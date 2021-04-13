@@ -1,0 +1,3 @@
+[submodule "mergify-engine"]
+	path = mergify-engine
+	url = https://github.com/Mergifyio/mergify-engine

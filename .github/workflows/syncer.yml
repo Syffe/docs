@@ -1,0 +1,16 @@
+name: mergify-engine syncer cron
+on:
+  schedule:
+    - cron:  '*/5 * * * *'
+
+jobs:
+  syncer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          cd ./.github/actions/syncer
+          yarn install
+      - uses: ./.github/actions/syncer
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}

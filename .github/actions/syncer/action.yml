@@ -1,0 +1,13 @@
+name: 'Syncer'
+description: 'Sync mergify-engine to prod repository'
+inputs:
+  token:
+    description: 'token'
+    required: true
+  commits-to-validate:
+    description: 'Number of commits to check (max: 100)'
+    required: true
+    default: 100
+runs:
+  using: 'node12'
+  main: 'syncer.js'
