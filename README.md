@@ -2,9 +2,12 @@
 
 [![mergify-engine syncer cron](https://github.com/Mergifyio/mergify-engine-prod/actions/workflows/syncer.yml/badge.svg)](https://github.com/Mergifyio/mergify-engine-prod/actions/workflows/syncer.yml)
 
-Engine is located in mergify-engine as git submodule
+This is the repository deployed in Heroku to run Mergify engine in production.
 
-We use a git-submodule and subdir buildpack to install deps of the submodule
+The upstream code is deployed using a git submodule in the `mergify-engine` directory.
+The upstream repository is automatically updated using [a GitHub Action named syncer](https://github.com/Mergifyio/mergify-engine-prod/actions/workflows/syncer.yml).
+
+We use a `git-submodule` and `subdir` buildpack to install the deps of the submodule:
 
 ```
 $ heroku buildpacks:clear
@@ -13,7 +16,9 @@ $ heroku buildpacks:set https://github.com/Mergifyio/heroku-buildpack-subdir.git
 
 ```
 
-All others buildpacks must go in .buildpacks
+All others buildpacks must go in `.buildpacks`.
+
+When this repository is updated, Heroku automatically triggers a new deployment using the latest commit of the `main` branch.
 
 ## Running the submodule syncer workflow on GitHub runners via CLI:
 
@@ -21,9 +26,11 @@ All others buildpacks must go in .buildpacks
 $ gh workflow run "mergify-engine syncer cron"
 ```
 
-## Running the submodule syncer workflow locally with docker:
+This will trigger the `syncer` GitHub Action that will update the submodule.
 
-With https://github.com/nektos/act
+## Running the submodule syncer workflow locally with Docker:
+
+Using https://github.com/nektos/act you can test the `syncer` action locally:
 
 ```
 $ act -j syncer -s GITHUB_TOKEN=${GITHUB_TOKEN}
