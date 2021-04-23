@@ -2,6 +2,7 @@ name: mergify-engine syncer cron
 on:
   schedule:
     - cron:  '*/15 10-19 * * 1-5'
+  workflow_dispatch:
 
 jobs:
   syncer:
