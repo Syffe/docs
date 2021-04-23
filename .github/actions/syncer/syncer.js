@@ -97,7 +97,7 @@ const syncer = async () => {
       const reviewersTrusted = allowedApprovals.size > 0;
       const message = `commit: ${commit.sha}, pull: ${pull.html_url}, author: ${pull.user.login}, reviewers: ${reviewers || '<none>'}, authorTrusted: ${authorTrusted}, reviewersTrusted: ${reviewersTrusted}`;
       console.log(message);
-      body += `${pull.html_url} (${commit.sha.slice(-7)}): ${pull.user.login} | ${pull.title} | reviewed by: ${reviewers || '<none>'}\n`;
+      body += `${pull.html_url} (${commit.sha.slice(0, 7)}): ${pull.user.login} | ${pull.title} | reviewed by: ${reviewers || '<none>'}\n`;
       if (!authorTrusted && !reviewersTrusted) {
         core.setOutput('untrusted-commit-sha', commit.sha);
         core.setOutput('untrusted-author', pull.user.login);
@@ -129,7 +129,7 @@ const syncer = async () => {
 
     const { data: newCommit } = await octokit.rest.git.createCommit({
       ...repoProd,
-      message: `feat: Bump mergify-engine from ${currentEngineProdSha.slice(-7)} to ${latestEngineSha.slice(-7)}\n\n${body}`,
+      message: `feat: Bump mergify-engine from ${currentEngineProdSha.slice(0, 7)} to ${latestEngineSha.slice(0, 7)}\n\n${body}`,
       tree: newTree.sha,
       parents: [branchMainProd.commit.sha],
     });
