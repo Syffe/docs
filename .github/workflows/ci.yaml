@@ -40,17 +40,15 @@ jobs:
         with: 
           submodules: true
       - run: |
-          ./tests/prepare-legacy-buildpacks.sh
           curl -sSL \
             "https://github.com/buildpacks/pack/releases/download/v0.18.1/pack-v0.18.1-linux.tgz" \
             | tar -xz pack
           ./pack build test_img \
-            -e SUBDIR_ENABLE_PROFILE_SOURCING=1 \
             --builder heroku/buildpacks:20 \
-            --buildpack buildpacks/subdir 
+            --buildpack heroku/python
           docker run \
-            --env-file tests/fake.env \
+            --env-file fake.env \
             -e MERGIFYENGINE_STORAGE_URL=redis://redis:6363 \
             --entrypoint /bin/bash \
             test_img \
-            -c 'cd /app ; source .profile.d/subdir-buildpack.sh ; mergify-import-check '
+            -c 'cd /app ; for i in .profile.d/*.sh; do source $i; done; mergify-import-check '

@@ -1,3 +1,0 @@
-mergify-engine=https://github.com/heroku/heroku-buildpack-python.git
-https://github.com/DataDog/heroku-buildpack-datadog.git
-https://github.com/Mergifyio/heroku-buildpack-notify-slack-deploy.git
