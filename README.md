@@ -7,16 +7,15 @@ This is the repository deployed in Heroku to run Mergify engine in production.
 The upstream code is deployed using a git submodule in the `mergify-engine` directory.
 The upstream repository is automatically updated using [a GitHub Action named syncer](https://github.com/Mergifyio/mergify-engine-prod/actions/workflows/syncer.yml).
 
-We use a `git-submodule` and `subdir` buildpack to install the deps of the submodule:
+We use a `git-submodule` buildpack to install the deps of the submodule:
 
 ```
 $ heroku buildpacks:clear
 $ heroku buildpacks:set https://github.com/Mergifyio/heroku-buildpack-git-submodule.git
-$ heroku buildpacks:set https://github.com/Mergifyio/heroku-buildpack-subdir.git
+$ heroku buildpacks:set https://github.com/DataDog/heroku-buildpack-datadog.git
+$ heroku buildpacks:set heroku/python
 
 ```
-
-All others buildpacks must go in `.buildpacks`.
 
 When this repository is updated, Heroku automatically triggers a new deployment using the latest commit of the `main` branch.
 
