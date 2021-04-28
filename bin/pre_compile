@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# Ensure heroku always reinstall requirements.txt as we uses -r and heroku does not
+# detect sub requirements changes
+echo > $CACHE_DIR/.heroku/requirements.txt
