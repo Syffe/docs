@@ -40,7 +40,8 @@ jobs:
           - 6363:6379
     steps:
       - uses: actions/checkout@v2
-        with: 
+        with:
+          ssh-key: ${{ secrets.DEPLOY_BOT_SSH_KEY }}
           submodules: true
       - run: |
           curl -sSL \
