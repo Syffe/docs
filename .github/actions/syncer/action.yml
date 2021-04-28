@@ -1,11 +1,14 @@
 name: 'Syncer'
-description: 'Sync mergify-engine to prod repository'
+description: 'Sync submodule main branch to prod repository'
 inputs:
-  token:
-    description: 'token'
+  token-write:
+    description: 'token to write in prod repository'
+    required: true
+  token-read:
+    description: 'token to read content of `repository`'
     required: true
   repository:
-    description: 'repoitory to synchronize'
+    description: 'repository to synchronize'
     required: true
   commits-to-validate:
     description: 'Number of commits to check (max: 100)'

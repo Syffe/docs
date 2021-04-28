@@ -15,11 +15,13 @@ jobs:
           yarn install
       - uses: ./.github/actions/syncer
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token-write: ${{ secrets.GITHUB_TOKEN }}
+          token-read: ${{ secrets.DEPLOY_BOT_PAT_TOKEN_FOR_SYNCER }}
           repository: mergify-engine
           production: true
       - uses: ./.github/actions/syncer
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token-write: ${{ secrets.GITHUB_TOKEN }}
+          token-read: ${{ secrets.DEPLOY_BOT_PAT_TOKEN_FOR_SYNCER }}
           repository: mergify-engine-signals
           production: true

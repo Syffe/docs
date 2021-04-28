@@ -12,14 +12,16 @@ const trustedAuthors = [
 
 const syncer = async () => {
   try {
-    const token = core.getInput('token', { required: true });
+    const tokenWrite = core.getInput('token-write', { required: true });
+    const tokenRead = core.getInput('token-read', { required: true });
     const repositoryName = core.getInput('repository', { required: true });
     const productionMode = core.getInput('production') === 'true';
 
     core.setOutput('production-mode', productionMode);
 
     const commitsToValidate = parseInt(core.getInput('commits-to-validate'), 10);
-    const octokit = github.getOctokit(token);
+    const octokit = github.getOctokit(tokenRead);
+    const octokitWrite = github.getOctokit(tokenWrite);
 
     const repoProd = {
       owner: 'Mergifyio',
@@ -128,7 +130,7 @@ const syncer = async () => {
     });
 
     if (productionMode) {
-      const { data: newTree } = await octokit.rest.git.createTree({
+      const { data: newTree } = await octokitWrite.rest.git.createTree({
         ...repoProd,
         base_tree: currentTree.sha,
         tree: [{
@@ -139,14 +141,14 @@ const syncer = async () => {
         }],
       });
 
-      const { data: newCommit } = await octokit.rest.git.createCommit({
+      const { data: newCommit } = await octokitWrite.rest.git.createCommit({
         ...repoProd,
         message: `feat: Bump ${repositoryName} from ${submodule.sha.slice(0, 7)} to ${latestSha.slice(0, 7)}\n\n${body}`,
         tree: newTree.sha,
         parents: [branchMainProd.commit.sha],
       });
 
-      await octokit.rest.git.updateRef({
+      await octokitWrite.rest.git.updateRef({
         ...repoProd,
         ref: 'heads/main',
         sha: newCommit.sha,

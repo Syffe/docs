@@ -66,5 +66,6 @@ jobs:
           yarn install
       - uses: ./.github/actions/syncer
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token-write: ${{ secrets.GITHUB_TOKEN }}
+          token-read: ${{ secrets.GITHUB_TOKEN }}
           repository: mergify-engine
