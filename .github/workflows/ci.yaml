@@ -1,4 +1,6 @@
 name: Continuous Integration
+permissions: write-all
+
 on:
   pull_request:
     branches:
@@ -17,7 +19,8 @@ jobs:
           bash -n datadog/prerun.sh
           pip install pyyaml
           python datadog/validate.py
-  action:
+
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -52,3 +55,15 @@ jobs:
             --entrypoint /bin/bash \
             test_img \
             -c 'cd /app ; for i in .profile.d/*.sh; do source $i; done; mergify-import-check '
+
+  action:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          cd ./.github/actions/syncer
+          yarn install
+      - uses: ./.github/actions/syncer
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: mergify-engine

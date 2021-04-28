@@ -12,7 +12,12 @@ const trustedAuthors = [
 
 const syncer = async () => {
   try {
-    const token = core.getInput('token');
+    const token = core.getInput('token', { required: true });
+    const repositoryName = core.getInput('repository', { required: true });
+    const productionMode = core.getInput('production') === 'true';
+
+    core.setOutput('production-mode', productionMode);
+
     const commitsToValidate = parseInt(core.getInput('commits-to-validate'), 10);
     const octokit = github.getOctokit(token);
 
@@ -21,37 +26,42 @@ const syncer = async () => {
       repo: 'mergify-engine-prod',
     };
 
-    const repoEngine = {
+    const repoSource = {
       owner: 'Mergifyio',
-      repo: 'mergify-engine',
+      repo: repositoryName,
     };
 
-    const { data: submoduleFile } = await octokit.rest.repos.getContent({
+    const { data: submodule } = await octokit.rest.repos.getContent({
       ...repoProd,
-      path: 'mergify-engine',
+      path: repositoryName,
     });
 
-    if (submoduleFile.type !== 'submodule') {
-      throw new Error(`${submoduleFile.path} is not a submodule`);
+    if (submodule.type !== 'submodule') {
+      throw new Error(`${submodule.path} is not a submodule`);
     }
 
-    const currentEngineProdSha = submoduleFile.sha;
-
     const { data: commits } = await octokit.rest.repos.listCommits({
-      ...repoEngine,
+      ...repoSource,
       per_page: commitsToValidate,
     });
 
-    const idx = commits.findIndex((c) => c.sha === currentEngineProdSha);
+    if (!productionMode) {
+      submodule.sha = commits[5].sha;
+    }
+
+    const idx = commits.findIndex((c) => c.sha === submodule.sha);
     if (idx < 0) {
-      throw new Error('current production engine sha not found in last ');
+      throw new Error(
+        `Current submodule sha ${submodule.sha.slice(0, 7)} not found in last ${commitsToValidate} commits of ${repositoryName} repository`,
+      );
     }
     const deltaCommits = commits.slice(0, idx);
 
-    const latestEngineSha = commits[0].sha;
+    const latestSha = commits[0].sha;
 
-    core.setOutput('current-engine-sha', currentEngineProdSha);
-    core.setOutput('latest-engine-sha', latestEngineSha);
+    core.setOutput('repository-name', repositoryName);
+    core.setOutput('submodule-sha', submodule.sha);
+    core.setOutput('latest-sha', latestSha);
     core.setOutput('commits-to-validate', deltaCommits.length);
 
     if (idx === 0) {
@@ -63,10 +73,10 @@ const syncer = async () => {
     for (const commit of deltaCommits) {
       // Behave this API may returns pulls request from other forked repositories
       let { data: pulls } = await octokit.rest.repos.listPullRequestsAssociatedWithCommit({
-        ...repoEngine,
+        ...repoSource,
         commit_sha: commit.sha,
       });
-      pulls = pulls.filter((p) => (p.state === 'closed' && p.base.ref === 'master' && p.base.user.login === 'Mergifyio'));
+      pulls = pulls.filter((p) => (p.state === 'closed' && (p.base.ref === 'master' || p.base.ref === 'main') && p.base.user.login === 'Mergifyio'));
       if (pulls.length > 1) {
         core.setOutput('untrusted-commit-sha', commit.sha);
         throw new Error(`Multiple pull request associated with ${commit.sha}`);
@@ -76,7 +86,7 @@ const syncer = async () => {
       }
       const pull = pulls[0];
       const { data: reviews } = await octokit.rest.pulls.listReviews({
-        ...repoEngine,
+        ...repoSource,
         pull_number: pull.number,
       });
 
@@ -111,36 +121,40 @@ const syncer = async () => {
       ...repoProd,
       branch: 'main',
     });
+
     const { data: currentTree } = await octokit.rest.git.getTree({
       ...repoProd,
       tree_sha: branchMainProd.commit.sha,
     });
 
-    const { data: newTree } = await octokit.rest.git.createTree({
-      ...repoProd,
-      base_tree: currentTree.sha,
-      tree: [{
-        path: 'mergify-engine',
-        mode: '160000', // submodule mode
-        type: 'commit',
-        sha: latestEngineSha,
-      }],
-    });
+    if (productionMode) {
+      const { data: newTree } = await octokit.rest.git.createTree({
+        ...repoProd,
+        base_tree: currentTree.sha,
+        tree: [{
+          path: repositoryName,
+          mode: '160000', // submodule mode
+          type: 'commit',
+          sha: latestSha,
+        }],
+      });
 
-    const { data: newCommit } = await octokit.rest.git.createCommit({
-      ...repoProd,
-      message: `feat: Bump mergify-engine from ${currentEngineProdSha.slice(0, 7)} to ${latestEngineSha.slice(0, 7)}\n\n${body}`,
-      tree: newTree.sha,
-      parents: [branchMainProd.commit.sha],
-    });
+      const { data: newCommit } = await octokit.rest.git.createCommit({
+        ...repoProd,
+        message: `feat: Bump ${repositoryName} from ${submodule.sha.slice(0, 7)} to ${latestSha.slice(0, 7)}\n\n${body}`,
+        tree: newTree.sha,
+        parents: [branchMainProd.commit.sha],
+      });
 
-    await octokit.rest.git.updateRef({
-      ...repoProd,
-      ref: 'heads/main',
-      sha: newCommit.sha,
-    });
-
-    console.log(`Main branch have been updated from ${branchMainProd.commit.sha} to ${newCommit.sha}`);
+      await octokit.rest.git.updateRef({
+        ...repoProd,
+        ref: 'heads/main',
+        sha: newCommit.sha,
+      });
+      console.log(`Main branch has been updated from ${branchMainProd.commit.sha} to ${newCommit.sha}`);
+    } else {
+      console.log(`Main branch has been updated from ${branchMainProd.commit.sha} to ??? (TEST MODE)`);
+    }
   } catch (error) {
     console.log(error);
     core.setFailed(error.message);

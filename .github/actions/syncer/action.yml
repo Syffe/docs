@@ -4,10 +4,17 @@ inputs:
   token:
     description: 'token'
     required: true
+  repository:
+    description: 'repoitory to synchronize'
+    required: true
   commits-to-validate:
     description: 'Number of commits to check (max: 100)'
     required: true
     default: 100
+  production:
+    description: 'production mode'
+    required: true
+    default: "false"
 runs:
   using: 'node12'
   main: 'syncer.js'

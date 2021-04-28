@@ -1,4 +1,5 @@
 name: mergify-engine syncer cron
+permissions: write-all
 on:
   schedule:
     - cron:  '*/15 7-17 * * 1-5'
@@ -15,3 +16,5 @@ jobs:
       - uses: ./.github/actions/syncer
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          repository: mergify-engine
+          production: true
