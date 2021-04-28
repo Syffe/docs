@@ -18,3 +18,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: mergify-engine
           production: true
+      - uses: ./.github/actions/syncer
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: mergify-engine-signals
+          production: true
