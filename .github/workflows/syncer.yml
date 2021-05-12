@@ -9,7 +9,7 @@ jobs:
   syncer:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.4
       - run: |
           cd ./.github/actions/syncer
           yarn install
