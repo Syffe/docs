@@ -1,3 +1,1 @@
-:repo:deb http://ppa.launchpad.net/git-core/ppa/ubuntu focal main
-
-git
+https://launchpad.net/~git-core/+archive/ubuntu/ppa/+files/git_2.31.1-0ppa1~ubuntu20.04.1_amd64.deb
