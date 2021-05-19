@@ -49,6 +49,7 @@ jobs:
             | tar -xz pack
           ./pack build test_img \
             --builder heroku/buildpacks:20 \
+            --buildpack https://cnb-shim.herokuapp.com/v1/heroku-community/apt \
             --buildpack heroku/python
           docker run \
             --env-file fake.env \
