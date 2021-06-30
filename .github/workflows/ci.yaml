@@ -70,3 +70,25 @@ jobs:
           token-write: ${{ secrets.GITHUB_TOKEN }}
           token-read: ${{ secrets.GITHUB_TOKEN }}
           repository: mergify-engine
+
+  no-submodule-change:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v4.0.2
+        with:
+          script: |
+            var resp = await github.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: ${{ github.event.pull_request.number }},
+              per_page: 100,
+            });
+            var files = resp.data;
+            var filenames = files.map(file => file.filename);
+            if (filenames.includes("mergify-engine")
+                || filenames.includes("mergify-engine-signals")) {
+              console.log("Changing submodule is forbidden!")
+              process.exit(1);
+            } else {
+              console.log("No submodule changed")
+            }
