@@ -2,7 +2,7 @@ name: mergify-engine syncer cron
 permissions: write-all
 on:
   schedule:
-    - cron:  '*/15 7-17 * * 1-5'
+    - cron:  '*/5 * * * *'
   workflow_dispatch:
 
 jobs:
