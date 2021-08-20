@@ -74,7 +74,7 @@ jobs:
   no-submodule-change:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v4.0.2
+      - uses: actions/github-script@v4.1
         with:
           script: |
             var resp = await github.pulls.listFiles({
