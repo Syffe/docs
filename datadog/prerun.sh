@@ -26,7 +26,7 @@ tags:
   - dynotype:$DYNOTYPE
   - buildpackversion:$BUILDPACKVERSION
   - appname:$HEROKU_APP_NAME
-  - service:web
+  - service:engine-web
 EOF
         cat > "$DD_CONF_DIR/conf.d/process.d/conf.yaml" <<EOF
 init_config:
@@ -36,15 +36,30 @@ instances:
     search_string: ['^gunicorn: worker']
     exact_match: false
     tags:
-      - service:web
+      - service:engine-web
   - name: gunicorn-master
     search_string: ['^gunicorn: master']
     exact_match: false
     tags:
-      - service:web
+      - service:engine-web
 EOF
+
+        cat > "$DD_CONF_DIR/conf.d/engine-web.d/conf.yaml" <<EOF
+init_config:
+
+instances:
+
+logs:
+  - type: udp
+    port: 10518
+    source: python
+    service: engine-web
+    sourcecategory: sourcecode
+EOF
+
         ;;
     worker)
+        sed -i "s/<SERVICE>/engine-worker/" "$DD_CONF_DIR/conf.d/logs.d/conf.yaml"
         cat > "$DATADOG_CONF" <<EOF
 process_config:
   enabled: "true"
@@ -58,7 +73,7 @@ tags:
   - dynotype:$DYNOTYPE
   - buildpackversion:$BUILDPACKVERSION
   - appname:$HEROKU_APP_NAME
-  - service:worker
+  - service:engine-worker
 EOF
         cat > "$DD_CONF_DIR/conf.d/process.d/conf.yaml" <<EOF
 init_config:
@@ -68,8 +83,22 @@ instances:
     search_string: ['bin/mergify-engine-worker']
     exact_match: false
     tags:
-      - service:worker
+      - service:engine-worker
 EOF
+
+        cat > "$DD_CONF_DIR/conf.d/engine-worker.d/conf.yaml" <<EOF
+init_config:
+
+instances:
+
+logs:
+  - type: udp
+    port: 10518
+    source: python
+    service: engine-worker
+    sourcecategory: sourcecode
+EOF
+
         ;;
 esac
 
