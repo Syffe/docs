@@ -44,6 +44,7 @@ instances:
       - service:engine-web
 EOF
 
+        mkdir -p "$DD_CONF_DIR/conf.d/engine-web.d"
         cat > "$DD_CONF_DIR/conf.d/engine-web.d/conf.yaml" <<EOF
 init_config:
 
@@ -86,6 +87,7 @@ instances:
       - service:engine-worker
 EOF
 
+        mkdir -p "$DD_CONF_DIR/conf.d/engine-worker.d"
         cat > "$DD_CONF_DIR/conf.d/engine-worker.d/conf.yaml" <<EOF
 init_config:
 
