@@ -74,10 +74,10 @@ jobs:
   no-submodule-change:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v4.1
+      - uses: actions/github-script@v5
         with:
           script: |
-            var resp = await github.pulls.listFiles({
+            var resp = await github.rest.pulls.listFiles({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: ${{ github.event.pull_request.number }},
