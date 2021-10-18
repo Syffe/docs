@@ -11,7 +11,7 @@ jobs:
     timeout-minutes: 5
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v2.3.5
       - uses: actions/setup-python@v2.2.2
         with:
           python-version: 3.9.0
@@ -23,7 +23,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v2.3.5
       - uses: actions/setup-node@v2.4.1
         with:
           node-version: 12
@@ -39,7 +39,7 @@ jobs:
         ports:
           - 6363:6379
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v2.3.5
         with:
           ssh-key: ${{ secrets.DEPLOY_BOT_SSH_KEY }}
           submodules: true
@@ -61,7 +61,7 @@ jobs:
   action:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v2.3.5
       - run: |
           cd ./.github/actions/syncer
           yarn install
