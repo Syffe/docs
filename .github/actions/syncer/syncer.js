@@ -98,7 +98,9 @@ const syncer = async () => {
         if (trustedReviewers.includes(review.user.login)) {
           if (review.state === 'APPROVED') {
             allowedApprovals.set(review.user.login, review);
-          } else {
+          } else if (review.state === 'COMMENTED') {
+            // nothing to do
+          } else { // CHANGES_REQUESTED, DISMISSED
             allowedApprovals.delete(review.user.login);
           }
         }
