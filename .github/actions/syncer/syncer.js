@@ -87,10 +87,18 @@ const syncer = async () => {
         throw new Error(`No pull request associated with ${commit.sha}`);
       }
       const pull = pulls[0];
-      const { data: reviews } = await octokit.rest.pulls.listReviews({
+
+      const reviews = [];
+      const listReviewsOptions = {
         ...repoSource,
         pull_number: pull.number,
-      });
+        per_page: 100,
+      };
+      for await (const result of octokit.paginate.iterator(
+        octokit.rest.pulls.listReviews.endpoint.merge(listReviewsOptions),
+      )) {
+        reviews.push(...result.data);
+      }
 
       const allowedApprovals = new Map();
       // Reviews are by chronological order, so we need to keep only the last one
