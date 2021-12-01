@@ -16,7 +16,7 @@ jobs:
         ports:
           - 6363:6379
     steps:
-      - uses: actions/checkout@v2.3.5
+      - uses: actions/checkout@v2.4.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           ssh-key: ${{ secrets.DEPLOY_BOT_SSH_KEY }}
