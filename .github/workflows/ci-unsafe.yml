@@ -35,5 +35,3 @@ jobs:
             --entrypoint /bin/bash \
             test_img \
             -c 'cd /app ; for i in .profile.d/*.sh; do source $i; done; mergify-import-check-worker; mergify-import-check-web;'
-
-
