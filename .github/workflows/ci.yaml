@@ -1,5 +1,5 @@
 name: Continuous Integration
-permissions: write-all
+permissions: read-all
 
 on:
   pull_request:
@@ -29,34 +29,6 @@ jobs:
           node-version: 12
       - run: |
           cd .github/actions/syncer && yarn install && yarn run eslint
-
-  heroku:
-    timeout-minutes: 10
-    runs-on: ubuntu-20.04
-    services:
-      redis:
-        image: redis:latest
-        ports:
-          - 6363:6379
-    steps:
-      - uses: actions/checkout@v2.3.5
-        with:
-          ssh-key: ${{ secrets.DEPLOY_BOT_SSH_KEY }}
-          submodules: true
-      - run: |
-          curl -sSL \
-            "https://github.com/buildpacks/pack/releases/download/v0.18.1/pack-v0.18.1-linux.tgz" \
-            | tar -xz pack
-          ./pack build test_img \
-            --builder heroku/buildpacks:20 \
-            --buildpack https://cnb-shim.herokuapp.com/v1/heroku-community/apt \
-            --buildpack heroku/python
-          docker run \
-            --env-file fake.env \
-            -e MERGIFYENGINE_STORAGE_URL=redis://redis:6363 \
-            --entrypoint /bin/bash \
-            test_img \
-            -c 'cd /app ; for i in .profile.d/*.sh; do source $i; done; mergify-import-check-worker; mergify-import-check-web;'
 
   action:
     runs-on: ubuntu-latest
