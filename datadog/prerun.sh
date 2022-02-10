@@ -59,7 +59,7 @@ logs:
 EOF
 
         ;;
-    worker)
+    worker-*)
         sed -i "s/<SERVICE>/engine-worker/" "$DD_CONF_DIR/conf.d/logs.d/conf.yaml"
         cat > "$DATADOG_CONF" <<EOF
 process_config:
