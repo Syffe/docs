@@ -1,0 +1,123 @@
+name: Docker
+permissions: read-all
+
+on:
+  push:
+    branches:
+      - main
+  pull_request_target:
+    branches:
+      - main
+
+jobs:
+  heroku-future:
+    timeout-minutes: 10
+    runs-on: ubuntu-20.04
+    services:
+      redis:
+        image: redis:latest
+        ports:
+          - 6363:6379
+    steps:
+      - uses: akhileshns/heroku-deploy@v3.12.12
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: "mergify-engine-next"
+          heroku_email: "sileht@sileht.net"
+          justlogin: true
+
+      - name: Checkout
+        uses: actions/checkout@v2.4.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          ssh-key: ${{ secrets.DEPLOY_BOT_SSH_KEY }}
+          submodules: true
+
+      - name: Extract python version
+        id: python_version
+        run: |
+          PYTHON_VERSION="$(cut -d- -f2 mergify-engine/runtime.txt)"
+          echo ::set-output name=PYTHON_VERSION::${PYTHON_VERSION}
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build & cache all layers
+        uses: docker/build-push-action@v2
+        with: &build-params
+          build-args:
+          - PYTHON_VERSION=${{ steps.python_version.outputs.PYTHON_VERSION }}
+          - MERGIFYENGINE_SHA=${{ github.event.pull_request.head.sha }}
+          context: .
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build saas-web
+        uses: docker/build-push-action@v2
+        with:
+          <<: *build-params
+          target: saas-web
+          tags:
+            - web:latest
+
+      - name: Build saas-web
+        uses: docker/build-push-action@v2
+        with:
+          <<: *build-params
+          target: saas-web
+          tags:
+            - web:latest
+
+      - name: Build saas-worker-shared
+        uses: docker/build-push-action@v2
+        with:
+          <<: *build-params
+          target: saas-worker-shared
+          tags:
+            - worker-shared:latest
+
+      - name: Build saas-worker-dedicated
+        uses: docker/build-push-action@v2
+        with:
+          <<: *build-params
+          target: saas-worker-dedicated
+          tags:
+            - worker-dedicated:latest
+
+      - name: Build onpremise
+        uses: docker/build-push-action@v2
+        with:
+          <<: *build-params
+          target: onpremise
+          tags:
+            - onpremise:testing
+
+      - name: Testing
+        run:
+          for i in web worker-shared worker-dedicated onpremise; do
+            docker run \
+              --env-file fake.env \
+              -e MERGIFYENGINE_STORAGE_URL=redis://redis:6363 \
+              --entrypoint /bin/bash \
+              $i:latest \
+              -c '/datadog-wrapper.sh mergify-import-check-worker; /datadog-wrapper.sh mergify-import-check-web;'
+          done
+
+      # Next steps are only on main branch for pushing change in production
+
+      - name: Push
+        if: ${{ github.event_name == "push" && github.ref_name == "main" }}
+        run:
+          for i in web worker-shared worker-dedicated; do
+            docker tag $i registry.heroku.com/mergify-engine-next/$i
+            docker push registry.heroku.com/mergify-engine-next/$i
+          done
+
+      - name: Release
+        if: ${{ github.event_name == "push" && github.ref_name == "main" }}
+        run:
+          for i in web worker-shared worker-dedicated; do
+            heroku container:release -a mergify-engine-next $i
+          done
