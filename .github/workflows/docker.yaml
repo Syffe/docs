@@ -141,7 +141,7 @@ jobs:
       # Next steps are only on main branch for pushing change in production
 
       - name: Push
-        if: ${{ github.event_name == "push" && github.ref_name == "main" }}
+        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
         run:
           for i in web worker-shared worker-dedicated; do
             docker tag $i registry.heroku.com/mergify-engine-next/$i
@@ -149,7 +149,7 @@ jobs:
           done
 
       - name: Release
-        if: ${{ github.event_name == "push" && github.ref_name == "main" }}
+        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
         run:
           for i in web worker-shared worker-dedicated; do
             heroku container:release -a mergify-engine-next $i
