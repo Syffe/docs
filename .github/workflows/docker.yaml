@@ -128,7 +128,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Testing
-        run:
+        run: |
           for i in web worker-shared worker-dedicated onpremise; do
             docker run \
               --env-file fake.env \
@@ -142,7 +142,7 @@ jobs:
 
       - name: Push
         if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
-        run:
+        run: |
           for i in web worker-shared worker-dedicated; do
             docker tag $i registry.heroku.com/mergify-engine-next/$i
             docker push registry.heroku.com/mergify-engine-next/$i
@@ -150,7 +150,7 @@ jobs:
 
       - name: Release
         if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
-        run:
+        run: |
           for i in web worker-shared worker-dedicated; do
             heroku container:release -a mergify-engine-next $i
           done
