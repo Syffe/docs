@@ -71,20 +71,6 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           target: saas-web
-          tags: "web:latest"
-          # COMMON
-          build-args: |
-            PYTHON_VERSION=${{ steps.python_version.outputs.PYTHON_VERSION }}
-            MERGIFYENGINE_SHA=${{ steps.engine_version.outputs.SHA }}
-          context: .
-          push: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Build saas-web
-        uses: docker/build-push-action@v2
-        with:
-          target: saas-web
           tags: web:latest
           # COMMON
           build-args: |
