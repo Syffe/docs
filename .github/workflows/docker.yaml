@@ -33,6 +33,16 @@ jobs:
           ssh-key: ${{ secrets.DEPLOY_BOT_SSH_KEY }}
           submodules: true
 
+        # NOTE(sileht):  github.event.pull_request.head.sha is not set for push event
+        # so we pick the HEAD sha if the checkout for the image:
+        # * for push, HEAD is main branch head (default actions/checkout)
+        # * for pull_request_target, HEAD is github.event.pull_request.head.sha (thanks to actions/checkout)
+      - name: Extract engine last SHA
+        id: engine_version
+        run: |
+          SHA="$(/usr/bin/git log -1 --format='%H')"
+          echo ::set-output name=SHA::${SHA}
+
       - name: Extract python version
         id: python_version
         run: |
@@ -51,7 +61,7 @@ jobs:
           # COMMON
           build-args: |
             PYTHON_VERSION=${{ steps.python_version.outputs.PYTHON_VERSION }}
-            MERGIFYENGINE_SHA=${{ github.event.pull_request.head.sha }}
+            MERGIFYENGINE_SHA=${{ steps.engine_version.outputs.SHA }}
           context: .
           push: false
           cache-from: type=gha
@@ -65,7 +75,7 @@ jobs:
           # COMMON
           build-args: |
             PYTHON_VERSION=${{ steps.python_version.outputs.PYTHON_VERSION }}
-            MERGIFYENGINE_SHA=${{ github.event.pull_request.head.sha }}
+            MERGIFYENGINE_SHA=${{ steps.engine_version.outputs.SHA }}
           context: .
           push: false
           cache-from: type=gha
@@ -79,7 +89,7 @@ jobs:
           # COMMON
           build-args: |
             PYTHON_VERSION=${{ steps.python_version.outputs.PYTHON_VERSION }}
-            MERGIFYENGINE_SHA=${{ github.event.pull_request.head.sha }}
+            MERGIFYENGINE_SHA=${{ steps.engine_version.outputs.SHA }}
           context: .
           push: false
           cache-from: type=gha
@@ -93,7 +103,7 @@ jobs:
           # COMMON
           build-args: |
             PYTHON_VERSION=${{ steps.python_version.outputs.PYTHON_VERSION }}
-            MERGIFYENGINE_SHA=${{ github.event.pull_request.head.sha }}
+            MERGIFYENGINE_SHA=${{ steps.engine_version.outputs.SHA }}
           context: .
           push: false
           cache-from: type=gha
@@ -107,7 +117,7 @@ jobs:
           # COMMON
           build-args: |
             PYTHON_VERSION=${{ steps.python_version.outputs.PYTHON_VERSION }}
-            MERGIFYENGINE_SHA=${{ github.event.pull_request.head.sha }}
+            MERGIFYENGINE_SHA=${{ steps.engine_version.outputs.SHA }}
           context: .
           push: false
           cache-from: type=gha
@@ -121,7 +131,7 @@ jobs:
           # COMMON
           build-args: |
             PYTHON_VERSION=${{ steps.python_version.outputs.PYTHON_VERSION }}
-            MERGIFYENGINE_SHA=${{ github.event.pull_request.head.sha }}
+            MERGIFYENGINE_SHA=${{ steps.engine_version.outputs.SHA }}
           context: .
           push: false
           cache-from: type=gha
