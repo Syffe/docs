@@ -45,7 +45,10 @@ jobs:
 
       - name: Build & cache all layers
         uses: docker/build-push-action@v2
-        with: &build-params
+        with:
+          # NOTE(sileht): COMMON section must be the same on all build steps
+          # GitHub workflow does not support Yaml Anchors, so we have to duplciate it...
+          # COMMON
           build-args:
           - PYTHON_VERSION=${{ steps.python_version.outputs.PYTHON_VERSION }}
           - MERGIFYENGINE_SHA=${{ github.event.pull_request.head.sha }}
@@ -57,42 +60,77 @@ jobs:
       - name: Build saas-web
         uses: docker/build-push-action@v2
         with:
-          <<: *build-params
           target: saas-web
           tags:
             - web:latest
+          # COMMON
+          build-args:
+          - PYTHON_VERSION=${{ steps.python_version.outputs.PYTHON_VERSION }}
+          - MERGIFYENGINE_SHA=${{ github.event.pull_request.head.sha }}
+          context: .
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Build saas-web
         uses: docker/build-push-action@v2
         with:
-          <<: *build-params
           target: saas-web
           tags:
             - web:latest
+          # COMMON
+          build-args:
+          - PYTHON_VERSION=${{ steps.python_version.outputs.PYTHON_VERSION }}
+          - MERGIFYENGINE_SHA=${{ github.event.pull_request.head.sha }}
+          context: .
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Build saas-worker-shared
         uses: docker/build-push-action@v2
         with:
-          <<: *build-params
           target: saas-worker-shared
           tags:
             - worker-shared:latest
+          # COMMON
+          build-args:
+          - PYTHON_VERSION=${{ steps.python_version.outputs.PYTHON_VERSION }}
+          - MERGIFYENGINE_SHA=${{ github.event.pull_request.head.sha }}
+          context: .
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Build saas-worker-dedicated
         uses: docker/build-push-action@v2
         with:
-          <<: *build-params
           target: saas-worker-dedicated
           tags:
             - worker-dedicated:latest
+          # COMMON
+          build-args:
+          - PYTHON_VERSION=${{ steps.python_version.outputs.PYTHON_VERSION }}
+          - MERGIFYENGINE_SHA=${{ github.event.pull_request.head.sha }}
+          context: .
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Build onpremise
         uses: docker/build-push-action@v2
         with:
-          <<: *build-params
           target: onpremise
           tags:
             - onpremise:testing
+          # COMMON
+          build-args:
+          - PYTHON_VERSION=${{ steps.python_version.outputs.PYTHON_VERSION }}
+          - MERGIFYENGINE_SHA=${{ github.event.pull_request.head.sha }}
+          context: .
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Testing
         run:
