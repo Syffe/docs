@@ -19,13 +19,6 @@ jobs:
         ports:
           - 6363:6379
     steps:
-      - uses: akhileshns/heroku-deploy@v3.12.12
-        with:
-          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-          heroku_app_name: "mergify-engine-next"
-          heroku_email: "sileht@sileht.net"
-          justlogin: true
-
       - name: Checkout
         uses: actions/checkout@v2.4.0
         with:
@@ -139,6 +132,17 @@ jobs:
           done
 
       # Next steps are only on main branch for pushing change in production
+      #
+      - name: Loggin in Heroku
+        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+        run: |
+          cat >~/.netrc <<EOF
+          machine api.heroku.com
+              login sileht@sileht.net
+              password ${{secrets.HEROKU_API_KEY}}
+          EOF
+          heroku login
+          heroku container:login
 
       - name: Push
         if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
