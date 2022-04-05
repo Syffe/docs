@@ -1,4 +1,11 @@
 #!/bin/bash
+
+
+echo "Starting Mergify Enterprise"
+echo "MERGIFYENGINE_VERSION=$MERGIFYENGINE_VERSION"
+echo "MERGIFYENGINE_REVISION=$MERGIFYENGINE_REVISION"
+echo "MERGIFYENGINE_SHA=$MERGIFYENGINE_SHA"
+
 cd /app
 
 get_command() {

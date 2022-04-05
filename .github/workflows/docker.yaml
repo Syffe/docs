@@ -19,7 +19,7 @@ jobs:
         ports:
           - 6363:6379
     steps:
-      - name: Checkout
+      - name: ⬇️ Checkout
         uses: actions/checkout@v2.4.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
@@ -30,131 +30,169 @@ jobs:
         # so we pick the HEAD sha if the checkout for the image:
         # * for push, HEAD is main branch head (default actions/checkout)
         # * for pull_request_target, HEAD is github.event.pull_request.head.sha (thanks to actions/checkout)
-      - name: Extract engine last SHA
-        id: engine_version
+      - name: 📝 Prepare variables
+        id: vars
         run: |
+          HEROKU_ENVIRONMENT="mergify-engine-next"
+          echo ::set-output name=HEROKU_ENVIRONMENT::${HEROKU_ENVIRONMENT}
+
+          VERSION="${{ github.ref_name }}" 
+          echo ::set-output name=VERSION::${VERSION}
+
+          REVISION="$(git rev-list --count HEAD)"
+          echo ::set-output name=REVISION::${REVISION}
+
           SHA="$(/usr/bin/git log -1 --format='%H')"
           echo ::set-output name=SHA::${SHA}
 
-      - name: Extract python version
-        id: python_version
-        run: |
           PYTHON_VERSION="$(cut -d- -f2 mergify-engine/runtime.txt)"
           echo ::set-output name=PYTHON_VERSION::${PYTHON_VERSION}
 
-      - name: Set up Docker Buildx
+
+      - name: ⚙️ Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v1
 
-      - name: Build & cache all layers
+      - name: ⚙️ Build & cache all layers
         uses: docker/build-push-action@v2
         with:
           # NOTE(sileht): COMMON section must be the same on all build steps
           # GitHub workflow does not support Yaml Anchors, so we have to duplciate it...
           # COMMON
           build-args: |
-            PYTHON_VERSION=${{ steps.python_version.outputs.PYTHON_VERSION }}
-            MERGIFYENGINE_SHA=${{ steps.engine_version.outputs.SHA }}
+            PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
+            MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
+            MERGIFYENGINE_REVISION=${{ steps.vars.outputs.REVISION }}
+            MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
           context: .
           push: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build saas-web
+      - name: ⚙️ Build saas-web
         uses: docker/build-push-action@v2
         with:
           target: saas-web
-          tags: web:latest
+          tags: web:tmp
           outputs: type=docker
           # COMMON
           build-args: |
-            PYTHON_VERSION=${{ steps.python_version.outputs.PYTHON_VERSION }}
-            MERGIFYENGINE_SHA=${{ steps.engine_version.outputs.SHA }}
+            PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
+            MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
+            MERGIFYENGINE_REVISION=${{ steps.vars.outputs.REVISION }}
+            MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
           context: .
           push: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build saas-worker-shared
+      - name: ⚙️ Build saas-worker-shared
         uses: docker/build-push-action@v2
         with:
           target: saas-worker-shared
-          tags: worker-shared:latest
+          tags: worker-shared:tmp
           outputs: type=docker
           # COMMON
           build-args: |
-            PYTHON_VERSION=${{ steps.python_version.outputs.PYTHON_VERSION }}
-            MERGIFYENGINE_SHA=${{ steps.engine_version.outputs.SHA }}
+            PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
+            MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
+            MERGIFYENGINE_REVISION=${{ steps.vars.outputs.REVISION }}
+            MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
           context: .
           push: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build saas-worker-dedicated
+      - name: ⚙️ Build saas-worker-dedicated
         uses: docker/build-push-action@v2
         with:
           target: saas-worker-dedicated
-          tags: worker-dedicated:latest
+          tags: worker-dedicated:tmp
           outputs: type=docker
           # COMMON
           build-args: |
-            PYTHON_VERSION=${{ steps.python_version.outputs.PYTHON_VERSION }}
-            MERGIFYENGINE_SHA=${{ steps.engine_version.outputs.SHA }}
+            PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
+            MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
+            MERGIFYENGINE_REVISION=${{ steps.vars.outputs.REVISION }}
+            MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
           context: .
           push: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build onpremise
+      - name: ⚙️ Build onpremise
         uses: docker/build-push-action@v2
         with:
           target: onpremise
-          tags: onpremise:latest
+          tags: onpremise:tmp
           outputs: type=docker
           # COMMON
           build-args: |
-            PYTHON_VERSION=${{ steps.python_version.outputs.PYTHON_VERSION }}
-            MERGIFYENGINE_SHA=${{ steps.engine_version.outputs.SHA }}
+            PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
+            MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
+            MERGIFYENGINE_REVISION=${{ steps.vars.outputs.REVISION }}
+            MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
           context: .
           push: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Testing
+      - name: 🏓 Testing
         run: |
           for i in web worker-shared worker-dedicated onpremise; do
             docker run \
               --env-file fake.env \
               -e MERGIFYENGINE_STORAGE_URL=redis://redis:6363 \
               --entrypoint /bin/bash \
-              $i:latest \
+              $i:tmp \
               -c '/datadog-wrapper.sh mergify-import-check-worker; /datadog-wrapper.sh mergify-import-check-web;'
           done
 
       # Next steps are only on main branch for pushing change in production
       #
-      - name: Loggin in Heroku
+      - name: 👮 Log into in Heroku
         if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
         run: |
           cat >~/.netrc <<EOF
           machine api.heroku.com
-              login sileht@sileht.net
+              login prod+heroku@mergify.com
               password ${{secrets.HEROKU_API_KEY}}
           EOF
           heroku login
           heroku container:login
 
-      - name: Push
+      # The first phase upload all images to heroku
+      - name: 📜 Tag and Push (versionned)
         if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+        env:
+          REVISION: ${{ steps.vars.outputs.REVISION }}
+          SHA: ${{ steps.vars.outputs.SHA }}
+          HEROKU_ENVIRONMENT: ${{ steps.vars.outputs.HEROKU_ENVIRONMENT }}
         run: |
           for i in web worker-shared worker-dedicated; do
-            docker tag $i registry.heroku.com/mergify-engine-next/$i
-            docker push registry.heroku.com/mergify-engine-next/$i
+            image="registry.heroku.com/${HEROKU_ENVIRONMENT}/${i}:${REVISION}-${SHA}"
+            docker tag "${i}:tmp" "$image"
+            docker push "$image"
           done
 
-      - name: Release
+      # The second phase just upload a new tag that will be used for the release cycle
+      - name: 📜 Tag and Push (latest)
         if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+        env:
+          HEROKU_ENVIRONMENT: ${{ steps.vars.outputs.HEROKU_ENVIRONMENT }}
         run: |
           for i in web worker-shared worker-dedicated; do
-            heroku container:release -a mergify-engine-next $i
+            image="registry.heroku.com/${HEROKU_ENVIRONMENT}/${i}:latest"
+            docker tag "${i}:tmp" "$image"
+            docker push "$image"
+          done
+
+      # The third phase start the new latest images
+      - name: 🚀 Release
+        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+        env:
+          HEROKU_ENVIRONMENT: ${{ steps.vars.outputs.HEROKU_ENVIRONMENT }}
+        run: |
+          for i in web worker-shared worker-dedicated; do
+            heroku container:release -a "${HEROKU_ENVIRONMENT}" "${i}"
           done

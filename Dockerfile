@@ -1,6 +1,6 @@
 ARG ENGINE_PATH=mergify-engine
 ARG ENGINE_SIGNAL_PATH=mergify-engine-signals
-ARG PYTHON_VERSION=3
+ARG PYTHON_VERSION
 
 ### BASE ###
 FROM python:${PYTHON_VERSION}-slim as python-base
@@ -48,9 +48,17 @@ RUN python3 -m pip install --no-cache-dir -c /requirements.txt -e /signals
 FROM python-base as runner-base
 ARG PYTHON_VERSION
 ARG DD_AGENT_VERSION=7.34.0-1
-LABEL mergify-engine.version="$MERGIFYENGINE_VERSION"
-LABEL datadog-agent.version="$DD_AGENT_VERSION"
+ARG MERGIFYENGINE_REVISION
+ARG MERGIFYENGINE_SHA
 LABEL python.version="$PYTHON_VERSION"
+LABEL mergify-engine.sha="$MERGIFYENGINE_SHA"
+LABEL mergify-engine.revision="$MERGIFYENGINE_REVISION"
+LABEL datadog-agent.version="$DD_AGENT_VERSION"
+ENV MERGIFYENGINE_SHA=$MERGIFYENGINE_SHA
+ENV MERGIFYENGINE_REVISION=$MERGIFYENGINE_REVISION
+RUN test -n "$PYTHON_VERSION"
+RUN test -n "$MERGIFYENGINE_SHA"
+RUN test -n "$MERGIFYENGINE_REVISION"
 
 # Add Datadog repository, signing keys and packages
 RUN apt-get update \
@@ -77,28 +85,34 @@ WORKDIR /app
 ENV VIRTUAL_ENV=/venv
 ENV PYTHONUNBUFFERED=1
 ENV PATH="/venv/bin:${PATH}"
-ENV MERGIFYENGINE_VERSION=$MERGIFYENGINE_VERSION
 USER mergify
 
+# ALL LAYER ABOVE MUST BE THE SAME FOR ALL VERSIONS, BUILD ARGS MUST BE THE SAME FOR ALL VERSIONS
+### We don't put MERGIFYENGINE_VERSION inside runner-base, to ensure runner-base is the same layer between onpremise and saas
+FROM runner-base as runner-tagged
+ARG MERGIFYENGINE_VERSION
+LABEL mergify-engine.version="$MERGIFYENGINE_VERSION"
+ENV MERGIFYENGINE_VERSION=$MERGIFYENGINE_VERSION
+RUN test -n "$MERGIFYENGINE_VERSION"
+
 ### WEB ###
-FROM runner-base as saas-web
+FROM runner-tagged as saas-web
 ENV PORT=8002
 EXPOSE $PORT
 USER mergify
 CMD ["/datadog-wrapper.sh", "gunicorn", "--worker-class=uvicorn.workers.UvicornH11Worker", "--statsd-host=localhost:8125", "--log-level=warning", "mergify_engine.web.asgi"]
 
 ### WORKER-SHARED ###
-FROM runner-base as saas-worker-shared
+FROM runner-tagged as saas-worker-shared
 USER mergify
 CMD ["/datadog-wrapper.sh", "mergify-engine-worker", "--enabled-services=shared-stream"]
 
 ### WORKER-DEDICATED ###
-FROM runner-base as saas-worker-dedicated
+FROM runner-tagged as saas-worker-dedicated
 CMD ["/datadog-wrapper.sh", "mergify-engine-worker", "--enabled-services=dedicated-stream,stream-monitoring,delayed-refresh"]
 
 ### ON PREMISE ###
-FROM runner-base as onpremise
-ARG MERGIFYENGINE_VERSION=dev
+FROM runner-tagged as onpremise
 USER root
 COPY --from=js-builder /installer/build /app/installer/build
 ADD onpremise/Procfile /app/

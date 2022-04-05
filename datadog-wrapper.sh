@@ -3,18 +3,28 @@
 # NOTE(sileht): Heroku doesn't log stderr of containers, so use only stdout
 exec 2>&1
 
+startup_message() {
+    echo "Starting Mergify SaaS"
+    echo "MERGIFYENGINE_VERSION=$MERGIFYENGINE_VERSION"
+    echo "MERGIFYENGINE_REVISION=$MERGIFYENGINE_REVISION"
+    echo "MERGIFYENGINE_SHA=$MERGIFYENGINE_SHA"
+}
+
 export DYNOHOST="$(hostname)"
 export DYNOTYPE=${DYNO%%.*}
 
 if [ -z "$DD_API_KEY" ]; then
+    startup_message
     echo '$DD_API_KEY missing, skipping datadog-agent setup...'
     exec "$@"
 
 elif [ -z "$DYNO" ]; then
+    startup_message
     echo '$DYNO missing, skipping datadog-agent setup...'
     exec "$@"
 
 elif [ -z "$DYNO" -o "$DYNOHOST" == "run" ]; then
+    startup_message
     echo '$DYNOHOST == run , skipping datadog-agent setup...'
     exec "$@"
 fi
@@ -156,5 +166,5 @@ datadog-agent run &
 /opt/datadog-agent/embedded/bin/trace-agent --config=/etc/datadog-agent/datadog.yaml &
 /opt/datadog-agent/embedded/bin/process-agent --config=/etc/datadog-agent/datadog.yaml &
 
-echo 'Application startup.'
+startup_message
 exec /venv/bin/ddtrace-run "$@"
