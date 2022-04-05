@@ -85,16 +85,16 @@ FROM runner-base as saas-web
 ENV PORT=8002
 EXPOSE $PORT
 USER mergify
-ENTRYPOINT ["/datadog-wrapper.sh", "gunicorn", "--worker-class=uvicorn.workers.UvicornH11Worker", "--statsd-host=localhost:8125", "--log-level=warning", "mergify_engine.web.asgi"]
+CMD ["/datadog-wrapper.sh", "gunicorn", "--worker-class=uvicorn.workers.UvicornH11Worker", "--statsd-host=localhost:8125", "--log-level=warning", "mergify_engine.web.asgi"]
 
 ### WORKER-SHARED ###
 FROM runner-base as saas-worker-shared
 USER mergify
-ENTRYPOINT ["/datadog-wrapper.sh", "mergify-engine-worker", "--enabled-services=shared-stream"]
+CMD ["/datadog-wrapper.sh", "mergify-engine-worker", "--enabled-services=shared-stream"]
 
 ### WORKER-DEDICATED ###
 FROM runner-base as saas-worker-dedicated
-ENTRYPOINT ["/datadog-wrapper.sh", "mergify-engine-worker", "--enabled-services=dedicated-stream,stream-monitoring,delayed-refresh"]
+CMD ["/datadog-wrapper.sh", "mergify-engine-worker", "--enabled-services=dedicated-stream,stream-monitoring,delayed-refresh"]
 
 ### ON PREMISE ###
 FROM runner-base as onpremise
