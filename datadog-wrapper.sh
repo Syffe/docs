@@ -1,9 +1,21 @@
 #!/bin/bash
 
+# NOTE(sileht): Heroku doesn't log stderr of containers, so use only stdout
+exec 2>&1
+
 export DYNOHOST="$(hostname)"
 export DYNOTYPE=${DYNO%%.*}
 
-if [ -z "$DYNO" -o "$DYNOHOST" == "run" ]; then
+if [ -z "$DD_API_KEY" ]; then
+    echo '$DD_API_KEY missing, skipping datadog-agent setup...'
+    exec "$@"
+
+elif [ -z "$DYNO" ]; then
+    echo '$DYNO missing, skipping datadog-agent setup...'
+    exec "$@"
+
+elif [ -z "$DYNO" -o "$DYNOHOST" == "run" ]; then
+    echo '$DYNOHOST == run , skipping datadog-agent setup...'
     exec "$@"
 fi
 
@@ -139,8 +151,10 @@ fi
 
 
 unset DD_CONF_DIR
+echo 'Datadog-agent startup.'
 datadog-agent run &
 /opt/datadog-agent/embedded/bin/trace-agent --config=/etc/datadog-agent/datadog.yaml &
 /opt/datadog-agent/embedded/bin/process-agent --config=/etc/datadog-agent/datadog.yaml &
 
+echo 'Application startup.'
 exec /venv/bin/ddtrace-run "$@"
