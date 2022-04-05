@@ -23,7 +23,7 @@ jobs:
           submodules: true
       - run: |
           curl -sSL \
-            "https://github.com/buildpacks/pack/releases/download/v0.18.1/pack-v0.18.1-linux.tgz" \
+            "https://github.com/buildpacks/pack/releases/download/v0.24.1/pack-v0.24.1-linux.tgz" \
             | tar -xz pack
           ./pack build test_img \
             --builder heroku/buildpacks:20 \
