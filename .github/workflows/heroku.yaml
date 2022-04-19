@@ -1,0 +1,35 @@
+name: Heroku
+permissions: read-all
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  heroku:
+    timeout-minutes: 10
+    runs-on: ubuntu-20.04
+    steps:
+      - name: ⬇️ Checkout
+        uses: actions/checkout@v2.4.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          ssh-key: ${{ secrets.DEPLOY_BOT_SSH_KEY }}
+          submodules: true
+
+      - name: 👮 Log into in Heroku
+        run: |
+          cat >~/.netrc <<EOF
+          machine api.heroku.com
+              login prod+heroku@mergify.com
+              password ${{secrets.HEROKU_API_KEY}}
+          machine git.heroku.com
+              login prod+heroku@mergify.com
+              password ${{secrets.HEROKU_API_KEY}}
+          EOF
+
+      - name: 🚀 Release
+        run: |
+          heroku git:remote --app mergify-engine
+          git push heroku main
