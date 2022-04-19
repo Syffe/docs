@@ -124,7 +124,6 @@ jobs:
           context: .
           push: false
           cache-from: type=gha
-          cache-to: type=gha,mode=max
 
       - name: ⚙️ Build saas-worker-dedicated
         uses: docker/build-push-action@v2
@@ -141,7 +140,6 @@ jobs:
           context: .
           push: false
           cache-from: type=gha
-          cache-to: type=gha,mode=max
 
       - name: ⚙️ Build onpremise
         uses: docker/build-push-action@v2
@@ -158,7 +156,6 @@ jobs:
           context: .
           push: false
           cache-from: type=gha
-          cache-to: type=gha,mode=max
 
       - name: 🏓 Testing
         run: |
