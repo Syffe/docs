@@ -20,6 +20,7 @@ jobs:
           - 6363:6379
     steps:
       - name: Deployment start
+        if: always() && github.event_name == 'push' && github.ref_name == 'main'
         uses: slackapi/slack-github-action@v1.18.0
         with:
           payload: |
@@ -173,7 +174,7 @@ jobs:
       # Next steps are only on main branch for pushing change in production
       #
       - name: 👮 Log into in Heroku
-        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+        if: github.event_name == 'push' && github.ref_name == 'main'
         run: |
           cat >~/.netrc <<EOF
           machine api.heroku.com
@@ -187,7 +188,7 @@ jobs:
 
       # The first phase upload all images to heroku
       - name: 📜 Tag and Push (versionned)
-        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+        if: github.event_name == 'push' && github.ref_name == 'main'
         env:
           REVISION: ${{ steps.vars.outputs.REVISION }}
           SHA: ${{ steps.vars.outputs.SHA }}
@@ -201,7 +202,7 @@ jobs:
 
       # The second phase just upload a new tag that will be used for the release cycle
       - name: 📜 Tag and Push (latest)
-        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+        if: github.event_name == 'push' && github.ref_name == 'main'
         env:
           HEROKU_ENVIRONMENT: ${{ steps.vars.outputs.HEROKU_ENVIRONMENT }}
         run: |
@@ -213,7 +214,7 @@ jobs:
 
       # The third phase start the new latest images
       - name: 🚀 Release
-        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+        if: github.event_name == 'push' && github.ref_name == 'main'
         env:
           HEROKU_ENVIRONMENT: ${{ steps.vars.outputs.HEROKU_ENVIRONMENT }}
         run: |
@@ -223,7 +224,7 @@ jobs:
 
       - name: Fetch check run html url
         id: fetch-check-run
-        if: always()
+        if: always() && github.event_name == 'push' && github.ref_name == 'main'
         uses: actions/github-script@v5
         with:
           result-encoding: string
@@ -240,7 +241,7 @@ jobs:
 
       - name: Prepare report status
         id: report-status
-        if: always()
+        if: always() && github.event_name == 'push' && github.ref_name == 'main'
         run: |
           commit_message=$( git log -1 )
           # GitHub multiple lines hack
@@ -257,7 +258,7 @@ jobs:
           fi
 
       - name: Report Status
-        if: always()
+        if: always() && github.event_name == 'push' && github.ref_name == 'main'
         uses: slackapi/slack-github-action@v1.18.0
         with:
           # yamllint disable rule:line-length
