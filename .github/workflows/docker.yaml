@@ -157,8 +157,10 @@ jobs:
           machine api.heroku.com
               login prod+heroku@mergify.com
               password ${{secrets.HEROKU_API_KEY}}
+          machine git.heroku.com
+              login sileht@sileht.net
+              password ${{secrets.HEROKU_API_KEY}}
           EOF
-          heroku login
           heroku container:login
 
       # The first phase upload all images to heroku
