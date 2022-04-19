@@ -1,6 +1,3 @@
 [submodule "mergify-engine"]
 	path = mergify-engine
 	url = https://github.com/Mergifyio/mergify-engine
-[submodule "mergify-engine-signals"]
-	path = mergify-engine-signals
-	url = git@github.com:Mergifyio/mergify-engine-signals.git

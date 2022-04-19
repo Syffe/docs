@@ -1,5 +1,4 @@
 ARG ENGINE_PATH=mergify-engine
-ARG ENGINE_SIGNAL_PATH=mergify-engine-signals
 ARG PYTHON_VERSION
 
 ### BASE ###
@@ -37,12 +36,9 @@ ADD ${ENGINE_PATH}/requirements.txt /
 RUN python3 -m pip install --no-cache-dir -r /requirements.txt
 
 ADD ${ENGINE_PATH} /app
-ADD ${ENGINE_SIGNAL_PATH} /signals
 
 # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
 RUN python3 -m pip install --no-cache-dir -c /requirements.txt -e /app
-# nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
-RUN python3 -m pip install --no-cache-dir -c /requirements.txt -e /signals
 
 ### BASE RUNNER ###
 FROM python-base as runner-base
@@ -78,7 +74,6 @@ RUN apt-get update && apt-get -y --force-yes install --reinstall datadog-agent=1
 
 RUN apt clean -y && rm -rf /var/lib/apt/lists/*
 COPY --from=python-builder /app /app
-COPY --from=python-builder /signals /signals
 COPY --from=python-builder /venv /venv
 ADD datadog-wrapper.sh /
 WORKDIR /app

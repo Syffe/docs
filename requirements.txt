@@ -1,3 +1,2 @@
 -r mergify-engine/requirements.txt
 -e mergify-engine
--e mergify-engine-signals

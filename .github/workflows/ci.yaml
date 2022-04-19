@@ -59,8 +59,7 @@ jobs:
             });
             var files = resp.data;
             var filenames = files.map(file => file.filename);
-            if (filenames.includes("mergify-engine")
-                || filenames.includes("mergify-engine-signals")) {
+            if (filenames.includes("mergify-engine")) {
               console.log("Changing submodule is forbidden!")
               process.exit(1);
             } else {
