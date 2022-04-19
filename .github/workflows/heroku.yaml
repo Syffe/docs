@@ -79,11 +79,9 @@ jobs:
         if: always()
         run: |
           commit_message=$( git log -1 )
-          # GitHub multiple lines hack
-          # https://github.community/t/set-output-truncates-multiline-strings/16852
-          commit_message="${commit_message//'%'/'%25'}"
-          commit_message="${commit_message//$'\n'/'%0A'}"
-          commit_message="${commit_message//$'\r'/'%0D'}"
+          # need only one line for step output and json payload
+          commit_message="${commit_message//$'\n'/'\\\n'}"
+          commit_message="${commit_message//$'\r'/'\\\r'}"
 
           echo "::set-output name=commit_message::$commit_message"
           if [ "${{ job.status }}" == "success" ] ; then
