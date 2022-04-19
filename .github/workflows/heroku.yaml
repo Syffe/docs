@@ -14,8 +14,6 @@ jobs:
       - name: ⬇️ Checkout
         uses: actions/checkout@v2.4.0
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          ssh-key: ${{ secrets.DEPLOY_BOT_SSH_KEY }}
           fetch-depth: 0
           submodules: true
 
