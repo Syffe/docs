@@ -10,7 +10,7 @@ on:
       - main
 
 jobs:
-  heroku-future:
+  heroku:
     timeout-minutes: 10
     runs-on: ubuntu-20.04
     services:
@@ -19,6 +19,29 @@ jobs:
         ports:
           - 6363:6379
     steps:
+      - name: Deployment start
+        uses: slackapi/slack-github-action@v1.18.0
+        with:
+          payload: |
+            {
+              "attachments": [
+                {
+                  "blocks": [
+                    {
+                      "type": "section",
+                      "text": {
+                        "type": "mrkdwn",
+                        "text": "*Starting deployment of mergify-engine*"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
       - name: ⬇️ Checkout
         uses: actions/checkout@v2.4.0
         with:
@@ -197,3 +220,74 @@ jobs:
           for i in web worker-shared worker-dedicated; do
             heroku container:release -a "${HEROKU_ENVIRONMENT}" "${i}"
           done
+
+      - name: Fetch check run html url
+        id: fetch-check-run
+        if: always()
+        uses: actions/github-script@v5
+        with:
+          result-encoding: string
+          script: |
+            const { data } = await github.rest.actions.listJobsForWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.runId
+            });
+            const job = data.jobs.find(
+              (j) => j.name.includes("${{ github.job }}")
+            )
+            return job.html_url ;
+
+      - name: Prepare report status
+        id: report-status
+        if: always()
+        run: |
+          commit_message=$(( git log -1 ))
+          # GitHub multiple lines hack
+          # https://github.community/t/set-output-truncates-multiline-strings/16852
+          commit_message="${commit_message//'%'/'%25'}"
+          commit_message="${commit_message//$'\n'/'%0A'}"
+          commit_message="${commit_message//$'\r'/'%0D'}"
+
+          echo "::set-output name=commit_message::$commit_message"
+          if [ "${{ job.status }}" == "success" ] ; then
+            echo "::set-output name=color::2eb886"
+          else
+            echo "::set-output name=color::e03e2f"
+          fi
+
+      - name: Report Status
+        if: always()
+        uses: slackapi/slack-github-action@v1.18.0
+        with:
+          # yamllint disable rule:line-length
+          payload: |
+            {
+              "attachments": [
+                {
+                  "color": "#${{ steps.report-status.outputs.color }}",
+                  "blocks": [
+                    {
+                      "type": "section",
+                      "text": {
+                        "type": "mrkdwn",
+                        "text": "*Deployment of mergify-engine finished*\nConclusion: ${{ job.status }}\n```${{ steps.report-status.outputs.commit_message }}```"
+                      },
+                      "accessory": {
+                        "type": "button",
+                        "text": {
+                          "type": "plain_text",
+                          "text": "Job log",
+                          "emoji": true
+                        },
+                        "url": "${{ steps.fetch-check-run.outputs.result }}"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          # yamllint enable rule:line-length
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
