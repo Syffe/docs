@@ -78,7 +78,7 @@ jobs:
         id: report-status
         if: always()
         run: |
-          commit_message=$(( git log -1 ))
+          commit_message=$( git log -1 )
           # GitHub multiple lines hack
           # https://github.community/t/set-output-truncates-multiline-strings/16852
           commit_message="${commit_message//'%'/'%25'}"
