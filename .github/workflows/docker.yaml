@@ -25,17 +25,13 @@ jobs:
         with:
           payload: |
             {
-              "attachments": [
+              "blocks": [
                 {
-                  "blocks": [
-                    {
-                      "type": "section",
-                      "text": {
-                        "type": "mrkdwn",
-                        "text": "*Starting deployment of mergify-engine*"
-                      }
-                    }
-                  ]
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Starting deployment of mergify-engine*
+                  }
                 }
               ]
             }
@@ -245,9 +241,9 @@ jobs:
           echo EOF >> $GITHUB_ENV
 
           if [ "${{ job.status }}" == "success" ] ; then
-            echo "::set-output name=color::2eb886"
+            echo "::set-output name=emoji::🦾"
           else
-            echo "::set-output name=color::e03e2f"
+            echo "::set-output name=emoji::💥"
           fi
 
       - name: Report Status
@@ -257,27 +253,22 @@ jobs:
           # yamllint disable rule:line-length
           payload: |
             {
-              "attachments": [
+              "blocks": [
                 {
-                  "color": "#${{ steps.report-status.outputs.color }}",
-                  "blocks": [
-                    {
-                      "type": "section",
-                      "text": {
-                        "type": "mrkdwn",
-                        "text": "*Deployment of mergify-engine finished*\nConclusion: ${{ job.status }}\n```${{ env.COMMIT_MESSAGE }}```"
-                      },
-                      "accessory": {
-                        "type": "button",
-                        "text": {
-                          "type": "plain_text",
-                          "text": "Job log",
-                          "emoji": true
-                        },
-                        "url": "${{ steps.fetch-check-run.outputs.result }}"
-                      }
-                    }
-                  ]
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Deployment of mergify-dashboard finished ${{ steps.report-status.outputs.emoji }}*\nConclusion: ${{ job.status }}\n```${{ env.COMMIT_MESSAGE }}```,
+                  },
+                  "accessory": {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "Job log",
+                      "emoji": true
+                    },
+                    "url": "${{ steps.fetch-check-run.outputs.result }}"
+                  }
                 }
               ]
             }
