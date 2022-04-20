@@ -78,12 +78,10 @@ jobs:
         id: report-status
         if: always()
         run: |
-          commit_message=$( git log -1 )
-          # need only one line for step output and json payload
-          commit_message="${commit_message//$'\n'/'\\\n'}"
-          commit_message="${commit_message//$'\r'/'\\\r'}"
+          echo 'COMMIT_MESSAGE<<EOF' >> $GITHUB_ENV
+          git log -1 | sed ':a;N;$!ba;s/\n/\\n/g' >> $GITHUB_ENV
+          echo EOF >> $GITHUB_ENV
 
-          echo "::set-output name=commit_message::$commit_message"
           if [ "${{ job.status }}" == "success" ] ; then
             echo "::set-output name=color::2eb886"
           else
@@ -105,7 +103,7 @@ jobs:
                       "type": "section",
                       "text": {
                         "type": "mrkdwn",
-                        "text": "*Deployment of mergify-engine (legacy) finished*\nConclusion: ${{ job.status }}\n```${{ steps.report-status.outputs.commit_message }}```"
+                        "text": "*Deployment of mergify-engine (legacy) finished*\nConclusion: ${{ job.status }}\n```${{ env.COMMIT_MESSAGE }}```"
                       },
                       "accessory": {
                         "type": "button",
