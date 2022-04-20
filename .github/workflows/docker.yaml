@@ -30,7 +30,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*Starting deployment of mergify-engine*
+                    "text": "*Starting deployment of mergify-engine*"
                   }
                 }
               ]
@@ -258,7 +258,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*Deployment of mergify-dashboard finished ${{ steps.report-status.outputs.emoji }}*\nConclusion: ${{ job.status }}\n```${{ env.COMMIT_MESSAGE }}```,
+                    "text": "*Deployment of mergify-dashboard finished ${{ steps.report-status.outputs.emoji }}*\nConclusion: ${{ job.status }}\n```${{ env.COMMIT_MESSAGE }}```"
                   },
                   "accessory": {
                     "type": "button",
