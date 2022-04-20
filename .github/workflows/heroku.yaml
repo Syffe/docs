@@ -11,6 +11,24 @@ jobs:
     timeout-minutes: 10
     runs-on: ubuntu-20.04
     steps:
+      - name: Fetch job check run information
+        id: fetch-check-run
+        if: always()
+        uses: actions/github-script@v5
+        with:
+          result-encoding: string
+          script: |
+            const { data } = await github.rest.actions.listJobsForWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.runId
+            });
+            const job = data.jobs.find(
+              (j) => j.name.includes("${{ github.job }}")
+            )
+            core.setOutput("job_url", job.html_url);
+            core.setOutput("job_id", String(job.id));
+
       - name: Deployment start
         uses: slackapi/slack-github-action@v1.18.0
         with:
@@ -21,7 +39,16 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*Starting deployment of mergify-engine (legacy)*"
+                    "text": "*Starting deployment (${{ steps.fetch-check-run.outputs.job_id }}) of mergify-engine (legacy)*"
+                  },
+                  "accessory": {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "Job log",
+                      "emoji": true
+                    },
+                    "url": "${{ steps.fetch-check-run.outputs.job_url }}"
                   }
                 }
               ]
@@ -53,23 +80,6 @@ jobs:
           heroku git:remote --app mergify-engine
           git push heroku main
 
-      - name: Fetch check run html url
-        id: fetch-check-run
-        if: always()
-        uses: actions/github-script@v5
-        with:
-          result-encoding: string
-          script: |
-            const { data } = await github.rest.actions.listJobsForWorkflowRun({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              run_id: context.runId
-            });
-            const job = data.jobs.find(
-              (j) => j.name.includes("${{ github.job }}")
-            )
-            return job.html_url ;
-
       - name: Prepare report status
         id: report-status
         if: always()
@@ -96,7 +106,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*Deployment of mergify-engine (legacy) finished ${{ steps.report-status.outputs.emoji }}*\nConclusion: ${{ job.status }}\n```${{ env.COMMIT_MESSAGE }}```"
+                    "text": "*Deployment (${{ steps.fetch-check-run.outputs.job_id }}) of mergify-engine (legacy) finished ${{ steps.report-status.outputs.emoji }}*\nConclusion: ${{ job.status }}\n```${{ env.COMMIT_MESSAGE }}```"
                   },
                   "accessory": {
                     "type": "button",
@@ -105,7 +115,7 @@ jobs:
                       "text": "Job log",
                       "emoji": true
                     },
-                    "url": "${{ steps.fetch-check-run.outputs.result }}"
+                    "url": "${{ steps.fetch-check-run.outputs.job_url }}"
                   }
                 }
               ]
