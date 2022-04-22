@@ -113,7 +113,7 @@ jobs:
       - name: 📝 Prepare variables
         id: vars
         run: |
-          HEROKU_ENVIRONMENT="mergify-engine-next"
+          HEROKU_ENVIRONMENT="mergify-engine"
           echo ::set-output name=HEROKU_ENVIRONMENT::${HEROKU_ENVIRONMENT}
 
           VERSION="${{ github.ref_name }}" 
