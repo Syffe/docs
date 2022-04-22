@@ -243,7 +243,7 @@ jobs:
       - name: 📜 Tag and Push (on-premise)
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
         run: |
-          image="docker.io/mergifyio/engine-test"
+          image="docker.io/mergifyio/engine"
           docker tag "onpremise:tmp" "$image:latest"
           docker tag "onpremise:tmp" "$image:${{ github.ref_name }}"
           docker push "$image:latest"
