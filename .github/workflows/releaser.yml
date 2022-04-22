@@ -42,7 +42,7 @@ jobs:
           set -e
           set -o pipefail
 
-          cd mergify_engine
+          cd mergify-engine
 
           git fetch --tag
           VERSION=$(reno -q semver-next)
@@ -61,5 +61,5 @@ jobs:
         run: |
           git submodule set-url mergify-engine git@github.com:Mergifyio/mergify-engine.git
           git push origin ${{ steps.relnote.outputs.VERSION }}
-          cd mergify_engine
+          cd mergify-engine
           git push origin ${{ steps.relnote.outputs.VERSION }}
