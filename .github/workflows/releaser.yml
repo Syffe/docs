@@ -61,6 +61,9 @@ jobs:
       - name: Push git tag 🏎️
         if: ${{ !github.event.inputs.dry_run }}
         run: |
+          set -e
+          set -x
+          set -o pipefail
           git submodule set-url mergify-engine git@github.com:Mergifyio/mergify-engine.git
           git push origin ${{ steps.relnote.outputs.VERSION }}
           cd mergify-engine
