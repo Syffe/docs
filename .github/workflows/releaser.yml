@@ -21,7 +21,7 @@ jobs:
           ssh-key: "${{ secrets.DEPLOY_BOT_SSH_PRIVATE_KEY }}"
           persist-credentials: true
           fetch-depth: 0
-          submodule: true
+          submodules: true
 
       - name: Setup Python 🔧
         uses: actions/setup-python@v3
