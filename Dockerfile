@@ -44,17 +44,13 @@ RUN python3 -m pip install --no-cache-dir -c /requirements.txt -e /app
 FROM python-base as runner-base
 ARG PYTHON_VERSION
 ARG DD_AGENT_VERSION=7.34.0-1
-ARG MERGIFYENGINE_REVISION
 ARG MERGIFYENGINE_SHA
 LABEL python.version="$PYTHON_VERSION"
 LABEL mergify-engine.sha="$MERGIFYENGINE_SHA"
-LABEL mergify-engine.revision="$MERGIFYENGINE_REVISION"
 LABEL datadog-agent.version="$DD_AGENT_VERSION"
 ENV MERGIFYENGINE_SHA=$MERGIFYENGINE_SHA
-ENV MERGIFYENGINE_REVISION=$MERGIFYENGINE_REVISION
 RUN test -n "$PYTHON_VERSION"
 RUN test -n "$MERGIFYENGINE_SHA"
-RUN test -n "$MERGIFYENGINE_REVISION"
 
 # Add Datadog repository, signing keys and packages
 RUN apt-get update \

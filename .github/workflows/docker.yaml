@@ -119,9 +119,6 @@ jobs:
           VERSION="${{ github.ref_name }}" 
           echo ::set-output name=VERSION::${VERSION}
 
-          REVISION="$(git rev-list --count HEAD)"
-          echo ::set-output name=REVISION::${REVISION}
-
           SHA="$(/usr/bin/git log -1 --format='%H')"
           echo ::set-output name=SHA::${SHA}
 
@@ -142,7 +139,6 @@ jobs:
           build-args: |
             PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
             MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
-            MERGIFYENGINE_REVISION=${{ steps.vars.outputs.REVISION }}
             MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
           context: .
           push: false
@@ -159,7 +155,6 @@ jobs:
           build-args: |
             PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
             MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
-            MERGIFYENGINE_REVISION=${{ steps.vars.outputs.REVISION }}
             MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
           context: .
           push: false
@@ -176,7 +171,6 @@ jobs:
           build-args: |
             PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
             MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
-            MERGIFYENGINE_REVISION=${{ steps.vars.outputs.REVISION }}
             MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
           context: .
           push: false
@@ -192,7 +186,6 @@ jobs:
           build-args: |
             PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
             MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
-            MERGIFYENGINE_REVISION=${{ steps.vars.outputs.REVISION }}
             MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
           context: .
           push: false
@@ -208,7 +201,6 @@ jobs:
           build-args: |
             PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
             MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
-            MERGIFYENGINE_REVISION=${{ steps.vars.outputs.REVISION }}
             MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
           context: .
           push: false
@@ -313,12 +305,11 @@ jobs:
       - name: 📜 Tag and Push (versionned)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
-          REVISION: ${{ steps.vars.outputs.REVISION }}
           SHA: ${{ steps.vars.outputs.SHA }}
           HEROKU_ENVIRONMENT: ${{ steps.vars.outputs.HEROKU_ENVIRONMENT }}
         run: |
           for i in web worker-shared worker-dedicated; do
-            image="registry.heroku.com/${HEROKU_ENVIRONMENT}/${i}:${REVISION}-${SHA}"
+            image="registry.heroku.com/${HEROKU_ENVIRONMENT}/${i}:${SHA}"
             docker tag "${i}:tmp" "$image"
             docker push "$image"
           done
