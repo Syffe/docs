@@ -16,16 +16,22 @@ export DYNOTYPE=${DYNO%%.*}
 if [ -z "$DD_API_KEY" ]; then
     startup_message
     echo '$DD_API_KEY missing, skipping datadog-agent setup...'
+    export DD_DOGSTATSD_DISABLE=1
+    export DD_TRACE_ENABLED=0
     exec "$@"
 
 elif [ -z "$DYNO" ]; then
     startup_message
     echo '$DYNO missing, skipping datadog-agent setup...'
+    export DD_DOGSTATSD_DISABLE=1
+    export DD_TRACE_ENABLED=0
     exec "$@"
 
 elif [ -z "$DYNO" -o "$DYNOHOST" == "run" ]; then
     startup_message
     echo '$DYNOHOST == run , skipping datadog-agent setup...'
+    export DD_DOGSTATSD_DISABLE=1
+    export DD_TRACE_ENABLED=0
     exec "$@"
 fi
 
