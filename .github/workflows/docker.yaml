@@ -348,6 +348,8 @@ jobs:
 
           if [ "${{ job.status }}" == "success" ] ; then
             echo "::set-output name=emoji::🦾"
+          elif [ "${{ job.status }}" == "cancelled" ] ; then
+            echo "::set-output name=emoji::✋"
           else
             echo "::set-output name=emoji::💥"
           fi
