@@ -1,14 +1,20 @@
 ARG ENGINE_PATH=mergify-engine
 ARG PYTHON_VERSION
+# Used to rebuild everything without cache everyday
+ARG BUILD_DATE
 
 ### BASE ###
 FROM python:${PYTHON_VERSION}-slim as python-base
+ARG BUILD_DATE
+RUN test -n "$BUILD_DATE"
 RUN useradd -m mergify
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y && apt upgrade -y && apt install -y git && apt autoremove --purge -y
 
 ### BUILDER JS ###
 FROM node:16-buster-slim as js-builder
+ARG BUILD_DATE
+RUN test -n "$BUILD_DATE"
 ARG ENGINE_PATH
 # Real install that can't be cached
 ADD ${ENGINE_PATH}/installer /installer

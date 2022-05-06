@@ -125,6 +125,8 @@ jobs:
           PYTHON_VERSION="$(cut -d- -f2 mergify-engine/runtime.txt)"
           echo ::set-output name=PYTHON_VERSION::${PYTHON_VERSION}
 
+          BUILD_DATE="$(date '+%Y-%m-%d')"
+          echo ::set-output name=BUILD_DATE::${BUILD_DATE}
 
       - name: ⚙️ Set up Docker Buildx
         id: buildx
@@ -140,6 +142,7 @@ jobs:
             PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
             MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
             MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
+            BUILD_DATE=${{ steps.vars.outputs.BUILD_DATE }}
           context: .
           push: false
           cache-from: type=gha
@@ -156,6 +159,7 @@ jobs:
             PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
             MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
             MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
+            BUILD_DATE=${{ steps.vars.outputs.BUILD_DATE }}
           context: .
           push: false
           cache-from: type=gha
@@ -172,6 +176,7 @@ jobs:
             PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
             MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
             MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
+            BUILD_DATE=${{ steps.vars.outputs.BUILD_DATE }}
           context: .
           push: false
           cache-from: type=gha
@@ -187,6 +192,7 @@ jobs:
             PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
             MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
             MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
+            BUILD_DATE=${{ steps.vars.outputs.BUILD_DATE }}
           context: .
           push: false
           cache-from: type=gha
@@ -202,6 +208,7 @@ jobs:
             PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
             MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
             MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
+            BUILD_DATE=${{ steps.vars.outputs.BUILD_DATE }}
           context: .
           push: false
           cache-from: type=gha
