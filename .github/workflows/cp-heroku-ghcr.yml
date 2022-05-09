@@ -1,0 +1,50 @@
+name: Scan docker image
+permissions: read-all
+
+on:
+  workflow_dispatch:
+
+  # once it's ready enable it once or twice a day
+  #schedule:
+  #  - cron: "0 0 * * *"
+
+jobs:
+  cp-heroku-to-ghcr:
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+      cancel-in-progress: true
+    timeout-minutes: 10
+    runs-on: ubuntu-20.04
+    steps:
+      - name: ⬇️ Checkout
+        uses: actions/checkout@v2.4.0
+        with:
+          submodules: true
+
+      - name: 👮 Log into in Heroku
+        run: |
+          cat >~/.netrc <<EOF
+          machine api.heroku.com
+              login prod+heroku@mergify.com
+              password ${{secrets.HEROKU_API_KEY}}
+          machine git.heroku.com
+              login prod+heroku@mergify.com
+              password ${{secrets.HEROKU_API_KEY}}
+          EOF
+          heroku container:login
+
+      - name: ☁️  Download latest image
+        run:
+          docker pull registry.heroku.com/mergify-engine/web:latest
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'registry.heroku.com/mergify-engine/web:latest'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: 'trivy-results.sarif'
