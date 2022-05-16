@@ -37,14 +37,11 @@ jobs:
         run:
           docker pull registry.heroku.com/mergify-engine/web:latest
 
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+      - name: Run vulnerability scanner
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          image-ref: 'registry.heroku.com/mergify-engine/web:latest'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: 'trivy-results.sarif'
+          command: monitor
+          image: 'registry.heroku.com/mergify-engine/web:latest'
+          args: '--org=mergify'
