@@ -9,6 +9,7 @@ ARG BUILD_DATE
 RUN test -n "$BUILD_DATE"
 RUN useradd -m mergify
 ENV DEBIAN_FRONTEND=noninteractive
+RUN printf 'APT::Get::Install-Recommends "false";\nAPT::Get::Install-Suggests "false";\n' > /etc/apt/apt.conf.d/99local
 RUN apt update -y && apt upgrade -y && apt install -y git && apt autoremove --purge -y
 
 ### BUILDER JS ###
@@ -28,7 +29,8 @@ FROM python-base as python-builder
 ARG ENGINE_PATH
 ARG ENGINE_SIGNAL_PATH
 
-# Real install that can't be cached
+# Required because hiredis is lagging a lot are providing prebuild wheel, last
+# version if for py39
 RUN apt install -y gcc
 
 RUN python3 -m venv /venv
@@ -59,8 +61,8 @@ RUN test -n "$PYTHON_VERSION"
 RUN test -n "$MERGIFYENGINE_SHA"
 
 # Add Datadog repository, signing keys and packages
-RUN apt-get update \
- && apt-get install -y gnupg apt-transport-https gpg-agent curl ca-certificates
+RUN apt update -y \
+ && apt install -y gnupg apt-transport-https gpg-agent curl ca-certificates
 ENV DATADOG_APT_KEYRING="/usr/share/keyrings/datadog-archive-keyring.gpg"
 ENV DATADOG_APT_KEYS_URL="https://keys.datadoghq.com"
 RUN sh -c "echo 'deb [signed-by=${DATADOG_APT_KEYRING}] https://apt.datadoghq.com/ stable 7' > /etc/apt/sources.list.d/datadog.list"
@@ -73,8 +75,8 @@ RUN curl -o /tmp/DATADOG_APT_KEY_382E94DE.public "${DATADOG_APT_KEYS_URL}/DATADO
     gpg --ignore-time-conflict --no-default-keyring --keyring ${DATADOG_APT_KEYRING} --import /tmp/DATADOG_APT_KEY_382E94DE.public
 RUN apt-get update && apt-get -y --force-yes install --reinstall datadog-agent=1:${DD_AGENT_VERSION}
 
-
-RUN apt clean -y && rm -rf /var/lib/apt/lists/*
+RUN apt purge -y libcurl4 curl openssh-client gnupg apt-transport-https gpg-agent curl ca-certificates libldap-common openssl
+RUN apt autoremove --purge -y && apt clean -y && rm -rf /var/lib/apt/lists/*
 COPY --from=python-builder /app /app
 COPY --from=python-builder /venv /venv
 ADD datadog-wrapper.sh /
