@@ -3,10 +3,8 @@ permissions: read-all
 
 on:
   workflow_dispatch:
-
-  # once it's ready enable it once or twice a day
-  #schedule:
-  #  - cron: "0 0 * * *"
+  schedule:
+    - cron: "0 0 * * *"
 
 jobs:
   cp-heroku-to-ghcr:
