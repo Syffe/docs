@@ -75,8 +75,9 @@ RUN curl -o /tmp/DATADOG_APT_KEY_382E94DE.public "${DATADOG_APT_KEYS_URL}/DATADO
     gpg --ignore-time-conflict --no-default-keyring --keyring ${DATADOG_APT_KEYRING} --import /tmp/DATADOG_APT_KEY_382E94DE.public
 RUN apt-get update && apt-get -y --force-yes install --reinstall datadog-agent=1:${DD_AGENT_VERSION}
 
-RUN apt purge -y libcurl4 curl openssh-client gnupg apt-transport-https gpg-agent curl ca-certificates libldap-common openssl
+RUN apt purge -y libcurl4 curl openssh-client gnupg apt-transport-https gpg-agent curl ca-certificates libldap-common openssl patch
 RUN apt autoremove --purge -y && apt clean -y && rm -rf /var/lib/apt/lists/*
+RUN apt purge -y --allow-remove-essential libsepol1 apt libudev1 gpgv login
 COPY --from=python-builder /app /app
 COPY --from=python-builder /venv /venv
 ADD datadog-wrapper.sh /
