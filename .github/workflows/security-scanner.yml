@@ -7,7 +7,7 @@ on:
     - cron: "0 0 * * *"
 
 jobs:
-  cp-heroku-to-ghcr:
+  docker-image-security-scan:
     concurrency:
       group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
       cancel-in-progress: true
