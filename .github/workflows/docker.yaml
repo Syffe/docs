@@ -349,17 +349,24 @@ jobs:
         id: report-status
         if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
-          echo 'COMMIT_MESSAGE<<EOF' >> $GITHUB_ENV
-          git log -1 | sed ':a;N;$!ba;s/\n/\\n/g' >> $GITHUB_ENV
-          echo EOF >> $GITHUB_ENV
-
           if [ "${{ job.status }}" == "success" ] ; then
-            echo "::set-output name=emoji::🦾"
+            emoji="🦾"
           elif [ "${{ job.status }}" == "cancelled" ] ; then
-            echo "::set-output name=emoji::✋"
+            emoji="✋"
           else
-            echo "::set-output name=emoji::💥"
+            emoji="💥"
           fi
+
+          cat > slack_message <<EOF
+          *Deployment (${{ steps.fetch-check-run.outputs.job_id }}) of mergify-engine finished ${emoji}*
+          Conclusion: ${{ job.status }}
+          $(git log -1)
+          EOF
+          SLACK_MESSAGE=$(cat slack_message)
+          SLACK_MESSAGE="${SLACK_MESSAGE//'%'/'%25'}"
+          SLACK_MESSAGE="${SLACK_MESSAGE//$'\n'/'%0A'}"
+          SLACK_MESSAGE="${SLACK_MESSAGE//$'\r'/'%0D'}"
+          echo "::set-output name=slack_message::$SLACK_MESSAGE"
 
       - name: Report Status
         if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -373,7 +380,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*Deployment (${{ steps.fetch-check-run.outputs.job_id }}) of mergify-engine finished ${{ steps.report-status.outputs.emoji }}*\nConclusion: ${{ job.status }}\n```${{ env.COMMIT_MESSAGE }}```"
+                    "text": toJSON(steps.report-status.outputs.slack_message)
                   },
                   "accessory": {
                     "type": "button",
