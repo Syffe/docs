@@ -360,9 +360,9 @@ jobs:
           cat > slack_message <<EOF
           *Deployment (${{ steps.fetch-check-run.outputs.job_id }}) of mergify-engine finished ${emoji}*
           Conclusion: ${{ job.status }}
-          ```
+          \`\`\`
           $(git log -1)
-          ```
+          \`\`\`
           EOF
           SLACK_MESSAGE=$(cat slack_message)
           SLACK_MESSAGE="${SLACK_MESSAGE//'%'/'%25'}"
