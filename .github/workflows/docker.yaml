@@ -311,7 +311,7 @@ jobs:
           heroku container:login
 
       # The first phase upload all images to heroku
-      - name: 📜 Tag and Push (versionned)
+      - name: 📜 Tag and Push (versioned)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           SHA: ${{ steps.vars.outputs.SHA }}
