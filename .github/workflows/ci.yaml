@@ -18,9 +18,6 @@ jobs:
       - run: |
           bash -n onpremise/entrypoint.sh
           bash -n datadog-wrapper.sh
-          bash -n datadog/prerun.sh
-          pip install pyyaml
-          python datadog/validate.py
 
   lint:
     runs-on: ubuntu-latest
