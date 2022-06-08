@@ -116,21 +116,11 @@ cat > "$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml" <<EOF
 init_config:
 
 instances:
-  - host: <CACHE HOST>
-    port: <CACHE PORT>
-    password: <CACHE PASSWORD>
-    db: <CACHE DB>
-    ssl: <CACHE SSL>
-    ssl_cert_reqs: 0
-    slowlog-max-len: 0
-    tags:
-      - role:cache
-
-  - host: <STREAM HOST>
-    port: <STREAM PORT>
-    password: <STREAM PASSWORD>
-    db: <STREAM DB>
-    ssl: <STREAM SSL>
+  - host: <DEFAULT REDIS HOST>
+    port: <DEFAULT REDIS PORT>
+    password: <DEFAULT REDIS PASSWORD>
+    db: 3
+    ssl: <DEFAULT REDIS SSL>
     ssl_cert_reqs: 0
     slowlog-max-len: 0
     keys:
@@ -138,6 +128,16 @@ instances:
       - attempts
     tags:
       - role:streams
+
+  - host: <EVENTLOGS HOST>
+    port: <EVENTLOGS PORT>
+    password: <EVENTLOGS PASSWORD>
+    ssl: <EVENTLOGS SSL>
+    db: 1
+    ssl_cert_reqs: 0
+    slowlog-max-len: 0
+    tags:
+      - role:eventlogs
 EOF
 
 REDIS_REGEX='^redis(s?)://([^:]*):([^@]+)@([^:]+):([^/?]+)'
