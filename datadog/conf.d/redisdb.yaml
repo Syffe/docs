@@ -17,7 +17,6 @@ instances:
   - host: <EVENTLOGS HOST>
     port: <EVENTLOGS PORT>
     password: <EVENTLOGS PASSWORD>
-    db: <EVENTLOGS DB>
     ssl: <EVENTLOGS SSL>
     ssl_cert_reqs: 0
     slowlog-max-len: 0

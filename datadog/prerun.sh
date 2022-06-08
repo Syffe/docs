@@ -103,7 +103,7 @@ EOF
         ;;
 esac
 
-REDIS_REGEX='^redis(s?)://([^:]*):([^@]+)@([^:]+):([^/?]+)\?db=([^&]*)'
+REDIS_REGEX='^redis(s?)://([^:]*):([^@]+)@([^:]+):([^/?]+)'
 
 if [ -n "$MERGIFYENGINE_EVENTLOGS_URL" ]; then
     if [[ $MERGIFYENGINE_EVENTLOGS_URL =~ $REDIS_REGEX ]]; then
@@ -112,7 +112,6 @@ if [ -n "$MERGIFYENGINE_EVENTLOGS_URL" ]; then
         sed -i "s/<EVENTLOGS HOST>/${BASH_REMATCH[4]}/" "$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml"
         sed -i "s/<EVENTLOGS PASSWORD>/${BASH_REMATCH[3]}/" "$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml"
         sed -i "s/<EVENTLOGS PORT>/${BASH_REMATCH[5]}/" "$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml"
-        sed -i "s/<EVENTLOGS DB>/${BASH_REMATCH[6]}/" "$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml"
     fi
 fi
 
