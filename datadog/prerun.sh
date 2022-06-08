@@ -105,25 +105,24 @@ esac
 
 REDIS_REGEX='^redis(s?)://([^:]*):([^@]+)@([^:]+):([^/?]+)\?db=([^&]*)'
 
-if [ -n "$MERGIFYENGINE_STORAGE_URL" ]; then
-    if [[ $MERGIFYENGINE_STORAGE_URL =~ $REDIS_REGEX ]]; then
+if [ -n "$MERGIFYENGINE_EVENTLOGS_URL" ]; then
+    if [[ $MERGIFYENGINE_EVENTLOGS_URL =~ $REDIS_REGEX ]]; then
         [ "${BASH_REMATCH[1]}" ] && REDIS_SSL="true" || REDIS_SSL="false"
-        sed -i "s/<CACHE SSL>/$REDIS_SSL/" "$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml"
-        sed -i "s/<CACHE HOST>/${BASH_REMATCH[4]}/" "$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml"
-        sed -i "s/<CACHE PASSWORD>/${BASH_REMATCH[3]}/" "$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml"
-        sed -i "s/<CACHE PORT>/${BASH_REMATCH[5]}/" "$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml"
-        sed -i "s/<CACHE DB>/${BASH_REMATCH[6]}/" "$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml"
+        sed -i "s/<EVENTLOGS SSL>/$REDIS_SSL/" "$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml"
+        sed -i "s/<EVENTLOGS HOST>/${BASH_REMATCH[4]}/" "$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml"
+        sed -i "s/<EVENTLOGS PASSWORD>/${BASH_REMATCH[3]}/" "$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml"
+        sed -i "s/<EVENTLOGS PORT>/${BASH_REMATCH[5]}/" "$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml"
+        sed -i "s/<EVENTLOGS DB>/${BASH_REMATCH[6]}/" "$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml"
     fi
 fi
 
-if [ -n "$MERGIFYENGINE_STREAM_URL" ]; then
-    if [[ $MERGIFYENGINE_STREAM_URL =~ $REDIS_REGEX ]]; then
+if [ -n "$MERGIFYENGINE_DEFAULT_REDIS_URL" ]; then
+    if [[ $MERGIFYENGINE_DEFAULT_REDIS_URL =~ $REDIS_REGEX ]]; then
         [ "${BASH_REMATCH[1]}" ] && REDIS_SSL="true" || REDIS_SSL="false"
-        sed -i "s/<STREAM SSL>/$REDIS_SSL/" "$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml"
-        sed -i "s/<STREAM HOST>/${BASH_REMATCH[4]}/" "$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml"
-        sed -i "s/<STREAM PASSWORD>/${BASH_REMATCH[3]}/" "$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml"
-        sed -i "s/<STREAM PORT>/${BASH_REMATCH[5]}/" "$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml"
-        sed -i "s/<STREAM DB>/${BASH_REMATCH[6]}/" "$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml"
+        sed -i "s/<DEFAULT REDIS SSL>/$REDIS_SSL/" "$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml"
+        sed -i "s/<DEFAULT REDIS HOST>/${BASH_REMATCH[4]}/" "$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml"
+        sed -i "s/<DEFAULT REDIS PASSWORD>/${BASH_REMATCH[3]}/" "$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml"
+        sed -i "s/<DEFAULT REDIS PORT>/${BASH_REMATCH[5]}/" "$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml"
     fi
 fi
 
