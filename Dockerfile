@@ -49,16 +49,9 @@ ADD ${ENGINE_PATH} /app
 RUN python3 -m pip install --no-cache-dir -c /requirements.txt -e /app
 
 ### BASE RUNNER ###
-FROM python-base as runner-base
-ARG PYTHON_VERSION
-ARG DD_AGENT_VERSION=7.34.0-1
-ARG MERGIFYENGINE_SHA
-LABEL python.version="$PYTHON_VERSION"
-LABEL mergify-engine.sha="$MERGIFYENGINE_SHA"
+FROM python-base as system-base
+ARG DD_AGENT_VERSION=7.36.1-1
 LABEL datadog-agent.version="$DD_AGENT_VERSION"
-ENV MERGIFYENGINE_SHA=$MERGIFYENGINE_SHA
-RUN test -n "$PYTHON_VERSION"
-RUN test -n "$MERGIFYENGINE_SHA"
 
 # Add Datadog repository, signing keys and packages
 RUN apt update -y \
@@ -74,13 +67,23 @@ RUN curl -o /tmp/DATADOG_APT_KEY_F14F620E.public "${DATADOG_APT_KEYS_URL}/DATADO
 RUN curl -o /tmp/DATADOG_APT_KEY_382E94DE.public "${DATADOG_APT_KEYS_URL}/DATADOG_APT_KEY_382E94DE.public" && \
     gpg --ignore-time-conflict --no-default-keyring --keyring ${DATADOG_APT_KEYRING} --import /tmp/DATADOG_APT_KEY_382E94DE.public
 RUN apt-get update && apt-get -y --force-yes install --reinstall datadog-agent=1:${DD_AGENT_VERSION}
-
 RUN apt purge -y libcurl4 curl openssh-client gnupg apt-transport-https gpg-agent curl ca-certificates libldap-common openssl patch
 RUN apt autoremove --purge -y && apt clean -y && rm -rf /var/lib/apt/lists/*
 RUN apt purge -y --allow-remove-essential libsepol1 apt libudev1 gpgv login
+ADD datadog-wrapper.sh /
+
+
+FROM system-base as runner-base
+ARG PYTHON_VERSION
+ARG MERGIFYENGINE_SHA
+LABEL python.version="$PYTHON_VERSION"
+LABEL mergify-engine.sha="$MERGIFYENGINE_SHA"
+ENV MERGIFYENGINE_SHA=$MERGIFYENGINE_SHA
+RUN test -n "$PYTHON_VERSION"
+RUN test -n "$MERGIFYENGINE_SHA"
+
 COPY --from=python-builder /app /app
 COPY --from=python-builder /venv /venv
-ADD datadog-wrapper.sh /
 WORKDIR /app
 ENV VIRTUAL_ENV=/venv
 ENV PYTHONUNBUFFERED=1
