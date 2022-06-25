@@ -14,6 +14,18 @@ When this repository is updated `.github/workflows/docker.yaml` workflow will:
 * pushes them to Heroku docker registry
 * triggers a Heroku container release with the new images
 
+## Building docker image locally
+
+```
+$ ./docker-build-test.sh -t my-testing-image --target saas-web .
+```
+
+Targets list:
+* saas-web
+* saas-worker-shared
+* saas-worker-dedicated
+* onpremise
+
 ## Running the submodule syncer workflow on GitHub runners via CLI:
 
 ```
