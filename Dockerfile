@@ -33,20 +33,21 @@ ARG ENGINE_SIGNAL_PATH
 # version if for py39
 RUN apt install -y gcc
 
+ADD ${ENGINE_PATH}/poetry-version.txt /
+RUN python3 -m pip install -r poetry-version.txt
+
 RUN python3 -m venv /venv
 ENV VIRTUAL_ENV=/venv
 ENV PATH="/venv/bin:${PATH}"
 
 # First cache build requirements
-RUN python3 -m pip install wheel
-ADD ${ENGINE_PATH}/requirements.txt /
-# nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
-RUN python3 -m pip install --no-cache-dir -r /requirements.txt
-
+RUN mkdir /app
+ADD ${ENGINE_PATH}/pyproject.toml /app
+ADD ${ENGINE_PATH}/poetry.lock /app
+WORKDIR /app
+RUN poetry install --no-dev --remove-untracked --no-root
 ADD ${ENGINE_PATH} /app
-
-# nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
-RUN python3 -m pip install --no-cache-dir -c /requirements.txt -e /app
+RUN poetry install --no-dev --remove-untracked
 
 ### BASE RUNNER ###
 FROM python-base as system-base
@@ -82,8 +83,8 @@ ENV MERGIFYENGINE_SHA=$MERGIFYENGINE_SHA
 RUN test -n "$PYTHON_VERSION"
 RUN test -n "$MERGIFYENGINE_SHA"
 
-COPY --from=python-builder /app /app
 COPY --from=python-builder /venv /venv
+COPY --from=python-builder /app /app
 WORKDIR /app
 ENV VIRTUAL_ENV=/venv
 ENV PYTHONUNBUFFERED=1
@@ -117,10 +118,11 @@ CMD ["/datadog-wrapper.sh", "mergify-engine-worker", "--enabled-services=dedicat
 ### ON PREMISE ###
 FROM runner-tagged as onpremise
 USER root
-COPY --from=js-builder /installer/build /app/installer/build
-ADD onpremise/Procfile /app/
-ADD onpremise/entrypoint.sh /
+COPY --from=js-builder /installer/build /installer/build
+COPY --from=js-builder /installer/Procfile /installer
+COPY --from=js-builder /installer/asgi.py /installer
+ADD onpremise /onpremise
 ENV DD_DOGSTATSD_DISABLE=1
 ENV DD_TRACE_ENABLED=0
 USER mergify
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/onpremise/entrypoint.sh"]
