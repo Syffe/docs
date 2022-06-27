@@ -6,7 +6,6 @@ exec 2>&1
 startup_message() {
     echo "Starting Mergify SaaS"
     echo "MERGIFYENGINE_VERSION=$MERGIFYENGINE_VERSION"
-    echo "MERGIFYENGINE_REVISION=$MERGIFYENGINE_REVISION"
     echo "MERGIFYENGINE_SHA=$MERGIFYENGINE_SHA"
 }
 
