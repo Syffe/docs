@@ -1,4 +1,3 @@
-ARG ENGINE_PATH=mergify-engine
 ARG PYTHON_VERSION
 # Used to rebuild everything without cache everyday
 ARG BUILD_DATE
@@ -16,9 +15,8 @@ RUN apt update -y && apt upgrade -y && apt install -y git && apt autoremove --pu
 FROM node:16-buster-slim as js-builder
 ARG BUILD_DATE
 RUN test -n "$BUILD_DATE"
-ARG ENGINE_PATH
 # Real install that can't be cached
-ADD ${ENGINE_PATH}/installer /installer
+ADD installer /installer
 WORKDIR /installer
 RUN npm ci
 RUN npm run build
@@ -26,14 +24,12 @@ RUN rm -rf node_modules
 
 ### BUILDER PYTHON ###
 FROM python-base as python-builder
-ARG ENGINE_PATH
-ARG ENGINE_SIGNAL_PATH
 
 # Required because hiredis is lagging a lot are providing prebuild wheel, last
 # version if for py39
 RUN apt install -y gcc
 
-ADD ${ENGINE_PATH}/poetry-version.txt /
+ADD poetry-version.txt /
 RUN python3 -m pip install -r poetry-version.txt
 
 RUN python3 -m venv /venv
@@ -42,11 +38,11 @@ ENV PATH="/venv/bin:${PATH}"
 
 # First cache build requirements
 RUN mkdir /app
-ADD ${ENGINE_PATH}/pyproject.toml /app
-ADD ${ENGINE_PATH}/poetry.lock /app
+ADD pyproject.toml /app
+ADD poetry.lock /app
 WORKDIR /app
 RUN poetry install --no-dev --remove-untracked --no-root
-ADD ${ENGINE_PATH} /app
+ADD . /app
 RUN poetry install --no-dev --remove-untracked
 
 ### BASE RUNNER ###

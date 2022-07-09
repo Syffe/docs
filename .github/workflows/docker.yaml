@@ -122,7 +122,7 @@ jobs:
           SHA="$(/usr/bin/git log -1 --format='%H')"
           echo ::set-output name=SHA::${SHA}
 
-          PYTHON_VERSION="$(cut -d- -f2 mergify-engine/runtime.txt)"
+          PYTHON_VERSION="$(cut -d- -f2 runtime.txt)"
           echo ::set-output name=PYTHON_VERSION::${PYTHON_VERSION}
 
           BUILD_DATE="$(date '+%Y-%m-%d')"

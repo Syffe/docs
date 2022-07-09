@@ -5,57 +5,104 @@ on:
   pull_request:
     branches:
       - main
+      - git_push_stack/**
 
 jobs:
-  datadog:
-    timeout-minutes: 5
+  pep8:
+    timeout-minutes: 7
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
-      - run: |
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python 🔧
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10.5
+
+      - name: Build 🔧 & Test 🔍
+        run: |
+          # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
+          pip install -r requirements-dev.txt
+          tox -e pep8
           bash -n onpremise/entrypoint.sh
           bash -n datadog-wrapper.sh
 
-  lint:
-    runs-on: ubuntu-latest
+  requirements:
+    timeout-minutes: 5
+    runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 12
-      - run: |
-          cd .github/actions/syncer && yarn install && yarn run eslint
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
 
-  action:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - run: |
-          cd ./.github/actions/syncer
-          yarn install
-      - uses: ./.github/actions/syncer
+      - name: Setup Python 🔧
+        uses: actions/setup-python@v4
         with:
-          token-write: ${{ secrets.GITHUB_TOKEN }}
-          token-read: ${{ secrets.GITHUB_TOKEN }}
-          repository: mergify-engine
+          python-version: 3.10.5
 
-  no-submodule-change:
-    runs-on: ubuntu-latest
+      - name: Build 🔧 & Test 🔍
+        run: |
+          # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
+          pip install -r requirements-dev.txt
+          tox -e missing-imports
+  test:
+    timeout-minutes: 10
+    runs-on: ubuntu-20.04
+    services:
+      redis:
+        image: redis:latest
+        ports:
+          - 6363:6379
     steps:
-      - uses: actions/github-script@v6
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+
+      - name: Setup Python 🔧
+        uses: actions/setup-python@v4
         with:
-          script: |
-            var resp = await github.rest.pulls.listFiles({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: ${{ github.event.pull_request.number }},
-              per_page: 100,
-            });
-            var files = resp.data;
-            var filenames = files.map(file => file.filename);
-            if (filenames.includes("mergify-engine")) {
-              console.log("Changing submodule is forbidden!")
-              process.exit(1);
-            } else {
-              console.log("No submodule changed")
-            }
+          python-version: 3.10.5
+
+      - name: Build 🔧 & Test 🔍
+        run: |
+          # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
+          pip install -r requirements-dev.txt
+          tox -e py310
+  docs:
+    timeout-minutes: 5
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+
+      - name: Setup Python 🔧
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10.5
+
+      - name: Setup Node 🔧
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Build 🔧
+        run: |
+          sudo apt-get install graphviz
+          # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
+          pip install -r requirements-dev.txt
+          tox -e docs
+
+      # NOTE(sileht): workflow run on/pull_request doesn't have access to
+      # secrets
+      # So, we upload it as artifact, then another workflow
+      # docs-upload-gcp.yaml will upload it on gcp.
+      - name: Upload ☁️
+        uses: actions/upload-artifact@v3
+        with:
+          name: docs-pr-${{ github.event.pull_request.number }}
+          path: docs/build
+
+      # yamllint disable-line rule:line-length
+      - run: echo "::set-output name=docs::https://docs-preview.mergify.com/${{ github.event.pull_request.number }}/docs"
+        shell: bash

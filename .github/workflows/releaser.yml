@@ -45,13 +45,12 @@ jobs:
           set -x
           set -o pipefail
 
-          cd mergify-engine
           git fetch --tag
           VERSION=$(reno -q semver-next)
           git tag ${VERSION}
 
           echo "✂┅┅┅"
-          reno -q report --title '' --no-show-source | ../pandoc -t markdown | sed -e '/^\.\./,+1d' -e '1,4d'
+          reno -q report --title '' --no-show-source | ./pandoc -t markdown | sed -e '/^\.\./,+1d' -e '1,4d'
           echo "✂┅┅┅"
 
           cd -
@@ -64,8 +63,4 @@ jobs:
           set -e
           set -x
           set -o pipefail
-          git submodule set-url mergify-engine git@github.com:Mergifyio/mergify-engine.git
-          cd mergify-engine
-          git push origin ${{ steps.relnote.outputs.VERSION }}
-          cd -
           git push origin ${{ steps.relnote.outputs.VERSION }}
