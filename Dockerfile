@@ -30,6 +30,7 @@ FROM python-base as python-builder
 RUN apt install -y gcc
 
 ADD poetry-version.txt /
+# nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
 RUN python3 -m pip install -r poetry-version.txt
 
 RUN python3 -m venv /venv

@@ -5,9 +5,9 @@ on:
   push:
     branches:
       - main
-    tags: 
+    tags:
       - "*"
-  pull_request_target:
+  pull_request:
     branches:
       - main
 
@@ -46,6 +46,7 @@ jobs:
         if: always() && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
         uses: slackapi/slack-github-action@v1.19.0
         with:
+          # yamllint disable rule:line-length
           payload: |
             {
               "blocks": [
@@ -67,6 +68,7 @@ jobs:
                 }
               ]
             }
+          # yamllint enable rule:line-length
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
@@ -75,6 +77,7 @@ jobs:
         if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: slackapi/slack-github-action@v1.19.0
         with:
+          # yamllint disable rule:line-length
           payload: |
             {
               "blocks": [
@@ -96,6 +99,7 @@ jobs:
                 }
               ]
             }
+          # yamllint enable rule:line-length
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
@@ -106,10 +110,10 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           submodules: true
 
-        # NOTE(sileht):  github.event.pull_request.head.sha is not set for push event
-        # so we pick the HEAD sha if the checkout for the image:
-        # * for push, HEAD is main branch head (default actions/checkout)
-        # * for pull_request_target, HEAD is github.event.pull_request.head.sha (thanks to actions/checkout)
+      # NOTE(sileht):  github.event.pull_request.head.sha is not set for push event
+      # so we pick the HEAD sha if the checkout for the image:
+      # * for push, HEAD is main branch head (default actions/checkout)
+      # * for pull_request_target, HEAD is github.event.pull_request.head.sha (thanks to actions/checkout)
       - name: 📝 Prepare variables
         id: vars
         run: |
@@ -221,7 +225,8 @@ jobs:
               -e MERGIFYENGINE_STORAGE_URL=redis://redis:6363 \
               --entrypoint /bin/bash \
               $i:tmp \
-              -c '/datadog-wrapper.sh mergify-import-check-worker; /datadog-wrapper.sh mergify-import-check-web;'
+              -c '/datadog-wrapper.sh mergify-import-check-worker;
+                  /datadog-wrapper.sh mergify-import-check-web;'
           done
 
       ######################

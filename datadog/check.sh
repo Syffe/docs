@@ -12,6 +12,7 @@ export DD_PROFILING_ENABLED=0
 export DD_PROFILING_HEAP_ENABLED=1
 export DD_PYTHON_VERSION=3
 export DEBUG=True
+# nosemgrep: generic.secrets.security.detected-heroku-api-key.detected-heroku-api-key
 export HEROKU_APP_ID=006dd18f-f30f-4df5-a517-14255b75115c
 export HEROKU_APP_NAME=mergify-engine
 export HEROKU_RELEASE_CREATED_AT='2022-06-08T09:20:00Z'
