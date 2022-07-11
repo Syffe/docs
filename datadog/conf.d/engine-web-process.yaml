@@ -1,0 +1,9 @@
+init_config:
+
+instances:
+  - name: gunicorn-worker
+    search_string: ['^gunicorn: worker']
+    exact_match: false
+  - name: gunicorn-master
+    search_string: ['^gunicorn: master']
+    exact_match: false

@@ -68,7 +68,13 @@ RUN apt-get update && apt-get -y --force-yes install --reinstall datadog-agent=1
 RUN apt purge -y libcurl4 curl openssh-client gnupg apt-transport-https gpg-agent curl ca-certificates libldap-common openssl patch
 RUN apt autoremove --purge -y && apt clean -y && rm -rf /var/lib/apt/lists/*
 RUN apt purge -y --allow-remove-essential libsepol1 apt libudev1 gpgv login
+
 ADD datadog-wrapper.sh /
+ADD datadog/conf.d/redisdb.yaml /etc/datadog-agent/conf.d/redisdb.d/conf.yaml
+# Chown to be able to edit all those config files with the datadog-wrapper
+# because we don't run the script as root.
+RUN chown -R mergify:mergify /etc/datadog-agent
+RUN chown -R mergify:mergify /var/log/datadog
 
 
 FROM system-base as runner-base
@@ -98,18 +104,27 @@ RUN test -n "$MERGIFYENGINE_VERSION"
 
 ### WEB ###
 FROM runner-tagged as saas-web
+ENV DD_EXTRA_TAGS=service:engine-web
+ADD datadog/conf.d/engine-web-process.yaml /etc/datadog-agent/conf.d/process.d/conf.yaml
+ADD datadog/conf.d/engine-web.yaml /etc/datadog-agent/conf.d/engine-web.d/conf.yaml
 ENV PORT=8002
 EXPOSE $PORT
 USER mergify
 CMD ["/datadog-wrapper.sh", "gunicorn", "--worker-class=uvicorn.workers.UvicornH11Worker", "--statsd-host=localhost:8125", "--log-level=warning", "mergify_engine.web.asgi"]
 
+### BASE WORKER ###
+FROM runner-tagged as base-worker
+ENV DD_EXTRA_TAGS=service:engine-worker
+ADD datadog/conf.d/engine-worker-process.yaml /etc/datadog-agent/conf.d/process.d/conf.yaml
+ADD datadog/conf.d/engine-worker.yaml /etc/datadog-agent/conf.d/engine-worker.d/conf.yaml
+
 ### WORKER-SHARED ###
-FROM runner-tagged as saas-worker-shared
+FROM base-worker as saas-worker-shared
 USER mergify
 CMD ["/datadog-wrapper.sh", "mergify-engine-worker", "--enabled-services=shared-stream"]
 
 ### WORKER-DEDICATED ###
-FROM runner-tagged as saas-worker-dedicated
+FROM base-worker as saas-worker-dedicated
 CMD ["/datadog-wrapper.sh", "mergify-engine-worker", "--enabled-services=dedicated-stream,stream-monitoring,delayed-refresh"]
 
 ### ON PREMISE ###
