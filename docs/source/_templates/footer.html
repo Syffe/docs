@@ -1,4 +1,4 @@
-<footer class="footer d-flex justify-content-between flex-wrap">
+<footer class="footer d-flex justify-content-around flex-wrap">
     <div class="copyright">
     {%- if show_copyright %}
       {%- if hasdoc('copyright') %}
@@ -7,12 +7,6 @@
         <div>{% trans copyright=copyright|e %}&copy; Copyright {{ copyright }}{% endtrans %}</div>
       {%- endif %}
     {%- endif %}
-    </div>
-    <div>
-      <a href="https://github.com/Mergifyio/mergify-engine/tree/main/docs/source/{{pagename}}.rst"
-         class="btn btn-dark btn-sm active">
-        Edit on GitHub <i class="fas fa-external-link-square-alt"></i>
-      </a>
     </div>
     <div>
         <a href="#" class="btn btn-primary btn-sm" role="button">Back to top</a>
