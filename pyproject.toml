@@ -5,9 +5,9 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 name = "mergify_engine"
 version = "0.0.0"
-description = "mergify-engine is a GitHub Application to automate pull requests"
+description = "mergify is a GitHub Application to automate pull requests"
 classifiers = ["Intended Audience :: Information Technology", "License :: OSI Approved :: Apache Software License", "Operating System :: POSIX", "Programming Language :: Python", "Programming Language :: Python :: 3", "Programming Language :: Python :: 3.10"]
-homepage = "https://github.com/mergifyio/mergify-engine"
+homepage = "https://github.com/mergifyio/engine"
 authors = ["Mergify <hello@mergify.com>"]
 
 [tool.poetry.dependencies]
