@@ -28,7 +28,8 @@ jobs:
       - name: Build 🔧
         run: |
           sudo apt-get install -y graphviz
-          pip install tox
+          # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
+          pip install -r requirements-dev.txt
           tox -e docs
 
       - name: Setup gcloud 🔧
