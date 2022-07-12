@@ -46,3 +46,11 @@ targets:
       lineMatchPattern: '(\s+python-version: )(.+)'
     transformers:
       - replaceRegexGroup: 2
+  ci-record-file:
+    name: "Update ci-record file GitHub workflow"
+    kind: file
+    spec:
+      file: ".github/workflows/ci-record.yaml"
+      lineMatchPattern: '(\s+python-version: )(.+)'
+    transformers:
+      - replaceRegexGroup: 2
