@@ -3,7 +3,6 @@ defaults:
     queue:
       name: default
       method: squash
-      update_method: rebase
       commit_message_template: |
         {{ title }} (#{{ number }})
 
@@ -50,7 +49,6 @@ pull_request_rules:
           - body~=(?m)^Fixes MERGIFY-ENGINE-
           - "#approved-reviews-by>=1"
       - "#changes-requested-reviews-by=0"
-      - "#commits=1"
       - label!=work-in-progress
       - label!=manual merge
     actions:
@@ -66,7 +64,6 @@ pull_request_rules:
       - "#approved-reviews-by>=1"
       - "#changes-requested-reviews-by=0"
       - "#review-threads-unresolved=0"
-      - "#commits=1"
       - label!=work-in-progress
       - label!=manual merge
     actions:
@@ -81,7 +78,6 @@ pull_request_rules:
       - label!=manual merge
       - "title~=^chore: bump python version"
       - head=python-version-upgrade
-      - "#commits=1"
     actions:
       queue:
         name: lowprio
