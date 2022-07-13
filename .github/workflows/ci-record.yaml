@@ -23,8 +23,8 @@ jobs:
       fail-fast: false
       matrix:
         target:
-          - {"name": "GitHub.com", "config": "${{ secrets.FIXTURES_RECORDER_CONFIG_GITHUB_DOT_COM }}"}
-          - {"name": "GitHub Enterprise Server", "config": "${{ secrets.FIXTURES_RECORDER_CONFIG_GHES_DEV }}"}
+          - {"name": "GitHub.com", "secret_name": "FIXTURES_RECORDER_CONFIG_GITHUB_DOT_COM"}
+          - {"name": "GitHub Enterprise Server", "secret_name": "FIXTURES_RECORDER_CONFIG_GHES_DEV"}
 
     steps:
 
@@ -40,7 +40,7 @@ jobs:
 
       - name: Build 🔧 & Test 🔍
         run: |
-           cat "${{ matrix.target.config }}" > test.env
+           cat "${{ secrets[matrix.target.secret_name] }}" > test.env
            # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
            pip install -r requirements-dev.txt
            DOW=$(date +%u)
