@@ -31,7 +31,7 @@ jobs:
       - name: Clifus
         id: clifus
         run: |
-          ./clifus.py -c ./.github/clifus.yml
+          python clifus.py -c ./.github/clifus.yml
           echo "::set-output name=PYTHON_VERSION::$(cat runtime.txt | cut -d- -f2)"
 
       - name: Create the Pull Request
