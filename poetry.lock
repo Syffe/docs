@@ -709,20 +709,19 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "jsonschema"
-version = "3.2.0"
+version = "4.7.2"
 description = "An implementation of JSON Schema validation for Python"
 category = "dev"
 optional = false
-python-versions = "*"
+python-versions = ">=3.7"
 
 [package.dependencies]
 attrs = ">=17.4.0"
-pyrsistent = ">=0.14.0"
-six = ">=1.11.0"
+pyrsistent = ">=0.14.0,<0.17.0 || >0.17.0,<0.17.1 || >0.17.1,<0.17.2 || >0.17.2"
 
 [package.extras]
-format = ["idna", "jsonpointer (>1.13)", "rfc3987", "strict-rfc3339", "webcolors"]
-format_nongpl = ["idna", "jsonpointer (>1.13)", "webcolors", "rfc3986-validator (>0.1.0)", "rfc3339-validator"]
+format = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-validator", "rfc3987", "uri-template", "webcolors (>=1.11)"]
+format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-validator", "rfc3986-validator (>0.1.0)", "uri-template", "webcolors (>=1.11)"]
 
 [[package]]
 name = "markdownify"
@@ -1255,7 +1254,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "semgrep"
-version = "0.103.0"
+version = "0.104.0"
 description = "Lightweight static analysis for many languages. Find bug variants with patterns that look like source code."
 category = "dev"
 optional = false
@@ -1269,7 +1268,7 @@ click-option-group = ">=0.5,<1.0"
 colorama = ">=0.4.0,<0.5.0"
 defusedxml = ">=0.7.1,<0.8.0"
 glom = ">=22.1,<23.0"
-jsonschema = ">=3.2,<4.0"
+jsonschema = ">=4.6,<5.0"
 packaging = ">=21.0,<22.0"
 peewee = ">=3.14,<4.0"
 python-lsp-jsonrpc = ">=1.0.0,<1.1.0"
@@ -1722,7 +1721,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.10,<4.0"
-content-hash = "da35059a60d787657775eccfe39d38e56ef83d16c55404ddaa6b5fd75491ccef"
+content-hash = "84975080300324bc8009a16800417e356ec313964513b94d05493123ddc6f90f"
 
 [metadata.files]
 aiofiles = [
@@ -2234,8 +2233,8 @@ jinja2 = [
     {file = "Jinja2-3.1.2.tar.gz", hash = "sha256:31351a702a408a9e7595a8fc6150fc3f43bb6bf7e319770cbc0db9df9437e852"},
 ]
 jsonschema = [
-    {file = "jsonschema-3.2.0-py2.py3-none-any.whl", hash = "sha256:4e5b3cf8216f577bee9ce139cbe72eca3ea4f292ec60928ff24758ce626cd163"},
-    {file = "jsonschema-3.2.0.tar.gz", hash = "sha256:c8a85b28d377cc7737e46e2d9f2b4f44ee3c0e1deac6bf46ddefc7187d30797a"},
+    {file = "jsonschema-4.7.2-py3-none-any.whl", hash = "sha256:c7448a421b25e424fccfceea86b4e3a8672b4436e1988ccbde92c80828d4f085"},
+    {file = "jsonschema-4.7.2.tar.gz", hash = "sha256:73764f461d61eb97a057c929368610a134d1d1fffd858acfe88864ee94f1f1d3"},
 ]
 markdownify = [
     {file = "markdownify-0.11.2-py3-none-any.whl", hash = "sha256:ef396bb8d0ffb3efacc08b86ab4aa6d36b234e782aea9f6b7f980798eaa64e33"},
@@ -2710,10 +2709,10 @@ rfc3986 = [
     {file = "ruamel.yaml.clib-0.2.6.tar.gz", hash = "sha256:4ff604ce439abb20794f05613c374759ce10e3595d1867764dd1ae675b85acbd"},
 ]
 semgrep = [
-    {file = "semgrep-0.103.0-cp37.cp38.cp39.py37.py38.py39-none-any.whl", hash = "sha256:f0c05693f1f0217d147ae5ab56cb26ed5b46d796c36bfbcce73b9a89ec30a63e"},
-    {file = "semgrep-0.103.0-cp37.cp38.cp39.py37.py38.py39-none-macosx_10_14_x86_64.whl", hash = "sha256:7ca541e995781bf685a4f410d49af12da201aade77bee4dbcc0ba4e1a3ef7084"},
-    {file = "semgrep-0.103.0-cp37.cp38.cp39.py37.py38.py39-none-macosx_11_0_arm64.whl", hash = "sha256:fd03bfa1495febfc165c91f5ff83e123eff38ab5122b6d62b7480b1da6d6d441"},
-    {file = "semgrep-0.103.0.tar.gz", hash = "sha256:f446a48544b2037966884f7a707b57b38037b089e339ddc318d41b9cb59ddd8d"},
+    {file = "semgrep-0.104.0-cp37.cp38.cp39.py37.py38.py39-none-any.whl", hash = "sha256:ea4105fe0d61e4af478340646a5e67221c2b58754d3c0320520a0cc73579cea0"},
+    {file = "semgrep-0.104.0-cp37.cp38.cp39.py37.py38.py39-none-macosx_10_14_x86_64.whl", hash = "sha256:3a68d8e8f5b069a9ab99c69d52923534216b537165650088363df8cf70599170"},
+    {file = "semgrep-0.104.0-cp37.cp38.cp39.py37.py38.py39-none-macosx_11_0_arm64.whl", hash = "sha256:6d71ddc4684f8bab3a75788f7e90dc26cd0c8f686192f9b33a2dedd727c8a871"},
+    {file = "semgrep-0.104.0.tar.gz", hash = "sha256:f84dcfb55b63fb4b91a63f284da2447329fbdeaffd912f0ac44b2e3b456decdc"},
 ]
 sentry-sdk = [
     {file = "sentry-sdk-1.7.1.tar.gz", hash = "sha256:e410026af0af8c373f8ac40b550c15c11b58e60ddc3f65fcc395ad263daefaf1"},
