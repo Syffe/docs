@@ -21,10 +21,17 @@ jobs:
       - name: Install dependencies
         run: pip install PyYAML
 
+      - name: Retrieve clifus file
+        run: >
+          curl
+          -O
+          -H "Authorization: token ${{ secrets.MERGIFY_CI_BOT_PAT }}"
+          https://raw.githubusercontent.com/Mergifyio/developer-tooling/main/clifus.py
+
       - name: Clifus
         id: clifus
         run: |
-          ./tools/clifus.py -c ./.github/clifus.yml
+          ./clifus.py -c ./.github/clifus.yml
           echo "::set-output name=PYTHON_VERSION::$(cat runtime.txt | cut -d- -f2)"
 
       - name: Create the Pull Request
