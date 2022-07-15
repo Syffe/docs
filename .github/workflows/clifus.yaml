@@ -33,6 +33,7 @@ jobs:
         run: |
           python clifus.py -c ./.github/clifus.yml
           echo "::set-output name=PYTHON_VERSION::$(cat runtime.txt | cut -d- -f2)"
+          rm clifus.py
 
       - name: Create the Pull Request
         id: cpr
