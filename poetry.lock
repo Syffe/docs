@@ -345,7 +345,7 @@ boltons = ">=20.0.0"
 
 [[package]]
 name = "fastapi"
-version = "0.78.0"
+version = "0.79.0"
 description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
 category = "main"
 optional = false
@@ -2045,8 +2045,8 @@ face = [
     {file = "face-20.1.1.tar.gz", hash = "sha256:7d59ca5ba341316e58cf72c6aff85cca2541cf5056c4af45cb63af9a814bed3e"},
 ]
 fastapi = [
-    {file = "fastapi-0.78.0-py3-none-any.whl", hash = "sha256:15fcabd5c78c266fa7ae7d8de9b384bfc2375ee0503463a6febbe3bab69d6f65"},
-    {file = "fastapi-0.78.0.tar.gz", hash = "sha256:3233d4a789ba018578658e2af1a4bb5e38bdd122ff722b313666a9b2c6786a83"},
+    {file = "fastapi-0.79.0-py3-none-any.whl", hash = "sha256:d337563424ceada23857f73d5abe8dae0c28e4cccb53b2af06e78b7bb4a1c7d7"},
+    {file = "fastapi-0.79.0.tar.gz", hash = "sha256:cf0ff6db25b91d321050c4112baab0908c90f19b40bf257f9591d2f9780d1f22"},
 ]
 first = [
     {file = "first-2.0.2-py2.py3-none-any.whl", hash = "sha256:8d8e46e115ea8ac652c76123c0865e3ff18372aef6f03c22809ceefcea9dec86"},
