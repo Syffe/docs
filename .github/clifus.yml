@@ -5,7 +5,14 @@ sources:
     spec:
       command: python3 .github/get-latest-python-version.py
 
+  datadog-agent-version:
+    name: Get the latest datadog-agent version from apt
+    kind: shell
+    spec:
+      command: bash .github/get-latest-datadog-agent-version.sh
+
 targets:
+  # PYTHON VERSION
   heroku_runtime.txt:
     name: "Update runtime.txt"
     kind: file
@@ -41,6 +48,7 @@ targets:
   ci-file:
     name: "Update CI file GitHub workflow"
     kind: file
+    sourceID: python-version
     spec:
       file: ".github/workflows/ci.yaml"
       lineMatchPattern: '(\s+python-version: )(.+)'
@@ -49,8 +57,27 @@ targets:
   ci-record-file:
     name: "Update ci-record file GitHub workflow"
     kind: file
+    sourceID: python-version
     spec:
       file: ".github/workflows/ci-record.yaml"
       lineMatchPattern: '(\s+python-version: )(.+)'
     transformers:
       - replaceRegexGroup: 2
+  # DATADOG AGENT VERSION
+  datadog-agent-version-txt:
+    name: "Update datadog/agent-version.txt"
+    kind: file
+    sourceID: datadog-agent-version
+    spec:
+      file: datadog/agent-version.txt
+      forcecreate: true
+      content: "{{ source `datadog-agent-version` }}"
+  dockerfile:
+    name: "Update DD_AGENT_VERSION in Dockerfile"
+    sourceID: datadog-agent-version
+    kind: file
+    spec:
+      file: Dockerfile
+      lineMatchPattern: '^ARG DD_AGENT_VERSION='
+    transformers:
+      - addPrefix: 'ARG DD_AGENT_VERSION='

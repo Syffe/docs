@@ -48,7 +48,7 @@ RUN poetry install --no-dev --remove-untracked
 
 ### BASE RUNNER ###
 FROM python-base as system-base
-ARG DD_AGENT_VERSION=7.36.1-1
+ARG DD_AGENT_VERSION=1:7.36.1-1
 LABEL datadog-agent.version="$DD_AGENT_VERSION"
 
 # Add Datadog repository, signing keys and packages
@@ -64,7 +64,7 @@ RUN curl -o /tmp/DATADOG_APT_KEY_F14F620E.public "${DATADOG_APT_KEYS_URL}/DATADO
     gpg --ignore-time-conflict --no-default-keyring --keyring ${DATADOG_APT_KEYRING} --import /tmp/DATADOG_APT_KEY_F14F620E.public
 RUN curl -o /tmp/DATADOG_APT_KEY_382E94DE.public "${DATADOG_APT_KEYS_URL}/DATADOG_APT_KEY_382E94DE.public" && \
     gpg --ignore-time-conflict --no-default-keyring --keyring ${DATADOG_APT_KEYRING} --import /tmp/DATADOG_APT_KEY_382E94DE.public
-RUN apt-get update && apt-get -y --force-yes install --reinstall datadog-agent=1:${DD_AGENT_VERSION}
+RUN apt-get update && apt-get -y --force-yes install --reinstall datadog-agent=${DD_AGENT_VERSION}
 RUN apt purge -y gnupg apt-transport-https gpg-agent ca-certificates libldap-common openssl patch
 RUN apt autoremove --purge -y && apt clean -y && rm -rf /var/lib/apt/lists/*
 RUN apt purge -y --allow-remove-essential apt gpgv

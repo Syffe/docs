@@ -7,31 +7,20 @@ on:
     - cron: '0 0 * * *'
 
 jobs:
-  clifus:
+  python-bump:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3.0.2
 
-      - name: Setup Python
-        uses: actions/setup-python@v4.1.0
+      - uses: ./.github/workflows/clifus-setup
         with:
-          python-version: 3.10.5
-
-      - name: Install dependencies
-        run: pip install PyYAML
-
-      - name: Retrieve clifus file
-        run: >
-          curl
-          -O
-          -H "Authorization: token ${{ secrets.MERGIFY_CI_BOT_PAT }}"
-          https://raw.githubusercontent.com/Mergifyio/developer-tooling/main/clifus.py
+          github_token: ${{ secrets.MERGIFY_CI_BOT_PAT }}
 
       - name: Clifus
         id: clifus
         run: |
-          python clifus.py -c ./.github/clifus.yml
+          python clifus.py -c ./.github/clifus.yml -s python-version
           echo "::set-output name=PYTHON_VERSION::$(cat runtime.txt | cut -d- -f2)"
           rm clifus.py
 
@@ -46,6 +35,42 @@ jobs:
           base: main
           labels: |
             python
+            dependencies
+
+      - name: Check outputs
+        run: |
+          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
+
+  datadog-agent-bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3.0.2
+
+      - uses: ./.github/workflows/clifus-setup
+        with:
+          github_token: ${{ secrets.MERGIFY_CI_BOT_PAT }}
+
+      - name: Clifus
+        id: clifus
+        run: |
+          python clifus.py -c ./.github/clifus.yml -s datadog-agent-version
+          echo "::set-output name=DD_AGENT_VERSION::$(cat datadog/agent-version.txt)"
+          rm clifus.py
+
+      - name: Create the Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v4
+        with:
+          token: ${{ secrets.MERGIFY_CI_BOT_PAT }}
+          title: "chore: bump datadog-agent version to ${{ steps.clifus.outputs.DD_AGENT_VERSION }}"
+          body: >
+            This is an automated bump of datadog-agent version to
+            ${{ steps.clifus.outputs.DD_AGENT_VERSION }}
+          branch: datadog-agent-upgrade
+          base: main
+          labels: |
             dependencies
 
       - name: Check outputs
