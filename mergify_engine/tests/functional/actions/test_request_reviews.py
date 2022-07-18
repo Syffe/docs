@@ -30,7 +30,8 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
                 {
                     "name": "request_reviews",
                     "conditions": [f"base={self.main_branch_name}"],
-                    "actions": {"request_reviews": {"users": ["mergify-test1"]}},
+                    # The random case matter
+                    "actions": {"request_reviews": {"users": ["MeRgiFy-teSt1"]}},
                 }
             ]
         }
@@ -42,10 +43,18 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
 
         pulls = await self.get_pulls(params={"base": self.main_branch_name})
         assert 1 == len(pulls)
+
         requests = await self.get_review_requests(pulls[0]["number"])
         assert sorted(["mergify-test1"]) == sorted(
             user["login"] for user in requests["users"]
         )
+
+        for review_type in ("APPROVE", "REQUEST_CHANGES"):
+            await self.create_review(pulls[0]["number"], review_type)
+            await self.run_engine()
+
+            requests = await self.get_review_requests(pulls[0]["number"])
+            assert len(requests["users"]) == 0
 
     async def test_request_reviews_teams(self):
         team = (await self.get_teams())[0]
@@ -55,7 +64,8 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
                 {
                     "name": "request_reviews",
                     "conditions": [f"base={self.main_branch_name}"],
-                    "actions": {"request_reviews": {"teams": [team["slug"]]}},
+                    # The wrong team case matter
+                    "actions": {"request_reviews": {"teams": [team["slug"].upper()]}},
                 }
             ]
         }

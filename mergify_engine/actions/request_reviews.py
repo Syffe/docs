@@ -11,7 +11,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import itertools
 import typing
 
 import voluptuous
@@ -99,7 +98,8 @@ class RequestReviewsAction(actions.Action):
         choices = {
             **{user.lower(): weight for user, weight in self.config["users"].items()},
             **{
-                f"@{team.team}": weight for team, weight in self.config["teams"].items()
+                f"@{team.team.lower()}": weight
+                for team, weight in self.config["teams"].items()
             },
         }
 
@@ -125,15 +125,19 @@ class RequestReviewsAction(actions.Action):
 
             for reviewer in self._get_random_reviewers(pr_id, pr_author):
                 if reviewer.startswith("@"):
-                    team_reviews_to_request.add(reviewer[1:])
+                    team_reviews_to_request.add(reviewer[1:].lower())
                 else:
-                    user_reviews_to_request.add(reviewer)
+                    user_reviews_to_request.add(reviewer.lower())
         else:
-            user_reviews_to_request = set(self.config["users"].keys())
-            team_reviews_to_request = {t.team for t in self.config["teams"].keys()}
+            user_reviews_to_request = {
+                user.lower() for user in self.config["users"].keys()
+            }
+            team_reviews_to_request = {
+                t.team.lower() for t in self.config["teams"].keys()
+            }
 
         user_reviews_to_request -= existing_reviews
-        user_reviews_to_request -= {pr_author}
+        user_reviews_to_request -= {pr_author.lower()}
 
         # Team starts with @
         team_reviews_to_request -= {
@@ -186,11 +190,11 @@ class RequestReviewsAction(actions.Action):
             "commented-reviews-by",
             "review-requested",
         )
-        existing_reviews = set(
-            itertools.chain(
-                *[await getattr(ctxt.pull_request, key) for key in reviews_keys]
-            )
-        )
+        existing_reviews = {
+            user.lower()
+            for key in reviews_keys
+            for user in await getattr(ctxt.pull_request, key)
+        }
 
         team_errors = set()
         for team in self.config["teams"].keys():
