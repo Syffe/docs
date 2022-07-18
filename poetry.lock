@@ -1281,7 +1281,7 @@ wcmatch = ">=8.3,<9.0"
 
 [[package]]
 name = "sentry-sdk"
-version = "1.7.1"
+version = "1.7.2"
 description = "Python client for Sentry (https://sentry.io)"
 category = "main"
 optional = false
@@ -2715,8 +2715,8 @@ semgrep = [
     {file = "semgrep-0.104.0.tar.gz", hash = "sha256:f84dcfb55b63fb4b91a63f284da2447329fbdeaffd912f0ac44b2e3b456decdc"},
 ]
 sentry-sdk = [
-    {file = "sentry-sdk-1.7.1.tar.gz", hash = "sha256:e410026af0af8c373f8ac40b550c15c11b58e60ddc3f65fcc395ad263daefaf1"},
-    {file = "sentry_sdk-1.7.1-py2.py3-none-any.whl", hash = "sha256:560ce41420373b6949830831e8e11d96b311694ae58c8b145954bcb365bb035f"},
+    {file = "sentry-sdk-1.7.2.tar.gz", hash = "sha256:95fd321f583dfcfaf279a0b2cdc83d8d28c8b7cca4d2959fc4539bb4fecb56a0"},
+    {file = "sentry_sdk-1.7.2-py2.py3-none-any.whl", hash = "sha256:6f460da98b730d671510af18f119f96d01e3ba027ac0e985871abb3aede1c514"},
 ]
 setproctitle = [
     {file = "setproctitle-1.2.3-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:0a668acec8b61a971de54bc4c733869ea7b0eb1348eae5a32b9477f788908e5c"},
