@@ -395,7 +395,7 @@ How To Match Lists
 
 Some attributes have a type of ``list``. Most `Operators`_ are able to match
 value against lists: they will iterate over all the values of the list and
-return true if any of the value matches.
+return true if **any** of the value matches.
 
 For example, the ``label`` attribute is a list of string containing the names
 of the label attached to a pull request. With a pull request whose labels are
@@ -430,6 +430,9 @@ modified files:
 
 - ``-files~=^src/`` is **true** if none of the files that are modified are in
   the ``src`` directory.
+
+- ``files~=^(README.md|CONTRIBUTING.md)$`` is **true** if the file
+  ``README.md`` **or** ``CONTRIBUTING.md`` is modified in the pull requests.
 
 
 About Status Checks
