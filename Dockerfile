@@ -53,7 +53,7 @@ LABEL datadog-agent.version="$DD_AGENT_VERSION"
 
 # Add Datadog repository, signing keys and packages
 RUN apt update -y \
- && apt install -y gnupg apt-transport-https gpg-agent curl ca-certificates
+ && apt install -y gnupg apt-transport-https gpg-agent curl ca-certificates openssh-server iproute2
 ENV DATADOG_APT_KEYRING="/usr/share/keyrings/datadog-archive-keyring.gpg"
 ENV DATADOG_APT_KEYS_URL="https://keys.datadoghq.com"
 RUN sh -c "echo 'deb [signed-by=${DATADOG_APT_KEYRING}] https://apt.datadoghq.com/ stable 7' > /etc/apt/sources.list.d/datadog.list"
@@ -65,9 +65,9 @@ RUN curl -o /tmp/DATADOG_APT_KEY_F14F620E.public "${DATADOG_APT_KEYS_URL}/DATADO
 RUN curl -o /tmp/DATADOG_APT_KEY_382E94DE.public "${DATADOG_APT_KEYS_URL}/DATADOG_APT_KEY_382E94DE.public" && \
     gpg --ignore-time-conflict --no-default-keyring --keyring ${DATADOG_APT_KEYRING} --import /tmp/DATADOG_APT_KEY_382E94DE.public
 RUN apt-get update && apt-get -y --force-yes install --reinstall datadog-agent=1:${DD_AGENT_VERSION}
-RUN apt purge -y libcurl4 curl openssh-client gnupg apt-transport-https gpg-agent curl ca-certificates libldap-common openssl patch
+RUN apt purge -y gnupg apt-transport-https gpg-agent ca-certificates libldap-common openssl patch
 RUN apt autoremove --purge -y && apt clean -y && rm -rf /var/lib/apt/lists/*
-RUN apt purge -y --allow-remove-essential libsepol1 apt libudev1 gpgv login
+RUN apt purge -y --allow-remove-essential apt gpgv
 
 ADD datadog-wrapper.sh /
 ADD datadog/conf.d/redisdb.yaml /etc/datadog-agent/conf.d/redisdb.d/conf.yaml
@@ -85,9 +85,11 @@ LABEL mergify-engine.sha="$MERGIFYENGINE_SHA"
 ENV MERGIFYENGINE_SHA=$MERGIFYENGINE_SHA
 RUN test -n "$PYTHON_VERSION"
 RUN test -n "$MERGIFYENGINE_SHA"
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 COPY --from=python-builder /venv /venv
 COPY --from=python-builder /app /app
+ADD ./.profile.d /app/.profile.d
 WORKDIR /app
 ENV VIRTUAL_ENV=/venv
 ENV PYTHONUNBUFFERED=1
