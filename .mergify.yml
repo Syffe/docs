@@ -69,15 +69,17 @@ pull_request_rules:
     actions:
       queue:
 
-  - name: automatic merge for python version bump
+  - name: automatic merge for clifus version bump
     conditions:
       - and: *CheckRuns
       - check-success=semantic-pull-request
       - author=mergify-ci-bot
       - label!=work-in-progress
       - label!=manual merge
-      - "title~=^chore: bump python version"
-      - head=python-version-upgrade
+      - "title~=^chore: bump"
+      - or:
+          - head=python-version-upgrade
+          - head=datadog-agent-upgrade
     actions:
       queue:
         name: lowprio
