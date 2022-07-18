@@ -22,6 +22,7 @@ from mergify_engine import check_api
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import delayed_refresh
+from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import queue
 from mergify_engine import signals
@@ -325,8 +326,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     else:
                         result = await self.get_queue_status(ctxt, rule, q, qf)
 
-                except Exception:
-                    await q.remove_pull(ctxt, rule.get_signal_trigger())
+                except Exception as e:
+                    if not exceptions.need_retry(e):
+                        await q.remove_pull(ctxt, rule.get_signal_trigger())
                     raise
             else:
                 result = await self.get_unqueue_status(ctxt, q)
