@@ -37,6 +37,12 @@ Options
     -
     - The summary of the check.
 
+  * - ``success_conditions``
+    - list of conditions
+    -
+    - List of conditions to match to mark the pull request check as succeeded,
+      otherwise, it will be marked as failing.
+      If unset, the conditions from the rule that triggers this action are used.
 
 As the ``title`` and ``summary`` use on :ref:`data type template`, you can
 benefit from any pull request attributes, e.g. ``{{author}}``, and also these
@@ -61,9 +67,11 @@ The following rules add such a check, making sure your team follows
     pull_request_rules:
       - name: Conventional Commit
         conditions:
-          - "title~=^(fix|feat|docs|style|refactor|perf|test|build|ci|chore|revert)(?:\\(.+\\))?:"
+          - base=main
         actions:
           post_check:
+            success_conditions:
+              - "title~=^(fix|feat|docs|style|refactor|perf|test|build|ci|chore|revert)(?:\\(.+\\))?:"
             title: |
               {% if check_succeed %}
               Title follows Conventional Commit

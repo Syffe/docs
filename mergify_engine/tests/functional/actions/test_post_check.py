@@ -27,6 +27,78 @@ from mergify_engine.tests.functional import base
 class TestPostCheckAction(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
 
+    async def test_checks_with_conditions(self):
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "body need sentry ticket",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                    ],
+                    "actions": {
+                        "post_check": {
+                            "success_conditions": [
+                                "#title>10",
+                                "#title<50",
+                                "#body<4096",
+                                "#files<100",
+                                "body~=(?m)^(Fixes|Related|Closes) (MERGIFY-ENGINE|MRGFY)-",
+                                "-label=ignore-guideline",
+                            ]
+                        }
+                    },
+                }
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        p = await self.create_pr()
+        await self.run_engine()
+        p = await self.get_pull(p["number"])
+
+        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        sorted_checks = sorted(
+            await ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
+        )
+        assert len(sorted_checks) == 2
+        check = sorted_checks[0]
+        assert "failure" == check["conclusion"]
+        assert "'body need sentry ticket' failed" == check["output"]["title"]
+
+        r = await self.app.get(
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
+            headers={
+                "Authorization": f"bearer {self.api_key_admin}",
+                "Content-type": "application/json",
+            },
+        )
+        assert r.status_code == 200
+        assert r.json() == {
+            "events": [
+                {
+                    "event": "action.post_check",
+                    "metadata": {
+                        "conclusion": "failure",
+                        "summary": "- [X] `#title>10`\n"
+                        "- [ ] `#title<50`\n"
+                        "- [X] `#body<4096`\n"
+                        "- [X] `#files<100`\n"
+                        "- [ ] `body~=(?m)^(Fixes|Related|Closes) "
+                        "(MERGIFY-ENGINE|MRGFY)-`\n"
+                        "- [X] `-label=ignore-guideline`\n",
+                        "title": "'body need sentry ticket' failed",
+                    },
+                    "repository": p["base"]["repo"]["full_name"],
+                    "pull_request": p["number"],
+                    "timestamp": mock.ANY,
+                    "trigger": "Rule: body need sentry ticket",
+                },
+            ],
+            "per_page": 10,
+            "size": 1,
+            "total": 1,
+        }
+
     async def test_checks_default(self):
         rules = {
             "pull_request_rules": [

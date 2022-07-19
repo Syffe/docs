@@ -1,0 +1,4 @@
+---
+features:
+  - |
+    The option `success_conditions` has been added to `post_check` action.

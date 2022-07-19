@@ -24,6 +24,7 @@ from mergify_engine import context
 from mergify_engine import rules
 from mergify_engine import signals
 from mergify_engine.dashboard import subscription
+from mergify_engine.rules import conditions
 from mergify_engine.rules import types
 
 
@@ -55,10 +56,20 @@ class PostCheckAction(actions.Action):
         voluptuous.Required(
             "summary", default="{{ check_conditions }}"
         ): CheckRunJinja2,
+        voluptuous.Required("success_conditions", default=None): voluptuous.Any(
+            None,
+            voluptuous.All(
+                [voluptuous.Coerce(rules.RuleConditionSchema)],
+                voluptuous.Coerce(conditions.PullRequestRuleConditions),
+            ),
+        ),
     }
 
-    async def _post(
-        self, ctxt: context.Context, rule: rules.EvaluatedRule
+    async def _run(
+        self,
+        ctxt: context.Context,
+        rule: rules.EvaluatedRule,
+        check_conditions: conditions.PullRequestRuleConditions,
     ) -> check_api.Result:
         # TODO(sileht): Don't run it if conditions contains the rule itself, as it can
         # created an endless loop of events.
@@ -74,8 +85,10 @@ class PostCheckAction(actions.Action):
 
         extra_variables: typing.Dict[str, typing.Union[str, bool]] = {
             "check_rule_name": rule.name,
-            "check_succeed": rule.conditions.match,
-            "check_conditions": rule.conditions.get_summary(),
+            "check_succeeded": check_conditions.match,
+            "check_conditions": check_conditions.get_summary(),
+            # Backward compat
+            "check_succeed": check_conditions.match,
         }
         try:
             title = await ctxt.pull_request.render_template(
@@ -99,7 +112,7 @@ class PostCheckAction(actions.Action):
                 "Invalid summary template",
                 str(rmf),
             )
-        if rule.conditions.match:
+        if check_conditions.match:
             conclusion = check_api.Conclusion.SUCCESS
         else:
             conclusion = check_api.Conclusion.FAILURE
@@ -127,5 +140,20 @@ class PostCheckAction(actions.Action):
 
         return check_api.Result(conclusion, title, summary)
 
-    run = _post
-    cancel = _post
+    async def run(
+        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
+    ) -> check_api.Result:
+        if self.config["success_conditions"] is None:
+            check_conditions = rule.conditions
+        else:
+            check_conditions = self.config["success_conditions"].copy()
+            await check_conditions([ctxt.pull_request])
+        return await self._run(ctxt, rule, check_conditions)
+
+    async def cancel(
+        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
+    ) -> check_api.Result:  # pragma: no cover
+        if self.config["success_conditions"] is None:
+            return await self._run(ctxt, rule, rule.conditions)
+        else:
+            return actions.CANCELLED_CHECK_REPORT
