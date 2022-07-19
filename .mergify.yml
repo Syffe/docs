@@ -109,7 +109,7 @@ pull_request_rules:
         bot_account: mergify-ci-bot
         message: "@dependabot recreate"
 
-  - name: dismiss reviews except for core devs
+  - name: dismiss reviews
     conditions: []
     actions:
       dismiss_reviews: {}
