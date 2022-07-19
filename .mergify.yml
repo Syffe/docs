@@ -9,6 +9,7 @@ defaults:
         {{ body }}
     squash:
       commit_message: first-commit
+      bot_account: mergify-ci-bot
 
 queue_rules:
   - name: hotfix
