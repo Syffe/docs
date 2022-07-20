@@ -1406,6 +1406,12 @@ class Context(object):
                 for ctxt, state in (await self.checks).items()
                 if state == "neutral"
             ]
+        elif name == "check-timed-out":
+            return [
+                ctxt
+                for ctxt, state in (await self.checks).items()
+                if state == "timed_out"
+            ]
         elif name == "check-skipped":
             # hopefully this handles the gray "skipped" state that github actions
             # workflows can send when a job that depends on a job and the job it
@@ -2017,6 +2023,7 @@ class PullRequest(BasePullRequest):
         "check-success-or-neutral",
         "check-failure",
         "check-neutral",
+        "check-timed-out",
         "status-success",
         "status-failure",
         "status-neutral",
@@ -2199,6 +2206,7 @@ class QueuePullRequest(BasePullRequest):
         "check-failure",
         "check-neutral",
         "check-skipped",
+        "check-timed-out",
         "check-pending",
         "check-stale",
         "current-time",

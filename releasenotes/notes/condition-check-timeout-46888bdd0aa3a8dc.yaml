@@ -1,0 +1,4 @@
+---
+features:
+  - |
+   The attribute check-timed-out is now exposed for pull requests.

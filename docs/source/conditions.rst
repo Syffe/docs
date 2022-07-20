@@ -246,6 +246,13 @@ Here's the list of pull request attribute that can be used in conditions:
        details.
        Checks that report being cancelled, timed out, and action
        required are also considered as failures.
+   * - ``check-timed-out``
+     - list of string
+     - The list of status checks that timed out for the pull request.
+       This is the name of a *status check* such as
+       `continuous-integration/travis-ci/pr` or of a *check run* such as
+       `Travis CI - Pull Request`. See `About Status Checks`_ for more
+       details.
    * - ``check-skipped``
      - list of string
      - The list of status checks that was skipped for the pull request.

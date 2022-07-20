@@ -382,6 +382,7 @@ class TestAttributes(base.FunctionalTestBase):
             "check-stale": [],
             "check-success-or-neutral": ["Summary"],
             "check-skipped": [],
+            "check-timed-out": [],
         }
 
     async def test_repo_name_full_right(self) -> None:
@@ -909,6 +910,70 @@ class TestAttributesWithSub(base.FunctionalTestBase):
         )
         assert len(sorted_checks) == 2
         assert "success" == sorted_checks[0]["conclusion"]
+
+    async def test_check_run_failure(self):
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "check-run-failure-state",
+                    "conditions": ["check-failure=sick-ci"],
+                    "actions": {"post_check": {}},
+                }
+            ]
+        }
+        await self.setup_repo(yaml.dump(rules))
+        p = await self.create_pr()
+        await self.run_engine()
+
+        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        sorted_checks = sorted(
+            await ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
+        )
+        assert len(sorted_checks) == 2
+        assert "failure" == sorted_checks[0]["conclusion"]
+
+        await self.create_check_run(p, "sick-ci", "failure")
+        await self.run_engine()
+
+        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        sorted_checks = sorted(
+            await ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
+        )
+        assert len(sorted_checks) == 3
+        assert sorted_checks[0]["name"] == "Rule: check-run-failure-state (post_check)"
+        assert sorted_checks[0]["conclusion"] == "success"
+
+    async def test_check_run_timeout(self):
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "check-run-timeout-state",
+                    "conditions": ["check-timed-out=lazy-ci"],
+                    "actions": {"post_check": {}},
+                }
+            ]
+        }
+        await self.setup_repo(yaml.dump(rules))
+        p = await self.create_pr()
+        await self.run_engine()
+
+        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        sorted_checks = sorted(
+            await ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
+        )
+        assert len(sorted_checks) == 2
+        assert "failure" == sorted_checks[0]["conclusion"]
+
+        await self.create_check_run(p, "lazy-ci", "timed_out")
+        await self.run_engine()
+
+        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        sorted_checks = sorted(
+            await ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
+        )
+        assert len(sorted_checks) == 3
+        assert sorted_checks[0]["name"] == "Rule: check-run-timeout-state (post_check)"
+        assert sorted_checks[0]["conclusion"] == "success"
 
     async def test_linear_history(self):
         rules = {

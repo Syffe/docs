@@ -60,6 +60,7 @@ class FakeQueuePullRequest:
             + self.attrs.get("check-neutral", [])  # type: ignore
             + self.attrs.get("check-pending", [])  # type: ignore
             + self.attrs.get("check-failure", [])  # type: ignore
+            + self.attrs.get("check-timed-out", [])  # type: ignore
             + self.attrs.get("check-skipped", [])  # type: ignore
         )
 
@@ -284,6 +285,7 @@ async def test_rules_checks_status_with_negative_conditions1(logger_checker):
             "check-failure": [],
             "check-pending": [],
             "check-neutral": [],
+            "check-timed-out": [],
             "check-skipped": [],
             "check-stale": [],
         }
@@ -292,6 +294,7 @@ async def test_rules_checks_status_with_negative_conditions1(logger_checker):
         "check-success=test-starter",
         "check-pending!=foo",
         "check-failure!=foo",
+        "check-timed-out!=foo",
     ]
 
     # Nothing reported
@@ -300,24 +303,35 @@ async def test_rules_checks_status_with_negative_conditions1(logger_checker):
     # Pending reported
     pull.attrs["check-pending"] = ["foo"]
     pull.attrs["check-failure"] = []
+    pull.attrs["check-timed-out"] = []
     pull.attrs["check-success"] = ["test-starter"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
 
     # Failure reported
     pull.attrs["check-pending"] = []
     pull.attrs["check-failure"] = ["foo"]
+    pull.attrs["check-timed-out"] = []
+    pull.attrs["check-success"] = ["test-starter"]
+    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
+
+    # Timeout reported
+    pull.attrs["check-pending"] = []
+    pull.attrs["check-failure"] = []
+    pull.attrs["check-timed-out"] = ["foo"]
     pull.attrs["check-success"] = ["test-starter"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
 
     # Success reported
     pull.attrs["check-pending"] = []
     pull.attrs["check-failure"] = []
+    pull.attrs["check-timed-out"] = []
     pull.attrs["check-success"] = ["test-starter", "foo"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
 
     # half reported, sorry..., UNDEFINED BEHAVIOR
     pull.attrs["check-pending"] = []
     pull.attrs["check-failure"] = []
+    pull.attrs["check-success"] = []
     pull.attrs["check-success"] = ["test-starter"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
 

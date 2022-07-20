@@ -71,6 +71,7 @@ class Conclusion(enum.Enum):
     NEUTRAL = "neutral"
     STALE = "stale"
     ACTION_REQUIRED = "action_required"
+    TIMED_OUT = "timed_out"
 
     @staticmethod
     def _normalize(value: str) -> str:
@@ -83,7 +84,7 @@ class Conclusion(enum.Enum):
             return "🟠"
         elif self.value == "success":
             return "✅"
-        elif self.value == "failure":
+        elif self.value in ("failure", "timed_out"):
             return "❌"
         elif self.value in ("skipped", "neutral", "stale"):
             return "☑️"

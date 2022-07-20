@@ -749,6 +749,25 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         )
         await self.wait_for("status", {"state": state})
 
+    async def create_check_run(
+        self,
+        pull: github_types.GitHubPullRequest,
+        context: str = "continuous-integration/fake-ci",
+        conclusion: str = "success",
+    ) -> None:
+        await self.client_integration.post(
+            f"{self.url_origin}/check-runs",
+            json={
+                "name": context,
+                "head_sha": pull["head"]["sha"],
+                "conclusion": conclusion,
+            },
+        )
+        await self.wait_for(
+            "check_run",
+            {"check_run": {"conclusion": conclusion, "status": "completed"}},
+        )
+
     async def create_review(
         self,
         pull_number: github_types.GitHubPullRequestNumber,

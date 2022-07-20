@@ -75,6 +75,7 @@ CONDITION_PARSERS = {
     "check-failure": Parser.TEXT,
     "check-neutral": Parser.TEXT,
     "check-skipped": Parser.TEXT,
+    "check-timed-out": Parser.TEXT,
     "check-pending": Parser.TEXT,
     "check-stale": Parser.TEXT,
     "commits-unverified": Parser.TEXT,

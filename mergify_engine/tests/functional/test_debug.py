@@ -137,6 +137,7 @@ pull_request_rules:
  'check-stale': [],
  'check-success': ['Summary'],
  'check-success-or-neutral': ['Summary'],
+ 'check-timed-out': [],
  'closed': False,
  'commented-reviews-by': [],
  'commits': ['test_debugger: pull request n1 from integration'],
