@@ -23,7 +23,6 @@ from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import github_types
-from mergify_engine import utils
 from mergify_engine.tests.functional import base
 
 
@@ -187,17 +186,7 @@ class TestMergeAction(base.FunctionalTestBase):
         ]["reviewThreads"]["edges"][0]["node"]
         assert thread["isResolved"]
 
-        # NOTE(Syfe): We need to generate an event with send_pull_refresh() in order
-        # to trigger the summary check update after resolve_review_thread() since GitHub doesn't
-        # generate one after resolving a conversation (issue related MRGFY-907)
-        await utils.send_pull_refresh(
-            ctxt.redis.stream,
-            ctxt.pull["base"]["repo"],
-            pull_request_number=p1["number"],
-            action="internal",
-            source="test",
-        )
-
+        await self.wait_for("pull_request_review_thread", {"action": "resolved"})
         await self.run_engine()
 
         ctxt._caches.pull_check_runs.delete()

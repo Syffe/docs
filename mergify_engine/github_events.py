@@ -231,6 +231,14 @@ async def push_to_worker(
         repo_name = event["repository"]["name"]
         pull_number = event["pull_request"]["number"]
 
+    elif event_type == "pull_request_review_thread":
+        event = typing.cast(github_types.GitHubEventPullRequestReviewThread, event)
+        owner_login = event["repository"]["owner"]["login"]
+        owner_id = event["repository"]["owner"]["id"]
+        repo_id = event["repository"]["id"]
+        repo_name = event["repository"]["name"]
+        pull_number = event["pull_request"]["number"]
+
     elif event_type == "issue_comment":
         event = typing.cast(github_types.GitHubEventIssueComment, event)
         owner_login = event["repository"]["owner"]["login"]

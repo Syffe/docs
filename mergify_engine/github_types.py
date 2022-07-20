@@ -338,6 +338,7 @@ GitHubEventType = typing.Literal[
     "issue_comment",
     "pull_request_review",
     "pull_request_review_comment",
+    "pull_request_review_thread",
     "repository",
     # This does not exist in GitHub, it's a Mergify made one
     "refresh",
@@ -467,6 +468,10 @@ class GitHubEventPullRequestReview(GitHubEvent):
     action: GitHubEventPullRequestReviewActionType
     pull_request: GitHubPullRequest
     review: GitHubReview
+
+
+class GitHubEventPullRequestReviewThread(GitHubEventPullRequestReview):
+    pass
 
 
 GitHubEventIssueCommentActionType = typing.Literal[
