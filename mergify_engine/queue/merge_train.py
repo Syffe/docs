@@ -1715,7 +1715,9 @@ class Train:
         if need_to_be_readded:
             # FIXME(sileht): this can be optimised by not dropping spec checks,
             # if the position in the queue does not change
-            await self._remove_pull(ctxt, signal_trigger)
+            await self._remove_pull(
+                ctxt, signal_trigger, "position in queue has changed"
+            )
             await self.add_pull(ctxt, config, signal_trigger)
             return
 
@@ -1764,15 +1766,19 @@ class Train:
             source=f"pull {ctxt.pull['number']} added to queue",
         )
 
-    async def remove_pull(self, ctxt: context.Context, signal_trigger: str) -> None:
+    async def remove_pull(
+        self, ctxt: context.Context, signal_trigger: str, remove_reason: str
+    ) -> None:
         # NOTE(sileht): Remove the pull request from all trains, just in case
         # the base branch change in the meantime
         await self.force_remove_pull(
             ctxt, signal_trigger, exclude_ref=ctxt.pull["base"]["ref"]
         )
-        await self._remove_pull(ctxt, signal_trigger)
+        await self._remove_pull(ctxt, signal_trigger, remove_reason)
 
-    async def _remove_pull(self, ctxt: context.Context, signal_trigger: str) -> None:
+    async def _remove_pull(
+        self, ctxt: context.Context, signal_trigger: str, remove_reason: str
+    ) -> None:
         if (
             ctxt.pull["merged"]
             and ctxt.pull["base"]["ref"] == self.ref
@@ -1781,6 +1787,7 @@ class Train:
             == self._cars[0].still_queued_embarked_pulls[0].user_pull_request_number
             and await self.is_synced_with_the_base_branch(await self.get_base_sha())
         ):
+            embarked_pull = self._cars[0].still_queued_embarked_pulls[0]
             # Head of the train was merged and the base_sha haven't changed, we can keep
             # other running cars
             del self._cars[0].still_queued_embarked_pulls[0]
@@ -1802,10 +1809,25 @@ class Train:
                 source=f"merged pull {ctxt.pull['number']} removed from queue",
                 additional_pull_request=ctxt.pull["number"],
             )
+            await signals.send(
+                ctxt.repository,
+                ctxt.pull["number"],
+                "action.queue.leave",
+                signals.EventQueueLeaveMetadata(
+                    {
+                        "reason": remove_reason,
+                        "queue_name": embarked_pull.config["name"],
+                        "branch": self.ref,
+                        "position": 0,
+                        "queued_at": embarked_pull.queued_at,
+                    }
+                ),
+                signal_trigger,
+            )
             return
 
-        position, embarked_pull = self.find_embarked_pull(ctxt.pull["number"])
-        if position is None or embarked_pull is None:
+        position, embarked_pull_with_car = self.find_embarked_pull(ctxt.pull["number"])
+        if position is None or embarked_pull_with_car is None:
             ctxt.log.info("already absent from train", **self.log_queue_extras)
             return
 
@@ -1821,10 +1843,11 @@ class Train:
             "action.queue.leave",
             signals.EventQueueLeaveMetadata(
                 {
-                    "queue_name": embarked_pull.embarked_pull.config["name"],
+                    "reason": remove_reason,
+                    "queue_name": embarked_pull_with_car.embarked_pull.config["name"],
                     "branch": self.ref,
                     "position": position,
-                    "queued_at": embarked_pull.embarked_pull.queued_at,
+                    "queued_at": embarked_pull_with_car.embarked_pull.queued_at,
                 }
             ),
             signal_trigger,
@@ -2217,7 +2240,9 @@ class Train:
             ctxt.repository,
             exclude_ref=exclude_ref,
         ):
-            await train._remove_pull(ctxt, signal_trigger)
+            await train._remove_pull(
+                ctxt, signal_trigger, "pull request target branch changed"
+            )
 
     async def generate_merge_queue_summary_footer(
         self,

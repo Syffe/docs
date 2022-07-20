@@ -328,7 +328,11 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
                 except Exception as e:
                     if not exceptions.need_retry(e):
-                        await q.remove_pull(ctxt, rule.get_signal_trigger())
+                        await q.remove_pull(
+                            ctxt,
+                            rule.get_signal_trigger(),
+                            "unexpected merge-queue failure",
+                        )
                     raise
             else:
                 result = await self.get_unqueue_status(ctxt, q)
@@ -352,7 +356,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     ),
                 )
 
-            await q.remove_pull(ctxt, rule.get_signal_trigger())
+            await q.remove_pull(ctxt, rule.get_signal_trigger(), result.title)
 
         # NOTE(sileht): Only refresh if the car still exists and is the same as
         # before we run the action
@@ -421,7 +425,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 result = await self.get_unqueue_status(ctxt, q)
 
         if result.conclusion is not check_api.Conclusion.PENDING:
-            await q.remove_pull(ctxt, rule.get_signal_trigger())
+            await q.remove_pull(ctxt, rule.get_signal_trigger(), result.title)
 
         # The car may have been removed
         newcar = q.get_car(ctxt)

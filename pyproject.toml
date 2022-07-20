@@ -71,6 +71,7 @@ freezegun = "^1.2.1"
 yamllint = "^1.27.1"
 reno = "^3.5.0"
 pytest-chunks = "^0.2.0"
+anys = "^0.2.1"
 
 [tool.poetry.scripts]
   mergify-refresher = "mergify_engine.web_cli:refresher"

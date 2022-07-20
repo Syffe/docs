@@ -20,6 +20,7 @@ import operator
 import typing
 from unittest import mock
 
+import anys
 from first import first
 from freezegun import freeze_time
 import pytest
@@ -1053,6 +1054,83 @@ class TestQueueAction(base.FunctionalTestBase):
             check["output"]["title"]
             == "The pull request is the 2nd in the queue to be merged"
         )
+
+        r = await self.app.get(
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events?per_page=2",
+            headers={
+                "Authorization": f"bearer {self.api_key_admin}",
+                "Content-type": "application/json",
+            },
+        )
+        assert r.status_code == 200
+        """
+                {
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "event": "action.review",
+                    "metadata": {
+                        "type": "REQUEST_CHANGES",
+                        "reviewer": "mergify-test4",
+                    },
+                    "trigger": "Rule: requested",
+                },
+                {
+                    "repository": p1["base"]["repo"]["full_name"],
+                    "pull_request": p1["number"],
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "event": "action.review",
+                    "metadata": {
+                        "type": "APPROVE",
+                        "reviewer": config.BOT_USER_LOGIN,
+                    },
+                    "trigger": "Rule: approve",
+                },
+            ],
+        """
+        assert r.json() == {
+            "events": [
+                {
+                    "event": "action.queue.leave",
+                    "metadata": {
+                        "branch": self.main_branch_name,
+                        "position": 0,
+                        "queue_name": "default",
+                        "queued_at": anys.ANY_AWARE_DATETIME_STR,
+                        "reason": "The rule doesn't match anymore",
+                    },
+                    "repository": p1["base"]["repo"]["full_name"],
+                    "pull_request": p1["number"],
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "trigger": "Rule: Merge priority high",
+                },
+                {
+                    "event": "action.queue.checks_end",
+                    "metadata": {
+                        "abort_reason": anys.AnySearch(
+                            f"Pull request #{p1['number']} which was ahead in the queue has been dequeued."
+                        ),
+                        "aborted": True,
+                        "branch": self.main_branch_name,
+                        "position": 0,
+                        "queue_name": "default",
+                        "queued_at": anys.ANY_AWARE_DATETIME_STR,
+                        "speculative_check_pull_request": {
+                            "checks_conclusion": "pending",
+                            "checks_ended_at": None,
+                            "checks_timed_out": False,
+                            "in_place": False,
+                            "number": p1["number"] + 4,
+                        },
+                    },
+                    "repository": p1["base"]["repo"]["full_name"],
+                    "pull_request": p1["number"],
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "trigger": "merge-queue internal",
+                },
+            ],
+            "per_page": 2,
+            "size": 2,
+            "total": 4,
+        }
 
     async def test_unqueue_command_with_batch_requeue(self) -> None:
         rules = {
