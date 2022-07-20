@@ -123,6 +123,12 @@ minversion = "6.0"
 addopts = "--strict-markers"
 asyncio_mode = "auto"
 markers = ["recorder", "subscription"]
+filterwarnings = [
+    "error",
+    # FIXME(sileht): no idea where it comes from, backtraces are cryptic
+    #  ResourceWarning: unclosed <socket.socket fd=14, family=AddressFamily.AF_UNIX, type=SocketKind.SOCK_STREAM, proto=0>
+    "ignore::ResourceWarning"
+]
 
 [tool.black]
 target-version = ['py310']

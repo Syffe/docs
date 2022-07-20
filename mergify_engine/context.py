@@ -25,7 +25,9 @@ import random
 import re
 import typing
 from urllib import parse
+import warnings
 
+import bs4
 import daiquiri
 from ddtrace import tracer
 import first
@@ -2052,6 +2054,14 @@ class PullRequest(BasePullRequest):
             d[k] = await getattr(self, k)
         return d
 
+    @staticmethod
+    def _markdownify(s: str) -> str:
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore", category=bs4.MarkupResemblesLocatorWarning
+            )
+            return typing.cast(str, markdownify.markdownify(s))
+
     async def render_template(
         self,
         template: str,
@@ -2064,7 +2074,7 @@ class PullRequest(BasePullRequest):
         env = jinja2.sandbox.SandboxedEnvironment(
             undefined=jinja2.StrictUndefined, enable_async=True
         )
-        env.filters["markdownify"] = lambda s: markdownify.markdownify(s)
+        env.filters["markdownify"] = self._markdownify
         if allow_get_section:
             env.filters["get_section"] = functools.partial(
                 self._filter_get_section, self

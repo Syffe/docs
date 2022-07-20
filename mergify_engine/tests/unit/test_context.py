@@ -754,6 +754,9 @@ async def test_context_body_section(
     a_pull_request[
         "title"
     ] = "chore(deps-dev): update flake8 requirement <-- noway we commit this-->from <4 to <5"
+    a_pull_request["head"]["ref"] = github_types.GitHubRefType(
+        "daily_merge/beta/pv6.0.0"
+    )
     a_pull_request[
         "body"
     ] = """
@@ -784,10 +787,29 @@ Code review policies are handled and automated by Mergify.
     expected_title = "chore(deps-dev): update flake8 requirement from <4 to <5 (#6)"
     expected_body = """My awesome section with a beautiful description
 
-Fixes MRGFY-XXX"""
+Fixes MRGFY-XXX
+
+daily\\_merge/beta/pv6.0.0
+
+commits:
+
+* azerty
+* qsdfgh
+"""
     ctxt = await context.Context.create(mock.Mock(), a_pull_request)
+    ctxt._caches.commits.set(
+        [
+            github_types.CachedGitHubBranchCommit(
+                {"commit_message": "azerty"}
+            ),  # type:ignore[typeddict-item]
+            github_types.CachedGitHubBranchCommit(
+                {"commit_message": "qsdfgh"}
+            ),  # type:ignore[typeddict-item]
+        ]
+    )
     assert await ctxt.pull_request.get_commit_message(
-        "{{ title | striptags }} (#{{ number }})\n\n{{ body | get_section('### Description') }}",
+        "{{ title | striptags }} (#{{ number }})\n\n{{ body | get_section('### Description') }}\n\n"
+        "{{ head | markdownify }}\n\ncommits:\n\n{% for c in commits %}* {{ c }}\n{% endfor %}",  # noqa: FS003|
     ) == (expected_title, expected_body)
 
 
