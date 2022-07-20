@@ -100,6 +100,17 @@ async def event_handler(
     event_id = request.headers.get("X-GitHub-Delivery")
     data = await request.json()
 
+    # FIXME: complete payload with fake data. A ticket has been created at
+    # GitHub support because of an incomplete payload on
+    # pull_request_review_thread event sometimes. We could erase this block once
+    # the issue is resolved. MRGFY-1324
+    if "sender" not in data:
+        data["sender"] = {
+            "id": -1,
+            "login": "unknown",
+            "type": "unknown",
+        }
+
     try:
         await github_events.filter_and_dispatch(redis_links, event_type, event_id, data)
     except github_events.IgnoredEvent as ie:
