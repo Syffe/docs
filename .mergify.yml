@@ -62,6 +62,7 @@ pull_request_rules:
       - check-success=semantic-pull-request
       - and: *CheckRuns
       - "check-success=Rule: feature requirements (post_check)"
+      - "check-success=Rule: testing requirements (post_check)"
       - "#approved-reviews-by>=1"
       - "#changes-requested-reviews-by=0"
       - "#review-threads-unresolved=0"
@@ -122,6 +123,7 @@ pull_request_rules:
       - -closed
       - and: *CheckRuns
       - "check-success=Rule: feature requirements (post_check)"
+      - "check-success=Rule: testing requirements (post_check)"
       - "#approved-reviews-by=0"
       - "#changes-requested-reviews-by=0"
     actions:
@@ -196,4 +198,20 @@ pull_request_rules:
           Feature requirements are present.
           {% else %}
           Feature requirements are missing.
+          {% endif %}
+
+
+  - name: testing requirements
+    conditions:
+      - or:
+          - label=Skip tests
+          - "-title~=^(feat|fix):"
+          - "files~=mergify_engine/tests"
+    actions:
+      post_check:
+        title: |
+          {% if check_succeed %}
+          Testing requirements are present.
+          {% else %}
+          Testing requirements are missing.
           {% endif %}
