@@ -1834,7 +1834,6 @@ pull_request_rules:
     )
 
     pull_request_rules = list(rules.get_mergify_config(file)["pull_request_rules"])
-    print(pull_request_rules)
     assert pull_request_rules[0].actions["queue"].config["name"] == "default"
     assert pull_request_rules[0].actions["queue"].config["method"] == "squash"
 
@@ -1940,4 +1939,43 @@ queue_rules:
     assert (
         "* not a valid value for dictionary value @ queue_rules → item 0 → checks_timeout"
         in str(i.value)
+    )
+
+
+def test_ignorable_root_key() -> None:
+    file = context.MergifyConfigFile(
+        type="file",
+        content="whatever",
+        sha=github_types.SHAType("azertyuiop"),
+        path="whatever",
+        decoded_content="""
+shared:
+  conditions: &cond1
+    - status-success=continuous-integration/fake-ci
+
+queue_rules:
+  - name: default
+    conditions: *cond1
+    speculative_checks: 5
+    allow_inplace_checks: true
+
+pull_request_rules:
+  - name: Merge me
+    conditions:
+      - base={self.main_branch_name}
+    actions:
+      queue:
+        name: default
+""",
+    )
+
+    evaluated_rules = rules.get_mergify_config(file)
+    assert "shared" not in evaluated_rules
+
+    assert (
+        evaluated_rules["queue_rules"]  # type: ignore[union-attr]
+        .rules[0]
+        .conditions.condition.conditions[0]
+        .condition
+        == "status-success=continuous-integration/fake-ci"
     )

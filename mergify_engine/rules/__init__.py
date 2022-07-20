@@ -622,6 +622,7 @@ def UserConfigurationSchema(
         voluptuous.Required("defaults", default={}): get_defaults_schema(
             partial_validation
         ),
+        voluptuous.Remove("shared"): voluptuous.Any(dict, list, str, int, float, bool),
     }
 
     if not partial_validation:

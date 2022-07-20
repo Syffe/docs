@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    The configuration file now support a new configuration key: ``shared``.
+    Anything can be stored in this key, its content will be ignored. YAML anchors will still
+    be evaluated and available on the other configuration blocks.

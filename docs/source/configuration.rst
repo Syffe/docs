@@ -26,7 +26,7 @@ Here's what you need to know about the file format:
 - The file format is `YAML <http://yaml.org/>`_.
 
 - The file main type is a dictionary whose keys are named
-  ``pull_request_rules``, ``queue_rules``, ``commands_restrictions`` and ``defaults``.
+  ``pull_request_rules``, ``queue_rules``, ``commands_restrictions``, ``defaults`` and ``shared``.
 
 Pull Request Rules
 ~~~~~~~~~~~~~~~~~~
@@ -158,6 +158,11 @@ The configuration above is the same as below:
         comment:
           message: I 💙 Mergify
           bot_account: Autobot
+
+Shared
+~~~~~~
+
+Anything can be stored in this key. Its main goal is to be able to have a place where you can put your redundant YAML anchors.
 
 Data Types
 ----------
