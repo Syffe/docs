@@ -1,13 +1,16 @@
+import typing
 from unittest import mock
 
 import pytest
 
 from mergify_engine import config
+from mergify_engine import github_types
+from mergify_engine import redis_utils
 from mergify_engine.clients import http
 from mergify_engine.dashboard import user_tokens
 
 
-async def test_init(redis_cache):
+async def test_init(redis_cache: redis_utils.RedisCache) -> None:
     user_tokens.UserTokens(redis_cache, 123, [])
 
 
@@ -42,7 +45,9 @@ async def test_init(redis_cache):
         ],
     ),
 )
-async def test_save_ut(users, redis_cache):
+async def test_save_ut(
+    users: typing.List[user_tokens.UserTokensUser], redis_cache: redis_utils.RedisCache
+) -> None:
     owner_id = 1234
     ut = user_tokens.UserTokens(
         redis_cache,
@@ -56,7 +61,9 @@ async def test_save_ut(users, redis_cache):
 
 
 @mock.patch.object(user_tokens.UserTokens, "_retrieve_from_db")
-async def test_user_tokens_db_unavailable(retrieve_from_db_mock, redis_cache):
+async def test_user_tokens_db_unavailable(
+    retrieve_from_db_mock: mock.Mock, redis_cache: redis_utils.RedisCache
+) -> None:
     owner_id = 1234
     ut = user_tokens.UserTokens(redis_cache, owner_id, [])
     retrieve_from_db_mock.return_value = ut
@@ -103,25 +110,31 @@ async def test_user_tokens_db_unavailable(retrieve_from_db_mock, redis_cache):
     retrieve_from_db_mock.assert_called_once()
 
 
-async def test_unknown_ut(redis_cache):
+async def test_unknown_ut(redis_cache: redis_utils.RedisCache) -> None:
     tokens = await user_tokens.UserTokens._retrieve_from_cache(redis_cache, 98732189)
     assert tokens is None
 
 
-async def test_user_tokens_tokens_via_env(monkeypatch, redis_cache):
+async def test_user_tokens_tokens_via_env(
+    monkeypatch: pytest.MonkeyPatch, redis_cache: redis_utils.RedisCache
+) -> None:
     ut = await user_tokens.UserTokensOnPremise.get(redis_cache, 123)
 
-    assert ut.get_token_for("foo") is None
-    assert ut.get_token_for("login") is None
-    assert ut.get_token_for("nop") is None
+    assert ut.get_token_for(github_types.GitHubLogin("foo")) is None
+    assert ut.get_token_for(github_types.GitHubLogin("login")) is None
+    assert ut.get_token_for(github_types.GitHubLogin("nop")) is None
 
     monkeypatch.setattr(
         config, "ACCOUNT_TOKENS", config.AccountTokens("1:foo:bar,5:login:token")
     )
 
     ut = await user_tokens.UserTokensOnPremise.get(redis_cache, 123)
-    assert ut.get_token_for("foo")["id"] == 1
-    assert ut.get_token_for("foo")["oauth_access_token"] == "bar"
-    assert ut.get_token_for("login")["id"] == 5
-    assert ut.get_token_for("login")["oauth_access_token"] == "token"
-    assert ut.get_token_for("nop") is None
+    foo_token = ut.get_token_for(github_types.GitHubLogin("foo"))
+    assert foo_token is not None
+    assert foo_token["id"] == 1
+    assert foo_token["oauth_access_token"] == "bar"
+    login_token = ut.get_token_for(github_types.GitHubLogin("login"))
+    assert login_token is not None
+    assert login_token["id"] == 5
+    assert login_token["oauth_access_token"] == "token"
+    assert ut.get_token_for(github_types.GitHubLogin("nop")) is None
