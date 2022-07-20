@@ -4,6 +4,7 @@ ignore: |
   .tox
   docs/node_modules
   installer/node_modules
+  zfixtures
 rules:
   document-start: disable
   truthy: disable

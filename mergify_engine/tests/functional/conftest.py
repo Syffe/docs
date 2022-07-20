@@ -331,7 +331,7 @@ async def recorder(
         request.addfinalizer(patcher.stop)
 
     # Let's start recording
-    cassette = recorder.use_cassette("http.json")
+    cassette = recorder.use_cassette("http.yaml")
     cassette.__enter__()
     request.addfinalizer(cassette.__exit__)
     record_config_file = os.path.join(cassette_library_dir, "config.json")
