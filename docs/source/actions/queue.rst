@@ -478,6 +478,12 @@ A ``queue_rules`` takes the following parameter:
        logged in Mergify dashboard once and have **admin**, **write** or
        **maintain** permission.
 
+   * - ``queue_branch_prefix``
+     - string
+     - mergify/merge-queue/
+     - |premium plan tag|
+       When creating a draft pull request for a queue, this prefix will be used to name the branch.
+
 
 .. note::
 

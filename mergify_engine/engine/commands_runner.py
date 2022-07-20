@@ -30,6 +30,7 @@ from mergify_engine import config
 from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import rules
+from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.rules import conditions
@@ -43,10 +44,6 @@ COMMAND_MATCHER = re.compile(
 )
 COMMAND_RESULT_MATCHER_OLD = re.compile(
     r"\*Command `([^`]*)`: (pending|success|failure)\*"
-)
-COMMAND_RESULT_MATCHER = re.compile(
-    r"^-\*- Mergify Payload -\*-\n(.+)\n^-\*- Mergify Payload End -\*-",
-    re.MULTILINE,
 )
 
 MERGE_QUEUE_COMMAND_MESSAGE = "Command not allowed on merge queue pull request."
@@ -200,16 +197,8 @@ async def run_pending_commands_tasks(
 
             continue
 
-        # New format
-        match = COMMAND_RESULT_MATCHER.search(comment["body"])
-
-        if match is None:
-            continue
-
-        try:
-            payload = json.loads(match[1])
-        except Exception:
-            LOG.warning("Unable to load command payload: %s", match[1])
+        payload = utils.get_hidden_payload_from_comment_body(comment["body"])
+        if not payload:
             continue
 
         command = payload.get("command")

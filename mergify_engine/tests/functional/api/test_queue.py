@@ -16,6 +16,7 @@
 import yaml
 
 from mergify_engine import config
+from mergify_engine import constants
 from mergify_engine.tests.functional import base
 
 
@@ -105,6 +106,7 @@ class TestQueueApi(base.FunctionalTestBase):
                     "batch_max_wait_time": "15 s",
                     "speculative_checks": 1,
                     "batch_size": 3,
+                    "queue_branch_prefix": "urgent-",
                 },
                 {
                     "name": "default",
@@ -186,6 +188,7 @@ class TestQueueApi(base.FunctionalTestBase):
                         "batch_max_wait_time": 15.0,
                         "checks_timeout": None,
                         "draft_bot_account": None,
+                        "queue_branch_prefix": "urgent-",
                         "priority": 2,
                         "speculative_checks": 1,
                     },
@@ -199,6 +202,7 @@ class TestQueueApi(base.FunctionalTestBase):
                         "batch_max_wait_time": 0.0,
                         "checks_timeout": None,
                         "draft_bot_account": None,
+                        "queue_branch_prefix": constants.MERGE_QUEUE_BRANCH_PREFIX,
                         "priority": 1,
                         "speculative_checks": 2,
                     },
@@ -212,6 +216,7 @@ class TestQueueApi(base.FunctionalTestBase):
                         "batch_max_wait_time": 30.0,
                         "checks_timeout": 600.0,
                         "draft_bot_account": "mergify-test4",
+                        "queue_branch_prefix": constants.MERGE_QUEUE_BRANCH_PREFIX,
                         "priority": 0,
                         "speculative_checks": 1,
                     },

@@ -32,6 +32,7 @@ from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import worker
 from mergify_engine.engine import commands_runner
+from mergify_engine.queue import utils as queue_utils
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -185,8 +186,15 @@ async def push_to_worker(
         elif (
             event["action"] == "edited"
             and event["sender"]["id"] == config.BOT_USER_ID
-            and event["pull_request"]["head"]["ref"].startswith(
-                constants.MERGE_QUEUE_BRANCH_PREFIX
+            and (
+                # NOTE(greesb): For retrocompatibility. To remove once there are no more
+                # PR using this.
+                event["pull_request"]["head"]["ref"].startswith(
+                    constants.MERGE_QUEUE_BRANCH_PREFIX
+                )
+                or queue_utils.is_pr_body_a_merge_queue_pr(
+                    event["pull_request"]["body"]
+                )
             )
         ):
             ignore_reason = "mergify merge-queue description update"

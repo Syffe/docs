@@ -22,6 +22,7 @@ import fastapi
 import pydantic
 from starlette.status import HTTP_204_NO_CONTENT
 
+from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import github_types
@@ -212,6 +213,7 @@ class QueueFreezeResponse:
                                                 "disallow_checks_interruption_from_queues": [],
                                                 "checks_timeout": 60,
                                                 "draft_bot_account": "",
+                                                "queue_branch_prefix": constants.MERGE_QUEUE_BRANCH_PREFIX,
                                             },
                                         },
                                         "speculative_check_pull_request": {
@@ -240,6 +242,7 @@ class QueueFreezeResponse:
                                                 "disallow_checks_interruption_from_queues": [],
                                                 "checks_timeout": 60,
                                                 "draft_bot_account": "",
+                                                "queue_branch_prefix": constants.MERGE_QUEUE_BRANCH_PREFIX,
                                             },
                                         },
                                         "speculative_check_pull_request": {

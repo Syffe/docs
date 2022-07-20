@@ -54,6 +54,7 @@ from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription as subscription_mod
 from mergify_engine.dashboard import user_tokens
+from mergify_engine.queue import utils as queue_utils
 
 
 if typing.TYPE_CHECKING:
@@ -1771,9 +1772,12 @@ class Context(object):
         return is_behind
 
     def is_merge_queue_pr(self) -> bool:
-        return self.pull["title"].startswith("merge-queue:") and self.pull["head"][
-            "ref"
-        ].startswith(constants.MERGE_QUEUE_BRANCH_PREFIX)
+        return self.pull["title"].startswith("merge-queue:") and (
+            # NOTE(greesb): For retrocompatibility, to remove once there are
+            # no more PR using this.
+            self.pull["head"]["ref"].startswith(constants.MERGE_QUEUE_BRANCH_PREFIX)
+            or queue_utils.is_pr_body_a_merge_queue_pr(self.pull["body"])
+        )
 
     async def has_been_synchronized_by_user(self) -> bool:
         for source in self.sources:

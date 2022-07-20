@@ -22,7 +22,12 @@ MERGIFY_CONFIG_FILENAMES = [
 
 SUMMARY_NAME = "Summary"
 
-MERGE_QUEUE_BRANCH_PREFIX = "mergify/merge-queue"
+MERGE_QUEUE_BRANCH_PREFIX = "mergify/merge-queue/"
+# Payload to put in the body of the main comment of a pull request
+# for us to be able to know that this pull request is a merge-queue pull request
+MERGE_QUEUE_BODY_INFO = {
+    "merge-queue-pr": True,
+}
 MERGE_QUEUE_SUMMARY_NAME = "Queue: Embarked in merge train"
 CONFIGURATION_CHANGED_CHECK_NAME = "Configuration changed"
 CONFIGURATION_DELETED_CHECK_NAME = "Configuration has been deleted"

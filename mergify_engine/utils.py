@@ -14,8 +14,10 @@
 # under the License.
 import hashlib
 import hmac
+import json
 import math
 import os
+import re
 import socket
 import typing
 
@@ -32,6 +34,11 @@ if typing.TYPE_CHECKING:
 LOG = daiquiri.getLogger()
 
 _PROCESS_IDENTIFIER = os.environ.get("DYNO") or socket.gethostname()
+
+MERGIFY_COMMENT_PAYLOAD_MATCHER = re.compile(
+    r"^-\*- Mergify Payload -\*-\n(.+)\n^-\*- Mergify Payload End -\*-",
+    re.MULTILINE,
+)
 
 
 def unicode_truncate(
@@ -259,3 +266,20 @@ def split_list(
     while remaining:
         yield remaining[:size]
         remaining = remaining[size:]
+
+
+def get_hidden_payload_from_comment_body(
+    comment_body: str,
+) -> typing.Union[dict[typing.Any, typing.Any], None]:
+    payload_match = MERGIFY_COMMENT_PAYLOAD_MATCHER.search(comment_body)
+
+    if payload_match is None:
+        return None
+
+    try:
+        payload: dict[typing.Any, typing.Any] = json.loads(payload_match[1])
+    except Exception:
+        LOG.error("Unable to load comment payload: '%s'", payload_match[1])
+        return None
+
+    return payload

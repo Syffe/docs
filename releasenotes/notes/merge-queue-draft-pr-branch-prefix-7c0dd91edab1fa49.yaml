@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    A new option ``queue_branch_prefix`` is available for queue rules option.
+    This option allows to choose the prefix of the name of the branch that will be used to
+    create draft PR for merge-queue. The default value is ``mergify/merge-queue/``.

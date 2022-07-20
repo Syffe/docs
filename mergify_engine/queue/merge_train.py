@@ -20,6 +20,7 @@ import functools
 import itertools
 import typing
 from urllib import parse
+import uuid
 
 import daiquiri
 from ddtrace import tracer
@@ -252,6 +253,7 @@ class TrainCar:
     has_timed_out: bool = False
     checks_ended_timestamp: typing.Optional[datetime.datetime] = None
     ci_has_passed: bool = False
+    queue_branch_name: typing.Optional[str] = None
 
     class Serialized(typing.TypedDict):
         initial_embarked_pulls: typing.List[EmbarkedPull.Serialized]
@@ -270,6 +272,7 @@ class TrainCar:
         has_timed_out: bool
         checks_ended_timestamp: typing.Optional[datetime.datetime]
         ci_has_passed: bool
+        queue_branch_name: typing.Optional[str]
 
     def serialized(self) -> "TrainCar.Serialized":
         return self.Serialized(
@@ -298,6 +301,7 @@ class TrainCar:
             has_timed_out=self.has_timed_out,
             checks_ended_timestamp=self.checks_ended_timestamp,
             ci_has_passed=self.ci_has_passed,
+            queue_branch_name=self.queue_branch_name,
         )
 
     @classmethod
@@ -357,9 +361,18 @@ class TrainCar:
 
         if "head_branch" not in data:
             if creation_state == "created":
-                data["head_branch"] = cls._get_pulls_branch_ref(initial_embarked_pulls)
+                data["head_branch"] = cls._get_pulls_branch_ref(
+                    initial_embarked_pulls,
+                    data["parent_pull_request_numbers"],
+                )
             else:
                 data["head_branch"] = None
+
+        # Retrocompatibility
+        if "queue_branch_name" not in data:
+            data[
+                "queue_branch_name"
+            ] = f"{constants.MERGE_QUEUE_BRANCH_PREFIX}{train.ref}/{cls._get_pulls_branch_ref(initial_embarked_pulls)}"
 
         return cls(
             train,
@@ -380,7 +393,23 @@ class TrainCar:
             has_timed_out=data.get("has_timed_out", False),
             checks_ended_timestamp=data.get("checks_ended_timestamp"),
             ci_has_passed=data.get("ci_has_passed", False),
+            queue_branch_name=data["queue_branch_name"],
         )
+
+    def _generate_draft_pr_branch_suffix(self) -> str:
+        namespace_bytes = self.train.ref.encode()
+        if len(namespace_bytes) > 16:
+            namespace_bytes = namespace_bytes[:16]
+        elif len(namespace_bytes) < 16:
+            namespace_bytes = namespace_bytes + (b"\x00" * (16 - len(namespace_bytes)))
+
+        namespace = uuid.UUID(bytes=namespace_bytes)
+
+        name = self._get_pulls_branch_ref(
+            self.initial_embarked_pulls, self.parent_pull_request_numbers
+        )
+
+        return uuid.uuid5(namespace, name).hex[:10]
 
     def _get_user_refs(
         self,
@@ -528,8 +557,18 @@ class TrainCar:
         )
 
     @staticmethod
-    def _get_pulls_branch_ref(embarked_pulls: typing.List[EmbarkedPull]) -> str:
-        return "-".join([str(ep.user_pull_request_number) for ep in embarked_pulls])
+    def _get_pulls_branch_ref(
+        embarked_pulls: typing.List[EmbarkedPull],
+        parent_pr_numbers: typing.Optional[
+            list[github_types.GitHubPullRequestNumber]
+        ] = None,
+    ) -> str:
+        pr_numbers = [ep.user_pull_request_number for ep in embarked_pulls]
+        if parent_pr_numbers:
+            pr_numbers += parent_pr_numbers
+
+        pr_numbers_str = list(map(str, sorted(pr_numbers)))
+        return "-".join(pr_numbers_str)
 
     @tracer.wrap("TrainCar._create_draft_pull_request", span_type="worker")
     @tenacity.retry(
@@ -539,7 +578,9 @@ class TrainCar:
         stop=tenacity.stop_after_attempt(2),
     )
     async def _create_draft_pull_request(
-        self, branch_name: str, github_user: typing.Optional[user_tokens.UserTokensUser]
+        self,
+        branch_name: str,
+        github_user: typing.Optional[user_tokens.UserTokensUser],
     ) -> github_types.GitHubPullRequest:
 
         try:
@@ -653,11 +694,11 @@ class TrainCar:
         queue_rule: "rules.QueueRule",
     ) -> None:
 
-        self.head_branch = self._get_pulls_branch_ref(self.initial_embarked_pulls)
-
-        branch_name = (
-            f"{constants.MERGE_QUEUE_BRANCH_PREFIX}/{self.train.ref}/{self.head_branch}"
+        self.head_branch = self._get_pulls_branch_ref(
+            self.initial_embarked_pulls, self.parent_pull_request_numbers
         )
+        if self.queue_branch_name is None:
+            self.queue_branch_name = f"{queue_rule.config['queue_branch_prefix']}{self._generate_draft_pr_branch_suffix()}"
 
         bot_account = queue_rule.config["draft_bot_account"]
         github_user: typing.Optional[user_tokens.UserTokensUser] = None
@@ -671,7 +712,7 @@ class TrainCar:
                 )
                 raise TrainCarPullRequestCreationFailure(self)
 
-        await self._prepare_empty_draft_pr_branch(branch_name, github_user)
+        await self._prepare_empty_draft_pr_branch(self.queue_branch_name, github_user)
 
         for pull_number in self.parent_pull_request_numbers + [
             ep.user_pull_request_number for ep in self.still_queued_embarked_pulls
@@ -683,7 +724,7 @@ class TrainCar:
                     if github_user
                     else None,
                     json={
-                        "base": branch_name,
+                        "base": self.queue_branch_name,
                         "head": f"refs/pull/{pull_number}/head",
                         "commit_message": f"Merge of #{pull_number}",
                     },
@@ -724,7 +765,10 @@ class TrainCar:
                     raise TrainCarPullRequestCreationFailure(self) from e
 
         try:
-            tmp_pull = await self._create_draft_pull_request(branch_name, github_user)
+            tmp_pull = await self._create_draft_pull_request(
+                self.queue_branch_name,
+                github_user,
+            )
         except DraftPullRequestCreationTemporaryFailure as e:
             await self._delete_branch()
             raise TrainCarPullRequestCreationPostponed(self) from e
@@ -806,6 +850,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             ),
             show_queue=show_queue,
         )
+
         return description.strip()
 
     async def delete_pull(
@@ -908,14 +953,12 @@ You don't need to do anything. Mergify will close this pull request automaticall
         await self._delete_branch()
 
     async def _delete_branch(self) -> None:
-        escaped_branch_name = (
-            f"{constants.MERGE_QUEUE_BRANCH_PREFIX}/"
-            f"{parse.quote(self.train.ref, safe='')}/"
-            f"{self.head_branch}"
-        )
         if self.queue_pull_request_number is not None:
             await self.train._close_pull_request(self.queue_pull_request_number)
-        await self.train._delete_branch(escaped_branch_name)
+
+        if self.queue_branch_name is not None:
+            escaped_branch_name = parse.quote(self.queue_branch_name, safe="/")
+            await self.train._delete_branch(escaped_branch_name)
 
     async def _set_creation_failure(
         self,
@@ -2308,6 +2351,16 @@ class Train:
 
         description += "\n---\n\n"
         description += constants.MERGIFY_MERGE_QUEUE_PULL_REQUEST_DOC
+
+        description += (
+            "<!---\n"
+            "DO NOT EDIT\n"
+            "-*- Mergify Payload -*-\n"
+            f"{json.dumps(constants.MERGE_QUEUE_BODY_INFO)}\n"
+            "-*- Mergify Payload End -*-\n"
+            "-->"
+        )
+
         return description
 
     async def get_pull_summary(

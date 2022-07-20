@@ -28,6 +28,7 @@ import yaml
 
 from mergify_engine import actions
 from mergify_engine import config
+from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import github_types
@@ -90,6 +91,7 @@ class QueueConfig(typing.TypedDict):
     disallow_checks_interruption_from_queues: typing.List[str]
     checks_timeout: typing.Optional[datetime.timedelta]
     draft_bot_account: typing.Optional[github_types.GitHubLogin]
+    queue_branch_prefix: typing.Optional[str]
 
 
 EvaluatedQueueRule = typing.NewType("EvaluatedQueueRule", "QueueRule")
@@ -554,6 +556,10 @@ QueueRulesSchema = voluptuous.All(
                 voluptuous.Required("draft_bot_account", default=None): voluptuous.Any(
                     None, str
                 ),
+                voluptuous.Required(
+                    "queue_branch_prefix",
+                    default=constants.MERGE_QUEUE_BRANCH_PREFIX,
+                ): str,
                 # TODO(sileht): options to deprecate
                 voluptuous.Required(
                     "allow_checks_interruption", default=None

@@ -403,6 +403,58 @@ class TestQueueAction(base.FunctionalTestBase):
 
         await self._assert_cars_contents(q, None, [])
 
+    async def test_queue_with_queue_branch_prefix(self):
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "speculative_checks": 5,
+                    "queue_branch_prefix": "mq-",
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        p2 = await self.create_pr(two_commits=True)
+
+        # To force others to be rebased
+        p = await self.create_pr()
+        await self.merge_pull(p["number"])
+        await self.wait_for("pull_request", {"action": "closed"})
+        await self.run_engine()
+        p = await self.get_pull(p["number"])
+
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        await self.wait_for("pull_request", {"action": "opened"})
+        await self.wait_for("pull_request", {"action": "opened"})
+
+        pulls = await self.get_pulls()
+        assert len(pulls) == 4
+
+        tmp_pull_1 = await self.get_pull(pulls[1]["number"])
+        tmp_pull_2 = await self.get_pull(pulls[0]["number"])
+        assert tmp_pull_1["number"] not in [p1["number"], p2["number"]]
+        assert tmp_pull_1["head"]["ref"].startswith("mq-")
+        assert tmp_pull_2["number"] not in [p1["number"], p2["number"]]
+        assert tmp_pull_2["head"]["ref"].startswith("mq-")
+
     async def test_queue_fast_forward(self):
         rules = {
             "queue_rules": [
@@ -3456,6 +3508,7 @@ DO NOT EDIT
                                     "batch_size": 1,
                                     "checks_timeout": None,
                                     "draft_bot_account": None,
+                                    "queue_branch_prefix": constants.MERGE_QUEUE_BRANCH_PREFIX,
                                     "priority": 1,
                                     "speculative_checks": 5,
                                 },
@@ -3483,6 +3536,7 @@ DO NOT EDIT
                                     "batch_size": 1,
                                     "checks_timeout": None,
                                     "draft_bot_account": None,
+                                    "queue_branch_prefix": constants.MERGE_QUEUE_BRANCH_PREFIX,
                                     "priority": 0,
                                     "speculative_checks": 5,
                                 },
@@ -3503,6 +3557,7 @@ DO NOT EDIT
                                     "batch_max_wait_time": 30.0,
                                     "checks_timeout": None,
                                     "draft_bot_account": None,
+                                    "queue_branch_prefix": constants.MERGE_QUEUE_BRANCH_PREFIX,
                                     "priority": 0,
                                     "speculative_checks": 5,
                                 },
@@ -4377,6 +4432,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
             disallow_checks_interruption_from_queues=[],
             checks_timeout=None,
             draft_bot_account=None,
+            queue_branch_prefix=constants.MERGE_QUEUE_BRANCH_PREFIX,
         )
         config = queue.PullQueueConfig(
             name="foo",
@@ -4463,6 +4519,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
             disallow_checks_interruption_from_queues=[],
             checks_timeout=None,
             draft_bot_account=None,
+            queue_branch_prefix=constants.MERGE_QUEUE_BRANCH_PREFIX,
         )
         config = queue.PullQueueConfig(
             name="foo",
@@ -4497,10 +4554,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
         assert tmp_pull["draft"]
 
         # Ensure pull request is closed
-        branch_name = (
-            f"{constants.MERGE_QUEUE_BRANCH_PREFIX}/{car.train.ref}/{car.head_branch}"
-        )
-        await car._prepare_empty_draft_pr_branch(branch_name, None)
+        await car._prepare_empty_draft_pr_branch(car.queue_branch_name, None)
         await self.wait_for("pull_request", {"action": "closed"})
         pulls = await self.get_pulls()
         assert len(pulls) == 2
@@ -4537,6 +4591,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
             disallow_checks_interruption_from_queues=[],
             checks_timeout=None,
             draft_bot_account=None,
+            queue_branch_prefix=constants.MERGE_QUEUE_BRANCH_PREFIX,
         )
         config = queue.PullQueueConfig(
             name="foo",
