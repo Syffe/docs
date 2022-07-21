@@ -4565,6 +4565,16 @@ class TestTrainApiCalls(base.FunctionalTestBase):
         tmp_pull = [p for p in pulls if p["number"] == car.queue_pull_request_number][0]
         assert tmp_pull["draft"]
 
+        assert (
+            f"""
+---
+pull_requests:
+  - number: {p2["number"]}
+...
+"""
+            in tmp_pull["body"]
+        )
+
         pull_url_prefix = f"/{self.installation_ctxt.owner_login}/{self.repository_ctxt.repo['name']}/pull"
         expected_table = f"| 1 | test_create_pull_basic: pull request n2 from integration ([#{p2['number']}]({pull_url_prefix}/{p2['number']})) | foo/0 | [#{tmp_pull['number']}]({pull_url_prefix}/{tmp_pull['number']}) | <fake_pretty_datetime()>|"
         assert expected_table in await car.generate_merge_queue_summary()

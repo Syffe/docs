@@ -27,6 +27,7 @@ from ddtrace import tracer
 import first
 import pydantic
 import tenacity
+import yaml
 
 from mergify_engine import branch_updater
 from mergify_engine import check_api
@@ -853,7 +854,29 @@ You don't need to do anything. Mergify will close this pull request automaticall
             show_queue=show_queue,
         )
 
+        description += "\n\n"
+        description += await self.generate_yaml_infos()
+
         return description.strip()
+
+    async def generate_yaml_infos(self) -> str:
+        # NOTE(greesb): Workaround to have corrent indentation on lists
+        # https://stackoverflow.com/questions/25108581/python-yaml-dump-bad-indentation
+        class Dumper(yaml.Dumper):
+            def increase_indent(self, flow=False, *args, **kwargs):
+                return super().increase_indent(flow=flow, indentless=False)
+
+        yaml_dict = {
+            "pull_requests": [
+                {"number": ep.user_pull_request_number}
+                for ep in self.initial_embarked_pulls
+            ],
+        }
+        description = "```yaml\n---\n"
+        description += yaml.dump(yaml_dict, Dumper=Dumper)
+        description += "...\n\n```"
+
+        return description
 
     async def delete_pull(
         self,
@@ -1229,7 +1252,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
                     headline = f"✨ Unexpected queue change: {unexpected_change}. The pull request {self._get_user_refs()} will be re-embarked soon. ✨"
                 elif self.checks_conclusion == check_api.Conclusion.FAILURE:
                     if self.has_previous_car_status_succeeded():
-                        headline = "🕵️  This combination of pull requests has failed checks. Mergify will split this batch to understand which pull request is responsible for the failure. 🕵️"
+                        headline = "🕵️ This combination of pull requests has failed checks. Mergify will split this batch to understand which pull request is responsible for the failure. 🕵️"
                     else:
                         headline = "🕵️ This combination of pull requests has failed checks. Mergify is waiting for other pull requests ahead in the queue to understand which one is responsible for the failure. 🕵️"
 

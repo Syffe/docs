@@ -314,6 +314,31 @@ drawbacks:
   If you need to control which user is impersonated, you can use the ``update_bot_account`` option.
   Be aware that the GitHub UI will show the collaborator as the author of the push, while it was actually executed by Mergify.
 
+
+Merge-Queue PR
+---------------
+
+The body of draft merge-queue PRs contains, at the end of the body, a YAML document
+containing various data relative to the PR and what it is testing.
+
+The schema of this YAML document is the following:
+
+.. code-block:: yaml
+
+        pull_requests:
+          - number: int
+
+
+To be more easily found and parsed in the body, you can look for a markdown yaml code-block:
+
+.. code-block:: md
+
+        ```yaml
+        ---
+        # data here
+        ...
+        ```
+
 Options
 -------
 
