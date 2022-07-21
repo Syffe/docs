@@ -1942,6 +1942,72 @@ queue_rules:
     )
 
 
+async def test_condition_summary_simple() -> None:
+    single_condition_checked = conditions.RuleCondition("base=main")
+    single_condition_checked.match = True
+    pr_conditions = conditions.PullRequestRuleConditions([single_condition_checked])
+
+    expected_summary = "- [X] `base=main`\n"
+    assert pr_conditions.get_summary() == expected_summary
+
+    expected_summary = ""
+    assert pr_conditions.get_unmatched_summary() == expected_summary
+
+
+async def test_condition_summary_complex() -> None:
+    single_condition = conditions.RuleCondition("base=main")
+    single_condition_checked = single_condition.copy()
+    single_condition_checked.match = True
+    pr_conditions = conditions.PullRequestRuleConditions(
+        [
+            single_condition_checked,
+            conditions.RuleConditionGroup(
+                {
+                    "or": [
+                        single_condition,
+                        single_condition,
+                    ]
+                }
+            ),
+            conditions.RuleConditionGroup(
+                {
+                    "and": [
+                        single_condition,
+                        single_condition_checked,
+                    ]
+                }
+            ),
+        ]
+    )
+
+    expected_summary = """- [X] `base=main`
+- [ ] any of:
+  - [ ] `base=main`
+  - [ ] `base=main`
+- [ ] all of:
+  - [ ] `base=main`
+  - [X] `base=main`
+"""
+    assert pr_conditions.get_summary() == expected_summary
+
+    expected_summary = """- [ ] any of:
+  - [ ] `base=main`
+  - [ ] `base=main`
+- [ ] all of:
+  - [ ] `base=main`
+"""
+    assert pr_conditions.get_unmatched_summary() == expected_summary
+
+
+async def test_has_unmatched_conditions() -> None:
+    condition = conditions.RuleCondition("base=main")
+    pr_conditions = conditions.PullRequestRuleConditions([condition])
+    assert pr_conditions.has_unmatched_conditions()
+
+    condition.match = True
+    assert not pr_conditions.has_unmatched_conditions()
+
+
 def test_ignorable_root_key() -> None:
     file = context.MergifyConfigFile(
         type="file",

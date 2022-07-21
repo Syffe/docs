@@ -988,6 +988,105 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check["conclusion"] == check_api.Conclusion.SUCCESS.value
 
+    async def test_queue_update_inplace_merge_report(self):
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "label=merge",
+                    ],
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "actions": {
+                        "queue": {
+                            "name": "default",
+                            "priority": "high",
+                            "update_method": "rebase",
+                        }
+                    },
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        # Create 2 PR and put them in a queue
+        p1 = await self.create_pr()
+        await self.create_status(p1)
+        await self.run_engine()
+        p2 = await self.create_pr()
+        await self.create_status(p2)
+        await self.run_engine()
+
+        # Merge p1 to force p2 to be rebased
+        # The action triggers all CI again, including the one that put p2 in queue
+        await self.add_label(p1["number"], "merge")
+        await self.run_engine()
+        p1 = await self.get_pull(p1["number"])
+
+        # Ensure p2 is still in queue
+        ctxt = context.Context(self.repository_ctxt, p2)
+        q = await merge_train.Train.from_context(ctxt)
+        await self._assert_cars_contents(
+            q,
+            p1["merge_commit_sha"],
+            [
+                TrainCarMatcher(
+                    [p2["number"]],
+                    [],
+                    p1["merge_commit_sha"],
+                    "updated",
+                    p2["number"],
+                ),
+            ],
+        )
+
+        # Ensure that it have been rebased
+        head_sha = p2["head"]["sha"]
+        p2 = await self.get_pull(p2["number"])
+        assert p2["head"]["sha"] != head_sha
+
+        # Complete condition for merge
+        await self.add_label(p2["number"], "merge")
+        await self.run_engine()
+
+        # Ensure p2 is still in queue
+        await self._assert_cars_contents(
+            q,
+            p1["merge_commit_sha"],
+            [
+                TrainCarMatcher(
+                    [p2["number"]],
+                    [],
+                    p1["merge_commit_sha"],
+                    "updated",
+                    p2["number"],
+                ),
+            ],
+        )
+
+        # Ensure all conditions have been reported, included the ones that put
+        # PR in queue
+        p2_checks = await context.Context(
+            self.repository_ctxt, p2
+        ).pull_engine_check_runs
+        check = first(
+            p2_checks,
+            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+        )
+        summary = check["output"]["summary"]
+        assert "- `label=merge`\n  - [X]" in summary
+        assert "Required conditions to stay in the queue:" in summary
+        assert "- [ ] `status-success=continuous-integration/fake-ci`" in summary
+        assert f"base={self.main_branch_name}" not in summary
+
     async def test_unqueue_rule_unmatch_with_batch_requeue(self) -> None:
         rules = {
             "queue_rules": [

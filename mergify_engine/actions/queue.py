@@ -572,7 +572,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 _ord = utils.to_ordinal_numeric(position + 1)
                 title = f"The pull request is the {_ord} in the queue to be merged"
 
-        summary = await q.get_pull_summary(ctxt, self.queue_rule)
+        summary = await q.get_pull_summary(ctxt, self.queue_rule, pull_rule=rule)
+
         return check_api.Result(check_api.Conclusion.PENDING, title, summary)
 
     async def send_signal(

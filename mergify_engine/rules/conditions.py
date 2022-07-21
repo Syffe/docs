@@ -34,6 +34,10 @@ LOG = daiquiri.getLogger(__name__)
 # This helps mypy breaking the recursive definition
 FakeTreeT = typing.Dict[str, typing.Any]
 
+ConditionFilterKeyT = typing.Callable[
+    [typing.Union["RuleConditionGroup", "RuleCondition"]], bool
+]
+
 
 @dataclasses.dataclass
 class RuleCondition:
@@ -229,9 +233,13 @@ class RuleConditionGroup:
         cls,
         conditions: typing.List[typing.Union["RuleConditionGroup", RuleCondition]],
         level: int = 0,
+        filter_key: typing.Optional[ConditionFilterKeyT] = None,
     ) -> str:
         summary = ""
         for condition in conditions:
+            if filter_key and not filter_key(condition):
+                continue
+
             if isinstance(condition, RuleCondition):
                 summary += cls._get_rule_condition_summary(condition)
             elif isinstance(condition, RuleConditionGroup):
@@ -241,7 +249,9 @@ class RuleConditionGroup:
                 if condition.description:
                     summary += f" [{condition.description}]"
                 summary += "\n"
-                for _sum in cls._walk_for_summary(condition.conditions, level + 1):
+                for _sum in cls._walk_for_summary(
+                    condition.conditions, level + 1, filter_key=filter_key
+                ):
                     summary += _sum
             else:
                 raise RuntimeError(f"Unsupported condition type: {type(condition)}")
@@ -250,6 +260,22 @@ class RuleConditionGroup:
 
     def get_summary(self) -> str:
         return self._walk_for_summary(self.conditions)
+
+    def get_unmatched_summary(self) -> str:
+        return self._walk_for_summary(self.conditions, filter_key=lambda c: not c.match)
+
+    def has_unmatched_conditions(self) -> bool:
+        for condition in self.conditions:
+            if not condition.match:
+                return True
+
+            if (
+                isinstance(condition, RuleConditionGroup)
+                and condition.has_unmatched_conditions()
+            ):
+                return True
+
+        return False
 
 
 @dataclasses.dataclass
@@ -530,6 +556,12 @@ class PullRequestRuleConditions:
 
     def get_summary(self) -> str:
         return self.condition.get_summary()
+
+    def get_unmatched_summary(self) -> str:
+        return self.condition.get_unmatched_summary()
+
+    def has_unmatched_conditions(self) -> bool:
+        return self.condition.has_unmatched_conditions()
 
     @property
     def match(self) -> bool:

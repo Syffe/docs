@@ -827,6 +827,7 @@ class TrainCar:
         for_queue_pull_request: bool = False,
         show_queue: bool = True,
         headline: typing.Optional[str] = None,
+        pull_rule: typing.Optional["rules.EvaluatedRule"] = None,
     ) -> str:
         description = ""
         if headline:
@@ -848,6 +849,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 self.still_queued_embarked_pulls[0].config["name"],
                 self.last_evaluated_conditions or "",
             ),
+            pull_rule=pull_rule,
             show_queue=show_queue,
         )
 
@@ -2291,11 +2293,16 @@ class Train:
         self,
         queue_rule_report: QueueRuleReport,
         *,
+        pull_rule: typing.Optional["rules.EvaluatedRule"] = None,
         show_queue: bool = True,
     ) -> str:
 
         description = f"\n\n**Required conditions of queue** `{queue_rule_report.name}` **for merge:**\n\n"
         description += queue_rule_report.summary
+
+        if pull_rule and pull_rule.conditions.has_unmatched_conditions():
+            description += "\n\n**Required conditions to stay in the queue:**\n\n"
+            description += pull_rule.conditions.get_unmatched_summary()
 
         if show_queue:
             table = [
@@ -2364,7 +2371,10 @@ class Train:
         return description
 
     async def get_pull_summary(
-        self, ctxt: context.Context, queue_rule: "rules.QueueRule"
+        self,
+        ctxt: context.Context,
+        queue_rule: "rules.QueueRule",
+        pull_rule: typing.Optional["rules.EvaluatedRule"] = None,
     ) -> str:
         # NOTE(sileht): beware before using this method, car.update_state() must have been called earlier
         # to have up2date informations
@@ -2377,11 +2387,12 @@ class Train:
                 queue_rule_report=QueueRuleReport(
                     name=ep.embarked_pull.config["name"],
                     summary=queue_rule.conditions.get_summary(),
-                )
+                ),
+                pull_rule=pull_rule,
             )
             return description.strip()
         else:
-            return await ep.car.generate_merge_queue_summary()
+            return await ep.car.generate_merge_queue_summary(pull_rule=pull_rule)
 
     async def _delete_branch(self, escaped_branch_name: str) -> None:
         try:
