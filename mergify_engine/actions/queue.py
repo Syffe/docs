@@ -356,7 +356,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     ),
                 )
 
-            await q.remove_pull(ctxt, rule.get_signal_trigger(), result.title)
+            await q.remove_pull(
+                ctxt, rule.get_signal_trigger(), result.title + "\n" + result.summary
+            )
 
         # NOTE(sileht): Only refresh if the car still exists and is the same as
         # before we run the action
