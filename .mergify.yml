@@ -16,6 +16,7 @@ queue_rules:
     allow_inplace_checks: true
     conditions:
       - and: &CheckRuns
+          - check-success=docker
           - check-success=requirements
           - check-success=pep8
           - check-success=test
