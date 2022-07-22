@@ -19,6 +19,7 @@ import yaml
 
 from mergify_engine import constants
 from mergify_engine import context
+from mergify_engine import utils
 from mergify_engine.queue import merge_train
 from mergify_engine.tests.functional import base
 from mergify_engine.tests.functional.actions import test_queue
@@ -83,19 +84,13 @@ class TestUnQueueCommand(base.FunctionalTestBase):
         comments = await self.get_issue_comments(p1["number"])
         assert (
             comments[-1]["body"]
-            == """> requeue
+            == f"""> requeue
 
 #### ☑️ This pull request is already queued
 
 
 
-<!--
-DO NOT EDIT
--*- Mergify Payload -*-
-{"command": "requeue", "conclusion": "neutral"}
--*- Mergify Payload End -*-
--->
-"""
+{utils.get_mergify_payload({"command": "requeue", "conclusion": "neutral"})}"""
         )
 
         check = first(

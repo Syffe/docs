@@ -34,6 +34,7 @@ from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import queue
 from mergify_engine import rules
+from mergify_engine import utils
 from mergify_engine.queue import merge_train
 from mergify_engine.rules import conditions
 from mergify_engine.tests.functional import base
@@ -2432,19 +2433,13 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.wait_for("issue_comment", {"action": "created"})
         comments = await self.get_issue_comments(mq_pr_number)
         assert (
-            """> refresh
+            f"""> refresh
 
 #### ✅ Pull request refreshed
 
 
 
-<!--
-DO NOT EDIT
--*- Mergify Payload -*-
-{"command": "refresh", "conclusion": "success"}
--*- Mergify Payload End -*-
--->
-"""
+{utils.get_mergify_payload({"command": "refresh", "conclusion": "success"})}"""
             == comments[-1]["body"]
         )
 

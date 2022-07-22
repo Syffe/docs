@@ -35,8 +35,16 @@ LOG = daiquiri.getLogger()
 
 _PROCESS_IDENTIFIER = os.environ.get("DYNO") or socket.gethostname()
 
+MERGIFY_COMMENT_PAYLOAD_STR_PREFIX = "DO NOT EDIT\n-*- Mergify Payload -*-"
+MERGIFY_COMMENT_PAYLOAD_STR_SUFFIX = "-*- Mergify Payload End -*-"
+MERGIFY_COMMENT_PAYLOAD_REGEX = (
+    "^"
+    + MERGIFY_COMMENT_PAYLOAD_STR_PREFIX.replace("*", "\\*")
+    + r"\n(.+)^\n"
+    + MERGIFY_COMMENT_PAYLOAD_STR_SUFFIX.replace("*", "\\*")
+)
 MERGIFY_COMMENT_PAYLOAD_MATCHER = re.compile(
-    r"^-\*- Mergify Payload -\*-\n(.+)\n^-\*- Mergify Payload End -\*-",
+    MERGIFY_COMMENT_PAYLOAD_REGEX,
     re.MULTILINE,
 )
 
@@ -283,3 +291,11 @@ def get_hidden_payload_from_comment_body(
         return None
 
     return payload
+
+
+def get_mergify_payload(json_payload: dict[typing.Any, typing.Any]) -> str:
+    return f"""<!---
+{MERGIFY_COMMENT_PAYLOAD_STR_PREFIX}
+{json.dumps(json_payload)}
+{MERGIFY_COMMENT_PAYLOAD_STR_SUFFIX}
+-->"""

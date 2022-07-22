@@ -2382,15 +2382,7 @@ class Train:
         description += "\n---\n\n"
         description += constants.MERGIFY_MERGE_QUEUE_PULL_REQUEST_DOC
 
-        description += (
-            "<!---\n"
-            "DO NOT EDIT\n"
-            "-*- Mergify Payload -*-\n"
-            f"{json.dumps(constants.MERGE_QUEUE_BODY_INFO)}\n"
-            "-*- Mergify Payload End -*-\n"
-            "-->"
-        )
-
+        description += utils.get_mergify_payload(constants.MERGE_QUEUE_BODY_INFO)
         return description
 
     async def get_pull_summary(

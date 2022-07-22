@@ -27,6 +27,7 @@ from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import github_types
+from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.rules import live_resolvers
 from mergify_engine.tests.functional import base
@@ -610,19 +611,13 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
         comments = await self.get_issue_comments(p["number"])
         assert (
-            """> refresh
+            f"""> refresh
 
 #### ✅ Pull request refreshed
 
 
 
-<!--
-DO NOT EDIT
--*- Mergify Payload -*-
-{"command": "refresh", "conclusion": "success"}
--*- Mergify Payload End -*-
--->
-"""
+{utils.get_mergify_payload({"command": "refresh", "conclusion": "success"})}"""
             == comments[-1]["body"]
         )
 

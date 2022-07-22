@@ -16,7 +16,6 @@
 # under the License.
 
 import dataclasses
-import json
 import re
 import typing
 
@@ -99,19 +98,16 @@ def prepare_message(command_full: str, result: check_api.Result) -> str:
     if result.summary:
         details = f"<details>\n\n{result.summary}\n\n</details>\n"
 
-    return f"""> {command_full}
+    message = f"""> {command_full}
 
 #### {result.conclusion.emoji} {result.title}
 
 {details}
 
-<!--
-DO NOT EDIT
--*- Mergify Payload -*-
-{json.dumps(payload)}
--*- Mergify Payload End -*-
--->
 """
+
+    message += utils.get_mergify_payload(payload)
+    return message
 
 
 def load_command(
