@@ -269,6 +269,17 @@ async def push_to_worker(
         ):
             ignore_reason = "comment by Mergify[bot]"
 
+        elif (
+            # At the moment there is no specific "action" key or event
+            # for when someone hides a comment.
+            # So we need all those checks to identify someone hiding the comment
+            # of a bot to be able to not re-execute it.
+            event["comment"]["user"]["id"] != event["sender"]["id"]
+            and event["action"] == "edited"
+            and event["changes"]["body"]["from"] == event["comment"]["body"]
+        ):
+            ignore_reason = "comment has been hidden"
+
         else:
             # NOTE(sileht): nothing important should happen in this hook as we don't retry it
             try:

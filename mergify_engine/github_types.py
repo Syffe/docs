@@ -220,6 +220,13 @@ class GitHubComment(typing.TypedDict):
     user: GitHubAccount
 
 
+GitHubCommentChangesBody = typing.TypedDict("GitHubCommentChangesBody", {"from": str})
+
+
+class GitHubCommentChanges(typing.TypedDict):
+    body: GitHubCommentChangesBody
+
+
 class GitHubContentFile(typing.TypedDict):
     type: typing.Literal["file"]
     content: str
@@ -486,6 +493,7 @@ class GitHubEventIssueComment(GitHubEvent):
     action: GitHubEventIssueCommentActionType
     issue: GitHubIssue
     comment: GitHubComment
+    changes: GitHubCommentChanges
 
 
 class GitHubEventPushCommit(typing.TypedDict):

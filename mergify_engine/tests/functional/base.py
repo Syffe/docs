@@ -807,19 +807,77 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
 
     async def create_comment(
         self, pull_number: github_types.GitHubPullRequestNumber, message: str
-    ) -> None:
-        await self.client_integration.post(
+    ) -> int:
+        response = await self.client_integration.post(
             f"{self.url_origin}/issues/{pull_number}/comments", json={"body": message}
         )
         await self.wait_for("issue_comment", {"action": "created"})
+        return typing.cast(int, response.json()["id"])
 
     async def create_comment_as_admin(
         self, pull_number: github_types.GitHubPullRequestNumber, message: str
-    ) -> None:
-        await self.client_admin.post(
+    ) -> int:
+        response = await self.client_admin.post(
             f"{self.url_origin}/issues/{pull_number}/comments", json={"body": message}
         )
         await self.wait_for("issue_comment", {"action": "created"})
+        return typing.cast(int, response.json()["id"])
+
+    async def get_gql_id_of_comment_to_hide(
+        self, pr_number: int, comment_number: int
+    ) -> typing.Optional[str]:
+        query = f"""
+        query {{
+            repository(owner: "{self.repository_ctxt.repo["owner"]["login"]}", name: "{self.repository_ctxt.repo["name"]}") {{
+                pullRequest(number: {pr_number}) {{
+                    comments(first: 100) {{
+                    nodes {{
+                        id
+                        databaseId
+                    }}
+                    }}
+                }}
+            }}
+        }}
+        """
+        response = await self.client_integration.graphql_post(query)
+        data = typing.cast(
+            github_graphql_types.GraphqlHidingCommentsQuery, response["data"]
+        )
+
+        for comment in data["repository"]["pullRequest"]["comments"]["nodes"]:
+            if comment["databaseId"] == comment_number:
+                return comment["id"]
+        return None
+
+    async def hide_comment(
+        self,
+        pull_number: github_types.GitHubPullRequestNumber,
+        comment_number: int,
+        hide_reason: typing.Optional[
+            github_graphql_types.ReportedContentClassifiers
+        ] = "OUTDATED",
+    ) -> bool:
+        gql_comment_id = await self.get_gql_id_of_comment_to_hide(
+            pull_number, comment_number
+        )
+        mutation = f"""
+        mutation {{
+            minimizeComment(input: {{ classifier: {hide_reason}, subjectId: "{gql_comment_id}" }}) {{
+                minimizedComment {{
+                    isMinimized
+                    minimizedReason
+                    viewerCanMinimize
+                }}
+            }}
+        }}
+        """
+
+        response = await self.client_integration.graphql_post(mutation)
+        data = typing.cast(
+            github_graphql_types.GraphqlMinimizedCommentResponse, response["data"]
+        )
+        return data["minimizeComment"]["minimizedComment"]["isMinimized"]
 
     async def create_review_thread(
         self,

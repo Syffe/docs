@@ -16,6 +16,7 @@
 import contextlib
 import dataclasses
 import datetime
+import json
 import types
 import typing
 from urllib import parse
@@ -423,6 +424,8 @@ class AsyncGithubClient(http.AsyncClient):
         data = response.json()
         if "data" not in data:
             raise GraphqlError(response.text)
+        if len(data.get("errors", [])) > 0:
+            raise GraphqlError(json.dumps(data["errors"]))
         return data
 
     async def item(

@@ -982,7 +982,9 @@ class Context(object):
             """
             responses = typing.cast(
                 typing.AsyncIterable[
-                    typing.Dict[str, github_graphql_types.GraphqlRepository]
+                    typing.Dict[
+                        str, github_graphql_types.GraphqlRepositoryForReviewThreads
+                    ]
                 ],
                 multi.multi_query(
                     query,
