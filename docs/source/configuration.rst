@@ -164,6 +164,42 @@ Shared
 
 Anything can be stored in this key. Its main goal is to be able to have a place where you can put your redundant YAML anchors.
 
+Examples
+++++++++
+
+.. code-block:: yaml
+
+    shared:
+      my_ci: &common_checks
+        - check-success=ci-one
+        - check-success=ci-two
+
+    queue_rules:
+      - name: hotfix
+        conditions: *common_checks
+
+      - name: default
+        conditions:
+        - check-success=slow-ci
+        - and: *common_checks
+
+    pull_request_rules:
+      - name: Default merge
+        conditions:
+          - base=main
+          - and: *common_checks
+        actions:
+          queue:
+            name: default
+
+      - name: Hotfix merge
+        conditions:
+          - base=main
+          - label=hotfix
+        actions:
+          queue:
+            name: hotfix
+
 Data Types
 ----------
 
