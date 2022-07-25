@@ -67,7 +67,7 @@ class PostCheckAction(actions.Action):
     @property
     def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
         if self.config["success_conditions"] is None:
-            return super().silenced_conclusion
+            return ()
         else:
             return (check_api.Conclusion.CANCELLED,)
 
