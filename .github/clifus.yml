@@ -37,14 +37,13 @@ targets:
     sourceID: python-version
     spec:
       file: tox.ini
-      lineMatchPattern: 'envlist = py(\d+),pep8,cmd'
+      lineMatchPattern: '(envlist = py)(\d+)(.*)'
     transformers:
       - find: '^\d+\.\d+'
       - replacer:
           from: "."
           to: ""
-      - addPrefix: "envlist = py"
-      - addSuffix: ",pep8,cmd"
+      - replaceRegexGroup: 2
   ci-file:
     name: "Update CI file GitHub workflow"
     kind: file
