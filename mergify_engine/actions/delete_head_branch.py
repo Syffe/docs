@@ -33,9 +33,12 @@ class DeleteHeadBranchAction(actions.Action):
         actions.ActionFlag.ALLOW_AS_ACTION
         | actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
         | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
-        | actions.ActionFlag.ALWAYS_SEND_REPORT
     )
     validator = {voluptuous.Required("force", default=False): bool}
+
+    @property
+    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
+        return ()
 
     async def run(
         self, ctxt: context.Context, rule: rules.EvaluatedRule

@@ -17,6 +17,7 @@
 import typing
 
 from mergify_engine import actions
+from mergify_engine import check_api
 from mergify_engine import context
 from mergify_engine import duplicate_pull
 from mergify_engine.actions import copy
@@ -27,7 +28,6 @@ class BackportAction(copy.CopyAction):
     flags = (
         actions.ActionFlag.ALLOW_AS_ACTION
         | actions.ActionFlag.ALLOW_AS_COMMAND
-        | actions.ActionFlag.ALWAYS_SEND_REPORT
         | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
         | actions.ActionFlag.ALLOW_AS_PENDING_COMMAND
     )
@@ -39,6 +39,10 @@ class BackportAction(copy.CopyAction):
     BRANCH_PREFIX: str = "bp"
     SUCCESS_MESSAGE: str = "Backports have been created"
     FAILURE_MESSAGE: str = "No backport have been created"
+
+    @property
+    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
+        return ()
 
     @staticmethod
     def command_to_config(string: str) -> typing.Dict[str, typing.Any]:

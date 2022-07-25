@@ -51,8 +51,6 @@ class ActionFlag(enum.Flag):
     ALLOW_AS_COMMAND = enum.auto()
     # The action run()/cancel() is executed whatever the previous state was
     ALWAYS_RUN = enum.auto()
-    # The result of action will be posted as GitHub Check-run
-    ALWAYS_SEND_REPORT = enum.auto()
     # The action can be run when the Mergify configuration change
     ALLOW_ON_CONFIGURATION_CHANGED = enum.auto()
     # Allow to rerun an action if it's part of another rule
@@ -108,6 +106,17 @@ class Action(abc.ABC):
         self, mergify_config: "rules.MergifyConfig"
     ) -> None:  # pragma: no cover
         pass
+
+    @property
+    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
+        # Be default, we create check-run only on failure, CANCELLED is not a
+        # failure it's part of the expected state when the conditions that
+        # trigger the action didn't match anymore
+        return (
+            check_api.Conclusion.SUCCESS,
+            check_api.Conclusion.CANCELLED,
+            check_api.Conclusion.PENDING,
+        )
 
     @classmethod
     def get_schema(cls, partial_validation: bool = False) -> typing.Any:

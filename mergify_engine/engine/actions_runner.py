@@ -456,14 +456,9 @@ async def run_actions(
             ):
                 statsd.increment("engine.actions.count", tags=[f"name:{action}"])
 
-            if need_to_be_run and (
-                actions.ActionFlag.ALWAYS_SEND_REPORT in action_obj.flags
-                or report.conclusion
-                not in (
-                    check_api.Conclusion.SUCCESS,
-                    check_api.Conclusion.CANCELLED,
-                    check_api.Conclusion.PENDING,
-                )
+            if (
+                need_to_be_run
+                and report.conclusion not in action_obj.silenced_conclusion
             ):
                 external_id = (
                     check_api.USER_CREATED_CHECKS

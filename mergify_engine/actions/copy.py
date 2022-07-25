@@ -64,7 +64,6 @@ class CopyAction(actions.Action):
         actions.ActionFlag.ALLOW_AS_ACTION
         | actions.ActionFlag.ALLOW_AS_COMMAND
         | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
-        | actions.ActionFlag.ALWAYS_SEND_REPORT
     )
 
     KIND: duplicate_pull.KindT = "copy"
@@ -72,6 +71,10 @@ class CopyAction(actions.Action):
     BRANCH_PREFIX: str = "copy"
     SUCCESS_MESSAGE: str = "Pull request copies have been created"
     FAILURE_MESSAGE: str = "No copy have been created"
+
+    @property
+    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
+        return ()
 
     @classmethod
     def get_config_schema(

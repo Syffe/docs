@@ -44,7 +44,6 @@ if typing.TYPE_CHECKING:
 class QueueAction(merge_base.MergeBaseAction[merge_train.Train]):
     flags = (
         actions.ActionFlag.ALLOW_AS_ACTION
-        | actions.ActionFlag.ALWAYS_SEND_REPORT
         | actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
         | actions.ActionFlag.SUCCESS_IS_FINAL_STATE
         # FIXME(sileht): MRGFY-562
@@ -58,6 +57,10 @@ In case of a failure due to a flaky test, you should first retrigger the CI.
 Then, re-embark the pull request into the merge queue by posting the comment
 `@mergifyio refresh` on the pull request.
 """
+
+    @property
+    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
+        return ()
 
     @classmethod
     def get_config_schema(

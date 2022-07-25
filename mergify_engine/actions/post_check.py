@@ -44,7 +44,6 @@ class PostCheckAction(actions.Action):
     flags = (
         actions.ActionFlag.ALLOW_AS_ACTION
         | actions.ActionFlag.ALWAYS_RUN
-        | actions.ActionFlag.ALWAYS_SEND_REPORT
         | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
         | actions.ActionFlag.ALLOW_RETRIGGER_MERGIFY
     )
@@ -64,6 +63,13 @@ class PostCheckAction(actions.Action):
             ),
         ),
     }
+
+    @property
+    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
+        if self.config["success_conditions"] is None:
+            return super().silenced_conclusion
+        else:
+            return (check_api.Conclusion.CANCELLED,)
 
     async def _run(
         self,

@@ -14,6 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import typing
+
 import voluptuous
 
 from mergify_engine import actions
@@ -31,11 +33,14 @@ MSG = "This pull request has been automatically closed by Mergify."
 class CloseAction(actions.Action):
     flags = (
         actions.ActionFlag.ALLOW_AS_ACTION
-        | actions.ActionFlag.ALWAYS_SEND_REPORT
         | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
         | actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
     )
     validator = {voluptuous.Required("message", default=MSG): types.Jinja2}
+
+    @property
+    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
+        return ()
 
     async def run(
         self, ctxt: context.Context, rule: rules.EvaluatedRule

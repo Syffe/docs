@@ -39,7 +39,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
                         "post_check": {
                             "success_conditions": [
                                 "#title>10",
-                                "#title<50",
+                                "#title<100",
                                 "#body<4096",
                                 "#files<100",
                                 "body~=(?m)^(Fixes|Related|Closes) (MERGIFY-ENGINE|MRGFY)-",
@@ -50,23 +50,40 @@ class TestPostCheckAction(base.FunctionalTestBase):
                 }
             ]
         }
-
-        await self.setup_repo(yaml.dump(rules))
-        p = await self.create_pr()
+        unrelated_branch = self.get_full_branch_name("unrelated")
+        await self.setup_repo(yaml.dump(rules), test_branches=[unrelated_branch])
+        match_p = await self.create_pr(message="Fixes MRGFY-123")
+        unmatch_p = await self.create_pr()
+        unrelated_p = await self.create_pr(base=unrelated_branch)
         await self.run_engine()
-        p = await self.get_pull(p["number"])
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
-        sorted_checks = sorted(
-            await ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
+        # ensure no check is posted on unrelated branch
+        unrelated_ctxt = await context.Context.create(
+            self.repository_ctxt, unrelated_p, []
         )
-        assert len(sorted_checks) == 2
-        check = sorted_checks[0]
-        assert "failure" == check["conclusion"]
-        assert "'body need sentry ticket' failed" == check["output"]["title"]
+        assert len(await unrelated_ctxt.pull_engine_check_runs) == 1
+
+        # ensure a success check is posted on related branch
+        match_ctxt = await context.Context.create(self.repository_ctxt, match_p, [])
+        match_sorted_checks = sorted(
+            await match_ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
+        )
+        assert len(match_sorted_checks) == 2
+        match_check = match_sorted_checks[0]
+        assert "success" == match_check["conclusion"]
+
+        # ensure a failure check is posted on related branch
+        unmatch_ctxt = await context.Context.create(self.repository_ctxt, unmatch_p, [])
+        unmatch_sorted_checks = sorted(
+            await unmatch_ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
+        )
+        assert len(unmatch_sorted_checks) == 2
+        unmatch_check = unmatch_sorted_checks[0]
+        assert "failure" == unmatch_check["conclusion"]
+        assert "'body need sentry ticket' failed" == unmatch_check["output"]["title"]
 
         r = await self.app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{unmatch_p['number']}/events",
             headers={
                 "Authorization": f"bearer {self.api_key_admin}",
                 "Content-type": "application/json",
@@ -80,7 +97,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
                     "metadata": {
                         "conclusion": "failure",
                         "summary": "- [X] `#title>10`\n"
-                        "- [ ] `#title<50`\n"
+                        "- [X] `#title<100`\n"
                         "- [X] `#body<4096`\n"
                         "- [X] `#files<100`\n"
                         "- [ ] `body~=(?m)^(Fixes|Related|Closes) "
@@ -88,8 +105,8 @@ class TestPostCheckAction(base.FunctionalTestBase):
                         "- [X] `-label=ignore-guideline`\n",
                         "title": "'body need sentry ticket' failed",
                     },
-                    "repository": p["base"]["repo"]["full_name"],
-                    "pull_request": p["number"],
+                    "repository": unmatch_p["base"]["repo"]["full_name"],
+                    "pull_request": unmatch_p["number"],
                     "timestamp": mock.ANY,
                     "trigger": "Rule: body need sentry ticket",
                 },

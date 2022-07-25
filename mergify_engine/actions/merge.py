@@ -59,7 +59,6 @@ def DeprecatedOption(
 class MergeAction(merge_base.MergeBaseAction[None]):
     flags = (
         actions.ActionFlag.ALLOW_AS_ACTION
-        | actions.ActionFlag.ALWAYS_SEND_REPORT
         | actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
         | actions.ActionFlag.SUCCESS_IS_FINAL_STATE
         # FIXME(sileht): MRGFY-562
@@ -86,6 +85,10 @@ class MergeAction(merge_base.MergeBaseAction[None]):
             "priority", default=queue.PriorityAliases.medium.value
         ): queue.PrioritySchema,
     }
+
+    @property
+    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
+        return ()
 
     async def run(
         self, ctxt: context.Context, rule: "rules.EvaluatedRule"
