@@ -957,11 +957,15 @@ class Context(object):
 
     @functools.cached_property
     def _most_recent_event_datetime(self) -> typing.Optional[datetime.datetime]:
-        if self.sources:
-            return max(
-                date.fromisoformat(source["data"]["received_at"])
-                for source in self.sources
-            )
+        timestamps = [
+            date.fromisoformat(source["data"]["received_at"])
+            for source in self.sources
+            # NOTE(sileht): backward compat for refresh event without
+            # "received_at" set
+            if "received_at" in source["data"]
+        ]
+        if timestamps:
+            return max(timestamps)
         else:
             return None
 
