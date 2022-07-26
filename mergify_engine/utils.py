@@ -163,6 +163,7 @@ async def _send_refresh(
 
     data = github_types.GitHubEventRefresh(
         {
+            "received_at": github_types.ISODateTimeType(date.utcnow().isoformat()),
             "action": action,
             "source": source,
             "ref": ref,

@@ -1044,3 +1044,108 @@ async def test_check_runs_ordering(
             "ci (Native)": "success",
             "mima": "success",
         }
+
+
+async def test_reviews_filtering(
+    a_pull_request: github_types.GitHubPullRequest,
+) -> None:
+    all_reviews = [
+        github_types.GitHubReview(
+            {
+                "id": github_types.GitHubReviewIdType(123456),
+                "user": a_pull_request["user"],
+                "body": "",
+                "pull_request": a_pull_request,
+                "repository": a_pull_request["base"]["repo"],
+                "state": "APPROVED",
+                "author_association": "COLLABORATOR",
+                "submitted_at": github_types.ISODateTimeType(
+                    "2022-07-26T04:49:04.750767+00:00"
+                ),
+            }
+        ),
+        github_types.GitHubReview(
+            {
+                "id": github_types.GitHubReviewIdType(424242),
+                "user": a_pull_request["user"],
+                "body": "",
+                "pull_request": a_pull_request,
+                "repository": a_pull_request["base"]["repo"],
+                "state": "CHANGES_REQUESTED",
+                "author_association": "COLLABORATOR",
+                "submitted_at": github_types.ISODateTimeType(
+                    "2022-07-26T14:14:14.000000+00:00"
+                ),
+            }
+        ),
+        github_types.GitHubReview(
+            {
+                "id": github_types.GitHubReviewIdType(987654),
+                "user": a_pull_request["user"],
+                "body": "",
+                "pull_request": a_pull_request,
+                "repository": a_pull_request["base"]["repo"],
+                "state": "APPROVED",
+                "author_association": "COLLABORATOR",
+                "submitted_at": github_types.ISODateTimeType(
+                    "2022-07-26T22:42:24.000001+00:00"
+                ),
+            }
+        ),
+    ]
+
+    async def fake_client_items(
+        url: str,
+        *,
+        resource_name: str,
+        page_limit: int,
+        api_version: typing.Optional[github_types.GitHubApiVersion] = None,
+        oauth_token: typing.Optional[github_types.GitHubOAuthToken] = None,
+        list_items: typing.Optional[str] = None,
+        params: typing.Optional[typing.Dict[str, str]] = None,
+    ) -> typing.Any:
+        if url.endswith("/pulls/6/reviews"):
+            for review in all_reviews:
+                yield review
+        else:
+            raise RuntimeError(f"not mocked api call: {url}")
+
+    repo = mock.Mock()
+    repo.get_branch_protection.side_effect = mock.AsyncMock(return_value=None)
+    repo.installation.client = mock.AsyncMock(items=fake_client_items)
+    ctxt = await context.Context.create(repo, a_pull_request)
+    assert await ctxt.reviews == all_reviews
+
+    ctxt = await context.Context.create(repo, a_pull_request)
+    ctxt.sources = [
+        context.T_PayloadEventSource(
+            {
+                "event_type": "refresh",
+                "data": github_types.GitHubEventRefresh(
+                    {
+                        "received_at": github_types.ISODateTimeType(
+                            "2022-07-26T14:14:14.000000+00:00"
+                        ),
+                        "organization": a_pull_request["base"]["repo"]["owner"],
+                        "installation": {
+                            "id": github_types.GitHubInstallationIdType(123456),
+                            "account": a_pull_request["base"]["repo"]["owner"],
+                            "target_type": "User",
+                            "permissions": {},
+                        },
+                        "sender": a_pull_request["user"],
+                        "repository": a_pull_request["base"]["repo"],
+                        "action": "user",
+                        "ref": a_pull_request["base"]["ref"],
+                        "pull_request_number": a_pull_request["number"],
+                        "source": "internal",
+                    }
+                ),
+                "timestamp": github_types.ISODateTimeType(
+                    "2022-07-26T14:14:14.000000+00:00"
+                ),
+            }
+        ),
+    ]
+    # Drop review done after the refresh event.
+    assert await ctxt.reviews == all_reviews[0:2]

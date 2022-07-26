@@ -356,6 +356,8 @@ class GitHubEvent(typing.TypedDict):
     organization: GitHubAccount
     installation: GitHubInstallation
     sender: GitHubAccount
+    # NOTE(sileht):  Injected by Mergify webhook receiver
+    received_at: ISODateTimeType
 
 
 GitHubEventRefreshActionType = typing.Literal[
@@ -468,6 +470,7 @@ class GitHubReview(typing.TypedDict):
     repository: GitHubRepository
     state: GitHubReviewStateType
     author_association: GitHubCommentAuthorAssociation
+    submitted_at: ISODateTimeType
 
 
 class GitHubEventPullRequestReview(GitHubEvent):

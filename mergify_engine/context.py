@@ -955,6 +955,16 @@ class Context(object):
             if not commit["commit_verification_verified"]
         ]
 
+    @functools.cached_property
+    def _most_recent_event_datetime(self) -> typing.Optional[datetime.datetime]:
+        if self.sources:
+            return max(
+                date.fromisoformat(source["data"]["received_at"])
+                for source in self.sources
+            )
+        else:
+            return None
+
     async def retrieve_review_threads(
         self,
     ) -> typing.List[github_graphql_types.CachedReviewThread]:
@@ -1849,6 +1859,15 @@ class Context(object):
                         page_limit=5,
                     ),
                 )
+                # NOTE(sileht): We ignore any review done after the last event
+                # we received. It's safe because we will received another
+                # review submitted event soon for the review we filter out
+                # This allows to have a coherent view between review data
+                # retrived in this API and the review data in pull request
+                # requested_reviewers and requested_teams attributes
+                if self._most_recent_event_datetime is None
+                or date.fromisoformat(review["submitted_at"])
+                <= self._most_recent_event_datetime
             ]
             self._caches.reviews.set(reviews)
         return reviews
