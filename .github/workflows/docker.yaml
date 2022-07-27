@@ -118,19 +118,19 @@ jobs:
         id: vars
         run: |
           HEROKU_ENVIRONMENT="mergify-engine"
-          echo ::set-output name=HEROKU_ENVIRONMENT::${HEROKU_ENVIRONMENT}
+          echo "::set-output name=HEROKU_ENVIRONMENT::${HEROKU_ENVIRONMENT}"
 
-          VERSION="${{ github.ref_name }}" 
-          echo ::set-output name=VERSION::${VERSION}
+          VERSION="${{ github.ref_name }}"
+          echo "::set-output name=VERSION::${VERSION}"
 
           SHA="$(/usr/bin/git log -1 --format='%H')"
-          echo ::set-output name=SHA::${SHA}
+          echo "::set-output name=SHA::${SHA}"
 
           PYTHON_VERSION="$(cut -d- -f2 runtime.txt)"
-          echo ::set-output name=PYTHON_VERSION::${PYTHON_VERSION}
+          echo "::set-output name=PYTHON_VERSION::${PYTHON_VERSION}"
 
           BUILD_DATE="$(date '+%Y-%m-%d')"
-          echo ::set-output name=BUILD_DATE::${BUILD_DATE}
+          echo "::set-output name=BUILD_DATE::${BUILD_DATE}"
 
       - name: ⚙️ Set up Docker Buildx
         id: buildx
@@ -144,8 +144,8 @@ jobs:
           # COMMON
           build-args: |
             PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
-            MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
-            MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
+            MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
+            MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
             BUILD_DATE=${{ steps.vars.outputs.BUILD_DATE }}
           context: .
           push: false
@@ -161,8 +161,8 @@ jobs:
           # COMMON
           build-args: |
             PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
-            MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
-            MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
+            MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
+            MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
             BUILD_DATE=${{ steps.vars.outputs.BUILD_DATE }}
           context: .
           push: false
@@ -178,8 +178,8 @@ jobs:
           # COMMON
           build-args: |
             PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
-            MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
-            MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
+            MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
+            MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
             BUILD_DATE=${{ steps.vars.outputs.BUILD_DATE }}
           context: .
           push: false
@@ -194,8 +194,8 @@ jobs:
           # COMMON
           build-args: |
             PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
-            MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
-            MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
+            MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
+            MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
             BUILD_DATE=${{ steps.vars.outputs.BUILD_DATE }}
           context: .
           push: false
@@ -210,8 +210,8 @@ jobs:
           # COMMON
           build-args: |
             PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
-            MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
-            MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
+            MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
+            MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
             BUILD_DATE=${{ steps.vars.outputs.BUILD_DATE }}
           context: .
           push: false
@@ -249,9 +249,9 @@ jobs:
         run: |
           image="docker.io/mergifyio/engine"
           docker tag "onpremise:tmp" "$image:latest"
-          docker tag "onpremise:tmp" "$image:${{ github.ref_name }}"
+          docker tag "onpremise:tmp" "$image:${{ github.ref_name }}"
           docker push "$image:latest"
-          docker push "$image:${{ github.ref_name }}"
+          docker push "$image:${{ github.ref_name }}"
 
       - name: Prepare report status
         id: report-status-onpremise
@@ -277,7 +277,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*Release (${{ steps.fetch-check-run.outputs.job_id }}) of Mergify Enterprise ${{ github.ref_name }} finished ${{ steps.report-status.outputs.emoji }}*\nConclusion: ${{ job.status }}"
+                    "text": "*Release (${{ steps.fetch-check-run.outputs.job_id }}) of Mergify Enterprise ${{ github.ref_name }} finished ${{ steps.report-status-onpremise.outputs.emoji }}*\nConclusion: ${{ job.status }}"
                   },
                   "accessory": {
                     "type": "button",
@@ -387,7 +387,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": ${{ toJSON(steps.report-status.outputs.slack_message) }}
+                    "text": ${{ toJSON(steps.report-status.outputs.slack_message) }}
                   },
                   "accessory": {
                     "type": "button",

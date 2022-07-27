@@ -46,7 +46,7 @@ jobs:
            # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
            pip install -r requirements-dev.txt
            DOW=$(date +%u)
-           tox -e record -- mergify_engine/tests/functional --chunk=${DOW}-7
+           tox -e record -- mergify_engine/tests/functional --chunk="${DOW}-7"
 
       - name: Fetch check run html url
         id: fetch-check-run

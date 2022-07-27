@@ -47,14 +47,14 @@ jobs:
 
           git fetch --tag
           VERSION=$(reno -q semver-next)
-          git tag ${VERSION}
+          git tag "${VERSION}"
 
           echo "✂┅┅┅"
           reno -q report --title '' --no-show-source | ./pandoc -t markdown | sed -e '/^\.\./,+1d' -e '1,4d'
           echo "✂┅┅┅"
 
           cd -
-          git tag ${VERSION}
+          git tag "${VERSION}"
           echo "::set-output name=VERSION::$VERSION"
 
       - name: Push git tag 🏎️
