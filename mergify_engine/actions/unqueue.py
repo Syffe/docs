@@ -22,11 +22,8 @@ from mergify_engine import signals
 from mergify_engine.queue import merge_train
 
 
-class UnqueueAction(actions.Action):
-    flags = (
-        actions.ActionFlag.ALLOW_AS_COMMAND
-        | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
-    )
+class UnqueueCommand(actions.Action):
+    flags = actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
 
     validator: typing.ClassVar[typing.Dict[typing.Any, typing.Any]] = {}
 

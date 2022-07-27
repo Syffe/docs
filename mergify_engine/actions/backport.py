@@ -26,9 +26,7 @@ from mergify_engine.rules import conditions
 
 class BackportAction(copy.CopyAction):
     flags = (
-        actions.ActionFlag.ALLOW_AS_ACTION
-        | actions.ActionFlag.ALLOW_AS_COMMAND
-        | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
+        actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
         | actions.ActionFlag.ALLOW_AS_PENDING_COMMAND
     )
 

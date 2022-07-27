@@ -41,8 +41,7 @@ DEFAULT_MESSAGE = {
 
 class DismissReviewsAction(actions.Action):
     flags = (
-        actions.ActionFlag.ALLOW_AS_ACTION
-        | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
+        actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
         | actions.ActionFlag.ALWAYS_RUN
     )
 

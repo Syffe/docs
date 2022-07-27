@@ -30,8 +30,7 @@ from mergify_engine.rules import conditions
 
 class DeleteHeadBranchAction(actions.Action):
     flags = (
-        actions.ActionFlag.ALLOW_AS_ACTION
-        | actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
+        actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
         | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
     )
     validator = {voluptuous.Required("force", default=False): bool}

@@ -60,11 +60,7 @@ def DuplicateTitleJinja2(v: typing.Any) -> typing.Optional[str]:
 
 
 class CopyAction(actions.Action):
-    flags = (
-        actions.ActionFlag.ALLOW_AS_ACTION
-        | actions.ActionFlag.ALLOW_AS_COMMAND
-        | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
-    )
+    flags = actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
 
     KIND: duplicate_pull.KindT = "copy"
     HOOK_EVENT_NAME: typing.Literal["action.backport", "action.copy"] = "action.copy"

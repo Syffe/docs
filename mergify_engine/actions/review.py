@@ -39,8 +39,7 @@ EVENT_STATE_MAP = {
 
 class ReviewAction(actions.Action):
     flags = (
-        actions.ActionFlag.ALLOW_AS_ACTION
-        | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
+        actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
         | actions.ActionFlag.ALWAYS_RUN
     )
     validator = {

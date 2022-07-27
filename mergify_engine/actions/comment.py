@@ -31,10 +31,7 @@ from mergify_engine.rules import types
 
 
 class CommentAction(actions.Action):
-    flags = (
-        actions.ActionFlag.ALLOW_AS_ACTION
-        | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
-    )
+    flags = actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
     validator = {
         voluptuous.Required("message", default=None): types.Jinja2WithNone,
         voluptuous.Required("bot_account", default=None): types.Jinja2WithNone,

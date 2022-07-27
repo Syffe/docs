@@ -36,8 +36,15 @@ CANCELLED_CHECK_REPORT = check_api.Result(
 )
 
 
-global _ACTIONS_CLASSES
-_ACTIONS_CLASSES: typing.Optional[typing.Dict[str, "Action"]] = None
+PluginGroupT = typing.Literal["mergify_commands", "mergify_actions"]
+
+
+class PluginClassT(typing.TypedDict, total=False):
+    mergify_actions: typing.Dict[str, "Action"]
+    mergify_commands: typing.Dict[str, "Action"]
+
+
+_CLASSES: PluginClassT = {}
 
 RawConfigT = typing.Dict[str, typing.Any]
 
@@ -45,10 +52,6 @@ RawConfigT = typing.Dict[str, typing.Any]
 @enum.unique
 class ActionFlag(enum.Flag):
     NONE = 0
-    # Action can be used as pull_request_rules/actions
-    ALLOW_AS_ACTION = enum.auto()
-    # Action can be used as command
-    ALLOW_AS_COMMAND = enum.auto()
     # The action run()/cancel() is executed whatever the previous state was
     ALWAYS_RUN = enum.auto()
     # The action can be run when the Mergify configuration change
@@ -65,14 +68,12 @@ class ActionFlag(enum.Flag):
     SUCCESS_IS_FINAL_STATE = enum.auto()
 
 
-def get_classes() -> typing.Dict[str, "Action"]:
-    global _ACTIONS_CLASSES
-    if _ACTIONS_CLASSES is None:
-        _ACTIONS_CLASSES = {
-            ep.name: ep.load()
-            for ep in importlib.metadata.entry_points(group="mergify_actions")
+def get_classes(group: PluginGroupT) -> typing.Dict[str, "Action"]:
+    if group not in _CLASSES:
+        _CLASSES[group] = {
+            ep.name: ep.load() for ep in importlib.metadata.entry_points(group=group)
         }
-    return _ACTIONS_CLASSES
+    return _CLASSES[group]
 
 
 def get_action_schemas(
@@ -80,17 +81,12 @@ def get_action_schemas(
 ) -> typing.Dict[str, typing.Any]:
     return {
         name: obj.get_schema(partial_validation)
-        for name, obj in get_classes().items()
-        if ActionFlag.ALLOW_AS_ACTION in obj.flags
+        for name, obj in get_classes("mergify_actions").items()
     }
 
 
 def get_commands() -> typing.Dict[str, "Action"]:
-    return {
-        name: obj
-        for name, obj in get_classes().items()
-        if ActionFlag.ALLOW_AS_COMMAND in obj.flags
-    }
+    return {name: obj for name, obj in get_classes("mergify_commands").items()}
 
 
 @dataclasses.dataclass  # type: ignore[misc]

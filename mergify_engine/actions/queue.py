@@ -43,8 +43,7 @@ if typing.TYPE_CHECKING:
 
 class QueueAction(merge_base.MergeBaseAction[merge_train.Train]):
     flags = (
-        actions.ActionFlag.ALLOW_AS_ACTION
-        | actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
+        actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
         | actions.ActionFlag.SUCCESS_IS_FINAL_STATE
         # FIXME(sileht): MRGFY-562
         # | actions.ActionFlag.ALWAYS_RUN

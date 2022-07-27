@@ -58,8 +58,7 @@ def DeprecatedOption(
 
 class MergeAction(merge_base.MergeBaseAction[None]):
     flags = (
-        actions.ActionFlag.ALLOW_AS_ACTION
-        | actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
+        actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
         | actions.ActionFlag.SUCCESS_IS_FINAL_STATE
         # FIXME(sileht): MRGFY-562
         # enforce -merged/-closed in conditions requirements

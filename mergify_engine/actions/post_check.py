@@ -42,8 +42,7 @@ def CheckRunJinja2(v: typing.Any) -> typing.Optional[str]:
 class PostCheckAction(actions.Action):
 
     flags = (
-        actions.ActionFlag.ALLOW_AS_ACTION
-        | actions.ActionFlag.ALWAYS_RUN
+        actions.ActionFlag.ALWAYS_RUN
         | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
         | actions.ActionFlag.ALLOW_RETRIGGER_MERGIFY
     )

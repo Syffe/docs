@@ -21,11 +21,8 @@ from mergify_engine import signals
 from mergify_engine import utils
 
 
-class RefreshAction(actions.Action):
-    flags = (
-        actions.ActionFlag.ALLOW_AS_COMMAND
-        | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
-    )
+class RefreshCommand(actions.Action):
+    flags = actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
 
     validator: typing.ClassVar[typing.Dict[typing.Any, typing.Any]] = {}
 
