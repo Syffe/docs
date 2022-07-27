@@ -80,9 +80,7 @@ pull_request_rules:
       - label!=work-in-progress
       - label!=manual merge
       - "title~=^chore: bump"
-      - or:
-          - head=python-version-upgrade
-          - head=datadog-agent-upgrade
+      - head~=^clifus/
     actions:
       queue:
         name: lowprio
