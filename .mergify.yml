@@ -80,6 +80,7 @@ pull_request_rules:
       - label!=work-in-progress
       - label!=manual merge
       - "title~=^chore: bump"
+      - "#commits=1"
       - head~=^clifus/
     actions:
       queue:
