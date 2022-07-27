@@ -11,11 +11,13 @@ on:
     branches:
       - main
 
+concurrency:
+  # yamllint disable-line rule:line-length
+  group: "${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}"
+  cancel-in-progress: true
+
 jobs:
   docker:
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
-      cancel-in-progress: true
     timeout-minutes: 10
     runs-on: ubuntu-20.04
     services:
