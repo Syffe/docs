@@ -38,7 +38,7 @@ uvicorn = {extras = ["standard"], version = "*"}
 voluptuous = "*"
 
 [tool.poetry.dev-dependencies]
-sphinx = "^5.1.0"
+sphinx = "^5.1.1"
 sphinxcontrib-spelling = "^7.6.0"
 respx = "^0.19.2"
 semgrep = "^0.106.0"
