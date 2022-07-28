@@ -852,10 +852,12 @@ You don't need to do anything. Mergify will close this pull request automaticall
             ),
             pull_rule=pull_rule,
             show_queue=show_queue,
+            for_queue_pull_request=for_queue_pull_request,
         )
 
-        description += "\n\n"
-        description += await self.generate_yaml_infos()
+        if for_queue_pull_request:
+            description += "\n\n"
+            description += await self.generate_yaml_infos()
 
         return description.strip()
 
@@ -2318,6 +2320,7 @@ class Train:
         *,
         pull_rule: typing.Optional["rules.EvaluatedRule"] = None,
         show_queue: bool = True,
+        for_queue_pull_request: bool = False,
     ) -> str:
 
         description = f"\n\n**Required conditions of queue** `{queue_rule_report.name}` **for merge:**\n\n"
@@ -2382,7 +2385,8 @@ class Train:
         description += "\n---\n\n"
         description += constants.MERGIFY_MERGE_QUEUE_PULL_REQUEST_DOC
 
-        description += utils.get_mergify_payload(constants.MERGE_QUEUE_BODY_INFO)
+        if for_queue_pull_request:
+            description += utils.get_mergify_payload(constants.MERGE_QUEUE_BODY_INFO)
         return description
 
     async def get_pull_summary(
