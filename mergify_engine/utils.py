@@ -40,7 +40,7 @@ MERGIFY_COMMENT_PAYLOAD_STR_SUFFIX = "-*- Mergify Payload End -*-"
 MERGIFY_COMMENT_PAYLOAD_REGEX = (
     "^"
     + MERGIFY_COMMENT_PAYLOAD_STR_PREFIX.replace("*", "\\*")
-    + r"\n(.+)^\n"
+    + r"\n(.+)\n"
     + MERGIFY_COMMENT_PAYLOAD_STR_SUFFIX.replace("*", "\\*")
 )
 MERGIFY_COMMENT_PAYLOAD_MATCHER = re.compile(

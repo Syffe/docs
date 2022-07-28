@@ -242,3 +242,11 @@ async def test_refresh_with_pull_request_number(
     assert event["action"] == "admin"
     assert event["ref"] == "master"
     assert event["pull_request_number"] is None
+
+
+def test_payload_dumper() -> None:
+    expected_data = {"data": True}
+    payload = utils.get_mergify_payload(expected_data)
+    message = f"somecontent\n{payload}\nwhatever"
+    data = utils.get_hidden_payload_from_comment_body(message)
+    assert data == expected_data
