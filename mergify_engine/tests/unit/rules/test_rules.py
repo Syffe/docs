@@ -1532,29 +1532,6 @@ pull_request_rules:
 
     assert str(e.value.error) == "missing queue not found"
 
-    file = context.MergifyConfigFile(
-        type="file",
-        content="whatever",
-        sha=github_types.SHAType("azertyuiop"),
-        path="whatever",
-        decoded_content="""
-pull_request_rules:
-  - name: ahah
-    conditions:
-    - base=main
-    actions:
-      queue:
-            """,
-    )
-
-    with pytest.raises(rules.InvalidRules) as e:
-        rules.get_mergify_config(file)
-
-    assert (
-        str(e.value.error)
-        == "required key not provided @ data['pull_request_rules'][0]['actions']['queue']['name']"
-    )
-
 
 def test_default_with_no_pull_requests_rules() -> None:
     file = context.MergifyConfigFile(

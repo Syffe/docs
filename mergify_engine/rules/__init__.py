@@ -620,7 +620,9 @@ def UserConfigurationSchema(
         voluptuous.Required(
             "pull_request_rules", default=[]
         ): get_pull_request_rules_schema(partial_validation),
-        voluptuous.Required("queue_rules", default=[]): QueueRulesSchema,
+        voluptuous.Required(
+            "queue_rules", default=[{"name": "default", "conditions": []}]
+        ): QueueRulesSchema,
         voluptuous.Required("commands_restrictions", default={}): {
             voluptuous.Required(name, default={}): CommandsRestrictionsSchema
             for name in actions.get_commands()

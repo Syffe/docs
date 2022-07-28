@@ -61,41 +61,30 @@ Then, re-embark the pull request into the merge queue by posting the comment
     def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
         return ()
 
-    @classmethod
-    def get_config_schema(
-        cls,
-        partial_validation: bool,
-    ) -> typing.Dict[typing.Any, typing.Any]:
-        return {
-            voluptuous.Required(
-                "name", default="" if partial_validation else voluptuous.UNDEFINED
-            ): str,
-            voluptuous.Required("method", default="merge"): voluptuous.Any(
-                "rebase",
-                "merge",
-                "squash",
-                "fast-forward",
-            ),
-            voluptuous.Required("rebase_fallback", default="merge"): voluptuous.Any(
-                "merge", "squash", "none", None
-            ),
-            voluptuous.Required(
-                "merge_bot_account", default=None
-            ): types.Jinja2WithNone,
-            voluptuous.Required(
-                "update_bot_account", default=None
-            ): types.Jinja2WithNone,
-            voluptuous.Required("update_method", default=None): voluptuous.Any(
-                "rebase", "merge", None
-            ),
-            voluptuous.Required(
-                "commit_message_template", default=None
-            ): types.Jinja2WithNone,
-            voluptuous.Required(
-                "priority", default=queue.PriorityAliases.medium.value
-            ): queue.PrioritySchema,
-            voluptuous.Required("require_branch_protection", default=True): bool,
-        }
+    validator = {
+        voluptuous.Required("name", default="default"): str,
+        voluptuous.Required("method", default="merge"): voluptuous.Any(
+            "rebase",
+            "merge",
+            "squash",
+            "fast-forward",
+        ),
+        voluptuous.Required("rebase_fallback", default="merge"): voluptuous.Any(
+            "merge", "squash", "none", None
+        ),
+        voluptuous.Required("merge_bot_account", default=None): types.Jinja2WithNone,
+        voluptuous.Required("update_bot_account", default=None): types.Jinja2WithNone,
+        voluptuous.Required("update_method", default=None): voluptuous.Any(
+            "rebase", "merge", None
+        ),
+        voluptuous.Required(
+            "commit_message_template", default=None
+        ): types.Jinja2WithNone,
+        voluptuous.Required(
+            "priority", default=queue.PriorityAliases.medium.value
+        ): queue.PrioritySchema,
+        voluptuous.Required("require_branch_protection", default=True): bool,
+    }
 
     async def _subscription_status(
         self, ctxt: context.Context

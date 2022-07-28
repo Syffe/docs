@@ -357,7 +357,7 @@ These are the options of the ``queue`` action:
      - Value Description
    * - ``name``
      - string
-     -
+     - ``default``
      - The name of the merge queue where to move the pull request.
    * - ``method``
      - string

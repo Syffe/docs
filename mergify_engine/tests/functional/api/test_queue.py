@@ -164,7 +164,24 @@ class TestQueueApi(base.FunctionalTestBase):
         )
 
         assert r.status_code == 200
-        assert r.json() == {"configuration": []}
+        assert r.json() == {
+            "configuration": [
+                {
+                    "name": "default",
+                    "config": {
+                        "allow_inplace_checks": True,
+                        "disallow_checks_interruption_from_queues": [],
+                        "batch_size": 1,
+                        "batch_max_wait_time": 30.0,
+                        "checks_timeout": None,
+                        "draft_bot_account": None,
+                        "speculative_checks": 1,
+                        "priority": 0,
+                        "queue_branch_prefix": "mergify/merge-queue/",
+                    },
+                }
+            ]
+        }
 
         await self.setup_repo(yaml.dump(rules))
 
