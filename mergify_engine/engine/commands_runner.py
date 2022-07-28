@@ -62,18 +62,20 @@ class Command(typing.NamedTuple):
 async def post_comment(
     ctxt: context.Context,
     message: str,
-) -> None:
+) -> typing.Optional[github_types.GitHubComment]:
     try:
-        await ctxt.client.post(
+        resp = await ctxt.client.post(
             f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments",
             json={"body": message},
         )
+        return typing.cast(github_types.GitHubComment, resp.json())
     except http.HTTPClientSideError as e:  # pragma: no cover
         ctxt.log.error(
             "fail to post comment on the pull request",
             status_code=e.status_code,
             error=e.message,
         )
+        return None
 
 
 @dataclasses.dataclass

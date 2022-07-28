@@ -733,6 +733,37 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
                 f.write(content)
             await self.git("add", name)
 
+    async def create_conflicting_prs(self) -> list[github_types.GitHubPullRequest]:
+        pr1 = await self.create_pr(
+            files={"testconflict": "testconflict"},
+        )
+        branch = pr1["head"]["ref"]
+        branch_2 = f"{branch}-conflict"
+
+        await self.git("checkout", "--quiet", branch)
+        await self.git("checkout", "--quiet", "-b", branch_2)
+        await self.git("push", "--quiet", "origin", branch_2)
+
+        self.pr_counter += 1
+        login = github_types.GitHubLogin("mergifyio-testing")
+
+        title = (
+            f"{self._testMethodName}: pull request n{self.pr_counter} from integration"
+        )
+        resp = await self.client_integration.post(
+            f"{self.url_origin}/pulls",
+            json={
+                "base": self.main_branch_name,
+                "head": f"{login}:{branch_2}",
+                "title": title,
+                "body": title,
+            },
+        )
+        await self.wait_for("pull_request", {"action": "opened"})
+        pr2 = typing.cast(github_types.GitHubPullRequest, resp.json())
+
+        return [pr1, pr2]
+
     async def create_status(
         self,
         pull: github_types.GitHubPullRequest,

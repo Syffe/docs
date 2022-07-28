@@ -61,6 +61,7 @@ if typing.TYPE_CHECKING:
     from mergify_engine import rules
 
 SUMMARY_SHA_EXPIRATION = 60 * 60 * 24 * 31 * 1  # 1 Month
+WARNED_ABOUT_SHA_COLLISION_EXPIRATION = 60 * 60 * 24 * 7  # 7 days
 
 MARKDOWN_TITLE_RE = re.compile(r"^#+ ", re.I)
 MARKDOWN_COMMIT_MESSAGE_RE = re.compile(r"^#+ Commit Message ?:?\s*$", re.I)
@@ -1124,6 +1125,29 @@ class Context(object):
         sha: github_types.SHAType,
     ) -> str:
         return f"summary-pulls~{owner_id}~{repo_id}~{sha}"
+
+    @staticmethod
+    def redis_warned_about_sha_collision_key(
+        pull: github_types.GitHubPullRequest,
+    ) -> str:
+        owner_id = pull["base"]["repo"]["owner"]["id"]
+        repo_id = pull["base"]["repo"]["id"]
+        sha = pull["head"]["sha"]
+        return f"pr-sha-collision-warned~{owner_id}~{repo_id}~{pull['number']}~{sha}"
+
+    async def set_warned_about_sha_collision(self, comment_url: str) -> None:
+        await self.redis.cache.set(
+            self.redis_warned_about_sha_collision_key(self.pull),
+            comment_url,
+            ex=WARNED_ABOUT_SHA_COLLISION_EXPIRATION,
+        )
+
+    async def get_warned_about_sha_collision(self) -> bool:
+        return bool(
+            await self.redis.cache.exists(
+                self.redis_warned_about_sha_collision_key(self.pull)
+            )
+        )
 
     @classmethod
     async def get_cached_last_summary_head_sha_from_pull(

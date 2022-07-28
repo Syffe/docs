@@ -141,6 +141,7 @@ async def test_run_command_with_rerun_and_without_user(
 
     client = mock.Mock()
     client.post = mock.AsyncMock()
+    client.post.return_value = mock.Mock()
 
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
     ctxt.repository.installation.client = client
@@ -242,6 +243,7 @@ async def test_run_command_with_user(
         "user": user,
     }
     client.post = mock.AsyncMock()
+    client.post.return_value = mock.Mock()
 
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
     ctxt.repository.installation.client = client
@@ -275,6 +277,7 @@ async def test_run_command_with_wrong_arg(
 
     client = mock.Mock()
     client.post = mock.AsyncMock()
+    client.post.return_value = mock.Mock()
 
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
     ctxt.repository.installation.client = client

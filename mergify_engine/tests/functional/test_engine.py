@@ -967,3 +967,28 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         )
         assert repo.repo["name"] == self.RECORD_CONFIG["repository_name"]
         assert repo.repo["name"] == self.repository_ctxt.repo["name"]
+
+    async def test_sha_collision(self) -> None:
+        await self.setup_repo()
+        prs = await self.create_conflicting_prs()
+
+        await self.run_full_engine()
+        await self.wait_for("issue_comment", {"action": "created"})
+
+        await self.create_comment_as_admin(prs[1]["number"], "@mergifyio refresh")
+
+        await self.run_full_engine()
+        await self.wait_for("issue_comment", {"action": "created"})
+
+        if base.RECORD:
+            await asyncio.sleep(15)
+
+        resp = await self.app.post(
+            f"/refresh/{prs[1]['base']['repo']['full_name']}/pull/{prs[1]['number']}",
+            headers={"X-Hub-Signature": "sha1=" + base.FAKE_HMAC},
+        )
+        assert resp.status_code == 202, resp.text
+        await self.run_full_engine()
+
+        comments = await self.get_issue_comments(prs[1]["number"])
+        assert len(comments) == 3

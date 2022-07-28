@@ -376,6 +376,17 @@ async def run(
                 "sha collision detected between pull requests",
                 other_pull=summary["external_id"],
             )
+            if not (await other_ctxt.get_warned_about_sha_collision()):
+                comment = await commands_runner.post_comment(
+                    ctxt,
+                    (
+                        ":warning: The sha of the head commit of this PR conflicts with "
+                        f"#{other_ctxt.pull['number']}. Mergify cannot evaluate rules on this PR. :warning:"
+                    ),
+                )
+                if comment is not None:
+                    await other_ctxt.set_warned_about_sha_collision(comment["url"])
+
             return None
 
     if not ctxt.has_been_opened() and summary is None:

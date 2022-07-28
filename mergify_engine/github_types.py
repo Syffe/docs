@@ -216,6 +216,7 @@ class GitHubLabel(typing.TypedDict):
 
 class GitHubComment(typing.TypedDict):
     id: int
+    url: str
     body: str
     user: GitHubAccount
 
