@@ -22,6 +22,7 @@ from starlette import requests
 from starlette import responses
 
 from mergify_engine import exceptions as engine_exceptions
+from mergify_engine import pagination
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -43,4 +44,13 @@ def setup_exception_handlers(app: fastapi.FastAPI) -> None:
         return responses.JSONResponse(
             status_code=403,
             content={"message": "Organization or user has hit GitHub API rate limit"},
+        )
+
+    @app.exception_handler(pagination.InvalidCursor)
+    async def pagination_handler(
+        request: requests.Request, exc: pagination.InvalidCursor
+    ) -> responses.JSONResponse:
+        return responses.JSONResponse(
+            status_code=422,
+            content={"message": "Invalid cursor", "cursor": exc.cursor},
         )

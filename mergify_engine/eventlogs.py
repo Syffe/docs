@@ -277,10 +277,6 @@ class EventLogsSignal(signals.SignalBase):
         await pipe.execute()
 
 
-class InvalidCursor(Exception):
-    cursor: str
-
-
 async def get(
     repository: "context.Repository",
     page: pagination.CurrentPage,
@@ -336,7 +332,7 @@ async def get(
         to_ = "+"
         look_backward = True
     else:
-        raise InvalidCursor(page.cursor)
+        raise pagination.InvalidCursor(page.cursor)
 
     await pipe.xlen(key)
     if look_backward:

@@ -11,6 +11,11 @@ T = typing.TypeVar("T")
 
 
 @dataclasses.dataclass
+class InvalidCursor(Exception):
+    cursor: str
+
+
+@dataclasses.dataclass
 class CurrentPage:
     request: fastapi.Request
     response: fastapi.Response
