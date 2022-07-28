@@ -31,7 +31,6 @@ from mergify_engine import github_types
 from mergify_engine import rules
 from mergify_engine import utils
 from mergify_engine.clients import github
-from mergify_engine.clients import http
 from mergify_engine.rules import conditions
 
 
@@ -57,25 +56,6 @@ class Command(typing.NamedTuple):
     name: str
     args: str
     action: actions.Action
-
-
-async def post_comment(
-    ctxt: context.Context,
-    message: str,
-) -> typing.Optional[github_types.GitHubComment]:
-    try:
-        resp = await ctxt.client.post(
-            f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments",
-            json={"body": message},
-        )
-        return typing.cast(github_types.GitHubComment, resp.json())
-    except http.HTTPClientSideError as e:  # pragma: no cover
-        ctxt.log.error(
-            "fail to post comment on the pull request",
-            status_code=e.status_code,
-            error=e.message,
-        )
-        return None
 
 
 @dataclasses.dataclass
@@ -229,7 +209,7 @@ async def run_pending_commands_tasks(
                 "The Mergify comment has been edited manually.",
             ),
         )
-        await post_comment(ctxt, message)
+        await ctxt.post_comment(message)
 
     for pending in pendings:
         await handle(ctxt, mergify_config, f"@Mergifyio {pending}", None, rerun=True)
@@ -322,7 +302,7 @@ async def handle(
         command = load_command(mergify_config, comment)
     except CommandInvalid as e:
         log(e.message)
-        await post_comment(ctxt, e.message)
+        await ctxt.post_comment(e.message)
         return
     except NotACommand:
         return
@@ -335,7 +315,7 @@ async def handle(
         ):
             message = f"@{user['login']} is not allowed to run commands"
             log(message)
-            await post_comment(ctxt, message)
+            await ctxt.post_comment(message)
             return
 
     if (
@@ -345,12 +325,12 @@ async def handle(
     ):
         message = CONFIGURATION_CHANGE_MESSAGE
         log(message)
-        await post_comment(ctxt, message)
+        await ctxt.post_comment(message)
         return
 
     if command.name != "refresh" and ctxt.is_merge_queue_pr():
         log(MERGE_QUEUE_COMMAND_MESSAGE)
-        await post_comment(ctxt, MERGE_QUEUE_COMMAND_MESSAGE)
+        await ctxt.post_comment(MERGE_QUEUE_COMMAND_MESSAGE)
         return
 
     result, message = await run_command(ctxt, mergify_config, command, user)
@@ -359,4 +339,4 @@ async def handle(
         return
 
     log(message, result)
-    await post_comment(ctxt, message)
+    await ctxt.post_comment(message)

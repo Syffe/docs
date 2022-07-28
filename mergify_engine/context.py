@@ -2023,6 +2023,13 @@ class Context(object):
             for source in self.sources
         )
 
+    async def post_comment(self, message: str) -> github_types.GitHubComment:
+        resp = await self.client.post(
+            f"{self.base_url}/issues/{self.pull['number']}/comments",
+            json={"body": message},
+        )
+        return typing.cast(github_types.GitHubComment, resp.json())
+
 
 @dataclasses.dataclass
 class RenderTemplateFailure(Exception):
