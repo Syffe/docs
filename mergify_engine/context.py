@@ -2030,6 +2030,14 @@ class Context(object):
         )
         return typing.cast(github_types.GitHubComment, resp.json())
 
+    async def edit_comment(
+        self, comment_id: github_types.GitHubCommentIdType, message: str
+    ) -> None:
+        await self.client.post(
+            f"{self.base_url}/issues/comments/{comment_id}",
+            json={"body": message},
+        )
+
 
 @dataclasses.dataclass
 class RenderTemplateFailure(Exception):

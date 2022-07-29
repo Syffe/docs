@@ -37,6 +37,21 @@ EMPTY_CONFIG = rules.get_mergify_config(
         decoded_content="",
     )
 )
+FAKE_COMMENT = github_types.GitHubComment(
+    {
+        "id": github_types.GitHubCommentIdType(123),
+        "url": "",
+        "body": "",
+        "user": {
+            "id": github_types.GitHubAccountIdType(123),
+            "login": github_types.GitHubLogin("foobar"),
+            "type": "User",
+            "avatar_url": "",
+        },
+        "created_at": github_types.ISODateTimeType("2021-06-01T18:41:39Z"),
+        "updated_at": github_types.ISODateTimeType("2021-06-01T18:41:39Z"),
+    }
+)
 
 
 def test_command_loader() -> None:
@@ -129,10 +144,10 @@ async def test_run_command_without_rerun_and_without_user(
         await commands_runner.handle(
             ctxt=ctxt,
             mergify_config=EMPTY_CONFIG,
-            comment="@Mergifyio update",
+            comment_command="@Mergifyio update",
             user=None,
         )
-    assert "user must be set if rerun is false" in str(error_msg.value)
+    assert "user must be set if comment_result is unset" in str(error_msg.value)
 
 
 async def test_run_command_with_rerun_and_without_user(
@@ -149,9 +164,9 @@ async def test_run_command_with_rerun_and_without_user(
     await commands_runner.handle(
         ctxt=ctxt,
         mergify_config=EMPTY_CONFIG,
-        comment="@mergifyio something",
+        comment_command="@mergifyio something",
         user=None,
-        rerun=True,
+        comment_result=FAKE_COMMENT,
     )
     assert len(client.post.call_args_list) == 1
     assert (
@@ -251,16 +266,16 @@ async def test_run_command_with_user(
     await commands_runner.handle(
         ctxt=ctxt,
         mergify_config=EMPTY_CONFIG,
-        comment="unrelated",
+        comment_command="unrelated",
         user=None,
-        rerun=True,
+        comment_result=FAKE_COMMENT,
     )
     assert len(client.post.call_args_list) == 0
 
     await commands_runner.handle(
         ctxt=ctxt,
         mergify_config=EMPTY_CONFIG,
-        comment=comment,
+        comment_command=comment,
         user=user,
     )
 
@@ -285,9 +300,9 @@ async def test_run_command_with_wrong_arg(
     await commands_runner.handle(
         ctxt=ctxt,
         mergify_config=EMPTY_CONFIG,
-        comment="@mergifyio squash invalid-arg",
-        rerun=True,
+        comment_command="@mergifyio squash invalid-arg",
         user=None,
+        comment_result=FAKE_COMMENT,
     )
 
     assert len(client.post.call_args_list) == 1

@@ -15,6 +15,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import collections
 import dataclasses
 import re
 import typing
@@ -145,6 +146,12 @@ async def on_each_event(event: github_types.GitHubEventIssueComment) -> None:
             )
 
 
+class LastUpdatedOrderedDict(collections.OrderedDict[str, github_types.GitHubComment]):
+    def __setitem__(self, key: str, value: github_types.GitHubComment) -> None:
+        super().__setitem__(key, value)
+        self.move_to_end(key)
+
+
 async def run_pending_commands_tasks(
     ctxt: context.Context, mergify_config: rules.MergifyConfig
 ) -> None:
@@ -152,12 +159,14 @@ async def run_pending_commands_tasks(
         # We don't allow any command yet
         return
 
-    pendings = set()
-    edited = set()
-    async for comment in ctxt.client.items(
-        f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments",
-        resource_name="comments",
-        page_limit=20,
+    pendings = LastUpdatedOrderedDict()
+    async for comment in typing.cast(
+        typing.AsyncIterator[github_types.GitHubComment],
+        ctxt.client.items(
+            f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments",
+            resource_name="comments",
+            page_limit=20,
+        ),
     ):
 
         if comment["user"]["id"] != config.BOT_USER_ID:
@@ -168,10 +177,11 @@ async def run_pending_commands_tasks(
         if match:
             command = match[1]
             state = match[2]
+
             if state == "pending":
-                pendings.add(command)
+                pendings[command] = comment
             elif command in pendings:
-                pendings.remove(command)
+                del pendings[command]
 
             continue
 
@@ -179,11 +189,16 @@ async def run_pending_commands_tasks(
         if not payload:
             continue
 
-        command = payload.get("command")
-        if not command:
+        if (
+            not isinstance(payload, dict)
+            or "command" not in payload
+            or "conclusion" not in payload
+        ):
+            LOG.warning("got command with invalid payload", payload=payload)
             continue
 
-        conclusion_str = payload.get("conclusion")
+        command = payload["command"]
+        conclusion_str = payload["conclusion"]
 
         try:
             conclusion = check_api.Conclusion(conclusion_str)
@@ -192,27 +207,18 @@ async def run_pending_commands_tasks(
             continue
 
         if conclusion == check_api.Conclusion.PENDING:
-            if comment["created_at"] == comment["updated_at"]:
-                pendings.add(command)
-            else:
-                edited.add(command)
-        else:
-            edited.discard(command)
-            pendings.discard(command)
+            pendings[command] = comment
+        elif command in pendings:
+            del pendings[command]
 
-    for edit in edited:
-        message = prepare_message(
-            edit,
-            check_api.Result(
-                check_api.Conclusion.FAILURE,
-                "Command aborted",
-                "The Mergify comment has been edited manually.",
-            ),
+    for pending, comment in pendings.items():
+        await handle(
+            ctxt,
+            mergify_config,
+            f"@Mergifyio {pending}",
+            None,
+            comment_result=comment,
         )
-        await ctxt.post_comment(message)
-
-    for pending in pendings:
-        await handle(ctxt, mergify_config, f"@Mergifyio {pending}", None, rerun=True)
 
 
 async def run_command(
@@ -280,26 +286,26 @@ async def run_command(
 async def handle(
     ctxt: context.Context,
     mergify_config: rules.MergifyConfig,
-    comment: str,
+    comment_command: str,
     user: typing.Optional[github_types.GitHubAccount],
-    rerun: bool = False,
+    comment_result: typing.Optional[github_types.GitHubComment] = None,
 ) -> None:
     # Run command only if this is a pending task or if user have permission to do it.
-    if not rerun and not user:
-        raise RuntimeError("user must be set if rerun is false")
+    if comment_result is None and not user:
+        raise RuntimeError("user must be set if comment_result is unset")
 
     def log(comment_out: str, result: typing.Optional[check_api.Result] = None) -> None:
         ctxt.log.info(
             "ran command",
             user_login=None if user is None else user["login"],
-            rerun=rerun,
-            comment_in=comment,
+            comment_result=comment_result,
+            comment_in=comment_command,
             comment_out=comment_out,
             result=result,
         )
 
     try:
-        command = load_command(mergify_config, comment)
+        command = load_command(mergify_config, comment_command)
     except CommandInvalid as e:
         log(e.message)
         await ctxt.post_comment(e.message)
@@ -334,9 +340,9 @@ async def handle(
         return
 
     result, message = await run_command(ctxt, mergify_config, command, user)
-    if result.conclusion is check_api.Conclusion.PENDING and rerun:
-        log("action still pending", result)
-        return
 
     log(message, result)
-    await ctxt.post_comment(message)
+    if comment_result is None:
+        await ctxt.post_comment(message)
+    elif message != comment_result["body"]:
+        await ctxt.edit_comment(comment_result["id"], message)

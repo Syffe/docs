@@ -214,11 +214,16 @@ class GitHubLabel(typing.TypedDict):
     default: bool
 
 
+GitHubCommentIdType = typing.NewType("GitHubCommentIdType", int)
+
+
 class GitHubComment(typing.TypedDict):
-    id: int
+    id: GitHubCommentIdType
     url: str
     body: str
     user: GitHubAccount
+    created_at: ISODateTimeType
+    updated_at: ISODateTimeType
 
 
 GitHubCommentChangesBody = typing.TypedDict("GitHubCommentChangesBody", {"from": str})
