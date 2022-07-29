@@ -489,7 +489,7 @@ restructuredtext-lint = "*"
 
 [[package]]
 name = "flake8-use-fstring"
-version = "1.3"
+version = "1.4"
 description = "Flake8 plugin for string formatting style."
 category = "dev"
 optional = false
@@ -1734,7 +1734,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.10,<4.0"
-content-hash = "bbca77fe25bd01608e4ef4f901b6a0dba8283d74353c5bf6ede1554cc2d11248"
+content-hash = "30359af21c5eebfdf560a41bba33ebc4bcc992e10b1c9d954708fe454780e9b3"
 
 [metadata.files]
 aiofiles = [
@@ -2104,7 +2104,7 @@ flake8-rst-docstrings = [
     {file = "flake8_rst_docstrings-0.2.7-py3-none-any.whl", hash = "sha256:5d56075dce360bcc9c6775bfe7cb431aa395de600ca7e8d40580a28d50b2a803"},
 ]
 flake8-use-fstring = [
-    {file = "flake8-use-fstring-1.3.tar.gz", hash = "sha256:1bd4a409adbb93e64e711fdd26b88759c33792e3899f174edc68ddf7307e81b6"},
+    {file = "flake8-use-fstring-1.4.tar.gz", hash = "sha256:6550bf722585eb97dffa8343b0f1c372101f5c4ab5b07ebf0edd1c79880cdd39"},
 ]
 freezegun = [
     {file = "freezegun-1.2.1-py3-none-any.whl", hash = "sha256:15103a67dfa868ad809a8f508146e396be2995172d25f927e48ce51c0bf5cb09"},
