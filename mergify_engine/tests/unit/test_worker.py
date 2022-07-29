@@ -101,6 +101,18 @@ FAKE_INSTALLATION = {
 }
 
 
+@pytest.fixture
+def stream_processor(redis_links: redis_utils.RedisLinks) -> worker.StreamProcessor:
+    return worker.StreamProcessor(
+        redis_links, "shared-0", None, worker.OwnerLoginsCache()
+    )
+
+
+@pytest.fixture
+def fake_installation() -> context.Installation:
+    return context.Installation(FAKE_INSTALLATION, {}, None, None, {})  # type: ignore[arg-type]
+
+
 def fake_get_installation_from_account_id(
     owner_id: github_types.GitHubAccountIdType,
 ) -> github_types.GitHubInstallation:
@@ -583,18 +595,13 @@ async def test_consume_unexisting_stream(
     run_engine: mock.Mock,
     get_installation_from_account_id: mock.AsyncMock,
     get_subscription: mock.AsyncMock,
-    redis_links: redis_utils.RedisLinks,
+    stream_processor: worker.StreamProcessor,
     logger_checker: None,
 ) -> None:
     get_subscription.side_effect = fake_get_subscription
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
-    p = worker.StreamProcessor(
-        redis_links,
-        "shared-8",
-        None,
-        worker.OwnerLoginsCache(),
-    )
-    await p.consume(
+
+    await stream_processor.consume(
         worker_lua.BucketOrgKeyType("buckets~2~notexists"),
         github_types.GitHubAccountIdType(2),
         github_types.GitHubLogin("notexists"),
@@ -610,6 +617,7 @@ async def test_consume_good_stream(
     get_installation_from_account_id: mock.AsyncMock,
     get_subscription: mock.AsyncMock,
     redis_links: redis_utils.RedisLinks,
+    stream_processor: worker.StreamProcessor,
     logger_checker: None,
 ) -> None:
     get_subscription.side_effect = fake_get_subscription
@@ -642,14 +650,15 @@ async def test_consume_good_stream(
     assert 1 == len(await redis_links.stream.keys("bucket-sources~*"))
     assert 2 == await redis_links.stream.xlen("bucket-sources~123~123")
 
-    owners_cache = worker.OwnerLoginsCache()
-    p = worker.StreamProcessor(redis_links, "shared-8", None, owners_cache)
-    await p.consume(
+    await stream_processor.consume(
         worker_lua.BucketOrgKeyType("bucket~123"),
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
     )
-    assert owners_cache.get(github_types.GitHubAccountIdType(123)) == "owner-123"
+    assert (
+        stream_processor.owners_cache.get(github_types.GitHubAccountIdType(123))
+        == "owner-123"
+    )
 
     assert len(run_engine.mock_calls) == 1
     assert run_engine.mock_calls[0] == mock.call(
@@ -755,6 +764,7 @@ async def test_stream_processor_retrying_pull(
     get_subscription: mock.AsyncMock,
     logger_class: mock.MagicMock,
     redis_links: redis_utils.RedisLinks,
+    stream_processor: worker.StreamProcessor,
 ) -> None:
     logs.setup_logging()
     logger = logger_class.return_value
@@ -817,14 +827,15 @@ async def test_stream_processor_retrying_pull(
     assert 1 == await redis_links.stream.xlen("bucket-sources~123~123")
     assert 1 == await redis_links.stream.xlen("bucket-sources~123~42")
 
-    owners_cache = worker.OwnerLoginsCache()
-    p = worker.StreamProcessor(redis_links, "shared-8", None, owners_cache)
-    await p.consume(
+    await stream_processor.consume(
         worker_lua.BucketOrgKeyType("bucket~123"),
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
     )
-    assert owners_cache.get(github_types.GitHubAccountIdType(123)) == "owner-123"
+    assert (
+        stream_processor.owners_cache.get(github_types.GitHubAccountIdType(123))
+        == "owner-123"
+    )
 
     assert len(run_engine.mock_calls) == 2
     assert run_engine.mock_calls == [
@@ -868,7 +879,7 @@ async def test_stream_processor_retrying_pull(
         b"bucket-sources~123~123": b"1",
     } == await redis_links.stream.hgetall("attempts")
 
-    await p.consume(
+    await stream_processor.consume(
         worker_lua.BucketOrgKeyType("bucket~123"),
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
@@ -886,67 +897,67 @@ async def test_stream_processor_retrying_pull(
         "attempts"
     )
 
-    await p.consume(
+    await stream_processor.consume(
         worker_lua.BucketOrgKeyType("bucket~123"),
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
     )
-    await p.consume(
+    await stream_processor.consume(
         worker_lua.BucketOrgKeyType("bucket~123"),
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
     )
-    await p.consume(
+    await stream_processor.consume(
         worker_lua.BucketOrgKeyType("bucket~123"),
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
     )
-    await p.consume(
+    await stream_processor.consume(
         worker_lua.BucketOrgKeyType("bucket~123"),
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
     )
-    await p.consume(
+    await stream_processor.consume(
         worker_lua.BucketOrgKeyType("bucket~123"),
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
     )
-    await p.consume(
+    await stream_processor.consume(
         worker_lua.BucketOrgKeyType("bucket~123"),
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
     )
-    await p.consume(
+    await stream_processor.consume(
         worker_lua.BucketOrgKeyType("bucket~123"),
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
     )
-    await p.consume(
+    await stream_processor.consume(
         worker_lua.BucketOrgKeyType("bucket~123"),
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
     )
-    await p.consume(
+    await stream_processor.consume(
         worker_lua.BucketOrgKeyType("bucket~123"),
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
     )
-    await p.consume(
+    await stream_processor.consume(
         worker_lua.BucketOrgKeyType("bucket~123"),
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
     )
-    await p.consume(
+    await stream_processor.consume(
         worker_lua.BucketOrgKeyType("bucket~123"),
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
     )
-    await p.consume(
+    await stream_processor.consume(
         worker_lua.BucketOrgKeyType("bucket~123"),
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
     )
-    await p.consume(
+    await stream_processor.consume(
         worker_lua.BucketOrgKeyType("bucket~123"),
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
@@ -983,6 +994,7 @@ async def test_stream_processor_retrying_stream_recovered(
     get_subscription: mock.AsyncMock,
     logger: mock.MagicMock,
     redis_links: redis_utils.RedisLinks,
+    stream_processor: worker.StreamProcessor,
 ) -> None:
     logs.setup_logging()
 
@@ -1023,14 +1035,15 @@ async def test_stream_processor_retrying_stream_recovered(
     assert 2 == await redis_links.stream.xlen("bucket-sources~123~123")
     assert 0 == len(await redis_links.stream.hgetall("attempts"))
 
-    owners_cache = worker.OwnerLoginsCache()
-    p = worker.StreamProcessor(redis_links, "shared-8", None, owners_cache)
-    await p.consume(
+    await stream_processor.consume(
         worker_lua.BucketOrgKeyType("bucket~123"),
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
     )
-    assert owners_cache.get(github_types.GitHubAccountIdType(123)) == "owner-123"
+    assert (
+        stream_processor.owners_cache.get(github_types.GitHubAccountIdType(123))
+        == "owner-123"
+    )
 
     assert len(run_engine.mock_calls) == 1
     assert run_engine.mock_calls[0] == mock.call(
@@ -1063,7 +1076,7 @@ async def test_stream_processor_retrying_stream_recovered(
 
     run_engine.side_effect = None
 
-    await p.consume(
+    await stream_processor.consume(
         worker_lua.BucketOrgKeyType("bucket~123"),
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
@@ -1090,6 +1103,7 @@ async def test_stream_processor_retrying_stream_failure(
     get_subscription: mock.AsyncMock,
     logger: mock.MagicMock,
     redis_links: redis_utils.RedisLinks,
+    stream_processor: worker.StreamProcessor,
 ) -> None:
     logs.setup_logging()
 
@@ -1128,14 +1142,15 @@ async def test_stream_processor_retrying_stream_failure(
     assert 2 == await redis_links.stream.xlen("bucket-sources~123~123")
     assert 0 == len(await redis_links.stream.hgetall("attempts"))
 
-    owners_cache = worker.OwnerLoginsCache()
-    p = worker.StreamProcessor(redis_links, "shared-8", None, owners_cache)
-    await p.consume(
+    await stream_processor.consume(
         worker_lua.BucketOrgKeyType("bucket~123"),
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
     )
-    assert owners_cache.get(github_types.GitHubAccountIdType(123)) == "owner-123"
+    assert (
+        stream_processor.owners_cache.get(github_types.GitHubAccountIdType(123))
+        == "owner-123"
+    )
 
     assert len(run_engine.mock_calls) == 1
     assert run_engine.mock_calls[0] == mock.call(
@@ -1164,7 +1179,7 @@ async def test_stream_processor_retrying_stream_failure(
 
     assert {b"bucket~123": b"1"} == await redis_links.stream.hgetall("attempts")
 
-    await p.consume(
+    await stream_processor.consume(
         worker_lua.BucketOrgKeyType("bucket~123"),
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
@@ -1172,7 +1187,7 @@ async def test_stream_processor_retrying_stream_failure(
     assert len(run_engine.mock_calls) == 2
     assert {b"bucket~123": b"2"} == await redis_links.stream.hgetall("attempts")
 
-    await p.consume(
+    await stream_processor.consume(
         worker_lua.BucketOrgKeyType("bucket~123"),
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
@@ -1203,6 +1218,7 @@ async def test_stream_processor_pull_unexpected_error(
     get_subscription: mock.AsyncMock,
     logger_class: mock.MagicMock,
     redis_links: redis_utils.RedisLinks,
+    stream_processor: worker.StreamProcessor,
 ) -> None:
     logs.setup_logging()
     logger = logger_class.return_value
@@ -1222,19 +1238,20 @@ async def test_stream_processor_pull_unexpected_error(
         github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
     )
 
-    owners_cache = worker.OwnerLoginsCache()
-    p = worker.StreamProcessor(redis_links, "shared-8", None, owners_cache)
-    await p.consume(
+    await stream_processor.consume(
         worker_lua.BucketOrgKeyType("bucket~123"),
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
     )
-    await p.consume(
+    await stream_processor.consume(
         worker_lua.BucketOrgKeyType("bucket~123"),
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
     )
-    assert owners_cache.get(github_types.GitHubAccountIdType(123)) == "owner-123"
+    assert (
+        stream_processor.owners_cache.get(github_types.GitHubAccountIdType(123))
+        == "owner-123"
+    )
 
     # Exception have been logged, redis must be clean
     assert len(run_engine.mock_calls) == 2
@@ -1255,6 +1272,7 @@ async def test_stream_processor_priority(
     get_installation_from_account_id: mock.Mock,
     get_subscription: mock.Mock,
     redis_links: redis_utils.RedisLinks,
+    stream_processor: worker.StreamProcessor,
     logger_checker: None,
 ) -> None:
 
@@ -1295,7 +1313,6 @@ async def test_stream_processor_priority(
     assert 1 == len(await redis_links.stream.keys("bucket~*"))
     assert 0 == len(await redis_links.stream.hgetall("attempts"))
 
-    owners_cache = worker.OwnerLoginsCache()
     w = worker.Worker(
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
@@ -1303,8 +1320,6 @@ async def test_stream_processor_priority(
         shared_stream_processes=1,
         process_index=0,
     )
-
-    p = worker.StreamProcessor(redis_links, "shared-0", None, owners_cache)
 
     received = []
 
@@ -1314,7 +1329,7 @@ async def test_stream_processor_priority(
     run_engine.side_effect = fake_engine
 
     with freeze_time("2020-01-14", tick=True):
-        await w._stream_worker_task(p)
+        await w._stream_worker_task(stream_processor)
 
     assert 0 == (await redis_links.stream.zcard("streams"))
     assert 0 == len(await redis_links.stream.keys("bucket~*"))
@@ -1330,6 +1345,7 @@ async def test_stream_processor_date_scheduling(
     get_installation_from_account_id: mock.Mock,
     get_subscription: mock.AsyncMock,
     redis_links: redis_utils.RedisLinks,
+    stream_processor: worker.StreamProcessor,
     logger_checker: None,
 ) -> None:
 
@@ -1366,7 +1382,6 @@ async def test_stream_processor_date_scheduling(
     assert 2 == len(await redis_links.stream.keys("bucket~*"))
     assert 0 == len(await redis_links.stream.hgetall("attempts"))
 
-    owners_cache = worker.OwnerLoginsCache()
     w = worker.Worker(
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
@@ -1374,8 +1389,6 @@ async def test_stream_processor_date_scheduling(
         shared_stream_processes=1,
         process_index=0,
     )
-
-    p = worker.StreamProcessor(redis_links, "shared-0", None, owners_cache)
 
     received = []
 
@@ -1391,7 +1404,7 @@ async def test_stream_processor_date_scheduling(
     run_engine.side_effect = fake_engine
 
     with freeze_time("2020-01-14"):
-        await w._stream_worker_task(p)
+        await w._stream_worker_task(stream_processor)
 
     assert 1 == (await redis_links.stream.zcard("streams"))
     assert 1 == len(await redis_links.stream.keys("bucket~*"))
@@ -1399,7 +1412,7 @@ async def test_stream_processor_date_scheduling(
     assert received == [wanted_owner_id]
 
     with freeze_time("2030-01-14"):
-        await w._stream_worker_task(p)
+        await w._stream_worker_task(stream_processor)
 
     assert 1 == (await redis_links.stream.zcard("streams"))
     assert 1 == len(await redis_links.stream.keys("bucket~*"))
@@ -1408,15 +1421,21 @@ async def test_stream_processor_date_scheduling(
 
     # We are in 2041, we have something todo :)
     with freeze_time("2041-01-14"):
-        await w._stream_worker_task(p)
+        await w._stream_worker_task(stream_processor)
 
     assert 0 == (await redis_links.stream.zcard("streams"))
     assert 0 == len(await redis_links.stream.keys("bucket~*"))
     assert 0 == len(await redis_links.stream.hgetall("attempts"))
     assert received == [wanted_owner_id, unwanted_owner_id]
 
-    assert owners_cache.get(github_types.GitHubAccountIdType(123)) == "owner-123"
-    assert owners_cache.get(github_types.GitHubAccountIdType(234)) == "owner-234"
+    assert (
+        stream_processor.owners_cache.get(github_types.GitHubAccountIdType(123))
+        == "owner-123"
+    )
+    assert (
+        stream_processor.owners_cache.get(github_types.GitHubAccountIdType(234))
+        == "owner-234"
+    )
 
 
 @mock.patch("mergify_engine.worker.subscription.Subscription.get_subscription")
@@ -1505,7 +1524,8 @@ async def test_stream_processor_retrying_after_read_error(
     run_engine: mock.Mock,
     get_installation_from_account_id: mock.Mock,
     get_subscription: mock.AsyncMock,
-    redis_links: redis_utils.RedisLinks,
+    fake_installation: context.Installation,
+    stream_processor: worker.StreamProcessor,
 ) -> None:
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
     get_subscription.side_effect = fake_get_subscription
@@ -1518,23 +1538,22 @@ async def test_stream_processor_retrying_after_read_error(
         request=mock.Mock(),
     )
 
-    owners_cache = worker.OwnerLoginsCache()
-    p = worker.StreamProcessor(redis_links, "shared-0", None, owners_cache)
-
-    installation = context.Installation(FAKE_INSTALLATION, {}, None, None, None)  # type: ignore[arg-type]
     with pytest.raises(worker.OrgBucketRetry):
-        async with p._translate_exception_to_retries(
+        async with stream_processor._translate_exception_to_retries(
             worker_lua.BucketOrgKeyType("stream~owner~123")
         ):
             await worker.run_engine(
-                installation,
+                fake_installation,
                 github_types.GitHubRepositoryIdType(123),
                 github_types.GitHubRepositoryName("repo"),
                 github_types.GitHubPullRequestNumber(1234),
                 [],
             )
 
-    assert owners_cache.get(github_types.GitHubAccountIdType(123)) == "<unknown 123>"
+    assert (
+        stream_processor.owners_cache.get(github_types.GitHubAccountIdType(123))
+        == "<unknown 123>"
+    )
 
 
 @mock.patch("mergify_engine.worker.subscription.Subscription.get_subscription")
@@ -2308,3 +2327,40 @@ async def test_get_shared_worker_ids(
     assert w2.global_shared_tasks_count == 60
     s2 = worker.StreamProcessor(redis_links, "shared-38", None, w2._owners_cache)
     assert not s2.should_handle_owner(owner_id, set(), w2.global_shared_tasks_count)
+
+
+@mock.patch("mergify_engine.worker.subscription.Subscription.get_subscription")
+@mock.patch("mergify_engine.clients.github.get_installation_from_account_id")
+@mock.patch("mergify_engine.worker.run_engine")
+async def test_stream_processor_ignoring_error_422(
+    run_engine: mock.Mock,
+    get_installation_from_account_id: mock.Mock,
+    get_subscription: mock.AsyncMock,
+    stream_processor: worker.StreamProcessor,
+    fake_installation: context.Installation,
+) -> None:
+    get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
+    get_subscription.side_effect = fake_get_subscription
+
+    response = mock.Mock()
+    response.status_code = 422
+    response.json.return_value = {"message": "No commit found for SHA: xyz"}
+    message = "422 Client Error: Unprocessable Entity for url `https://api.github.com/repos/owner/repo/check-runs`"
+    error_422 = http.HTTPClientSideError(
+        message=message,
+        request=response.request,
+        response=response,
+    )
+    run_engine.side_effect = error_422
+
+    with pytest.raises(worker.IgnoredException):
+        async with stream_processor._translate_exception_to_retries(
+            worker_lua.BucketOrgKeyType("stream~owner~123")
+        ):
+            await worker.run_engine(
+                fake_installation,
+                github_types.GitHubRepositoryIdType(123),
+                github_types.GitHubRepositoryName("repo"),
+                github_types.GitHubPullRequestNumber(1234),
+                [],
+            )
