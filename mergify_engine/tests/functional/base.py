@@ -910,6 +910,12 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         )
         return data["minimizeComment"]["minimizedComment"]["isMinimized"]
 
+    async def delete_comment(self, comment_number: int) -> None:
+        resp = await self.client_integration.delete(
+            f"/repos/{self.repository_ctxt.repo['owner']['login']}/{self.repository_ctxt.repo['name']}/issues/comments/{comment_number}"
+        )
+        assert resp.status_code == 204
+
     async def create_review_thread(
         self,
         pull_number: github_types.GitHubPullRequestNumber,

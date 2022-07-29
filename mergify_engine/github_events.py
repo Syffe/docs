@@ -261,6 +261,9 @@ async def push_to_worker(
         elif "pull_request" not in event["issue"]:
             ignore_reason = "comment is not on a pull request"
 
+        elif event["action"] not in ("created", "edited"):
+            ignore_reason = f"comment action is '{event['action']}'"
+
         elif (
             # When someone else edit our comment the user id is still us
             # but the sender id is the one that edited the comment

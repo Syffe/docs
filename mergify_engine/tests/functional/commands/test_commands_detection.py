@@ -51,3 +51,31 @@ class TestCommandsDetection(base.FunctionalTestBase):
 
         comments = await self.get_issue_comments(p1["number"])
         assert len(comments) == 2
+
+    async def test_deleted_message_not_detected(self) -> None:
+        await self.setup_repo()
+        p1 = await self.create_pr()
+        comment_id = await self.create_comment_as_admin(
+            p1["number"], "@mergifyio update"
+        )
+        await self.run_engine()
+
+        await self.wait_for("issue_comment", {"action": "created"})
+        await self.delete_comment(comment_id)
+
+        await self.wait_for("issue_comment", {"action": "deleted"})
+
+        await self.run_engine()
+
+        if base.RECORD:
+            await asyncio.sleep(15)
+
+        resp = await self.app.post(
+            f"/refresh/{p1['base']['repo']['full_name']}/pull/{p1['number']}",
+            headers={"X-Hub-Signature": "sha1=" + base.FAKE_HMAC},
+        )
+        assert resp.status_code == 202, resp.text
+        await self.run_engine()
+
+        comments = await self.get_issue_comments(p1["number"])
+        assert len(comments) == 1
