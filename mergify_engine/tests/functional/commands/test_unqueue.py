@@ -22,7 +22,6 @@ from mergify_engine import context
 from mergify_engine import utils
 from mergify_engine.queue import merge_train
 from mergify_engine.tests.functional import base
-from mergify_engine.tests.functional.actions import test_queue
 
 
 class TestUnQueueCommand(base.FunctionalTestBase):
@@ -53,11 +52,11 @@ class TestUnQueueCommand(base.FunctionalTestBase):
         ctxt = context.Context(self.repository_ctxt, p1)
         q = await merge_train.Train.from_context(ctxt)
         base_sha = await q.get_base_sha()
-        await test_queue.TestQueueAction._assert_cars_contents(
+        await self.assert_merge_queue_contents(
             q,
             base_sha,
             [
-                test_queue.TrainCarMatcher(
+                base.MergeQueueCarMatcher(
                     [p1["number"]],
                     [],
                     base_sha,
@@ -107,7 +106,7 @@ class TestUnQueueCommand(base.FunctionalTestBase):
         await self.run_engine()
         await self.wait_for("issue_comment", {"action": "created"})
 
-        await test_queue.TestQueueAction._assert_cars_contents(q, None, [])
+        await self.assert_merge_queue_contents(q, None, [])
 
         check = first(
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,

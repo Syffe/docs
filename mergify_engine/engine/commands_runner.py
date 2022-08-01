@@ -121,6 +121,7 @@ def load_command(
             action = voluptuous.Schema(
                 action_class.get_schema(partial_validation=False)
             )(action_config)
+            action.validate_config(mergify_config)
         except voluptuous.Invalid:
             raise CommandInvalid(
                 INVALID_COMMAND_ARGS_MESSAGE.format(command=action_name)

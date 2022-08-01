@@ -120,6 +120,7 @@ anys = "^0.2.1"
 [tool.poetry.plugins.mergify_commands]
   backport = "mergify_engine.actions.backport:BackportAction"
   copy = "mergify_engine.actions.copy:CopyAction"
+  queue = "mergify_engine.actions.queue:QueueAction"
   rebase = "mergify_engine.actions.rebase:RebaseAction"
   refresh = "mergify_engine.actions.refresh:RefreshCommand"
   requeue = "mergify_engine.actions.requeue:RequeueCommand"

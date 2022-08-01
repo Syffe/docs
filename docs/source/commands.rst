@@ -118,11 +118,29 @@ Re-evaluates your Mergify rules on this pull request.
   * - Example
     - ``@Mergifyio refresh``
 
+.. _queue command:
+
+queue
+=====
+
+Add this pull request to the merge queue.
+
+.. list-table::
+  :widths: 1 7
+  :align: left
+
+  * - Syntax
+    - ``@Mergifyio queue [<queue-name>]``
+  * - Example
+    - ``@Mergifyio queue``
+      ``@Mergifyio queue default``
+
+
 unqueue
 =======
 
 Removes this pull request from the merge queue if it has been queued with
-:ref:`queue action` action.
+:ref:`queue action` action or :ref:`queue command` command.
 
 .. list-table::
   :widths: 1 7

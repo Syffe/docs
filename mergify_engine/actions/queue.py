@@ -45,6 +45,7 @@ class QueueAction(merge_base.MergeBaseAction[merge_train.Train]):
     flags = (
         actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
         | actions.ActionFlag.SUCCESS_IS_FINAL_STATE
+        | actions.ActionFlag.ALLOW_AS_PENDING_COMMAND
         # FIXME(sileht): MRGFY-562
         # | actions.ActionFlag.ALWAYS_RUN
     )
@@ -85,6 +86,22 @@ Then, re-embark the pull request into the merge queue by posting the comment
         ): queue.PrioritySchema,
         voluptuous.Required("require_branch_protection", default=True): bool,
     }
+
+    @staticmethod
+    def command_to_config(command_arguments: str) -> typing.Dict[str, typing.Any]:
+        # NOTE(sileht): requiring branch_protection before putting in queue
+        # doesn't play well with command subsystem, and it's not intuitive as
+        # the user tell us to put the PR in queue and by default we don't. So
+        # we disable this for commands.
+        config = {"name": "default", "require_branch_protection": False}
+        args = [
+            arg_stripped
+            for arg in command_arguments.split(" ")
+            if (arg_stripped := arg.strip())
+        ]
+        if args and args[0]:
+            config["name"] = args[0]
+        return config
 
     async def _subscription_status(
         self, ctxt: context.Context

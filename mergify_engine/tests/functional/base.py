@@ -16,6 +16,7 @@
 import asyncio
 import copy
 import datetime
+import itertools
 import json
 import logging
 import os
@@ -48,6 +49,7 @@ from mergify_engine import worker_lua
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
+from mergify_engine.queue import merge_train
 from mergify_engine.tests.functional import conftest as func_conftest
 from mergify_engine.web import root
 
@@ -56,6 +58,14 @@ LOG = daiquiri.getLogger(__name__)
 RECORD = bool(os.getenv("MERGIFYENGINE_RECORD", False))
 FAKE_DATA = "whatdataisthat"
 FAKE_HMAC = utils.compute_hmac(FAKE_DATA.encode("utf8"), config.WEBHOOK_SECRET)
+
+
+class MergeQueueCarMatcher(typing.NamedTuple):
+    user_pull_request_numbers: typing.List[github_types.GitHubPullRequestNumber]
+    parent_pull_request_numbers: typing.List[github_types.GitHubPullRequestNumber]
+    initial_current_base_sha: github_types.SHAType
+    creation_state: merge_train.TrainCarState
+    queue_pull_request_number: typing.Optional[github_types.GitHubPullRequestNumber]
 
 
 class ForwardedEvent(typing.TypedDict):
@@ -1255,3 +1265,55 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
                 ),
             )
         ]
+
+    @staticmethod
+    def _assert_merge_queue_car(
+        car: merge_train.TrainCar, expected_car: MergeQueueCarMatcher
+    ) -> None:
+        for i, ep in enumerate(car.still_queued_embarked_pulls):
+            assert (
+                ep.user_pull_request_number == expected_car.user_pull_request_numbers[i]
+            )
+        assert (
+            car.parent_pull_request_numbers == expected_car.parent_pull_request_numbers
+        )
+        assert car.initial_current_base_sha == expected_car.initial_current_base_sha
+        assert car.creation_state == expected_car.creation_state
+        assert car.queue_pull_request_number == expected_car.queue_pull_request_number
+
+    @classmethod
+    async def assert_merge_queue_contents(
+        cls,
+        q: merge_train.Train,
+        expected_base_sha: typing.Optional[github_types.SHAType],
+        expected_cars: typing.List[MergeQueueCarMatcher],
+        expected_waiting_pulls: typing.Optional[
+            typing.List[github_types.GitHubPullRequestNumber]
+        ] = None,
+    ) -> None:
+        if expected_waiting_pulls is None:
+            expected_waiting_pulls = []
+
+        await q.load()
+        assert q._current_base_sha == expected_base_sha
+
+        pulls_in_queue = await q.get_pulls()
+        assert (
+            pulls_in_queue
+            == list(
+                itertools.chain.from_iterable(
+                    [p.user_pull_request_numbers for p in expected_cars]
+                )
+            )
+            + expected_waiting_pulls
+        )
+
+        assert len(q._cars) == len(expected_cars)
+        for i, expected_car in enumerate(expected_cars):
+            car = q._cars[i]
+            cls._assert_merge_queue_car(car, expected_car)
+
+        assert len(q._waiting_pulls) == len(expected_waiting_pulls)
+        for i, expected_waiting_pull in enumerate(expected_waiting_pulls):
+            wp = q._waiting_pulls[i]
+            assert wp.user_pull_request_number == expected_waiting_pull
