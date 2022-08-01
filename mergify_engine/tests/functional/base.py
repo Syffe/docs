@@ -639,6 +639,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         draft: bool = False,
         git_tree_ready: bool = False,
         verified: bool = False,
+        commit_message: typing.Optional[str] = None,
     ) -> github_types.GitHubPullRequest:
         self.pr_counter += 1
 
@@ -658,6 +659,8 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
             branch = self.get_full_branch_name(branch)
 
         title = f"{self._testMethodName}: pull request n{self.pr_counter} from {as_}"
+        if not commit_message:
+            commit_message = title
 
         if git_tree_ready:
             await self.git("branch", "-M", branch)
@@ -669,7 +672,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         else:
             open(self.git.repository + f"/test{self.pr_counter}", "wb").close()
             await self.git("add", f"test{self.pr_counter}")
-        args_commit = ["commit", "--no-edit", "-m", title]
+        args_commit = ["commit", "--no-edit", "-m", commit_message]
         tmp_kwargs = {}
         if verified:
             temporary_folder = tempfile.mkdtemp()
@@ -691,7 +694,12 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
             await self.git(
                 "mv", f"test{self.pr_counter}", f"test{self.pr_counter}-moved"
             )
-            args_second_commit = ["commit", "--no-edit", "-m", f"{title}, moved"]
+            args_second_commit = [
+                "commit",
+                "--no-edit",
+                "-m",
+                f"{commit_message}, moved",
+            ]
             if verified:
                 args_second_commit.append("-S")
             await self.git(*args_second_commit, **tmp_kwargs)

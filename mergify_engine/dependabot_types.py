@@ -1,0 +1,25 @@
+import typing
+
+import pydantic
+
+
+DependabotAttributes = typing.TypedDict(
+    "DependabotAttributes",
+    {
+        "dependency-name": str,
+        "dependency-type": str,
+        "update-type": typing.Optional[str],
+    },
+)
+
+# Note(jules) update-type can be missing https://github.com/dependabot/dependabot-core/issues/4893
+DependabotAttributes.__required_keys__ = frozenset(  # type: ignore[attr-defined]
+    {"dependency-name", "dependency-type"}
+)
+DependabotAttributes.__optional_keys__ = frozenset({"update-type"})  # type: ignore[attr-defined]
+
+
+class DependabotYamlMessageSchema(pydantic.BaseModel):
+    updated_dependencies: typing.List[DependabotAttributes] = pydantic.Field(
+        alias="updated-dependencies", min_items=1, max_items=1
+    )

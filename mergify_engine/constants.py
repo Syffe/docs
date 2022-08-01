@@ -89,3 +89,5 @@ Additionally, on Mergify [dashboard](https://dashboard.mergify.com/) you can:
 Finally, you can contact us on https://mergify.com
 </details>
 """
+
+DEPENDABOT_PULL_REQUEST_AUTHOR_LOGIN = "dependabot[bot]"

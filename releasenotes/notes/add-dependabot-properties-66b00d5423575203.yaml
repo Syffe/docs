@@ -1,0 +1,7 @@
+---
+features:
+  - |
+    Add new pull request attributes, available in conditions, based on Dependabot commit message:
+      ``dependabot-dependency-name``, e.g., "bootstrap"
+      ``dependabot-dependency-type``, e.g., "direct:development"
+      ``dependabot-update-type``, e.g., "version-update:semver-major"

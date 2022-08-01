@@ -20,6 +20,8 @@ import pytest
 
 from mergify_engine import config
 from mergify_engine import context
+from mergify_engine import dependabot_helpers
+from mergify_engine import dependabot_types
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine.clients import github
@@ -1149,3 +1151,122 @@ async def test_reviews_filtering(
     ]
     # Drop review done after the refresh event.
     assert await ctxt.reviews == all_reviews[0:2]
+
+
+@pytest.mark.parametrize(
+    "commit_msg,dependabot_properties",
+    [
+        (
+            """
+            chore(deps-dev): bump bootstrap from 5.1.3 to 5.2.0 in /docs
+
+            Bumps [bootstrap](https://github.com/twbs/bootstrap) from 5.1.3 to 5.2.0.
+            - [Release notes](https://github.com/twbs/bootstrap/releases)
+            - [Commits](https://github.com/twbs/bootstrap/compare/v5.1.3...v5.2.0)
+
+            ---
+            updated-dependencies:
+            - dependency-name: bootstrap
+              dependency-type: direct:development
+              update-type: version-update:semver-minor
+            ...
+
+            Signed-off-by: dependabot[bot] <support@github.com>
+            """,
+            {
+                "dependency-name": "bootstrap",
+                "dependency-type": "direct:development",
+                "update-type": "version-update:semver-minor",
+            },
+        ),
+        (
+            """
+            chore(deps): bump terser from 5.10.0 to 5.10.2 in /installer
+
+            Bumps [terser](https://github.com/terser/terser) from 5.10.0 to 5.14.2.
+            - [Release notes](https://github.com/terser/terser/releases)
+            - [Changelog](https://github.com/terser/terser/blob/master/CHANGELOG.md)
+            - [Commits](https://github.com/terser/terser/commits)
+
+            ---
+            updated-dependencies:
+            - dependency-name: terser
+              dependency-type: indirect
+            ...
+
+            Signed-off-by: dependabot[bot] <support@github.com>
+            """,
+            {
+                "dependency-name": "terser",
+                "dependency-type": "indirect",
+            },
+        ),
+    ],
+)
+async def test_dependabot_attributes_parsing(
+    commit_msg: str, dependabot_properties: dependabot_types.DependabotAttributes
+) -> None:
+    res = dependabot_helpers.get_dependabot_consolidated_data_from_commit_msg(
+        mock.Mock(), commit_msg
+    )
+    assert res == dependabot_properties
+
+
+@pytest.mark.parametrize(
+    "commit_msg",
+    [
+        "",
+        """
+        chore(deps-dev): bump bootstrap from 5.1.3 to 5.2.0 in /docs
+
+        Bumps [bootstrap](https://github.com/twbs/bootstrap) from 5.1.3 to 5.2.0.
+        - Signed-off-by: dependabot[bot] <support@github.com>",
+                "chore(deps-dev): bump bootstrap from 5.1.3 to 5.2.0 in /docs
+
+        Bumps [bootstrap](https://github.com/twbs/bootstrap) from 5.1.3 to 5.2.0.
+        - [Release notes](https://github.com/twbs/bootstrap/releases)
+        - [Commits](https://github.com/twbs/bootstrap/compare/v5.1.3...v5.2.0)
+
+        ---
+        ...
+
+        Signed-off-by: dependabot[bot] <support@github.com>
+        """,
+        """chore(deps): bump terser from 5.10.0 to 5.10.2 in /installer
+
+        Bumps [terser](https://github.com/terser/terser) from 5.10.0 to 5.14.2.
+        - [Release notes](https://github.com/terser/terser/releases)
+        - [Changelog](https://github.com/terser/terser/blob/master/CHANGELOG.md)
+        - [Commits](https://github.com/terser/terser/commits)
+
+        ---
+        updated-dependencies:
+        - dependency-name: terser
+          dependency-type: indirect
+        - dependency-name: terser2
+          dependency-type: indirect
+        ...
+
+        Signed-off-by: dependabot[bot] <support@github.com>
+        """,
+        """chore(deps): bump terser from 5.10.0 to 5.10.2 in /installer
+
+        Bumps [terser](https://github.com/terser/terser) from 5.10.0 to 5.14.2.
+        - [Release notes](https://github.com/terser/terser/releases)
+        - [Changelog](https://github.com/terser/terser/blob/master/CHANGELOG.md)
+        - [Commits](https://github.com/terser/terser/commits)
+
+        ---
+        updated-dependencies:
+        - invalid-key: terser
+          dependency-type: indirect
+        ...
+
+        Signed-off-by: dependabot[bot] <support@github.com>""",
+    ],
+)
+async def test_dependabot_attributes_parsing_ko(commit_msg: str) -> None:
+    res = dependabot_helpers.get_dependabot_consolidated_data_from_commit_msg(
+        mock.Mock(), commit_msg
+    )
+    assert res is None

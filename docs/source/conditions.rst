@@ -156,6 +156,15 @@ Here's the list of pull request attribute that can be used in conditions:
        repository organization.
        This only matches reviewers with ``admin``, ``write`` or ``maintain``
        permission on the repository.
+   * - ``dependabot-dependency-name``
+     - string
+     - The dependency-name value included in the Dependabot commit message.
+   * - ``dependabot-dependency-type``
+     - string
+     - The dependency-type value included in the Dependabot commit message.
+   * - ``dependabot-update-type``
+     - string
+     - The update-type value included in the Dependabot commit message.
    * - ``dismissed-reviews-by``
      - list of string
      - The list of GitHub user or team login that have their review dismissed

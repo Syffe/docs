@@ -46,6 +46,8 @@ from mergify_engine import check_api
 from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import date
+from mergify_engine import dependabot_helpers
+from mergify_engine import dependabot_types
 from mergify_engine import exceptions
 from mergify_engine import github_graphql_types
 from mergify_engine import github_types
@@ -1272,6 +1274,20 @@ class Context(object):
             self._caches.consolidated_reviews.set(consolidated_reviews)
         return consolidated_reviews
 
+    @property
+    async def dependabot_attributes(
+        self,
+    ) -> typing.Optional[dependabot_types.DependabotAttributes]:
+        if (
+            not self.pull["user"]["login"]
+            == constants.DEPENDABOT_PULL_REQUEST_AUTHOR_LOGIN
+        ):
+            return None
+        commits = await self.commits
+        return dependabot_helpers.get_dependabot_consolidated_data_from_commit_msg(
+            self.log, commits[0]["commit_message"]
+        )
+
     async def _get_consolidated_data(self, name: str) -> ContextAttributeType:
 
         if name == "assignee":
@@ -1545,6 +1561,22 @@ class Context(object):
             return self.repository.repo["name"]
         elif name == "repository-full-name":
             return self.repository.repo["full_name"]
+        elif name in (
+            "dependabot-dependency-name",
+            "dependabot-dependency-type",
+            "dependabot-update-type",
+        ):
+            dependabot_attributes = await self.dependabot_attributes
+            if dependabot_attributes is None:
+                return None
+            if name == "dependabot-dependency-name":
+                return dependabot_attributes["dependency-name"]
+            elif name == "dependabot-dependency-type":
+                return dependabot_attributes["dependency-type"]
+            elif name == "dependabot-update-type":
+                return dependabot_attributes["update-type"]
+            else:
+                raise PullRequestAttributeError(name)
         else:
             raise PullRequestAttributeError(name)
 

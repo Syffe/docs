@@ -102,6 +102,9 @@ CONDITION_PARSERS = {
     "conflict": Parser.BOOL,
     "draft": Parser.BOOL,
     "linear-history": Parser.BOOL,
+    "dependabot-dependency-name": Parser.TEXT,
+    "dependabot-dependency-type": Parser.TEXT,
+    "dependabot-update-type": Parser.TEXT,
 }
 # NOTE(sileht): From the longest string to the short one to ensure for
 # example that merged-at is selected before merged

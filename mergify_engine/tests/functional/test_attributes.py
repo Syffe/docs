@@ -15,6 +15,7 @@
 # under the License.
 import logging
 import operator
+from unittest import mock
 
 from freezegun import freeze_time
 import pytest
@@ -1055,3 +1056,50 @@ class TestAttributesWithSub(base.FunctionalTestBase):
         await self.run_engine()
         p = await self.get_pull(p["number"])
         assert "queued" not in [label["name"] for label in p["labels"]]
+
+    @mock.patch(
+        "mergify_engine.constants.DEPENDABOT_PULL_REQUEST_AUTHOR_LOGIN",
+        config.BOT_USER_LOGIN,
+    )
+    async def test_dependabot_attributes(self) -> None:
+        rules_config = [
+            ("dependabot-dependency-name", "bootstrap"),
+            ("dependabot-dependency-type", " direct:development"),
+            ("dependabot-update-type", "version-update:semver-minor"),
+        ]
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "Merge if dependabot properties are checked",
+                    "conditions": [
+                        f"{property_name}={property_value}"
+                        for property_name, property_value in rules_config
+                    ],
+                    "actions": {"comment": {"message": "dependabot was here"}},
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        pr = await self.create_pr(
+            commit_message="""
+            chore(deps-dev): bump bootstrap from 5.1.3 to 5.2.0 in /docs
+
+            Bumps [bootstrap](https://github.com/twbs/bootstrap) from 5.1.3 to 5.2.0.
+            - [Release notes](https://github.com/twbs/bootstrap/releases)
+            - [Commits](https://github.com/twbs/bootstrap/compare/v5.1.3...v5.2.0)
+
+            ---
+            updated-dependencies:
+            - dependency-name: bootstrap
+              dependency-type: direct:development
+              update-type: version-update:semver-minor
+            ...
+
+            Signed-off-by: dependabot[bot] <support@github.com>
+            """,
+        )
+        await self.run_engine()
+        comments = await self.get_issue_comments(pr["number"])
+        assert len(comments) == 1
+        self.assertEqual("dependabot was here", comments[-1]["body"])
