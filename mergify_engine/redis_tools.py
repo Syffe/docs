@@ -58,4 +58,4 @@ async def download_redis_cached_keys(argv: typing.List[str]) -> None:
 
 
 def get_redis_cached_keys() -> None:
-    asyncio.run(download_redis_cached_keys(sys.argv))
+    asyncio.run(download_redis_cached_keys(sys.argv[1:]))
