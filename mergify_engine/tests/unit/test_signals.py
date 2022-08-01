@@ -46,6 +46,33 @@ async def test_signals(
         )
 
 
+async def test_copy_signal(
+    context_getter: conftest.ContextGetterFixture, request: pytest.FixtureRequest
+) -> None:
+    signals.register()
+    request.addfinalizer(signals.unregister)
+    assert len(signals.SIGNALS) == 4
+
+    ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
+    with mock.patch("mergify_engine.signals.NoopSignal.__call__") as signal_method:
+        await signals.send(
+            ctxt.repository,
+            ctxt.pull["number"],
+            "action.copy",
+            signals.EventCopyMetadata(
+                {"to": "test_branch", "pull_request_number": 123}
+            ),
+            "Rule: awesome rule",
+        )
+        signal_method.assert_called_once_with(
+            ctxt.repository,
+            ctxt.pull["number"],
+            "action.copy",
+            {"to": "test_branch", "pull_request_number": 123},
+            "Rule: awesome rule",
+        )
+
+
 async def test_datadog(
     context_getter: conftest.ContextGetterFixture, request: pytest.FixtureRequest
 ) -> None:

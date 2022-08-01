@@ -149,13 +149,19 @@ class CopyAction(actions.Action):
                     assignees=users_to_add,
                     branch_prefix=self.BRANCH_PREFIX,
                 )
-                await signals.send(
-                    ctxt.repository,
-                    ctxt.pull["number"],
-                    self.HOOK_EVENT_NAME,
-                    signals.EventCopyMetadata({"to": branch_name}),
-                    rule.get_signal_trigger(),
-                )
+                if new_pull is not None:
+                    await signals.send(
+                        ctxt.repository,
+                        ctxt.pull["number"],
+                        self.HOOK_EVENT_NAME,
+                        signals.EventCopyMetadata(
+                            {
+                                "to": branch_name,
+                                "pull_request_number": new_pull["number"],
+                            }
+                        ),
+                        rule.get_signal_trigger(),
+                    )
 
             except duplicate_pull.DuplicateAlreadyExists:
                 new_pull = await self.get_existing_duplicate_pull(ctxt, branch_name)
