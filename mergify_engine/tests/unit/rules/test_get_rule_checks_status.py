@@ -47,21 +47,21 @@ class FakeQueuePullRequest:
     def sync_checks(self) -> None:
         self.attrs["check-success-or-neutral"] = (
             self.attrs.get("check-success", [])  # type: ignore
-            + self.attrs.get("check-neutral", [])  # type: ignore
-            + self.attrs.get("check-pending", [])  # type: ignore
+            + self.attrs.get("check-neutral", [])
+            + self.attrs.get("check-pending", [])
         )
         self.attrs["check-success-or-neutral-or-pending"] = (
             self.attrs.get("check-success", [])  # type: ignore
-            + self.attrs.get("check-neutral", [])  # type: ignore
-            + self.attrs.get("check-pending", [])  # type: ignore
+            + self.attrs.get("check-neutral", [])
+            + self.attrs.get("check-pending", [])
         )
         self.attrs["check"] = (
             self.attrs.get("check-success", [])  # type: ignore
-            + self.attrs.get("check-neutral", [])  # type: ignore
-            + self.attrs.get("check-pending", [])  # type: ignore
-            + self.attrs.get("check-failure", [])  # type: ignore
-            + self.attrs.get("check-timed-out", [])  # type: ignore
-            + self.attrs.get("check-skipped", [])  # type: ignore
+            + self.attrs.get("check-neutral", [])
+            + self.attrs.get("check-pending", [])
+            + self.attrs.get("check-failure", [])
+            + self.attrs.get("check-timed-out", [])
+            + self.attrs.get("check-skipped", [])
         )
 
         self.attrs["status-success"] = self.attrs.get("check-success", [])  # type: ignore
@@ -859,11 +859,11 @@ async def test_rules_checks_status_ceph(logger_checker: None) -> None:
     )
     pull.attrs["check"] = (
         pull.attrs.get("check-success", [])  # type: ignore
-        + pull.attrs.get("check-neutral", [])  # type: ignore
-        + pull.attrs.get("check-pending", [])  # type: ignore
-        + pull.attrs.get("check-stale", [])  # type: ignore
-        + pull.attrs.get("check-failure", [])  # type: ignore
-        + pull.attrs.get("check-skipped", [])  # type: ignore
+        + pull.attrs.get("check-neutral", [])
+        + pull.attrs.get("check-pending", [])
+        + pull.attrs.get("check-stale", [])
+        + pull.attrs.get("check-failure", [])
+        + pull.attrs.get("check-skipped", [])
     )
 
     tree = {

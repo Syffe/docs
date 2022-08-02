@@ -25,13 +25,13 @@ from ddtrace import tracer
 import voluptuous
 import yaml
 
-from mergify_engine import actions
+from mergify_engine import actions as actions_mod
 from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import github_types
-from mergify_engine.rules import conditions
+from mergify_engine.rules import conditions as conditions_mod
 from mergify_engine.rules import live_resolvers
 from mergify_engine.rules import types
 
@@ -47,16 +47,16 @@ class DisabledDict(typing.TypedDict):
 class PullRequestRule:
     name: str
     disabled: typing.Union[DisabledDict, None]
-    conditions: conditions.PullRequestRuleConditions
-    actions: typing.Dict[str, actions.Action]
+    conditions: conditions_mod.PullRequestRuleConditions
+    actions: typing.Dict[str, actions_mod.Action]
     hidden: bool = False
     from_command: bool = False
 
     class T_from_dict_required(typing.TypedDict):
         name: str
         disabled: typing.Union[DisabledDict, None]
-        conditions: conditions.PullRequestRuleConditions
-        actions: typing.Dict[str, actions.Action]
+        conditions: conditions_mod.PullRequestRuleConditions
+        actions: typing.Dict[str, actions_mod.Action]
 
     class T_from_dict(T_from_dict_required, total=False):
         hidden: bool
@@ -102,12 +102,12 @@ QueueName = typing.NewType("QueueName", str)
 @dataclasses.dataclass
 class QueueRule:
     name: QueueName
-    conditions: conditions.QueueRuleConditions
+    conditions: conditions_mod.QueueRuleConditions
     config: QueueConfig
 
     class T_from_dict(QueueConfig, total=False):
         name: QueueName
-        conditions: conditions.QueueRuleConditions
+        conditions: conditions_mod.QueueRuleConditions
 
     @classmethod
     def from_dict(cls, d: T_from_dict) -> "QueueRule":
@@ -135,13 +135,13 @@ class QueueRule:
         ref: github_types.GitHubRefType,
         pulls: typing.List[context.BasePullRequest],
     ) -> EvaluatedQueueRule:
-        extra_conditions = await conditions.get_branch_protection_conditions(
+        extra_conditions = await conditions_mod.get_branch_protection_conditions(
             repository, ref, strict=False
         )
 
         queue_rule_with_branch_protection = QueueRule(
             self.name,
-            conditions.QueueRuleConditions(
+            conditions_mod.QueueRuleConditions(
                 extra_conditions + self.conditions.condition.copy().conditions
             ),
             self.config,
@@ -293,15 +293,17 @@ class PullRequestRules:
     @staticmethod
     def _gen_rule_from(
         rule: PullRequestRule,
-        new_actions: typing.Dict[str, actions.Action],
+        new_actions: typing.Dict[str, actions_mod.Action],
         extra_conditions: typing.List[
-            typing.Union[conditions.RuleConditionGroup, conditions.RuleCondition]
+            typing.Union[
+                conditions_mod.RuleConditionGroup, conditions_mod.RuleCondition
+            ]
         ],
     ) -> PullRequestRule:
         return PullRequestRule(
             name=rule.name,
             disabled=rule.disabled,
-            conditions=conditions.PullRequestRuleConditions(
+            conditions=conditions_mod.PullRequestRuleConditions(
                 rule.conditions.condition.copy().conditions + extra_conditions
             ),
             actions=new_actions,
@@ -425,7 +427,7 @@ def RuleConditionSchema(v: typing.Any, depth: int = 0) -> typing.Any:
 
     return voluptuous.Schema(
         voluptuous.Any(
-            voluptuous.All(str, voluptuous.Coerce(conditions.RuleCondition)),
+            voluptuous.All(str, voluptuous.Coerce(conditions_mod.RuleCondition)),
             voluptuous.All(
                 {
                     "and": voluptuous.All(
@@ -438,7 +440,7 @@ def RuleConditionSchema(v: typing.Any, depth: int = 0) -> typing.Any:
                     ),
                 },
                 voluptuous.Length(min=1, max=1),
-                voluptuous.Coerce(conditions.RuleConditionGroup),
+                voluptuous.Coerce(conditions_mod.RuleConditionGroup),
             ),
         )
     )(v)
@@ -456,9 +458,9 @@ def get_pull_request_rules_schema() -> voluptuous.All:
                     voluptuous.Required("hidden", default=False): bool,
                     voluptuous.Required("conditions"): voluptuous.All(
                         [voluptuous.Coerce(RuleConditionSchema)],
-                        voluptuous.Coerce(conditions.PullRequestRuleConditions),
+                        voluptuous.Coerce(conditions_mod.PullRequestRuleConditions),
                     ),
-                    voluptuous.Required("actions"): actions.get_action_schemas(),
+                    voluptuous.Required("actions"): actions_mod.get_action_schemas(),
                 },
                 voluptuous.Coerce(PullRequestRule.from_dict),
             ),
@@ -495,7 +497,7 @@ QueueRulesSchema = voluptuous.All(
                 voluptuous.Required("name"): str,
                 voluptuous.Required("conditions"): voluptuous.All(
                     [voluptuous.Coerce(RuleConditionSchema)],
-                    voluptuous.Coerce(conditions.QueueRuleConditions),
+                    voluptuous.Coerce(conditions_mod.QueueRuleConditions),
                 ),
                 voluptuous.Required("speculative_checks", default=1): voluptuous.All(
                     int, voluptuous.Range(min=1, max=20)
@@ -544,7 +546,7 @@ def get_defaults_schema() -> typing.Dict[typing.Any, typing.Any]:
         # FIXME(sileht): actions.get_action_schemas() returns only actions Actions
         # and not command only, since only refresh is command only and it doesn't
         # have options it's not a big deal.
-        voluptuous.Required("actions", default={}): actions.get_action_schemas(),
+        voluptuous.Required("actions", default={}): actions_mod.get_action_schemas(),
     }
 
 
@@ -564,7 +566,7 @@ def FullifyPullRequestRules(v: "MergifyConfig") -> "MergifyConfig":
 CommandsRestrictionsSchema = {
     voluptuous.Required("conditions", default=[]): voluptuous.All(
         [voluptuous.Coerce(RuleConditionSchema)],
-        voluptuous.Coerce(conditions.PullRequestRuleConditions),
+        voluptuous.Coerce(conditions_mod.PullRequestRuleConditions),
     )
 }
 
@@ -581,7 +583,7 @@ def UserConfigurationSchema(
         ): QueueRulesSchema,
         voluptuous.Required("commands_restrictions", default={}): {
             voluptuous.Required(name, default={}): CommandsRestrictionsSchema
-            for name in actions.get_commands()
+            for name in actions_mod.get_commands()
         },
         voluptuous.Required("defaults", default={}): get_defaults_schema(),
         voluptuous.Remove("shared"): voluptuous.Any(dict, list, str, int, float, bool),
@@ -662,7 +664,7 @@ class Defaults(typing.TypedDict):
 
 
 class CommandsRestrictions(typing.TypedDict):
-    conditions: conditions.PullRequestRuleConditions
+    conditions: conditions_mod.PullRequestRuleConditions
 
 
 class MergifyConfig(typing.TypedDict):

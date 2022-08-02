@@ -395,7 +395,8 @@ async def run(
 
     ctxt.log.debug("engine handle actions")
     if ctxt.is_merge_queue_pr():
-        return await queue_runner.handle(mergify_config["queue_rules"], ctxt)
+        await queue_runner.handle(mergify_config["queue_rules"], ctxt)
+        return None
     else:
         return await actions_runner.handle(mergify_config["pull_request_rules"], ctxt)
 
