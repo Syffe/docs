@@ -254,7 +254,7 @@ It can be used with any of the greater and lesser operators (``>=``, ``>``,
 
 .. code-block::
 
-  current-time>=18:00[Europe/Paris
+  current-time>=18:00[Europe/Paris]
   schedule: Mon-Fri 09:00-19:00[America/Vancouver]
   schedule: Mon-Fri 09:00[Europe/Paris]-19:00[America/Vancouver]
 
