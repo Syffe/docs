@@ -99,8 +99,6 @@ async def handle(queue_rules: rules.QueueRules, ctxt: context.Context) -> None:
         ctxt.repository,
         ctxt.pull["base"]["ref"],
         pull_requests,
-        ctxt.log,
-        ctxt.has_been_refreshed_by_timer(),
     )
 
     for pull_request in pull_requests:

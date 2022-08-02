@@ -17,7 +17,6 @@ import dataclasses
 import datetime
 import functools
 import itertools
-import logging
 import operator
 import typing
 
@@ -135,8 +134,6 @@ class QueueRule:
         repository: context.Repository,
         ref: github_types.GitHubRefType,
         pulls: typing.List[context.BasePullRequest],
-        logger: "logging.LoggerAdapter[logging.Logger]",
-        log_schedule_details: bool,
     ) -> EvaluatedQueueRule:
         extra_conditions = await conditions.get_branch_protection_conditions(
             repository, ref, strict=False
@@ -154,8 +151,6 @@ class QueueRule:
             repository,
             pulls,
             False,
-            logger,
-            log_schedule_details,
         )
         return queue_rules_evaluator.matching_rules[0]
 
@@ -213,8 +208,6 @@ class GenericRulesEvaluator(typing.Generic[T_Rule, T_EvaluatedRule]):
         repository: context.Repository,
         pulls: typing.List[context.BasePullRequest],
         rule_hidden_from_merge_queue: bool,
-        logger: "logging.LoggerAdapter[logging.Logger]",
-        log_schedule_details: bool,
     ) -> "GenericRulesEvaluator[T_Rule, T_EvaluatedRule]":
         self = cls(rules)
 
@@ -223,35 +216,6 @@ class GenericRulesEvaluator(typing.Generic[T_Rule, T_EvaluatedRule]):
                 live_resolvers.configure_filter(repository, condition.partial_filter)
 
             await rule.conditions(pulls)
-
-            if log_schedule_details:
-                for condition in rule.conditions.walk():
-                    condition_raw = str(condition)
-                    if condition_raw.startswith("schedule"):
-                        # FIXME(sileht): mixed async dict/list comprehension is bugged before 3.11
-                        details = []
-                        for pull in pulls:
-                            details.append(
-                                {
-                                    attr: await getattr(pull, attr)
-                                    for attr in (
-                                        "number",
-                                        "current-time",
-                                        "current-day",
-                                        "current-month",
-                                        "current-year",
-                                        "current-day-of-week",
-                                    )
-                                }
-                            )
-
-                        logger.info(
-                            "delayed pull request refresh, schedule details",
-                            condition=condition_raw,
-                            match=condition.match,
-                            tree=condition.partial_filter.tree,
-                            pulls=details,
-                        )
 
             # NOTE(sileht):
             # In the summary, we display rules in five groups:
@@ -371,8 +335,6 @@ class PullRequestRules:
             ctxt.repository,
             [ctxt.pull_request],
             True,
-            ctxt.log,
-            ctxt.has_been_refreshed_by_timer(),
         )
 
 

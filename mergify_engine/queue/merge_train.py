@@ -789,8 +789,6 @@ class TrainCar:
             self.train.repository,
             self.train.ref,
             queue_pull_requests,
-            self.train.repository.log,
-            False,
         )
         await self.update_state(check_api.Conclusion.PENDING, evaluated_queue_rule)
         await self.update_summaries(check_api.Conclusion.PENDING, force_refresh=True)
