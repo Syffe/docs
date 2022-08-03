@@ -34,6 +34,7 @@ from mergify_engine import queue
 from mergify_engine import redis_utils
 from mergify_engine import rules
 from mergify_engine.queue import merge_train
+from mergify_engine.queue import utils as queue_utils
 from mergify_engine.tests.unit import conftest
 
 
@@ -54,7 +55,7 @@ async def fake_train_car_start_checking_inplace(
 
 async def fake_train_car_delete_pull(
     inner_self: merge_train.TrainCar,
-    reason: str,
+    reason: queue_utils.BaseAbortReason,
     not_reembarked_pull_request: typing.Optional[
         github_types.GitHubPullRequestNumber
     ] = None,

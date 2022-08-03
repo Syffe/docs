@@ -35,6 +35,7 @@ from mergify_engine import queue
 from mergify_engine import rules
 from mergify_engine import utils
 from mergify_engine.queue import merge_train
+from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import conditions
 from mergify_engine.tests.functional import base
 
@@ -1199,8 +1200,11 @@ class TestQueueAction(base.FunctionalTestBase):
                     "event": "action.queue.checks_end",
                     "metadata": {
                         "abort_reason": anys.AnySearch(
-                            f"Pull request #{p1['number']} which was ahead in the queue has been dequeued."
+                            str(queue_utils.PrAheadDequeued(pr_number=p1["number"])),
                         ),
+                        "abort_code": queue_utils.PrAheadDequeued(
+                            pr_number=p1["number"]
+                        ).code,
                         "aborted": True,
                         "branch": self.main_branch_name,
                         "position": 0,
@@ -4605,13 +4609,13 @@ pull_requests:
         expected_table = f"| 1 | test_create_pull_basic: pull request n2 from integration ([#{p2['number']}]({pull_url_prefix}/{p2['number']})) | foo/0 | [#{tmp_pull['number']}]({pull_url_prefix}/{tmp_pull['number']}) | <fake_pretty_datetime()>|"
         assert expected_table in await car.generate_merge_queue_summary()
 
-        await car.delete_pull(reason="testing deleted reason")
+        await car.delete_pull(reason=queue_utils.ChecksFailed())
 
         ctxt = context.Context(self.repository_ctxt, tmp_pull)
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert summary["conclusion"] == "cancelled"
-        assert "testing deleted reason" in summary["output"]["summary"]
+        assert str(queue_utils.ChecksFailed()) in summary["output"]["summary"]
 
         pulls = await self.get_pulls()
         assert len(pulls) == 2

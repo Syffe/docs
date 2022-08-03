@@ -44,6 +44,7 @@ from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
 from mergify_engine.dashboard import user_tokens
 from mergify_engine.queue import freeze
+from mergify_engine.queue import utils as queue_utils
 
 
 if typing.TYPE_CHECKING:
@@ -880,7 +881,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
     async def delete_pull(
         self,
-        reason: typing.Optional[str],
+        reason: typing.Optional[queue_utils.BaseAbortReason],
         not_reembarked_pull_request: typing.Optional[
             github_types.GitHubPullRequestNumber
         ] = None,
@@ -888,6 +889,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
         if not self.queue_pull_request_number or self.head_branch is None:
             return
 
+        headline: typing.Optional[str] = None
         if self.creation_state == "created" and reason is not None:
             if self.queue_pull_request_number is None:
                 raise RuntimeError(
@@ -909,14 +911,14 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 summary is None
                 or summary["conclusion"] == check_api.Conclusion.PENDING.value
             ):
-                reason = f"✨ {reason}."
+                headline = f"✨ {reason}."
                 if remaning_embarked_pulls:
-                    reason += f" The pull request {self._get_user_refs(embarked_pulls=remaning_embarked_pulls)} has been re-embarked."
-                reason += " ✨"
+                    headline += f" The pull request {self._get_user_refs(embarked_pulls=remaning_embarked_pulls)} has been re-embarked."
+                headline += " ✨"
 
                 body = await self.generate_merge_queue_summary(
                     for_queue_pull_request=True,
-                    headline=reason,
+                    headline=headline,
                     show_queue=False,
                 )
 
@@ -930,21 +932,20 @@ You don't need to do anything. Mergify will close this pull request automaticall
                     check_api.Result(
                         check_api.Conclusion.CANCELLED,
                         title=f"The pull request {self._get_user_refs(create_link=False)} has been re-embarked for merge",
-                        summary=reason,
+                        summary=headline,
                     )
                 )
                 tmp_pull_ctxt.log.info("train car deleted", reason=reason)
 
+        abort_reason: typing.Optional[queue_utils.BaseAbortReason] = None
         if reason is None:
             if self.has_timed_out:
                 aborted = True
-                abort_reason = "Checks have timed out"
-            else:
-                aborted = self.checks_conclusion is not check_api.Conclusion.SUCCESS
-                if aborted:
-                    abort_reason = "Checks did not succeed"
-                else:
-                    abort_reason = ""
+                abort_reason = queue_utils.ChecksTimeout()
+            elif aborted := (
+                self.checks_conclusion is not check_api.Conclusion.SUCCESS
+            ):
+                abort_reason = queue_utils.ChecksFailed()
         else:
             aborted = True
             abort_reason = reason
@@ -958,7 +959,12 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 signals.EventQueueChecksEndMetadata(
                     {
                         "aborted": aborted,
-                        "abort_reason": abort_reason,
+                        "abort_reason": str(abort_reason)
+                        if abort_reason is not None
+                        else "",
+                        "abort_code": abort_reason.code
+                        if abort_reason is not None
+                        else None,
                         "queue_name": ep.config["name"],
                         "branch": self.train.ref,
                         "position": position,
@@ -1605,7 +1611,8 @@ class Train:
             for embarked_pull in car.still_queued_embarked_pulls:
                 if embarked_pull.user_pull_request_number in known_prs:
                     await self._slice_cars(
-                        i, reason="The pull request has been queued twice"
+                        i,
+                        reason=queue_utils.PrQueuedTwice(),
                     )
                     break
                 else:
@@ -1627,12 +1634,13 @@ class Train:
                 # car will be recreated if the rule doesn't exists anymore, the
                 # failure will be reported properly
                 await self._slice_cars(
-                    i, reason="The associated queue rule does not exist anymore"
+                    i,
+                    reason=queue_utils.QueueRuleMissing(),
                 )
 
     async def reset(self, unexpected_change: UnexpectedChange) -> None:
         await self._slice_cars(
-            0, reason=f"Unexpected queue change: {unexpected_change}."
+            0, reason=queue_utils.UnexpectedQueueChange(change=str(unexpected_change))
         )
         await self.save()
         self.log.info("train cars reset")
@@ -1640,7 +1648,7 @@ class Train:
     async def _slice_cars(
         self,
         new_queue_size: int,
-        reason: str,
+        reason: queue_utils.BaseAbortReason,
         drop_pull_request: typing.Optional[github_types.GitHubPullRequestNumber] = None,
     ) -> None:
         sliced = False
@@ -1659,7 +1667,9 @@ class Train:
 
         if sliced:
             self.log.info(
-                "queue has been sliced", new_queue_size=new_queue_size, reason=reason
+                "queue has been sliced",
+                new_queue_size=new_queue_size,
+                reason=str(reason),
             )
 
         self._cars = new_cars
@@ -1797,7 +1807,9 @@ class Train:
         if best_position != -1:
             await self._slice_cars(
                 best_position,
-                reason=f"Pull request #{ctxt.pull['number']} with higher priority has been queued",
+                reason=queue_utils.PrWithHigherPriorityQueued(
+                    pr_number=ctxt.pull["number"]
+                ),
             )
 
         await self.save()
@@ -1901,7 +1913,7 @@ class Train:
 
         await self._slice_cars(
             position,
-            reason=f"Pull request #{ctxt.pull['number']} which was ahead in the queue has been dequeued",
+            reason=queue_utils.PrAheadDequeued(pr_number=ctxt.pull["number"]),
             drop_pull_request=ctxt.pull["number"],
         )
         await self.save()
@@ -1953,8 +1965,7 @@ class Train:
         # after has we known now they will not work, and split this one
         # in two
         await self._slice_cars(
-            current_queue_position,
-            reason="Pull request ahead in queue failed to get merged",
+            current_queue_position, reason=queue_utils.PrAheadFailedToMerge()
         )
 
         # We move this car later at the end to not retest it
@@ -2120,7 +2131,7 @@ class Train:
             )
             await self._slice_cars(
                 new_queue_size,
-                reason="The number of speculative checks has been reduced",
+                reason=queue_utils.SpeculativeCheckNumberReduced(),
             )
 
         elif missing_cars > 0 and self._waiting_pulls:

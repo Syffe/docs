@@ -146,6 +146,7 @@ class EventQueueMergedMetadata(EventMetadata, total=False):
 class EventQueueChecksEndMetadata(EventMetadata, total=False):
     aborted: bool
     abort_reason: typing.Optional[str]
+    abort_code: typing.Optional[str]
     queue_name: str
     branch: str
     position: typing.Optional[int]

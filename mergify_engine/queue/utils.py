@@ -14,14 +14,83 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import dataclasses
+import re
 import typing
-
-import daiquiri
 
 from mergify_engine import utils
 
 
-LOG = daiquiri.getLogger(__name__)
+@dataclasses.dataclass
+class BaseAbortReason:
+    message: typing.ClassVar[str]
+
+    @property
+    def code(self) -> str:
+        # eg: BaseAbortReason -> BASE_ABORT_REASON
+        return (
+            re.sub(r"([A-Z][a-z]+)", r"\1_", self.__class__.__name__)
+            .rstrip("_")
+            .upper()
+        )
+
+    def __str__(self) -> str:
+        format_vars = {
+            k: v
+            for k, v in self.__dict__.items()
+            if not k.startswith("_") and k not in ("code", "message")
+        }
+        return self.message.format(**format_vars)
+
+
+@dataclasses.dataclass
+class PrAheadDequeued(BaseAbortReason):
+    message = "Pull request #{pr_number} which was ahead in the queue has been dequeued"  # noqa: FS003
+    pr_number: int
+
+
+@dataclasses.dataclass
+class PrAheadFailedToMerge(BaseAbortReason):
+    message = "Pull request ahead in queue failed to get merged"
+
+
+@dataclasses.dataclass
+class PrWithHigherPriorityQueued(BaseAbortReason):
+    message = (
+        "Pull request #{pr_number} with higher priority has been queued"  # noqa: FS003
+    )
+    pr_number: int
+
+
+@dataclasses.dataclass
+class PrQueuedTwice(BaseAbortReason):
+    message = "The pull request has been queued twice"
+
+
+@dataclasses.dataclass
+class SpeculativeCheckNumberReduced(BaseAbortReason):
+    message = "The number of speculative checks has been reduced"
+
+
+@dataclasses.dataclass
+class ChecksTimeout(BaseAbortReason):
+    message = "Checks have timed out"
+
+
+@dataclasses.dataclass
+class ChecksFailed(BaseAbortReason):
+    message = "Checks did not succeed"
+
+
+@dataclasses.dataclass
+class QueueRuleMissing(BaseAbortReason):
+    message = "The associated queue rule does not exist anymore"
+
+
+@dataclasses.dataclass
+class UnexpectedQueueChange(BaseAbortReason):
+    message = "Unexpected queue change: {change}"  # noqa: FS003
+    change: str
 
 
 def is_pr_body_a_merge_queue_pr(pull_request_body: typing.Optional[str]) -> bool:
