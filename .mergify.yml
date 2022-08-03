@@ -118,6 +118,7 @@ pull_request_rules:
   - name: request review
     conditions:
       - -author=dependabot[bot]
+      - -author=mergify-ci-bot
       - label!=work-in-progress
       - -merged
       - -closed
