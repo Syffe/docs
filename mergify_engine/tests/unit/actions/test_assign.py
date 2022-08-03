@@ -20,44 +20,40 @@ from mergify_engine.actions import assign
 
 
 def test_assign_get_schema():
-    validator = voluptuous.Schema(assign.AssignAction.get_schema())
-
     schema = {"users": ["{{ author }}"]}
-    result = validator(schema)
+    result = assign.AssignAction(schema)
     assert result.config["users"] == schema["users"]
 
     schema = {"users": ["foo-42"]}
-    result = validator(schema)
+    result = assign.AssignAction(schema)
     assert result.config["users"] == schema["users"]
 
     schema = {"add_users": ["{{ author }}"]}
-    result = validator(schema)
+    result = assign.AssignAction(schema)
     assert result.config["add_users"] == schema["add_users"]
 
     schema = {"add_users": ["foo-42"]}
-    result = validator(schema)
+    result = assign.AssignAction(schema)
     assert result.config["add_users"] == schema["add_users"]
 
     schema = {"remove_users": ["{{ author }}"]}
-    result = validator(schema)
+    result = assign.AssignAction(schema)
     assert result.config["remove_users"] == schema["remove_users"]
 
     schema = {"remove_users": ["foo-42"]}
-    result = validator(schema)
+    result = assign.AssignAction(schema)
     assert result.config["remove_users"] == schema["remove_users"]
 
 
 def test_assign_get_schema_with_wrong_template():
-    validator = voluptuous.Schema(assign.AssignAction.get_schema())
-
     with pytest.raises(voluptuous.Invalid) as e:
-        validator({"users": ["{{ foo }}"]})
+        assign.AssignAction({"users": ["{{ foo }}"]})
     assert str(e.value) == "Template syntax error @ data['users'][0]"
 
     with pytest.raises(voluptuous.Invalid) as e:
-        validator({"add_users": ["{{ foo }}"]})
+        assign.AssignAction({"add_users": ["{{ foo }}"]})
     assert str(e.value) == "Template syntax error @ data['add_users'][0]"
 
     with pytest.raises(voluptuous.Invalid) as e:
-        validator({"remove_users": ["{{ foo }}"]})
+        assign.AssignAction({"remove_users": ["{{ foo }}"]})
     assert str(e.value) == "Template syntax error @ data['remove_users'][0]"

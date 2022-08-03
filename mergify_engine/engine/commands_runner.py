@@ -118,9 +118,7 @@ def load_command(
 
         action_config.update(action_class.command_to_config(command_args))
         try:
-            action = voluptuous.Schema(
-                action_class.get_schema(partial_validation=False)
-            )(action_config)
+            action = action_class(action_config)
             action.validate_config(mergify_config)
         except voluptuous.Invalid:
             raise CommandInvalid(

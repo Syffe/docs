@@ -444,7 +444,7 @@ def RuleConditionSchema(v: typing.Any, depth: int = 0) -> typing.Any:
     )(v)
 
 
-def get_pull_request_rules_schema(partial_validation: bool = False) -> voluptuous.All:
+def get_pull_request_rules_schema() -> voluptuous.All:
     return voluptuous.All(
         [
             voluptuous.All(
@@ -458,9 +458,7 @@ def get_pull_request_rules_schema(partial_validation: bool = False) -> voluptuou
                         [voluptuous.Coerce(RuleConditionSchema)],
                         voluptuous.Coerce(conditions.PullRequestRuleConditions),
                     ),
-                    voluptuous.Required("actions"): actions.get_action_schemas(
-                        partial_validation
-                    ),
+                    voluptuous.Required("actions"): actions.get_action_schemas(),
                 },
                 voluptuous.Coerce(PullRequestRule.from_dict),
             ),
@@ -541,16 +539,12 @@ QueueRulesSchema = voluptuous.All(
 )
 
 
-def get_defaults_schema(
-    partial_validation: bool,
-) -> typing.Dict[typing.Any, typing.Any]:
+def get_defaults_schema() -> typing.Dict[typing.Any, typing.Any]:
     return {
         # FIXME(sileht): actions.get_action_schemas() returns only actions Actions
         # and not command only, since only refresh is command only and it doesn't
         # have options it's not a big deal.
-        voluptuous.Required("actions", default={}): actions.get_action_schemas(
-            partial_validation
-        ),
+        voluptuous.Required("actions", default={}): actions.get_action_schemas(),
     }
 
 
@@ -581,7 +575,7 @@ def UserConfigurationSchema(
     schema = {
         voluptuous.Required(
             "pull_request_rules", default=[]
-        ): get_pull_request_rules_schema(partial_validation),
+        ): get_pull_request_rules_schema(),
         voluptuous.Required(
             "queue_rules", default=[{"name": "default", "conditions": []}]
         ): QueueRulesSchema,
@@ -589,9 +583,7 @@ def UserConfigurationSchema(
             voluptuous.Required(name, default={}): CommandsRestrictionsSchema
             for name in actions.get_commands()
         },
-        voluptuous.Required("defaults", default={}): get_defaults_schema(
-            partial_validation
-        ),
+        voluptuous.Required("defaults", default={}): get_defaults_schema(),
         voluptuous.Remove("shared"): voluptuous.Any(dict, list, str, int, float, bool),
     }
 

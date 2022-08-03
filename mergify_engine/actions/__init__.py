@@ -40,8 +40,8 @@ PluginGroupT = typing.Literal["mergify_commands", "mergify_actions"]
 
 
 class PluginClassT(typing.TypedDict, total=False):
-    mergify_actions: typing.Dict[str, "Action"]
-    mergify_commands: typing.Dict[str, "Action"]
+    mergify_actions: typing.Dict[str, typing.Type["Action"]]
+    mergify_commands: typing.Dict[str, typing.Type["Action"]]
 
 
 _CLASSES: PluginClassT = {}
@@ -68,7 +68,7 @@ class ActionFlag(enum.Flag):
     SUCCESS_IS_FINAL_STATE = enum.auto()
 
 
-def get_classes(group: PluginGroupT) -> typing.Dict[str, "Action"]:
+def get_classes(group: PluginGroupT) -> typing.Dict[str, typing.Type["Action"]]:
     if group not in _CLASSES:
         _CLASSES[group] = {
             ep.name: ep.load() for ep in importlib.metadata.entry_points(group=group)
@@ -76,27 +76,38 @@ def get_classes(group: PluginGroupT) -> typing.Dict[str, "Action"]:
     return _CLASSES[group]
 
 
-def get_action_schemas(
-    partial_validation: bool = False,
-) -> typing.Dict[str, typing.Any]:
+def get_action_schemas() -> typing.Dict[str, typing.Type["Action"]]:
     return {
-        name: obj.get_schema(partial_validation)
+        name: voluptuous.Coerce(obj)
         for name, obj in get_classes("mergify_actions").items()
     }
 
 
-def get_commands() -> typing.Dict[str, "Action"]:
+def get_commands() -> typing.Dict[str, typing.Type["Action"]]:
     return {name: obj for name, obj in get_classes("mergify_commands").items()}
+
+
+ValidatorT = typing.Dict[voluptuous.Required, typing.Any]
 
 
 @dataclasses.dataclass  # type: ignore[misc]
 class Action(abc.ABC):
-    # FIXME: this might be more precise if we replace voluptuous by pydantic somehow?
-    config: RawConfigT
-    raw_config: RawConfigT
+    raw_config_: dataclasses.InitVar[RawConfigT | None] = dataclasses.field(
+        default=None
+    )
+    raw_config: RawConfigT = dataclasses.field(init=False)
+    config: RawConfigT = dataclasses.field(init=False)
 
     flags: typing.ClassVar[ActionFlag] = ActionFlag.NONE
-    validator: typing.ClassVar[typing.Dict[typing.Any, typing.Any]]
+
+    @property
+    @abc.abstractmethod
+    def validator(self) -> ValidatorT:
+        ...
+
+    def __post_init__(self, raw_config_: RawConfigT | None) -> None:
+        self.raw_config = raw_config_ or {}
+        self.config = voluptuous.Schema(self.validator)(self.raw_config)
 
     def validate_config(
         self, mergify_config: "rules.MergifyConfig"
@@ -113,25 +124,6 @@ class Action(abc.ABC):
             check_api.Conclusion.CANCELLED,
             check_api.Conclusion.PENDING,
         )
-
-    @classmethod
-    def get_schema(cls, partial_validation: bool = False) -> typing.Any:
-        def schema(raw_config: typing.Optional[RawConfigT]) -> typing.Any:
-            if raw_config is None:
-                raw_config = {}
-            schema = voluptuous.All(
-                cls.get_config_schema(partial_validation),
-                voluptuous.Coerce(lambda v: cls(v, raw_config)),
-            )
-            return voluptuous.Schema(schema)(raw_config)
-
-        return schema
-
-    @classmethod
-    def get_config_schema(
-        cls, partial_validation: bool
-    ) -> typing.Dict[typing.Any, typing.Any]:
-        return cls.validator
 
     @staticmethod
     def command_to_config(string: str) -> typing.Dict[str, typing.Any]:

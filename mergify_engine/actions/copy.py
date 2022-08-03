@@ -72,11 +72,8 @@ class CopyAction(actions.Action):
     def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
         return ()
 
-    @classmethod
-    def get_config_schema(
-        cls,
-        partial_validation: bool = False,
-    ) -> typing.Dict[typing.Any, typing.Any]:
+    @property
+    def validator(self) -> actions.ValidatorT:
         return {
             voluptuous.Required("bot_account", default=None): voluptuous.Any(
                 None, types.Jinja2
@@ -88,11 +85,11 @@ class CopyAction(actions.Action):
             voluptuous.Required("labels", default=list): [str],
             voluptuous.Required("label_conflicts", default="conflicts"): str,
             voluptuous.Required(
-                "title", default=f"{{{{ title }}}} ({cls.KIND} #{{{{ number }}}})"
+                "title", default=f"{{{{ title }}}} ({self.KIND} #{{{{ number }}}})"
             ): DuplicateTitleJinja2,
             voluptuous.Required(
                 "body",
-                default=f"This is an automatic {cls.KIND} of pull request #{{{{number}}}} done by [Mergify](https://mergify.com).\n{{{{ cherry_pick_error }}}}",
+                default=f"This is an automatic {self.KIND} of pull request #{{{{number}}}} done by [Mergify](https://mergify.com).\n{{{{ cherry_pick_error }}}}",
             ): DuplicateBodyJinja2,
         }
 

@@ -37,11 +37,11 @@ from mergify_engine.tests.unit import conftest
     ),
 )
 def test_config(config: typing.Dict[str, typing.List[str]]) -> None:
-    request_reviews.RequestReviewsAction.get_schema()(config)
+    request_reviews.RequestReviewsAction(config)
 
 
 def test_random_reviewers() -> None:
-    action = request_reviews.RequestReviewsAction.get_schema()(
+    action = request_reviews.RequestReviewsAction(
         {
             "random_count": 2,
             "teams": {
@@ -63,7 +63,7 @@ def test_random_reviewers() -> None:
 
 
 def test_random_reviewers_no_weight() -> None:
-    action = request_reviews.RequestReviewsAction.get_schema()(
+    action = request_reviews.RequestReviewsAction(
         {
             "random_count": 2,
             "teams": {
@@ -82,7 +82,7 @@ def test_random_reviewers_no_weight() -> None:
 
 
 def test_random_reviewers_count_bigger() -> None:
-    action = request_reviews.RequestReviewsAction.get_schema()(
+    action = request_reviews.RequestReviewsAction(
         {
             "random_count": 15,
             "teams": {
@@ -105,7 +105,7 @@ def test_random_reviewers_count_bigger() -> None:
 
 def test_random_config_too_much_count() -> None:
     with pytest.raises(voluptuous.MultipleInvalid) as p:
-        request_reviews.RequestReviewsAction.get_schema()(
+        request_reviews.RequestReviewsAction(
             {
                 "random_count": 20,
                 "teams": {
@@ -125,7 +125,7 @@ def test_random_config_too_much_count() -> None:
 
 
 def test_get_reviewers() -> None:
-    action = request_reviews.RequestReviewsAction.get_schema()(
+    action = request_reviews.RequestReviewsAction(
         {
             "random_count": 2,
             "teams": {
@@ -153,7 +153,7 @@ def test_get_reviewers() -> None:
 
 
 async def test_disabled(context_getter: conftest.ContextGetterFixture) -> None:
-    action = request_reviews.RequestReviewsAction.get_schema()(
+    action = request_reviews.RequestReviewsAction(
         {
             "random_count": 2,
             "teams": {
@@ -167,7 +167,7 @@ async def test_disabled(context_getter: conftest.ContextGetterFixture) -> None:
         },
     )
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
-    result = await action.run(ctxt, None)
+    result = await action.run(ctxt, mock.Mock())
     assert result.conclusion == check_api.Conclusion.ACTION_REQUIRED
     assert result.title == "Random request reviews are disabled"
     assert result.summary == (
@@ -180,7 +180,7 @@ async def test_disabled(context_getter: conftest.ContextGetterFixture) -> None:
 async def test_team_permissions_missing(
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
-    action = request_reviews.RequestReviewsAction.get_schema()(
+    action = request_reviews.RequestReviewsAction(
         {
             "random_count": 2,
             "teams": {
@@ -201,7 +201,7 @@ async def test_team_permissions_missing(
     )
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
     ctxt.repository.installation.client = client
-    result = await action.run(ctxt, None)
+    result = await action.run(ctxt, mock.Mock())
     assert result.conclusion == check_api.Conclusion.ACTION_REQUIRED
     assert result.title == "Invalid requested teams"
     for error in (
@@ -215,7 +215,7 @@ async def test_team_permissions_missing(
 async def test_team_permissions_ok(
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
-    action = request_reviews.RequestReviewsAction.get_schema()(
+    action = request_reviews.RequestReviewsAction(
         {
             "random_count": 2,
             "teams": {
@@ -232,7 +232,7 @@ async def test_team_permissions_ok(
     client.get = mock.AsyncMock(return_value={})
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
     ctxt.repository.installation.client = client
-    result = await action.run(ctxt, None)
+    result = await action.run(ctxt, mock.Mock())
     assert result.summary == ""
     assert result.title == "No new reviewers to request"
     assert result.conclusion == check_api.Conclusion.SUCCESS
