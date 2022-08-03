@@ -359,7 +359,7 @@ async def test_day_near_datetime() -> None:
         assert await f(FakePR({"foo": date.Day(1)})) == today
         assert await f(FakePR({"foo": None})) == date.DT_MAX
 
-        f = filter.NearDatetimeFilter({"<=": ("foo", date.Day(6))})
+        f = filter.NearDatetimeFilter({">=": ("foo", date.Day(6))})
         frozen_time.move_to(today.replace(day=6))
         assert await f(FakePR({"foo": date.Day(6)})) == nextday
         frozen_time.move_to(today.replace(day=7))
@@ -368,7 +368,7 @@ async def test_day_near_datetime() -> None:
         assert await f(FakePR({"foo": date.Day(1)})) == today
         assert await f(FakePR({"foo": None})) == date.DT_MAX
 
-        f = filter.NearDatetimeFilter({"<": ("foo", date.Day(6))})
+        f = filter.NearDatetimeFilter({">": ("foo", date.Day(6))})
         frozen_time.move_to(today.replace(day=6))
         assert await f(FakePR({"foo": date.Day(6)})) == nextmonth
         frozen_time.move_to(today.replace(day=7))
@@ -398,67 +398,71 @@ async def test_day_near_datetime() -> None:
 
 async def test_day_of_the_week_near_datetime() -> None:
     # 2012-01-06 is a Friday (5)
-
     with freeze_time("2012-01-06T12:15:00", tz_offset=0) as frozen_time:
         today = frozen_time().replace(
             hour=0, minute=0, second=0, microsecond=0, tzinfo=UTC
         )
+        on_monday = today.replace(day=2)
         on_saturday = today.replace(day=7)
         on_sunday = today.replace(day=8)
         next_saturday = today.replace(day=14)
 
-        f = filter.NearDatetimeFilter({"<=": ("foo", date.DayOfWeek(6))})
-        frozen_time.move_to(today.replace(day=7))
-        assert await f(FakePR({"foo": date.DayOfWeek(6)})) == on_sunday
-        frozen_time.move_to(today.replace(day=8))
-        assert await f(FakePR({"foo": date.DayOfWeek(7)})) == next_saturday
-        frozen_time.move_to(today.replace(day=2))
-        assert await f(FakePR({"foo": date.DayOfWeek(1)})) == on_saturday
+        monday = date.DayOfWeek(1)
+        saturday = date.DayOfWeek(6)
+        sunday = date.DayOfWeek(7)
+
+        f = filter.NearDatetimeFilter({"<=": ("foo", saturday)})
+        frozen_time.move_to(on_saturday)
+        assert await f(FakePR({"foo": saturday})) == on_sunday
+        frozen_time.move_to(on_sunday)
+        assert await f(FakePR({"foo": sunday})) == next_saturday
+        frozen_time.move_to(on_monday)
+        assert await f(FakePR({"foo": monday})) == on_saturday
         assert await f(FakePR({"foo": None})) == date.DT_MAX
 
-        f = filter.NearDatetimeFilter({"<": ("foo", date.DayOfWeek(6))})
-        frozen_time.move_to(today.replace(day=7))
-        assert await f(FakePR({"foo": date.DayOfWeek(6)})) == next_saturday
-        frozen_time.move_to(today.replace(day=8))
-        assert await f(FakePR({"foo": date.DayOfWeek(7)})) == next_saturday
-        frozen_time.move_to(today.replace(day=2))
-        assert await f(FakePR({"foo": date.DayOfWeek(1)})) == on_saturday
+        f = filter.NearDatetimeFilter({"<": ("foo", saturday)})
+        frozen_time.move_to(on_saturday)
+        assert await f(FakePR({"foo": saturday})) == next_saturday
+        frozen_time.move_to(on_sunday)
+        assert await f(FakePR({"foo": sunday})) == next_saturday
+        frozen_time.move_to(on_monday)
+        assert await f(FakePR({"foo": monday})) == on_saturday
         assert await f(FakePR({"foo": None})) == date.DT_MAX
 
-        f = filter.NearDatetimeFilter({"<=": ("foo", date.DayOfWeek(6))})
-        frozen_time.move_to(today.replace(day=7))
-        assert await f(FakePR({"foo": date.DayOfWeek(6)})) == on_sunday
-        frozen_time.move_to(today.replace(day=8))
-        assert await f(FakePR({"foo": date.DayOfWeek(7)})) == next_saturday
-        frozen_time.move_to(today.replace(day=2))
-        assert await f(FakePR({"foo": date.DayOfWeek(1)})) == on_saturday
+        f = filter.NearDatetimeFilter({">=": ("foo", saturday)})
+        frozen_time.move_to(on_saturday)
+        assert await f(FakePR({"foo": saturday})) == on_sunday
+        frozen_time.move_to(on_sunday)
+        assert await f(FakePR({"foo": sunday})) == next_saturday
+        frozen_time.move_to(on_monday)
+        assert await f(FakePR({"foo": monday})) == on_saturday
         assert await f(FakePR({"foo": None})) == date.DT_MAX
 
-        f = filter.NearDatetimeFilter({"<": ("foo", date.DayOfWeek(6))})
-        frozen_time.move_to(today.replace(day=7))
-        assert await f(FakePR({"foo": date.DayOfWeek(6)})) == next_saturday
-        frozen_time.move_to(today.replace(day=8))
-        assert await f(FakePR({"foo": date.DayOfWeek(7)})) == next_saturday
-        frozen_time.move_to(today.replace(day=2))
-        assert await f(FakePR({"foo": date.DayOfWeek(1)})) == on_saturday
+        f = filter.NearDatetimeFilter({">": ("foo", saturday)})
+        frozen_time.move_to(on_saturday)
+        assert await f(FakePR({"foo": saturday})) == next_saturday
+        frozen_time.move_to(on_sunday)
+        assert await f(FakePR({"foo": sunday})) == next_saturday
+        frozen_time.move_to(on_monday)
+        assert await f(FakePR({"foo": monday})) == on_saturday
         assert await f(FakePR({"foo": None})) == date.DT_MAX
 
-        f = filter.NearDatetimeFilter({"=": ("foo", date.DayOfWeek(6))})
-        frozen_time.move_to(today.replace(day=7))
-        assert await f(FakePR({"foo": date.DayOfWeek(6)})) == on_sunday
-        frozen_time.move_to(today.replace(day=8))
-        assert await f(FakePR({"foo": date.DayOfWeek(7)})) == next_saturday
-        frozen_time.move_to(today.replace(day=2))
-        assert await f(FakePR({"foo": date.DayOfWeek(1)})) == on_saturday
+        f = filter.NearDatetimeFilter({"=": ("foo", saturday)})
+        frozen_time.move_to(on_saturday)
+        assert await f(FakePR({"foo": saturday})) == on_sunday
+        frozen_time.move_to(on_sunday)
+        assert await f(FakePR({"foo": sunday})) == next_saturday
+        frozen_time.move_to(on_monday)
+        assert await f(FakePR({"foo": monday})) == on_saturday
         assert await f(FakePR({"foo": None})) == date.DT_MAX
 
-        f = filter.NearDatetimeFilter({"!=": ("foo", date.DayOfWeek(6))})
-        frozen_time.move_to(today.replace(day=7))
-        assert await f(FakePR({"foo": date.DayOfWeek(6)})) == on_sunday
-        frozen_time.move_to(today.replace(day=8))
-        assert await f(FakePR({"foo": date.DayOfWeek(7)})) == next_saturday
-        frozen_time.move_to(today.replace(day=2))
-        assert await f(FakePR({"foo": date.DayOfWeek(1)})) == on_saturday
+        f = filter.NearDatetimeFilter({"!=": ("foo", saturday)})
+        frozen_time.move_to(on_saturday)
+        assert await f(FakePR({"foo": saturday})) == on_sunday
+        frozen_time.move_to(on_sunday)
+        assert await f(FakePR({"foo": sunday})) == next_saturday
+        frozen_time.move_to(on_monday)
+        assert await f(FakePR({"foo": monday})) == on_saturday
         assert await f(FakePR({"foo": None})) == date.DT_MAX
 
 
@@ -490,7 +494,7 @@ async def test_month_near_datetime() -> None:
         assert await f(FakePR({"foo": date.Month(1)})) == in_june
         assert await f(FakePR({"foo": None})) == date.DT_MAX
 
-        f = filter.NearDatetimeFilter({"<=": ("foo", date.Month(6))})
+        f = filter.NearDatetimeFilter({">=": ("foo", date.Month(6))})
         frozen_time.move_to(in_june.replace(month=6))
         assert await f(FakePR({"foo": date.Month(6)})) == in_july
         frozen_time.move_to(in_june.replace(month=7))
@@ -499,7 +503,7 @@ async def test_month_near_datetime() -> None:
         assert await f(FakePR({"foo": date.Month(1)})) == in_june
         assert await f(FakePR({"foo": None})) == date.DT_MAX
 
-        f = filter.NearDatetimeFilter({"<": ("foo", date.Month(6))})
+        f = filter.NearDatetimeFilter({">": ("foo", date.Month(6))})
         frozen_time.move_to(in_june.replace(month=6))
         assert await f(FakePR({"foo": date.Month(6)})) == next_year_in_january
         frozen_time.move_to(in_june.replace(month=7))
@@ -551,7 +555,7 @@ async def test_year_near_datetime() -> None:
         assert await f(FakePR({"foo": date.Year(2011)})) == in_2016
         assert await f(FakePR({"foo": None})) == date.DT_MAX
 
-        f = filter.NearDatetimeFilter({"<=": ("foo", date.Year(2016))})
+        f = filter.NearDatetimeFilter({">=": ("foo", date.Year(2016))})
         frozen_time.move_to(today.replace(year=2016))
         assert await f(FakePR({"foo": date.Year(2016)})) == in_2017
         frozen_time.move_to(today.replace(year=2017))
@@ -560,7 +564,7 @@ async def test_year_near_datetime() -> None:
         assert await f(FakePR({"foo": date.Year(2011)})) == in_2016
         assert await f(FakePR({"foo": None})) == date.DT_MAX
 
-        f = filter.NearDatetimeFilter({"<": ("foo", date.Year(2016))})
+        f = filter.NearDatetimeFilter({">": ("foo", date.Year(2016))})
         frozen_time.move_to(today.replace(year=2016))
         assert await f(FakePR({"foo": date.Year(2016)})) == date.DT_MAX
         frozen_time.move_to(today.replace(year=2017))
