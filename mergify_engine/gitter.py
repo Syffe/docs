@@ -70,6 +70,7 @@ GIT_MESSAGE_TO_EXCEPTION: typing.Dict[
         ("The requested URL returned error: 403", GitAuthenticationFailure),
         ("remote contains work that you do", GitErrorRetriable),
         ("remote end hung up unexpectedly", GitErrorRetriable),
+        ("unexpected disconnect while reading sideband packet", GitErrorRetriable),
         (
             re.compile(
                 "cannot lock ref 'refs/heads/mergify/[^']*': 'refs/heads/mergify(|/bp|/copy|/merge-queue)' exists"
