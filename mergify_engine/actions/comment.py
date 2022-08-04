@@ -30,7 +30,7 @@ from mergify_engine.dashboard import user_tokens
 from mergify_engine.rules import types
 
 
-class CommentAction(actions.Action):
+class CommentAction(actions.BackwardCompatAction):
     flags = actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
     validator = {
         voluptuous.Required("message", default=None): types.Jinja2WithNone,

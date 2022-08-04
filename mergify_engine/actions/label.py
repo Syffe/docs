@@ -27,7 +27,7 @@ from mergify_engine import signals
 from mergify_engine.clients import http
 
 
-class LabelAction(actions.Action):
+class LabelAction(actions.BackwardCompatAction):
     flags = (
         actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
         | actions.ActionFlag.ALWAYS_RUN

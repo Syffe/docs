@@ -25,7 +25,7 @@ from mergify_engine.clients import http
 from mergify_engine.rules import types
 
 
-class AssignAction(actions.Action):
+class AssignAction(actions.BackwardCompatAction):
     validator = {
         # NOTE: "users" is deprecated, but kept as legacy code for old config
         voluptuous.Required("users", default=list): [types.Jinja2],

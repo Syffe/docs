@@ -39,6 +39,12 @@ from mergify_engine.rules import types
 LOG = daiquiri.getLogger(__name__)
 
 
+@dataclasses.dataclass
+class InvalidPullRequestRule(Exception):
+    reason: str
+    details: str
+
+
 class DisabledDict(typing.TypedDict):
     reason: str
 
@@ -70,6 +76,17 @@ class PullRequestRule:
 
     def get_signal_trigger(self) -> str:
         return f"Rule: {self.name}"
+
+    async def evaluate(
+        self, pulls: typing.List[context.BasePullRequest]
+    ) -> "EvaluatedRule":
+        evaluated_rule = typing.cast(EvaluatedRule, self)
+        await evaluated_rule.conditions(pulls)
+        for action in self.actions.values():
+            await action.load_context(
+                typing.cast(context.PullRequest, pulls[0]).context, evaluated_rule
+            )
+        return evaluated_rule
 
 
 @dataclasses.dataclass
@@ -154,6 +171,12 @@ class QueueRule:
         )
         return queue_rules_evaluator.matching_rules[0]
 
+    async def evaluate(
+        self, pulls: typing.List[context.BasePullRequest]
+    ) -> EvaluatedQueueRule:
+        await self.conditions(pulls)
+        return typing.cast(EvaluatedQueueRule, self)
+
 
 T_Rule = typing.TypeVar("T_Rule", PullRequestRule, QueueRule)
 T_EvaluatedRule = typing.TypeVar("T_EvaluatedRule", EvaluatedRule, EvaluatedQueueRule)
@@ -215,7 +238,8 @@ class GenericRulesEvaluator(typing.Generic[T_Rule, T_EvaluatedRule]):
             for condition in rule.conditions.walk():
                 live_resolvers.configure_filter(repository, condition.partial_filter)
 
-            await rule.conditions(pulls)
+            evaluated_rule = typing.cast(T_EvaluatedRule, await rule.evaluate(pulls))  # type: ignore[redundant-cast]
+            del rule
 
             # NOTE(sileht):
             # In the summary, we display rules in five groups:
@@ -225,17 +249,16 @@ class GenericRulesEvaluator(typing.Generic[T_Rule, T_EvaluatedRule]):
             # * rules where only BASE_ATTRIBUTES don't match (mainly to hide rule written for other branches) -> ignored_rules
             # * rules where only BASE_CHANGEABLE ATTRIBUTES don't match (they rarely change but are handled)-> not_applicable_base_changeable_attributes_rules
             categorized = False
-            evaluated_rule = typing.cast(T_EvaluatedRule, rule)
-            if rule_hidden_from_merge_queue and not rule.conditions.match:
+            if rule_hidden_from_merge_queue and not evaluated_rule.conditions.match:
                 # NOTE(sileht): Replace non-base attribute and non-base changeables attributes
                 # by true, if it still matches it's a potential rule otherwise hide it.
-                base_changeable_conditions = rule.conditions.copy()
+                base_changeable_conditions = evaluated_rule.conditions.copy()
                 for condition in base_changeable_conditions.walk():
                     attr = condition.get_attribute_name()
                     if attr not in self.BASE_CHANGEABLE_ATTRIBUTES:
                         condition.update("number>0")
 
-                base_conditions = rule.conditions.copy()
+                base_conditions = evaluated_rule.conditions.copy()
                 for condition in base_conditions.walk():
                     attr = condition.get_attribute_name()
                     if attr not in self.BASE_ATTRIBUTES:
@@ -253,7 +276,7 @@ class GenericRulesEvaluator(typing.Generic[T_Rule, T_EvaluatedRule]):
                     self.ignored_rules.append(evaluated_rule)
                     categorized = True
 
-                if not categorized and rule.conditions.is_faulty():
+                if not categorized and evaluated_rule.conditions.is_faulty():
                     self.faulty_rules.append(evaluated_rule)
                     categorized = True
 

@@ -245,12 +245,21 @@ async def run_command(
         )
         await conds([ctxt.pull_request])
         if conds.match:
-            result = await command.action.run(
-                ctxt,
-                rules.EvaluatedRule(
-                    rules.CommandRule(command_full, None, conds, {}, False)
-                ),
-            )
+            try:
+                await command.action.load_context(
+                    ctxt,
+                    rules.EvaluatedRule(
+                        rules.CommandRule(command_full, None, conds, {}, False)
+                    ),
+                )
+            except rules.InvalidPullRequestRule as e:
+                result = check_api.Result(
+                    check_api.Conclusion.ACTION_REQUIRED,
+                    e.reason,
+                    e.details,
+                )
+            else:
+                result = await command.action.executor.run()
         elif actions.ActionFlag.ALLOW_AS_PENDING_COMMAND in command.action.flags:
             result = check_api.Result(
                 check_api.Conclusion.PENDING,

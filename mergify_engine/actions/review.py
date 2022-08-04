@@ -37,7 +37,7 @@ EVENT_STATE_MAP = {
 }
 
 
-class ReviewAction(actions.Action):
+class ReviewAction(actions.BackwardCompatAction):
     flags = (
         actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
         | actions.ActionFlag.ALWAYS_RUN

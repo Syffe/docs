@@ -28,7 +28,7 @@ from mergify_engine.clients import http
 from mergify_engine.rules import conditions
 
 
-class DeleteHeadBranchAction(actions.Action):
+class DeleteHeadBranchAction(actions.BackwardCompatAction):
     flags = (
         actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
         | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED

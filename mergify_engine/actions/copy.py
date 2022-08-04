@@ -59,7 +59,7 @@ def DuplicateTitleJinja2(v: typing.Any) -> typing.Optional[str]:
     )
 
 
-class CopyAction(actions.Action):
+class CopyAction(actions.BackwardCompatAction):
     flags = actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
 
     KIND: duplicate_pull.KindT = "copy"

@@ -39,7 +39,7 @@ DEFAULT_MESSAGE = {
 }
 
 
-class DismissReviewsAction(actions.Action):
+class DismissReviewsAction(actions.BackwardCompatAction):
     flags = (
         actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
         | actions.ActionFlag.ALWAYS_RUN

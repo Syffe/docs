@@ -103,14 +103,16 @@ async def simulator_pull(
     except http.HTTPClientSideError as e:
         raise fastapi.HTTPException(status_code=e.status_code, detail=e.message)
     ctxt.sources = [{"event_type": "mergify-simulator", "data": [], "timestamp": ""}]  # type: ignore[typeddict-item]
-    match = await config["pull_request_rules"].get_pull_request_rule(ctxt)
-    title, summary = await actions_runner.gen_summary(
-        ctxt, config["pull_request_rules"], match
-    )
-    return SimulatorResponse(
-        title=title,
-        summary=summary,
-    )
+    try:
+        match = await config["pull_request_rules"].get_pull_request_rule(ctxt)
+    except rules.InvalidPullRequestRule as e:
+        title = e.reason
+        summary = e.details
+    else:
+        title, summary = await actions_runner.gen_summary(
+            ctxt, config["pull_request_rules"], match
+        )
+    return SimulatorResponse(title=title, summary=summary)
 
 
 @router.post(

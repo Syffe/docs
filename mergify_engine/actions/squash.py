@@ -30,7 +30,7 @@ from mergify_engine.dashboard import subscription
 from mergify_engine.rules import types
 
 
-class SquashAction(actions.Action):
+class SquashAction(actions.BackwardCompatAction):
     flags = (
         actions.ActionFlag.ALWAYS_RUN
         | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED

@@ -28,7 +28,7 @@ from mergify_engine.dashboard import user_tokens
 from mergify_engine.rules import types
 
 
-class EditAction(actions.Action):
+class EditAction(actions.BackwardCompatAction):
     flags = (
         actions.ActionFlag.ALWAYS_RUN
         | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED

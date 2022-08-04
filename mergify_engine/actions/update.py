@@ -24,7 +24,7 @@ from mergify_engine import signals
 from mergify_engine.rules import conditions
 
 
-class UpdateAction(actions.Action):
+class UpdateAction(actions.BackwardCompatAction):
     flags = (
         actions.ActionFlag.ALWAYS_RUN
         | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED

@@ -234,19 +234,18 @@ async def get_summary_check_result(
 
 
 async def exec_action(
-    method_name: typing.Literal["run", "cancel"],
-    rule: rules.EvaluatedRule,
     action: str,
-    ctxt: context.Context,
+    method_name: typing.Literal["run", "cancel"],
+    executor: actions.ActionExecutorProtocol,
 ) -> check_api.Result:
     try:
         if method_name == "run":
-            method = rule.actions[action].run
+            method = executor.run
         elif method_name == "cancel":
-            method = rule.actions[action].cancel
+            method = executor.cancel
         else:
             raise RuntimeError("wrong method_name")
-        return await method(ctxt, rule)
+        return await method()
     except Exception as e:  # pragma: no cover
         # Forward those to worker
         if (
@@ -257,10 +256,12 @@ async def exec_action(
             raise
         # NOTE(sileht): the action fails, this is a bug!!!, so just set the
         # result as pending and retry in 5 minutes...
-        ctxt.log.error("action failed", action=action, rule=rule, exc_info=True)
+        executor.ctxt.log.error(
+            "action failed", action=action, rule=executor.rule, exc_info=True
+        )
         await delayed_refresh.plan_refresh_at_least_at(
-            ctxt.repository,
-            ctxt.pull["number"],
+            executor.ctxt.repository,
+            executor.ctxt.pull["number"],
             date.utcnow() + datetime.timedelta(minutes=5),
         )
         return check_api.Result(
@@ -439,10 +440,9 @@ async def run_actions(
                 ) as span:
                     # NOTE(sileht): check state change so we have to run "run" or "cancel"
                     report = await exec_action(
-                        method_name,
-                        rule,
                         action,
-                        ctxt,
+                        method_name,
+                        action_obj.executor,
                     )
                     span.set_tags({"conclusion": str(report.conclusion)})
 
@@ -458,7 +458,7 @@ async def run_actions(
 
             if (
                 need_to_be_run
-                and report.conclusion not in action_obj.silenced_conclusion
+                and report.conclusion not in action_obj.executor.silenced_conclusion
             ):
                 external_id = (
                     check_api.USER_CREATED_CHECKS
@@ -548,7 +548,14 @@ async def cleanup_pending_actions_with_no_associated_rules(
 async def handle(
     pull_request_rules: rules.PullRequestRules, ctxt: context.Context
 ) -> typing.Optional[check_api.Result]:
-    match = await pull_request_rules.get_pull_request_rule(ctxt)
+    try:
+        match = await pull_request_rules.get_pull_request_rule(ctxt)
+    except rules.InvalidPullRequestRule as e:
+        return check_api.Result(
+            check_api.Conclusion.ACTION_REQUIRED,
+            e.reason,
+            e.details,
+        )
     await delayed_refresh.plan_next_refresh(
         ctxt, match.matching_rules, ctxt.pull_request
     )

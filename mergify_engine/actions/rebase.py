@@ -29,7 +29,7 @@ from mergify_engine.rules import conditions
 from mergify_engine.rules import types
 
 
-class RebaseAction(actions.Action):
+class RebaseAction(actions.BackwardCompatAction):
     flags = (
         actions.ActionFlag.ALWAYS_RUN
         | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED

@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import dataclasses
 import typing
 
 import voluptuous
@@ -34,9 +35,137 @@ def CheckRunJinja2(v: typing.Any) -> typing.Optional[str]:
         {
             "check_rule_name": "whatever",
             "check_succeed": True,
+            "check_succeeded": True,
             "check_conditions": "the expected condition conditions",
         },
     )
+
+
+class PostCheckExecutorConfig(typing.TypedDict):
+    title: str
+    summary: str
+    always_show: bool
+    check_conditions: conditions.PullRequestRuleConditions
+
+
+@dataclasses.dataclass
+class PostCheckExecutor(
+    actions.ActionExecutor["PostCheckAction", PostCheckExecutorConfig]
+):
+    config: PostCheckExecutorConfig
+
+    @classmethod
+    async def create(
+        cls,
+        action: "PostCheckAction",
+        ctxt: "context.Context",
+        rule: "rules.EvaluatedRule",
+    ) -> "PostCheckExecutor":
+        if not ctxt.subscription.has_feature(subscription.Features.CUSTOM_CHECKS):
+            raise rules.InvalidPullRequestRule(
+                "Custom checks are disabled",
+                ctxt.subscription.missing_feature_reason(
+                    ctxt.pull["base"]["repo"]["owner"]["login"]
+                ),
+            )
+
+        # TODO(sileht): Don't run it if conditions contains the rule itself, as it can
+        # created an endless loop of events.
+        if action.config["success_conditions"] is None:
+            check_conditions = rule.conditions
+        else:
+            check_conditions = action.config["success_conditions"].copy()
+            await check_conditions([ctxt.pull_request])
+
+        extra_variables: typing.Dict[str, typing.Union[str, bool]] = {
+            "check_rule_name": rule.name,
+            "check_succeeded": check_conditions.match,
+            "check_conditions": check_conditions.get_summary(),
+            # Backward compat
+            "check_succeed": check_conditions.match,
+        }
+        try:
+            title = await ctxt.pull_request.render_template(
+                action.config["title"],
+                extra_variables,
+            )
+        except context.RenderTemplateFailure as rmf:
+            raise rules.InvalidPullRequestRule(
+                "Invalid title template",
+                str(rmf),
+            )
+
+        try:
+            summary = await ctxt.pull_request.render_template(
+                action.config["summary"], extra_variables
+            )
+        except context.RenderTemplateFailure as rmf:
+            raise rules.InvalidPullRequestRule(
+                "Invalid summary template",
+                str(rmf),
+            )
+        return cls(
+            ctxt,
+            rule,
+            PostCheckExecutorConfig(
+                {
+                    "title": title,
+                    "summary": summary,
+                    "check_conditions": check_conditions,
+                    "always_show": action.config["success_conditions"] is None,
+                }
+            ),
+        )
+
+    async def _run(
+        self, check_conditions: conditions.PullRequestRuleConditions
+    ) -> check_api.Result:
+        if check_conditions.match:
+            conclusion = check_api.Conclusion.SUCCESS
+        else:
+            conclusion = check_api.Conclusion.FAILURE
+
+        check = await self.ctxt.get_engine_check_run(
+            self.rule.get_check_name("post_check")
+        )
+        if (
+            not check
+            or check["conclusion"] != conclusion.value
+            or check["output"]["title"] != self.config["title"]
+            or check["output"]["summary"] != self.config["summary"]
+        ):
+            await signals.send(
+                self.ctxt.repository,
+                self.ctxt.pull["number"],
+                "action.post_check",
+                signals.EventPostCheckMetadata(
+                    {
+                        "conclusion": conclusion.value,
+                        "title": self.config["title"],
+                        "summary": self.config["summary"],
+                    }
+                ),
+                self.rule.get_signal_trigger(),
+            )
+        return check_api.Result(
+            conclusion, self.config["title"], self.config["summary"]
+        )
+
+    async def run(self) -> check_api.Result:
+        return await self._run(self.config["check_conditions"])
+
+    async def cancel(self) -> check_api.Result:
+        if self.config["always_show"]:
+            return await self._run(self.config["check_conditions"])
+        else:
+            return actions.CANCELLED_CHECK_REPORT
+
+    @property
+    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
+        if self.config["always_show"]:
+            return ()
+        else:
+            return (check_api.Conclusion.CANCELLED,)
 
 
 class PostCheckAction(actions.Action):
@@ -49,7 +178,7 @@ class PostCheckAction(actions.Action):
     validator = {
         voluptuous.Required(
             "title",
-            default="'{{ check_rule_name }}' {% if check_succeed %}succeed{% else %}failed{% endif %}",  # noqa:FS003
+            default="'{{ check_rule_name }}' {% if check_succeeded %}succeeded{% else %}failed{% endif %}",  # noqa:FS003
         ): CheckRunJinja2,
         voluptuous.Required(
             "summary", default="{{ check_conditions }}"
@@ -63,102 +192,4 @@ class PostCheckAction(actions.Action):
         ),
     }
 
-    @property
-    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
-        if self.config["success_conditions"] is None:
-            return ()
-        else:
-            return (check_api.Conclusion.CANCELLED,)
-
-    async def _run(
-        self,
-        ctxt: context.Context,
-        rule: rules.EvaluatedRule,
-        check_conditions: conditions.PullRequestRuleConditions,
-    ) -> check_api.Result:
-        # TODO(sileht): Don't run it if conditions contains the rule itself, as it can
-        # created an endless loop of events.
-
-        if not ctxt.subscription.has_feature(subscription.Features.CUSTOM_CHECKS):
-            return check_api.Result(
-                check_api.Conclusion.ACTION_REQUIRED,
-                "Custom checks are disabled",
-                ctxt.subscription.missing_feature_reason(
-                    ctxt.pull["base"]["repo"]["owner"]["login"]
-                ),
-            )
-
-        extra_variables: typing.Dict[str, typing.Union[str, bool]] = {
-            "check_rule_name": rule.name,
-            "check_succeeded": check_conditions.match,
-            "check_conditions": check_conditions.get_summary(),
-            # Backward compat
-            "check_succeed": check_conditions.match,
-        }
-        try:
-            title = await ctxt.pull_request.render_template(
-                self.config["title"],
-                extra_variables,
-            )
-        except context.RenderTemplateFailure as rmf:
-            return check_api.Result(
-                check_api.Conclusion.FAILURE,
-                "Invalid title template",
-                str(rmf),
-            )
-
-        try:
-            summary = await ctxt.pull_request.render_template(
-                self.config["summary"], extra_variables
-            )
-        except context.RenderTemplateFailure as rmf:
-            return check_api.Result(
-                check_api.Conclusion.FAILURE,
-                "Invalid summary template",
-                str(rmf),
-            )
-        if check_conditions.match:
-            conclusion = check_api.Conclusion.SUCCESS
-        else:
-            conclusion = check_api.Conclusion.FAILURE
-
-        check = await ctxt.get_engine_check_run(rule.get_check_name("post_check"))
-        if (
-            not check
-            or check["conclusion"] != conclusion.value
-            or check["output"]["title"] != title
-            or check["output"]["summary"] != summary
-        ):
-            await signals.send(
-                ctxt.repository,
-                ctxt.pull["number"],
-                "action.post_check",
-                signals.EventPostCheckMetadata(
-                    {
-                        "conclusion": conclusion.value,
-                        "title": title,
-                        "summary": summary,
-                    }
-                ),
-                rule.get_signal_trigger(),
-            )
-
-        return check_api.Result(conclusion, title, summary)
-
-    async def run(
-        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
-    ) -> check_api.Result:
-        if self.config["success_conditions"] is None:
-            check_conditions = rule.conditions
-        else:
-            check_conditions = self.config["success_conditions"].copy()
-            await check_conditions([ctxt.pull_request])
-        return await self._run(ctxt, rule, check_conditions)
-
-    async def cancel(
-        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
-    ) -> check_api.Result:  # pragma: no cover
-        if self.config["success_conditions"] is None:
-            return await self._run(ctxt, rule, rule.conditions)
-        else:
-            return actions.CANCELLED_CHECK_REPORT
+    executor_class = PostCheckExecutor

@@ -35,7 +35,7 @@ FORBIDDEN_REBASE_MERGE_MSG = "Rebase merges are not allowed on this repository."
 T = typing.TypeVar("T")
 
 
-class MergeBaseAction(actions.Action, abc.ABC, typing.Generic[T]):
+class MergeBaseAction(actions.BackwardCompatAction, abc.ABC, typing.Generic[T]):
     @abc.abstractmethod
     async def send_signal(
         self,

@@ -41,7 +41,7 @@ def _ensure_weight(entities: ReviewEntityT) -> ReviewEntityWithWeightT:
     return {entity: 1 for entity in entities}
 
 
-class RequestReviewsAction(actions.Action):
+class RequestReviewsAction(actions.BackwardCompatAction):
     flags = (
         actions.ActionFlag.ALWAYS_RUN
         | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED

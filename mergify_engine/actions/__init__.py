@@ -87,6 +87,104 @@ def get_commands() -> typing.Dict[str, typing.Type["Action"]]:
     return {name: obj for name, obj in get_classes("mergify_commands").items()}
 
 
+ActionT = typing.TypeVar("ActionT")
+ActionExecutorConfigT = typing.TypeVar("ActionExecutorConfigT")
+
+
+@dataclasses.dataclass  # type: ignore[misc]
+class ActionExecutor(abc.ABC, typing.Generic[ActionT, ActionExecutorConfigT]):
+    ctxt: "context.Context"
+    rule: "rules.EvaluatedRule"
+    config: ActionExecutorConfigT
+
+    @abc.abstractmethod
+    async def run(self) -> check_api.Result:  # pragma: no cover
+        ...
+
+    @abc.abstractmethod
+    async def cancel(self) -> check_api.Result:  # pragma: no cover
+        ...
+
+    @property
+    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
+        # Be default, we create check-run only on failure, CANCELLED is not a
+        # failure it's part of the expected state when the conditions that
+        # trigger the action didn't match anyore
+        return (
+            check_api.Conclusion.SUCCESS,
+            check_api.Conclusion.CANCELLED,
+            check_api.Conclusion.PENDING,
+        )
+
+    @classmethod
+    async def create(
+        cls,
+        # FIXME(sileht): pass just RawConfigT instead of the "Action"
+        action: "ActionT",
+        ctxt: "context.Context",
+        rule: "rules.EvaluatedRule",
+    ) -> "ActionExecutor[ActionT, ActionExecutorConfigT]":
+        ...
+
+
+@dataclasses.dataclass
+class BackwardCompatActionExecutor(ActionExecutor["BackwardCompatAction", RawConfigT]):
+    action: "BackwardCompatAction"
+
+    async def run(self) -> check_api.Result:  # pragma: no cover
+        return await self.action.run(self.ctxt, self.rule)
+
+    async def cancel(self) -> check_api.Result:  # pragma: no cover
+        return await self.action.cancel(self.ctxt, self.rule)
+
+    @property
+    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
+        return self.action.silenced_conclusion
+
+    @classmethod
+    async def create(
+        cls,
+        action: "BackwardCompatAction",
+        ctxt: "context.Context",
+        rule: "rules.EvaluatedRule",
+    ) -> "ActionExecutor[BackwardCompatAction, RawConfigT]":
+        return cls(ctxt, rule, action.config, action)
+
+
+class ActionExecutorProtocol(typing.Protocol):
+    ctxt: "context.Context"
+    rule: "rules.EvaluatedRule"
+
+    @abc.abstractmethod
+    async def run(self) -> check_api.Result:  # pragma: no cover
+        ...
+
+    @abc.abstractmethod
+    async def cancel(self) -> check_api.Result:  # pragma: no cover
+        ...
+
+    @property
+    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
+        # Be default, we create check-run only on failure, CANCELLED is not a
+        # failure it's part of the expected state when the conditions that
+        # trigger the action didn't match anyore
+        return (
+            check_api.Conclusion.SUCCESS,
+            check_api.Conclusion.CANCELLED,
+            check_api.Conclusion.PENDING,
+        )
+
+    @classmethod
+    async def create(
+        cls,
+        # FIXME(sileht): pass just RawConfigT instead of the "Action"
+        action: "Action",
+        ctxt: "context.Context",
+        rule: "rules.EvaluatedRule",
+    ) -> "ActionExecutorProtocol":
+        ...
+
+
 ValidatorT = typing.Dict[voluptuous.Required, typing.Any]
 
 
@@ -105,15 +203,39 @@ class Action(abc.ABC):
     def validator(self) -> ValidatorT:
         ...
 
+    executor: ActionExecutorProtocol = dataclasses.field(init=False)
+    # NOTE(sileht): mypy didn't handle thing like typing.Type[ActionExecutorProtocol]
+    executor_class: typing.ClassVar[typing.Any] = BackwardCompatActionExecutor
+
     def __post_init__(self, raw_config_: RawConfigT | None) -> None:
         self.raw_config = raw_config_ or {}
         self.config = voluptuous.Schema(self.validator)(self.raw_config)
+
+    async def load_context(
+        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
+    ) -> None:
+        self.executor = await self.executor_class.create(self, ctxt, rule)
 
     def validate_config(
         self, mergify_config: "rules.MergifyConfig"
     ) -> None:  # pragma: no cover
         pass
 
+    @staticmethod
+    def command_to_config(string: str) -> typing.Dict[str, typing.Any]:
+        """Convert string to dict config"""
+        return {}
+
+    async def get_conditions_requirements(
+        self,
+        ctxt: context.Context,
+    ) -> typing.List[
+        typing.Union[conditions.RuleConditionGroup, conditions.RuleCondition]
+    ]:
+        return []
+
+
+class BackwardCompatAction(Action):
     @property
     def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
         # Be default, we create check-run only on failure, CANCELLED is not a
@@ -124,23 +246,6 @@ class Action(abc.ABC):
             check_api.Conclusion.CANCELLED,
             check_api.Conclusion.PENDING,
         )
-
-    @staticmethod
-    def command_to_config(string: str) -> typing.Dict[str, typing.Any]:
-        """Convert string to dict config"""
-        return {}
-
-    @abc.abstractmethod
-    async def run(
-        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
-    ) -> check_api.Result:  # pragma: no cover
-        ...
-
-    @abc.abstractmethod
-    async def cancel(
-        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
-    ) -> check_api.Result:  # pragma: no cover
-        ...
 
     @staticmethod
     async def wanted_users(
@@ -159,10 +264,14 @@ class Action(abc.ABC):
 
         return wanted
 
-    async def get_conditions_requirements(
-        self,
-        ctxt: context.Context,
-    ) -> typing.List[
-        typing.Union[conditions.RuleConditionGroup, conditions.RuleCondition]
-    ]:
-        return []
+    @abc.abstractmethod
+    async def run(
+        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
+    ) -> check_api.Result:  # pragma: no cover
+        ...
+
+    @abc.abstractmethod
+    async def cancel(
+        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
+    ) -> check_api.Result:  # pragma: no cover
+        ...

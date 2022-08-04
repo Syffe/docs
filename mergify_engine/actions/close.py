@@ -30,7 +30,7 @@ from mergify_engine.rules import types
 MSG = "This pull request has been automatically closed by Mergify."
 
 
-class CloseAction(actions.Action):
+class CloseAction(actions.BackwardCompatAction):
     flags = (
         actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
         | actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES

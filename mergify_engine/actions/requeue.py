@@ -22,7 +22,7 @@ from mergify_engine import signals
 from mergify_engine import utils
 
 
-class RequeueCommand(actions.Action):
+class RequeueCommand(actions.BackwardCompatAction):
     flags = actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
 
     validator: typing.ClassVar[typing.Dict[typing.Any, typing.Any]] = {}
