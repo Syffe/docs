@@ -55,7 +55,7 @@ pull request created by `dependabot` with a rule such as:
     pull_request_rules:
       - name: automatic approval for Dependabot pull requests
         conditions:
-          - author~=^dependabot(|-preview)\[bot\]$
+          - author=dependabot[bot]
         actions:
           review:
             type: APPROVE

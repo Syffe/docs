@@ -216,7 +216,7 @@ and configure the priority option of the :ref:`queue <queue action>` action:
             priority: high
       - name: automatic merge of bot 🤖 (low priority)
         conditions:
-          - author~=^dependabot(|-preview)\[bot\]$
+          - author=dependabot[bot]
           - check-success=Travis CI - Pull Request
           - "#approved-reviews-by>=2"
           - base=main

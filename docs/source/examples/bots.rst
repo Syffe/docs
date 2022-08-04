@@ -30,7 +30,7 @@ such as:
     pull_request_rules:
       - name: automatic merge for Dependabot pull requests
         conditions:
-          - author~=^dependabot(|-preview)\[bot\]$
+          - author=dependabot[bot]
           - check-success=Travis CI - Pull Request
         actions:
           merge:
@@ -44,7 +44,7 @@ request only if they are for the same major version.
     pull_request_rules:
       - name: automatic merge for Dependabot pull requests
         conditions:
-          - author~=^dependabot(|-preview)\[bot\]$
+          - author=dependabot[bot]
           - check-success=Travis CI - Pull Request
           - title~=^Bump [^\s]+ from ([\d]+)\..+ to \1\.
         actions:
