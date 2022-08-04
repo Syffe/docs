@@ -14,6 +14,7 @@
 # under the License.
 
 import dataclasses
+import datetime
 import functools
 import hashlib
 import typing
@@ -290,3 +291,7 @@ class RedisLinks:
         await self.user_permissions_cache.flushdb()
         await self.active_users.flushdb()
         await self.eventlogs.flushdb()
+
+
+def get_expiration_minid(retention: datetime.timedelta) -> int:
+    return int((datetime.datetime.utcnow() - retention).timestamp() * 1000)

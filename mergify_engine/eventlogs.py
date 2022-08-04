@@ -22,6 +22,7 @@ import msgpack
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import pagination
+from mergify_engine import redis_utils
 from mergify_engine import signals
 from mergify_engine.dashboard import subscription
 
@@ -270,8 +271,10 @@ class EventLogsSignal(signals.SignalBase):
                 datetime=True,
             ),
         }
-        await pipe.xadd(pull_key, fields=fields)
-        await pipe.xadd(repo_key, fields=fields)
+        minid = redis_utils.get_expiration_minid(retention)
+
+        await pipe.xadd(pull_key, fields=fields, minid=minid)
+        await pipe.xadd(repo_key, fields=fields, minid=minid)
         await pipe.expire(pull_key, int(retention.total_seconds()))
         await pipe.expire(repo_key, int(retention.total_seconds()))
         await pipe.execute()

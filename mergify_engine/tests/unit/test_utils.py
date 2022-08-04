@@ -12,8 +12,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import datetime
 import typing
 
+from freezegun import freeze_time
 import msgpack
 import pytest
 
@@ -250,3 +252,10 @@ def test_payload_dumper() -> None:
     message = f"somecontent\n{payload}\nwhatever"
     data = utils.get_hidden_payload_from_comment_body(message)
     assert data == expected_data
+
+
+@freeze_time("2022-08-03T15:43:50.478Z")
+def test_get_retention_minid() -> None:
+    retention = datetime.timedelta(days=1)
+    expected_minid = 1659455030478  # 2022-08-02T15:43:50.478Z
+    assert redis_utils.get_expiration_minid(retention) == expected_minid
