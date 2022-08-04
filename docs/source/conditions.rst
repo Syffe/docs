@@ -63,7 +63,7 @@ For example:
 Combining Conditions with Operators
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The `conditions` do support the ``or``, ``and`` and ``not`` operators.
+The `conditions` do support the ``or`` and ``and`` operators.
 
 For example, you can match if its author is ``foo`` or
 ``bar``, you could write:
@@ -74,16 +74,6 @@ For example, you can match if its author is ``foo`` or
       - or:
         - author=foo
         - author=bar
-
-Or you can do the opposite with the ``not`` operator:
-
-.. code-block:: yaml
-
-    conditions:
-      - not:
-        - or:
-          - author=foo
-          - author=bar
 
 You can also combine ``or`` and ``and`` like this:
 

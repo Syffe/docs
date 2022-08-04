@@ -83,7 +83,6 @@ TreeT = typing.TypedDict(
         "@": typing.Union["TreeT", "CompiledTreeT[GetAttrObject]"],  # type: ignore[misc]
         "or": typing.Iterable[typing.Union["TreeT", "CompiledTreeT[GetAttrObject]"]],  # type: ignore[misc]
         "and": typing.Iterable[typing.Union["TreeT", "CompiledTreeT[GetAttrObject]"]],  # type: ignore[misc]
-        "not": typing.Iterable[typing.Union["TreeT", "CompiledTreeT[GetAttrObject]"]],  # type: ignore[misc]
     },
     total=False,
 )
@@ -236,16 +235,12 @@ class Filter(typing.Generic[FilterResultT]):
                     binary_operator = self.binary_operators[operator_name]
                 except KeyError:
                     raise UnknownOperator(operator_name)
-
                 nodes = typing.cast(TreeBinaryLeafT, nodes)
                 return self._handle_binary_op(binary_operator, nodes)
-
             nodes = typing.cast(TreeT, nodes)
             return self._handle_unary_op(unary_operator, nodes)
-
         if not isinstance(nodes, abc.Iterable):
             raise InvalidArguments(nodes)
-
         return self._handle_multiple_op(multiple_op, nodes)
 
     def _eval_binary_op(
@@ -323,9 +318,7 @@ def BinaryFilter(
 ) -> "Filter[bool]":
     return Filter[bool](
         tree,
-        {
-            "-": operator.not_,
-        },
+        {"-": operator.not_},
         {
             "=": (operator.eq, any, _identity),
             "<": (lambda a, b: a is not None and a < b, any, _identity),
@@ -338,7 +331,6 @@ def BinaryFilter(
         {
             "or": any,
             "and": all,
-            "not": lambda x: not x[0],
         },
     )
 
@@ -487,7 +479,7 @@ def NearDatetimeFilter(
     tree: typing.Union[TreeT, CompiledTreeT[GetAttrObject, datetime.datetime]],
 ) -> "Filter[datetime.datetime]":
     """
-    The principles:
+    The principes:
     * the attribute can't be mapped to a datetime -> datetime.datetime.max
     * the time/datetime attribute can't change in the future -> datetime.datetime.max
     * the time/datetime attribute can change in the future -> return when
@@ -495,11 +487,9 @@ def NearDatetimeFilter(
     """
     return Filter[datetime.datetime](
         tree,
-        {
-            # NOTE(sileht): This is not allowed in parser on all time-based attributes
-            # so we can just return DT_MAX for all other attributes
-            "-": _dt_identity_max,
-        },
+        # NOTE(sileht): This is not allowed in parser on all time based attributes
+        # so we can just return DT_MAX for all other attributes
+        {"-": _dt_identity_max},
         {
             "=": (_dt_op(operator.eq), _minimal_datetime, _identity),
             "<": (_dt_op(operator.lt), _minimal_datetime, _identity),
@@ -514,7 +504,6 @@ def NearDatetimeFilter(
         {
             "or": _minimal_datetime,
             "and": _minimal_datetime,
-            "not": _minimal_datetime,
         },
     )
 
@@ -581,11 +570,7 @@ class IncompleteChecksFilter(Filter[IncompleteChecksResult]):
     tree: typing.Union[TreeT, CompiledTreeT[GetAttrObject, bool]]
     unary_operators: typing.Dict[
         str, UnaryOperatorT[IncompleteChecksResult]
-    ] = dataclasses.field(
-        default_factory=lambda: {
-            "-": IncompleteChecksNegate,
-        }
-    )
+    ] = dataclasses.field(default_factory=lambda: {"-": IncompleteChecksNegate})
     binary_operators: typing.Dict[
         str, BinaryOperatorT[IncompleteChecksResult]
     ] = dataclasses.field(
@@ -635,7 +620,6 @@ class IncompleteChecksFilter(Filter[IncompleteChecksResult]):
         default_factory=lambda: {
             "or": IncompleteChecksAny,
             "and": IncompleteChecksAll,
-            "not": lambda x: IncompleteChecksNegate(x[0]),
         }
     )
     pending_checks: typing.List[str] = dataclasses.field(default_factory=list)
