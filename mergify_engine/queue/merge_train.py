@@ -1896,6 +1896,7 @@ class Train:
                 signals.EventQueueLeaveMetadata(
                     {
                         "reason": remove_reason,
+                        "merged": True,
                         "queue_name": embarked_pull.config["name"],
                         "branch": self.ref,
                         "position": 0,
@@ -1924,6 +1925,7 @@ class Train:
             signals.EventQueueLeaveMetadata(
                 {
                     "reason": remove_reason,
+                    "merged": ctxt.pull["merged"],
                     "queue_name": embarked_pull_with_car.embarked_pull.config["name"],
                     "branch": self.ref,
                     "position": position,

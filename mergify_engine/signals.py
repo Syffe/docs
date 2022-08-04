@@ -108,6 +108,7 @@ class EventQueueEnterMetadata(EventMetadata, total=False):
 
 class EventQueueLeaveMetadata(EventMetadata, total=False):
     reason: str
+    merged: bool
     queue_name: str
     branch: str
     position: int

@@ -1185,6 +1185,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 {
                     "event": "action.queue.leave",
                     "metadata": {
+                        "merged": False,
                         "branch": self.main_branch_name,
                         "position": 0,
                         "queue_name": "default",
