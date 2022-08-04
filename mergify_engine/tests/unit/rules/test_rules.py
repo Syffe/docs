@@ -1602,6 +1602,7 @@ async def test_queue_rules_summary() -> None:
             {"or": ["label=foo", "check-success!=first-ci"]},
             {"and": ["label=foo", "check-success=first-ci"]},
             {"and": ["label=foo", "check-success!=first-ci"]},
+            {"not": [{"and": ["label=fizz", "label=buzz"]}]},
             "current-year=2018",
         ]
     )
@@ -1723,6 +1724,16 @@ async def test_queue_rules_summary() -> None:
     - [X] #2
     - [X] #3
   - [ ] `check-success!=first-ci`
+- [X] none of:
+  - [ ] all of:
+      - `label=fizz`
+        - [ ] #1
+        - [ ] #2
+        - [ ] #3
+      - `label=buzz`
+        - [ ] #1
+        - [ ] #2
+        - [ ] #3
 - [X] `current-year=2018`
 - `#approved-reviews-by>=2` [🛡 GitHub branch protection]
   - [X] #1

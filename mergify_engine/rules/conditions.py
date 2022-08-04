@@ -124,15 +124,15 @@ class RuleCondition:
 
 @dataclasses.dataclass
 class RuleConditionGroup:
-    """This describe a group leafs of the `conditions:` tree linked by and or or."""
+    """This describe a group leafs of the `conditions:` tree linked by `and`, `or` or `not`."""
 
     condition: dataclasses.InitVar[
         typing.Dict[
-            typing.Literal["and", "or"],
+            typing.Literal["and", "or", "not"],
             typing.List[typing.Union["RuleConditionGroup", RuleCondition]],
         ]
     ]
-    operator: typing.Literal["and", "or"] = dataclasses.field(init=False)
+    operator: typing.Literal["and", "or", "not"] = dataclasses.field(init=False)
     conditions: typing.List[
         typing.Union["RuleConditionGroup", RuleCondition]
     ] = dataclasses.field(init=False)
@@ -143,7 +143,7 @@ class RuleConditionGroup:
     def __post_init__(
         self,
         condition: typing.Dict[
-            typing.Literal["and", "or"],
+            typing.Literal["and", "or", "not"],
             typing.List[typing.Union["RuleConditionGroup", RuleCondition]],
         ],
     ) -> None:
@@ -243,7 +243,8 @@ class RuleConditionGroup:
             if isinstance(condition, RuleCondition):
                 summary += cls._get_rule_condition_summary(condition)
             elif isinstance(condition, RuleConditionGroup):
-                label = "all of" if condition.operator == "and" else "any of"
+                label = cls.get_label_for_operator(condition.operator)
+
                 checked = "X" if condition.match else " "
                 summary += f"- [{checked}] {label}:"
                 if condition.description:
@@ -257,6 +258,19 @@ class RuleConditionGroup:
                 raise RuntimeError(f"Unsupported condition type: {type(condition)}")
 
         return textwrap.indent(summary, "  " * level)
+
+    @staticmethod
+    def get_label_for_operator(operator: typing.Literal["and", "or", "not"]) -> str:
+        if operator == "and":
+            label = "all of"
+        elif operator == "or":
+            label = "any of"
+        elif operator == "not":
+            label = "none of"
+        else:
+            raise RuntimeError(f"Unsupported operator: {operator}")
+
+        return label
 
     def get_summary(self) -> str:
         return self._walk_for_summary(self.conditions)
@@ -358,7 +372,6 @@ class QueueRuleConditions:
             github_types.GitHubPullRequestNumber,
             typing.Union["RuleConditionGroup", "RuleCondition"],
         ],
-        operator: typing.Literal["and", "or"],
         level: int = -1,
     ) -> str:
         summary = ""
@@ -383,10 +396,8 @@ class QueueRuleConditions:
                 evaluated_conditions,
             )
             if level >= 0:
-                label = (
-                    "all of"
-                    if evaluated_conditions[first_key].operator == "and"
-                    else "any of"
+                label = RuleConditionGroup.get_label_for_operator(
+                    evaluated_conditions[first_key].operator
                 )
                 if evaluated_conditions[first_key].description:
                     label += f" [{evaluated_conditions[first_key].description}]"
@@ -402,7 +413,6 @@ class QueueRuleConditions:
             for inner_condition in inner_conditions:
                 for _sum in cls._walk_for_summary(
                     inner_condition,
-                    evaluated_conditions[first_key].operator,
                     level + 1,
                 ):
                     summary += _sum
@@ -415,7 +425,7 @@ class QueueRuleConditions:
 
     def get_summary(self) -> str:
         if self._used:
-            return self._walk_for_summary(self._evaluated_conditions, "and")
+            return self._walk_for_summary(self._evaluated_conditions)
         else:
             return self.condition.get_summary()
 
