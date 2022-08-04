@@ -143,7 +143,7 @@ async def check_subscription_feature_queue_freeze(
         subscription.Features.QUEUE_FREEZE
     ):
         raise fastapi.HTTPException(
-            status_code=403,
+            status_code=402,
             detail="⚠ The subscription needs to be upgraded to enable the `queue_freeze` feature.",
         )
 
