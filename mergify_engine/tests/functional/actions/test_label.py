@@ -15,12 +15,18 @@
 # under the License.
 from unittest import mock
 
+import pytest
 import yaml
 
 from mergify_engine import config
+from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 
 
+@pytest.mark.subscription(
+    subscription.Features.EVENTLOGS_SHORT,
+    subscription.Features.EVENTLOGS_LONG,
+)
 class TestLabelAction(base.FunctionalTestBase):
     async def test_label_basic(self):
         rules = {

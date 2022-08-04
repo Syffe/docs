@@ -39,6 +39,7 @@ from mergify_engine.web import root as web_root
 
 RECORD = bool(os.getenv("MERGIFYENGINE_RECORD", False))
 CASSETTE_LIBRARY_DIR_BASE = "zfixtures/cassettes"
+DEFAULT_SUBSCRIPTION_FEATURES = (subscription.Features.PUBLIC_REPOSITORY,)
 
 
 class RecordConfigType(typing.TypedDict):
@@ -69,17 +70,45 @@ class DashboardFixture(typing.NamedTuple):
     user_tokens: user_tokens_mod.UserTokens
 
 
+def get_all_subscription_features() -> typing.FrozenSet[subscription.Features]:
+    return frozenset(
+        getattr(subscription.Features, f) for f in subscription.Features.__members__
+    )
+
+
+def extract_subscription_marker_features(
+    marker: pytest.Mark,
+) -> typing.FrozenSet[subscription.Features]:
+    if len(marker.args) == 0:
+        return get_all_subscription_features()
+
+    if isinstance(marker.args[0], bool):
+        if marker.args[0]:
+            return get_all_subscription_features()
+
+        return frozenset(DEFAULT_SUBSCRIPTION_FEATURES)
+
+    for feat in marker.args:
+        if not isinstance(feat, subscription.Features):
+            raise Exception(
+                "Expected every arguments of `subscription` marker to be an instance of `subscription.Features`"
+            )
+
+    return frozenset(DEFAULT_SUBSCRIPTION_FEATURES + marker.args)
+
+
 @pytest.fixture
 async def dashboard(
     redis_cache: redis_utils.RedisCache, request: pytest.FixtureRequest
 ) -> DashboardFixture:
-    is_unittest_class = request.cls is not None
-    subscription_active = False
+    is_functionaltest_class = request.cls is not None
     marker = request.node.get_closest_marker("subscription")
     if marker:
-        subscription_active = marker.args[0]
-    elif is_unittest_class:
-        subscription_active = request.cls.SUBSCRIPTION_ACTIVE
+        subscription_features = extract_subscription_marker_features(marker)
+    elif is_functionaltest_class and request.cls.SUBSCRIPTION_ACTIVE:
+        subscription_features = get_all_subscription_features()
+    else:
+        subscription_features = frozenset(DEFAULT_SUBSCRIPTION_FEATURES)
 
     api_key_admin = "a" * 64
 
@@ -87,18 +116,7 @@ async def dashboard(
         redis_cache,
         config.TESTING_ORGANIZATION_ID,
         "You're not nice",
-        frozenset(
-            getattr(subscription.Features, f) for f in subscription.Features.__members__
-        )
-        if subscription_active
-        else frozenset(
-            # EVENTLOGS requires subscription, but not for tests
-            [
-                subscription.Features.PUBLIC_REPOSITORY,
-                subscription.Features.EVENTLOGS_SHORT,
-                subscription.Features.EVENTLOGS_LONG,
-            ]
-        ),
+        subscription_features,
     )
     await sub._save_subscription_to_cache()
     user_tokens = user_tokens_mod.UserTokens(

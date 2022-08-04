@@ -43,7 +43,5 @@ async def test_fixture_dashboard(dashboard: func_conftest.DashboardFixture) -> N
     assert dashboard.subscription.features == frozenset(
         {
             subscription.Features.PUBLIC_REPOSITORY,
-            subscription.Features.EVENTLOGS_SHORT,
-            subscription.Features.EVENTLOGS_LONG,
         }
     )

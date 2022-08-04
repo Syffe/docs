@@ -15,17 +15,27 @@
 # under the License.
 from unittest import mock
 
+import pytest
 import yaml
 
 from mergify_engine import config
 from mergify_engine import context
+from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 
 
 class TestDismissReviewsAction(base.FunctionalTestBase):
+    @pytest.mark.subscription(
+        subscription.Features.EVENTLOGS_SHORT,
+        subscription.Features.EVENTLOGS_LONG,
+    )
     async def test_dismiss_reviews(self):
         await self._test_dismiss_reviews()
 
+    @pytest.mark.subscription(
+        subscription.Features.EVENTLOGS_SHORT,
+        subscription.Features.EVENTLOGS_LONG,
+    )
     async def test_dismiss_reviews_custom_message(self):
         await self._test_dismiss_reviews(message="Loser")
 

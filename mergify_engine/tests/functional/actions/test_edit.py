@@ -19,9 +19,14 @@ import pytest
 import yaml
 
 from mergify_engine import config
+from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 
 
+@pytest.mark.subscription(
+    subscription.Features.EVENTLOGS_SHORT,
+    subscription.Features.EVENTLOGS_LONG,
+)
 class TestEditAction(base.FunctionalTestBase):
     @pytest.mark.skipif(
         not config.GITHUB_URL.startswith("https://github.com"),
@@ -125,6 +130,10 @@ class TestEditAction(base.FunctionalTestBase):
             "total": 1,
         }
 
+    @pytest.mark.subscription(
+        subscription.Features.EVENTLOGS_SHORT,
+        subscription.Features.EVENTLOGS_LONG,
+    )
     async def test_draft_already_converted(self):
         rules = {
             "pull_request_rules": [
