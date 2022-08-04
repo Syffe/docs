@@ -1,6 +1,6 @@
 {
   "devDependencies": {
-    "@stoplight/spectral-cli": "^6.4.2",
+    "@stoplight/spectral-cli": "^6.5.0",
     "bootstrap": "5.2.0",
     "sass": "^1.54.2"
   }
