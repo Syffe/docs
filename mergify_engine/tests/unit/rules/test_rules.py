@@ -176,9 +176,30 @@ def test_pull_request_rule(valid: typing.Any) -> None:
                                                     "base=main",
                                                     {
                                                         "or": [
-                                                            "author:robot",
                                                             "author=bot",
-                                                        ]
+                                                            {
+                                                                "and": [
+                                                                    "author:robot",
+                                                                    "label=robot",
+                                                                    {
+                                                                        "or": [
+                                                                            "#approved-reviews-by>=1",
+                                                                            {
+                                                                                "and": [
+                                                                                    "#review-threads-unresolved=0",
+                                                                                    {
+                                                                                        "or": [
+                                                                                            "#approved-reviews-by=0",
+                                                                                            "label=skip",
+                                                                                        ],
+                                                                                    },
+                                                                                ],
+                                                                            },
+                                                                        ],
+                                                                    },
+                                                                ]
+                                                            },
+                                                        ],
                                                     },
                                                 ]
                                             },
@@ -2027,3 +2048,62 @@ pull_request_rules:
         .condition
         == "status-success=continuous-integration/fake-ci"
     )
+
+
+async def test_render_big_nested_summary() -> None:
+    c = conditions.QueueRuleConditions(
+        [
+            conditions.RuleConditionGroup(
+                {
+                    "or": [
+                        conditions.RuleCondition("base=main"),
+                        conditions.RuleConditionGroup(
+                            {
+                                "or": [
+                                    conditions.RuleCondition("base=main"),
+                                    conditions.RuleConditionGroup(
+                                        {
+                                            "or": [
+                                                conditions.RuleCondition("base=main"),
+                                                conditions.RuleConditionGroup(
+                                                    {
+                                                        "or": [
+                                                            conditions.RuleCondition(
+                                                                "base=main"
+                                                            ),
+                                                            conditions.RuleConditionGroup(
+                                                                {
+                                                                    "or": [
+                                                                        conditions.RuleCondition(
+                                                                            "base=main"
+                                                                        ),
+                                                                        conditions.RuleConditionGroup(
+                                                                            {
+                                                                                "or": [
+                                                                                    conditions.RuleCondition(
+                                                                                        "base=main"
+                                                                                    ),
+                                                                                ]
+                                                                            }
+                                                                        ),
+                                                                    ]
+                                                                }
+                                                            ),
+                                                        ]
+                                                    }
+                                                ),
+                                            ]
+                                        }
+                                    ),
+                                ]
+                            }
+                        ),
+                    ]
+                }
+            )
+        ]
+    )
+
+    summary = c.get_summary()
+    summary_split = summary.strip().split("\n")
+    assert summary_split[-1] == "            - [ ] `base=main`"

@@ -1,0 +1,4 @@
+---
+features:
+  - |
+    The maximum depth on combined conditions has been upgraded from 4 to 8.

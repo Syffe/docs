@@ -445,7 +445,7 @@ def YAML(v: str) -> typing.Any:
 
 
 def RuleConditionSchema(v: typing.Any, depth: int = 0) -> typing.Any:
-    if depth > 4:
+    if depth > 8:
         raise voluptuous.Invalid("Maximun number of nested conditions reached")
 
     return voluptuous.Schema(

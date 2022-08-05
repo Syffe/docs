@@ -256,7 +256,7 @@ class RuleConditionGroup:
             else:
                 raise RuntimeError(f"Unsupported condition type: {type(condition)}")
 
-        return textwrap.indent(summary, "  " * level)
+        return textwrap.indent(summary, "  " * min(level, 1))
 
     def get_summary(self) -> str:
         return self._walk_for_summary(self.conditions)
@@ -411,7 +411,7 @@ class QueueRuleConditions:
                 f"Unsupported condition type: {type(evaluated_conditions[first_key])}"
             )
 
-        return textwrap.indent(summary, "  " * level)
+        return textwrap.indent(summary, "  " * min(level, 1))
 
     def get_summary(self) -> str:
         if self._used:
