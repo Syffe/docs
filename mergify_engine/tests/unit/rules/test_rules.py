@@ -413,7 +413,8 @@ def test_jinja_with_wrong_syntax() -> None:
                 conditions:
                 - base=main
                 actions:
-                  comment: {}
+                  comment:
+                    message: Hey
                   rebase: {}
             """
         ),
@@ -464,6 +465,7 @@ async def test_get_mergify_config_with_defaults(
 defaults:
   actions:
     comment:
+      message: "Hey"
       bot_account: foo-bot
     rebase:
       bot_account: test-bot-account
@@ -550,6 +552,7 @@ async def test_get_mergify_config_file_content_from_cache(
     defaults:
       actions:
         comment:
+          message: Hey
           bot_account: foo-bot
         rebase:
           bot_account: test-bot-account
@@ -1452,6 +1455,7 @@ defaults:
     queue:
       name: default
     comment:
+      message: Hey
       bot_account: "foobar"
 queue_rules:
     - name: default
@@ -1462,6 +1466,7 @@ pull_request_rules:
     - base=main
     actions:
       comment:
+        message: "foobar"
       rebase:
         bot_account: "foobar"
       post_check:

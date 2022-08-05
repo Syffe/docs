@@ -116,33 +116,6 @@ class TestCommentAction(base.FunctionalTestBase):
         new_comments = await self.get_issue_comments(p["number"])
         assert new_comments[-1]["body"] == f"Thank you {config.BOT_USER_LOGIN}"
 
-    async def test_comment_with_none(self):
-        rules = {
-            "pull_request_rules": [
-                {
-                    "name": "comment",
-                    "conditions": [f"base={self.main_branch_name}"],
-                    "actions": {"comment": {"message": None}},
-                }
-            ]
-        }
-
-        await self.setup_repo(yaml.dump(rules))
-
-        p = await self.create_pr()
-
-        await self.run_engine()
-        p = await self.get_pull(p["number"])
-
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
-
-        checks = await ctxt.pull_engine_check_runs
-        assert len(checks) == 1
-        assert "success" == checks[0]["conclusion"]
-
-        comments = await self.get_issue_comments(p["number"])
-        assert len(comments) == 0
-
     async def _test_comment_template_error(self, msg):
         rules = {
             "pull_request_rules": [

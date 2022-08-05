@@ -30,38 +30,34 @@ from mergify_engine.dashboard import user_tokens
 from mergify_engine.rules import types
 
 
-class CommentAction(actions.BackwardCompatAction):
-    flags = actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
-    validator = {
-        voluptuous.Required("message", default=None): types.Jinja2WithNone,
-        voluptuous.Required("bot_account", default=None): types.Jinja2WithNone,
-    }
+class CommandExecutorConfig(typing.TypedDict):
+    message: str
+    bot_account: typing.Optional[user_tokens.UserTokensUser]
 
-    async def run(
-        self, ctxt: context.Context, rule: rules.EvaluatedRule
-    ) -> check_api.Result:
 
-        if self.config["message"] is None:
-            return check_api.Result(
-                check_api.Conclusion.SUCCESS, "Message is not set", ""
-            )
-
+class CommentExecutor(actions.ActionExecutor["CommentAction", "CommandExecutorConfig"]):
+    @classmethod
+    async def create(
+        cls,
+        action: "CommentAction",
+        ctxt: "context.Context",
+        rule: "rules.EvaluatedRule",
+    ) -> "CommentExecutor":
         try:
             bot_account = await action_utils.render_bot_account(
                 ctxt,
-                self.config["bot_account"],
+                action.config["bot_account"],
                 required_feature=subscription.Features.BOT_ACCOUNT,
                 missing_feature_message="Comments with `bot_account` set are disabled",
                 required_permissions=[],
             )
         except action_utils.RenderBotAccountFailure as e:
-            return check_api.Result(e.status, e.title, e.reason)
+            raise rules.InvalidPullRequestRule(e.title, e.reason)
 
         try:
-            message = await ctxt.pull_request.render_template(self.config["message"])
+            message = await ctxt.pull_request.render_template(action.config["message"])
         except context.RenderTemplateFailure as rmf:
-            return check_api.Result(
-                check_api.Conclusion.FAILURE,
+            raise rules.InvalidPullRequestRule(
                 "Invalid comment message",
                 str(rmf),
             )
@@ -71,17 +67,25 @@ class CommentAction(actions.BackwardCompatAction):
             tokens = await ctxt.repository.installation.get_user_tokens()
             github_user = tokens.get_token_for(bot_account)
             if not github_user:
-                return check_api.Result(
-                    check_api.Conclusion.FAILURE,
+                raise rules.InvalidPullRequestRule(
                     f"Unable to comment: user `{bot_account}` is unknown. ",
                     f"Please make sure `{bot_account}` has logged in Mergify dashboard.",
                 )
+        return cls(
+            ctxt,
+            rule,
+            CommandExecutorConfig({"message": message, "bot_account": github_user}),
+        )
+
+    async def run(self) -> check_api.Result:
 
         try:
-            await ctxt.client.post(
-                f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments",
-                oauth_token=github_user["oauth_access_token"] if github_user else None,
-                json={"body": message},
+            await self.ctxt.client.post(
+                f"{self.ctxt.base_url}/issues/{self.ctxt.pull['number']}/comments",
+                oauth_token=self.config["bot_account"]["oauth_access_token"]
+                if self.config["bot_account"]
+                else None,
+                json={"body": self.config["message"]},
             )
         except http.HTTPClientSideError as e:  # pragma: no cover
             return check_api.Result(
@@ -90,15 +94,24 @@ class CommentAction(actions.BackwardCompatAction):
                 f"GitHub error: [{e.status_code}] `{e.message}`",
             )
         await signals.send(
-            ctxt.repository,
-            ctxt.pull["number"],
+            self.ctxt.repository,
+            self.ctxt.pull["number"],
             "action.comment",
             signals.EventNoMetadata(),
-            rule.get_signal_trigger(),
+            self.rule.get_signal_trigger(),
         )
-        return check_api.Result(check_api.Conclusion.SUCCESS, "Comment posted", message)
+        return check_api.Result(
+            check_api.Conclusion.SUCCESS, "Comment posted", self.config["message"]
+        )
 
-    async def cancel(
-        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
-    ) -> check_api.Result:  # pragma: no cover
+    async def cancel(self) -> check_api.Result:  # pragma: no cover
         return actions.CANCELLED_CHECK_REPORT
+
+
+class CommentAction(actions.Action):
+    flags = actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
+    validator = {
+        voluptuous.Required("message"): types.Jinja2,
+        voluptuous.Required("bot_account", default=None): types.Jinja2WithNone,
+    }
+    executor_class = CommentExecutor
