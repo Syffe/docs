@@ -30,28 +30,37 @@ from mergify_engine.rules import types
 MSG = "This pull request has been automatically closed by Mergify."
 
 
-class CloseAction(actions.BackwardCompatAction):
-    flags = (
-        actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
-        | actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
-    )
-    validator = {voluptuous.Required("message", default=MSG): types.Jinja2}
+class CloseExecutorConfig(typing.TypedDict):
+    message: str
 
-    @property
-    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
-        return ()
 
-    async def run(
-        self, ctxt: context.Context, rule: rules.EvaluatedRule
-    ) -> check_api.Result:
-        if ctxt.closed:
+class CloseExecutor(actions.ActionExecutor["CloseAction", CloseExecutorConfig]):
+    @classmethod
+    async def create(
+        cls,
+        action: "CloseAction",
+        ctxt: "context.Context",
+        rule: "rules.EvaluatedRule",
+    ) -> "CloseExecutor":
+        try:
+            message = await ctxt.pull_request.render_template(action.config["message"])
+        except context.RenderTemplateFailure as rmf:
+            raise rules.InvalidPullRequestRule(
+                "Invalid close message",
+                str(rmf),
+            )
+        return cls(ctxt, rule, CloseExecutorConfig({"message": message}))
+
+    async def run(self) -> check_api.Result:
+        if self.ctxt.closed:
             return check_api.Result(
                 check_api.Conclusion.SUCCESS, "Pull request is already closed", ""
             )
 
         try:
-            await ctxt.client.patch(
-                f"{ctxt.base_url}/pulls/{ctxt.pull['number']}", json={"state": "close"}
+            await self.ctxt.client.patch(
+                f"{self.ctxt.base_url}/pulls/{self.ctxt.pull['number']}",
+                json={"state": "close"},
             )
         except http.HTTPClientSideError as e:  # pragma: no cover
             return check_api.Result(
@@ -59,18 +68,9 @@ class CloseAction(actions.BackwardCompatAction):
             )
 
         try:
-            message = await ctxt.pull_request.render_template(self.config["message"])
-        except context.RenderTemplateFailure as rmf:
-            return check_api.Result(
-                check_api.Conclusion.FAILURE,
-                "Invalid close message",
-                str(rmf),
-            )
-
-        try:
-            await ctxt.client.post(
-                f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments",
-                json={"body": message},
+            await self.ctxt.client.post(
+                f"{self.ctxt.base_url}/issues/{self.ctxt.pull['number']}/comments",
+                json={"body": self.config["message"]},
             )
         except http.HTTPClientSideError as e:  # pragma: no cover
             return check_api.Result(
@@ -80,17 +80,30 @@ class CloseAction(actions.BackwardCompatAction):
             )
 
         await signals.send(
-            ctxt.repository,
-            ctxt.pull["number"],
+            self.ctxt.repository,
+            self.ctxt.pull["number"],
             "action.close",
             signals.EventNoMetadata(),
-            rule.get_signal_trigger(),
+            self.rule.get_signal_trigger(),
         )
         return check_api.Result(
-            check_api.Conclusion.SUCCESS, "The pull request has been closed", message
+            check_api.Conclusion.SUCCESS,
+            "The pull request has been closed",
+            self.config["message"],
         )
 
-    async def cancel(
-        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
-    ) -> check_api.Result:  # pragma: no cover
+    async def cancel(self) -> check_api.Result:  # pragma: no cover
         return actions.CANCELLED_CHECK_REPORT
+
+    @property
+    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
+        return ()
+
+
+class CloseAction(actions.Action):
+    flags = (
+        actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
+        | actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
+    )
+    validator = {voluptuous.Required("message", default=MSG): types.Jinja2}
+    executor_class = CloseExecutor
