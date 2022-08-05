@@ -24,18 +24,23 @@ from mergify_engine import signals
 from mergify_engine.rules import conditions
 
 
-class UpdateAction(actions.BackwardCompatAction):
-    flags = (
-        actions.ActionFlag.ALWAYS_RUN
-        | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
-        | actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
-    )
-    validator: typing.ClassVar[typing.Dict[typing.Any, typing.Any]] = {}
+class UpdateExecutorConfig(typing.TypedDict):
+    pass
 
-    @staticmethod
-    async def run(ctxt: context.Context, rule: rules.EvaluatedRule) -> check_api.Result:
+
+class UpdateExecutor(actions.ActionExecutor["UpdateAction", "UpdateExecutorConfig"]):
+    @classmethod
+    async def create(
+        cls,
+        action: "UpdateAction",
+        ctxt: "context.Context",
+        rule: "rules.EvaluatedRule",
+    ) -> "UpdateExecutor":
+        return cls(ctxt, rule, UpdateExecutorConfig())
+
+    async def run(self) -> check_api.Result:
         try:
-            await branch_updater.update_with_api(ctxt)
+            await branch_updater.update_with_api(self.ctxt)
         except branch_updater.BranchUpdateFailure as e:
             return check_api.Result(
                 check_api.Conclusion.FAILURE,
@@ -44,17 +49,30 @@ class UpdateAction(actions.BackwardCompatAction):
             )
         else:
             await signals.send(
-                ctxt.repository,
-                ctxt.pull["number"],
+                self.ctxt.repository,
+                self.ctxt.pull["number"],
                 "action.update",
                 signals.EventNoMetadata(),
-                rule.get_signal_trigger(),
+                self.rule.get_signal_trigger(),
             )
             return check_api.Result(
                 check_api.Conclusion.SUCCESS,
                 "Branch has been successfully updated",
                 "",
             )
+
+    async def cancel(self) -> check_api.Result:  # pragma: no cover
+        return actions.CANCELLED_CHECK_REPORT
+
+
+class UpdateAction(actions.Action):
+    flags = (
+        actions.ActionFlag.ALWAYS_RUN
+        | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
+        | actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
+    )
+    validator: typing.ClassVar[typing.Dict[typing.Any, typing.Any]] = {}
+    executor_class = UpdateExecutor
 
     async def get_conditions_requirements(
         self,
@@ -73,8 +91,3 @@ class UpdateAction(actions.BackwardCompatAction):
                 description=description,
             ),
         ]
-
-    async def cancel(
-        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
-    ) -> check_api.Result:  # pragma: no cover
-        return actions.CANCELLED_CHECK_REPORT
