@@ -116,3 +116,20 @@ async def render_bot_account(
             )
 
     return bot_account
+
+
+async def render_users_template(
+    ctxt: context.Context, users: typing.List[str]
+) -> typing.Set[str]:
+    wanted = set()
+    for user in set(users):
+        try:
+            user = await ctxt.pull_request.render_template(user)
+        except context.RenderTemplateFailure:
+            # NOTE: this should never happen since
+            # the template is validated when parsing the config 🤷
+            continue
+        else:
+            wanted.add(user)
+
+    return wanted

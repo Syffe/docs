@@ -14,6 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import typing
+
 import voluptuous
 
 from mergify_engine import actions
@@ -21,37 +23,51 @@ from mergify_engine import check_api
 from mergify_engine import context
 from mergify_engine import rules
 from mergify_engine import signals
+from mergify_engine.actions import utils as actions_utils
 from mergify_engine.clients import http
 from mergify_engine.rules import types
 
 
-class AssignAction(actions.BackwardCompatAction):
-    validator = {
+class AssignExecutorConfig(typing.TypedDict):
+    users_to_add: typing.Set[str]
+    users_to_remove: typing.Set[str]
+
+
+class AssignExecutor(actions.ActionExecutor["AssignAction", AssignExecutorConfig]):
+    @classmethod
+    async def create(
+        cls,
+        action: "AssignAction",
+        ctxt: "context.Context",
+        rule: "rules.EvaluatedRule",
+    ) -> "AssignExecutor":
         # NOTE: "users" is deprecated, but kept as legacy code for old config
-        voluptuous.Required("users", default=list): [types.Jinja2],
-        voluptuous.Required("add_users", default=list): [types.Jinja2],
-        voluptuous.Required("remove_users", default=list): [types.Jinja2],
-    }
+        add_users = action.config["users"] + action.config["add_users"]
+        users_to_add_parsed = await actions_utils.render_users_template(ctxt, add_users)
+        users_to_remove_parsed = await actions_utils.render_users_template(
+            ctxt, action.config["remove_users"]
+        )
+        return cls(
+            ctxt,
+            rule,
+            AssignExecutorConfig(
+                {
+                    "users_to_add": users_to_add_parsed,
+                    "users_to_remove": users_to_remove_parsed,
+                }
+            ),
+        )
 
-    flags = (
-        actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
-        | actions.ActionFlag.ALWAYS_RUN
-    )
+    async def run(self) -> check_api.Result:
 
-    async def run(
-        self, ctxt: context.Context, rule: rules.EvaluatedRule
-    ) -> check_api.Result:
-
-        # NOTE: "users" is deprecated, but kept as legacy code for old config
-        add_users = self.config["users"] + self.config["add_users"]
-        users_to_add_parsed = await self.wanted_users(ctxt, add_users)
         assignees_to_add = list(
-            users_to_add_parsed - {a["login"] for a in ctxt.pull["assignees"]}
+            self.config["users_to_add"]
+            - {a["login"] for a in self.ctxt.pull["assignees"]}
         )
         if assignees_to_add:
             try:
-                await ctxt.client.post(
-                    f"{ctxt.base_url}/issues/{ctxt.pull['number']}/assignees",
+                await self.ctxt.client.post(
+                    f"{self.ctxt.base_url}/issues/{self.ctxt.pull['number']}/assignees",
                     json={"assignees": assignees_to_add},
                 )
             except http.HTTPClientSideError as e:  # pragma: no cover
@@ -61,17 +77,15 @@ class AssignAction(actions.BackwardCompatAction):
                     f"GitHub error: [{e.status_code}] `{e.message}`",
                 )
 
-        users_to_remove_parsed = await self.wanted_users(
-            ctxt, self.config["remove_users"]
-        )
         assignees_to_remove = list(
-            users_to_remove_parsed & {a["login"] for a in ctxt.pull["assignees"]}
+            self.config["users_to_remove"]
+            & {a["login"] for a in self.ctxt.pull["assignees"]}
         )
         if assignees_to_remove:
             try:
-                await ctxt.client.request(
+                await self.ctxt.client.request(
                     "DELETE",
-                    f"{ctxt.base_url}/issues/{ctxt.pull['number']}/assignees",
+                    f"{self.ctxt.base_url}/issues/{self.ctxt.pull['number']}/assignees",
                     json={"assignees": assignees_to_remove},
                 )
             except http.HTTPClientSideError as e:  # pragma: no cover
@@ -83,13 +97,13 @@ class AssignAction(actions.BackwardCompatAction):
 
         if assignees_to_add or assignees_to_remove:
             await signals.send(
-                ctxt.repository,
-                ctxt.pull["number"],
+                self.ctxt.repository,
+                self.ctxt.pull["number"],
                 "action.assign",
                 signals.EventAssignMetadata(
                     {"added": assignees_to_add, "removed": assignees_to_remove}
                 ),
-                rule.get_signal_trigger(),
+                self.rule.get_signal_trigger(),
             )
 
             return check_api.Result(
@@ -104,7 +118,20 @@ class AssignAction(actions.BackwardCompatAction):
                 "",
             )
 
-    async def cancel(
-        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
-    ) -> check_api.Result:  # pragma: no cover
+    async def cancel(self) -> check_api.Result:  # pragma: no cover
         return actions.CANCELLED_CHECK_REPORT
+
+
+class AssignAction(actions.Action):
+    validator = {
+        # NOTE: "users" is deprecated, but kept as legacy code for old config
+        voluptuous.Required("users", default=list): [types.Jinja2],
+        voluptuous.Required("add_users", default=list): [types.Jinja2],
+        voluptuous.Required("remove_users", default=list): [types.Jinja2],
+    }
+
+    flags = (
+        actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
+        | actions.ActionFlag.ALWAYS_RUN
+    )
+    executor_class = AssignExecutor
