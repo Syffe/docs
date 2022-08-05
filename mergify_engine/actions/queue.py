@@ -489,6 +489,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
         )
         if manually_unqueued:
             reason = "The pull request has been manually removed from the queue by an `unqueue` command."
+        elif await ctxt.has_been_synchronized_by_user():
+            reason = "The pull request code has been updated."
         else:
             reason = (
                 "The queue conditions cannot be satisfied due to failing checks or checks timeout. "
@@ -503,6 +505,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
     async def _should_be_queued(
         self, ctxt: context.Context, q: merge_train.Train
     ) -> bool:
+        if await ctxt.has_been_synchronized_by_user():
+            return False
         check = await ctxt.get_engine_check_run(constants.MERGE_QUEUE_SUMMARY_NAME)
         return not check or check_api.Conclusion(check["conclusion"]) in [
             check_api.Conclusion.SUCCESS,
