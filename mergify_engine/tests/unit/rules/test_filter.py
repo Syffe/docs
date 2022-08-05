@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import dataclasses
 import datetime
 import typing
 import zoneinfo
@@ -74,6 +75,31 @@ async def test_len() -> None:
     assert await f(FakePR({"foo": [10, "abc", 20, 30]}))
     assert not await f(FakePR({"foo": [10, 20]}))
     assert not await f(FakePR({"foo": []}))
+
+
+@dataclasses.dataclass
+class Obj(filter.StringLike):
+    foo: str
+    bar: str
+
+    def __str__(self):
+        return f"{self.foo}a{self.bar}"
+
+
+async def test_object() -> None:
+    f = filter.BinaryFilter({"=": ("foo", "bar")})
+    assert await f(FakePR({"foo": Obj("b", "r")}))
+    assert not await f(FakePR({"foo": Obj("o", "k")}))
+
+    assert await f(FakePR({"foo": [Obj("b", "r")]}))
+    assert not await f(FakePR({"foo": [Obj("o", "k")]}))
+
+    f = filter.BinaryFilter({"~=": ("foo", "^bar")})
+    assert await f(FakePR({"foo": Obj("b", "r")}))
+    assert not await f(FakePR({"foo": Obj("o", "k")}))
+
+    assert await f(FakePR({"foo": [Obj("b", "r")]}))
+    assert not await f(FakePR({"foo": [Obj("o", "k")]}))
 
 
 async def test_optimized_len() -> None:

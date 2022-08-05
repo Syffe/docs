@@ -62,7 +62,19 @@ class InvalidArguments(InvalidQuery, ValueError):
         self.arguments = arguments
 
 
+class StringLike:
+    pass
+
+
 def _identity(value: _T) -> _T:
+    return value
+
+
+def _format_attribute_value(value: _T) -> _T | list[str] | str:
+    if isinstance(value, list) and value and isinstance(value[0], StringLike):
+        return [str(v) for v in value]
+    if isinstance(value, StringLike):
+        return str(value)
     return value
 
 
@@ -202,11 +214,15 @@ class Filter(typing.Generic[FilterResultT]):
         op: typing.Callable[[typing.Any], typing.Any]
         if attribute_name.startswith(self.LENGTH_OPERATOR):
             try:
-                return await self._get_attribute_values(obj, attribute_name, _identity)
+                return await self._get_attribute_values(
+                    obj, attribute_name, _format_attribute_value
+                )
             except UnknownAttribute:
                 return await self._get_attribute_values(obj, attribute_name[1:], len)
         else:
-            return await self._get_attribute_values(obj, attribute_name, _identity)
+            return await self._get_attribute_values(
+                obj, attribute_name, _format_attribute_value
+            )
 
     def build_evaluator(
         self,
