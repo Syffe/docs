@@ -28,21 +28,26 @@ from mergify_engine.clients import http
 from mergify_engine.rules import conditions
 
 
-class DeleteHeadBranchAction(actions.BackwardCompatAction):
-    flags = (
-        actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
-        | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
-    )
-    validator = {voluptuous.Required("force", default=False): bool}
+class DeleteHeadBranchExecutorConfig(typing.TypedDict):
+    force: bool
 
-    @property
-    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
-        return ()
 
-    async def run(
-        self, ctxt: context.Context, rule: rules.EvaluatedRule
-    ) -> check_api.Result:
-        if ctxt.pull_from_fork:
+class DeleteHeadBranchExecutor(
+    actions.ActionExecutor["DeleteHeadBranchAction", DeleteHeadBranchExecutorConfig]
+):
+    @classmethod
+    async def create(
+        cls,
+        action: "DeleteHeadBranchAction",
+        ctxt: "context.Context",
+        rule: "rules.EvaluatedRule",
+    ) -> "DeleteHeadBranchExecutor":
+        return cls(
+            ctxt, rule, DeleteHeadBranchExecutorConfig(force=action.config["force"])
+        )
+
+    async def run(self) -> check_api.Result:
+        if self.ctxt.pull_from_fork:
             return check_api.Result(
                 check_api.Conclusion.SUCCESS, "Pull request come from fork", ""
             )
@@ -50,21 +55,21 @@ class DeleteHeadBranchAction(actions.BackwardCompatAction):
         if not self.config["force"]:
             pulls_using_this_branch = [
                 pull
-                async for pull in ctxt.client.items(
-                    f"{ctxt.base_url}/pulls",
+                async for pull in self.ctxt.client.items(
+                    f"{self.ctxt.base_url}/pulls",
                     resource_name="pulls",
                     page_limit=20,
-                    params={"base": ctxt.pull["head"]["ref"]},
+                    params={"base": self.ctxt.pull["head"]["ref"]},
                 )
             ] + [
                 pull
-                async for pull in ctxt.client.items(
-                    f"{ctxt.base_url}/pulls",
+                async for pull in self.ctxt.client.items(
+                    f"{self.ctxt.base_url}/pulls",
                     resource_name="pulls",
                     page_limit=5,
-                    params={"head": ctxt.pull["head"]["label"]},
+                    params={"head": self.ctxt.pull["head"]["label"]},
                 )
-                if pull["number"] is not ctxt.pull["number"]
+                if pull["number"] is not self.ctxt.pull["number"]
             ]
             if pulls_using_this_branch:
                 pulls_using_this_branch_formatted = "\n".join(
@@ -73,20 +78,22 @@ class DeleteHeadBranchAction(actions.BackwardCompatAction):
                 return check_api.Result(
                     check_api.Conclusion.NEUTRAL,
                     "Not deleting the head branch",
-                    f"Branch `{ctxt.pull['head']['ref']}` was not deleted "
+                    f"Branch `{self.ctxt.pull['head']['ref']}` was not deleted "
                     f"because it is used by:\n{pulls_using_this_branch_formatted}",
                 )
 
-        ref_to_delete = parse.quote(ctxt.pull["head"]["ref"], safe="")
+        ref_to_delete = parse.quote(self.ctxt.pull["head"]["ref"], safe="")
         try:
-            await ctxt.client.delete(f"{ctxt.base_url}/git/refs/heads/{ref_to_delete}")
+            await self.ctxt.client.delete(
+                f"{self.ctxt.base_url}/git/refs/heads/{ref_to_delete}"
+            )
         except http.HTTPClientSideError as e:
             if e.status_code == 404 or (
                 e.status_code == 422 and "Reference does not exist" in e.message
             ):
                 return check_api.Result(
                     check_api.Conclusion.SUCCESS,
-                    f"Branch `{ctxt.pull['head']['ref']}` does not exist",
+                    f"Branch `{self.ctxt.pull['head']['ref']}` does not exist",
                     "",
                 )
             else:
@@ -96,22 +103,33 @@ class DeleteHeadBranchAction(actions.BackwardCompatAction):
                     f"GitHub error: [{e.status_code}] `{e.message}`",
                 )
         await signals.send(
-            ctxt.repository,
-            ctxt.pull["number"],
+            self.ctxt.repository,
+            self.ctxt.pull["number"],
             "action.delete_head_branch",
             signals.EventNoMetadata(),
-            rule.get_signal_trigger(),
+            self.rule.get_signal_trigger(),
         )
         return check_api.Result(
             check_api.Conclusion.SUCCESS,
-            f"Branch `{ctxt.pull['head']['ref']}` has been deleted",
+            f"Branch `{self.ctxt.pull['head']['ref']}` has been deleted",
             "",
         )
 
-    async def cancel(
-        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
-    ) -> check_api.Result:  # pragma: no cover
+    async def cancel(self) -> check_api.Result:  # pragma: no cover
         return actions.CANCELLED_CHECK_REPORT
+
+    @property
+    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
+        return ()
+
+
+class DeleteHeadBranchAction(actions.Action):
+    flags = (
+        actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
+        | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
+    )
+    validator = {voluptuous.Required("force", default=False): bool}
+    executor_class = DeleteHeadBranchExecutor
 
     async def get_conditions_requirements(
         self,
