@@ -553,8 +553,8 @@ async def handle(
     except rules.InvalidPullRequestRule as e:
         return check_api.Result(
             check_api.Conclusion.ACTION_REQUIRED,
-            e.reason,
-            e.details,
+            "The current Mergify configuration is invalid",
+            f"### {e.reason}\n\n{e.details}",
         )
     await delayed_refresh.plan_next_refresh(
         ctxt, match.matching_rules, ctxt.pull_request

@@ -309,7 +309,10 @@ class TestPostCheckActionNoSub(base.FunctionalTestBase):
         sorted_checks = sorted(
             await ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
         )
-        assert len(sorted_checks) == 2
+        assert len(sorted_checks) == 1
         check = sorted_checks[0]
         assert "action_required" == check["conclusion"]
-        assert "Custom checks are disabled" == check["output"]["title"]
+        assert (
+            "The current Mergify configuration is invalid" == check["output"]["title"]
+        )
+        assert "Custom checks are disabled" in check["output"]["summary"]

@@ -106,8 +106,8 @@ async def simulator_pull(
     try:
         match = await config["pull_request_rules"].get_pull_request_rule(ctxt)
     except rules.InvalidPullRequestRule as e:
-        title = e.reason
-        summary = e.details
+        title = "The current Mergify configuration is invalid"
+        summary = f"### {e.reason}\n\n{e.details}"
     else:
         title, summary = await actions_runner.gen_summary(
             ctxt, config["pull_request_rules"], match
