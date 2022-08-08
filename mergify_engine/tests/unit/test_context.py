@@ -802,11 +802,25 @@ commits:
     ctxt._caches.commits.set(
         [
             github_types.CachedGitHubBranchCommit(
-                {"commit_message": "azerty"}
-            ),  # type:ignore[typeddict-item]
+                sha=github_types.SHAType("foo"),
+                commit_message="azerty",
+                commit_verification_verified=False,
+                parents=[],
+                author="someone",
+                committer="someone-else",
+                date_author=github_types.ISODateTimeType(""),
+                date_committer=github_types.ISODateTimeType(""),
+            ),
             github_types.CachedGitHubBranchCommit(
-                {"commit_message": "qsdfgh"}
-            ),  # type:ignore[typeddict-item]
+                sha=github_types.SHAType("foobar"),
+                commit_message="qsdfgh",
+                commit_verification_verified=False,
+                parents=[],
+                author="someone",
+                committer="someone-else",
+                date_author=github_types.ISODateTimeType(""),
+                date_committer=github_types.ISODateTimeType(""),
+            ),
         ]
     )
     assert await ctxt.pull_request.get_commit_message(
@@ -1270,3 +1284,87 @@ async def test_dependabot_attributes_parsing_ko(commit_msg: str) -> None:
         mock.Mock(), commit_msg
     )
     assert res is None
+
+
+async def test_commit_details_from_attributes(
+    a_pull_request: github_types.GitHubPullRequest,
+) -> None:
+    a_pull_request[
+        "body"
+    ] = """
+Yo!
+### Commits:
+
+# COMMIT LIST:
+{% for commit in commits %}
+    - {{ commit.author }}
+    - {{ commit.date_author }}
+    - {{ commit }}
+    - {{ commit.committer }}
+    - {{ commit.date_committer }}
+{% endfor %}
+"""
+    commits = [
+        github_types.CachedGitHubBranchCommit(
+            sha=github_types.SHAType("6666bbbb"),
+            commit_message="first commit to do something",
+            commit_verification_verified=True,
+            parents=[github_types.SHAType("6666aaaa")],
+            author="someone",
+            committer="someone 2",
+            date_author=github_types.ISODateTimeType("2012-04-14T16:00:49Z"),
+            date_committer=github_types.ISODateTimeType("2013-04-14T16:00:49Z"),
+        ),
+        github_types.CachedGitHubBranchCommit(
+            sha=github_types.SHAType("7777bbbb"),
+            commit_message="second commit to do something",
+            commit_verification_verified=True,
+            parents=[github_types.SHAType("7777aaaa")],
+            author="someone-else",
+            committer="someone-else 2",
+            date_author=github_types.ISODateTimeType("2013-04-14T16:00:49Z"),
+            date_committer=github_types.ISODateTimeType("2014-04-14T16:00:49Z"),
+        ),
+        github_types.CachedGitHubBranchCommit(
+            sha=github_types.SHAType("8888bbbb"),
+            commit_message="third commit to do something",
+            commit_verification_verified=True,
+            parents=[github_types.SHAType("8888aaaa")],
+            author="another-someone",
+            committer="another-someone 2",
+            date_author=github_types.ISODateTimeType("2014-04-14T16:00:49Z"),
+            date_committer=github_types.ISODateTimeType("2015-04-14T16:00:49Z"),
+        ),
+    ]
+    ctxt = await context.Context.create(mock.Mock(), a_pull_request)
+    ctxt._caches.commits.set(commits)
+
+    template = await ctxt.pull_request.render_template(a_pull_request["body"])  # type: ignore[arg-type]
+    print(template)
+    assert (
+        template
+        == """
+Yo!
+### Commits:
+
+# COMMIT LIST:
+
+    - someone
+    - 2012-04-14T16:00:49Z
+    - first commit to do something
+    - someone 2
+    - 2013-04-14T16:00:49Z
+
+    - someone-else
+    - 2013-04-14T16:00:49Z
+    - second commit to do something
+    - someone-else 2
+    - 2014-04-14T16:00:49Z
+
+    - another-someone
+    - 2014-04-14T16:00:49Z
+    - third commit to do something
+    - another-someone 2
+    - 2015-04-14T16:00:49Z
+"""
+    )

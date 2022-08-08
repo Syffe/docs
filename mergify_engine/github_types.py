@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import dataclasses
 import typing
 
 
@@ -120,9 +121,16 @@ class GitHubBranchCommitVerification(typing.TypedDict):
     verified: bool
 
 
+class GitHubAuthorCommitterCommit(typing.TypedDict):
+    name: str
+    date: ISODateTimeType
+
+
 class GitHubBranchCommitCommit(typing.TypedDict):
     message: str
     verification: GitHubBranchCommitVerification
+    author: GitHubAuthorCommitterCommit
+    committer: GitHubAuthorCommitterCommit
 
 
 class GitHubBranchCommit(typing.TypedDict):
@@ -131,25 +139,34 @@ class GitHubBranchCommit(typing.TypedDict):
     commit: GitHubBranchCommitCommit
 
 
-class CachedGitHubBranchCommit(typing.TypedDict):
+@dataclasses.dataclass
+class CachedGitHubBranchCommit:
     sha: SHAType
     parents: typing.List[SHAType]
     commit_message: str
     commit_verification_verified: bool
+    author: str
+    committer: str
+    date_author: ISODateTimeType
+    date_committer: ISODateTimeType
+    __string_like__ = True
+
+    def __str__(self) -> str:
+        return self.commit_message
 
 
 def to_cached_github_branch_commit(
     commit: GitHubBranchCommit,
 ) -> CachedGitHubBranchCommit:
     return CachedGitHubBranchCommit(
-        {
-            "sha": commit["sha"],
-            "commit_message": commit["commit"]["message"],
-            "commit_verification_verified": commit["commit"]["verification"][
-                "verified"
-            ],
-            "parents": [p["sha"] for p in commit["parents"]],
-        }
+        sha=commit["sha"],
+        commit_message=commit["commit"]["message"],
+        commit_verification_verified=commit["commit"]["verification"]["verified"],
+        parents=[p["sha"] for p in commit["parents"]],
+        author=commit["commit"]["author"]["name"],
+        committer=commit["commit"]["committer"]["name"],
+        date_author=commit["commit"]["author"]["date"],
+        date_committer=commit["commit"]["committer"]["date"],
     )
 
 

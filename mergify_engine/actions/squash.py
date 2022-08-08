@@ -89,11 +89,11 @@ class SquashAction(actions.BackwardCompatAction):
         elif self.config["commit_message"] == "all-commits":
             message = f"{(await ctxt.pull_request.title)} (#{(await ctxt.pull_request.number)})\n"
             message += "\n\n* ".join(
-                [commit["commit_message"] for commit in await ctxt.commits]
+                [commit.commit_message for commit in await ctxt.commits]
             )
 
         elif self.config["commit_message"] == "first-commit":
-            message = (await ctxt.commits)[0]["commit_message"]
+            message = (await ctxt.commits)[0].commit_message
 
         elif self.config["commit_message"] == "title+body":
             message = f"{(await ctxt.pull_request.title)} (#{(await ctxt.pull_request.number)})"

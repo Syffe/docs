@@ -206,8 +206,8 @@ Here's the list of pull request attribute that can be used in conditions:
      - integer
      - The pull request number.
    * - ``commits``
-     - list of string
-     - The list of commit messages of the pull request.
+     - list of :ref:`commits <data type commit>`
+     - The list of commits of the pull request.
    * - ``queue-position``
      - integer
      - The position of the pull request in its queue if queued. The first pull

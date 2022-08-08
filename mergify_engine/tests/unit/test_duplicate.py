@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import datetime
 import typing
 from unittest import mock
 
@@ -61,20 +62,24 @@ async def test_get_commits_to_cherry_pick_rebase(
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
     c1 = github_types.CachedGitHubBranchCommit(
-        {
-            "sha": github_types.SHAType("c1f"),
-            "parents": [],
-            "commit_message": "foobar",
-            "commit_verification_verified": False,
-        }
+        sha=github_types.SHAType("c1f"),
+        commit_message="foobar",
+        commit_verification_verified=False,
+        parents=[],
+        author="someone",
+        committer="someone-else",
+        date_author=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
+        date_committer=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
     )
     c2 = github_types.CachedGitHubBranchCommit(
-        {
-            "sha": github_types.SHAType("c2"),
-            "parents": [c1["sha"]],
-            "commit_message": "foobar",
-            "commit_verification_verified": False,
-        }
+        sha=github_types.SHAType("c2"),
+        commit_message="foobar",
+        commit_verification_verified=False,
+        parents=[c1.sha],
+        author="someone",
+        committer="someone-else",
+        date_author=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
+        date_committer=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
     )
     commits.return_value = [c1, c2]
 
@@ -92,14 +97,44 @@ async def test_get_commits_to_cherry_pick_rebase(
         {
             "sha": github_types.SHAType("rebased_c1"),
             "parents": [base_branch],
-            "commit": {"message": "hello c1", "verification": {"verified": False}},
+            "commit": {
+                "message": "hello c1",
+                "verification": {"verified": False},
+                "author": {
+                    "name": "someone",
+                    "date": github_types.ISODateTimeType(
+                        str(datetime.datetime.utcnow())
+                    ),
+                },
+                "committer": {
+                    "name": "someone-else",
+                    "date": github_types.ISODateTimeType(
+                        str(datetime.datetime.utcnow())
+                    ),
+                },
+            },
         }
     )
     rebased_c2 = github_types.GitHubBranchCommit(
         {
             "sha": github_types.SHAType("rebased_c2"),
             "parents": [rebased_c1],
-            "commit": {"message": "hello c2", "verification": {"verified": False}},
+            "commit": {
+                "message": "hello c2",
+                "verification": {"verified": False},
+                "author": {
+                    "name": "someone",
+                    "date": github_types.ISODateTimeType(
+                        str(datetime.datetime.utcnow())
+                    ),
+                },
+                "committer": {
+                    "name": "someone-else",
+                    "date": github_types.ISODateTimeType(
+                        str(datetime.datetime.utcnow())
+                    ),
+                },
+            },
         }
     )
 
@@ -129,20 +164,24 @@ async def test_get_commits_to_cherry_pick_merge(
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
     c1 = github_types.CachedGitHubBranchCommit(
-        {
-            "sha": github_types.SHAType("c1f"),
-            "parents": [],
-            "commit_message": "foobar",
-            "commit_verification_verified": False,
-        }
+        sha=github_types.SHAType("c1f"),
+        commit_message="foobar",
+        commit_verification_verified=False,
+        parents=[],
+        author="someone",
+        committer="someone-else",
+        date_author=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
+        date_committer=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
     )
     c2 = github_types.CachedGitHubBranchCommit(
-        {
-            "sha": github_types.SHAType("c2"),
-            "parents": [c1["sha"]],
-            "commit_message": "foobar",
-            "commit_verification_verified": False,
-        }
+        sha=github_types.SHAType("c2"),
+        commit_message="foobar",
+        commit_verification_verified=False,
+        parents=[c1.sha],
+        author="someone",
+        committer="someone-else",
+        date_author=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
+        date_committer=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
     )
 
     async def fake_commits() -> typing.List[github_types.CachedGitHubBranchCommit]:
@@ -157,20 +196,24 @@ async def test_get_commits_to_cherry_pick_merge(
     ctxt.repository.installation.client = client
 
     base_branch = github_types.CachedGitHubBranchCommit(
-        {
-            "sha": github_types.SHAType("base_branch"),
-            "parents": [],
-            "commit_message": "foobar",
-            "commit_verification_verified": False,
-        }
+        sha=github_types.SHAType("base_branch"),
+        commit_message="foobar",
+        commit_verification_verified=False,
+        parents=[],
+        author="someone",
+        committer="someone-else",
+        date_author=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
+        date_committer=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
     )
     merge_commit = github_types.CachedGitHubBranchCommit(
-        {
-            "sha": github_types.SHAType("merge_commit"),
-            "parents": [base_branch["sha"], c2["sha"]],
-            "commit_message": "foobar",
-            "commit_verification_verified": False,
-        }
+        sha=github_types.SHAType("merge_commit"),
+        commit_message="foobar",
+        commit_verification_verified=False,
+        parents=[base_branch.sha, c2.sha],
+        author="someone",
+        committer="someone-else",
+        date_author=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
+        date_committer=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
     )
 
     assert await duplicate_pull._get_commits_to_cherrypick(ctxt, merge_commit) == [

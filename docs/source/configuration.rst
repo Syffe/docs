@@ -202,6 +202,27 @@ Examples
 
 Data Types
 ----------
+.. _data type commit:
+
+Commits
+~~~~~~~
+
+List of commit object.
+
+Example structure of a commit object:
+
+.. code-block:: javascript
+
+    {
+        "sha": "foo-sha",
+        "parents": ["parent-foo-sha", "another-parent-foo-sha"],
+        "commit_message": "a commit message",
+        "commit_verification_verified": True,
+        "author": "commit-author",
+        "date_author": "2012-04-14T16:00:49Z",
+        "committer": "commit-committer",
+        "date_committer": "2012-04-15T16:00:49Z"
+    }
 
 .. _regular expressions:
 

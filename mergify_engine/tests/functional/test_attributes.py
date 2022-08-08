@@ -340,6 +340,7 @@ class TestAttributes(base.FunctionalTestBase):
             | context.PullRequest.LIST_ATTRIBUTES
             | context.PullRequest.LIST_ATTRIBUTES_WITH_LENGTH_OPTIMIZATION
         )
+        commit = (await ctxt.commits)[0]
         assert await ctxt.pull_request.items() == {
             "#commits": 1,
             "#commits-behind": 2,
@@ -367,7 +368,7 @@ class TestAttributes(base.FunctionalTestBase):
             "status-success": ["Summary"],
             "changes-requested-reviews-by": [],
             "merged": False,
-            "commits": ["test_draft: pull request n2 from integration"],
+            "commits": [commit],
             "head": self.get_full_branch_name("integration/pr2"),
             "author": config.BOT_USER_LOGIN,
             "dismissed-reviews-by": [],
@@ -544,6 +545,25 @@ class TestAttributes(base.FunctionalTestBase):
 
         comments = await self.get_issue_comments(pr["number"])
         self.assertEqual("and or pr", comments[-1]["body"])
+
+    async def test_commits_list_condition(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "list_commits",
+                    "conditions": [
+                        "commits~=test_commits_list_condition: pull request n1 from integration"
+                    ],
+                    "actions": {"comment": {"message": "list commits not empty"}},
+                }
+            ]
+        }
+        await self.setup_repo(yaml.dump(rules))
+        pr = await self.create_pr()
+        await self.run_engine()
+        await self.wait_for("issue_comment", {"action": "created"})
+        comments = await self.get_issue_comments(pr["number"])
+        self.assertEqual("list commits not empty", comments[-1]["body"])
 
     async def test_one_commit_unverified(self):
         rules = {

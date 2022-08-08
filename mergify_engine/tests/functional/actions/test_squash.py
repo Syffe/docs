@@ -81,6 +81,4 @@ Awesome body
         assert pr["commits"] == 1
 
         ctxt = await context.Context.create(self.repository_ctxt, pr, [])
-        assert (await ctxt.commits)[0][
-            "commit_message"
-        ] == "Awesome title\n\nAwesome body"
+        assert (await ctxt.commits)[0].commit_message == "Awesome title\n\nAwesome body"

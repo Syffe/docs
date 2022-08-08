@@ -1,0 +1,4 @@
+---
+features:
+  - Updated the ``commits`` attribute, now returning a list of commits. Each commits has
+    new attributes (see documentation) that can be accessed and shown in Jinja templates.

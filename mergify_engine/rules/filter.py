@@ -62,18 +62,18 @@ class InvalidArguments(InvalidQuery, ValueError):
         self.arguments = arguments
 
 
-class StringLike:
-    pass
-
-
 def _identity(value: _T) -> _T:
     return value
 
 
 def _format_attribute_value(value: _T) -> _T | list[str] | str:
-    if isinstance(value, list) and value and isinstance(value[0], StringLike):
+    if (
+        isinstance(value, list)
+        and value
+        and getattr(value[0], "__string_like__", False)
+    ):
         return [str(v) for v in value]
-    if isinstance(value, StringLike):
+    if getattr(value, "__string_like__", False):
         return str(value)
     return value
 

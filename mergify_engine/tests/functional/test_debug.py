@@ -84,6 +84,7 @@ class TestDebugger(base.FunctionalTestBase):
         summary_html_url = [
             check for check in await ctxt.pull_check_runs if check["name"] == "Summary"
         ][0]["html_url"]
+        commit = (await ctxt.commits)[0]
         assert (
             s1.strip()
             == f"""* INSTALLATION ID: {self.installation_ctxt.installation["id"]}
@@ -140,7 +141,14 @@ pull_request_rules:
  'check-timed-out': [],
  'closed': False,
  'commented-reviews-by': [],
- 'commits': ['test_debugger: pull request n1 from integration'],
+ 'commits': [CachedGitHubBranchCommit(sha='{commit.sha}',
+                                      parents={commit.parents},
+                                      commit_message='test_debugger: pull request n1 from integration',
+                                      commit_verification_verified=False,
+                                      author='Mergify',
+                                      committer='Mergify',
+                                      date_author='{commit.date_author}',
+                                      date_committer='{commit.date_committer}')],
  'commits-unverified': ['test_debugger: pull request n1 from integration'],
  'conflict': False,
  'dismissed-reviews-by': [],

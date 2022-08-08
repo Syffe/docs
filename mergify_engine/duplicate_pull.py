@@ -80,11 +80,11 @@ class CommitOrderingKey:
         c1: github_types.CachedGitHubBranchCommit,
         c2: github_types.CachedGitHubBranchCommit,
     ) -> int:
-        if c1["sha"] == c2["sha"]:
+        if c1.sha == c2.sha:
             return 0
 
-        for p_sha in c1["parents"]:
-            if c2["sha"] == p_sha:
+        for p_sha in c1.parents:
+            if c2.sha == p_sha:
                 return 1
 
         return -1
@@ -107,8 +107,8 @@ def is_base_branch_merge_commit(
     base_branch: github_types.GitHubRefType,
 ) -> bool:
     return (
-        commit["commit_message"].startswith(f"Merge branch '{base_branch}'")
-        and len(commit["parents"]) == 2
+        commit.commit_message.startswith(f"Merge branch '{base_branch}'")
+        and len(commit.parents) == 2
     )
 
 
@@ -127,20 +127,20 @@ async def _get_commits_without_base_branch_merge(
 async def _get_commits_to_cherrypick(
     ctxt: context.Context, merge_commit: github_types.CachedGitHubBranchCommit
 ) -> typing.List[github_types.CachedGitHubBranchCommit]:
-    if len(merge_commit["parents"]) == 1:
+    if len(merge_commit.parents) == 1:
         # NOTE(sileht): We have a rebase+merge or squash+merge
         # We pick all commits until a sha is not linked with our PR
 
         out_commits: typing.List[github_types.CachedGitHubBranchCommit] = []
         commit = merge_commit
         while True:
-            if len(commit["parents"]) != 1:
+            if len(commit.parents) != 1:
                 # NOTE(sileht): What is that? A merge here?
                 ctxt.log.error("unhandled commit structure")
                 return []
 
             out_commits.insert(0, commit)
-            parent_commit_sha = commit["parents"][0]
+            parent_commit_sha = commit.parents[0]
 
             pull_numbers = [
                 p["number"]
@@ -191,11 +191,11 @@ async def _get_commits_to_cherrypick(
                 )
             )
 
-    elif len(merge_commit["parents"]) == 2:
+    elif len(merge_commit.parents) == 2:
         ctxt.log.debug("Pull request merged with merge commit")
         return await _get_commits_without_base_branch_merge(ctxt)
 
-    elif len(merge_commit["parents"]) >= 3:
+    elif len(merge_commit.parents) >= 3:
         raise DuplicateFailed("merge commit with more than 2 parents are unsupported")
     else:
         raise RuntimeError("merge commit with no parents")
@@ -302,7 +302,7 @@ async def duplicate(
             # git("fetch", "origin", ctxt.pull["base"]["ref"],
             #    "--shallow-since='%s'" % last_commit_date)
             try:
-                await git("cherry-pick", "-x", commit["sha"])
+                await git("cherry-pick", "-x", commit.sha)
             except (
                 gitter.GitAuthenticationFailure,
                 gitter.GitErrorRetriable,
@@ -314,9 +314,11 @@ async def duplicate(
                     if message in e.output:
                         raise
 
-                ctxt.log.info("fail to cherry-pick %s: %s", commit["sha"], e.output)
+                ctxt.log.info("fail to cherry-pick %s: %s", commit.sha, e.output)
                 output = await git("status")
-                cherry_pick_error += f"Cherry-pick of {commit['sha']} has failed:\n```\n{output}```\n\n\n"
+                cherry_pick_error += (
+                    f"Cherry-pick of {commit.sha} has failed:\n```\n{output}```\n\n\n"
+                )
                 if not ignore_conflicts:
                     raise DuplicateFailed(cherry_pick_error)
                 await git("add", "*", _env={"GIT_NOGLOB_PATHSPECS": "0"})

@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from datetime import datetime
 import typing
 from unittest import mock
 
@@ -28,7 +29,18 @@ def create_commit(sha: github_types.SHAType) -> github_types.GitHubBranchCommit:
         {
             "sha": sha,
             "parents": [],
-            "commit": {"message": "", "verification": {"verified": False}},
+            "commit": {
+                "message": "",
+                "verification": {"verified": False},
+                "author": {
+                    "name": "someone",
+                    "date": github_types.ISODateTimeType(str(datetime.utcnow())),
+                },
+                "committer": {
+                    "name": "someone-else",
+                    "date": github_types.ISODateTimeType(str(datetime.utcnow())),
+                },
+            },
         }
     )
 

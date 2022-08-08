@@ -78,9 +78,10 @@ async def test_len() -> None:
 
 
 @dataclasses.dataclass
-class Obj(filter.StringLike):
+class Obj:
     foo: str
     bar: str
+    __string_like__ = True
 
     def __str__(self):
         return f"{self.foo}a{self.bar}"

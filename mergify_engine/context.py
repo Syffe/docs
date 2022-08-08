@@ -913,6 +913,7 @@ ContextAttributeType = typing.Union[
     typing.List[github_types.SHAType],
     typing.List[github_types.GitHubLogin],
     typing.List[github_types.GitHubBranchCommit],
+    typing.List[github_types.CachedGitHubBranchCommit],
 ]
 
 
@@ -953,9 +954,9 @@ class Context(object):
 
     async def retrieve_unverified_commits(self) -> typing.List[str]:
         return [
-            commit["commit_message"]
+            commit.commit_message
             for commit in await self.commits
-            if not commit["commit_verification_verified"]
+            if not commit.commit_verification_verified
         ]
 
     @functools.cached_property
@@ -1285,7 +1286,7 @@ class Context(object):
             return None
         commits = await self.commits
         return dependabot_helpers.get_dependabot_consolidated_data_from_commit_msg(
-            self.log, commits[0]["commit_message"]
+            self.log, commits[0].commit_message
         )
 
     async def _get_consolidated_data(self, name: str) -> ContextAttributeType:
@@ -1375,7 +1376,7 @@ class Context(object):
             return self.pull["mergeable"] is False
 
         elif name == "linear-history":
-            return all(len(commit["parents"]) == 1 for commit in await self.commits)
+            return all(len(commit.parents) == 1 for commit in await self.commits)
 
         elif name == "base":
             return self.pull["base"]["ref"]
@@ -1408,7 +1409,7 @@ class Context(object):
             return self.pull["commits"]
 
         elif name == "commits":
-            return [c["commit_message"] for c in await self.commits]
+            return await self.commits
 
         elif name == "approved-reviews-by":
             _, approvals = await self.consolidated_reviews()
@@ -1786,10 +1787,10 @@ class Context(object):
         self._caches.pull_check_runs.delete()
 
     async def _get_external_parents(self) -> typing.Set[github_types.SHAType]:
-        known_commits_sha = [commit["sha"] for commit in await self.commits]
+        known_commits_sha = [commit.sha for commit in await self.commits]
         external_parents_sha = set()
         for commit in await self.commits:
-            for parent_sha in commit["parents"]:
+            for parent_sha in commit.parents:
                 if parent_sha not in known_commits_sha:
                     external_parents_sha.add(parent_sha)
         return external_parents_sha
