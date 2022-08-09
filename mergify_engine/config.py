@@ -200,6 +200,9 @@ Schema = voluptuous.Schema(
         voluptuous.Required(
             "REDIS_EVENTLOGS_WEB_MAX_CONNECTIONS", default=None
         ): voluptuous.Any(None, voluptuous.Coerce(int)),
+        voluptuous.Required(
+            "REDIS_STATS_WEB_MAX_CONNECTIONS", default=None
+        ): voluptuous.Any(None, voluptuous.Coerce(int)),
         # NOTE(sileht): Unused anymore, but keep to detect legacy onpremise installation
         voluptuous.Required("STORAGE_URL", default=None): voluptuous.Any(None, str),
         # NOTE(sileht): Not used directly, but used to build other redis urls if not provided
@@ -224,6 +227,7 @@ Schema = voluptuous.Schema(
             None, str
         ),
         voluptuous.Required("EVENTLOGS_URL", default=None): voluptuous.Any(None, str),
+        voluptuous.Required("STATISTICS_URL", default=None): voluptuous.Any(None, str),
         voluptuous.Required("SHARED_STREAM_PROCESSES", default=1): voluptuous.Coerce(
             int
         ),
@@ -312,6 +316,7 @@ TEAM_PERMISSIONS_CACHE_URL: str
 TEAM_MEMBERS_CACHE_URL: str
 USER_PERMISSIONS_CACHE_URL: str
 ACTIVE_USERS_URL: str
+STATISTICS_URL: str
 
 BUCKET_PROCESSING_MAX_SECONDS: int
 INTEGRATION_ID: int
@@ -330,6 +335,7 @@ REDIS_STREAM_WEB_MAX_CONNECTIONS: typing.Optional[int]
 REDIS_CACHE_WEB_MAX_CONNECTIONS: typing.Optional[int]
 REDIS_QUEUE_WEB_MAX_CONNECTIONS: typing.Optional[int]
 REDIS_EVENTLOGS_WEB_MAX_CONNECTIONS: typing.Optional[int]
+REDIS_STATS_WEB_MAX_CONNECTIONS: typing.Optional[int]
 TESTING_ORGANIZATION_ID: github_types.GitHubAccountIdType
 TESTING_ORGANIZATION_NAME: github_types.GitHubLogin
 TESTING_REPOSITORY_ID: github_types.GitHubRepositoryIdType
@@ -412,6 +418,7 @@ def load() -> typing.Dict[str, typing.Any]:
         "USER_PERMISSIONS_CACHE_URL": 7,
         "EVENTLOGS_URL": 8,
         "ACTIVE_USERS_URL": 9,
+        "STATISTICS_URL": 10,
     }
 
     default_redis_url_parsed = parse.urlparse(

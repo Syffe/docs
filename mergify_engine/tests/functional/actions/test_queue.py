@@ -35,6 +35,7 @@ from mergify_engine import queue
 from mergify_engine import rules
 from mergify_engine import utils
 from mergify_engine.queue import merge_train
+from mergify_engine.queue import statistics
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import conditions
 from mergify_engine.tests.functional import base
@@ -1203,9 +1204,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "abort_reason": anys.AnySearch(
                             str(queue_utils.PrAheadDequeued(pr_number=p1["number"])),
                         ),
-                        "abort_code": queue_utils.PrAheadDequeued(
-                            pr_number=p1["number"]
-                        ).code,
+                        "abort_code": queue_utils.PrAheadDequeued.get_abort_code(),
                         "aborted": True,
                         "branch": self.main_branch_name,
                         "position": 0,
@@ -4316,6 +4315,10 @@ class TestQueueAction(base.FunctionalTestBase):
         assert len(pulls) == 0
 
         await self.assert_merge_queue_contents(q, None, [])
+        redis_repo_key = statistics._get_repository_key(
+            self.subscription.owner_id, self.RECORD_CONFIG["repository_id"]
+        )
+        assert await self.redis_links.stats.xlen(f"{redis_repo_key}/time_to_merge") == 1
 
     async def test_queue_without_branch_protection_for_queueing(self):
         rules = {
@@ -4620,6 +4623,14 @@ pull_requests:
 
         pulls = await self.get_pulls()
         assert len(pulls) == 2
+
+        redis_repo_key = statistics._get_repository_key(
+            self.subscription.owner_id, self.RECORD_CONFIG["repository_id"]
+        )
+        assert (
+            await self.redis_links.stats.xlen(f"{redis_repo_key}/failure_by_reason")
+            == 1
+        )
 
     async def test_create_pull_after_failure(self):
         config = {

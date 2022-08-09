@@ -962,7 +962,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
                         "abort_reason": str(abort_reason)
                         if abort_reason is not None
                         else "",
-                        "abort_code": abort_reason.code
+                        "abort_code": abort_reason.get_abort_code()
                         if abort_reason is not None
                         else None,
                         "queue_name": ep.config["name"],

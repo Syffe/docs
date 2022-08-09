@@ -25,14 +25,10 @@ from mergify_engine import utils
 class BaseAbortReason:
     message: typing.ClassVar[str]
 
-    @property
-    def code(self) -> str:
+    @classmethod
+    def get_abort_code(cls) -> str:
         # eg: BaseAbortReason -> BASE_ABORT_REASON
-        return (
-            re.sub(r"([A-Z][a-z]+)", r"\1_", self.__class__.__name__)
-            .rstrip("_")
-            .upper()
-        )
+        return re.sub(r"([A-Z][a-z]+)", r"\1_", cls.__name__).rstrip("_").upper()
 
     def __str__(self) -> str:
         format_vars = {

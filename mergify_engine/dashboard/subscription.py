@@ -55,6 +55,7 @@ class Features(enum.Enum):
     QUEUE_FREEZE = "queue_freeze"
     EVENTLOGS_SHORT = "eventlogs_short"
     EVENTLOGS_LONG = "eventlogs_long"
+    MERGE_QUEUE_STATS = "merge_queue_stats"
 
 
 class SubscriptionDict(typing.TypedDict):
@@ -75,6 +76,7 @@ class SubscriptionDict(typing.TypedDict):
             "queue_freeze",
             "eventlogs_short",
             "eventlogs_long",
+            "merge_queue_stats",
         ]
     ]
 
