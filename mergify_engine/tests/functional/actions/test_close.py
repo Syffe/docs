@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Copyright © 2020 Mergify SAS
+# Copyright © 2020–2022 Mergify SAS
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -17,11 +17,12 @@ import yaml
 
 from mergify_engine import config
 from mergify_engine import context
+from mergify_engine import github_types
 from mergify_engine.tests.functional import base
 
 
 class TestCloseAction(base.FunctionalTestBase):
-    async def test_close(self):
+    async def test_close(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -43,7 +44,7 @@ class TestCloseAction(base.FunctionalTestBase):
         comments = await self.get_issue_comments(p["number"])
         self.assertEqual("WTF?", comments[-1]["body"])
 
-    async def test_close_template(self):
+    async def test_close_template(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -65,7 +66,9 @@ class TestCloseAction(base.FunctionalTestBase):
         comments = await self.get_issue_comments(p["number"])
         self.assertEqual(f"Thank you {config.BOT_USER_LOGIN}", comments[-1]["body"])
 
-    async def _test_close_template_error(self, msg):
+    async def _test_close_template_error(
+        self, msg: str
+    ) -> github_types.CachedGitHubCheckRun:
         rules = {
             "pull_request_rules": [
                 {
@@ -95,7 +98,7 @@ class TestCloseAction(base.FunctionalTestBase):
         )
         return checks[0]
 
-    async def test_close_template_syntax_error(self):
+    async def test_close_template_syntax_error(self) -> None:
         check = await self._test_close_template_error(
             msg="Thank you {{",
         )
@@ -107,7 +110,7 @@ unexpected 'end of template'
             == check["output"]["summary"]
         )
 
-    async def test_close_template_attribute_error(self):
+    async def test_close_template_attribute_error(self) -> None:
         check = await self._test_close_template_error(
             msg="Thank you {{hello}}",
         )

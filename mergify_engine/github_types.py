@@ -137,6 +137,7 @@ class GitHubBranchCommit(typing.TypedDict):
     sha: SHAType
     parents: typing.List[GitHubBranchCommitParent]
     commit: GitHubBranchCommitCommit
+    committer: GitHubAccount
 
 
 @dataclasses.dataclass

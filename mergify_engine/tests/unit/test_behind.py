@@ -41,6 +41,12 @@ def create_commit(sha: github_types.SHAType) -> github_types.GitHubBranchCommit:
                     "date": github_types.ISODateTimeType(str(datetime.utcnow())),
                 },
             },
+            "committer": {
+                "login": github_types.GitHubLogin("foobar"),
+                "id": github_types.GitHubAccountIdType(1),
+                "type": "User",
+                "avatar_url": "",
+            },
         }
     )
 

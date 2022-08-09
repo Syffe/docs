@@ -1192,7 +1192,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
     async def edit_pull(
         self,
         pull_number: github_types.GitHubPullRequestNumber,
-        **payload: typing.Dict[str, typing.Any],
+        **payload: typing.Any,
     ) -> github_types.GitHubPullRequest:
         return typing.cast(
             github_types.GitHubPullRequest,

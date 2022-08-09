@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Copyright © 2020 Mergify SAS
+# Copyright © 2020–2022 Mergify SAS
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -20,6 +20,7 @@ import yaml
 
 from mergify_engine import config
 from mergify_engine import context
+from mergify_engine import github_types
 from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 
@@ -29,25 +30,27 @@ class TestDismissReviewsAction(base.FunctionalTestBase):
         subscription.Features.EVENTLOGS_SHORT,
         subscription.Features.EVENTLOGS_LONG,
     )
-    async def test_dismiss_reviews(self):
+    async def test_dismiss_reviews(self) -> None:
         await self._test_dismiss_reviews()
 
     @pytest.mark.subscription(
         subscription.Features.EVENTLOGS_SHORT,
         subscription.Features.EVENTLOGS_LONG,
     )
-    async def test_dismiss_reviews_custom_message(self):
+    async def test_dismiss_reviews_custom_message(self) -> None:
         await self._test_dismiss_reviews(message="Loser")
 
     async def _push_for_synchronize(
-        self, branch, filename="unwanted_changes", remote="origin"
-    ):
+        self, branch: str, filename: str = "unwanted_changes", remote: str = "origin"
+    ) -> None:
         open(self.git.repository + f"/{filename}", "wb").close()
         await self.git("add", self.git.repository + f"/{filename}")
         await self.git("commit", "--no-edit", "-m", filename)
         await self.git("push", "--quiet", remote, branch)
 
-    async def _test_dismiss_reviews_fail(self, msg):
+    async def _test_dismiss_reviews_fail(
+        self, msg: str
+    ) -> github_types.CachedGitHubCheckRun:
         rules = {
             "pull_request_rules": [
                 {
@@ -97,7 +100,7 @@ class TestDismissReviewsAction(base.FunctionalTestBase):
         )
         return checks[0]
 
-    async def test_dismiss_reviews_custom_message_syntax_error(self):
+    async def test_dismiss_reviews_custom_message_syntax_error(self) -> None:
         check = await self._test_dismiss_reviews_fail("{{Loser")
         assert (
             """Template syntax error @ pull_request_rules → item 0 → actions → dismiss_reviews → message → line 1
@@ -107,7 +110,7 @@ unexpected end of template, expected 'end of print statement'.
             == check["output"]["summary"]
         )
 
-    async def test_dismiss_reviews_custom_message_attribute_error(self):
+    async def test_dismiss_reviews_custom_message_attribute_error(self) -> None:
         check = await self._test_dismiss_reviews_fail("{{Loser}}")
         assert (
             """Template syntax error for dictionary value @ pull_request_rules → item 0 → actions → dismiss_reviews → message
@@ -117,7 +120,9 @@ Unknown pull request attribute: Loser
             == check["output"]["summary"]
         )
 
-    async def _test_dismiss_reviews(self, message=None):
+    async def _test_dismiss_reviews(
+        self, message: None | str = None
+    ) -> github_types.GitHubPullRequest:
         rules = {
             "pull_request_rules": [
                 {
@@ -134,7 +139,7 @@ Unknown pull request attribute: Loser
         }
 
         if message is not None:
-            rules["pull_request_rules"][0]["actions"]["dismiss_reviews"][
+            rules["pull_request_rules"][0]["actions"]["dismiss_reviews"][  # type: ignore[index]
                 "message"
             ] = message
 
@@ -226,7 +231,7 @@ Unknown pull request attribute: Loser
         }
         return p
 
-    async def test_dismiss_reviews_ignored(self):
+    async def test_dismiss_reviews_ignored(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -270,7 +275,7 @@ Unknown pull request attribute: Loser
             ],
         )
 
-    async def test_dismiss_reviews_from_requested_reviewers(self):
+    async def test_dismiss_reviews_from_requested_reviewers(self) -> None:
         rules = {
             "pull_request_rules": [
                 {

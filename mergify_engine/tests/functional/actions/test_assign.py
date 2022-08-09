@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Copyright © 2018–2020 Mergify SAS
+# Copyright © 2018–2022 Mergify SAS
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -19,7 +19,7 @@ from mergify_engine.tests.functional import base
 
 
 class TestAssignAction(base.FunctionalTestBase):
-    async def test_assign_with_users(self):
+    async def test_assign_with_users(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -57,7 +57,7 @@ class TestAssignAction(base.FunctionalTestBase):
             sorted(user["login"] for user in p["assignees"]),
         )
 
-    async def test_assign_with_add_users(self):
+    async def test_assign_with_add_users(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -81,7 +81,7 @@ class TestAssignAction(base.FunctionalTestBase):
             sorted(user["login"] for user in pulls[0]["assignees"]),
         )
 
-    async def test_assign_valid_template(self):
+    async def test_assign_valid_template(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -105,7 +105,7 @@ class TestAssignAction(base.FunctionalTestBase):
             sorted(user["login"] for user in pulls[0]["assignees"]),
         )
 
-    async def test_assign_user_already_assigned(self):
+    async def test_assign_user_already_assigned(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -129,7 +129,7 @@ class TestAssignAction(base.FunctionalTestBase):
             sorted(user["login"] for user in pulls[0]["assignees"]),
         )
 
-    async def test_remove_assignee(self):
+    async def test_remove_assignee(self) -> None:
         rules = {
             "pull_request_rules": [
                 {

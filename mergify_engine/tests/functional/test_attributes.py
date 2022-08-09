@@ -538,7 +538,7 @@ class TestAttributes(base.FunctionalTestBase):
 
         pr = await self.create_pr()
         await self.add_label(pr["number"], "foo")
-        await self.edit_pull(pr["number"], state="closed")  # type: ignore
+        await self.edit_pull(pr["number"], state="closed")
 
         await self.run_engine()
         await self.wait_for("issue_comment", {"action": "created"})

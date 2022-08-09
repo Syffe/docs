@@ -27,7 +27,7 @@ from mergify_engine.tests.functional import base
 class TestPostCheckAction(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
 
-    async def test_checks_with_conditions(self):
+    async def test_checks_with_conditions(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -116,7 +116,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
             "total": 1,
         }
 
-    async def test_checks_default(self):
+    async def test_checks_default(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -209,7 +209,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
             "total": 1,
         }
 
-    async def test_checks_custom(self):
+    async def test_checks_custom(self) -> None:
         rules = {
             "pull_request_rules": [
                 {

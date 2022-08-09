@@ -19,7 +19,7 @@ from mergify_engine.tests.functional import base
 
 
 class TestDeleteHeadBranchAction(base.FunctionalTestBase):
-    async def test_delete_branch_basic(self):
+    async def test_delete_branch_basic(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -76,7 +76,7 @@ class TestDeleteHeadBranchAction(base.FunctionalTestBase):
         self.assertEqual(fourth_branch, branches[2]["name"])
         self.assertEqual("main", branches[3]["name"])
 
-    async def test_delete_branch_with_dep_no_force(self):
+    async def test_delete_branch_with_dep_no_force(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -118,7 +118,9 @@ class TestDeleteHeadBranchAction(base.FunctionalTestBase):
             b["name"] for b in branches
         }
 
-    async def test_delete_branch_with_shared_head_branches_and_dep_no_force(self):
+    async def test_delete_branch_with_shared_head_branches_and_dep_no_force(
+        self,
+    ) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -167,7 +169,7 @@ class TestDeleteHeadBranchAction(base.FunctionalTestBase):
             p1["head"]["ref"],
         } == {b["name"] for b in branches}
 
-    async def test_delete_branch_with_dep_force(self):
+    async def test_delete_branch_with_dep_force(self) -> None:
         rules = {
             "pull_request_rules": [
                 {

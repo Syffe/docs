@@ -271,7 +271,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
         # Edit and fixes the typo
         await self.edit_pull(
-            p["number"], body="It fixes it\n\n## Commit Message\n\nHere it is valid now"  # type: ignore[arg-type]
+            p["number"], body="It fixes it\n\n## Commit Message\n\nHere it is valid now"
         )
         await self.wait_for("pull_request", {"action": "edited"})
 

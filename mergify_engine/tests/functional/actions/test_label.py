@@ -28,7 +28,7 @@ from mergify_engine.tests.functional import base
     subscription.Features.EVENTLOGS_LONG,
 )
 class TestLabelAction(base.FunctionalTestBase):
-    async def test_label_basic(self):
+    async def test_label_basic(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -110,7 +110,7 @@ class TestLabelAction(base.FunctionalTestBase):
             "total": 2,
         }
 
-    async def test_label_empty(self):
+    async def test_label_empty(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -154,7 +154,7 @@ class TestLabelAction(base.FunctionalTestBase):
             "total": 0,
         }
 
-    async def test_label_remove_all(self):
+    async def test_label_remove_all(self) -> None:
         rules = {
             "pull_request_rules": [
                 {

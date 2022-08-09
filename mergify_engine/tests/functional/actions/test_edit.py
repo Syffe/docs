@@ -32,7 +32,7 @@ class TestEditAction(base.FunctionalTestBase):
         not config.GITHUB_URL.startswith("https://github.com"),
         reason="requires GHES 3.2",
     )
-    async def test_pr_to_draft_edit(self):
+    async def test_pr_to_draft_edit(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -81,7 +81,7 @@ class TestEditAction(base.FunctionalTestBase):
             "total": 1,
         }
 
-    async def test_draft_to_ready_for_review(self):
+    async def test_draft_to_ready_for_review(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -134,7 +134,7 @@ class TestEditAction(base.FunctionalTestBase):
         subscription.Features.EVENTLOGS_SHORT,
         subscription.Features.EVENTLOGS_LONG,
     )
-    async def test_draft_already_converted(self):
+    async def test_draft_already_converted(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -174,7 +174,7 @@ class TestEditAction(base.FunctionalTestBase):
             "total": 0,
         }
 
-    async def test_ready_for_review_already_converted(self):
+    async def test_ready_for_review_already_converted(self) -> None:
         rules = {
             "pull_request_rules": [
                 {

@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Copyright © 2018 Mehdi Abaakouk <sileht@sileht.net>
+# Copyright © 2018–2022 Mergify
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -32,7 +32,7 @@ LOG = logging.getLogger(__name__)
 class TestMergeAction(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
 
-    async def test_merge_draft(self):
+    async def test_merge_draft(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -69,7 +69,7 @@ class TestMergeAction(base.FunctionalTestBase):
         assert check["conclusion"] == "cancelled"
         assert check["output"]["title"] == "The rule doesn't match anymore"
 
-    async def test_merge_with_installation_token(self):
+    async def test_merge_with_installation_token(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -88,9 +88,10 @@ class TestMergeAction(base.FunctionalTestBase):
 
         p = await self.get_pull(p["number"])
         self.assertEqual(True, p["merged"])
-        self.assertEqual(config.BOT_USER_LOGIN, p["merged_by"]["login"])
+        assert p["merged_by"]
+        assert config.BOT_USER_LOGIN == p["merged_by"]["login"]
 
-    async def test_merge_with_oauth_token(self):
+    async def test_merge_with_oauth_token(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -109,7 +110,8 @@ class TestMergeAction(base.FunctionalTestBase):
 
         p = await self.get_pull(p["number"])
         self.assertEqual(True, p["merged"])
-        self.assertEqual("mergify-test4", p["merged_by"]["login"])
+        assert p["merged_by"]
+        assert "mergify-test4" == p["merged_by"]["login"]
 
         ctxt = await context.Context.create(self.repository_ctxt, p, [])
         checks = await ctxt.pull_engine_check_runs
@@ -128,7 +130,7 @@ class TestMergeAction(base.FunctionalTestBase):
         not config.GITHUB_URL.startswith("https://github.com"),
         reason="required_conversation_resolution requires GHES 3.2",
     )
-    async def test_merge_branch_protection_conversation_resolution(self):
+    async def test_merge_branch_protection_conversation_resolution(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -198,7 +200,7 @@ class TestMergeAction(base.FunctionalTestBase):
             in summary["output"]["summary"]
         )
 
-    async def test_merge_branch_protection_linear_history(self):
+    async def test_merge_branch_protection_linear_history(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -237,7 +239,7 @@ class TestMergeAction(base.FunctionalTestBase):
             == checks[0]["output"]["title"]
         )
 
-    async def test_merge_template_with_empty_body(self):
+    async def test_merge_template_with_empty_body(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -262,13 +264,14 @@ class TestMergeAction(base.FunctionalTestBase):
 
         p = await self.get_pull(p["number"])
         self.assertEqual(True, p["merged"])
+        assert p["merge_commit_sha"]
         c = await self.get_commit(p["merge_commit_sha"])
         assert (
             f"""test_merge_template_with_empty_body: pull request n1 from integration (#{p['number']})"""
             == c["commit"]["message"]
         )
 
-    async def test_merge_template(self):
+    async def test_merge_template(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -293,6 +296,7 @@ superRP!
 
         p2 = await self.get_pull(p["number"])
         self.assertEqual(True, p2["merged"])
+        assert p2["merge_commit_sha"]
         p3 = await self.get_commit(p2["merge_commit_sha"])
         assert (
             f"""test_merge_template: pull request n1 from integration (#{p2['number']})
@@ -303,6 +307,7 @@ superRP!"""
         )
         ctxt = await context.Context.create(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
+        assert summary
         assert (
             """
 :bangbang: **Action Required** :bangbang:
@@ -316,7 +321,7 @@ superRP!"""
             not in summary["output"]["summary"]
         )
 
-    async def test_merge_branch_protection_strict(self):
+    async def test_merge_branch_protection_strict(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -375,7 +380,7 @@ superRP!"""
         p2 = await self.get_pull(p2["number"])
         assert p2["merged"]
 
-    async def test_merge_fastforward_basic(self):
+    async def test_merge_fastforward_basic(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -397,6 +402,7 @@ superRP!"""
 
         p = await self.get_pull(p["number"])
         assert p["merged"]
+        assert p["merged_by"]
         assert p["merged_by"]["login"] == config.BOT_USER_LOGIN
 
         branch = typing.cast(
@@ -421,7 +427,7 @@ superRP!"""
             == f"The pull request has been merged at *{p['head']['sha']}*."
         )
 
-    async def test_merge_fastforward_bot_account(self):
+    async def test_merge_fastforward_bot_account(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -444,6 +450,7 @@ superRP!"""
 
         p = await self.get_pull(p["number"])
         assert p["merged"]
+        assert p["merged_by"]
         assert p["merged_by"]["login"] == "mergify-test4"
 
         branch = typing.cast(

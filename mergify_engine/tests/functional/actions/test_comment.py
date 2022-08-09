@@ -17,13 +17,14 @@ import yaml
 
 from mergify_engine import config
 from mergify_engine import context
+from mergify_engine import github_types
 from mergify_engine.tests.functional import base
 
 
 class TestCommentActionWithSub(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
 
-    async def test_comment_with_bot_account(self):
+    async def test_comment_with_bot_account(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -48,7 +49,7 @@ class TestCommentActionWithSub(base.FunctionalTestBase):
 
 
 class TestCommentAction(base.FunctionalTestBase):
-    async def test_comment(self):
+    async def test_comment(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -96,7 +97,7 @@ class TestCommentAction(base.FunctionalTestBase):
         self.assertEqual(len(comments), len(new_comments))
         assert new_comments[-1]["body"] == "WTF?"
 
-    async def test_comment_template(self):
+    async def test_comment_template(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -116,7 +117,9 @@ class TestCommentAction(base.FunctionalTestBase):
         new_comments = await self.get_issue_comments(p["number"])
         assert new_comments[-1]["body"] == f"Thank you {config.BOT_USER_LOGIN}"
 
-    async def _test_comment_template_error(self, msg):
+    async def _test_comment_template_error(
+        self, msg: str
+    ) -> github_types.CachedGitHubCheckRun:
         rules = {
             "pull_request_rules": [
                 {
@@ -145,7 +148,7 @@ class TestCommentAction(base.FunctionalTestBase):
         )
         return checks[0]
 
-    async def test_comment_template_syntax_error(self):
+    async def test_comment_template_syntax_error(self) -> None:
         check = await self._test_comment_template_error(
             msg="Thank you {{",
         )
@@ -157,7 +160,7 @@ unexpected 'end of template'
             == check["output"]["summary"]
         )
 
-    async def test_comment_template_attribute_error(self):
+    async def test_comment_template_attribute_error(self) -> None:
         check = await self._test_comment_template_error(
             msg="Thank you {{hello}}",
         )
@@ -169,7 +172,7 @@ Unknown pull request attribute: hello
             == check["output"]["summary"]
         )
 
-    async def test_comment_with_bot_account(self):
+    async def test_comment_with_bot_account(self) -> None:
         rules = {
             "pull_request_rules": [
                 {

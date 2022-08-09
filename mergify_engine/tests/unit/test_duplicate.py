@@ -113,6 +113,12 @@ async def test_get_commits_to_cherry_pick_rebase(
                     ),
                 },
             },
+            "committer": {
+                "login": github_types.GitHubLogin("foobar"),
+                "id": github_types.GitHubAccountIdType(1),
+                "type": "User",
+                "avatar_url": "",
+            },
         }
     )
     rebased_c2 = github_types.GitHubBranchCommit(
@@ -134,6 +140,12 @@ async def test_get_commits_to_cherry_pick_rebase(
                         str(datetime.datetime.utcnow())
                     ),
                 },
+            },
+            "committer": {
+                "login": github_types.GitHubLogin("foobar"),
+                "id": github_types.GitHubAccountIdType(1),
+                "type": "User",
+                "avatar_url": "",
             },
         }
     )
