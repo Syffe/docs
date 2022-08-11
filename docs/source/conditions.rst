@@ -108,11 +108,6 @@ Here's the list of pull request attribute that can be used in conditions:
    * - Attribute Name
      - Value type
      - Value description
-   * - ``assignee``
-     - list of string
-     - The list of GitHub user or team login that are assigned to the pull request.
-       Team logins are prefixed with the ``@`` character and must belong to the
-       repository organization.
    * - ``approved-reviews-by``
      - list of string
      - The list of GitHub user or team login that approved the pull request.
@@ -120,6 +115,11 @@ Here's the list of pull request attribute that can be used in conditions:
        repository organization.
        This only matches reviewers with ``admin``, ``write`` or ``maintain``
        permission on the repository.
+   * - ``assignee``
+     - list of string
+     - The list of GitHub user or team login that are assigned to the pull request.
+       Team logins are prefixed with the ``@`` character and must belong to the
+       repository organization.
    * - ``author``
      - string
      - The GitHub user or team login of the author of the pull request.
@@ -142,12 +142,63 @@ Here's the list of pull request attribute that can be used in conditions:
        repository organization.
        This only matches reviewers with ``admin``, ``write`` or ``maintain``
        permission on the repository.
+   * - ``check-failure``
+     - list of string
+     - The list of status checks that failed for the pull request.
+       This is the name of a *status check* such as
+       `continuous-integration/travis-ci/pr` or of a *check run* such as
+       `Travis CI - Pull Request`. See `About Status Checks`_ for more
+       details.
+       Checks that report being cancelled, timed out, and action
+       required are also considered as failures.
+   * - ``check-neutral``
+     - list of string
+     - The list of status checks that are neutral for the pull request.
+       This is the name of a *status check* such as
+       `continuous-integration/travis-ci/pr` or of a *check run* such as
+       `Travis CI - Pull Request`. See `About Status Checks`_ for more
+       details.
+   * - ``check-pending``
+     - list of string
+     - The list of status checks that is pending for the pull request.
+       This is the name of a *status check* such as
+       `continuous-integration/travis-ci/pr` or of a *check run* such as
+       `Travis CI - Pull Request`. See `About Status Checks`_ for more
+       details.
+   * - ``check-skipped``
+     - list of string
+     - The list of status checks that was skipped for the pull request.
+       This is the name of a *status check* such as
+       `continuous-integration/travis-ci/pr` or of a *check run* such as
+       `Travis CI - Pull Request`. See `About Status Checks`_ for more
+       details.
+   * - ``check-stale``
+     - list of string
+     - The list of status checks that are stale for the pull request.
+       This is the name of a *status check* such as
+       `continuous-integration/travis-ci/pr` or of a *check run* such as
+       `Travis CI - Pull Request`. See `About Status Checks`_ for more
+       details.
+   * - ``check-success``
+     - list of string
+     - The list of status checks that successfully passed for the pull request.
+       This is the name of a *status check* such as
+       `continuous-integration/travis-ci/pr` or of a *check run* such as
+       `Travis CI - Pull Request`. See `About Status Checks`_ for more
+       details.
+   * - ``check-timed-out``
+     - list of string
+     - The list of status checks that timed out for the pull request.
+       This is the name of a *status check* such as
+       `continuous-integration/travis-ci/pr` or of a *check run* such as
+       `Travis CI - Pull Request`. See `About Status Checks`_ for more
+       details.
    * - ``closed``
      - Boolean
      - Whether the pull request is closed.
-   * - ``conflict``
-     - Boolean
-     - Whether the pull request is conflicting with its base branch.
+   * - ``closed-at``
+     - :ref:`Timestamp <iso timestamp>` or :ref:`Relative timestamp <relative timestamp>`
+     - The time the pull request was closed at.
    * - ``commented-reviews-by``
      - list of string
      - The list of GitHub user or team login that have commented in a review
@@ -156,6 +207,44 @@ Here's the list of pull request attribute that can be used in conditions:
        repository organization.
        This only matches reviewers with ``admin``, ``write`` or ``maintain``
        permission on the repository.
+   * - ``commits``
+     - list of :ref:`commits <data type commit>`
+     - The list of commits of the pull request.
+   * - ``commits-behind``
+     - list of commits
+     - The list of commits between the head of the base branch and the base of
+       the pull request. This can only be used with the length operator as
+       `#commits-behind`.
+   * - ``commits-unverified``
+     - list of strings
+     - The list of commit messages that are marked as ``unverified`` by GitHub.
+   * - ``conflict``
+     - Boolean
+     - Whether the pull request is conflicting with its base branch.
+   * - ``created-at``
+     - :ref:`Timestamp <iso timestamp>` or :ref:`Relative timestamp <relative timestamp>`
+     - The time the pull request was created at.
+   * - ``current-day``
+     - integer
+     - The current day of the month, from 1 to 31.
+   * - ``current-day-of-week``
+     - integer or string
+     - The current day of the week. From 1 (Monday) to 7 (Sunday), or one of
+       ``Mon``, ``Tue``, ``Wed``, ``Thu``, ``Fri``, ``Sat``, ``Sun``,
+       ``Monday``, ``Tuesday``, ``Wednesday``, ``Thursday``, ``Friday``,
+       ``Saturday``, ``Sunday``. Weeks start on Monday.
+   * - ``current-month``
+     - integer
+     - The current month, from 1 to 12.
+   * - ``current-time``
+     - :ref:`Time <time format>`
+     - The current time in format ``HH:MM``.
+   * - ``current-timestamp``
+     - :ref:`Timestamp <iso timestamp>`
+     - The current date and time.
+   * - ``current-year``
+     - integer
+     - The current year, from 1900 to 9999.
    * - ``dependabot-dependency-name``
      - string
      - The dependency-name value included in the Dependabot commit message.
@@ -194,6 +283,9 @@ Here's the list of pull request attribute that can be used in conditions:
    * - ``merged``
      - Boolean
      - Whether the pull request is merged.
+   * - ``merged-at``
+     - :ref:`Timestamp <iso timestamp>` or :ref:`Relative timestamp <relative timestamp>`
+     - The time the pull request was merged at.
    * - ``merged-by``
      - string
      - The GitHub user or team login that merged the pull request.
@@ -205,9 +297,6 @@ Here's the list of pull request attribute that can be used in conditions:
    * - ``number``
      - integer
      - The pull request number.
-   * - ``commits``
-     - list of :ref:`commits <data type commit>`
-     - The list of commits of the pull request.
    * - ``queue-position``
      - integer
      - The position of the pull request in its queue if queued. The first pull
@@ -219,11 +308,12 @@ Here's the list of pull request attribute that can be used in conditions:
    * - ``queue-merge-started-at``
      - :ref:`Timestamp <iso timestamp>` or :ref:`Relative timestamp <relative timestamp>`
      - The time the pull request mergeability checks have started at.
-   * - ``commits-behind``
-     - list of commits
-     - The list of commits between the head of the base branch and the base of
-       the pull request. This can only be used with the length operator as
-       `#commits-behind`.
+   * - ``repository-full-name``
+     - string
+     - The current repository full name (complete version with the organization name).
+   * - ``repository-name``
+     - string
+     - The current repository name (short version without the organization name).
    * - ``review-requested``
      - list of string
      - The list of GitHub user or team login that were requested to review the
@@ -232,111 +322,22 @@ Here's the list of pull request attribute that can be used in conditions:
        repository organization.
        This only matches reviewers with ``admin``, ``write`` or ``maintain``
        permission on the repository.
-   * - ``check-success``
-     - list of string
-     - The list of status checks that successfully passed for the pull request.
-       This is the name of a *status check* such as
-       `continuous-integration/travis-ci/pr` or of a *check run* such as
-       `Travis CI - Pull Request`. See `About Status Checks`_ for more
-       details.
-   * - ``check-neutral``
-     - list of string
-     - The list of status checks that are neutral for the pull request.
-       This is the name of a *status check* such as
-       `continuous-integration/travis-ci/pr` or of a *check run* such as
-       `Travis CI - Pull Request`. See `About Status Checks`_ for more
-       details.
-   * - ``check-failure``
-     - list of string
-     - The list of status checks that failed for the pull request.
-       This is the name of a *status check* such as
-       `continuous-integration/travis-ci/pr` or of a *check run* such as
-       `Travis CI - Pull Request`. See `About Status Checks`_ for more
-       details.
-       Checks that report being cancelled, timed out, and action
-       required are also considered as failures.
-   * - ``check-timed-out``
-     - list of string
-     - The list of status checks that timed out for the pull request.
-       This is the name of a *status check* such as
-       `continuous-integration/travis-ci/pr` or of a *check run* such as
-       `Travis CI - Pull Request`. See `About Status Checks`_ for more
-       details.
-   * - ``check-skipped``
-     - list of string
-     - The list of status checks that was skipped for the pull request.
-       This is the name of a *status check* such as
-       `continuous-integration/travis-ci/pr` or of a *check run* such as
-       `Travis CI - Pull Request`. See `About Status Checks`_ for more
-       details.
-   * - ``check-pending``
-     - list of string
-     - The list of status checks that is pending for the pull request.
-       This is the name of a *status check* such as
-       `continuous-integration/travis-ci/pr` or of a *check run* such as
-       `Travis CI - Pull Request`. See `About Status Checks`_ for more
-       details.
-   * - ``check-stale``
-     - list of string
-     - The list of status checks that are stale for the pull request.
-       This is the name of a *status check* such as
-       `continuous-integration/travis-ci/pr` or of a *check run* such as
-       `Travis CI - Pull Request`. See `About Status Checks`_ for more
-       details.
-   * - ``title``
-     - string
-     - The title of the pull request.
-   * - ``created-at``
-     - :ref:`Timestamp <iso timestamp>` or :ref:`Relative timestamp <relative timestamp>`
-     - The time the pull request was created at.
-   * - ``updated-at``
-     - :ref:`Timestamp <iso timestamp>` or :ref:`Relative timestamp <relative timestamp>`
-     - The time the pull request was updated at.
-   * - ``merged-at``
-     - :ref:`Timestamp <iso timestamp>` or :ref:`Relative timestamp <relative timestamp>`
-     - The time the pull request was merged at.
-   * - ``closed-at``
-     - :ref:`Timestamp <iso timestamp>` or :ref:`Relative timestamp <relative timestamp>`
-     - The time the pull request was closed at.
-   * - ``current-timestamp``
-     - :ref:`Timestamp <iso timestamp>`
-     - The current date and time.
-   * - ``current-time``
-     - :ref:`Time <time format>`
-     - The current time in format ``HH:MM``.
-   * - ``current-day``
-     - integer
-     - The current day of the month, from 1 to 31.
-   * - ``current-month``
-     - integer
-     - The current month, from 1 to 12.
-   * - ``current-year``
-     - integer
-     - The current year, from 1900 to 9999.
-   * - ``current-day-of-week``
-     - integer or string
-     - The current day of the week. From 1 (Monday) to 7 (Sunday), or one of
-       ``Mon``, ``Tue``, ``Wed``, ``Thu``, ``Fri``, ``Sat``, ``Sun``,
-       ``Monday``, ``Tuesday``, ``Wednesday``, ``Thursday``, ``Friday``,
-       ``Saturday``, ``Sunday``. Weeks start on Monday.
-   * - ``schedule``
-     - string
-     - A schedule, e.g., ``Mon-Fri``, ``12:00-18:00`` or ``Mon-Fri 12:00-18:00``
-   * - ``commits-unverified``
-     - list of strings
-     - The list of commit messages that are marked as ``unverified`` by GitHub.
    * - ``review-threads-resolved``
      - list of strings
      - The list of bodies associated to review threads that are marked as ``resolved`` by GitHub.
    * - ``review-threads-unresolved``
      - list of strings
      - The list of bodies associated to review threads that are NOT marked as ``resolved`` by GitHub.
-   * - ``repository-name``
+   * - ``schedule``
      - string
-     - The current repository name (short version without the organization name).
-   * - ``repository-full-name``
+     - A schedule, e.g., ``Mon-Fri``, ``12:00-18:00`` or ``Mon-Fri 12:00-18:00``
+   * - ``title``
      - string
-     - The current repository full name (complete version with the organization name).
+     - The title of the pull request.
+   * - ``updated-at``
+     - :ref:`Timestamp <iso timestamp>` or :ref:`Relative timestamp <relative timestamp>`
+     - The time the pull request was updated at.
+
 
 
 
