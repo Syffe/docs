@@ -35,7 +35,7 @@ def fake_subscription(
     subscribed = marker is not None
     return subscription.Subscription(
         redis_cache,
-        123,
+        github_types.GitHubAccountIdType(123),
         "sub or not to sub",
         frozenset(
             getattr(subscription.Features, f) for f in subscription.Features.__members__

@@ -4,6 +4,7 @@ import pytest
 from pytest_httpserver import httpserver
 
 from mergify_engine import exceptions
+from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
@@ -192,7 +193,7 @@ async def test_subscription_on_premise_valid(
         httpserver.url_for("/")[:-1],
     ):
         await subscription.SubscriptionDashboardOnPremise.get_subscription(
-            redis_cache, 1234
+            redis_cache, github_types.GitHubAccountIdType(1234)
         )
 
     assert len(httpserver.log) == 1
@@ -214,7 +215,7 @@ async def test_subscription_on_premise_wrong_token(
     ):
         with pytest.raises(exceptions.MergifyNotInstalled):
             await subscription.SubscriptionDashboardOnPremise.get_subscription(
-                redis_cache, 1234
+                redis_cache, github_types.GitHubAccountIdType(1234)
             )
 
     assert len(httpserver.log) == 1
@@ -236,7 +237,7 @@ async def test_subscription_on_premise_invalid_sub(
     ):
         with pytest.raises(exceptions.MergifyNotInstalled):
             await subscription.SubscriptionDashboardOnPremise.get_subscription(
-                redis_cache, 1234
+                redis_cache, github_types.GitHubAccountIdType(1234)
             )
 
     assert len(httpserver.log) == 1

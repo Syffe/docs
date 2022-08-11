@@ -370,7 +370,7 @@ async def test_configuration_changed(
             installation_json,
             subscription.Subscription(
                 redis_links.cache,
-                0,
+                github_types.GitHubAccountIdType(0),
                 "",
                 frozenset([subscription.Features.PUBLIC_REPOSITORY]),
                 0,
@@ -491,7 +491,7 @@ async def test_configuration_duplicated(
             installation_json,
             subscription.Subscription(
                 redis_links.cache,
-                0,
+                github_types.GitHubAccountIdType(0),
                 "",
                 frozenset([subscription.Features.PUBLIC_REPOSITORY]),
                 0,
@@ -596,7 +596,7 @@ async def test_configuration_not_changed(
             installation_json,
             subscription.Subscription(
                 redis_links.cache,
-                0,
+                github_types.GitHubAccountIdType(0),
                 "",
                 frozenset([subscription.Features.PUBLIC_REPOSITORY]),
                 0,
@@ -697,7 +697,7 @@ async def test_configuration_initial(
             installation_json,
             subscription.Subscription(
                 redis_links.cache,
-                0,
+                github_types.GitHubAccountIdType(0),
                 "",
                 frozenset([subscription.Features.PUBLIC_REPOSITORY]),
                 0,
@@ -770,7 +770,7 @@ async def test_configuration_check_not_needed_with_configuration_not_changed(
             installation_json,
             subscription.Subscription(
                 redis_links.cache,
-                0,
+                github_types.GitHubAccountIdType(0),
                 "",
                 frozenset([subscription.Features.PUBLIC_REPOSITORY]),
                 0,
@@ -840,7 +840,7 @@ async def test_configuration_check_not_needed_with_configuration_changed(
             installation_json,
             subscription.Subscription(
                 redis_links.cache,
-                0,
+                github_types.GitHubAccountIdType(0),
                 "",
                 frozenset([subscription.Features.PUBLIC_REPOSITORY]),
                 0,
@@ -911,7 +911,7 @@ async def test_configuration_check_not_needed_with_configuration_deleted(
             installation_json,
             subscription.Subscription(
                 redis_links.cache,
-                0,
+                github_types.GitHubAccountIdType(0),
                 "",
                 frozenset([subscription.Features.PUBLIC_REPOSITORY]),
                 0,

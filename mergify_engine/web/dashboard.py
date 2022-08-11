@@ -82,7 +82,7 @@ async def subscription_cache_update(
         return responses.Response("Empty content", status_code=400)
     try:
         await subscription.Subscription.update_subscription(
-            redis_links.cache, int(owner_id), sub
+            redis_links.cache, owner_id, sub
         )
     except NotImplementedError:
         return responses.Response("Updating subscription is disabled", status_code=400)

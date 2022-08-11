@@ -27,6 +27,7 @@ import daiquiri
 from mergify_engine import config
 from mergify_engine import crypto
 from mergify_engine import exceptions
+from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine.clients import dashboard
 from mergify_engine.clients import http
@@ -84,7 +85,7 @@ class SubscriptionDict(typing.TypedDict):
 @dataclasses.dataclass  # type: ignore
 class SubscriptionBase(abc.ABC):
     redis: redis_utils.RedisCache
-    owner_id: int
+    owner_id: github_types.GitHubAccountIdType
     reason: str
     features: typing.FrozenSet[enum.Enum]
     ttl: int = -2
@@ -92,7 +93,7 @@ class SubscriptionBase(abc.ABC):
     feature_flag_log_level: int = logging.ERROR
 
     @staticmethod
-    def _cache_key(owner_id: int) -> str:
+    def _cache_key(owner_id: github_types.GitHubAccountIdType) -> str:
         return f"subscription-cache-owner-{owner_id}"
 
     @classmethod
@@ -123,7 +124,7 @@ class SubscriptionBase(abc.ABC):
     def from_dict(
         cls: typing.Type[SubscriptionT],
         redis: redis_utils.RedisCache,
-        owner_id: int,
+        owner_id: github_types.GitHubAccountIdType,
         sub: SubscriptionDict,
         ttl: int = -2,
     ) -> SubscriptionT:
@@ -152,7 +153,9 @@ class SubscriptionBase(abc.ABC):
 
     @classmethod
     async def get_subscription(
-        cls: typing.Type[SubscriptionT], redis: redis_utils.RedisCache, owner_id: int
+        cls: typing.Type[SubscriptionT],
+        redis: redis_utils.RedisCache,
+        owner_id: github_types.GitHubAccountIdType,
     ) -> SubscriptionT:
         """Get a subscription."""
         cached_sub = await cls._retrieve_subscription_from_cache(redis, owner_id)
@@ -174,13 +177,16 @@ class SubscriptionBase(abc.ABC):
 
     @classmethod
     async def update_subscription(
-        cls, redis: redis_utils.RedisCache, owner_id: int, sub: SubscriptionDict
+        cls,
+        redis: redis_utils.RedisCache,
+        owner_id: github_types.GitHubAccountIdType,
+        sub: SubscriptionDict,
     ) -> None:
         await cls.from_dict(redis, owner_id, sub)._save_subscription_to_cache()
 
     @classmethod
     async def delete_subscription(
-        cls, redis: redis_utils.RedisCache, owner_id: int
+        cls, redis: redis_utils.RedisCache, owner_id: github_types.GitHubAccountIdType
     ) -> None:
         await redis.delete(cls._cache_key(owner_id))
 
@@ -196,13 +202,17 @@ class SubscriptionBase(abc.ABC):
     @classmethod
     @abc.abstractmethod
     async def _retrieve_subscription_from_db(
-        cls: typing.Type[SubscriptionT], redis: redis_utils.RedisCache, owner_id: int
+        cls: typing.Type[SubscriptionT],
+        redis: redis_utils.RedisCache,
+        owner_id: github_types.GitHubAccountIdType,
     ) -> SubscriptionT:
         pass
 
     @classmethod
     async def _retrieve_subscription_from_cache(
-        cls: typing.Type[SubscriptionT], redis: redis_utils.RedisCache, owner_id: int
+        cls: typing.Type[SubscriptionT],
+        redis: redis_utils.RedisCache,
+        owner_id: github_types.GitHubAccountIdType,
     ) -> typing.Optional[SubscriptionT]:
         async with await redis.pipeline() as pipe:
             await pipe.get(cls._cache_key(owner_id))
@@ -224,7 +234,9 @@ class SubscriptionBase(abc.ABC):
 class SubscriptionDashboardSaas(SubscriptionBase):
     @classmethod
     async def _retrieve_subscription_from_db(
-        cls: typing.Type[SubscriptionT], redis: redis_utils.RedisCache, owner_id: int
+        cls: typing.Type[SubscriptionT],
+        redis: redis_utils.RedisCache,
+        owner_id: github_types.GitHubAccountIdType,
     ) -> SubscriptionT:
         async with dashboard.AsyncDashboardSaasClient() as client:
             try:
@@ -241,7 +253,9 @@ class SubscriptionDashboardOnPremise(SubscriptionBase):
 
     @classmethod
     async def _retrieve_subscription_from_db(
-        cls: typing.Type[SubscriptionT], redis: redis_utils.RedisCache, owner_id: int
+        cls: typing.Type[SubscriptionT],
+        redis: redis_utils.RedisCache,
+        owner_id: github_types.GitHubAccountIdType,
     ) -> SubscriptionT:
         async with dashboard.AsyncDashboardOnPremiseClient() as client:
             try:

@@ -118,7 +118,10 @@ async def test_user_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
     )
 
     sub = subscription.Subscription(
-        redis_links.cache, 0, "", frozenset([subscription.Features.PUBLIC_REPOSITORY])
+        redis_links.cache,
+        github_types.GitHubAccountIdType(0),
+        "",
+        frozenset([subscription.Features.PUBLIC_REPOSITORY]),
     )
     client = FakeClient(gh_owner["login"], gh_repo["name"])
     installation = context.Installation(installation_json, sub, client, redis_links)
@@ -261,7 +264,10 @@ async def test_team_members_cache(redis_links: redis_utils.RedisLinks) -> None:
     team_slug3 = github_types.GitHubTeamSlug("team3")
 
     sub = subscription.Subscription(
-        redis_links.cache, 0, "", frozenset([subscription.Features.PUBLIC_REPOSITORY])
+        redis_links.cache,
+        github_types.GitHubAccountIdType(0),
+        "",
+        frozenset([subscription.Features.PUBLIC_REPOSITORY]),
     )
     client = FakeClient(gh_owner["login"], gh_repo["name"])
     installation = context.Installation(installation_json, sub, client, redis_links)
@@ -414,7 +420,10 @@ async def test_team_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
     team_slug3 = github_types.GitHubTeamSlug("team-also-nok")
 
     sub = subscription.Subscription(
-        redis_links.cache, 0, "", frozenset([subscription.Features.PUBLIC_REPOSITORY])
+        redis_links.cache,
+        github_types.GitHubAccountIdType(0),
+        "",
+        frozenset([subscription.Features.PUBLIC_REPOSITORY]),
     )
     client = FakeClient(gh_owner["login"], gh_repo["name"])
     installation = context.Installation(installation_json, sub, client, redis_links)
