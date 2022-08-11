@@ -104,7 +104,7 @@ class RuleCondition:
 
     async def __call__(self, obj: filter.GetAttrObjectT) -> bool:
         if self._used:
-            raise RuntimeError("RuleCondition cannot be reused")
+            raise RuntimeError(f"{self.__class__.__name__} cannot be re-used")
         self._used = True
         try:
             self.match = await self.partial_filter(obj)
@@ -306,7 +306,7 @@ class QueueRuleConditions:
         self, pull_requests: typing.List[context.BasePullRequest]
     ) -> bool:
         if self._used:
-            raise RuntimeError("QueueRuleConditions cannot be re-used")
+            raise RuntimeError(f"{self.__class__.__name__} cannot be re-used")
         self._used = True
 
         for pull in pull_requests:
@@ -547,7 +547,7 @@ class PullRequestRuleConditions:
     async def __call__(self, objs: typing.List[context.BasePullRequest]) -> bool:
         if len(objs) > 1:
             raise RuntimeError(
-                "PullRequestRuleConditions take only one pull request at a time"
+                f"{self.__class__.__name__} take only one pull request at a time"
             )
         return await self.condition(objs[0])
 
