@@ -22,6 +22,7 @@ from unittest import mock
 import anys
 from first import first
 from freezegun import freeze_time
+import msgpack
 import pytest
 import yaml
 
@@ -30,6 +31,7 @@ from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
+from mergify_engine import eventlogs
 from mergify_engine import github_types
 from mergify_engine import queue
 from mergify_engine import rules
@@ -1205,6 +1207,7 @@ class TestQueueAction(base.FunctionalTestBase):
                             str(queue_utils.PrAheadDequeued(pr_number=p1["number"])),
                         ),
                         "abort_code": queue_utils.PrAheadDequeued.get_abort_code(),
+                        "abort_status": "DEFINITIVE",
                         "aborted": True,
                         "branch": self.main_branch_name,
                         "position": 0,
@@ -4631,6 +4634,25 @@ pull_requests:
             await self.redis_links.stats.xlen(f"{redis_repo_key}/failure_by_reason")
             == 1
         )
+
+        await self.assert_eventlog_check_end("REEMBARKED")
+
+    async def assert_eventlog_check_end(
+        self, abort_status: typing.Literal["DEFINITIVE", "REEMBARKED"]
+    ) -> None:
+        redis_repo_key = eventlogs._get_repository_key(
+            self.subscription.owner_id, self.RECORD_CONFIG["repository_id"]
+        )
+        bdata = await self.redis_links.eventlogs.xrange(redis_repo_key)
+        events = [msgpack.unpackb(raw[b"data"]) for _, raw in bdata]
+        check_end_events = [
+            e for e in events if e["event"] == "action.queue.checks_end"
+        ]
+
+        assert len(check_end_events) == 1
+
+        event = check_end_events[0]
+        assert event["metadata"]["abort_status"] == abort_status
 
     async def test_create_pull_after_failure(self):
         config = {

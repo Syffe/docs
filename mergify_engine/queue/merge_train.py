@@ -890,6 +890,8 @@ You don't need to do anything. Mergify will close this pull request automaticall
             return
 
         headline: typing.Optional[str] = None
+        remaning_embarked_pulls: list[EmbarkedPull] = []
+
         if self.creation_state == "created" and reason is not None:
             if self.queue_pull_request_number is None:
                 raise RuntimeError(
@@ -937,7 +939,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 )
                 tmp_pull_ctxt.log.info("train car deleted", reason=reason)
 
-        abort_reason: typing.Optional[queue_utils.BaseAbortReason] = None
+        abort_reason: None | queue_utils.BaseAbortReason = None
         if reason is None:
             if self.has_timed_out:
                 aborted = True
@@ -950,38 +952,60 @@ You don't need to do anything. Mergify will close this pull request automaticall
             aborted = True
             abort_reason = reason
 
+        await self._send_checks_end_signal(
+            self.queue_pull_request_number,
+            remaning_embarked_pulls,
+            aborted,
+            abort_reason,
+        )
+        await self._delete_branch()
+
+    async def _send_checks_end_signal(
+        self,
+        queue_pull_request_number: github_types.GitHubPullRequestNumber,
+        reembarked_pulls: list[EmbarkedPull],
+        aborted: bool,
+        abort_reason: None | queue_utils.BaseAbortReason,
+    ) -> None:
+        abort_reason_str = str(abort_reason) if abort_reason is not None else ""
+        abort_code = abort_reason.get_abort_code() if abort_reason is not None else None
+        checks_conclusion = typing.cast(
+            signals.ChecksConclusion, self.checks_conclusion.value or "pending"
+        )
+
         for ep in self.initial_embarked_pulls:
             position, _ = self.train.find_embarked_pull(ep.user_pull_request_number)
+            abort_status: typing.Literal["DEFINITIVE", "REEMBARKED"] = (
+                "REEMBARKED" if ep in reembarked_pulls else "DEFINITIVE"
+            )
+
+            metadata = signals.EventQueueChecksEndMetadata(
+                {
+                    "aborted": aborted,
+                    "abort_reason": abort_reason_str,
+                    "abort_code": abort_code,
+                    "abort_status": abort_status,
+                    "queue_name": ep.config["name"],
+                    "branch": self.train.ref,
+                    "position": position,
+                    "queued_at": ep.queued_at,
+                    "speculative_check_pull_request": {
+                        "number": queue_pull_request_number,
+                        "in_place": self.creation_state == "updated",
+                        "checks_conclusion": checks_conclusion,
+                        "checks_timed_out": self.has_timed_out,
+                        "checks_ended_at": self.checks_ended_timestamp,
+                    },
+                }
+            )
+
             await signals.send(
                 self.train.repository,
                 ep.user_pull_request_number,
                 "action.queue.checks_end",
-                signals.EventQueueChecksEndMetadata(
-                    {
-                        "aborted": aborted,
-                        "abort_reason": str(abort_reason)
-                        if abort_reason is not None
-                        else "",
-                        "abort_code": abort_reason.get_abort_code()
-                        if abort_reason is not None
-                        else None,
-                        "queue_name": ep.config["name"],
-                        "branch": self.train.ref,
-                        "position": position,
-                        "queued_at": ep.queued_at,
-                        "speculative_check_pull_request": {
-                            "number": self.queue_pull_request_number,
-                            "in_place": self.creation_state == "updated",
-                            "checks_conclusion": self.checks_conclusion.value
-                            or "pending",
-                            "checks_timed_out": self.has_timed_out,
-                            "checks_ended_at": self.checks_ended_timestamp,
-                        },
-                    }
-                ),
+                metadata,
                 "merge-queue internal",
             )
-        await self._delete_branch()
 
     async def _delete_branch(self) -> None:
         if self.queue_pull_request_number is not None:

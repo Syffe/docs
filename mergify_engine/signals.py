@@ -148,6 +148,7 @@ class EventQueueChecksEndMetadata(EventMetadata, total=False):
     aborted: bool
     abort_reason: typing.Optional[str]
     abort_code: typing.Optional[str]
+    abort_status: typing.Literal["DEFINITIVE", "REEMBARKED"]
     queue_name: str
     branch: str
     position: typing.Optional[int]
