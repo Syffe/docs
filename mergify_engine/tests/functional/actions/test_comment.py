@@ -201,3 +201,37 @@ Unknown pull request attribute: hello
             checks[-1]["output"]["title"]
             == "Comments with `bot_account` set are disabled"
         )
+
+    async def test_comment_without_default_message(self):
+        rules = {
+            "defaults": {
+                "actions": {
+                    "comment": {},
+                }
+            },
+            "pull_request_rules": [
+                {
+                    "name": "comment without default message",
+                    "conditions": [f"base={self.main_branch_name}"],
+                    "actions": {
+                        "comment": {"message": "Hello World!"},
+                    },
+                }
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        p = await self.create_pr()
+        await self.run_engine()
+
+        p = await self.get_pull(p["number"])
+        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        checks = await ctxt.pull_engine_check_runs
+
+        assert len(checks) == 1
+        assert checks[0]["conclusion"] == "success"
+
+        comments = await self.get_issue_comments(p["number"])
+        assert len(comments) == 1
+        assert comments[0]["body"] == "Hello World!"
