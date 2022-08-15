@@ -26,6 +26,7 @@ from mergify_engine import rules
 from mergify_engine import signals
 from mergify_engine.dashboard import subscription
 from mergify_engine.rules import conditions
+from mergify_engine.rules import live_resolvers
 from mergify_engine.rules import types
 
 
@@ -75,6 +76,10 @@ class PostCheckExecutor(
             check_conditions = rule.conditions
         else:
             check_conditions = action.config["success_conditions"].copy()
+            for condition in check_conditions.walk():
+                live_resolvers.configure_filter(
+                    ctxt.repository, condition.partial_filter
+                )
             await check_conditions([ctxt.pull_request])
 
         extra_variables: typing.Dict[str, typing.Union[str, bool]] = {
@@ -148,7 +153,10 @@ class PostCheckExecutor(
                 self.rule.get_signal_trigger(),
             )
         return check_api.Result(
-            conclusion, self.config["title"], self.config["summary"]
+            conclusion,
+            self.config["title"],
+            self.config["summary"],
+            log_details={"conditions": check_conditions.get_summary()},
         )
 
     async def run(self) -> check_api.Result:

@@ -116,6 +116,7 @@ class Result:
     annotations: typing.Optional[typing.List[github_types.GitHubAnnotation]] = None
     started_at: typing.Optional[datetime.datetime] = None
     ended_at: typing.Optional[datetime.datetime] = None
+    log_details: typing.Optional[typing.Dict[str, typing.Any]] = None
 
 
 def to_check_run_light(

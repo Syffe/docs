@@ -347,7 +347,7 @@ LOG_STDOUT_LEVEL: int  # This is converted to an int by voluptuous
 LOG_DATADOG: bool
 LOG_DATADOG_LEVEL: int  # This is converted to an int by voluptuous
 LOG_DEBUG_LOGGER_NAMES: typing.List[str]
-ORG_ADMIN_PERSONAL_TOKEN: str
+ORG_ADMIN_PERSONAL_TOKEN: github_types.GitHubOAuthToken
 ORG_ADMIN_ID: github_types.GitHubAccountIdType
 ORG_USER_ID: github_types.GitHubAccountIdType
 ORG_USER_PERSONAL_TOKEN: github_types.GitHubOAuthToken

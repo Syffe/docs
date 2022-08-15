@@ -42,6 +42,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
                                 "#title<100",
                                 "#body<4096",
                                 "#files<100",
+                                "approved-reviews-by=@testing",
                                 "body~=(?m)^(Fixes|Related|Closes) (MERGIFY-ENGINE|MRGFY)-",
                                 "-label=ignore-guideline",
                             ]
@@ -55,8 +56,12 @@ class TestPostCheckAction(base.FunctionalTestBase):
         match_p = await self.create_pr(message="Fixes MRGFY-123")
         unmatch_p = await self.create_pr()
         unrelated_p = await self.create_pr(base=unrelated_branch)
-        await self.run_engine()
 
+        await self.create_review(
+            match_p["number"], oauth_token=config.ORG_ADMIN_PERSONAL_TOKEN
+        )
+
+        await self.run_engine()
         # ensure no check is posted on unrelated branch
         unrelated_ctxt = await context.Context.create(
             self.repository_ctxt, unrelated_p, []
@@ -83,6 +88,41 @@ class TestPostCheckAction(base.FunctionalTestBase):
         assert "'body need sentry ticket' failed" == unmatch_check["output"]["title"]
 
         r = await self.app.get(
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{match_p['number']}/events",
+            headers={
+                "Authorization": f"bearer {self.api_key_admin}",
+                "Content-type": "application/json",
+            },
+        )
+        assert r.status_code == 200
+        assert r.json() == {
+            "events": [
+                {
+                    "event": "action.post_check",
+                    "metadata": {
+                        "conclusion": "success",
+                        "summary": "- [X] `#title>10`\n"
+                        "- [X] `#title<100`\n"
+                        "- [X] `#body<4096`\n"
+                        "- [X] `#files<100`\n"
+                        "- [X] `approved-reviews-by=@testing`\n"
+                        "- [X] `body~=(?m)^(Fixes|Related|Closes) "
+                        "(MERGIFY-ENGINE|MRGFY)-`\n"
+                        "- [X] `-label=ignore-guideline`\n",
+                        "title": "'body need sentry ticket' succeeded",
+                    },
+                    "repository": match_p["base"]["repo"]["full_name"],
+                    "pull_request": match_p["number"],
+                    "timestamp": mock.ANY,
+                    "trigger": "Rule: body need sentry ticket",
+                },
+            ],
+            "per_page": 10,
+            "size": 1,
+            "total": 1,
+        }
+
+        r = await self.app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{unmatch_p['number']}/events",
             headers={
                 "Authorization": f"bearer {self.api_key_admin}",
@@ -100,6 +140,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
                         "- [X] `#title<100`\n"
                         "- [X] `#body<4096`\n"
                         "- [X] `#files<100`\n"
+                        "- [ ] `approved-reviews-by=@testing`\n"
                         "- [ ] `body~=(?m)^(Fixes|Related|Closes) "
                         "(MERGIFY-ENGINE|MRGFY)-`\n"
                         "- [X] `-label=ignore-guideline`\n",
