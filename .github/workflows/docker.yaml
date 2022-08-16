@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   docker:
-    timeout-minutes: 10
+    timeout-minutes: 15
     runs-on: ubuntu-20.04
     services:
       redis:
