@@ -61,7 +61,9 @@ def original_environment_variables(
 
 
 @pytest.fixture()
-def logger_checker(request, caplog):
+def logger_checker(
+    request: pytest.FixtureRequest, caplog: pytest.LogCaptureFixture
+) -> typing.Generator[None, None, None]:
     # daiquiri removes all handlers during setup, as we want to sexy output and the pytest
     # capability at the same, we must add back the pytest handler
     logs.setup_logging()

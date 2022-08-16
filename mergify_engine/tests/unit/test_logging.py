@@ -26,7 +26,7 @@ from mergify_engine import logs
 
 
 @pytest.fixture
-def enable_tracer():
+def enable_tracer() -> typing.Generator[None, None, None]:
     enabled = tracer.enabled
     with mock.patch.object(tracer._writer, "flush_queue"), mock.patch.object(
         tracer._writer, "write"

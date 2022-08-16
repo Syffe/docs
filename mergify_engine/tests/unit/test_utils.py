@@ -127,7 +127,7 @@ def test_get_random_choices() -> None:
         assert utils.get_random_choices(4, choices, 4) == {"jd", "sileht"}
 
 
-def test_to_ordinal_numeric():
+def test_to_ordinal_numeric() -> None:
     with pytest.raises(ValueError):
         utils.to_ordinal_numeric(-1)
 
@@ -153,7 +153,7 @@ def test_to_ordinal_numeric():
     assert utils.to_ordinal_numeric(5743) == "5743rd"
 
 
-def test_split_list():
+def test_split_list() -> None:
     assert list(utils.split_list([1, 2, 3, 4, 5, 6, 7, 8, 9], 2)) == [
         [1, 2, 3, 4, 5],
         [6, 7, 8, 9],

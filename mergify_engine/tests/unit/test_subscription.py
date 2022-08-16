@@ -10,17 +10,17 @@ from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
 
 
-async def test_init(redis_cache):
+async def test_init(redis_cache: redis_utils.RedisCache) -> None:
     subscription.Subscription(
         redis_cache,
-        123,
+        github_types.GitHubAccountIdType(123),
         "friend",
         frozenset({subscription.Features.PRIVATE_REPOSITORY}),
     )
 
 
-async def test_dict(redis_cache):
-    owner_id = 1234
+async def test_dict(redis_cache: redis_utils.RedisCache) -> None:
+    owner_id = github_types.GitHubAccountIdType(1234)
     sub = subscription.Subscription(
         redis_cache,
         owner_id,
@@ -43,8 +43,10 @@ async def test_dict(redis_cache):
         },
     ),
 )
-async def test_save_sub(features, redis_cache):
-    owner_id = 1234
+async def test_save_sub(
+    features: set[subscription.Features], redis_cache: redis_utils.RedisCache
+) -> None:
+    owner_id = github_types.GitHubAccountIdType(1234)
     sub = subscription.Subscription(
         redis_cache,
         owner_id,
@@ -61,9 +63,10 @@ async def test_save_sub(features, redis_cache):
 
 @mock.patch.object(subscription.Subscription, "_retrieve_subscription_from_db")
 async def test_subscription_db_unavailable(
-    retrieve_subscription_from_db_mock, redis_cache
-):
-    owner_id = 1234
+    retrieve_subscription_from_db_mock: mock.Mock,
+    redis_cache: redis_utils.RedisCache,
+) -> None:
+    owner_id = github_types.GitHubAccountIdType(1234)
     sub = subscription.Subscription(
         redis_cache,
         owner_id,

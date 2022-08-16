@@ -1323,7 +1323,13 @@ async def test_stream_processor_priority(
 
     received = []
 
-    def fake_engine(installation, repo_id, repo, pull_number, sources):
+    def fake_engine(
+        installation: context.Installation,
+        repo_id: github_types.GitHubRepositoryIdType,
+        repo: github_types.GitHubRepositoryName,
+        pull_number: github_types.GitHubPullRequestNumber,
+        sources: typing.List[context.T_PayloadEventSource],
+    ) -> None:
         received.append(pull_number)
 
     run_engine.side_effect = fake_engine

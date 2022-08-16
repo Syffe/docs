@@ -93,7 +93,7 @@ def test_pretty_datetime(dt: datetime.datetime, expected_string: str) -> None:
     assert date.pretty_datetime(dt) == expected_string
 
 
-def test_time_compare():
+def test_time_compare() -> None:
     utc = datetime.timezone.utc
     with freeze_time("2021-09-22T08:00:05", tz_offset=0):
         assert datetime.datetime(2021, 9, 22, 8, 0, 5, tzinfo=utc) >= date.Time(
@@ -155,7 +155,7 @@ def test_time_compare():
         ("sunday", "Sun"),
     ],
 )
-def test_day_of_week_from_string(dow, expected_string):
+def test_day_of_week_from_string(dow: str, expected_string: str) -> None:
     assert str(date.DayOfWeek.from_string(dow)) == expected_string
 
 
@@ -167,13 +167,13 @@ def test_day_of_week_from_string(dow, expected_string):
         ("2:05 ago", "2021-09-22T05:55:05"),
     ],
 )
-def test_relative_datetime_from_string(string, expected_value):
+def test_relative_datetime_from_string(string: str, expected_value: str) -> None:
     with freeze_time("2021-09-22T08:00:05", tz_offset=0):
         dt = date.RelativeDatetime.from_string(string)
         assert dt.value == date.fromisoformat(expected_value)
 
 
-def test_relative_datetime_without_timezone():
+def test_relative_datetime_without_timezone() -> None:
     with pytest.raises(date.InvalidDate):
         date.RelativeDatetime(datetime.datetime.utcnow())
 
@@ -185,7 +185,12 @@ def test_relative_datetime_without_timezone():
         ("11:22[Europe/Paris]", 11, 22, zoneinfo.ZoneInfo("Europe/Paris")),
     ],
 )
-def test_time_from_string(time, expected_hour, expected_minute, expected_tzinfo):
+def test_time_from_string(
+    time: str,
+    expected_hour: int,
+    expected_minute: int,
+    expected_tzinfo: zoneinfo.ZoneInfo,
+) -> None:
     t = date.Time.from_string(time)
     assert t.hour == expected_hour
     assert t.minute == expected_minute
@@ -212,7 +217,9 @@ def test_time_from_string(time, expected_hour, expected_minute, expected_tzinfo)
         (date.RelativeDatetime, "10:20", "Invalid relative date"),
     ],
 )
-def test_invalid_date_string(date_type, value, expected_message):
+def test_invalid_date_string(
+    date_type: typing.Type[date.PartialDatetime], value: str, expected_message: str
+) -> None:
     with pytest.raises(date.InvalidDate) as exc:
         date_type.from_string(value)
 
