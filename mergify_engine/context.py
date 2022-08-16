@@ -1801,6 +1801,9 @@ class Context(object):
         if commits_behind_count is cache.Unset:
             if self.pull["merged"]:
                 commits_behind_count = 0
+            elif self.pull["head"]["label"] is None:
+                # label can be null... see: MERGIFY-ENGINE-2SJ
+                commits_behind_count = 1000000
             else:
                 commits_diff_count = await self.repository.get_commits_diff_count(
                     self.pull["base"]["label"], self.pull["head"]["label"]
