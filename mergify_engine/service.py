@@ -18,7 +18,9 @@ import os
 from datadog import statsd
 import ddtrace
 import sentry_sdk
+from sentry_sdk.integrations import fastapi
 from sentry_sdk.integrations import httpx
+from sentry_sdk.integrations import starlette
 
 from mergify_engine import config
 from mergify_engine import logs
@@ -40,6 +42,8 @@ def setup(service_name: str, dump_config: bool = True) -> None:
             environment=config.SENTRY_ENVIRONMENT,
             integrations=[
                 httpx.HttpxIntegration(),
+                starlette.StarletteIntegration(),
+                fastapi.FastApiIntegration(),
             ],
         )
         sentry_sdk.utils.MAX_STRING_LENGTH = 2048
