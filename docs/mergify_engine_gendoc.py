@@ -1,4 +1,3 @@
-import glob
 import os
 
 import docutils
@@ -37,10 +36,16 @@ def store_action(app, doctree):
 
 def render_action_list(app, docname, source):
     if docname == "actions/index":
-        with open(os.path.join(app.srcdir, "_templates/action-list.j2"), "r") as t:
-            template = jinja2.Template(t.read())
-        with open(os.path.join(app.srcdir, "actions/action-list.html"), "w") as l:
-            l.write(template.render(actions=sorted(app._MERGIFY_ACTIONS)))
+        with open(
+            os.path.join(app.srcdir, "_templates/action-list.j2"), "r"
+        ) as template_file:
+            template = jinja2.Template(template_file.read())
+        with open(
+            os.path.join(app.srcdir, "actions/action-list.html"), "w"
+        ) as destination_file:
+            destination_file.write(
+                template.render(actions=sorted(app._MERGIFY_ACTIONS))
+            )
 
 
 def order_files(app, env, docnames):
@@ -63,11 +68,13 @@ def write_redirect(app, pagename, templatename, context, doctree):
     url = f"https://docs.mergify.com/{pagename}/"
     os.makedirs(os.path.join(app.outdir, pagename), exist_ok=True)
     with open(os.path.join(app.outdir, pagename + ".html"), "w") as f:
-        f.write(f"""<head>
+        f.write(
+            f"""<head>
   <meta http-equiv="refresh" content="0; URL={url}">
   <link rel="canonical" href="{url}">
 </head>
-""")
+"""
+        )
 
 
 def setup(app):

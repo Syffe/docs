@@ -37,7 +37,7 @@ master_doc = "index"
 # General information about the project.
 project = "Mergify"
 language = "en"
-copyright = "%s, Mergify" % datetime.date.today().year
+copyright = f"{datetime.date.today().year}, Mergify"  # noqa: A001
 version = pkg_resources.get_distribution("mergify_engine").version
 
 # The name of the Pygments (syntax highlighting) style to use.
