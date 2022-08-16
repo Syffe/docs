@@ -34,9 +34,9 @@ LOG = daiquiri.getLogger(__name__)
 # This helps mypy breaking the recursive definition
 FakeTreeT = typing.Dict[str, typing.Any]
 
-ConditionFilterKeyT = typing.Callable[
-    [typing.Union["RuleConditionGroup", "RuleCondition"]], bool
-]
+RuleConditionNode = typing.Union["RuleConditionGroup", "RuleCondition"]
+
+ConditionFilterKeyT = typing.Callable[[RuleConditionNode], bool]
 
 
 @dataclasses.dataclass
@@ -127,25 +127,17 @@ class RuleConditionGroup:
     """This describe a group leafs of the `conditions:` tree linked by and or or."""
 
     condition: dataclasses.InitVar[
-        typing.Dict[
-            typing.Literal["and", "or"],
-            typing.List[typing.Union["RuleConditionGroup", RuleCondition]],
-        ]
+        typing.Dict[typing.Literal["and", "or"], list[RuleConditionNode]]
     ]
     operator: typing.Literal["and", "or"] = dataclasses.field(init=False)
-    conditions: typing.List[
-        typing.Union["RuleConditionGroup", RuleCondition]
-    ] = dataclasses.field(init=False)
+    conditions: list[RuleConditionNode] = dataclasses.field(init=False)
     description: typing.Optional[str] = None
     match: bool = dataclasses.field(init=False, default=False)
     _used: bool = dataclasses.field(init=False, default=False)
 
     def __post_init__(
         self,
-        condition: typing.Dict[
-            typing.Literal["and", "or"],
-            typing.List[typing.Union["RuleConditionGroup", RuleCondition]],
-        ],
+        condition: typing.Dict[typing.Literal["and", "or"], list[RuleConditionNode]],
     ) -> None:
         if len(condition) != 1:
             raise RuntimeError("Invalid condition")
@@ -168,10 +160,7 @@ class RuleConditionGroup:
         return self.match
 
     def extract_raw_filter_tree(
-        self,
-        condition: typing.Optional[
-            typing.Union["RuleConditionGroup", RuleCondition]
-        ] = None,
+        self, condition: None | RuleConditionNode = None
     ) -> filter.TreeT:
         if condition is None:
             condition = self
@@ -191,10 +180,7 @@ class RuleConditionGroup:
             raise RuntimeError("unexpected condition instance")
 
     def walk(
-        self,
-        conditions: typing.Optional[
-            typing.List[typing.Union["RuleConditionGroup", RuleCondition]]
-        ] = None,
+        self, conditions: None | list[RuleConditionNode] = None
     ) -> typing.Iterator[RuleCondition]:
         if conditions is None:
             conditions = self.conditions
@@ -231,7 +217,7 @@ class RuleConditionGroup:
     @classmethod
     def _walk_for_summary(
         cls,
-        conditions: typing.List[typing.Union["RuleConditionGroup", RuleCondition]],
+        conditions: list[RuleConditionNode],
         level: int = 0,
         filter_key: typing.Optional[ConditionFilterKeyT] = None,
     ) -> str:
@@ -280,9 +266,7 @@ class RuleConditionGroup:
 
 @dataclasses.dataclass
 class QueueRuleConditions:
-    conditions: dataclasses.InitVar[
-        typing.List[typing.Union["RuleConditionGroup", RuleCondition]],
-    ]
+    conditions: dataclasses.InitVar[list[RuleConditionNode]]
     condition: RuleConditionGroup = dataclasses.field(init=False)
     _evaluated_conditions: typing.Dict[
         github_types.GitHubPullRequestNumber, RuleConditionGroup
@@ -290,10 +274,7 @@ class QueueRuleConditions:
     match: bool = dataclasses.field(init=False, default=False)
     _used: bool = dataclasses.field(init=False, default=False)
 
-    def __post_init__(
-        self,
-        conditions: typing.List[typing.Union["RuleConditionGroup", RuleCondition]],
-    ) -> None:
+    def __post_init__(self, conditions: list[RuleConditionNode]) -> None:
         self.condition = RuleConditionGroup({"and": conditions})
 
     def copy(self) -> "QueueRuleConditions":
@@ -355,8 +336,7 @@ class QueueRuleConditions:
     def _walk_for_summary(
         cls,
         evaluated_conditions: typing.Mapping[
-            github_types.GitHubPullRequestNumber,
-            typing.Union["RuleConditionGroup", "RuleCondition"],
+            github_types.GitHubPullRequestNumber, RuleConditionNode
         ],
         operator: typing.Literal["and", "or"],
         level: int = -1,
@@ -439,13 +419,10 @@ BRANCH_PROTECTION_CONDITION_TAG = "🛡 GitHub branch protection"
 
 
 async def get_branch_protection_conditions(
-    repository: context.Repository,
-    ref: github_types.GitHubRefType,
-    *,
-    strict: bool,
-) -> typing.List[typing.Union["RuleConditionGroup", RuleCondition]]:
+    repository: context.Repository, ref: github_types.GitHubRefType, *, strict: bool
+) -> list[RuleConditionNode]:
     protection = await repository.get_branch_protection(ref)
-    conditions: typing.List[typing.Union["RuleConditionGroup", RuleCondition]] = []
+    conditions: list[RuleConditionNode] = []
     if protection:
         if "required_status_checks" in protection:
             conditions.extend(
@@ -509,10 +486,8 @@ async def get_branch_protection_conditions(
     return conditions
 
 
-async def get_depends_on_conditions(
-    ctxt: context.Context,
-) -> typing.List[typing.Union["RuleConditionGroup", RuleCondition]]:
-    conds: typing.List[typing.Union["RuleConditionGroup", RuleCondition]] = []
+async def get_depends_on_conditions(ctxt: context.Context) -> list[RuleConditionNode]:
+    conds: list[RuleConditionNode] = []
     for pull_request_number in ctxt.get_depends_on():
         try:
             dep_ctxt = await ctxt.repository.get_pull_request_context(
@@ -533,15 +508,10 @@ async def get_depends_on_conditions(
 
 @dataclasses.dataclass
 class PullRequestRuleConditions:
-    conditions: dataclasses.InitVar[
-        typing.List[typing.Union["RuleConditionGroup", RuleCondition]],
-    ]
+    conditions: dataclasses.InitVar[list[RuleConditionNode]]
     condition: RuleConditionGroup = dataclasses.field(init=False)
 
-    def __post_init__(
-        self,
-        conditions: typing.List[typing.Union["RuleConditionGroup", RuleCondition]],
-    ) -> None:
+    def __post_init__(self, conditions: list[RuleConditionNode]) -> None:
         self.condition = RuleConditionGroup({"and": conditions})
 
     async def __call__(self, objs: typing.List[context.BasePullRequest]) -> bool:

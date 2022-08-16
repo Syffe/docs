@@ -317,11 +317,7 @@ class PullRequestRules:
     def _gen_rule_from(
         rule: PullRequestRule,
         new_actions: typing.Dict[str, actions_mod.Action],
-        extra_conditions: typing.List[
-            typing.Union[
-                conditions_mod.RuleConditionGroup, conditions_mod.RuleCondition
-            ]
-        ],
+        extra_conditions: list[conditions_mod.RuleConditionNode],
     ) -> PullRequestRule:
         return PullRequestRule(
             name=rule.name,

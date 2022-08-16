@@ -132,11 +132,8 @@ class DeleteHeadBranchAction(actions.Action):
     executor_class = DeleteHeadBranchExecutor
 
     async def get_conditions_requirements(
-        self,
-        ctxt: context.Context,
-    ) -> typing.List[
-        typing.Union[conditions.RuleConditionGroup, conditions.RuleCondition]
-    ]:
+        self, ctxt: context.Context
+    ) -> list[conditions.RuleConditionNode]:
         return [
             conditions.RuleCondition(
                 "closed", description=":pushpin: delete_head_branch requirement"

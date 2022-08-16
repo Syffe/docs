@@ -619,11 +619,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
         return False
 
     async def get_conditions_requirements(
-        self,
-        ctxt: context.Context,
-    ) -> typing.List[
-        typing.Union[conditions.RuleConditionGroup, conditions.RuleCondition]
-    ]:
+        self, ctxt: context.Context
+    ) -> list[conditions.RuleConditionNode]:
         branch_protection_conditions = []
         if (
             self.config["require_branch_protection"]

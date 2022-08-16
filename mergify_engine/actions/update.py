@@ -75,11 +75,8 @@ class UpdateAction(actions.Action):
     executor_class = UpdateExecutor
 
     async def get_conditions_requirements(
-        self,
-        ctxt: context.Context,
-    ) -> typing.List[
-        typing.Union[conditions.RuleConditionGroup, conditions.RuleCondition]
-    ]:
+        self, ctxt: context.Context
+    ) -> list[conditions.RuleConditionNode]:
         description = ":pushpin: update requirement"
         return [
             conditions.RuleCondition(

@@ -13,8 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import typing
-
 import voluptuous
 
 from mergify_engine import actions
@@ -77,11 +75,8 @@ class RebaseAction(actions.BackwardCompatAction):
         )
 
     async def get_conditions_requirements(
-        self,
-        ctxt: context.Context,
-    ) -> typing.List[
-        typing.Union[conditions.RuleConditionGroup, conditions.RuleCondition]
-    ]:
+        self, ctxt: context.Context
+    ) -> list[conditions.RuleConditionNode]:
         description = ":pushpin: rebase requirement"
         return [
             conditions.RuleCondition(

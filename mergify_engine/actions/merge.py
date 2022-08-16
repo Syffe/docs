@@ -147,14 +147,9 @@ class MergeAction(merge_base.MergeBaseAction[None]):
         )
 
     async def get_conditions_requirements(
-        self,
-        ctxt: context.Context,
-    ) -> typing.List[
-        typing.Union[conditions.RuleConditionGroup, conditions.RuleCondition]
-    ]:
-        conditions_requirements: typing.List[
-            typing.Union[conditions.RuleConditionGroup, conditions.RuleCondition]
-        ] = []
+        self, ctxt: context.Context
+    ) -> list[conditions.RuleConditionNode]:
+        conditions_requirements: list[conditions.RuleConditionNode] = []
         if self.config["method"] == "fast-forward":
             conditions_requirements.append(
                 conditions.RuleCondition(
