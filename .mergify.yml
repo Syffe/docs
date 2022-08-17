@@ -46,10 +46,7 @@ pull_request_rules:
       - check-success=semantic-pull-request
       - label=hotfix
       - title~=^(revert|fix)
-      - or:
-          # We authorize hotfix to go through if they fix a sentry
-          - body~=(?m)^Fixes MERGIFY-ENGINE-
-          - "#approved-reviews-by>=1"
+      - "#approved-reviews-by>=1"
       - "#changes-requested-reviews-by=0"
       - label!=work-in-progress
       - label!=manual merge
@@ -131,13 +128,6 @@ pull_request_rules:
       request_reviews:
         teams:
           - devs
-  - name: warn on no Sentry
-    conditions:
-      - -body~=(?m)^Fixes MERGIFY-ENGINE-
-      - label=hotfix
-    actions:
-      comment:
-        message: Your pull request is a hotfix but does not fix a Sentry issue. 🤔
   - name: warn on conflicts
     conditions:
       - conflict
