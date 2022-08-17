@@ -343,11 +343,14 @@ class QueueRuleConditions:
         ],
         level: int = -1,
     ) -> str:
-        summary = ""
         if not evaluated_conditions:
             raise RuntimeError("Empty conditions group")
+
+        summary = ""
         first_key = next(iter(evaluated_conditions))
-        if isinstance(evaluated_conditions[first_key], RuleCondition):
+        first_evaluated_condition = evaluated_conditions[first_key]
+
+        if isinstance(first_evaluated_condition, RuleCondition):
             evaluated_conditions = typing.cast(
                 typing.Mapping[
                     github_types.GitHubPullRequestNumber,
@@ -356,7 +359,7 @@ class QueueRuleConditions:
                 evaluated_conditions,
             )
             summary += cls._get_rule_condition_summary(evaluated_conditions)
-        elif isinstance(evaluated_conditions[first_key], RuleConditionGroup):
+        elif isinstance(first_evaluated_condition, RuleConditionGroup):
             evaluated_conditions = typing.cast(
                 typing.Mapping[
                     github_types.GitHubPullRequestNumber,
@@ -365,27 +368,25 @@ class QueueRuleConditions:
                 evaluated_conditions,
             )
             if level >= 0:
-                label = evaluated_conditions[first_key].operator_label
-                if evaluated_conditions[first_key].description:
-                    label += f" [{evaluated_conditions[first_key].description}]"
+                label = first_evaluated_condition.operator_label
+                if first_evaluated_condition.description:
+                    label += f" [{first_evaluated_condition.description}]"
+
                 global_match = all(c.match for c in evaluated_conditions.values())
                 checked = "X" if global_match else " "
                 summary += f"- [{checked}] {label}:\n"
 
             inner_conditions = []
-            for i in range(len(evaluated_conditions[first_key].conditions)):
+            for i in range(len(first_evaluated_condition.conditions)):
                 inner_conditions.append(
                     {p: c.conditions[i] for p, c in evaluated_conditions.items()}
                 )
             for inner_condition in inner_conditions:
-                for _sum in cls._walk_for_summary(
-                    inner_condition,
-                    level + 1,
-                ):
+                for _sum in cls._walk_for_summary(inner_condition, level + 1):
                     summary += _sum
         else:
             raise RuntimeError(
-                f"Unsupported condition type: {type(evaluated_conditions[first_key])}"
+                f"Unsupported condition type: {type(first_evaluated_condition).__name__}"
             )
 
         return textwrap.indent(summary, "  " * min(level, 1))
