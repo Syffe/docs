@@ -341,7 +341,6 @@ class QueueRuleConditions:
         evaluated_conditions: typing.Mapping[
             github_types.GitHubPullRequestNumber, RuleConditionNode
         ],
-        operator: typing.Literal["and", "or"],
         level: int = -1,
     ) -> str:
         summary = ""
@@ -381,7 +380,6 @@ class QueueRuleConditions:
             for inner_condition in inner_conditions:
                 for _sum in cls._walk_for_summary(
                     inner_condition,
-                    evaluated_conditions[first_key].operator,
                     level + 1,
                 ):
                     summary += _sum
@@ -394,7 +392,7 @@ class QueueRuleConditions:
 
     def get_summary(self) -> str:
         if self._used:
-            return self._walk_for_summary(self._evaluated_conditions, "and")
+            return self._walk_for_summary(self._evaluated_conditions)
         else:
             return self.condition.get_summary()
 
