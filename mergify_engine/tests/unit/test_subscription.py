@@ -117,34 +117,34 @@ async def test_subscription_db_unavailable(
     retrieve_subscription_from_db_mock.assert_called_once()
 
 
-async def test_unknown_sub(redis_cache):
+async def test_unknown_sub(redis_cache: redis_utils.RedisCache) -> None:
     sub = await subscription.Subscription._retrieve_subscription_from_cache(
-        redis_cache, 98732189
+        redis_cache, github_types.GitHubAccountIdType(98732189)
     )
     assert sub is None
 
 
-async def test_from_dict_unknown_features(redis_cache):
+async def test_from_dict_unknown_features(redis_cache: redis_utils.RedisCache) -> None:
     assert subscription.Subscription.from_dict(
         redis_cache,
-        123,
+        github_types.GitHubAccountIdType(123),
         {
             "subscription_reason": "friend",
-            "features": ["unknown feature"],
+            "features": ["unknown feature"],  # type: ignore[list-item]
         },
     ) == subscription.Subscription(
         redis_cache,
-        123,
+        github_types.GitHubAccountIdType(123),
         "friend",
         frozenset(),
         -2,
     )
 
 
-async def test_active_feature(redis_cache):
+async def test_active_feature(redis_cache: redis_utils.RedisCache) -> None:
     sub = subscription.Subscription(
         redis_cache,
-        123,
+        github_types.GitHubAccountIdType(123),
         "friend",
         frozenset([subscription.Features.PRIORITY_QUEUES]),
     )
@@ -152,7 +152,7 @@ async def test_active_feature(redis_cache):
     assert sub.has_feature(subscription.Features.PRIORITY_QUEUES) is True
     sub = subscription.Subscription(
         redis_cache,
-        123,
+        github_types.GitHubAccountIdType(123),
         "friend",
         frozenset([subscription.Features.PRIORITY_QUEUES]),
     )
@@ -160,7 +160,7 @@ async def test_active_feature(redis_cache):
 
     sub = subscription.Subscription.from_dict(
         redis_cache,
-        123,
+        github_types.GitHubAccountIdType(123),
         {
             "subscription_reason": "friend",
             "features": ["private_repository"],

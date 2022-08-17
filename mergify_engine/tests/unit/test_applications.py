@@ -4,11 +4,12 @@ import pytest
 
 from mergify_engine import config
 from mergify_engine import github_types
+from mergify_engine import redis_utils
 from mergify_engine.clients import http
 from mergify_engine.dashboard import application
 
 
-async def test_init(redis_cache):
+async def test_init(redis_cache: redis_utils.RedisCache) -> None:
     application.Application(
         redis_cache,
         0,
@@ -31,7 +32,7 @@ async def test_init(redis_cache):
     )
 
 
-async def test_save_apikey_scoped(redis_cache):
+async def test_save_apikey_scoped(redis_cache: redis_utils.RedisCache) -> None:
     api_access_key = "a" * 32
     api_secret_key = "s" * 32
     account_id = github_types.GitHubAccountIdType(12345)
@@ -52,23 +53,23 @@ async def test_save_apikey_scoped(redis_cache):
     assert app == rapp
 
     # wrong scope
-    app = await application.Application._retrieve_from_cache(
+    app_saas = await application.Application._retrieve_from_cache(
         redis_cache,
         api_access_key,
         api_secret_key,
         github_types.GitHubLogin("another login"),
     )
-    assert app is None
-    app = await application.Application._retrieve_from_cache(
+    assert app_saas is None
+    app_saas = await application.Application._retrieve_from_cache(
         redis_cache,
         api_access_key,
         api_secret_key,
         None,
     )
-    assert app is None
+    assert app_saas is None
 
 
-async def test_save_apikey_unscoped(redis_cache):
+async def test_save_apikey_unscoped(redis_cache: redis_utils.RedisCache) -> None:
     api_access_key = "a" * 32
     api_secret_key = "s" * 32
     app = application.Application(
@@ -85,16 +86,16 @@ async def test_save_apikey_unscoped(redis_cache):
     assert app == rapp
 
     # wrong scope
-    app = await application.Application._retrieve_from_cache(
+    app_saas = await application.Application._retrieve_from_cache(
         redis_cache,
         api_access_key,
         api_secret_key,
         github_types.GitHubLogin("login"),
     )
-    assert app is None
+    assert app_saas is None
 
 
-async def test_update_apikey(redis_cache):
+async def test_update_apikey(redis_cache: redis_utils.RedisCache) -> None:
     api_access_key = "a" * 32
     api_secret_key = "s" * 32
     account_id = github_types.GitHubAccountIdType(12345)
@@ -123,8 +124,8 @@ async def test_update_apikey(redis_cache):
                 "id": 1,
                 "name": "new name",
                 "github_account": {
-                    "id": 424242,
-                    "login": "login",
+                    "id": github_types.GitHubAccountIdType(424242),
+                    "login": github_types.GitHubLogin("login"),
                     "type": "User",
                     "avatar_url": "",
                 },
@@ -140,7 +141,10 @@ async def test_update_apikey(redis_cache):
         "new name",
         api_access_key,
         api_secret_key,
-        {"id": 424242, "login": "login"},
+        {
+            "id": github_types.GitHubAccountIdType(424242),
+            "login": github_types.GitHubLogin("login"),
+        },
         ttl=application.Application.RETENTION_SECONDS,
     )
 
@@ -148,7 +152,9 @@ async def test_update_apikey(redis_cache):
 
 
 @mock.patch.object(application.Application, "_retrieve_from_db")
-async def test_application_db_unavailable(retrieve_from_db_mock, redis_cache):
+async def test_application_db_unavailable(
+    retrieve_from_db_mock: mock.Mock, redis_cache: redis_utils.RedisCache
+) -> None:
     api_access_key = "a" * 32
     api_secret_key = "s" * 32
     account_id = github_types.GitHubAccountIdType(12345)
@@ -215,14 +221,16 @@ async def test_application_db_unavailable(retrieve_from_db_mock, redis_cache):
     retrieve_from_db_mock.assert_called_once()
 
 
-async def test_unknown_app(redis_cache):
+async def test_unknown_app(redis_cache: redis_utils.RedisCache) -> None:
     app = await application.Application._retrieve_from_cache(
         redis_cache, "whatever", "secret", None
     )
     assert app is None
 
 
-async def test_application_tokens_via_env(monkeypatch, redis_cache):
+async def test_application_tokens_via_env(
+    monkeypatch: pytest.MonkeyPatch, redis_cache: redis_utils.RedisCache
+) -> None:
     api_access_key1 = "1" * 32
     api_secret_key1 = "1" * 32
     account_id1 = github_types.GitHubAccountIdType(12345)
@@ -254,29 +262,33 @@ async def test_application_tokens_via_env(monkeypatch, redis_cache):
     app = await application.ApplicationOnPremise.get(
         redis_cache, api_access_key1, api_secret_key1, account_login1
     )
+    assert app.account_scope is not None
     assert app.account_scope["id"] == account_id1
 
     app = await application.ApplicationOnPremise.get(
         redis_cache, api_access_key2, api_secret_key2, account_login2
     )
+    assert app.account_scope is not None
     assert app.account_scope["id"] == account_id2
 
     app = await application.ApplicationOnPremise.get(
         redis_cache, api_access_key1, api_secret_key1, None
     )
+    assert app.account_scope is not None
     assert app.account_scope["id"] == account_id1
 
     app = await application.ApplicationOnPremise.get(
         redis_cache, api_access_key2, api_secret_key2, None
     )
+    assert app.account_scope is not None
     assert app.account_scope["id"] == account_id2
 
     # wrong scope
     with pytest.raises(application.ApplicationUserNotFound):
         await application.ApplicationOnPremise.get(
-            redis_cache, api_access_key1, api_secret_key1, account_id2
+            redis_cache, api_access_key1, api_secret_key1, account_login2
         )
     with pytest.raises(application.ApplicationUserNotFound):
         await application.ApplicationOnPremise.get(
-            redis_cache, api_access_key2, api_secret_key2, account_id1
+            redis_cache, api_access_key2, api_secret_key2, account_login1
         )

@@ -19,7 +19,7 @@ from starlette import testclient
 from mergify_engine.web import root
 
 
-def test_legacy_badge_endpoint():
+def test_legacy_badge_endpoint() -> None:
     with testclient.TestClient(root.app) as client:
         reply = client.get(
             "/badges/mergifyio/mergify-engine.png", allow_redirects=False

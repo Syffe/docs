@@ -13,7 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
+import typing
 from unittest import mock
 
 from mergify_engine import check_api
@@ -24,18 +24,22 @@ from mergify_engine.tests.unit import conftest
 async def test_summary_synchronization_cache(
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
-    async def items(*args, **kwargs):
+    async def items(
+        *args: typing.Any, **kwargs: typing.Any
+    ) -> typing.AsyncGenerator[None, None]:
         if False:
             yield
         return
 
-    async def post_check(*args, **kwargs):
+    async def post_check(*args: typing.Any, **kwargs: typing.Any) -> mock.Mock:
         return mock.Mock(
             status_code=200,
             json=mock.Mock(
                 return_value=github_types.GitHubCheckRun(
                     {
-                        "head_sha": "ce587453ced02b1526dfb4cb910479d431683101",
+                        "head_sha": github_types.SHAType(
+                            "ce587453ced02b1526dfb4cb910479d431683101"
+                        ),
                         "details_url": "https://example.com",
                         "status": "completed",
                         "conclusion": "neutral",
@@ -46,17 +50,21 @@ async def test_summary_synchronization_cache(
                             "name": "CI",
                             "owner": {
                                 "type": "User",
-                                "id": 1234,
-                                "login": "goo",
+                                "id": github_types.GitHubAccountIdType(1234),
+                                "login": github_types.GitHubLogin("goo"),
                                 "avatar_url": "https://example.com",
                             },
                         },
                         "external_id": "",
                         "pull_requests": [],
-                        "before": "4eef79d038b0327a5e035fd65059e556a55c6aa4",
-                        "after": "4eef79d038b0327a5e035fd65059e556a55c6aa4",
-                        "started_at": "",
-                        "completed_at": "",
+                        "before": github_types.SHAType(
+                            "4eef79d038b0327a5e035fd65059e556a55c6aa4"
+                        ),
+                        "after": github_types.SHAType(
+                            "4eef79d038b0327a5e035fd65059e556a55c6aa4"
+                        ),
+                        "started_at": github_types.ISODateTimeType(""),
+                        "completed_at": github_types.ISODateTimeType(""),
                         "html_url": "https://example.com",
                         "check_suite": {"id": 1234},
                         "output": {

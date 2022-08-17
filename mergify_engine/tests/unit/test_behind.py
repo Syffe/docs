@@ -65,32 +65,33 @@ def create_commit(sha: github_types.SHAType) -> github_types.GitHubBranchCommit:
         "O-AP-B-CP",
     ]
 )
-def commits_tree_generator(request):
+def commits_tree_generator(
+    request: typing.Any,
+) -> typing.Tuple[bool, typing.List[github_types.GitHubBranchCommit]]:
     # NOTE(sileht):
     # tree direction: ->
     # U: mean HEAD of base branch
     # O: mean old commit of base branch
     # P: mean another unknown branch
     commits = []
-    cur = create_commit("whatever")
+    cur = create_commit(github_types.SHAType("whatever"))
     tree = request.param
     behind = "U" not in tree
-
     while tree:
         elem = tree[0]
         tree = tree[1:]
         if elem == "-":
             commits.append(cur)
-            cur = create_commit("whatever")
+            cur = create_commit(github_types.SHAType("whatever"))
             cur["parents"].append(commits[-1])
         elif elem == "U":
-            cur["parents"].append(create_commit("base"))
+            cur["parents"].append(create_commit(github_types.SHAType("base")))
         elif elem == "O":
-            cur["parents"].append(create_commit("outdated"))
+            cur["parents"].append(create_commit(github_types.SHAType("outdated")))
         elif elem == "P":
-            cur["parents"].append(create_commit("random-branch"))
+            cur["parents"].append(create_commit(github_types.SHAType("random-branch")))
         else:
-            cur["parents"].append(create_commit(f"sha-{elem}"))
+            cur["parents"].append(create_commit(github_types.SHAType(f"sha-{elem}")))
     commits.append(cur)
     return behind, commits
 

@@ -197,7 +197,9 @@ QUEUE_RULES = voluptuous.Schema(rules.QueueRulesSchema)(
 def fake_client() -> mock.Mock:
     branch = {"commit": {"sha": "sha1"}}
 
-    def item_call(url, *args, **kwargs):
+    def item_call(
+        url: str, *args: typing.Any, **kwargs: typing.Any
+    ) -> typing.Dict[str, typing.Any]:
         if url == "/repos/Mergifyio/mergify-engine/contents/.mergify.yml":
             return {
                 "type": "file",
@@ -214,7 +216,7 @@ def fake_client() -> mock.Mock:
 
         raise Exception(f"url not mocked: {url}")
 
-    def update_base_sha(sha):
+    def update_base_sha(sha: github_types.SHAType) -> None:
         branch["commit"]["sha"] = sha
 
     client = mock.Mock()

@@ -5,7 +5,7 @@ from mergify_engine.tests.functional import base
 
 
 class TestSubscriptionsApi(base.FunctionalTestBase):
-    async def test_queue_freeze_subscription(self):
+    async def test_queue_freeze_subscription(self) -> None:
         rules = {
             "queue_rules": [
                 {
@@ -76,7 +76,7 @@ class TestSubscriptionsApi(base.FunctionalTestBase):
         )
         assert r.status_code == 402
 
-    async def test_eventlogs_subscription(self):
+    async def test_eventlogs_subscription(self) -> None:
         rules = {
             "pull_request_rules": [
                 {

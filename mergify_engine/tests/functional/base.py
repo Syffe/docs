@@ -112,7 +112,7 @@ class GitterRecorder(gitter.Gitter):
             data = json.dumps(self.records)
             f.write(data.encode("utf8"))
 
-    async def __call__(self, *args, **kwargs):
+    async def __call__(self, *args: typing.Any, **kwargs: typing.Any) -> str:
         if RECORD:
             try:
                 output = await super(GitterRecorder, self).__call__(*args, **kwargs)
@@ -125,6 +125,7 @@ class GitterRecorder(gitter.Gitter):
                             "returncode": e.returncode,
                             "output": e.output,
                         },
+                        "out": "",
                     }
                 )
                 raise
@@ -133,6 +134,10 @@ class GitterRecorder(gitter.Gitter):
                     {
                         "args": self.prepare_args(args),
                         "kwargs": self.prepare_kwargs(kwargs),
+                        "exc": {
+                            "returncode": 0,
+                            "output": "",
+                        },
                         "out": output,
                     }
                 )
@@ -153,21 +158,21 @@ class GitterRecorder(gitter.Gitter):
                 ), f'{r["kwargs"]} != {self.prepare_kwargs(kwargs)}'
                 return r["out"]
 
-    def prepare_args(self, args):
+    def prepare_args(self, args: typing.Any) -> typing.List[str]:
         prepared_args = [
             arg.replace(self.tmp, "/tmp/mergify-gitter<random>") for arg in args
         ]
         return prepared_args
 
     @staticmethod
-    def prepare_kwargs(kwargs):
+    def prepare_kwargs(kwargs: typing.Any) -> typing.Any:
         if "_input" in kwargs:
             kwargs["_input"] = re.sub(r"://[^@]*@", "://<TOKEN>:@", kwargs["_input"])
         if "_env" in kwargs:
             kwargs["_env"] = {"envtest": "this is a test"}
         return kwargs
 
-    async def cleanup(self):
+    async def cleanup(self) -> None:
         await super(GitterRecorder, self).cleanup()
         if RECORD:
             self.save_records()
