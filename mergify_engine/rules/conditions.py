@@ -144,6 +144,10 @@ class RuleConditionGroup:
 
         self.operator, self.conditions = next(iter(condition.items()))
 
+    @property
+    def operator_label(self) -> str:
+        return "all of" if self.operator == "and" else "any of"
+
     async def __call__(
         self,
         obj: filter.GetAttrObjectT,
@@ -229,9 +233,8 @@ class RuleConditionGroup:
             if isinstance(condition, RuleCondition):
                 summary += cls._get_rule_condition_summary(condition)
             elif isinstance(condition, RuleConditionGroup):
-                label = "all of" if condition.operator == "and" else "any of"
                 checked = "X" if condition.match else " "
-                summary += f"- [{checked}] {label}:"
+                summary += f"- [{checked}] {condition.operator_label}:"
                 if condition.description:
                     summary += f" [{condition.description}]"
                 summary += "\n"
@@ -363,11 +366,7 @@ class QueueRuleConditions:
                 evaluated_conditions,
             )
             if level >= 0:
-                label = (
-                    "all of"
-                    if evaluated_conditions[first_key].operator == "and"
-                    else "any of"
-                )
+                label = evaluated_conditions[first_key].operator_label
                 if evaluated_conditions[first_key].description:
                     label += f" [{evaluated_conditions[first_key].description}]"
                 global_match = all(c.match for c in evaluated_conditions.values())
