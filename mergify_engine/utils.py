@@ -241,7 +241,11 @@ async def send_repository_refresh(
         source=source,
     )
 
-    score = str(date.utcnow().timestamp() * 10)
+    # TODO(sileht): move refresh stuff into it's own file
+    # Break circular import
+    from mergify_engine import worker
+
+    score = worker.get_priority_score(worker.Priority.low)
     await _send_refresh(redis_stream, repository, action, source, score=score)
 
 
@@ -261,7 +265,12 @@ async def send_branch_refresh(
         action=action,
         source=source,
     )
-    score = str(date.utcnow().timestamp() * 10)
+
+    # TODO(sileht): move refresh stuff into it's own file
+    # Break circular import
+    from mergify_engine import worker
+
+    score = worker.get_priority_score(worker.Priority.low)
     await _send_refresh(redis_stream, repository, action, source, ref=ref, score=score)
 
 

@@ -154,10 +154,10 @@ PRIORITY_OFFSET = 100_000_000_000
 SCORE_TIMESTAMP_PRECISION = 10000
 
 
-def get_priority_score(prio: Priority) -> float:
+def get_priority_score(prio: Priority) -> str:
     # NOTE(sileht): we drop ms, to avoid float precision issue (eg:
     # 3.99999 becoming 4.0000) that could break priority offset
-    return (
+    return str(
         int(date.utcnow().timestamp() * SCORE_TIMESTAMP_PRECISION)
         + prio.value * PRIORITY_OFFSET * SCORE_TIMESTAMP_PRECISION
     )
@@ -212,7 +212,7 @@ async def push(
 
         # NOTE(sileht): lower timestamps are processed first
         if score is None:
-            score = str(get_priority_score(Priority.high))
+            score = get_priority_score(Priority.high)
 
         bucket_org_key = worker_lua.BucketOrgKeyType(f"bucket~{owner_id}")
         bucket_sources_key = worker_lua.BucketSourcesKeyType(
@@ -791,7 +791,7 @@ class StreamProcessor:
         # NOTE(sileht): refreshing all opened pull request because something got merged
         # has a lower priority
         if source["event_type"] == "push":
-            score = str(get_priority_score(Priority.low))
+            score = get_priority_score(Priority.low)
 
         pipe = await self.redis_links.stream.pipeline()
         for pull_number in pull_numbers:
