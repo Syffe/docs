@@ -57,5 +57,8 @@ class TestSubscription(base.FunctionalTestBase):
         ctxt = await context.Context.create(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
-        assert "Abuse" == summary["output"]["summary"]
-        assert "Mergify is disabled" == summary["output"]["title"]
+        assert (
+            "⚠ The [subscription](https://dashboard.mergify.com/github/mergifyio-testing/subscription) needs to be updated to enable this feature."
+            == summary["output"]["summary"]
+        )
+        assert "Cannot use Mergify on a public repository" == summary["output"]["title"]
