@@ -79,10 +79,16 @@ class RecordException(typing.TypedDict):
     output: str
 
 
-class Record(typing.TypedDict):
+# mypy doesn't understand a key being "optional" in a TypedDict.
+# The only workaround is to make a TypedDict with the optional key(s)
+# and pass `total=False`, then inherit this class.
+class RecordExc(typing.TypedDict, total=False):
+    exc: RecordException
+
+
+class Record(RecordExc):
     args: typing.List[typing.Any]
     kwargs: typing.Dict[typing.Any, typing.Any]
-    exc: RecordException
     out: str
 
 
@@ -134,10 +140,6 @@ class GitterRecorder(gitter.Gitter):
                     {
                         "args": self.prepare_args(args),
                         "kwargs": self.prepare_kwargs(kwargs),
-                        "exc": {
-                            "returncode": 0,
-                            "output": "",
-                        },
                         "out": output,
                     }
                 )
