@@ -14,6 +14,13 @@ The ``rebase`` action will rebase the pull request against its base branch. To
 this effect, it clones the branch, run `git rebase` locally and push back the
 result to the GitHub repository.
 
+.. tip::
+
+   You do not need to use this action if you use the :ref:`queue action`
+   action. The merge queue automatically update the pull requests it processes
+   as necessary, making sure they are test with up-to-date code before being
+   merged.
+
 Options
 -------
 

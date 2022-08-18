@@ -14,6 +14,13 @@ works by merging the base branch into the head branch of the pull request.
 
 .. image:: ../_static/update-branch.png
 
+.. tip::
+
+   You do not need to use this action if you use the :ref:`queue action`
+   action. The merge queue automatically update the pull requests it processes
+   as necessary, making sure they are test with up-to-date code before being
+   merged.
+
 Examples
 --------
 
