@@ -80,7 +80,7 @@ class FakeQueuePullRequest(context.BasePullRequest):
 async def test_multiple_pulls_to_match() -> None:
     c = conditions.QueueRuleConditions(
         [
-            conditions.RuleConditionGroup(
+            conditions.RuleConditionCombination(
                 {
                     "or": [
                         conditions.RuleCondition("base=main"),
@@ -1346,7 +1346,7 @@ async def test_get_pull_request_rule(
     assert len(match.matching_rules[0].conditions.condition.conditions) == 1
     assert not match.matching_rules[0].conditions.match
     group = match.matching_rules[0].conditions.condition.conditions[0]
-    assert isinstance(group, rules.conditions.RuleConditionGroup)
+    assert isinstance(group, rules.conditions.RuleConditionCombination)
     assert group.operator == "or"
     assert len(group.conditions) == 3
     assert str(group.conditions[0]) == "check-success=awesome-ci"
@@ -1637,7 +1637,7 @@ async def test_queue_rules_summary() -> None:
                 "#approved-reviews-by>=2",
                 description="🛡 GitHub branch protection",
             ),
-            conditions.RuleConditionGroup(
+            conditions.RuleConditionCombination(
                 {
                     "or": [
                         conditions.RuleCondition("check-success=my-awesome-ci"),
@@ -1964,7 +1964,7 @@ async def test_condition_summary_complex() -> None:
     pr_conditions = conditions.PullRequestRuleConditions(
         [
             single_condition_checked,
-            conditions.RuleConditionGroup(
+            conditions.RuleConditionCombination(
                 {
                     "or": [
                         single_condition,
@@ -1972,7 +1972,7 @@ async def test_condition_summary_complex() -> None:
                     ]
                 }
             ),
-            conditions.RuleConditionGroup(
+            conditions.RuleConditionCombination(
                 {
                     "and": [
                         single_condition,
@@ -2053,31 +2053,31 @@ pull_request_rules:
 async def test_render_big_nested_summary() -> None:
     c = conditions.QueueRuleConditions(
         [
-            conditions.RuleConditionGroup(
+            conditions.RuleConditionCombination(
                 {
                     "or": [
                         conditions.RuleCondition("base=main"),
-                        conditions.RuleConditionGroup(
+                        conditions.RuleConditionCombination(
                             {
                                 "or": [
                                     conditions.RuleCondition("base=main"),
-                                    conditions.RuleConditionGroup(
+                                    conditions.RuleConditionCombination(
                                         {
                                             "or": [
                                                 conditions.RuleCondition("base=main"),
-                                                conditions.RuleConditionGroup(
+                                                conditions.RuleConditionCombination(
                                                     {
                                                         "or": [
                                                             conditions.RuleCondition(
                                                                 "base=main"
                                                             ),
-                                                            conditions.RuleConditionGroup(
+                                                            conditions.RuleConditionCombination(
                                                                 {
                                                                     "or": [
                                                                         conditions.RuleCondition(
                                                                             "base=main"
                                                                         ),
-                                                                        conditions.RuleConditionGroup(
+                                                                        conditions.RuleConditionCombination(
                                                                             {
                                                                                 "or": [
                                                                                     conditions.RuleCondition(

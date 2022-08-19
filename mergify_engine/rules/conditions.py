@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import abc
 import dataclasses
 import textwrap
 import typing
@@ -34,7 +35,7 @@ LOG = daiquiri.getLogger(__name__)
 # This helps mypy breaking the recursive definition
 FakeTreeT = typing.Dict[str, typing.Any]
 
-RuleConditionNode = typing.Union["RuleConditionGroup", "RuleCondition"]
+RuleConditionNode = typing.Union["RuleConditionCombination", "RuleCondition"]
 
 ConditionFilterKeyT = typing.Callable[[RuleConditionNode], bool]
 
@@ -122,101 +123,39 @@ class RuleCondition:
         return str(name)
 
 
-@dataclasses.dataclass
-class RuleConditionGroup:
-    """This describe a group leafs of the `conditions:` tree linked by and or or."""
+class RuleConditionGroup(abc.ABC):
+    @abc.abstractmethod
+    async def copy(self):
+        pass
 
-    condition: dataclasses.InitVar[
-        typing.Dict[typing.Literal["and", "or"], list[RuleConditionNode]]
-    ]
-    operator: typing.Literal["and", "or"] = dataclasses.field(init=False)
-    conditions: list[RuleConditionNode] = dataclasses.field(init=False)
-    description: typing.Optional[str] = None
-    match: bool = dataclasses.field(init=False, default=False)
-    _used: bool = dataclasses.field(init=False, default=False)
+    async def __call__(self, obj: filter.GetAttrObjectT) -> bool:
+        if getattr(self, "_used", False):
+            raise RuntimeError(f"{self.__class__.__name__} cannot be re-used")
 
-    def __post_init__(
-        self,
-        condition: typing.Dict[typing.Literal["and", "or"], list[RuleConditionNode]],
-    ) -> None:
-        if len(condition) != 1:
-            raise RuntimeError("Invalid condition")
-
-        self.operator, self.conditions = next(iter(condition.items()))
-
-    @property
-    def operator_label(self) -> str:
-        return "all of" if self.operator == "and" else "any of"
-
-    async def __call__(
-        self,
-        obj: filter.GetAttrObjectT,
-    ) -> bool:
-        if self._used:
-            raise RuntimeError("RuleConditionGroup cannot be re-used")
         self._used = True
-        self.match = await filter.BinaryFilter(
-            typing.cast(
-                filter.TreeT,
-                {self.operator: self.conditions},
-            )
-        )(obj)
+        self.match = await self._get_filter_result(obj)
+
         return self.match
 
-    def extract_raw_filter_tree(
-        self, condition: None | RuleConditionNode = None
-    ) -> filter.TreeT:
-        if condition is None:
-            condition = self
+    @abc.abstractmethod
+    async def _get_filter_result(self, obj: filter.GetAttrObjectT) -> bool:
+        pass
 
-        if isinstance(condition, RuleCondition):
-            return typing.cast(filter.TreeT, condition.partial_filter.tree)
-        elif isinstance(condition, RuleConditionGroup):
-            return typing.cast(
-                filter.TreeT,
-                {
-                    condition.operator: [
-                        self.extract_raw_filter_tree(c) for c in condition.conditions
-                    ]
-                },
-            )
-        else:
-            raise RuntimeError("unexpected condition instance")
+    @property
+    @abc.abstractmethod
+    def operator_label(self) -> str:
+        pass
 
-    def walk(
-        self, conditions: None | list[RuleConditionNode] = None
-    ) -> typing.Iterator[RuleCondition]:
-        if conditions is None:
-            conditions = self.conditions
-        for condition in conditions:
-            if isinstance(condition, RuleCondition):
-                yield condition
-            elif isinstance(condition, RuleConditionGroup):
-                for _condition in self.walk(condition.conditions):
-                    yield _condition
-            else:
-                raise RuntimeError(f"Unsupported condition type: {type(condition)}")
+    @property
+    @abc.abstractmethod
+    def conditions(self) -> list[RuleConditionNode]:
+        pass
 
-    def is_faulty(self) -> bool:
-        return any(c.evaluation_error for c in self.walk())
+    def get_summary(self) -> str:
+        return self._walk_for_summary(self.conditions)
 
-    def copy(self) -> "RuleConditionGroup":
-        return self.__class__(
-            {self.operator: [c.copy() for c in self.conditions]},
-            description=self.description,
-        )
-
-    @staticmethod
-    def _get_rule_condition_summary(cond: RuleCondition) -> str:
-        summary = ""
-        checked = "X" if cond.match else " "
-        summary += f"- [{checked}] `{cond}`"
-        if cond.description:
-            summary += f" [{cond.description}]"
-        if cond.evaluation_error:
-            summary += f" ⚠️ {cond.evaluation_error}"
-        summary += "\n"
-        return summary
+    def get_unmatched_summary(self) -> str:
+        return self._walk_for_summary(self.conditions, filter_key=lambda c: not c.match)
 
     @classmethod
     def _walk_for_summary(
@@ -247,11 +186,17 @@ class RuleConditionGroup:
 
         return textwrap.indent(summary, "  " * min(level, 1))
 
-    def get_summary(self) -> str:
-        return self._walk_for_summary(self.conditions)
-
-    def get_unmatched_summary(self) -> str:
-        return self._walk_for_summary(self.conditions, filter_key=lambda c: not c.match)
+    @staticmethod
+    def _get_rule_condition_summary(condition: RuleCondition) -> str:
+        summary = ""
+        checked = "X" if condition.match else " "
+        summary += f"- [{checked}] `{condition}`"
+        if condition.description:
+            summary += f" [{condition.description}]"
+        if condition.evaluation_error:
+            summary += f" ⚠️ {condition.evaluation_error}"
+        summary += "\n"
+        return summary
 
     def has_unmatched_conditions(self) -> bool:
         for condition in self.conditions:
@@ -266,19 +211,101 @@ class RuleConditionGroup:
 
         return False
 
+    def walk(
+        self, conditions: None | list[RuleConditionNode] = None
+    ) -> typing.Iterator[RuleCondition]:
+        if conditions is None:
+            conditions = self.conditions
+
+        for condition in conditions:
+            if isinstance(condition, RuleCondition):
+                yield condition
+            elif isinstance(condition, RuleConditionGroup):
+                for sub_condition in self.walk(condition.conditions):
+                    yield sub_condition
+            else:
+                raise RuntimeError(f"Unsupported condition type: {type(condition)}")
+
+    def extract_raw_filter_tree(self, condition: RuleConditionNode) -> filter.TreeT:
+        if isinstance(condition, RuleCondition):
+            return typing.cast(filter.TreeT, condition.partial_filter.tree)
+        elif isinstance(condition, RuleConditionCombination):
+            return typing.cast(
+                filter.TreeT,
+                {
+                    condition.operator: [
+                        self.extract_raw_filter_tree(c) for c in condition.conditions
+                    ]
+                },
+            )
+        else:
+            raise RuntimeError(f"Unsupported condition type: {type(condition)}")
+
+
+@dataclasses.dataclass
+class RuleConditionCombination(RuleConditionGroup):
+    """This describe a group leafs of the `conditions:` tree linked by and or or."""
+
+    data: dataclasses.InitVar[
+        dict[typing.Literal["and", "or"], list[RuleConditionNode]]
+    ]
+    operator: typing.Literal["and", "or"] = dataclasses.field(init=False)
+    _conditions: list[RuleConditionNode] = dataclasses.field(init=False)
+    description: typing.Optional[str] = None
+    match: bool = dataclasses.field(init=False, default=False)
+
+    def __post_init__(
+        self,
+        data: dict[typing.Literal["and", "or"], list[RuleConditionNode]],
+    ) -> None:
+        if len(data) != 1:
+            raise RuntimeError("Invalid condition")
+
+        self.operator, self._conditions = next(iter(data.items()))
+
+    async def _get_filter_result(self, obj: filter.GetAttrObjectT) -> bool:
+        return await filter.BinaryFilter(
+            typing.cast(filter.TreeT, {self.operator: self.conditions})
+        )(obj)
+
+    @property
+    def operator_label(self) -> str:
+        return "all of" if self.operator == "and" else "any of"
+
+    @property
+    def conditions(self) -> list[RuleConditionNode]:
+        return self._conditions
+
+    def extract_raw_filter_tree(
+        self, condition: None | RuleConditionNode = None
+    ) -> filter.TreeT:
+        if condition is None:
+            condition = self
+
+        return super().extract_raw_filter_tree(condition)
+
+    def is_faulty(self) -> bool:
+        return any(c.evaluation_error for c in self.walk())
+
+    def copy(self) -> "RuleConditionCombination":
+        return self.__class__(
+            {self.operator: [c.copy() for c in self.conditions]},
+            description=self.description,
+        )
+
 
 @dataclasses.dataclass
 class QueueRuleConditions:
     conditions: dataclasses.InitVar[list[RuleConditionNode]]
-    condition: RuleConditionGroup = dataclasses.field(init=False)
+    condition: RuleConditionCombination = dataclasses.field(init=False)
     _evaluated_conditions: typing.Dict[
-        github_types.GitHubPullRequestNumber, RuleConditionGroup
+        github_types.GitHubPullRequestNumber, RuleConditionCombination
     ] = dataclasses.field(default_factory=dict, init=False, repr=False)
     match: bool = dataclasses.field(init=False, default=False)
     _used: bool = dataclasses.field(init=False, default=False)
 
     def __post_init__(self, conditions: list[RuleConditionNode]) -> None:
-        self.condition = RuleConditionGroup({"and": conditions})
+        self.condition = RuleConditionCombination({"and": conditions})
 
     def copy(self) -> "QueueRuleConditions":
         return QueueRuleConditions(self.condition.copy().conditions)
@@ -359,11 +386,11 @@ class QueueRuleConditions:
                 evaluated_conditions,
             )
             summary += cls._get_rule_condition_summary(evaluated_conditions)
-        elif isinstance(first_evaluated_condition, RuleConditionGroup):
+        elif isinstance(first_evaluated_condition, RuleConditionCombination):
             evaluated_conditions = typing.cast(
                 typing.Mapping[
                     github_types.GitHubPullRequestNumber,
-                    RuleConditionGroup,
+                    RuleConditionCombination,
                 ],
                 evaluated_conditions,
             )
@@ -425,7 +452,7 @@ async def get_branch_protection_conditions(
         if "required_status_checks" in protection:
             conditions.extend(
                 [
-                    RuleConditionGroup(
+                    RuleConditionCombination(
                         {
                             "or": [
                                 RuleCondition(f"check-success={check}"),
@@ -507,10 +534,10 @@ async def get_depends_on_conditions(ctxt: context.Context) -> list[RuleCondition
 @dataclasses.dataclass
 class PullRequestRuleConditions:
     conditions: dataclasses.InitVar[list[RuleConditionNode]]
-    condition: RuleConditionGroup = dataclasses.field(init=False)
+    condition: RuleConditionCombination = dataclasses.field(init=False)
 
     def __post_init__(self, conditions: list[RuleConditionNode]) -> None:
-        self.condition = RuleConditionGroup({"and": conditions})
+        self.condition = RuleConditionCombination({"and": conditions})
 
     async def __call__(self, objs: typing.List[context.BasePullRequest]) -> bool:
         if len(objs) > 1:

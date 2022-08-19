@@ -459,7 +459,7 @@ def RuleConditionSchema(v: typing.Any, depth: int = 0) -> typing.Any:
                     ),
                 },
                 voluptuous.Length(min=1, max=1),
-                voluptuous.Coerce(conditions_mod.RuleConditionGroup),
+                voluptuous.Coerce(conditions_mod.RuleConditionCombination),
             ),
         )
     )(v)

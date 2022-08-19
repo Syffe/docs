@@ -83,7 +83,7 @@ class RebaseAction(actions.BackwardCompatAction):
                 "-closed",
                 description=description,
             ),
-            conditions.RuleConditionGroup(
+            conditions.RuleConditionCombination(
                 {
                     "or": [
                         conditions.RuleCondition(
