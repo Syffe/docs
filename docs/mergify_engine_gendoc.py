@@ -2,7 +2,6 @@ import os
 
 import docutils
 import jinja2
-import sphinx.addnodes
 
 
 def store_action(app, doctree):
@@ -14,7 +13,7 @@ def store_action(app, doctree):
         for child in doctree.traverse():
             if title is None and isinstance(child, docutils.nodes.title):
                 title = child[0]
-            if isinstance(child, sphinx.addnodes.meta):
+            if isinstance(child, docutils.nodes.meta):
                 if summary is None and child["name"] == "summary":
                     summary = child["content"]
                 if icon is None and child["name"] == "doc:icon":
