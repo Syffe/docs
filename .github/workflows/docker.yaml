@@ -10,6 +10,13 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - 'Dockerfile'
+      - 'datadog/**'
+      - 'datadog-wrapper.sh'
+      - 'installer/**'
+      - 'onpremise/**'
+      - 'fake.env'
 
 concurrency:
   # yamllint disable-line rule:line-length
@@ -26,6 +33,20 @@ jobs:
         ports:
           - 6363:6379
     steps:
+      - id: label
+        if: github.event_name == 'pull_request'
+        name: Add docker label to PR
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.MERGIFY_CI_BOT_PAT }}
+          script: |
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['Docker']
+            })
+
       - name: Fetch job check run information
         id: fetch-check-run
         if: always()

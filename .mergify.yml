@@ -16,7 +16,9 @@ queue_rules:
     allow_inplace_checks: true
     conditions:
       - and: &CheckRuns
-          - check-success=docker
+          - or:
+              - -label=Docker
+              - check-success=docker
           - check-success=import-checks
           - check-success=pep8
           - check-success=test
