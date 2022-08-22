@@ -43,9 +43,14 @@ jobs:
           bash -n onpremise/entrypoint.sh
           bash -n datadog-wrapper.sh
 
-  requirements:
+  import-checks:
     timeout-minutes: 5
     runs-on: ubuntu-20.04
+    services:
+      redis:
+        image: redis:latest
+        ports:
+          - 6363:6379
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v3.0.2
@@ -59,7 +64,7 @@ jobs:
         run: |
           # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
           pip install -r requirements-dev.txt
-          tox -e missing-imports
+          tox -e import-checks
   test:
     timeout-minutes: 10
     runs-on: ubuntu-20.04
