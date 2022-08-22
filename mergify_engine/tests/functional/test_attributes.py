@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Copyright © 2020–2021 Mergify SAS
+# Copyright © 2020–2022 Mergify SAS
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -31,7 +31,7 @@ LOG = logging.getLogger(__name__)
 
 
 class TestAttributes(base.FunctionalTestBase):
-    async def test_jit_schedule_on_queue_rules(self):
+    async def test_jit_schedule_on_queue_rules(self) -> None:
         rules = {
             "queue_rules": [
                 {
@@ -565,7 +565,7 @@ class TestAttributes(base.FunctionalTestBase):
         comments = await self.get_issue_comments(pr["number"])
         self.assertEqual("list commits not empty", comments[-1]["body"])
 
-    async def test_one_commit_unverified(self):
+    async def test_one_commit_unverified(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -583,7 +583,7 @@ class TestAttributes(base.FunctionalTestBase):
         comments = await self.get_issue_comments(pr["number"])
         self.assertEqual("commits unverified", comments[-1]["body"])
 
-    async def test_two_commits_unverified(self):
+    async def test_two_commits_unverified(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -602,7 +602,7 @@ class TestAttributes(base.FunctionalTestBase):
         self.assertEqual("commits unverified", comments[-1]["body"])
         self.assertEqual("commits unverified", comments[0]["body"])
 
-    async def test_one_commit_unverified_message(self):
+    async def test_one_commit_unverified_message(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -622,7 +622,7 @@ class TestAttributes(base.FunctionalTestBase):
         comments = await self.get_issue_comments(pr["number"])
         self.assertEqual("commits unverified", comments[-1]["body"])
 
-    async def test_one_commit_unverified_message_wrong(self):
+    async def test_one_commit_unverified_message_wrong(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -638,7 +638,7 @@ class TestAttributes(base.FunctionalTestBase):
         comments = await self.get_issue_comments(pr["number"])
         assert len(comments) == 0
 
-    async def test_one_commit_verified(self):
+    async def test_one_commit_verified(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -657,7 +657,7 @@ class TestAttributes(base.FunctionalTestBase):
         comments = await self.get_issue_comments(pr["number"])
         self.assertEqual("commits verified", comments[-1]["body"])
 
-    async def test_two_commits_verified(self):
+    async def test_two_commits_verified(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -862,7 +862,7 @@ class TestAttributes(base.FunctionalTestBase):
 class TestAttributesWithSub(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
 
-    async def test_depends_on(self):
+    async def test_depends_on(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -902,7 +902,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
 """
         assert expected in summary["output"]["summary"]
 
-    async def test_statuses_error(self):
+    async def test_statuses_error(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -932,7 +932,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
         assert len(sorted_checks) == 2
         assert "success" == sorted_checks[0]["conclusion"]
 
-    async def test_check_run_failure(self):
+    async def test_check_run_failure(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -964,7 +964,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
         assert sorted_checks[0]["name"] == "Rule: check-run-failure-state (post_check)"
         assert sorted_checks[0]["conclusion"] == "success"
 
-    async def test_check_run_timeout(self):
+    async def test_check_run_timeout(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -996,7 +996,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
         assert sorted_checks[0]["name"] == "Rule: check-run-timeout-state (post_check)"
         assert sorted_checks[0]["conclusion"] == "success"
 
-    async def test_linear_history(self):
+    async def test_linear_history(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -1025,7 +1025,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
         await self.run_engine()
         await self.wait_for("pull_request", {"action": "closed"})
 
-    async def test_queued(self):
+    async def test_queued(self) -> None:
         rules = {
             "queue_rules": [
                 {

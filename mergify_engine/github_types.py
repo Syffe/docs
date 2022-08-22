@@ -201,6 +201,7 @@ class GitHubBranch(typing.TypedDict):
     name: GitHubRefType
     commit: GitHubBranchCommit
     protection: GitHubBranchProtectionLight
+    protected: bool
 
 
 GitHubBaseBranchLabel = typing.NewType("GitHubBaseBranchLabel", str)

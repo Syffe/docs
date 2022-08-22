@@ -17,7 +17,7 @@ from mergify_engine.tests.functional import base
 
 
 class TestCommandsRestrictions(base.FunctionalTestBase):
-    async def test_commands_restrictions(self):
+    async def test_commands_restrictions(self) -> None:
         stable_branch = self.get_full_branch_name("stable/#3.1")
         feature_branch = self.get_full_branch_name("feature/one")
 

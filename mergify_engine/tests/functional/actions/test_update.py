@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Copyright © 2018–2021 Mergify SAS
+# Copyright © 2018–2022 Mergify SAS
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -21,7 +21,7 @@ from mergify_engine.tests.functional import base
 
 
 class TestUpdateAction(base.FunctionalTestBase):
-    async def test_update_action(self):
+    async def test_update_action(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -57,7 +57,7 @@ class TestUpdateAction(base.FunctionalTestBase):
         assert commits[-1]["commit"]["author"]["name"] == config.BOT_USER_LOGIN
         assert commits[-1]["commit"]["message"].startswith("Merge branch")
 
-    async def test_update_action_on_closed_pr_deleted_branch(self):
+    async def test_update_action_on_closed_pr_deleted_branch(self) -> None:
         rules = {
             "pull_request_rules": [
                 {

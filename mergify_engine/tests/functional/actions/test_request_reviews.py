@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Copyright © 2018–2020 Mergify SAS
+# Copyright © 2018–2022 Mergify SAS
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -24,7 +24,7 @@ from mergify_engine.tests.functional import base
 
 
 class TestRequestReviewsAction(base.FunctionalTestBase):
-    async def test_request_reviews_users(self):
+    async def test_request_reviews_users(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -50,13 +50,13 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
         )
 
         for review_type in ("APPROVE", "REQUEST_CHANGES"):
-            await self.create_review(pulls[0]["number"], review_type)
+            await self.create_review(pulls[0]["number"], review_type)  # type: ignore[arg-type]
             await self.run_engine()
 
             requests = await self.get_review_requests(pulls[0]["number"])
             assert len(requests["users"]) == 0
 
-    async def test_request_reviews_teams(self):
+    async def test_request_reviews_teams(self) -> None:
         team = (await self.get_teams())[0]
 
         rules = {
@@ -85,7 +85,7 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
     @mock.patch.object(
         request_reviews.RequestReviewsAction, "GITHUB_MAXIMUM_REVIEW_REQUEST", new=1
     )
-    async def test_request_reviews_already_max(self):
+    async def test_request_reviews_already_max(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -135,7 +135,7 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
     @mock.patch.object(
         request_reviews.RequestReviewsAction, "GITHUB_MAXIMUM_REVIEW_REQUEST", new=2
     )
-    async def test_request_reviews_going_above_max(self):
+    async def test_request_reviews_going_above_max(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -191,7 +191,7 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
 class TestRequestReviewsSubAction(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
 
-    async def test_request_reviews_users_from_teams(self):
+    async def test_request_reviews_users_from_teams(self) -> None:
         rules = {
             "pull_request_rules": [
                 {

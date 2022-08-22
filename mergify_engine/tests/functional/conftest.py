@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Copyright © 2021 Mergify SAS
+# Copyright © 2021–2022 Mergify SAS
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -24,6 +24,7 @@ from unittest import mock
 import httpx
 import pytest
 import vcr
+import vcr.request
 import vcr.stubs.urllib3_stubs
 
 from mergify_engine import config
@@ -136,24 +137,29 @@ async def dashboard(
 
     real_get_subscription = subscription.Subscription.get_subscription
 
-    async def fake_retrieve_subscription_from_db(redis_cache, owner_id):
+    async def fake_retrieve_subscription_from_db(
+        redis_cache: redis_utils.RedisCache,
+        owner_id: github_types.GitHubAccountIdType,
+    ) -> subscription.Subscription:
         if owner_id == config.TESTING_ORGANIZATION_ID:
             return sub
         return subscription.Subscription(
             redis_cache,
             owner_id,
             "We're just testing",
-            set(subscription.Features.PUBLIC_REPOSITORY),
+            frozenset({subscription.Features.PUBLIC_REPOSITORY}),
         )
 
-    async def fake_subscription(redis_cache, owner_id):
+    async def fake_subscription(
+        redis_cache: redis_utils.RedisCache, owner_id: github_types.GitHubAccountIdType
+    ) -> subscription.Subscription:
         if owner_id == config.TESTING_ORGANIZATION_ID:
             return await real_get_subscription(redis_cache, owner_id)
         return subscription.Subscription(
             redis_cache,
             owner_id,
             "We're just testing",
-            set(subscription.Features.PUBLIC_REPOSITORY),
+            frozenset({subscription.Features.PUBLIC_REPOSITORY}),
         )
 
     patcher = mock.patch(
@@ -170,17 +176,21 @@ async def dashboard(
     patcher.start()
     request.addfinalizer(patcher.stop)
 
-    async def fake_retrieve_user_tokens_from_db(redis_cache, owner_id):
+    async def fake_retrieve_user_tokens_from_db(
+        redis_cache: redis_utils.RedisCache, owner_id: github_types.GitHubAccountIdType
+    ) -> user_tokens_mod.UserTokens:
         if owner_id == config.TESTING_ORGANIZATION_ID:
             return user_tokens
-        return user_tokens_mod.UserTokens(redis_cache, owner_id, {})
+        return user_tokens_mod.UserTokens(redis_cache, owner_id, [])
 
     real_get_user_tokens = user_tokens_mod.UserTokens.get
 
-    async def fake_user_tokens(redis_cache, owner_id):
+    async def fake_user_tokens(
+        redis_cache: redis_utils.RedisCache, owner_id: github_types.GitHubAccountIdType
+    ) -> user_tokens_mod.UserTokens:
         if owner_id == config.TESTING_ORGANIZATION_ID:
             return await real_get_user_tokens(redis_cache, owner_id)
-        return user_tokens_mod.UserTokens(redis_cache, owner_id, {})
+        return user_tokens_mod.UserTokens(redis_cache, owner_id, [])
 
     patcher = mock.patch(
         "mergify_engine.dashboard.user_tokens.UserTokensSaas._retrieve_from_db",
@@ -197,8 +207,11 @@ async def dashboard(
     request.addfinalizer(patcher.stop)
 
     async def fake_application_get(
-        redis_cache, api_access_key, api_secret_key, account_scope
-    ):
+        redis_cache: redis_utils.RedisCache,
+        api_access_key: str,
+        api_secret_key: str,
+        account_scope: str,
+    ) -> application_mod.Application:
         if (
             api_access_key == api_key_admin[:32]
             and api_secret_key == api_key_admin[32:]
@@ -230,7 +243,9 @@ async def dashboard(
     )
 
 
-def pyvcr_response_filter(response):
+def pyvcr_response_filter(
+    response: typing.Dict[str, typing.Any]
+) -> typing.Dict[str, typing.Any]:
     for h in [
         "CF-Cache-Status",
         "CF-RAY",
@@ -272,7 +287,7 @@ def pyvcr_response_filter(response):
     return response
 
 
-def pyvcr_request_filter(request):
+def pyvcr_request_filter(request: vcr.request.Request) -> vcr.request.Request:
     if request.method == "POST" and request.path.endswith("/access_tokens"):
         return None
     return request

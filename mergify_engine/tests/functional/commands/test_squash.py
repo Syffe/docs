@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-#  Copyright © 2021 Mergify SAS
+#  Copyright © 2021–2022 Mergify SAS
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -19,7 +19,7 @@ from mergify_engine.tests.functional import base
 
 
 class TestCommandSquash(base.FunctionalTestBase):
-    async def test_squash_several_commits_ok(self):
+    async def test_squash_several_commits_ok(self) -> None:
         await self.setup_repo()
         branch_name = self.get_full_branch_name("pr_squash_test")
 
@@ -66,7 +66,7 @@ class TestCommandSquash(base.FunctionalTestBase):
 
     async def test_squash_several_commits_with_one_merge_commit_and_custom_message(
         self,
-    ):
+    ) -> None:
         await self.setup_repo()
         branch_name1 = self.get_full_branch_name("pr_squash_test_b1")
 
@@ -147,7 +147,7 @@ Awesome body
         ctxt = await context.Context.create(self.repository_ctxt, pr, [])
         assert (await ctxt.commits)[0].commit_message == "Awesome title\n\nAwesome body"
 
-    async def test_squash_several_commits_with_two_merge_commits(self):
+    async def test_squash_several_commits_with_two_merge_commits(self) -> None:
         await self.setup_repo()
         branch_name1 = self.get_full_branch_name("pr_squash_test_b1")
 

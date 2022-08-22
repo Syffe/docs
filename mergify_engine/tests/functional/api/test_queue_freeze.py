@@ -27,7 +27,7 @@ from mergify_engine.tests.functional import base
 class TestQueueFreeze(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
 
-    async def test_request_error_create_queue_freeze(self):
+    async def test_request_error_create_queue_freeze(self) -> None:
         rules = {
             "queue_rules": [
                 {
@@ -158,7 +158,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
         assert r.status_code == 404
         assert r.json() == {"detail": f'The queue "{queue_name}" does not exist.'}
 
-    async def test_create_queue_freeze(self):
+    async def test_create_queue_freeze(self) -> None:
 
         rules = {
             "queue_rules": [
@@ -252,7 +252,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge default (queue)",
         )
-
+        assert check
         assert (
             check["output"]["title"]
             == 'The queue "default" is currently frozen, for the following reason: test freeze reason'
@@ -269,7 +269,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
         )
-
+        assert check
         assert (
             check["output"]["title"]
             == "The pull request is the 1st in the queue to be merged"
@@ -279,7 +279,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             await context.Context(self.repository_ctxt, p3).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge low (queue)",
         )
-
+        assert check
         assert (
             check["output"]["title"]
             == "The pull request is the 3rd in the queue to be merged"
@@ -298,7 +298,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
         )
-
+        assert check
         assert (
             check["output"]["title"] == "The pull request has been merged automatically"
         )
@@ -307,7 +307,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge default (queue)",
         )
-
+        assert check
         assert (
             check["output"]["title"]
             == 'The queue "default" is currently frozen, for the following reason: test freeze reason'
@@ -317,13 +317,13 @@ class TestQueueFreeze(base.FunctionalTestBase):
             await context.Context(self.repository_ctxt, p3).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge low (queue)",
         )
-
+        assert check
         assert (
             check["output"]["title"]
             == "The pull request is the 2nd in the queue to be merged"
         )
 
-    async def test_update_queue_freeze(self):
+    async def test_update_queue_freeze(self) -> None:
 
         rules = {
             "queue_rules": [
@@ -476,7 +476,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             ],
         }
 
-    async def test_request_error_delete_queue_freeze(self):
+    async def test_request_error_delete_queue_freeze(self) -> None:
         rules = {
             "queue_rules": [
                 {
@@ -558,7 +558,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             "detail": f'The queue "{queue_name}" does not exist or is not currently frozen.'
         }
 
-    async def test_delete_queue_freeze(self):
+    async def test_delete_queue_freeze(self) -> None:
 
         rules = {
             "queue_rules": [
@@ -651,7 +651,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge default (queue)",
         )
-
+        assert check
         assert (
             check["output"]["title"]
             == 'The queue "default" is currently frozen, for the following reason: test freeze reason'
@@ -679,13 +679,13 @@ class TestQueueFreeze(base.FunctionalTestBase):
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge default (queue)",
         )
-
+        assert check
         assert (
             check["output"]["title"]
             == "The pull request is the 1st in the queue to be merged"
         )
 
-    async def test_request_error_get_queue_freeze(self):
+    async def test_request_error_get_queue_freeze(self) -> None:
         rules = {
             "queue_rules": [
                 {
@@ -766,7 +766,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             "detail": f'The queue "{queue_name}" does not exist or is not currently frozen.'
         }
 
-    async def test_get_queue_freeze(self):
+    async def test_get_queue_freeze(self) -> None:
 
         rules = {
             "queue_rules": [
@@ -872,7 +872,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             ],
         }
 
-    async def test_get_list_queue_freeze(self):
+    async def test_get_list_queue_freeze(self) -> None:
 
         rules = {
             "queue_rules": [
@@ -1046,7 +1046,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             "queue_freezes": [],
         }
 
-    async def test_queue_freeze_with_pr_just_about_to_merge(self):
+    async def test_queue_freeze_with_pr_just_about_to_merge(self) -> None:
 
         rules = {
             "queue_rules": [
@@ -1104,6 +1104,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge default (queue)",
         )
+        assert check
 
         assert (
             check["output"]["title"]

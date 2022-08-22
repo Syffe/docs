@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Copyright © 2020 Mergify SAS
+# Copyright © 2020–2022 Mergify SAS
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -19,13 +19,14 @@ import yaml
 
 from mergify_engine import config
 from mergify_engine import context
+from mergify_engine import github_types
 from mergify_engine.tests.functional import base
 
 
 class TestReviewAction(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
 
-    async def test_review(self):
+    async def test_review(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -50,10 +51,10 @@ class TestReviewAction(base.FunctionalTestBase):
 
         p = await self.create_pr(as_="fork")
         await self.run_engine()
-        await self.wait_for("pull_request_review", {}),
+        await self.wait_for("pull_request_review", {})
 
         await self.run_engine()
-        await self.wait_for("pull_request_review", {}),
+        await self.wait_for("pull_request_review", {})
 
         reviews = await self.get_reviews(p["number"])
         self.assertEqual(2, len(reviews))
@@ -61,7 +62,7 @@ class TestReviewAction(base.FunctionalTestBase):
         self.assertEqual("CHANGES_REQUESTED", reviews[-1]["state"])
         self.assertEqual("WTF?", reviews[-1]["body"])
 
-    async def test_review_template(self):
+    async def test_review_template(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -90,7 +91,7 @@ class TestReviewAction(base.FunctionalTestBase):
         p = await self.create_pr(as_="fork")
         await self.run_engine()
 
-        await self.wait_for("pull_request_review", {}),
+        await self.wait_for("pull_request_review", {})
         await self.run_engine()
 
         reviews = await self.get_reviews(p["number"])
@@ -99,7 +100,9 @@ class TestReviewAction(base.FunctionalTestBase):
         self.assertEqual("CHANGES_REQUESTED", reviews[-1]["state"])
         self.assertEqual("WTF mergify-test2?", reviews[-1]["body"])
 
-    async def _test_review_template_error(self, msg):
+    async def _test_review_template_error(
+        self, msg: str
+    ) -> github_types.CachedGitHubCheckRun:
         rules = {
             "pull_request_rules": [
                 {
@@ -127,7 +130,7 @@ class TestReviewAction(base.FunctionalTestBase):
         )
         return checks[0]
 
-    async def test_review_template_syntax_error(self):
+    async def test_review_template_syntax_error(self) -> None:
         check = await self._test_review_template_error(
             msg="Thank you {{",
         )
@@ -139,7 +142,7 @@ unexpected 'end of template'
             == check["output"]["summary"]
         )
 
-    async def test_review_template_attribute_error(self):
+    async def test_review_template_attribute_error(self) -> None:
         check = await self._test_review_template_error(
             msg="Thank you {{hello}}",
         )
@@ -151,7 +154,7 @@ Unknown pull request attribute: hello
             == check["output"]["summary"]
         )
 
-    async def test_review_with_oauth_token(self):
+    async def test_review_with_oauth_token(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -182,7 +185,7 @@ Unknown pull request attribute: hello
         p = await self.create_pr(as_="fork", message="mergify-test4")
         await self.run_engine()
 
-        await self.wait_for("pull_request_review", {}),
+        await self.wait_for("pull_request_review", {})
         await self.run_engine()
 
         reviews = await self.get_reviews(p["number"])

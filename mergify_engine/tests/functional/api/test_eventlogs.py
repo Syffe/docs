@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Copyright © 2021 Mergify SAS
+# Copyright © 2021–2022 Mergify SAS
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -19,6 +19,7 @@ import pytest
 import yaml
 
 from mergify_engine import config
+from mergify_engine import github_types
 from mergify_engine import signals
 from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
@@ -29,7 +30,7 @@ from mergify_engine.tests.functional import base
     subscription.Features.EVENTLOGS_LONG,
 )
 class TestEventLogsAction(base.FunctionalTestBase):
-    async def test_eventlogs(self):
+    async def test_eventlogs(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -274,7 +275,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
             "total": 7,
         }
 
-    async def test_incomplete_eventlogs_metadata(self):
+    async def test_incomplete_eventlogs_metadata(self) -> None:
         await self.setup_repo()
 
         expected_events = [
@@ -290,7 +291,11 @@ class TestEventLogsAction(base.FunctionalTestBase):
 
         # We don't send any metadata on purpose
         await signals.send(
-            self.repository_ctxt, 123, "action.queue.merged", {}, "gogogo"
+            self.repository_ctxt,
+            github_types.GitHubPullRequestNumber(123),
+            "action.queue.merged",
+            signals.EventQueueMergedMetadata({}),
+            "gogogo",
         )
         r = await self.app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/123/events",

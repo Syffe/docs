@@ -364,9 +364,9 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
     # delayed-refreshes to be flaky
     WORKER_HAS_WORK_INTERVAL_CHECK = 0.04
 
-    def _setupAsyncioLoop(self):
+    def _setupAsyncioLoop(self) -> None:
         # We reuse the event loop created by pytest-asyncio
-        loop = self.pytest_event_loop
+        loop = self.pytest_event_loop  # type: ignore[attr-defined]
 
         # Copy as-is of unittest.IsolatedAsyncioTestCase code without loop setup
         # loop = asyncio.new_event_loop()
@@ -374,15 +374,15 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         loop.set_debug(True)
         self._asyncioTestLoop = loop
         fut = loop.create_future()
-        self._asyncioCallsTask = loop.create_task(self._asyncioLoopRunner(fut))
+        self._asyncioCallsTask = loop.create_task(self._asyncioLoopRunner(fut))  # type: ignore[attr-defined]
         loop.run_until_complete(fut)
 
-    def _tearDownAsyncioLoop(self):
+    def _tearDownAsyncioLoop(self) -> None:
         # Part of the cleanup must be done by pytest-asyncio
-        loop = self.pytest_event_loop
+        loop = self.pytest_event_loop  # type: ignore[attr-defined]
         loop_close = loop.close
         loop.close = lambda: True
-        super()._tearDownAsyncioLoop()
+        super()._tearDownAsyncioLoop()  # type: ignore[misc]
         loop.close = loop_close
         asyncio.set_event_loop(loop)
 
@@ -503,7 +503,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
 
         self.addCleanup(cleanup_consume)
 
-    async def asyncTearDown(self):
+    async def asyncTearDown(self) -> None:
         await super(FunctionalTestBase, self).asyncTearDown()
 
         # NOTE(sileht): Wait a bit to ensure all remaining events arrive.

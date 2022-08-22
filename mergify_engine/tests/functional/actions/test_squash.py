@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-#  Copyright © 2021 Mergify SAS
+#  Copyright © 2021–2022 Mergify SAS
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -21,7 +21,7 @@ from mergify_engine.tests.functional import base
 
 
 class TestActionSquash(base.FunctionalTestBase):
-    async def test_squash_several_commits_ok(self):
+    async def test_squash_several_commits_ok(self) -> None:
         rules = {
             "pull_request_rules": [
                 {

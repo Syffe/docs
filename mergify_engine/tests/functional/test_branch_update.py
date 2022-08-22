@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Copyright © 2020  Mergify SAS
+# Copyright © 2020—2022 Mergify SAS
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -25,7 +25,7 @@ from mergify_engine.tests.functional import base
 
 
 class TestBranchUpdatePublic(base.FunctionalTestBase):
-    async def test_command_update(self):
+    async def test_command_update(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -50,7 +50,7 @@ class TestBranchUpdatePublic(base.FunctionalTestBase):
         assert p2["commits"] == 2
         assert oldsha != p2["head"]["sha"]
 
-    async def test_command_rebase_ok(self):
+    async def test_command_rebase_ok(self) -> None:
         rules = {
             "pull_request_rules": [
                 {

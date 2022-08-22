@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Copyright © 2019–2020 Mergify SAS
+# Copyright © 2019–2022 Mergify SAS
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -20,7 +20,7 @@ from mergify_engine.tests.functional import base
 
 
 class TestApiSimulator(base.FunctionalTestBase):
-    async def test_simulator_with_token(self):
+    async def test_simulator_with_token(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -131,7 +131,7 @@ class TestApiSimulator(base.FunctionalTestBase):
             ]
         }
 
-    async def test_simulator_with_wrong_pull_request_url(self):
+    async def test_simulator_with_wrong_pull_request_url(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -161,7 +161,7 @@ class TestApiSimulator(base.FunctionalTestBase):
         )
         assert resp.status_code == 404
 
-    async def test_simulator_invalid_json(self):
+    async def test_simulator_invalid_json(self) -> None:
         rules = {
             "pull_request_rules": [
                 {

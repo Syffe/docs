@@ -8,7 +8,7 @@ from mergify_engine.tests.functional import base
 class TestStatisticsRedis(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
 
-    async def test_statistics_format_in_redis(self):
+    async def test_statistics_format_in_redis(self) -> None:
         rules = {
             "queue_rules": [
                 {

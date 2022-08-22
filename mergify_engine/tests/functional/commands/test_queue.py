@@ -24,7 +24,7 @@ from mergify_engine.tests.functional import base
 class TestQueueCommand(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
 
-    async def test_command_queue(self):
+    async def test_command_queue(self) -> None:
         rules = {
             "queue_rules": [
                 {
@@ -58,11 +58,16 @@ class TestQueueCommand(base.FunctionalTestBase):
         pulls = await self.get_pulls()
         assert len(pulls) == 4
 
-        tmp_pull_1 = await self.get_pull(p["number"] + 1)
-        tmp_pull_2 = await self.get_pull(p["number"] + 2)
+        tmp_pull_1 = await self.get_pull(
+            github_types.GitHubPullRequestNumber(p["number"] + 1)
+        )
+        tmp_pull_2 = await self.get_pull(
+            github_types.GitHubPullRequestNumber(p["number"] + 2)
+        )
 
         ctxt = context.Context(self.repository_ctxt, p)
         q = await merge_train.Train.from_context(ctxt)
+        assert p["merge_commit_sha"]
         await self.assert_merge_queue_contents(
             q,
             p["merge_commit_sha"],
@@ -114,7 +119,7 @@ class TestQueueCommand(base.FunctionalTestBase):
 
         await self.assert_merge_queue_contents(q, None, [])
 
-    async def test_without_config(self):
+    async def test_without_config(self) -> None:
         await self.setup_repo()
 
         protection = {
@@ -151,6 +156,7 @@ class TestQueueCommand(base.FunctionalTestBase):
 
         ctxt = context.Context(self.repository_ctxt, p)
         q = await merge_train.Train.from_context(ctxt)
+        assert p["merge_commit_sha"]
         await self.assert_merge_queue_contents(
             q,
             p["merge_commit_sha"],
@@ -194,7 +200,7 @@ class TestQueueCommand(base.FunctionalTestBase):
 
         await self.assert_merge_queue_contents(q, None, [])
 
-    async def test_unqueue_on_synchronize(self):
+    async def test_unqueue_on_synchronize(self) -> None:
         rules = {
             "queue_rules": [
                 {
@@ -219,7 +225,9 @@ class TestQueueCommand(base.FunctionalTestBase):
         pulls = await self.get_pulls()
         assert len(pulls) == 2
 
-        tmp_pull = await self.get_pull(p["number"] + 1)
+        tmp_pull = await self.get_pull(
+            github_types.GitHubPullRequestNumber(p["number"] + 1)
+        )
 
         ctxt = context.Context(self.repository_ctxt, p)
         q = await merge_train.Train.from_context(ctxt)

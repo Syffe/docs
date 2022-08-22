@@ -202,7 +202,7 @@ Unknown pull request attribute: hello
             == "Comments with `bot_account` set are disabled"
         )
 
-    async def test_comment_without_default_message(self):
+    async def test_comment_without_default_message(self) -> None:
         rules = {
             "defaults": {
                 "actions": {
