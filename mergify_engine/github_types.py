@@ -608,7 +608,7 @@ class GitHubCheckRun(typing.TypedDict):
     output: GitHubCheckRunOutput
     conclusion: typing.Optional[GitHubCheckRunConclusion]
     started_at: ISODateTimeType
-    completed_at: ISODateTimeType
+    completed_at: ISODateTimeType | None
     html_url: str
     details_url: str
     check_suite: GitHubCheckRunCheckSuite
@@ -625,7 +625,7 @@ class CachedGitHubCheckRun(typing.TypedDict):
     status: GitHubCheckRunStatus
     output: GitHubCheckRunOutput
     conclusion: typing.Optional[GitHubCheckRunConclusion]
-    completed_at: ISODateTimeType
+    completed_at: ISODateTimeType | None
     html_url: str
 
 

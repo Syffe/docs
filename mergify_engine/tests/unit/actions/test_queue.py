@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Copyright © 2021 Mergify SAS
+# Copyright © 2021–2022 Mergify SAS
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -36,13 +36,17 @@ def pull_request_rule_from_list(lst: typing.Any) -> rules.PullRequestRules:
 
 @pytest.fixture
 def fake_client() -> mock.Mock:
-    async def items_call(url, *args, **kwargs):
+    async def items_call(
+        url: str, *args: typing.Any, **kwargs: typing.Any
+    ) -> typing.AsyncGenerator[github_types.GitHubCheckRun, None]:
         if url == "/repos/Mergifyio/mergify-engine/commits/the-head-sha/status":
             return
         elif url == "/repos/Mergifyio/mergify-engine/commits/the-head-sha/check-runs":
             yield github_types.GitHubCheckRun(
                 {
-                    "head_sha": "ce587453ced02b1526dfb4cb910479d431683101",
+                    "head_sha": github_types.SHAType(
+                        "ce587453ced02b1526dfb4cb910479d431683101"
+                    ),
                     "details_url": "https://example.com",
                     "status": "completed",
                     "conclusion": "failure",
@@ -53,16 +57,20 @@ def fake_client() -> mock.Mock:
                         "name": "CI",
                         "owner": {
                             "type": "User",
-                            "id": 1234,
-                            "login": "goo",
+                            "id": github_types.GitHubAccountIdType(1234),
+                            "login": github_types.GitHubLogin("goo"),
                             "avatar_url": "https://example.com",
                         },
                     },
-                    "external_id": None,
+                    "external_id": "",
                     "pull_requests": [],
-                    "before": "4eef79d038b0327a5e035fd65059e556a55c6aa4",
-                    "after": "4eef79d038b0327a5e035fd65059e556a55c6aa4",
-                    "started_at": "",
+                    "before": github_types.SHAType(
+                        "4eef79d038b0327a5e035fd65059e556a55c6aa4"
+                    ),
+                    "after": github_types.SHAType(
+                        "4eef79d038b0327a5e035fd65059e556a55c6aa4"
+                    ),
+                    "started_at": github_types.ISODateTimeType(""),
                     "completed_at": None,
                     "html_url": "https://example.com",
                     "check_suite": {"id": 1234},
@@ -78,7 +86,9 @@ def fake_client() -> mock.Mock:
             )
             yield github_types.GitHubCheckRun(
                 {
-                    "head_sha": "ce587453ced02b1526dfb4cb910479d431683101",
+                    "head_sha": github_types.SHAType(
+                        "ce587453ced02b1526dfb4cb910479d431683101"
+                    ),
                     "details_url": "https://example.com",
                     "status": "completed",
                     "conclusion": "success",
@@ -89,16 +99,20 @@ def fake_client() -> mock.Mock:
                         "name": "CI",
                         "owner": {
                             "type": "User",
-                            "id": 1234,
-                            "login": "goo",
+                            "id": github_types.GitHubAccountIdType(1234),
+                            "login": github_types.GitHubLogin("goo"),
                             "avatar_url": "https://example.com",
                         },
                     },
-                    "external_id": None,
+                    "external_id": "",
                     "pull_requests": [],
-                    "before": "4eef79d038b0327a5e035fd65059e556a55c6aa4",
-                    "after": "4eef79d038b0327a5e035fd65059e556a55c6aa4",
-                    "started_at": "",
+                    "before": github_types.SHAType(
+                        "4eef79d038b0327a5e035fd65059e556a55c6aa4"
+                    ),
+                    "after": github_types.SHAType(
+                        "4eef79d038b0327a5e035fd65059e556a55c6aa4"
+                    ),
+                    "started_at": github_types.ISODateTimeType(""),
                     "completed_at": None,
                     "html_url": "https://example.com",
                     "check_suite": {"id": 1234},
@@ -114,7 +128,9 @@ def fake_client() -> mock.Mock:
             )
             yield github_types.GitHubCheckRun(
                 {
-                    "head_sha": "ce587453ced02b1526dfb4cb910479d431683101",
+                    "head_sha": github_types.SHAType(
+                        "ce587453ced02b1526dfb4cb910479d431683101"
+                    ),
                     "details_url": "https://example.com",
                     "status": "completed",
                     "conclusion": "neutral",
@@ -125,16 +141,20 @@ def fake_client() -> mock.Mock:
                         "name": "CI",
                         "owner": {
                             "type": "User",
-                            "id": 1234,
-                            "login": "goo",
+                            "id": github_types.GitHubAccountIdType(1234),
+                            "login": github_types.GitHubLogin("goo"),
                             "avatar_url": "https://example.com",
                         },
                     },
-                    "external_id": None,
+                    "external_id": "",
                     "pull_requests": [],
-                    "before": "4eef79d038b0327a5e035fd65059e556a55c6aa4",
-                    "after": "4eef79d038b0327a5e035fd65059e556a55c6aa4",
-                    "started_at": "",
+                    "before": github_types.SHAType(
+                        "4eef79d038b0327a5e035fd65059e556a55c6aa4"
+                    ),
+                    "after": github_types.SHAType(
+                        "4eef79d038b0327a5e035fd65059e556a55c6aa4"
+                    ),
+                    "started_at": github_types.ISODateTimeType(""),
                     "completed_at": None,
                     "html_url": "https://example.com",
                     "check_suite": {"id": 1234},
@@ -150,7 +170,9 @@ def fake_client() -> mock.Mock:
             )
             yield github_types.GitHubCheckRun(
                 {
-                    "head_sha": "ce587453ced02b1526dfb4cb910479d431683101",
+                    "head_sha": github_types.SHAType(
+                        "ce587453ced02b1526dfb4cb910479d431683101"
+                    ),
                     "details_url": "https://example.com",
                     "status": "in_progress",
                     "conclusion": None,
@@ -161,16 +183,20 @@ def fake_client() -> mock.Mock:
                         "name": "CI",
                         "owner": {
                             "type": "User",
-                            "id": 1234,
-                            "login": "goo",
+                            "id": github_types.GitHubAccountIdType(1234),
+                            "login": github_types.GitHubLogin("goo"),
                             "avatar_url": "https://example.com",
                         },
                     },
-                    "external_id": None,
+                    "external_id": "",
                     "pull_requests": [],
-                    "before": "4eef79d038b0327a5e035fd65059e556a55c6aa4",
-                    "after": "4eef79d038b0327a5e035fd65059e556a55c6aa4",
-                    "started_at": "",
+                    "before": github_types.SHAType(
+                        "4eef79d038b0327a5e035fd65059e556a55c6aa4"
+                    ),
+                    "after": github_types.SHAType(
+                        "4eef79d038b0327a5e035fd65059e556a55c6aa4"
+                    ),
+                    "started_at": github_types.ISODateTimeType(""),
                     "completed_at": None,
                     "html_url": "https://example.com",
                     "check_suite": {"id": 1234},
@@ -187,9 +213,42 @@ def fake_client() -> mock.Mock:
         else:
             raise Exception(f"url not mocked: {url}")
 
-    def item_call(url, *args, **kwargs):
+    def item_call(
+        url: str, *args: typing.Any, **kwargs: typing.Any
+    ) -> github_types.GitHubBranch:
         if url == "/repos/Mergifyio/mergify-engine/branches/main":
-            return {"commit": {"sha": "sha1"}, "protection": {"enabled": False}}
+            return github_types.GitHubBranch(
+                {
+                    "commit": {
+                        "sha": github_types.SHAType("sha1"),
+                        "parents": [],
+                        "commit": {
+                            "message": "",
+                            "verification": {"verified": False},
+                            "committer": {
+                                "name": "",
+                                "date": github_types.ISODateTimeType(""),
+                            },
+                            "author": {
+                                "name": "",
+                                "date": github_types.ISODateTimeType(""),
+                            },
+                        },
+                        "committer": {
+                            "type": "User",
+                            "id": github_types.GitHubAccountIdType(1234),
+                            "login": github_types.GitHubLogin("goo"),
+                            "avatar_url": "https://example.com",
+                        },
+                    },
+                    "protection": {
+                        "enabled": False,
+                        "required_status_checks": {"contexts": [], "strict": False},
+                    },
+                    "protected": False,
+                    "name": github_types.GitHubRefType("foobar"),
+                }
+            )
         if url == "/repos/Mergifyio/mergify-engine/branches/main/protection":
             raise http.HTTPNotFound(
                 message="boom", response=mock.Mock(), request=mock.Mock()
