@@ -326,6 +326,9 @@ async def handle(
             user["id"] != ctxt.pull["user"]["id"]
             and user["id"] != config.BOT_USER_ID
             and not await ctxt.repository.has_write_permission(user)
+        ) or (
+            "queue" in command.name
+            and not await ctxt.repository.has_write_permission(user)
         ):
             message = f"@{user['login']} is not allowed to run commands"
             log(message)
