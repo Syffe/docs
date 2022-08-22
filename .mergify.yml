@@ -37,6 +37,7 @@ queue_rules:
       - schedule=Mon-Fri 09:30-17:00[Europe/Paris]
     speculative_checks: 3
     batch_size: 5
+    batch_max_wait_time: 5min
 
 pull_request_rules:
   - name: automatic merge for hotfix
