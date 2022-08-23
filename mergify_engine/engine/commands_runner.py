@@ -41,9 +41,6 @@ COMMAND_MATCHER = re.compile(
     rf"^(?:{config.GITHUB_URL.rstrip('/')}/|@)Mergify(?:|io) (\w*)(.*)",  # noqa: BLK100
     re.IGNORECASE,
 )
-COMMAND_RESULT_MATCHER_OLD = re.compile(
-    r"\*Command `([^`]*)`: (pending|success|failure)\*"
-)
 
 MERGE_QUEUE_COMMAND_MESSAGE = "Command not allowed on merge queue pull request."
 UNKNOWN_COMMAND_MESSAGE = "Sorry but I didn't understand the command. Please consult [the commands documentation](https://docs.mergify.com/commands.html) \U0001F4DA."
@@ -169,19 +166,6 @@ async def run_pending_commands_tasks(
     ):
 
         if comment["user"]["id"] != config.BOT_USER_ID:
-            continue
-
-        # Old format
-        match = COMMAND_RESULT_MATCHER_OLD.search(comment["body"])
-        if match:
-            command = match[1]
-            state = match[2]
-
-            if state == "pending":
-                pendings[command] = comment
-            elif command in pendings:
-                del pendings[command]
-
             continue
 
         payload = utils.get_hidden_payload_from_comment_body(comment["body"])
