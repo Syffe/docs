@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Copyright © 2018–2021 Mergify SAS
+# Copyright © 2018–2022 Mergify SAS
 #
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -66,14 +66,21 @@ class NotACommand(Exception):
     message: str
 
 
+class CommandPayload(typing.TypedDict):
+    command: str
+    conclusion: str
+
+
 def prepare_message(command_full: str, result: check_api.Result) -> str:
     # NOTE: Do not serialize this with Mergify JSON encoder:
     # we don't want to allow loading/unloading weird value/classes
     # this could be modified by a user, so we keep it really straightforward
-    payload = {
-        "command": command_full,
-        "conclusion": result.conclusion.value,
-    }
+    payload = CommandPayload(
+        {
+            "command": command_full,
+            "conclusion": result.conclusion.value,
+        }
+    )
     details = ""
     if result.summary:
         details = f"<details>\n\n{result.summary}\n\n</details>\n"
@@ -86,7 +93,7 @@ def prepare_message(command_full: str, result: check_api.Result) -> str:
 
 """
 
-    message += utils.get_mergify_payload(payload)
+    message += utils.get_mergify_payload(typing.cast(dict[str, typing.Any], payload))
     return message
 
 
@@ -168,7 +175,10 @@ async def run_pending_commands_tasks(
         if comment["user"]["id"] != config.BOT_USER_ID:
             continue
 
-        payload = utils.get_hidden_payload_from_comment_body(comment["body"])
+        payload = typing.cast(
+            CommandPayload, utils.get_hidden_payload_from_comment_body(comment["body"])
+        )
+
         if not payload:
             continue
 

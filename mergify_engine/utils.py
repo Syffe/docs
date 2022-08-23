@@ -288,7 +288,7 @@ def split_list(
 
 def get_hidden_payload_from_comment_body(
     comment_body: str,
-) -> typing.Union[dict[typing.Any, typing.Any], None]:
+) -> dict[str, typing.Any] | None:
     payload_match = MERGIFY_COMMENT_PAYLOAD_MATCHER.search(comment_body)
 
     if payload_match is None:
@@ -303,7 +303,7 @@ def get_hidden_payload_from_comment_body(
     return payload
 
 
-def get_mergify_payload(json_payload: dict[typing.Any, typing.Any]) -> str:
+def get_mergify_payload(json_payload: dict[str, typing.Any]) -> str:
     return f"""<!---
 {MERGIFY_COMMENT_PAYLOAD_STR_PREFIX}
 {json.dumps(json_payload)}
