@@ -65,8 +65,9 @@ class EventClose(EventBaseNoMetadata):
     event: typing.Literal["action.close"]
 
 
-class EventComment(EventBaseNoMetadata):
+class EventComment(EventBase):
     event: typing.Literal["action.comment"]
+    metadata: signals.EventCommentMetadata
 
 
 class EventCopy(EventBase):

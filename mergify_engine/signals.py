@@ -60,6 +60,10 @@ class EventMetadata(typing.TypedDict):
     pass
 
 
+class EventCommentMetadata(EventMetadata, total=False):
+    message: str
+
+
 class EventReviewMetadata(EventMetadata, total=False):
     type: str
     reviewer: str
@@ -231,7 +235,6 @@ async def send(
     pull_request: github_types.GitHubPullRequestNumber,
     event: typing.Literal[
         "action.close",
-        "action.comment",
         "action.delete_head_branch",
         "action.merge",
         "action.squash",
@@ -242,6 +245,17 @@ async def send(
         "action.update",
     ],
     metadata: EventNoMetadata,
+    trigger: str,
+) -> None:
+    ...
+
+
+@typing.overload
+async def send(
+    repository: "context.Repository",
+    pull_request: github_types.GitHubPullRequestNumber,
+    event: typing.Literal["action.comment"],
+    metadata: EventCommentMetadata,
     trigger: str,
 ) -> None:
     ...

@@ -100,7 +100,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "pull_request": p1["number"],
                 "timestamp": mock.ANY,
                 "event": "action.comment",
-                "metadata": {},
+                "metadata": {"message": "Hello!"},
                 "trigger": "Rule: hello",
             },
         ]

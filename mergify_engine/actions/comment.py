@@ -101,7 +101,7 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommandExecutorCo
             self.ctxt.repository,
             self.ctxt.pull["number"],
             "action.comment",
-            signals.EventNoMetadata(),
+            signals.EventCommentMetadata(message=self.config["message"]),
             self.rule.get_signal_trigger(),
         )
         return check_api.Result(
