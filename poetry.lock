@@ -95,8 +95,8 @@ python-versions = ">=3.6.0"
 soupsieve = ">1.2"
 
 [package.extras]
-lxml = ["lxml"]
 html5lib = ["html5lib"]
+lxml = ["lxml"]
 
 [[package]]
 name = "black"
@@ -370,10 +370,10 @@ pydantic = ">=1.6.2,<1.7 || >1.7,<1.7.1 || >1.7.1,<1.7.2 || >1.7.2,<1.7.3 || >1.
 starlette = "0.19.1"
 
 [package.extras]
-test = ["types-dataclasses (==0.6.5)", "types-orjson (==3.6.2)", "types-ujson (==4.2.1)", "anyio[trio] (>=3.2.1,<4.0.0)", "flask (>=1.1.2,<3.0.0)", "python-multipart (>=0.0.5,<0.0.6)", "ujson (>=4.0.1,!=4.0.2,!=4.1.0,!=4.2.0,!=4.3.0,!=5.0.0,!=5.1.0,<6.0.0)", "orjson (>=3.2.1,<4.0.0)", "databases[sqlite] (>=0.3.2,<0.6.0)", "peewee (>=3.13.3,<4.0.0)", "sqlalchemy (>=1.3.18,<1.5.0)", "email_validator (>=1.1.1,<2.0.0)", "httpx (>=0.14.0,<0.19.0)", "requests (>=2.24.0,<3.0.0)", "isort (>=5.0.6,<6.0.0)", "black (==22.3.0)", "flake8 (>=3.8.3,<4.0.0)", "mypy (==0.910)", "pytest-cov (>=2.12.0,<4.0.0)", "pytest (>=6.2.4,<7.0.0)"]
-doc = ["pyyaml (>=5.3.1,<7.0.0)", "typer (>=0.4.1,<0.5.0)", "mkdocs-markdownextradata-plugin (>=0.1.7,<0.3.0)", "mdx-include (>=1.4.1,<2.0.0)", "mkdocs-material (>=8.1.4,<9.0.0)", "mkdocs (>=1.1.2,<2.0.0)"]
-dev = ["pre-commit (>=2.17.0,<3.0.0)", "uvicorn[standard] (>=0.12.0,<0.18.0)", "flake8 (>=3.8.3,<4.0.0)", "autoflake (>=1.4.0,<2.0.0)", "passlib[bcrypt] (>=1.7.2,<2.0.0)", "python-jose[cryptography] (>=3.3.0,<4.0.0)"]
-all = ["uvicorn[standard] (>=0.12.0,<0.18.0)", "email_validator (>=1.1.1,<2.0.0)", "orjson (>=3.2.1,<4.0.0)", "ujson (>=4.0.1,!=4.0.2,!=4.1.0,!=4.2.0,!=4.3.0,!=5.0.0,!=5.1.0,<6.0.0)", "pyyaml (>=5.3.1,<7.0.0)", "itsdangerous (>=1.1.0,<3.0.0)", "python-multipart (>=0.0.5,<0.0.6)", "jinja2 (>=2.11.2,<4.0.0)", "requests (>=2.24.0,<3.0.0)"]
+all = ["requests (>=2.24.0,<3.0.0)", "jinja2 (>=2.11.2,<4.0.0)", "python-multipart (>=0.0.5,<0.0.6)", "itsdangerous (>=1.1.0,<3.0.0)", "pyyaml (>=5.3.1,<7.0.0)", "ujson (>=4.0.1,!=4.0.2,!=4.1.0,!=4.2.0,!=4.3.0,!=5.0.0,!=5.1.0,<6.0.0)", "orjson (>=3.2.1,<4.0.0)", "email_validator (>=1.1.1,<2.0.0)", "uvicorn[standard] (>=0.12.0,<0.18.0)"]
+dev = ["python-jose[cryptography] (>=3.3.0,<4.0.0)", "passlib[bcrypt] (>=1.7.2,<2.0.0)", "autoflake (>=1.4.0,<2.0.0)", "flake8 (>=3.8.3,<4.0.0)", "uvicorn[standard] (>=0.12.0,<0.18.0)", "pre-commit (>=2.17.0,<3.0.0)"]
+doc = ["mkdocs (>=1.1.2,<2.0.0)", "mkdocs-material (>=8.1.4,<9.0.0)", "mdx-include (>=1.4.1,<2.0.0)", "mkdocs-markdownextradata-plugin (>=0.1.7,<0.3.0)", "typer (>=0.4.1,<0.5.0)", "pyyaml (>=5.3.1,<7.0.0)"]
+test = ["pytest (>=6.2.4,<7.0.0)", "pytest-cov (>=2.12.0,<4.0.0)", "mypy (==0.910)", "flake8 (>=3.8.3,<4.0.0)", "black (==22.3.0)", "isort (>=5.0.6,<6.0.0)", "requests (>=2.24.0,<3.0.0)", "httpx (>=0.14.0,<0.19.0)", "email_validator (>=1.1.1,<2.0.0)", "sqlalchemy (>=1.3.18,<1.5.0)", "peewee (>=3.13.3,<4.0.0)", "databases[sqlite] (>=0.3.2,<0.6.0)", "orjson (>=3.2.1,<4.0.0)", "ujson (>=4.0.1,!=4.0.2,!=4.1.0,!=4.2.0,!=4.3.0,!=5.0.0,!=5.1.0,<6.0.0)", "python-multipart (>=0.0.5,<0.0.6)", "flask (>=1.1.2,<3.0.0)", "anyio[trio] (>=3.2.1,<4.0.0)", "types-ujson (==4.2.1)", "types-orjson (==3.6.2)", "types-dataclasses (==0.6.5)"]
 
 [[package]]
 name = "first"
@@ -430,7 +430,7 @@ attrs = ">=19.2.0"
 flake8 = ">=3.0.0"
 
 [package.extras]
-dev = ["pre-commit", "hypothesmith (>=0.2)", "hypothesis", "coverage"]
+dev = ["coverage", "hypothesis", "hypothesmith (>=0.2)", "pre-commit"]
 
 [[package]]
 name = "flake8-builtins"
@@ -444,7 +444,7 @@ python-versions = "*"
 flake8 = "*"
 
 [package.extras]
-test = ["pytest-cov", "pytest", "mock", "coveralls", "coverage"]
+test = ["coverage", "coveralls", "mock", "pytest", "pytest-cov"]
 
 [[package]]
 name = "flake8-comprehensions"
@@ -1024,7 +1024,7 @@ python-versions = ">=3.7"
 pytest = ">=6.1.0"
 
 [package.extras]
-testing = ["pytest-trio (>=0.7.0)", "mypy (>=0.931)", "flaky (>=3.5.0)", "hypothesis (>=5.7.1)", "coverage (>=6.2)"]
+testing = ["coverage (>=6.2)", "hypothesis (>=5.7.1)", "flaky (>=3.5.0)", "mypy (>=0.931)", "pytest-trio (>=0.7.0)"]
 
 [[package]]
 name = "pytest-chunks"
@@ -1175,8 +1175,8 @@ deprecated = ">=1.2.3"
 packaging = ">=20.4"
 
 [package.extras]
-ocsp = ["requests (>=2.26.0)", "pyopenssl (==20.0.1)", "cryptography (>=36.0.1)"]
 hiredis = ["hiredis (>=1.0.0)"]
+ocsp = ["cryptography (>=36.0.1)", "pyopenssl (==20.0.1)", "requests (>=2.26.0)"]
 
 [[package]]
 name = "reno"
@@ -1581,7 +1581,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-redis"
-version = "4.3.16"
+version = "4.3.17"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
@@ -1752,7 +1752,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.10,<4.0"
-content-hash = "5d2f24c7d84af939fb8490a611781e792d90a5cddf76d21f08f7e0f914dbc0b8"
+content-hash = "cc0248fce91ef7f44fbfba592bd34baacab4cbac708ada94cc8d2da81de953c9"
 
 [metadata.files]
 aiofiles = [
@@ -2922,8 +2922,8 @@ types-pyyaml = [
     {file = "types_PyYAML-6.0.11-py3-none-any.whl", hash = "sha256:8f890028123607379c63550179ddaec4517dc751f4c527a52bb61934bf495989"},
 ]
 types-redis = [
-    {file = "types-redis-4.3.16.tar.gz", hash = "sha256:ed53e35eac4303ef70cf7f5c205e210f2238b7fdd9306b7f8676669c1070943e"},
-    {file = "types_redis-4.3.16-py3-none-any.whl", hash = "sha256:41da87dc80f39573a71873e4265f181d9628b0a2a862e850ecc896a0cd6cacd2"},
+    {file = "types-redis-4.3.17.tar.gz", hash = "sha256:03b023c08acf344f4f0821cc1c7e4dbecb7b17bc5483927c3e73d80f7fe1768e"},
+    {file = "types_redis-4.3.17-py3-none-any.whl", hash = "sha256:a34c4e7aafa4b2fb9090d3a7f3ad0ac969089c7b4a05c21dff593a0c37405916"},
 ]
 typing-extensions = [
     {file = "typing_extensions-4.3.0-py3-none-any.whl", hash = "sha256:25642c956049920a5aa49edcdd6ab1e06d7e5d467fc00e0506c44ac86fbfca02"},
