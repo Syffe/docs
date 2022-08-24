@@ -17,6 +17,7 @@ on:
       - 'installer/**'
       - 'onpremise/**'
       - 'fake.env'
+      - '.github/workflows/docker.yaml'
 
 concurrency:
   # yamllint disable-line rule:line-length
