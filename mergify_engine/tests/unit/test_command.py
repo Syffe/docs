@@ -75,17 +75,17 @@ def test_command_loader() -> None:
         "@mergifyio rebase foobar",
         "@mergifyio rebase foobar\nsecondline\n",
     ]:
-        command, args, action = commands_runner.load_command(EMPTY_CONFIG, message)
-        assert command == "rebase"
-        assert isinstance(action, RebaseAction)
+        command = commands_runner.load_command(EMPTY_CONFIG, message)
+        assert command.name == "rebase"
+        assert isinstance(command.action, RebaseAction)
 
-    command, args, action = commands_runner.load_command(
+    command = commands_runner.load_command(
         EMPTY_CONFIG, "@mergifyio backport branch-3.1 branch-3.2\nfoobar\n"
     )
-    assert command == "backport"
-    assert args == "branch-3.1 branch-3.2"
-    assert isinstance(action, BackportAction)
-    assert action.config == {
+    assert command.name == "backport"
+    assert command.args == "branch-3.1 branch-3.2"
+    assert isinstance(command.action, BackportAction)
+    assert command.action.config == {
         "branches": ["branch-3.1", "branch-3.2"],
         "bot_account": None,
         "regexes": [],
@@ -132,47 +132,6 @@ defaults:
         "title": "{{ title }} (backport #{{ number }})",
         "body": "This is an automatic backport of pull request #{{number}} done by [Mergify](https://mergify.com).\n{{ cherry_pick_error }}",
     }
-
-
-async def test_run_command_without_rerun_and_without_user(
-    context_getter: conftest.ContextGetterFixture,
-) -> None:
-
-    ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
-
-    with pytest.raises(RuntimeError) as error_msg:
-        await commands_runner.handle(
-            ctxt=ctxt,
-            mergify_config=EMPTY_CONFIG,
-            comment_command="@Mergifyio update",
-            user=None,
-        )
-    assert "user must be set if comment_result is unset" in str(error_msg.value)
-
-
-async def test_run_command_with_rerun_and_without_user(
-    context_getter: conftest.ContextGetterFixture,
-) -> None:
-
-    client = mock.Mock()
-    client.post = mock.AsyncMock()
-    client.post.return_value = mock.Mock()
-
-    ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
-    ctxt.repository.installation.client = client
-
-    await commands_runner.handle(
-        ctxt=ctxt,
-        mergify_config=EMPTY_CONFIG,
-        comment_command="@mergifyio something",
-        user=None,
-        comment_result=FAKE_COMMENT,
-    )
-    assert len(client.post.call_args_list) == 1
-    assert (
-        "Sorry but I didn't understand the command."
-        in client.post.call_args_list[0][1]["json"]["body"]
-    )
 
 
 @pytest.mark.parametrize(
@@ -267,8 +226,7 @@ async def test_run_command_with_user(
         ctxt=ctxt,
         mergify_config=EMPTY_CONFIG,
         comment_command="unrelated",
-        user=None,
-        comment_result=FAKE_COMMENT,
+        user=user,
     )
     assert len(client.post.call_args_list) == 0
 
@@ -289,7 +247,14 @@ async def test_run_command_with_user(
 async def test_run_command_with_wrong_arg(
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
-
+    user = github_types.GitHubAccount(
+        {
+            "id": github_types.GitHubAccountIdType(123),
+            "login": github_types.GitHubLogin("wall-e"),
+            "type": "Bot",
+            "avatar_url": "https://avatars.githubusercontent.com/u/583231?v=4",
+        },
+    )
     client = mock.Mock()
     client.post = mock.AsyncMock()
     client.post.return_value = mock.Mock()
@@ -301,8 +266,7 @@ async def test_run_command_with_wrong_arg(
         ctxt=ctxt,
         mergify_config=EMPTY_CONFIG,
         comment_command="@mergifyio squash invalid-arg",
-        user=None,
-        comment_result=FAKE_COMMENT,
+        user=user,
     )
 
     assert len(client.post.call_args_list) == 1

@@ -32,7 +32,7 @@ from mergify_engine import github_types
 from mergify_engine import rules
 from mergify_engine import utils
 from mergify_engine.clients import github
-from mergify_engine.rules import conditions
+from mergify_engine.rules import conditions as conditions_mod
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -46,14 +46,21 @@ MERGE_QUEUE_COMMAND_MESSAGE = "Command not allowed on merge queue pull request."
 UNKNOWN_COMMAND_MESSAGE = "Sorry but I didn't understand the command. Please consult [the commands documentation](https://docs.mergify.com/commands.html) \U0001F4DA."
 INVALID_COMMAND_ARGS_MESSAGE = "Sorry but I didn't understand the arguments of the command `{command}`. Please consult [the commands documentation](https://docs.mergify.com/commands/) \U0001F4DA."  # noqa
 CONFIGURATION_CHANGE_MESSAGE = (
-    "Sorry but this action cannot run when the configuration is updated"
+    "Sorry but this command cannot run when the configuration is updated"
 )
 
 
-class Command(typing.NamedTuple):
+@dataclasses.dataclass
+class Command:
     name: str
     args: str
     action: actions.Action
+
+    def __str__(self):
+        if self.args:
+            return f"{self.name} {self.args}"
+        else:
+            return self.name
 
 
 @dataclasses.dataclass
@@ -71,13 +78,13 @@ class CommandPayload(typing.TypedDict):
     conclusion: str
 
 
-def prepare_message(command_full: str, result: check_api.Result) -> str:
+def prepare_message(command: Command, result: check_api.Result) -> str:
     # NOTE: Do not serialize this with Mergify JSON encoder:
     # we don't want to allow loading/unloading weird value/classes
     # this could be modified by a user, so we keep it really straightforward
     payload = CommandPayload(
         {
-            "command": command_full,
+            "command": str(command),
             "conclusion": result.conclusion.value,
         }
     )
@@ -85,7 +92,7 @@ def prepare_message(command_full: str, result: check_api.Result) -> str:
     if result.summary:
         details = f"<details>\n\n{result.summary}\n\n</details>\n"
 
-    message = f"""> {command_full}
+    message = f"""> {command}
 
 #### {result.conclusion.emoji} {result.title}
 
@@ -190,7 +197,7 @@ async def run_pending_commands_tasks(
             LOG.warning("got command with invalid payload", payload=payload)
             continue
 
-        command = payload["command"]
+        command_str = payload["command"]
         conclusion_str = payload["conclusion"]
 
         try:
@@ -200,110 +207,116 @@ async def run_pending_commands_tasks(
             continue
 
         if conclusion == check_api.Conclusion.PENDING:
-            pendings[command] = comment
-        elif command in pendings:
-            del pendings[command]
+            pendings[command_str] = comment
+        elif command_str in pendings:
+            del pendings[command_str]
 
     for pending, comment in pendings.items():
-        await handle(
-            ctxt,
-            mergify_config,
-            f"@Mergifyio {pending}",
-            None,
-            comment_result=comment,
-        )
+        try:
+            command = load_command(mergify_config, f"@Mergifyio {pending}")
+        except (CommandInvalid, NotACommand):
+            ctxt.log.error(
+                "Unexpected command string, it was valid in the past but not anymore",
+                exc_info=True,
+            )
+            continue
+        await run_command(ctxt, mergify_config, command, comment_result=comment)
 
 
 async def run_command(
     ctxt: context.Context,
     mergify_config: rules.MergifyConfig,
     command: Command,
-    user: typing.Optional[github_types.GitHubAccount],
-) -> typing.Tuple[check_api.Result, str]:
-
+    comment_result: typing.Optional[github_types.GitHubComment] = None,
+) -> None:
     statsd.increment("engine.commands.count", tags=[f"name:{command.name}"])
 
-    if command.args:
-        command_full = f"{command.name} {command.args}"
+    conds = conditions_mod.PullRequestRuleConditions(
+        await command.action.get_conditions_requirements(ctxt)
+    )
+    await conds([ctxt.pull_request])
+    if conds.match:
+        try:
+            await command.action.load_context(
+                ctxt,
+                rules.EvaluatedRule(
+                    rules.CommandRule(str(command), None, conds, {}, False)
+                ),
+            )
+        except rules.InvalidPullRequestRule as e:
+            result = check_api.Result(
+                check_api.Conclusion.ACTION_REQUIRED,
+                e.reason,
+                e.details,
+            )
+        else:
+            result = await command.action.executor.run()
+    elif actions.ActionFlag.ALLOW_AS_PENDING_COMMAND in command.action.flags:
+        result = check_api.Result(
+            check_api.Conclusion.PENDING,
+            "Waiting for conditions to match",
+            conds.get_summary(),
+        )
     else:
-        command_full = command.name
+        result = check_api.Result(
+            check_api.Conclusion.NEUTRAL,
+            "Nothing to do",
+            conds.get_summary(),
+        )
+    ctxt.log.info(
+        "command %s: %s",
+        command.name,
+        result.conclusion,
+        command_full=str(command),
+        result=result,
+    )
+    message = prepare_message(command, result)
 
+    ctxt.log.info(
+        "command ran",
+        command=str(command),
+        result=result,
+        comment_result=comment_result,
+    )
+
+    if comment_result is None:
+        await ctxt.post_comment(message)
+    elif message != comment_result["body"]:
+        await ctxt.edit_comment(comment_result["id"], message)
+
+
+@dataclasses.dataclass
+class CommandNotAllowed(Exception):
+    conditions: conditions_mod.PullRequestRuleConditions
+
+
+async def command_is_allowed(
+    ctxt: context.Context,
+    mergify_config: rules.MergifyConfig,
+    command: Command,
+) -> None:
     commands_restrictions = mergify_config["commands_restrictions"].get(command.name)
     restriction_conditions = None
     if commands_restrictions is not None:
         restriction_conditions = commands_restrictions["conditions"].copy()
         await restriction_conditions([ctxt.pull_request])
     if restriction_conditions is None or restriction_conditions.match:
-        conds = conditions.PullRequestRuleConditions(
-            await command.action.get_conditions_requirements(ctxt)
-        )
-        await conds([ctxt.pull_request])
-        if conds.match:
-            try:
-                await command.action.load_context(
-                    ctxt,
-                    rules.EvaluatedRule(
-                        rules.CommandRule(command_full, None, conds, {}, False)
-                    ),
-                )
-            except rules.InvalidPullRequestRule as e:
-                result = check_api.Result(
-                    check_api.Conclusion.ACTION_REQUIRED,
-                    e.reason,
-                    e.details,
-                )
-            else:
-                result = await command.action.executor.run()
-        elif actions.ActionFlag.ALLOW_AS_PENDING_COMMAND in command.action.flags:
-            result = check_api.Result(
-                check_api.Conclusion.PENDING,
-                "Waiting for conditions to match",
-                conds.get_summary(),
-            )
-        else:
-            result = check_api.Result(
-                check_api.Conclusion.NEUTRAL,
-                "Nothing to do",
-                conds.get_summary(),
-            )
-    else:
-        result = check_api.Result(
-            check_api.Conclusion.FAILURE,
-            "Command disallowed on this pull request",
-            restriction_conditions.get_summary(),
-        )
-
-    ctxt.log.info(
-        "command %s: %s",
-        command.name,
-        result.conclusion,
-        command_full=command_full,
-        result=result,
-        user=user["login"] if user else None,
-    )
-    message = prepare_message(command_full, result)
-    return result, message
+        return
+    raise CommandNotAllowed(restriction_conditions)
 
 
 async def handle(
     ctxt: context.Context,
     mergify_config: rules.MergifyConfig,
     comment_command: str,
-    user: typing.Optional[github_types.GitHubAccount],
-    comment_result: typing.Optional[github_types.GitHubComment] = None,
+    user: github_types.GitHubAccount,
 ) -> None:
-    # Run command only if this is a pending task or if user have permission to do it.
-    if comment_result is None and not user:
-        raise RuntimeError("user must be set if comment_result is unset")
-
-    def log(comment_out: str, result: typing.Optional[check_api.Result] = None) -> None:
+    def log(comment_out: str) -> None:
         ctxt.log.info(
-            "ran command",
-            user_login=None if user is None else user["login"],
-            comment_result=comment_result,
+            "handle command",
+            user_login=user["login"],
             comment_in=comment_command,
             comment_out=comment_out,
-            result=result,
         )
 
     try:
@@ -314,20 +327,6 @@ async def handle(
         return
     except NotACommand:
         return
-
-    if user:
-        if (
-            user["id"] != ctxt.pull["user"]["id"]
-            and user["id"] != config.BOT_USER_ID
-            and not await ctxt.repository.has_write_permission(user)
-        ) or (
-            "queue" in command.name
-            and not await ctxt.repository.has_write_permission(user)
-        ):
-            message = f"@{user['login']} is not allowed to run commands"
-            log(message)
-            await ctxt.post_comment(message)
-            return
 
     if (
         ctxt.configuration_changed
@@ -344,10 +343,30 @@ async def handle(
         await ctxt.post_comment(MERGE_QUEUE_COMMAND_MESSAGE)
         return
 
-    result, message = await run_command(ctxt, mergify_config, command, user)
-
-    log(message, result)
-    if comment_result is None:
+    # FIXME(sileht): should be done with restriction_conditions: MRGFY-1405
+    if (
+        user["id"] != ctxt.pull["user"]["id"]
+        and user["id"] != config.BOT_USER_ID
+        and not await ctxt.repository.has_write_permission(user)
+    ) or (
+        "queue" in command.name and not await ctxt.repository.has_write_permission(user)
+    ):
+        message = f"@{user['login']} is not allowed to run commands"
+        log(message)
         await ctxt.post_comment(message)
-    elif message != comment_result["body"]:
-        await ctxt.edit_comment(comment_result["id"], message)
+        return
+
+    try:
+        await command_is_allowed(ctxt, mergify_config, command)
+    except CommandNotAllowed as e:
+        result = check_api.Result(
+            check_api.Conclusion.FAILURE,
+            "Command disallowed on this pull request",
+            e.conditions.get_summary(),
+        )
+        message = prepare_message(command, result)
+        log(message)
+        await ctxt.post_comment(message)
+        return
+
+    await run_command(ctxt, mergify_config, command)
