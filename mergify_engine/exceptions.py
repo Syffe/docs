@@ -13,6 +13,7 @@
 # under the License.
 import dataclasses
 import datetime
+import re
 import typing
 
 from redis import exceptions as redis_exceptions
@@ -52,11 +53,14 @@ class MergeableStateUnknown(EngineNeedRetry):
 RATE_LIMIT_RETRY_MIN = datetime.timedelta(seconds=3)
 
 IGNORED_HTTP_ERROR_REASONS: typing.Dict[int, typing.List[str]] = {451: ["dmca"]}
-IGNORED_HTTP_ERROR_MESSAGES: typing.Dict[int, typing.List[str]] = {
+IGNORED_HTTP_ERROR_MESSAGES: typing.Dict[int, typing.List[str | re.Pattern[str]]] = {
     403: [
         "Repository access blocked",  # Blocked Github Account or Repo
         "Resource not accessible by integration",  # missing permission
         "Repository was archived so is read-only",
+        re.compile(
+            r"Although you appear to have the correct authorization credentials, the `.*` organization has an IP allow list enabled, and .* is not permitted to access this resource\."
+        ),
     ],
     422: [
         "Sorry, there was a problem generating this diff. The repository may be missing relevant data."
@@ -75,8 +79,16 @@ def should_be_ignored(exception: Exception) -> bool:
 
     if isinstance(exception, (http.HTTPClientSideError, http.HTTPServerSideError)):
         for error in IGNORED_HTTP_ERROR_MESSAGES.get(exception.status_code, []):
-            if error in exception.message:
-                return True
+            if isinstance(error, str):
+                if error in exception.message:
+                    return True
+            elif isinstance(error, re.Pattern):
+                if error.match(exception.message):
+                    return True
+            else:
+                raise RuntimeError(
+                    f"Unexpected IGNORED_HTTP_ERROR_MESSAGES datatype: {type(error)}"
+                )
 
         # NOTE(sileht): a repository return 404 for /pulls..., so can't do much
         if exception.status_code == 404 and exception.request.url.path.endswith(
