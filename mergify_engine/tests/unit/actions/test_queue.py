@@ -311,6 +311,20 @@ def fake_client() -> mock.Mock:
             ],
             check_api.Conclusion.FAILURE,
         ),
+        (
+            [
+                {
+                    "not": {
+                        "and": [
+                            "title!=awesome",
+                            "check-neutral:neutral",
+                            "check-success:success",
+                        ]
+                    },
+                },
+            ],
+            check_api.Conclusion.SUCCESS,
+        ),
     ),
 )
 async def test_get_rule_checks_status(

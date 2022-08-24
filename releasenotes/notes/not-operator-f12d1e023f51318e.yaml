@@ -1,0 +1,4 @@
+---
+features:
+  - |
+    The operator ``not`` has been added to conditions.

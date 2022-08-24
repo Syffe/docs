@@ -459,6 +459,15 @@ def RuleConditionSchema(v: typing.Any, depth: int = 0) -> typing.Any:
                 voluptuous.Length(min=1, max=1),
                 voluptuous.Coerce(conditions_mod.RuleConditionCombination),
             ),
+            voluptuous.All(
+                {
+                    "not": voluptuous.All(
+                        voluptuous.Coerce(lambda v: RuleConditionSchema(v, depth + 1)),
+                    ),
+                },
+                voluptuous.Length(min=1, max=1),
+                voluptuous.Coerce(conditions_mod.RuleConditionNegation),
+            ),
         )
     )(v)
 

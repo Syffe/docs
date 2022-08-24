@@ -35,7 +35,9 @@ LOG = daiquiri.getLogger(__name__)
 # This helps mypy breaking the recursive definition
 FakeTreeT = typing.Dict[str, typing.Any]
 
-RuleConditionNode = typing.Union["RuleConditionCombination", "RuleCondition"]
+RuleConditionNode = typing.Union[
+    "RuleConditionCombination", "RuleConditionNegation", "RuleCondition"
+]
 
 ConditionFilterKeyT = typing.Callable[[RuleConditionNode], bool]
 
@@ -106,12 +108,14 @@ class RuleCondition:
     async def __call__(self, obj: filter.GetAttrObjectT) -> bool:
         if self._used:
             raise RuntimeError(f"{self.__class__.__name__} cannot be re-used")
+
         self._used = True
         try:
             self.match = await self.partial_filter(obj)
         except live_resolvers.LiveResolutionFailure as e:
             self.match = False
             self.evaluation_error = e.reason
+
         return self.match
 
     def get_attribute_name(self) -> str:
@@ -238,6 +242,11 @@ class RuleConditionGroup(abc.ABC):
                     ]
                 },
             )
+        elif isinstance(condition, RuleConditionNegation):
+            return typing.cast(
+                filter.TreeT,
+                {condition.operator: self.extract_raw_filter_tree(condition.condition)},
+            )
         else:
             raise RuntimeError(f"Unsupported condition type: {type(condition)}")
 
@@ -292,6 +301,43 @@ class RuleConditionCombination(RuleConditionGroup):
             {self.operator: [c.copy() for c in self.conditions]},
             description=self.description,
         )
+
+
+@dataclasses.dataclass
+class RuleConditionNegation(RuleConditionGroup):
+    """This describe a group leafs of the `conditions:` tree linked by not."""
+
+    data: dataclasses.InitVar[dict[typing.Literal["not"], RuleConditionCombination]]
+    operator: typing.Literal["not"] = dataclasses.field(init=False)
+    condition: RuleConditionCombination = dataclasses.field(init=False)
+    description: typing.Optional[str] = None
+    match: bool = dataclasses.field(init=False, default=False)
+
+    def __post_init__(
+        self, data: dict[typing.Literal["not"], RuleConditionCombination]
+    ) -> None:
+        if len(data) != 1:
+            raise RuntimeError("Invalid condition")
+
+        self.operator, self.condition = next(iter(data.items()))
+
+    def copy(self) -> "RuleConditionNegation":
+        return self.__class__(
+            {self.operator: self.condition.copy()}, description=self.description
+        )
+
+    @property
+    def conditions(self) -> list[RuleConditionNode]:
+        return [self.condition]
+
+    @property
+    def operator_label(self) -> str:
+        return "not"
+
+    async def _get_filter_result(self, obj: filter.GetAttrObjectT) -> bool:
+        return await filter.BinaryFilter(
+            typing.cast(filter.TreeT, {self.operator: self.condition})
+        )(obj)
 
 
 @dataclasses.dataclass
@@ -386,7 +432,8 @@ class QueueRuleConditions:
                 evaluated_conditions,
             )
             summary += cls._get_rule_condition_summary(evaluated_conditions)
-        elif isinstance(first_evaluated_condition, RuleConditionCombination):
+
+        elif isinstance(first_evaluated_condition, RuleConditionGroup):
             evaluated_conditions = typing.cast(
                 typing.Mapping[
                     github_types.GitHubPullRequestNumber,
@@ -513,6 +560,7 @@ async def get_branch_protection_conditions(
 
 async def get_depends_on_conditions(ctxt: context.Context) -> list[RuleConditionNode]:
     conds: list[RuleConditionNode] = []
+
     for pull_request_number in ctxt.get_depends_on():
         try:
             dep_ctxt = await ctxt.repository.get_pull_request_context(

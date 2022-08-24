@@ -1628,6 +1628,7 @@ async def test_queue_rules_summary() -> None:
             {"or": ["label=foo", "check-success!=first-ci"]},
             {"and": ["label=foo", "check-success=first-ci"]},
             {"and": ["label=foo", "check-success!=first-ci"]},
+            {"not": {"and": ["label=fizz", "label=buzz"]}},
             "current-year=2018",
         ]
     )
@@ -1749,6 +1750,16 @@ async def test_queue_rules_summary() -> None:
     - [X] #2
     - [X] #3
   - [ ] `check-success!=first-ci`
+- [X] not:
+  - [ ] all of:
+    - `label=fizz`
+      - [ ] #1
+      - [ ] #2
+      - [ ] #3
+    - `label=buzz`
+      - [ ] #1
+      - [ ] #2
+      - [ ] #3
 - [X] `current-year=2018`
 - `#approved-reviews-by>=2` [🛡 GitHub branch protection]
   - [X] #1
@@ -1958,48 +1969,56 @@ async def test_condition_summary_simple() -> None:
 
 
 async def test_condition_summary_complex() -> None:
-    single_condition = conditions.RuleCondition("base=main")
-    single_condition_checked = single_condition.copy()
-    single_condition_checked.match = True
-    pr_conditions = conditions.PullRequestRuleConditions(
+    schema = voluptuous.Schema(
+        voluptuous.All(
+            [voluptuous.Coerce(rules.RuleConditionSchema)],
+            voluptuous.Coerce(conditions.PullRequestRuleConditions),
+        )
+    )
+    pr_conditions = schema(
         [
-            single_condition_checked,
-            conditions.RuleConditionCombination(
-                {
-                    "or": [
-                        single_condition,
-                        single_condition,
-                    ]
-                }
-            ),
-            conditions.RuleConditionCombination(
-                {
-                    "and": [
-                        single_condition,
-                        single_condition_checked,
-                    ]
-                }
-            ),
+            "base=main",
+            {"or": ["label=foo", "label=bar"]},
+            {"and": ["label=foo", "label=baz"]},
         ]
     )
+    pr_conditions.condition.conditions[0].match = True
+    pr_conditions.condition.conditions[2].conditions[1].match = True
 
     expected_summary = """- [X] `base=main`
 - [ ] any of:
-  - [ ] `base=main`
-  - [ ] `base=main`
+  - [ ] `label=foo`
+  - [ ] `label=bar`
 - [ ] all of:
-  - [ ] `base=main`
-  - [X] `base=main`
+  - [ ] `label=foo`
+  - [X] `label=baz`
 """
     assert pr_conditions.get_summary() == expected_summary
 
     expected_summary = """- [ ] any of:
-  - [ ] `base=main`
-  - [ ] `base=main`
+  - [ ] `label=foo`
+  - [ ] `label=bar`
 - [ ] all of:
-  - [ ] `base=main`
+  - [ ] `label=foo`
 """
     assert pr_conditions.get_unmatched_summary() == expected_summary
+
+
+async def test_rule_condition_negation_summary() -> None:
+    rule_condition_negation = rules.RuleConditionSchema(
+        {"not": {"or": ["base=main", "label=foo"]}}
+    )
+    pr_conditions = conditions.PullRequestRuleConditions([rule_condition_negation])
+    pr_conditions.condition.conditions[0].match = True
+
+    expected_summary = """- [X] not:
+  - [ ] any of:
+    - [ ] `base=main`
+    - [ ] `label=foo`
+"""
+    assert pr_conditions.get_summary() == expected_summary
+
+    assert pr_conditions.get_unmatched_summary() == ""
 
 
 async def test_has_unmatched_conditions() -> None:
@@ -2048,6 +2067,28 @@ pull_request_rules:
         .condition
         == "status-success=continuous-integration/fake-ci"
     )
+
+
+async def test_rule_condition_negation_extract_raw_filter_tree() -> None:
+    rule_condition_negation = rules.RuleConditionSchema(
+        {"not": {"or": ["base=main", "label=foo"]}}
+    )
+    pr_conditions = conditions.PullRequestRuleConditions([rule_condition_negation])
+
+    expected_tree = {
+        "and": [
+            {
+                "not": {
+                    "or": [
+                        {"=": ("base", "main")},
+                        {"=": ("label", "foo")},
+                    ]
+                }
+            }
+        ]
+    }
+
+    assert pr_conditions.extract_raw_filter_tree() == expected_tree
 
 
 async def test_render_big_nested_summary() -> None:

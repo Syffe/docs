@@ -897,6 +897,14 @@ async def test_rules_checks_status_ceph(logger_checker: None) -> None:
             {"=": ["status-success", "ci/centos/upgrade-tests-cephfs"]},
             {"=": ["status-success", "ci/centos/upgrade-tests-rbd"]},
             {"=": ["status-success", "DCO"]},
+            {
+                "not": {
+                    "or": [
+                        {"=": ["label", "wip"]},
+                        {"=": ["label", "in-progress"]},
+                    ]
+                }
+            },
         ]
     }
     f = filter.IncompleteChecksFilter(

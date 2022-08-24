@@ -95,6 +95,7 @@ TreeT = typing.TypedDict(
         "@": typing.Union["TreeT", "CompiledTreeT[GetAttrObject]"],  # type: ignore[misc]
         "or": typing.Iterable[typing.Union["TreeT", "CompiledTreeT[GetAttrObject]"]],  # type: ignore[misc]
         "and": typing.Iterable[typing.Union["TreeT", "CompiledTreeT[GetAttrObject]"]],  # type: ignore[misc]
+        "not": typing.Union["TreeT", "CompiledTreeT[GetAttrObject]"],  # type: ignore[misc]
     },
     total=False,
 )
@@ -334,7 +335,10 @@ def BinaryFilter(
 ) -> "Filter[bool]":
     return Filter[bool](
         tree,
-        {"-": operator.not_},
+        {
+            "-": operator.not_,
+            "not": operator.not_,
+        },
         {
             "=": (operator.eq, any, _identity),
             "<": (lambda a, b: a is not None and a < b, any, _identity),
@@ -495,7 +499,7 @@ def NearDatetimeFilter(
     tree: typing.Union[TreeT, CompiledTreeT[GetAttrObject, datetime.datetime]],
 ) -> "Filter[datetime.datetime]":
     """
-    The principes:
+    The principles:
     * the attribute can't be mapped to a datetime -> datetime.datetime.max
     * the time/datetime attribute can't change in the future -> datetime.datetime.max
     * the time/datetime attribute can change in the future -> return when
@@ -503,9 +507,12 @@ def NearDatetimeFilter(
     """
     return Filter[datetime.datetime](
         tree,
-        # NOTE(sileht): This is not allowed in parser on all time based attributes
-        # so we can just return DT_MAX for all other attributes
-        {"-": _dt_identity_max},
+        {
+            "not": _minimal_datetime,
+            # NOTE(sileht): This is not allowed in parser on all time-based attributes
+            # so we can just return DT_MAX for all other attributes
+            "-": _dt_identity_max,
+        },
         {
             "=": (_dt_op(operator.eq), _minimal_datetime, _identity),
             "<": (_dt_op(operator.lt), _minimal_datetime, _identity),
@@ -586,7 +593,12 @@ class IncompleteChecksFilter(Filter[IncompleteChecksResult]):
     tree: typing.Union[TreeT, CompiledTreeT[GetAttrObject, bool]]
     unary_operators: typing.Dict[
         str, UnaryOperatorT[IncompleteChecksResult]
-    ] = dataclasses.field(default_factory=lambda: {"-": IncompleteChecksNegate})
+    ] = dataclasses.field(
+        default_factory=lambda: {
+            "-": IncompleteChecksNegate,
+            "not": IncompleteChecksNegate,
+        }
+    )
     binary_operators: typing.Dict[
         str, BinaryOperatorT[IncompleteChecksResult]
     ] = dataclasses.field(

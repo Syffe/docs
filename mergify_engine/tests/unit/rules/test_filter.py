@@ -885,89 +885,65 @@ async def test_multiple_near_datetime() -> None:
         )
         soon = now + datetime.timedelta(minutes=1)
 
-        f = filter.NearDatetimeFilter(
+        trees = (
             {
                 "or": [
                     {"<=": ("foo", in_two_hours_time)},
                     {"<=": ("foo", now_time)},
                 ]
-            }
-        )
-        frozen_time.move_to(now)
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == soon
-        frozen_time.move_to(now.replace(hour=2, minute=1))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == now
-        frozen_time.move_to(now.replace(hour=6, minute=8))
-        assert (
-            await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == in_two_hours
-        )
-        frozen_time.move_to(now.replace(hour=8, minute=9))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == atmidnight
-        frozen_time.move_to(now.replace(hour=18, minute=9))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == atmidnight
-
-        f = filter.NearDatetimeFilter(
+            },
             {
                 "and": [
                     {">=": ("foo", in_two_hours_time)},
                     {">=": ("foo", now_time)},
                 ]
-            }
-        )
-        frozen_time.move_to(now)
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == soon
-        frozen_time.move_to(now.replace(hour=2, minute=1))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == now
-        frozen_time.move_to(now.replace(hour=6, minute=8))
-        assert (
-            await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == in_two_hours
-        )
-        frozen_time.move_to(now.replace(hour=8, minute=9))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == atmidnight
-        frozen_time.move_to(now.replace(hour=18, minute=9))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == atmidnight
-
-        f = filter.NearDatetimeFilter(
+            },
             {
                 "or": [
                     {">=": ("foo", in_two_hours_time)},
                     {">=": ("foo", now_time)},
                 ]
-            }
-        )
-        frozen_time.move_to(now)
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == soon
-        frozen_time.move_to(now.replace(hour=2, minute=1))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == now
-        frozen_time.move_to(now.replace(hour=6, minute=8))
-        assert (
-            await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == in_two_hours
-        )
-        frozen_time.move_to(now.replace(hour=8, minute=9))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == atmidnight
-        frozen_time.move_to(now.replace(hour=18, minute=9))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == atmidnight
-
-        f = filter.NearDatetimeFilter(
+            },
             {
                 "and": [
                     {"<=": ("foo", in_two_hours_time)},
                     {"<=": ("foo", now_time)},
                 ]
-            }
+            },
+            # NOTE(charly): "not" is a just a pass through, the PR is
+            # re-evaluated like "and" or "or"
+            {
+                "not": {
+                    "and": [
+                        {"<=": ("foo", in_two_hours_time)},
+                        {"<=": ("foo", now_time)},
+                    ]
+                }
+            },
         )
-        frozen_time.move_to(now)
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == soon
-        frozen_time.move_to(now.replace(hour=2, minute=1))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == now
-        frozen_time.move_to(now.replace(hour=6, minute=8))
-        assert (
-            await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == in_two_hours
-        )
-        frozen_time.move_to(now.replace(hour=8, minute=9))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == atmidnight
-        frozen_time.move_to(now.replace(hour=18, minute=9))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == atmidnight
+
+        for tree in trees:
+            f = filter.NearDatetimeFilter(typing.cast(filter.TreeT, tree))
+
+            frozen_time.move_to(now)
+            assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == soon
+            frozen_time.move_to(now.replace(hour=2, minute=1))
+            assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == now
+            frozen_time.move_to(now.replace(hour=6, minute=8))
+            assert (
+                await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)}))
+                == in_two_hours
+            )
+            frozen_time.move_to(now.replace(hour=8, minute=9))
+            assert (
+                await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)}))
+                == atmidnight
+            )
+            frozen_time.move_to(now.replace(hour=18, minute=9))
+            assert (
+                await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)}))
+                == atmidnight
+            )
 
 
 async def test_or() -> None:
@@ -986,6 +962,23 @@ async def test_and() -> None:
     assert not await f(FakePR({"bar": 1, "foo": 2}))
     with pytest.raises(filter.ParseError):
         filter.BinaryFilter({"or": {"foo": "whar"}})
+
+
+async def test_not_tree() -> None:
+    f1 = {"=": ("foo", 1)}
+    f2 = {"=": ("bar", 1)}
+
+    f = filter.BinaryFilter({"not": {"or": (f1, f2)}})
+    assert not await f(FakePR({"foo": 1, "bar": 1}))
+    assert await f(FakePR({"bar": 2, "foo": 2}))
+    assert not await f(FakePR({"bar": 2, "foo": 1}))
+    assert not await f(FakePR({"bar": 1, "foo": 2}))
+
+    f = filter.BinaryFilter({"not": {"and": (f1, f2)}})
+    assert not await f(FakePR({"bar": 1, "foo": 1}))
+    assert await f(FakePR({"bar": 2, "foo": 2}))
+    assert await f(FakePR({"bar": 2, "foo": 1}))
+    assert await f(FakePR({"bar": 1, "foo": 2}))
 
 
 async def test_chain() -> None:
@@ -1009,6 +1002,13 @@ async def test_parser_group() -> None:
         filter.BinaryFilter({"and": ({"=": ("head", "foobar")}, {">": ("#files", 3)})})
     )
     assert string == "(head=foobar and #files>3)"
+
+    string = str(
+        filter.BinaryFilter(
+            {"not": {"and": ({"=": ("head", "foobar")}, {">": ("#files", 3)})}}
+        )
+    )
+    assert string == "not(head=foobar and #files>3)"
 
 
 def get_scheduled_pr() -> FakePR:

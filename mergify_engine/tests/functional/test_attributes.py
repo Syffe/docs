@@ -527,6 +527,7 @@ class TestAttributes(base.FunctionalTestBase):
                                     ]
                                 },
                                 "merged",
+                                {"not": {"and": ["label=foo", "label=bar"]}},
                             ]
                         },
                     ],
