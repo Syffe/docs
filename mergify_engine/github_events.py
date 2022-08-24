@@ -19,6 +19,7 @@ import typing
 
 import daiquiri
 from datadog import statsd
+import sentry_sdk
 
 from mergify_engine import check_api
 from mergify_engine import config
@@ -36,6 +37,13 @@ from mergify_engine.queue import utils as queue_utils
 
 
 LOG = daiquiri.getLogger(__name__)
+
+
+def set_sentry_info(owner_login: str, repo_name: str | None) -> None:
+    sentry_sdk.set_user({"username": owner_login})
+    sentry_sdk.set_tag("gh_owner", owner_login)
+    if repo_name is not None:
+        sentry_sdk.set_tag("gh_repo", repo_name)
 
 
 async def get_pull_request_head_sha_to_number_mapping(
@@ -174,6 +182,7 @@ async def push_to_worker(
         repo_id = event["repository"]["id"]
         repo_name = event["repository"]["name"]
         pull_number = event["pull_request"]["number"]
+        set_sentry_info(owner_login, repo_name)
 
         if event["repository"]["archived"]:
             ignore_reason = "repository archived"
@@ -205,6 +214,8 @@ async def push_to_worker(
         owner_id = event["repository"]["owner"]["id"]
         repo_id = event["repository"]["id"]
         repo_name = event["repository"]["name"]
+        set_sentry_info(owner_login, repo_name)
+
         if event["action"] in ("edited", "deleted"):
             await context.Repository.clear_config_file_cache(redis_links.cache, repo_id)
         ignore_reason = "unused repository event"
@@ -215,6 +226,7 @@ async def push_to_worker(
         owner_id = event["repository"]["owner"]["id"]
         repo_id = event["repository"]["id"]
         repo_name = event["repository"]["name"]
+        set_sentry_info(owner_login, repo_name)
 
         if event["pull_request_number"] is not None:
             pull_number = event["pull_request_number"]
@@ -225,6 +237,8 @@ async def push_to_worker(
         owner_id = event["repository"]["owner"]["id"]
         repo_id = event["repository"]["id"]
         repo_name = event["repository"]["name"]
+        set_sentry_info(owner_login, repo_name)
+
         if event["pull_request"] is not None:
             pull_number = event["pull_request"]["number"]
 
@@ -238,6 +252,7 @@ async def push_to_worker(
         repo_id = event["repository"]["id"]
         repo_name = event["repository"]["name"]
         pull_number = event["pull_request"]["number"]
+        set_sentry_info(owner_login, repo_name)
 
     elif event_type == "pull_request_review_thread":
         event = typing.cast(github_types.GitHubEventPullRequestReviewThread, event)
@@ -246,6 +261,7 @@ async def push_to_worker(
         repo_id = event["repository"]["id"]
         repo_name = event["repository"]["name"]
         pull_number = event["pull_request"]["number"]
+        set_sentry_info(owner_login, repo_name)
 
     elif event_type == "issue_comment":
         event = typing.cast(github_types.GitHubEventIssueComment, event)
@@ -254,6 +270,7 @@ async def push_to_worker(
         repo_id = event["repository"]["id"]
         repo_name = event["repository"]["name"]
         pull_number = github_types.GitHubPullRequestNumber(event["issue"]["number"])
+        set_sentry_info(owner_login, repo_name)
 
         if event["repository"]["archived"]:
             ignore_reason = "repository archived"
@@ -296,6 +313,7 @@ async def push_to_worker(
         owner_id = event["repository"]["owner"]["id"]
         repo_id = event["repository"]["id"]
         repo_name = event["repository"]["name"]
+        set_sentry_info(owner_login, repo_name)
 
         if event["repository"]["archived"]:
             ignore_reason = "repository archived"
@@ -310,6 +328,7 @@ async def push_to_worker(
         owner_id = event["repository"]["owner"]["id"]
         repo_id = event["repository"]["id"]
         repo_name = event["repository"]["name"]
+        set_sentry_info(owner_login, repo_name)
 
         if event["repository"]["archived"]:
             ignore_reason = "repository archived"
@@ -352,6 +371,7 @@ async def push_to_worker(
         owner_id = event["repository"]["owner"]["id"]
         repo_id = event["repository"]["id"]
         repo_name = event["repository"]["name"]
+        set_sentry_info(owner_login, repo_name)
 
         if event["repository"]["archived"]:
             ignore_reason = "repository archived"
@@ -376,6 +396,7 @@ async def push_to_worker(
         owner_id = event["repository"]["owner"]["id"]
         repo_id = event["repository"]["id"]
         repo_name = event["repository"]["name"]
+        set_sentry_info(owner_login, repo_name)
 
         if event["repository"]["archived"]:
             ignore_reason = "repository archived"
@@ -398,6 +419,7 @@ async def push_to_worker(
         repo_name = None
         repo_id = None
         ignore_reason = "organization event"
+        set_sentry_info(owner_login, repo_name)
 
         if event["action"] == "deleted":
             await context.Installation.clear_team_members_cache_for_org(
@@ -419,6 +441,7 @@ async def push_to_worker(
         repo_id = event["repository"]["id"]
         repo_name = event["repository"]["name"]
         ignore_reason = "member event"
+        set_sentry_info(owner_login, repo_name)
 
         await context.Repository.clear_user_permission_cache_for_user(
             redis_links.user_permissions_cache,
@@ -434,6 +457,7 @@ async def push_to_worker(
         repo_name = None
         repo_id = None
         ignore_reason = "membership event"
+        set_sentry_info(owner_login, repo_name)
 
         if "slug" in event["team"]:
             await context.Installation.clear_team_members_cache_for_team(
@@ -467,6 +491,7 @@ async def push_to_worker(
         repo_id = None
         repo_name = None
         ignore_reason = "team event"
+        set_sentry_info(owner_login, repo_name)
 
         if event["action"] in ("edited", "deleted"):
             await context.Installation.clear_team_members_cache_for_team(
@@ -512,6 +537,7 @@ async def push_to_worker(
         repo_id = event["repository"]["id"]
         repo_name = event["repository"]["name"]
         ignore_reason = "team_add event"
+        set_sentry_info(owner_login, repo_name)
 
         await context.Repository.clear_user_permission_cache_for_repo(
             redis_links.user_permissions_cache,
