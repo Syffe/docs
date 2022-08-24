@@ -67,6 +67,7 @@ class EventCommentMetadata(EventMetadata, total=False):
 class EventReviewMetadata(EventMetadata, total=False):
     type: str
     reviewer: str
+    message: str | None
 
 
 class EventCopyMetadata(EventMetadata, total=False):

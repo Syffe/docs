@@ -217,6 +217,7 @@ Unknown pull request attribute: hello
                     "timestamp": mock.ANY,
                     "event": "action.review",
                     "metadata": {
+                        "message": "WTF?",
                         "type": "REQUEST_CHANGES",
                         "reviewer": "mergify-test4",
                     },
@@ -228,6 +229,7 @@ Unknown pull request attribute: hello
                     "timestamp": mock.ANY,
                     "event": "action.review",
                     "metadata": {
+                        "message": None,
                         "type": "APPROVE",
                         "reviewer": config.BOT_USER_LOGIN,
                     },

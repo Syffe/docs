@@ -153,7 +153,11 @@ class ReviewAction(actions.BackwardCompatAction):
             ctxt.pull["number"],
             "action.review",
             signals.EventReviewMetadata(
-                {"type": self.config["type"], "reviewer": review_user}
+                {
+                    "type": self.config["type"],
+                    "reviewer": review_user,
+                    "message": payload.get("body"),
+                }
             ),
             rule.get_signal_trigger(),
         )
