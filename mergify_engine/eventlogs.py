@@ -61,8 +61,9 @@ class EventBackport(EventBase):
     metadata: signals.EventCopyMetadata
 
 
-class EventClose(EventBaseNoMetadata):
+class EventClose(EventBase):
     event: typing.Literal["action.close"]
+    metadata: signals.EventCloseMetadata
 
 
 class EventComment(EventBase):

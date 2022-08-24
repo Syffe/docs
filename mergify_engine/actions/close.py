@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-#  Copyright © 2018 Mehdi Abaakouk <sileht@sileht.net>
+#  Copyright © 2018—2022 Mergify SAS
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -83,7 +83,7 @@ class CloseExecutor(actions.ActionExecutor["CloseAction", CloseExecutorConfig]):
             self.ctxt.repository,
             self.ctxt.pull["number"],
             "action.close",
-            signals.EventNoMetadata(),
+            signals.EventCloseMetadata(message=self.config["message"]),
             self.rule.get_signal_trigger(),
         )
         return check_api.Result(
