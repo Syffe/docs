@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-#  Copyright © 2020 Mergify SAS
+#  Copyright © 2020-2022 Mergify SAS
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -26,7 +26,6 @@ from mergify_engine import rules
 from mergify_engine import signals
 from mergify_engine.dashboard import subscription
 from mergify_engine.rules import conditions
-from mergify_engine.rules import live_resolvers
 from mergify_engine.rules import types
 
 
@@ -76,10 +75,7 @@ class PostCheckExecutor(
             check_conditions = rule.conditions
         else:
             check_conditions = action.config["success_conditions"].copy()
-            for condition in check_conditions.walk():
-                live_resolvers.configure_filter(
-                    ctxt.repository, condition.partial_filter
-                )
+            rules.apply_configure_filter(ctxt.repository, check_conditions)
             await check_conditions([ctxt.pull_request])
 
         extra_variables: typing.Dict[str, typing.Union[str, bool]] = {

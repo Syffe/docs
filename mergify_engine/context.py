@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 # mypy: disallow-untyped-defs
 #
-# Copyright © 2020—2021 Mergify SAS
+# Copyright © 2020—2022 Mergify SAS
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -2331,6 +2331,23 @@ class QueuePullRequest(BasePullRequest):
             return await self.queue_context._get_consolidated_data(fancy_name)
         else:
             return await self.context._get_consolidated_data(fancy_name)
+
+
+@dataclasses.dataclass
+class CommandPullRequest(PullRequest):
+    """A high level pull request object aimed for commands.
+
+    This object is used for evalutating command restrictions on users.
+    """
+
+    context: Context
+    sender: github_types.GitHubLogin
+
+    async def __getattr__(self, name: str) -> ContextAttributeType:
+        if name == "sender":
+            return self.sender
+        else:
+            return await super().__getattr__(name)
 
 
 # circular import

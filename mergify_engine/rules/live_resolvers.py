@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Copyright © 2021 Mergify SAS
+# Copyright © 2021-2022 Mergify SAS
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -92,6 +92,7 @@ async def teams(
 
 _TEAM_ATTRIBUTES = (
     "author",
+    "sender",
     "merged_by",
     "approved-reviews-by",
     "dismissed-reviews-by",

@@ -331,6 +331,12 @@ Here's the list of pull request attribute that can be used in conditions:
    * - ``schedule``
      - string
      - A schedule, e.g., ``Mon-Fri``, ``12:00-18:00`` or ``Mon-Fri 12:00-18:00``
+   * - ``sender``
+     - string
+     - The GitHub user or team login of the sender of the GitHub event.
+       Team logins are prefixed with the ``@`` character and must belong to the
+       repository organization. See :ref:`Commands Restrictions <commands restrictions>` for more
+       details.
    * - ``title``
      - string
      - The title of the pull request.

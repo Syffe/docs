@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    New command restriction condition: ``sender``. It allows to restrict commands use to certain
+    users or teams.

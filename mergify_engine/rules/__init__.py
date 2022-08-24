@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Copyright © 2018-2021 Mergify SAS
+# Copyright © 2018-2022 Mergify SAS
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -235,9 +235,7 @@ class GenericRulesEvaluator(typing.Generic[T_Rule, T_EvaluatedRule]):
         self = cls(rules)
 
         for rule in self.rules:
-            for condition in rule.conditions.walk():
-                live_resolvers.configure_filter(repository, condition.partial_filter)
-
+            apply_configure_filter(repository, rule.conditions)
             evaluated_rule = typing.cast(T_EvaluatedRule, await rule.evaluate(pulls))  # type: ignore[redundant-cast]
             del rule
 
@@ -743,6 +741,16 @@ def get_mergify_config(
         return typing.cast(MergifyConfig, final_config)
     except voluptuous.Invalid as e:
         raise InvalidRules(e, config_file["path"])
+
+
+def apply_configure_filter(
+    repository: "context.Repository",
+    conditions: typing.Union[
+        conditions_mod.PullRequestRuleConditions, conditions_mod.QueueRuleConditions
+    ],
+) -> None:
+    for condition in conditions.walk():
+        live_resolvers.configure_filter(repository, condition.partial_filter)
 
 
 MERGIFY_BUILTIN_CONFIG_YAML = f"""

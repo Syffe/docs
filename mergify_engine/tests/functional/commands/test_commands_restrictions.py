@@ -1,5 +1,7 @@
 # -*- encoding: utf-8 -*-
 #
+# Copyright © 2022 Mergify SAS
+#
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
@@ -17,7 +19,7 @@ from mergify_engine.tests.functional import base
 
 
 class TestCommandsRestrictions(base.FunctionalTestBase):
-    async def test_commands_restrictions(self) -> None:
+    async def test_commands_restrictions_base_branch(self) -> None:
         stable_branch = self.get_full_branch_name("stable/#3.1")
         feature_branch = self.get_full_branch_name("feature/one")
 
@@ -66,4 +68,101 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
         # failure comment
         comments = await self.get_issue_comments(p_nok["number"])
         assert len(comments) == 2
-        assert "Command disallowed on this pull request" in comments[1]["body"]
+        assert "Command disallowed due to [command restrictions]" in comments[1]["body"]
+
+    async def test_false_user_commands_restrictions(self) -> None:
+        stable_branch = self.get_full_branch_name("stable/#3.1")
+        await self.setup_repo(
+            yaml.dump(
+                {
+                    "commands_restrictions": {
+                        "copy": {
+                            "conditions": ["sender=toto"]
+                        }  # sender is mergify-test1 but toto is expected
+                    }
+                }
+            ),
+            test_branches=[stable_branch],
+        )
+        pr = await self.create_pr()
+        await self.create_comment_as_admin(
+            pr["number"], f"@mergifyio copy {stable_branch}"
+        )
+        await self.run_engine()
+        await self.wait_for("issue_comment", {"action": "created"})
+        await self.run_engine()
+
+        # No copy done due to false sender
+        pulls_stable = await self.get_pulls(
+            params={"state": "all", "base": stable_branch}
+        )
+        assert 0 == len(pulls_stable)
+
+        # failure comment
+        comments = await self.get_issue_comments(pr["number"])
+        assert len(comments) == 2
+        assert "Command disallowed due to [command restrictions]" in comments[1]["body"]
+
+    async def test_user_in_team_commands_restrictions(self) -> None:
+        stable_branch = self.get_full_branch_name("stable/#3.1")
+
+        await self.setup_repo(
+            yaml.dump(
+                {
+                    "commands_restrictions": {
+                        "copy": {"conditions": ["sender=@mergifyio-testing/testing"]}
+                    }
+                }
+            ),
+            test_branches=[stable_branch],
+        )
+        pr = await self.create_pr()
+        await self.create_comment_as_admin(
+            pr["number"], f"@mergifyio copy {stable_branch}"
+        )
+        await self.run_engine()
+        await self.wait_for("issue_comment", {"action": "created"})
+        await self.run_engine()
+
+        # Copy done successfully because sender is in the team
+        pulls_stable = await self.get_pulls(
+            params={"state": "all", "base": stable_branch}
+        )
+        assert 1 == len(pulls_stable)
+
+        # success comment
+        comments = await self.get_issue_comments(pr["number"])
+        assert len(comments) == 2
+        assert "Pull request copies have been created" in comments[1]["body"]
+
+    async def test_user_not_in_team_commands_restrictions(self) -> None:
+        stable_branch = self.get_full_branch_name("stable/#3.1")
+
+        await self.setup_repo(
+            yaml.dump(
+                {
+                    "commands_restrictions": {
+                        "copy": {"conditions": ["sender=@mergifyio-testing/bot"]}
+                    }
+                }
+            ),
+            test_branches=[stable_branch],
+        )
+        pr = await self.create_pr()
+        await self.create_comment_as_admin(
+            pr["number"], f"@mergifyio copy {stable_branch}"
+        )
+        await self.run_engine()
+        await self.wait_for("issue_comment", {"action": "created"})
+        await self.run_engine()
+
+        # No copy done
+        pulls_stable = await self.get_pulls(
+            params={"state": "all", "base": stable_branch}
+        )
+        assert 0 == len(pulls_stable)
+
+        # Failure comment
+        comments = await self.get_issue_comments(pr["number"])
+        assert len(comments) == 2
+        assert "Command disallowed due to [command restrictions]" in comments[1]["body"]

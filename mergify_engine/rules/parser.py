@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Copyright © 2018—2021 Mergify SAS
+# Copyright © 2018—2022 Mergify SAS
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -51,6 +51,7 @@ CONDITION_PARSERS = {
     "head": Parser.BRANCH,
     "base": Parser.BRANCH,
     "author": Parser.LOGIN_AND_TEAMS,
+    "sender": Parser.LOGIN_AND_TEAMS,
     "merged-by": Parser.LOGIN_AND_TEAMS,
     "body": Parser.TEXT,
     "body-raw": Parser.TEXT,

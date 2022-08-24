@@ -105,7 +105,16 @@ For example, to limit backport commands for pull requests coming from the main b
   commands_restrictions:
     backport:
       conditions:
-      - base=main
+        - base=main
+
+Another example, to limit backport commands usage to a specific team (or user):
+
+.. code-block:: yaml
+
+  commands_restrictions:
+    backport:
+      conditions:
+        - sender=@team
 
 
 Defaults
