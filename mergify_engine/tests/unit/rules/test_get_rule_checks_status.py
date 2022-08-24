@@ -32,6 +32,8 @@ from mergify_engine.rules import live_resolvers
 
 FAKE_REPO = mock.Mock(repo={"owner": {"login": "org"}})
 
+empty: list[str] = []
+
 
 @dataclasses.dataclass
 class FakeQueuePullRequest:
@@ -124,7 +126,7 @@ async def test_rules_conditions_update() -> None:
 
 
 async def assert_queue_rule_checks_status(
-    conds: typing.List[typing.Collection[str]],
+    conds: typing.List[typing.Any],
     pull: FakeQueuePullRequest,
     expected_state: checks_status.ChecksCombinedStatus,
 ) -> None:
@@ -150,7 +152,7 @@ async def assert_queue_rule_checks_status(
     assert state == expected_state
 
 
-async def test_rules_checks_basic(logger_checker):
+async def test_rules_checks_basic(logger_checker: None) -> None:
     pull = FakeQueuePullRequest(
         {
             "number": 1,
@@ -158,13 +160,13 @@ async def test_rules_checks_basic(logger_checker):
             "author": "me",
             "base": "main",
             "head": "feature-1",
-            "label": [],
-            "check-success": [],
-            "check-neutral": [],
-            "check-failure": [],
-            "check-pending": [],
-            "check-skipped": [],
-            "check-stale": [],
+            "label": empty,
+            "check-success": empty,
+            "check-neutral": empty,
+            "check-failure": empty,
+            "check-pending": empty,
+            "check-skipped": empty,
+            "check-stale": empty,
         }
     )
     conds = ["check-success=fake-ci", "label=foobar"]
@@ -178,12 +180,12 @@ async def test_rules_checks_basic(logger_checker):
 
     # label ok and nothing reported
     pull.attrs["label"] = ["foobar"]
-    pull.attrs["check-success"] = []
+    pull.attrs["check-success"] = empty
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
 
     # Pending reported
     pull.attrs["check-pending"] = ["fake-ci"]
-    pull.attrs["check-failure"] = []
+    pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["test-starter"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
 
@@ -249,31 +251,33 @@ async def test_rules_checks_with_and_or(logger_checker: None) -> None:
 
     # label ok and nothing reported
     pull.attrs["label"] = ["skip-tests"]
-    pull.attrs["check-success"] = []  # type: ignore
-    pull.attrs["check-failure"] = []  # type: ignore
+    pull.attrs["check-success"] = empty
+    pull.attrs["check-failure"] = empty
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
 
     # label ok and failure
     pull.attrs["label"] = ["skip-tests"]
-    pull.attrs["check-success"] = []  # type: ignore
+    pull.attrs["check-success"] = empty
     pull.attrs["check-failure"] = ["other-ci"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
 
     # label ok and failure
     pull.attrs["label"] = ["skip-tests"]
-    pull.attrs["check-success"] = []  # type: ignore
+    pull.attrs["check-success"] = empty
     pull.attrs["check-failure"] = ["fake-ci"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
 
     # label ok and success
     pull.attrs["label"] = ["skip-tests"]
     pull.attrs["check-pending"] = ["fake-ci"]
-    pull.attrs["check-failure"] = []  # type: ignore
+    pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["other-ci"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
 
 
-async def test_rules_checks_status_with_negative_conditions1(logger_checker):
+async def test_rules_checks_status_with_negative_conditions1(
+    logger_checker: None,
+) -> None:
     pull = FakeQueuePullRequest(
         {
             "number": 1,
@@ -281,13 +285,13 @@ async def test_rules_checks_status_with_negative_conditions1(logger_checker):
             "author": "me",
             "base": "main",
             "head": "feature-1",
-            "check-success": [],
-            "check-failure": [],
-            "check-pending": [],
-            "check-neutral": [],
-            "check-timed-out": [],
-            "check-skipped": [],
-            "check-stale": [],
+            "check-success": empty,
+            "check-failure": empty,
+            "check-pending": empty,
+            "check-neutral": empty,
+            "check-timed-out": empty,
+            "check-skipped": empty,
+            "check-stale": empty,
         }
     )
     conds = [
@@ -302,41 +306,41 @@ async def test_rules_checks_status_with_negative_conditions1(logger_checker):
 
     # Pending reported
     pull.attrs["check-pending"] = ["foo"]
-    pull.attrs["check-failure"] = []
-    pull.attrs["check-timed-out"] = []
+    pull.attrs["check-failure"] = empty
+    pull.attrs["check-timed-out"] = empty
     pull.attrs["check-success"] = ["test-starter"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
 
     # Failure reported
-    pull.attrs["check-pending"] = []
+    pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = ["foo"]
-    pull.attrs["check-timed-out"] = []
+    pull.attrs["check-timed-out"] = empty
     pull.attrs["check-success"] = ["test-starter"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
 
     # Timeout reported
-    pull.attrs["check-pending"] = []
-    pull.attrs["check-failure"] = []
+    pull.attrs["check-pending"] = empty
+    pull.attrs["check-failure"] = empty
     pull.attrs["check-timed-out"] = ["foo"]
     pull.attrs["check-success"] = ["test-starter"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
 
     # Success reported
-    pull.attrs["check-pending"] = []
-    pull.attrs["check-failure"] = []
-    pull.attrs["check-timed-out"] = []
+    pull.attrs["check-pending"] = empty
+    pull.attrs["check-failure"] = empty
+    pull.attrs["check-timed-out"] = empty
     pull.attrs["check-success"] = ["test-starter", "foo"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
 
     # half reported, sorry..., UNDEFINED BEHAVIOR
-    pull.attrs["check-pending"] = []
-    pull.attrs["check-failure"] = []
-    pull.attrs["check-success"] = []
+    pull.attrs["check-pending"] = empty
+    pull.attrs["check-failure"] = empty
+    pull.attrs["check-success"] = empty
     pull.attrs["check-success"] = ["test-starter"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
 
 
-async def test_rules_checks_status_with_negative_conditions2():
+async def test_rules_checks_status_with_negative_conditions2() -> None:
     pull = FakeQueuePullRequest(
         {
             "number": 1,
@@ -344,12 +348,12 @@ async def test_rules_checks_status_with_negative_conditions2():
             "author": "me",
             "base": "main",
             "head": "feature-1",
-            "check-success": [],
-            "check-failure": [],
-            "check-pending": [],
-            "check-neutral": [],
-            "check-skipped": [],
-            "check-stale": [],
+            "check-success": empty,
+            "check-failure": empty,
+            "check-pending": empty,
+            "check-neutral": empty,
+            "check-skipped": empty,
+            "check-stale": empty,
         }
     )
     conds = [
@@ -363,30 +367,32 @@ async def test_rules_checks_status_with_negative_conditions2():
 
     # Pending reported
     pull.attrs["check-pending"] = ["foo"]
-    pull.attrs["check-failure"] = []
+    pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["test-starter"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
 
     # Failure reported
-    pull.attrs["check-pending"] = []
+    pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = ["foo"]
     pull.attrs["check-success"] = ["test-starter"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
 
     # Success reported
-    pull.attrs["check-pending"] = []
-    pull.attrs["check-failure"] = []
+    pull.attrs["check-pending"] = empty
+    pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["test-starter", "foo"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
 
     # half reported, sorry..., UNDEFINED BEHAVIOR
-    pull.attrs["check-pending"] = []
-    pull.attrs["check-failure"] = []
+    pull.attrs["check-pending"] = empty
+    pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["test-starter"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
 
 
-async def test_rules_checks_status_with_negative_conditions3(logger_checker):
+async def test_rules_checks_status_with_negative_conditions3(
+    logger_checker: None,
+) -> None:
     pull = FakeQueuePullRequest(
         {
             "number": 1,
@@ -394,12 +400,12 @@ async def test_rules_checks_status_with_negative_conditions3(logger_checker):
             "author": "me",
             "base": "main",
             "head": "feature-1",
-            "check-success": [],
-            "check-failure": [],
-            "check-pending": [],
-            "check-neutral": [],
-            "check-skipped": [],
-            "check-stale": [],
+            "check-success": empty,
+            "check-failure": empty,
+            "check-pending": empty,
+            "check-neutral": empty,
+            "check-skipped": empty,
+            "check-stale": empty,
         }
     )
     conds = [
@@ -413,30 +419,30 @@ async def test_rules_checks_status_with_negative_conditions3(logger_checker):
 
     # Pending reported
     pull.attrs["check-pending"] = ["foo"]
-    pull.attrs["check-failure"] = []
+    pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["test-starter"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
 
     # Failure reported
-    pull.attrs["check-pending"] = []
+    pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = ["foo"]
     pull.attrs["check-success"] = ["test-starter"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
 
     # Success reported
-    pull.attrs["check-pending"] = []
-    pull.attrs["check-failure"] = []
+    pull.attrs["check-pending"] = empty
+    pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["test-starter", "foo"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
 
     # half reported, sorry..., UNDEFINED BEHAVIOR
-    pull.attrs["check-pending"] = []
-    pull.attrs["check-failure"] = []
+    pull.attrs["check-pending"] = empty
+    pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["test-starter"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
 
 
-async def test_rules_checks_status_with_or_conditions():
+async def test_rules_checks_status_with_or_conditions() -> None:
     pull = FakeQueuePullRequest(
         {
             "number": 1,
@@ -444,12 +450,12 @@ async def test_rules_checks_status_with_or_conditions():
             "author": "me",
             "base": "main",
             "head": "feature-1",
-            "check-success": [],
-            "check-failure": [],
-            "check-pending": [],
-            "check-neutral": [],
-            "check-skipped": [],
-            "check-stale": [],
+            "check-success": empty,
+            "check-failure": empty,
+            "check-pending": empty,
+            "check-neutral": empty,
+            "check-skipped": empty,
+            "check-stale": empty,
         }
     )
     conds = [
@@ -463,42 +469,42 @@ async def test_rules_checks_status_with_or_conditions():
 
     # Pending reported
     pull.attrs["check-pending"] = ["ci-1"]
-    pull.attrs["check-failure"] = []
+    pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["ci-2"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
 
     # Pending reported
     pull.attrs["check-pending"] = ["ci-1"]
     pull.attrs["check-failure"] = ["ci-2"]
-    pull.attrs["check-success"] = []
+    pull.attrs["check-success"] = empty
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
 
     # Failure reported
-    pull.attrs["check-pending"] = []
+    pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = ["ci-1"]
     pull.attrs["check-success"] = ["ci-2"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
 
     # Success reported
-    pull.attrs["check-pending"] = []
-    pull.attrs["check-failure"] = []
+    pull.attrs["check-pending"] = empty
+    pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["ci-1", "ci-2"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
 
     # half reported success
-    pull.attrs["check-failure"] = []
-    pull.attrs["check-pending"] = []
+    pull.attrs["check-failure"] = empty
+    pull.attrs["check-pending"] = empty
     pull.attrs["check-success"] = ["ci-1"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
 
     # half reported failure, wait for ci-2 to finish
     pull.attrs["check-failure"] = ["ci-1"]
-    pull.attrs["check-pending"] = []
-    pull.attrs["check-success"] = []
+    pull.attrs["check-pending"] = empty
+    pull.attrs["check-success"] = empty
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
 
 
-async def test_rules_checks_status_expected_failure():
+async def test_rules_checks_status_expected_failure() -> None:
     pull = FakeQueuePullRequest(
         {
             "number": 1,
@@ -506,12 +512,12 @@ async def test_rules_checks_status_expected_failure():
             "author": "me",
             "base": "main",
             "head": "feature-1",
-            "check-success": [],
-            "check-failure": [],
-            "check-pending": [],
-            "check-neutral": [],
-            "check-skipped": [],
-            "check-stale": [],
+            "check-success": empty,
+            "check-failure": empty,
+            "check-pending": empty,
+            "check-neutral": empty,
+            "check-skipped": empty,
+            "check-stale": empty,
         }
     )
     conds = ["check-failure=ci-1"]
@@ -521,24 +527,24 @@ async def test_rules_checks_status_expected_failure():
 
     # Pending reported
     pull.attrs["check-pending"] = ["ci-1"]
-    pull.attrs["check-failure"] = []
-    pull.attrs["check-success"] = []
+    pull.attrs["check-failure"] = empty
+    pull.attrs["check-success"] = empty
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
 
     # Failure reported
-    pull.attrs["check-pending"] = []
+    pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = ["ci-1"]
-    pull.attrs["check-success"] = []
+    pull.attrs["check-success"] = empty
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
 
     # Success reported, no way!
-    pull.attrs["check-pending"] = []
-    pull.attrs["check-failure"] = []
+    pull.attrs["check-pending"] = empty
+    pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["ci-1"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
 
 
-async def test_rules_checks_status_regular():
+async def test_rules_checks_status_regular() -> None:
     pull = FakeQueuePullRequest(
         {
             "number": 1,
@@ -546,12 +552,12 @@ async def test_rules_checks_status_regular():
             "author": "me",
             "base": "main",
             "head": "feature-1",
-            "check-success": [],
-            "check-failure": [],
-            "check-pending": [],
-            "check-neutral": [],
-            "check-skipped": [],
-            "check-stale": [],
+            "check-success": empty,
+            "check-failure": empty,
+            "check-pending": empty,
+            "check-neutral": empty,
+            "check-skipped": empty,
+            "check-stale": empty,
         }
     )
     conds = ["check-success=ci-1", "check-success=ci-2"]
@@ -561,36 +567,36 @@ async def test_rules_checks_status_regular():
 
     # Pending reported
     pull.attrs["check-pending"] = ["ci-1"]
-    pull.attrs["check-failure"] = []
+    pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["ci-2"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
 
     # Failure reported
-    pull.attrs["check-pending"] = []
+    pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = ["ci-1"]
     pull.attrs["check-success"] = ["ci-2"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
 
     # Success reported
-    pull.attrs["check-pending"] = []
-    pull.attrs["check-failure"] = []
+    pull.attrs["check-pending"] = empty
+    pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["ci-1", "ci-2"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
 
     # half reported success
-    pull.attrs["check-failure"] = []
-    pull.attrs["check-pending"] = []
+    pull.attrs["check-failure"] = empty
+    pull.attrs["check-pending"] = empty
     pull.attrs["check-success"] = ["ci-1"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
 
     # half reported failure, fail early
     pull.attrs["check-failure"] = ["ci-1"]
-    pull.attrs["check-pending"] = []
-    pull.attrs["check-success"] = []
+    pull.attrs["check-pending"] = empty
+    pull.attrs["check-success"] = empty
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
 
 
-async def test_rules_checks_status_regex():
+async def test_rules_checks_status_regex() -> None:
     pull = FakeQueuePullRequest(
         {
             "number": 1,
@@ -598,12 +604,12 @@ async def test_rules_checks_status_regex():
             "author": "me",
             "base": "main",
             "head": "feature-1",
-            "check-success": [],
-            "check-failure": [],
-            "check-pending": [],
-            "check-neutral": [],
-            "check-skipped": [],
-            "check-stale": [],
+            "check-success": empty,
+            "check-failure": empty,
+            "check-pending": empty,
+            "check-neutral": empty,
+            "check-skipped": empty,
+            "check-stale": empty,
         }
     )
     conds = ["check-success~=^ci-1$", "check-success~=^ci-2$"]
@@ -613,37 +619,37 @@ async def test_rules_checks_status_regex():
 
     # Pending reported
     pull.attrs["check-pending"] = ["ci-1"]
-    pull.attrs["check-failure"] = []
+    pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["ci-2"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
 
     # Failure reported
-    pull.attrs["check-pending"] = []
+    pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = ["ci-1"]
     pull.attrs["check-success"] = ["ci-2"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
 
     # Success reported
-    pull.attrs["check-pending"] = []
-    pull.attrs["check-failure"] = []
+    pull.attrs["check-pending"] = empty
+    pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["ci-1", "ci-2"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
 
     # half reported success
-    pull.attrs["check-failure"] = []
-    pull.attrs["check-pending"] = []
+    pull.attrs["check-failure"] = empty
+    pull.attrs["check-pending"] = empty
     pull.attrs["check-success"] = ["ci-1"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
 
     # half reported failure, fail early
     pull.attrs["check-failure"] = ["ci-1"]
-    pull.attrs["check-pending"] = []
-    pull.attrs["check-success"] = []
+    pull.attrs["check-pending"] = empty
+    pull.attrs["check-success"] = empty
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
 
 
 @freeze_time("2021-09-22T08:00:05", tz_offset=0)
-async def test_rules_conditions_schedule():
+async def test_rules_conditions_schedule() -> None:
     pulls = [
         FakeQueuePullRequest(
             {
@@ -742,14 +748,14 @@ async def test_rules_checks_status_depop(logger_checker: None) -> None:
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
 
     # Pending reported
-    pull.attrs["check-pending"] = []  # type: ignore
-    pull.attrs["check-failure"] = []  # type: ignore
+    pull.attrs["check-pending"] = empty
+    pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["Summary", "continuous-integration/jenkins/pr-head"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
 
     # Pending reported
     pull.attrs["check-pending"] = ["c-ci/status"]
-    pull.attrs["check-failure"] = []  # type: ignore
+    pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = [
         "Summary",
         "continuous-integration/jenkins/pr-head",
@@ -768,7 +774,7 @@ async def test_rules_checks_status_depop(logger_checker: None) -> None:
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
 
     # Failure reported
-    pull.attrs["check-pending"] = []  # type: ignore
+    pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = [
         "c-ci/s-c-t",
         "c-ci/g-validate",
@@ -781,7 +787,7 @@ async def test_rules_checks_status_depop(logger_checker: None) -> None:
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
 
     # Success reported
-    pull.attrs["check-pending"] = []  # type: ignore
+    pull.attrs["check-pending"] = empty
     pull.attrs["check-failure"] = ["c-ci/g-validate"]
     pull.attrs["check-success"] = [
         "Summary",
@@ -899,7 +905,7 @@ async def test_rules_checks_status_ceph(logger_checker: None) -> None:
         all_checks=pull.attrs["check"],  # type: ignore
     )
 
-    async def fake_get_team_members(*args):
+    async def fake_get_team_members(*args: typing.Any) -> list[str]:
         return ["me", "other", "foo", "bar"]
 
     repo_with_team = mock.Mock(

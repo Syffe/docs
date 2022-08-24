@@ -31,7 +31,7 @@ UTC = datetime.timezone.utc
 
 
 class FakePR(dict):  # type: ignore[type-arg]
-    def __getattr__(self, k):
+    def __getattr__(self, k: typing.Any) -> typing.Any:
         try:
             return self[k]
         except KeyError:
@@ -83,7 +83,7 @@ class Obj:
     bar: str
     __string_like__ = True
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.foo}a{self.bar}"
 
 

@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Copyright © 2020 Mergify SAS
+# Copyright © 2020—2022 Mergify SAS
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -19,7 +19,7 @@ import voluptuous
 from mergify_engine.actions import assign
 
 
-def test_assign_get_schema():
+def test_assign_get_schema() -> None:
     schema = {"users": ["{{ author }}"]}
     result = assign.AssignAction(schema)
     assert result.config["users"] == schema["users"]
@@ -45,7 +45,7 @@ def test_assign_get_schema():
     assert result.config["remove_users"] == schema["remove_users"]
 
 
-def test_assign_get_schema_with_wrong_template():
+def test_assign_get_schema_with_wrong_template() -> None:
     with pytest.raises(voluptuous.Invalid) as e:
         assign.AssignAction({"users": ["{{ foo }}"]})
     assert str(e.value) == "Template syntax error @ data['users'][0]"
