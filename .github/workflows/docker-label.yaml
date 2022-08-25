@@ -1,0 +1,33 @@
+name: Docker-label
+permissions:
+  issues: write
+  pull-requests: write
+
+on:
+  pull_request_target:
+    branches:
+      - main
+    paths:
+      - 'Dockerfile'
+      - 'datadog/**'
+      - 'datadog-wrapper.sh'
+      - 'installer/**'
+      - 'onpremise/**'
+      - 'fake.env'
+      - '.github/workflows/docker.yaml'
+
+jobs:
+  docker-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add Docker label to PR
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['Docker']
+            })

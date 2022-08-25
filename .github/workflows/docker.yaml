@@ -25,26 +25,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  docker-label:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    permissions:
-      issues: write
-      pull-requests: write
-    steps:
-      - id: docker-label
-        name: Add Docker label to PR
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            github.rest.issues.addLabels({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              labels: ['Docker']
-            })
-
   docker:
     timeout-minutes: 15
     runs-on: ubuntu-20.04
