@@ -969,7 +969,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
         abort_reason: None | queue_utils.BaseAbortReason,
     ) -> None:
         abort_reason_str = str(abort_reason) if abort_reason is not None else ""
-        abort_code = abort_reason.get_abort_code() if abort_reason is not None else None
+        abort_code = abort_reason.abort_code if abort_reason is not None else None
         checks_conclusion = typing.cast(
             signals.ChecksConclusion, self.checks_conclusion.value or "pending"
         )

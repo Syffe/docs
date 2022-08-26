@@ -70,6 +70,7 @@ Link: <https://api.mergify.com/v1/repos/Mergifyio/mergify-engine/events?cursor=d
 
 @pydantic.dataclasses.dataclass
 class PageResponse(typing.Generic[T]):
+    # The attribute name under which all the items of the page will be stored
     items_key: typing.ClassVar[str]
     page: dataclasses.InitVar[Page[T]]
     size: int = dataclasses.field(

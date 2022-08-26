@@ -45,6 +45,7 @@ from mergify_engine.web.api import eventlogs
 from mergify_engine.web.api import queues
 from mergify_engine.web.api import security
 from mergify_engine.web.api import simulator
+from mergify_engine.web.api import statistics
 
 
 def api_enabled() -> None:
@@ -84,7 +85,11 @@ app = fastapi.FastAPI(
         },
         {
             "name": "simulator",
-            "description": "Mergify configuration simulator",
+            "description": "Mergify configuration simulator.",
+        },
+        {
+            "name": "statistics",
+            "description": "Operations with statistics.",
         },
     ],
     servers=[{"url": "https://api.mergify.com/v1", "description": "default"}],
@@ -103,6 +108,7 @@ app.include_router(queues.router)
 app.include_router(badges.router)
 app.include_router(simulator.router)
 app.include_router(eventlogs.router)
+app.include_router(statistics.router)
 
 web_utils.setup_exception_handlers(app)
 

@@ -20,6 +20,7 @@ import typing
 import daiquiri
 
 from mergify_engine import github_types
+from mergify_engine.queue import utils as queue_utils
 
 
 if typing.TYPE_CHECKING:
@@ -156,7 +157,7 @@ class EventQueueMergedMetadata(EventMetadata, total=False):
 class EventQueueChecksEndMetadata(EventMetadata, total=False):
     aborted: bool
     abort_reason: typing.Optional[str]
-    abort_code: typing.Optional[str]
+    abort_code: typing.Optional[queue_utils.AbortCodeT]
     abort_status: typing.Literal["DEFINITIVE", "REEMBARKED"]
     queue_name: str
     branch: str

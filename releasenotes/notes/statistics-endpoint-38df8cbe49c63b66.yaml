@@ -1,0 +1,11 @@
+---
+features:
+  - |
+    Added 3 new endpoints to be able to retrieve statistics on merge queues:
+      * ``/repos/{owner}/{repository}/queues/{name}/stats/time_to_merge``:
+        Returns the average time to merge on this queue.
+      * ``/repos/{owner}/{repository}/queues/{name}/stats/checks_duration``:
+        Returns the average duration of the checks of the merge queue PRs.
+      * ``/repos/{owner}/{repository}/queues/{name}/stats/failure_by_reason``:
+        Returns a mapping of the failure reasons of a merge queue associated with the number
+        of times they happened.

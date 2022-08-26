@@ -45,35 +45,66 @@ class BaseQueueStats:
         }
 
 
+TimeToMergeT = typing.List[int]
+
+
 @dataclasses.dataclass
 class TimeToMerge(BaseQueueStats):
     time_seconds: int
 
 
+# Every key is an `abort_code` of a class that inherits from `BaseAbortReason`
+# in mergify_engine/queue/utils.py
+class FailureByReasonT(typing.TypedDict):
+    PR_AHEAD_DEQUEUED: int
+    PR_AHEAD_FAILED_TO_MERGE: int
+    PR_WITH_HIGHER_PRIORITY_QUEUED: int
+    PR_QUEUED_TWICE: int
+    SPECULATIVE_CHECK_NUMBER_REDUCED: int
+    CHECKS_TIMEOUT: int
+    CHECKS_FAILED: int
+    QUEUE_RULE_MISSING: int
+    UNEXPECTED_QUEUE_CHANGE: int
+
+
 @dataclasses.dataclass
 class FailureByReason(BaseQueueStats):
-    _ABORT_CODE_TO_INT_MAPPING: typing.ClassVar[typing.Dict[str, int]] = {
-        queue_utils.PrAheadDequeued.get_abort_code(): 1,
-        queue_utils.PrAheadFailedToMerge.get_abort_code(): 2,
-        queue_utils.PrWithHigherPriorityQueued.get_abort_code(): 3,
-        queue_utils.PrQueuedTwice.get_abort_code(): 4,
-        queue_utils.SpeculativeCheckNumberReduced.get_abort_code(): 5,
-        queue_utils.ChecksTimeout.get_abort_code(): 6,
-        queue_utils.ChecksFailed.get_abort_code(): 7,
-        queue_utils.QueueRuleMissing.get_abort_code(): 8,
-        queue_utils.UnexpectedQueueChange.get_abort_code(): 9,
+    _ABORT_CODE_TO_INT_MAPPING: typing.ClassVar[
+        typing.Dict[queue_utils.AbortCodeT, int]
+    ] = {
+        queue_utils.PrAheadDequeued.abort_code: 1,
+        queue_utils.PrAheadFailedToMerge.abort_code: 2,
+        queue_utils.PrWithHigherPriorityQueued.abort_code: 3,
+        queue_utils.PrQueuedTwice.abort_code: 4,
+        queue_utils.SpeculativeCheckNumberReduced.abort_code: 5,
+        queue_utils.ChecksTimeout.abort_code: 6,
+        queue_utils.ChecksFailed.abort_code: 7,
+        queue_utils.QueueRuleMissing.abort_code: 8,
+        queue_utils.UnexpectedQueueChange.abort_code: 9,
     }
-    _INT_TO_ABORT_CODE_MAPPING: typing.ClassVar[typing.Dict[int, str]] = {
-        v: k for k, v in _ABORT_CODE_TO_INT_MAPPING.items()
-    }
+    _INT_TO_ABORT_CODE_MAPPING: typing.ClassVar[
+        typing.Dict[int, queue_utils.AbortCodeT]
+    ] = {v: k for k, v in _ABORT_CODE_TO_INT_MAPPING.items()}
 
-    reason_code_str: str
-    reason_code: int = dataclasses.field(init=False)
+    reason_code: int
+    reason_code_str: queue_utils.AbortCodeT = dataclasses.field(init=False)
 
     _todict_ignore_vars = ("reason_code_str",)
 
     def __post_init__(self):
-        self.reason_code = self._ABORT_CODE_TO_INT_MAPPING[self.reason_code_str]
+        self.reason_code_str = self._INT_TO_ABORT_CODE_MAPPING[self.reason_code]
+
+    @classmethod
+    def from_reason_code_str(
+        cls, reason_code_str: queue_utils.AbortCodeT, **kwargs: typing.Any
+    ) -> "FailureByReason":
+        return cls(
+            reason_code=cls._ABORT_CODE_TO_INT_MAPPING[reason_code_str],
+            **kwargs,
+        )
+
+
+ChecksDurationT = typing.List[int]
 
 
 @dataclasses.dataclass
@@ -112,7 +143,7 @@ def get_stats_from_event_metadata(
             if metadata["abort_code"] is None:
                 return None
 
-            return FailureByReason(
+            return FailureByReason.from_reason_code_str(
                 queue_name=metadata["queue_name"],
                 reason_code_str=metadata["abort_code"],
             )
@@ -151,8 +182,6 @@ class StatisticsSignal(signals.SignalBase):
             return
 
         redis = repository.installation.redis.stats
-        if redis is None:
-            return
 
         if not repository.installation.subscription.has_feature(
             subscription.Features.MERGE_QUEUE_STATS
@@ -185,3 +214,99 @@ class StatisticsSignal(signals.SignalBase):
             stat_redis_key, int(MERGE_QUEUE_STATS_RETENTION.total_seconds())
         )
         await pipe.execute()
+
+
+# bytes = timestamp
+RedisXRangeT = typing.List[typing.Tuple[bytes, typing.Any]]
+
+
+async def _get_stat_items(
+    repository: "context.Repository",
+    stat_name: typing.Literal["time_to_merge", "failure_by_reason", "checks_duration"],
+    queue_name: str,
+    start_at: int | None,
+    end_at: int | None,
+) -> typing.AsyncGenerator[dict[str, typing.Any], None]:
+    redis = repository.installation.redis.stats
+
+    redis_repo_key = _get_repository_key(
+        repository.installation.owner_id, repository.repo["id"]
+    )
+    full_redis_key = f"{redis_repo_key}/{stat_name}"
+
+    if start_at is not None:
+        older_event_id = str(start_at)
+    else:
+        older_event_id = "-"
+
+    if end_at is not None:
+        newer_event_id = str(end_at)
+    else:
+        newer_event_id = "+"
+
+    items = await redis.xrange(full_redis_key, min=older_event_id, max=newer_event_id)
+    for _, raw_stat in items:
+        stat = msgpack.unpackb(raw_stat[b"data"], timestamp=3)
+        if stat["queue_name"] == queue_name:
+            yield stat
+
+
+async def get_time_to_merge_stats(
+    repository: "context.Repository",
+    queue_name: str,
+    start_at: int | None,
+    end_at: int | None,
+) -> TimeToMergeT:
+    stats = []
+    async for stat in _get_stat_items(
+        repository, "time_to_merge", queue_name, start_at, end_at
+    ):
+        stat_obj = TimeToMerge(**stat)
+        stats.append(stat_obj.time_seconds)
+
+    return stats
+
+
+async def get_checks_duration_stats(
+    repository: "context.Repository",
+    queue_name: str,
+    start_at: int | None,
+    end_at: int | None,
+) -> ChecksDurationT:
+    stats = []
+    async for stat in _get_stat_items(
+        repository, "checks_duration", queue_name, start_at, end_at
+    ):
+        stat_obj = ChecksDuration(**stat)
+        stats.append(stat_obj.duration_seconds)
+
+    return stats
+
+
+async def get_failure_by_reason_stats(
+    repository: "context.Repository",
+    queue_name: str,
+    start_at: int | None,
+    end_at: int | None,
+) -> FailureByReasonT:
+    stats = FailureByReasonT(
+        {
+            "PR_AHEAD_DEQUEUED": 0,
+            "PR_AHEAD_FAILED_TO_MERGE": 0,
+            "PR_WITH_HIGHER_PRIORITY_QUEUED": 0,
+            "PR_QUEUED_TWICE": 0,
+            "SPECULATIVE_CHECK_NUMBER_REDUCED": 0,
+            "CHECKS_TIMEOUT": 0,
+            "CHECKS_FAILED": 0,
+            "QUEUE_RULE_MISSING": 0,
+            "UNEXPECTED_QUEUE_CHANGE": 0,
+        }
+    )
+
+    async for stat in _get_stat_items(
+        repository, "failure_by_reason", queue_name, start_at, end_at
+    ):
+        stat_obj = FailureByReason(**stat)
+        stats[stat_obj.reason_code_str] += 1
+
+    return stats

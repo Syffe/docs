@@ -1230,7 +1230,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "abort_reason": anys.AnySearch(
                             str(queue_utils.PrAheadDequeued(pr_number=p1["number"])),
                         ),
-                        "abort_code": queue_utils.PrAheadDequeued.get_abort_code(),
+                        "abort_code": queue_utils.PrAheadDequeued.abort_code,
                         "abort_status": "DEFINITIVE",
                         "aborted": True,
                         "branch": self.main_branch_name,

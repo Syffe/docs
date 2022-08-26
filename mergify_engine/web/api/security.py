@@ -164,3 +164,19 @@ async def check_subscription_feature_eventlogs(
         status_code=402,
         detail="⚠ The subscription needs to be upgraded to enable the `eventlogs` feature.",
     )
+
+
+async def check_subscription_feature_merge_queue_stats(
+    repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
+        get_repository_context
+    ),
+) -> None:
+    if repository_ctxt.installation.subscription.has_feature(
+        subscription.Features.MERGE_QUEUE_STATS
+    ):
+        return
+
+    raise fastapi.HTTPException(
+        status_code=402,
+        detail="⚠ The subscription needs to be upgraded to enable the `merge_queue_stats` feature.",
+    )
