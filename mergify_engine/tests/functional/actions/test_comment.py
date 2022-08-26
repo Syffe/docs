@@ -199,7 +199,10 @@ Unknown pull request attribute: hello
         checks = await ctxt.pull_engine_check_runs
         assert (
             checks[-1]["output"]["title"]
-            == "Comments with `bot_account` set are disabled"
+            == "The current Mergify configuration is invalid"
+        )
+        assert checks[-1]["output"]["summary"].startswith(
+            "### Comments with `bot_account` set are disabled"
         )
 
     async def test_comment_without_default_message(self) -> None:
