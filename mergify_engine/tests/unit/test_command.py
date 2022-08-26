@@ -19,6 +19,7 @@ from unittest import mock
 import pytest
 
 from mergify_engine import config
+from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import rules
@@ -94,7 +95,8 @@ def test_command_loader() -> None:
         "label_conflicts": "conflicts",
         "assignees": [],
         "title": "{{ title }} (backport #{{ number }})",
-        "body": "This is an automatic backport of pull request #{{number}} done by [Mergify](https://mergify.com).\n{{ cherry_pick_error }}",
+        "body": "This is an automatic backport of pull request #{{number}} done by [Mergify](https://mergify.com).\n{{ cherry_pick_error }}\n\n---\n\n"
+        + constants.MERGIFY_PULL_REQUEST_DOC,
     }
 
 
@@ -130,7 +132,8 @@ defaults:
         "labels": [],
         "label_conflicts": "conflicts",
         "title": "{{ title }} (backport #{{ number }})",
-        "body": "This is an automatic backport of pull request #{{number}} done by [Mergify](https://mergify.com).\n{{ cherry_pick_error }}",
+        "body": "This is an automatic backport of pull request #{{number}} done by [Mergify](https://mergify.com).\n{{ cherry_pick_error }}\n\n---\n\n"
+        + constants.MERGIFY_PULL_REQUEST_DOC,
     }
 
 

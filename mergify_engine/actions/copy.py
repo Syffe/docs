@@ -22,6 +22,7 @@ import voluptuous
 
 from mergify_engine import actions
 from mergify_engine import check_api
+from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import duplicate_pull
 from mergify_engine import github_types
@@ -89,7 +90,9 @@ class CopyAction(actions.BackwardCompatAction):
             ): DuplicateTitleJinja2,
             voluptuous.Required(
                 "body",
-                default=f"This is an automatic {self.KIND} of pull request #{{{{number}}}} done by [Mergify](https://mergify.com).\n{{{{ cherry_pick_error }}}}",
+                default=f"This is an automatic {self.KIND} of pull request #{{{{number}}}} done by [Mergify](https://mergify.com).\n{{{{ cherry_pick_error }}}}"
+                + "\n\n---\n\n"
+                + constants.MERGIFY_PULL_REQUEST_DOC,
             ): DuplicateBodyJinja2,
         }
 

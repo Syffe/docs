@@ -19,7 +19,6 @@ from typing import List
 
 import tenacity
 
-from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import exceptions
 from mergify_engine import github_types
@@ -400,9 +399,7 @@ async def duplicate(
                     f"{ctxt.base_url}/pulls",
                     json={
                         "title": title,
-                        "body": body
-                        + "\n\n---\n\n"
-                        + constants.MERGIFY_PULL_REQUEST_DOC,
+                        "body": body,
                         "base": branch_name,
                         "head": bp_branch,
                     },
