@@ -543,6 +543,52 @@ class Repository(object):
 
         return self.pull_contexts[pull_number]
 
+    PULL_REQUEST_TITLE_CACHE_KEY_PREFIX = "pull_request_title"
+    PULL_REQUEST_TITLE_CACHE_KEY_DELIMITER = "/"
+    PULL_REQUEST_TITLE_EXPIRATION = datetime.timedelta(days=7)
+
+    @classmethod
+    def get_pull_request_title_cache_key(
+        cls,
+        repo_id: github_types.GitHubRepositoryIdType,
+        pull_number: github_types.GitHubPullRequestNumber,
+    ) -> str:
+        return (
+            f"{cls.PULL_REQUEST_TITLE_CACHE_KEY_PREFIX}"
+            f"{cls.PULL_REQUEST_TITLE_CACHE_KEY_DELIMITER}{repo_id}"
+            f"{cls.PULL_REQUEST_TITLE_CACHE_KEY_DELIMITER}{pull_number}"
+        )
+
+    async def get_pull_request_title(
+        self, pull_number: github_types.GitHubPullRequestNumber
+    ) -> str:
+        """The returned data has good chance to be obsolete, the only intent is for
+        caching the title for later reporting"""
+        title = await self.installation.redis.cache.get(
+            self.get_pull_request_title_cache_key(self.repo["id"], pull_number),
+        )
+        if title is None:
+            ctxt = await self.get_pull_request_context(pull_number)
+            title = ctxt.pull["title"]
+            await self.cache_pull_request_title(
+                self.installation.redis.cache, self.repo["id"], pull_number, title
+            )
+        return title
+
+    @classmethod
+    async def cache_pull_request_title(
+        cls,
+        redis: redis_utils.RedisCache,
+        repo_id: github_types.GitHubRepositoryIdType,
+        pull_number: github_types.GitHubPullRequestNumber,
+        title: str,
+    ) -> None:
+        await redis.set(
+            cls.get_pull_request_title_cache_key(repo_id, pull_number),
+            title,
+            ex=cls.PULL_REQUEST_TITLE_EXPIRATION,
+        )
+
     CONFIG_FILE_CACHE_KEY_PREFIX = "config_file"
     CONFIG_FILE_CACHE_KEY_DELIMITER = "/"
 

@@ -2372,7 +2372,7 @@ class Train:
                 "| ---: | :--- | :--- | :--- | :--- |",
             ]
             for i, (embarked_pull, car) in enumerate(self._iter_embarked_pulls()):
-                ctxt = await self.repository.get_pull_request_context(
+                title = await self.repository.get_pull_request_title(
                     embarked_pull.user_pull_request_number
                 )
                 # NOTE(sileht): we use this wierd url format to not trigger the GitHub pull request cross references
@@ -2405,7 +2405,7 @@ class Train:
                 queued_at = date.pretty_datetime(embarked_pull.queued_at)
                 table.append(
                     f"| {i + 1} "
-                    f"| {ctxt.pull['title']} ({build_pr_link(self.repository, embarked_pull.user_pull_request_number)}) "
+                    f"| {title} ({build_pr_link(self.repository, embarked_pull.user_pull_request_number)}) "
                     f"| {embarked_pull.config['name']}/{fancy_priority} "
                     f"| {speculative_checks} "
                     f"| {queued_at}"

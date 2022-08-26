@@ -184,6 +184,13 @@ async def push_to_worker(
         pull_number = event["pull_request"]["number"]
         set_sentry_info(owner_login, repo_name)
 
+        if event["action"] in ("opened", "edited"):
+            await context.Repository.cache_pull_request_title(
+                redis_links.cache,
+                repo_id,
+                pull_number,
+                event["pull_request"]["title"],
+            )
         if event["repository"]["archived"]:
             ignore_reason = "repository archived"
 
