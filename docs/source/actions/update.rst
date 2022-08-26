@@ -21,6 +21,26 @@ works by merging the base branch into the head branch of the pull request.
    as necessary, making sure they are test with up-to-date code before being
    merged.
 
+Options
+-------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 1 1 1 3
+
+   * - Key Name
+     - Value Type
+     - Default
+     - Value Description
+   * - ``bot_account``
+     - :ref:`data type template`
+     -
+     - |premium plan tag|
+       Mergify can impersonate a GitHub user to update a pull request.
+       If no ``bot_account`` is set, Mergify will update the pull request
+       itself.
+
+
 Examples
 --------
 
@@ -48,3 +68,5 @@ pull requests.
 
 When a pull request is not in conflict nor draft, and has the label
 ``Ready-to-Go``, it will be automatically updated with its base branch.
+
+.. include:: ../global-substitutions.rst

@@ -15,17 +15,23 @@
 # under the License.
 import typing
 
+import voluptuous
+
 from mergify_engine import actions
 from mergify_engine import branch_updater
 from mergify_engine import check_api
 from mergify_engine import context
 from mergify_engine import rules
 from mergify_engine import signals
+from mergify_engine.actions import utils as action_utils
+from mergify_engine.dashboard import subscription
+from mergify_engine.dashboard import user_tokens
 from mergify_engine.rules import conditions
+from mergify_engine.rules import types
 
 
 class UpdateExecutorConfig(typing.TypedDict):
-    pass
+    bot_account: user_tokens.UserTokensUser | None
 
 
 class UpdateExecutor(actions.ActionExecutor["UpdateAction", "UpdateExecutorConfig"]):
@@ -36,11 +42,32 @@ class UpdateExecutor(actions.ActionExecutor["UpdateAction", "UpdateExecutorConfi
         ctxt: "context.Context",
         rule: "rules.EvaluatedRule",
     ) -> "UpdateExecutor":
-        return cls(ctxt, rule, UpdateExecutorConfig())
+        try:
+            bot_account = await action_utils.render_bot_account(
+                ctxt,
+                action.config["bot_account"],
+                required_feature=subscription.Features.BOT_ACCOUNT,
+                missing_feature_message="Update with `bot_account` set are disabled",
+                required_permissions=[],
+            )
+        except action_utils.RenderBotAccountFailure as e:
+            raise rules.InvalidPullRequestRule(e.title, e.reason)
+
+        github_user: typing.Optional[user_tokens.UserTokensUser] = None
+        if bot_account:
+            tokens = await ctxt.repository.installation.get_user_tokens()
+            github_user = tokens.get_token_for(bot_account)
+            if not github_user:
+                raise rules.InvalidPullRequestRule(
+                    f"Unable to comment: user `{bot_account}` is unknown. ",
+                    f"Please make sure `{bot_account}` has logged in Mergify dashboard.",
+                )
+
+        return cls(ctxt, rule, UpdateExecutorConfig({"bot_account": github_user}))
 
     async def run(self) -> check_api.Result:
         try:
-            await branch_updater.update_with_api(self.ctxt)
+            await branch_updater.update_with_api(self.ctxt, self.config["bot_account"])
         except branch_updater.BranchUpdateFailure as e:
             return check_api.Result(
                 check_api.Conclusion.FAILURE,
@@ -55,6 +82,7 @@ class UpdateExecutor(actions.ActionExecutor["UpdateAction", "UpdateExecutorConfi
                 signals.EventNoMetadata(),
                 self.rule.get_signal_trigger(),
             )
+
             return check_api.Result(
                 check_api.Conclusion.SUCCESS,
                 "Branch has been successfully updated",
@@ -71,7 +99,10 @@ class UpdateAction(actions.Action):
         | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
         | actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
     )
-    validator: typing.ClassVar[typing.Dict[typing.Any, typing.Any]] = {}
+    validator: typing.ClassVar[typing.Dict[typing.Any, typing.Any]] = {
+        voluptuous.Required("bot_account", default=None): types.Jinja2WithNone,
+    }
+
     executor_class = UpdateExecutor
 
     async def get_conditions_requirements(

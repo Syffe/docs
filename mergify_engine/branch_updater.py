@@ -183,13 +183,17 @@ async def _do_rebase(
         await git.cleanup()
 
 
-async def update_with_api(ctxt: context.Context) -> None:
+async def update_with_api(
+    ctxt: context.Context,
+    on_behalf: user_tokens.UserTokensUser | None = None,
+) -> None:
     ctxt.log.info("updating base branch with api")
     pre_update_check(ctxt)
     try:
         await ctxt.client.put(
             f"{ctxt.base_url}/pulls/{ctxt.pull['number']}/update-branch",
             api_version="lydian",
+            oauth_token=on_behalf["oauth_access_token"] if on_behalf else None,
             json={"expected_head_sha": ctxt.pull["head"]["sha"]},
         )
     except http.HTTPClientSideError as e:
