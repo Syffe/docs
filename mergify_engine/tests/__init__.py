@@ -19,10 +19,10 @@ from unittest import mock
 
 from datadog import statsd
 
-from mergify_engine import worker
+from mergify_engine import worker_pusher
 
 
 statsd.socket = mock.Mock()  # type:ignore[assignment]
 
 
-worker.WORKER_PROCESSING_DELAY = 0.01
+worker_pusher.WORKER_PROCESSING_DELAY = 0.01

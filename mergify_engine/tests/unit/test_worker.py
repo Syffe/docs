@@ -34,12 +34,13 @@ from mergify_engine import logs
 from mergify_engine import redis_utils
 from mergify_engine import worker
 from mergify_engine import worker_lua
+from mergify_engine import worker_pusher
 from mergify_engine.clients import github_app
 from mergify_engine.clients import http
 
 
-# NOTE(sileht): old version of the worker.push() method (3.0.0)
-# Since we do rolling upgrade of the API and worker.push is used by the API
+# NOTE(sileht): old version of the worker_pusher.push() method (3.0.0)
+# Since we do rolling upgrade of the API and worker_pusher.push is used by the API
 # We can't migrate the data on the worker startup.
 # So we need to support at least until next major version the old format in Redis database
 async def legacy_push(
@@ -63,7 +64,9 @@ async def legacy_push(
         },
         use_bin_type=True,
     )
-    scheduled_at = now + datetime.timedelta(seconds=worker.WORKER_PROCESSING_DELAY)
+    scheduled_at = now + datetime.timedelta(
+        seconds=worker_pusher.WORKER_PROCESSING_DELAY
+    )
     if score is None:
         score = str(date.utcnow().timestamp())
     bucket_org_key = worker_lua.BucketOrgKeyType(f"bucket~{owner_id}~{owner_login}")
@@ -241,7 +244,7 @@ async def test_worker_legacy_push(
                 owner_id = installation_id
                 buckets.add(f"bucket~{owner_id}")
                 bucket_sources.add(f"bucket-sources~{repo_id}~{pull_number}")
-                await worker.push(
+                await worker_pusher.push(
                     redis_links.stream,
                     github_types.GitHubAccountIdType(owner_id),
                     github_types.GitHubLogin(owner),
@@ -324,7 +327,7 @@ async def test_worker_with_waiting_tasks(
                 owner_id = installation_id
                 buckets.add(f"bucket~{owner_id}")
                 bucket_sources.add(f"bucket-sources~{repo_id}~{pull_number}")
-                await worker.push(
+                await worker_pusher.push(
                     redis_links.stream,
                     github_types.GitHubAccountIdType(owner_id),
                     github_types.GitHubLogin(owner),
@@ -414,7 +417,7 @@ async def test_worker_expanded_events(
     aget_client.return_value = client
 
     extract_pull_numbers_from_event.side_effect = [[123, 456, 789], [123, 789]]
-    await worker.push(
+    await worker_pusher.push(
         redis_links.stream,
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
@@ -424,7 +427,7 @@ async def test_worker_expanded_events(
         "push",
         github_types.GitHubEvent({"payload": "foobar"}),  # type: ignore[typeddict-item]
     )
-    await worker.push(
+    await worker_pusher.push(
         redis_links.stream,
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
@@ -434,7 +437,7 @@ async def test_worker_expanded_events(
         "check_run",
         github_types.GitHubEvent({"payload": "foobar"}),  # type: ignore[typeddict-item]
     )
-    await worker.push(
+    await worker_pusher.push(
         redis_links.stream,
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
@@ -530,7 +533,7 @@ async def test_worker_with_one_task(
 ) -> None:
     get_subscription.side_effect = fake_get_subscription
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
-    await worker.push(
+    await worker_pusher.push(
         redis_links.stream,
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
@@ -540,7 +543,7 @@ async def test_worker_with_one_task(
         "pull_request",
         github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
     )
-    await worker.push(
+    await worker_pusher.push(
         redis_links.stream,
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
@@ -622,7 +625,7 @@ async def test_consume_good_stream(
 ) -> None:
     get_subscription.side_effect = fake_get_subscription
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
-    await worker.push(
+    await worker_pusher.push(
         redis_links.stream,
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
@@ -632,7 +635,7 @@ async def test_consume_good_stream(
         "pull_request",
         github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
     )
-    await worker.push(
+    await worker_pusher.push(
         redis_links.stream,
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
@@ -798,7 +801,7 @@ async def test_stream_processor_retrying_pull(
         exceptions.MergeableStateUnknown(mock.Mock()),
     ]
 
-    await worker.push(
+    await worker_pusher.push(
         redis_links.stream,
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
@@ -808,7 +811,7 @@ async def test_stream_processor_retrying_pull(
         "pull_request",
         github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
     )
-    await worker.push(
+    await worker_pusher.push(
         redis_links.stream,
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
@@ -1008,7 +1011,7 @@ async def test_stream_processor_retrying_stream_recovered(
         message="foobar", request=response.request, response=response
     )
 
-    await worker.push(
+    await worker_pusher.push(
         redis_links.stream,
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
@@ -1018,7 +1021,7 @@ async def test_stream_processor_retrying_stream_recovered(
         "pull_request",
         github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
     )
-    await worker.push(
+    await worker_pusher.push(
         redis_links.stream,
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
@@ -1115,7 +1118,7 @@ async def test_stream_processor_retrying_stream_failure(
     run_engine.side_effect = http.HTTPClientSideError(
         message="foobar", request=response.request, response=response
     )
-    await worker.push(
+    await worker_pusher.push(
         redis_links.stream,
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
@@ -1125,7 +1128,7 @@ async def test_stream_processor_retrying_stream_failure(
         "pull_request",
         github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
     )
-    await worker.push(
+    await worker_pusher.push(
         redis_links.stream,
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
@@ -1227,7 +1230,7 @@ async def test_stream_processor_pull_unexpected_error(
     get_subscription.side_effect = fake_get_subscription
     run_engine.side_effect = Exception
 
-    await worker.push(
+    await worker_pusher.push(
         redis_links.stream,
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
@@ -1279,8 +1282,8 @@ async def test_stream_processor_priority(
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
     get_subscription.side_effect = fake_get_subscription
 
-    async def push_prio(pr: int, prio: worker.Priority) -> None:
-        await worker.push(
+    async def push_prio(pr: int, prio: worker_pusher.Priority) -> None:
+        await worker_pusher.push(
             redis_links.stream,
             github_types.GitHubAccountIdType(234),
             github_types.GitHubLogin("owner-234"),
@@ -1289,25 +1292,25 @@ async def test_stream_processor_priority(
             github_types.GitHubPullRequestNumber(pr),
             "pull_request",
             {"payload": prio},  # type: ignore[typeddict-item]
-            score=str(worker.get_priority_score(prio)),
+            score=str(worker_pusher.get_priority_score(prio)),
         )
 
     with freeze_time("2020-01-01", tick=True):
-        await push_prio(1, worker.Priority.low)
-        await push_prio(2, worker.Priority.low)
-        await push_prio(3, worker.Priority.high)
-        await push_prio(4, worker.Priority.low)
-        await push_prio(5, worker.Priority.medium)
-        await push_prio(6, worker.Priority.medium)
-        await push_prio(7, worker.Priority.high)
-        await push_prio(8, worker.Priority.low)
+        await push_prio(1, worker_pusher.Priority.low)
+        await push_prio(2, worker_pusher.Priority.low)
+        await push_prio(3, worker_pusher.Priority.high)
+        await push_prio(4, worker_pusher.Priority.low)
+        await push_prio(5, worker_pusher.Priority.medium)
+        await push_prio(6, worker_pusher.Priority.medium)
+        await push_prio(7, worker_pusher.Priority.high)
+        await push_prio(8, worker_pusher.Priority.low)
 
     with freeze_time("2020-01-04", tick=True):
-        await push_prio(9, worker.Priority.high)
-        await push_prio(10, worker.Priority.low)
-        await push_prio(11, worker.Priority.medium)
-        await push_prio(12, worker.Priority.medium)
-        await push_prio(13, worker.Priority.low)
+        await push_prio(9, worker_pusher.Priority.high)
+        await push_prio(10, worker_pusher.Priority.low)
+        await push_prio(11, worker_pusher.Priority.medium)
+        await push_prio(12, worker_pusher.Priority.medium)
+        await push_prio(13, worker_pusher.Priority.low)
 
     assert 1 == (await redis_links.stream.zcard("streams"))
     assert 1 == len(await redis_links.stream.keys("bucket~*"))
@@ -1359,7 +1362,7 @@ async def test_stream_processor_date_scheduling(
     get_subscription.side_effect = fake_get_subscription
     # Don't process it before 2040
     with freeze_time("2040-01-01"):
-        await worker.push(
+        await worker_pusher.push(
             redis_links.stream,
             github_types.GitHubAccountIdType(123),
             github_types.GitHubLogin("owner-123"),
@@ -1372,7 +1375,7 @@ async def test_stream_processor_date_scheduling(
         unwanted_owner_id = "owner-123"
 
     with freeze_time("2020-01-01"):
-        await worker.push(
+        await worker_pusher.push(
             redis_links.stream,
             github_types.GitHubAccountIdType(234),
             github_types.GitHubLogin("owner-234"),
@@ -1463,7 +1466,7 @@ async def test_worker_drop_bucket(
             owner_id = _id
             buckets.add(f"bucket~{owner_id}")
             bucket_sources.add(f"bucket-sources~{repo_id}~{pull_number}")
-            await worker.push(
+            await worker_pusher.push(
                 redis_links.stream,
                 github_types.GitHubAccountIdType(owner_id),
                 github_types.GitHubLogin(owner),
@@ -1509,7 +1512,7 @@ async def test_worker_debug_report(
             for data in range(3):
                 owner = f"owner-{installation_id}"
                 repo = f"repo-{installation_id}"
-                await worker.push(
+                await worker_pusher.push(
                     redis_links.stream,
                     github_types.GitHubAccountIdType(123),
                     github_types.GitHubLogin(owner),
@@ -1584,7 +1587,7 @@ async def test_stream_processor_ignore_503(
 
     run_engine.side_effect = lambda *_: http.raise_for_status(response)
 
-    await worker.push(
+    await worker_pusher.push(
         redis_links.stream,
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
@@ -1627,7 +1630,7 @@ async def test_worker_with_multiple_workers(
                 owner_id = installation_id
                 buckets.add(f"bucket~{owner_id}")
                 bucket_sources.add(f"bucket-sources~{repo_id}~{pull_number}")
-                await worker.push(
+                await worker_pusher.push(
                     redis_links.stream,
                     github_types.GitHubAccountIdType(owner_id),
                     github_types.GitHubLogin(owner),
@@ -1685,8 +1688,8 @@ async def test_worker_reschedule(
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
     get_subscription.side_effect = fake_get_subscription
 
-    monkeypatch.setattr("mergify_engine.worker.WORKER_PROCESSING_DELAY", 3000)
-    await worker.push(
+    monkeypatch.setattr("mergify_engine.worker_pusher.WORKER_PROCESSING_DELAY", 3000)
+    await worker_pusher.push(
         redis_links.stream,
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
@@ -1740,7 +1743,7 @@ async def test_worker_stuck_shutdown(
         await asyncio.sleep(10000000)
 
     run_engine.side_effect = fake_engine
-    await worker.push(
+    await worker_pusher.push(
         redis_links.stream,
         github_types.GitHubAccountIdType(123),
         github_types.GitHubLogin("owner-123"),
@@ -1808,7 +1811,7 @@ async def test_dedicated_worker_scaleup_scaledown(
 
     async def push_and_wait() -> None:
         # worker hash == 2
-        await worker.push(
+        await worker_pusher.push(
             redis_links.stream,
             github_types.GitHubAccountIdType(4446),
             github_types.GitHubLogin("owner-4446"),
@@ -1819,7 +1822,7 @@ async def test_dedicated_worker_scaleup_scaledown(
             github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
         )
         # worker hash == 1
-        await worker.push(
+        await worker_pusher.push(
             redis_links.stream,
             github_types.GitHubAccountIdType(123),
             github_types.GitHubLogin("owner-123"),
@@ -1830,7 +1833,7 @@ async def test_dedicated_worker_scaleup_scaledown(
             github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
         )
         # worker hash == 0
-        await worker.push(
+        await worker_pusher.push(
             redis_links.stream,
             github_types.GitHubAccountIdType(1),
             github_types.GitHubLogin("owner-1"),
@@ -1955,7 +1958,7 @@ async def test_dedicated_worker_process_scaleup_scaledown(
 
     async def push_and_wait() -> None:
         # worker hash == 2
-        await worker.push(
+        await worker_pusher.push(
             redis_links.stream,
             github_types.GitHubAccountIdType(4446),
             github_types.GitHubLogin("owner-4446"),
@@ -1966,7 +1969,7 @@ async def test_dedicated_worker_process_scaleup_scaledown(
             github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
         )
         # worker hash == 1
-        await worker.push(
+        await worker_pusher.push(
             redis_links.stream,
             github_types.GitHubAccountIdType(123),
             github_types.GitHubLogin("owner-123"),
@@ -1977,7 +1980,7 @@ async def test_dedicated_worker_process_scaleup_scaledown(
             github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
         )
         # worker hash == 0
-        await worker.push(
+        await worker_pusher.push(
             redis_links.stream,
             github_types.GitHubAccountIdType(1),
             github_types.GitHubLogin("owner-1"),
@@ -2137,7 +2140,7 @@ async def test_separate_dedicated_worker(
         "pull_request",
         github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
         # worker hash == 2
-        await worker.push(
+        await worker_pusher.push(
             redis_links.stream,
             github_types.GitHubAccountIdType(4446),
             github_types.GitHubLogin("owner-4446"),
@@ -2148,7 +2151,7 @@ async def test_separate_dedicated_worker(
             github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
         )
         # worker hash == 1
-        await worker.push(
+        await worker_pusher.push(
             redis_links.stream,
             github_types.GitHubAccountIdType(123),
             github_types.GitHubLogin("owner-123"),
@@ -2159,7 +2162,7 @@ async def test_separate_dedicated_worker(
             github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
         )
         # worker hash == 0
-        await worker.push(
+        await worker_pusher.push(
             redis_links.stream,
             github_types.GitHubAccountIdType(1),
             github_types.GitHubLogin("owner-1"),

@@ -22,7 +22,7 @@ import daiquiri
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import redis_utils
-from mergify_engine import worker
+from mergify_engine import worker_pusher
 from mergify_engine.rules import filter
 from mergify_engine.rules import live_resolvers
 
@@ -150,7 +150,7 @@ async def send(
             source="delayed-refresh",
         )
 
-        await worker.push(
+        await worker_pusher.push(
             pipe,
             owner_id,
             owner_login,
@@ -163,7 +163,7 @@ async def send(
                 "ref": None,
                 "source": "delayed-refresh",
             },  # type: ignore[typeddict-item]
-            score=str(worker.get_priority_score(worker.Priority.medium)),
+            score=str(worker_pusher.get_priority_score(worker_pusher.Priority.medium)),
         )
         keys_to_delete.add(subkey)
 

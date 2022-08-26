@@ -46,7 +46,6 @@ import collections
 import contextlib
 import dataclasses
 import datetime
-import enum
 import functools
 import hashlib
 import itertools
@@ -78,6 +77,7 @@ from mergify_engine import redis_utils
 from mergify_engine import service
 from mergify_engine import signals
 from mergify_engine import worker_lua
+from mergify_engine import worker_pusher
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
@@ -101,7 +101,6 @@ LOG = daiquiri.getLogger(__name__)
 
 # we keep the PR in queue for ~ 7 minutes (a try == WORKER_PROCESSING_DELAY)
 MAX_RETRIES: int = 15
-WORKER_PROCESSING_DELAY: float = 30
 STREAM_ATTEMPTS_LOGGING_THRESHOLD: int = 20
 
 DEDICATED_WORKERS_KEY = "dedicated-workers"
@@ -140,100 +139,6 @@ class UnexpectedPullRetry(Exception):
 T_MessagePayload = typing.NewType("T_MessagePayload", typing.Dict[bytes, bytes])
 # FIXME(sileht): redis returns bytes, not str
 T_MessageID = typing.NewType("T_MessageID", str)
-
-
-class Priority(enum.IntEnum):
-    high = 1
-    medium = 3
-    low = 5
-
-
-# NOTE(sileht): any score below comes from entry created before we introduce
-# offset, the lower score at this times was around 16 557 192 804 (utcnow() * 10)
-PRIORITY_OFFSET = 100_000_000_000
-SCORE_TIMESTAMP_PRECISION = 10000
-
-
-def get_priority_score(prio: Priority) -> str:
-    # NOTE(sileht): we drop ms, to avoid float precision issue (eg:
-    # 3.99999 becoming 4.0000) that could break priority offset
-    return str(
-        int(date.utcnow().timestamp() * SCORE_TIMESTAMP_PRECISION)
-        + prio.value * PRIORITY_OFFSET * SCORE_TIMESTAMP_PRECISION
-    )
-
-
-def get_priority_level_from_score(score: float) -> Priority:
-    if score < PRIORITY_OFFSET * SCORE_TIMESTAMP_PRECISION:
-        # NOTE(sileht): backward compatibilty
-        return Priority.high
-    prio_score = int(score / PRIORITY_OFFSET / SCORE_TIMESTAMP_PRECISION)
-    return Priority(prio_score)
-
-
-@tenacity.retry(
-    wait=tenacity.wait_exponential(multiplier=0.2),
-    stop=tenacity.stop_after_attempt(5),
-    retry=tenacity.retry_if_exception_type(redis_exceptions.ConnectionError),
-    reraise=True,
-)
-async def push(
-    redis: redis_utils.RedisStream,
-    owner_id: github_types.GitHubAccountIdType,
-    owner_login: github_types.GitHubLogin,
-    repo_id: github_types.GitHubRepositoryIdType,
-    tracing_repo_name: github_types.GitHubRepositoryNameForTracing,
-    pull_number: typing.Optional[github_types.GitHubPullRequestNumber],
-    event_type: github_types.GitHubEventType,
-    data: github_types.GitHubEvent,
-    score: typing.Optional[str] = None,
-) -> None:
-    with tracer.trace(
-        "push event",
-        span_type="worker",
-        resource=f"{owner_login}/{tracing_repo_name}/{pull_number}",
-    ) as span:
-        span.set_tags(
-            {
-                "gh_owner": owner_login,
-                "gh_repo": tracing_repo_name,
-                "gh_pull": pull_number,
-            }
-        )
-        now = date.utcnow()
-        event = msgpack.packb(
-            {
-                "event_type": event_type,
-                "data": data,
-                "timestamp": now.isoformat(),
-            },
-        )
-        scheduled_at = now + datetime.timedelta(seconds=WORKER_PROCESSING_DELAY)
-
-        # NOTE(sileht): lower timestamps are processed first
-        if score is None:
-            score = get_priority_score(Priority.high)
-
-        bucket_org_key = worker_lua.BucketOrgKeyType(f"bucket~{owner_id}")
-        bucket_sources_key = worker_lua.BucketSourcesKeyType(
-            f"bucket-sources~{repo_id}~{pull_number or 0}"
-        )
-        await worker_lua.push_pull(
-            redis,
-            bucket_org_key,
-            bucket_sources_key,
-            tracing_repo_name,
-            scheduled_at,
-            event,
-            score,
-        )
-        LOG.debug(
-            "pushed to worker",
-            gh_owner=owner_login,
-            gh_repo=tracing_repo_name,
-            gh_pull=pull_number,
-            event_type=event_type,
-        )
 
 
 async def run_engine(
@@ -622,7 +527,7 @@ class StreamProcessor:
                 break
 
             if (time.monotonic() - started_at) >= config.BUCKET_PROCESSING_MAX_SECONDS:
-                prio = get_priority_level_from_score(_bucket_score)
+                prio = worker_pusher.get_priority_level_from_score(_bucket_score)
                 statsd.increment(
                     "engine.buckets.preempted", tags=[f"priority:{prio.name}"]
                 )
@@ -791,7 +696,7 @@ class StreamProcessor:
         # NOTE(sileht): refreshing all opened pull request because something got merged
         # has a lower priority
         if source["event_type"] == "push":
-            score = get_priority_score(Priority.low)
+            score = worker_pusher.get_priority_score(worker_pusher.Priority.low)
 
         pipe = await self.redis_links.stream.pipeline()
         for pull_number in pull_numbers:
@@ -800,7 +705,7 @@ class StreamProcessor:
                 # we didn't generate a ending loop of events, because when pull_number is
                 # None, this method got called again and again.
                 raise RuntimeError("Got an empty pull number")
-            await push(
+            await worker_pusher.push(
                 pipe,
                 installation.owner_id,
                 installation.owner_login,
@@ -1147,7 +1052,7 @@ class Worker:
         # TODO(sileht): maybe we can do something with the bucket scores to
         # build a latency metric
         bucket_backlogs: typing.Dict[
-            Priority, typing.Dict[str, int]
+            worker_pusher.Priority, typing.Dict[str, int]
         ] = collections.defaultdict(lambda: collections.defaultdict(lambda: 0))
 
         for org_bucket, _ in org_buckets:
@@ -1166,7 +1071,7 @@ class Worker:
                 org_bucket, min=0, max="+inf", withscores=True
             )
             for _, score in bucket_contents:
-                prio = get_priority_level_from_score(score)
+                prio = worker_pusher.get_priority_level_from_score(score)
                 bucket_backlogs[prio][worker_id] += 1
 
         for priority, bucket_backlog in bucket_backlogs.items():

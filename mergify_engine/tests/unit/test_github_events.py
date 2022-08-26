@@ -94,7 +94,7 @@ for filename in os.listdir(_EVENT_DIR):
 
 
 @pytest.mark.parametrize("event_type, event", list(GITHUB_SAMPLE_EVENTS.values()))
-@mock.patch("mergify_engine.worker.push")
+@mock.patch("mergify_engine.worker_pusher.push")
 async def test_filter_and_dispatch(
     worker_push: mock.Mock,
     event_type: github_types.GitHubEventType,

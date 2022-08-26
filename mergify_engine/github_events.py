@@ -26,12 +26,11 @@ from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import count_seats
-from mergify_engine import date
 from mergify_engine import engine
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import redis_utils
-from mergify_engine import worker
+from mergify_engine import worker_pusher
 from mergify_engine.engine import commands_runner
 from mergify_engine.queue import utils as queue_utils
 
@@ -77,74 +76,6 @@ def meter_event(
 
     # TODO(sileht): is statsd async ?
     statsd.increment("github.events", tags=tags)
-
-
-def _extract_slim_event(event_type: str, data: typing.Any) -> typing.Any:
-    slim_data = {
-        "received_at": date.utcnow().isoformat(),
-        "sender": {
-            "id": data["sender"]["id"],
-            "login": data["sender"]["login"],
-            "type": data["sender"]["type"],
-        },
-    }
-
-    if event_type == "status":
-        # To get PR from sha
-        slim_data["sha"] = data["sha"]
-        slim_data["context"] = data["context"]
-
-    elif event_type == "pull_request_review":
-        # NOTE(sileht): only used for logging purpose
-        slim_data["action"] = data["action"]
-
-    elif event_type == "refresh":
-        # To get PR from sha or branch name
-        slim_data["action"] = data["action"]
-        slim_data["ref"] = data["ref"]
-        slim_data["pull_request_number"] = data["pull_request_number"]
-        slim_data["source"] = data["source"]
-
-    elif event_type == "push":
-        # To get PR from sha
-        slim_data["ref"] = data["ref"]
-        slim_data["before"] = data["before"]
-        slim_data["after"] = data["after"]
-        slim_data["pusher"] = data["pusher"]
-
-    elif event_type in ("check_suite", "check_run"):
-        # To get PR from sha
-        slim_data["action"] = data["action"]
-        slim_data["app"] = {"id": data[event_type]["app"]["id"]}
-        slim_data[event_type] = {
-            "head_sha": data[event_type]["head_sha"],
-            "pull_requests": [
-                {
-                    "number": p["number"],
-                    "base": {"repo": {"url": p["base"]["repo"]["url"]}},
-                }
-                for p in data[event_type]["pull_requests"]
-            ],
-        }
-        if event_type == "check_run":
-            # NOTE(sileht): only used for logging purpose
-            slim_data["check_run"]["name"] = data["check_run"]["name"]  # type: ignore
-            slim_data["check_run"]["id"] = data["check_run"]["id"]  # type: ignore
-            slim_data["check_run"]["conclusion"] = data["check_run"]["conclusion"]  # type: ignore
-            slim_data["check_run"]["status"] = data["check_run"]["status"]  # type: ignore
-
-    elif event_type == "pull_request":
-        # For pull_request opened/synchronize/closed
-        slim_data["action"] = data["action"]
-        if slim_data["action"] == "synchronize":
-            slim_data["before"] = data["before"]
-            slim_data["after"] = data["after"]
-
-    elif event_type == "issue_comment":
-        # For commands runner
-        slim_data["comment"] = data["comment"]
-
-    return slim_data
 
 
 @dataclasses.dataclass
@@ -566,9 +497,9 @@ async def push_to_worker(
 
     if ignore_reason is None:
         msg_action = "pushed to worker"
-        slim_event = _extract_slim_event(event_type, event)
+        slim_event = worker_pusher.extract_slim_event(event_type, event)
 
-        await worker.push(
+        await worker_pusher.push(
             redis_links.stream,
             owner_id,
             owner_login,

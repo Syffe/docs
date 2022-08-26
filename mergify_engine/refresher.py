@@ -7,11 +7,11 @@ import daiquiri
 
 from mergify_engine import date
 from mergify_engine import github_types
+from mergify_engine import worker_pusher
 
 
 if typing.TYPE_CHECKING:
     from mergify_engine import redis_utils
-    from mergify_engine import worker
 
 
 LOG = daiquiri.getLogger()
@@ -24,13 +24,10 @@ async def _send_refresh(
     source: str,
     pull_request_number: typing.Optional[github_types.GitHubPullRequestNumber] = None,
     ref: typing.Optional[github_types.GitHubRefType] = None,
-    priority: typing.Optional["worker.Priority"] = None,
+    priority: worker_pusher.Priority = worker_pusher.Priority.high,
 ) -> None:
-    # Break circular import
-    from mergify_engine import github_events
-    from mergify_engine import worker
 
-    score = worker.get_priority_score(priority) if priority is not None else None
+    score = worker_pusher.get_priority_score(priority)
 
     data = github_types.GitHubEventRefresh(
         {
@@ -56,8 +53,8 @@ async def _send_refresh(
         }
     )
 
-    slim_event = github_events._extract_slim_event("refresh", data)
-    await worker.push(
+    slim_event = worker_pusher.extract_slim_event("refresh", data)
+    await worker_pusher.push(
         redis_stream,
         repository["owner"]["id"],
         repository["owner"]["login"],
@@ -76,7 +73,7 @@ async def send_pull_refresh(
     action: github_types.GitHubEventRefreshActionType,
     pull_request_number: github_types.GitHubPullRequestNumber,
     source: str,
-    priority: typing.Optional["worker.Priority"] = None,
+    priority: worker_pusher.Priority = worker_pusher.Priority.high,
 ) -> None:
     LOG.info(
         "sending pull refresh",
@@ -115,11 +112,8 @@ async def send_repository_refresh(
         source=source,
     )
 
-    # Break circular import
-    from mergify_engine import worker
-
     await _send_refresh(
-        redis_stream, repository, action, source, priority=worker.Priority.low
+        redis_stream, repository, action, source, priority=worker_pusher.Priority.low
     )
 
 
@@ -139,9 +133,12 @@ async def send_branch_refresh(
         action=action,
         source=source,
     )
-    # Break circular import
-    from mergify_engine import worker
 
     await _send_refresh(
-        redis_stream, repository, action, source, ref=ref, priority=worker.Priority.low
+        redis_stream,
+        repository,
+        action,
+        source,
+        ref=ref,
+        priority=worker_pusher.Priority.low,
     )
