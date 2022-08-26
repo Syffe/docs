@@ -151,7 +151,6 @@ jobs:
         with:
           # NOTE(sileht): COMMON section must be the same on all build steps
           # GitHub workflow does not support Yaml Anchors, so we have to duplciate it...
-          # COMMON
           build-args: |
             PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
             MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
@@ -160,6 +159,21 @@ jobs:
           context: .
           push: false
           cache-from: type=gha
+          cache-to: type=local,dest=/home/runner/docker-cache
+
+      - name: ⚙️  Upload layers cache to GitHub Action Cache
+        uses: docker/build-push-action@v3
+        with:
+          # NOTE(sileht): COMMON section must be the same on all build steps
+          # GitHub workflow does not support Yaml Anchors, so we have to duplciate it...
+          build-args: |
+            PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
+            MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
+            MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
+            BUILD_DATE=${{ steps.vars.outputs.BUILD_DATE }}
+          context: .
+          push: false
+          cache-from: type=local,src=/home/runner/docker-cache
           cache-to: type=gha,mode=max
 
       - name: ⚙️ Build saas-web
@@ -176,8 +190,7 @@ jobs:
             BUILD_DATE=${{ steps.vars.outputs.BUILD_DATE }}
           context: .
           push: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=local,src=/home/runner/docker-cache
 
       - name: ⚙️ Build saas-worker-shared
         uses: docker/build-push-action@v3
@@ -193,7 +206,7 @@ jobs:
             BUILD_DATE=${{ steps.vars.outputs.BUILD_DATE }}
           context: .
           push: false
-          cache-from: type=gha
+          cache-from: type=local,src=/home/runner/docker-cache
 
       - name: ⚙️ Build saas-worker-dedicated
         uses: docker/build-push-action@v3
@@ -209,7 +222,7 @@ jobs:
             BUILD_DATE=${{ steps.vars.outputs.BUILD_DATE }}
           context: .
           push: false
-          cache-from: type=gha
+          cache-from: type=local,src=/home/runner/docker-cache
 
       - name: ⚙️ Build onpremise
         uses: docker/build-push-action@v3
@@ -225,7 +238,7 @@ jobs:
             BUILD_DATE=${{ steps.vars.outputs.BUILD_DATE }}
           context: .
           push: false
-          cache-from: type=gha
+          cache-from: type=local,src=/home/runner/docker-cache
 
       - name: 🏓 Testing
         run: |
