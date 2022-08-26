@@ -109,10 +109,10 @@ async def test_rules_conditions_update() -> None:
 
     assert (
         c.get_summary()
-        == """- `label=foo`
-  - [X] #1
+        == """- [ ] `check-success=jenkins/fake-tests`
 - [X] `check-success=tests`
-- [ ] `check-success=jenkins/fake-tests`
+- `label=foo`
+  - [X] #1
 """
     )
 
@@ -685,10 +685,10 @@ async def test_rules_conditions_schedule() -> None:
 
     assert (
         c.get_summary()
-        == """- [X] `base=main`
-- [X] `schedule=MON-FRI 08:00-17:00`
-- [ ] `schedule=MONDAY-FRIDAY 10:00-12:00`
+        == """- [ ] `schedule=MONDAY-FRIDAY 10:00-12:00`
 - [ ] `schedule=SAT-SUN 07:00-12:00`
+- [X] `base=main`
+- [X] `schedule=MON-FRI 08:00-17:00`
 """
     )
 

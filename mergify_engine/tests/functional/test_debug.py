@@ -177,10 +177,10 @@ mergeable_state: clean
 [Summary]: success | 1 potential rule | {summary_html_url}
 > <!-- J1J1bGU6IGNvbW1lbnQgKGNvbW1lbnQpJzogbmV1dHJhbAo= -->
 > ### Rule: comment (comment)
-> - [X] `base={self.main_branch_name}`
 > - [ ] any of:
 >   - [ ] `label=doubt`
 >   - [ ] `label=suspect`
+> - [X] `base={self.main_branch_name}`
 > - [X] all of:
 >   - [X] `number>0`
 >   - [X] `title~=pull request`
@@ -216,10 +216,10 @@ mergeable_state: clean
 * MERGIFY LIVE MATCHES:
 [Summary]: success | 1 potential rule
 > ### Rule: comment (comment)
-> - [X] `base={self.main_branch_name}`
 > - [ ] any of:
 >   - [ ] `label=doubt`
 >   - [ ] `label=suspect`
+> - [X] `base={self.main_branch_name}`
 > - [X] all of:
 >   - [X] `number>0`
 >   - [X] `title~=pull request`

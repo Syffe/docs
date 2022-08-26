@@ -101,14 +101,14 @@ class TestPostCheckAction(base.FunctionalTestBase):
                     "event": "action.post_check",
                     "metadata": {
                         "conclusion": "success",
-                        "summary": "- [X] `#title>10`\n"
-                        "- [X] `#title<100`\n"
-                        "- [X] `#body<4096`\n"
+                        "summary": "- [X] `#body<4096`\n"
                         "- [X] `#files<100`\n"
+                        "- [X] `#title<100`\n"
+                        "- [X] `#title>10`\n"
+                        "- [X] `-label=ignore-guideline`\n"
                         "- [X] `approved-reviews-by=@testing`\n"
                         "- [X] `body~=(?m)^(Fixes|Related|Closes) "
-                        "(MERGIFY-ENGINE|MRGFY)-`\n"
-                        "- [X] `-label=ignore-guideline`\n",
+                        "(MERGIFY-ENGINE|MRGFY)-`\n",
                         "title": "'body need sentry ticket' succeeded",
                     },
                     "repository": match_p["base"]["repo"]["full_name"],
@@ -136,13 +136,13 @@ class TestPostCheckAction(base.FunctionalTestBase):
                     "event": "action.post_check",
                     "metadata": {
                         "conclusion": "failure",
-                        "summary": "- [X] `#title>10`\n"
-                        "- [X] `#title<100`\n"
-                        "- [X] `#body<4096`\n"
-                        "- [X] `#files<100`\n"
-                        "- [ ] `approved-reviews-by=@testing`\n"
+                        "summary": "- [ ] `approved-reviews-by=@testing`\n"
                         "- [ ] `body~=(?m)^(Fixes|Related|Closes) "
                         "(MERGIFY-ENGINE|MRGFY)-`\n"
+                        "- [X] `#body<4096`\n"
+                        "- [X] `#files<100`\n"
+                        "- [X] `#title<100`\n"
+                        "- [X] `#title>10`\n"
                         "- [X] `-label=ignore-guideline`\n",
                         "title": "'body need sentry ticket' failed",
                     },
@@ -229,14 +229,14 @@ class TestPostCheckAction(base.FunctionalTestBase):
                     "event": "action.post_check",
                     "metadata": {
                         "conclusion": "failure",
-                        "summary": f"- [X] `base={self.main_branch_name}`\n"
-                        "- [X] `#title>10`\n"
-                        "- [X] `#title<100`\n"
+                        "summary": "- [ ] `body~=(?m)^(Fixes|Related|Closes) "
+                        "(MERGIFY-ENGINE|MRGFY)-`\n"
                         "- [X] `#body<4096`\n"
                         "- [X] `#files<100`\n"
-                        "- [ ] `body~=(?m)^(Fixes|Related|Closes) "
-                        "(MERGIFY-ENGINE|MRGFY)-`\n"
-                        "- [X] `-label=ignore-guideline`\n",
+                        "- [X] `#title<100`\n"
+                        "- [X] `#title>10`\n"
+                        "- [X] `-label=ignore-guideline`\n"
+                        f"- [X] `base={self.main_branch_name}`\n",
                         "title": "'body need sentry ticket' failed",
                     },
                     "repository": unmatch_p["base"]["repo"]["full_name"],

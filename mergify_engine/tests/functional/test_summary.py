@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import logging
+import re
 
 import yaml
 
@@ -105,3 +106,601 @@ class TestSummary(base.FunctionalTestBase):
         assert summary is not None
         assert summary["output"]["title"] == "1 rule matches"
         assert "1 not applicable rule" in summary["output"]["summary"]
+
+    async def test_pull_request_rules_order_0_depth(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "test",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=test",
+                    ],
+                    "actions": {"merge": {"method": "rebase"}},
+                }
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        p = await self.create_pr()
+        await self.run_engine()
+
+        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
+        assert summary is not None
+        assert (
+            f"### Rule: test (merge)\n- [ ] `label=test`\n- [X] `base={self.main_branch_name}`\n\n"
+            in summary["output"]["summary"]
+        )
+
+        await self.add_label(p["number"], "test")
+        await self.run_engine()
+
+        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
+        assert summary is not None
+        assert (
+            f"### Rule: test (merge)\n- [X] `base={self.main_branch_name}`\n- [X] `label=test`\n\n"
+            in summary["output"]["summary"]
+        )
+
+    async def test_pull_request_rules_order_operator_and(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "test",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=test",
+                        {
+                            "and": [
+                                "label=test2",
+                                "label=test3",
+                            ],
+                        },
+                    ],
+                    "actions": {"merge": {"method": "rebase"}},
+                }
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        p = await self.create_pr()
+        await self.run_engine()
+
+        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
+        assert summary is not None
+        assert (
+            f"### Rule: test (merge)\n- [ ] `label=test`\n- [ ] all of:\n  - [ ] `label=test2`\n  - [ ] `label=test3`\n- [X] `base={self.main_branch_name}`\n\n"
+            in summary["output"]["summary"]
+        )
+
+        await self.add_label(p["number"], "test2")
+        await self.run_engine()
+
+        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
+        assert summary is not None
+        assert (
+            f"### Rule: test (merge)\n- [ ] `label=test`\n- [ ] all of:\n  - [ ] `label=test3`\n  - [X] `label=test2`\n- [X] `base={self.main_branch_name}`\n\n"
+            in summary["output"]["summary"]
+        )
+
+        await self.add_label(p["number"], "test3")
+        await self.run_engine()
+
+        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
+        assert summary is not None
+        assert (
+            f"### Rule: test (merge)\n- [ ] `label=test`\n- [X] `base={self.main_branch_name}`\n- [X] all of:\n  - [X] `label=test2`\n  - [X] `label=test3`\n\n"
+            in summary["output"]["summary"]
+        )
+
+    async def test_pull_request_rules_order_operator_or(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "test",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=test",
+                        {
+                            "or": [
+                                "label=test2",
+                                "label=test3",
+                            ],
+                        },
+                    ],
+                    "actions": {"merge": {"method": "rebase"}},
+                }
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        p = await self.create_pr()
+        await self.run_engine()
+
+        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
+        assert summary is not None
+        assert (
+            f"### Rule: test (merge)\n- [ ] `label=test`\n- [ ] any of:\n  - [ ] `label=test2`\n  - [ ] `label=test3`\n- [X] `base={self.main_branch_name}`\n\n"
+            in summary["output"]["summary"]
+        )
+
+        await self.add_label(p["number"], "test2")
+        await self.run_engine()
+
+        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
+        assert summary is not None
+        assert (
+            f"### Rule: test (merge)\n- [ ] `label=test`\n- [X] `base={self.main_branch_name}`\n- [X] any of:\n  - [X] `label=test2`\n  - [ ] `label=test3`\n\n"
+            in summary["output"]["summary"]
+        )
+
+        await self.add_label(p["number"], "test3")
+        await self.run_engine()
+
+        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
+        assert summary is not None
+        assert (
+            f"### Rule: test (merge)\n- [ ] `label=test`\n- [X] `base={self.main_branch_name}`\n- [X] any of:\n  - [X] `label=test2`\n  - [X] `label=test3`\n\n"
+            in summary["output"]["summary"]
+        )
+
+
+class TestQueueRulesSummary(base.FunctionalTestBase):
+    SUBSCRIPTION_ACTIVE = True
+
+    async def test_queue_rules_order_0_depth(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "base=fail",
+                        f"base={self.main_branch_name}",
+                        "label=test",
+                    ],
+                    "speculative_checks": 2,
+                    "batch_size": 2,
+                    "allow_inplace_checks": False,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "test",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                }
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        p1 = await self.create_pr()
+        p2 = await self.create_pr()
+
+        # To force others to be rebased
+        p = await self.create_pr()
+        await self.merge_pull(p["number"])
+        await self.wait_for("pull_request", {"action": "closed"})
+        await self.run_engine()
+
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        await self.wait_for("pull_request", {"action": "opened"})
+
+        queue_pr = (await self.get_pulls())[0]
+
+        assert queue_pr["body"] is not None
+        assert (
+            (
+                f"""**Required conditions of queue** `default` **for merge:**
+
+- [ ] `base=fail`
+- `label=test`
+  - [ ] #{p1['number']}
+  - [ ] #{p2['number']}
+- [X] `base={self.main_branch_name}`"""
+            )
+            in queue_pr["body"]
+        )
+
+        await self.add_label(p1["number"], "test")
+        await self.run_engine()
+
+        await self.wait_for(
+            "pull_request", {"action": "edited", "number": queue_pr["number"]}
+        )
+
+        queue_pr = (await self.get_pulls())[0]
+        assert queue_pr["body"] is not None
+        assert (
+            (
+                f"""**Required conditions of queue** `default` **for merge:**
+
+- [ ] `base=fail`
+- `label=test`
+  - [X] #{p1['number']}
+  - [ ] #{p2['number']}
+- [X] `base={self.main_branch_name}`"""
+            )
+            in queue_pr["body"]
+        )
+
+        await self.add_label(p2["number"], "test")
+        await self.run_engine()
+
+        await self.wait_for(
+            "pull_request", {"action": "edited", "number": queue_pr["number"]}
+        )
+        queue_pr = (await self.get_pulls())[0]
+        assert queue_pr["body"] is not None
+        assert (
+            (
+                f"""**Required conditions of queue** `default` **for merge:**
+
+- [ ] `base=fail`
+- [X] `base={self.main_branch_name}`
+- `label=test`
+  - [X] #{p1['number']}
+  - [X] #{p2['number']}"""
+            )
+            in queue_pr["body"]
+        )
+
+    async def test_queue_rules_order_operator_and(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "author=somebody",
+                        f"base={self.main_branch_name}",
+                        "label=test",
+                        {
+                            "and": [
+                                "label=test",
+                                "label=test2",
+                            ]
+                        },
+                    ],
+                    "speculative_checks": 2,
+                    "batch_size": 2,
+                    "allow_inplace_checks": False,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "test",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                }
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        p1 = await self.create_pr()
+        p2 = await self.create_pr()
+
+        # To force others to be rebased
+        p = await self.create_pr()
+        await self.merge_pull(p["number"])
+        await self.wait_for("pull_request", {"action": "closed"})
+        await self.run_engine()
+
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        await self.wait_for("pull_request", {"action": "opened"})
+
+        queue_pr = (await self.get_pulls())[0]
+
+        assert queue_pr["body"] is not None
+        assert (
+            (
+                f"""**Required conditions of queue** `default` **for merge:**
+
+- `author=somebody`
+  - [ ] #{p1['number']}
+  - [ ] #{p2['number']}
+- `label=test`
+  - [ ] #{p1['number']}
+  - [ ] #{p2['number']}
+- [ ] all of:
+  - `label=test`
+    - [ ] #{p1['number']}
+    - [ ] #{p2['number']}
+  - `label=test2`
+    - [ ] #{p1['number']}
+    - [ ] #{p2['number']}
+- [X] `base={self.main_branch_name}`"""
+            )
+            in queue_pr["body"]
+        )
+
+        await self.add_label(p1["number"], "test")
+        await self.run_engine()
+
+        await self.wait_for(
+            "pull_request", {"action": "edited", "number": queue_pr["number"]}
+        )
+
+        queue_pr = (await self.get_pulls())[0]
+        assert queue_pr["body"] is not None
+        assert (
+            (
+                f"""**Required conditions of queue** `default` **for merge:**
+
+- `author=somebody`
+  - [ ] #{p1['number']}
+  - [ ] #{p2['number']}
+- `label=test`
+  - [X] #{p1['number']}
+  - [ ] #{p2['number']}
+- [ ] all of:
+  - `label=test`
+    - [X] #{p1['number']}
+    - [ ] #{p2['number']}
+  - `label=test2`
+    - [ ] #{p1['number']}
+    - [ ] #{p2['number']}
+- [X] `base={self.main_branch_name}`"""
+            )
+            in queue_pr["body"]
+        )
+
+        await self.add_label(p2["number"], "test")
+        await self.run_engine()
+
+        await self.wait_for(
+            "pull_request", {"action": "edited", "number": queue_pr["number"]}
+        )
+        queue_pr = (await self.get_pulls())[0]
+        assert queue_pr["body"] is not None
+        assert (
+            (
+                f"""**Required conditions of queue** `default` **for merge:**
+
+- `author=somebody`
+  - [ ] #{p1['number']}
+  - [ ] #{p2['number']}
+- [ ] all of:
+  - `label=test2`
+    - [ ] #{p1['number']}
+    - [ ] #{p2['number']}
+  - `label=test`
+    - [X] #{p1['number']}
+    - [X] #{p2['number']}
+- [X] `base={self.main_branch_name}`
+- `label=test`
+  - [X] #{p1['number']}
+  - [X] #{p2['number']}
+"""
+            )
+            in queue_pr["body"]
+        )
+
+    async def test_queue_rules_order_operator_or(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "author=somebody",
+                        f"base={self.main_branch_name}",
+                        "label=test",
+                        {
+                            "or": [
+                                "label=test",
+                                "label=test2",
+                            ]
+                        },
+                    ],
+                    "speculative_checks": 2,
+                    "batch_size": 2,
+                    "allow_inplace_checks": False,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "test",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                }
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        p1 = await self.create_pr()
+        p2 = await self.create_pr()
+
+        # To force others to be rebased
+        p = await self.create_pr()
+        await self.merge_pull(p["number"])
+        await self.wait_for("pull_request", {"action": "closed"})
+        await self.run_engine()
+
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        await self.wait_for("pull_request", {"action": "opened"})
+
+        queue_pr = (await self.get_pulls())[0]
+
+        assert queue_pr["body"] is not None
+        assert (
+            (
+                f"""**Required conditions of queue** `default` **for merge:**
+
+- `author=somebody`
+  - [ ] #{p1['number']}
+  - [ ] #{p2['number']}
+- `label=test`
+  - [ ] #{p1['number']}
+  - [ ] #{p2['number']}
+- [ ] any of:
+  - `label=test`
+    - [ ] #{p1['number']}
+    - [ ] #{p2['number']}
+  - `label=test2`
+    - [ ] #{p1['number']}
+    - [ ] #{p2['number']}
+- [X] `base={self.main_branch_name}`"""
+            )
+            in queue_pr["body"]
+        )
+
+        await self.add_label(p1["number"], "test")
+        await self.run_engine()
+
+        await self.wait_for(
+            "pull_request", {"action": "edited", "number": queue_pr["number"]}
+        )
+
+        queue_pr = (await self.get_pulls())[0]
+        assert queue_pr["body"] is not None
+        assert (
+            (
+                f"""**Required conditions of queue** `default` **for merge:**
+
+- `author=somebody`
+  - [ ] #{p1['number']}
+  - [ ] #{p2['number']}
+- `label=test`
+  - [X] #{p1['number']}
+  - [ ] #{p2['number']}
+- [ ] any of:
+  - `label=test`
+    - [X] #{p1['number']}
+    - [ ] #{p2['number']}
+  - `label=test2`
+    - [ ] #{p1['number']}
+    - [ ] #{p2['number']}
+- [X] `base={self.main_branch_name}`"""
+            )
+            in queue_pr["body"]
+        )
+
+        await self.add_label(p2["number"], "test")
+        await self.run_engine()
+
+        await self.wait_for(
+            "pull_request", {"action": "edited", "number": queue_pr["number"]}
+        )
+        queue_pr = (await self.get_pulls())[0]
+        assert queue_pr["body"] is not None
+        assert (
+            (
+                f"""**Required conditions of queue** `default` **for merge:**
+
+- `author=somebody`
+  - [ ] #{p1['number']}
+  - [ ] #{p2['number']}
+- [X] `base={self.main_branch_name}`
+- `label=test`
+  - [X] #{p1['number']}
+  - [X] #{p2['number']}
+- [X] any of:
+  - `label=test`
+    - [X] #{p1['number']}
+    - [X] #{p2['number']}
+  - `label=test2`
+    - [ ] #{p1['number']}
+    - [ ] #{p2['number']}
+"""
+            )
+            in queue_pr["body"]
+        )
+
+
+class TestQueueCISummary(base.FunctionalTestBase):
+    SUBSCRIPTION_ACTIVE = True
+
+    async def test_pr_embarked_check_runs_statuses_ci_summary(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fail-ci",
+                        "status-success=continuous-integration/pending-ci",
+                        "status-success=continuous-integration/success-ci",
+                    ],
+                    "speculative_checks": 5,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        p2 = await self.create_pr(two_commits=True)
+
+        # To force others to be rebased
+        p = await self.create_pr()
+        await self.merge_pull(p["number"])
+        await self.wait_for("pull_request", {"action": "closed"})
+        await self.run_engine()
+        p = await self.get_pull(p["number"])
+
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        await self.wait_for("pull_request", {"action": "opened"})
+        await self.wait_for("pull_request", {"action": "opened"})
+
+        pulls = await self.get_pulls()
+        assert len(pulls) == 4
+
+        tmp_pull_1 = pulls[1]
+        await self.create_status(
+            tmp_pull_1, "continuous-integration/fail-ci", "failure"
+        )
+        await self.create_status(
+            tmp_pull_1, "continuous-integration/pending-ci", "pending"
+        )
+        await self.create_status(
+            tmp_pull_1, "continuous-integration/success-ci", "success"
+        )
+
+        await self.run_engine()
+
+        p1 = await self.get_pull(p1["number"])
+        check_runs = await self.get_check_runs(p1)
+
+        assert len(check_runs) == 3
+        assert check_runs[0]["name"] == "Queue: Embarked in merge train"
+        regex = rf"Check-runs and statuses of the embarked pull request #{tmp_pull_1['number']}:.*The CI is failure.*The CI is pending.*The CI is success"
+        assert (
+            re.search(regex, check_runs[0]["output"]["summary"], flags=re.DOTALL)
+            is not None
+        )

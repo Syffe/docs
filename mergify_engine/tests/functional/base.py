@@ -805,6 +805,19 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         )
         await self.wait_for("status", {"state": state})
 
+    async def get_check_runs(
+        self,
+        pull: github_types.GitHubPullRequest,
+    ) -> list[github_types.GitHubCheckRun]:
+        req = await self.client_integration.get(
+            f"{self.url_origin}/commits/{pull['head']['ref']}/check-runs"
+        )
+        assert req.status_code == 200
+        return [
+            typing.cast(github_types.GitHubCheckRun, check_run)
+            for check_run in req.json()["check_runs"]
+        ]
+
     async def create_check_run(
         self,
         pull: github_types.GitHubPullRequest,

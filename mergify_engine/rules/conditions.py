@@ -15,6 +15,7 @@
 # under the License.
 import abc
 import dataclasses
+import functools
 import textwrap
 import typing
 
@@ -161,15 +162,65 @@ class RuleConditionGroup(abc.ABC):
     def get_unmatched_summary(self) -> str:
         return self._walk_for_summary(self.conditions, filter_key=lambda c: not c.match)
 
+    @staticmethod
+    def _conditions_sort_key(
+        condition: typing.Union[RuleCondition, "RuleConditionGroup"],
+        should_match: bool,
+    ) -> typing.Tuple[bool, int, typing.Any, typing.Any]:
+        """
+        Group conditions based on (in order):
+        - If `condition.match` != `should_match`
+        - If they are a normal condition (first) or a grouped condition (last)
+        - Their name
+        - Their description
+
+        If `should_match=True`, all matching conditions will appear first,
+        otherwise all non-matching conditions will appear first.
+        """
+
+        if isinstance(condition, RuleCondition):
+            return (
+                should_match != condition.match,
+                0,
+                str(condition),
+                condition.description or "",
+            )
+
+        # RuleConditionGroup
+        return (
+            should_match != condition.match,
+            1,
+            condition.operator_label,
+            condition.description or "",  # type: ignore[attr-defined]
+        )
+
+    @staticmethod
+    def _get_conditions_ordered(
+        conditions: list[RuleConditionNode],
+        should_match: bool,
+    ) -> list[RuleConditionNode]:
+        cond_cpy = conditions.copy()
+        cond_cpy.sort(
+            key=functools.partial(
+                RuleConditionGroup._conditions_sort_key, should_match=should_match
+            )
+        )
+        return cond_cpy
+
     @classmethod
     def _walk_for_summary(
         cls,
         conditions: list[RuleConditionNode],
         level: int = 0,
         filter_key: typing.Optional[ConditionFilterKeyT] = None,
+        parent_condition_matching: bool = False,
     ) -> str:
+        ordered_conditions = RuleConditionGroup._get_conditions_ordered(
+            conditions, should_match=parent_condition_matching
+        )
+
         summary = ""
-        for condition in conditions:
+        for condition in ordered_conditions:
             if filter_key and not filter_key(condition):
                 continue
 
@@ -181,10 +232,13 @@ class RuleConditionGroup(abc.ABC):
                 if condition.description:
                     summary += f" [{condition.description}]"
                 summary += "\n"
-                for _sum in cls._walk_for_summary(
-                    condition.conditions, level + 1, filter_key=filter_key
-                ):
-                    summary += _sum
+
+                summary += cls._walk_for_summary(
+                    condition.conditions,
+                    level + 1,
+                    filter_key=filter_key,
+                    parent_condition_matching=condition.match,
+                )
             else:
                 raise RuntimeError(f"Unsupported condition type: {type(condition)}")
 
@@ -216,16 +270,24 @@ class RuleConditionGroup(abc.ABC):
         return False
 
     def walk(
-        self, conditions: None | list[RuleConditionNode] = None
+        self,
+        conditions: None | list[RuleConditionNode] = None,
+        parent_condition_matching: bool = False,
     ) -> typing.Iterator[RuleCondition]:
         if conditions is None:
             conditions = self.conditions
 
-        for condition in conditions:
+        ordered_conditions = RuleConditionGroup._get_conditions_ordered(
+            conditions, should_match=parent_condition_matching
+        )
+
+        for condition in ordered_conditions:
             if isinstance(condition, RuleCondition):
                 yield condition
             elif isinstance(condition, RuleConditionGroup):
-                for sub_condition in self.walk(condition.conditions):
+                for sub_condition in self.walk(
+                    condition.conditions, parent_condition_matching=condition.match
+                ):
                     yield sub_condition
             else:
                 raise RuntimeError(f"Unsupported condition type: {type(condition)}")
@@ -392,10 +454,12 @@ class QueueRuleConditions:
         if not display_detail:
             checked = "X" if conditions[first_key].match else " "
             summary += f"[{checked}] "
+
         summary += f"`{conditions[first_key]}`"
 
         if conditions[first_key].description:
             summary += f" [{conditions[first_key].description}]"
+
         summary += "\n"
 
         if display_detail:
@@ -407,6 +471,57 @@ class QueueRuleConditions:
                 summary += "\n"
 
         return summary
+
+    @staticmethod
+    def _conditions_sort_key(
+        condition: typing.Mapping[
+            github_types.GitHubPullRequestNumber, RuleConditionNode
+        ],
+        should_match: bool,
+    ) -> typing.Tuple[bool, int, typing.Any, typing.Any]:
+        """
+        Group conditions based on (in order):
+        - If `condition.match` != `should_match`
+        - If they are a normal condition (first) or a grouped condition (last)
+        - Their name
+        - Their description
+
+        If `should_match=True`, all matching conditions will appear first,
+        otherwise all non-matching conditions will appear first.
+        """
+
+        first_key = next(iter(condition))
+        if isinstance(condition[first_key], RuleCondition):
+            return (
+                should_match != all(cond.match for cond in condition.values()),
+                0,
+                str(condition[first_key]),
+                condition[first_key].description or "",
+            )
+
+        # RuleConditionCombination
+        return (
+            should_match != all(cond.match for cond in condition.values()),
+            1,
+            condition[first_key].operator_label,  # type: ignore[union-attr]
+            condition[first_key].description or "",
+        )
+
+    @classmethod
+    def _get_conditions_ordered(
+        cls,
+        conditions: list[
+            typing.Mapping[github_types.GitHubPullRequestNumber, RuleConditionNode]
+        ],
+        should_match: bool,
+    ) -> list[typing.Mapping[github_types.GitHubPullRequestNumber, RuleConditionNode]]:
+        cond_cpy = conditions.copy()
+        cond_cpy.sort(
+            key=functools.partial(
+                QueueRuleConditions._conditions_sort_key, should_match=should_match
+            )
+        )
+        return cond_cpy
 
     @classmethod
     def _walk_for_summary(
@@ -432,7 +547,6 @@ class QueueRuleConditions:
                 evaluated_conditions,
             )
             summary += cls._get_rule_condition_summary(evaluated_conditions)
-
         elif isinstance(first_evaluated_condition, RuleConditionGroup):
             evaluated_conditions = typing.cast(
                 typing.Mapping[
@@ -441,6 +555,7 @@ class QueueRuleConditions:
                 ],
                 evaluated_conditions,
             )
+            global_match = False
             if level >= 0:
                 label = first_evaluated_condition.operator_label
                 if first_evaluated_condition.description:
@@ -450,14 +565,23 @@ class QueueRuleConditions:
                 checked = "X" if global_match else " "
                 summary += f"- [{checked}] {label}:\n"
 
-            inner_conditions = []
-            for i in range(len(first_evaluated_condition.conditions)):
+            inner_conditions: list[
+                typing.Mapping[github_types.GitHubPullRequestNumber, RuleConditionNode]
+            ] = []
+
+            for idx in range(len(first_evaluated_condition.conditions)):
                 inner_conditions.append(
-                    {p: c.conditions[i] for p, c in evaluated_conditions.items()}
+                    {p: c.conditions[idx] for p, c in evaluated_conditions.items()}
                 )
+
+            inner_conditions = cls._get_conditions_ordered(
+                inner_conditions, global_match
+            )
             for inner_condition in inner_conditions:
-                for _sum in cls._walk_for_summary(inner_condition, level + 1):
-                    summary += _sum
+                summary += cls._walk_for_summary(
+                    inner_condition,
+                    level + 1,
+                )
         else:
             raise RuntimeError(
                 f"Unsupported condition type: {type(first_evaluated_condition).__name__}"

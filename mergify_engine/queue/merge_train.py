@@ -66,14 +66,34 @@ def build_pr_link(
 
 LOG = daiquiri.getLogger(__name__)
 
-CHECK_ASSERTS = {
+TrainCarState = typing.Literal[
+    "pending",
+    "created",
+    "updated",
+    "failed",
+]
+
+
+CheckStateT = typing.Literal[
+    "success",
+    "failure",
+    "error",
+    "cancelled",
+    "skipped",
+    "action_required",
+    "timed_out",
+    "pending",
+    "neutral",
+    "stale",
+]
+
+CHECK_ASSERTS: typing.Dict[CheckStateT | None, str] = {
     # green check mark
     "success": "https://raw.githubusercontent.com/Mergifyio/mergify-engine/master/assets/check-green-16.png",
     # red x
     "failure": "https://raw.githubusercontent.com/Mergifyio/mergify-engine/master/assets/x-red-16.png",
     "error": "https://raw.githubusercontent.com/Mergifyio/mergify-engine/master/assets/x-red-16.png",
     "cancelled": "https://raw.githubusercontent.com/Mergifyio/mergify-engine/master/assets/x-red-16.png",
-    "skipped": "https://raw.githubusercontent.com/Mergifyio/mergify-engine/master/assets/square-grey-16.png",
     "action_required": "https://raw.githubusercontent.com/Mergifyio/mergify-engine/master/assets/x-red-16.png",
     "timed_out": "https://raw.githubusercontent.com/Mergifyio/mergify-engine/master/assets/x-red-16.png",
     # yellow dot
@@ -81,7 +101,23 @@ CHECK_ASSERTS = {
     None: "https://raw.githubusercontent.com/Mergifyio/mergify-engine/master/assets/dot-yellow-16.png",
     # grey square
     "neutral": "https://raw.githubusercontent.com/Mergifyio/mergify-engine/master/assets/square-grey-16.png",
+    "skipped": "https://raw.githubusercontent.com/Mergifyio/mergify-engine/master/assets/square-grey-16.png",
     "stale": "https://raw.githubusercontent.com/Mergifyio/mergify-engine/master/assets/square-grey-16.png",
+}
+
+# Lower value will be displayed first
+CHECK_SORTING: typing.Dict[CheckStateT | None, int] = {
+    "failure": 0,
+    "error": 0,
+    "cancelled": 0,
+    "action_required": 0,
+    "timed_out": 0,
+    "pending": 1,
+    None: 1,
+    "neutral": 2,
+    "skipped": 2,
+    "stale": 2,
+    "success": 100,
 }
 
 
@@ -187,28 +223,6 @@ class EmbarkedPull:
         )
 
 
-TrainCarState = typing.Literal[
-    "pending",
-    "created",
-    "updated",
-    "failed",
-]
-
-
-CheckStateT = typing.Literal[
-    "success",
-    "failure",
-    "error",
-    "cancelled",
-    "skipped",
-    "action_required",
-    "timed_out",
-    "pending",
-    "neutral",
-    "stale",
-]
-
-
 @pydantic.dataclasses.dataclass
 class QueueCheck:
     name: str = dataclasses.field(metadata={"description": "Check name"})
@@ -227,6 +241,20 @@ class QueueCheck:
         url: typing.Optional[str]
         state: CheckStateT
         avatar_url: typing.Optional[str]
+
+
+def get_check_list_ordered(
+    checks: typing.List[QueueCheck],
+) -> typing.List[QueueCheck]:
+    checks_cpy = checks.copy()
+    checks_cpy.sort(
+        key=lambda c: (
+            CHECK_SORTING.get(c.state, CHECK_SORTING["neutral"]),
+            c.name,
+            c.description,
+        )
+    )
+    return checks_cpy
 
 
 @dataclasses.dataclass
@@ -1322,7 +1350,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 "\n\nCheck-runs and statuses of the embarked "
                 f"pull request #{checked_pull}:\n\n<table>"
             )
-            for qcheck in self.last_checks:
+            for qcheck in get_check_list_ordered(self.last_checks):
                 qcheck_icon_url = CHECK_ASSERTS.get(
                     qcheck.state, CHECK_ASSERTS["neutral"]
                 )

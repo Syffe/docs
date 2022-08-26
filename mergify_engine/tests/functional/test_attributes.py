@@ -895,11 +895,11 @@ class TestAttributesWithSub(base.FunctionalTestBase):
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         expected = f"""### Rule: merge (merge)
-- [X] `base={self.main_branch_name}`
-- [X] `label=automerge`
 - [ ] `depends-on=#{pr1['number']}` [⛓️ **test_depends_on: pull request n1 from integration** ([#{pr1['number']}]({repo_url}/pull/{pr1['number']}))]
-- [X] `depends-on=#{pr2['number']}` [⛓️ **test_depends_on: pull request n2 from integration** ([#{pr2['number']}]({repo_url}/pull/{pr2['number']}))]
 - [ ] `depends-on=#9999999` [⛓️ ⚠️ *pull request not found* (#9999999)]
+- [X] `base={self.main_branch_name}`
+- [X] `depends-on=#{pr2['number']}` [⛓️ **test_depends_on: pull request n2 from integration** ([#{pr2['number']}]({repo_url}/pull/{pr2['number']}))]
+- [X] `label=automerge`
 """
         assert expected in summary["output"]["summary"]
 

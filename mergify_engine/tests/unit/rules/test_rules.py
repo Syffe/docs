@@ -1181,12 +1181,12 @@ async def test_get_pull_request_rule(
         c for c in match.matching_rules[2].conditions.walk() if not c.match
     ]
     assert len(missing_conditions) == 4
-    assert str(missing_conditions[0]) == "label=automerge"
-    assert str(missing_conditions[1]) == "label=ready"
-    assert str(missing_conditions[2]) == "label=fast-track"
     assert (
-        str(missing_conditions[3]) == "check-success=continuous-integration/fake-ci-bis"
+        str(missing_conditions[0]) == "check-success=continuous-integration/fake-ci-bis"
     )
+    assert str(missing_conditions[1]) == "label=fast-track"
+    assert str(missing_conditions[2]) == "label=automerge"
+    assert str(missing_conditions[3]) == "label=ready"
 
     # Team conditions with one review missing
     pull_request_rules = pull_request_rule_from_list(
@@ -1356,9 +1356,9 @@ async def test_get_pull_request_rule(
         c for c in match.matching_rules[0].conditions.walk() if not c.match
     ]
     assert len(missing_conditions) == 3
-    assert str(missing_conditions[0]) == "check-success=awesome-ci"
-    assert str(missing_conditions[1]) == "check-neutral=awesome-ci"
-    assert str(missing_conditions[2]) == "check-skipped=awesome-ci"
+    assert str(missing_conditions[0]) == "check-neutral=awesome-ci"
+    assert str(missing_conditions[1]) == "check-skipped=awesome-ci"
+    assert str(missing_conditions[2]) == "check-success=awesome-ci"
     assert list(match.matching_rules[1].actions.keys()) == ["comment"]
     assert len(match.matching_rules[1].conditions.condition.conditions) == 0
 
@@ -1706,7 +1706,35 @@ async def test_queue_rules_summary() -> None:
 
     assert (
         c.get_summary()
-        == """- [X] `base=main`
+        == """\
+- `author=me` [Another mechanism to get condtions]
+  - [X] #1
+  - [X] #2
+  - [ ] #3
+- [ ] all of:
+  - [ ] `check-success!=first-ci`
+  - `label=foo`
+    - [X] #1
+    - [X] #2
+    - [X] #3
+- [ ] any of:
+  - `label=urgent`
+    - [ ] #1
+    - [X] #2
+    - [X] #3
+  - [ ] `status-failure!=noway`
+- `#approved-reviews-by>=2` [🛡 GitHub branch protection]
+  - [X] #1
+  - [X] #2
+  - [X] #3
+- [X] `base=main`
+- [X] `current-year=2018`
+- [X] all of:
+  - [X] `check-success=first-ci`
+  - `label=foo`
+    - [X] #1
+    - [X] #2
+    - [X] #3
 - [X] any of:
   - `head=feature-1`
     - [X] #1
@@ -1720,59 +1748,32 @@ async def test_queue_rules_summary() -> None:
     - [ ] #1
     - [ ] #2
     - [X] #3
-- [ ] any of:
-  - `label=urgent`
-    - [ ] #1
-    - [X] #2
-    - [X] #3
-  - [ ] `status-failure!=noway`
 - [X] any of:
+  - [X] `check-success=first-ci`
   - `label=bar`
     - [X] #1
     - [ ] #2
     - [ ] #3
-  - [X] `check-success=first-ci`
 - [X] any of:
   - `label=foo`
     - [X] #1
     - [X] #2
     - [X] #3
   - [ ] `check-success!=first-ci`
-- [X] all of:
-  - `label=foo`
-    - [X] #1
-    - [X] #2
-    - [X] #3
-  - [X] `check-success=first-ci`
-- [ ] all of:
-  - `label=foo`
-    - [X] #1
-    - [X] #2
-    - [X] #3
-  - [ ] `check-success!=first-ci`
-- [X] not:
-  - [ ] all of:
-    - `label=fizz`
-      - [ ] #1
-      - [ ] #2
-      - [ ] #3
-    - `label=buzz`
-      - [ ] #1
-      - [ ] #2
-      - [ ] #3
-- [X] `current-year=2018`
-- `#approved-reviews-by>=2` [🛡 GitHub branch protection]
-  - [X] #1
-  - [X] #2
-  - [X] #3
 - [X] any of [🛡 GitHub branch protection]:
   - [X] `check-success=my-awesome-ci`
   - [ ] `check-neutral=my-awesome-ci`
   - [ ] `check-skipped=my-awesome-ci`
-- `author=me` [Another mechanism to get condtions]
-  - [X] #1
-  - [X] #2
-  - [ ] #3
+- [X] not:
+  - [ ] all of:
+    - `label=buzz`
+      - [ ] #1
+      - [ ] #2
+      - [ ] #3
+    - `label=fizz`
+      - [ ] #1
+      - [ ] #2
+      - [ ] #3
 """
     )
 
@@ -1814,10 +1815,10 @@ async def test_rules_conditions_schedule() -> None:
 
     assert (
         c.get_summary()
-        == """- [X] `base=main`
-- [X] `schedule=MON-FRI 08:00-17:00`
-- [ ] `schedule=MONDAY-FRIDAY 10:00-12:00`
+        == """- [ ] `schedule=MONDAY-FRIDAY 10:00-12:00`
 - [ ] `schedule=SAT-SUN 07:00-12:00`
+- [X] `base=main`
+- [X] `schedule=MON-FRI 08:00-17:00`
 """
     )
 
@@ -1985,20 +1986,20 @@ async def test_condition_summary_complex() -> None:
     pr_conditions.condition.conditions[0].match = True
     pr_conditions.condition.conditions[2].conditions[1].match = True
 
-    expected_summary = """- [X] `base=main`
-- [ ] any of:
-  - [ ] `label=foo`
-  - [ ] `label=bar`
-- [ ] all of:
+    expected_summary = """- [ ] all of:
   - [ ] `label=foo`
   - [X] `label=baz`
+- [ ] any of:
+  - [ ] `label=bar`
+  - [ ] `label=foo`
+- [X] `base=main`
 """
     assert pr_conditions.get_summary() == expected_summary
 
-    expected_summary = """- [ ] any of:
+    expected_summary = """- [ ] all of:
   - [ ] `label=foo`
+- [ ] any of:
   - [ ] `label=bar`
-- [ ] all of:
   - [ ] `label=foo`
 """
     assert pr_conditions.get_unmatched_summary() == expected_summary
