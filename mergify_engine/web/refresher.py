@@ -20,7 +20,7 @@ import voluptuous
 
 from mergify_engine import github_types
 from mergify_engine import redis_utils
-from mergify_engine import utils
+from mergify_engine import refresher
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.web import auth
@@ -50,7 +50,7 @@ async def refresh_repo(
                 status_code=404, content="repository not found"
             )
 
-    await utils.send_repository_refresh(
+    await refresher.send_repository_refresh(
         redis_links.stream, repository, action="user", source="API"
     )
     return responses.Response("Refresh queued", status_code=202)
@@ -83,7 +83,7 @@ async def refresh_pull(
                 status_code=404, content="repository not found"
             )
 
-    await utils.send_pull_refresh(
+    await refresher.send_pull_refresh(
         redis_links.stream,
         repository,
         action=action,
@@ -114,7 +114,7 @@ async def refresh_branch(
                 status_code=404, content="repository not found"
             )
 
-    await utils.send_branch_refresh(
+    await refresher.send_branch_refresh(
         redis_links.stream,
         repository,
         action="user",

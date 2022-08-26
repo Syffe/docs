@@ -25,6 +25,7 @@ from mergify_engine import delayed_refresh
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import queue
+from mergify_engine import refresher
 from mergify_engine import signals
 from mergify_engine import utils
 from mergify_engine.actions import merge_base
@@ -383,7 +384,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             # update the associated transient pull request.
             # This is mandatory to filter out refresh to avoid loop
             # of refreshes between this PR and the transient one.
-            await utils.send_pull_refresh(
+            await refresher.send_pull_refresh(
                 ctxt.repository.installation.redis.stream,
                 ctxt.pull["base"]["repo"],
                 pull_request_number=new_car.queue_pull_request_number,
@@ -449,7 +450,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             # update the associated transient pull request.
             # This is mandatory to filter out refresh to avoid loop
             # of refreshes between this PR and the transient one.
-            await utils.send_pull_refresh(
+            await refresher.send_pull_refresh(
                 ctxt.repository.installation.redis.stream,
                 ctxt.pull["base"]["repo"],
                 pull_request_number=newcar.queue_pull_request_number,

@@ -17,9 +17,9 @@ from mergify_engine import actions
 from mergify_engine import check_api
 from mergify_engine import constants
 from mergify_engine import context
+from mergify_engine import refresher
 from mergify_engine import rules
 from mergify_engine import signals
-from mergify_engine import utils
 
 
 class RequeueCommand(actions.BackwardCompatAction):
@@ -60,7 +60,7 @@ class RequeueCommand(actions.BackwardCompatAction):
         )
 
         # NOTE(sileht): refresh it to maybe, retrigger the queue action.
-        await utils.send_pull_refresh(
+        await refresher.send_pull_refresh(
             ctxt.redis.stream,
             ctxt.pull["base"]["repo"],
             pull_request_number=ctxt.pull["number"],

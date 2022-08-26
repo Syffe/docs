@@ -38,6 +38,7 @@ from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import json
 from mergify_engine import queue
+from mergify_engine import refresher
 from mergify_engine import signals
 from mergify_engine import utils
 from mergify_engine.clients import http
@@ -544,7 +545,7 @@ class TrainCar:
 
         else:
             # Already done, just refresh it to merge it
-            await utils.send_pull_refresh(
+            await refresher.send_pull_refresh(
                 self.train.repository.installation.redis.stream,
                 ctxt.pull["base"]["repo"],
                 pull_request_number=ctxt.pull["number"],
@@ -1064,7 +1065,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 ),
             )
 
-            await utils.send_pull_refresh(
+            await refresher.send_pull_refresh(
                 self.train.repository.installation.redis.stream,
                 original_ctxt.pull["base"]["repo"],
                 pull_request_number=original_ctxt.pull["number"],
@@ -1397,7 +1398,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             ):
                 # NOTE(sileht): refresh it, so the queue action will merge it and delete the
                 # tmp_pull_ctxt branch
-                await utils.send_pull_refresh(
+                await refresher.send_pull_refresh(
                     self.train.repository.installation.redis.stream,
                     original_ctxt.pull["base"]["repo"],
                     pull_request_number=original_ctxt.pull["number"],
@@ -2056,7 +2057,7 @@ class Train:
             # A earlier batch failed and it was the fault of the last PR of the batch
             # we refresh the draft PR, so it will set the final state
             if self._cars[0].queue_pull_request_number is not None:
-                await utils.send_pull_refresh(
+                await refresher.send_pull_refresh(
                     self.repository.installation.redis.stream,
                     self.repository.repo,
                     pull_request_number=self._cars[0].queue_pull_request_number,
@@ -2494,7 +2495,7 @@ class Train:
 
         pipe = await self.repository.installation.redis.stream.pipeline()
         for pull_number in pulls:
-            await utils.send_pull_refresh(
+            await refresher.send_pull_refresh(
                 pipe,
                 self.repository.repo,
                 pull_request_number=pull_number,
