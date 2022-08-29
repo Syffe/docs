@@ -22,15 +22,24 @@ from mergify_engine import rules
 from mergify_engine import signals
 
 
-class RequeueCommand(actions.BackwardCompatAction):
-    flags = actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
+class RequeueExecutorConfig(typing.TypedDict):
+    pass
 
-    validator: typing.ClassVar[typing.Dict[typing.Any, typing.Any]] = {}
 
-    async def run(
-        self, ctxt: context.Context, rule: rules.EvaluatedRule
-    ) -> check_api.Result:
-        check = await ctxt.get_engine_check_run(constants.MERGE_QUEUE_SUMMARY_NAME)
+class RequeueExecutor(
+    actions.ActionExecutor["RequeueCommand", "RequeueExecutorConfig"]
+):
+    @classmethod
+    async def create(
+        cls,
+        action: "RequeueCommand",
+        ctxt: "context.Context",
+        rule: "rules.EvaluatedRule",
+    ) -> "RequeueExecutor":
+        return cls(ctxt, rule, RequeueExecutorConfig())
+
+    async def run(self) -> check_api.Result:
+        check = await self.ctxt.get_engine_check_run(constants.MERGE_QUEUE_SUMMARY_NAME)
         if not check:
             return check_api.Result(
                 check_api.Conclusion.FAILURE,
@@ -50,7 +59,7 @@ class RequeueCommand(actions.BackwardCompatAction):
             )
 
         await check_api.set_check_run(
-            ctxt,
+            self.ctxt,
             constants.MERGE_QUEUE_SUMMARY_NAME,
             check_api.Result(
                 check_api.Conclusion.NEUTRAL,
@@ -61,19 +70,19 @@ class RequeueCommand(actions.BackwardCompatAction):
 
         # NOTE(sileht): refresh it to maybe, retrigger the queue action.
         await refresher.send_pull_refresh(
-            ctxt.redis.stream,
-            ctxt.pull["base"]["repo"],
-            pull_request_number=ctxt.pull["number"],
+            self.ctxt.redis.stream,
+            self.ctxt.pull["base"]["repo"],
+            pull_request_number=self.ctxt.pull["number"],
             action="user",
             source="action/command/requeue",
         )
 
         await signals.send(
-            ctxt.repository,
-            ctxt.pull["number"],
+            self.ctxt.repository,
+            self.ctxt.pull["number"],
             "action.requeue",
             signals.EventNoMetadata(),
-            rule.get_signal_trigger(),
+            self.rule.get_signal_trigger(),
         )
 
         return check_api.Result(
@@ -82,7 +91,13 @@ class RequeueCommand(actions.BackwardCompatAction):
             summary="",
         )
 
-    async def cancel(
-        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
-    ) -> check_api.Result:  # pragma: no cover
+    async def cancel(self) -> check_api.Result:  # pragma: no cover
         return actions.CANCELLED_CHECK_REPORT
+
+
+class RequeueCommand(actions.Action):
+    flags = actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
+
+    validator: typing.ClassVar[typing.Dict[typing.Any, typing.Any]] = {}
+
+    executor_class = RequeueExecutor
