@@ -21,6 +21,13 @@ MERGE_QUEUE_STATS_RETENTION: datetime.timedelta = datetime.timedelta(days=30)
 VERSION: str = "1.0"
 
 
+AvailableStatsKeyT = typing.Literal[
+    "time_to_merge",
+    "failure_by_reason",
+    "checks_duration",
+]
+
+
 @dataclasses.dataclass
 class BaseQueueStats:
     queue_name: str
@@ -119,6 +126,14 @@ def _get_repository_key(
     return f"merge-queue-stats/repository/{owner_id}/{repo_id}"
 
 
+def get_statistic_redis_key(
+    repository_owner_id: github_types.GitHubAccountIdType,
+    repository_id: github_types.GitHubRepositoryIdType,
+    stat_name: AvailableStatsKeyT,
+) -> str:
+    return f"{_get_repository_key(repository_owner_id, repository_id)}/{stat_name}"
+
+
 def _get_seconds_since_datetime(past_datetime: datetime.datetime) -> int:
     return int((date.utcnow() - past_datetime).total_seconds())
 
@@ -188,17 +203,20 @@ class StatisticsSignal(signals.SignalBase):
         ):
             return
 
-        base_repo_key = _get_repository_key(
-            repository.installation.owner_id, repository.repo["id"]
-        )
-
         pipe = await redis.pipeline()
 
         stats = get_stats_from_event_metadata(event, metadata)
         if stats is None:
             return
 
-        stat_redis_key = f"{base_repo_key}/{stats.redis_key_name}"
+        stat_redis_key = get_statistic_redis_key(
+            repository.installation.owner_id,
+            repository.repo["id"],
+            typing.cast(
+                AvailableStatsKeyT,
+                stats.redis_key_name,
+            ),
+        )
         fields = {
             b"version": VERSION,
             b"data": msgpack.packb(
@@ -222,7 +240,7 @@ RedisXRangeT = typing.List[typing.Tuple[bytes, typing.Any]]
 
 async def _get_stat_items(
     repository: "context.Repository",
-    stat_name: typing.Literal["time_to_merge", "failure_by_reason", "checks_duration"],
+    stat_name: AvailableStatsKeyT,
     queue_name: str,
     start_at: int | None,
     end_at: int | None,

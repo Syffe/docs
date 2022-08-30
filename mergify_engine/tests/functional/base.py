@@ -50,6 +50,7 @@ from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
 from mergify_engine.queue import merge_train
+from mergify_engine.queue import statistics as queue_statistics
 from mergify_engine.tests.functional import conftest as func_conftest
 from mergify_engine.web import root
 
@@ -1364,3 +1365,11 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         for i, expected_waiting_pull in enumerate(expected_waiting_pulls):
             wp = q._waiting_pulls[i]
             assert wp.user_pull_request_number == expected_waiting_pull
+
+    def get_statistic_redis_key(
+        self,
+        stat_name: queue_statistics.AvailableStatsKeyT,
+    ) -> str:
+        return queue_statistics.get_statistic_redis_key(
+            self.subscription.owner_id, self.RECORD_CONFIG["repository_id"], stat_name
+        )

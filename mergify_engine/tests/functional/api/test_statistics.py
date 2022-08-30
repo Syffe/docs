@@ -5,7 +5,6 @@ import yaml
 
 from mergify_engine import config
 from mergify_engine import date
-from mergify_engine.queue import statistics
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.tests.functional import base
 
@@ -67,10 +66,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             await self.wait_for("pull_request", {"action": "closed"})
             await self.wait_for("pull_request", {"action": "closed"})
 
-            redis_repo_key = statistics._get_repository_key(
-                self.subscription.owner_id, self.RECORD_CONFIG["repository_id"]
-            )
-            time_to_merge_key = f"{redis_repo_key}/time_to_merge"
+            time_to_merge_key = self.get_statistic_redis_key("time_to_merge")
             assert await self.redis_links.stats.xlen(time_to_merge_key) == 2
 
             r = await self.app.get(
@@ -142,10 +138,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
         await self.run_engine()
         await self.wait_for("pull_request", {"action": "closed"})
 
-        redis_repo_key = statistics._get_repository_key(
-            self.subscription.owner_id, self.RECORD_CONFIG["repository_id"]
-        )
-        failure_by_reason_key = f"{redis_repo_key}/failure_by_reason"
+        failure_by_reason_key = self.get_statistic_redis_key("failure_by_reason")
         assert await self.redis_links.stats.xlen(failure_by_reason_key) == 3
 
         r = await self.app.get(
@@ -213,10 +206,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
         await self.wait_for("pull_request", {"action": "closed"})
         await self.wait_for("pull_request", {"action": "closed"})
 
-        redis_repo_key = statistics._get_repository_key(
-            self.subscription.owner_id, self.RECORD_CONFIG["repository_id"]
-        )
-        checks_duration_key = f"{redis_repo_key}/checks_duration"
+        checks_duration_key = self.get_statistic_redis_key("checks_duration")
         assert await self.redis_links.stats.xlen(checks_duration_key) == 1
 
         r = await self.app.get(
@@ -284,10 +274,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
         await self.run_engine()
         await self.wait_for("pull_request", {"action": "closed"})
 
-        redis_repo_key = statistics._get_repository_key(
-            self.subscription.owner_id, self.RECORD_CONFIG["repository_id"]
-        )
-        failure_by_reason_key = f"{redis_repo_key}/failure_by_reason"
+        failure_by_reason_key = self.get_statistic_redis_key("failure_by_reason")
         assert await self.redis_links.stats.xlen(failure_by_reason_key) == 3
 
         r = await self.app.get(

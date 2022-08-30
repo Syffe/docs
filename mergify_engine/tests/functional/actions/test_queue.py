@@ -37,7 +37,6 @@ from mergify_engine import queue
 from mergify_engine import rules
 from mergify_engine import utils
 from mergify_engine.queue import merge_train
-from mergify_engine.queue import statistics
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import conditions
 from mergify_engine.tests.functional import base
@@ -4368,10 +4367,8 @@ class TestQueueAction(base.FunctionalTestBase):
         assert len(pulls) == 0
 
         await self.assert_merge_queue_contents(q, None, [])
-        redis_repo_key = statistics._get_repository_key(
-            self.subscription.owner_id, self.RECORD_CONFIG["repository_id"]
-        )
-        assert await self.redis_links.stats.xlen(f"{redis_repo_key}/time_to_merge") == 1
+        time_to_merge_key = self.get_statistic_redis_key("time_to_merge")
+        assert await self.redis_links.stats.xlen(time_to_merge_key) == 1
 
     async def test_queue_without_branch_protection_for_queueing(self) -> None:
         rules = {
@@ -4689,13 +4686,8 @@ pull_requests:
         pulls = await self.get_pulls()
         assert len(pulls) == 2
 
-        redis_repo_key = statistics._get_repository_key(
-            self.subscription.owner_id, self.RECORD_CONFIG["repository_id"]
-        )
-        assert (
-            await self.redis_links.stats.xlen(f"{redis_repo_key}/failure_by_reason")
-            == 1
-        )
+        failure_by_reason_key = self.get_statistic_redis_key("failure_by_reason")
+        assert await self.redis_links.stats.xlen(failure_by_reason_key) == 1
 
         await self.assert_eventlog_check_end("REEMBARKED")
 
