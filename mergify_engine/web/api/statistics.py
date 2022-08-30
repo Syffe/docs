@@ -32,7 +32,7 @@ router = fastapi.APIRouter(
 
 
 class TimeToMergeResponse(typing.TypedDict):
-    mean: float
+    mean: float | None
 
 
 @router.get(
@@ -69,11 +69,17 @@ async def get_average_time_to_merge_stats(
         start_at,
         end_at,
     )
-    return TimeToMergeResponse(mean=statistics.fmean(stats))
+
+    if len(stats) == 0:
+        mean = None
+    else:
+        mean = statistics.fmean(stats)
+
+    return TimeToMergeResponse(mean=mean)
 
 
 class ChecksDurationResponse(typing.TypedDict):
-    mean: float
+    mean: float | None
 
 
 @router.get(
@@ -107,7 +113,13 @@ async def get_checks_duration_stats(
     stats = await queue_statistics.get_checks_duration_stats(
         repository_ctxt, queue_name, start_at, end_at
     )
-    return ChecksDurationResponse(mean=statistics.fmean(stats))
+
+    if len(stats) == 0:
+        mean = None
+    else:
+        mean = statistics.fmean(stats)
+
+    return ChecksDurationResponse(mean=mean)
 
 
 @router.get(

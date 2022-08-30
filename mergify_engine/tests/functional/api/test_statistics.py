@@ -39,6 +39,17 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
         with freeze_time("2022-08-18T10:00:00", tick=True):
             await self.setup_repo(yaml.dump(rules))
 
+            r = await self.app.get(
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge",
+                headers={
+                    "Authorization": f"bearer {self.api_key_admin}",
+                    "Content-type": "application/json",
+                },
+            )
+
+            assert r.status_code == 200
+            assert r.json()["mean"] is None
+
             p1 = await self.create_pr()
             p2 = await self.create_pr()
 
@@ -172,6 +183,17 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             ],
         }
         await self.setup_repo(yaml.dump(rules))
+
+        r = await self.app.get(
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/checks_duration",
+            headers={
+                "Authorization": f"bearer {self.api_key_admin}",
+                "Content-type": "application/json",
+            },
+        )
+
+        assert r.status_code == 200
+        assert r.json()["mean"] is None
 
         p1 = await self.create_pr()
 
