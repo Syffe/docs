@@ -37,6 +37,7 @@ class RebaseAction(actions.BackwardCompatAction):
         voluptuous.Required("bot_account", default=None): voluptuous.Any(
             None, types.Jinja2
         ),
+        voluptuous.Required("autosquash", default=True): bool,
     }
 
     async def run(
@@ -55,7 +56,10 @@ class RebaseAction(actions.BackwardCompatAction):
 
         try:
             await branch_updater.rebase_with_git(
-                ctxt, subscription.Features.BOT_ACCOUNT, bot_account
+                ctxt,
+                subscription.Features.BOT_ACCOUNT,
+                bot_account,
+                self.config["autosquash"],
             )
         except branch_updater.BranchUpdateFailure as e:
             return check_api.Result(check_api.Conclusion.FAILURE, e.title, e.message)

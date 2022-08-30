@@ -140,3 +140,57 @@ class TestRebaseAction(base.FunctionalTestBase):
         checks = await ctxt.pull_engine_check_runs
         for check in checks:
             assert check["conclusion"] == "success", check
+
+    async def test_rebase_autosquash_true(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "rebase",
+                    "conditions": [f"base={self.main_branch_name}", "label=rebase"],
+                    "actions": {"rebase": {"autosquash": True}},
+                },
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        pr_fixup = await self.create_pr_with_fixup_commit()
+
+        p2 = await self.create_pr()
+        await self.merge_pull(p2["number"])
+
+        await self.wait_for("pull_request", {"action": "closed"})
+
+        await self.add_label(pr_fixup["number"], "rebase")
+        await self.run_engine()
+        await self.wait_for("pull_request", {"action": "synchronize"})
+
+        nb_fixup_commits = await self.get_commits(pr_fixup["number"])
+        assert len(nb_fixup_commits) == 1
+
+    async def test_rebase_autosquash_false(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "rebase",
+                    "conditions": [f"base={self.main_branch_name}", "label=rebase"],
+                    "actions": {"rebase": {"autosquash": False}},
+                },
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        pr_fixup = await self.create_pr_with_fixup_commit()
+
+        p2 = await self.create_pr()
+        await self.merge_pull(p2["number"])
+
+        await self.wait_for("pull_request", {"action": "closed"})
+
+        await self.add_label(pr_fixup["number"], "rebase")
+        await self.run_engine()
+        await self.wait_for("pull_request", {"action": "synchronize"})
+
+        nb_fixup_commits = await self.get_commits(pr_fixup["number"])
+        assert len(nb_fixup_commits) == 2

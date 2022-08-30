@@ -528,7 +528,7 @@ pull_request_rules:
     assert comment == {"message": "I love Mergify", "bot_account": "foo-bot"}
 
     rebase = schema["pull_request_rules"].rules[0].actions["rebase"].config
-    assert rebase == {"bot_account": "test-bot-account"}
+    assert rebase == {"autosquash": True, "bot_account": "test-bot-account"}
 
     config = """
 defaults:

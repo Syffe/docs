@@ -103,6 +103,7 @@ async def _do_rebase(
     ctxt: context.Context,
     user: user_tokens.UserTokensUser,
     committer: typing.Optional[user_tokens.UserTokensUser],
+    autosquash: bool,
 ) -> None:
     # NOTE(sileht):
     # $ curl https://api.github.com/repos/sileht/repotest/pulls/2 | jq .commits
@@ -138,7 +139,17 @@ async def _do_rebase(
 
         await git("fetch", "--quiet", "upstream", base_branch)
 
-        await git("rebase", f"upstream/{base_branch}")
+        if autosquash:
+            await git(
+                "rebase",
+                "--interactive",
+                "--autosquash",
+                f"upstream/{base_branch}",
+                _env={"GIT_SEQUENCE_EDITOR": ":"},
+            )
+        else:
+            await git("rebase", f"upstream/{base_branch}")
+
         await git("push", "--verbose", "origin", head_branch, "--force-with-lease")
 
         expected_sha = (await git("log", "-1", "--format=%H")).strip()
@@ -220,6 +231,7 @@ async def rebase_with_git(
     ctxt: context.Context,
     bot_account_feature: subscription.Features,
     bot_account: typing.Optional[github_types.GitHubLogin] = None,
+    autosquash: bool = False,
 ) -> None:
     ctxt.log.info("updating base branch with git")
 
@@ -238,7 +250,7 @@ async def rebase_with_git(
 
     for user in users:
         try:
-            await _do_rebase(ctxt, user, committer)
+            await _do_rebase(ctxt, user, committer, autosquash)
         except gitter.GitAuthenticationFailure as e:  # pragma: no cover
             ctxt.log.info(
                 "authentification failure, will retry another token: %s",

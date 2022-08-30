@@ -689,6 +689,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         else:
             open(self.git.repository + f"/test{self.pr_counter}", "wb").close()
             await self.git("add", f"test{self.pr_counter}")
+
         args_commit = ["commit", "--no-edit", "-m", commit_message]
         tmp_kwargs = {}
         if verified:
@@ -788,6 +789,21 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         pr2 = typing.cast(github_types.GitHubPullRequest, resp.json())
 
         return [pr1, pr2]
+
+    async def create_pr_with_fixup_commit(self) -> github_types.GitHubPullRequest:
+        pr = await self.create_pr()
+
+        with open(self.git.repository + f"/testfixup{self.pr_counter}", "w") as f:
+            f.write("fixup")
+
+        await self.git("add", f"testfixup{self.pr_counter}")
+        await self.git("commit", "--no-edit", "--fixup", pr["head"]["sha"])
+        await self.git("push", "--quiet", "origin", pr["head"]["ref"])
+
+        await self.wait_for("push", {"ref": f"refs/heads/{pr['head']['ref']}"})
+        assert len(await self.get_commits(pr["number"])) == 2
+
+        return await self.get_pull(pr["number"])
 
     async def create_status(
         self,
