@@ -14,12 +14,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import datetime
+import re
 import zoneinfo
 
 from freezegun import freeze_time
 import pytest
 
 from mergify_engine import date
+from mergify_engine import github_types
 from mergify_engine.rules import parser
 
 
@@ -473,6 +475,33 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
         ("body=b", {"=": ("body", "b")}),
         ("body=bb", {"=": ("body", "bb")}),
         ("author=", {"=": ("author", "")}),
+        (
+            "sender-permission=admin",
+            {
+                "=": (
+                    "sender-permission",
+                    github_types.GitHubRepositoryPermission.ADMIN,
+                )
+            },
+        ),
+        (
+            "sender-permission>=write",
+            {
+                ">=": (
+                    "sender-permission",
+                    github_types.GitHubRepositoryPermission.WRITE,
+                )
+            },
+        ),
+        (
+            "sender-permission!=read",
+            {
+                "!=": (
+                    "sender-permission",
+                    github_types.GitHubRepositoryPermission.READ,
+                )
+            },
+        ),
     ),
 )
 @freeze_time(now)
@@ -526,9 +555,9 @@ def test_search(line, result):
         ("-#", "Incomplete condition"),
         ("#-", "Invalid attribute"),
         ("commits-behind", "`#` modifier is required for attribute: `commits-behind`"),
+        ("sender-permission=foo", "Permission must be one of"),
     ),
 )
 def test_invalid(line: str, expected_error: str) -> None:
-    with pytest.raises(parser.ConditionParsingError) as exc:
+    with pytest.raises(parser.ConditionParsingError, match=re.escape(expected_error)):
         parser.parse(line)
-    assert exc.value.message == expected_error

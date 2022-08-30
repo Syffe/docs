@@ -22,6 +22,7 @@ import voluptuous
 from mergify_engine import actions
 from mergify_engine import check_api
 from mergify_engine import context
+from mergify_engine import github_types
 from mergify_engine import queue
 from mergify_engine import rules
 from mergify_engine import signals
@@ -101,7 +102,7 @@ class MergeAction(merge_base.MergeBaseAction[None]):
                 missing_feature_message="Cannot use `merge_bot_account` with merge action",
                 # NOTE(sileht): we don't allow admin, because if branch protection are
                 # enabled, but not enforced on admins, we may bypass them
-                required_permissions=["write", "maintain"],
+                required_permissions=[github_types.GitHubRepositoryPermission.WRITE],
             )
         except action_utils.RenderBotAccountFailure as e:
             return check_api.Result(e.status, e.title, e.reason)

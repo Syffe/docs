@@ -891,22 +891,33 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         await self.wait_for("pull_request", {"action": "review_requested"})
 
     async def create_comment(
-        self, pull_number: github_types.GitHubPullRequestNumber, message: str
+        self,
+        pull_number: github_types.GitHubPullRequestNumber,
+        message: str,
+        as_: typing.Literal["integration", "fork", "admin"] = "integration",
     ) -> int:
-        response = await self.client_integration.post(
+        if as_ == "admin":
+            client = self.client_admin
+        elif as_ == "fork":
+            client = self.client_fork
+        else:
+            client = self.client_integration
+
+        response = await client.post(
             f"{self.url_origin}/issues/{pull_number}/comments", json={"body": message}
         )
         await self.wait_for("issue_comment", {"action": "created"})
         return typing.cast(int, response.json()["id"])
 
+    async def create_comment_as_fork(
+        self, pull_number: github_types.GitHubPullRequestNumber, message: str
+    ) -> int:
+        return await self.create_comment(pull_number, message, as_="fork")
+
     async def create_comment_as_admin(
         self, pull_number: github_types.GitHubPullRequestNumber, message: str
     ) -> int:
-        response = await self.client_admin.post(
-            f"{self.url_origin}/issues/{pull_number}/comments", json={"body": message}
-        )
-        await self.wait_for("issue_comment", {"action": "created"})
-        return typing.cast(int, response.json()["id"])
+        return await self.create_comment(pull_number, message, as_="admin")
 
     async def get_gql_id_of_comment_to_hide(
         self, pr_number: int, comment_number: int

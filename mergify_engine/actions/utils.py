@@ -63,7 +63,11 @@ async def render_bot_account(
         )
 
     if required_permissions is None:
-        required_permissions = ["admin", "write", "maintain"]
+        required_permissions = (
+            github_types.GitHubRepositoryPermission.permissions_above(
+                github_types.GitHubRepositoryPermission.WRITE
+            )
+        )
 
     try:
         bot_account = await ctxt.pull_request.render_template(bot_account_template)

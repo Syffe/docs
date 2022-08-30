@@ -347,6 +347,11 @@ Here's the list of pull request attribute that can be used in conditions:
        Team logins are prefixed with the ``@`` character and must belong to the
        repository organization. See :ref:`Commands Restrictions <commands restrictions>` for more
        details.
+   * - ``sender-permission``
+     - string
+     - The permission of the sender of the GitHub event on the repository.
+       Available permissions are ``admin``, ``write``, ``read`` or ``none``. See
+       :ref:`Commands Restrictions <commands restrictions>` for more details.
    * - ``title``
      - string
      - The title of the pull request.

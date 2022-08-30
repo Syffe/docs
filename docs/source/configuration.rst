@@ -116,6 +116,15 @@ Another example, to limit backport commands usage to a specific team (or user):
       conditions:
         - sender=@team
 
+Or to limit backport commands for users with a specific permission on the repository.
+
+.. code-block:: yaml
+
+  commands_restrictions:
+    backport:
+      conditions:
+        - sender-permission>=write
+
 
 Defaults
 ~~~~~~~~

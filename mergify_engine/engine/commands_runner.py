@@ -301,7 +301,10 @@ async def command_is_allowed(
     if commands_restrictions is not None:
         restriction_conditions = commands_restrictions["conditions"].copy()
         rules.apply_configure_filter(ctxt.repository, restriction_conditions)
-        command_pull_request = context.CommandPullRequest(ctxt, user["login"])
+        user_permission = await ctxt.repository.get_user_permission(user)
+        command_pull_request = context.CommandPullRequest(
+            ctxt, user["login"], user_permission
+        )
         await restriction_conditions([command_pull_request])
     if restriction_conditions is None or restriction_conditions.match:
         return

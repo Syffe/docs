@@ -14,6 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import dataclasses
+import enum
+import functools
 import typing
 
 
@@ -98,7 +100,43 @@ class GitHubRepository(typing.TypedDict):
     default_branch: GitHubRefType
 
 
-GitHubRepositoryPermission = typing.Literal["write", "maintain", "admin", "none"]
+@functools.total_ordering
+class GitHubRepositoryPermission(enum.Enum):
+    level: int
+    _ignore_ = "level"
+
+    def __new__(cls, permission: str) -> "GitHubRepositoryPermission":
+        member = object.__new__(cls)
+        member._value_ = permission
+        member.level = len(cls.__members__)
+        return member
+
+    _order_ = "NONE READ WRITE ADMIN"
+    NONE = "none"
+    READ = "read"
+    WRITE = "write"
+    ADMIN = "admin"
+
+    @classmethod
+    def _missing_(cls, value: object) -> None:
+        allowed_permissions_str = ", ".join(map(str.lower, cls.__members__.keys()))
+        raise ValueError(f"Permission must be one of ({allowed_permissions_str})")
+
+    @classmethod
+    def default(cls) -> "GitHubRepositoryPermission":
+        return cls.NONE
+
+    @classmethod
+    def permissions_above(
+        cls, permission: "GitHubRepositoryPermission"
+    ) -> list["GitHubRepositoryPermission"]:
+        """Return all permissions including the permission and above it"""
+        return [p for p in cls.__members__.values() if p >= permission]
+
+    def __lt__(self, other: "GitHubRepositoryPermission") -> bool:
+        if isinstance(other, GitHubRepositoryPermission):
+            return self.level < other.level
+        return NotImplemented
 
 
 class GitHubRepositoryCollaboratorPermission(typing.TypedDict):

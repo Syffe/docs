@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    New command restriction condition: ``sender-permission``. It allows to
+    restrict commands use to users with a specific permission.

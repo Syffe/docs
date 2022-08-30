@@ -209,7 +209,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             missing_feature_message="Cannot use `merge_bot_account` with queue action",
             # NOTE(sileht): we don't allow admin, because if branch protection are
             # enabled, but not enforced on admins, we may bypass them
-            required_permissions=["write", "maintain"],
+            required_permissions=[github_types.GitHubRepositoryPermission.WRITE],
         )
 
     async def run(

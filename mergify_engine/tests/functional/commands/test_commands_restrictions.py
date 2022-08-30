@@ -166,3 +166,58 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
         comments = await self.get_issue_comments(pr["number"])
         assert len(comments) == 2
         assert "Command disallowed due to [command restrictions]" in comments[1]["body"]
+
+    async def test_commands_restrictions_sender_permission(self) -> None:
+        stable_branch = self.get_full_branch_name("stable/#3.1")
+
+        await self.setup_repo(
+            yaml.dump(
+                {
+                    "commands_restrictions": {
+                        "copy": {"conditions": ["sender-permission=admin"]}
+                    }
+                }
+            ),
+            test_branches=[stable_branch],
+        )
+        pr = await self.create_pr()
+
+        # Create command as non-admin user
+        await self.create_comment_as_fork(
+            pr["number"], f"@mergifyio copy {stable_branch}"
+        )
+        await self.run_engine()
+        await self.wait_for("issue_comment", {"action": "created"})
+        await self.run_engine()
+
+        # No copy done
+        pulls_stable = await self.get_pulls(
+            params={"state": "all", "base": stable_branch}
+        )
+        assert 0 == len(pulls_stable)
+
+        # Failure comment
+        comments = await self.get_issue_comments(pr["number"])
+        assert len(comments) == 2
+        # FIXME(charly): should be done with restriction_conditions: MRGFY-1405
+        # assert "Command disallowed due to [command restrictions]" in comments[1]["body"]
+        assert "is not allowed to run commands" in comments[-1]["body"]
+
+        # Create command as admin user
+        await self.create_comment_as_admin(
+            pr["number"], f"@mergifyio copy {stable_branch}"
+        )
+        await self.run_engine()
+        await self.wait_for("issue_comment", {"action": "created"})
+        await self.run_engine()
+
+        # Copy done successfully because sender is in the team
+        pulls_stable = await self.get_pulls(
+            params={"state": "all", "base": stable_branch}
+        )
+        assert 1 == len(pulls_stable)
+
+        # Success comment
+        comments = await self.get_issue_comments(pr["number"])
+        assert len(comments) == 4
+        assert "Pull request copies have been created" in comments[-1]["body"]

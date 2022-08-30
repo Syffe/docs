@@ -20,6 +20,7 @@ import re
 import typing
 
 from mergify_engine import date
+from mergify_engine import github_types
 from mergify_engine.rules import filter
 
 
@@ -44,6 +45,7 @@ class Parser(enum.Enum):
     TIMESTAMP_OR_TIMEDELTA = enum.auto()
     TIMESTAMP = enum.auto()
     BOOL = enum.auto()
+    PERMISSION = enum.auto()
 
 
 CONDITION_PARSERS = {
@@ -106,6 +108,7 @@ CONDITION_PARSERS = {
     "dependabot-dependency-name": Parser.TEXT,
     "dependabot-dependency-type": Parser.TEXT,
     "dependabot-update-type": Parser.TEXT,
+    "sender-permission": Parser.PERMISSION,
 }
 # NOTE(sileht): From the longest string to the short one to ensure for
 # example that merged-at is selected before merged
@@ -160,6 +163,7 @@ SUPPORTED_OPERATORS = {
     Parser.MONTH: SIMPLE_OPERATORS,
     Parser.YEAR: SIMPLE_OPERATORS,
     Parser.DOW: SIMPLE_OPERATORS,
+    Parser.PERMISSION: SIMPLE_OPERATORS,
 }
 
 INVALID_BRANCH_CHARS = "~^: []\\"
@@ -462,5 +466,11 @@ def parse(v: str) -> typing.Any:
                     else:
                         raise ConditionParsingError("Invalid GitHub login")
         return _to_dict(negate, quantity, attribute, op, value)
+    elif parser == Parser.PERMISSION:
+        try:
+            permission = github_types.GitHubRepositoryPermission(value)
+        except ValueError as e:
+            raise ConditionParsingError(str(e))
+        return _to_dict(negate, False, attribute, op, permission)
     else:
         raise RuntimeError(f"unhandled parser: {parser}")

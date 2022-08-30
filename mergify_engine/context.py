@@ -685,27 +685,49 @@ class Repository(object):
                 )
             )
             if cached_permission_raw is None:
-                permission = typing.cast(
-                    github_types.GitHubRepositoryCollaboratorPermission,
-                    await self.installation.client.item(
-                        f"{self.base_url}/collaborators/{user['login']}/permission"
-                    ),
-                )["permission"]
-                pipe = await self.installation.redis.user_permissions_cache.pipeline()
-                await pipe.hset(key, user["id"], permission)
-                await pipe.expire(key, self.USERS_PERMISSION_EXPIRATION)
-                await pipe.execute()
+                permission = await self._get_user_permission_from_github(user)
+                await self._set_permission_cache(user, permission)
             else:
-                permission = typing.cast(
-                    github_types.GitHubRepositoryPermission,
-                    cached_permission_raw.decode(),
+                permission = github_types.GitHubRepositoryPermission(
+                    cached_permission_raw.decode()
                 )
             self._caches.user_permissions.set(user["id"], permission)
         return permission
 
+    async def _get_user_permission_from_github(
+        self, user: github_types.GitHubAccount
+    ) -> github_types.GitHubRepositoryPermission:
+        permission_response = await self.installation.client.item(
+            f"{self.base_url}/collaborators/{user['login']}/permission"
+        )
+        permission_str = permission_response["permission"]
+
+        try:
+            return github_types.GitHubRepositoryPermission(permission_str)
+        except ValueError:
+            self.log.error(
+                f"Received unknown '{permission_str}' permission from GitHub. "
+                "Keeps processing with none permission."
+            )
+            return github_types.GitHubRepositoryPermission.default()
+
+    async def _set_permission_cache(
+        self,
+        user: github_types.GitHubAccount,
+        permission: github_types.GitHubRepositoryPermission,
+    ) -> None:
+        pipe = await self.installation.redis.user_permissions_cache.pipeline()
+        await pipe.hset(self._users_permission_cache_key, user["id"], permission.value)
+        await pipe.expire(
+            self._users_permission_cache_key, self.USERS_PERMISSION_EXPIRATION
+        )
+        await pipe.execute()
+
     async def has_write_permission(self, user: github_types.GitHubAccount) -> bool:
         permission = await self.get_user_permission(user)
-        return permission in ("admin", "maintain", "write")
+        return permission in github_types.GitHubRepositoryPermission.permissions_above(
+            github_types.GitHubRepositoryPermission.WRITE
+        )
 
     TEAMS_PERMISSION_CACHE_KEY_PREFIX = "teams_permission"
     TEAMS_PERMISSION_CACHE_KEY_DELIMITER = "/"
@@ -960,6 +982,7 @@ ContextAttributeType = typing.Union[
     typing.List[github_types.GitHubLogin],
     typing.List[github_types.GitHubBranchCommit],
     typing.List[github_types.CachedGitHubBranchCommit],
+    github_types.GitHubRepositoryPermission,
 ]
 
 
@@ -2388,10 +2411,13 @@ class CommandPullRequest(PullRequest):
 
     context: Context
     sender: github_types.GitHubLogin
+    sender_permission: github_types.GitHubRepositoryPermission
 
     async def __getattr__(self, name: str) -> ContextAttributeType:
         if name == "sender":
             return self.sender
+        elif name == "sender-permission":
+            return self.sender_permission
         else:
             return await super().__getattr__(name)
 

@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Copyright © 2019 Mehdi Abaakouk <sileht@sileht.net>
+# Copyright © 2019-2022 Mergify SAS
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -137,6 +137,31 @@ defaults:
     }
 
 
+def create_fake_user(user_id: int = 1) -> github_types.GitHubAccount:
+    return github_types.GitHubAccount(
+        {
+            "id": github_types.GitHubAccountIdType(user_id),
+            "login": github_types.GitHubLogin("wall-e"),
+            "type": "Bot",
+            "avatar_url": "https://avatars.githubusercontent.com/u/583231?v=4",
+        },
+    )
+
+
+def create_fake_installation_client(
+    user: github_types.GitHubAccount, user_permission: str
+) -> mock.Mock:
+    client = mock.Mock()
+    client.item = mock.AsyncMock()
+    client.item.return_value = {
+        "permission": user_permission,
+        "user": user,
+    }
+    client.post = mock.AsyncMock()
+    client.post.return_value = mock.Mock()
+    return client
+
+
 @pytest.mark.parametrize(
     "user_id,permission,comment,result",
     [
@@ -184,7 +209,7 @@ defaults:
         ),
         (
             666,
-            "maintain",
+            "write",
             "@mergifyio something",
             "Sorry but I didn't understand the command",
         ),
@@ -203,25 +228,8 @@ async def test_run_command_with_user(
     result: typing.Optional[str],
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
-
-    user = github_types.GitHubAccount(
-        {
-            "id": github_types.GitHubAccountIdType(user_id),
-            "login": github_types.GitHubLogin("wall-e"),
-            "type": "Bot",
-            "avatar_url": "https://avatars.githubusercontent.com/u/583231?v=4",
-        },
-    )
-
-    client = mock.Mock()
-    client.item = mock.AsyncMock()
-    client.item.return_value = {
-        "permission": permission,
-        "user": user,
-    }
-    client.post = mock.AsyncMock()
-    client.post.return_value = mock.Mock()
-
+    user = create_fake_user(user_id)
+    client = create_fake_installation_client(user, permission)
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
     ctxt.repository.installation.client = client
 
@@ -250,14 +258,7 @@ async def test_run_command_with_user(
 async def test_run_command_with_wrong_arg(
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
-    user = github_types.GitHubAccount(
-        {
-            "id": github_types.GitHubAccountIdType(123),
-            "login": github_types.GitHubLogin("wall-e"),
-            "type": "Bot",
-            "avatar_url": "https://avatars.githubusercontent.com/u/583231?v=4",
-        },
-    )
+    user = create_fake_user()
     client = mock.Mock()
     client.post = mock.AsyncMock()
     client.post.return_value = mock.Mock()
@@ -276,3 +277,64 @@ async def test_run_command_with_wrong_arg(
     assert client.post.call_args_list[0][1]["json"]["body"].startswith(
         "Sorry but I didn't understand the arguments of the command `squash`"
     )
+
+
+@pytest.mark.parametrize(
+    "command_restriction,user_permission,is_command_allowed",
+    [
+        ("sender-permission=admin", "admin", True),
+        ("sender-permission=admin", "write", False),
+        ("sender-permission=write", "admin", False),
+        ("sender-permission=write", "write", True),
+        ("sender-permission!=write", "admin", True),
+        ("sender-permission!=write", "write", False),
+        ("sender-permission<admin", "admin", False),
+        ("sender-permission<admin", "write", True),
+        ("sender-permission<=admin", "admin", True),
+        ("sender-permission<=admin", "write", True),
+        ("sender-permission>write", "write", False),
+        ("sender-permission>write", "admin", True),
+        ("sender-permission>=write", "write", True),
+        ("sender-permission>=write", "admin", True),
+    ],
+)
+async def test_commands_restrictions_sender_permission(
+    command_restriction: str,
+    user_permission: str,
+    is_command_allowed: bool,
+    context_getter: conftest.ContextGetterFixture,
+) -> None:
+    mergify_config = rules.get_mergify_config(
+        context.MergifyConfigFile(
+            type="file",
+            content="whatever",
+            sha=github_types.SHAType("azertyuiop"),
+            path="whatever",
+            decoded_content=f"""
+commands_restrictions:
+  squash:
+    conditions:
+    - {command_restriction}
+""",
+        )
+    )
+
+    user = create_fake_user()
+    client = create_fake_installation_client(user, user_permission)
+    ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
+    ctxt.repository.installation.client = client
+
+    await commands_runner.handle(
+        ctxt=ctxt,
+        mergify_config=mergify_config,
+        comment_command="@mergify squash",
+        user=user,
+    )
+
+    if is_command_allowed:
+        expected_result_str = "Pull request is already one-commit long"
+    else:
+        expected_result_str = "Command disallowed due to [command restrictions]"
+
+    client.post.assert_called_once()
+    assert expected_result_str in client.post.call_args_list[0][1]["json"]["body"]
