@@ -110,7 +110,10 @@ async def simulator_pull(
         summary = f"### {e.reason}\n\n{e.details}"
     else:
         title, summary = await actions_runner.gen_summary(
-            ctxt, config["pull_request_rules"], match
+            ctxt,
+            config["pull_request_rules"],
+            match,
+            display_action_configs=True,
         )
     return SimulatorResponse(title=title, summary=summary)
 

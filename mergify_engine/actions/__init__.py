@@ -154,6 +154,7 @@ class BackwardCompatActionExecutor(ActionExecutor["BackwardCompatAction", RawCon
 class ActionExecutorProtocol(typing.Protocol):
     ctxt: "context.Context"
     rule: "rules.EvaluatedRule"
+    config: dict[str, typing.Any]
 
     @abc.abstractmethod
     async def run(self) -> check_api.Result:  # pragma: no cover

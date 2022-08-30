@@ -22,6 +22,7 @@ import socket
 import typing
 
 import daiquiri
+import yaml
 
 
 LOG = daiquiri.getLogger()
@@ -175,3 +176,16 @@ def get_mergify_payload(json_payload: dict[str, typing.Any]) -> str:
 {json.dumps(json_payload)}
 {MERGIFY_COMMENT_PAYLOAD_STR_SUFFIX}
 -->"""
+
+
+class LiteralYamlString(yaml.YAMLObject):
+    yaml_tag = ""
+    yaml_loader = []  # type: ignore[var-annotated]
+    yaml_dumper = yaml.SafeDumper
+
+    def __init__(self, data: str) -> None:
+        self.data = data
+
+    @classmethod
+    def to_yaml(cls, dumper: yaml.BaseDumper, data: typing.Any) -> typing.Any:
+        return dumper.represent_scalar("tag:yaml.org,2002:str", data.data, style="|")

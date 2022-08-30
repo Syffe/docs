@@ -29,8 +29,10 @@ from mergify_engine import delayed_refresh
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import rules
+from mergify_engine import utils
 from mergify_engine.dashboard import subscription
 from mergify_engine.queue import merge_train
+from mergify_engine.rules import conditions
 
 
 NOT_APPLICABLE_TEMPLATE = """<details>
@@ -81,9 +83,22 @@ async def get_already_merged_summary(
         return "⚠️ The pull request has been merged by " f"@{merged_by}\n\n"
 
 
+def _sanitize_action_config(config_key: str, config_value: typing.Any) -> typing.Any:
+    if "bot_account" in config_key and config_value is not None:
+        return config_value["login"]
+    elif isinstance(config_value, conditions.PullRequestRuleConditions):
+        return utils.LiteralYamlString(config_value.get_summary().strip())
+    elif isinstance(config_value, set):
+        return list(config_value)
+    elif isinstance(config_value, str) and "\n" in config_value:
+        return utils.LiteralYamlString(config_value)
+    return config_value
+
+
 async def gen_summary_rules(
     ctxt: context.Context,
     _rules: typing.List[rules.EvaluatedRule],
+    display_action_configs: bool,
 ) -> str:
     summary = ""
     for rule in _rules:
@@ -96,6 +111,26 @@ async def gen_summary_rules(
             summary += f":no_entry_sign: **Disabled: {rule.disabled['reason']}**\n"
         summary += rule.conditions.get_summary()
         summary += "\n"
+        if display_action_configs:
+            for action_name, action in rule.actions.items():
+                # TODO(sileht): drop me once all actions has been migrated to actions.ActionExecutor base class
+                if (
+                    isinstance(action.executor, actions.BackwardCompatActionExecutor)
+                    or not action.executor.config
+                ):
+                    continue
+
+                summary += f"**{action_name} action configuration:**\n"
+                summary += "```\n"
+                summary += yaml.safe_dump(
+                    {
+                        k: _sanitize_action_config(k, v)
+                        for k, v in action.executor.config.items()
+                    },
+                    default_flow_style=False,
+                ).replace("```", "\\`\\`\\`")
+                summary += "```"
+                summary += "\n\n"
     return summary
 
 
@@ -103,6 +138,7 @@ async def gen_summary(
     ctxt: context.Context,
     pull_request_rules: rules.PullRequestRules,
     match: rules.RulesEvaluator,
+    display_action_configs: bool = False,
 ) -> typing.Tuple[str, str]:
     summary = ""
     summary += await get_already_merged_summary(ctxt, match)
@@ -116,8 +152,10 @@ async def gen_summary(
 
     if ctxt.configuration_changed:
         summary += "⚠️ The configuration has been changed, *queue* and *merge* actions are ignored. ⚠️\n\n"
-    summary += await gen_summary_rules(ctxt, match.faulty_rules)
-    summary += await gen_summary_rules(ctxt, matching_rules_to_display)
+    summary += await gen_summary_rules(ctxt, match.faulty_rules, display_action_configs)
+    summary += await gen_summary_rules(
+        ctxt, matching_rules_to_display, display_action_configs
+    )
     if ctxt.subscription.has_feature(subscription.Features.SHOW_SPONSOR):
         summary += constants.MERGIFY_OPENSOURCE_SPONSOR_DOC
 
@@ -144,11 +182,15 @@ async def gen_summary(
             )
 
         if ignored_rules_count > 0:
-            summary += await gen_summary_rules(ctxt, ignored_rules)
+            summary += await gen_summary_rules(
+                ctxt, ignored_rules, display_action_configs
+            )
 
         if not_applicable_base_changeable_attributes_rules_to_display_count > 0:
             summary += await gen_summary_rules(
-                ctxt, not_applicable_base_changeable_attributes_rules_to_display
+                ctxt,
+                not_applicable_base_changeable_attributes_rules_to_display,
+                display_action_configs,
             )
 
         summary += "</details>\n"
@@ -196,7 +238,11 @@ async def get_summary_check_result(
     conclusions: typing.Dict[str, check_api.Conclusion],
     previous_conclusions: typing.Dict[str, check_api.Conclusion],
 ) -> typing.Optional[check_api.Result]:
-    summary_title, summary = await gen_summary(ctxt, pull_request_rules, match)
+    summary_title, summary = await gen_summary(
+        ctxt,
+        pull_request_rules,
+        match,
+    )
 
     summary = serialize_conclusions(conclusions) + "\n" + summary
     summary += constants.MERGIFY_PULL_REQUEST_DOC
