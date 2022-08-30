@@ -290,14 +290,14 @@ class CommandNotAllowed(Exception):
     conditions: conditions_mod.PullRequestRuleConditions
 
 
-async def command_is_allowed(
+async def check_command_restrictions(
     ctxt: context.Context,
     mergify_config: rules.MergifyConfig,
     command: Command,
     user: github_types.GitHubAccount,
 ) -> None:
     commands_restrictions = mergify_config["commands_restrictions"].get(command.name)
-    restriction_conditions = None
+
     if commands_restrictions is not None:
         restriction_conditions = commands_restrictions["conditions"].copy()
         rules.apply_configure_filter(ctxt.repository, restriction_conditions)
@@ -306,9 +306,9 @@ async def command_is_allowed(
             ctxt, user["login"], user_permission
         )
         await restriction_conditions([command_pull_request])
-    if restriction_conditions is None or restriction_conditions.match:
-        return
-    raise CommandNotAllowed(restriction_conditions)
+
+        if not restriction_conditions.match:
+            raise CommandNotAllowed(restriction_conditions)
 
 
 async def handle(
@@ -363,7 +363,7 @@ async def handle(
         return
 
     try:
-        await command_is_allowed(ctxt, mergify_config, command, user)
+        await check_command_restrictions(ctxt, mergify_config, command, user)
     except CommandNotAllowed as e:
         result = check_api.Result(
             check_api.Conclusion.FAILURE,
