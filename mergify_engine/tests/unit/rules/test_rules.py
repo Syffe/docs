@@ -29,8 +29,19 @@ from mergify_engine import rules
 from mergify_engine.clients import http
 from mergify_engine.rules import InvalidRules
 from mergify_engine.rules import conditions
-from mergify_engine.rules import get_mergify_config
 from mergify_engine.tests.unit import conftest
+
+
+def load_mergify_config(content: str) -> rules.MergifyConfig:
+    file = context.MergifyConfigFile(
+        type="file",
+        content="whatever",
+        sha=github_types.SHAType("azertyuiop"),
+        path="whatever",
+        decoded_content=content,
+    )
+
+    return rules.get_mergify_config(file)
 
 
 def pull_request_rule_from_list(lst: typing.Any) -> rules.PullRequestRules:
@@ -256,9 +267,8 @@ def test_same_names() -> None:
 
 
 def test_jinja_with_list_attribute() -> None:
-    pull_request_rules = rules.UserConfigurationSchema(
-        rules.YamlSchema(
-            """
+    config = load_mergify_config(
+        """
             pull_request_rules:
               - name: ahah
                 conditions:
@@ -281,9 +291,8 @@ def test_jinja_with_list_attribute() -> None:
                       {% endfor %}
                       Thank you @{{author}} for your contributions!
             """
-        )
-    )["pull_request_rules"]
-    assert [rule.name for rule in pull_request_rules] == [
+    )
+    assert [rule.name for rule in config["pull_request_rules"]] == [
         "ahah",
     ]
 
@@ -470,7 +479,7 @@ async def test_get_mergify_config(
 
     config_file = await fake_repository.get_mergify_config_file()
     assert config_file is not None
-    schema = get_mergify_config(config_file)
+    schema = rules.get_mergify_config(config_file)
     assert isinstance(schema, dict)
     assert "pull_request_rules" in schema
     assert "queue_rules" in schema
@@ -519,7 +528,7 @@ pull_request_rules:
     config_file = await fake_repository.get_mergify_config_file()
     assert config_file is not None
 
-    schema = get_mergify_config(config_file)
+    schema = rules.get_mergify_config(config_file)
     assert isinstance(schema, dict)
 
     assert len(schema["pull_request_rules"].rules) == 1
@@ -557,7 +566,7 @@ pull_request_rules:
     config_file = await fake_repository.get_mergify_config_file()
     assert config_file is not None
 
-    schema = get_mergify_config(config_file)
+    schema = rules.get_mergify_config(config_file)
     assert isinstance(schema, dict)
 
     assert len(schema["pull_request_rules"].rules) == 1
@@ -710,7 +719,7 @@ async def test_get_mergify_config_invalid(
 
         config_file = await fake_repository.get_mergify_config_file()
         assert config_file is not None
-        get_mergify_config(config_file)
+        rules.get_mergify_config(config_file)
 
 
 def test_user_configuration_schema() -> None:
@@ -2031,13 +2040,32 @@ async def test_has_unmatched_conditions() -> None:
     assert not pr_conditions.has_unmatched_conditions()
 
 
+async def test_template_with_empty_body() -> None:
+    config = load_mergify_config(
+        """pull_request_rules:
+  - name: rule name
+    conditions:
+      - base=master
+    actions:
+      queue:
+        name: default
+        commit_message_template: |
+          {{title}}
+
+          {{ body.split('----PR MESSAGE----')[0] }}
+"""
+    )
+
+    queue_config = config["pull_request_rules"].rules[0].actions["queue"]
+    assert (
+        queue_config.config["commit_message_template"]
+        == "{{title}}\n\n{{ body.split('----PR MESSAGE----')[0] }}\n"
+    )
+
+
 def test_ignorable_root_key() -> None:
-    file = context.MergifyConfigFile(
-        type="file",
-        content="whatever",
-        sha=github_types.SHAType("azertyuiop"),
-        path="whatever",
-        decoded_content="""
+    config = load_mergify_config(
+        """
 shared:
   conditions: &cond1
     - status-success=continuous-integration/fake-ci
@@ -2058,11 +2086,10 @@ pull_request_rules:
 """,
     )
 
-    evaluated_rules = rules.get_mergify_config(file)
-    assert "shared" not in evaluated_rules
+    assert "shared" not in config
 
     assert (
-        evaluated_rules["queue_rules"]  # type: ignore[union-attr]
+        config["queue_rules"]  # type: ignore[union-attr]
         .rules[0]
         .conditions.condition.conditions[0]
         .condition

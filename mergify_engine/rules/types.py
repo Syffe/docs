@@ -40,11 +40,16 @@ class LineColumnPath:
 
 class DummyContext(context.Context):
 
+    ALWAYS_STRING_ATTRIBUTES = ("title", "body")
+
     # This is only used to check Jinja2 syntax validity and must be sync
-    @staticmethod
-    def _get_consolidated_data(key):
+    @classmethod
+    def _get_consolidated_data(cls, key):
         if key in context.PullRequest.ATTRIBUTES:
-            return None
+            if key in cls.ALWAYS_STRING_ATTRIBUTES:
+                return ""
+            else:
+                return None
         elif key in context.PullRequest.LIST_ATTRIBUTES:
             return []
         elif key in context.PullRequest.LIST_ATTRIBUTES_WITH_LENGTH_OPTIMIZATION:
