@@ -4802,6 +4802,88 @@ pull_requests:
         tmp_pull = [p for p in pulls if p["number"] == car.queue_pull_request_number][0]
         assert tmp_pull["draft"]
 
+    async def test_failed_draft_pr_auto_cleanup(self) -> None:
+        config = {
+            "queue_rules": [
+                {
+                    "name": "foo",
+                    "conditions": [
+                        "check-success=continuous-integration/fake-ci",
+                    ],
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "queue",
+                    "conditions": [
+                        "check-success=continuous-integration/fake-ci",
+                    ],
+                    "actions": {"queue": {"name": "foo"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(config))
+
+        p = await self.create_pr()
+
+        ctxt = context.Context(self.repository_ctxt, p)
+        q = await merge_train.Train.from_context(ctxt)
+        base_sha = await q.get_base_sha()
+
+        queue_config = rules.QueueConfig(
+            priority=0,
+            speculative_checks=5,
+            batch_size=1,
+            batch_max_wait_time=datetime.timedelta(seconds=0),
+            allow_inplace_checks=True,
+            disallow_checks_interruption_from_queues=[],
+            checks_timeout=None,
+            draft_bot_account=None,
+            queue_branch_prefix=constants.MERGE_QUEUE_BRANCH_PREFIX,
+        )
+        queue_pull_config = queue.PullQueueConfig(
+            name=rules.QueueName("foo"),
+            strict_method="merge",
+            update_method="merge",
+            priority=0,
+            effective_priority=0,
+            bot_account=None,
+            update_bot_account=None,
+        )
+
+        embarked_pulls = [
+            merge_train.EmbarkedPull(q, p["number"], queue_pull_config, date.utcnow())
+        ]
+        car = merge_train.TrainCar(
+            q,
+            embarked_pulls,
+            embarked_pulls,
+            [],
+            base_sha,
+        )
+        q._cars.append(car)
+
+        queue_rule = rules.QueueRule(
+            name=rules.QueueName("foo"),
+            conditions=conditions.QueueRuleConditions([]),
+            config=queue_config,
+        )
+        await car.start_checking_with_draft(queue_rule)
+        assert car.queue_pull_request_number is not None
+        pulls = await self.get_pulls()
+        assert len(pulls) == 2
+
+        # NOTE(sileht): We don't save the merge train in Redis on purpose, so next
+        # engine run should delete merge-queue branch of draft PR not tied to a
+        # TrainCar
+        await self.wait_for("pull_request", {"action": "opened"})
+        await self.run_engine()
+        await self.wait_for("pull_request", {"action": "closed"})
+        draft_pr = await self.get_pull(
+            typing.cast(github_types.GitHubPullRequestNumber, p["number"] + 1)
+        )
+        assert draft_pr["state"] == "closed"
+
     async def test_create_pull_conflicts(self) -> None:
         await self.setup_repo(yaml.dump({}), files={"conflicts": "foobar"})
 

@@ -15,7 +15,6 @@
 # under the License.
 
 import typing
-from urllib import parse
 
 import voluptuous
 
@@ -82,26 +81,23 @@ class DeleteHeadBranchExecutor(
                     f"because it is used by:\n{pulls_using_this_branch_formatted}",
                 )
 
-        ref_to_delete = parse.quote(self.ctxt.pull["head"]["ref"], safe="")
         try:
-            await self.ctxt.client.delete(
-                f"{self.ctxt.base_url}/git/refs/heads/{ref_to_delete}"
+            existed = await self.ctxt.repository.delete_branch_if_exists(
+                self.ctxt.pull["head"]["ref"]
             )
         except http.HTTPClientSideError as e:
-            if e.status_code == 404 or (
-                e.status_code == 422 and "Reference does not exist" in e.message
-            ):
-                return check_api.Result(
-                    check_api.Conclusion.SUCCESS,
-                    f"Branch `{self.ctxt.pull['head']['ref']}` does not exist",
-                    "",
-                )
-            else:
-                return check_api.Result(
-                    check_api.Conclusion.FAILURE,
-                    "Unable to delete the head branch",
-                    f"GitHub error: [{e.status_code}] `{e.message}`",
-                )
+            return check_api.Result(
+                check_api.Conclusion.FAILURE,
+                "Unable to delete the head branch",
+                f"GitHub error: [{e.status_code}] `{e.message}`",
+            )
+
+        if not existed:
+            return check_api.Result(
+                check_api.Conclusion.SUCCESS,
+                f"Branch `{self.ctxt.pull['head']['ref']}` does not exist",
+                "",
+            )
         await signals.send(
             self.ctxt.repository,
             self.ctxt.pull["number"],

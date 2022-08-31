@@ -1041,8 +1041,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             await self.train._close_pull_request(self.queue_pull_request_number)
 
         if self.queue_branch_name is not None:
-            escaped_branch_name = parse.quote(self.queue_branch_name, safe="/")
-            await self.train._delete_branch(escaped_branch_name)
+            await self.train.repository.delete_branch_if_exists(self.queue_branch_name)
 
     async def _set_creation_failure(
         self,
@@ -2476,23 +2475,6 @@ class Train:
             return description.strip()
         else:
             return await ep.car.generate_merge_queue_summary(pull_rule=pull_rule)
-
-    async def _delete_branch(self, escaped_branch_name: str) -> None:
-        try:
-            await self.repository.installation.client.delete(
-                f"/repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/git/refs/heads/{escaped_branch_name}"
-            )
-        except http.HTTPClientSideError as exc:
-            if exc.status_code == 404 or (
-                exc.status_code == 422 and "Reference does not exist" in exc.message
-            ):
-                self.log.warning(
-                    "fail to delete merge-queue branch",
-                    branch=escaped_branch_name,
-                    exc_info=True,
-                )
-            else:
-                raise
 
     async def _close_pull_request(
         self, pull_request_number: github_types.GitHubPullRequestNumber

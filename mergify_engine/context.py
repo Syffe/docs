@@ -509,6 +509,21 @@ class Repository(object):
             self._caches.branches.set(branch_name, branch)
         return branch
 
+    async def delete_branch_if_exists(self, branch_name: str) -> bool:
+        escaped_branch_name = parse.quote(branch_name, safe="")
+        try:
+            await self.installation.client.delete(
+                f"{self.base_url}/git/refs/heads/{escaped_branch_name}"
+            )
+        except http.HTTPClientSideError as exc:
+            if exc.status_code == 404 or (
+                exc.status_code == 422 and "Reference does not exist" in exc.message
+            ):
+                return False
+            else:
+                raise
+        return True
+
     async def get_pull_request_context(
         self,
         pull_number: github_types.GitHubPullRequestNumber,

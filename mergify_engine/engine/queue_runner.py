@@ -54,11 +54,13 @@ async def handle(queue_rules: rules.QueueRules, ctxt: context.Context) -> None:
                 "train car temporary pull request has been closed", sources=ctxt.sources
             )
         else:
-            ctxt.log.warning(
-                "train car not found for an opened merge queue pull request",
+            # NOTE(sileht): no need to close the PR, GitHub will do it for us.
+            ctxt.log.info(
+                "train car not found, deleting the merge-queue branch",
                 sources=ctxt.sources,
+                branch=ctxt.pull["head"]["ref"],
             )
-
+            await ctxt.repository.delete_branch_if_exists(ctxt.pull["head"]["ref"])
         return
 
     if car.checks_conclusion != check_api.Conclusion.PENDING and ctxt.closed:
