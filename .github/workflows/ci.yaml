@@ -22,7 +22,7 @@ jobs:
         run: ${{ steps.get_actionlint.outputs.executable }} -color
 
   pep8:
-    timeout-minutes: 7
+    timeout-minutes: 20
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout 🛎️
@@ -44,7 +44,7 @@ jobs:
           bash -n datadog-wrapper.sh
 
   import-checks:
-    timeout-minutes: 5
+    timeout-minutes: 20
     runs-on: ubuntu-20.04
     services:
       redis:
@@ -66,7 +66,7 @@ jobs:
           pip install -r requirements-dev.txt
           tox -e import-checks
   test:
-    timeout-minutes: 10
+    timeout-minutes: 20
     runs-on: ubuntu-20.04
     services:
       redis:
@@ -88,7 +88,7 @@ jobs:
           pip install -r requirements-dev.txt
           tox -e py310
   docs:
-    timeout-minutes: 5
+    timeout-minutes: 20
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout 🛎️
