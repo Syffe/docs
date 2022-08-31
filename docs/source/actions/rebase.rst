@@ -44,7 +44,7 @@ Options
       logged in Mergify dashboard once.
   * - ``autosquash``
     - bool
-    - True
+    - False
     - When set to ``True``, commits starting with ``fixup!``, ``squash!`` and ``amend!``
       are squashed during the rebase.
 
