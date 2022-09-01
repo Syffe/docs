@@ -657,7 +657,8 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         draft: bool = False,
         git_tree_ready: bool = False,
         verified: bool = False,
-        commit_message: typing.Optional[str] = None,
+        commit_headline: typing.Optional[str] = None,
+        commit_body: typing.Optional[str] = None,
     ) -> github_types.GitHubPullRequest:
         self.pr_counter += 1
 
@@ -677,8 +678,8 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
             branch = self.get_full_branch_name(branch)
 
         title = f"{self._testMethodName}: pull request n{self.pr_counter} from {as_}"
-        if not commit_message:
-            commit_message = title
+        if not commit_headline:
+            commit_headline = title
 
         if git_tree_ready:
             await self.git("branch", "-M", branch)
@@ -691,7 +692,10 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
             open(self.git.repository + f"/test{self.pr_counter}", "wb").close()
             await self.git("add", f"test{self.pr_counter}")
 
-        args_commit = ["commit", "--no-edit", "-m", commit_message]
+        args_commit = ["commit", "--no-edit", "-m", commit_headline]
+        if commit_body is not None:
+            args_commit += ["-m", commit_body]
+
         tmp_kwargs = {}
         if verified:
             temporary_folder = tempfile.mkdtemp()
@@ -708,7 +712,9 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
             )
             args_commit.append("-S")
             tmp_kwargs = {"_env": tmp_env}
+
         await self.git(*args_commit, **tmp_kwargs)
+
         if two_commits:
             await self.git(
                 "mv", f"test{self.pr_counter}", f"test{self.pr_counter}-moved"
@@ -717,11 +723,15 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
                 "commit",
                 "--no-edit",
                 "-m",
-                f"{commit_message}, moved",
+                f"{commit_headline}, moved",
             ]
+            if commit_body is not None:
+                args_second_commit += ["-m", commit_body]
             if verified:
                 args_second_commit.append("-S")
+
             await self.git(*args_second_commit, **tmp_kwargs)
+
         await self.git("push", "--quiet", remote, branch)
 
         if as_ == "admin":

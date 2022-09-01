@@ -1103,10 +1103,8 @@ class TestAttributesWithSub(base.FunctionalTestBase):
 
         await self.setup_repo(yaml.dump(rules))
         pr = await self.create_pr(
-            commit_message="""
-            chore(deps-dev): bump bootstrap from 5.1.3 to 5.2.0 in /docs
-
-            Bumps [bootstrap](https://github.com/twbs/bootstrap) from 5.1.3 to 5.2.0.
+            commit_headline="chore(deps-dev): bump bootstrap from 5.1.3 to 5.2.0 in /docs",
+            commit_body="""Bumps [bootstrap](https://github.com/twbs/bootstrap) from 5.1.3 to 5.2.0.
             - [Release notes](https://github.com/twbs/bootstrap/releases)
             - [Commits](https://github.com/twbs/bootstrap/compare/v5.1.3...v5.2.0)
 
