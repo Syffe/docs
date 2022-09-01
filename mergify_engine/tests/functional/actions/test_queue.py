@@ -2053,6 +2053,178 @@ class TestQueueAction(base.FunctionalTestBase):
 
         await self.assert_merge_queue_contents(q, None, [])
 
+    async def test_unqueue_all_pr_when_unexpected_changes_on_draft_pr(self) -> None:
+        rules_config = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "batch_max_wait_time": "0 s",
+                    "speculative_checks": 2,
+                    "batch_size": 3,
+                    "allow_inplace_checks": True,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules_config))
+
+        p1 = await self.create_pr()
+        p2 = await self.create_pr()
+
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        draft_pr = await self.get_pull(
+            github_types.GitHubPullRequestNumber(p2["number"] + 1)
+        )
+        assert draft_pr["number"] not in [p1["number"], p2["number"]]
+
+        ctxt = context.Context(self.repository_ctxt, p1)
+        q = await merge_train.Train.from_context(ctxt)
+        await self.assert_merge_queue_contents(
+            q,
+            p1["base"]["sha"],
+            [
+                base.MergeQueueCarMatcher(
+                    [p1["number"], p2["number"]],
+                    [],
+                    p1["base"]["sha"],
+                    "created",
+                    draft_pr["number"],
+                ),
+            ],
+        )
+
+        # we push changes to the draft PR's branch
+        await self.git("fetch", "origin", f'{draft_pr["head"]["ref"]}')
+        await self.git("checkout", "-b", "random", f'origin/{draft_pr["head"]["ref"]}')
+        open(self.git.repository + "/random_file.txt", "wb").close()
+        await self.git("add", "random_file.txt")
+        await self.git("commit", "--no-edit", "-m", "random update")
+        await self.git("push", "--quiet", "origin", f'random:{draft_pr["head"]["ref"]}')
+        await self.wait_for("pull_request", {"action": "synchronize"})
+        await self.run_engine()
+
+        # when detecting external changes onto the draft PR, the engine should disembark it and
+        # unqueue all its contained PRs
+        comments = await self.get_issue_comments(draft_pr["number"])
+        assert (
+            "cannot be merged, due to unexpected changes in this draft PR, and have been disembarked"
+            in comments[-1]["body"]
+        )
+
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request has been removed from the queue"
+        )
+        check = first(
+            await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request has been removed from the queue"
+        )
+
+    async def test_draft_pr_train_reset_after_unexpected_base_branch_changes(
+        self,
+    ) -> None:
+        rules_config = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "batch_max_wait_time": "0 s",
+                    "speculative_checks": 2,
+                    "batch_size": 3,
+                    "allow_inplace_checks": True,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules_config))
+
+        p1 = await self.create_pr()
+        p2 = await self.create_pr()
+
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        draft_pr = await self.get_pull(
+            github_types.GitHubPullRequestNumber(p2["number"] + 1)
+        )
+        assert draft_pr["number"] not in [p1["number"], p2["number"]]
+
+        ctxt = context.Context(self.repository_ctxt, p1)
+        q = await merge_train.Train.from_context(ctxt)
+        await self.assert_merge_queue_contents(
+            q,
+            p1["base"]["sha"],
+            [
+                base.MergeQueueCarMatcher(
+                    [p1["number"], p2["number"]],
+                    [],
+                    p1["base"]["sha"],
+                    "created",
+                    draft_pr["number"],
+                ),
+            ],
+        )
+
+        # we push changes to the base branch
+        await self.git("fetch", "origin", f"{self.main_branch_name}")
+        await self.git("checkout", "-b", "random", f"origin/{self.main_branch_name}")
+        open(self.git.repository + "/random_file.txt", "wb").close()
+        await self.git("add", "random_file.txt")
+        await self.git("commit", "--no-edit", "-m", "random update")
+        await self.git("push", "--quiet", "origin", f"random:{self.main_branch_name}")
+        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.run_engine()
+
+        # when detecting base branch changes, the engine should reset the train
+        comments = await self.get_issue_comments(draft_pr["number"])
+        assert "The whole train will be reset." in comments[-1]["body"]
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 1st in the queue to be merged"
+        )
+
     async def test_queue_just_rebase(self) -> None:
         rules = {
             "queue_rules": [

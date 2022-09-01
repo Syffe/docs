@@ -141,6 +141,8 @@ async def handle(queue_rules: rules.QueueRules, ctxt: context.Context) -> None:
             # * one of the batch ?
             # * one of the parent car ?
             status = check_api.Conclusion.PENDING
+    elif isinstance(unexpected_changes, merge_train.UnexpectedDraftPullRequestChange):
+        real_status = status = check_api.Conclusion.FAILURE
     else:
         real_status = status = check_api.Conclusion.PENDING
 
@@ -160,7 +162,9 @@ async def handle(queue_rules: rules.QueueRules, ctxt: context.Context) -> None:
     await car.update_summaries(status, unexpected_change=unexpected_changes)
     await train.save()
 
-    if unexpected_changes:
+    # NOTE(Syffe): In order to differentiate the two types of unexpected_changes, and
+    # only reset the train when it is a base branch change
+    if isinstance(unexpected_changes, merge_train.UnexpectedBaseBranchChange):
         ctxt.log.info(
             "train will be reset",
             gh_pull_queued=[

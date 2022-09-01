@@ -139,7 +139,7 @@ class UnexpectedDraftPullRequestChange(UnexpectedChange):
     draft_pull_request_number: github_types.GitHubPullRequestNumber
 
     def __str__(self) -> str:
-        return f"the draft pull request #{self.draft_pull_request_number} has been manually updated"
+        return f"the draft pull request #{self.draft_pull_request_number} has sustained unexpected changes from external sources"
 
 
 @dataclasses.dataclass
@@ -1217,13 +1217,17 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 tmp_pull_title = f"The pull requests {refs} are embarked for merge"
         else:
             if len(self.initial_embarked_pulls) == 1:
-                tmp_pull_title = (
-                    f"The pull request {refs} cannot be merged and has been disembarked"
-                )
+                if unexpected_change:
+                    tmp_pull_title = f"The pull request {refs} cannot be merged, due to unexpected changes in this draft PR, and has been disembarked."
+                else:
+                    tmp_pull_title = f"The pull request {refs} cannot be merged and has been disembarked."
             else:
-                tmp_pull_title = (
-                    f"The pull requests {refs} cannot be merged and will be split"
-                )
+                if unexpected_change:
+                    tmp_pull_title = f"The pull requests {refs} cannot be merged, due to unexpected changes in this draft PR, and have been disembarked."
+                else:
+                    tmp_pull_title = (
+                        f"The pull requests {refs} cannot be merged and will be split."
+                    )
 
         queue_summary = "\n\nRequired conditions for merge:\n\n"
         queue_summary += self.last_evaluated_conditions or ""
@@ -1376,10 +1380,18 @@ You don't need to do anything. Mergify will close this pull request automaticall
             else:
                 original_pull_title = f"The pull request embarked with {self._get_embarked_refs(include_my_self=False)} cannot be merged and has been disembarked"
         else:
-            original_pull_title = "The pull request is going to be re-embarked soon"
-            unexpected_change_summary = (
-                f"✨ Unexpected queue change: {unexpected_change}. ✨\n\n"
-            )
+            if isinstance(unexpected_change, UnexpectedDraftPullRequestChange):
+                original_pull_title = (
+                    "The pull request has been removed from the queue."
+                )
+                unexpected_change_summary = (
+                    f"❌ Unexpected queue change: {unexpected_change}. ❌\n\n"
+                )
+            else:
+                original_pull_title = "The pull request is going to be re-embarked soon"
+                unexpected_change_summary = (
+                    f"❌ Unexpected queue change: {unexpected_change}. ❌\n\n"
+                )
 
         if self.has_timed_out:
             conclusion = check_api.Conclusion.FAILURE
