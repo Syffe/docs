@@ -8,6 +8,7 @@ import msgpack
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import redis_utils
+from mergify_engine import rules
 from mergify_engine import signals
 from mergify_engine.dashboard import subscription
 from mergify_engine.queue import utils as queue_utils
@@ -30,7 +31,7 @@ AvailableStatsKeyT = typing.Literal[
 
 @dataclasses.dataclass
 class BaseQueueStats:
-    queue_name: str
+    queue_name: rules.QueueName
     # List of variables to not include in the return of the `to_dict()`
     # if using an `_` is not enough/appropriate.
     _todict_ignore_vars: typing.ClassVar[typing.Tuple[str, ...]] = ()
@@ -148,7 +149,7 @@ def get_stats_from_event_metadata(
             return None
 
         return TimeToMerge(
-            queue_name=metadata["queue_name"],
+            queue_name=typing.cast(rules.QueueName, metadata["queue_name"]),
             time_seconds=_get_seconds_since_datetime(metadata["queued_at"]),
         )
 
@@ -159,7 +160,7 @@ def get_stats_from_event_metadata(
                 return None
 
             return FailureByReason.from_reason_code_str(
-                queue_name=metadata["queue_name"],
+                queue_name=typing.cast(rules.QueueName, metadata["queue_name"]),
                 reason_code_str=metadata["abort_code"],
             )
 
@@ -172,7 +173,7 @@ def get_stats_from_event_metadata(
             )
 
         return ChecksDuration(
-            queue_name=metadata["queue_name"],
+            queue_name=typing.cast(rules.QueueName, metadata["queue_name"]),
             duration_seconds=_get_seconds_since_datetime(checks_ended_at),
         )
 
@@ -241,9 +242,9 @@ RedisXRangeT = typing.List[typing.Tuple[bytes, typing.Any]]
 async def _get_stat_items(
     repository: "context.Repository",
     stat_name: AvailableStatsKeyT,
-    queue_name: str,
-    start_at: int | None,
-    end_at: int | None,
+    queue_name: typing.Optional[rules.QueueName] = None,
+    start_at: typing.Optional[int] = None,
+    end_at: typing.Optional[int] = None,
 ) -> typing.AsyncGenerator[dict[str, typing.Any], None]:
     redis = repository.installation.redis.stats
 
@@ -265,66 +266,78 @@ async def _get_stat_items(
     items = await redis.xrange(full_redis_key, min=older_event_id, max=newer_event_id)
     for _, raw_stat in items:
         stat = msgpack.unpackb(raw_stat[b"data"], timestamp=3)
-        if stat["queue_name"] == queue_name:
+        if queue_name is None or stat["queue_name"] == queue_name:
             yield stat
 
 
 async def get_time_to_merge_stats(
     repository: "context.Repository",
-    queue_name: str,
-    start_at: int | None,
-    end_at: int | None,
-) -> TimeToMergeT:
-    stats = []
+    queue_name: typing.Optional[rules.QueueName] = None,
+    start_at: typing.Optional[int] = None,
+    end_at: typing.Optional[int] = None,
+) -> dict[str, TimeToMergeT]:
+    stats: dict[str, TimeToMergeT] = {}
+
     async for stat in _get_stat_items(
         repository, "time_to_merge", queue_name, start_at, end_at
     ):
         stat_obj = TimeToMerge(**stat)
-        stats.append(stat_obj.time_seconds)
+        if stat_obj.queue_name not in stats:
+            stats[stat_obj.queue_name] = []
+
+        stats[stat_obj.queue_name].append(stat_obj.time_seconds)
 
     return stats
 
 
 async def get_checks_duration_stats(
     repository: "context.Repository",
-    queue_name: str,
-    start_at: int | None,
-    end_at: int | None,
-) -> ChecksDurationT:
-    stats = []
+    queue_name: typing.Optional[rules.QueueName] = None,
+    start_at: typing.Optional[int] = None,
+    end_at: typing.Optional[int] = None,
+) -> dict[str, ChecksDurationT]:
+    stats: dict[str, ChecksDurationT] = {}
     async for stat in _get_stat_items(
         repository, "checks_duration", queue_name, start_at, end_at
     ):
         stat_obj = ChecksDuration(**stat)
-        stats.append(stat_obj.duration_seconds)
+        if stat_obj.queue_name not in stats:
+            stats[stat_obj.queue_name] = []
+
+        stats[stat_obj.queue_name].append(stat_obj.duration_seconds)
 
     return stats
+
+
+BASE_FAILURE_BY_REASON_T_DICT = FailureByReasonT(
+    {
+        "PR_AHEAD_DEQUEUED": 0,
+        "PR_AHEAD_FAILED_TO_MERGE": 0,
+        "PR_WITH_HIGHER_PRIORITY_QUEUED": 0,
+        "PR_QUEUED_TWICE": 0,
+        "SPECULATIVE_CHECK_NUMBER_REDUCED": 0,
+        "CHECKS_TIMEOUT": 0,
+        "CHECKS_FAILED": 0,
+        "QUEUE_RULE_MISSING": 0,
+        "UNEXPECTED_QUEUE_CHANGE": 0,
+    }
+)
 
 
 async def get_failure_by_reason_stats(
     repository: "context.Repository",
-    queue_name: str,
-    start_at: int | None,
-    end_at: int | None,
-) -> FailureByReasonT:
-    stats = FailureByReasonT(
-        {
-            "PR_AHEAD_DEQUEUED": 0,
-            "PR_AHEAD_FAILED_TO_MERGE": 0,
-            "PR_WITH_HIGHER_PRIORITY_QUEUED": 0,
-            "PR_QUEUED_TWICE": 0,
-            "SPECULATIVE_CHECK_NUMBER_REDUCED": 0,
-            "CHECKS_TIMEOUT": 0,
-            "CHECKS_FAILED": 0,
-            "QUEUE_RULE_MISSING": 0,
-            "UNEXPECTED_QUEUE_CHANGE": 0,
-        }
-    )
-
+    queue_name: typing.Optional[rules.QueueName] = None,
+    start_at: typing.Optional[int] = None,
+    end_at: typing.Optional[int] = None,
+) -> dict[str, FailureByReasonT]:
+    stats_dict: dict[str, FailureByReasonT] = {}
     async for stat in _get_stat_items(
         repository, "failure_by_reason", queue_name, start_at, end_at
     ):
         stat_obj = FailureByReason(**stat)
-        stats[stat_obj.reason_code_str] += 1
+        if stat_obj.queue_name not in stats_dict:
+            stats_dict[stat_obj.queue_name] = BASE_FAILURE_BY_REASON_T_DICT.copy()
 
-    return stats
+        stats_dict[stat_obj.queue_name][stat_obj.reason_code_str] += 1
+
+    return stats_dict
