@@ -133,6 +133,7 @@ Add this pull request to the merge queue.
     - ``@Mergifyio queue [<queue-name>]``
   * - Example
     - ``@Mergifyio queue``
+
       ``@Mergifyio queue default``
 
 
