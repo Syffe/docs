@@ -1,5 +1,4 @@
 # -*- encoding: utf-8 -*-
-# flake8: noqa: B008
 #
 # Copyright © 2021 Mergify SAS
 #
@@ -15,35 +14,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import argparse
-import collections
-import dataclasses
-import datetime
 import json
 import os
-import typing
 
 import fastapi
-import pydantic
-from starlette import requests
-from starlette import responses
 from starlette.middleware import cors
 
 from mergify_engine import config
-from mergify_engine import context
-from mergify_engine import exceptions as engine_exceptions
-from mergify_engine import github_types
-from mergify_engine import utils
-from mergify_engine.clients import github
-from mergify_engine.clients import http
-from mergify_engine.queue import merge_train
 from mergify_engine.web import api
-from mergify_engine.web import redis
 from mergify_engine.web import utils as web_utils
 from mergify_engine.web.api import applications
 from mergify_engine.web.api import badges
 from mergify_engine.web.api import eventlogs
 from mergify_engine.web.api import queues
-from mergify_engine.web.api import security
 from mergify_engine.web.api import simulator
 from mergify_engine.web.api import statistics
 

@@ -1798,7 +1798,8 @@ class Train:
         best_position = -1
         need_to_be_readded = False
         frozen_queues = {
-            freeze.name async for freeze in freeze.QueueFreeze.get_all(self.repository)
+            frozen_queue.name
+            async for frozen_queue in freeze.QueueFreeze.get_all(self.repository)
         }
 
         for position, (embarked_pull, car) in enumerate(self._iter_embarked_pulls()):
