@@ -744,7 +744,7 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 
 [[package]]
 name = "markdownify"
-version = "0.11.4"
+version = "0.11.5"
 description = "Convert HTML to markdown."
 category = "main"
 optional = false
@@ -2295,8 +2295,8 @@ jsonschema = [
     {file = "jsonschema-4.14.0.tar.gz", hash = "sha256:15062f4cc6f591400cd528d2c355f2cfa6a57e44c820dc783aee5e23d36a831f"},
 ]
 markdownify = [
-    {file = "markdownify-0.11.4-py3-none-any.whl", hash = "sha256:538ec3f7094aa9b8ee4727614a4dc523c80707f9fecbe224b72bc98453efca22"},
-    {file = "markdownify-0.11.4.tar.gz", hash = "sha256:72b3a48affccf2feeb25dfd3becabaecf53beaf4e08be68dced8447278832813"},
+    {file = "markdownify-0.11.5-py3-none-any.whl", hash = "sha256:cd39d9e79cba896de242e36b6cb1121b2d7e943f416e501679fd7945b7cbf1ba"},
+    {file = "markdownify-0.11.5.tar.gz", hash = "sha256:b8f99a909f76b41aadfb748f2c3ebe237f41dfb261744645af6712c1ed2bd758"},
 ]
 markupsafe = [
     {file = "MarkupSafe-2.1.1-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:86b1f75c4e7c2ac2ccdaec2b9022845dbb81880ca318bb7a0a01fbf7813e3812"},
