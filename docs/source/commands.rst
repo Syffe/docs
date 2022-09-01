@@ -141,7 +141,7 @@ unqueue
 =======
 
 Removes this pull request from the merge queue if it has been queued with
-:ref:`queue action` action or :ref:`queue command` command.
+:ref:`queue action page` action or :ref:`queue command` command.
 
 .. list-table::
   :widths: 1 7

@@ -4,7 +4,7 @@
    :summary: Put a pull request in queue before merging.
    :doc:icon: train
 
-.. _queue action:
+.. _queue action page:
 
 queue
 =====

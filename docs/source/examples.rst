@@ -195,11 +195,12 @@ passing.
 
 |premium plan tag|
 
-When using the :ref:`queue <queue action>` action and many pull requests are
-waiting to be merged, some of them might be more urgent. In that case, you
+When using the :ref:`queue <queue action page>` action and many pull requests
+are waiting to be merged, some of them might be more urgent. In that case, you
 could add a condition using a `label
 <https://docs.github.com/en/issues/using-labels-and-milestones-to-track-work/managing-labels>`_
-and configure the priority option of the :ref:`queue <queue action>` action:
+and configure the priority option of the :ref:`queue <queue action page>`
+action:
 
 .. code-block:: yaml
 
