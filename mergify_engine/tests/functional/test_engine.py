@@ -425,21 +425,21 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         assert summary is not None
         assert (
             f"""### Rule: merge (merge)
-- [X] `base={self.main_branch_name}`
+- [ ] `#approved-reviews-by>=1` [🛡 GitHub branch protection]
 - [ ] any of: [🛡 GitHub branch protection]
-  - [ ] `check-success=continuous-integration/fake-ci`
   - [ ] `check-neutral=continuous-integration/fake-ci`
   - [ ] `check-skipped=continuous-integration/fake-ci`
+  - [ ] `check-success=continuous-integration/fake-ci`
 - [ ] any of: [🛡 GitHub branch protection]
-  - [ ] `check-success=neutral-ci`
   - [ ] `check-neutral=neutral-ci`
   - [ ] `check-skipped=neutral-ci`
+  - [ ] `check-success=neutral-ci`
 - [ ] any of: [🛡 GitHub branch protection]
-  - [ ] `check-success=skipped-ci`
   - [ ] `check-neutral=skipped-ci`
   - [ ] `check-skipped=skipped-ci`
-- [ ] `#approved-reviews-by>=1` [🛡 GitHub branch protection]
+  - [ ] `check-success=skipped-ci`
 - [X] `#changes-requested-reviews-by=0` [🛡 GitHub branch protection]
+- [X] `base={self.main_branch_name}`
 
 ### Rule: merge (comment)
 - [X] `base={self.main_branch_name}`
