@@ -145,7 +145,7 @@ async def _do_rebase(
                 "--interactive",
                 "--autosquash",
                 f"upstream/{base_branch}",
-                _env={"GIT_SEQUENCE_EDITOR": ":"},
+                _env={"GIT_SEQUENCE_EDITOR": ":", "EDITOR": ":"},
             )
         else:
             await git("rebase", f"upstream/{base_branch}")

@@ -141,33 +141,6 @@ class TestRebaseAction(base.FunctionalTestBase):
         for check in checks:
             assert check["conclusion"] == "success", check
 
-    async def test_rebase_autosquash_true(self) -> None:
-        rules = {
-            "pull_request_rules": [
-                {
-                    "name": "rebase",
-                    "conditions": [f"base={self.main_branch_name}", "label=rebase"],
-                    "actions": {"rebase": {"autosquash": True}},
-                },
-            ]
-        }
-
-        await self.setup_repo(yaml.dump(rules))
-
-        pr_fixup = await self.create_pr_with_fixup_commit()
-
-        p2 = await self.create_pr()
-        await self.merge_pull(p2["number"])
-
-        await self.wait_for("pull_request", {"action": "closed"})
-
-        await self.add_label(pr_fixup["number"], "rebase")
-        await self.run_engine()
-        await self.wait_for("pull_request", {"action": "synchronize"})
-
-        nb_fixup_commits = await self.get_commits(pr_fixup["number"])
-        assert len(nb_fixup_commits) == 1
-
     async def test_rebase_autosquash_false(self) -> None:
         rules = {
             "pull_request_rules": [
@@ -181,7 +154,7 @@ class TestRebaseAction(base.FunctionalTestBase):
 
         await self.setup_repo(yaml.dump(rules))
 
-        pr_fixup = await self.create_pr_with_fixup_commit()
+        pr_fixup = await self.create_pr_with_autosquash_commit("fixup")
 
         p2 = await self.create_pr()
         await self.merge_pull(p2["number"])
@@ -192,5 +165,152 @@ class TestRebaseAction(base.FunctionalTestBase):
         await self.run_engine()
         await self.wait_for("pull_request", {"action": "synchronize"})
 
-        nb_fixup_commits = await self.get_commits(pr_fixup["number"])
-        assert len(nb_fixup_commits) == 2
+        fixup_commits = await self.get_commits(pr_fixup["number"])
+        assert len(fixup_commits) == 2
+
+    async def test_rebase_autosquash_fixup_commit(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "rebase",
+                    "conditions": [f"base={self.main_branch_name}", "label=rebase"],
+                    "actions": {"rebase": {"autosquash": True}},
+                },
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        pr_fixup = await self.create_pr_with_autosquash_commit("fixup")
+
+        p2 = await self.create_pr()
+        await self.merge_pull(p2["number"])
+
+        await self.wait_for("pull_request", {"action": "closed"})
+
+        await self.add_label(pr_fixup["number"], "rebase")
+        await self.run_engine()
+        await self.wait_for("pull_request", {"action": "synchronize"})
+
+        fixup_commits = await self.get_commits(pr_fixup["number"])
+        assert len(fixup_commits) == 1
+
+    async def test_rebase_autosquash_squash_commit(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "rebase",
+                    "conditions": [f"base={self.main_branch_name}", "label=rebase"],
+                    "actions": {"rebase": {"autosquash": True}},
+                },
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        pr_fixup = await self.create_pr_with_autosquash_commit("squash")
+
+        p2 = await self.create_pr()
+        await self.merge_pull(p2["number"])
+
+        await self.wait_for("pull_request", {"action": "closed"})
+
+        await self.add_label(pr_fixup["number"], "rebase")
+        await self.run_engine()
+        await self.wait_for("pull_request", {"action": "synchronize"})
+
+        fixup_commits = await self.get_commits(pr_fixup["number"])
+        assert len(fixup_commits) == 1
+
+    async def test_rebase_autosquash_squash_commit_with_message(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "rebase",
+                    "conditions": [f"base={self.main_branch_name}", "label=rebase"],
+                    "actions": {"rebase": {"autosquash": True}},
+                },
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        pr_fixup = await self.create_pr_with_autosquash_commit(
+            "squash", commit_body="blablatest", autosquash_commit_body="blabla2test2"
+        )
+
+        p2 = await self.create_pr()
+        await self.merge_pull(p2["number"])
+
+        await self.wait_for("pull_request", {"action": "closed"})
+
+        await self.add_label(pr_fixup["number"], "rebase")
+        await self.run_engine()
+        await self.wait_for("pull_request", {"action": "synchronize"})
+
+        fixup_commits = await self.get_commits(pr_fixup["number"])
+        assert len(fixup_commits) == 1
+        assert "blablatest" in fixup_commits[0]["commit"]["message"]
+        assert "blabla2test2" in fixup_commits[0]["commit"]["message"]
+
+    async def test_rebase_autosquash_fixup_amend(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "rebase",
+                    "conditions": [f"base={self.main_branch_name}", "label=rebase"],
+                    "actions": {"rebase": {"autosquash": True}},
+                },
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        pr_fixup = await self.create_pr_with_autosquash_commit(
+            "fixup=amend", autosquash_commit_body="test123"
+        )
+
+        p2 = await self.create_pr()
+        await self.merge_pull(p2["number"])
+
+        await self.wait_for("pull_request", {"action": "closed"})
+
+        await self.add_label(pr_fixup["number"], "rebase")
+        await self.run_engine()
+        await self.wait_for("pull_request", {"action": "synchronize"})
+
+        fixup_commits = await self.get_commits(pr_fixup["number"])
+        assert len(fixup_commits) == 1
+
+        assert "\n\ntest123" in fixup_commits[0]["commit"]["message"]
+
+    async def test_rebase_autosquash_fixup_reword(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "rebase",
+                    "conditions": [f"base={self.main_branch_name}", "label=rebase"],
+                    "actions": {"rebase": {"autosquash": True}},
+                },
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        pr_fixup = await self.create_pr_with_autosquash_commit(
+            "fixup=reword", autosquash_commit_body="test123"
+        )
+
+        p2 = await self.create_pr()
+        await self.merge_pull(p2["number"])
+
+        await self.wait_for("pull_request", {"action": "closed"})
+
+        await self.add_label(pr_fixup["number"], "rebase")
+        await self.run_engine()
+        await self.wait_for("pull_request", {"action": "synchronize"})
+
+        fixup_commits = await self.get_commits(pr_fixup["number"])
+        assert len(fixup_commits) == 1
+
+        assert "\n\ntest123" in fixup_commits[0]["commit"]["message"]

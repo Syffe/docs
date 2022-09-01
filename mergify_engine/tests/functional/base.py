@@ -801,18 +801,60 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
 
         return [pr1, pr2]
 
-    async def create_pr_with_fixup_commit(self) -> github_types.GitHubPullRequest:
-        pr = await self.create_pr()
+    async def create_pr_with_autosquash_commit(
+        self,
+        commit_type: typing.Literal["fixup", "squash", "fixup=amend", "fixup=reword"],
+        commit_body: typing.Optional[str] = None,
+        autosquash_commit_body: typing.Optional[str] = None,
+    ) -> github_types.GitHubPullRequest:
+        # if autosquash_commit_body is not None and commit_type in ("fixup=amend", "fixup=reword"):
+        #     raise RuntimeError("Git doesn't allow `-m` with `--fixup=amend` and `--fixup=reword`")
+
+        pr = await self.create_pr(commit_body=commit_body)
 
         with open(self.git.repository + f"/testfixup{self.pr_counter}", "w") as f:
             f.write("fixup")
 
         await self.git("add", f"testfixup{self.pr_counter}")
-        await self.git("commit", "--no-edit", "--fixup", pr["head"]["sha"])
+
+        args = ["commit", "--no-edit"]
+        if commit_type in ("fixup=amend", "fixup=reword"):
+            args += [f"--{commit_type}:{pr['head']['sha']}"]
+        else:
+            args += [f"--{commit_type}", pr["head"]["sha"]]
+
+        if autosquash_commit_body is not None and commit_type not in (
+            "fixup=amend",
+            "fixup=reword",
+        ):
+            args += ["-m", autosquash_commit_body]
+
+        await self.git(*args)
+
         await self.git("push", "--quiet", "origin", pr["head"]["ref"])
 
         await self.wait_for("push", {"ref": f"refs/heads/{pr['head']['ref']}"})
-        assert len(await self.get_commits(pr["number"])) == 2
+        commits = await self.get_commits(pr["number"])
+        assert len(commits) == 2
+
+        # We can't use `-m` with those (git doesn't  allow it), so we
+        # need to trick a bit to have the same behavior.
+        if autosquash_commit_body is not None and commit_type in (
+            "fixup=amend",
+            "fixup=reword",
+        ):
+            amend_commit_headline = commits[1]["commit"]["message"].split("\n")[0]
+            await self.git(
+                "commit",
+                "--amend",
+                "-m",
+                amend_commit_headline,
+                "-m",
+                commits[0]["commit"]["message"],
+                "-m",
+                autosquash_commit_body,
+            )
+            await self.git("push", "-f", "--quiet", "origin", pr["head"]["ref"])
 
         return await self.get_pull(pr["number"])
 
