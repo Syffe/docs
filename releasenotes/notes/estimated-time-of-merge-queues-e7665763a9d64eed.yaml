@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    The ``pull_requests`` in the ``/repos/{owner}/{repository}/queues`` endpoint
+    have a new attribute called ``estimated_time_of_merge``. It is a timestamp in ISO format
+    giving a rough estimate of when the pull request will be merged.

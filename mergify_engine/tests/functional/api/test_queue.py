@@ -13,10 +13,15 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import datetime
+import statistics
+
+import msgpack
 import yaml
 
 from mergify_engine import config
 from mergify_engine import constants
+from mergify_engine import github_types
 from mergify_engine.tests.functional import base
 
 
@@ -244,3 +249,105 @@ class TestQueueApi(base.FunctionalTestBase):
                 },
             ]
         }
+
+    async def test_estimated_time_of_merge(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "foo",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "check-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "queue",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "foo"}},
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        p2 = await self.create_pr()
+        p3 = await self.create_pr()
+        p4 = await self.create_pr()
+
+        p5 = await self.create_pr()
+        await self.merge_pull(p5["number"])
+
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        await self.wait_for("pull_request", {"action": "opened"})
+
+        await self.create_status(
+            await self.get_pull(github_types.GitHubPullRequestNumber(p5["number"] + 1))
+        )
+        await self.run_engine()
+        await self.wait_for("pull_request", {"action": "closed"})
+        await self.wait_for("pull_request", {"action": "closed"})
+
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        await self.wait_for("pull_request", {"action": "opened"})
+        await self.create_status(
+            await self.get_pull(github_types.GitHubPullRequestNumber(p5["number"] + 2))
+        )
+        await self.run_engine()
+        await self.wait_for("pull_request", {"action": "closed"})
+        await self.wait_for("pull_request", {"action": "closed"})
+
+        await self.add_label(p3["number"], "queue")
+        await self.run_engine()
+
+        await self.wait_for("pull_request", {"action": "opened"})
+        await self.create_status(
+            await self.get_pull(github_types.GitHubPullRequestNumber(p5["number"] + 3))
+        )
+        await self.run_engine()
+        await self.wait_for("pull_request", {"action": "closed"})
+        await self.wait_for("pull_request", {"action": "closed"})
+
+        time_to_merge_key = self.get_statistic_redis_key("time_to_merge")
+        assert await self.redis_links.stats.xlen(time_to_merge_key) == 3
+
+        items = await self.redis_links.stats.xrange(time_to_merge_key, "-", "+")
+        stats = [
+            msgpack.unpackb(v[b"data"], timestamp=3)["time_seconds"] for _, v in items
+        ]
+        avg_ttm = statistics.fmean(stats)
+
+        await self.add_label(p4["number"], "queue")
+        await self.run_engine()
+
+        await self.wait_for("pull_request", {"action": "opened"})
+
+        r = await self.app.get(
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues",
+            headers={
+                "Authorization": f"bearer {self.api_key_admin}",
+                "Content-type": "application/json",
+            },
+        )
+
+        assert len(r.json()["queues"]) == 1
+        assert len(r.json()["queues"][0]["pull_requests"]) == 1
+        assert "estimated_time_of_merge" in r.json()["queues"][0]["pull_requests"][0]
+
+        queued_at = datetime.datetime.fromisoformat(
+            r.json()["queues"][0]["pull_requests"][0]["queued_at"]
+        )
+        assert (
+            r.json()["queues"][0]["pull_requests"][0]["estimated_time_of_merge"]
+            == (queued_at + datetime.timedelta(seconds=avg_ttm)).isoformat()
+        )

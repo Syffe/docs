@@ -34,6 +34,7 @@ from mergify_engine.rules import InvalidRules
 from mergify_engine.rules import get_mergify_config
 from mergify_engine.web import api
 from mergify_engine.web.api import security
+from mergify_engine.web.api import statistics as statistics_api
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -118,6 +119,12 @@ class PullRequestQueued:
         }
     )
     speculative_check_pull_request: typing.Optional[SpeculativeCheckPullRequest]
+
+    estimated_time_of_merge: typing.Optional[datetime.datetime] = dataclasses.field(
+        metadata={
+            "description": "The estimated timestamp when this pull request will be merged"
+        }
+    )
 
 
 @pydantic.dataclasses.dataclass
@@ -227,6 +234,7 @@ class QueueFreezeResponse:
                                             "state": "success",
                                         },
                                         "queued_at": "2021-10-14T14:19:12+00:00",
+                                        "estimated_time_of_merge": "2021-10-14T15:19:12+00:00",
                                     },
                                     {
                                         "number": 4242,
@@ -257,6 +265,7 @@ class QueueFreezeResponse:
                                             "state": "success",
                                         },
                                         "queued_at": "2021-10-14T14:19:12+00:00",
+                                        "estimated_time_of_merge": "2021-10-14T15:19:12+00:00",
                                     },
                                 ],
                             }
@@ -278,6 +287,9 @@ async def repository_queues(
         security.get_repository_context
     ),
 ) -> Queues:
+    time_to_merge_stats = await statistics_api.get_time_to_merge_stats_for_all_queues(
+        repository_ctxt,
+    )
     queues = Queues()
     async for train in merge_train.Train.iter_trains(repository_ctxt):
         queue_rules = await train.get_queue_rules()
@@ -313,6 +325,22 @@ async def repository_queues(
             except KeyError:
                 # This car is going to be deleted so skip it
                 continue
+
+            eta = None
+            if (
+                embarked_pull.config["name"] in time_to_merge_stats
+                and time_to_merge_stats[embarked_pull.config["name"]]["mean"]
+                is not None
+            ):
+                eta = (
+                    embarked_pull.queued_at
+                    + datetime.timedelta(
+                        seconds=time_to_merge_stats[embarked_pull.config["name"]][  # type: ignore[arg-type]
+                            "mean"
+                        ],
+                    )
+                ).isoformat()
+
             queue.pull_requests.append(
                 PullRequestQueued(
                     embarked_pull.user_pull_request_number,
@@ -323,6 +351,7 @@ async def repository_queues(
                     ),
                     embarked_pull.queued_at,
                     speculative_check_pull_request,
+                    estimated_time_of_merge=eta,
                 )
             )
 

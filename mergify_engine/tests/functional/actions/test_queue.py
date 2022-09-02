@@ -3832,6 +3832,7 @@ class TestQueueAction(base.FunctionalTestBase):
                                 "checks": [],
                                 "evaluated_conditions": "- [ ] `status-success=continuous-integration/fast-ci`\n",
                             },
+                            "estimated_time_of_merge": None,
                         },
                         {
                             "number": p1["number"],
@@ -3854,6 +3855,7 @@ class TestQueueAction(base.FunctionalTestBase):
                             },
                             "queued_at": mock.ANY,
                             "speculative_check_pull_request": None,
+                            "estimated_time_of_merge": None,
                         },
                         {
                             "number": p2["number"],
@@ -3876,6 +3878,7 @@ class TestQueueAction(base.FunctionalTestBase):
                             },
                             "queued_at": mock.ANY,
                             "speculative_check_pull_request": None,
+                            "estimated_time_of_merge": None,
                         },
                     ],
                 }
