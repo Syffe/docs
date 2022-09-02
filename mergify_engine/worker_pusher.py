@@ -134,8 +134,12 @@ async def push(
     pull_number: typing.Optional[github_types.GitHubPullRequestNumber],
     event_type: github_types.GitHubEventType,
     data: github_types.GitHubEvent,
-    score: typing.Optional[str] = None,
+    priority: Priority | None = None,
+    score: str | None = None,
 ) -> None:
+    if score is not None and priority is not None:
+        raise RuntimeError("score and prio should not be used at the same time")
+
     with tracer.trace(
         "push event",
         span_type="worker",
@@ -160,7 +164,9 @@ async def push(
 
         # NOTE(sileht): lower timestamps are processed first
         if score is None:
-            score = get_priority_score(Priority.high)
+            if priority is None:
+                priority = Priority.high
+            score = get_priority_score(priority)
 
         bucket_org_key = worker_lua.BucketOrgKeyType(f"bucket~{owner_id}")
         bucket_sources_key = worker_lua.BucketSourcesKeyType(

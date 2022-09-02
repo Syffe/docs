@@ -163,7 +163,7 @@ async def send(
                 "ref": None,
                 "source": "delayed-refresh",
             },  # type: ignore[typeddict-item]
-            score=str(worker_pusher.get_priority_score(worker_pusher.Priority.medium)),
+            priority=worker_pusher.Priority.medium,
         )
         keys_to_delete.add(subkey)
 

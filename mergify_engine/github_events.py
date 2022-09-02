@@ -100,7 +100,6 @@ async def push_to_worker(
     event_type: github_types.GitHubEventType,
     event_id: str,
     event: github_types.GitHubEvent,
-    score: typing.Optional[str] = None,
 ) -> None:
 
     pull_number = None
@@ -508,7 +507,6 @@ async def push_to_worker(
             pull_number,
             event_type,
             slim_event,
-            score,
         )
     else:
         slim_event = None
@@ -534,11 +532,10 @@ async def filter_and_dispatch(
     event_type: github_types.GitHubEventType,
     event_id: str,
     event: github_types.GitHubEvent,
-    score: typing.Optional[str] = None,
 ) -> None:
     meter_event(event_type, event)
     await count_seats.store_active_users(redis_links.active_users, event_type, event)
-    await push_to_worker(redis_links, event_type, event_id, event, score)
+    await push_to_worker(redis_links, event_type, event_id, event)
 
 
 SHA_EXPIRATION = 60

@@ -27,8 +27,6 @@ async def _send_refresh(
     priority: worker_pusher.Priority = worker_pusher.Priority.high,
 ) -> None:
 
-    score = worker_pusher.get_priority_score(priority)
-
     data = github_types.GitHubEventRefresh(
         {
             "received_at": github_types.ISODateTimeType(date.utcnow().isoformat()),
@@ -63,7 +61,7 @@ async def _send_refresh(
         pull_request_number,
         "refresh",
         slim_event,
-        score,
+        priority,
     )
 
 

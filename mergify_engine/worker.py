@@ -714,7 +714,7 @@ class StreamProcessor:
                 pull_number,
                 source["event_type"],
                 source["data"],
-                score,
+                score=score,
             )
         await pipe.execute()
         return len(pull_numbers)
