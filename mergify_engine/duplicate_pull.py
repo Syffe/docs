@@ -57,6 +57,12 @@ class DuplicateWithMergeFailure(Exception):
     reason: str
 
 
+@dataclasses.dataclass
+class DuplicatePull:
+    pull: github_types.GitHubPullRequest
+    conflicts: bool
+
+
 GIT_MESSAGE_TO_EXCEPTION = {
     "(non-fast-forward)": DuplicateAlreadyExists,
     "Updates were rejected because the tip of your current branch is behind": DuplicateNeedRetry,
@@ -229,7 +235,7 @@ async def duplicate(
     ignore_conflicts: bool = False,
     assignees: typing.Optional[List[str]] = None,
     branch_prefix: str = "bp",
-) -> typing.Optional[github_types.GitHubPullRequest]:
+) -> typing.Optional[DuplicatePull]:
     """Duplicate a pull request.
 
     :param pull: The pull request.
@@ -248,7 +254,7 @@ async def duplicate(
     )
 
     cherry_pick_error: str = ""
-
+    has_conflicts = False
     bot_account_user: typing.Optional[UserTokensUser] = None
     if bot_account is not None:
         user_tokens = await ctxt.repository.installation.get_user_tokens()
@@ -425,8 +431,10 @@ async def duplicate(
     if labels is not None:
         effective_labels.extend(labels)
 
-    if cherry_pick_error and label_conflicts is not None:
-        effective_labels.append(label_conflicts)
+    if cherry_pick_error:
+        has_conflicts = True
+        if label_conflicts is not None:
+            effective_labels.append(label_conflicts)
 
     if len(effective_labels) > 0:
         await ctxt.client.post(
@@ -442,4 +450,4 @@ async def duplicate(
             json={"assignees": assignees},
         )
 
-    return duplicate_pr
+    return DuplicatePull(duplicate_pr, has_conflicts)

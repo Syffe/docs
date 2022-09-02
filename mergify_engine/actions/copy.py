@@ -139,7 +139,7 @@ class CopyAction(actions.BackwardCompatAction):
                         ctxt, self.config["assignees"]
                     )
                 )
-                new_pull = await duplicate_pull.duplicate(
+                pull_duplicate = await duplicate_pull.duplicate(
                     ctxt,
                     branch_name,
                     title_template=self.config["title"],
@@ -151,7 +151,8 @@ class CopyAction(actions.BackwardCompatAction):
                     assignees=users_to_add,
                     branch_prefix=self.BRANCH_PREFIX,
                 )
-                if new_pull is not None:
+                if pull_duplicate is not None:
+                    new_pull = pull_duplicate.pull
                     await signals.send(
                         ctxt.repository,
                         ctxt.pull["number"],
@@ -160,6 +161,7 @@ class CopyAction(actions.BackwardCompatAction):
                             {
                                 "to": branch_name,
                                 "pull_request_number": new_pull["number"],
+                                "conflicts": pull_duplicate.conflicts,
                             }
                         ),
                         rule.get_signal_trigger(),

@@ -78,6 +78,7 @@ class EventReviewMetadata(EventMetadata, total=False):
 class EventCopyMetadata(EventMetadata, total=False):
     to: str
     pull_request_number: int
+    conflicts: bool
 
 
 class EventAssignMetadata(EventMetadata, total=False):

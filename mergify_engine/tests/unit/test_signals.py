@@ -60,7 +60,7 @@ async def test_copy_signal(
             ctxt.pull["number"],
             "action.copy",
             signals.EventCopyMetadata(
-                {"to": "test_branch", "pull_request_number": 123}
+                {"to": "test_branch", "pull_request_number": 123, "conflicts": False}
             ),
             "Rule: awesome rule",
         )
@@ -68,7 +68,7 @@ async def test_copy_signal(
             ctxt.repository,
             ctxt.pull["number"],
             "action.copy",
-            {"to": "test_branch", "pull_request_number": 123},
+            {"to": "test_branch", "pull_request_number": 123, "conflicts": False},
             "Rule: awesome rule",
         )
 
