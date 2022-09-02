@@ -31,6 +31,28 @@ LOG = logging.getLogger(__name__)
 
 
 class TestAttributes(base.FunctionalTestBase):
+    async def test_merged_attribute(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "no manual merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "merged",
+                        "#approved-reviews-by=0",
+                    ],
+                    "actions": {"comment": {"message": "no way"}},
+                }
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+        pr = await self.create_pr()
+        await self.merge_pull(pr["number"])
+        await self.run_engine()
+        comments = await self.get_issue_comments(pr["number"])
+        assert len(comments) == 1
+        assert comments[0]["body"] == "no way"
+
     async def test_jit_schedule_on_queue_rules(self) -> None:
         rules = {
             "queue_rules": [

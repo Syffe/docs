@@ -292,7 +292,8 @@ Here's the list of pull request attribute that can be used in conditions:
      - Whether the pull request is locked.
    * - ``merged``
      - Boolean
-     - Whether the pull request is merged.
+     - Whether the pull request is merged. This attribute doesn't work on
+       pull requests merged before a rule using this attribute is created.
    * - ``merged-at``
      - :ref:`Timestamp <iso timestamp>` or :ref:`Relative timestamp <relative timestamp>`
      - The time the pull request was merged at.
