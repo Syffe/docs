@@ -113,7 +113,12 @@ async def handle(queue_rules: rules.QueueRules, ctxt: context.Context) -> None:
         return None
 
     unexpected_changes: typing.Optional[merge_train.UnexpectedChange] = None
-    if await have_unexpected_draft_pull_request_changes(ctxt, car):
+    queue_config = await train.get_queue_rule(
+        car.initial_embarked_pulls[0].config["name"]
+    )
+    if not queue_config.config[
+        "allow_queue_branch_edit"
+    ] and await have_unexpected_draft_pull_request_changes(ctxt, car):
         unexpected_changes = merge_train.UnexpectedDraftPullRequestChange(
             car.queue_pull_request_number
         )

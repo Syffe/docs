@@ -169,6 +169,7 @@ class TestQueueApi(base.FunctionalTestBase):
                 {
                     "name": "default",
                     "config": {
+                        "allow_queue_branch_edit": False,
                         "allow_inplace_checks": True,
                         "disallow_checks_interruption_from_queues": [],
                         "batch_size": 1,
@@ -200,6 +201,7 @@ class TestQueueApi(base.FunctionalTestBase):
                     "name": "urgent",
                     "config": {
                         "allow_inplace_checks": True,
+                        "allow_queue_branch_edit": False,
                         "disallow_checks_interruption_from_queues": [],
                         "batch_size": 3,
                         "batch_max_wait_time": 15.0,
@@ -213,6 +215,7 @@ class TestQueueApi(base.FunctionalTestBase):
                 {
                     "name": "default",
                     "config": {
+                        "allow_queue_branch_edit": False,
                         "allow_inplace_checks": True,
                         "disallow_checks_interruption_from_queues": [],
                         "batch_size": 2,
@@ -227,6 +230,7 @@ class TestQueueApi(base.FunctionalTestBase):
                 {
                     "name": "low-priority",
                     "config": {
+                        "allow_queue_branch_edit": False,
                         "allow_inplace_checks": False,
                         "disallow_checks_interruption_from_queues": [],
                         "batch_size": 1,

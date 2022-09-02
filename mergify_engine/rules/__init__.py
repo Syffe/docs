@@ -108,6 +108,7 @@ class QueueConfig(typing.TypedDict):
     checks_timeout: typing.Optional[datetime.timedelta]
     draft_bot_account: typing.Optional[github_types.GitHubLogin]
     queue_branch_prefix: typing.Optional[str]
+    allow_queue_branch_edit: bool
 
 
 EvaluatedQueueRule = typing.NewType("EvaluatedQueueRule", "QueueRule")
@@ -548,6 +549,7 @@ QueueRulesSchema = voluptuous.All(
                     "queue_branch_prefix",
                     default=constants.MERGE_QUEUE_BRANCH_PREFIX,
                 ): str,
+                voluptuous.Required("allow_queue_branch_edit", default=False): bool,
                 # TODO(sileht): options to deprecate
                 voluptuous.Required(
                     "allow_checks_interruption", default=None

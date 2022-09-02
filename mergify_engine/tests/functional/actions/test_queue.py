@@ -2852,6 +2852,58 @@ class TestQueueAction(base.FunctionalTestBase):
 
         await self.assert_merge_queue_contents(q, None, [])
 
+    async def test_queue_with_allow_queue_branch_edit_set_to_false(self) -> None:
+        await self._do_test_queue_with_allow_queue_branch_edit(False)
+
+    async def test_queue_with_allow_queue_branch_edit_set_to_true(self) -> None:
+        await self._do_test_queue_with_allow_queue_branch_edit(True)
+
+    async def _do_test_queue_with_allow_queue_branch_edit(
+        self, allow_queue_branch_edit: bool
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                    "allow_queue_branch_edit": allow_queue_branch_edit,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p = await self.create_pr()
+        await self.run_engine()
+
+        draft_pr_number = github_types.GitHubPullRequestNumber(p["number"] + 1)
+        draft_pr = await self.get_pull(draft_pr_number)
+
+        # we push changes to the draft PR's branch
+        await self.git("fetch", "origin", f'{draft_pr["head"]["ref"]}')
+        await self.git("checkout", "-b", "random", f'origin/{draft_pr["head"]["ref"]}')
+        open(self.git.repository + "/random_file.txt", "wb").close()
+        await self.git("add", "random_file.txt")
+        await self.git("commit", "--no-edit", "-m", "random update")
+        await self.git("push", "--quiet", "origin", f'random:{draft_pr["head"]["ref"]}')
+        await self.wait_for("pull_request", {"action": "synchronize"})
+        await self.run_engine()
+
+        # Get the new state
+        draft_pr = await self.get_pull(draft_pr_number)
+        assert draft_pr["state"] == "open" if allow_queue_branch_edit else "closed"
+
     async def test_queue_ci_failure(self) -> None:
         rules = {
             "queue_rules": [
@@ -3759,6 +3811,7 @@ class TestQueueAction(base.FunctionalTestBase):
                             "queue_rule": {
                                 "config": {
                                     "allow_inplace_checks": True,
+                                    "allow_queue_branch_edit": False,
                                     "disallow_checks_interruption_from_queues": [],
                                     "batch_max_wait_time": 30.0,
                                     "batch_size": 1,
@@ -3787,6 +3840,7 @@ class TestQueueAction(base.FunctionalTestBase):
                             "queue_rule": {
                                 "config": {
                                     "allow_inplace_checks": True,
+                                    "allow_queue_branch_edit": False,
                                     "disallow_checks_interruption_from_queues": [],
                                     "batch_max_wait_time": 30.0,
                                     "batch_size": 1,
@@ -3808,6 +3862,7 @@ class TestQueueAction(base.FunctionalTestBase):
                             "queue_rule": {
                                 "config": {
                                     "allow_inplace_checks": True,
+                                    "allow_queue_branch_edit": False,
                                     "disallow_checks_interruption_from_queues": [],
                                     "batch_size": 1,
                                     "batch_max_wait_time": 30.0,
@@ -4789,6 +4844,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
             batch_max_wait_time=datetime.timedelta(seconds=0),
             allow_inplace_checks=True,
             disallow_checks_interruption_from_queues=[],
+            allow_queue_branch_edit=False,
             checks_timeout=None,
             draft_bot_account=None,
             queue_branch_prefix=constants.MERGE_QUEUE_BRANCH_PREFIX,
@@ -4916,6 +4972,7 @@ pull_requests:
             batch_max_wait_time=datetime.timedelta(seconds=0),
             allow_inplace_checks=True,
             disallow_checks_interruption_from_queues=[],
+            allow_queue_branch_edit=False,
             checks_timeout=None,
             draft_bot_account=None,
             queue_branch_prefix=constants.MERGE_QUEUE_BRANCH_PREFIX,
@@ -5009,6 +5066,7 @@ pull_requests:
             batch_max_wait_time=datetime.timedelta(seconds=0),
             allow_inplace_checks=True,
             disallow_checks_interruption_from_queues=[],
+            allow_queue_branch_edit=False,
             checks_timeout=None,
             draft_bot_account=None,
             queue_branch_prefix=constants.MERGE_QUEUE_BRANCH_PREFIX,
@@ -5078,6 +5136,7 @@ pull_requests:
             batch_max_wait_time=datetime.timedelta(seconds=0),
             allow_inplace_checks=True,
             disallow_checks_interruption_from_queues=[],
+            allow_queue_branch_edit=False,
             checks_timeout=None,
             draft_bot_account=None,
             queue_branch_prefix=constants.MERGE_QUEUE_BRANCH_PREFIX,

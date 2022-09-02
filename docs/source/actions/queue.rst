@@ -509,6 +509,15 @@ A ``queue_rules`` takes the following parameter:
      - |premium plan tag|
        When creating a draft pull request for a queue, this prefix will be used to name the branch.
 
+   * - ``allow_queue_branch_edit``
+     - bool
+     - false
+     - When creating a branch for a queue, if the code of this branch is edited
+       by an entity external to Mergify, Mergify un-queues all pull requests
+       embarked in the branch and report the issue as a failure. If set to
+       ``true``, Mergify will allow such modifications and trust the content of
+       the branch. Make sure only Mergify and your external application are
+       allowed to edit these branches.
 
 .. note::
 
