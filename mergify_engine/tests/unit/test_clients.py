@@ -269,7 +269,7 @@ async def _do_test_client_retry_429(
 ) -> datetime.datetime:
     records: typing.List[datetime.datetime] = []
 
-    def record_date(_):
+    def record_date(_: typing.Any) -> httpx.Response:
         if records:
             records.append(date.utcnow())
             return httpx.Response(200, text="It works now !")
@@ -326,7 +326,7 @@ async def test_client_access_token_HTTP_500(respx_mock: respx.MockRouter) -> Non
     )
     retries = [0]
 
-    def error_500_tracker(_):
+    def error_500_tracker(_: typing.Any) -> httpx.Response:
         retries[0] += 1
         return httpx.Response(500, text="This is a 5XX error")
 

@@ -8,28 +8,109 @@ from mergify_engine.tests.unit import conftest
 
 
 async def fake_get_github_pulls_from_sha(
-    url, resource_name, page_limit, api_version=None
-):
-    pr = {
-        "number": 6,
-        "base": {
-            "ref": "main",
-            "sha": "the-base-sha",
-            "repo": {
-                "full_name": "Mergifyio/mergify-engine",
-                "name": "mergify-engine",
-                "private": False,
+    url: str, resource_name: str, page_limit: str, api_version: None | str = None
+) -> typing.AsyncGenerator[github_types.GitHubPullRequest, None]:
+    pr = github_types.GitHubPullRequest(
+        {
+            "id": github_types.GitHubPullRequestId(1),
+            "maintainer_can_modify": False,
+            "merged_at": None,
+            "state": "open",
+            "merge_commit_sha": github_types.SHAType(""),
+            "user": github_types.GitHubAccount(
+                {
+                    "login": github_types.GitHubLogin(""),
+                    "id": github_types.GitHubAccountIdType(0),
+                    "type": "User",
+                    "avatar_url": "",
+                }
+            ),
+            "labels": [],
+            "merged": False,
+            "mergeable": False,
+            "mergeable_state": "unknown",
+            "html_url": "",
+            "locked": False,
+            "assignees": [],
+            "requested_teams": [],
+            "created_at": github_types.ISODateTimeType(""),
+            "title": "",
+            "body": "",
+            "changed_files": 0,
+            "commits": 0,
+            "requested_reviewers": [],
+            "closed_at": github_types.ISODateTimeType(""),
+            "node_id": "",
+            "merged_by": None,
+            "rebaseable": False,
+            "draft": False,
+            "milestone": None,
+            "updated_at": github_types.ISODateTimeType(""),
+            "number": github_types.GitHubPullRequestNumber(6),
+            "base": {
+                "label": github_types.GitHubBaseBranchLabel(""),
+                "user": github_types.GitHubAccount(
+                    {
+                        "login": github_types.GitHubLogin(""),
+                        "id": github_types.GitHubAccountIdType(0),
+                        "type": "User",
+                        "avatar_url": "",
+                    }
+                ),
+                "ref": github_types.GitHubRefType("main"),
+                "sha": github_types.SHAType("the-base-sha"),
+                "repo": {
+                    "id": github_types.GitHubRepositoryIdType(1),
+                    "owner": github_types.GitHubAccount(
+                        {
+                            "login": github_types.GitHubLogin(""),
+                            "id": github_types.GitHubAccountIdType(0),
+                            "type": "User",
+                            "avatar_url": "",
+                        }
+                    ),
+                    "archived": False,
+                    "url": "",
+                    "html_url": "",
+                    "default_branch": github_types.GitHubRefType(""),
+                    "full_name": "Mergifyio/mergify-engine",
+                    "name": github_types.GitHubRepositoryName("mergify-engine"),
+                    "private": False,
+                },
             },
-        },
-        "head": {
-            "ref": "main",
-            "repo": {
-                "full_name": "contributor/mergify-engine",
-                "name": "mergify-engine",
-                "private": False,
+            "head": {
+                "ref": github_types.GitHubRefType("main"),
+                "sha": github_types.SHAType("the-base-sha"),
+                "label": github_types.GitHubHeadBranchLabel(""),
+                "user": github_types.GitHubAccount(
+                    {
+                        "login": github_types.GitHubLogin(""),
+                        "id": github_types.GitHubAccountIdType(0),
+                        "type": "User",
+                        "avatar_url": "",
+                    }
+                ),
+                "repo": {
+                    "id": github_types.GitHubRepositoryIdType(1),
+                    "owner": github_types.GitHubAccount(
+                        {
+                            "login": github_types.GitHubLogin(""),
+                            "id": github_types.GitHubAccountIdType(0),
+                            "type": "User",
+                            "avatar_url": "",
+                        }
+                    ),
+                    "archived": False,
+                    "url": "",
+                    "html_url": "",
+                    "default_branch": github_types.GitHubRefType(""),
+                    "full_name": "Mergifyio/mergify-engine",
+                    "name": github_types.GitHubRepositoryName("mergify-engine"),
+                    "private": False,
+                },
             },
-        },
-    }
+        }
+    )
     if url.endswith("commits/rebased_c1/pulls"):
         yield pr
     elif url.endswith("commits/rebased_c2/pulls"):
@@ -135,7 +216,9 @@ async def test_get_commits_to_cherry_pick_rebase(
         }
     )
 
-    async def fake_get_github_commit_from_sha(url, api_version=None):
+    async def fake_get_github_commit_from_sha(
+        url: str, api_version: None | str = None
+    ) -> github_types.GitHubBranchCommit:
         if url.endswith("/commits/rebased_c1"):
             return rebased_c1
         if url.endswith("/commits/rebased_c2"):
