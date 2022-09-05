@@ -1584,7 +1584,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-redis"
-version = "4.3.19"
+version = "4.3.20"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
@@ -1756,7 +1756,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.10,<4.0"
-content-hash = "2f399ccd536996032ab3b9fddf8931c68ccc7a446fd1b091934182da7edac80a"
+content-hash = "1de7d85b788ca855c8a86c4c332ca8b4db76aac9017e8822f31fbfc627cf9bb4"
 
 [metadata.files]
 aiofiles = [
@@ -2939,8 +2939,8 @@ types-pyyaml = [
     {file = "types_PyYAML-6.0.11-py3-none-any.whl", hash = "sha256:8f890028123607379c63550179ddaec4517dc751f4c527a52bb61934bf495989"},
 ]
 types-redis = [
-    {file = "types-redis-4.3.19.tar.gz", hash = "sha256:c881ffb94bd47dca21ed503328544a56bb315851575eebb27fb371bff735844a"},
-    {file = "types_redis-4.3.19-py3-none-any.whl", hash = "sha256:c74262197487a65e3f02db37d3f0e0f3bb2d5d370f7e6ba390814e865a45e56e"},
+    {file = "types-redis-4.3.20.tar.gz", hash = "sha256:74ed02945470ddea2dd21447c185dabb3169e5a5328d26b25cf3547d949b8e04"},
+    {file = "types_redis-4.3.20-py3-none-any.whl", hash = "sha256:b22e0f5a18b98b6a197dd403daed52a22cb76f50e3cbd7ddc539196af52ec23e"},
 ]
 typing-extensions = [
     {file = "typing_extensions-4.3.0-py3-none-any.whl", hash = "sha256:25642c956049920a5aa49edcdd6ab1e06d7e5d467fc00e0506c44ac86fbfca02"},
