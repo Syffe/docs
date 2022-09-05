@@ -22,7 +22,7 @@ class RebaseAction(actions.BackwardCompatAction):
         voluptuous.Required("bot_account", default=None): voluptuous.Any(
             None, types.Jinja2
         ),
-        voluptuous.Required("autosquash", default=False): bool,
+        voluptuous.Required("autosquash", default=True): bool,
     }
 
     async def run(
