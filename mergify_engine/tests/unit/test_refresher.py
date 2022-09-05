@@ -1,7 +1,3 @@
-#
-# Copyright © 2022 Mergify SAS
-#
-
 import msgpack
 
 from mergify_engine import github_types

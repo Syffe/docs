@@ -1,6 +1,3 @@
-#
-# Copyright © 2022 Mergify SAS
-#
 import datetime
 import enum
 import typing
