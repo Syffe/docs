@@ -15,6 +15,7 @@
 # under the License.
 import datetime
 import re
+import typing
 import zoneinfo
 
 from freezegun import freeze_time
@@ -505,7 +506,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
     ),
 )
 @freeze_time(now)
-def test_search(line, result):
+def test_search(line: str, result: typing.Any) -> None:
     assert result == parser.parse(line)
 
 

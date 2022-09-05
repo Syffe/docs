@@ -25,13 +25,13 @@ from mergify_engine.rules import types
         "{{author}}",
     ),
 )
-def test_jinja2_valid(s):
+def test_jinja2_valid(s: str) -> None:
     assert types.Jinja2(s) == s
 
     assert types.Jinja2WithNone(s) == s
 
 
-def test_jinja2_invalid():
+def test_jinja2_invalid() -> None:
     with pytest.raises(voluptuous.Invalid) as x:
         types.Jinja2("{{foo")
     assert str(x.value) == "Template syntax error @ data[line 1]"
@@ -49,23 +49,23 @@ def test_jinja2_invalid():
     )
 
 
-def test_jinja2_None():
+def test_jinja2_None() -> None:
     with pytest.raises(voluptuous.Invalid) as x:
         types.Jinja2(None)
     assert str(x.value) == "Template cannot be null"
 
-    assert types.Jinja2WithNone(None) is None
+    assert types.Jinja2WithNone(None) is None  # type: ignore[arg-type]
 
 
-def test_jinja2_not_str():
+def test_jinja2_not_str() -> None:
     with pytest.raises(voluptuous.Invalid) as x:
         types.Jinja2({"title": None})
     assert str(x.value) == "Template must be a string"
 
-    assert types.Jinja2WithNone(None) is None
+    assert types.Jinja2WithNone(None) is None  # type: ignore[arg-type]
 
 
-def test_jinja2_unknown_attr():
+def test_jinja2_unknown_attr() -> None:
     with pytest.raises(voluptuous.Invalid) as x:
         types.Jinja2("{{foo}}")
     assert str(x.value) == "Template syntax error"
@@ -77,7 +77,7 @@ def test_jinja2_unknown_attr():
     assert str(x.value.error_message) == "Unknown pull request attribute: foo"
 
 
-def test_jinja2_custom_attr():
+def test_jinja2_custom_attr() -> None:
     s = "{{ role_status }}"
 
     assert types.Jinja2(s, {"role_status": "passed"}) == s
@@ -89,7 +89,7 @@ def test_jinja2_custom_attr():
     "login",
     ("foobar", "foobaz", "foo-baz", "f123", "123foo"),
 )
-def test_github_login_ok(login):
+def test_github_login_ok(login: str) -> None:
     assert voluptuous.Schema(types.GitHubLogin)(login) == login
 
 
@@ -104,7 +104,7 @@ def test_github_login_ok(login):
         ("", "A GitHub login cannot be an empty string"),
     ),
 )
-def test_github_login_nok(login, error):
+def test_github_login_nok(login: str, error: str) -> None:
     with pytest.raises(voluptuous.Invalid) as x:
         voluptuous.Schema(types.GitHubLogin)(login)
     assert str(x.value) == error
@@ -125,7 +125,7 @@ def test_github_login_nok(login, error):
         ("under_score", None, "under_score"),
     ),
 )
-def test_github_team_ok(login, org, slug):
+def test_github_team_ok(login: str, org: str, slug: str) -> None:
     team = voluptuous.Schema(types.GitHubTeam)(login)
     assert team.team == slug
     assert team.organization == org
@@ -146,7 +146,7 @@ def test_github_team_ok(login, org, slug):
         ("", "A GitHub team cannot be an empty string"),
     ),
 )
-def test_github_team_nok(login, error):
+def test_github_team_nok(login: str, error: str) -> None:
     with pytest.raises(voluptuous.Invalid) as x:
         voluptuous.Schema(types.GitHubTeam)(login)
     assert str(x.value) == error
