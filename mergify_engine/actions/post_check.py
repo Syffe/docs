@@ -113,12 +113,7 @@ class PostCheckExecutor(
         check = await self.ctxt.get_engine_check_run(
             self.rule.get_check_name("post_check")
         )
-        if (
-            not check
-            or check["conclusion"] != conclusion.value
-            or check["output"]["title"] != self.config["title"]
-            or check["output"]["summary"] != self.config["summary"]
-        ):
+        if not check or check["conclusion"] != conclusion.value:
             await signals.send(
                 self.ctxt.repository,
                 self.ctxt.pull["number"],

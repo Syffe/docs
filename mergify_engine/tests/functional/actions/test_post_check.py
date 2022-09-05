@@ -47,6 +47,11 @@ class TestPostCheckAction(base.FunctionalTestBase):
         )
 
         await self.run_engine()
+
+        # refresh the pr to ensure we don't have the event-logs entry twice
+        await self.send_refresh(match_p["number"])
+        await self.run_engine()
+
         # ensure no check is posted on unrelated branch
         unrelated_ctxt = await context.Context.create(
             self.repository_ctxt, unrelated_p, []
@@ -140,6 +145,72 @@ class TestPostCheckAction(base.FunctionalTestBase):
             "per_page": 10,
             "size": 1,
             "total": 1,
+        }
+
+        # Check it moves to failure and the event logs is filled accordingly
+        await self.add_label(match_p["number"], "ignore-guideline")
+        await self.run_engine()
+
+        match_ctxt = await context.Context.create(self.repository_ctxt, match_p, [])
+        match_sorted_checks = sorted(
+            await match_ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
+        )
+        assert len(match_sorted_checks) == 2
+        match_check = match_sorted_checks[0]
+        assert "failure" == match_check["conclusion"]
+
+        r = await self.app.get(
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{match_p['number']}/events",
+            headers={
+                "Authorization": f"bearer {self.api_key_admin}",
+                "Content-type": "application/json",
+            },
+        )
+        assert r.status_code == 200
+        assert r.json() == {
+            "events": [
+                {
+                    "event": "action.post_check",
+                    "metadata": {
+                        "conclusion": "failure",
+                        "summary": "- [ ] `-label=ignore-guideline`\n"
+                        "- [X] `#body<4096`\n"
+                        "- [X] `#files<100`\n"
+                        "- [X] `#title<100`\n"
+                        "- [X] `#title>10`\n"
+                        "- [X] `approved-reviews-by=@testing`\n"
+                        "- [X] `body~=(?m)^(Fixes|Related|Closes) "
+                        "(MERGIFY-ENGINE|MRGFY)-`\n",
+                        "title": "'body need sentry ticket' failed",
+                    },
+                    "pull_request": match_p["number"],
+                    "repository": self.repository_ctxt.repo["full_name"],
+                    "timestamp": mock.ANY,
+                    "trigger": "Rule: body need sentry ticket",
+                },
+                {
+                    "event": "action.post_check",
+                    "metadata": {
+                        "conclusion": "success",
+                        "summary": "- [X] `#body<4096`\n"
+                        "- [X] `#files<100`\n"
+                        "- [X] `#title<100`\n"
+                        "- [X] `#title>10`\n"
+                        "- [X] `-label=ignore-guideline`\n"
+                        "- [X] `approved-reviews-by=@testing`\n"
+                        "- [X] `body~=(?m)^(Fixes|Related|Closes) "
+                        "(MERGIFY-ENGINE|MRGFY)-`\n",
+                        "title": "'body need sentry ticket' succeeded",
+                    },
+                    "repository": match_p["base"]["repo"]["full_name"],
+                    "pull_request": match_p["number"],
+                    "timestamp": mock.ANY,
+                    "trigger": "Rule: body need sentry ticket",
+                },
+            ],
+            "per_page": 10,
+            "size": 2,
+            "total": 2,
         }
 
     async def test_checks_default(self) -> None:

@@ -27,6 +27,7 @@ from mergify_engine import github_graphql_types
 from mergify_engine import github_types
 from mergify_engine import gitter
 from mergify_engine import redis_utils
+from mergify_engine import refresher
 from mergify_engine import signals
 from mergify_engine import utils
 from mergify_engine import worker
@@ -1119,6 +1120,17 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
             json={"assignees": [assignee]},
         )
         await self.wait_for("pull_request", {"action": "assigned"})
+
+    async def send_refresh(
+        self, pull_number: github_types.GitHubPullRequestNumber
+    ) -> None:
+        await refresher.send_pull_refresh(
+            redis_stream=self.redis_links.stream,
+            repository=self.repository_ctxt.repo,
+            action="internal",
+            pull_request_number=pull_number,
+            source="test",
+        )
 
     async def add_label(
         self, pull_number: github_types.GitHubPullRequestNumber, label: str
