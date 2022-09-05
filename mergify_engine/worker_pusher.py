@@ -65,6 +65,8 @@ def extract_slim_event(event_type: str, data: typing.Any) -> typing.Any:
         # To get PR from sha
         slim_data["sha"] = data["sha"]
         slim_data["context"] = data["context"]
+        # NOTE(sileht): only used for logging purpose
+        slim_data["state"] = data["state"]
 
     elif event_type == "pull_request_review":
         # NOTE(sileht): only used for logging purpose
