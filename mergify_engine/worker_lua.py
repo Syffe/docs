@@ -64,6 +64,47 @@ async def push_pull(
     )
 
 
+GET_PR_MESSAGES_SCRIPT = redis_utils.register_script(
+    """
+local bucket_org_key = KEYS[1]
+local bucket_sources_key = KEYS[2]
+local score_offset = tonumber(KEYS[3])
+local sources = redis.call("XRANGE", bucket_sources_key, "-", "+")
+local score = redis.call("ZSCORE", bucket_org_key, bucket_sources_key)
+redis.call("ZADD", bucket_org_key, score + score_offset, bucket_sources_key)
+return sources
+"""
+)
+
+
+def lua_table_to_dict(table: typing.List[bytes]) -> typing.Dict[bytes, bytes]:
+    it = iter(table)
+    return dict(zip(it, it))
+
+
+@tracer.wrap("stream_get_pull_messages", span_type="worker")
+async def get_pull_messages(
+    redis: redis_utils.RedisStream,
+    bucket_org_key: BucketOrgKeyType,
+    bucket_sources_key: BucketSourcesKeyType,
+    score_offset: int,
+) -> typing.List[typing.Tuple[bytes, typing.Dict[bytes, bytes]]]:
+    """Get all messages for a pull requests and program next run with score_offset"""
+
+    messages = await redis_utils.run_script(
+        redis,
+        GET_PR_MESSAGES_SCRIPT,
+        (
+            bucket_org_key,
+            bucket_sources_key,
+            str(score_offset),
+        ),
+    )
+    return [
+        (message_id, lua_table_to_dict(message)) for message_id, message in messages
+    ]
+
+
 REMOVE_PR_SCRIPT = redis_utils.register_script(
     """
 local bucket_org_key = KEYS[1]
@@ -73,7 +114,6 @@ local step = 1000
 for i = 1, #ARGV, step do
     redis.call("XDEL", bucket_sources_key, unpack(ARGV, i, math.min(i + step - 1, #ARGV)))
 end
--- Check if sources has been received in the meantime
 local sources = redis.call("XRANGE", bucket_sources_key, "-", "+", "COUNT", 1)
 if table.getn(sources) == 0 then
     redis.call("DEL", bucket_sources_key)
@@ -81,15 +121,6 @@ if table.getn(sources) == 0 then
     redis.call("ZREM", bucket_org_key, bucket_sources_key)
     -- No need to clean "streams" key, CLEAN_STREAM_SCRIPT is always
     -- called at the end and it will do it
-else
-    -- Yes new sources are waiting, update the score for this pull request with
-    -- the next one
-    -- FIXME(sileht): if this is an unpacked push event we should pick another
-    -- one
-    -- For the first version, this is not a big issue, if the pull request is
-    -- really active, another event will override the score with a lower one.
-    local score = sources[1][2][4]
-    redis.call("ZADD", bucket_org_key, score, bucket_sources_key)
 end
 """
 )

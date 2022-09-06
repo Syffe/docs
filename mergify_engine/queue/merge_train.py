@@ -25,6 +25,7 @@ from mergify_engine import queue
 from mergify_engine import refresher
 from mergify_engine import signals
 from mergify_engine import utils
+from mergify_engine import worker_pusher
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
 from mergify_engine.dashboard import user_tokens
@@ -563,6 +564,7 @@ class TrainCar:
                 pull_request_number=ctxt.pull["number"],
                 action="internal",
                 source="updated pull need to be merge",
+                priority=worker_pusher.Priority.immediate,
             )
 
         await self._set_initial_state(
@@ -1087,6 +1089,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 pull_request_number=original_ctxt.pull["number"],
                 action="internal",
                 source="draft pull creation error",
+                priority=worker_pusher.Priority.immediate,
             )
 
     def checks_have_timed_out(
@@ -1413,7 +1416,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             title=original_pull_title,
             summary=original_pull_summary,
         )
-        for original_ctxt in original_ctxts:
+        for i, original_ctxt in enumerate(original_ctxts):
             await check_api.set_check_run(
                 original_ctxt,
                 constants.MERGE_QUEUE_SUMMARY_NAME,
@@ -1432,6 +1435,9 @@ You don't need to do anything. Mergify will close this pull request automaticall
                     pull_request_number=original_ctxt.pull["number"],
                     action="internal",
                     source="draft pull request state change",
+                    priority=worker_pusher.Priority.immediate
+                    if i == 0
+                    else worker_pusher.Priority.high,
                 )
 
         if self.creation_state != "created":
@@ -2092,6 +2098,7 @@ class Train:
                     pull_request_number=self._cars[0].queue_pull_request_number,
                     action="internal",
                     source="batch failed due to last pull",
+                    priority=worker_pusher.Priority.immediate,
                 )
             return
 
@@ -2506,12 +2513,15 @@ class Train:
             pulls.add(additional_pull_request)
 
         pipe = await self.repository.installation.redis.stream.pipeline()
-        for pull_number in pulls:
+        for i, pull_number in enumerate(pulls):
             await refresher.send_pull_refresh(
                 pipe,
                 self.repository.repo,
                 pull_request_number=pull_number,
                 action="internal",
                 source=source,
+                priority=worker_pusher.Priority.immediate
+                if i == 0
+                else worker_pusher.Priority.high,
             )
         await pipe.execute()

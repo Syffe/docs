@@ -241,6 +241,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "speculative_checks": 5,
+                    "allow_inplace_checks": False,
                     "draft_bot_account": "mergify-test4",
                 }
             ],

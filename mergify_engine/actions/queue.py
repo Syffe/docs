@@ -13,6 +13,7 @@ from mergify_engine import queue
 from mergify_engine import refresher
 from mergify_engine import signals
 from mergify_engine import utils
+from mergify_engine import worker_pusher
 from mergify_engine.actions import merge_base
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.dashboard import subscription
@@ -375,6 +376,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 pull_request_number=new_car.queue_pull_request_number,
                 action="internal",
                 source="forward from queue action (run)",
+                priority=worker_pusher.Priority.immediate,
             )
         return result
 
@@ -441,6 +443,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 pull_request_number=newcar.queue_pull_request_number,
                 action="internal",
                 source="forward from queue action (cancel)",
+                priority=worker_pusher.Priority.immediate,
             )
         return result
 

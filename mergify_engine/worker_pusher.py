@@ -20,7 +20,8 @@ WORKER_PROCESSING_DELAY: float = 30
 
 
 class Priority(enum.IntEnum):
-    high = 1
+    immediate = 1
+    high = 2
     medium = 3
     low = 5
 
@@ -42,10 +43,23 @@ def get_priority_score(prio: Priority) -> str:
 
 def get_priority_level_from_score(score: float) -> Priority:
     if score < PRIORITY_OFFSET * SCORE_TIMESTAMP_PRECISION:
-        # NOTE(sileht): backward compatibilty
+        # NOTE(sileht): backward compatibilty for engine <= 5.0.0
+        # prio < 1 so this is score computed before priorities
         return Priority.high
     prio_score = int(score / PRIORITY_OFFSET / SCORE_TIMESTAMP_PRECISION)
     return Priority(prio_score)
+
+
+def get_date_from_score(score: float) -> datetime.datetime:
+    if score < PRIORITY_OFFSET * SCORE_TIMESTAMP_PRECISION:
+        # NOTE(sileht): backward compatibility for engine <= 5.0.0
+        # prio < 1 so this is score computed before priorities
+        # just return a date in the past to handle this event now
+        return date.utcnow() - datetime.timedelta(minutes=5)
+    timestamp = (
+        score % (PRIORITY_OFFSET * SCORE_TIMESTAMP_PRECISION)
+    ) / SCORE_TIMESTAMP_PRECISION
+    return date.fromtimestamp(timestamp)
 
 
 def extract_slim_event(event_type: str, data: typing.Any) -> typing.Any:

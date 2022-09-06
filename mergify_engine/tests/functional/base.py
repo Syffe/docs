@@ -384,6 +384,8 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
 
         config.API_ENABLE = True
 
+        mock.patch.object(worker, "MIN_DELAY_BETWEEN_SAME_PULL_REQUEST", 0).start()
+
         self.existing_labels: typing.List[str] = []
         self.pr_counter: int = 0
         self.git_counter: int = 0

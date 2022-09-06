@@ -17,7 +17,7 @@
 #                                  to process for each                GitHub events.
 #                                  org                                PR #0 is for events with
 #                                  key = pull request                 no PR number attached.
-#                                  score = timestamp
+#                                  score = prio + timestamp
 #
 #
 # Orgs key format: f"bucket~{owner_id}"
@@ -87,6 +87,8 @@ LOG = daiquiri.getLogger(__name__)
 # we keep the PR in queue for ~ 7 minutes (a try == WORKER_PROCESSING_DELAY)
 MAX_RETRIES: int = 15
 STREAM_ATTEMPTS_LOGGING_THRESHOLD: int = 20
+# minimun delay to wait between two processing of the same PR
+MIN_DELAY_BETWEEN_SAME_PULL_REQUEST = int(datetime.timedelta(seconds=5).total_seconds())
 
 DEDICATED_WORKERS_KEY = "dedicated-workers"
 ATTEMPTS_KEY = "attempts"
@@ -124,6 +126,14 @@ class UnexpectedPullRetry(Exception):
 T_MessagePayload = typing.NewType("T_MessagePayload", typing.Dict[bytes, bytes])
 # FIXME(sileht): redis returns bytes, not str
 T_MessageID = typing.NewType("T_MessageID", str)
+
+
+@dataclasses.dataclass
+class PullRequestBucket:
+    sources_key: worker_lua.BucketSourcesKeyType
+    score: float
+    repo_id: github_types.GitHubRepositoryIdType
+    pull_number: github_types.GitHubPullRequestNumber
 
 
 async def run_engine(
@@ -469,6 +479,52 @@ class StreamProcessor:
             github_types.GitHubPullRequestNumber(int(pull_number)),
         )
 
+    async def _select_pull_request_bucket(
+        self,
+        bucket_org_key: worker_lua.BucketOrgKeyType,
+        installation: context.Installation,
+        # TODO(sileht): Update the score instead of this need_retries_later hack
+        need_retries_later: typing.Set[
+            typing.Tuple[
+                github_types.GitHubRepositoryIdType,
+                github_types.GitHubPullRequestNumber,
+            ]
+        ],
+    ) -> PullRequestBucket | None:
+        bucket_sources_keys: typing.List[
+            typing.Tuple[bytes, float]
+        ] = await self.redis_links.stream.zrangebyscore(
+            bucket_org_key,
+            min=0,
+            max="+inf",
+            withscores=True,
+        )
+        LOG.debug(
+            "org bucket contains %d pulls",
+            len(bucket_sources_keys),
+            gh_owner=installation.owner_login,
+        )
+
+        now = date.utcnow()
+        for _bucket_sources_key, _bucket_score in bucket_sources_keys:
+            when = worker_pusher.get_date_from_score(_bucket_score)
+            if when >= now:
+                continue
+
+            bucket_sources_key = worker_lua.BucketSourcesKeyType(
+                _bucket_sources_key.decode()
+            )
+            (
+                repo_id,
+                pull_number,
+            ) = self._extract_infos_from_bucket_sources_key(bucket_sources_key)
+            if (repo_id, pull_number) in need_retries_later:
+                continue
+            return PullRequestBucket(
+                bucket_sources_key, _bucket_score, repo_id, pull_number
+            )
+        return None
+
     async def _consume_buckets(
         self,
         bucket_org_key: worker_lua.BucketOrgKeyType,
@@ -479,40 +535,24 @@ class StreamProcessor:
             typing.List[github_types.GitHubPullRequest],
         ] = {}
 
-        need_retries_later = set()
+        need_retries_later: typing.Set[
+            typing.Tuple[
+                github_types.GitHubRepositoryIdType,
+                github_types.GitHubPullRequestNumber,
+            ]
+        ] = set()
 
         pulls_processed = 0
         started_at = time.monotonic()
         while True:
-            bucket_sources_keys: typing.List[
-                typing.Tuple[bytes, float]
-            ] = await self.redis_links.stream.zrangebyscore(
-                bucket_org_key,
-                min=0,
-                max="+inf",
-                withscores=True,
+            bucket = await self._select_pull_request_bucket(
+                bucket_org_key, installation, need_retries_later
             )
-            LOG.debug(
-                "org bucket contains %d pulls",
-                len(bucket_sources_keys),
-                gh_owner=installation.owner_login,
-            )
-            for _bucket_sources_key, _bucket_score in bucket_sources_keys:
-                bucket_sources_key = worker_lua.BucketSourcesKeyType(
-                    _bucket_sources_key.decode()
-                )
-                (
-                    repo_id,
-                    pull_number,
-                ) = self._extract_infos_from_bucket_sources_key(bucket_sources_key)
-                if (repo_id, pull_number) in need_retries_later:
-                    continue
-                break
-            else:
+            if bucket is None:
                 break
 
             if (time.monotonic() - started_at) >= config.BUCKET_PROCESSING_MAX_SECONDS:
-                prio = worker_pusher.get_priority_level_from_score(_bucket_score)
+                prio = worker_pusher.get_priority_level_from_score(bucket.score)
                 statsd.increment(
                     "engine.buckets.preempted", tags=[f"priority:{prio.name}"]
                 )
@@ -521,7 +561,13 @@ class StreamProcessor:
             pulls_processed += 1
             installation.client.set_requests_ratio(pulls_processed)
 
-            messages = await self.redis_links.stream.xrange(bucket_sources_key)
+            messages = await worker_lua.get_pull_messages(
+                self.redis_links.stream,
+                bucket_org_key,
+                bucket.sources_key,
+                MIN_DELAY_BETWEEN_SAME_PULL_REQUEST
+                * worker_pusher.SCORE_TIMESTAMP_PRECISION,
+            )
             statsd.histogram("engine.buckets.events.read_size", len(messages))
 
             if messages:
@@ -533,7 +579,7 @@ class StreamProcessor:
                 tracing_repo_name: github_types.GitHubRepositoryNameForTracing
                 if tracing_repo_name_bin is None:
                     tracing_repo_name = github_types.GitHubRepositoryNameUnknown(
-                        f"<unknown {repo_id}>"
+                        f"<unknown {bucket.repo_id}>"
                     )
                 else:
                     tracing_repo_name = typing.cast(
@@ -542,14 +588,14 @@ class StreamProcessor:
                     )
             else:
                 tracing_repo_name = github_types.GitHubRepositoryNameUnknown(
-                    f"<unknown {repo_id}>"
+                    f"<unknown {bucket.repo_id}>"
                 )
 
             logger = daiquiri.getLogger(
                 __name__,
                 gh_owner=installation.owner_login,
                 gh_repo=tracing_repo_name,
-                gh_pull=pull_number,
+                gh_pull=bucket.pull_number,
             )
             logger.debug("read org bucket", sources=len(messages))
             if not messages:
@@ -557,12 +603,12 @@ class StreamProcessor:
                 await worker_lua.remove_pull(
                     self.redis_links.stream,
                     bucket_org_key,
-                    bucket_sources_key,
+                    bucket.sources_key,
                     (),
                 )
                 break
 
-            if bucket_sources_key.endswith("~0"):
+            if bucket.sources_key.endswith("~0"):
                 with tracer.trace(
                     "check-runs/push pull requests finder",
                     span_type="worker",
@@ -571,19 +617,19 @@ class StreamProcessor:
                     logger.debug(
                         "unpack events without pull request number", count=len(messages)
                     )
-                    if repo_id not in opened_pulls_by_repo:
+                    if bucket.repo_id not in opened_pulls_by_repo:
                         try:
-                            opened_pulls_by_repo[repo_id] = [
+                            opened_pulls_by_repo[bucket.repo_id] = [
                                 p
                                 async for p in installation.client.items(
-                                    f"/repositories/{repo_id}/pulls",
+                                    f"/repositories/{bucket.repo_id}/pulls",
                                     resource_name="pull requests",
                                     page_limit=100,
                                 )
                             ]
                         except Exception as e:
                             if exceptions.should_be_ignored(e):
-                                opened_pulls_by_repo[repo_id] = []
+                                opened_pulls_by_repo[bucket.repo_id] = []
                             else:
                                 raise
 
@@ -594,11 +640,11 @@ class StreamProcessor:
                         )
                         converted_messages = await self._convert_event_to_messages(
                             installation,
-                            repo_id,
+                            bucket.repo_id,
                             tracing_repo_name,
                             source,
-                            opened_pulls_by_repo[repo_id],
-                            message[b"score"],
+                            opened_pulls_by_repo[bucket.repo_id],
+                            message[b"score"].decode(),
                         )
                         logger.debug(
                             "event unpacked into %d messages", converted_messages
@@ -607,7 +653,7 @@ class StreamProcessor:
                         await worker_lua.remove_pull(
                             self.redis_links.stream,
                             bucket_org_key,
-                            bucket_sources_key,
+                            bucket.sources_key,
                             (typing.cast(T_MessageID, message_id),),
                         )
             else:
@@ -631,18 +677,21 @@ class StreamProcessor:
                     with tracer.trace(
                         "pull processing",
                         span_type="worker",
-                        resource=f"{installation.owner_login}/{tracing_repo_name}/{pull_number}",
+                        resource=f"{installation.owner_login}/{tracing_repo_name}/{bucket.pull_number}",
                     ) as span:
                         span.set_tags(
-                            {"gh_repo": tracing_repo_name, "gh_pull": pull_number}
+                            {
+                                "gh_repo": tracing_repo_name,
+                                "gh_pull": bucket.pull_number,
+                            }
                         )
                         await self._consume_pull(
                             bucket_org_key,
-                            bucket_sources_key,
+                            bucket.sources_key,
                             installation,
-                            repo_id,
+                            bucket.repo_id,
                             tracing_repo_name,
-                            pull_number,
+                            bucket.pull_number,
                             message_ids,
                             sources,
                         )
@@ -653,7 +702,7 @@ class StreamProcessor:
                 except vcr_errors_CannotOverwriteExistingCassetteException:
                     raise
                 except (PullRetry, UnexpectedPullRetry):
-                    need_retries_later.add((repo_id, pull_number))
+                    need_retries_later.add((bucket.repo_id, bucket.pull_number))
 
         statsd.histogram("engine.buckets.read_size", pulls_processed)
 
