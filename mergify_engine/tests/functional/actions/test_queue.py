@@ -2,7 +2,6 @@ import copy
 import datetime
 import operator
 import typing
-from unittest import mock
 
 import anys
 from first import first
@@ -1041,6 +1040,111 @@ class TestQueueAction(base.FunctionalTestBase):
         assert "- [ ] `status-success=continuous-integration/fake-ci`" in summary
         assert f"base={self.main_branch_name}" not in summary
 
+        # Check event logs
+        r = await self.app.get(
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events?per_page=5",
+            headers={
+                "Authorization": f"bearer {self.api_key_admin}",
+                "Content-type": "application/json",
+            },
+        )
+        assert r.status_code == 200
+        assert r.json() == {
+            "events": [
+                {
+                    "event": "action.queue.leave",
+                    "metadata": {
+                        "branch": self.main_branch_name,
+                        "merged": True,
+                        "position": 0,
+                        "queue_name": "default",
+                        "queued_at": anys.ANY_AWARE_DATETIME_STR,
+                        "reason": "The pull request has been merged "
+                        "automatically\n"
+                        "The pull request has been merged "
+                        "automatically at "
+                        "*298d467c5bbe84634578356918768d487d54818b*",
+                    },
+                    "pull_request": p1["number"],
+                    "repository": self.repository_ctxt.repo["full_name"],
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "trigger": "Rule: Merge priority high",
+                },
+                {
+                    "event": "action.queue.checks_end",
+                    "metadata": {
+                        "abort_code": None,
+                        "abort_reason": "",
+                        "abort_status": "REEMBARKED",
+                        "aborted": False,
+                        "branch": self.main_branch_name,
+                        "position": None,
+                        "queue_name": "default",
+                        "queued_at": anys.ANY_AWARE_DATETIME_STR,
+                        "speculative_check_pull_request": {
+                            "checks_conclusion": "success",
+                            "checks_ended_at": anys.ANY_AWARE_DATETIME_STR,
+                            "checks_timed_out": False,
+                            "in_place": True,
+                            "number": p1["number"],
+                        },
+                    },
+                    "pull_request": p1["number"],
+                    "repository": self.repository_ctxt.repo["full_name"],
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "trigger": "merge-queue internal",
+                },
+                {
+                    "event": "action.queue.merged",
+                    "metadata": {
+                        "branch": self.main_branch_name,
+                        "queue_name": "default",
+                        "queued_at": anys.ANY_AWARE_DATETIME_STR,
+                    },
+                    "pull_request": p1["number"],
+                    "repository": self.repository_ctxt.repo["full_name"],
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "trigger": "Rule: Merge priority high",
+                },
+                {
+                    "event": "action.queue.checks_start",
+                    "metadata": {
+                        "branch": self.main_branch_name,
+                        "position": 0,
+                        "queue_name": "default",
+                        "queued_at": anys.ANY_AWARE_DATETIME_STR,
+                        "speculative_check_pull_request": {
+                            "checks_conclusion": "pending",
+                            "checks_ended_at": None,
+                            "checks_timed_out": False,
+                            "in_place": True,
+                            "number": p1["number"],
+                        },
+                    },
+                    "pull_request": p1["number"],
+                    "repository": self.repository_ctxt.repo["full_name"],
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "trigger": "merge-queue internal",
+                },
+                {
+                    "event": "action.queue.enter",
+                    "metadata": {
+                        "branch": self.main_branch_name,
+                        "position": 0,
+                        "queue_name": "default",
+                        "queued_at": anys.ANY_AWARE_DATETIME_STR,
+                    },
+                    "pull_request": p1["number"],
+                    "repository": self.repository_ctxt.repo["full_name"],
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "trigger": "Rule: Merge priority high",
+                },
+            ],
+            "per_page": 5,
+            "size": 5,
+            "total": 5,
+        }
+
     async def test_unqueue_rule_unmatch_with_batch_requeue(self) -> None:
         rules = {
             "queue_rules": [
@@ -1168,29 +1272,6 @@ class TestQueueAction(base.FunctionalTestBase):
             },
         )
         assert r.status_code == 200
-        """
-                {
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
-                    "event": "action.review",
-                    "metadata": {
-                        "type": "REQUEST_CHANGES",
-                        "reviewer": "mergify-test4",
-                    },
-                    "trigger": "Rule: requested",
-                },
-                {
-                    "repository": p1["base"]["repo"]["full_name"],
-                    "pull_request": p1["number"],
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
-                    "event": "action.review",
-                    "metadata": {
-                        "type": "APPROVE",
-                        "reviewer": config.BOT_USER_LOGIN,
-                    },
-                    "trigger": "Rule: approve",
-                },
-            ],
-        """
         assert r.json() == {
             "events": [
                 {
@@ -3791,7 +3872,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         {
                             "number": p3["number"],
                             "position": 0,
-                            "queued_at": mock.ANY,
+                            "queued_at": anys.ANY_AWARE_DATETIME_STR,
                             "priority": 2000,
                             "queue_rule": {
                                 "config": {
@@ -3811,8 +3892,8 @@ class TestQueueAction(base.FunctionalTestBase):
                             "speculative_check_pull_request": {
                                 "in_place": False,
                                 "number": tmp_mq_p3["number"],
-                                "started_at": mock.ANY,
-                                "ended_at": mock.ANY,
+                                "started_at": anys.ANY_AWARE_DATETIME_STR,
+                                "ended_at": None,
                                 "state": "pending",
                                 "checks": [],
                                 "evaluated_conditions": "- [ ] `status-success=continuous-integration/fast-ci`\n",
@@ -3838,7 +3919,7 @@ class TestQueueAction(base.FunctionalTestBase):
                                 },
                                 "name": "default",
                             },
-                            "queued_at": mock.ANY,
+                            "queued_at": anys.ANY_AWARE_DATETIME_STR,
                             "speculative_check_pull_request": None,
                             "estimated_time_of_merge": None,
                         },
@@ -3861,7 +3942,7 @@ class TestQueueAction(base.FunctionalTestBase):
                                 },
                                 "name": "default",
                             },
-                            "queued_at": mock.ANY,
+                            "queued_at": anys.ANY_AWARE_DATETIME_STR,
                             "speculative_check_pull_request": None,
                             "estimated_time_of_merge": None,
                         },
@@ -4891,7 +4972,7 @@ pull_requests:
         expected_table = f"| 1 | test_create_pull_basic: pull request n2 from integration ([#{p2['number']}]({pull_url_prefix}/{p2['number']})) | foo/0 | [#{tmp_pull['number']}]({pull_url_prefix}/{tmp_pull['number']}) | <fake_pretty_datetime()>|"
         assert expected_table in await car.generate_merge_queue_summary()
 
-        await car.delete_pull(reason=queue_utils.ChecksFailed())
+        await car.end_checking(reason=queue_utils.ChecksFailed())
 
         ctxt = context.Context(self.repository_ctxt, tmp_pull)
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)

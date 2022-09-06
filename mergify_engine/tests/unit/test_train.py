@@ -37,7 +37,7 @@ async def fake_train_car_start_checking_inplace(
     inner_self.creation_state = "updated"
 
 
-async def fake_train_car_delete_pull(
+async def fake_train_car_end_checking(
     inner_self: merge_train.TrainCar,
     reason: queue_utils.BaseAbortReason,
     not_reembarked_pull_request: typing.Optional[
@@ -66,8 +66,8 @@ def monkepatched_traincar(monkeypatch: pytest.MonkeyPatch) -> None:
         fake_train_car_start_checking_with_draft,
     )
     monkeypatch.setattr(
-        "mergify_engine.queue.merge_train.TrainCar.delete_pull",
-        fake_train_car_delete_pull,
+        "mergify_engine.queue.merge_train.TrainCar.end_checking",
+        fake_train_car_end_checking,
     )
 
 

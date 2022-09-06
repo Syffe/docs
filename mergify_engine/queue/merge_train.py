@@ -892,65 +892,22 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
         return description
 
-    async def delete_pull(
+    async def end_checking(
         self,
         reason: typing.Optional[queue_utils.BaseAbortReason],
         not_reembarked_pull_request: typing.Optional[
             github_types.GitHubPullRequestNumber
         ] = None,
     ) -> None:
-        if not self.queue_pull_request_number or self.head_branch is None:
+        if self.queue_pull_request_number is None:
             return
 
-        headline: typing.Optional[str] = None
-        remaning_embarked_pulls: list[EmbarkedPull] = []
-
-        if self.creation_state == "created" and reason is not None:
-            if self.queue_pull_request_number is None:
-                raise RuntimeError(
-                    "car state is created, but queue_pull_request_number is None"
-                )
-
-            remaning_embarked_pulls = [
-                ep
-                for ep in self.initial_embarked_pulls
-                if not_reembarked_pull_request is None
-                or ep.user_pull_request_number != not_reembarked_pull_request
-            ]
-
-            tmp_pull_ctxt = await self.train.repository.get_pull_request_context(
-                self.queue_pull_request_number
-            )
-            summary = await tmp_pull_ctxt.get_engine_check_run(constants.SUMMARY_NAME)
-            if (
-                summary is None
-                or summary["conclusion"] == check_api.Conclusion.PENDING.value
-            ):
-                headline = f"✨ {reason}."
-                if remaning_embarked_pulls:
-                    headline += f" The pull request {self._get_user_refs(embarked_pulls=remaning_embarked_pulls)} has been re-embarked."
-                headline += " ✨"
-
-                body = await self.generate_merge_queue_summary(
-                    for_queue_pull_request=True,
-                    headline=headline,
-                    show_queue=False,
-                )
-
-                if tmp_pull_ctxt.body != body:
-                    await tmp_pull_ctxt.client.patch(
-                        f"{tmp_pull_ctxt.base_url}/pulls/{self.queue_pull_request_number}",
-                        json={"body": body},
-                    )
-
-                await tmp_pull_ctxt.set_summary_check(
-                    check_api.Result(
-                        check_api.Conclusion.CANCELLED,
-                        title=f"The pull request {self._get_user_refs(create_link=False)} has been re-embarked for merge",
-                        summary=headline,
-                    )
-                )
-                tmp_pull_ctxt.log.info("train car deleted", reason=reason)
+        remaning_embarked_pulls = [
+            ep
+            for ep in self.initial_embarked_pulls
+            if not_reembarked_pull_request is None
+            or ep.user_pull_request_number != not_reembarked_pull_request
+        ]
 
         abort_reason: None | queue_utils.BaseAbortReason = None
         if reason is None:
@@ -971,7 +928,55 @@ You don't need to do anything. Mergify will close this pull request automaticall
             aborted,
             abort_reason,
         )
-        await self._delete_branch()
+
+        if self.creation_state == "updated":
+            return
+
+        elif self.creation_state == "created":
+            if reason is not None:
+                await self._set_final_draft_pr_summary(reason, remaning_embarked_pulls)
+            await self._delete_branch()
+
+    async def _set_final_draft_pr_summary(
+        self,
+        reason: typing.Optional[queue_utils.BaseAbortReason],
+        remaning_embarked_pulls: typing.List[EmbarkedPull],
+    ) -> None:
+        if self.creation_state != "created" or self.queue_pull_request_number is None:
+            raise RuntimeError("can be called only on draft pr")
+        tmp_pull_ctxt = await self.train.repository.get_pull_request_context(
+            self.queue_pull_request_number
+        )
+        summary = await tmp_pull_ctxt.get_engine_check_run(constants.SUMMARY_NAME)
+        if (
+            summary is None
+            or summary["conclusion"] == check_api.Conclusion.PENDING.value
+        ):
+            headline = f"✨ {reason}."
+            if remaning_embarked_pulls:
+                headline += f" The pull request {self._get_user_refs(embarked_pulls=remaning_embarked_pulls)} has been re-embarked."
+            headline += " ✨"
+
+            body = await self.generate_merge_queue_summary(
+                for_queue_pull_request=True,
+                headline=headline,
+                show_queue=False,
+            )
+
+            if tmp_pull_ctxt.body != body:
+                await tmp_pull_ctxt.client.patch(
+                    f"{tmp_pull_ctxt.base_url}/pulls/{self.queue_pull_request_number}",
+                    json={"body": body},
+                )
+
+            await tmp_pull_ctxt.set_summary_check(
+                check_api.Result(
+                    check_api.Conclusion.CANCELLED,
+                    title=f"The pull request {self._get_user_refs(create_link=False)} has been re-embarked for merge",
+                    summary=headline,
+                )
+            )
+            tmp_pull_ctxt.log.info("train car deleted", reason=reason)
 
     async def _send_checks_end_signal(
         self,
@@ -1709,7 +1714,7 @@ class Train:
             else:
                 sliced = True
                 new_waiting_pulls.extend(c.still_queued_embarked_pulls)
-                await c.delete_pull(
+                await c.end_checking(
                     reason, not_reembarked_pull_request=drop_pull_request
                 )
 
@@ -1922,7 +1927,7 @@ class Train:
             del self._cars[0].still_queued_embarked_pulls[0]
             if len(self._cars[0].still_queued_embarked_pulls) == 0:
                 deleted_car = self._cars[0]
-                await deleted_car.delete_pull(reason=None)
+                await deleted_car.end_checking(reason=None)
                 self._cars = self._cars[1:]
 
             if ctxt.pull["merge_commit_sha"] is None:
