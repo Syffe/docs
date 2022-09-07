@@ -153,7 +153,7 @@ async def get_checks_for_ref(
                 ctxt.client.items(
                     f"{ctxt.base_url}/commits/{sha}/check-runs",
                     resource_name="check runs",
-                    page_limit=5,
+                    page_limit=10,
                     api_version="antiope",
                     list_items="check_runs",
                     params=params,
