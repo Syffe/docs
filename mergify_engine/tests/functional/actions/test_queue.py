@@ -1064,7 +1064,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "automatically\n"
                         "The pull request has been merged "
                         "automatically at "
-                        "*298d467c5bbe84634578356918768d487d54818b*",
+                        f"*{p1['merge_commit_sha']}*",
                     },
                     "pull_request": p1["number"],
                     "repository": self.repository_ctxt.repo["full_name"],
