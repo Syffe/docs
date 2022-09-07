@@ -269,7 +269,7 @@ class TrainCar:
     has_timed_out: bool = False
     checks_ended_timestamp: typing.Optional[datetime.datetime] = None
     ci_has_passed: bool = False
-    queue_branch_name: typing.Optional[str] = None
+    queue_branch_name: typing.Optional[github_types.GitHubRefType] = None
 
     class Serialized(typing.TypedDict):
         initial_embarked_pulls: typing.List[EmbarkedPull.Serialized]
@@ -288,7 +288,7 @@ class TrainCar:
         has_timed_out: bool
         checks_ended_timestamp: typing.Optional[datetime.datetime]
         ci_has_passed: bool
-        queue_branch_name: typing.Optional[str]
+        queue_branch_name: typing.Optional[github_types.GitHubRefType]
 
     def serialized(self) -> "TrainCar.Serialized":
         return self.Serialized(
@@ -386,9 +386,9 @@ class TrainCar:
 
         # Retrocompatibility
         if "queue_branch_name" not in data:
-            data[
-                "queue_branch_name"
-            ] = f"{constants.MERGE_QUEUE_BRANCH_PREFIX}{train.ref}/{cls._get_pulls_branch_ref(initial_embarked_pulls)}"
+            data["queue_branch_name"] = github_types.GitHubRefType(
+                f"{constants.MERGE_QUEUE_BRANCH_PREFIX}{train.ref}/{cls._get_pulls_branch_ref(initial_embarked_pulls)}"
+            )
 
         return cls(
             train,
@@ -715,7 +715,9 @@ class TrainCar:
             self.initial_embarked_pulls, self.parent_pull_request_numbers
         )
         if self.queue_branch_name is None:
-            self.queue_branch_name = f"{queue_rule.config['queue_branch_prefix']}{self._generate_draft_pr_branch_suffix()}"
+            self.queue_branch_name = github_types.GitHubRefType(
+                f"{queue_rule.config['queue_branch_prefix']}{self._generate_draft_pr_branch_suffix()}"
+            )
 
         bot_account = queue_rule.config["draft_bot_account"]
         github_user: typing.Optional[user_tokens.UserTokensUser] = None
