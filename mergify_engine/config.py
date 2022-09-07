@@ -1,5 +1,4 @@
 import base64
-import distutils.util
 import logging
 import os
 import secrets
@@ -11,11 +10,12 @@ import dotenv
 import voluptuous
 
 from mergify_engine import github_types
+from mergify_engine import utils
 
 
 # NOTE(sileht) we coerce bool and int in case they are loaded from the environment
 def CoercedBool(value: typing.Any) -> bool:
-    return bool(distutils.util.strtobool(str(value)))
+    return utils.strtobool(str(value))
 
 
 def CoercedLoggingLevel(value: str) -> int:

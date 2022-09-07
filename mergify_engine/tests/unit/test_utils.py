@@ -178,3 +178,28 @@ def test_get_retention_minid() -> None:
     retention = datetime.timedelta(days=1)
     expected_minid = 1659455030478  # 2022-08-02T15:43:50.478Z
     assert redis_utils.get_expiration_minid(retention) == expected_minid
+
+
+@pytest.mark.parametrize(
+    "string,expected",
+    (
+        ("n", False),
+        ("no", False),
+        ("false", False),
+        ("f", False),
+        ("0", False),
+        ("off", False),
+        ("y", True),
+        ("yes", True),
+        ("t", True),
+        ("on", True),
+        ("1", True),
+    ),
+)
+def test_strtobool(string: str, expected: bool) -> None:
+    assert utils.strtobool(string) == expected
+
+
+def test_strtobool_exc() -> None:
+    with pytest.raises(ValueError):
+        utils.strtobool("test")

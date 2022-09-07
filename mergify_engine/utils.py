@@ -175,3 +175,13 @@ class LiteralYamlString(yaml.YAMLObject):
     @classmethod
     def to_yaml(cls, dumper: yaml.BaseDumper, data: typing.Any) -> typing.Any:
         return dumper.represent_scalar("tag:yaml.org,2002:str", data.data, style="|")
+
+
+def strtobool(string: str) -> bool:
+    if string.lower() in ("y", "yes", "t", "true", "on", "1"):
+        return True
+
+    if string.lower() in ("n", "no", "f", "false", "off", "0"):
+        return False
+
+    raise ValueError(f"Could not convert '{string}' to boolean")
