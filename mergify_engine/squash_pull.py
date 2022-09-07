@@ -19,6 +19,11 @@ class SquashNeedRetry(exceptions.EngineNeedRetry):
     message: str
 
 
+GIT_MESSAGE_TO_EXCEPTION = {
+    "CONFLICT (content): ": SquashFailure,
+}
+
+
 async def _do_squash(
     ctxt: context.Context, user: user_tokens.UserTokensUser, squash_message: str
 ) -> None:
@@ -87,6 +92,12 @@ async def _do_squash(
             f"Git reported the following error:\n```\n{e.output}\n```\n"
         )
     except gitter.GitError as e:
+        for message, out_exception in GIT_MESSAGE_TO_EXCEPTION.items():
+            if message in e.output:
+                raise out_exception(
+                    f"Git reported the following error:\n```\n{e.output}\n```\n"
+                )
+
         ctxt.log.error(
             "squash failed",
             output=e.output,
