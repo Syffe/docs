@@ -1085,6 +1085,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "speculative_check_pull_request": {
                             "checks_conclusion": "success",
                             "checks_ended_at": anys.ANY_AWARE_DATETIME_STR,
+                            "checks_started_at": anys.ANY_AWARE_DATETIME_STR,
                             "checks_timed_out": False,
                             "in_place": True,
                             "number": p1["number"],
@@ -1306,6 +1307,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "speculative_check_pull_request": {
                             "checks_conclusion": "pending",
                             "checks_ended_at": None,
+                            "checks_started_at": anys.ANY_AWARE_DATETIME_STR,
                             "checks_timed_out": False,
                             "in_place": False,
                             "number": p1["number"] + 4,

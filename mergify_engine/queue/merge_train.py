@@ -815,6 +815,7 @@ class TrainCar:
             position, _ = self.train.find_embarked_pull(ep.user_pull_request_number)
             if position is None:
                 raise RuntimeError("TrainCar with embarked_pull not in train...")
+
             await signals.send(
                 self.train.repository,
                 ep.user_pull_request_number,
@@ -1017,6 +1018,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
                         "checks_conclusion": checks_conclusion,
                         "checks_timed_out": self.has_timed_out,
                         "checks_ended_at": self.checks_ended_timestamp,
+                        "checks_started_at": self.creation_date,
                     },
                 }
             )

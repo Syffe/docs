@@ -68,8 +68,8 @@ async def get_time_to_merge_stats_for_all_queues(
 
 @router.get(
     "/repos/{owner}/{repository}/queues/{queue_name}/stats/time_to_merge",  # noqa: FS003
-    summary="Get the average time to merge statistics for the specified queue name",
-    description="Get the average time to merge statistics for the specified queue name",
+    summary="Get the average time to merge statistics, in seconds, for the specified queue name",
+    description="Get the average time to merge statistics, in seconds, for the specified queue name",
     dependencies=[
         fastapi.Depends(security.check_subscription_feature_merge_queue_stats)
     ],
@@ -151,8 +151,8 @@ async def get_checks_duration_stats_for_all_queues(
 
 @router.get(
     "/repos/{owner}/{repository}/queues/{queue_name}/stats/checks_duration",  # noqa: FS003
-    summary="Get the average checks duration statistics for the specified queue name",
-    description="Get the average checks duration statistics for the specified queue name",
+    summary="Get the average checks duration statistics, in seconds, for the specified queue name",
+    description="Get the average checks duration statistics, in seconds, for the specified queue name",
     dependencies=[
         fastapi.Depends(security.check_subscription_feature_merge_queue_stats)
     ],

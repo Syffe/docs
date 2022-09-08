@@ -149,7 +149,7 @@ def get_stats_from_event_metadata(
             return None
 
         return TimeToMerge(
-            queue_name=typing.cast(rules.QueueName, metadata["queue_name"]),
+            queue_name=rules.QueueName(metadata["queue_name"]),
             time_seconds=_get_seconds_since_datetime(metadata["queued_at"]),
         )
 
@@ -160,7 +160,7 @@ def get_stats_from_event_metadata(
                 return None
 
             return FailureByReason.from_reason_code_str(
-                queue_name=typing.cast(rules.QueueName, metadata["queue_name"]),
+                queue_name=rules.QueueName(metadata["queue_name"]),
                 reason_code_str=metadata["abort_code"],
             )
 
@@ -172,9 +172,17 @@ def get_stats_from_event_metadata(
                 "Received an EventQueueChecksEndMetadata without 'checks_ended_at' set"
             )
 
+        checks_started_at = metadata["speculative_check_pull_request"].get(
+            "checks_started_at"
+        )
+        if checks_started_at is None:
+            return None
+
+        duration_seconds = int((checks_ended_at - checks_started_at).total_seconds())
+
         return ChecksDuration(
-            queue_name=typing.cast(rules.QueueName, metadata["queue_name"]),
-            duration_seconds=_get_seconds_since_datetime(checks_ended_at),
+            queue_name=rules.QueueName(metadata["queue_name"]),
+            duration_seconds=duration_seconds,
         )
 
     raise RuntimeError(f"Received unhandled event {event_name}")
@@ -204,8 +212,6 @@ class StatisticsSignal(signals.SignalBase):
         ):
             return
 
-        pipe = await redis.pipeline()
-
         stats = get_stats_from_event_metadata(event, metadata)
         if stats is None:
             return
@@ -228,6 +234,7 @@ class StatisticsSignal(signals.SignalBase):
 
         minid = redis_utils.get_expiration_minid(MERGE_QUEUE_STATS_RETENTION)
 
+        pipe = await redis.pipeline()
         await pipe.xadd(stat_redis_key, fields=fields, minid=minid)
         await pipe.expire(
             stat_redis_key, int(MERGE_QUEUE_STATS_RETENTION.total_seconds())

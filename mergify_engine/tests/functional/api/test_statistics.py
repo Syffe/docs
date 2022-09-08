@@ -175,50 +175,62 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
                 },
             ],
         }
-        await self.setup_repo(yaml.dump(rules))
+        with freeze_time("2022-08-18T10:00:00", tick=True):
+            await self.setup_repo(yaml.dump(rules))
 
-        r = await self.app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/checks_duration",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
-        )
+            r = await self.app.get(
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/checks_duration",
+                headers={
+                    "Authorization": f"bearer {self.api_key_admin}",
+                    "Content-type": "application/json",
+                },
+            )
 
-        assert r.status_code == 200
-        assert r.json()["mean"] is None
+            assert r.status_code == 200
+            assert r.json()["mean"] is None
 
-        p1 = await self.create_pr()
+            p1 = await self.create_pr()
 
-        # To force others to be rebased
-        p = await self.create_pr()
-        await self.merge_pull(p["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
-        await self.run_engine()
+            # To force others to be rebased
+            p = await self.create_pr()
+            await self.merge_pull(p["number"])
+            await self.wait_for("pull_request", {"action": "closed"})
+            await self.run_engine()
 
-        await self.add_label(p1["number"], "queue")
-        await self.run_engine()
+            await self.add_label(p1["number"], "queue")
+            await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "opened"})
-        await self.run_full_engine()
+            await self.wait_for("pull_request", {"action": "opened"})
 
-        await self.wait_for("check_suite", {"check_suite": {"conclusion": "success"}})
-        await self.wait_for("pull_request", {"action": "closed"})
-        await self.wait_for("pull_request", {"action": "closed"})
+        with freeze_time("2022-08-18T12:00:00", tick=True):
+            await self.run_full_engine()
 
-        checks_duration_key = self.get_statistic_redis_key("checks_duration")
-        assert await self.redis_links.stats.xlen(checks_duration_key) == 1
+            await self.wait_for(
+                "check_suite", {"check_suite": {"conclusion": "success"}}
+            )
+            await self.wait_for("pull_request", {"action": "closed"})
+            await self.wait_for("pull_request", {"action": "closed"})
 
-        r = await self.app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/checks_duration",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
-        )
+            checks_duration_key = self.get_statistic_redis_key("checks_duration")
+            assert await self.redis_links.stats.xlen(checks_duration_key) == 1
 
-        assert r.status_code == 200
-        assert isinstance(r.json()["mean"], float)
+            r = await self.app.get(
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/checks_duration",
+                headers={
+                    "Authorization": f"bearer {self.api_key_admin}",
+                    "Content-type": "application/json",
+                },
+            )
+
+            assert r.status_code == 200
+            # Because of execution time we can't really make sure that it will
+            # always be the expected number. The best we can do is make sure
+            # it is at least close to what we expect (around 2 hours).
+            assert (
+                datetime.timedelta(hours=1, minutes=58).total_seconds()
+                < r.json()["mean"]
+                < datetime.timedelta(hours=2, minutes=10).total_seconds()
+            )
 
     async def test_start_at_end_at_query_params(self) -> None:
         rules = {
