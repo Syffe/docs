@@ -88,7 +88,9 @@ LOG = daiquiri.getLogger(__name__)
 MAX_RETRIES: int = 15
 STREAM_ATTEMPTS_LOGGING_THRESHOLD: int = 20
 # minimun delay to wait between two processing of the same PR
-MIN_DELAY_BETWEEN_SAME_PULL_REQUEST = int(datetime.timedelta(seconds=5).total_seconds())
+MIN_DELAY_BETWEEN_SAME_PULL_REQUEST = int(
+    datetime.timedelta(seconds=30).total_seconds()
+)
 
 DEDICATED_WORKERS_KEY = "dedicated-workers"
 ATTEMPTS_KEY = "attempts"
@@ -483,13 +485,6 @@ class StreamProcessor:
         self,
         bucket_org_key: worker_lua.BucketOrgKeyType,
         installation: context.Installation,
-        # TODO(sileht): Update the score instead of this need_retries_later hack
-        need_retries_later: typing.Set[
-            typing.Tuple[
-                github_types.GitHubRepositoryIdType,
-                github_types.GitHubPullRequestNumber,
-            ]
-        ],
     ) -> PullRequestBucket | None:
         bucket_sources_keys: typing.List[
             typing.Tuple[bytes, float]
@@ -518,8 +513,6 @@ class StreamProcessor:
                 repo_id,
                 pull_number,
             ) = self._extract_infos_from_bucket_sources_key(bucket_sources_key)
-            if (repo_id, pull_number) in need_retries_later:
-                continue
             return PullRequestBucket(
                 bucket_sources_key, _bucket_score, repo_id, pull_number
             )
@@ -535,18 +528,11 @@ class StreamProcessor:
             typing.List[github_types.GitHubPullRequest],
         ] = {}
 
-        need_retries_later: typing.Set[
-            typing.Tuple[
-                github_types.GitHubRepositoryIdType,
-                github_types.GitHubPullRequestNumber,
-            ]
-        ] = set()
-
         pulls_processed = 0
         started_at = time.monotonic()
         while True:
             bucket = await self._select_pull_request_bucket(
-                bucket_org_key, installation, need_retries_later
+                bucket_org_key, installation
             )
             if bucket is None:
                 break
@@ -702,7 +688,8 @@ class StreamProcessor:
                 except vcr_errors_CannotOverwriteExistingCassetteException:
                     raise
                 except (PullRetry, UnexpectedPullRetry):
-                    need_retries_later.add((bucket.repo_id, bucket.pull_number))
+                    # NOTE(sileht): Will be retried automatically in MIN_DELAY_BETWEEN_SAME_PULL_REQUEST
+                    pass
 
         statsd.histogram("engine.buckets.read_size", pulls_processed)
 
