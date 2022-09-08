@@ -310,9 +310,11 @@ drawbacks:
 * GPG signed commits will lose their signatures.
 
 * Mergify will impersonate one of the repository members to force-push the
-  branch as GitHub Applications are not authorized to do that by themselves.
-  If you need to control which user is impersonated, you can use the ``update_bot_account`` option.
-  Be aware that the GitHub UI will show the collaborator as the author of the push, while it was actually executed by Mergify.
+  branch as GitHub Applications are not authorized to do that by themselves. If
+  you need to control which user is impersonated, you can use the
+  ``update_bot_account`` option. Be aware that the GitHub UI will show the
+  collaborator as the author of the push, while it was actually executed by
+  Mergify.
 
 
 Merge-Queue PR

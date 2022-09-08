@@ -28,8 +28,3 @@ therefore decides to automatically marks pull request A as merged.
 
 Be sure that Mergify did nothing on the pull request A if it told you so in the
 `Checks` tab. Don't be fooled by GitHub UI.
-
-I see a rebase and force-push done by a member of the repository, but Mergify actually did it.
-----------------------------------------------------------------------------------------------
-
-See :ref:`update method rebase`.

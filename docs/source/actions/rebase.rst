@@ -21,6 +21,16 @@ result to the GitHub repository.
    as necessary, making sure they are test with up-to-date code before being
    merged.
 
+.. warning::
+
+   GitHub Applications are not allowed to force-push to a branch. To get around
+   that limitation, Mergify tries to impersonate the pull request author or one
+   of the repository members to force-push the branch. That means that the
+   GitHub UI will show the collaborator as author of the push, while Mergify
+   actually executed it. If you need to control which user is impersonated, you
+   can use the ``bot_account`` option.
+
+
 Options
 -------
 
