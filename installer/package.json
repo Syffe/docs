@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@octokit/request": "^6.2.1",
-    "bootstrap": "^5.2.0",
+    "bootstrap": "^5.2.1",
     "buffer": "^6.0.3",
     "formik": "^2.2.9",
     "prop-types": "^15.8.1",
