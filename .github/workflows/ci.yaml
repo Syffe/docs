@@ -33,7 +33,7 @@ jobs:
       - name: Setup Python 🔧
         uses: actions/setup-python@v4.2.0
         with:
-          python-version: 3.10.6
+          python-version: 3.10.7
 
       - name: Build 🔧 & Test 🔍
         run: |
@@ -58,7 +58,7 @@ jobs:
       - name: Setup Python 🔧
         uses: actions/setup-python@v4.2.0
         with:
-          python-version: 3.10.6
+          python-version: 3.10.7
 
       - name: Build 🔧 & Test 🔍
         run: |
@@ -80,7 +80,7 @@ jobs:
       - name: Setup Python 🔧
         uses: actions/setup-python@v4.2.0
         with:
-          python-version: 3.10.6
+          python-version: 3.10.7
 
       - name: Build 🔧 & Test 🔍
         run: |
@@ -97,7 +97,7 @@ jobs:
       - name: Setup Python 🔧
         uses: actions/setup-python@v4.2.0
         with:
-          python-version: 3.10.6
+          python-version: 3.10.7
 
       - name: Setup Node 🔧
         uses: actions/setup-node@v3
