@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import datetime
+import importlib.metadata
 import os
 import sys
-
-import pkg_resources
 
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -38,7 +37,7 @@ master_doc = "index"
 project = "Mergify"
 language = "en"
 copyright = f"{datetime.date.today().year}, Mergify"  # noqa: A001
-version = pkg_resources.get_distribution("mergify_engine").version
+version = importlib.metadata.distribution("mergify_engine").version
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"
