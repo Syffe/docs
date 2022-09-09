@@ -77,14 +77,14 @@ check_conditions: |-
   - [ ] `author=foobar`
   - [ ] `label=whatever`
   - [X] `base={self.main_branch_name}`
-summary: Did you check mergify-sileht[bot]?
+summary: Did you check {p['user']['login']}?
 title: '''a lot of stuff'' failed'
 ```
 
 **comment action configuration:**
 ```
 bot_account: null
-message: Welcome mergify-sileht[bot].
+message: Welcome {p['user']['login']}.
 ```
 
 **assign action configuration:**
