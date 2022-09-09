@@ -16,15 +16,6 @@ Merge queues prevent merging broken pull requests by serializing their merge.
 Merging broken pull requests can happen when outdated pull requests are being
 merged in their base branch.
 
-Mergify always respects the `branch protection`_ settings. When the conditions
-match and the ``queue`` action runs, Mergify waits for the branch protection to
-be validated before embarking and merging the pull request.
-
-.. _`branch protection`: https://docs.github.com/en/github/administering-a-repository/about-protected-branches
-
-Mergify also waits for dependent pull requests to get merged first (see :ref:`merge-depends-on`).
-
-
 Why Queues?
 -----------
 
@@ -124,6 +115,25 @@ to merge the pull request.
 When multiple queues are defined, they are processed one after the other in the
 order they are defined in the ``queue_rules`` list. Queue processing is blocked
 until all preceding queues are empty.
+
+Mergify always respects the `branch protection`_ settings. When the conditions
+match and the ``queue`` action runs, Mergify waits for the branch protection to
+be validated before embarking and merging the pull request.
+
+Mergify also waits for dependent pull requests to get merged first (see
+:ref:`merge-depends-on`).
+
+.. note::
+
+   If you are using `branch protection`_ and ``Require review from Code
+   Owners`` is checked, Mergify will queue pull requests even if that condition
+   does not match. GitHub does not offer an API to know if the approval comes
+   from a code owner, therefore Mergify has to try to merge it to know if the
+   requirements are validated or not. If they don't match, the pull request
+   will be removed from the queue.
+
+.. _`branch protection`: https://docs.github.com/en/github/administering-a-repository/about-protected-branches
+
 
 Viewing the Merge Queue
 -----------------------
