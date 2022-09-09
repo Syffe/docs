@@ -169,6 +169,7 @@ class TestQueueApi(base.FunctionalTestBase):
                         "speculative_checks": 1,
                         "priority": 0,
                         "queue_branch_prefix": "mergify/merge-queue/",
+                        "queue_branch_merge_method": None,
                     },
                 }
             ]
@@ -198,6 +199,7 @@ class TestQueueApi(base.FunctionalTestBase):
                         "checks_timeout": None,
                         "draft_bot_account": None,
                         "queue_branch_prefix": "urgent-",
+                        "queue_branch_merge_method": None,
                         "priority": 2,
                         "speculative_checks": 1,
                     },
@@ -213,6 +215,7 @@ class TestQueueApi(base.FunctionalTestBase):
                         "checks_timeout": None,
                         "draft_bot_account": None,
                         "queue_branch_prefix": constants.MERGE_QUEUE_BRANCH_PREFIX,
+                        "queue_branch_merge_method": None,
                         "priority": 1,
                         "speculative_checks": 2,
                     },
@@ -228,6 +231,7 @@ class TestQueueApi(base.FunctionalTestBase):
                         "checks_timeout": 600.0,
                         "draft_bot_account": "mergify-test4",
                         "queue_branch_prefix": constants.MERGE_QUEUE_BRANCH_PREFIX,
+                        "queue_branch_merge_method": None,
                         "priority": 0,
                         "speculative_checks": 1,
                     },

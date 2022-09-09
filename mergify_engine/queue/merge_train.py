@@ -596,7 +596,7 @@ class TrainCar:
     )
     async def _create_draft_pull_request(
         self,
-        branch_name: str,
+        branch_name: github_types.GitHubRefType,
         github_user: typing.Optional[user_tokens.UserTokensUser],
     ) -> github_types.GitHubPullRequest:
 
@@ -680,16 +680,20 @@ class TrainCar:
         retry=tenacity.retry_if_exception_type(tenacity.TryAgain),
         stop=tenacity.stop_after_attempt(2),
     )
-    async def _prepare_empty_draft_pr_branch(
-        self, branch_name: str, github_user: typing.Optional[user_tokens.UserTokensUser]
+    async def _prepare_draft_pr_branch(
+        self,
+        branch_name: github_types.GitHubRefType,
+        base_sha: github_types.SHAType,
+        github_user: typing.Optional[user_tokens.UserTokensUser],
     ) -> None:
+
         try:
             await self.train.repository.installation.client.post(
                 f"/repos/{self.train.repository.installation.owner_login}/{self.train.repository.repo['name']}/git/refs",
                 oauth_token=github_user["oauth_access_token"] if github_user else None,
                 json={
                     "ref": f"refs/heads/{branch_name}",
-                    "sha": self.initial_current_base_sha,
+                    "sha": base_sha,
                 },
             )
         except http.HTTPClientSideError as exc:
@@ -705,10 +709,47 @@ class TrainCar:
                 await self._set_creation_failure(exc.message)
                 raise TrainCarPullRequestCreationFailure(self) from exc
 
+    async def _get_draft_pr_setup(
+        self,
+        queue_rule: "rules.QueueRule",
+        previous_car: "TrainCar | None",
+    ) -> typing.Tuple[
+        github_types.SHAType, typing.List[github_types.GitHubPullRequestNumber]
+    ]:
+        pulls_in_draft = []
+        queue_branch_merge_method = queue_rule.config["queue_branch_merge_method"]
+        if queue_branch_merge_method is None:
+            pulls_in_draft += self.parent_pull_request_numbers
+            base_sha = self.initial_current_base_sha
+        elif queue_branch_merge_method == "fast-forward":
+            if previous_car is None:
+                base_sha = self.initial_current_base_sha
+            elif previous_car.creation_state in ("updated", "created"):
+                if previous_car.queue_pull_request_number is None:
+                    raise RuntimeError("previous_car without queue_pull_request_number")
+                ctxt = await self.train.repository.get_pull_request_context(
+                    previous_car.queue_pull_request_number
+                )
+                base_sha = ctxt.pull["head"]["sha"]
+            else:
+                raise RuntimeError(
+                    f"previous_car with invalid creation_state: {previous_car.creation_state}"
+                )
+        else:
+            raise RuntimeError(
+                f"previous_car with invalid creation_state: {queue_branch_merge_method}"
+            )
+
+        pulls_in_draft += [
+            ep.user_pull_request_number for ep in self.still_queued_embarked_pulls
+        ]
+        return base_sha, pulls_in_draft
+
     @tracer.wrap("TrainCar.start_checking_with_draft", span_type="worker")
     async def start_checking_with_draft(
         self,
         queue_rule: "rules.QueueRule",
+        previous_car: "TrainCar | None",
     ) -> None:
 
         self.head_branch = self._get_pulls_branch_ref(
@@ -731,11 +772,18 @@ class TrainCar:
                 )
                 raise TrainCarPullRequestCreationFailure(self)
 
-        await self._prepare_empty_draft_pr_branch(self.queue_branch_name, github_user)
+        base_sha, pulls_in_draft = await self._get_draft_pr_setup(
+            queue_rule, previous_car
+        )
 
-        for pull_number in self.parent_pull_request_numbers + [
-            ep.user_pull_request_number for ep in self.still_queued_embarked_pulls
-        ]:
+        await self._prepare_draft_pr_branch(
+            self.queue_branch_name, base_sha, github_user
+        )
+
+        # TODO(sileht): use another attribute as this one is used in UI
+        self.expeceted_current_base_sha = base_sha
+
+        for pull_number in pulls_in_draft:
             try:
                 await self.train.repository.installation.client.post(
                     f"/repos/{self.train.repository.installation.owner_login}/{self.train.repository.repo['name']}/merges",
@@ -1911,25 +1959,37 @@ class Train:
         )
 
     async def remove_pull(
-        self, ctxt: context.Context, signal_trigger: str, remove_reason: str
+        self,
+        ctxt: context.Context,
+        signal_trigger: str,
+        remove_reason: str,
+        safely_merged_at: github_types.SHAType | None = None,
     ) -> None:
         # NOTE(sileht): Remove the pull request from all trains, just in case
         # the base branch change in the meantime
         await self.force_remove_pull(
             ctxt, signal_trigger, exclude_ref=ctxt.pull["base"]["ref"]
         )
-        await self._remove_pull(ctxt, signal_trigger, remove_reason)
+        await self._remove_pull(ctxt, signal_trigger, remove_reason, safely_merged_at)
 
     async def _remove_pull(
-        self, ctxt: context.Context, signal_trigger: str, remove_reason: str
+        self,
+        ctxt: context.Context,
+        signal_trigger: str,
+        remove_reason: str,
+        safely_merged_at: github_types.SHAType | None = None,
     ) -> None:
         if (
-            ctxt.pull["merged"]
+            (safely_merged_at or ctxt.pull["merged"])
             and ctxt.pull["base"]["ref"] == self.ref
             and self._cars
             and ctxt.pull["number"]
             == self._cars[0].still_queued_embarked_pulls[0].user_pull_request_number
-            and await self.is_synced_with_the_base_branch(await self.get_base_sha())
+            # We do it last to avoid two useless API calls
+            and (
+                safely_merged_at
+                or await self.is_synced_with_the_base_branch(await self.get_base_sha())
+            )
         ):
             embarked_pull = self._cars[0].still_queued_embarked_pulls[0]
             # Head of the train was merged and the base_sha haven't changed, we can keep
@@ -1940,10 +2000,10 @@ class Train:
                 await deleted_car.end_checking(reason=None)
                 self._cars = self._cars[1:]
 
-            if ctxt.pull["merge_commit_sha"] is None:
+            if safely_merged_at is None and ctxt.pull["merge_commit_sha"] is None:
                 raise RuntimeError("merged pull request without merge_commit_sha set")
 
-            self._current_base_sha = ctxt.pull["merge_commit_sha"]
+            self._current_base_sha = safely_merged_at or ctxt.pull["merge_commit_sha"]
 
             await self.save()
             ctxt.log.info(
@@ -2064,7 +2124,15 @@ class Train:
             # first car has finished and passed
             if queue_rule.config["speculative_checks"] > 1 or pos == 0:
                 try:
-                    await self._start_checking_car(queue_rule, self._cars[-1])
+                    previous_car = self._cars[-2]
+                except IndexError:
+                    previous_car = None
+                try:
+                    await self._start_checking_car(
+                        queue_rule,
+                        self._cars[-1],
+                        previous_car,
+                    )
                 except (
                     TrainCarPullRequestCreationPostponed,
                     TrainCarPullRequestCreationFailure,
@@ -2143,7 +2211,7 @@ class Train:
                 return
 
             try:
-                await self._start_checking_car(queue_rule, self._cars[0])
+                await self._start_checking_car(queue_rule, self._cars[0], None)
             except TrainCarPullRequestCreationPostponed:
                 return
             except TrainCarPullRequestCreationFailure:
@@ -2251,10 +2319,15 @@ class Train:
                     self._current_base_sha,
                 )
 
+                if self._cars:
+                    previous_car = self._cars[-1]
+                else:
+                    previous_car = None
+
                 self._cars.append(car)
 
                 try:
-                    await self._start_checking_car(queue_rule, car)
+                    await self._start_checking_car(queue_rule, car, previous_car)
                 except TrainCarPullRequestCreationPostponed:
                     return
                 except TrainCarPullRequestCreationFailure:
@@ -2268,6 +2341,7 @@ class Train:
         self,
         queue_rule: "rules.QueueRule",
         car: TrainCar,
+        previous_car: "TrainCar | None",
     ) -> None:
         can_be_updated = (
             self._cars[0] == car
@@ -2292,7 +2366,7 @@ class Train:
                 # No need to create a pull request
                 await car.start_checking_inplace(queue_rule)
             else:
-                await car.start_checking_with_draft(queue_rule)
+                await car.start_checking_with_draft(queue_rule, previous_car)
 
         except TrainCarPullRequestCreationPostponed:
             # NOTE(sileht): We can't create the tmp pull request, we will
@@ -2334,7 +2408,7 @@ class Train:
         pull: github_types.GitHubPullRequest = await self.repository.installation.client.item(
             f"{self.repository.base_url}/pulls/{self._cars[0].still_queued_embarked_pulls[0].user_pull_request_number}"
         )
-        return pull["merged"] and pull["merge_commit_sha"] == base_sha
+        return pull["merged"] and base_sha == pull["merge_commit_sha"]
 
     async def get_config(
         self, pull_number: github_types.GitHubPullRequestNumber

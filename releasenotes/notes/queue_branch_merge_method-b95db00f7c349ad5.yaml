@@ -1,0 +1,4 @@
+---
+features:
+  - |
+    A new option ``queue_branch_merge_method`` is available in queue rules options.

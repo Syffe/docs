@@ -207,6 +207,7 @@ class QueueFreezeResponse:
                                                 "checks_timeout": 60,
                                                 "draft_bot_account": "",
                                                 "queue_branch_prefix": constants.MERGE_QUEUE_BRANCH_PREFIX,
+                                                "queue_branch_merge_method": "fast-forward",
                                             },
                                         },
                                         "speculative_check_pull_request": {
@@ -238,6 +239,7 @@ class QueueFreezeResponse:
                                                 "checks_timeout": 60,
                                                 "draft_bot_account": "",
                                                 "queue_branch_prefix": constants.MERGE_QUEUE_BRANCH_PREFIX,
+                                                "queue_branch_merge_method": "fast-forward",
                                             },
                                         },
                                         "speculative_check_pull_request": {

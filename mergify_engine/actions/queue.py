@@ -16,7 +16,9 @@ from mergify_engine import utils
 from mergify_engine import worker_pusher
 from mergify_engine.actions import merge_base
 from mergify_engine.actions import utils as action_utils
+from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
+from mergify_engine.dashboard import user_tokens
 from mergify_engine.queue import freeze
 from mergify_engine.queue import merge_train
 from mergify_engine.rules import checks_status
@@ -89,6 +91,76 @@ Then, re-embark the pull request into the merge queue by posting the comment
         if args and args[0]:
             config["name"] = args[0]
         return config
+
+    async def _queue_branch_merge(
+        self,
+        ctxt: context.Context,
+        rule: "rules.EvaluatedRule",
+        queue: merge_train.Train,
+        car: merge_train.TrainCar | None,
+        merge_bot_account: typing.Optional[github_types.GitHubLogin],
+    ) -> check_api.Result:
+
+        if car is None:
+            raise RuntimeError("ready to merge PR without car....")
+
+        if self.config["method"] != "merge":
+            return check_api.Result(
+                check_api.Conclusion.ACTION_REQUIRED,
+                f"Cannot use method={self.config['method']} with queue_branch_merge_method=fast-forward",
+                "Only `method=merge` is supported with `queue_branch_merge_method=fast-forward`",
+            )
+
+        github_user: typing.Optional[user_tokens.UserTokensUser] = None
+        if merge_bot_account:
+            tokens = await ctxt.repository.installation.get_user_tokens()
+            github_user = tokens.get_token_for(merge_bot_account)
+            if not github_user:
+                return check_api.Result(
+                    check_api.Conclusion.FAILURE,
+                    f"Unable to rebase: user `{merge_bot_account}` is unknown. ",
+                    f"Please make sure `{merge_bot_account}` has logged in Mergify dashboard.",
+                )
+
+        if car.creation_state == "updated":
+            newsha = ctxt.pull["head"]["sha"]
+        elif car.creation_state == "created":
+            if car.queue_pull_request_number is None:
+                raise RuntimeError(
+                    f"car state is {car.creation_state}, but queue_pull_request_number is None"
+                )
+            tmp_ctxt = await queue.repository.get_pull_request_context(
+                car.queue_pull_request_number
+            )
+            newsha = tmp_ctxt.pull["head"]["sha"]
+        else:
+            raise RuntimeError(f"Invalid state: {car.creation_state}")
+
+        try:
+            await ctxt.client.put(
+                f"{ctxt.base_url}/git/refs/heads/{ctxt.pull['base']['ref']}",
+                oauth_token=github_user["oauth_access_token"] if github_user else None,
+                json={"sha": newsha},
+            )
+        except http.HTTPClientSideError as e:  # pragma: no cover
+            return await self._handle_merge_error(e, ctxt, rule, queue)
+
+        for embarked_pull in car.still_queued_embarked_pulls.copy():
+            other_ctxt = await queue.repository.get_pull_request_context(
+                embarked_pull.user_pull_request_number
+            )
+            await queue.remove_pull(
+                other_ctxt,
+                rule.get_signal_trigger(),
+                f"The pull request has been merged automatically at *{newsha}*",
+                safely_merged_at=newsha,
+            )
+
+        return check_api.Result(
+            check_api.Conclusion.SUCCESS,
+            "The pull request has been merged automatically",
+            f"The pull request has been merged automatically at *{newsha}*",
+        )
 
     async def _subscription_status(
         self, ctxt: context.Context
@@ -325,7 +397,21 @@ Then, re-embark the pull request into the merge queue by posting the comment
                         ctxt.repository, self.config["name"]
                     )
                     if await self._should_be_merged(ctxt, q, qf):
-                        result = await self._merge(ctxt, rule, q, merge_bot_account)
+                        if (
+                            self.queue_rule.config["queue_branch_merge_method"]
+                            == "fast-forward"
+                        ):
+                            result = await self._queue_branch_merge(
+                                ctxt, rule, q, car, merge_bot_account
+                            )
+                        elif (
+                            self.queue_rule.config["queue_branch_merge_method"] is None
+                        ):
+                            result = await self._merge(ctxt, rule, q, merge_bot_account)
+                        else:
+                            raise RuntimeError(
+                                f"Unsupported queue_branch_merge_method: {self.queue_rule.config['queue_branch_merge_method']}"
+                            )
                     else:
                         result = await self.get_queue_status(ctxt, rule, q, qf)
 

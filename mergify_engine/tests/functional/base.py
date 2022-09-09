@@ -399,7 +399,9 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         signals.register()
         self.addCleanup(signals.unregister)
 
-        self.main_branch_name = self.get_full_branch_name("main")
+        self.main_branch_name = github_types.GitHubRefType(
+            self.get_full_branch_name("main")
+        )
 
         self.git = self.get_gitter(LOG)
         await self.git.init()
@@ -1364,6 +1366,13 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
                 ),
             )
         ]
+
+    async def get_train(self) -> merge_train.Train:
+        q = merge_train.Train(
+            repository=self.repository_ctxt, ref=self.main_branch_name
+        )
+        await q.load()
+        return q
 
     @staticmethod
     def _assert_merge_queue_car(

@@ -511,6 +511,14 @@ A ``queue_rules`` takes the following parameter:
      - |premium plan tag|
        When creating a draft pull request for a queue, this prefix will be used to name the branch.
 
+   * - ``queue_branch_merge_method``
+     - string
+     - none
+     - If set to ``fast-forward``, Mergify will merge the draft pull request
+       instead of merging the original pull request that has been checked.
+       (This only works when the queue action ``method`` is set to its default
+       ``merge``).
+
    * - ``allow_queue_branch_edit``
      - bool
      - false

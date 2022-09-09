@@ -23,7 +23,9 @@ from mergify_engine.tests.unit import conftest
 
 
 async def fake_train_car_start_checking_with_draft(
-    inner_self: merge_train.TrainCar, queue_rule: rules.QueueRule
+    inner_self: merge_train.TrainCar,
+    queue_rule: rules.QueueRule,
+    previous_car: merge_train.TrainCar | None,
 ) -> None:
     inner_self.creation_state = "created"
     inner_self.queue_pull_request_number = github_types.GitHubPullRequestNumber(

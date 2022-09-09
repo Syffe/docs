@@ -2664,6 +2664,152 @@ class TestQueueAction(base.FunctionalTestBase):
             == comments[-1]["body"]
         )
 
+    async def test_queue_branch_fast_forward_basic(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                    "batch_size": 3,
+                    "speculative_checks": 5,
+                    "batch_max_wait_time": "0 s",
+                    "queue_branch_merge_method": "fast-forward",
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Queue",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        p2 = await self.create_pr()
+        p3 = await self.create_pr()
+        p4 = await self.create_pr()
+        p5 = await self.create_pr()
+
+        # Queue PRs
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p2["number"], "queue")
+        await self.add_label(p3["number"], "queue")
+        await self.add_label(p4["number"], "queue")
+        await self.run_engine()
+
+        await self.wait_for("pull_request", {"action": "opened"})
+        await self.wait_for("pull_request", {"action": "opened"})
+
+        tmp_mq_p1 = await self.get_pull(
+            github_types.GitHubPullRequestNumber(p5["number"] + 1)
+        )
+        tmp_mq_p2 = await self.get_pull(
+            github_types.GitHubPullRequestNumber(p5["number"] + 2)
+        )
+        q = await self.get_train()
+        await self.assert_merge_queue_contents(
+            q,
+            p1["base"]["sha"],
+            [
+                base.MergeQueueCarMatcher(
+                    [p1["number"], p2["number"], p3["number"]],
+                    [],
+                    p1["base"]["sha"],
+                    "created",
+                    tmp_mq_p1["number"],
+                ),
+                base.MergeQueueCarMatcher(
+                    [p4["number"]],
+                    [p1["number"], p2["number"], p3["number"]],
+                    p1["base"]["sha"],
+                    "created",
+                    tmp_mq_p2["number"],
+                ),
+            ],
+        )
+
+        # Merge p1
+        await self.create_status(tmp_mq_p1)
+        await self.run_engine()
+        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.run_engine()
+        for p in (p1, p2, p3):
+            await self.wait_for("pull_request", {"action": "closed"})
+            assert (await self.get_pull(p["number"]))["merged"]
+
+        # ensure it's fast-forward
+        tmp_mq_p1 = await self.get_pull(tmp_mq_p1["number"])
+        branch = await self.repository_ctxt.get_branch(
+            self.main_branch_name, bypass_cache=True
+        )
+        assert branch["commit"]["sha"] == tmp_mq_p1["head"]["sha"]
+
+        # merge the second one
+        await self.create_status(tmp_mq_p2)
+        await self.run_engine()
+        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.run_engine()
+        await self.wait_for("pull_request", {"action": "closed"})
+        assert (await self.get_pull(p4["number"]))["merged"]
+
+        # ensure it's fast-forward
+        tmp_mq_p2 = await self.get_pull(tmp_mq_p2["number"])
+        branch = await self.repository_ctxt.get_branch(
+            self.main_branch_name, bypass_cache=True
+        )
+        assert branch["commit"]["sha"] == tmp_mq_p2["head"]["sha"]
+
+        # Queue is now empty, the process will restart
+        await self.assert_merge_queue_contents(q, None, [])
+
+        # Queue a new one and checks base commit is the good one
+        await self.add_label(p5["number"], "queue")
+        await self.run_engine()
+
+        await self.wait_for("pull_request", {"action": "opened"})
+        tmp_mq_p3 = await self.get_pull(
+            github_types.GitHubPullRequestNumber(p5["number"] + 3)
+        )
+
+        await self.assert_merge_queue_contents(
+            q,
+            tmp_mq_p2["head"]["sha"],
+            [
+                base.MergeQueueCarMatcher(
+                    [p5["number"]],
+                    [],
+                    tmp_mq_p2["head"]["sha"],
+                    "created",
+                    tmp_mq_p3["number"],
+                ),
+            ],
+        )
+
+        # merge the third one
+        await self.create_status(tmp_mq_p3)
+        await self.run_engine()
+        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.run_engine()
+        assert (await self.get_pull(p5["number"]))["merged"]
+
+        # ensure it's fast-forward
+        tmp_mq_p3 = await self.get_pull(tmp_mq_p3["number"])
+        branch = await self.repository_ctxt.get_branch(
+            self.main_branch_name, bypass_cache=True
+        )
+        assert branch["commit"]["sha"] == tmp_mq_p3["head"]["sha"]
+
+        # Queue is now empty
+        await self.assert_merge_queue_contents(q, None, [])
+
     async def test_ongoing_train_basic(self) -> None:
         rules = {
             "queue_rules": [
@@ -3887,6 +4033,7 @@ class TestQueueAction(base.FunctionalTestBase):
                                     "checks_timeout": None,
                                     "draft_bot_account": None,
                                     "queue_branch_prefix": constants.MERGE_QUEUE_BRANCH_PREFIX,
+                                    "queue_branch_merge_method": None,
                                     "priority": 1,
                                     "speculative_checks": 5,
                                 },
@@ -3917,6 +4064,7 @@ class TestQueueAction(base.FunctionalTestBase):
                                     "checks_timeout": None,
                                     "draft_bot_account": None,
                                     "queue_branch_prefix": constants.MERGE_QUEUE_BRANCH_PREFIX,
+                                    "queue_branch_merge_method": None,
                                     "priority": 0,
                                     "speculative_checks": 5,
                                 },
@@ -3940,6 +4088,7 @@ class TestQueueAction(base.FunctionalTestBase):
                                     "checks_timeout": None,
                                     "draft_bot_account": None,
                                     "queue_branch_prefix": constants.MERGE_QUEUE_BRANCH_PREFIX,
+                                    "queue_branch_merge_method": None,
                                     "priority": 0,
                                     "speculative_checks": 5,
                                 },
@@ -4920,6 +5069,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
             checks_timeout=None,
             draft_bot_account=None,
             queue_branch_prefix=constants.MERGE_QUEUE_BRANCH_PREFIX,
+            queue_branch_merge_method=None,
         )
         pull_queue_config = queue.PullQueueConfig(
             name=rules.QueueName("foo"),
@@ -4953,7 +5103,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
             conditions=conditions.QueueRuleConditions([]),
             config=queue_config,
         )
-        await car.start_checking_with_draft(queue_rule)
+        await car.start_checking_with_draft(queue_rule, None)
         assert car.queue_pull_request_number is not None
         pulls = await self.get_pulls()
         assert len(pulls) == 3
@@ -5048,6 +5198,7 @@ pull_requests:
             checks_timeout=None,
             draft_bot_account=None,
             queue_branch_prefix=constants.MERGE_QUEUE_BRANCH_PREFIX,
+            queue_branch_merge_method=None,
         )
         queue_pull_config = queue.PullQueueConfig(
             name=rules.QueueName("foo"),
@@ -5081,7 +5232,7 @@ pull_requests:
             conditions=conditions.QueueRuleConditions([]),
             config=queue_config,
         )
-        await car.start_checking_with_draft(queue_rule)
+        await car.start_checking_with_draft(queue_rule, None)
         assert car.queue_pull_request_number is not None
         pulls = await self.get_pulls()
         assert len(pulls) == 3
@@ -5090,13 +5241,14 @@ pull_requests:
         assert tmp_pull["draft"]
         assert car.queue_branch_name is not None
         # Ensure pull request is closed
-        await car._prepare_empty_draft_pr_branch(car.queue_branch_name, None)
+        base_sha, _ = await car._get_draft_pr_setup(queue_rule, None)
+        await car._prepare_draft_pr_branch(car.queue_branch_name, base_sha, None)
         await self.wait_for("pull_request", {"action": "closed"})
         pulls = await self.get_pulls()
         assert len(pulls) == 2
 
         # Recreating it should works
-        await car.start_checking_with_draft(queue_rule)
+        await car.start_checking_with_draft(queue_rule, None)
         assert car.queue_pull_request_number is not None
         pulls = await self.get_pulls()
         assert len(pulls) == 3
@@ -5142,6 +5294,7 @@ pull_requests:
             checks_timeout=None,
             draft_bot_account=None,
             queue_branch_prefix=constants.MERGE_QUEUE_BRANCH_PREFIX,
+            queue_branch_merge_method=None,
         )
         queue_pull_config = queue.PullQueueConfig(
             name=rules.QueueName("foo"),
@@ -5170,7 +5323,7 @@ pull_requests:
             conditions=conditions.QueueRuleConditions([]),
             config=queue_config,
         )
-        await car.start_checking_with_draft(queue_rule)
+        await car.start_checking_with_draft(queue_rule, None)
         assert car.queue_pull_request_number is not None
         pulls = await self.get_pulls()
         assert len(pulls) == 2
@@ -5212,6 +5365,7 @@ pull_requests:
             checks_timeout=None,
             draft_bot_account=None,
             queue_branch_prefix=constants.MERGE_QUEUE_BRANCH_PREFIX,
+            queue_branch_merge_method=None,
         )
         config = queue.PullQueueConfig(
             name=rules.QueueName("foo"),
@@ -5236,7 +5390,8 @@ pull_requests:
                     name=rules.QueueName("foo"),
                     conditions=conditions.QueueRuleConditions([]),
                     config=queue_config,
-                )
+                ),
+                None,
             )
         assert exc_info.value.car == car
         assert car.queue_pull_request_number is None

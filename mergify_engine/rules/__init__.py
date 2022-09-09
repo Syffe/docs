@@ -83,6 +83,9 @@ class CommandRule(PullRequestRule):
 EvaluatedRule = typing.NewType("EvaluatedRule", PullRequestRule)
 
 
+QueueBranchMergeMethod = typing.Optional[typing.Literal["fast-forward"]]
+
+
 class QueueConfig(typing.TypedDict):
     priority: int
     speculative_checks: int
@@ -93,6 +96,7 @@ class QueueConfig(typing.TypedDict):
     checks_timeout: typing.Optional[datetime.timedelta]
     draft_bot_account: typing.Optional[github_types.GitHubLogin]
     queue_branch_prefix: typing.Optional[str]
+    queue_branch_merge_method: QueueBranchMergeMethod
     allow_queue_branch_edit: bool
 
 
@@ -529,6 +533,11 @@ QueueRulesSchema = voluptuous.All(
                 ),
                 voluptuous.Required("draft_bot_account", default=None): voluptuous.Any(
                     None, str
+                ),
+                voluptuous.Required(
+                    "queue_branch_merge_method", default=None
+                ): voluptuous.Any(
+                    None, *QueueBranchMergeMethod.__args__[0].__args__  # type: ignore[attr-defined]
                 ),
                 voluptuous.Required(
                     "queue_branch_prefix",
