@@ -304,7 +304,17 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         result = await self.merge_report(ctxt, merge_bot_account)
         if result is None:
-            if await self._should_be_queued(ctxt, q):
+            should_be_requeued = await self._should_be_requeued(ctxt, car)
+
+            if should_be_requeued:
+                await q.remove_pull(
+                    ctxt,
+                    rule.get_signal_trigger(),
+                    "The pull request has been removed from the queue\n"
+                    "The pull request code has been updated.",
+                )
+
+            if should_be_requeued or await self._should_be_queued(ctxt, q):
                 await q.add_pull(
                     ctxt,
                     typing.cast(queue.PullQueueConfig, self.config),
@@ -489,6 +499,19 @@ Then, re-embark the pull request into the merge queue by posting the comment
             check_api.Conclusion.CANCELLED,
             "The pull request has been removed from the queue",
             reason,
+        )
+
+    async def _should_be_requeued(
+        self,
+        ctxt: context.Context,
+        car: merge_train.TrainCar | None,
+    ) -> bool:
+        # NOTE(sileht): the pull request gets checked in-place and then changed
+        # by user, we should unqueue and requeue it as the conditions still match.
+        return (
+            await ctxt.has_been_synchronized_by_user()
+            and car is not None
+            and car.creation_state == "updated"
         )
 
     async def _should_be_queued(
