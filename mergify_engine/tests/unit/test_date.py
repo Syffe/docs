@@ -279,3 +279,40 @@ def test_interval_from_string(
             date.interval_from_string(value)
     else:
         assert date.interval_from_string(value) == expected_interval
+
+
+@pytest.mark.parametrize(
+    "time_to_check,begin_hour,begin_minute,end_hour,end_minute,strict,result",
+    (
+        (datetime.datetime(2022, 1, 1, 20, 10, 1), 20, 10, 21, 0, False, True),
+        (datetime.datetime(2022, 1, 1, 20, 10, 0), 20, 10, 21, 0, False, True),
+        (datetime.datetime(2022, 1, 1, 20, 10, 0), 20, 10, 21, 0, True, False),
+        (datetime.datetime(2022, 1, 1, 20, 10, 1), 20, 10, 21, 0, True, True),
+        (
+            datetime.datetime(
+                2022, 1, 1, 20, 10, 1, tzinfo=zoneinfo.ZoneInfo("Pacific/Auckland")
+            ),
+            20,
+            10,
+            21,
+            0,
+            False,
+            True,
+        ),
+    ),
+)
+def test_datetime_between_range(
+    time_to_check: datetime.datetime,
+    begin_hour: int,
+    begin_minute: int,
+    end_hour: int,
+    end_minute: int,
+    strict: bool,
+    result: bool,
+) -> None:
+    assert (
+        date.is_datetime_between_time_range(
+            time_to_check, begin_hour, begin_minute, end_hour, end_minute, strict
+        )
+        == result
+    )

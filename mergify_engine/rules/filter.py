@@ -136,8 +136,10 @@ class Filter(typing.Generic[FilterResultT]):
 
         if op in self.multiple_operators:
             return "(" + f" {op} ".join(self._tree_to_str(n) for n in nodes) + ")"  # type: ignore[attr-defined]
+
         if op in self.unary_operators:
             return op + self._tree_to_str(nodes)  # type: ignore[arg-type]
+
         if op in self.binary_operators:
             if isinstance(nodes[1], bool):  # type: ignore[index]
                 if self.binary_operators[op][0] != operator.eq:
@@ -412,6 +414,10 @@ def _dt_op(
             return date.DT_MAX
         try:
             dt_value = _as_datetime(value).astimezone(datetime.timezone.utc)
+
+            if isinstance(ref, date.Schedule):
+                return ref.get_next_valid_time(dt_value)
+
             dt_ref = _as_datetime(ref).astimezone(datetime.timezone.utc)
 
             handle_equality = op in (
@@ -440,11 +446,13 @@ def _dt_op(
                         dt_ref = dt_ref.replace(month=1, day=1)
                         dt_ref = dt_ref + datetime.timedelta(days=366)
                         dt_ref = dt_ref.replace(month=1, day=1)
+
                     return _dt_in_future(
                         dt_ref.replace(hour=0, minute=0, second=0, microsecond=0)
                     )
                 elif isinstance(ref, date.RelativeDatetime):
                     return date.utcnow() + datetime.timedelta(minutes=1)
+
                 return _dt_in_future(dt_ref + datetime.timedelta(minutes=1))
             elif isinstance(ref, date.RelativeDatetime):
                 return _dt_in_future(dt_value + (date.utcnow() - dt_ref))

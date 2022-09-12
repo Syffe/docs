@@ -218,6 +218,7 @@ def _extract_dow_range(days: str) -> typing.Dict[str, typing.Any]:
 
     dow1 = _extract_date(date.DayOfWeek, dow1_str)
     dow2 = _extract_date(date.DayOfWeek, dow2_str)
+
     return {
         "and": (
             {">=": ("current-day-of-week", dow1)},
@@ -230,6 +231,7 @@ def _extract_time_range(times: str) -> typing.Dict[str, typing.Any]:
     time1_str, sep, time2_str = times.partition("-")
     if sep != "-":
         raise ConditionParsingError("Invalid schedule")
+
     time1 = _extract_time(time1_str)
     time2 = _extract_time(time2_str)
 
@@ -319,6 +321,7 @@ def parse(v: str) -> typing.Any:
             break
     else:
         raise ConditionParsingError("Invalid operator")
+
     position += len(op)
     value = v[position:].strip()
     op = OPERATOR_ALIASES.get(op, op)
@@ -327,20 +330,25 @@ def parse(v: str) -> typing.Any:
         value = _unquote(value)
         if op == "!=":
             negate = True
+
         cond: typing.Dict[str, typing.Any]
         days, has_times, times = value.partition(" ")
-        try:
-            dow_cond = _extract_dow_range(days)
-        except ConditionParsingError:
-            if has_times:
-                raise
-            cond = _extract_time_range(days)
+        if not has_times or not times:
+            try:
+                # Only days
+                cond = _extract_dow_range(days)
+            except ConditionParsingError:
+                # Only hours+minutes
+                cond = _extract_time_range(days)
         else:
-            if has_times:
-                time_cond = _extract_time_range(times)
-                cond = {"and": (dow_cond, time_cond)}
-            else:
-                cond = dow_cond
+            # Days + Times
+            try:
+                schedule = date.Schedule.from_strings(days, times)
+            except date.InvalidDate as e:
+                raise ConditionParsingError(e.message)
+
+            cond = {"=": ("current-time", schedule)}
+
         return _to_dict(negate, False, attribute, "@", cond)
 
     elif parser == Parser.TIME:

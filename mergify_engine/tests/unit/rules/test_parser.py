@@ -24,51 +24,17 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                     "@": (
                         "schedule",
                         {
-                            "and": (
-                                {
-                                    "and": (
-                                        {
-                                            ">=": (
-                                                "current-day-of-week",
-                                                date.DayOfWeek(1),
-                                            )
-                                        },
-                                        {
-                                            "<=": (
-                                                "current-day-of-week",
-                                                date.DayOfWeek(5),
-                                            )
-                                        },
-                                    )
-                                },
-                                {
-                                    "and": (
-                                        {
-                                            ">=": (
-                                                "current-time",
-                                                date.Time(
-                                                    12,
-                                                    0,
-                                                    tzinfo=zoneinfo.ZoneInfo(
-                                                        "Europe/Paris"
-                                                    ),
-                                                ),
-                                            )
-                                        },
-                                        {
-                                            "<=": (
-                                                "current-time",
-                                                date.Time(
-                                                    23,
-                                                    59,
-                                                    tzinfo=zoneinfo.ZoneInfo(
-                                                        "Europe/Paris"
-                                                    ),
-                                                ),
-                                            )
-                                        },
-                                    )
-                                },
+                            "=": (
+                                "current-time",
+                                date.Schedule(
+                                    start_weekday=1,
+                                    end_weekday=5,
+                                    start_hour=12,
+                                    end_hour=23,
+                                    start_minute=0,
+                                    end_minute=59,
+                                    tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
+                                ),
                             )
                         },
                     )
@@ -82,43 +48,17 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                     "@": (
                         "schedule",
                         {
-                            "and": (
-                                {
-                                    "and": (
-                                        {
-                                            ">=": (
-                                                "current-day-of-week",
-                                                date.DayOfWeek(1),
-                                            )
-                                        },
-                                        {
-                                            "<=": (
-                                                "current-day-of-week",
-                                                date.DayOfWeek(5),
-                                            )
-                                        },
-                                    )
-                                },
-                                {
-                                    "and": (
-                                        {
-                                            ">=": (
-                                                "current-time",
-                                                date.Time(
-                                                    12, 0, tzinfo=datetime.timezone.utc
-                                                ),
-                                            )
-                                        },
-                                        {
-                                            "<=": (
-                                                "current-time",
-                                                date.Time(
-                                                    23, 59, tzinfo=datetime.timezone.utc
-                                                ),
-                                            )
-                                        },
-                                    )
-                                },
+                            "=": (
+                                "current-time",
+                                date.Schedule(
+                                    start_weekday=1,
+                                    end_weekday=5,
+                                    start_hour=12,
+                                    end_hour=23,
+                                    start_minute=0,
+                                    end_minute=59,
+                                    tzinfo=datetime.timezone.utc,
+                                ),
                             )
                         },
                     )
@@ -166,33 +106,17 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                 "@": (
                     "schedule",
                     {
-                        "and": (
-                            {
-                                "and": (
-                                    {">=": ("current-day-of-week", date.DayOfWeek(1))},
-                                    {"<=": ("current-day-of-week", date.DayOfWeek(5))},
-                                )
-                            },
-                            {
-                                "and": (
-                                    {
-                                        ">=": (
-                                            "current-time",
-                                            date.Time(
-                                                8, 0, tzinfo=datetime.timezone.utc
-                                            ),
-                                        )
-                                    },
-                                    {
-                                        "<=": (
-                                            "current-time",
-                                            date.Time(
-                                                17, 0, tzinfo=datetime.timezone.utc
-                                            ),
-                                        )
-                                    },
-                                )
-                            },
+                        "=": (
+                            "current-time",
+                            date.Schedule(
+                                start_weekday=1,
+                                end_weekday=5,
+                                start_hour=8,
+                                end_hour=17,
+                                start_minute=0,
+                                end_minute=0,
+                                tzinfo=datetime.timezone.utc,
+                            ),
                         )
                     },
                 )
@@ -204,40 +128,24 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                 "@": (
                     "schedule",
                     {
-                        "and": (
-                            {
-                                "and": (
-                                    {">=": ("current-day-of-week", date.DayOfWeek(1))},
-                                    {"<=": ("current-day-of-week", date.DayOfWeek(5))},
-                                )
-                            },
-                            {
-                                "and": (
-                                    {
-                                        ">=": (
-                                            "current-time",
-                                            date.Time(
-                                                10, 2, tzinfo=datetime.timezone.utc
-                                            ),
-                                        )
-                                    },
-                                    {
-                                        "<=": (
-                                            "current-time",
-                                            date.Time(
-                                                22, 35, tzinfo=datetime.timezone.utc
-                                            ),
-                                        )
-                                    },
-                                )
-                            },
+                        "=": (
+                            "current-time",
+                            date.Schedule(
+                                start_weekday=1,
+                                end_weekday=5,
+                                start_hour=10,
+                                end_hour=22,
+                                start_minute=2,
+                                end_minute=35,
+                                tzinfo=datetime.timezone.utc,
+                            ),
                         )
                     },
                 )
             },
         ),
         (
-            "schedule: MON-friday ",
+            "schedule: MON-friday",
             {
                 "@": (
                     "schedule",

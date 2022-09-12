@@ -32,6 +32,38 @@ def utcnow() -> datetime.datetime:
     return datetime.datetime.now(tz=datetime.timezone.utc)
 
 
+def is_datetime_between_time_range(
+    time_to_check: datetime.datetime,
+    begin_hour: int,
+    begin_minute: int,
+    end_hour: int,
+    end_minute: int,
+    strict: bool,
+) -> bool:
+    d_start = datetime.datetime(
+        year=time_to_check.year,
+        month=time_to_check.month,
+        day=time_to_check.day,
+        hour=begin_hour,
+        minute=begin_minute,
+        tzinfo=time_to_check.tzinfo,
+    )
+
+    d_end = datetime.datetime(
+        year=time_to_check.year,
+        month=time_to_check.month,
+        day=time_to_check.day,
+        hour=end_hour,
+        minute=end_minute,
+        tzinfo=time_to_check.tzinfo,
+    )
+
+    if strict:
+        return d_start < time_to_check < d_end
+    else:
+        return d_start <= time_to_check <= d_end
+
+
 @dataclasses.dataclass(order=True)
 class PartialDatetime:
     value: int
@@ -151,7 +183,8 @@ class Time:
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, (Time, datetime.datetime)):
-            raise ValueError(f"Unsupport comparaison type: {type(other)}")
+            raise ValueError(f"Unsupported comparison type: {type(other)}")
+
         now = utcnow()
         d1 = self._to_dt(self, now)
         d2 = self._to_dt(other, now)
@@ -159,7 +192,8 @@ class Time:
 
     def __gt__(self, other: object) -> bool:
         if not isinstance(other, (Time, datetime.datetime)):
-            raise ValueError(f"Unsupport comparaison type: {type(other)}")
+            raise ValueError(f"Unsupported comparison type: {type(other)}")
+
         now = utcnow()
         d1 = self._to_dt(self, now)
         d2 = self._to_dt(other, now)
@@ -182,27 +216,28 @@ class Time:
             raise ValueError(f"Unsupport comparaison type: {type(obj)}")
 
 
+_SHORT_WEEKDAY = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
+_LONG_WEEKDAY = (
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday",
+)
+
+
 @dataclasses.dataclass
 class DayOfWeek(PartialDatetime):
-    _SHORT_DAY = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
-    _LONG_DAY = (
-        "monday",
-        "tuesday",
-        "wednesday",
-        "thursday",
-        "friday",
-        "saturday",
-        "sunday",
-    )
-
     @classmethod
     def from_string(cls, string: str) -> "DayOfWeek":
         try:
-            return cls(cls._SHORT_DAY.index(string.lower()) + 1)
+            return cls(_SHORT_WEEKDAY.index(string.lower()) + 1)
         except ValueError:
             pass
         try:
-            return cls(cls._LONG_DAY.index(string.lower()) + 1)
+            return cls(_LONG_WEEKDAY.index(string.lower()) + 1)
         except ValueError:
             pass
         try:
@@ -216,7 +251,168 @@ class DayOfWeek(PartialDatetime):
             raise InvalidDate("Day of the week must be between 1 and 7")
 
     def __str__(self) -> str:
-        return self._SHORT_DAY[self.value - 1].capitalize()
+        return _SHORT_WEEKDAY[self.value - 1].capitalize()
+
+
+@dataclasses.dataclass
+class Schedule:
+    start_weekday: int
+    end_weekday: int
+    start_hour: int
+    end_hour: int
+    start_minute: int
+    end_minute: int
+    tzinfo: datetime.tzinfo
+
+    @classmethod
+    def from_strings(
+        cls,
+        days: str,
+        times: str,
+    ) -> "Schedule":
+        start_weekday, end_weekday = days.split("-")
+        start_weekday_int = DayOfWeek.from_string(start_weekday).value
+        end_weekday_int = DayOfWeek.from_string(end_weekday).value
+
+        start_hourminute, end_hourminute = times.split("-")
+        start_time_obj = Time.from_string(start_hourminute)
+        end_time_obj = Time.from_string(end_hourminute)
+
+        return cls(
+            start_weekday=start_weekday_int,
+            end_weekday=end_weekday_int,
+            start_hour=start_time_obj.hour,
+            end_hour=end_time_obj.hour,
+            start_minute=start_time_obj.minute,
+            end_minute=end_time_obj.minute,
+            tzinfo=end_time_obj.tzinfo,
+        )
+
+    def __post_init__(self) -> None:
+        if self.start_weekday > self.end_weekday:
+            raise InvalidDate(
+                "Starting weekday of schedule needs to be before the last day"
+            )
+
+        if self.start_hour > self.end_hour:
+            raise InvalidDate(
+                "Starting hour of schedule needs to be less or equal than the ending hour"
+            )
+
+        if self.start_hour == self.end_hour and self.start_minute > self.end_minute:
+            raise InvalidDate(
+                "Starting minute of schedule needs to be less or equal than the ending minute"
+            )
+
+        if self.start_hour == self.end_hour and self.start_minute == self.end_minute:
+            raise InvalidDate(
+                "Cannot have schedule with the same hour+minute as start and end"
+            )
+
+    def __str__(self) -> str:
+        return (
+            f"{_SHORT_WEEKDAY[self.start_weekday - 1].capitalize()}-{_SHORT_WEEKDAY[self.end_weekday - 1].capitalize()}"
+            " "
+            f"{self.start_hour:02d}:{self.start_minute:02d}-"
+            f"{self.end_hour:02d}:{self.end_minute:02d}"
+            f"[{self.tzinfo}]"
+        )
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(
+            other,
+            (
+                Schedule,
+                datetime.datetime,
+            ),
+        ):
+            raise ValueError(f"Unsupported comparison type: {type(other)}")
+
+        if isinstance(other, Schedule):
+            # This is for unit/functional test purposes only
+            return (
+                self.start_weekday == other.start_weekday
+                and self.end_weekday == other.end_weekday
+                and self.start_hour == other.start_hour
+                and self.start_minute == other.start_minute
+                and self.end_hour == other.end_hour
+                and self.end_minute == other.end_minute
+            )
+
+        # Allow to check if a datetime is in a schedule
+        dother = other.astimezone(self.tzinfo)
+        return (
+            self.start_weekday <= dother.isoweekday() <= self.end_weekday
+            and self.is_datetime_between_time_range(dother, strict=False)
+        )
+
+    def is_datetime_between_time_range(
+        self,
+        time_to_check: datetime.datetime,
+        strict: bool,
+    ) -> bool:
+        return is_datetime_between_time_range(
+            time_to_check.astimezone(self.tzinfo),
+            self.start_hour,
+            self.start_minute,
+            self.end_hour,
+            self.end_minute,
+            strict,
+        )
+
+    def get_next_valid_time(self, from_time: datetime.datetime) -> datetime.datetime:
+        def return_as_origin_timezone(dt: datetime.datetime) -> datetime.datetime:
+            return dt.astimezone(from_time.tzinfo)
+
+        from_time_as_tz = from_time.astimezone(self.tzinfo)
+
+        if self.is_datetime_between_time_range(from_time_as_tz, strict=True):
+            return return_as_origin_timezone(
+                from_time_as_tz.replace(
+                    hour=self.end_hour,
+                    minute=self.end_minute,
+                    second=0,
+                )
+            )
+        elif (
+            from_time_as_tz.hour == self.end_hour
+            and from_time_as_tz.minute == self.end_minute
+        ):
+            # 1 minute after the end just to invalidate the summary condition
+            return return_as_origin_timezone(
+                (from_time_as_tz + datetime.timedelta(minutes=1))
+            )
+
+        # Outside of the whole schedule
+        if self.start_weekday > from_time_as_tz.isoweekday() > self.end_weekday:
+            # Add the number of days missing to go to the starting weekday
+            # of the next week
+            from_time_as_tz += datetime.timedelta(
+                days=self.start_weekday + (7 - from_time_as_tz.isoweekday())
+            )
+        # Inside day schedule but oustide of hour+minute schedule
+        elif from_time_as_tz.isoweekday() == self.end_weekday:
+            # Next time is next week at the start of schedule
+            from_time_as_tz += datetime.timedelta(
+                days=self.start_weekday + (7 - from_time_as_tz.isoweekday())
+            )
+        elif from_time_as_tz.hour < self.start_hour or (
+            from_time_as_tz.hour == self.start_hour
+            and from_time_as_tz.minute < self.start_minute
+        ):
+            # We're in a good day but before start hour + start minute
+            # The hour+minute replace is done at the end, this elif is just
+            # for clarity.
+            pass
+        else:
+            # Next time is next day at start hour + start minute
+            from_time_as_tz += datetime.timedelta(days=1)
+
+        return return_as_origin_timezone(
+            from_time_as_tz.replace(
+                hour=self.start_hour, minute=self.start_minute, second=1, microsecond=0
+            )
+        )
 
 
 def fromisoformat(s: str) -> datetime.datetime:

@@ -321,7 +321,6 @@ async def test_partial_datetime_year_str() -> None:
         date.Day,
         date.Month,
         lambda n: date.Year(2000 + n),
-        date.DayOfWeek,
     ),
 )
 @freeze_time("2012-01-14")
@@ -1017,15 +1016,10 @@ async def test_schedule_with_timezone() -> None:
         today = frozen_time().replace(tzinfo=UTC)
 
         next_refreshes = [
-            "2021-10-20T00:00:00",
-            "2021-10-20T07:00:00",
-            # TODO(sileht): we could drop that one for day.Time and operator ge
-            "2021-10-20T07:01:00",
-            # TODO(sileht): we could drop that one for day.Time and operator le
+            "2021-10-20T07:00:01",
             "2021-10-20T15:30:00",
             "2021-10-20T15:31:00",
-            "2021-10-21T00:00:00",
-            "2021-10-21T07:00:00",
+            "2021-10-21T07:00:01",
         ]
         for next_refresh in next_refreshes:
             next_refresh_dt = datetime.datetime.fromisoformat(next_refresh).replace(
@@ -1036,5 +1030,5 @@ async def test_schedule_with_timezone() -> None:
 
         frozen_time.move_to(today.replace(day=23))
         assert await f(get_scheduled_pr()) == datetime.datetime(
-            2021, 10, 24, 0, 0, tzinfo=datetime.timezone.utc
+            2021, 10, 24, 7, 0, 1, tzinfo=datetime.timezone.utc
         )

@@ -131,7 +131,7 @@ class TestAttributes(base.FunctionalTestBase):
         )
         assert expected in summary["output"]["summary"]
 
-    async def test_schedule(self) -> None:
+    async def test_schedule_no_timezone(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -141,18 +141,53 @@ class TestAttributes(base.FunctionalTestBase):
                 }
             ]
         }
+        # Sunday
         with freeze_time("2021-05-30T10:00:00", tick=True):
             await self.setup_repo(yaml.dump(rules))
             pr = await self.create_pr()
             comments = await self.get_issue_comments(pr["number"])
             assert len(comments) == 0
+
             await self.run_full_engine()
             comments = await self.get_issue_comments(pr["number"])
             assert len(comments) == 0
 
             assert await self.redis_links.cache.zcard("delayed-refresh") == 1
 
+        # Wednesday
         with freeze_time("2021-06-02T14:00:00", tick=True):
+            await self.run_full_engine()
+            await self.wait_for("issue_comment", {"action": "created"})
+            comments = await self.get_issue_comments(pr["number"])
+            self.assertEqual("it's time", comments[-1]["body"])
+
+    async def test_schedule_with_1_day_timezone_diff(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "no-draft",
+                    "conditions": ["schedule=MON-FRI 08:00-17:00[Pacific/Auckland]"],
+                    "actions": {"comment": {"message": "it's time"}},
+                }
+            ]
+        }
+        # Sunday 19:00 for UTC
+        # Monday 07:00 for NZST (Auckland)
+        with freeze_time("2022-09-04T19:00:00+00:00", tick=True):
+            await self.setup_repo(yaml.dump(rules))
+            pr = await self.create_pr()
+            comments = await self.get_issue_comments(pr["number"])
+            assert len(comments) == 0
+
+            await self.run_full_engine()
+            comments = await self.get_issue_comments(pr["number"])
+            assert len(comments) == 0
+
+            assert await self.redis_links.cache.zcard("delayed-refresh") == 1
+
+        # Sunday 21:00 for UTC
+        # Monday 09:00 for NZST (Auckland)
+        with freeze_time("2022-09-04T21:00:00+00:00", tick=True):
             await self.run_full_engine()
             await self.wait_for("issue_comment", {"action": "created"})
             comments = await self.get_issue_comments(pr["number"])
