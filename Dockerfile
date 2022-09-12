@@ -42,9 +42,9 @@ RUN mkdir /app
 ADD pyproject.toml /app
 ADD poetry.lock /app
 WORKDIR /app
-RUN poetry install --no-dev --remove-untracked --no-root
+RUN poetry install --no-dev --sync --no-root
 ADD . /app
-RUN poetry install --no-dev --remove-untracked
+RUN poetry install --no-dev --sync
 
 ### BASE RUNNER ###
 FROM python-base as system-base
