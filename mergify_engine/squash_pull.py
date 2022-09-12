@@ -3,7 +3,6 @@ import typing
 
 from mergify_engine import context
 from mergify_engine import exceptions
-from mergify_engine import github_types
 from mergify_engine import gitter
 from mergify_engine.dashboard import user_tokens
 from mergify_engine.dashboard.subscription import Features
@@ -113,18 +112,11 @@ async def _do_squash(
 
 
 async def squash(
-    ctxt: context.Context,
-    message: str,
-    bot_account: typing.Optional[github_types.GitHubLogin] = None,
+    ctxt: context.Context, message: str, users: typing.List[user_tokens.UserTokensUser]
 ) -> None:
 
     if ctxt.pull["commits"] <= 1:
         return
-
-    try:
-        users = await user_tokens.UserTokens.select_users_for(ctxt, bot_account)
-    except user_tokens.UserTokensUserNotFound as e:
-        raise SquashFailure(f"Unable to squash: {e.reason}")
 
     for user in users:
         try:

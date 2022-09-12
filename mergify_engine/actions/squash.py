@@ -10,10 +10,128 @@ from mergify_engine import signals
 from mergify_engine import squash_pull
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.dashboard import subscription
+from mergify_engine.dashboard import user_tokens
 from mergify_engine.rules import types
 
 
-class SquashAction(actions.BackwardCompatAction):
+class SquashExecutorConfig(typing.TypedDict):
+    commit_message: typing.Literal["all-commits", "first-commit", "title+body"]
+    bot_account: typing.Optional[user_tokens.UserTokensUser]
+
+
+class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig]):
+    @classmethod
+    async def create(
+        cls,
+        action: "SquashAction",
+        ctxt: "context.Context",
+        rule: "rules.EvaluatedRule",
+    ) -> "SquashExecutor":
+        try:
+            bot_account = await action_utils.render_bot_account(
+                ctxt,
+                action.config["bot_account"],
+                required_feature=subscription.Features.BOT_ACCOUNT,
+                missing_feature_message="Squash with `bot_account` set is disabled",
+                required_permissions=[],
+            )
+        except action_utils.RenderBotAccountFailure as e:
+            raise rules.InvalidPullRequestRule(e.title, e.reason)
+
+        github_user: typing.Optional[user_tokens.UserTokensUser] = None
+
+        if bot_account:
+            tokens = await ctxt.repository.installation.get_user_tokens()
+            github_user = tokens.get_token_for(bot_account)
+            if not github_user:
+                raise rules.InvalidPullRequestRule(
+                    f"Unable to edit: user `{bot_account}` is unknown. ",
+                    f"Please make sure `{bot_account}` has logged in Mergify dashboard.",
+                )
+        else:
+            github_user = None
+
+        return cls(
+            ctxt,
+            rule,
+            SquashExecutorConfig(
+                {
+                    "commit_message": action.config["commit_message"],
+                    "bot_account": github_user,
+                }
+            ),
+        )
+
+    async def run(self) -> check_api.Result:
+        if self.ctxt.pull["commits"] <= 1:
+            return check_api.Result(
+                check_api.Conclusion.SUCCESS,
+                "Pull request is already one-commit long",
+                "",
+            )
+
+        try:
+            commit_title_and_message = await self.ctxt.pull_request.get_commit_message()
+        except context.RenderTemplateFailure as rmf:
+            return check_api.Result(
+                check_api.Conclusion.ACTION_REQUIRED,
+                "Invalid commit message",
+                str(rmf),
+            )
+
+        if commit_title_and_message is not None:
+            title, message = commit_title_and_message
+            message = f"{title}\n\n{message}"
+
+        elif self.config["commit_message"] == "all-commits":
+            message = f"{(await self.ctxt.pull_request.title)} (#{(await self.ctxt.pull_request.number)})\n"
+            message += "\n\n* ".join(
+                [commit.commit_message for commit in await self.ctxt.commits]
+            )
+
+        elif self.config["commit_message"] == "first-commit":
+            message = (await self.ctxt.commits)[0].commit_message
+
+        elif self.config["commit_message"] == "title+body":
+            message = f"{(await self.ctxt.pull_request.title)} (#{(await self.ctxt.pull_request.number)})"
+            message += f"\n\n{await self.ctxt.pull_request.body}"
+
+        else:
+            raise RuntimeError("Unsupported commit_message option")
+
+        if self.config["bot_account"] is None:
+            tokens = await self.ctxt.repository.installation.get_user_tokens()
+            users = tokens.users
+        else:
+            users = [self.config["bot_account"]]
+
+        try:
+            await squash_pull.squash(
+                self.ctxt,
+                message,
+                users,
+            )
+        except squash_pull.SquashFailure as e:
+            return check_api.Result(
+                check_api.Conclusion.FAILURE, "Pull request squash failed", e.reason
+            )
+        else:
+            await signals.send(
+                self.ctxt.repository,
+                self.ctxt.pull["number"],
+                "action.squash",
+                signals.EventNoMetadata(),
+                self.rule.get_signal_trigger(),
+            )
+        return check_api.Result(
+            check_api.Conclusion.SUCCESS, "Pull request squashed successfully", ""
+        )
+
+    async def cancel(self) -> check_api.Result:
+        return actions.CANCELLED_CHECK_REPORT
+
+
+class SquashAction(actions.Action):
     flags = (
         actions.ActionFlag.ALWAYS_RUN
         | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
@@ -27,6 +145,7 @@ class SquashAction(actions.BackwardCompatAction):
             "all-commits", "first-commit", "title+body"
         ),
     }
+    executor_class = SquashExecutor
 
     @staticmethod
     def command_to_config(string: str) -> typing.Dict[str, typing.Any]:
@@ -34,80 +153,3 @@ class SquashAction(actions.BackwardCompatAction):
             return {"commit_message": string.strip()}
         else:
             return {}
-
-    async def run(
-        self, ctxt: context.Context, rule: rules.EvaluatedRule
-    ) -> check_api.Result:
-        try:
-            bot_account = await action_utils.render_bot_account(
-                ctxt,
-                self.config["bot_account"],
-                required_feature=subscription.Features.BOT_ACCOUNT,
-                missing_feature_message="Squash with `bot_account` set are disabled",
-                required_permissions=[],
-            )
-        except action_utils.RenderBotAccountFailure as e:
-            return check_api.Result(e.status, e.title, e.reason)
-
-        if ctxt.pull["commits"] <= 1:
-            return check_api.Result(
-                check_api.Conclusion.SUCCESS,
-                "Pull request is already one-commit long",
-                "",
-            )
-
-        try:
-            commit_title_and_message = await ctxt.pull_request.get_commit_message()
-        except context.RenderTemplateFailure as rmf:
-            return check_api.Result(
-                check_api.Conclusion.ACTION_REQUIRED,
-                "Invalid commit message",
-                str(rmf),
-            )
-
-        if commit_title_and_message is not None:
-            title, message = commit_title_and_message
-            message = f"{title}\n\n{message}"
-
-        elif self.config["commit_message"] == "all-commits":
-            message = f"{(await ctxt.pull_request.title)} (#{(await ctxt.pull_request.number)})\n"
-            message += "\n\n* ".join(
-                [commit.commit_message for commit in await ctxt.commits]
-            )
-
-        elif self.config["commit_message"] == "first-commit":
-            message = (await ctxt.commits)[0].commit_message
-
-        elif self.config["commit_message"] == "title+body":
-            message = f"{(await ctxt.pull_request.title)} (#{(await ctxt.pull_request.number)})"
-            message += f"\n\n{await ctxt.pull_request.body}"
-
-        else:
-            raise RuntimeError("Unsupported commit_message option")
-
-        try:
-            await squash_pull.squash(
-                ctxt,
-                message,
-                bot_account,
-            )
-        except squash_pull.SquashFailure as e:
-            return check_api.Result(
-                check_api.Conclusion.FAILURE, "Pull request squash failed", e.reason
-            )
-        else:
-            await signals.send(
-                ctxt.repository,
-                ctxt.pull["number"],
-                "action.squash",
-                signals.EventNoMetadata(),
-                rule.get_signal_trigger(),
-            )
-        return check_api.Result(
-            check_api.Conclusion.SUCCESS, "Pull request squashed successfully", ""
-        )
-
-    async def cancel(
-        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
-    ) -> check_api.Result:  # pragma: no cover
-        return actions.CANCELLED_CHECK_REPORT
