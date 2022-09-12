@@ -420,10 +420,11 @@ def _dt_op(
                 operator.le,
                 operator.ge,
             )
+
             if handle_equality and dt_value == dt_ref:
                 # NOTE(sileht): The condition will change...
                 if isinstance(ref, date.PartialDatetime):
-                    if isinstance(value, date.DayOfWeek):
+                    if isinstance(ref, date.DayOfWeek):
                         # next day
                         dt_ref = dt_ref + datetime.timedelta(days=1)
                     elif isinstance(ref, date.Day):
@@ -453,7 +454,7 @@ def _dt_op(
                 if isinstance(ref, date.Time):
                     # Condition will change next day at 00:00:00
                     dt_ref = dt_ref + datetime.timedelta(days=1)
-                elif isinstance(value, date.DayOfWeek):
+                elif isinstance(ref, date.DayOfWeek):
                     dt_ref = dt_ref + datetime.timedelta(days=7)
                 elif isinstance(ref, date.Day):
                     # Condition will change, 1st day of next month at 00:00:00
