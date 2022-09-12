@@ -1057,19 +1057,14 @@ pytest = ">=4.0.0"
 
 [[package]]
 name = "pytest-httpserver"
-version = "1.0.5"
+version = "1.0.6"
 description = "pytest-httpserver is a httpserver for pytest"
 category = "dev"
 optional = false
-python-versions = ">=3.6,<4.0"
+python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
 Werkzeug = ">=2.0.0"
-
-[package.extras]
-dev = ["coverage", "ipdb", "mypy", "pytest", "pytest-cov", "reno", "requests", "sphinx", "sphinx_rtd_theme", "types-requests"]
-doc = ["sphinx", "sphinx_rtd_theme"]
-test = ["coverage", "mypy", "pytest", "pytest-cov", "requests", "types-requests"]
 
 [[package]]
 name = "pytest-timeout"
@@ -1758,7 +1753,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.10,<4.0"
-content-hash = "afa4ef2340e2f30832cf983b4ae9c7f8b87397b7db689bcb7648abfbca945807"
+content-hash = "c238ba93036eda7f395de1a3f7ce718d98269aa81c5e7d572508fe5028219e91"
 
 [metadata.files]
 aiofiles = [
@@ -2663,8 +2658,8 @@ pytest-github-actions-annotate-failures = [
     {file = "pytest_github_actions_annotate_failures-0.1.7-py2.py3-none-any.whl", hash = "sha256:c4a7346d1d95f731a6b53e9a45f10ca56593978149266dd7526876cce403ea38"},
 ]
 pytest-httpserver = [
-    {file = "pytest_httpserver-1.0.5-py3-none-any.whl", hash = "sha256:9a4c5308da1482e0b2d792278518d400cf4043746e3da0fdb05747f56d6f80b2"},
-    {file = "pytest_httpserver-1.0.5.tar.gz", hash = "sha256:ae3296626d0a10e835a9f423c61b4540547d582422be054c3fcc08626baa1024"},
+    {file = "pytest_httpserver-1.0.6-py3-none-any.whl", hash = "sha256:ac2379acc91fe8bdbe2911c93af8dd130e33b5899fb9934d15669480739c6d32"},
+    {file = "pytest_httpserver-1.0.6.tar.gz", hash = "sha256:9040d07bf59ac45d8de3db1d4468fd2d1d607975e4da4c872ecc0402cdbf7b3e"},
 ]
 pytest-timeout = [
     {file = "pytest-timeout-2.1.0.tar.gz", hash = "sha256:c07ca07404c612f8abbe22294b23c368e2e5104b521c1790195561f37e1ac3d9"},
