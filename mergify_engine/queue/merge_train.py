@@ -589,10 +589,10 @@ class TrainCar:
 
     @tracer.wrap("TrainCar._create_draft_pull_request", span_type="worker")
     @tenacity.retry(
-        retry=tenacity.retry_if_exception_type(
+        retry=tenacity.retry_if_exception_type(  # type: ignore[attr-defined]
             DraftPullRequestCreationTemporaryFailure
         ),
-        stop=tenacity.stop_after_attempt(2),
+        stop=tenacity.stop_after_attempt(2),  # type: ignore[attr-defined]
     )
     async def _create_draft_pull_request(
         self,
@@ -677,8 +677,8 @@ class TrainCar:
             raise TrainCarPullRequestCreationFailure(self) from e
 
     @tenacity.retry(
-        retry=tenacity.retry_if_exception_type(tenacity.TryAgain),
-        stop=tenacity.stop_after_attempt(2),
+        retry=tenacity.retry_if_exception_type(tenacity.TryAgain),  # type: ignore[attr-defined]
+        stop=tenacity.stop_after_attempt(2),  # type: ignore[attr-defined]
     )
     async def _prepare_draft_pr_branch(
         self,
@@ -930,8 +930,10 @@ You don't need to do anything. Mergify will close this pull request automaticall
         # NOTE(greesb): Workaround to have corrent indentation on lists
         # https://stackoverflow.com/questions/25108581/python-yaml-dump-bad-indentation
         class Dumper(yaml.Dumper):
-            def increase_indent(self, flow=False, *args, **kwargs):
-                return super().increase_indent(flow=flow, indentless=False)
+            def increase_indent(
+                self, flow: bool = False, *args: typing.Any, **kwargs: typing.Any
+            ) -> typing.Any:
+                return super().increase_indent(flow=flow, indentless=False)  # type: ignore[no-untyped-call]
 
         yaml_dict = {
             "pull_requests": [

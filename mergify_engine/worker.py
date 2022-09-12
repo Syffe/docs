@@ -40,7 +40,7 @@ import time
 import typing
 
 import daiquiri
-from datadog import statsd
+from datadog import statsd  # type: ignore[attr-defined]
 from ddtrace import tracer
 import first
 import msgpack
@@ -873,8 +873,8 @@ async def ping_redis(
         )
 
     r = tenacity.retry(
-        wait=tenacity.wait_exponential(multiplier=0.2, max=5),
-        retry=tenacity.retry_if_exception_type(redis_exceptions.ConnectionError),
+        wait=tenacity.wait_exponential(multiplier=0.2, max=5),  # type: ignore[attr-defined]
+        retry=tenacity.retry_if_exception_type(redis_exceptions.ConnectionError),  # type: ignore[attr-defined]
         before_sleep=retry_log,
     )
     await r(redis.ping)()

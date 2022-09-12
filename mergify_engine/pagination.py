@@ -34,7 +34,7 @@ class Page(typing.Generic[T]):
     cursor_last: str = dataclasses.field(default="-")
 
     @property
-    def size(self):
+    def size(self) -> int:
         return len(self.items)
 
 

@@ -29,14 +29,15 @@ class DummyContext(context.Context):
 
     # This is only used to check Jinja2 syntax validity and must be sync
     @classmethod
-    def _get_consolidated_data(cls, key):
+    def _get_consolidated_data(cls, key: str) -> context.ContextAttributeType:  # type: ignore[override]
         if key in context.PullRequest.ATTRIBUTES:
             if key in cls.ALWAYS_STRING_ATTRIBUTES:
                 return ""
             else:
                 return None
         elif key in context.PullRequest.LIST_ATTRIBUTES:
-            return []
+            l: list[str] = []
+            return l
         elif key in context.PullRequest.LIST_ATTRIBUTES_WITH_LENGTH_OPTIMIZATION:
             return 0
         else:

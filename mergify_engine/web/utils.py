@@ -1,5 +1,5 @@
 import daiquiri
-from datadog import statsd
+from datadog import statsd  # type: ignore[attr-defined]
 import fastapi
 from redis import exceptions as redis_exceptions
 from starlette import requests

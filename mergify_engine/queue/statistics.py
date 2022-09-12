@@ -99,7 +99,7 @@ class FailureByReason(BaseQueueStats):
 
     _todict_ignore_vars = ("reason_code_str",)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.reason_code_str = self._INT_TO_ABORT_CODE_MAPPING[self.reason_code]
 
     @classmethod

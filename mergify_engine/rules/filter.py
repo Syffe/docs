@@ -121,37 +121,42 @@ class Filter(typing.Generic[FilterResultT]):
     def __post_init__(self) -> None:
         self._eval = self.build_evaluator(self.tree)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self._tree_to_str(self.tree)
 
-    def _tree_to_str(self, tree):
+    def _tree_to_str(
+        self, tree: typing.Union[TreeT, CompiledTreeT[GetAttrObject, FilterResultT]]
+    ) -> str:
+        if callable(tree):
+            raise RuntimeError("Cannot convert compiled tree")
+
         # We don't do any kind of validation here since build_evaluator does
         # that.
         op, nodes = list(tree.items())[0]
 
         if op in self.multiple_operators:
-            return "(" + f" {op} ".join(self._tree_to_str(n) for n in nodes) + ")"
+            return "(" + f" {op} ".join(self._tree_to_str(n) for n in nodes) + ")"  # type: ignore[attr-defined]
         if op in self.unary_operators:
-            return op + self._tree_to_str(nodes)
+            return op + self._tree_to_str(nodes)  # type: ignore[arg-type]
         if op in self.binary_operators:
-            if isinstance(nodes[1], bool):
+            if isinstance(nodes[1], bool):  # type: ignore[index]
                 if self.binary_operators[op][0] != operator.eq:
                     raise InvalidOperator(op)
-                return ("" if nodes[1] else "-") + str(nodes[0])
-            elif isinstance(nodes[1], datetime.datetime):
+                return ("" if nodes[1] else "-") + str(nodes[0])  # type: ignore[index]
+            elif isinstance(nodes[1], datetime.datetime):  # type: ignore[index]
                 return (
-                    str(nodes[0])
+                    str(nodes[0])  # type: ignore[index]
                     + op
-                    + nodes[1].replace(tzinfo=None).isoformat(timespec="seconds")
+                    + nodes[1].replace(tzinfo=None).isoformat(timespec="seconds")  # type: ignore[index]
                 )
-            elif isinstance(nodes[1], datetime.time):
+            elif isinstance(nodes[1], datetime.time):  # type: ignore[index]
                 return (
-                    str(nodes[0])
+                    str(nodes[0])  # type: ignore[index]
                     + op
-                    + nodes[1].replace(tzinfo=None).isoformat(timespec="minutes")
+                    + nodes[1].replace(tzinfo=None).isoformat(timespec="minutes")  # type: ignore[index]
                 )
             else:
-                return str(nodes[0]) + op + str(nodes[1])
+                return str(nodes[0]) + op + str(nodes[1])  # type: ignore[index]
         raise InvalidOperator(op)  # pragma: no cover
 
     def __repr__(self) -> str:  # pragma: no cover

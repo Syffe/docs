@@ -1,6 +1,6 @@
 import typing
 
-from datadog import statsd
+from datadog import statsd  # type: ignore[attr-defined]
 
 from mergify_engine import github_types
 from mergify_engine import signals

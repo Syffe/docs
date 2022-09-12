@@ -2,7 +2,7 @@ import dataclasses
 import typing
 
 import daiquiri
-from datadog import statsd
+from datadog import statsd  # type: ignore[attr-defined]
 import sentry_sdk
 
 from mergify_engine import check_api

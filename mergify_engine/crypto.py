@@ -7,7 +7,7 @@ import cryptography.exceptions
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import ciphers
 from cryptography.hazmat.primitives import hashes
-from datadog import statsd
+from datadog import statsd  # type: ignore[attr-defined]
 
 from mergify_engine import config
 

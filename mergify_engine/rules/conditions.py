@@ -115,7 +115,7 @@ class RuleCondition:
 
 class RuleConditionGroup(abc.ABC):
     @abc.abstractmethod
-    async def copy(self):
+    def copy(self) -> "RuleConditionGroup":
         pass
 
     async def __call__(self, obj: filter.GetAttrObjectT) -> bool:

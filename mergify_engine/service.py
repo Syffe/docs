@@ -1,6 +1,6 @@
 import os
 
-from datadog import statsd
+from datadog import statsd  # type: ignore[attr-defined]
 import ddtrace
 import sentry_sdk
 from sentry_sdk.integrations import fastapi

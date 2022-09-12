@@ -2,7 +2,7 @@ import base64
 import datetime
 import typing
 
-from datadog import statsd
+from datadog import statsd  # type: ignore[attr-defined]
 import ddtrace
 import yaml
 

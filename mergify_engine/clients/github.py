@@ -7,7 +7,7 @@ import typing
 from urllib import parse
 
 import daiquiri
-from datadog import statsd
+from datadog import statsd  # type: ignore[attr-defined]
 import httpx
 
 from mergify_engine import config

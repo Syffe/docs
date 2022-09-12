@@ -4,7 +4,7 @@ import re
 import typing
 
 import daiquiri
-from datadog import statsd
+from datadog import statsd  # type: ignore[attr-defined]
 import voluptuous
 
 from mergify_engine import actions
@@ -39,7 +39,7 @@ class Command:
     args: str
     action: actions.Action
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.args:
             return f"{self.name} {self.args}"
         else:
