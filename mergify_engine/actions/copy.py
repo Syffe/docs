@@ -25,23 +25,22 @@ def Regex(value: str) -> typing.Pattern[str]:
         raise voluptuous.Invalid(str(e))
 
 
+DUPLICATE_BODY_EXTRA_VARIABLES: dict[str, str | bool] = {
+    "destination_branch": "branch-name-example",
+    "cherry_pick_error": "cherry-pick error message example",
+}
+
+DUPLICATE_TITLE_EXTRA_VARIABLES: dict[str, str | bool] = {
+    "destination_branch": "branch-name-example",
+}
+
+
 def DuplicateBodyJinja2(v: typing.Any) -> typing.Optional[str]:
-    return types.Jinja2(
-        v,
-        {
-            "destination_branch": "whatever",
-            "cherry_pick_error": "whaever",
-        },
-    )
+    return types.Jinja2(v, DUPLICATE_BODY_EXTRA_VARIABLES)
 
 
 def DuplicateTitleJinja2(v: typing.Any) -> typing.Optional[str]:
-    return types.Jinja2(
-        v,
-        {
-            "destination_branch": "whatever",
-        },
-    )
+    return types.Jinja2(v, DUPLICATE_TITLE_EXTRA_VARIABLES)
 
 
 class CopyAction(actions.BackwardCompatAction):
@@ -324,8 +323,7 @@ class CopyAction(actions.BackwardCompatAction):
     ) -> typing.Optional[check_api.Result]:
         try:
             await ctxt.pull_request.render_template(
-                self.config["title"],
-                extra_variables={"destination_branch": "whatever"},
+                self.config["title"], extra_variables=DUPLICATE_TITLE_EXTRA_VARIABLES
             )
         except context.RenderTemplateFailure as rmf:
             # can't occur, template have been checked earlier
@@ -337,11 +335,7 @@ class CopyAction(actions.BackwardCompatAction):
 
         try:
             await ctxt.pull_request.render_template(
-                self.config["body"],
-                extra_variables={
-                    "destination_branch": "whatever",
-                    "cherry_pick_error": "whatever",
-                },
+                self.config["body"], extra_variables=DUPLICATE_BODY_EXTRA_VARIABLES
             )
         except context.RenderTemplateFailure as rmf:
             # can't occur, template have been checked earlier

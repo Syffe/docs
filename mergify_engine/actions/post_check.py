@@ -17,7 +17,7 @@ def CheckRunJinja2(v: typing.Any) -> typing.Optional[str]:
     return types.Jinja2(
         v,
         {
-            "check_rule_name": "whatever",
+            "check_rule_name": "Rule name example",
             "check_succeed": True,
             "check_succeeded": True,
             "check_conditions": "the expected condition conditions",
