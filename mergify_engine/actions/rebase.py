@@ -1,3 +1,5 @@
+import typing
+
 import voluptuous
 
 from mergify_engine import actions
@@ -8,11 +10,95 @@ from mergify_engine import rules
 from mergify_engine import signals
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.dashboard import subscription
+from mergify_engine.dashboard import user_tokens
 from mergify_engine.rules import conditions
 from mergify_engine.rules import types
 
 
-class RebaseAction(actions.BackwardCompatAction):
+class RebaseExecutorConfig(typing.TypedDict):
+    autosquash: bool
+    bot_account: typing.Optional[user_tokens.UserTokensUser]
+
+
+class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig]):
+    @classmethod
+    async def create(
+        cls,
+        action: "RebaseAction",
+        ctxt: "context.Context",
+        rule: "rules.EvaluatedRule",
+    ) -> "RebaseExecutor":
+        try:
+            bot_account = await action_utils.render_bot_account(
+                ctxt,
+                action.config["bot_account"],
+                required_feature=subscription.Features.BOT_ACCOUNT,
+                missing_feature_message="Comments with `bot_account` set are disabled",
+                required_permissions=[],
+            )
+        except action_utils.RenderBotAccountFailure as e:
+            raise rules.InvalidPullRequestRule(e.title, e.reason)
+
+        github_user: typing.Optional[user_tokens.UserTokensUser] = None
+        if bot_account:
+            tokens = await ctxt.repository.installation.get_user_tokens()
+            github_user = tokens.get_token_for(bot_account)
+            if not github_user:
+                raise rules.InvalidPullRequestRule(
+                    f"Unable to comment: user `{bot_account}` is unknown. ",
+                    f"Please make sure `{bot_account}` has logged in Mergify dashboard.",
+                )
+
+        return cls(
+            ctxt,
+            rule,
+            RebaseExecutorConfig(
+                {"bot_account": github_user, "autosquash": action.config["autosquash"]}
+            ),
+        )
+
+    async def run(self) -> check_api.Result:
+        if self.config[
+            "bot_account"
+        ] is not None and self.ctxt.subscription.has_feature(
+            subscription.Features.BOT_ACCOUNT
+        ):
+            users = [self.config["bot_account"]]
+            committer = self.config["bot_account"]
+        else:
+            tokens = await self.ctxt.repository.installation.get_user_tokens()
+            users = tokens.users
+            committer = None
+
+        try:
+            await branch_updater.rebase_with_git(
+                self.ctxt,
+                users,
+                committer,
+                self.config["autosquash"],
+            )
+        except branch_updater.BranchUpdateFailure as e:
+            return check_api.Result(check_api.Conclusion.FAILURE, e.title, e.message)
+
+        await signals.send(
+            self.ctxt.repository,
+            self.ctxt.pull["number"],
+            "action.rebase",
+            signals.EventNoMetadata(),
+            self.rule.get_signal_trigger(),
+        )
+
+        return check_api.Result(
+            check_api.Conclusion.SUCCESS,
+            "Branch has been successfully rebased",
+            "",
+        )
+
+    async def cancel(self) -> check_api.Result:
+        return actions.CANCELLED_CHECK_REPORT
+
+
+class RebaseAction(actions.Action):
     flags = (
         actions.ActionFlag.ALWAYS_RUN
         | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
@@ -24,44 +110,7 @@ class RebaseAction(actions.BackwardCompatAction):
         ),
         voluptuous.Required("autosquash", default=True): bool,
     }
-
-    async def run(
-        self, ctxt: context.Context, rule: rules.EvaluatedRule
-    ) -> check_api.Result:
-        try:
-            bot_account = await action_utils.render_bot_account(
-                ctxt,
-                self.config["bot_account"],
-                option_name="bot_account",
-                required_feature=subscription.Features.BOT_ACCOUNT,
-                missing_feature_message="Cannot use `bot_account` with rebase action",
-            )
-        except action_utils.RenderBotAccountFailure as e:
-            return check_api.Result(e.status, e.title, e.reason)
-
-        try:
-            await branch_updater.rebase_with_git(
-                ctxt,
-                subscription.Features.BOT_ACCOUNT,
-                bot_account,
-                self.config["autosquash"],
-            )
-        except branch_updater.BranchUpdateFailure as e:
-            return check_api.Result(check_api.Conclusion.FAILURE, e.title, e.message)
-
-        await signals.send(
-            ctxt.repository,
-            ctxt.pull["number"],
-            "action.rebase",
-            signals.EventNoMetadata(),
-            rule.get_signal_trigger(),
-        )
-
-        return check_api.Result(
-            check_api.Conclusion.SUCCESS,
-            "Branch has been successfully rebased",
-            "",
-        )
+    executor_class = RebaseExecutor
 
     async def get_conditions_requirements(
         self, ctxt: context.Context
@@ -87,8 +136,3 @@ class RebaseAction(actions.BackwardCompatAction):
                 }
             ),
         ]
-
-    async def cancel(
-        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
-    ) -> check_api.Result:  # pragma: no cover
-        return actions.CANCELLED_CHECK_REPORT

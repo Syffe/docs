@@ -214,24 +214,13 @@ async def update_with_api(
 
 async def rebase_with_git(
     ctxt: context.Context,
-    bot_account_feature: subscription.Features,
-    bot_account: typing.Optional[github_types.GitHubLogin] = None,
+    users: typing.List[user_tokens.UserTokensUser],
+    committer: user_tokens.UserTokensUser | None,
     autosquash: bool = False,
 ) -> None:
     ctxt.log.info("updating base branch with git")
 
     await pre_rebase_check(ctxt)
-
-    try:
-        users = await user_tokens.UserTokens.select_users_for(ctxt, bot_account)
-    except user_tokens.UserTokensUserNotFound as e:
-        raise BranchUpdateFailure(f"Unable to rebase: {e.reason}")
-
-    # NOTE(sileht): select_users_for returns only one item if bot_account is set
-    if bot_account is not None and ctxt.subscription.has_feature(bot_account_feature):
-        committer = users[0]
-    else:
-        committer = None
 
     for user in users:
         try:
@@ -264,4 +253,15 @@ async def update(
     if method == "merge":
         await update_with_api(ctxt)
     else:
-        await rebase_with_git(ctxt, bot_account_feature, user)
+        try:
+            users = await user_tokens.UserTokens.select_users_for(ctxt, user)
+        except user_tokens.UserTokensUserNotFound as e:
+            raise BranchUpdateFailure(f"Unable to rebase: {e.reason}")
+
+        # NOTE(sileht): select_users_for returns only one item if bot_account is set
+        if user is not None and ctxt.subscription.has_feature(bot_account_feature):
+            committer = users[0]
+        else:
+            committer = None
+
+        await rebase_with_git(ctxt, users, committer)
