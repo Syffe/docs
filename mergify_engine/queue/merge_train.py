@@ -780,9 +780,6 @@ class TrainCar:
             self.queue_branch_name, base_sha, github_user
         )
 
-        # TODO(sileht): use another attribute as this one is used in UI
-        self.expeceted_current_base_sha = base_sha
-
         for pull_number in pulls_in_draft:
             try:
                 await self.train.repository.installation.client.post(
