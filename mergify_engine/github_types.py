@@ -495,6 +495,15 @@ GitHubReviewIdType = typing.NewType("GitHubReviewIdType", int)
 GitHubReviewStateType = typing.Literal[
     "APPROVED", "COMMENTED", "DISMISSED", "CHANGES_REQUESTED"
 ]
+GitHubReviewStateChangeType = typing.Literal["APPROVE", "REQUEST_CHANGES", "COMMENT"]
+
+
+class GitHubReviewPostMandatory(typing.TypedDict):
+    event: GitHubReviewStateChangeType
+
+
+class GitHubReviewPost(GitHubReviewPostMandatory, total=False):
+    body: str
 
 
 # https://docs.github.com/en/graphql/reference/enums#commentauthorassociation

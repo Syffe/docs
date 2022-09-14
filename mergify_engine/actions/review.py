@@ -1,3 +1,5 @@
+import typing
+
 import voluptuous
 
 from mergify_engine import actions
@@ -10,6 +12,7 @@ from mergify_engine import signals
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
+from mergify_engine.dashboard import user_tokens
 from mergify_engine.rules import types
 
 
@@ -20,65 +23,82 @@ EVENT_STATE_MAP = {
 }
 
 
-class ReviewAction(actions.BackwardCompatAction):
-    flags = (
-        actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
-        | actions.ActionFlag.ALWAYS_RUN
-    )
-    validator = {
-        voluptuous.Required("type", default="APPROVE"): voluptuous.Any(
-            "APPROVE", "REQUEST_CHANGES", "COMMENT"
-        ),
-        voluptuous.Required("message", default=None): types.Jinja2WithNone,
-        voluptuous.Required("bot_account", default=None): types.Jinja2WithNone,
-    }
+class ReviewExecutorConfig(typing.TypedDict):
+    type: github_types.GitHubReviewStateChangeType
+    message: str | None
+    bot_account: user_tokens.UserTokensUser | None
 
-    async def run(
-        self, ctxt: context.Context, rule: rules.EvaluatedRule
-    ) -> check_api.Result:
-        payload = {"event": self.config["type"]}
 
+class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig]):
+    @classmethod
+    async def create(
+        cls,
+        action: "ReviewAction",
+        ctxt: "context.Context",
+        rule: "rules.EvaluatedRule",
+    ) -> "ReviewExecutor":
         try:
             bot_account = await action_utils.render_bot_account(
                 ctxt,
-                self.config["bot_account"],
-                option_name="bot_account",
+                action.config["bot_account"],
                 required_feature=subscription.Features.BOT_ACCOUNT,
-                missing_feature_message="Cannot use `bot_account` with review action",
+                missing_feature_message="Review with `bot_account` set are disabled",
+                required_permissions=[],
             )
         except action_utils.RenderBotAccountFailure as e:
-            return check_api.Result(e.status, e.title, e.reason)
+            raise rules.InvalidPullRequestRule(e.title, e.reason)
 
-        if ctxt.pull["merged"] and self.config["type"] != "COMMENT":
+        if action.config["message"]:
+            try:
+                message = await ctxt.pull_request.render_template(
+                    action.config["message"]
+                )
+            except context.RenderTemplateFailure as rmf:
+                raise rules.InvalidPullRequestRule(
+                    "Invalid review message",
+                    str(rmf),
+                )
+        else:
+            message = None
+
+        github_user: typing.Optional[user_tokens.UserTokensUser] = None
+        if bot_account:
+            tokens = await ctxt.repository.installation.get_user_tokens()
+            github_user = tokens.get_token_for(bot_account)
+            if not github_user:
+                raise rules.InvalidPullRequestRule(
+                    f"Unable to comment: user `{bot_account}` is unknown. ",
+                    f"Please make sure `{bot_account}` has logged in Mergify dashboard.",
+                )
+        return cls(
+            ctxt,
+            rule,
+            ReviewExecutorConfig(
+                {
+                    "message": message,
+                    "type": action.config["type"],
+                    "bot_account": github_user,
+                }
+            ),
+        )
+
+    async def run(self) -> check_api.Result:
+        payload = github_types.GitHubReviewPost({"event": self.config["type"]})
+
+        if self.ctxt.pull["merged"] and self.config["type"] != "COMMENT":
             return check_api.Result(
                 check_api.Conclusion.SUCCESS,
                 "Pull request has been merged, APPROVE and REQUEST_CHANGES are ignored.",
                 "",
             )
 
-        if bot_account:
-            review_user = bot_account
-            user_tokens = await ctxt.repository.installation.get_user_tokens()
-            github_user = user_tokens.get_token_for(bot_account)
-            if not github_user:
-                return check_api.Result(
-                    check_api.Conclusion.FAILURE,
-                    f"Unable to review: user `{bot_account}` is unknown. ",
-                    f"Please make sure `{bot_account}` has logged in Mergify dashboard.",
-                )
-        else:
+        if self.config["bot_account"] is None:
             review_user = github_types.GitHubLogin(config.BOT_USER_LOGIN)
-            github_user = None
+        else:
+            review_user = self.config["bot_account"]["login"]
 
         if self.config["message"]:
-            try:
-                payload["body"] = await ctxt.pull_request.render_template(
-                    self.config["message"]
-                )
-            except context.RenderTemplateFailure as rmf:
-                return check_api.Result(
-                    check_api.Conclusion.FAILURE, "Invalid review message", str(rmf)
-                )
+            payload["body"] = self.config["message"]
         elif self.config["type"] != "APPROVE":
             payload[
                 "body"
@@ -88,7 +108,7 @@ class ReviewAction(actions.BackwardCompatAction):
             list(
                 filter(
                     lambda r: r["user"]["login"] == review_user,
-                    await ctxt.reviews,
+                    await self.ctxt.reviews,
                 )
             )
         )
@@ -116,9 +136,11 @@ class ReviewAction(actions.BackwardCompatAction):
                 break
 
         try:
-            await ctxt.client.post(
-                f"{ctxt.base_url}/pulls/{ctxt.pull['number']}/reviews",
-                oauth_token=github_user["oauth_access_token"] if github_user else None,
+            await self.ctxt.client.post(
+                f"{self.ctxt.base_url}/pulls/{self.ctxt.pull['number']}/reviews",
+                oauth_token=self.config["bot_account"]["oauth_access_token"]
+                if self.config["bot_account"]
+                else None,
                 json=payload,
             )
         except http.HTTPClientSideError as e:
@@ -132,8 +154,8 @@ class ReviewAction(actions.BackwardCompatAction):
             raise
 
         await signals.send(
-            ctxt.repository,
-            ctxt.pull["number"],
+            self.ctxt.repository,
+            self.ctxt.pull["number"],
             "action.review",
             signals.EventReviewMetadata(
                 {
@@ -142,11 +164,24 @@ class ReviewAction(actions.BackwardCompatAction):
                     "message": payload.get("body"),
                 }
             ),
-            rule.get_signal_trigger(),
+            self.rule.get_signal_trigger(),
         )
         return check_api.Result(check_api.Conclusion.SUCCESS, "Review posted", "")
 
-    async def cancel(
-        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
-    ) -> check_api.Result:  # pragma: no cover
+    async def cancel(self) -> check_api.Result:
         return actions.CANCELLED_CHECK_REPORT
+
+
+class ReviewAction(actions.Action):
+    flags = (
+        actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
+        | actions.ActionFlag.ALWAYS_RUN
+    )
+    validator = {
+        voluptuous.Required("type", default="APPROVE"): voluptuous.Any(
+            *github_types.GitHubReviewStateChangeType.__args__  # type: ignore[attr-defined]
+        ),
+        voluptuous.Required("message", default=None): types.Jinja2WithNone,
+        voluptuous.Required("bot_account", default=None): types.Jinja2WithNone,
+    }
+    executor_class = ReviewExecutor
