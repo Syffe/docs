@@ -1,9 +1,16 @@
+import pytest
 import yaml
 
+from mergify_engine import config
+from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 
 
 class TestDeleteHeadBranchAction(base.FunctionalTestBase):
+    @pytest.mark.subscription(
+        subscription.Features.EVENTLOGS_SHORT,
+        subscription.Features.EVENTLOGS_LONG,
+    )
     async def test_delete_branch_basic(self) -> None:
         rules = {
             "pull_request_rules": [
@@ -34,8 +41,10 @@ class TestDeleteHeadBranchAction(base.FunctionalTestBase):
         second_branch = self.get_full_branch_name("#2-second-pr")
         third_branch = self.get_full_branch_name("#3-second-pr")
         fourth_branch = self.get_full_branch_name("#4-second-pr")
+
         p1 = await self.create_pr(branch=first_branch)
         p2 = await self.create_pr(branch=second_branch)
+
         await self.create_pr(branch=third_branch)
         await self.create_pr(branch=fourth_branch)
         await self.add_label(p1["number"], "merge")
@@ -60,6 +69,17 @@ class TestDeleteHeadBranchAction(base.FunctionalTestBase):
         self.assertEqual(third_branch, branches[1]["name"])
         self.assertEqual(fourth_branch, branches[2]["name"])
         self.assertEqual("main", branches[3]["name"])
+
+        # Check event logs
+        r = await self.app.get(
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p2['number']}/events?per_page=5",
+            headers={
+                "Authorization": f"bearer {self.api_key_admin}",
+                "Content-type": "application/json",
+            },
+        )
+        assert len(r.json()["events"]) == 1
+        assert r.json()["events"][0]["metadata"]["branch"] == second_branch
 
     async def test_delete_branch_with_dep_no_force(self) -> None:
         rules = {

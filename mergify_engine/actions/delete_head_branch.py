@@ -82,11 +82,16 @@ class DeleteHeadBranchExecutor(
                 f"Branch `{self.ctxt.pull['head']['ref']}` does not exist",
                 "",
             )
+
         await signals.send(
             self.ctxt.repository,
             self.ctxt.pull["number"],
             "action.delete_head_branch",
-            signals.EventNoMetadata(),
+            signals.EventDeleteHeadBranchMetadata(
+                {
+                    "branch": self.ctxt.pull["head"]["ref"],
+                }
+            ),
             self.rule.get_signal_trigger(),
         )
         return check_api.Result(

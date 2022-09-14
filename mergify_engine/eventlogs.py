@@ -67,8 +67,9 @@ class EventEdit(EventBase):
     metadata: signals.EventEditMetadata
 
 
-class EventDeleteHeadBranch(EventBaseNoMetadata):
+class EventDeleteHeadBranch(EventBase):
     event: typing.Literal["action.delete_head_branch"]
+    metadata: signals.EventDeleteHeadBranchMetadata
 
 
 class EventDismissReviews(EventBase):

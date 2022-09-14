@@ -112,6 +112,10 @@ class EventQueueLeaveMetadata(EventMetadata, total=False):
     queued_at: datetime.datetime
 
 
+class EventDeleteHeadBranchMetadata(EventMetadata, total=False):
+    branch: str
+
+
 # Like GitHubCheckRunConclusion but with "pending" instead of None
 ChecksConclusion = typing.Literal[
     "success",
