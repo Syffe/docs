@@ -871,7 +871,7 @@ async def test_stream_processor_retrying_pull(
         b"bucket-sources~123~123": b"1",
     } == await redis_links.stream.hgetall("attempts")
 
-    with freeze_time("2020-01-01 22:00:32", tick=True):
+    with freeze_time("2020-01-01 22:00:05", tick=True):
         await stream_processor.consume(
             worker_lua.BucketOrgKeyType("bucket~123"),
             github_types.GitHubAccountIdType(123),
@@ -892,7 +892,7 @@ async def test_stream_processor_retrying_pull(
     )
 
     # Check nothing is retried if we replay the steram before 30s
-    with freeze_time("2020-01-01 22:00:42", tick=True):
+    with freeze_time("2020-01-01 22:00:08", tick=True):
         await stream_processor.consume(
             worker_lua.BucketOrgKeyType("bucket~123"),
             github_types.GitHubAccountIdType(123),
@@ -911,9 +911,9 @@ async def test_stream_processor_retrying_pull(
         "attempts"
     )
 
-    when = date.fromisoformat("2020-01-01 22:01:32")
+    when = date.fromisoformat("2020-01-01 22:00:12")
     for _ in range(14):
-        when += datetime.timedelta(seconds=31)
+        when += datetime.timedelta(seconds=4)
         with freeze_time(when, tick=True):
             await stream_processor.consume(
                 worker_lua.BucketOrgKeyType("bucket~123"),

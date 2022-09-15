@@ -87,10 +87,13 @@ LOG = daiquiri.getLogger(__name__)
 # we keep the PR in queue for ~ 7 minutes (a try == WORKER_PROCESSING_DELAY)
 MAX_RETRIES: int = 15
 STREAM_ATTEMPTS_LOGGING_THRESHOLD: int = 20
-# minimun delay to wait between two processing of the same PR
-MIN_DELAY_BETWEEN_SAME_PULL_REQUEST = int(
+# usual delay to wait between two processing of the same PR
+NORMAL_DELAY_BETWEEN_SAME_PULL_REQUEST = int(
     datetime.timedelta(seconds=30).total_seconds()
 )
+# minimun delay to wait between two processing of the same PR
+MIN_DELAY_BETWEEN_SAME_PULL_REQUEST = datetime.timedelta(seconds=3)
+
 
 DEDICATED_WORKERS_KEY = "dedicated-workers"
 ATTEMPTS_KEY = "attempts"
@@ -103,6 +106,10 @@ class IgnoredException(Exception):
 @dataclasses.dataclass
 class PullRetry(Exception):
     attempts: int
+
+
+class PullFastRetry(PullRetry):
+    pass
 
 
 class MaxPullRetry(PullRetry):
@@ -136,6 +143,10 @@ class PullRequestBucket:
     score: float
     repo_id: github_types.GitHubRepositoryIdType
     pull_number: github_types.GitHubPullRequestNumber
+
+    @property
+    def priority(self) -> worker_pusher.Priority:
+        return worker_pusher.get_priority_level_from_score(self.score)
 
 
 async def run_engine(
@@ -263,6 +274,11 @@ class StreamProcessor:
                 isinstance(e, http.HTTPServerSideError)
                 and bucket_sources_key is not None
             ):
+                exc: type[PullRetry]
+                if isinstance(e, exceptions.MergeableStateUnknown):
+                    exc = PullFastRetry
+                else:
+                    exc = PullRetry
                 if (
                     isinstance(e, exceptions.MergeableStateUnknown)
                     and bucket_sources_key is None
@@ -270,6 +286,7 @@ class StreamProcessor:
                     bucket_sources_key = worker_lua.BucketSourcesKeyType(
                         f"bucket-sources~{e.ctxt.repository.repo['id']}~{e.ctxt.pull['number']}"
                     )
+
                 if bucket_sources_key is None:
                     raise RuntimeError("bucket_sources_key must be set at this point")
 
@@ -277,7 +294,7 @@ class StreamProcessor:
                     ATTEMPTS_KEY, bucket_sources_key
                 )
                 if attempts < MAX_RETRIES:
-                    raise PullRetry(attempts) from e
+                    raise exc(attempts) from e
                 else:
                     await self.redis_links.stream.hdel(ATTEMPTS_KEY, bucket_sources_key)
                     raise MaxPullRetry(attempts) from e
@@ -538,9 +555,9 @@ class StreamProcessor:
                 break
 
             if (time.monotonic() - started_at) >= config.BUCKET_PROCESSING_MAX_SECONDS:
-                prio = worker_pusher.get_priority_level_from_score(bucket.score)
                 statsd.increment(
-                    "engine.buckets.preempted", tags=[f"priority:{prio.name}"]
+                    "engine.buckets.preempted",
+                    tags=[f"priority:{bucket.priority.name}"],
                 )
                 break
 
@@ -551,7 +568,7 @@ class StreamProcessor:
                 self.redis_links.stream,
                 bucket_org_key,
                 bucket.sources_key,
-                MIN_DELAY_BETWEEN_SAME_PULL_REQUEST
+                NORMAL_DELAY_BETWEEN_SAME_PULL_REQUEST
                 * worker_pusher.SCORE_TIMESTAMP_PRECISION,
             )
             statsd.histogram("engine.buckets.events.read_size", len(messages))
@@ -687,8 +704,17 @@ class StreamProcessor:
                     raise
                 except vcr_errors_CannotOverwriteExistingCassetteException:
                     raise
+                except PullFastRetry:
+                    await self.redis_links.stream.zadd(
+                        bucket_org_key,
+                        {
+                            bucket.sources_key: worker_pusher.get_priority_score(
+                                bucket.priority, MIN_DELAY_BETWEEN_SAME_PULL_REQUEST
+                            )
+                        },
+                    )
                 except (PullRetry, UnexpectedPullRetry):
-                    # NOTE(sileht): Will be retried automatically in MIN_DELAY_BETWEEN_SAME_PULL_REQUEST
+                    # NOTE(sileht): Will be retried automatically in NORMAL_DELAY_BETWEEN_SAME_PULL_REQUEST
                     pass
 
         statsd.histogram("engine.buckets.read_size", pulls_processed)

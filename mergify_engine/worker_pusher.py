@@ -32,11 +32,14 @@ PRIORITY_OFFSET = 100_000_000_000
 SCORE_TIMESTAMP_PRECISION = 10000
 
 
-def get_priority_score(prio: Priority) -> str:
+def get_priority_score(prio: Priority, offset: datetime.timedelta | None = None) -> str:
     # NOTE(sileht): we drop ms, to avoid float precision issue (eg:
     # 3.99999 becoming 4.0000) that could break priority offset
+    when = date.utcnow()
+    if offset is not None:
+        when += offset
     return str(
-        int(date.utcnow().timestamp() * SCORE_TIMESTAMP_PRECISION)
+        int(when.timestamp() * SCORE_TIMESTAMP_PRECISION)
         + prio.value * PRIORITY_OFFSET * SCORE_TIMESTAMP_PRECISION
     )
 
