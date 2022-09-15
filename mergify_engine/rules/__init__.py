@@ -281,6 +281,7 @@ QueuesRulesEvaluator = GenericRulesEvaluator[QueueRule, EvaluatedQueueRule]
 @dataclasses.dataclass
 class PullRequestRules:
     rules: typing.List[PullRequestRule]
+    has_multiple_rules_with_same_name: bool = False
 
     def __post_init__(self) -> None:
         # NOTE(sileht): Make sure each rule has a unique name because they are
@@ -294,6 +295,7 @@ class PullRequestRules:
                 continue
             for n, rule in enumerate(sub_rules_list):
                 rule.name += f" #{n + 1}"
+                self.has_multiple_rules_with_same_name = True
 
     def __iter__(self) -> typing.Iterator[PullRequestRule]:
         return iter(self.rules)

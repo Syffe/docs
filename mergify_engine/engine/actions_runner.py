@@ -29,6 +29,14 @@ NOT_APPLICABLE_TEMPLATE = """<details>
 </details>"""
 
 
+MSG_RULE_WITH_SAME_NAME_DEPRECATION = """
+⚠️ **Action Required** ⚠️
+> **The configuration has multiple rules with the same name.**
+> This option is deprecated and all rules should have different names.
+> This option will be removed on Monday, 17 October  2022.
+"""
+
+
 async def get_already_merged_summary(
     ctxt: context.Context, match: rules.RulesEvaluator
 ) -> str:
@@ -133,6 +141,9 @@ async def gen_summary(
 ) -> typing.Tuple[str, str]:
     summary = ""
     summary += await get_already_merged_summary(ctxt, match)
+
+    if pull_request_rules.has_multiple_rules_with_same_name:
+        summary = MSG_RULE_WITH_SAME_NAME_DEPRECATION + summary
 
     matching_rules_to_display = match.matching_rules[:]
     not_applicable_base_changeable_attributes_rules_to_display = []
