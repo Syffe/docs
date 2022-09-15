@@ -689,3 +689,57 @@ class TestQueueCISummary(base.FunctionalTestBase):
             re.search(regex, check_runs[0]["output"]["summary"], flags=re.DOTALL)
             is not None
         )
+
+    async def test_summary_html_escape(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "no <i>manual</i> merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=<h1>foo</h1>bar",
+                    ],
+                    "actions": {"comment": {"message": "no way"}},
+                }
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+        pr = await self.create_pr()
+        await self.run_engine()
+        ctxt = await context.Context.create(self.repository_ctxt, pr)
+        summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
+        assert summary is not None
+        assert summary["output"] is not None
+        assert (
+            """
+### Rule: no &lt;i&gt;manual&lt;/i&gt; merge (comment)
+- [ ] `label=&lt;h1&gt;foo&lt;/h1&gt;bar`
+- [X] `base=20220913130249/test_summary_html_escape/main`
+"""
+            in summary["output"]["summary"]
+        )
+
+    async def test_invalid_config_html_escape(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "no <i>manual</i> merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=<h1>foo</h1>bar",
+                    ],
+                    "actions": {"queue": {"name": "not <h1>exists</h1> !!"}},
+                }
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+        pr = await self.create_pr()
+        await self.run_engine()
+        ctxt = await context.Context.create(self.repository_ctxt, pr)
+        summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
+        assert summary is not None
+        assert summary["output"] is not None
+        assert (
+            summary["output"]["summary"]
+            == "not &lt;h1&gt;exists&lt;/h1&gt; !! queue not found"
+        )

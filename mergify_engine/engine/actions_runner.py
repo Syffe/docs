@@ -1,5 +1,6 @@
 import base64
 import datetime
+import html
 import typing
 
 from datadog import statsd  # type: ignore[attr-defined]
@@ -89,14 +90,17 @@ async def gen_summary_rules(
 ) -> str:
     summary = ""
     for rule in _rules:
+        escaped_rule_name = html.escape(rule.name)
         if rule.hidden:
             continue
         if rule.disabled is None:
-            summary += f"### Rule: {rule.name} ({', '.join(rule.actions)})\n"
+            summary += f"### Rule: {escaped_rule_name} ({', '.join(rule.actions)})\n"
         else:
-            summary += f"### Rule: ~~{rule.name} ({', '.join(rule.actions)})~~\n"
-            summary += f":no_entry_sign: **Disabled: {rule.disabled['reason']}**\n"
-        summary += rule.conditions.get_summary()
+            summary += (
+                f"### Rule: ~~{escaped_rule_name} ({', '.join(rule.actions)})~~\n"
+            )
+            summary += f":no_entry_sign: **Disabled: {html.escape(rule.disabled['reason'])}**\n"
+        summary += html.escape(rule.conditions.get_summary())
         summary += "\n"
         if display_action_configs:
             for action_name, action in rule.actions.items():

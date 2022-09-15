@@ -166,7 +166,7 @@ mergeable_state: clean
 >   - [ ] `label=suspect`
 > - [X] `base={self.main_branch_name}`
 > - [X] all of:
->   - [X] `number>0`
+>   - [X] `number&gt;0`
 >   - [X] `title~=pull request`
 > 
 > <hr />
@@ -205,7 +205,7 @@ mergeable_state: clean
 >   - [ ] `label=suspect`
 > - [X] `base={self.main_branch_name}`
 > - [X] all of:
->   - [X] `number>0`
+>   - [X] `number&gt;0`
 >   - [X] `title~=pull request`
 > 
 > <hr />
