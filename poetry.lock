@@ -1262,7 +1262,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "semgrep"
-version = "0.112.1"
+version = "0.113.0"
 description = "Lightweight static analysis for many languages. Find bug variants with patterns that look like source code."
 category = "dev"
 optional = false
@@ -1282,6 +1282,7 @@ peewee = ">=3.14,<4.0"
 python-lsp-jsonrpc = ">=1.0.0,<1.1.0"
 requests = ">=2.22,<3.0"
 "ruamel.yaml" = ">=0.16.0,<0.18"
+tomli = ">=2.0.1,<2.1.0"
 tqdm = ">=4.46,<5.0"
 typing-extensions = ">=4.2,<5.0"
 urllib3 = ">=1.26,<2.0"
@@ -1753,7 +1754,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.10,<4.0"
-content-hash = "fabb380c059444c576b80458b3e6816ae57beb1a11e7807ea3c4c5ad8286fad0"
+content-hash = "00bd446c31f050d33df82202db30b460c81513208b482f375c931ae959402d33"
 
 [metadata.files]
 aiofiles = [
@@ -2797,10 +2798,10 @@ rfc3986 = [
     {file = "ruamel.yaml.clib-0.2.6.tar.gz", hash = "sha256:4ff604ce439abb20794f05613c374759ce10e3595d1867764dd1ae675b85acbd"},
 ]
 semgrep = [
-    {file = "semgrep-0.112.1-cp37.cp38.cp39.py37.py38.py39-none-any.whl", hash = "sha256:2a62bc6321d371dadc41df2c68678e87df807ddfa3d1faafb40bd0998abfe503"},
-    {file = "semgrep-0.112.1-cp37.cp38.cp39.py37.py38.py39-none-macosx_10_14_x86_64.whl", hash = "sha256:b690a84cbaa6a4670ff6c11a674818b8ad99736e89520a3c47d1542cc45e6d05"},
-    {file = "semgrep-0.112.1-cp37.cp38.cp39.py37.py38.py39-none-macosx_11_0_arm64.whl", hash = "sha256:bc2437f12e41ac5e28a303e463098565a3d948c7744f6745bdb0fea341ccdae1"},
-    {file = "semgrep-0.112.1.tar.gz", hash = "sha256:2140a0fd16f3ac0a0e330980613ba65fe58faea7808a965e219c4199bab96102"},
+    {file = "semgrep-0.113.0-cp37.cp38.cp39.py37.py38.py39-none-any.whl", hash = "sha256:5a37687ff7e8c268446ce3f52a30898ba56bcf5335d295888925ad48bf67284b"},
+    {file = "semgrep-0.113.0-cp37.cp38.cp39.py37.py38.py39-none-macosx_10_14_x86_64.whl", hash = "sha256:caffda001074a561260acb61625bdd2a121ef7f8eaed9471074c7236f4c89b4e"},
+    {file = "semgrep-0.113.0-cp37.cp38.cp39.py37.py38.py39-none-macosx_11_0_arm64.whl", hash = "sha256:999dd30bbe33416736a51aad89cd05b6d48c4eee8c24ec55a2fdccbc1aceed04"},
+    {file = "semgrep-0.113.0.tar.gz", hash = "sha256:6085906839e8b2c18b7862536f1920375643b92e952d2accd489f2dbf44b1d2e"},
 ]
 sentry-sdk = [
     {file = "sentry-sdk-1.9.8.tar.gz", hash = "sha256:ef4b4d57631662ff81e15c22bf007f7ce07c47321648c8e601fbd22950ed1a79"},
