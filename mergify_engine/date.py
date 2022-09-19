@@ -367,6 +367,8 @@ class Schedule:
         from_time_as_tz = from_time.astimezone(self.tzinfo)
 
         if self.is_datetime_between_time_range(from_time_as_tz, strict=True):
+            # We are between the correct date+time range,
+            # next try is same day at the end_hour + end_minute
             return return_as_origin_timezone(
                 from_time_as_tz.replace(
                     hour=self.end_hour,
@@ -391,11 +393,6 @@ class Schedule:
                 days=self.start_weekday + (7 - from_time_as_tz.isoweekday())
             )
         # Inside day schedule but oustide of hour+minute schedule
-        elif from_time_as_tz.isoweekday() == self.end_weekday:
-            # Next time is next week at the start of schedule
-            from_time_as_tz += datetime.timedelta(
-                days=self.start_weekday + (7 - from_time_as_tz.isoweekday())
-            )
         elif from_time_as_tz.hour < self.start_hour or (
             from_time_as_tz.hour == self.start_hour
             and from_time_as_tz.minute < self.start_minute
@@ -404,6 +401,11 @@ class Schedule:
             # The hour+minute replace is done at the end, this elif is just
             # for clarity.
             pass
+        elif from_time_as_tz.isoweekday() == self.end_weekday:
+            # Next time is next week at the start of schedule
+            from_time_as_tz += datetime.timedelta(
+                days=self.start_weekday + (7 - from_time_as_tz.isoweekday())
+            )
         else:
             # Next time is next day at start hour + start minute
             from_time_as_tz += datetime.timedelta(days=1)

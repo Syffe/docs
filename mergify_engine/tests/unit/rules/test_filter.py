@@ -1032,3 +1032,19 @@ async def test_schedule_with_timezone() -> None:
         assert await f(get_scheduled_pr()) == datetime.datetime(
             2021, 10, 24, 7, 0, 1, tzinfo=datetime.timezone.utc
         )
+
+    with freeze_time("2022-09-16T10:38:18.019100", tz_offset=0) as frozen_time:
+        tree = parser.parse("schedule=Mon-Fri 06:00-17:00[America/Los_Angeles]")
+        f = filter.NearDatetimeFilter(tree)
+
+        today = frozen_time().replace(tzinfo=UTC)
+
+        next_refreshes = [
+            "2022-09-16T13:00:01",
+        ]
+        for next_refresh in next_refreshes:
+            next_refresh_dt = datetime.datetime.fromisoformat(next_refresh).replace(
+                tzinfo=datetime.timezone.utc
+            )
+            assert await f(get_scheduled_pr()) == next_refresh_dt
+            frozen_time.move_to(next_refresh_dt)
