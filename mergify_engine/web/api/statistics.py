@@ -14,6 +14,7 @@ router = fastapi.APIRouter(
     dependencies=[
         fastapi.Depends(security.require_authentication),
     ],
+    include_in_schema=False,
 )
 
 
