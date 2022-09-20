@@ -42,7 +42,8 @@ def get_current_page(
     request: fastapi.Request,
     response: fastapi.Response,
     cursor: typing.Optional[str] = fastapi.Query(  # noqa: B008
-        default=None, description="The cursor of the current page"
+        default=None,
+        description="The opaque cursor of the current page. Must be extracted for RFC 5988 pagination links to get first/previous/next/last pages",
     ),
     per_page: int = fastapi.Query(  # noqa: B008
         default=DEFAULT_PER_PAGE,
