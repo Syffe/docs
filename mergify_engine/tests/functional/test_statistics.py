@@ -1,6 +1,6 @@
 import msgpack
-import yaml
 
+from mergify_engine import yaml
 from mergify_engine.queue import statistics
 from mergify_engine.tests.functional import base
 

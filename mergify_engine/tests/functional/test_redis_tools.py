@@ -4,9 +4,8 @@ import os
 import shutil
 import tempfile
 
-import yaml
-
 from mergify_engine import redis_tools
+from mergify_engine import yaml
 from mergify_engine.tests.functional import base
 
 

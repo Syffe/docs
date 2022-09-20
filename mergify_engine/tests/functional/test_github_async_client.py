@@ -1,6 +1,5 @@
-import yaml
-
 from mergify_engine import github_types
+from mergify_engine import yaml
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.tests.functional import base

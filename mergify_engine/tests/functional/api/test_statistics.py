@@ -1,10 +1,10 @@
 import datetime
 
 from freezegun import freeze_time
-import yaml
 
 from mergify_engine import config
 from mergify_engine import date
+from mergify_engine import yaml
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.tests.functional import base
 

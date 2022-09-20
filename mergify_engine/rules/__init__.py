@@ -8,7 +8,6 @@ import typing
 import daiquiri
 from ddtrace import tracer
 import voluptuous
-import yaml
 
 from mergify_engine import actions as actions_mod
 from mergify_engine import config
@@ -16,6 +15,7 @@ from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import github_types
+from mergify_engine import yaml
 from mergify_engine.rules import conditions as conditions_mod
 from mergify_engine.rules import live_resolvers
 from mergify_engine.rules import types

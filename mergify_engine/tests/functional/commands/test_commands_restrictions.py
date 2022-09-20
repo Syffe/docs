@@ -1,5 +1,4 @@
-import yaml
-
+from mergify_engine import yaml
 from mergify_engine.tests.functional import base
 
 

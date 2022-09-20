@@ -4,11 +4,11 @@ from unittest import mock
 
 from freezegun import freeze_time
 import pytest
-import yaml
 
 from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
+from mergify_engine import yaml
 from mergify_engine.tests.functional import base
 
 

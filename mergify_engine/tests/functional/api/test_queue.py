@@ -2,11 +2,11 @@ import datetime
 import statistics
 
 import msgpack
-import yaml
 
 from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import github_types
+from mergify_engine import yaml
 from mergify_engine.tests.functional import base
 
 

@@ -1,9 +1,9 @@
 from unittest import mock
 
 import pytest
-import yaml
 
 from mergify_engine import context
+from mergify_engine import yaml
 from mergify_engine.actions import request_reviews
 from mergify_engine.tests.functional import base
 

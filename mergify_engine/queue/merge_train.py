@@ -11,7 +11,6 @@ from ddtrace import tracer
 import first
 import pydantic
 import tenacity
-import yaml
 
 from mergify_engine import branch_updater
 from mergify_engine import check_api
@@ -26,6 +25,7 @@ from mergify_engine import refresher
 from mergify_engine import signals
 from mergify_engine import utils
 from mergify_engine import worker_pusher
+from mergify_engine import yaml
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
 from mergify_engine.dashboard import user_tokens
@@ -924,14 +924,6 @@ You don't need to do anything. Mergify will close this pull request automaticall
         return description.strip()
 
     async def generate_yaml_infos(self) -> str:
-        # NOTE(greesb): Workaround to have corrent indentation on lists
-        # https://stackoverflow.com/questions/25108581/python-yaml-dump-bad-indentation
-        class Dumper(yaml.Dumper):
-            def increase_indent(
-                self, flow: bool = False, *args: typing.Any, **kwargs: typing.Any
-            ) -> typing.Any:
-                return super().increase_indent(flow=flow, indentless=False)  # type: ignore[no-untyped-call]
-
         yaml_dict = {
             "pull_requests": [
                 {"number": ep.user_pull_request_number}
@@ -939,7 +931,8 @@ You don't need to do anything. Mergify will close this pull request automaticall
             ],
         }
         description = "```yaml\n---\n"
-        description += yaml.dump(yaml_dict, Dumper=Dumper)
+        # TODO(sileht): use regular dumper, to use the C parser
+        description += yaml.dump_with_indented_list(yaml_dict)
         description += "...\n\n```"
 
         return description

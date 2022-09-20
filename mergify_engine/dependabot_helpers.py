@@ -3,9 +3,9 @@ import typing
 
 import first
 import pydantic
-import yaml
 
 from mergify_engine import dependabot_types
+from mergify_engine import yaml
 
 
 def get_dependabot_consolidated_data_from_commit_msg(
@@ -32,7 +32,7 @@ def get_dependabot_consolidated_data_from_commit_msg(
 
     try:
         data_from_yaml = yaml.safe_load(yaml_str)
-    except (yaml.parser.ParserError, yaml.scanner.ScannerError):
+    except yaml.YAMLError:
         log.error(
             "Cannot parse dependabot commit message correctly",
             commit_message=commit_msg,

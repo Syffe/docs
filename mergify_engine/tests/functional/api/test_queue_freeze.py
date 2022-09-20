@@ -1,10 +1,10 @@
 from unittest import mock
 
 from first import first
-import yaml
 
 from mergify_engine import config
 from mergify_engine import context
+from mergify_engine import yaml
 from mergify_engine.queue import freeze
 from mergify_engine.tests.functional import base
 

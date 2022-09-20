@@ -8,7 +8,6 @@ from first import first
 from freezegun import freeze_time
 import msgpack
 import pytest
-import yaml
 
 from mergify_engine import check_api
 from mergify_engine import config
@@ -20,6 +19,7 @@ from mergify_engine import github_types
 from mergify_engine import queue
 from mergify_engine import rules
 from mergify_engine import utils
+from mergify_engine import yaml
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import conditions

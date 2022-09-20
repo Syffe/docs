@@ -4,12 +4,11 @@ import time
 import typing
 from unittest import mock
 
-import yaml
-
 from mergify_engine import config
 from mergify_engine import count_seats
 from mergify_engine import github_types
 from mergify_engine import json
+from mergify_engine import yaml
 from mergify_engine.tests.functional import base
 
 

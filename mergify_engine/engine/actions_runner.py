@@ -5,7 +5,6 @@ import typing
 
 from datadog import statsd  # type: ignore[attr-defined]
 import ddtrace
-import yaml
 
 from mergify_engine import actions
 from mergify_engine import check_api
@@ -17,7 +16,7 @@ from mergify_engine import delayed_refresh
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import rules
-from mergify_engine import utils
+from mergify_engine import yaml
 from mergify_engine.dashboard import subscription
 from mergify_engine.queue import merge_train
 from mergify_engine.rules import conditions
@@ -83,11 +82,11 @@ def _sanitize_action_config(config_key: str, config_value: typing.Any) -> typing
     if "bot_account" in config_key and config_value is not None:
         return config_value["login"]
     elif isinstance(config_value, conditions.PullRequestRuleConditions):
-        return utils.LiteralYamlString(config_value.get_summary().strip())
+        return yaml.LiteralYamlString(config_value.get_summary().strip())
     elif isinstance(config_value, set):
         return list(config_value)
     elif isinstance(config_value, str) and "\n" in config_value:
-        return utils.LiteralYamlString(config_value)
+        return yaml.LiteralYamlString(config_value)
     return config_value
 
 

@@ -749,10 +749,8 @@ def test_user_configuration_schema() -> None:
         str(ir)
         == """Invalid YAML @ line 2, column 3
 ```
-found undefined alias 'yaml'
-  in "<unicode string>", line 2, column 3:
-    - *yaml
-      ^
+found undefined alias
+  in "<unicode string>", line 2, column 3
 ```"""
     )
     assert [
@@ -760,10 +758,8 @@ found undefined alias 'yaml'
             "annotation_level": "failure",
             "end_column": 3,
             "end_line": 2,
-            "message": "found undefined alias 'yaml'\n"
-            '  in "<unicode string>", line 2, column 3:\n'
-            "    - *yaml\n"
-            "      ^",
+            "message": "found undefined alias\n"
+            '  in "<unicode string>", line 2, column 3',
             "path": ".mergify.yml",
             "start_column": 3,
             "start_line": 2,
@@ -827,7 +823,7 @@ def test_user_binary_file() -> None:
         str(ir)
         == """Invalid YAML
 ```
-unacceptable character #x0004: special characters are not allowed
+unacceptable character #x0004: control characters are not allowed
   in "<unicode string>", position 0
 ```"""
     )

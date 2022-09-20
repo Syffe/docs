@@ -1,7 +1,6 @@
-import yaml
-
 from mergify_engine import context
 from mergify_engine import github_types
+from mergify_engine import yaml
 from mergify_engine.queue import merge_train
 from mergify_engine.tests.functional import base
 

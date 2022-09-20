@@ -1,10 +1,9 @@
 import os
 import typing
 
-import yaml
-
 from mergify_engine import context
 from mergify_engine import github_types
+from mergify_engine import yaml
 from mergify_engine.tests.functional import base
 
 

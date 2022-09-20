@@ -1,10 +1,9 @@
 from unittest import mock
 
-import yaml
-
 from mergify_engine import config
 from mergify_engine import context
 from mergify_engine import debug
+from mergify_engine import yaml
 from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 

@@ -1,7 +1,7 @@
 import pytest
-import yaml
 
 from mergify_engine import config
+from mergify_engine import yaml
 from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 
@@ -216,13 +216,9 @@ users_to_remove: []
                     "msg": """Invalid YAML @ line 2, column 2
 ```
 while scanning an alias
-  in "<unicode string>", line 2, column 1:
-    * way
-    ^
-expected alphabetic or numeric character, but found ' '
-  in "<unicode string>", line 2, column 2:
-    * way
-     ^
+  in "<unicode string>", line 2, column 1
+did not find expected alphabetic or numeric character
+  in "<unicode string>", line 2, column 2
 ```""",
                     "type": "mergify_config_error",
                 }
