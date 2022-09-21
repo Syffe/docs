@@ -1,0 +1,22 @@
+name: Linear automation
+
+on:
+  pull_request_target:
+    branches: ["main"]
+    types: ["opened", "synchronize", "reopened", "edited"]
+
+
+permissions: write-all
+
+jobs:
+  add-linear-author-as-reviewer:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add reviewers
+        uses: Mergifyio/add-linear-author-as-reviewer@main
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+          EMAIL_MAPPING: |
+            sileht@mergify.com sileht
+            jd@mergify.com jd
