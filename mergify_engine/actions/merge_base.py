@@ -273,11 +273,12 @@ class MergeBaseAction(actions.BackwardCompatAction, abc.ABC, typing.Generic[T]):
             title = "Draft flag needs to be removed"
             summary = ""
         elif ctxt.pull["merged"]:
-            if merge_bot_account is None:
-                merge_bot_account = config.BOT_USER_LOGIN
             if ctxt.pull["merged_by"] is None:
                 mode = "somehow"
-            elif ctxt.pull["merged_by"]["login"] == merge_bot_account:
+            elif (
+                ctxt.pull["merged_by"]["id"] == config.BOT_USER_ID
+                or ctxt.pull["merged_by"]["login"] == merge_bot_account
+            ):
                 mode = "automatically"
             else:
                 mode = "manually"

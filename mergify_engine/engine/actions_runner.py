@@ -42,12 +42,10 @@ async def get_already_merged_summary(
     if not ctxt.pull["merged"]:
         return ""
 
-    if ctxt.pull["merged_by"] is None:
-        merged_by = "???"
-    else:
-        merged_by = ctxt.pull["merged_by"]["login"]
-
-    if merged_by == config.BOT_USER_LOGIN:
+    if (
+        ctxt.pull["merged_by"] is not None
+        and ctxt.pull["merged_by"]["id"] == config.BOT_USER_ID
+    ):
         for rule in match.matching_rules:
             if "merge" in rule.actions or "queue" in rule.actions:
                 # NOTE(sileht): Replace all -merged -closed by closed/merged and
@@ -75,7 +73,12 @@ async def get_already_merged_summary(
             "because its commits are also part of another pull request\n\n"
         )
     else:
-        return "⚠️ The pull request has been merged by " f"@{merged_by}\n\n"
+        if ctxt.pull["merged_by"] is None:
+            merged_by = "???"
+        else:
+            merged_by = ctxt.pull["merged_by"]["login"]
+
+        return f"⚠️ The pull request has been merged by @{merged_by}\n\n"
 
 
 def _sanitize_action_config(config_key: str, config_value: typing.Any) -> typing.Any:

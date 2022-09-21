@@ -54,7 +54,7 @@ def meter_event(
         if event["action"] == "closed" and event["pull_request"]["merged"]:
             if (
                 event["pull_request"]["merged_by"] is not None
-                and event["pull_request"]["merged_by"]["login"] == config.BOT_USER_LOGIN
+                and event["pull_request"]["merged_by"]["id"] == config.BOT_USER_ID
             ):
                 tags.append("by_mergify")
 

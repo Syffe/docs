@@ -9,10 +9,11 @@ from mergify_engine.tests.unit import conftest
 
 
 @pytest.mark.parametrize(
-    "merged_by,raw_config,result",
+    "merged_by,merged_by_id,raw_config,result",
     [
         (
             config.BOT_USER_LOGIN,
+            config.BOT_USER_ID,
             """
 pull_request_rules:
  - name: Automatic merge on approval
@@ -28,6 +29,7 @@ pull_request_rules:
         ),
         (
             "foobar",
+            github_types.GitHubAccountIdType(1),
             """
 queue_rules:
   - name: foo
@@ -46,6 +48,7 @@ pull_request_rules:
         ),
         (
             config.BOT_USER_LOGIN,
+            config.BOT_USER_ID,
             """
 pull_request_rules:
  - name: Automatic queue on approval
@@ -61,7 +64,8 @@ pull_request_rules:
     ],
 )
 async def test_get_already_merged_summary(
-    merged_by: str,
+    merged_by: github_types.GitHubLogin,
+    merged_by_id: github_types.GitHubAccountIdType,
     raw_config: str,
     result: str,
     context_getter: conftest.ContextGetterFixture,
@@ -71,8 +75,8 @@ async def test_get_already_merged_summary(
         merged=True,
         merged_by=github_types.GitHubAccount(
             {
-                "id": github_types.GitHubAccountIdType(1),
-                "login": github_types.GitHubLogin(merged_by),
+                "id": merged_by_id,
+                "login": merged_by,
                 "type": "User",
                 "avatar_url": "",
             }

@@ -93,9 +93,18 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
             )
 
         if self.config["bot_account"] is None:
-            review_user = github_types.GitHubLogin(config.BOT_USER_LOGIN)
+            review_user_id = config.BOT_USER_ID
         else:
-            review_user = self.config["bot_account"]["login"]
+            review_user_id = self.config["bot_account"]["id"]
+
+        reviews = reversed(
+            list(
+                filter(
+                    lambda r: r["user"]["id"] == review_user_id,
+                    await self.ctxt.reviews,
+                )
+            )
+        )
 
         if self.config["message"]:
             payload["body"] = self.config["message"]
@@ -103,15 +112,6 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
             payload[
                 "body"
             ] = f"Pull request automatically reviewed by Mergify: {self.config['type']}"
-
-        reviews = reversed(
-            list(
-                filter(
-                    lambda r: r["user"]["login"] == review_user,
-                    await self.ctxt.reviews,
-                )
-            )
-        )
 
         for review in reviews:
             if (
@@ -136,7 +136,7 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
                 break
 
         try:
-            await self.ctxt.client.post(
+            response = await self.ctxt.client.post(
                 f"{self.ctxt.base_url}/pulls/{self.ctxt.pull['number']}/reviews",
                 oauth_token=self.config["bot_account"]["oauth_access_token"]
                 if self.config["bot_account"]
@@ -160,7 +160,9 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
             signals.EventReviewMetadata(
                 {
                     "type": self.config["type"],
-                    "reviewer": review_user,
+                    "reviewer": typing.cast(github_types.GitHubReview, response.json())[
+                        "user"
+                    ]["login"],
                     "message": payload.get("body"),
                 }
             ),
