@@ -15,8 +15,6 @@ from mergify_engine import github_types
 from mergify_engine import json
 from mergify_engine import redis_utils
 from mergify_engine import service
-from mergify_engine.clients import github
-from mergify_engine.clients import github_app
 from mergify_engine.clients import http
 
 
@@ -48,12 +46,10 @@ class SeatRepository:
 
 
 class SeatsCountResultT(typing.NamedTuple):
-    write_users: int
     active_users: int
 
 
 class CollaboratorsSetsT(typing.TypedDict):
-    write_users: typing.Optional[typing.Set[SeatAccount]]
     active_users: typing.Optional[typing.Set[ActiveUser]]
 
 
@@ -184,7 +180,6 @@ class SeatCollaboratorJsonT(typing.TypedDict):
 
 
 class SeatCollaboratorsJsonT(typing.TypedDict):
-    write_users: typing.Optional[typing.List[SeatCollaboratorJsonT]]
     active_users: typing.Optional[typing.List[SeatCollaboratorJsonT]]
 
 
@@ -208,9 +203,7 @@ class SeatsJsonT(typing.TypedDict):
 class Seats:
     seats: CollaboratorsT = dataclasses.field(
         default_factory=lambda: collections.defaultdict(
-            lambda: collections.defaultdict(
-                lambda: {"write_users": None, "active_users": None}
-            )
+            lambda: collections.defaultdict(lambda: {"active_users": None})
         )
     )
 
@@ -218,17 +211,10 @@ class Seats:
     async def get(
         cls,
         redis: redis_utils.RedisActiveUsers,
-        write_users: bool = True,
-        active_users: bool = True,
         owner_id: typing.Optional[github_types.GitHubAccountIdType] = None,
     ) -> "Seats":
         seats = cls()
-        if write_users:
-            if owner_id is not None:
-                raise RuntimeError("Can't get `write_users` if `owner_id` is set")
-            await seats.populate_with_collaborators_with_write_users_access()
-        if active_users:
-            await seats.populate_with_active_users(redis, owner_id)
+        await seats.populate_with_active_users(redis, owner_id)
         return seats
 
     def jsonify(self) -> SeatsJsonT:
@@ -238,14 +224,6 @@ class Seats:
             for repo, _seats in repos.items():
                 collaborators_json = SeatCollaboratorsJsonT(
                     {
-                        "write_users": (
-                            None
-                            if _seats["write_users"] is None
-                            else [
-                                {"id": seat.id, "login": seat.login}
-                                for seat in _seats["write_users"]
-                            ]
-                        ),
                         "active_users": (
                             None
                             if _seats["active_users"] is None
@@ -277,17 +255,12 @@ class Seats:
         return data
 
     def count(self) -> SeatsCountResultT:
-        all_write_users_collaborators = set()
         all_active_users_collaborators = set()
         for repos in self.seats.values():
             for sets in repos.values():
-                if sets["write_users"] is not None:
-                    all_write_users_collaborators |= sets["write_users"]
                 if sets["active_users"] is not None:
                     all_active_users_collaborators |= sets["active_users"]
-        return SeatsCountResultT(
-            len(all_write_users_collaborators), len(all_active_users_collaborators)
-        )
+        return SeatsCountResultT(len(all_active_users_collaborators))
 
     async def populate_with_active_users(
         self,
@@ -314,56 +287,6 @@ class Seats:
             else:
                 repo_seats["active_users"] |= active_users
 
-    async def populate_with_collaborators_with_write_users_access(self) -> None:
-        async with github.AsyncGithubClient(
-            auth=github_app.GithubBearerAuth(),
-        ) as app_client:
-            async for installation in app_client.items(
-                "/app/installations",
-                resource_name="installations",
-                page_limit=100,
-            ):
-                installation = typing.cast(
-                    github_types.GitHubInstallation, installation
-                )
-                org = SeatAccount(
-                    installation["account"]["id"], installation["account"]["login"]
-                )
-                async with github.aget_client(installation) as client:
-                    try:
-                        async for repository in client.items(
-                            "/installation/repositories",
-                            list_items="repositories",
-                            resource_name="repositories",
-                            page_limit=100,
-                        ):
-                            repository = typing.cast(
-                                github_types.GitHubRepository, repository
-                            )
-                            repo = SeatRepository(repository["id"], repository["name"])
-                            async for collaborator in client.items(
-                                f"{repository['url']}/collaborators",
-                                resource_name="collaborators",
-                                page_limit=100,
-                            ):
-                                if collaborator["permissions"]["push"]:
-                                    seat = SeatAccount(
-                                        collaborator["id"], collaborator["login"]
-                                    )
-                                    repo_seats = self.seats[org][repo]
-                                    if repo_seats["write_users"] is None:
-                                        repo_seats["write_users"] = {seat}
-                                    else:
-                                        repo_seats["write_users"].add(seat)
-                    except exceptions.MergifyNotInstalled:
-                        LOG.warning(
-                            "can't retrieve collaborators with write users access",
-                            account_id=installation["account"]["id"],
-                            account_login=installation["account"]["login"],
-                            suspended_at=installation["suspended_at"],
-                            suspended_by=installation["suspended_by"],
-                        )
-
 
 @tenacity.retry(
     wait=tenacity.wait_exponential(multiplier=0.2),  # type: ignore[attr-defined]
@@ -377,11 +300,8 @@ async def send_seats(seats: SeatsCountResultT) -> None:
                 f"{config.SUBSCRIPTION_BASE_URL}/on-premise/report",
                 headers={"Authorization": f"token {config.SUBSCRIPTION_TOKEN}"},
                 json={
-                    "write_users": seats.write_users,
                     "active_users": seats.active_users,
                     "engine_version": config.VERSION,
-                    # Deprecated version
-                    "seats": seats.write_users,
                 },
             )
         except Exception as exc:
@@ -432,11 +352,7 @@ async def report(args: argparse.Namespace) -> None:
                     print(json.dumps(seats.jsonify()))
                 else:
                     seats_count = seats.count()
-                    LOG.info(
-                        "collaborators with write_users access: %s",
-                        seats_count.write_users,
-                    )
-                    LOG.info("active_users collaborators: %s", seats_count.active_users)
+                    LOG.info("Active users: %s", seats_count.active_users)
     finally:
         await redis_links.shutdown_all()
 

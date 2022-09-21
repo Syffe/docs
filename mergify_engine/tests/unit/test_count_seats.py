@@ -67,13 +67,13 @@ async def test_send_seats(httpserver: httpserver.HTTPServer) -> None:
     httpserver.expect_request(
         "/on-premise/report",
         method="POST",
-        json={"seats": 5, "write_users": 5, "active_users": 2, "engine_version": "dev"},
+        json={"active_users": 2, "engine_version": "dev"},
     ).respond_with_data("Accepted", status=201)
     with mock.patch(
         "mergify_engine.config.SUBSCRIPTION_BASE_URL",
         httpserver.url_for("/")[:-1],
     ):
-        await count_seats.send_seats(count_seats.SeatsCountResultT(5, 2))
+        await count_seats.send_seats(count_seats.SeatsCountResultT(2))
 
     assert len(httpserver.log) == 1
 
@@ -162,7 +162,6 @@ async def test_get_usage_count_seats(
                                 {"id": 21031067, "login": "Codertocat"},
                                 {"id": 12345678, "login": "AnotherUser"},
                             ],
-                            "write_users": None,
                         },
                         "id": 186853002,
                         "name": "Hello-World",
@@ -178,7 +177,6 @@ async def test_get_usage_count_seats(
                             "active_users": [
                                 {"id": 21031067, "login": "Codertocat"},
                             ],
-                            "write_users": None,
                         },
                         "id": 186853002,
                         "name": "Hello-World",

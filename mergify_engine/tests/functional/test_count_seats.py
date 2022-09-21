@@ -22,18 +22,6 @@ class TestCountSeats(base.FunctionalTestBase):
         # NOTE(sileht): we add active users only on the repository used for
         # recording the fixture
 
-        members = (
-            await self.client_admin.get(
-                url=f"{config.GITHUB_REST_API_URL}/orgs/mergifyio-testing/members"
-            )
-        ).json()
-        write_users = {
-            count_seats.SeatAccount(
-                github_types.GitHubAccountIdType(member["id"]),
-                github_types.GitHubLogin(member["login"]),
-            )
-            for member in members
-        }
         organization = {}
         active_users = None
         key_repo = count_seats.SeatRepository(
@@ -52,7 +40,6 @@ class TestCountSeats(base.FunctionalTestBase):
         }
         organization[key_repo] = count_seats.CollaboratorsSetsT(
             {
-                "write_users": write_users,
                 "active_users": active_users,
             }
         )
@@ -74,15 +61,9 @@ class TestCountSeats(base.FunctionalTestBase):
 
     async def test_count_seats(self) -> None:
         await self._prepare_repo()
-        members = (
-            await self.client_admin.get(
-                url=f"{config.GITHUB_REST_API_URL}/orgs/mergifyio-testing/members"
-            )
-        ).json()
         seats_count = (
             await count_seats.Seats.get(self.redis_links.active_users)
         ).count()
-        assert seats_count.write_users >= len(members)
         assert seats_count.active_users == 2
 
     async def test_run_count_seats_report(self) -> None:

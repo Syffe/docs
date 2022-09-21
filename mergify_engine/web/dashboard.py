@@ -29,9 +29,7 @@ async def get_stats(
     ),
 ) -> responses.Response:
     last_seen_at = await last_seen.get(redis_links.cache, owner_id)
-    seats = await count_seats.Seats.get(
-        redis_links.active_users, write_users=False, owner_id=owner_id
-    )
+    seats = await count_seats.Seats.get(redis_links.active_users, owner_id=owner_id)
     data = seats.jsonify()
     if data["organizations"]:
         if len(data["organizations"]) > 1:
