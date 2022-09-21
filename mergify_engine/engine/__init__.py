@@ -372,13 +372,21 @@ async def run(
                 other_pull=summary["external_id"],
             )
             if not (await other_ctxt.get_warned_about_sha_collision()):
-                comment = await ctxt.post_comment(
-                    (
-                        ":warning: The sha of the head commit of this PR conflicts with "
-                        f"#{other_ctxt.pull['number']}. Mergify cannot evaluate rules on this PR. :warning:"
-                    ),
-                )
-                await other_ctxt.set_warned_about_sha_collision(comment["url"])
+                try:
+                    comment = await ctxt.post_comment(
+                        (
+                            ":warning: The sha of the head commit of this PR conflicts with "
+                            f"#{other_ctxt.pull['number']}. Mergify cannot evaluate rules on this PR. :warning:"
+                        ),
+                    )
+                except http.HTTPClientSideError as e:
+                    LOG.warning(
+                        "Unable to post sha collision detection comment",
+                        status_code=e.status_code,
+                        error_message=e.message,
+                    )
+                else:
+                    await other_ctxt.set_warned_about_sha_collision(comment["url"])
 
             return None
 
