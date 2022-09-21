@@ -1,7 +1,12 @@
-MERGIFY_CONFIG_FILENAMES = [
-    ".mergify.yml",
-    ".mergify/config.yml",
-    ".github/mergify.yml",
+import typing
+
+from . import github_types
+
+
+MERGIFY_CONFIG_FILENAMES: typing.List[github_types.GitHubFilePath] = [
+    github_types.GitHubFilePath(".mergify.yml"),
+    github_types.GitHubFilePath(".mergify/config.yml"),
+    github_types.GitHubFilePath(".github/mergify.yml"),
 ]
 
 SUMMARY_NAME = "Summary"

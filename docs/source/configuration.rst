@@ -17,6 +17,7 @@ Mergify uses the configuration file that is:
   from the root directory.
 
 - In the default repository branch configured on GitHub — usually ``main``.
+- The configuration can be extended once by another configuration using the keyword ``extends``.
 
 Format
 ------
@@ -26,7 +27,7 @@ Here's what you need to know about the file format:
 - The file format is `YAML <http://yaml.org/>`_.
 
 - The file main type is a dictionary whose keys are named
-  ``pull_request_rules``, ``queue_rules``, ``commands_restrictions``, ``defaults`` and ``shared``.
+  ``pull_request_rules``, ``queue_rules``, ``commands_restrictions``, ``defaults``, ``shared`` and ``extends``.
 
 Pull Request Rules
 ~~~~~~~~~~~~~~~~~~
@@ -523,3 +524,98 @@ We also provide custom Jinja2 filters:
 
    By default, the HTML comments are stripped from ``body``. To get the
    full body, you can use the ``body_raw`` attribute.
+
+
+Extends
+~~~~~~~
+``extends`` is an optional key with its value type being a string.
+
+
+You can extend a configuration once by inheriting the configuration from another repository configuration where Mergify is installed.
+The value of the ``extends`` key is a repository name.
+
+.. code-block:: yaml
+
+  extends: my_repo
+
+
+The local configuration inherits rules from the remote configuration. Remote rules will be overridden by the local configuration if they have the same name.
+
+Example:
+
+``remote_repository/.mergify.yml``
+
+.. code-block:: yaml
+
+  defaults:
+    actions:
+      comment:
+        bot_account: Autobot
+
+  pull_request_rules:
+    - name: comment with default
+      conditions:
+        - label=comment
+      actions:
+        comment:
+          message: I am a default comment 😊
+    - name: comment when closed
+      conditions:
+        - label=closed
+      actions:
+        comment:
+          message: Closed by Mergify 🔒
+
+    commands_restrictions:
+      backport:
+        conditions:
+          - base=main
+
+``.mergify.yml``
+
+.. code-block:: yaml
+
+  extends: remote_repository
+
+  pull_request_rules:
+    - name: comment with default
+      conditions:
+        - label=comment
+      actions:
+        comment:
+          message: I 💙 Mergify
+
+    commands_restrictions:
+      backport:
+        conditions:
+          - sender=@team
+
+The result will be:
+
+.. code-block:: yaml
+
+  pull_request_rules:
+    - name: comment with default
+      conditions:
+        - label=comment
+      actions:
+        comment:
+          message: I 💙 Mergify
+          bot_account: Autobot
+    - name: comment when closed
+      conditions:
+        - label=closed
+      actions:
+        comment:
+          message: Closed by Mergify 🔒
+          bot_account: Autobot
+
+    commands_restrictions:
+      backport:
+        conditions:
+          - sender=@team
+
+
+.. warning::
+
+   Values in  the ``shared`` key will not be merged and shared between local and remote configurations.

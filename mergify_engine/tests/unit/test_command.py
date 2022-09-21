@@ -14,15 +14,19 @@ from mergify_engine.engine import commands_runner
 from mergify_engine.tests.unit import conftest
 
 
-EMPTY_CONFIG = rules.get_mergify_config(
-    context.MergifyConfigFile(
-        type="file",
-        content="whatever",
-        sha=github_types.SHAType("azertyuiop"),
-        path="whatever",
-        decoded_content="",
+async def get_empty_config() -> rules.MergifyConfig:
+    return await rules.get_mergify_config_from_file(
+        context.MergifyConfigFile(
+            type="file",
+            content="whatever",
+            sha=github_types.SHAType("azertyuiop"),
+            path=github_types.GitHubFilePath("whatever"),
+            decoded_content="",
+        ),
+        mock.MagicMock(),
     )
-)
+
+
 FAKE_COMMENT = github_types.GitHubComment(
     {
         "id": github_types.GitHubCommentIdType(123),
@@ -40,18 +44,26 @@ FAKE_COMMENT = github_types.GitHubComment(
 )
 
 
-def test_command_loader() -> None:
+async def test_command_loader() -> None:
     with pytest.raises(commands_runner.CommandInvalid):
-        commands_runner.load_command(EMPTY_CONFIG, "@mergifyio notexist foobar\n")
+        commands_runner.load_command(
+            await get_empty_config(), "@mergifyio notexist foobar\n"
+        )
 
     with pytest.raises(commands_runner.CommandInvalid):
-        commands_runner.load_command(EMPTY_CONFIG, "@mergifyio comment foobar\n")
+        commands_runner.load_command(
+            await get_empty_config(), "@mergifyio comment foobar\n"
+        )
 
     with pytest.raises(commands_runner.CommandInvalid):
-        commands_runner.load_command(EMPTY_CONFIG, "@Mergifyio comment foobar\n")
+        commands_runner.load_command(
+            await get_empty_config(), "@Mergifyio comment foobar\n"
+        )
 
     with pytest.raises(commands_runner.NotACommand):
-        commands_runner.load_command(EMPTY_CONFIG, "comment @Mergifyio test foobar\n")
+        commands_runner.load_command(
+            await get_empty_config(), "comment @Mergifyio test foobar\n"
+        )
 
     for message in [
         "@mergify rebase",
@@ -61,12 +73,12 @@ def test_command_loader() -> None:
         "@mergifyio rebase foobar",
         "@mergifyio rebase foobar\nsecondline\n",
     ]:
-        command = commands_runner.load_command(EMPTY_CONFIG, message)
+        command = commands_runner.load_command(await get_empty_config(), message)
         assert command.name == "rebase"
         assert isinstance(command.action, RebaseAction)
 
     command = commands_runner.load_command(
-        EMPTY_CONFIG, "@mergifyio backport branch-3.1 branch-3.2\nfoobar\n"
+        await get_empty_config(), "@mergifyio backport branch-3.1 branch-3.2\nfoobar\n"
     )
     assert command.name == "backport"
     assert command.args == "branch-3.1 branch-3.2"
@@ -85,7 +97,7 @@ def test_command_loader() -> None:
     }
 
 
-def test_command_loader_with_defaults() -> None:
+async def test_command_loader_with_defaults() -> None:
     raw_config = """
 defaults:
   actions:
@@ -100,10 +112,10 @@ defaults:
         type="file",
         content="whatever",
         sha=github_types.SHAType("azertyuiop"),
-        path="whatever",
+        path=github_types.GitHubFilePath("whatever"),
         decoded_content=raw_config,
     )
-    config = rules.get_mergify_config(file)
+    config = await rules.get_mergify_config_from_file(file, mock.MagicMock())
     command = commands_runner.load_command(config, "@mergifyio backport")
     assert command.name == "backport"
     assert command.args == ""
@@ -220,7 +232,7 @@ async def test_run_command_with_user(
 
     await commands_runner.handle(
         ctxt=ctxt,
-        mergify_config=EMPTY_CONFIG,
+        mergify_config=await get_empty_config(),
         comment_command="unrelated",
         user=user,
     )
@@ -228,7 +240,7 @@ async def test_run_command_with_user(
 
     await commands_runner.handle(
         ctxt=ctxt,
-        mergify_config=EMPTY_CONFIG,
+        mergify_config=await get_empty_config(),
         comment_command=comment,
         user=user,
     )
@@ -253,7 +265,7 @@ async def test_run_command_with_wrong_arg(
 
     await commands_runner.handle(
         ctxt=ctxt,
-        mergify_config=EMPTY_CONFIG,
+        mergify_config=await get_empty_config(),
         comment_command="@mergifyio squash invalid-arg",
         user=user,
     )
@@ -289,19 +301,20 @@ async def test_commands_restrictions_sender_permission(
     is_command_allowed: bool,
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
-    mergify_config = rules.get_mergify_config(
+    mergify_config = await rules.get_mergify_config_from_file(
         context.MergifyConfigFile(
             type="file",
             content="whatever",
             sha=github_types.SHAType("azertyuiop"),
-            path="whatever",
+            path=github_types.GitHubFilePath("whatever"),
             decoded_content=f"""
 commands_restrictions:
   squash:
     conditions:
     - {command_restriction}
 """,
-        )
+        ),
+        mock.MagicMock(),
     )
 
     user = create_fake_user()

@@ -71,6 +71,7 @@ GitHubRepositoryNameUnknown = typing.NewType("GitHubRepositoryNameUnknown", str)
 GitHubRepositoryNameForTracing = typing.Union[
     GitHubRepositoryName, GitHubRepositoryNameUnknown
 ]
+GitHubFilePath = typing.NewType("GitHubFilePath", str)
 
 
 class GitHubRepository(typing.TypedDict):
@@ -279,7 +280,7 @@ class GitHubContentFile(typing.TypedDict):
     type: typing.Literal["file"]
     content: str
     sha: SHAType
-    path: str
+    path: GitHubFilePath
 
 
 class GitHubFile(typing.TypedDict):

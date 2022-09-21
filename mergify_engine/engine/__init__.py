@@ -109,7 +109,9 @@ async def _check_configuration_changes(
             return False
 
     try:
-        rules.get_mergify_config(future_mergify_config_file)
+        await rules.get_mergify_config_from_file(
+            future_mergify_config_file, ctxt.repository
+        )
     except rules.InvalidRules as e:
         # Not configured, post status check with the error message
         await check_api.set_check_run(

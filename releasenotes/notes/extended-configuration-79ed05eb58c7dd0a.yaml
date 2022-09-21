@@ -1,0 +1,10 @@
+---
+features:
+  - |
+    Mergify config files now have a new `extends` keyword that
+    allow configurations to inherit from another repository configuration,
+    where Mergify is installed.
+    The value of `extends` is a repository name.
+    The extended configuration file will be ``<repositary_name>:.mergify.yml``
+    or, as a fallback, ``<repositary_name>:config.yml`` or
+    ``<repositary_name>:.github/mergify.yml``

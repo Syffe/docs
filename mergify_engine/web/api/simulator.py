@@ -27,18 +27,19 @@ router = fastapi.APIRouter(
 class SimulatorPayload(pydantic.BaseModel):
     mergify_yml: str = pydantic.Field(description="A Mergify configuration")
 
-    def get_config(self) -> rules.MergifyConfig:
+    async def get_config(self, ctxt: context.Repository) -> rules.MergifyConfig:
         try:
-            return rules.get_mergify_config(
+            return await rules.get_mergify_config_from_file(
                 context.MergifyConfigFile(
                     {
                         "type": "file",
                         "content": "whatever",
                         "sha": github_types.SHAType("whatever"),
-                        "path": ".mergify.yml",
+                        "path": github_types.GitHubFilePath(".mergify.yml"),
                         "decoded_content": self.mergify_yml,
                     }
-                )
+                ),
+                ctxt,
             )
         except rules.InvalidRules as exc:
             detail = [
@@ -80,7 +81,7 @@ async def simulator_pull(
         ..., description="The pull request number"
     ),
 ) -> SimulatorResponse:
-    config = body.get_config()
+    config = await body.get_config(repository_ctxt)
     try:
         ctxt = await repository_ctxt.get_pull_request_context(
             github_types.GitHubPullRequestNumber(number)
@@ -116,8 +117,11 @@ async def simulator_pull(
 )
 async def simulator_repo(
     body: SimulatorPayload,  # noqa: B008
+    repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
+        security.get_repository_context
+    ),
 ) -> SimulatorResponse:
-    body.get_config()
+    await body.get_config(repository_ctxt)
     return SimulatorResponse(
         title="The configuration is valid",
         summary="",

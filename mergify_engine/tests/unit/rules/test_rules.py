@@ -17,16 +17,16 @@ from mergify_engine.rules import conditions
 from mergify_engine.tests.unit import conftest
 
 
-def load_mergify_config(content: str) -> rules.MergifyConfig:
+async def load_mergify_config(content: str) -> rules.MergifyConfig:
     file = context.MergifyConfigFile(
         type="file",
         content="whatever",
         sha=github_types.SHAType("azertyuiop"),
-        path="whatever",
+        path=github_types.GitHubFilePath("whatever"),
         decoded_content=content,
     )
 
-    return rules.get_mergify_config(file)
+    return await rules.get_mergify_config_from_file(file, mock.MagicMock())
 
 
 def pull_request_rule_from_list(lst: typing.Any) -> rules.PullRequestRules:
@@ -251,8 +251,8 @@ def test_same_names() -> None:
     ]
 
 
-def test_jinja_with_list_attribute() -> None:
-    config = load_mergify_config(
+async def test_jinja_with_list_attribute() -> None:
+    config = await load_mergify_config(
         """
             pull_request_rules:
               - name: ahah
@@ -452,7 +452,7 @@ async def test_get_mergify_config(
         return github_types.GitHubContentFile(
             {
                 "content": encodebytes(valid.encode()).decode(),
-                "path": ".mergify.yml",
+                "path": github_types.GitHubFilePath(".mergify.yml"),
                 "type": "file",
                 "sha": github_types.SHAType("azertyu"),
             }
@@ -464,7 +464,7 @@ async def test_get_mergify_config(
 
     config_file = await fake_repository.get_mergify_config_file()
     assert config_file is not None
-    schema = rules.get_mergify_config(config_file)
+    schema = await rules.get_mergify_config_from_file(config_file, mock.MagicMock())
     assert isinstance(schema, dict)
     assert "pull_request_rules" in schema
     assert "queue_rules" in schema
@@ -500,7 +500,7 @@ pull_request_rules:
         return github_types.GitHubContentFile(
             {
                 "content": encodebytes(config.encode()).decode(),
-                "path": ".mergify.yml",
+                "path": github_types.GitHubFilePath(".mergify.yml"),
                 "type": "file",
                 "sha": github_types.SHAType("azertyu"),
             }
@@ -513,7 +513,7 @@ pull_request_rules:
     config_file = await fake_repository.get_mergify_config_file()
     assert config_file is not None
 
-    schema = rules.get_mergify_config(config_file)
+    schema = await rules.get_mergify_config_from_file(config_file, mock.MagicMock())
     assert isinstance(schema, dict)
 
     assert len(schema["pull_request_rules"].rules) == 1
@@ -551,7 +551,7 @@ pull_request_rules:
     config_file = await fake_repository.get_mergify_config_file()
     assert config_file is not None
 
-    schema = rules.get_mergify_config(config_file)
+    schema = await rules.get_mergify_config_from_file(config_file, mock.MagicMock())
     assert isinstance(schema, dict)
 
     assert len(schema["pull_request_rules"].rules) == 1
@@ -586,7 +586,7 @@ async def test_get_mergify_config_file_content_from_cache(
             {
                 "content": encodebytes(config.encode()).decode(),
                 "type": "file",
-                "path": ".github/mergify.yml",
+                "path": github_types.GitHubFilePath(".github/mergify.yml"),
                 "sha": github_types.SHAType("zeazeaze"),
             }
         ),
@@ -622,7 +622,7 @@ async def test_get_mergify_config_location_from_cache(
             {
                 "content": encodebytes("whatever".encode()).decode(),
                 "type": "file",
-                "path": ".github/mergify.yml",
+                "path": github_types.GitHubFilePath(".github/mergify.yml"),
                 "sha": github_types.SHAType("zeazeaze"),
             }
         ),
@@ -652,7 +652,7 @@ async def test_get_mergify_config_location_from_cache(
             {
                 "content": encodebytes("whatever".encode()).decode(),
                 "type": "file",
-                "path": ".github/mergify.yml",
+                "path": github_types.GitHubFilePath(".github/mergify.yml"),
                 "sha": github_types.SHAType("zeazeaze"),
             }
         ),
@@ -692,7 +692,7 @@ async def test_get_mergify_config_invalid(
             return github_types.GitHubContentFile(
                 {
                     "content": encodebytes(invalid.encode()).decode(),
-                    "path": ".mergify.yml",
+                    "path": github_types.GitHubFilePath(".mergify.yml"),
                     "type": "file",
                     "sha": github_types.SHAType("azertyu"),
                 }
@@ -704,7 +704,7 @@ async def test_get_mergify_config_invalid(
 
         config_file = await fake_repository.get_mergify_config_file()
         assert config_file is not None
-        rules.get_mergify_config(config_file)
+        await rules.get_mergify_config_from_file(config_file, mock.MagicMock())
 
 
 def test_user_configuration_schema() -> None:
@@ -760,7 +760,7 @@ found undefined alias
             "end_line": 2,
             "message": "found undefined alias\n"
             '  in "<unicode string>", line 2, column 3',
-            "path": ".mergify.yml",
+            "path": github_types.GitHubFilePath(".mergify.yml"),
             "start_column": 3,
             "start_line": 2,
             "title": "Invalid YAML",
@@ -811,6 +811,49 @@ found undefined alias
     assert (
         str(ir)
         == "expected str @ pull_request_rules → item 0 → actions → label → add → item 0"
+    )
+
+
+@pytest.mark.parametrize(
+    "extends",
+    [
+        (".github"),
+        ("repo_name"),
+    ],
+)
+def test_extends_parsing(extends: str) -> None:
+    schema = rules.UserConfigurationSchema({"extends": extends})
+    assert schema["extends"] == extends
+
+
+@pytest.mark.parametrize(
+    "extends",
+    [
+        "",
+        None,
+    ],
+)
+def test_extends_ko(extends: typing.Optional[str]) -> None:
+    with pytest.raises(voluptuous.Invalid) as i:
+        rules.UserConfigurationSchema({"extends": extends})
+    assert (
+        str(i.value)
+        == "Invalid repository name or file path for dictionary value @ data['extends']"
+    )
+
+
+async def test_extends_infinite_loop() -> None:
+    config = {"extends": ".github"}
+    merigy_config = rules.MergifyConfig(raw_config=config)  # type: ignore[typeddict-item]
+    mock.patch(
+        "mergify_engine.context.Repository.get_mergify_config",
+        return_value=merigy_config,
+    )
+    with pytest.raises(rules.InvalidRules) as i:
+        await rules.get_mergify_config_from_dict(config, "", mock.MagicMock())
+    assert (
+        str(i.value)
+        == "Maximum number of extended configuration reached. Limit is 1. @ extends"
     )
 
 
@@ -1408,7 +1451,7 @@ def test_merge_config() -> None:
     }
 
     defaults = config.pop("defaults", {})
-    merged_config = rules.merge_config(config, defaults)  # type: ignore[arg-type]
+    merged_config = rules.merge_config_with_defaults(config, defaults)  # type: ignore[arg-type]
 
     expected_config = config.copy()
     expected_config["pull_request_rules"][0]["actions"].update(defaults["actions"])  # type: ignore[index]
@@ -1432,7 +1475,7 @@ def test_merge_config() -> None:
     }
 
     defaults = config.pop("defaults", {})
-    merged_config = rules.merge_config(config, defaults)  # type: ignore[arg-type]
+    merged_config = rules.merge_config_with_defaults(config, defaults)  # type: ignore[arg-type]
 
     assert merged_config == config
 
@@ -1447,17 +1490,17 @@ def test_merge_config() -> None:
     }
 
     defaults = config.pop("defaults", {})
-    merged_config = rules.merge_config(config, defaults)  # type: ignore[arg-type]
+    merged_config = rules.merge_config_with_defaults(config, defaults)  # type: ignore[arg-type]
 
     assert merged_config == config
 
 
-def test_actions_with_options_none() -> None:
+async def test_actions_with_options_none() -> None:
     file = context.MergifyConfigFile(
         type="file",
         content="whatever",
         sha=github_types.SHAType("azertyuiop"),
-        path="whatever",
+        path=github_types.GitHubFilePath("whatever"),
         decoded_content="""
 defaults:
   actions:
@@ -1485,7 +1528,7 @@ pull_request_rules:
             """,
     )
 
-    config = rules.get_mergify_config(file)
+    config = await rules.get_mergify_config_from_file(file, mock.MagicMock())
 
     assert [list(rule.actions.keys()) for rule in config["pull_request_rules"]][0] == [
         "comment",
@@ -1495,12 +1538,12 @@ pull_request_rules:
     ]
 
 
-def test_action_queue_with_duplicate_queue() -> None:
+async def test_action_queue_with_duplicate_queue() -> None:
     file = context.MergifyConfigFile(
         type="file",
         content="whatever",
         sha=github_types.SHAType("azertyuiop"),
-        path="whatever",
+        path=github_types.GitHubFilePath("whatever"),
         decoded_content="""
 queue_rules:
   - name: default
@@ -1518,7 +1561,7 @@ pull_request_rules:
     )
 
     with pytest.raises(rules.InvalidRules) as e:
-        rules.get_mergify_config(file)
+        await rules.get_mergify_config_from_file(file, mock.MagicMock())
 
     assert (
         str(e.value.error)
@@ -1526,12 +1569,12 @@ pull_request_rules:
     )
 
 
-def test_action_queue_with_no_default_queue() -> None:
+async def test_action_queue_with_no_default_queue() -> None:
     file = context.MergifyConfigFile(
         type="file",
         content="whatever",
         sha=github_types.SHAType("azertyuiop"),
-        path="whatever",
+        path=github_types.GitHubFilePath("whatever"),
         decoded_content="""
 pull_request_rules:
   - name: ahah
@@ -1544,17 +1587,17 @@ pull_request_rules:
     )
 
     with pytest.raises(rules.InvalidRules) as e:
-        rules.get_mergify_config(file)
+        await rules.get_mergify_config_from_file(file, mock.MagicMock())
 
     assert str(e.value.error) == "missing queue not found"
 
 
-def test_default_with_no_pull_requests_rules() -> None:
+async def test_default_with_no_pull_requests_rules() -> None:
     file = context.MergifyConfigFile(
         type="file",
         content="whatever",
         sha=github_types.SHAType("azertyuiop"),
-        path="whatever",
+        path=github_types.GitHubFilePath("whatever"),
         decoded_content="""
 defaults:
   actions:
@@ -1563,18 +1606,18 @@ defaults:
 """,
     )
 
-    assert rules.get_mergify_config(file)
-    config = rules.get_mergify_config(file)
+    assert await rules.get_mergify_config_from_file(file, mock.MagicMock())
+    config = await rules.get_mergify_config_from_file(file, mock.MagicMock())
 
     assert config["pull_request_rules"].rules == []
 
 
-def test_multiple_cascaded_errors() -> None:
+async def test_multiple_cascaded_errors() -> None:
     file = context.MergifyConfigFile(
         type="file",
         content="whatever",
         sha=github_types.SHAType("azertyuiop"),
-        path="whatever",
+        path=github_types.GitHubFilePath("whatever"),
         decoded_content="""
 pull_request_rules:
   - name: automatic merge for Dependabot pull requests
@@ -1588,7 +1631,7 @@ pull_request_rules:
     )
 
     with pytest.raises(rules.InvalidRules) as e:
-        rules.get_mergify_config(file)
+        await rules.get_mergify_config_from_file(file, mock.MagicMock())
 
     assert (
         str(e.value)
@@ -1813,12 +1856,12 @@ async def test_rules_conditions_schedule() -> None:
     )
 
 
-def test_queue_action_defaults() -> None:
+async def test_queue_action_defaults() -> None:
     file = context.MergifyConfigFile(
         type="file",
         content="whatever",
         sha=github_types.SHAType("azertyuiop"),
-        path="whatever",
+        path=github_types.GitHubFilePath("whatever"),
         decoded_content="""
 defaults:
   actions:
@@ -1838,7 +1881,9 @@ pull_request_rules:
 """,
     )
 
-    pull_request_rules = list(rules.get_mergify_config(file)["pull_request_rules"])
+    config = await rules.get_mergify_config_from_file(file, mock.MagicMock())
+
+    pull_request_rules = list(config["pull_request_rules"])
     assert pull_request_rules[0].actions["queue"].config["name"] == "default"
     assert pull_request_rules[0].actions["queue"].config["method"] == "squash"
 
@@ -1850,12 +1895,12 @@ def queue_rule_from_list(lst: typing.Any) -> rules.PullRequestRules:
     )
 
 
-def test_invalid_disallow_checks_interruption_from_queues() -> None:
+async def test_invalid_disallow_checks_interruption_from_queues() -> None:
     file = context.MergifyConfigFile(
         type="file",
         content="whatever",
         sha=github_types.SHAType("azertyuiop"),
-        path="whatever",
+        path=github_types.GitHubFilePath("whatever"),
         decoded_content="""
 queue_rules:
 - name: default
@@ -1866,19 +1911,19 @@ queue_rules:
     )
 
     with pytest.raises(rules.InvalidRules) as i:
-        rules.get_mergify_config(file)
+        await rules.get_mergify_config_from_file(file, mock.MagicMock())
     assert (
         "disallow_checks_interruption_from_queues containes an unkown queue: whatever"
         in str(i.value)
     )
 
 
-def test_valid_disallow_checks_interruption_from_queues() -> None:
+async def test_valid_disallow_checks_interruption_from_queues() -> None:
     file = context.MergifyConfigFile(
         type="file",
         content="whatever",
         sha=github_types.SHAType("azertyuiop"),
-        path="whatever",
+        path=github_types.GitHubFilePath("whatever"),
         decoded_content="""
 queue_rules:
 - name: default
@@ -1890,17 +1935,18 @@ queue_rules:
 """,
     )
 
-    assert rules.get_mergify_config(file)["queue_rules"][rules.QueueName("low")].config[
+    config = await rules.get_mergify_config_from_file(file, mock.MagicMock())
+    assert config["queue_rules"][rules.QueueName("low")].config[
         "disallow_checks_interruption_from_queues"
     ] == ["default"]
 
 
-def test_invalid_interval() -> None:
+async def test_invalid_interval() -> None:
     file = context.MergifyConfigFile(
         type="file",
         content="whatever",
         sha=github_types.SHAType("azertyuiop"),
-        path="whatever",
+        path=github_types.GitHubFilePath("whatever"),
         decoded_content="""
 queue_rules:
 - name: default
@@ -1911,7 +1957,7 @@ queue_rules:
     )
 
     with pytest.raises(rules.InvalidRules) as i:
-        rules.get_mergify_config(file)
+        await rules.get_mergify_config_from_file(file, mock.MagicMock())
     assert (
         "* Invalid date interval for dictionary value @ queue_rules → item 0 → batch_max_wait_time"
         in str(i.value)
@@ -1925,7 +1971,7 @@ queue_rules:
         type="file",
         content="whatever",
         sha=github_types.SHAType("azertyuiop"),
-        path="whatever",
+        path=github_types.GitHubFilePath("whatever"),
         decoded_content="""
 queue_rules:
 - name: default
@@ -1936,7 +1982,7 @@ queue_rules:
     )
 
     with pytest.raises(rules.InvalidRules) as i:
-        rules.get_mergify_config(file)
+        await rules.get_mergify_config_from_file(file, mock.MagicMock())
     assert (
         "* expected str for dictionary value @ queue_rules → item 0 → batch_max_wait_time"
         in str(i.value)
@@ -2022,7 +2068,7 @@ async def test_has_unmatched_conditions() -> None:
 
 
 async def test_template_with_empty_body() -> None:
-    config = load_mergify_config(
+    config = await load_mergify_config(
         """pull_request_rules:
   - name: rule name
     conditions:
@@ -2044,12 +2090,14 @@ async def test_template_with_empty_body() -> None:
     )
 
 
-def test_ignorable_root_key() -> None:
-    config = load_mergify_config(
+async def test_ignorable_root_key() -> None:
+    config = await load_mergify_config(
         """
 shared:
   conditions: &cond1
     - status-success=continuous-integration/fake-ci
+  conditions: &cond2
+    - base=main
 
 queue_rules:
   - name: default
@@ -2059,8 +2107,7 @@ queue_rules:
 
 pull_request_rules:
   - name: Merge me
-    conditions:
-      - base={self.main_branch_name}
+    conditions: *cond2
     actions:
       queue:
         name: default
@@ -2075,6 +2122,13 @@ pull_request_rules:
         .conditions.condition.conditions[0]
         .condition
         == "status-success=continuous-integration/fake-ci"
+    )
+    assert (
+        config["pull_request_rules"]  # type: ignore[union-attr]
+        .rules[0]
+        .conditions.condition.conditions[0]
+        .condition
+        == "base=main"
     )
 
 

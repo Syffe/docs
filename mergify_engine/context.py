@@ -79,7 +79,7 @@ DEFAULT_CONFIG_FILE = MergifyConfigFile(
     type="file",
     content="<default>",
     sha=github_types.SHAType("<default>"),
-    path="<default>",
+    path=github_types.GitHubFilePath("<default>"),
 )
 
 
@@ -333,7 +333,7 @@ class Repository(object):
     async def iter_mergify_config_files(
         self,
         ref: typing.Optional[github_types.SHAType] = None,
-        preferred_filename: typing.Optional[str] = None,
+        preferred_filename: typing.Optional[github_types.GitHubFilePath] = None,
     ) -> typing.AsyncIterator[MergifyConfigFile]:
         """Get the Mergify configuration file content.
 
@@ -390,7 +390,9 @@ class Repository(object):
 
         # BRANCH CONFIGURATION CHECKING
         try:
-            mergify_config = rules.get_mergify_config(config_file)
+            mergify_config = await rules.get_mergify_config_from_file(
+                config_file, self, allow_extend=True
+            )
         except Exception as e:
             self._caches.mergify_config.set(e)
             raise
@@ -608,9 +610,8 @@ class Repository(object):
         redis: redis_utils.RedisCache,
         repo_id: github_types.GitHubRepositoryIdType,
     ) -> None:
-        await redis.delete(
-            cls.get_config_file_cache_key(repo_id),
-        )
+        cache_key = cls.get_config_file_cache_key(repo_id)
+        await redis.delete(cache_key)
 
     USERS_PERMISSION_CACHE_KEY_PREFIX = "users_permission"
     USERS_PERMISSION_CACHE_KEY_DELIMITER = "/"

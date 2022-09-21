@@ -300,7 +300,7 @@ async def test_configuration_changed(
                 {
                     "type": "file",
                     "content": FAKE_MERGIFY_CONTENT,
-                    "path": ".mergify.yml",
+                    "path": github_types.GitHubFilePath(".mergify.yml"),
                     "sha": github_types.SHAType(
                         "739e5ec79e358bae7a150941a148b4131233ce2c"
                     ),
@@ -320,7 +320,7 @@ async def test_configuration_changed(
                 {
                     "type": "file",
                     "content": OTHER_FAKE_MERGIFY_CONTENT,
-                    "path": ".mergify.yml",
+                    "path": github_types.GitHubFilePath(".mergify.yml"),
                     "sha": github_types.SHAType(
                         "ab739e5ec79e358bae7a150941a148b4131233ce"
                     ),
@@ -409,7 +409,7 @@ async def test_configuration_duplicated(
                 {
                     "type": "file",
                     "content": FAKE_MERGIFY_CONTENT,
-                    "path": ".mergify.yml",
+                    "path": github_types.GitHubFilePath(".mergify.yml"),
                     "sha": github_types.SHAType(
                         "739e5ec79e358bae7a150941a148b4131233ce2c"
                     ),
@@ -429,7 +429,7 @@ async def test_configuration_duplicated(
                 {
                     "type": "file",
                     "content": FAKE_MERGIFY_CONTENT,
-                    "path": ".mergify.yml",
+                    "path": github_types.GitHubFilePath(".mergify.yml"),
                     "sha": github_types.SHAType(
                         "739e5ec79e358bae7a150941a148b4131233ce2c"
                     ),
@@ -454,7 +454,7 @@ async def test_configuration_duplicated(
                 {
                     "type": "file",
                     "content": OTHER_FAKE_MERGIFY_CONTENT,
-                    "path": ".github/mergify.yml",
+                    "path": github_types.GitHubFilePath(".github/mergify.yml"),
                     "sha": github_types.SHAType(
                         "ab739e5ec79e358bae7a150941a148b4131233ce"
                     ),
@@ -529,7 +529,7 @@ async def test_configuration_not_changed(
                 {
                     "type": "file",
                     "content": FAKE_MERGIFY_CONTENT,
-                    "path": ".mergify.yml",
+                    "path": github_types.GitHubFilePath(".mergify.yml"),
                     "sha": github_types.SHAType(
                         "739e5ec79e358bae7a150941a148b4131233ce2c"
                     ),
@@ -549,7 +549,7 @@ async def test_configuration_not_changed(
                 {
                     "type": "file",
                     "content": FAKE_MERGIFY_CONTENT,
-                    "path": ".mergify.yml",
+                    "path": github_types.GitHubFilePath(".mergify.yml"),
                     "sha": github_types.SHAType(
                         "739e5ec79e358bae7a150941a148b4131233ce2c"
                     ),
@@ -648,7 +648,7 @@ async def test_configuration_initial(
                 {
                     "type": "file",
                     "content": FAKE_MERGIFY_CONTENT,
-                    "path": ".mergify.yml",
+                    "path": github_types.GitHubFilePath(".mergify.yml"),
                     "sha": github_types.SHAType(
                         "739e5ec79e358bae7a150941a148b4131233ce2c"
                     ),
@@ -729,7 +729,7 @@ async def test_configuration_check_not_needed_with_configuration_not_changed(
                 {
                     "type": "file",
                     "content": FAKE_MERGIFY_CONTENT,
-                    "path": ".mergify.yml",
+                    "path": github_types.GitHubFilePath(".mergify.yml"),
                     "sha": github_types.SHAType(
                         "739e5ec79e358bae7a150941a148b4131233ce2c"
                     ),
@@ -799,7 +799,7 @@ async def test_configuration_check_not_needed_with_configuration_changed(
                 {
                     "type": "file",
                     "content": FAKE_MERGIFY_CONTENT,
-                    "path": ".mergify.yml",
+                    "path": github_types.GitHubFilePath(".mergify.yml"),
                     "sha": github_types.SHAType(
                         "739e5ec79e358bae7a150941a148b4131233ce2c"
                     ),
@@ -870,7 +870,7 @@ async def test_configuration_check_not_needed_with_configuration_deleted(
                 {
                     "type": "file",
                     "content": FAKE_MERGIFY_CONTENT,
-                    "path": ".mergify.yml",
+                    "path": github_types.GitHubFilePath(".mergify.yml"),
                     "sha": github_types.SHAType(
                         "739e5ec79e358bae7a150941a148b4131233ce2c"
                     ),

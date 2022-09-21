@@ -6,7 +6,9 @@ import pytest
 from mergify_engine import check_api
 from mergify_engine import constants
 from mergify_engine import context
+from mergify_engine import rules
 from mergify_engine import yaml
+from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 
 
@@ -452,3 +454,95 @@ expected alphabetic or numeric character, but found"""
                 break
         else:
             pytest.fail("Merge check not found")
+
+    @pytest.mark.subscription(subscription.Features.CUSTOM_CHECKS)
+    async def test_extend_config_file_ok(self) -> None:
+        # Notes(Jules): this config is stored here: https://github.com/mergifyio-testing/.github/blob/main/.mergify.yml
+        mergify_config = {"extends": ".github"}
+
+        await self.setup_repo(yaml.dump(mergify_config))
+        p = await self.create_pr()
+        await self.add_label(p["number"], "comment")
+        await self.run_engine()
+        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        config = await ctxt.repository.get_mergify_config()
+
+        assert len(config["queue_rules"]) == 3
+        assert len(config["pull_request_rules"].rules) == 15
+
+    @pytest.mark.subscription(
+        subscription.Features.CUSTOM_CHECKS, subscription.Features.BOT_ACCOUNT
+    )
+    async def test_extend_config_file_merge_ok(self) -> None:
+        # Notes(Jules): this config is stored here: https://github.com/mergifyio-testing/.github/blob/main/.mergify.yml
+        mergify_config = {
+            "extends": ".github",
+            "pull_request_rules": [
+                {
+                    "name": "merge on main",
+                    "conditions": ["base=new_rule"],
+                    "actions": {"merge": {}},
+                },
+            ],
+            "queue_rules": [
+                {
+                    "name": "new_rule",
+                    "conditions": ["schedule: MON-FRI 08:00-17:00"],
+                    "allow_inplace_checks": False,
+                }
+            ],
+            "commands_restrictions": {"copy": {"conditions": ["base=new_rule"]}},
+        }
+
+        await self.setup_repo(yaml.dump(mergify_config))
+        p = await self.create_pr()
+        await self.add_label(p["number"], "comment")
+        await self.run_engine()
+        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        config = await ctxt.repository.get_mergify_config()
+
+        assert len(config["queue_rules"].rules) == 4
+        assert len(config["pull_request_rules"].rules) == 16
+        assert len(config["commands_restrictions"]) == 9
+
+        rule = config["pull_request_rules"].rules[0].conditions.condition.conditions[0]
+        assert isinstance(rule, rules.conditions.RuleCondition)
+        assert rule.condition == "base=new_rule"
+
+        rule = config["queue_rules"][
+            rules.QueueName("new_rule")
+        ].conditions.condition.conditions[0]
+        assert isinstance(rule, rules.conditions.RuleCondition)
+        assert rule.condition == "schedule: MON-FRI 08:00-17:00"
+
+        rule = config["commands_restrictions"]["copy"][
+            "conditions"
+        ].condition.conditions[0]
+        assert isinstance(rule, rules.conditions.RuleCondition)
+        assert rule.condition == "base=new_rule"
+
+    async def test_extend_config_repo_does_not_exist(self) -> None:
+        rules = {"extends": "this_repo_does_not_exist"}
+
+        await self.setup_repo(yaml.dump(rules))
+        p = await self.create_pr()
+        await self.run_engine()
+        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        checks = await ctxt.pull_engine_check_runs
+        summary_check = checks[0]
+        assert (
+            summary_check["output"]["title"]
+            == "The current Mergify configuration is invalid"
+        )
+        assert (
+            "404 Client Error: Not Found for url" in summary_check["output"]["summary"]
+        )
+        assert (
+            "https://api.github.com/repos/mergifyio-testing/this_repo_does_not_exist`"
+            in summary_check["output"]["summary"]
+        )
+        assert "@ extends" in summary_check["output"]["summary"]
+        assert (
+            "Extended configuration repository this_repo_does_not_exist was not found. This repository doesn't exist or Mergify is not installed on it."
+            in summary_check["output"]["summary"]
+        )
