@@ -614,7 +614,11 @@ async def handle(
         # NOTE(sileht): Only comment/command, don't need to go further
         return None
 
-    ctxt.log.info("actions runner", sources=ctxt.sources)
+    ctxt.log.info(
+        "actions runner",
+        sources=ctxt.sources,
+        configuration_changed=ctxt.configuration_changed,
+    )
 
     summary_check = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
     previous_conclusions = load_conclusions(ctxt, summary_check)
