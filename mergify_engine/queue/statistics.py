@@ -18,8 +18,21 @@ if typing.TYPE_CHECKING:
     from mergify_engine import context
 
 
-MERGE_QUEUE_STATS_RETENTION: datetime.timedelta = datetime.timedelta(days=30)
+# The maximum time in the past we allow users to query
+QUERY_MERGE_QUEUE_STATS_RETENTION: datetime.timedelta = datetime.timedelta(days=30)
+# The real retention time for redis
+BACKEND_MERGE_QUEUE_STATS_RETENTION: datetime.timedelta = (
+    QUERY_MERGE_QUEUE_STATS_RETENTION * 2
+)
 VERSION: str = "1.0"
+
+
+class TimestampTooFar(Exception):
+    pass
+
+
+def get_redis_query_older_id() -> int:
+    return int((date.utcnow() - QUERY_MERGE_QUEUE_STATS_RETENTION).timestamp() * 1000)
 
 
 AvailableStatsKeyT = typing.Literal[
@@ -232,12 +245,18 @@ class StatisticsSignal(signals.SignalBase):
             ),
         }
 
-        minid = redis_utils.get_expiration_minid(MERGE_QUEUE_STATS_RETENTION)
+        minid = redis_utils.get_expiration_minid(BACKEND_MERGE_QUEUE_STATS_RETENTION)
+        # NOTE(greesb):
+        # We need to manually specify id just for tests to work properly.
+        # If we do not manually specify the id using our own `date` (which will be mocked by freezegun),
+        # redis is going to automatically pick the id with its own timestamp, which will not be mocked,
+        # thus causing the tests to fail because the expected id will not be there.
+        id_timestamp = int(date.utcnow().timestamp() * 1000)
 
         pipe = await redis.pipeline()
-        await pipe.xadd(stat_redis_key, fields=fields, minid=minid)
+        await pipe.xadd(stat_redis_key, id=id_timestamp, fields=fields, minid=minid)
         await pipe.expire(
-            stat_redis_key, int(MERGE_QUEUE_STATS_RETENTION.total_seconds())
+            stat_redis_key, int(BACKEND_MERGE_QUEUE_STATS_RETENTION.total_seconds())
         )
         await pipe.execute()
 
@@ -249,9 +268,9 @@ RedisXRangeT = typing.List[typing.Tuple[bytes, typing.Any]]
 async def _get_stat_items(
     repository: "context.Repository",
     stat_name: AvailableStatsKeyT,
+    older_event_id: str,
+    newer_event_id: str,
     queue_name: typing.Optional[rules.QueueName] = None,
-    start_at: typing.Optional[int] = None,
-    end_at: typing.Optional[int] = None,
 ) -> typing.AsyncGenerator[dict[str, typing.Any], None]:
     redis = repository.installation.redis.stats
 
@@ -260,16 +279,6 @@ async def _get_stat_items(
     )
     full_redis_key = f"{redis_repo_key}/{stat_name}"
 
-    if start_at is not None:
-        older_event_id = str(start_at)
-    else:
-        older_event_id = "-"
-
-    if end_at is not None:
-        newer_event_id = str(end_at)
-    else:
-        newer_event_id = "+"
-
     items = await redis.xrange(full_redis_key, min=older_event_id, max=newer_event_id)
     for _, raw_stat in items:
         stat = msgpack.unpackb(raw_stat[b"data"], timestamp=3)
@@ -277,16 +286,76 @@ async def _get_stat_items(
             yield stat
 
 
-async def get_time_to_merge_stats(
+async def _get_stat_items_date_range(
     repository: "context.Repository",
+    stat_name: AvailableStatsKeyT,
     queue_name: typing.Optional[rules.QueueName] = None,
     start_at: typing.Optional[int] = None,
     end_at: typing.Optional[int] = None,
+) -> typing.AsyncGenerator[dict[str, typing.Any], None]:
+    redis_query_older_id = get_redis_query_older_id()
+    if start_at is not None and start_at * 1000 < redis_query_older_id:
+        older_event_id = str(start_at * 1000)
+    else:
+        older_event_id = str(redis_query_older_id)
+
+    if end_at is not None:
+        newer_event_id = str(end_at * 1000)
+    else:
+        newer_event_id = "+"
+
+    async for item in _get_stat_items(
+        repository,
+        stat_name,
+        older_event_id,
+        newer_event_id,
+        queue_name,
+    ):
+        yield item
+
+
+async def _get_stat_items_at_timestamp(
+    repository: "context.Repository",
+    stat_name: AvailableStatsKeyT,
+    queue_name: typing.Optional[rules.QueueName] = None,
+    at: typing.Optional[int] = None,
+) -> typing.AsyncGenerator[dict[str, typing.Any], None]:
+    redis_query_older_id = get_redis_query_older_id()
+    if at is not None:
+        if at * 1000 < redis_query_older_id:
+            raise TimestampTooFar()
+
+        at_date = datetime.datetime.fromtimestamp(at)
+        older_event_id = str(
+            int((at_date - QUERY_MERGE_QUEUE_STATS_RETENTION).timestamp() * 1000)
+        )
+        newer_event_id = str(at * 1000)
+    else:
+        older_event_id = str(redis_query_older_id)
+        newer_event_id = "+"
+
+    async for item in _get_stat_items(
+        repository,
+        stat_name,
+        older_event_id,
+        newer_event_id,
+        queue_name,
+    ):
+        yield item
+
+
+async def get_time_to_merge_stats(
+    repository: "context.Repository",
+    queue_name: typing.Optional[rules.QueueName] = None,
+    at: typing.Optional[int] = None,
 ) -> dict[str, TimeToMergeT]:
     stats: dict[str, TimeToMergeT] = {}
 
-    async for stat in _get_stat_items(
-        repository, "time_to_merge", queue_name, start_at, end_at
+    async for stat in _get_stat_items_at_timestamp(
+        repository,
+        "time_to_merge",
+        queue_name,
+        at,
     ):
         stat_obj = TimeToMerge(**stat)
         if stat_obj.queue_name not in stats:
@@ -304,7 +373,7 @@ async def get_checks_duration_stats(
     end_at: typing.Optional[int] = None,
 ) -> dict[str, ChecksDurationT]:
     stats: dict[str, ChecksDurationT] = {}
-    async for stat in _get_stat_items(
+    async for stat in _get_stat_items_date_range(
         repository, "checks_duration", queue_name, start_at, end_at
     ):
         stat_obj = ChecksDuration(**stat)
@@ -338,7 +407,7 @@ async def get_failure_by_reason_stats(
     end_at: typing.Optional[int] = None,
 ) -> dict[str, FailureByReasonT]:
     stats_dict: dict[str, FailureByReasonT] = {}
-    async for stat in _get_stat_items(
+    async for stat in _get_stat_items_date_range(
         repository, "failure_by_reason", queue_name, start_at, end_at
     ):
         stat_obj = FailureByReason(**stat)

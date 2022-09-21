@@ -5,6 +5,7 @@ from freezegun import freeze_time
 from mergify_engine import config
 from mergify_engine import date
 from mergify_engine import yaml
+from mergify_engine.queue import statistics as queue_statistics
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.tests.functional import base
 
@@ -12,7 +13,7 @@ from mergify_engine.tests.functional import base
 class TestStatisticsEndpoints(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
 
-    async def test_time_to_merge_endpoint(self) -> None:
+    async def test_time_to_merge_endpoint_normal(self) -> None:
         rules = {
             "queue_rules": [
                 {
@@ -35,7 +36,9 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             ],
         }
 
-        with freeze_time("2022-08-18T10:00:00", tick=True):
+        start_date = datetime.datetime(2022, 8, 18, 10, tzinfo=datetime.timezone.utc)
+
+        with freeze_time(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 
             r = await self.app.get(
@@ -59,7 +62,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
 
             await self.wait_for("pull_request", {"action": "opened"})
 
-        with freeze_time("2022-08-18T12:00:00", tick=True):
+        with freeze_time(start_date + datetime.timedelta(hours=2), tick=True):
             await self.run_engine()
 
             await self.wait_for("pull_request", {"action": "closed"})
@@ -85,6 +88,23 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
                 r.json()["mean"]
                 > datetime.timedelta(hours=1, minutes=58).total_seconds()
             )
+            previous_result = r.json()["mean"]
+
+        with freeze_time(
+            start_date + (queue_statistics.QUERY_MERGE_QUEUE_STATS_RETENTION / 2),
+            tick=True,
+        ):
+            at_timestamp = int((start_date + datetime.timedelta(hours=3)).timestamp())
+            r = await self.app.get(
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge?at={at_timestamp}",
+                headers={
+                    "Authorization": f"bearer {self.api_key_admin}",
+                    "Content-type": "application/json",
+                },
+            )
+
+            assert r.status_code == 200
+            assert r.json()["mean"] == previous_result
 
     async def test_failure_by_reason_endpoint(self) -> None:
         rules = {
@@ -311,3 +331,24 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
         assert r.status_code == 200
         for count in r.json().values():
             assert count == 0
+
+    async def test_time_to_merge_endpoint_at_timestamp_too_far(self) -> None:
+        at_timestamp = int(
+            (
+                date.utcnow() - (queue_statistics.QUERY_MERGE_QUEUE_STATS_RETENTION * 2)
+            ).timestamp()
+        )
+
+        r = await self.app.get(
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge?at={at_timestamp}",
+            headers={
+                "Authorization": f"bearer {self.api_key_admin}",
+                "Content-type": "application/json",
+            },
+        )
+
+        assert r.status_code == 400
+        assert (
+            f"The provided 'at' timestamp ({at_timestamp}) is too far in the past"
+            in r.json()["detail"]
+        )

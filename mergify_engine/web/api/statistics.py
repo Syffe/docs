@@ -25,14 +25,12 @@ class TimeToMergeResponse(typing.TypedDict):
 async def get_time_to_merge_stats_for_queue(
     repository_ctxt: context.Repository,
     queue_name: rules.QueueName,
-    start_at: typing.Optional[int] = None,
-    end_at: typing.Optional[int] = None,
+    at: typing.Optional[int] = None,
 ) -> TimeToMergeResponse:
     stats = await queue_statistics.get_time_to_merge_stats(
         repository_ctxt,
         queue_name=queue_name,
-        start_at=start_at,
-        end_at=end_at,
+        at=at,
     )
     if qstats := stats.get(queue_name, []):
         return TimeToMergeResponse(mean=statistics.fmean(qstats))
@@ -42,8 +40,7 @@ async def get_time_to_merge_stats_for_queue(
 
 async def get_time_to_merge_stats_for_all_queues(
     repository_ctxt: context.Repository,
-    start_at: typing.Optional[int] = None,
-    end_at: typing.Optional[int] = None,
+    at: typing.Optional[int] = None,
 ) -> dict[str, TimeToMergeResponse]:
     """
     Returns a dict containing a TimeToMergeResponse for each queue.
@@ -52,8 +49,7 @@ async def get_time_to_merge_stats_for_all_queues(
     """
     stats_dict = await queue_statistics.get_time_to_merge_stats(
         repository_ctxt,
-        start_at=start_at,
-        end_at=end_at,
+        at=at,
     )
     stats_out: dict[str, TimeToMergeResponse] = {}
     for queue_name, stats_list in stats_dict.items():
@@ -81,23 +77,30 @@ async def get_average_time_to_merge_stats_endpoint(
         ...,
         description="Name of the queue",
     ),
-    start_at: int
+    at: int
     | None = fastapi.Query(  # noqa: B008
         default=None,
-        description="Retrieve the average time to merge after this timestamp",
-    ),
-    end_at: int
-    | None = fastapi.Query(  # noqa: B008
-        default=None,
-        description="Retrieve the average time to merge before this timestamp",
+        description="Retrieve the average time to merge for the queue at this timestamp (in seconds)",
     ),
     repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
         security.get_repository_context
     ),
 ) -> TimeToMergeResponse:
-    return await get_time_to_merge_stats_for_queue(
-        repository_ctxt, queue_name=queue_name, start_at=start_at, end_at=end_at
-    )
+    try:
+        return await get_time_to_merge_stats_for_queue(
+            repository_ctxt,
+            queue_name=queue_name,
+            at=at,
+        )
+    except queue_statistics.TimestampTooFar:
+        raise fastapi.HTTPException(
+            status_code=400,
+            detail=(
+                f"The provided 'at' timestamp ({at}) is too far in the past. "
+                "You can only query a maximum of "
+                f"{queue_statistics.QUERY_MERGE_QUEUE_STATS_RETENTION.days} days in the past."
+            ),
+        )
 
 
 class ChecksDurationResponse(typing.TypedDict):
@@ -167,12 +170,12 @@ async def get_checks_duration_stats_endpoint(
     start_at: int
     | None = fastapi.Query(  # noqa: B008
         default=None,
-        description="Retrieve the stats that happened after this timestamp",
+        description="Retrieve the stats that happened after this timestamp (in seconds)",
     ),
     end_at: int
     | None = fastapi.Query(  # noqa: B008
         default=None,
-        description="Retrieve the stats that happened before this timestamp",
+        description="Retrieve the stats that happened before this timestamp (in seconds)",
     ),
     repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
         security.get_repository_context
@@ -238,12 +241,12 @@ async def get_failure_by_reason_stats_endpoint(
     start_at: int
     | None = fastapi.Query(  # noqa: B008
         default=None,
-        description="Retrieve the stats that happened after this timestamp",
+        description="Retrieve the stats that happened after this timestamp (in seconds)",
     ),
     end_at: int
     | None = fastapi.Query(  # noqa: B008
         default=None,
-        description="Retrieve the stats that happened before this timestamp",
+        description="Retrieve the stats that happened before this timestamp (in seconds)",
     ),
     repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
         security.get_repository_context
