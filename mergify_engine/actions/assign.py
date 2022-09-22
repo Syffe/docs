@@ -27,7 +27,11 @@ class AssignExecutor(actions.ActionExecutor["AssignAction", AssignExecutorConfig
     ) -> "AssignExecutor":
         # NOTE: "users" is deprecated, but kept as legacy code for old config
         add_users = action.config["users"] + action.config["add_users"]
-        users_to_add_parsed = await actions_utils.render_users_template(ctxt, add_users)
+        users_to_add_parsed = {
+            user
+            for user in await actions_utils.render_users_template(ctxt, add_users)
+            if not user.endswith("[bot]")
+        }
         users_to_remove_parsed = await actions_utils.render_users_template(
             ctxt, action.config["remove_users"]
         )

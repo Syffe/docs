@@ -117,11 +117,13 @@ class CopyAction(actions.BackwardCompatAction):
         # No, then do it
         if not new_pull:
             try:
-                users_to_add = list(
-                    await action_utils.render_users_template(
+                users_to_add = [
+                    user
+                    for user in await action_utils.render_users_template(
                         ctxt, self.config["assignees"]
                     )
-                )
+                    if not user.endswith("[bot]")
+                ]
                 pull_duplicate = await duplicate_pull.duplicate(
                     ctxt,
                     branch_name,
