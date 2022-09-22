@@ -45,6 +45,7 @@ AvailableStatsKeyT = typing.Literal[
 @dataclasses.dataclass
 class BaseQueueStats:
     queue_name: rules.QueueName
+    branch_name: str
     # List of variables to not include in the return of the `to_dict()`
     # if using an `_` is not enough/appropriate.
     _todict_ignore_vars: typing.ClassVar[typing.Tuple[str, ...]] = ()
@@ -163,6 +164,7 @@ def get_stats_from_event_metadata(
 
         return TimeToMerge(
             queue_name=rules.QueueName(metadata["queue_name"]),
+            branch_name=metadata["branch"],
             time_seconds=_get_seconds_since_datetime(metadata["queued_at"]),
         )
 
@@ -174,6 +176,7 @@ def get_stats_from_event_metadata(
 
             return FailureByReason.from_reason_code_str(
                 queue_name=rules.QueueName(metadata["queue_name"]),
+                branch_name=metadata["branch"],
                 reason_code_str=metadata["abort_code"],
             )
 
@@ -195,6 +198,7 @@ def get_stats_from_event_metadata(
 
         return ChecksDuration(
             queue_name=rules.QueueName(metadata["queue_name"]),
+            branch_name=metadata["branch"],
             duration_seconds=duration_seconds,
         )
 
@@ -271,8 +275,12 @@ async def _get_stat_items(
     older_event_id: str,
     newer_event_id: str,
     queue_name: typing.Optional[rules.QueueName] = None,
+    branch_name: typing.Optional[str] = None,
 ) -> typing.AsyncGenerator[dict[str, typing.Any], None]:
     redis = repository.installation.redis.stats
+
+    if branch_name is None:
+        branch_name = repository.repo["default_branch"]
 
     redis_repo_key = _get_repository_key(
         repository.installation.owner_id, repository.repo["id"]
@@ -282,7 +290,11 @@ async def _get_stat_items(
     items = await redis.xrange(full_redis_key, min=older_event_id, max=newer_event_id)
     for _, raw_stat in items:
         stat = msgpack.unpackb(raw_stat[b"data"], timestamp=3)
-        if queue_name is None or stat["queue_name"] == queue_name:
+        # NOTE(greesb): Replace ".get()" by "[]" when all the stats
+        # will have a branch_name (1 month from the time this modification has been merged)
+        if (queue_name is None or stat["queue_name"] == queue_name) and stat.get(
+            "branch_name"
+        ) == branch_name:
             yield stat
 
 
@@ -290,6 +302,7 @@ async def _get_stat_items_date_range(
     repository: "context.Repository",
     stat_name: AvailableStatsKeyT,
     queue_name: typing.Optional[rules.QueueName] = None,
+    branch_name: typing.Optional[str] = None,
     start_at: typing.Optional[int] = None,
     end_at: typing.Optional[int] = None,
 ) -> typing.AsyncGenerator[dict[str, typing.Any], None]:
@@ -305,11 +318,7 @@ async def _get_stat_items_date_range(
         newer_event_id = "+"
 
     async for item in _get_stat_items(
-        repository,
-        stat_name,
-        older_event_id,
-        newer_event_id,
-        queue_name,
+        repository, stat_name, older_event_id, newer_event_id, queue_name, branch_name
     ):
         yield item
 
@@ -318,6 +327,7 @@ async def _get_stat_items_at_timestamp(
     repository: "context.Repository",
     stat_name: AvailableStatsKeyT,
     queue_name: typing.Optional[rules.QueueName] = None,
+    branch_name: typing.Optional[str] = None,
     at: typing.Optional[int] = None,
 ) -> typing.AsyncGenerator[dict[str, typing.Any], None]:
     redis_query_older_id = get_redis_query_older_id()
@@ -340,6 +350,7 @@ async def _get_stat_items_at_timestamp(
         older_event_id,
         newer_event_id,
         queue_name,
+        branch_name,
     ):
         yield item
 
@@ -347,6 +358,7 @@ async def _get_stat_items_at_timestamp(
 async def get_time_to_merge_stats(
     repository: "context.Repository",
     queue_name: typing.Optional[rules.QueueName] = None,
+    branch_name: typing.Optional[str] = None,
     at: typing.Optional[int] = None,
 ) -> dict[str, TimeToMergeT]:
     stats: dict[str, TimeToMergeT] = {}
@@ -354,8 +366,9 @@ async def get_time_to_merge_stats(
     async for stat in _get_stat_items_at_timestamp(
         repository,
         "time_to_merge",
-        queue_name,
-        at,
+        queue_name=queue_name,
+        branch_name=branch_name,
+        at=at,
     ):
         stat_obj = TimeToMerge(**stat)
         if stat_obj.queue_name not in stats:
@@ -369,12 +382,18 @@ async def get_time_to_merge_stats(
 async def get_checks_duration_stats(
     repository: "context.Repository",
     queue_name: typing.Optional[rules.QueueName] = None,
+    branch_name: typing.Optional[str] = None,
     start_at: typing.Optional[int] = None,
     end_at: typing.Optional[int] = None,
 ) -> dict[str, ChecksDurationT]:
     stats: dict[str, ChecksDurationT] = {}
     async for stat in _get_stat_items_date_range(
-        repository, "checks_duration", queue_name, start_at, end_at
+        repository,
+        "checks_duration",
+        queue_name=queue_name,
+        branch_name=branch_name,
+        start_at=start_at,
+        end_at=end_at,
     ):
         stat_obj = ChecksDuration(**stat)
         if stat_obj.queue_name not in stats:
@@ -403,12 +422,18 @@ BASE_FAILURE_BY_REASON_T_DICT = FailureByReasonT(
 async def get_failure_by_reason_stats(
     repository: "context.Repository",
     queue_name: typing.Optional[rules.QueueName] = None,
+    branch_name: typing.Optional[str] = None,
     start_at: typing.Optional[int] = None,
     end_at: typing.Optional[int] = None,
 ) -> dict[str, FailureByReasonT]:
     stats_dict: dict[str, FailureByReasonT] = {}
     async for stat in _get_stat_items_date_range(
-        repository, "failure_by_reason", queue_name, start_at, end_at
+        repository,
+        "failure_by_reason",
+        queue_name=queue_name,
+        branch_name=branch_name,
+        start_at=start_at,
+        end_at=end_at,
     ):
         stat_obj = FailureByReason(**stat)
         if stat_obj.queue_name not in stats_dict:

@@ -25,11 +25,13 @@ class TimeToMergeResponse(typing.TypedDict):
 async def get_time_to_merge_stats_for_queue(
     repository_ctxt: context.Repository,
     queue_name: rules.QueueName,
+    branch_name: typing.Optional[str] = None,
     at: typing.Optional[int] = None,
 ) -> TimeToMergeResponse:
     stats = await queue_statistics.get_time_to_merge_stats(
         repository_ctxt,
         queue_name=queue_name,
+        branch_name=branch_name,
         at=at,
     )
     if qstats := stats.get(queue_name, []):
@@ -40,6 +42,7 @@ async def get_time_to_merge_stats_for_queue(
 
 async def get_time_to_merge_stats_for_all_queues(
     repository_ctxt: context.Repository,
+    branch_name: typing.Optional[str] = None,
     at: typing.Optional[int] = None,
 ) -> dict[str, TimeToMergeResponse]:
     """
@@ -49,6 +52,7 @@ async def get_time_to_merge_stats_for_all_queues(
     """
     stats_dict = await queue_statistics.get_time_to_merge_stats(
         repository_ctxt,
+        branch_name=branch_name,
         at=at,
     )
     stats_out: dict[str, TimeToMergeResponse] = {}
@@ -82,6 +86,11 @@ async def get_average_time_to_merge_stats_endpoint(
         default=None,
         description="Retrieve the average time to merge for the queue at this timestamp (in seconds)",
     ),
+    branch: str
+    | None = fastapi.Query(  # noqa: B008
+        default=None,
+        description="The name of the branch on which we want the statistics",
+    ),
     repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
         security.get_repository_context
     ),
@@ -90,6 +99,7 @@ async def get_average_time_to_merge_stats_endpoint(
         return await get_time_to_merge_stats_for_queue(
             repository_ctxt,
             queue_name=queue_name,
+            branch_name=branch,
             at=at,
         )
     except queue_statistics.TimestampTooFar:
@@ -110,12 +120,14 @@ class ChecksDurationResponse(typing.TypedDict):
 async def get_checks_duration_stats_for_queue(
     repository_ctxt: context.Repository,
     queue_name: rules.QueueName,
+    branch_name: typing.Optional[str] = None,
     start_at: typing.Optional[int] = None,
     end_at: typing.Optional[int] = None,
 ) -> ChecksDurationResponse:
     stats = await queue_statistics.get_checks_duration_stats(
         repository_ctxt,
         queue_name=queue_name,
+        branch_name=branch_name,
         start_at=start_at,
         end_at=end_at,
     )
@@ -128,6 +140,7 @@ async def get_checks_duration_stats_for_queue(
 
 async def get_checks_duration_stats_for_all_queues(
     repository_ctxt: context.Repository,
+    branch_name: typing.Optional[str] = None,
     start_at: typing.Optional[int] = None,
     end_at: typing.Optional[int] = None,
 ) -> dict[str, ChecksDurationResponse]:
@@ -138,6 +151,7 @@ async def get_checks_duration_stats_for_all_queues(
     """
     stats_dict = await queue_statistics.get_checks_duration_stats(
         repository_ctxt,
+        branch_name=branch_name,
         start_at=start_at,
         end_at=end_at,
     )
@@ -177,6 +191,11 @@ async def get_checks_duration_stats_endpoint(
         default=None,
         description="Retrieve the stats that happened before this timestamp (in seconds)",
     ),
+    branch: str
+    | None = fastapi.Query(  # noqa: B008
+        default=None,
+        description="The name of the branch on which we want the statistics",
+    ),
     repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
         security.get_repository_context
     ),
@@ -184,6 +203,7 @@ async def get_checks_duration_stats_endpoint(
     return await get_checks_duration_stats_for_queue(
         repository_ctxt,
         queue_name=queue_name,
+        branch_name=branch,
         start_at=start_at,
         end_at=end_at,
     )
@@ -192,12 +212,14 @@ async def get_checks_duration_stats_endpoint(
 async def get_failure_by_reason_stats_for_queue(
     repository_ctxt: context.Repository,
     queue_name: rules.QueueName,
+    branch_name: typing.Optional[str] = None,
     start_at: typing.Optional[int] = None,
     end_at: typing.Optional[int] = None,
 ) -> queue_statistics.FailureByReasonT:
     stats = await queue_statistics.get_failure_by_reason_stats(
         repository_ctxt,
         queue_name=queue_name,
+        branch_name=branch_name,
         start_at=start_at,
         end_at=end_at,
     )
@@ -209,6 +231,7 @@ async def get_failure_by_reason_stats_for_queue(
 
 async def get_failure_by_reason_stats_for_all_queues(
     repository_ctxt: context.Repository,
+    branch_name: typing.Optional[str] = None,
     start_at: typing.Optional[int] = None,
     end_at: typing.Optional[int] = None,
 ) -> dict[str, queue_statistics.FailureByReasonT]:
@@ -219,6 +242,7 @@ async def get_failure_by_reason_stats_for_all_queues(
     """
     return await queue_statistics.get_failure_by_reason_stats(
         repository_ctxt,
+        branch_name=branch_name,
         start_at=start_at,
         end_at=end_at,
     )
@@ -248,6 +272,11 @@ async def get_failure_by_reason_stats_endpoint(
         default=None,
         description="Retrieve the stats that happened before this timestamp (in seconds)",
     ),
+    branch: str
+    | None = fastapi.Query(  # noqa: B008
+        default=None,
+        description="The name of the branch on which we want the statistics",
+    ),
     repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
         security.get_repository_context
     ),
@@ -255,6 +284,7 @@ async def get_failure_by_reason_stats_endpoint(
     return await get_failure_by_reason_stats_for_queue(
         repository_ctxt,
         queue_name=queue_name,
+        branch_name=branch,
         start_at=start_at,
         end_at=end_at,
     )

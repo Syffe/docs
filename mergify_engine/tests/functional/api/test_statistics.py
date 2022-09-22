@@ -352,3 +352,102 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             f"The provided 'at' timestamp ({at_timestamp}) is too far in the past"
             in r.json()["detail"]
         )
+
+    async def test_queue_statistics_branch_name_filter(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [],
+                    "speculative_checks": 5,
+                    "batch_size": 2,
+                    "allow_inplace_checks": False,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+
+        start_date = datetime.datetime(2022, 8, 18, 10, tzinfo=datetime.timezone.utc)
+
+        with freeze_time(start_date, tick=True):
+            await self.setup_repo(yaml.dump(rules))
+
+            r = await self.app.get(
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge",
+                headers={
+                    "Authorization": f"bearer {self.api_key_admin}",
+                    "Content-type": "application/json",
+                },
+            )
+
+            assert r.status_code == 200
+            assert r.json()["mean"] is None
+
+            p1 = await self.create_pr()
+            p2 = await self.create_pr()
+
+            await self.add_label(p1["number"], "queue")
+            await self.add_label(p2["number"], "queue")
+
+            await self.run_engine()
+
+            await self.wait_for("pull_request", {"action": "opened"})
+
+        with freeze_time(start_date + datetime.timedelta(hours=2), tick=True):
+            await self.run_engine()
+
+            await self.wait_for("pull_request", {"action": "closed"})
+            await self.wait_for("pull_request", {"action": "closed"})
+            await self.wait_for("pull_request", {"action": "closed"})
+
+            time_to_merge_key = self.get_statistic_redis_key("time_to_merge")
+            assert await self.redis_links.stats.xlen(time_to_merge_key) == 2
+
+            r = await self.app.get(
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge",
+                headers={
+                    "Authorization": f"bearer {self.api_key_admin}",
+                    "Content-type": "application/json",
+                },
+            )
+
+            assert r.status_code == 200
+            # Because of execution time we can't really make sure that it will
+            # always be the expected number. The best we can do is make sure
+            # it is at least close to what we expect (around 2 hours).
+            assert (
+                r.json()["mean"]
+                > datetime.timedelta(hours=1, minutes=58).total_seconds()
+            )
+            previous_result = r.json()["mean"]
+
+            r = await self.app.get(
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge?branch={self.main_branch_name}",
+                headers={
+                    "Authorization": f"bearer {self.api_key_admin}",
+                    "Content-type": "application/json",
+                },
+            )
+
+            assert r.status_code == 200
+            assert r.json()["mean"] == previous_result
+
+            r = await self.app.get(
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge?branch=abc123",
+                headers={
+                    "Authorization": f"bearer {self.api_key_admin}",
+                    "Content-type": "application/json",
+                },
+            )
+
+            assert r.status_code == 200
+            assert r.json()["mean"] is None
