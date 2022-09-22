@@ -63,6 +63,7 @@ GH_PULL = github_types.GitHubPullRequest(
         "commits": 1,
         "state": "open",
         "html_url": "<html_url>",
+        "issue_url": "",
         "base": {
             "label": github_types.GitHubBaseBranchLabel(""),
             "sha": github_types.SHAType("base-sha"),

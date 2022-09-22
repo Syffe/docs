@@ -369,6 +369,7 @@ class GitHubPullRequest(GitHubIssueOrPullRequest):
     mergeable: typing.Optional[bool]
     mergeable_state: GitHubPullRequestMergeableState
     html_url: str
+    issue_url: str
     title: str
     body: typing.Optional[str]
     changed_files: int

@@ -4,6 +4,19 @@ from mergify_engine.tests.functional import base
 
 
 class TestCommandsDetection(base.FunctionalTestBase):
+    async def test_pull_request_locked(self) -> None:
+        stable_branch = self.get_full_branch_name("stable/#3.1")
+        await self.setup_repo(test_branches=[stable_branch])
+        p = await self.create_pr()
+        await self.create_comment_as_admin(
+            p["number"], f"@mergifyio backport {stable_branch}"
+        )
+        await self.client_admin.put(
+            f"{p['issue_url']}/lock", json={"lock_reason": "off-topic"}
+        )
+        await self.wait_for("pull_request", {"action": "locked"})
+        await self.run_engine()
+
     async def test_hidden_comment_not_detected_twice(self) -> None:
         await self.setup_repo()
         p1 = await self.create_pr()

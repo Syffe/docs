@@ -153,6 +153,7 @@ async def build_fake_context(
         "merged_by": None,
         "merged_at": None,
         "html_url": "https://...",
+        "issue_url": "",
         "base": {
             "label": github_types.GitHubBaseBranchLabel("mergify_engine:main"),
             "ref": github_types.GitHubRefType("main"),

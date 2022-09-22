@@ -535,6 +535,7 @@ def a_pull_request() -> github_types.GitHubPullRequest:
             "state": "closed",
             "changed_files": 1,
             "html_url": "<html_url>",
+            "issue_url": "",
             "base": {
                 "label": github_types.GitHubBaseBranchLabel(""),
                 "sha": github_types.SHAType("sha"),

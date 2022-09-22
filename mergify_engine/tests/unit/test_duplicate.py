@@ -30,6 +30,7 @@ async def fake_get_github_pulls_from_sha(
             "mergeable": False,
             "mergeable_state": "unknown",
             "html_url": "",
+            "issue_url": "",
             "locked": False,
             "assignees": [],
             "requested_teams": [],

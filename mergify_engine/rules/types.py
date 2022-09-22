@@ -94,6 +94,7 @@ _DUMMY_PR = DummyPullRequest(
                 "body": "",
                 "number": github_types.GitHubPullRequestNumber(0),
                 "html_url": "",
+                "issue_url": "",
                 "id": github_types.GitHubPullRequestId(0),
                 "maintainer_can_modify": False,
                 "state": "open",
