@@ -111,8 +111,6 @@ async def store_active_users(
             github_types.GitHubEventPullRequest,
             github_types.GitHubEventPullRequestReview,
             github_types.GitHubEventPullRequestReviewComment,
-            github_types.GitHubEventCheckRun,
-            github_types.GitHubEventCheckSuite,
         ]
     ] = None
 
@@ -152,10 +150,6 @@ async def store_active_users(
             list(map(_add_user, typed_event["pull_request"]["assignees"]))
         if typed_event["comment"] is not None:
             _add_user(typed_event["comment"]["user"])
-    elif event_type == "check_run":
-        typed_event = typing.cast(github_types.GitHubEventCheckRun, event)
-    elif event_type == "check_suite":
-        typed_event = typing.cast(github_types.GitHubEventCheckSuite, event)
 
     if typed_event is None:
         return
