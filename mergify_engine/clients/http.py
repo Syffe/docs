@@ -3,6 +3,7 @@ import email.utils
 import sys
 import typing
 
+import anyio._core._exceptions
 import daiquiri
 import httpx
 from httpx import _types as httpx_types
@@ -228,6 +229,10 @@ class AsyncClient(httpx.AsyncClient):
 
     @connectivity_issue_retry
     async def request(self, *args: typing.Any, **kwargs: typing.Any) -> httpx.Response:
-        resp = await super().request(*args, **kwargs)
+        try:
+            resp = await super().request(*args, **kwargs)
+        except anyio._core._exceptions.ClosedResourceError:
+            # FIXME(sileht): https://github.com/encode/httpx/issues/2337
+            raise httpx.RequestError("Connection unexpectely closed")
         raise_for_status(resp)
         return resp
