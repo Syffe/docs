@@ -30,6 +30,17 @@ def setup_exception_handlers(app: fastapi.FastAPI) -> None:
             content={"message": "Organization or user has hit GitHub API rate limit"},
         )
 
+    @app.exception_handler(engine_exceptions.MergifyNotInstalled)
+    async def mergify_not_installed_handler(
+        request: requests.Request, exc: engine_exceptions.MergifyNotInstalled
+    ) -> responses.JSONResponse:
+        return responses.JSONResponse(
+            status_code=403,
+            content={
+                "message": "Mergify is not installed or suspended on this organization or repository"
+            },
+        )
+
     @app.exception_handler(pagination.InvalidCursor)
     async def pagination_handler(
         request: requests.Request, exc: pagination.InvalidCursor

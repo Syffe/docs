@@ -31,6 +31,13 @@ def create_testing_router() -> None:
     async def test_exception_pagination() -> None:
         raise pagination.InvalidCursor(cursor="abcdef")
 
+    @router.get(
+        "/testing-endpoint-exception-mergify-not-installed",
+        response_model=test_auth.ResponseTest,
+    )
+    async def test_exception_mergify_not_installed() -> None:
+        raise exceptions.MergifyNotInstalled()
+
     api_root.app.include_router(router)
     web_root.app.include_router(router)
 
@@ -48,6 +55,23 @@ async def test_handler_exception_rate_limited(
         assert r.status_code == 403, r.json()
         assert (
             r.json()["message"] == "Organization or user has hit GitHub API rate limit"
+        )
+
+
+async def test_handler_exception_mergify_not_installed(
+    mergify_web_client: httpx.AsyncClient,
+) -> None:
+
+    endpoints = ["/", "/v1/"]
+
+    for endpoint in endpoints:
+        r = await mergify_web_client.get(
+            f"{ endpoint }testing-endpoint-exception-mergify-not-installed"
+        )
+        assert r.status_code == 403, r.json()
+        assert (
+            r.json()["message"]
+            == "Mergify is not installed or suspended on this organization or repository"
         )
 
 
