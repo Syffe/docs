@@ -18,5 +18,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
           EMAIL_MAPPING: |
-            sileht@mergify.com sileht
+            alexandre.gaubert@mergify.com AlexandreGaubert
+            charly.laurent@mergify.com DouglasBlackwood
+            fabien.martinet@mergify.com Syffe
+            guillaume.risbourg@mergify.com Greesb
             jd@mergify.com jd
+            jules.vautier@mergify.com JulesVautier
+            sileht@mergify.com sileht
