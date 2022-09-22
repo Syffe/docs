@@ -58,6 +58,7 @@ GIT_MESSAGE_TO_EXCEPTION = {
     "is a merge but no -m option was given": DuplicateWithMergeFailure,
     "is not a commit and a branch": DuplicateFailed,
     "couldn't find remote ref": DuplicateFailed,
+    "does not have a commit checked": DuplicateFailed,
 }
 
 
