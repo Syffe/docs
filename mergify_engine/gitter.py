@@ -5,6 +5,7 @@ import logging
 import os
 import re
 import shutil
+import sys
 import tempfile
 import typing
 import urllib.parse
@@ -218,7 +219,21 @@ class Gitter(object):
         except GitError:  # pragma: no cover
             self.logger.warning("git credential-cache exit fail")
         # TODO(sileht): use aiofiles instead of thread
-        await asyncio.to_thread(shutil.rmtree, self.tmp)
+
+        ongoing_exc_type, ongoing_exc_value, _ = sys.exc_info()
+        try:
+            await asyncio.to_thread(shutil.rmtree, self.tmp)
+        except OSError:
+            if (
+                ongoing_exc_type is not None
+                and ongoing_exc_value is not None
+                and ongoing_exc_type is asyncio.CancelledError
+                # NOTE(sileht): The reason is set by worker.py
+                and ongoing_exc_value.args[0] == "shutdown"
+            ):
+                return
+
+            self.logger.warning("git temporary directory cleanup fail.")
 
     async def configure(
         self, user: typing.Optional[user_tokens.UserTokensUser] = None
