@@ -14,7 +14,6 @@ from redis import exceptions as redis_exceptions
 
 from mergify_engine import context
 from mergify_engine import date
-from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import logs
 from mergify_engine import redis_utils
@@ -86,6 +85,12 @@ FAKE_INSTALLATION = {
     "target_type": "Organization",
     "permissions": github_app.EXPECTED_MINIMAL_PERMISSIONS["Organization"],
 }
+
+HTTP_500_EXCEPTION = http.HTTPServerSideError(
+    "no way",
+    response=httpx.Response(500),
+    request=httpx.Request("GET", "http://localhost"),
+)
 
 
 @pytest.fixture
@@ -759,30 +764,30 @@ async def test_stream_processor_retrying_pull(
     get_subscription.side_effect = fake_get_subscription
     # One retries once, the other reaches max_retry
     run_engine.side_effect = [
-        exceptions.MergeableStateUnknown(mock.Mock()),
-        exceptions.MergeableStateUnknown(mock.Mock()),
+        HTTP_500_EXCEPTION,
+        HTTP_500_EXCEPTION,
         mock.Mock(),
-        exceptions.MergeableStateUnknown(mock.Mock()),
-        exceptions.MergeableStateUnknown(mock.Mock()),
-        exceptions.MergeableStateUnknown(mock.Mock()),
-        exceptions.MergeableStateUnknown(mock.Mock()),
-        exceptions.MergeableStateUnknown(mock.Mock()),
-        exceptions.MergeableStateUnknown(mock.Mock()),
-        exceptions.MergeableStateUnknown(mock.Mock()),
-        exceptions.MergeableStateUnknown(mock.Mock()),
-        exceptions.MergeableStateUnknown(mock.Mock()),
-        exceptions.MergeableStateUnknown(mock.Mock()),
-        exceptions.MergeableStateUnknown(mock.Mock()),
-        exceptions.MergeableStateUnknown(mock.Mock()),
-        exceptions.MergeableStateUnknown(mock.Mock()),
-        exceptions.MergeableStateUnknown(mock.Mock()),
-        exceptions.MergeableStateUnknown(mock.Mock()),
-        exceptions.MergeableStateUnknown(mock.Mock()),
-        exceptions.MergeableStateUnknown(mock.Mock()),
-        exceptions.MergeableStateUnknown(mock.Mock()),
-        exceptions.MergeableStateUnknown(mock.Mock()),
-        exceptions.MergeableStateUnknown(mock.Mock()),
-        exceptions.MergeableStateUnknown(mock.Mock()),
+        HTTP_500_EXCEPTION,
+        HTTP_500_EXCEPTION,
+        HTTP_500_EXCEPTION,
+        HTTP_500_EXCEPTION,
+        HTTP_500_EXCEPTION,
+        HTTP_500_EXCEPTION,
+        HTTP_500_EXCEPTION,
+        HTTP_500_EXCEPTION,
+        HTTP_500_EXCEPTION,
+        HTTP_500_EXCEPTION,
+        HTTP_500_EXCEPTION,
+        HTTP_500_EXCEPTION,
+        HTTP_500_EXCEPTION,
+        HTTP_500_EXCEPTION,
+        HTTP_500_EXCEPTION,
+        HTTP_500_EXCEPTION,
+        HTTP_500_EXCEPTION,
+        HTTP_500_EXCEPTION,
+        HTTP_500_EXCEPTION,
+        HTTP_500_EXCEPTION,
+        HTTP_500_EXCEPTION,
     ]
 
     with freeze_time("2020-01-01 22:00:00", tick=True):
@@ -815,7 +820,7 @@ async def test_stream_processor_retrying_pull(
     assert 1 == await redis_links.stream.xlen("bucket-sources~123~123")
     assert 1 == await redis_links.stream.xlen("bucket-sources~123~42")
 
-    with freeze_time("2020-01-01 22:00:01", tick=True):
+    with freeze_time("2020-01-01 22:00:20", tick=True):
         await stream_processor.consume(
             worker_lua.BucketOrgKeyType("bucket~123"),
             github_types.GitHubAccountIdType(123),
@@ -869,7 +874,7 @@ async def test_stream_processor_retrying_pull(
         b"bucket-sources~123~123": b"1",
     } == await redis_links.stream.hgetall("attempts")
 
-    with freeze_time("2020-01-01 22:00:05", tick=True):
+    with freeze_time("2020-01-01 22:00:35", tick=True):
         await stream_processor.consume(
             worker_lua.BucketOrgKeyType("bucket~123"),
             github_types.GitHubAccountIdType(123),
@@ -890,7 +895,7 @@ async def test_stream_processor_retrying_pull(
     )
 
     # Check nothing is retried if we replay the steram before 30s
-    with freeze_time("2020-01-01 22:00:08", tick=True):
+    with freeze_time("2020-01-01 22:00:58", tick=True):
         await stream_processor.consume(
             worker_lua.BucketOrgKeyType("bucket~123"),
             github_types.GitHubAccountIdType(123),
@@ -909,9 +914,9 @@ async def test_stream_processor_retrying_pull(
         "attempts"
     )
 
-    when = date.fromisoformat("2020-01-01 22:00:12")
+    when = date.fromisoformat("2020-01-01 22:01:33")
     for _ in range(14):
-        when += datetime.timedelta(seconds=4)
+        when += datetime.timedelta(seconds=30)
         with freeze_time(when, tick=True):
             await stream_processor.consume(
                 worker_lua.BucketOrgKeyType("bucket~123"),

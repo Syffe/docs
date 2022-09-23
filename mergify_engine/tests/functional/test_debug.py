@@ -158,7 +158,7 @@ is_behind: False
 mergeable_state: clean
 * MERGIFY LAST CHECKS:
 [Summary]: success | 1 potential rule | {summary_html_url}
-> <!-- J1J1bGU6IGNvbW1lbnQgKGNvbW1lbnQpJzogbmV1dHJhbAo= -->
+> <!-- eydSdWxlOiBjb21tZW50IChjb21tZW50KSc6IG5ldXRyYWx9Cg== -->
 > ### Rule: comment (comment)
 > - [ ] any of:
 >   - [ ] `label=doubt`

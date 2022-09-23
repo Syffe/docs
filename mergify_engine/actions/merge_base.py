@@ -290,24 +290,6 @@ class MergeBaseAction(actions.BackwardCompatAction, abc.ABC, typing.Generic[T]):
             title = "The pull request has been closed manually"
             summary = ""
 
-        # NOTE(sileht): Take care of all branch protection state
-        elif ctxt.pull["mergeable_state"] == "dirty":
-            conclusion = check_api.Conclusion.CANCELLED
-            title = "Merge conflict needs to be solved"
-            summary = ""
-
-        elif ctxt.pull["mergeable_state"] == "unknown":
-            conclusion = check_api.Conclusion.FAILURE
-            title = "Pull request state reported as `unknown` by GitHub"
-            summary = ""
-        # FIXME(sileht): We disable this check as github wrongly report
-        # mergeable_state == blocked sometimes. The workaround is to try to merge
-        # it and if that fail we checks for blocking state.
-        # elif ctxt.pull["mergeable_state"] == "blocked":
-        #     conclusion = "failure"
-        #     title = "Branch protection settings are blocking automatic merging"
-        #     summary = ""
-
         elif (
             await self._is_branch_protection_linear_history_enabled(ctxt)
             and self.config["method"] == "merge"

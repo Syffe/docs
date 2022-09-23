@@ -8,10 +8,6 @@ from redis import exceptions as redis_exceptions
 from mergify_engine.clients import http
 
 
-if typing.TYPE_CHECKING:
-    from mergify_engine import context
-
-
 @dataclasses.dataclass
 class UnprocessablePullRequest(Exception):
     reason: str
@@ -30,11 +26,6 @@ class RateLimited(Exception):
 @dataclasses.dataclass
 class EngineNeedRetry(Exception):
     pass
-
-
-@dataclasses.dataclass
-class MergeableStateUnknown(EngineNeedRetry):
-    ctxt: "context.Context"
 
 
 RATE_LIMIT_RETRY_MIN = datetime.timedelta(seconds=3)

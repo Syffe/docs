@@ -164,14 +164,12 @@ class Installation:
         repo_id: github_types.GitHubRepositoryIdType,
         pull_number: github_types.GitHubPullRequestNumber,
         force_new: bool = False,
-        wait_background_github_processing: bool = False,
     ) -> "Context":
         for repository in self.repositories.values():
             if repository.repo["id"] == repo_id:
                 return await repository.get_pull_request_context(
                     pull_number,
                     force_new=force_new,
-                    wait_background_github_processing=wait_background_github_processing,
                 )
 
         pull = await self.client.item(f"/repositories/{repo_id}/pulls/{pull_number}")
@@ -180,7 +178,6 @@ class Installation:
             pull_number,
             pull,
             force_new=force_new,
-            wait_background_github_processing=wait_background_github_processing,
         )
 
     def get_repository_from_github_data(
@@ -516,7 +513,6 @@ class Repository(object):
         pull_number: github_types.GitHubPullRequestNumber,
         pull: typing.Optional[github_types.GitHubPullRequest] = None,
         force_new: bool = False,
-        wait_background_github_processing: bool = False,
     ) -> "Context":
         if force_new or pull_number not in self.pull_contexts:
             if pull is None:
@@ -530,18 +526,8 @@ class Repository(object):
             ctxt = await Context.create(
                 self,
                 pull,
-                wait_background_github_processing=wait_background_github_processing,
             )
             self.pull_contexts[pull_number] = ctxt
-        elif (
-            wait_background_github_processing
-            and not self.pull_contexts[
-                pull_number
-            ].is_background_github_processing_completed()
-        ):
-            await self.pull_contexts[pull_number].ensure_complete(
-                wait_background_github_processing
-            )
 
         return self.pull_contexts[pull_number]
 
@@ -957,6 +943,9 @@ class ContextCaches:
     is_behind: cache.SingleCache[bool] = dataclasses.field(
         default_factory=cache.SingleCache
     )
+    is_conflicting: cache.SingleCache[bool] = dataclasses.field(
+        default_factory=cache.SingleCache
+    )
     files: cache.SingleCache[
         typing.List[github_types.CachedGitHubFile]
     ] = dataclasses.field(default_factory=cache.SingleCache)
@@ -994,6 +983,9 @@ class Context(object):
     sources: typing.List[T_PayloadEventSource] = dataclasses.field(default_factory=list)
     configuration_changed: bool = False
     pull_request: "PullRequest" = dataclasses.field(init=False, repr=False)
+    github_has_pending_background_jobs: bool = dataclasses.field(
+        init=False, default=False
+    )
     log: "logging.LoggerAdapter[logging.Logger]" = dataclasses.field(
         init=False, repr=False
     )
@@ -1112,12 +1104,10 @@ class Context(object):
         repository: Repository,
         pull: github_types.GitHubPullRequest,
         sources: typing.Optional[typing.List[T_PayloadEventSource]] = None,
-        wait_background_github_processing: bool = False,
     ) -> "Context":
         if sources is None:
             sources = []
         self = cls(repository, pull, sources)
-        await self.ensure_complete(wait_background_github_processing)
         self.pull_request = PullRequest(self)
 
         self.log = daiquiri.getLogger(
@@ -1444,7 +1434,7 @@ class Context(object):
             return await self.commits_behind_count
 
         elif name == "conflict":
-            return self.pull["mergeable"] is False
+            return await self.is_conflicting()
 
         elif name == "linear-history":
             return all(len(commit.parents) == 1 for commit in await self.commits)
@@ -1659,6 +1649,46 @@ class Context(object):
         re.MULTILINE | re.IGNORECASE,
     )
 
+    CONFLICT_EXPIRATION = datetime.timedelta(days=30)
+
+    @property
+    def _conflict_cache_key(self) -> str:
+        return f"conflict/{self.repository.repo['id']}/{self.pull['number']}"
+
+    async def is_conflicting(self) -> bool:
+        if self.closed:
+            # NOTE(sileht): this mimic the GitHub behavior that doesn't
+            # compute it anymore when the PR is closed.
+            return False
+
+        is_conflicting = self._caches.is_conflicting.get()
+        if is_conflicting is cache.Unset:
+
+            cached_is_conflicting: str | None = await self.redis.cache.get(
+                self._conflict_cache_key
+            )
+            if self.pull["mergeable"] is None:
+                # NOTE(sileht): we mark it, so at the end of the engine
+                # processing we will refresh the PR later
+                self.github_has_pending_background_jobs = True
+
+                # NOTE(sileht): Here we fallback to the last known value or False
+                if cached_is_conflicting is None:
+                    is_conflicting = False
+                else:
+                    is_conflicting = bool(int(cached_is_conflicting))
+            else:
+                is_conflicting = self.pull["mergeable"] is False
+
+            await self.redis.cache.set(
+                self._conflict_cache_key,
+                str(int(is_conflicting)),
+                ex=self.CONFLICT_EXPIRATION,
+            )
+            self._caches.is_conflicting.set(is_conflicting)
+
+        return is_conflicting
+
     @property
     def body(self) -> str:
         # NOTE(sileht): multiline regex on our side assume eol char is only LF,
@@ -1795,28 +1825,12 @@ class Context(object):
         else:
             return datetime.datetime.fromisoformat(check_run["completed_at"][:-1])
 
-    UNUSABLE_STATES = ["unknown", None]
-
     @tracer.wrap("ensure_complete", span_type="worker")
-    async def ensure_complete(self, wait_background_github_processing: bool) -> None:
-        if not (
-            self._is_data_complete()
-            and (
-                not wait_background_github_processing
-                or self.is_background_github_processing_completed()
-            )
-        ):
+    async def ensure_complete(self) -> None:
+        if not self._is_data_complete():
             self.pull = await self.client.item(
                 f"{self.base_url}/pulls/{self.pull['number']}"
             )
-
-        if (
-            not wait_background_github_processing
-            or self.is_background_github_processing_completed()
-        ):
-            return
-
-        raise exceptions.MergeableStateUnknown(self)
 
     def _is_data_complete(self) -> bool:
         # NOTE(sileht): If pull request come from /pulls listing or check-runs sometimes,
@@ -1824,7 +1838,6 @@ class Context(object):
         fields_to_control = (
             "state",
             "mergeable",
-            "mergeable_state",
             "merge_commit_sha",
             "merged_by",
             "merged",
@@ -1834,12 +1847,6 @@ class Context(object):
             if field not in self.pull:
                 return False
         return True
-
-    def is_background_github_processing_completed(self) -> bool:
-        return self.closed or (
-            self.pull["mergeable_state"] not in self.UNUSABLE_STATES
-            and self.pull["mergeable"] is not None
-        )
 
     @tenacity.retry(
         wait=tenacity.wait_exponential(multiplier=0.2),  # type: ignore[attr-defined]

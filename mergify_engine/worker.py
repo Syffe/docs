@@ -59,6 +59,7 @@ from mergify_engine import github_events
 from mergify_engine import github_types
 from mergify_engine import logs
 from mergify_engine import redis_utils
+from mergify_engine import refresher
 from mergify_engine import service
 from mergify_engine import signals
 from mergify_engine import worker_lua
@@ -160,7 +161,6 @@ async def run_engine(
                 # consume_buckets(), so we need to clear the sources/_cache/pull/... to
                 # ensure we get the last snapshot of the pull request
                 force_new=True,
-                wait_background_github_processing=True,
             )
         except http.HTTPNotFound:
             # NOTE(sileht): Don't fail if we received an event on repo/pull that doesn't exists anymore
@@ -196,6 +196,18 @@ async def run_engine(
                 check_api.Conclusion.FAILURE,
                 title="This pull request cannot be evaluated by Mergify",
                 summary=e.reason,
+            )
+
+        if ctxt.github_has_pending_background_jobs:
+            # NOTE(sileht): This pull request may change its state soon and we
+            # will not be aware, so refresh it later
+            await refresher.send_pull_refresh(
+                redis_stream=ctxt.repository.installation.redis.stream,
+                repository=ctxt.repository.repo,
+                pull_request_number=ctxt.pull["number"],
+                priority=worker_pusher.Priority.low,
+                action="internal",
+                source="engine",
             )
 
         if result is not None:
@@ -258,22 +270,10 @@ class StreamProcessor:
                 await self.redis_links.stream.hdel(ATTEMPTS_KEY, bucket_org_key)
                 raise IgnoredException()
 
-            if isinstance(e, exceptions.MergeableStateUnknown) or (
+            if (
                 isinstance(e, http.HTTPServerSideError)
                 and bucket_sources_key is not None
             ):
-                exc: type[PullRetry]
-                if isinstance(e, exceptions.MergeableStateUnknown):
-                    exc = PullFastRetry
-                else:
-                    exc = PullRetry
-                if (
-                    isinstance(e, exceptions.MergeableStateUnknown)
-                    and bucket_sources_key is None
-                ):
-                    bucket_sources_key = worker_lua.BucketSourcesKeyType(
-                        f"bucket-sources~{e.ctxt.repository.repo['id']}~{e.ctxt.pull['number']}"
-                    )
 
                 if bucket_sources_key is None:
                     raise RuntimeError("bucket_sources_key must be set at this point")
@@ -282,7 +282,7 @@ class StreamProcessor:
                     ATTEMPTS_KEY, bucket_sources_key
                 )
                 if attempts < MAX_RETRIES:
-                    raise exc(attempts) from e
+                    raise PullRetry(attempts) from e
                 else:
                     await self.redis_links.stream.hdel(ATTEMPTS_KEY, bucket_sources_key)
                     raise MaxPullRetry(attempts) from e
