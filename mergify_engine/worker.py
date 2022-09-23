@@ -636,6 +636,7 @@ class StreamProcessor:
                             "assiociated non pull request event to pull requests",
                             event_type=source["event_type"],
                             pull_requests_found=converted_messages,
+                            event=source["data"],
                         )
                         statsd.increment(
                             "engine.buckets.pull_request_associations",
