@@ -632,8 +632,17 @@ class StreamProcessor:
                             opened_pulls_by_repo[bucket.repo_id],
                             message[b"score"].decode(),
                         )
-                        logger.debug(
-                            "event unpacked into %d messages", converted_messages
+                        logger.info(
+                            "assiociated non pull request event to pull requests",
+                            event_type=source["event_type"],
+                            pull_requests_found=converted_messages,
+                        )
+                        statsd.increment(
+                            "engine.buckets.pull_request_associations",
+                            tags=[
+                                f"worker_id:{self.worker_id}",
+                                f"event_type:{source['event_type']}",
+                            ],
                         )
                         # NOTE(sileht) can we take the risk to batch the deletion here ?
                         await worker_lua.remove_pull(
