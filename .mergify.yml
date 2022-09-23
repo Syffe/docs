@@ -45,11 +45,22 @@ pull_request_rules:
   - name: automatic merge for hotfix
     conditions:
       - base=main
-      - author=@devs
       - check-success=semantic-pull-request
+      - or:
+          # Author is engineering manager, we allow with one review
+          - and:
+              - author=@eng-mgr
+              - "#approved-reviews-by>=1"
+          - and:
+              - author=@devs
+              # in any other case, we allow if approve by engineering manager
+              # or anyone if it's a regular fix/revert
+              - or:
+                  - approved-reviews-by=@eng-mgr
+                  - and:
+                      - title~=^(revert|fix)
+                      - "#approved-reviews-by>=1"
       - label=hotfix
-      - title~=^(revert|fix)
-      - "#approved-reviews-by>=1"
       - "#changes-requested-reviews-by=0"
       - label!=work-in-progress
       - label!=manual merge
