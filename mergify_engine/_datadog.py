@@ -20,4 +20,10 @@ class Signal(signals.SignalBase):
         trigger: str,
     ) -> None:
         if event.startswith("action"):
-            statsd.increment("engine.signals.action.count", tags=[f"event:{event[7:]}"])
+            statsd.increment(
+                "engine.signals.action.count",
+                tags=[
+                    f"event:{event[7:]}",
+                    f"customer:{repository.installation.owner_id}",
+                ],
+            )

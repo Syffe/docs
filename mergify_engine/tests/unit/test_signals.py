@@ -77,5 +77,5 @@ async def test_datadog(
             "Rule: awesome rule",
         )
         increment.assert_called_once_with(
-            "engine.signals.action.count", tags=["event:label"]
+            "engine.signals.action.count", tags=["event:label", "customer:0"]
         )
