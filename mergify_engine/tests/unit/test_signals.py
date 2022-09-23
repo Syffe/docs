@@ -4,6 +4,7 @@ import pytest
 
 from mergify_engine import github_types
 from mergify_engine import signals
+from mergify_engine.dashboard import subscription
 from mergify_engine.tests.unit import conftest
 
 
@@ -77,5 +78,25 @@ async def test_datadog(
             "Rule: awesome rule",
         )
         increment.assert_called_once_with(
-            "engine.signals.action.count", tags=["event:label", "customer:0"]
+            "engine.signals.action.count", tags=["event:label"]
+        )
+
+    ctxt.repository.installation.subscription.features = frozenset(
+        [
+            subscription.Features.PUBLIC_REPOSITORY,
+            subscription.Features.PRIVATE_REPOSITORY,
+        ]
+    )
+
+    with mock.patch("datadog.statsd.increment") as increment:
+        await signals.send(
+            ctxt.repository,
+            ctxt.pull["number"],
+            "action.label",
+            {"added": [], "removed": ["bar"]},
+            "Rule: awesome rule",
+        )
+        increment.assert_called_once_with(
+            "engine.signals.action.count",
+            tags=["event:label", "github_login:Mergifyio"],
         )

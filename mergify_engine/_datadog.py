@@ -4,6 +4,7 @@ from datadog import statsd  # type: ignore[attr-defined]
 
 from mergify_engine import github_types
 from mergify_engine import signals
+from mergify_engine.dashboard import subscription
 
 
 if typing.TYPE_CHECKING:
@@ -20,10 +21,20 @@ class Signal(signals.SignalBase):
         trigger: str,
     ) -> None:
         if event.startswith("action"):
+            tags = [
+                f"event:{event[7:]}",
+            ]
+            sub = repository.installation.subscription.has_feature(
+                subscription.Features.PRIVATE_REPOSITORY
+            )
+            # NOTE(Syffe): We detect non-Open Source users in order to
+            # not overload the quantity of metrics sent to Datadog
+            if sub:
+                tags.append(
+                    f"github_login:{repository.installation.owner_login}",
+                )
+
             statsd.increment(
                 "engine.signals.action.count",
-                tags=[
-                    f"event:{event[7:]}",
-                    f"customer:{repository.installation.owner_id}",
-                ],
+                tags=tags,
             )
