@@ -1,0 +1,60 @@
+name: Scan docker image
+permissions: read-all
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
+
+concurrency:
+  # yamllint disable-line rule:line-length
+  group: "${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  docker-image-security-scan:
+    timeout-minutes: 10
+    runs-on: ubuntu-20.04
+    steps:
+      - name: ⬇️ Checkout
+        uses: actions/checkout@v3.0.2
+
+      - name: 👮 Log into in Heroku
+        run: |
+          cat >~/.netrc <<EOF
+          machine api.heroku.com
+              login prod+heroku@mergify.com
+              password ${{secrets.HEROKU_API_KEY}}
+          machine git.heroku.com
+              login prod+heroku@mergify.com
+              password ${{secrets.HEROKU_API_KEY}}
+          EOF
+          heroku container:login
+
+      - name: ☁️  Download latest image
+        run:
+          docker pull registry.heroku.com/mergify-engine/web:latest
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'registry.heroku.com/mergify-engine/web:latest'
+          format: 'json'
+          security-checks: 'vuln'
+          output: 'docker-security-scan.json'
+
+      - name: Create the Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v4
+        with:
+          token: ${{ secrets.MERGIFY_CI_BOT_PAT }}
+          title: "chore(docker): image security scanning report"
+          body: >
+            This is the docker image security scanning report
+          branch: trivy/daily-report
+          base: main
+
+      - name: Check outputs
+        run: |
+          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
