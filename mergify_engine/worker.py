@@ -69,19 +69,6 @@ from mergify_engine.dashboard import subscription
 from mergify_engine.queue import merge_train
 
 
-try:
-    import vcr
-except ImportError:
-
-    class vcr_errors_CannotOverwriteExistingCassetteException(Exception):
-        pass
-
-else:
-    vcr_errors_CannotOverwriteExistingCassetteException: Exception = (  # type: ignore
-        vcr.errors.CannotOverwriteExistingCassetteException
-    )
-
-
 LOG = daiquiri.getLogger(__name__)
 
 # we keep the PR in queue for ~ 7 minutes (a try == WORKER_PROCESSING_DELAY)
@@ -251,6 +238,7 @@ class StreamProcessor:
     worker_id: str
     dedicated_owner_id: typing.Optional[github_types.GitHubAccountIdType]
     owners_cache: OwnerLoginsCache
+    retry_unhandled_exception_forever: bool = True
 
     @contextlib.asynccontextmanager
     async def _translate_exception_to_retries(
@@ -434,31 +422,26 @@ class StreamProcessor:
                 exc_info=True,
             )
             return
-        except vcr_errors_CannotOverwriteExistingCassetteException:
-            LOG.error(
-                "failed to process org bucket",
-                gh_owner=owner_login_for_tracing,
-                exc_info=True,
-            )
-            # NOTE(sileht): During functionnal tests replay, we don't want to retry for ever
-            # so we catch the error and print all events that can't be processed
-            buckets = await self.redis_links.stream.zrangebyscore(
-                bucket_org_key, min=0, max="+inf", start=0, num=1
-            )
-            for bucket in buckets:
-                messages = await self.redis_links.stream.xrange(bucket)
-                for _, message in messages:
-                    LOG.info(msgpack.unpackb(message[b"source"]))
-                await self.redis_links.stream.delete(bucket)
-                await self.redis_links.stream.delete(ATTEMPTS_KEY)
-                await self.redis_links.stream.zrem(bucket_org_key, bucket)
         except Exception:
-            # Ignore it, it will retried later
             LOG.error(
                 "failed to process org bucket",
                 gh_owner=owner_login_for_tracing,
                 exc_info=True,
             )
+
+            # NOTE(sileht): During functionnal tests, we don't want to retry for ever
+            # so we catch the error and print all events that can't be processed
+            if not self.retry_unhandled_exception_forever:
+                buckets = await self.redis_links.stream.zrangebyscore(
+                    bucket_org_key, min=0, max="+inf", start=0, num=1
+                )
+                for bucket in buckets:
+                    messages = await self.redis_links.stream.xrange(bucket)
+                    for _, message in messages:
+                        LOG.info("event dropped", msgpack.unpackb(message[b"source"]))
+                    await self.redis_links.stream.delete(bucket)
+                    await self.redis_links.stream.delete(ATTEMPTS_KEY)
+                    await self.redis_links.stream.zrem(bucket_org_key, bucket)
 
         LOG.debug("cleanup org bucket start", bucket_org_key=bucket_org_key)
         try:
@@ -702,8 +685,6 @@ class StreamProcessor:
                     raise
                 except OrgBucketUnused:
                     raise
-                except vcr_errors_CannotOverwriteExistingCassetteException:
-                    raise
                 except PullFastRetry:
                     await self.redis_links.stream.zadd(
                         bucket_org_key,
@@ -849,12 +830,13 @@ class StreamProcessor:
             raise
         except OrgBucketUnused:
             raise
-        except vcr_errors_CannotOverwriteExistingCassetteException:
-            raise
         except Exception:
-            # Ignore it, it will retried later
             logger.error("failed to process pull request", exc_info=True)
-            raise UnexpectedPullRetry()
+            if self.retry_unhandled_exception_forever:
+                # Ignore it, it will retried later
+                raise UnexpectedPullRetry()
+            else:
+                raise
 
     def should_handle_owner(
         self,
@@ -930,6 +912,7 @@ class Worker:
     delayed_refresh_idle_time: float = 60
     dedicated_workers_spawner_idle_time: float = 60
     dedicated_workers_syncer_idle_time: float = 30
+    retry_handled_exception_forever: bool = True
 
     _redis_links: redis_utils.RedisLinks = dataclasses.field(
         init=False, default_factory=lambda: redis_utils.RedisLinks(name="worker")
@@ -985,6 +968,7 @@ class Worker:
             worker_id=f"shared-{shared_worker_id}",
             dedicated_owner_id=None,
             owners_cache=self._owners_cache,
+            retry_unhandled_exception_forever=self.retry_handled_exception_forever,
         )
         return await self._stream_worker_task(stream_processor)
 
@@ -996,6 +980,7 @@ class Worker:
             worker_id=f"dedicated-{owner_id}",
             dedicated_owner_id=owner_id,
             owners_cache=self._owners_cache,
+            retry_unhandled_exception_forever=self.retry_handled_exception_forever,
         )
         return await self._stream_worker_task(stream_processor)
 

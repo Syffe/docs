@@ -546,6 +546,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
             delayed_refresh_idle_time=0.01,
             dedicated_workers_spawner_idle_time=0.01,
             dedicated_workers_syncer_idle_time=0.01,
+            retry_handled_exception_forever=False,
         )
         await w.start()
 
@@ -566,6 +567,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
             enabled_services=set(),
             shared_stream_processes=1,
             shared_stream_tasks_per_process=1,
+            retry_handled_exception_forever=False,
         )
         await w.start()
 
