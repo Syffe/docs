@@ -581,7 +581,8 @@ async def extract_pull_numbers_from_event(
         pulls = [
             p["number"]
             for p in data[event_type]["pull_requests"]
-            if p["base"]["repo"]["url"].startswith(base_repo_url)
+            if "url" in p["base"]["repo"]
+            and p["base"]["repo"]["url"].startswith(base_repo_url)
         ]
         if not pulls:
             sha = data[event_type]["head_sha"]
