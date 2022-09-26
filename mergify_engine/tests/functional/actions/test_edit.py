@@ -198,3 +198,37 @@ class TestEditAction(base.FunctionalTestBase):
             "size": 0,
             "total": 0,
         }
+
+    async def test_edit_on_closed_pr(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "convert Pull Request to Draft",
+                    "conditions": [f"base={self.main_branch_name}"],
+                    "actions": {
+                        "edit": {"draft": True},
+                    },
+                }
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        p = await self.create_pr()
+        await self.merge_pull(p["number"])
+        await self.run_engine()
+
+        r = await self.app.get(
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
+            headers={
+                "Authorization": f"bearer {self.api_key_admin}",
+                "Content-type": "application/json",
+            },
+        )
+        assert r.status_code == 200
+        assert r.json() == {
+            "events": [],
+            "per_page": 10,
+            "size": 0,
+            "total": 0,
+        }

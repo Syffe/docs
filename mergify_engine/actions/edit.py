@@ -63,6 +63,13 @@ class EditExecutor(actions.ActionExecutor["EditAction", EditExecutorConfig]):
         if self.config["draft"] is None:
             return check_api.Result(check_api.Conclusion.SUCCESS, "Nothing to do.", "")
 
+        elif self.ctxt.closed:
+            return check_api.Result(
+                check_api.Conclusion.SUCCESS,
+                "Nothing to do, the pull request is closed.",
+                "",
+            )
+
         if self.config["draft"]:
             expected_state = True
             current_state = "draft"
