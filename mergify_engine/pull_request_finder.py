@@ -57,7 +57,8 @@ class PullRequestFinder:
             pull_numbers = {
                 p["number"]
                 for p in info["pull_requests"]
-                if p["base"]["repo"]["id"] == repo_id
+                # NOTE(sileht): engine <= 5.0 doesn't have id set
+                if "id" in p["base"]["repo"] and p["base"]["repo"]["id"] == repo_id
             }
             if not pull_numbers:
                 sha = info["head_sha"]
