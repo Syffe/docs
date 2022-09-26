@@ -546,6 +546,12 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         )
         assert resp.status_code == 202, resp.text
 
+        resp = await self.app.post(
+            f"/refresh/{p1['base']['repo']['full_name']}",
+            headers={"X-Hub-Signature": "sha1=" + base.FAKE_HMAC},
+        )
+        assert resp.status_code == 202, resp.text
+
     async def test_command_refresh(self) -> None:
         rules = {
             "pull_request_rules": [

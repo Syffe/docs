@@ -91,6 +91,27 @@ async def send_pull_refresh(
     )
 
 
+async def send_repository_refresh(
+    redis_stream: "redis_utils.RedisStream",
+    repository: github_types.GitHubRepository,
+    action: github_types.GitHubEventRefreshActionType,
+    source: str,
+) -> None:
+
+    LOG.info(
+        "sending repository refresh",
+        gh_owner=repository["owner"]["login"],
+        gh_repo=repository["name"],
+        gh_private=repository["private"],
+        action=action,
+        source=source,
+    )
+
+    await _send_refresh(
+        redis_stream, repository, action, source, priority=worker_pusher.Priority.low
+    )
+
+
 async def send_branch_refresh(
     redis_stream: "redis_utils.RedisStream",
     repository: github_types.GitHubRepository,

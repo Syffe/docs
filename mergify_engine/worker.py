@@ -55,9 +55,9 @@ from mergify_engine import date
 from mergify_engine import delayed_refresh
 from mergify_engine import engine
 from mergify_engine import exceptions
+from mergify_engine import github_events
 from mergify_engine import github_types
 from mergify_engine import logs
-from mergify_engine import pull_request_finder
 from mergify_engine import redis_utils
 from mergify_engine import refresher
 from mergify_engine import service
@@ -135,16 +135,6 @@ class PullRequestBucket:
     @property
     def priority(self) -> worker_pusher.Priority:
         return worker_pusher.get_priority_level_from_score(self.score)
-
-
-def order_messages_without_pull_numbers(
-    data: tuple[bytes, context.T_PayloadEventSource, str]
-) -> str:
-    # NOTE(sileht): put push event first to make PullRequestFinder more efficient.
-    if data[1]["event_type"] == "push":
-        return ""
-    else:
-        return data[1]["timestamp"]
 
 
 async def run_engine(
@@ -533,7 +523,10 @@ class StreamProcessor:
         bucket_org_key: worker_lua.BucketOrgKeyType,
         installation: context.Installation,
     ) -> None:
-        pr_finder = pull_request_finder.PullRequestFinder(installation)
+        opened_pulls_by_repo: typing.Dict[
+            github_types.GitHubRepositoryIdType,
+            typing.List[github_types.GitHubPullRequest],
+        ] = {}
 
         pulls_processed = 0
         started_at = time.monotonic()
@@ -610,31 +603,34 @@ class StreamProcessor:
                     logger.debug(
                         "unpack events without pull request number", count=len(messages)
                     )
+                    if bucket.repo_id not in opened_pulls_by_repo:
+                        try:
+                            opened_pulls_by_repo[bucket.repo_id] = [
+                                p
+                                async for p in installation.client.items(
+                                    f"/repositories/{bucket.repo_id}/pulls",
+                                    resource_name="pull requests",
+                                    page_limit=100,
+                                )
+                            ]
+                        except Exception as e:
+                            if exceptions.should_be_ignored(e):
+                                opened_pulls_by_repo[bucket.repo_id] = []
+                            else:
+                                raise
 
-                    decoded_messages = (
-                        (
-                            message_id,
-                            typing.cast(
-                                context.T_PayloadEventSource,
-                                msgpack.unpackb(message[b"source"]),
-                            ),
-                            message[b"score"].decode(),
+                    for message_id, message in messages:
+                        source = typing.cast(
+                            context.T_PayloadEventSource,
+                            msgpack.unpackb(message[b"source"]),
                         )
-                        for message_id, message in messages
-                    )
-
-                    # NOTE(sileht): we put push event first to make PullsFinder
-                    # more effective.
-                    for message_id, source, score in sorted(
-                        decoded_messages, key=order_messages_without_pull_numbers
-                    ):
                         converted_messages = await self._convert_event_to_messages(
                             installation,
-                            pr_finder,
                             bucket.repo_id,
                             tracing_repo_name,
                             source,
-                            score,
+                            opened_pulls_by_repo[bucket.repo_id],
+                            message[b"score"].decode(),
                         )
                         logger.info(
                             "assiociated non pull request event to pull requests",
@@ -717,10 +713,10 @@ class StreamProcessor:
     async def _convert_event_to_messages(
         self,
         installation: context.Installation,
-        pr_finder: pull_request_finder.PullRequestFinder,
         repo_id: github_types.GitHubRepositoryIdType,
         tracing_repo_name: github_types.GitHubRepositoryNameForTracing,
         source: context.T_PayloadEventSource,
+        pulls: typing.List[github_types.GitHubPullRequest],
         score: typing.Optional[str] = None,
     ) -> int:
         # NOTE(sileht): the event is incomplete (push, refresh, checks, status)
@@ -728,10 +724,11 @@ class StreamProcessor:
         # handle retry later, add them to message to run engine on them now,
         # and delete the current message_id as we have unpack this incomplete event into
         # multiple complete event
-        pull_numbers = await pr_finder.extract_pull_numbers_from_event(
-            repo_id,
+        pull_numbers = await github_events.extract_pull_numbers_from_event(
+            installation,
             source["event_type"],
             source["data"],
+            pulls,
         )
 
         # NOTE(sileht): refreshing all opened pull request because something got merged

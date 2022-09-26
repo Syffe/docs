@@ -16,7 +16,6 @@ from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import logs
-from mergify_engine import pull_request_finder
 from mergify_engine import redis_utils
 from mergify_engine import worker
 from mergify_engine import worker_lua
@@ -379,19 +378,16 @@ async def test_worker_with_waiting_tasks(
 @mock.patch("mergify_engine.worker.run_engine")
 @mock.patch("mergify_engine.clients.github.get_installation_from_account_id")
 @mock.patch("mergify_engine.clients.github.aget_client")
-@mock.patch.object(
-    pull_request_finder.PullRequestFinder,
-    "extract_pull_numbers_from_event",
-    mock.AsyncMock(side_effect=[[123, 456, 789], [123, 789]]),
-)
+@mock.patch("mergify_engine.github_events.extract_pull_numbers_from_event")
 async def test_worker_expanded_events(
+    extract_pull_numbers_from_event: mock.AsyncMock,
     aget_client: mock.MagicMock,
     get_installation_from_account_id: mock.AsyncMock,
     run_engine: mock.Mock,
     get_subscription: mock.AsyncMock,
     redis_links: redis_utils.RedisLinks,
+    logger_checker: None,
 ) -> None:
-    logs.setup_logging()
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
     get_subscription.side_effect = fake_get_subscription
     client = mock.Mock(
@@ -409,6 +405,7 @@ async def test_worker_expanded_events(
 
     aget_client.return_value = client
 
+    extract_pull_numbers_from_event.side_effect = [[123, 456, 789], [123, 789]]
     await worker_pusher.push(
         redis_links.stream,
         github_types.GitHubAccountIdType(123),

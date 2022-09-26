@@ -107,7 +107,7 @@ def extract_slim_event(event_type: str, data: typing.Any) -> typing.Any:
             "pull_requests": [
                 {
                     "number": p["number"],
-                    "base": {"repo": {"id": p["base"]["repo"]["id"]}},
+                    "base": {"repo": {"url": p["base"]["repo"]["url"]}},
                 }
                 for p in data[event_type]["pull_requests"]
             ],

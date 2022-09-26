@@ -40,6 +40,8 @@ def test_refresher(
     monkeypatch.setattr(
         "mergify_engine.web_cli.http.AsyncClient", lambda: mergify_web_client
     )
-    repo = f"{recorder.config['organization_name']}/{recorder.config['repository_name']}/branch/main"
+    repo = (
+        f"{recorder.config['organization_name']}/{recorder.config['repository_name']}"
+    )
     monkeypatch.setattr("sys.argv", ["mergify-refresher", "--action=admin", repo])
     web_cli.refresher()

@@ -37,7 +37,7 @@ def refresher() -> None:
         "urls",
         nargs="*",
         help=(
-            "<owner>/<repo>/branch/<branch>, "
+            "<owner>/<repo>, <owner>/<repo>/branch/<branch>, "
             "<owner>/<repo>/pull/<pull#> or "
             "https://github.com/<owner>/<repo>/pull/<pull#>"
         ),
