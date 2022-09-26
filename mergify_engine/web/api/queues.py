@@ -15,8 +15,6 @@ from mergify_engine import rules
 from mergify_engine.dashboard import application as application_mod
 from mergify_engine.queue import freeze
 from mergify_engine.queue import merge_train
-from mergify_engine.rules import InvalidRules
-from mergify_engine.rules import get_mergify_config_from_file
 from mergify_engine.web import api
 from mergify_engine.web.api import security
 from mergify_engine.web.api import statistics as statistics_api
@@ -363,13 +361,9 @@ async def repository_queues_configuration(
     ),
 ) -> QueuesConfig:
 
-    config_file = await repository_ctxt.get_mergify_config_file()
-    if config_file is None:
-        return QueuesConfig()
-
     try:
-        config = await get_mergify_config_from_file(config_file, repository_ctxt)
-    except InvalidRules:
+        config = await repository_ctxt.get_mergify_config()
+    except rules.InvalidRules:
         raise fastapi.HTTPException(
             status_code=422,
             detail="The configuration file is invalid.",
@@ -413,13 +407,14 @@ async def create_queue_freeze(
     if queue_freeze_payload.reason == "":
         queue_freeze_payload.reason = "No freeze reason was specified."
 
-    config_file = await repository_ctxt.get_mergify_config_file()
-    if config_file is None:
+    try:
+        config = await repository_ctxt.get_mergify_config()
+    except rules.InvalidRules:
         raise fastapi.HTTPException(
-            status_code=404, detail="Mergify configuration file is missing."
+            status_code=422,
+            detail="The configuration file is invalid.",
         )
 
-    config = await get_mergify_config_from_file(config_file, repository_ctxt)
     queue_rules = config["queue_rules"]
     if all(queue_name != rule.name for rule in queue_rules):
         raise fastapi.HTTPException(
