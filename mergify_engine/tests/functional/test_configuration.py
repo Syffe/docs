@@ -96,15 +96,17 @@ class TestConfiguration(base.FunctionalTestBase):
             check["output"]["title"] == "The current Mergify configuration is invalid"
         )
         # Use startswith because the message has some weird \x00 char
-        assert check["output"]["summary"].startswith(
-            """Invalid YAML @ line 3, column 2
+        assert (
+            check["output"]["summary"]
+            == """Invalid YAML @ line 3, column 2
 ```
 while scanning an alias
-  in "<unicode string>", line 3, column 1:
-    *
-    ^
-expected alphabetic or numeric character, but found"""
+  in &quot;&lt;unicode string&gt;&quot;, line 3, column 1
+did not find expected alphabetic or numeric character
+  in &quot;&lt;unicode string&gt;&quot;, line 3, column 2
+```"""
         )
+
         check_id = check["id"]
         annotations = [
             annotation
@@ -543,6 +545,6 @@ expected alphabetic or numeric character, but found"""
         )
         assert "@ extends" in summary_check["output"]["summary"]
         assert (
-            "Extended configuration repository this_repo_does_not_exist was not found. This repository doesn't exist or Mergify is not installed on it."
+            "Extended configuration repository this_repo_does_not_exist was not found. This repository doesn&#x27;t exist or Mergify is not installed on it."
             in summary_check["output"]["summary"]
         )

@@ -710,10 +710,10 @@ class TestQueueCISummary(base.FunctionalTestBase):
         assert summary is not None
         assert summary["output"] is not None
         assert (
-            """
+            f"""
 ### Rule: no &lt;i&gt;manual&lt;/i&gt; merge (comment)
 - [ ] `label=&lt;h1&gt;foo&lt;/h1&gt;bar`
-- [X] `base=20220913130249/test_summary_html_escape/main`
+- [X] `base={self.main_branch_name}`
 """
             in summary["output"]["summary"]
         )

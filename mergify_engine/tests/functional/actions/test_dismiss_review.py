@@ -90,7 +90,7 @@ class TestDismissReviewsAction(base.FunctionalTestBase):
         assert (
             """Template syntax error @ pull_request_rules → item 0 → actions → dismiss_reviews → message → line 1
 ```
-unexpected end of template, expected 'end of print statement'.
+unexpected end of template, expected &#x27;end of print statement&#x27;.
 ```"""
             == check["output"]["summary"]
         )
