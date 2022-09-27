@@ -151,6 +151,16 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
                     "GitHub returned an unexpected error:\n\n * "
                     + "\n * ".join(f"`{s}`" for s in e.response.json()["errors"]),
                 )
+            elif e.status_code == 404 and self.config["bot_account"] is not None:
+                # NOTE(sileht): If the oauth token is valid but the user is not
+                # allowed access this repository GitHub returns 404 for private
+                # repository instead of 403.
+                return check_api.Result(
+                    check_api.Conclusion.FAILURE,
+                    "Review failed",
+                    f"GitHub account `{self.config['bot_account']['login']}` is not "
+                    "allowed to review pull requests of this repository",
+                )
             raise
 
         await signals.send(
