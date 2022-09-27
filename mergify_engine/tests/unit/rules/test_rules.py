@@ -839,14 +839,72 @@ def test_extends_ko(extends: typing.Optional[str]) -> None:
 
 
 async def test_extends_infinite_loop() -> None:
-    config = {"extends": ".github"}
-    merigy_config = rules.MergifyConfig(raw_config=config)  # type: ignore[typeddict-item]
-    mock.patch(
-        "mergify_engine.context.Repository.get_mergify_config",
-        return_value=merigy_config,
+    mergify_config = rules.MergifyConfig(
+        {
+            "extends": github_types.GitHubRepositoryName(".github"),
+            "pull_request_rules": rules.PullRequestRules([]),
+            "queue_rules": rules.QueueRules([]),
+            "defaults": rules.Defaults({"actions": {}}),
+            "commands_restrictions": {},
+            "raw_config": {
+                "extends": github_types.GitHubRepositoryName(".github"),
+            },
+        }
+    )
+    repository_ctxt = mock.MagicMock()
+    repository_ctxt.get_mergify_config.side_effect = mock.AsyncMock(
+        return_value=mergify_config
+    )
+
+    repository_ctxt.installation.get_repository_by_name = mock.AsyncMock(
+        return_value=repository_ctxt
     )
     with pytest.raises(rules.InvalidRules) as i:
-        await rules.get_mergify_config_from_dict(mock.MagicMock(), config, "")
+        await rules.get_mergify_config_from_dict(
+            repository_ctxt, mergify_config["raw_config"], ""
+        )
+    assert (
+        str(i.value)
+        == "Only configuration from other repositories can be extended. @ extends"
+    )
+
+
+async def test_extends_limit(fake_repository: context.Repository) -> None:
+    mergify_config = rules.MergifyConfig(
+        {
+            "extends": github_types.GitHubRepositoryName(".github"),
+            "pull_request_rules": rules.PullRequestRules([]),
+            "queue_rules": rules.QueueRules([]),
+            "defaults": rules.Defaults({"actions": {}}),
+            "commands_restrictions": {},
+            "raw_config": {
+                "extends": github_types.GitHubRepositoryName(".github"),
+            },
+        }
+    )
+
+    repository_ctxt = mock.MagicMock()
+    repository_ctxt.installation.get_repository_by_name = mock.AsyncMock(
+        return_value=fake_repository
+    )
+    with mock.patch.object(
+        fake_repository,
+        "get_mergify_config_file",
+        side_effect=mock.AsyncMock(
+            return_value=context.MergifyConfigFile(
+                type="file",
+                content="whatever",
+                sha=github_types.SHAType("azertyuiop"),
+                path=github_types.GitHubFilePath("whatever"),
+                decoded_content="extends: faraway",
+            )
+        ),
+    ):
+
+        with pytest.raises(rules.InvalidRules) as i:
+            await rules.get_mergify_config_from_dict(
+                repository_ctxt, mergify_config["raw_config"], ""
+            )
     assert (
         str(i.value)
         == "Maximum number of extended configuration reached. Limit is 1. @ extends"

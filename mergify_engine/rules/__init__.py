@@ -700,6 +700,7 @@ class CommandsRestrictions(typing.TypedDict):
 
 
 class MergifyConfig(typing.TypedDict):
+    extends: github_types.GitHubRepositoryName | None
     pull_request_rules: PullRequestRules
     queue_rules: QueueRules
     commands_restrictions: typing.Dict[str, CommandsRestrictions]
@@ -775,7 +776,7 @@ def merge_raw_configs(
 async def get_mergify_config_from_file(
     repository_ctxt: context.Repository,
     config_file: context.MergifyConfigFile,
-    allow_extend: bool = False,
+    allow_extend: bool = True,
 ) -> MergifyConfig:
     try:
         config = YamlSchema(config_file["decoded_content"])
@@ -796,7 +797,7 @@ async def get_mergify_config_from_dict(
     repository_ctxt: context.Repository,
     config: typing.Dict[str, typing.Any],
     error_path: str,
-    allow_extend: bool = False,
+    allow_extend: bool = True,
 ) -> MergifyConfig:
     try:
         UserConfigurationSchema(config, partial_validation=True)
@@ -869,7 +870,7 @@ async def get_mergify_extended_config(
             error_path,
         )
 
-    return await extended_repository_ctxt.get_mergify_config()
+    return await extended_repository_ctxt.get_mergify_config(allow_extend=False)
 
 
 def apply_configure_filter(

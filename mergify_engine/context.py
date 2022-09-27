@@ -370,7 +370,9 @@ class Repository(object):
             yield content_file_to_config_file(content)
 
     @tracer.wrap("get_mergify_config", span_type="worker")
-    async def get_mergify_config(self) -> "rules.MergifyConfig":
+    async def get_mergify_config(
+        self, allow_extend: bool = True
+    ) -> "rules.MergifyConfig":
         # circular import
         from mergify_engine import rules
 
@@ -388,7 +390,7 @@ class Repository(object):
         # BRANCH CONFIGURATION CHECKING
         try:
             mergify_config = await rules.get_mergify_config_from_file(
-                self, config_file, allow_extend=True
+                self, config_file, allow_extend=allow_extend
             )
         except Exception as e:
             self._caches.mergify_config.set(e)
