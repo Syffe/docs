@@ -41,7 +41,12 @@ jobs:
           image-ref: 'registry.heroku.com/mergify-engine/web:latest'
           format: 'json'
           security-checks: 'vuln'
-          output: 'docker-security-scan.json'
+          output: 'docker-security-scan.json.tmp'
+
+      - name: Keep only the results section
+        run: |
+          jq -r .Results docker-security-scan.json.tmp > docker-security-scan.json
+          rm -f docker-security-scan.json.tmp
 
       - name: Create the Pull Request
         id: cpr
