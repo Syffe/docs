@@ -46,7 +46,7 @@ CUSTOM_FORMATTER = CustomFormatter(
 class HerokuDatadogFormatter(daiquiri.formatter.DatadogFormatter):
     HEROKU_LOG_EXTRAS = {
         envvar: os.environ[envvar]
-        for envvar in ("HEROKU_RELEASE_VERSION", "HEROKU_SLUG_COMMIT")
+        for envvar in ("HEROKU_RELEASE_VERSION",)
         if envvar in os.environ
     }
 

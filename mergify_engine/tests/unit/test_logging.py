@@ -30,7 +30,6 @@ def test_logging(
 ) -> None:
     monkeypatch.setenv("DYNO", "worker-shared.1")
     monkeypatch.setenv("HEROKU_RELEASE_VERSION", "v1234")
-    monkeypatch.setenv("HEROKU_SLUG_COMMIT", "75a50b499de27757f171bac717c81685d648d3a7")
 
     importlib.reload(logs)
 
@@ -65,7 +64,6 @@ def test_logging(
             "dd.version": mock.ANY,
             "dd.env": "",
             "HEROKU_RELEASE_VERSION": "v1234",
-            "HEROKU_SLUG_COMMIT": "75a50b499de27757f171bac717c81685d648d3a7",
             "worker_id": "shared-30",
             "dyno": "worker-shared.1",
             "dynotype": "worker-shared",
