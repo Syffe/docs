@@ -256,6 +256,9 @@ def _check_rate_limit(response: httpx.Response) -> None:
         else:
             delta = (
                 datetime.datetime.utcfromtimestamp(int(reset))
+                # NOTE(sileht): we add 5 seconds to not be subject to
+                # time jitter and retry too early
+                + datetime.timedelta(seconds=5)
                 - datetime.datetime.utcnow()
             )
             if delta < datetime.timedelta():
