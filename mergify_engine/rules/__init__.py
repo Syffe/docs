@@ -600,7 +600,13 @@ def UserConfigurationSchema(
     config: typing.Dict[str, typing.Any], partial_validation: bool = False
 ) -> voluptuous.Schema:
     schema = {
-        voluptuous.Optional("extends"): voluptuous.Coerce(validate_extends),
+        voluptuous.Required("extends", default=None): voluptuous.Any(
+            None,
+            voluptuous.All(
+                str,
+                voluptuous.Length(min=1),
+            ),
+        ),
         voluptuous.Required(
             "pull_request_rules", default=[]
         ): get_pull_request_rules_schema(),
@@ -619,12 +625,6 @@ def UserConfigurationSchema(
         schema = voluptuous.And(schema, voluptuous.Coerce(FullifyPullRequestRules))
 
     return voluptuous.Schema(schema)(config)
-
-
-def validate_extends(v: str) -> github_types.GitHubRepositoryName:
-    if v is None or v == "":
-        raise voluptuous.Invalid("Invalid repository name or file path")
-    return github_types.GitHubRepositoryName(v)
 
 
 YamlSchema: typing.Callable[[str], typing.Any] = voluptuous.Schema(
@@ -754,24 +754,16 @@ def merge_raw_configs(
     dest_config: typing.Dict[str, typing.Any],
 ) -> typing.Dict[str, typing.Any]:
     merged_config = dest_config.copy()
-    rules_to_merge = ["pull_request_rules", "queue_rules"]
 
-    for rule_to_merge in rules_to_merge:
-        source_rules_to_add = []
+    for rule_to_merge in ("pull_request_rules", "queue_rules"):
+        dest_rules = merged_config.setdefault(rule_to_merge, [])
+        dest_rule_names = [rule["name"] for rule in dest_rules]
+
         for source_rule in extended_config.get(rule_to_merge, []):
-            dest_rules = [
-                dest_rule
-                for dest_rule in dest_config.get(rule_to_merge, [])
-                if dest_rule["name"] == source_rule["name"]
-            ]
-            if not dest_rules:
-                source_rules_to_add.append(source_rule)
-        if rule_to_merge in merged_config:
-            merged_config[rule_to_merge].extend(source_rules_to_add)
-        else:
-            merged_config[rule_to_merge] = source_rules_to_add
+            if source_rule["name"] not in dest_rule_names:
+                dest_rules.append(source_rule)
 
-    for commands_restriction in extended_config.get("commands_restrictions", {}).keys():
+    for commands_restriction in extended_config.get("commands_restrictions", {}):
         if commands_restriction not in merged_config["commands_restrictions"]:
             merged_config["commands_restrictions"][
                 commands_restriction
@@ -781,8 +773,8 @@ def merge_raw_configs(
 
 
 async def get_mergify_config_from_file(
+    repository_ctxt: context.Repository,
     config_file: context.MergifyConfigFile,
-    ctxt: context.Repository,
     allow_extend: bool = False,
 ) -> MergifyConfig:
     try:
@@ -796,14 +788,14 @@ async def get_mergify_config_from_file(
 
     # Validate defaults
     return await get_mergify_config_from_dict(
-        config, config_file["path"], ctxt, allow_extend
+        repository_ctxt, config, config_file["path"], allow_extend
     )
 
 
 async def get_mergify_config_from_dict(
+    repository_ctxt: context.Repository,
     config: typing.Dict[str, typing.Any],
     error_path: str,
-    ctxt: context.Repository,
     allow_extend: bool = False,
 ) -> MergifyConfig:
     try:
@@ -826,14 +818,13 @@ async def get_mergify_config_from_dict(
                 error_path,
             )
         config_to_extend = await get_mergify_extended_config(
-            extended_path, error_path, ctxt
+            repository_ctxt, extended_path, error_path
         )
         # NOTE(jules): Anchor and shared elements can't be shared between files
         # because they are computed by YamlSchema already.
         extended_defaults = merge_defaults(config_to_extend["defaults"], defaults)
         extended_config = merge_raw_configs(config_to_extend["raw_config"], config)
         merged_config = merge_config_with_defaults(extended_config, extended_defaults)
-        merged_config.pop("extends")
 
     try:
         final_config = UserConfigurationSchema(merged_config, partial_validation=False)
@@ -849,13 +840,15 @@ async def get_mergify_config_from_dict(
 
 
 async def get_mergify_extended_config(
+    repository_ctxt: context.Repository,
     extended_path: github_types.GitHubRepositoryName,
     error_path: str,
-    ctxt: context.Repository,
 ) -> MergifyConfig:
 
     try:
-        extended_repo = await ctxt.installation.get_repository_by_name(extended_path)
+        extended_repository_ctxt = (
+            await repository_ctxt.installation.get_repository_by_name(extended_path)
+        )
     except http.HTTPNotFound as e:
         exc = InvalidRules(
             voluptuous.Invalid(
@@ -867,7 +860,7 @@ async def get_mergify_extended_config(
         )
         raise exc from e
 
-    if extended_repo.repo["id"] == ctxt.repo["id"]:
+    if extended_repository_ctxt.repo["id"] == repository_ctxt.repo["id"]:
         raise InvalidRules(
             voluptuous.Invalid(
                 "Only configuration from other repositories can be extended.",
@@ -876,7 +869,7 @@ async def get_mergify_extended_config(
             error_path,
         )
 
-    return await extended_repo.get_mergify_config()
+    return await extended_repository_ctxt.get_mergify_config()
 
 
 def apply_configure_filter(

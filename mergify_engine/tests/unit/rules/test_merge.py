@@ -828,7 +828,6 @@ def test_merge_defaults(
                 ],
             },
             {
-                "extends": "whatever.yml",
                 "defaults": {
                     "actions": {
                         "copy": {"labels": ["copied"], "bot_account": "Autobot"}
@@ -843,6 +842,7 @@ def test_merge_defaults(
                 ],
             },
             {
+                "extends": "extended_configuration.yml",
                 "queue_rules": [],
                 "pull_request_rules": [
                     {
@@ -881,9 +881,12 @@ async def test_merge_rules_and_defaults(
     mocked_ctxt = mock.MagicMock()
     with mock.patch(
         "mergify_engine.rules.get_mergify_extended_config",
-        return_value={"defaults": defaults, "raw_config": config_to_extend},
+        return_value={
+            "defaults": defaults,
+            "raw_config": config_to_extend,
+        },
     ):
         merged_config = await rules.get_mergify_config_from_dict(
-            config, "", mocked_ctxt, allow_extend=True
+            mocked_ctxt, config, "", allow_extend=True
         )
     assert merged_config["raw_config"] == expected_result

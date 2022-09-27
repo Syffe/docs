@@ -16,6 +16,7 @@ from mergify_engine.tests.unit import conftest
 
 async def get_empty_config() -> rules.MergifyConfig:
     return await rules.get_mergify_config_from_file(
+        mock.MagicMock(),
         context.MergifyConfigFile(
             type="file",
             content="whatever",
@@ -23,7 +24,6 @@ async def get_empty_config() -> rules.MergifyConfig:
             path=github_types.GitHubFilePath("whatever"),
             decoded_content="",
         ),
-        mock.MagicMock(),
     )
 
 
@@ -115,7 +115,7 @@ defaults:
         path=github_types.GitHubFilePath("whatever"),
         decoded_content=raw_config,
     )
-    config = await rules.get_mergify_config_from_file(file, mock.MagicMock())
+    config = await rules.get_mergify_config_from_file(mock.MagicMock(), file)
     command = commands_runner.load_command(config, "@mergifyio backport")
     assert command.name == "backport"
     assert command.args == ""
@@ -302,6 +302,7 @@ async def test_commands_restrictions_sender_permission(
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
     mergify_config = await rules.get_mergify_config_from_file(
+        mock.MagicMock(),
         context.MergifyConfigFile(
             type="file",
             content="whatever",
@@ -314,7 +315,6 @@ commands_restrictions:
     - {command_restriction}
 """,
         ),
-        mock.MagicMock(),
     )
 
     user = create_fake_user()

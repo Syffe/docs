@@ -388,7 +388,7 @@ class Repository(object):
         # BRANCH CONFIGURATION CHECKING
         try:
             mergify_config = await rules.get_mergify_config_from_file(
-                config_file, self, allow_extend=True
+                self, config_file, allow_extend=True
             )
         except Exception as e:
             self._caches.mergify_config.set(e)

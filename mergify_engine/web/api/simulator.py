@@ -27,9 +27,12 @@ router = fastapi.APIRouter(
 class SimulatorPayload(pydantic.BaseModel):
     mergify_yml: str = pydantic.Field(description="A Mergify configuration")
 
-    async def get_config(self, ctxt: context.Repository) -> rules.MergifyConfig:
+    async def get_config(
+        self, repository_ctxt: context.Repository
+    ) -> rules.MergifyConfig:
         try:
             return await rules.get_mergify_config_from_file(
+                repository_ctxt,
                 context.MergifyConfigFile(
                     {
                         "type": "file",
@@ -39,7 +42,6 @@ class SimulatorPayload(pydantic.BaseModel):
                         "decoded_content": self.mergify_yml,
                     }
                 ),
-                ctxt,
             )
         except rules.InvalidRules as exc:
             detail = [

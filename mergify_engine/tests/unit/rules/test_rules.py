@@ -26,7 +26,7 @@ async def load_mergify_config(content: str) -> rules.MergifyConfig:
         decoded_content=content,
     )
 
-    return await rules.get_mergify_config_from_file(file, mock.MagicMock())
+    return await rules.get_mergify_config_from_file(mock.MagicMock(), file)
 
 
 def pull_request_rule_from_list(lst: typing.Any) -> rules.PullRequestRules:
@@ -464,7 +464,7 @@ async def test_get_mergify_config(
 
     config_file = await fake_repository.get_mergify_config_file()
     assert config_file is not None
-    schema = await rules.get_mergify_config_from_file(config_file, mock.MagicMock())
+    schema = await rules.get_mergify_config_from_file(mock.MagicMock(), config_file)
     assert isinstance(schema, dict)
     assert "pull_request_rules" in schema
     assert "queue_rules" in schema
@@ -513,7 +513,7 @@ pull_request_rules:
     config_file = await fake_repository.get_mergify_config_file()
     assert config_file is not None
 
-    schema = await rules.get_mergify_config_from_file(config_file, mock.MagicMock())
+    schema = await rules.get_mergify_config_from_file(mock.MagicMock(), config_file)
     assert isinstance(schema, dict)
 
     assert len(schema["pull_request_rules"].rules) == 1
@@ -551,7 +551,7 @@ pull_request_rules:
     config_file = await fake_repository.get_mergify_config_file()
     assert config_file is not None
 
-    schema = await rules.get_mergify_config_from_file(config_file, mock.MagicMock())
+    schema = await rules.get_mergify_config_from_file(mock.MagicMock(), config_file)
     assert isinstance(schema, dict)
 
     assert len(schema["pull_request_rules"].rules) == 1
@@ -704,7 +704,7 @@ async def test_get_mergify_config_invalid(
 
         config_file = await fake_repository.get_mergify_config_file()
         assert config_file is not None
-        await rules.get_mergify_config_from_file(config_file, mock.MagicMock())
+        await rules.get_mergify_config_from_file(mock.MagicMock(), config_file)
 
 
 def test_user_configuration_schema() -> None:
@@ -830,16 +830,12 @@ def test_extends_parsing(extends: str) -> None:
     "extends",
     [
         "",
-        None,
     ],
 )
 def test_extends_ko(extends: typing.Optional[str]) -> None:
     with pytest.raises(voluptuous.Invalid) as i:
         rules.UserConfigurationSchema({"extends": extends})
-    assert (
-        str(i.value)
-        == "Invalid repository name or file path for dictionary value @ data['extends']"
-    )
+    assert str(i.value) == "not a valid value for dictionary value @ data['extends']"
 
 
 async def test_extends_infinite_loop() -> None:
@@ -850,7 +846,7 @@ async def test_extends_infinite_loop() -> None:
         return_value=merigy_config,
     )
     with pytest.raises(rules.InvalidRules) as i:
-        await rules.get_mergify_config_from_dict(config, "", mock.MagicMock())
+        await rules.get_mergify_config_from_dict(mock.MagicMock(), config, "")
     assert (
         str(i.value)
         == "Maximum number of extended configuration reached. Limit is 1. @ extends"
@@ -1528,7 +1524,7 @@ pull_request_rules:
             """,
     )
 
-    config = await rules.get_mergify_config_from_file(file, mock.MagicMock())
+    config = await rules.get_mergify_config_from_file(mock.MagicMock(), file)
 
     assert [list(rule.actions.keys()) for rule in config["pull_request_rules"]][0] == [
         "comment",
@@ -1561,7 +1557,7 @@ pull_request_rules:
     )
 
     with pytest.raises(rules.InvalidRules) as e:
-        await rules.get_mergify_config_from_file(file, mock.MagicMock())
+        await rules.get_mergify_config_from_file(mock.MagicMock(), file)
 
     assert (
         str(e.value.error)
@@ -1587,7 +1583,7 @@ pull_request_rules:
     )
 
     with pytest.raises(rules.InvalidRules) as e:
-        await rules.get_mergify_config_from_file(file, mock.MagicMock())
+        await rules.get_mergify_config_from_file(mock.MagicMock(), file)
 
     assert str(e.value.error) == "missing queue not found"
 
@@ -1606,8 +1602,8 @@ defaults:
 """,
     )
 
-    assert await rules.get_mergify_config_from_file(file, mock.MagicMock())
-    config = await rules.get_mergify_config_from_file(file, mock.MagicMock())
+    assert await rules.get_mergify_config_from_file(mock.MagicMock(), file)
+    config = await rules.get_mergify_config_from_file(mock.MagicMock(), file)
 
     assert config["pull_request_rules"].rules == []
 
@@ -1631,7 +1627,7 @@ pull_request_rules:
     )
 
     with pytest.raises(rules.InvalidRules) as e:
-        await rules.get_mergify_config_from_file(file, mock.MagicMock())
+        await rules.get_mergify_config_from_file(mock.MagicMock(), file)
 
     assert (
         str(e.value)
@@ -1881,7 +1877,7 @@ pull_request_rules:
 """,
     )
 
-    config = await rules.get_mergify_config_from_file(file, mock.MagicMock())
+    config = await rules.get_mergify_config_from_file(mock.MagicMock(), file)
 
     pull_request_rules = list(config["pull_request_rules"])
     assert pull_request_rules[0].actions["queue"].config["name"] == "default"
@@ -1911,7 +1907,7 @@ queue_rules:
     )
 
     with pytest.raises(rules.InvalidRules) as i:
-        await rules.get_mergify_config_from_file(file, mock.MagicMock())
+        await rules.get_mergify_config_from_file(mock.MagicMock(), file)
     assert (
         "disallow_checks_interruption_from_queues containes an unkown queue: whatever"
         in str(i.value)
@@ -1935,7 +1931,7 @@ queue_rules:
 """,
     )
 
-    config = await rules.get_mergify_config_from_file(file, mock.MagicMock())
+    config = await rules.get_mergify_config_from_file(mock.MagicMock(), file)
     assert config["queue_rules"][rules.QueueName("low")].config[
         "disallow_checks_interruption_from_queues"
     ] == ["default"]
@@ -1957,7 +1953,7 @@ queue_rules:
     )
 
     with pytest.raises(rules.InvalidRules) as i:
-        await rules.get_mergify_config_from_file(file, mock.MagicMock())
+        await rules.get_mergify_config_from_file(mock.MagicMock(), file)
     assert (
         "* Invalid date interval for dictionary value @ queue_rules → item 0 → batch_max_wait_time"
         in str(i.value)
@@ -1982,7 +1978,7 @@ queue_rules:
     )
 
     with pytest.raises(rules.InvalidRules) as i:
-        await rules.get_mergify_config_from_file(file, mock.MagicMock())
+        await rules.get_mergify_config_from_file(mock.MagicMock(), file)
     assert (
         "* expected str for dictionary value @ queue_rules → item 0 → batch_max_wait_time"
         in str(i.value)
