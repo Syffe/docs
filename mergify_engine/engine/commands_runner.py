@@ -5,6 +5,7 @@ import typing
 
 import daiquiri
 from datadog import statsd  # type: ignore[attr-defined]
+import tenacity
 import voluptuous
 
 from mergify_engine import actions
@@ -15,6 +16,7 @@ from mergify_engine import github_types
 from mergify_engine import rules
 from mergify_engine import utils
 from mergify_engine.clients import github
+from mergify_engine.clients import http
 from mergify_engine.rules import conditions as conditions_mod
 
 
@@ -153,15 +155,23 @@ async def run_pending_commands_tasks(
         return
 
     pendings = LastUpdatedOrderedDict()
-    async for comment in typing.cast(
-        typing.AsyncIterator[github_types.GitHubComment],
-        ctxt.client.items(
-            f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments",
-            resource_name="comments",
-            page_limit=20,
-        ),
+    for attempt in tenacity.AsyncRetrying(  # type: ignore[attr-defined]
+        stop=tenacity.stop_after_attempt(2),  # type: ignore[attr-defined]
+        wait=tenacity.wait_exponential(0.2),  # type: ignore[attr-defined]
+        retry=tenacity.retry_if_exception_type(http.HTTPNotFound),  # type: ignore[attr-defined]
+        reraise=True,
     ):
+        with attempt:
+            comments: typing.List[github_types.GitHubComment] = [
+                c
+                async for c in ctxt.client.items(
+                    f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments",
+                    resource_name="comments",
+                    page_limit=20,
+                )
+            ]
 
+    for comment in comments:
         if comment["user"]["id"] != config.BOT_USER_ID:
             continue
 
