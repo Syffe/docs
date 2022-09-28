@@ -1311,6 +1311,16 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
             ).json(),
         )
 
+    async def close_pull(
+        self,
+        pull_number: github_types.GitHubPullRequestNumber,
+    ) -> None:
+        r = await self.client_integration.patch(
+            f"{self.url_origin}/pulls/{pull_number}", json={"state": "closed"}
+        )
+        assert r.status_code == 200
+        assert r.json()["state"] == "closed"
+
     async def is_pull_merged(
         self,
         pull_number: github_types.GitHubPullRequestNumber,

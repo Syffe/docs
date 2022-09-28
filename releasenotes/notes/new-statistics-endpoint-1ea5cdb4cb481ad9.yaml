@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    Added a new statistics endpoint that gives the number of queue checks that succeeded
+    in addition to FailureByReason stats.

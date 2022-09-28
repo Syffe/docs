@@ -4,6 +4,7 @@ from freezegun import freeze_time
 
 from mergify_engine import config
 from mergify_engine import date
+from mergify_engine import github_types
 from mergify_engine import yaml
 from mergify_engine.queue import statistics as queue_statistics
 from mergify_engine.queue import utils as queue_utils
@@ -451,3 +452,111 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
 
             assert r.status_code == 200
             assert r.json()["mean"] is None
+
+    async def test_queue_checks_outcome_endpoint(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "status-success=continuous-integration/fake-ci",
+                        "label=queue",
+                    ],
+                    "allow_inplace_checks": False,
+                    "batch_size": 3,
+                    "batch_max_wait_time": "0 s",
+                    "speculative_checks": 1,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                },
+            ],
+        }
+        with freeze_time("2022-08-18T10:00:00", tick=True):
+            await self.setup_repo(yaml.dump(rules))
+
+            # #####
+            # Create FailureByReason
+            p1 = await self.create_pr()
+            p2 = await self.create_pr(two_commits=True)
+            p3 = await self.create_pr()
+
+            # To force others to be rebased
+            p = await self.create_pr()
+            await self.merge_pull(p["number"])
+            await self.wait_for("pull_request", {"action": "closed"})
+            await self.run_engine()
+
+            await self.add_label(p1["number"], "queue")
+            await self.add_label(p2["number"], "queue")
+            await self.add_label(p3["number"], "queue")
+            await self.run_engine()
+
+            pulls = await self.get_pulls()
+            assert len(pulls) == 4
+
+            await self.wait_for("pull_request", {"action": "opened"})
+            await self.run_engine()
+
+            await self.remove_label(p1["number"], "queue")
+            await self.run_engine()
+            await self.wait_for("pull_request", {"action": "closed"})
+
+            failure_by_reason_key = self.get_statistic_redis_key("failure_by_reason")
+            assert await self.redis_links.stats.xlen(failure_by_reason_key) == 3
+
+            await self.close_pull(p1["number"])
+            await self.close_pull(p2["number"])
+            await self.close_pull(p3["number"])
+            await self.run_engine()
+
+            await self.wait_for("pull_request", {"action": "closed"})
+
+            # #####
+            # Create ChecksDuration
+            p4 = await self.create_pr()
+
+            # To force others to be rebased
+            p5 = await self.create_pr()
+            await self.merge_pull(p5["number"])
+            await self.wait_for("pull_request", {"action": "closed"})
+            await self.run_engine()
+
+            await self.add_label(p4["number"], "queue")
+            await self.run_full_engine()
+
+            await self.wait_for("pull_request", {"action": "opened"})
+            await self.create_status(
+                await self.get_pull(
+                    github_types.GitHubPullRequestNumber(p5["number"] + 1)
+                )
+            )
+
+        with freeze_time("2022-08-18T12:00:00", tick=True):
+            await self.run_full_engine()
+
+            await self.wait_for(
+                "check_suite", {"check_suite": {"conclusion": "success"}}
+            )
+            await self.wait_for("pull_request", {"action": "closed"})
+            await self.wait_for("pull_request", {"action": "closed"})
+
+            r = await self.app.get(
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/queue_checks_outcome",
+                headers={
+                    "Authorization": f"bearer {self.api_key_admin}",
+                    "Content-type": "application/json",
+                },
+            )
+
+            assert r.status_code == 200
+            assert r.json()[queue_utils.PrAheadDequeued.abort_code] == 3
+            assert r.json()["SUCCESS"] == 1

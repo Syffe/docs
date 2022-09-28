@@ -134,6 +134,10 @@ class ChecksDuration(BaseQueueStats):
     duration_seconds: int
 
 
+class QueueChecksOutcomeT(FailureByReasonT):
+    SUCCESS: int
+
+
 def _get_repository_key(
     owner_id: github_types.GitHubAccountIdType,
     repo_id: github_types.GitHubRepositoryIdType,
@@ -269,9 +273,9 @@ class StatisticsSignal(signals.SignalBase):
 RedisXRangeT = typing.List[typing.Tuple[bytes, typing.Any]]
 
 
-async def _get_stat_items(
+async def _get_stats_items(
     repository: "context.Repository",
-    stat_name: AvailableStatsKeyT,
+    stats_name_list: list[AvailableStatsKeyT],
     older_event_id: str,
     newer_event_id: str,
     queue_name: typing.Optional[rules.QueueName] = None,
@@ -285,22 +289,27 @@ async def _get_stat_items(
     redis_repo_key = _get_repository_key(
         repository.installation.owner_id, repository.repo["id"]
     )
-    full_redis_key = f"{redis_repo_key}/{stat_name}"
 
-    items = await redis.xrange(full_redis_key, min=older_event_id, max=newer_event_id)
-    for _, raw_stat in items:
-        stat = msgpack.unpackb(raw_stat[b"data"], timestamp=3)
-        # NOTE(greesb): Replace ".get()" by "[]" when all the stats
-        # will have a branch_name (1 month from the time this modification has been merged)
-        if (queue_name is None or stat["queue_name"] == queue_name) and stat.get(
-            "branch_name"
-        ) == branch_name:
-            yield stat
+    pipe = await redis.pipeline()
+    for stat_name in stats_name_list:
+        full_redis_key = f"{redis_repo_key}/{stat_name}"
+        await pipe.xrange(full_redis_key, min=older_event_id, max=newer_event_id)
+
+    results = await pipe.execute()
+    for result in results:
+        for _, raw_stat in result:
+            stat = msgpack.unpackb(raw_stat[b"data"], timestamp=3)
+            # NOTE(greesb): Replace ".get()" by "[]" when all the stats
+            # will have a branch_name (1 month from the time this modification has been merged)
+            if (queue_name is None or stat["queue_name"] == queue_name) and stat.get(
+                "branch_name"
+            ) == branch_name:
+                yield stat
 
 
-async def _get_stat_items_date_range(
+async def _get_stats_items_date_range(
     repository: "context.Repository",
-    stat_name: AvailableStatsKeyT,
+    stats_name_list: list[AvailableStatsKeyT],
     queue_name: typing.Optional[rules.QueueName] = None,
     branch_name: typing.Optional[str] = None,
     start_at: typing.Optional[int] = None,
@@ -317,15 +326,20 @@ async def _get_stat_items_date_range(
     else:
         newer_event_id = "+"
 
-    async for item in _get_stat_items(
-        repository, stat_name, older_event_id, newer_event_id, queue_name, branch_name
+    async for item in _get_stats_items(
+        repository,
+        stats_name_list,
+        older_event_id,
+        newer_event_id,
+        queue_name,
+        branch_name,
     ):
         yield item
 
 
-async def _get_stat_items_at_timestamp(
+async def _get_stats_items_at_timestamp(
     repository: "context.Repository",
-    stat_name: AvailableStatsKeyT,
+    stats_name_list: list[AvailableStatsKeyT],
     queue_name: typing.Optional[rules.QueueName] = None,
     branch_name: typing.Optional[str] = None,
     at: typing.Optional[int] = None,
@@ -344,9 +358,9 @@ async def _get_stat_items_at_timestamp(
         older_event_id = str(redis_query_older_id)
         newer_event_id = "+"
 
-    async for item in _get_stat_items(
+    async for item in _get_stats_items(
         repository,
-        stat_name,
+        stats_name_list,
         older_event_id,
         newer_event_id,
         queue_name,
@@ -360,12 +374,12 @@ async def get_time_to_merge_stats(
     queue_name: typing.Optional[rules.QueueName] = None,
     branch_name: typing.Optional[str] = None,
     at: typing.Optional[int] = None,
-) -> dict[str, TimeToMergeT]:
-    stats: dict[str, TimeToMergeT] = {}
+) -> dict[rules.QueueName, TimeToMergeT]:
+    stats: dict[rules.QueueName, TimeToMergeT] = {}
 
-    async for stat in _get_stat_items_at_timestamp(
+    async for stat in _get_stats_items_at_timestamp(
         repository,
-        "time_to_merge",
+        ["time_to_merge"],
         queue_name=queue_name,
         branch_name=branch_name,
         at=at,
@@ -385,11 +399,11 @@ async def get_checks_duration_stats(
     branch_name: typing.Optional[str] = None,
     start_at: typing.Optional[int] = None,
     end_at: typing.Optional[int] = None,
-) -> dict[str, ChecksDurationT]:
-    stats: dict[str, ChecksDurationT] = {}
-    async for stat in _get_stat_items_date_range(
+) -> dict[rules.QueueName, ChecksDurationT]:
+    stats: dict[rules.QueueName, ChecksDurationT] = {}
+    async for stat in _get_stats_items_date_range(
         repository,
-        "checks_duration",
+        ["checks_duration"],
         queue_name=queue_name,
         branch_name=branch_name,
         start_at=start_at,
@@ -404,7 +418,7 @@ async def get_checks_duration_stats(
     return stats
 
 
-BASE_FAILURE_BY_REASON_T_DICT = FailureByReasonT(
+BASE_FAILURE_BY_REASON_T_DICT: FailureByReasonT = FailureByReasonT(
     {
         "PR_AHEAD_DEQUEUED": 0,
         "PR_AHEAD_FAILED_TO_MERGE": 0,
@@ -425,11 +439,11 @@ async def get_failure_by_reason_stats(
     branch_name: typing.Optional[str] = None,
     start_at: typing.Optional[int] = None,
     end_at: typing.Optional[int] = None,
-) -> dict[str, FailureByReasonT]:
-    stats_dict: dict[str, FailureByReasonT] = {}
-    async for stat in _get_stat_items_date_range(
+) -> dict[rules.QueueName, FailureByReasonT]:
+    stats_dict: dict[rules.QueueName, FailureByReasonT] = {}
+    async for stat in _get_stats_items_date_range(
         repository,
-        "failure_by_reason",
+        ["failure_by_reason"],
         queue_name=queue_name,
         branch_name=branch_name,
         start_at=start_at,
@@ -440,5 +454,52 @@ async def get_failure_by_reason_stats(
             stats_dict[stat_obj.queue_name] = BASE_FAILURE_BY_REASON_T_DICT.copy()
 
         stats_dict[stat_obj.queue_name][stat_obj.reason_code_str] += 1
+
+    return stats_dict
+
+
+BASE_QUEUE_CHECKS_OUTCOME_T_DICT: QueueChecksOutcomeT = QueueChecksOutcomeT(
+    {
+        "PR_AHEAD_DEQUEUED": 0,
+        "PR_AHEAD_FAILED_TO_MERGE": 0,
+        "PR_WITH_HIGHER_PRIORITY_QUEUED": 0,
+        "PR_QUEUED_TWICE": 0,
+        "SPECULATIVE_CHECK_NUMBER_REDUCED": 0,
+        "CHECKS_TIMEOUT": 0,
+        "CHECKS_FAILED": 0,
+        "QUEUE_RULE_MISSING": 0,
+        "UNEXPECTED_QUEUE_CHANGE": 0,
+        "SUCCESS": 0,
+    }
+)
+
+
+async def get_queue_checks_outcome_stats(
+    repository: "context.Repository",
+    queue_name: typing.Optional[rules.QueueName] = None,
+    branch_name: typing.Optional[str] = None,
+    start_at: typing.Optional[int] = None,
+    end_at: typing.Optional[int] = None,
+) -> dict[rules.QueueName, QueueChecksOutcomeT]:
+    stats_dict: dict[rules.QueueName, QueueChecksOutcomeT] = {}
+    # Retrieve all the checks duration on the same period of time, this will tell us
+    # the number of success, since if a check wasn't aborted it is added as a `CheckDuration` stat,
+    # and if it was aborted it is added as a `FailureByReason` stat.
+    async for stat in _get_stats_items_date_range(
+        repository,
+        ["checks_duration", "failure_by_reason"],
+        queue_name=queue_name,
+        branch_name=branch_name,
+        start_at=start_at,
+        end_at=end_at,
+    ):
+        if stat["queue_name"] not in stats_dict:
+            stats_dict[stat["queue_name"]] = BASE_QUEUE_CHECKS_OUTCOME_T_DICT.copy()
+
+        if "duration_seconds" in stat:
+            stats_dict[stat["queue_name"]]["SUCCESS"] += 1
+        else:
+            stat_obj = FailureByReason(**stat)
+            stats_dict[stat["queue_name"]][stat_obj.reason_code_str] += 1
 
     return stats_dict
