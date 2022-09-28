@@ -3299,7 +3299,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check["output"]["summary"] == (
             "The merge-queue pull request can't be created\n"
-            f"Details: `The pull request conflict with at least one of pull request ahead in queue: #{p1['number']}`"
+            f"Details: `The pull request conflicts with at least one pull request ahead in queue: #{p1['number']}`"
         )
 
         # Merge the train
@@ -3390,7 +3390,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check["output"]["summary"] == (
             "The merge-queue pull request can't be created\n"
-            f"Details: `The pull request conflict with at least one of pull request ahead in queue: #{p1['number']}`"
+            f"Details: `The pull request conflicts with at least one pull request ahead in queue: #{p1['number']}`"
         )
 
         # Merge the train
@@ -5240,18 +5240,14 @@ pull_requests:
         tmp_pull = [p for p in pulls if p["number"] == car.queue_pull_request_number][0]
         assert tmp_pull["draft"]
         assert car.queue_branch_name is not None
-        # Ensure pull request is closed
-        base_sha, _ = await car._get_draft_pr_setup(queue_rule, None)
-        await car._prepare_draft_pr_branch(car.queue_branch_name, base_sha, None)
-        await self.wait_for("pull_request", {"action": "closed"})
-        pulls = await self.get_pulls()
-        assert len(pulls) == 2
-
-        # Recreating it should works
+        # Ensure pull request is closed and re-created
         await car.start_checking_with_draft(queue_rule, None)
         assert car.queue_pull_request_number is not None
+        await self.wait_for("pull_request", {"action": "closed"})
+        await self.wait_for("pull_request", {"action": "opened"})
         pulls = await self.get_pulls()
         assert len(pulls) == 3
+
         tmp_pull = [p for p in pulls if p["number"] == car.queue_pull_request_number][0]
         assert tmp_pull["draft"]
 
@@ -5408,6 +5404,6 @@ pull_requests:
         )
         assert check["output"]["summary"] == (
             "The merge-queue pull request can't be created\n"
-            "Details: `The pull request conflict with at least one of pull request ahead in queue: "
+            "Details: `The pull request conflicts with at least one pull request ahead in queue: "
             f"#{p1['number']}, #{p2['number']}`"
         )

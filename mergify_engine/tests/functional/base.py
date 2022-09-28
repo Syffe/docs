@@ -397,6 +397,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
 
         mock.patch.object(branch_updater.gitter, "Gitter", self.get_gitter).start()  # type: ignore[attr-defined]
         mock.patch.object(duplicate_pull.gitter, "Gitter", self.get_gitter).start()  # type: ignore[attr-defined]
+        mock.patch.object(merge_train.gitter, "Gitter", self.get_gitter).start()  # type: ignore[attr-defined]
 
         # Web authentification always pass
         mock.patch("hmac.compare_digest", return_value=True).start()
