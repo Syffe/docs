@@ -65,7 +65,7 @@ class SubscriptionDict(typing.TypedDict):
     ]
 
 
-@dataclasses.dataclass  # type: ignore
+@dataclasses.dataclass
 class SubscriptionBase(abc.ABC):
     redis: redis_utils.RedisCache
     owner_id: github_types.GitHubAccountIdType

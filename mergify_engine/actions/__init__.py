@@ -74,7 +74,7 @@ ActionT = typing.TypeVar("ActionT")
 ActionExecutorConfigT = typing.TypeVar("ActionExecutorConfigT")
 
 
-@dataclasses.dataclass  # type: ignore[misc]
+@dataclasses.dataclass
 class ActionExecutor(abc.ABC, typing.Generic[ActionT, ActionExecutorConfigT]):
     ctxt: "context.Context"
     rule: "rules.EvaluatedRule"
@@ -172,7 +172,7 @@ class ActionExecutorProtocol(typing.Protocol):
 ValidatorT = typing.Dict[voluptuous.Required, typing.Any]
 
 
-@dataclasses.dataclass  # type: ignore[misc]
+@dataclasses.dataclass
 class Action(abc.ABC):
     raw_config_: dataclasses.InitVar[RawConfigT | None] = dataclasses.field(
         default=None
