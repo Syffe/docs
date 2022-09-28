@@ -103,23 +103,24 @@ class TestDeleteHeadBranchAction(base.FunctionalTestBase):
         p1 = await self.create_pr(branch=first_branch)
         await self.create_pr(branch=second_branch, base=first_branch)
 
+        pulls = await self.get_pulls(params={"state": "all", "base": first_branch})
+        assert 1 == len(pulls)
+
         await self.merge_pull(p1["number"])
         await self.wait_for("pull_request", {"action": "closed"})
         await self.add_label(p1["number"], "merge")
         await self.run_engine()
 
-        await self.wait_for("check_run", {"check_run": {"conclusion": "neutral"}})
+        await self.wait_for("check_run", {"check_run": {"conclusion": "success"}})
 
+        # NOTE(greesb): Base of second pr is automatically changed by github because p1 was merged
         pulls = await self.get_pulls(
             params={"state": "all", "base": self.main_branch_name}
         )
-        assert 1 == len(pulls)
-        pulls = await self.get_pulls(params={"state": "all", "base": first_branch})
-        assert 1 == len(pulls)
+        assert 2 == len(pulls)
 
         branches = await self.get_branches()
-        assert 4 == len(branches)
-        assert {"main", self.main_branch_name, first_branch, second_branch} == {
+        assert {"main", self.main_branch_name, second_branch} == {
             b["name"] for b in branches
         }
 
