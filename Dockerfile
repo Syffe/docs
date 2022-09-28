@@ -48,7 +48,7 @@ RUN poetry install --no-dev --sync
 
 ### BASE RUNNER ###
 FROM python-base as system-base
-ARG DD_AGENT_VERSION=1:7.39.0-1
+ARG DD_AGENT_VERSION=1:7.39.1-1
 LABEL datadog-agent.version="$DD_AGENT_VERSION"
 
 # Add Datadog repository, signing keys and packages
