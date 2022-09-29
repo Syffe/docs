@@ -409,11 +409,13 @@ class StreamProcessor:
                     bucket_org_key=bucket_org_key,
                 )
         except OrgBucketRetry as e:
-            log_method = (
-                LOG.error
-                if e.attempts >= STREAM_ATTEMPTS_LOGGING_THRESHOLD
-                else LOG.info
-            )
+            log_method = LOG.info
+            if e.attempts >= STREAM_ATTEMPTS_LOGGING_THRESHOLD:
+                if isinstance(e.__cause__, http.HTTPServerSideError):
+                    log_method = LOG.warning
+                else:
+                    log_method = LOG.error
+
             log_method(
                 "failed to process org bucket, retrying",
                 attempts=e.attempts,
@@ -428,7 +430,6 @@ class StreamProcessor:
                 gh_owner=owner_login_for_tracing,
                 exc_info=True,
             )
-
             # NOTE(sileht): During functionnal tests, we don't want to retry for ever
             # so we catch the error and print all events that can't be processed
             if not self.retry_unhandled_exception_forever:
