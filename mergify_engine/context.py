@@ -408,10 +408,7 @@ class Repository(object):
         if mergify_config_file is not cache.Unset:
             return mergify_config_file
 
-        cached_config_file = await self.get_cached_config_file(
-            self.repo["id"],
-        )
-
+        cached_config_file = await self.get_cached_config_file()
         if cached_config_file is not None:
             self._caches.mergify_config_file.set(cached_config_file)
             return cached_config_file
@@ -441,12 +438,9 @@ class Repository(object):
         self._caches.mergify_config_file.set(None)
         return None
 
-    async def get_cached_config_file(
-        self,
-        repo_id: github_types.GitHubRepositoryIdType,
-    ) -> typing.Optional[MergifyConfigFile]:
+    async def get_cached_config_file(self) -> typing.Optional[MergifyConfigFile]:
         config_file_raw = await self.installation.redis.cache.get(
-            self.get_config_file_cache_key(repo_id),
+            self.get_config_file_cache_key(self.repo["id"]),
         )
 
         if config_file_raw is None:

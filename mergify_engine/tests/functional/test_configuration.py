@@ -152,9 +152,7 @@ did not find expected alphabetic or numeric character
         await self.repository_ctxt.get_mergify_config_file()
         await self.run_engine()
 
-        cached_config_file = await self.repository_ctxt.get_cached_config_file(
-            self.repository_ctxt.repo["id"]
-        )
+        cached_config_file = await self.repository_ctxt.get_cached_config_file()
         assert cached_config_file is not None
         assert cached_config_file["decoded_content"] == yaml.dump(rules_default)
 
@@ -167,9 +165,7 @@ did not find expected alphabetic or numeric character
         await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
         await self.run_engine()
 
-        cached_config_file = await self.repository_ctxt.get_cached_config_file(
-            self.repository_ctxt.repo["id"]
-        )
+        cached_config_file = await self.repository_ctxt.get_cached_config_file()
         assert cached_config_file is not None
         assert cached_config_file["decoded_content"] == yaml.dump(rules_default)
 
@@ -182,9 +178,7 @@ did not find expected alphabetic or numeric character
         await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
         await self.run_engine()
 
-        cached_config_file = await self.repository_ctxt.get_cached_config_file(
-            self.repository_ctxt.repo["id"]
-        )
+        cached_config_file = await self.repository_ctxt.get_cached_config_file()
         assert cached_config_file is None
 
         # Open a PR and it's cached again
@@ -192,9 +186,7 @@ did not find expected alphabetic or numeric character
         await context.Context.create(self.repository_ctxt, p, [])
         await self.run_engine()
 
-        cached_config_file = await self.repository_ctxt.get_cached_config_file(
-            self.repository_ctxt.repo["id"]
-        )
+        cached_config_file = await self.repository_ctxt.get_cached_config_file()
         assert cached_config_file is not None
         assert cached_config_file["decoded_content"] == yaml.dump(rules)
 

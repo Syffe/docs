@@ -594,9 +594,7 @@ async def test_get_mergify_config_file_content_from_cache(
 
     fake_repository.installation.client = client
     await fake_repository.get_mergify_config_file()
-    cached_config_file = await fake_repository.get_cached_config_file(
-        fake_repository.repo["id"]
-    )
+    cached_config_file = await fake_repository.get_cached_config_file()
     assert cached_config_file is not None
     assert cached_config_file["content"] == encodebytes(config.encode()).decode()
 
@@ -605,9 +603,7 @@ async def test_get_mergify_config_file_content_from_cache(
         fake_repository.repo["id"],
     )
 
-    cached_config_file = await fake_repository.get_cached_config_file(
-        fake_repository.repo["id"]
-    )
+    cached_config_file = await fake_repository.get_cached_config_file()
     assert cached_config_file is None
 
 
