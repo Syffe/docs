@@ -14,32 +14,6 @@ from mergify_engine.web import redis
 router = fastapi.APIRouter()
 
 
-@router.post(
-    "/refresh/{owner_login}/{repo_name}",  # noqa: FS003
-    dependencies=[fastapi.Depends(auth.signature)],
-)
-async def refresh_repo(
-    owner_login: github_types.GitHubLogin,
-    repo_name: github_types.GitHubRepositoryName,
-    redis_links: redis_utils.RedisLinks = fastapi.Depends(  # noqa: B008
-        redis.get_redis_links
-    ),
-) -> responses.Response:
-    installation_json = await github.get_installation_from_login(owner_login)
-    async with github.aget_client(installation_json) as client:
-        try:
-            repository = await client.item(f"/repos/{owner_login}/{repo_name}")
-        except http.HTTPNotFound:
-            return responses.JSONResponse(
-                status_code=404, content="repository not found"
-            )
-
-    await refresher.send_repository_refresh(
-        redis_links.stream, repository, action="user", source="API"
-    )
-    return responses.Response("Refresh queued", status_code=202)
-
-
 RefreshActionSchema = voluptuous.Schema(voluptuous.Any("user", "admin", "internal"))
 
 

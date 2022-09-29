@@ -203,6 +203,7 @@ class EventReader:
         event_type: github_types.GitHubEventType,
         expected_payload: typing.Any,
         timeout: float = 15 if RECORD else 2,
+        forward_to_engine: bool = True,
     ) -> None:
         LOG.log(
             42,
@@ -216,7 +217,7 @@ class EventReader:
         while time.monotonic() - started_at < timeout:
             try:
                 event = self._handled_events.get_nowait()
-                await self._forward_to_engine_api(event)
+                await self._process_event(event, forward_to_engine)
             except asyncio.QueueEmpty:
                 for event in await self._get_events():
                     await self._handled_events.put(event)
@@ -260,7 +261,7 @@ class EventReader:
             ).json(),
         )
 
-    async def _forward_to_engine_api(self, event: typing.Any) -> httpx.Response:
+    async def _process_event(self, event: typing.Any, forward_to_engine: bool) -> None:
         payload = event["payload"]
         if event["type"] in ["check_run", "check_suite"]:
             extra = (
@@ -279,16 +280,17 @@ class EventReader:
             extra,
             self._remove_useless_links(copy.deepcopy(event)),
         )
-        return await self._app.post(
-            "/event",
-            headers={
-                "X-GitHub-Event": event["type"],
-                "X-GitHub-Delivery": "123456789",
-                "X-Hub-Signature": "sha1=whatever",
-                "Content-type": "application/json",
-            },
-            content=json.dumps(payload),
-        )
+        if forward_to_engine:
+            await self._app.post(
+                "/event",
+                headers={
+                    "X-GitHub-Event": event["type"],
+                    "X-GitHub-Delivery": "123456789",
+                    "X-Hub-Signature": "sha1=whatever",
+                    "Content-type": "application/json",
+                },
+                content=json.dumps(payload),
+            )
 
     def _remove_useless_links(self, data: typing.Any) -> typing.Any:
         if isinstance(data, dict):
@@ -592,6 +594,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         mergify_config: typing.Optional[str] = None,
         test_branches: typing.Optional[typing.Iterable[str]] = None,
         files: typing.Optional[typing.Dict[str, str]] = None,
+        forward_to_engine: bool = False,
     ) -> None:
 
         if self.git.repository is None:
@@ -631,17 +634,21 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         await self.git("commit", "--no-edit", "-m", "initial commit")
         await self.git("branch", "-M", self.main_branch_name)
 
+        branches_to_push = [str(self.main_branch_name)]
         for test_branch in test_branches:
             await self.git("branch", test_branch, self.main_branch_name)
+            branches_to_push.append(test_branch)
 
-        await self.git(
-            "push", "--quiet", "origin", self.main_branch_name, *test_branches
-        )
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.git("push", "--quiet", "origin", *branches_to_push)
+        for _ in branches_to_push:
+            await self.wait_for("push", {}, forward_to_engine=forward_to_engine)
+
         await self.client_admin.patch(
             self.url_origin, json={"default_branch": self.main_branch_name}
         )
-        await self.wait_for("repository", {"action": "edited"})
+        await self.wait_for(
+            "repository", {"action": "edited"}, forward_to_engine=forward_to_engine
+        )
 
     def get_full_branch_name(self, name: str) -> str:
         return f"{self.RECORD_CONFIG['branch_prefix']}/{self._testMethodName}/{name}"
@@ -733,6 +740,11 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
             await self.git(*args_second_commit, **tmp_kwargs)
 
         await self.git("push", "--quiet", remote, branch)
+        if as_ != "fork":
+            await self.wait_for(
+                "push",
+                {"ref": f"refs/heads/{branch}"},
+            )
 
         if as_ == "admin":
             client = self.client_admin
@@ -1409,9 +1421,8 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         assert car.creation_state == expected_car.creation_state
         assert car.queue_pull_request_number == expected_car.queue_pull_request_number
 
-    @classmethod
     async def assert_merge_queue_contents(
-        cls,
+        self,
         q: merge_train.Train,
         expected_base_sha: typing.Optional[github_types.SHAType],
         expected_cars: typing.List[MergeQueueCarMatcher],
@@ -1423,7 +1434,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
             expected_waiting_pulls = []
 
         await q.load()
-        assert q._current_base_sha == expected_base_sha
+        self.assertEqual(q._current_base_sha, expected_base_sha)
 
         pulls_in_queue = await q.get_pulls()
         assert (
@@ -1439,7 +1450,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         assert len(q._cars) == len(expected_cars)
         for i, expected_car in enumerate(expected_cars):
             car = q._cars[i]
-            cls._assert_merge_queue_car(car, expected_car)
+            self._assert_merge_queue_car(car, expected_car)
 
         assert len(q._waiting_pulls) == len(expected_waiting_pulls)
         for i, expected_waiting_pull in enumerate(expected_waiting_pulls):

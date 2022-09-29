@@ -72,7 +72,7 @@ class TestQueueApi(base.FunctionalTestBase):
             ],
         }
 
-        await self.setup_repo(yaml.dump(invalid_rules))
+        await self.setup_repo(yaml.dump(invalid_rules), forward_to_engine=True)
 
         r = await self.app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/configuration",
@@ -175,7 +175,7 @@ class TestQueueApi(base.FunctionalTestBase):
             ]
         }
 
-        await self.setup_repo(yaml.dump(rules))
+        await self.setup_repo(yaml.dump(rules), forward_to_engine=True)
 
         r = await self.app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/configuration",
