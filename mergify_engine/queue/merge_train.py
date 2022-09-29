@@ -253,6 +253,9 @@ class MergedPRMissingFromFetchedOrigin(Exception):
     pull_number: github_types.GitHubPullRequestNumber
 
 
+IGNORABLE_GIT_ERRORS = ("Git process got killed",)
+
+
 @dataclasses.dataclass
 class TrainCar:
     train: "Train" = dataclasses.field(repr=False)
@@ -801,7 +804,12 @@ class TrainCar:
             await self._delete_branch()
             raise TrainCarPullRequestCreationPostponed(self) from e
         except gitter.GitError as e:
-            self.train.log.error(
+            if any(m in e.output for m in IGNORABLE_GIT_ERRORS):
+                log_method = self.train.log.warning
+            else:
+                log_method = self.train.log.error
+
+            log_method(
                 f"Unable to create draft PR because of git error: {e.output}",
                 error_message=e.output,
             )
