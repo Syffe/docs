@@ -44,9 +44,11 @@ jobs:
           output: 'docker-security-scan.json.tmp'
 
       - name: Keep only the results section
+        # yamllint disable rule:line-length
         run: |
-          jq -r .Results docker-security-scan.json.tmp > docker-security-scan.json
+          jq --raw-output '.Results | del(.[].Vulnerabilities[].Layer)' docker-security-scan.json.tmp > docker-security-scan.json
           rm -f docker-security-scan.json.tmp
+        # yamllint enable rule:line-length
 
       - name: Create the Pull Request
         id: cpr
