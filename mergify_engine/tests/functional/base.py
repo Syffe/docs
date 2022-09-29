@@ -511,8 +511,10 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
                 self.url_origin, json={"default_branch": "main"}
             )
             for branch in await self.get_branches():
-                if branch["name"].startswith("20") or branch["name"].startswith(
-                    "mergify"
+                if (
+                    branch["name"].startswith("20")
+                    or branch["name"].startswith("mergify")
+                    or branch["name"].startswith("mq-")
                 ):
                     if branch["protected"]:
                         await self.branch_protection_unprotect(branch["name"])
