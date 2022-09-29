@@ -411,7 +411,10 @@ class StreamProcessor:
         except OrgBucketRetry as e:
             log_method = LOG.info
             if e.attempts >= STREAM_ATTEMPTS_LOGGING_THRESHOLD:
-                if isinstance(e.__cause__, http.HTTPServerSideError):
+                if isinstance(
+                    e.__cause__,
+                    (http.HTTPServerSideError, redis_exceptions.ConnectionError),
+                ):
                     log_method = LOG.warning
                 else:
                     log_method = LOG.error
