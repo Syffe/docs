@@ -62,6 +62,7 @@ pull_request_rules:
                       - "#approved-reviews-by>=1"
       - label=hotfix
       - "#changes-requested-reviews-by=0"
+      - "#review-requested=0"
       - label!=work-in-progress
       - label!=manual merge
     actions:
@@ -78,6 +79,7 @@ pull_request_rules:
       - "#approved-reviews-by>=2"
       - "#changes-requested-reviews-by=0"
       - "#review-threads-unresolved=0"
+      - "#review-requested=0"
       - label!=work-in-progress
       - label!=manual merge
     actions:
@@ -138,6 +140,7 @@ pull_request_rules:
       - "check-success=Rule: testing requirements (post_check)"
       - "#approved-reviews-by=0"
       - "#changes-requested-reviews-by=0"
+      - "#review-requested=0"
     actions:
       request_reviews:
         teams:
