@@ -707,7 +707,7 @@ class TrainCar:
                 f"Merge of #{pull_number}",
             )
         except gitter.GitError as e:
-            if "merging conflict" in e.output:
+            if "merging conflict" in e.output or "CONFLICT (" in e.output:
                 pull_requests_ahead = self.parent_pull_request_numbers[:]
                 for ep in self.still_queued_embarked_pulls:
                     if ep.user_pull_request_number == pull_number:
