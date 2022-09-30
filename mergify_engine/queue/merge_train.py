@@ -2651,9 +2651,9 @@ class Train:
         ] = None,
     ) -> None:
 
-        pulls = set(await self.get_pulls())
-        if additional_pull_request:
-            pulls.add(additional_pull_request)
+        pulls = await self.get_pulls()
+        if additional_pull_request and additional_pull_request not in pulls:
+            pulls.append(additional_pull_request)
 
         pipe = await self.repository.installation.redis.stream.pipeline()
         for i, pull_number in enumerate(pulls):
