@@ -19,6 +19,8 @@ LOG = daiquiri.getLogger(__name__)
 
 DELAYED_REFRESH_KEY = "delayed-refresh"
 
+STOP_REFRESH_PULL_REQUEST_CLOSED_WITH_TIME_CONDITIONS_SINCE = datetime.timedelta(days=7)
+
 
 def _redis_key(
     repository: "context.Repository", pull_number: github_types.GitHubPullRequestNumber
@@ -60,8 +62,27 @@ async def plan_next_refresh(
     if best_bet is not None and best_bet < date.utcnow():
         best_bet = None
 
+    refresh_time_conditions = (
+        ctxt.pull["closed_at"] is None
+        or (date.utcnow() - date.fromisoformat(ctxt.pull["closed_at"]))
+        > STOP_REFRESH_PULL_REQUEST_CLOSED_WITH_TIME_CONDITIONS_SINCE
+    )
+
     for rule in _rules:
-        f = filter.NearDatetimeFilter(rule.conditions.extract_raw_filter_tree())
+        if refresh_time_conditions:
+            conditions = rule.conditions
+        else:
+            # NOTE(sileht): we stop refresh closed PR of only current-XXX conditions change
+            conditions = rule.conditions.copy()
+            for condition in conditions.walk():
+                attr = condition.get_attribute_name()
+                # Replace time conditions with an always true condition, so
+                # they will become date.DT_MAX when parsed by
+                # filter.NearDatetimeFilter
+                if attr.startswith("current-") or attr.startswith("schedule"):
+                    condition.update("number>0")
+
+        f = filter.NearDatetimeFilter(conditions.extract_raw_filter_tree())
         live_resolvers.configure_filter(ctxt.repository, f)
         try:
             bet = await f(pull_request)
@@ -80,7 +101,9 @@ async def plan_next_refresh(
             ctxt.repository, ctxt.pull["number"], best_bet
         )
         ctxt.log.info(
-            "plan to refresh pull request", refresh_planned_at=best_bet.isoformat()
+            "plan to refresh pull request",
+            refresh_planned_at=best_bet.isoformat(),
+            refresh_time_conditions=refresh_time_conditions,
         )
 
 

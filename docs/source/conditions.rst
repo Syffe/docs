@@ -377,6 +377,12 @@ Here's the list of pull request attribute that can be used in conditions:
 
 .. note::
 
+   ``current-day``, ``current-day-of-week``, ``current-month``,
+   ``current-time``, ``current-timestamp``, ``current-year`` and ``schedule``
+   works only for open pull requests or pull requests closed in the last 7 days.
+
+.. note::
+
    The timezone for all time-based conditions is UTC.
 
 .. _Operators:
