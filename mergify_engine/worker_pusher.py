@@ -17,6 +17,8 @@ from mergify_engine import worker_lua
 
 LOG = daiquiri.getLogger(__name__)
 
+WORKER_PROCESSING_DELAY: float = 30
+
 
 class Priority(enum.IntEnum):
     immediate = 1
@@ -180,6 +182,7 @@ async def push(
                 "timestamp": now.isoformat(),
             },
         )
+        scheduled_at = now + datetime.timedelta(seconds=WORKER_PROCESSING_DELAY)
 
         # NOTE(sileht): lower timestamps are processed first
         if score is None:
@@ -201,7 +204,7 @@ async def push(
             bucket_org_key,
             bucket_sources_key,
             tracing_repo_name,
-            now,
+            scheduled_at,
             event,
             score,
         )

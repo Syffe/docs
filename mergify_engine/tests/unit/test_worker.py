@@ -50,7 +50,9 @@ async def legacy_push(
         },
         use_bin_type=True,
     )
-    scheduled_at = now + datetime.timedelta(seconds=0.01)
+    scheduled_at = now + datetime.timedelta(
+        seconds=worker_pusher.WORKER_PROCESSING_DELAY
+    )
     if score is None:
         score = str(date.utcnow().timestamp())
     bucket_org_key = worker_lua.BucketOrgKeyType(f"bucket~{owner_id}~{owner_login}")
@@ -1669,6 +1671,58 @@ async def test_worker_with_multiple_workers(
 
     # Check engine have been run with expect data
     assert 200 == len(run_engine.mock_calls)
+
+
+@mock.patch("mergify_engine.worker.subscription.Subscription.get_subscription")
+@mock.patch("mergify_engine.clients.github.get_installation_from_account_id")
+@mock.patch("mergify_engine.worker.run_engine")
+async def test_worker_reschedule(
+    run_engine: mock.Mock,
+    get_installation_from_account_id: mock.Mock,
+    get_subscription: mock.AsyncMock,
+    redis_links: redis_utils.RedisLinks,
+    logger_checker: None,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
+    get_subscription.side_effect = fake_get_subscription
+
+    monkeypatch.setattr("mergify_engine.worker_pusher.WORKER_PROCESSING_DELAY", 3000)
+    await worker_pusher.push(
+        redis_links.stream,
+        github_types.GitHubAccountIdType(123),
+        github_types.GitHubLogin("owner-123"),
+        github_types.GitHubRepositoryIdType(123),
+        github_types.GitHubRepositoryName("repo"),
+        github_types.GitHubPullRequestNumber(123),
+        "pull_request",
+        github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
+    )
+
+    score = (await redis_links.stream.zrange("streams", 0, -1, withscores=True))[0][1]
+    planned_for = datetime.datetime.utcfromtimestamp(score)
+
+    monkeypatch.setattr("sys.argv", ["mergify-worker-rescheduler", "other"])
+    ret = await worker.async_reschedule_now()
+    assert ret == 1
+
+    score_not_rescheduled = (
+        await redis_links.stream.zrange("streams", 0, -1, withscores=True)
+    )[0][1]
+    planned_for_not_rescheduled = datetime.datetime.utcfromtimestamp(
+        score_not_rescheduled
+    )
+    assert planned_for == planned_for_not_rescheduled
+
+    monkeypatch.setattr("sys.argv", ["mergify-worker-rescheduler", "123"])
+    ret = await worker.async_reschedule_now()
+    assert ret == 0
+
+    score_rescheduled = (
+        await redis_links.stream.zrange("streams", 0, -1, withscores=True)
+    )[0][1]
+    planned_for_rescheduled = datetime.datetime.utcfromtimestamp(score_rescheduled)
+    assert planned_for > planned_for_rescheduled
 
 
 @mock.patch("mergify_engine.worker.subscription.Subscription.get_subscription")
