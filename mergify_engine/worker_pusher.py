@@ -191,6 +191,7 @@ async def push(
 
             if priority is Priority.immediate:
                 delay = None
+                scheduled_at = now
             else:
                 delay = constants.NORMAL_DELAY_BETWEEN_SAME_PULL_REQUEST
             score = get_priority_score(priority, delay)
