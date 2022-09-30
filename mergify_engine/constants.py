@@ -1,3 +1,4 @@
+import datetime
 import typing
 
 from . import github_types
@@ -80,3 +81,9 @@ Finally, you can contact us on https://mergify.com
 """
 
 DEPENDABOT_PULL_REQUEST_AUTHOR_LOGIN = "dependabot[bot]"
+
+
+# usual delay to wait between two processing of the same PR
+NORMAL_DELAY_BETWEEN_SAME_PULL_REQUEST = datetime.timedelta(seconds=30)
+# minimun delay to wait between two processing of the same PR
+MIN_DELAY_BETWEEN_SAME_PULL_REQUEST = datetime.timedelta(seconds=3)

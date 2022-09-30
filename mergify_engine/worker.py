@@ -50,6 +50,7 @@ import tenacity
 
 from mergify_engine import check_api
 from mergify_engine import config
+from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import delayed_refresh
@@ -75,14 +76,6 @@ LOG = daiquiri.getLogger(__name__)
 # we keep the PR in queue for ~ 7 minutes (a try == WORKER_PROCESSING_DELAY)
 MAX_RETRIES: int = 15
 STREAM_ATTEMPTS_LOGGING_THRESHOLD: int = 20
-# usual delay to wait between two processing of the same PR
-NORMAL_DELAY_BETWEEN_SAME_PULL_REQUEST = int(
-    datetime.timedelta(seconds=30).total_seconds()
-)
-# minimun delay to wait between two processing of the same PR
-MIN_DELAY_BETWEEN_SAME_PULL_REQUEST = datetime.timedelta(seconds=3)
-
-
 DEDICATED_WORKERS_KEY = "dedicated-workers"
 ATTEMPTS_KEY = "attempts"
 
@@ -562,7 +555,7 @@ class StreamProcessor:
                 self.redis_links.stream,
                 bucket_org_key,
                 bucket.sources_key,
-                NORMAL_DELAY_BETWEEN_SAME_PULL_REQUEST
+                int(constants.NORMAL_DELAY_BETWEEN_SAME_PULL_REQUEST.total_seconds())
                 * worker_pusher.SCORE_TIMESTAMP_PRECISION,
             )
             statsd.histogram("engine.buckets.events.read_size", len(messages))
@@ -708,7 +701,8 @@ class StreamProcessor:
                         bucket_org_key,
                         {
                             bucket.sources_key: worker_pusher.get_priority_score(
-                                bucket.priority, MIN_DELAY_BETWEEN_SAME_PULL_REQUEST
+                                bucket.priority,
+                                constants.MIN_DELAY_BETWEEN_SAME_PULL_REQUEST,
                             )
                         },
                     )

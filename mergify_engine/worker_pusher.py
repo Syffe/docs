@@ -8,6 +8,7 @@ import msgpack
 from redis import exceptions as redis_exceptions
 import tenacity
 
+from mergify_engine import constants
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import redis_utils
@@ -184,7 +185,12 @@ async def push(
         if score is None:
             if priority is None:
                 priority = Priority.high
-            score = get_priority_score(priority)
+
+            if priority is Priority.immediate:
+                delay = None
+            else:
+                delay = constants.NORMAL_DELAY_BETWEEN_SAME_PULL_REQUEST
+            score = get_priority_score(priority, delay)
 
         bucket_org_key = worker_lua.BucketOrgKeyType(f"bucket~{owner_id}")
         bucket_sources_key = worker_lua.BucketSourcesKeyType(

@@ -243,6 +243,7 @@ async def test_worker_legacy_push(
                     github_types.GitHubPullRequestNumber(pull_number),
                     "pull_request",
                     github_types.GitHubEvent({"payload": data}),  # type: ignore[typeddict-item]
+                    priority=worker_pusher.Priority.immediate,
                 )
 
     # Check everything we push are in redis
@@ -326,6 +327,7 @@ async def test_worker_with_waiting_tasks(
                     github_types.GitHubPullRequestNumber(pull_number),
                     "pull_request",
                     github_types.GitHubEvent({"payload": data}),  # type: ignore[typeddict-item]
+                    priority=worker_pusher.Priority.immediate,
                 )
 
     # Check everything we push are in redis
@@ -418,6 +420,7 @@ async def test_worker_expanded_events(
         None,
         "push",
         github_types.GitHubEvent({"payload": "foobar"}),  # type: ignore[typeddict-item]
+        priority=worker_pusher.Priority.immediate,
     )
     await worker_pusher.push(
         redis_links.stream,
@@ -428,6 +431,7 @@ async def test_worker_expanded_events(
         None,
         "check_run",
         github_types.GitHubEvent({"payload": "foobar"}),  # type: ignore[typeddict-item]
+        priority=worker_pusher.Priority.immediate,
     )
     await worker_pusher.push(
         redis_links.stream,
@@ -438,6 +442,7 @@ async def test_worker_expanded_events(
         github_types.GitHubPullRequestNumber(123),
         "pull_request",
         github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
+        priority=worker_pusher.Priority.immediate,
     )
 
     assert 1 == await redis_links.stream.zcard("streams")
@@ -534,6 +539,7 @@ async def test_worker_with_one_task(
         github_types.GitHubPullRequestNumber(123),
         "pull_request",
         github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
+        priority=worker_pusher.Priority.immediate,
     )
     await worker_pusher.push(
         redis_links.stream,
@@ -544,6 +550,7 @@ async def test_worker_with_one_task(
         github_types.GitHubPullRequestNumber(123),
         "issue_comment",
         github_types.GitHubEvent({"payload": "foobar"}),  # type: ignore[typeddict-item]
+        priority=worker_pusher.Priority.immediate,
     )
 
     # Check everything we push are in redis
@@ -626,6 +633,7 @@ async def test_consume_good_stream(
         github_types.GitHubPullRequestNumber(123),
         "pull_request",
         github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
+        priority=worker_pusher.Priority.immediate,
     )
     await worker_pusher.push(
         redis_links.stream,
@@ -636,6 +644,7 @@ async def test_consume_good_stream(
         github_types.GitHubPullRequestNumber(123),
         "issue_comment",
         github_types.GitHubEvent({"payload": "foobar"}),  # type: ignore[typeddict-item]
+        priority=worker_pusher.Priority.immediate,
     )
 
     # Check everything we push are in redis
@@ -803,6 +812,7 @@ async def test_stream_processor_retrying_pull(
             github_types.GitHubPullRequestNumber(123),
             "pull_request",
             github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
+            priority=worker_pusher.Priority.immediate,
         )
         await worker_pusher.push(
             redis_links.stream,
@@ -813,6 +823,7 @@ async def test_stream_processor_retrying_pull(
             github_types.GitHubPullRequestNumber(42),
             "issue_comment",
             github_types.GitHubEvent({"payload": "foobar"}),  # type: ignore[typeddict-item]
+            priority=worker_pusher.Priority.immediate,
         )
 
     # Check everything we push are in redis
@@ -982,6 +993,7 @@ async def test_stream_processor_retrying_stream_recovered(
             github_types.GitHubPullRequestNumber(123),
             "pull_request",
             github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
+            priority=worker_pusher.Priority.immediate,
         )
         await worker_pusher.push(
             redis_links.stream,
@@ -992,6 +1004,7 @@ async def test_stream_processor_retrying_stream_recovered(
             github_types.GitHubPullRequestNumber(123),
             "issue_comment",
             github_types.GitHubEvent({"payload": "foobar"}),  # type: ignore[typeddict-item]
+            priority=worker_pusher.Priority.immediate,
         )
 
         assert 1 == (await redis_links.stream.zcard("streams"))
@@ -1094,6 +1107,7 @@ async def test_stream_processor_retrying_stream_failure(
             github_types.GitHubPullRequestNumber(123),
             "pull_request",
             github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
+            priority=worker_pusher.Priority.immediate,
         )
         await worker_pusher.push(
             redis_links.stream,
@@ -1104,6 +1118,7 @@ async def test_stream_processor_retrying_stream_failure(
             github_types.GitHubPullRequestNumber(123),
             "issue_comment",
             github_types.GitHubEvent({"payload": "foobar"}),  # type: ignore[typeddict-item]
+            priority=worker_pusher.Priority.immediate,
         )
 
         assert 1 == await redis_links.stream.zcard("streams")
@@ -1215,6 +1230,7 @@ async def test_stream_processor_pull_unexpected_error(
             github_types.GitHubPullRequestNumber(123),
             "pull_request",
             github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
+            priority=worker_pusher.Priority.immediate,
         )
 
         await stream_processor.consume(
@@ -1575,6 +1591,7 @@ async def test_stream_processor_ignore_503(
         github_types.GitHubPullRequestNumber(123),
         "pull_request",
         github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
+        priority=worker_pusher.Priority.immediate,
     )
 
     await run_worker()
@@ -1618,6 +1635,7 @@ async def test_worker_with_multiple_workers(
                     github_types.GitHubPullRequestNumber(pull_number),
                     "pull_request",
                     github_types.GitHubEvent({"payload": data}),  # type: ignore[typeddict-item]
+                    priority=worker_pusher.Priority.immediate,
                 )
 
     # Check everything we push are in redis
@@ -1679,6 +1697,7 @@ async def test_worker_stuck_shutdown(
         github_types.GitHubPullRequestNumber(123),
         "pull_request",
         github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
+        priority=worker_pusher.Priority.immediate,
     )
     await run_worker(test_timeout=2, shutdown_timeout=1)
 
@@ -1747,6 +1766,7 @@ async def test_dedicated_worker_scaleup_scaledown(
             github_types.GitHubPullRequestNumber(4446),
             "pull_request",
             github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
+            priority=worker_pusher.Priority.immediate,
         )
         # worker hash == 1
         await worker_pusher.push(
@@ -1758,6 +1778,7 @@ async def test_dedicated_worker_scaleup_scaledown(
             github_types.GitHubPullRequestNumber(123),
             "pull_request",
             github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
+            priority=worker_pusher.Priority.immediate,
         )
         # worker hash == 0
         await worker_pusher.push(
@@ -1769,6 +1790,7 @@ async def test_dedicated_worker_scaleup_scaledown(
             github_types.GitHubPullRequestNumber(1),
             "pull_request",
             github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
+            priority=worker_pusher.Priority.immediate,
         )
         started_at = time.monotonic()
         while (
@@ -1894,6 +1916,7 @@ async def test_dedicated_worker_process_scaleup_scaledown(
             github_types.GitHubPullRequestNumber(4446),
             "pull_request",
             github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
+            priority=worker_pusher.Priority.immediate,
         )
         # worker hash == 1
         await worker_pusher.push(
@@ -1905,6 +1928,7 @@ async def test_dedicated_worker_process_scaleup_scaledown(
             github_types.GitHubPullRequestNumber(123),
             "pull_request",
             github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
+            priority=worker_pusher.Priority.immediate,
         )
         # worker hash == 0
         await worker_pusher.push(
@@ -1916,6 +1940,7 @@ async def test_dedicated_worker_process_scaleup_scaledown(
             github_types.GitHubPullRequestNumber(1),
             "pull_request",
             github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
+            priority=worker_pusher.Priority.immediate,
         )
         started_at = time.monotonic()
         while (
@@ -2076,6 +2101,7 @@ async def test_separate_dedicated_worker(
             github_types.GitHubPullRequestNumber(4446),
             "pull_request",
             github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
+            priority=worker_pusher.Priority.immediate,
         )
         # worker hash == 1
         await worker_pusher.push(
@@ -2087,6 +2113,7 @@ async def test_separate_dedicated_worker(
             github_types.GitHubPullRequestNumber(123),
             "pull_request",
             github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
+            priority=worker_pusher.Priority.immediate,
         )
         # worker hash == 0
         await worker_pusher.push(
@@ -2098,6 +2125,7 @@ async def test_separate_dedicated_worker(
             github_types.GitHubPullRequestNumber(1),
             "pull_request",
             github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
+            priority=worker_pusher.Priority.immediate,
         )
         started_at = time.monotonic()
         while (

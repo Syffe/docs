@@ -21,6 +21,7 @@ import pytest
 
 from mergify_engine import branch_updater
 from mergify_engine import config
+from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import duplicate_pull
 from mergify_engine import github_graphql_types
@@ -386,9 +387,13 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
 
         config.API_ENABLE = True
 
-        mock.patch.object(worker, "NORMAL_DELAY_BETWEEN_SAME_PULL_REQUEST", 0).start()
         mock.patch.object(
-            worker,
+            constants,
+            "NORMAL_DELAY_BETWEEN_SAME_PULL_REQUEST",
+            datetime.timedelta(seconds=0),
+        ).start()
+        mock.patch.object(
+            constants,
             "MIN_DELAY_BETWEEN_SAME_PULL_REQUEST",
             datetime.timedelta(seconds=0),
         ).start()
