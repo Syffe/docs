@@ -1,10 +1,12 @@
 import datetime
 import statistics
+from unittest import mock
 
 import msgpack
 
 from mergify_engine import config
 from mergify_engine import constants
+from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import yaml
 from mergify_engine.tests.functional import base
@@ -145,6 +147,19 @@ class TestQueueApi(base.FunctionalTestBase):
             ],
         }
 
+        # Mock get_mergify_config_file to force the case where we do not
+        # have a config file. Default behavior will look into the repository for
+        # a config file but, since we are in test mode and everyone might
+        # have a config file in its own test repo, it could fail.
+        mock_get_mergify_config_file = mock.patch.object(
+            context.Repository,
+            "get_mergify_config_file",
+            return_value=None,
+        )
+        mock_get_mergify_config_file.start()
+        # Add a cleanup in case we do not reach the `.stop()`
+        self.addCleanup(mock_get_mergify_config_file.stop)
+
         r = await self.app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/configuration",
             headers={
@@ -152,6 +167,8 @@ class TestQueueApi(base.FunctionalTestBase):
                 "Content-type": "application/json",
             },
         )
+
+        mock_get_mergify_config_file.stop()
 
         assert r.status_code == 200
         assert r.json() == {
