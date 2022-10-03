@@ -153,6 +153,7 @@ async def send(
             "sending delayed pull request refresh",
             gh_owner=owner_login,
             gh_repo=repository_name,
+            gh_pull=pull_request_number,
             action="internal",
             source="delayed-refresh",
         )
