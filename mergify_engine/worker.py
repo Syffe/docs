@@ -684,11 +684,9 @@ class StreamProcessor:
                         )
                         await self._consume_pull(
                             bucket_org_key,
-                            bucket.sources_key,
                             installation,
-                            bucket.repo_id,
+                            bucket,
                             tracing_repo_name,
-                            bucket.pull_number,
                             message_ids,
                             sources,
                         )
@@ -761,11 +759,9 @@ class StreamProcessor:
     async def _consume_pull(
         self,
         bucket_org_key: worker_lua.BucketOrgKeyType,
-        bucket_sources_key: worker_lua.BucketSourcesKeyType,
         installation: context.Installation,
-        repo_id: github_types.GitHubRepositoryIdType,
+        bucket: PullRequestBucket,
         tracing_repo_name: github_types.GitHubRepositoryNameForTracing,
-        pull_number: github_types.GitHubPullRequestNumber,
         message_ids: typing.List[T_MessageID],
         sources: typing.List[context.T_PayloadEventSource],
     ) -> None:
@@ -788,29 +784,33 @@ class StreamProcessor:
             __name__,
             gh_repo=tracing_repo_name,
             gh_owner=installation.owner_login,
-            gh_pull=pull_number,
+            gh_pull=bucket.pull_number,
         )
 
         try:
             async with self._translate_exception_to_retries(
                 bucket_org_key,
-                bucket_sources_key,
+                bucket.sources_key,
             ):
                 await run_engine(
-                    installation, repo_id, tracing_repo_name, pull_number, sources
+                    installation,
+                    bucket.repo_id,
+                    tracing_repo_name,
+                    bucket.pull_number,
+                    sources,
                 )
-            await self.redis_links.stream.hdel(ATTEMPTS_KEY, bucket_sources_key)
+            await self.redis_links.stream.hdel(ATTEMPTS_KEY, bucket.sources_key)
             await worker_lua.remove_pull(
                 self.redis_links.stream,
                 bucket_org_key,
-                bucket_sources_key,
+                bucket.sources_key,
                 tuple(message_ids),
             )
         except IgnoredException:
             await worker_lua.remove_pull(
                 self.redis_links.stream,
                 bucket_org_key,
-                bucket_sources_key,
+                bucket.sources_key,
                 tuple(message_ids),
             )
             logger.debug("failed to process pull request, ignoring", exc_info=True)
@@ -818,7 +818,7 @@ class StreamProcessor:
             await worker_lua.remove_pull(
                 self.redis_links.stream,
                 bucket_org_key,
-                bucket_sources_key,
+                bucket.sources_key,
                 tuple(message_ids),
             )
             statsd.increment(
