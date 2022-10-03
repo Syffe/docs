@@ -7,6 +7,11 @@ startup_message() {
     echo "Starting Mergify SaaS"
     echo "MERGIFYENGINE_VERSION=$MERGIFYENGINE_VERSION"
     echo "MERGIFYENGINE_SHA=$MERGIFYENGINE_SHA"
+    echo "DYNO=$DYNO"
+    echo "DYNOTYPE=$DYNOTYPE"
+    echo "DYNOHOST=$DYNOHOST"
+    echo "DD_TAGS=$DD_TAGS"
+    echo "DD_HOSTNAME=$DD_HOSTNAME"
 }
 
 export DYNOHOST="$(hostname)"
