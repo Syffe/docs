@@ -2345,7 +2345,7 @@ async def test_get_shared_worker_ids(
     redis_links: redis_utils.RedisLinks,
 ) -> None:
     owner_id = github_types.GitHubAccountIdType(132)
-    monkeypatch.setenv("DYNO", "worker-shared.1")
+    monkeypatch.setattr(worker, "_DYNO", "worker-shared.1")
     assert worker.get_process_index_from_env() == 0
     w1 = worker.Worker(shared_stream_processes=2, shared_stream_tasks_per_process=30)
     assert w1.get_shared_worker_ids() == list(range(0, 30))
@@ -2353,7 +2353,7 @@ async def test_get_shared_worker_ids(
     s1 = worker.StreamProcessor(redis_links, "shared-8", None, w1._owners_cache)
     assert s1.should_handle_owner(owner_id, set(), w1.global_shared_tasks_count)
 
-    monkeypatch.setenv("DYNO", "worker-shared.2")
+    monkeypatch.setattr(worker, "_DYNO", "worker-shared.2")
     assert worker.get_process_index_from_env() == 1
     w2 = worker.Worker(shared_stream_processes=2, shared_stream_tasks_per_process=30)
     assert w2.get_shared_worker_ids() == list(range(30, 60))
@@ -2374,7 +2374,7 @@ async def test_get_my_dedicated_worker_ids(
         github_types.GitHubAccountIdType(127),
     }
 
-    monkeypatch.setenv("DYNO", "worker-dedicated.1")
+    monkeypatch.setattr(worker, "_DYNO", "worker-dedicated.1")
     assert worker.get_process_index_from_env() == 0
     w1 = worker.Worker(shared_stream_processes=0, dedicated_stream_processes=2)
     w1._dedicated_workers_owners_cache = owners_cache
@@ -2384,7 +2384,7 @@ async def test_get_my_dedicated_worker_ids(
         github_types.GitHubAccountIdType(127),
     }
 
-    monkeypatch.setenv("DYNO", "worker-dedicated.2")
+    monkeypatch.setattr(worker, "_DYNO", "worker-dedicated.2")
     assert worker.get_process_index_from_env() == 1
     w2 = worker.Worker(shared_stream_processes=0, dedicated_stream_processes=2)
     w2._dedicated_workers_owners_cache = owners_cache

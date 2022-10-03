@@ -867,10 +867,14 @@ class StreamProcessor:
             return owner_id == self.dedicated_owner_id
 
 
+# NOTE(sileht): for security reason we empty the os.environ at runtime
+# We can access it only when modules load.
+_DYNO = os.getenv("DYNO")
+
+
 def get_process_index_from_env() -> int:
-    dyno = os.getenv("DYNO", None)
-    if dyno:
-        return int(dyno.rsplit(".", 1)[-1]) - 1
+    if _DYNO:
+        return int(_DYNO.rsplit(".", 1)[-1]) - 1
     else:
         return 0
 
