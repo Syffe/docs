@@ -54,6 +54,7 @@ GIT_MESSAGE_TO_EXCEPTION: typing.Dict[
         ("Invalid username or password", GitAuthenticationFailure),
         ("Repository not found", GitAuthenticationFailure),
         ("The requested URL returned error: 403", GitAuthenticationFailure),
+        ("The requested URL returned error: 504", GitErrorRetriable),
         ("remote contains work that you do", GitErrorRetriable),
         ("remote end hung up unexpectedly", GitErrorRetriable),
         ("gnutls_handshake() failed:", GitErrorRetriable),
