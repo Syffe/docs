@@ -1048,7 +1048,7 @@ class Worker:
             )
 
     @staticmethod
-    async def get_dedicated_worker_owner_ids(
+    async def get_dedicated_worker_owner_ids_from_redis(
         redis_stream: redis_utils.RedisStream,
     ) -> typing.Set[github_types.GitHubAccountIdType]:
         dedicated_workers_data = await redis_stream.smembers(DEDICATED_WORKERS_KEY)
@@ -1062,7 +1062,9 @@ class Worker:
     @tracer.wrap("sync_dedicated_workers_cache", span_type="worker")
     async def _sync_dedicated_workers_cache(self) -> None:
         self._dedicated_workers_owners_cache = (
-            await self.get_dedicated_worker_owner_ids(self._redis_links.stream)
+            await self.get_dedicated_worker_owner_ids_from_redis(
+                self._redis_links.stream
+            )
         )
 
     @tracer.wrap("monitoring_task", span_type="worker")
@@ -1277,16 +1279,20 @@ class Worker:
 
         LOG.debug("%s task exited", task_name)
 
-    @tracer.wrap("dedicated_workers_spawner_task", span_type="worker")
-    async def dedicated_workers_spawner_task(self) -> None:
+    def get_my_dedicated_worker_ids_from_cache(
+        self,
+    ) -> set[github_types.GitHubAccountIdType]:
         if self.dedicated_stream_processes:
-            expected_workers = set(
+            return set(
                 sorted(self._dedicated_workers_owners_cache)[
                     self.process_index :: self.dedicated_stream_processes
                 ]
             )
-        else:
-            expected_workers = set()
+        return set()
+
+    @tracer.wrap("dedicated_workers_spawner_task", span_type="worker")
+    async def dedicated_workers_spawner_task(self) -> None:
+        expected_workers = self.get_my_dedicated_worker_ids_from_cache()
         current_workers = set(self._dedicated_worker_tasks.keys())
 
         to_stop = current_workers - expected_workers
@@ -1429,7 +1435,7 @@ async def async_status() -> None:
 
     redis_links = redis_utils.RedisLinks(name="async_status")
 
-    dedicated_worker_owner_ids = await Worker.get_dedicated_worker_owner_ids(
+    dedicated_worker_owner_ids = await Worker.get_dedicated_worker_owner_ids_from_redis(
         redis_links.stream
     )
 

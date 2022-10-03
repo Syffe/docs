@@ -2362,6 +2362,38 @@ async def test_get_shared_worker_ids(
     assert not s2.should_handle_owner(owner_id, set(), w2.global_shared_tasks_count)
 
 
+async def test_get_my_dedicated_worker_ids(
+    monkeypatch: pytest.MonkeyPatch,
+    redis_links: redis_utils.RedisLinks,
+) -> None:
+    owners_cache = {
+        github_types.GitHubAccountIdType(123),
+        github_types.GitHubAccountIdType(124),
+        github_types.GitHubAccountIdType(125),
+        github_types.GitHubAccountIdType(126),
+        github_types.GitHubAccountIdType(127),
+    }
+
+    monkeypatch.setenv("DYNO", "worker-dedicated.1")
+    assert worker.get_process_index_from_env() == 0
+    w1 = worker.Worker(shared_stream_processes=0, dedicated_stream_processes=2)
+    w1._dedicated_workers_owners_cache = owners_cache
+    assert w1.get_my_dedicated_worker_ids_from_cache() == {
+        github_types.GitHubAccountIdType(123),
+        github_types.GitHubAccountIdType(125),
+        github_types.GitHubAccountIdType(127),
+    }
+
+    monkeypatch.setenv("DYNO", "worker-dedicated.2")
+    assert worker.get_process_index_from_env() == 1
+    w2 = worker.Worker(shared_stream_processes=0, dedicated_stream_processes=2)
+    w2._dedicated_workers_owners_cache = owners_cache
+    assert w2.get_my_dedicated_worker_ids_from_cache() == {
+        github_types.GitHubAccountIdType(124),
+        github_types.GitHubAccountIdType(126),
+    }
+
+
 @mock.patch("mergify_engine.worker.subscription.Subscription.get_subscription")
 @mock.patch("mergify_engine.clients.github.get_installation_from_account_id")
 @mock.patch("mergify_engine.worker.run_engine")
