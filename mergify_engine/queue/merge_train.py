@@ -789,7 +789,7 @@ class TrainCar:
                         "--verbose",
                         "origin",
                         str(self.queue_branch_name),
-                        "--force-with-lease",
+                        "--force",
                     )
 
         except gitter.GitAuthenticationFailure as e:
@@ -872,8 +872,6 @@ class TrainCar:
             self.queue_branch_name = github_types.GitHubRefType(
                 f"{queue_rule.config['queue_branch_prefix']}{self._generate_draft_pr_branch_suffix()}"
             )
-        else:
-            await self._delete_branch()
 
         bot_account = queue_rule.config["draft_bot_account"]
         github_user: typing.Optional[user_tokens.UserTokensUser] = None
