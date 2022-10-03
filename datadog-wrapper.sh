@@ -31,9 +31,9 @@ elif [ -z "$DYNO" ]; then
     export DD_TRACE_ENABLED=0
     exec "$@"
 
-elif [ -z "$DYNO" -o "$DYNOHOST" == "run" ]; then
+elif [ "$DYNOTYPE" == "run" ] || [ "$DYNOTYPE" == "scheduler" ] || [ "$DYNOTYPE" == "release" ]; then
     startup_message
-    echo '$DYNOHOST == run , skipping datadog-agent setup...'
+    echo 'short lived DYNOTYPE: $DYNOHOST, skipping datadog-agent setup...'
     export DD_DOGSTATSD_DISABLE=1
     export DD_TRACE_ENABLED=0
     exec "$@"
