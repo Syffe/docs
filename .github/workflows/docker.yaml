@@ -224,6 +224,21 @@ jobs:
           push: false
           cache-from: type=local,src=/home/runner/docker-cache
 
+      - name: ⚙️ Build saas-worker-monitoring
+        uses: docker/build-push-action@v3
+        with:
+          target: saas-worker-monitoring
+          tags: worker-monitoring:tmp
+          outputs: type=docker
+          # COMMON
+          build-args: |
+            PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
+            MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
+            MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
+            BUILD_DATE=${{ steps.vars.outputs.BUILD_DATE }}
+          context: .
+          push: false
+          cache-from: type=local,src=/home/runner/docker-cache
       - name: ⚙️ Build onpremise
         uses: docker/build-push-action@v3
         with:
@@ -242,7 +257,7 @@ jobs:
 
       - name: 🏓 Testing
         run: |
-          for i in web worker-shared worker-dedicated onpremise; do
+          for i in web worker-shared worker-dedicated worker-monitoring onpremise; do
             docker run \
               --env-file fake.env \
               -e MERGIFYENGINE_STORAGE_URL=redis://redis:6363 \
@@ -345,7 +360,7 @@ jobs:
           SHA: ${{ steps.vars.outputs.SHA }}
           HEROKU_ENVIRONMENT: ${{ steps.vars.outputs.HEROKU_ENVIRONMENT }}
         run: |
-          for i in web worker-shared worker-dedicated; do
+          for i in web worker-shared worker-dedicated worker-monitoring; do
             image="registry.heroku.com/${HEROKU_ENVIRONMENT}/${i}:${SHA}"
             docker tag "${i}:tmp" "$image"
             docker push "$image"
@@ -357,7 +372,7 @@ jobs:
         env:
           HEROKU_ENVIRONMENT: ${{ steps.vars.outputs.HEROKU_ENVIRONMENT }}
         run: |
-          for i in web worker-shared worker-dedicated; do
+          for i in web worker-shared worker-dedicated worker-monitoring; do
             image="registry.heroku.com/${HEROKU_ENVIRONMENT}/${i}:latest"
             docker tag "${i}:tmp" "$image"
             docker push "$image"
@@ -369,7 +384,7 @@ jobs:
         env:
           HEROKU_ENVIRONMENT: ${{ steps.vars.outputs.HEROKU_ENVIRONMENT }}
         run: |
-          for i in web worker-shared worker-dedicated; do
+          for i in web worker-shared worker-dedicated worker-monitoring; do
             heroku container:release -a "${HEROKU_ENVIRONMENT}" "${i}"
           done
 
