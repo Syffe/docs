@@ -65,7 +65,7 @@ async def plan_next_refresh(
     refresh_time_conditions = (
         ctxt.pull["closed_at"] is None
         or (date.utcnow() - date.fromisoformat(ctxt.pull["closed_at"]))
-        > STOP_REFRESH_PULL_REQUEST_CLOSED_WITH_TIME_CONDITIONS_SINCE
+        < STOP_REFRESH_PULL_REQUEST_CLOSED_WITH_TIME_CONDITIONS_SINCE
     )
 
     for rule in _rules:

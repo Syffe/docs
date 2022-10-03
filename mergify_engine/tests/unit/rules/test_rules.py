@@ -15,19 +15,8 @@ from mergify_engine import rules
 from mergify_engine.clients import http
 from mergify_engine.rules import InvalidRules
 from mergify_engine.rules import conditions
+from mergify_engine.tests import utils
 from mergify_engine.tests.unit import conftest
-
-
-async def load_mergify_config(content: str) -> rules.MergifyConfig:
-    file = context.MergifyConfigFile(
-        type="file",
-        content="whatever",
-        sha=github_types.SHAType("azertyuiop"),
-        path=github_types.GitHubFilePath("whatever"),
-        decoded_content=content,
-    )
-
-    return await rules.get_mergify_config_from_file(mock.MagicMock(), file)
 
 
 def pull_request_rule_from_list(lst: typing.Any) -> rules.PullRequestRules:
@@ -253,7 +242,7 @@ def test_same_names() -> None:
 
 
 async def test_jinja_with_list_attribute() -> None:
-    config = await load_mergify_config(
+    config = await utils.load_mergify_config(
         """
             pull_request_rules:
               - name: ahah
@@ -2117,7 +2106,7 @@ async def test_has_unmatched_conditions() -> None:
 
 
 async def test_template_with_empty_body() -> None:
-    config = await load_mergify_config(
+    config = await utils.load_mergify_config(
         """pull_request_rules:
   - name: rule name
     conditions:
@@ -2140,7 +2129,7 @@ async def test_template_with_empty_body() -> None:
 
 
 async def test_ignorable_root_key() -> None:
-    config = await load_mergify_config(
+    config = await utils.load_mergify_config(
         """
 shared:
   conditions: &cond1
