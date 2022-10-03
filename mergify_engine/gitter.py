@@ -121,6 +121,10 @@ class Gitter(object):
             "credential.helper",
             f"cache --timeout=300 --socket={self.tmp}/.git-creds-socket",
         )
+        # Setting the number of checkout workers to 0 will use as many workers
+        # as there are logical cores on the machine.
+        # https://git-scm.com/docs/git-config#Documentation/git-config.txt-checkoutworkers
+        await self("config", "checkout.workers", "0")
 
     def prepare_safe_env(
         self,
