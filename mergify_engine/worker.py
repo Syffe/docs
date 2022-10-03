@@ -1156,6 +1156,15 @@ class Worker:
         )
 
     async def start(self) -> None:
+        LOG.info(
+            "worker process start",
+            enabled_services=self.enabled_services,
+            process_index=self.process_index,
+            dedicated_stream_processes=self.dedicated_stream_processes,
+            shared_stream_tasks_per_process=self.shared_stream_processes,
+            shared_stream_processes=self.shared_stream_processes,
+        )
+
         self._stopping.clear()
 
         await ping_redis(self._redis_links.stream, "Stream")
@@ -1169,7 +1178,12 @@ class Worker:
 
         if "shared-stream" in self.enabled_services:
             worker_ids = self.get_shared_worker_ids()
-            LOG.info("workers starting", count=len(worker_ids))
+            LOG.info(
+                "workers starting",
+                count=len(worker_ids),
+                process_index=self.process_index,
+                shared_stream_tasks_per_process=self.shared_stream_tasks_per_process,
+            )
             for worker_id in worker_ids:
                 self._shared_worker_tasks.append(
                     self.create_task(
@@ -1181,7 +1195,12 @@ class Worker:
                         ),
                     )
                 )
-            LOG.info("workers started", count=len(worker_ids))
+            LOG.info(
+                "workers started",
+                count=len(worker_ids),
+                process_index=self.process_index,
+                shared_stream_tasks_per_process=self.shared_stream_tasks_per_process,
+            )
 
         if "dedicated-stream" in self.enabled_services:
             LOG.info("dedicated worker spawner starting")
@@ -1275,7 +1294,12 @@ class Worker:
 
         shutdown_tasks: typing.List[asyncio.Task[None]] = []
         if to_stop:
-            LOG.info("dedicated workers to stop", workers=to_stop)
+            LOG.info(
+                "dedicated workers to stop",
+                workers=to_stop,
+                process_index=self.process_index,
+                dedicated_stream_processes=self.dedicated_stream_processes,
+            )
         for owner_id in to_stop:
             task = self._dedicated_worker_tasks[owner_id]
             task.cancel(msg="dedicated worker shutdown")
@@ -1288,7 +1312,12 @@ class Worker:
             del self._dedicated_worker_tasks[owner_id]
 
         if to_start:
-            LOG.info("dedicated workers to start", workers=to_start)
+            LOG.info(
+                "dedicated workers to start",
+                workers=to_start,
+                process_index=self.process_index,
+                dedicated_stream_processes=self.dedicated_stream_processes,
+            )
         for owner_id in to_start:
             self._dedicated_worker_tasks[owner_id] = self.create_task(
                 f"dedicated-{owner_id}",
@@ -1298,7 +1327,10 @@ class Worker:
 
         if to_start or to_stop:
             LOG.info(
-                "new dedicated workers setup", workers=set(self._dedicated_worker_tasks)
+                "new dedicated workers setup",
+                workers=set(self._dedicated_worker_tasks),
+                process_index=self.process_index,
+                dedicated_stream_processes=self.dedicated_stream_processes,
             )
 
     async def _shutdown(self) -> None:
