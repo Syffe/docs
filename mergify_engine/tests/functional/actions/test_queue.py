@@ -5025,6 +5025,74 @@ pull_request_rules:
 
         await self.assert_merge_queue_contents(q, None, [])
 
+    async def test_unexpected_config_change(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge me",
+                    "conditions": ["label=queue"],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        # Put a PR in queue
+        p1 = await self.create_pr()
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        # Change the name of the queue in the configuration
+        updated_rules = {
+            "queue_rules": [
+                {
+                    "name": "new_default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge me",
+                    "conditions": [f"base={self.main_branch_name}", "label=queue"],
+                    "actions": {"queue": {"name": "new_default"}},
+                },
+            ],
+        }
+        await self.push_file(".mergify.yml", yaml.dump(updated_rules))
+
+        # Put a new PR in queue, with the new configuration
+        p2 = await self.create_pr()
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        # The first PR has been removed from the queue, then queued again with
+        # the new configuration
+        p1 = await self.get_pull(p1["number"])
+        ctxt = context.Context(self.repository_ctxt, p1)
+        check = first(
+            await ctxt.pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Merge me (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 2nd in the queue to be merged"
+        )
+        assert (
+            "Required conditions of queue** `new_default` **for merge"
+            in check["output"]["summary"]
+        )
+
 
 class TestTrainApiCalls(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True

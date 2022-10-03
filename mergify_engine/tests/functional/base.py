@@ -1469,3 +1469,15 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         return queue_statistics.get_statistic_redis_key(
             self.subscription.owner_id, self.RECORD_CONFIG["repository_id"], stat_name
         )
+
+    async def push_file(
+        self, filename: str = "random_file.txt", content: str = ""
+    ) -> None:
+        await self.git("fetch", "origin", f"{self.main_branch_name}")
+        await self.git("checkout", "-b", "random", f"origin/{self.main_branch_name}")
+        with open(self.git.repository + f"/{filename}", "w") as f:
+            f.write(content)
+        await self.git("add", filename)
+        await self.git("commit", "--no-edit", "-m", "random update")
+        await self.git("push", "--quiet", "origin", f"random:{self.main_branch_name}")
+        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})

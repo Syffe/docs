@@ -1904,6 +1904,20 @@ class Train:
             ctxt, signal_trigger, exclude_ref=ctxt.pull["base"]["ref"]
         )
 
+        # NOTE(charly): ensure there is no configuration change since the train
+        # creation
+        queue_rules = await self.get_queue_rules()
+        if queue_rules is not None:
+            for embarked_pull, _ in list(self._iter_embarked_pulls()):
+                queue_rule = queue_rules.get(embarked_pull.config["name"])
+                if queue_rule is None:
+                    await self._remove_pull(
+                        embarked_pull.user_pull_request_number,
+                        signal_trigger,
+                        "configuration has unexpectedly changed",
+                        merged=False,
+                    )
+
         new_pull_queue_rule = await self.get_queue_rule(config["name"])
         best_position = -1
         need_to_be_readded = False
@@ -1968,7 +1982,7 @@ class Train:
         if need_to_be_readded:
             # FIXME(sileht): this can be optimised by not dropping spec checks,
             # if the position in the queue does not change
-            await self._remove_pull(
+            await self._remove_pull_from_context(
                 ctxt, signal_trigger, "position in queue has changed"
             )
             await self.add_pull(ctxt, config, signal_trigger)
@@ -2033,16 +2047,37 @@ class Train:
         await self.force_remove_pull(
             ctxt, signal_trigger, exclude_ref=ctxt.pull["base"]["ref"]
         )
-        await self._remove_pull(ctxt, signal_trigger, remove_reason, safely_merged_at)
+        await self._remove_pull_from_context(
+            ctxt, signal_trigger, remove_reason, safely_merged_at
+        )
 
-    async def _remove_pull(
+    async def _remove_pull_from_context(
         self,
         ctxt: context.Context,
         signal_trigger: str,
         remove_reason: str,
         safely_merged_at: github_types.SHAType | None = None,
     ) -> None:
-        if (
+        if await self._is_head_of_train_merged(ctxt, safely_merged_at):
+            await self._remove_merged_head_of_train(
+                ctxt.pull["number"],
+                ctxt.pull["merge_commit_sha"],
+                signal_trigger,
+                remove_reason,
+                safely_merged_at,
+            )
+        else:
+            await self._remove_pull(
+                ctxt.pull["number"],
+                signal_trigger,
+                remove_reason,
+                ctxt.pull["merged"],
+            )
+
+    async def _is_head_of_train_merged(
+        self, ctxt: context.Context, safely_merged_at: github_types.SHAType | None
+    ) -> bool:
+        return bool(
             (safely_merged_at or ctxt.pull["merged"])
             and ctxt.pull["base"]["ref"] == self.ref
             and self._cars
@@ -2053,66 +2088,90 @@ class Train:
                 safely_merged_at
                 or await self.is_synced_with_the_base_branch(await self.get_base_sha())
             )
-        ):
-            embarked_pull = self._cars[0].still_queued_embarked_pulls[0]
-            # Head of the train was merged and the base_sha haven't changed, we can keep
-            # other running cars
-            del self._cars[0].still_queued_embarked_pulls[0]
-            if len(self._cars[0].still_queued_embarked_pulls) == 0:
-                deleted_car = self._cars[0]
-                await deleted_car.end_checking(reason=None)
-                self._cars = self._cars[1:]
-
-            if safely_merged_at is None and ctxt.pull["merge_commit_sha"] is None:
-                raise RuntimeError("merged pull request without merge_commit_sha set")
-
-            self._current_base_sha = safely_merged_at or ctxt.pull["merge_commit_sha"]
-
-            await self.save()
-            ctxt.log.info(
-                "removed from head train", position=0, **self.log_queue_extras
-            )
-            await self.refresh_pulls(
-                source=f"merged pull {ctxt.pull['number']} removed from queue",
-                additional_pull_request=ctxt.pull["number"],
-            )
-            await signals.send(
-                ctxt.repository,
-                ctxt.pull["number"],
-                "action.queue.leave",
-                signals.EventQueueLeaveMetadata(
-                    {
-                        "reason": remove_reason,
-                        "merged": True,
-                        "queue_name": embarked_pull.config["name"],
-                        "branch": self.ref,
-                        "position": 0,
-                        "queued_at": embarked_pull.queued_at,
-                    }
-                ),
-                signal_trigger,
-            )
-            return
-
-        position, embarked_pull_with_car = self.find_embarked_pull(ctxt.pull["number"])
-        if position is None or embarked_pull_with_car is None:
-            ctxt.log.info("already absent from train", **self.log_queue_extras)
-            return
-
-        await self._slice_cars(
-            position,
-            reason=queue_utils.PrAheadDequeued(pr_number=ctxt.pull["number"]),
-            drop_pull_request=ctxt.pull["number"],
         )
+
+    async def _remove_merged_head_of_train(
+        self,
+        pr_number: github_types.GitHubPullRequestNumber,
+        merge_commit_sha: github_types.SHAType | None,
+        signal_trigger: str,
+        remove_reason: str,
+        safely_merged_at: github_types.SHAType | None = None,
+    ) -> None:
+        embarked_pull = self._cars[0].still_queued_embarked_pulls[0]
+        # Head of the train was merged and the base_sha haven't changed, we can keep
+        # other running cars
+        del self._cars[0].still_queued_embarked_pulls[0]
+        if len(self._cars[0].still_queued_embarked_pulls) == 0:
+            deleted_car = self._cars[0]
+            await deleted_car.end_checking(reason=None)
+            self._cars = self._cars[1:]
+
+        if safely_merged_at is None and merge_commit_sha is None:
+            raise RuntimeError("merged pull request without merge_commit_sha set")
+
+        self._current_base_sha = safely_merged_at or merge_commit_sha
+
         await self.save()
+        self.log.info(
+            "removed from head train",
+            position=0,
+            gh_pull=pr_number,
+            gh_branch=self.ref,
+            **self.log_queue_extras,
+        )
+        await self.refresh_pulls(
+            source=f"merged pull {pr_number} removed from queue",
+            additional_pull_request=pr_number,
+        )
         await signals.send(
-            ctxt.repository,
-            ctxt.pull["number"],
+            self.repository,
+            pr_number,
             "action.queue.leave",
             signals.EventQueueLeaveMetadata(
                 {
                     "reason": remove_reason,
-                    "merged": ctxt.pull["merged"],
+                    "merged": True,
+                    "queue_name": embarked_pull.config["name"],
+                    "branch": self.ref,
+                    "position": 0,
+                    "queued_at": embarked_pull.queued_at,
+                }
+            ),
+            signal_trigger,
+        )
+
+    async def _remove_pull(
+        self,
+        pr_number: github_types.GitHubPullRequestNumber,
+        signal_trigger: str,
+        remove_reason: str,
+        merged: bool,
+    ) -> None:
+        position, embarked_pull_with_car = self.find_embarked_pull(pr_number)
+        if position is None or embarked_pull_with_car is None:
+            self.log.info(
+                "already absent from train",
+                gh_pull=pr_number,
+                gh_branch=self.ref,
+                **self.log_queue_extras,
+            )
+            return
+
+        await self._slice_cars(
+            position,
+            reason=queue_utils.PrAheadDequeued(pr_number=pr_number),
+            drop_pull_request=pr_number,
+        )
+        await self.save()
+        await signals.send(
+            self.repository,
+            pr_number,
+            "action.queue.leave",
+            signals.EventQueueLeaveMetadata(
+                {
+                    "reason": remove_reason,
+                    "merged": merged,
                     "queue_name": embarked_pull_with_car.embarked_pull.config["name"],
                     "branch": self.ref,
                     "position": position,
@@ -2122,10 +2181,16 @@ class Train:
             signal_trigger,
         )
 
-        ctxt.log.info("removed from train", position=position, **self.log_queue_extras)
+        self.log.info(
+            "removed from train",
+            position=position,
+            gh_pull=pr_number,
+            gh_branch=self.ref,
+            **self.log_queue_extras,
+        )
         await self.refresh_pulls(
-            source=f"pull {ctxt.pull['number']} removed from queue",
-            additional_pull_request=ctxt.pull["number"],
+            source=f"pull {pr_number} removed from queue",
+            additional_pull_request=pr_number,
         )
 
     async def _split_failed_train_car(
@@ -2523,7 +2588,7 @@ class Train:
             ctxt.repository,
             exclude_ref=exclude_ref,
         ):
-            await train._remove_pull(
+            await train._remove_pull_from_context(
                 ctxt, signal_trigger, "pull request target branch changed"
             )
 
