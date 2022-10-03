@@ -2,17 +2,13 @@ import hashlib
 import hmac
 import json
 import math
-import os
 import re
-import socket
 import typing
 
 import daiquiri
 
 
 LOG = daiquiri.getLogger()
-
-_PROCESS_IDENTIFIER = os.environ.get("DYNO") or socket.gethostname()
 
 MERGIFY_COMMENT_PAYLOAD_STR_PREFIX = "DO NOT EDIT\n-*- Mergify Payload -*-"
 MERGIFY_COMMENT_PAYLOAD_STR_SUFFIX = "-*- Mergify Payload End -*-"

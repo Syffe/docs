@@ -66,10 +66,6 @@ def test_unicode_truncate(
         assert result == expected
 
 
-def test_process_identifier() -> None:
-    assert isinstance(utils._PROCESS_IDENTIFIER, str)
-
-
 def test_get_random_choices() -> None:
     choices = {
         "jd": 10,
