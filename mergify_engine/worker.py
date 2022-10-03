@@ -915,6 +915,7 @@ class Worker:
     shutdown_timeout: float = config.WORKER_SHUTDOWN_TIMEOUT
     shared_stream_tasks_per_process: int = config.SHARED_STREAM_TASKS_PER_PROCESS
     shared_stream_processes: int = config.SHARED_STREAM_PROCESSES
+    dedicated_stream_processes: int = config.DEDICATED_STREAM_PROCESSES
     process_index: int = dataclasses.field(default_factory=get_process_index_from_env)
     enabled_services: WorkerServicesT = dataclasses.field(
         default_factory=lambda: AVAILABLE_WORKER_SERVICES.copy()
@@ -1087,7 +1088,16 @@ class Worker:
 
         statsd.gauge("engine.streams.backlog", len(org_buckets))
         statsd.gauge("engine.workers.count", self.global_shared_tasks_count)
-        statsd.gauge("engine.processes.count", self.shared_stream_processes)
+        statsd.gauge(
+            "engine.processes.count",
+            self.shared_stream_processes,
+            tags=["type:shared"],
+        )
+        statsd.gauge(
+            "engine.processes.count",
+            self.dedicated_stream_processes,
+            tags=["type:dedicated"],
+        )
         statsd.gauge(
             "engine.workers-per-process.count", self.shared_stream_tasks_per_process
         )
@@ -1250,7 +1260,14 @@ class Worker:
 
     @tracer.wrap("dedicated_workers_spawner_task", span_type="worker")
     async def dedicated_workers_spawner_task(self) -> None:
-        expected_workers = self._dedicated_workers_owners_cache
+        if self.dedicated_stream_processes:
+            expected_workers = set(
+                sorted(self._dedicated_workers_owners_cache)[
+                    self.process_index :: self.dedicated_stream_processes
+                ]
+            )
+        else:
+            expected_workers = set()
         current_workers = set(self._dedicated_worker_tasks.keys())
 
         to_stop = current_workers - expected_workers

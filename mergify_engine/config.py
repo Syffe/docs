@@ -215,6 +215,9 @@ Schema = voluptuous.Schema(
         voluptuous.Required("SHARED_STREAM_PROCESSES", default=1): voluptuous.Coerce(
             int
         ),
+        voluptuous.Required("DEDICATED_STREAM_PROCESSES", default=1): voluptuous.Coerce(
+            int
+        ),
         voluptuous.Required(
             "SHARED_STREAM_TASKS_PER_PROCESS", default=7
         ): voluptuous.Coerce(int),
@@ -287,6 +290,7 @@ WEBHOOK_FORWARD_EVENT_TYPES: str
 WEBHOOK_SECRET: str
 WEBHOOK_SECRET_PRE_ROTATION: typing.Optional[str]
 SHARED_STREAM_PROCESSES: int
+DEDICATED_STREAM_PROCESSES: int
 SHARED_STREAM_TASKS_PER_PROCESS: int
 EXTERNAL_USER_PERSONAL_TOKEN: str
 BOT_USER_ID: github_types.GitHubAccountIdType

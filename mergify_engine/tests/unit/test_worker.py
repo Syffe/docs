@@ -1859,6 +1859,13 @@ async def test_dedicated_worker_scaleup_scaledown(
         "dedicated-4446",
         "shared-1",
     ]
+    assert set(w._dedicated_worker_tasks.keys()) == set(
+        {
+            github_types.GitHubAccountIdType(1),
+            github_types.GitHubAccountIdType(4446),
+        }
+    )
+
     tracker.clear()
 
     get_subscription.side_effect = fake_get_subscription_shared
@@ -1872,6 +1879,7 @@ async def test_dedicated_worker_scaleup_scaledown(
         "shared-2",
         "shared-2",
     ]
+    assert set(w._dedicated_worker_tasks.keys()) == set()
     tracker.clear()
 
     get_subscription.side_effect = fake_get_subscription_dedicated
@@ -1885,6 +1893,12 @@ async def test_dedicated_worker_scaleup_scaledown(
         "shared-1",
         "shared-1",
     ]
+    assert set(w._dedicated_worker_tasks.keys()) == set(
+        {
+            github_types.GitHubAccountIdType(1),
+            github_types.GitHubAccountIdType(4446),
+        }
+    )
     tracker.clear()
 
     get_subscription.side_effect = fake_get_subscription_shared
@@ -1894,6 +1908,7 @@ async def test_dedicated_worker_scaleup_scaledown(
         "shared-1",
         "shared-2",
     ]
+    assert set(w._dedicated_worker_tasks.keys()) == set()
 
 
 @mock.patch("mergify_engine.worker.subscription.Subscription.get_subscription")
@@ -2402,3 +2417,201 @@ def test_score_priority_helpers(
         assert worker_pusher.get_date_from_score(score) == frozen_time().replace(
             tzinfo=datetime.timezone.utc
         )
+
+
+@mock.patch("mergify_engine.worker.subscription.Subscription.get_subscription")
+@mock.patch("mergify_engine.clients.github.get_installation_from_account_id")
+@mock.patch("mergify_engine.worker.run_engine")
+async def test_dedicated_multiple_processes(
+    run_engine: mock.Mock,
+    get_installation_from_account_id: mock.Mock,
+    get_subscription: mock.Mock,
+    redis_links: redis_utils.RedisLinks,
+    logger_checker: None,
+    request: pytest.FixtureRequest,
+    event_loop: asyncio.BaseEventLoop,
+) -> None:
+    get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
+
+    w_shared = worker.Worker(
+        enabled_services={"shared-stream"},
+        shared_stream_tasks_per_process=3,
+        delayed_refresh_idle_time=0.01,
+        dedicated_workers_spawner_idle_time=0.01,
+        dedicated_workers_syncer_idle_time=0.01,
+        dedicated_stream_processes=0,
+        process_index=0,
+    )
+    await w_shared.start()
+    w1 = worker.Worker(
+        enabled_services={"dedicated-stream"},
+        shared_stream_tasks_per_process=0,
+        delayed_refresh_idle_time=0.01,
+        dedicated_workers_spawner_idle_time=0.01,
+        dedicated_workers_syncer_idle_time=0.01,
+        dedicated_stream_processes=2,
+        process_index=0,
+    )
+    await w1.start()
+
+    w2 = worker.Worker(
+        enabled_services={"dedicated-stream"},
+        shared_stream_tasks_per_process=0,
+        delayed_refresh_idle_time=0.01,
+        dedicated_workers_spawner_idle_time=0.01,
+        dedicated_workers_syncer_idle_time=0.01,
+        dedicated_stream_processes=2,
+        process_index=1,
+    )
+    await w2.start()
+
+    async def cleanup() -> None:
+        w_shared.stop()
+        w1.stop()
+        w2.stop()
+        await w_shared.wait_shutdown_complete()
+        await w1.wait_shutdown_complete()
+        await w2.wait_shutdown_complete()
+
+    request.addfinalizer(lambda: event_loop.run_until_complete(cleanup()))
+
+    tracker = []
+
+    async def track_context(*args: typing.Any, **kwargs: typing.Any) -> None:
+        tracker.append(str(logs.WORKER_ID.get(None)))
+
+    run_engine.side_effect = track_context
+
+    async def fake_get_subscription_dedicated(
+        redis: redis_utils.RedisStream, owner_id: github_types.GitHubAccountIdType
+    ) -> mock.Mock:
+        sub = mock.Mock()
+        # 123 is always shared
+        if owner_id == 123:
+            sub.has_feature.return_value = False
+        else:
+            sub.has_feature.return_value = True
+        return sub
+
+    async def fake_get_subscription_shared(
+        redis: redis_utils.RedisStream, owner_id: github_types.GitHubAccountIdType
+    ) -> mock.Mock:
+        sub = mock.Mock()
+        sub.has_feature.return_value = False
+        return sub
+
+    async def push_and_wait() -> None:
+        # worker hash == 2
+        await worker_pusher.push(
+            redis_links.stream,
+            github_types.GitHubAccountIdType(4446),
+            github_types.GitHubLogin("owner-4446"),
+            github_types.GitHubRepositoryIdType(4446),
+            github_types.GitHubRepositoryName("repo"),
+            github_types.GitHubPullRequestNumber(4446),
+            "pull_request",
+            github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
+            priority=worker_pusher.Priority.immediate,
+        )
+        # worker hash == 1
+        await worker_pusher.push(
+            redis_links.stream,
+            github_types.GitHubAccountIdType(123),
+            github_types.GitHubLogin("owner-123"),
+            github_types.GitHubRepositoryIdType(123),
+            github_types.GitHubRepositoryName("repo"),
+            github_types.GitHubPullRequestNumber(123),
+            "pull_request",
+            github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
+            priority=worker_pusher.Priority.immediate,
+        )
+        # worker hash == 0
+        await worker_pusher.push(
+            redis_links.stream,
+            github_types.GitHubAccountIdType(1),
+            github_types.GitHubLogin("owner-1"),
+            github_types.GitHubRepositoryIdType(1),
+            github_types.GitHubRepositoryName("repo"),
+            github_types.GitHubPullRequestNumber(1),
+            "pull_request",
+            github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
+            priority=worker_pusher.Priority.immediate,
+        )
+        started_at = time.monotonic()
+        while (
+            await w_shared._redis_links.stream.zcard("streams")
+        ) > 0 and time.monotonic() - started_at < 10:
+            await asyncio.sleep(0.5)
+
+    get_subscription.side_effect = fake_get_subscription_dedicated
+    await push_and_wait()
+    assert sorted(tracker) == [
+        "dedicated-1",
+        "dedicated-4446",
+        "shared-1",
+    ]
+    assert set(w_shared._dedicated_worker_tasks.keys()) == set()
+    assert set(w1._dedicated_worker_tasks.keys()) == {
+        github_types.GitHubAccountIdType(1)
+    }
+    assert set(w2._dedicated_worker_tasks.keys()) == {
+        github_types.GitHubAccountIdType(4446)
+    }
+    tracker.clear()
+
+    get_subscription.side_effect = fake_get_subscription_shared
+    await push_and_wait()
+    await push_and_wait()
+    assert sorted(tracker) == [
+        "shared-0",
+        "shared-0",
+        "shared-1",
+        "shared-1",
+        "shared-2",
+        "shared-2",
+    ]
+    assert set(w_shared._dedicated_worker_tasks.keys()) == set()
+    assert set(w1._dedicated_worker_tasks.keys()) == set()
+    assert set(w2._dedicated_worker_tasks.keys()) == set()
+    tracker.clear()
+
+    get_subscription.side_effect = fake_get_subscription_dedicated
+    await push_and_wait()
+    await push_and_wait()
+    assert sorted(tracker) == [
+        "dedicated-1",
+        "dedicated-1",
+        "dedicated-4446",
+        "dedicated-4446",
+        "shared-1",
+        "shared-1",
+    ]
+    assert set(w_shared._dedicated_worker_tasks.keys()) == set()
+    assert set(w1._dedicated_worker_tasks.keys()) == {
+        github_types.GitHubAccountIdType(1)
+    }
+    assert set(w2._dedicated_worker_tasks.keys()) == {
+        github_types.GitHubAccountIdType(4446)
+    }
+    tracker.clear()
+
+    get_subscription.side_effect = fake_get_subscription_shared
+    await push_and_wait()
+    assert sorted(tracker) == [
+        "shared-0",
+        "shared-1",
+        "shared-2",
+    ]
+
+    await push_and_wait()
+    assert sorted(tracker) == [
+        "shared-0",
+        "shared-0",
+        "shared-1",
+        "shared-1",
+        "shared-2",
+        "shared-2",
+    ]
+    assert set(w_shared._dedicated_worker_tasks.keys()) == set()
+    assert set(w1._dedicated_worker_tasks.keys()) == set()
+    assert set(w2._dedicated_worker_tasks.keys()) == set()
