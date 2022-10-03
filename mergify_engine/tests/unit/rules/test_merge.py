@@ -336,336 +336,340 @@ source_config = {
     ],
 }
 
-dest_config = {
-    "commands_restrictions": {"copy": {"conditions": ["sender=toto"]}},
-    "extends": ".github",
-    "pull_request_rules": [
-        {
-            "actions": {"merge": {}},
-            "conditions": ["base=override_permission"],
-            "name": "automatic merge",
-        }
-    ],
-    "queue_rules": [
-        {
-            "allow_inplace_checks": False,
-            "conditions": ["schedule: MON-FRI 06:06-06:06"],
-            "name": "hotfix",
-        }
-    ],
-}
-
-expected_result = {
-    "commands_restrictions": {"copy": {"conditions": ["sender=toto"]}},
-    "extends": ".github",
-    "pull_request_rules": [
-        {
-            "actions": {"merge": {}},
-            "conditions": ["base=override_permission"],
-            "name": "automatic merge",
-        },
-        {
-            "actions": {
-                "queue": {
-                    "commit_message_template": "{{ "
-                    "title "
-                    "}} "
-                    "(#{{ "
-                    "number "
-                    "}})\n"
-                    "\n"
-                    "{{ "
-                    "body "
-                    "}}\n",
-                    "method": "squash",
-                    "name": "hotfix",
-                }
-            },
-            "conditions": [
-                "base=main",
-                "author=@devs",
-                "check-success=semantic-pull-request",
-                "label=hotfix",
-                "title~=^(revert|fix)",
-                "#approved-reviews-by>=1",
-                "#changes-requested-reviews-by=0",
-                "label!=work-in-progress",
-                "label!=manual merge",
-            ],
-            "name": "automatic merge for hotfix",
-        },
-        {
-            "actions": {
-                "queue": {
-                    "commit_message_template": "{{ "
-                    "title "
-                    "}} "
-                    "(#{{ "
-                    "number "
-                    "}})\n"
-                    "\n"
-                    "{{ "
-                    "body "
-                    "}}\n",
-                    "method": "rebase",
-                    "name": "lowprio",
-                }
-            },
-            "conditions": [
-                {
-                    "and": [
-                        {"or": ["-label=Docker", "check-success=docker"]},
-                        "check-success=import-checks",
-                        "check-success=pep8",
-                        "check-success=test",
-                        "check-success=docs",
-                    ]
-                },
-                "check-success=semantic-pull-request",
-                "author=mergify-ci-bot",
-                "label!=work-in-progress",
-                "label!=manual merge",
-                "title~=^chore: bump",
-                "#commits=1",
-                "head~=^clifus/",
-            ],
-            "name": "automatic merge for clifus version bump",
-        },
-        {
-            "actions": {
-                "queue": {
-                    "commit_message_template": None,
-                    "method": "rebase",
-                    "name": "lowprio",
-                }
-            },
-            "conditions": [
-                {
-                    "and": [
-                        {"or": ["-label=Docker", "check-success=docker"]},
-                        "check-success=import-checks",
-                        "check-success=pep8",
-                        "check-success=test",
-                        "check-success=docs",
-                    ]
-                },
-                "check-success=semantic-pull-request",
-                "author=dependabot[bot]",
-                "label!=work-in-progress",
-                "label!=manual merge",
-                "#commits=1",
-            ],
-            "name": "automatic merge from dependabot",
-        },
-        {
-            "actions": {"comment": {"message": "@dependabot " "recreate"}},
-            "conditions": ["author=dependabot[bot]", "conflict"],
-            "name": "dependabot conflict fixer",
-        },
-        {
-            "actions": {"dismiss_reviews": {}},
-            "conditions": [],
-            "name": "dismiss reviews",
-        },
-        {
-            "actions": {"request_reviews": {"teams": ["devs"]}},
-            "conditions": [
-                "-author=dependabot[bot]",
-                "-author=mergify-ci-bot",
-                "label!=work-in-progress",
-                "-merged",
-                "-closed",
-                {
-                    "and": [
-                        {"or": ["-label=Docker", "check-success=docker"]},
-                        "check-success=import-checks",
-                        "check-success=pep8",
-                        "check-success=test",
-                        "check-success=docs",
-                    ]
-                },
-                "check-success=Rule: feature " "requirements (post_check)",
-                "check-success=Rule: testing " "requirements (post_check)",
-                "#approved-reviews-by=0",
-                "#changes-requested-reviews-by=0",
-            ],
-            "name": "request review",
-        },
-        {
-            "actions": {
-                "comment": {
-                    "message": "@{{author}} this "
-                    "pull request is "
-                    "now in conflict "
-                    "😩"
-                },
-                "label": {"add": ["conflict"]},
-            },
-            "conditions": ["conflict", "-closed"],
-            "name": "warn on conflicts",
-        },
-        {
-            "actions": {"label": {"remove": ["conflict"]}},
-            "conditions": ["-conflict"],
-            "name": "remove conflict label if not needed",
-        },
-        {
-            "actions": {"label": {"add": ["Review Threads " "Unresolved"]}},
-            "conditions": ["#review-threads-unresolved>0"],
-            "name": "label on unresolved",
-        },
-        {
-            "actions": {"label": {"remove": ["Review Threads " "Unresolved"]}},
-            "conditions": ["#review-threads-unresolved=0"],
-            "name": "unlabel on resolved",
-        },
-        {
-            "actions": {
-                "comment": {"message": "Your hotfix is " "failing CI " "@{{author}} 🥺"}
-            },
-            "conditions": ["label=hotfix", "#check-failure>0"],
-            "name": "warn on CI failure for hotfix",
-        },
-        {
-            "actions": {
-                "post_check": {
-                    "title": "{% if "
-                    "check_succeed "
-                    "%}\n"
-                    "Feature "
-                    "requirements are "
-                    "present.\n"
-                    "{% else %}\n"
-                    "Feature "
-                    "requirements are "
-                    "missing.\n"
-                    "{% endif %}\n"
-                }
-            },
-            "conditions": [
-                {
-                    "or": [
-                        "-title~=^feat",
-                        {
-                            "and": [
-                                {
-                                    "or": [
-                                        "label=Skip " "release note",
-                                        "files~=^releasenotes/notes",
-                                    ]
-                                },
-                                {
-                                    "or": [
-                                        "label=Skip " "documentation",
-                                        "files~=^docs/source",
-                                    ]
-                                },
-                                "body~=MRGFY-",
-                            ]
-                        },
-                    ]
-                }
-            ],
-            "name": "feature requirements",
-        },
-        {
-            "actions": {
-                "post_check": {
-                    "title": "{% if "
-                    "check_succeed "
-                    "%}\n"
-                    "Testing "
-                    "requirements are "
-                    "present.\n"
-                    "{% else %}\n"
-                    "Testing "
-                    "requirements are "
-                    "missing.\n"
-                    "{% endif %}\n"
-                }
-            },
-            "conditions": [
-                {
-                    "or": [
-                        "label=Skip tests",
-                        "-title~=^(feat|fix)",
-                        "files~=mergify_engine/tests",
-                    ]
-                }
-            ],
-            "name": "testing requirements",
-        },
-    ],
-    "queue_rules": [
-        {
-            "allow_inplace_checks": False,
-            "conditions": ["schedule: MON-FRI 06:06-06:06"],
-            "name": "hotfix",
-        },
-        {
-            "allow_inplace_checks": True,
-            "conditions": [
-                {
-                    "and": [
-                        {"or": ["-label=Docker", "check-success=docker"]},
-                        "check-success=import-checks",
-                        "check-success=pep8",
-                        "check-success=test",
-                        "check-success=docs",
-                    ]
-                },
-                "schedule=Mon-Fri 09:00-17:30[Europe/Paris]",
-            ],
-            "name": "default",
-            "speculative_checks": 5,
-        },
-        {
-            "allow_inplace_checks": True,
-            "batch_max_wait_time": "5min",
-            "batch_size": 5,
-            "conditions": [
-                {
-                    "and": [
-                        {"or": ["-label=Docker", "check-success=docker"]},
-                        "check-success=import-checks",
-                        "check-success=pep8",
-                        "check-success=test",
-                        "check-success=docs",
-                    ]
-                },
-                "schedule=Mon-Fri 09:30-17:00[Europe/Paris]",
-            ],
-            "name": "lowprio",
-            "speculative_checks": 3,
-        },
-    ],
-}
-
 
 def test_merge_raw_configs() -> None:
-    assert rules.merge_raw_configs(source_config, dest_config) == expected_result
+    dest_config = {
+        "commands_restrictions": {"copy": {"conditions": ["sender=toto"]}},
+        "extends": ".github",
+        "pull_request_rules": [
+            {
+                "actions": {"merge": {}},
+                "conditions": ["base=override_permission"],
+                "name": "automatic merge",
+            }
+        ],
+        "queue_rules": [
+            {
+                "allow_inplace_checks": False,
+                "conditions": ["schedule: MON-FRI 06:06-06:06"],
+                "name": "hotfix",
+            }
+        ],
+    }
+
+    expected_result = {
+        "commands_restrictions": {"copy": {"conditions": ["sender=toto"]}},
+        "extends": ".github",
+        "pull_request_rules": [
+            {
+                "actions": {"merge": {}},
+                "conditions": ["base=override_permission"],
+                "name": "automatic merge",
+            },
+            {
+                "actions": {
+                    "queue": {
+                        "commit_message_template": "{{ "
+                        "title "
+                        "}} "
+                        "(#{{ "
+                        "number "
+                        "}})\n"
+                        "\n"
+                        "{{ "
+                        "body "
+                        "}}\n",
+                        "method": "squash",
+                        "name": "hotfix",
+                    }
+                },
+                "conditions": [
+                    "base=main",
+                    "author=@devs",
+                    "check-success=semantic-pull-request",
+                    "label=hotfix",
+                    "title~=^(revert|fix)",
+                    "#approved-reviews-by>=1",
+                    "#changes-requested-reviews-by=0",
+                    "label!=work-in-progress",
+                    "label!=manual merge",
+                ],
+                "name": "automatic merge for hotfix",
+            },
+            {
+                "actions": {
+                    "queue": {
+                        "commit_message_template": "{{ "
+                        "title "
+                        "}} "
+                        "(#{{ "
+                        "number "
+                        "}})\n"
+                        "\n"
+                        "{{ "
+                        "body "
+                        "}}\n",
+                        "method": "rebase",
+                        "name": "lowprio",
+                    }
+                },
+                "conditions": [
+                    {
+                        "and": [
+                            {"or": ["-label=Docker", "check-success=docker"]},
+                            "check-success=import-checks",
+                            "check-success=pep8",
+                            "check-success=test",
+                            "check-success=docs",
+                        ]
+                    },
+                    "check-success=semantic-pull-request",
+                    "author=mergify-ci-bot",
+                    "label!=work-in-progress",
+                    "label!=manual merge",
+                    "title~=^chore: bump",
+                    "#commits=1",
+                    "head~=^clifus/",
+                ],
+                "name": "automatic merge for clifus version bump",
+            },
+            {
+                "actions": {
+                    "queue": {
+                        "commit_message_template": None,
+                        "method": "rebase",
+                        "name": "lowprio",
+                    }
+                },
+                "conditions": [
+                    {
+                        "and": [
+                            {"or": ["-label=Docker", "check-success=docker"]},
+                            "check-success=import-checks",
+                            "check-success=pep8",
+                            "check-success=test",
+                            "check-success=docs",
+                        ]
+                    },
+                    "check-success=semantic-pull-request",
+                    "author=dependabot[bot]",
+                    "label!=work-in-progress",
+                    "label!=manual merge",
+                    "#commits=1",
+                ],
+                "name": "automatic merge from dependabot",
+            },
+            {
+                "actions": {"comment": {"message": "@dependabot " "recreate"}},
+                "conditions": ["author=dependabot[bot]", "conflict"],
+                "name": "dependabot conflict fixer",
+            },
+            {
+                "actions": {"dismiss_reviews": {}},
+                "conditions": [],
+                "name": "dismiss reviews",
+            },
+            {
+                "actions": {"request_reviews": {"teams": ["devs"]}},
+                "conditions": [
+                    "-author=dependabot[bot]",
+                    "-author=mergify-ci-bot",
+                    "label!=work-in-progress",
+                    "-merged",
+                    "-closed",
+                    {
+                        "and": [
+                            {"or": ["-label=Docker", "check-success=docker"]},
+                            "check-success=import-checks",
+                            "check-success=pep8",
+                            "check-success=test",
+                            "check-success=docs",
+                        ]
+                    },
+                    "check-success=Rule: feature " "requirements (post_check)",
+                    "check-success=Rule: testing " "requirements (post_check)",
+                    "#approved-reviews-by=0",
+                    "#changes-requested-reviews-by=0",
+                ],
+                "name": "request review",
+            },
+            {
+                "actions": {
+                    "comment": {
+                        "message": "@{{author}} this "
+                        "pull request is "
+                        "now in conflict "
+                        "😩"
+                    },
+                    "label": {"add": ["conflict"]},
+                },
+                "conditions": ["conflict", "-closed"],
+                "name": "warn on conflicts",
+            },
+            {
+                "actions": {"label": {"remove": ["conflict"]}},
+                "conditions": ["-conflict"],
+                "name": "remove conflict label if not needed",
+            },
+            {
+                "actions": {"label": {"add": ["Review Threads " "Unresolved"]}},
+                "conditions": ["#review-threads-unresolved>0"],
+                "name": "label on unresolved",
+            },
+            {
+                "actions": {"label": {"remove": ["Review Threads " "Unresolved"]}},
+                "conditions": ["#review-threads-unresolved=0"],
+                "name": "unlabel on resolved",
+            },
+            {
+                "actions": {
+                    "comment": {
+                        "message": "Your hotfix is " "failing CI " "@{{author}} 🥺"
+                    }
+                },
+                "conditions": ["label=hotfix", "#check-failure>0"],
+                "name": "warn on CI failure for hotfix",
+            },
+            {
+                "actions": {
+                    "post_check": {
+                        "title": "{% if "
+                        "check_succeed "
+                        "%}\n"
+                        "Feature "
+                        "requirements are "
+                        "present.\n"
+                        "{% else %}\n"
+                        "Feature "
+                        "requirements are "
+                        "missing.\n"
+                        "{% endif %}\n"
+                    }
+                },
+                "conditions": [
+                    {
+                        "or": [
+                            "-title~=^feat",
+                            {
+                                "and": [
+                                    {
+                                        "or": [
+                                            "label=Skip " "release note",
+                                            "files~=^releasenotes/notes",
+                                        ]
+                                    },
+                                    {
+                                        "or": [
+                                            "label=Skip " "documentation",
+                                            "files~=^docs/source",
+                                        ]
+                                    },
+                                    "body~=MRGFY-",
+                                ]
+                            },
+                        ]
+                    }
+                ],
+                "name": "feature requirements",
+            },
+            {
+                "actions": {
+                    "post_check": {
+                        "title": "{% if "
+                        "check_succeed "
+                        "%}\n"
+                        "Testing "
+                        "requirements are "
+                        "present.\n"
+                        "{% else %}\n"
+                        "Testing "
+                        "requirements are "
+                        "missing.\n"
+                        "{% endif %}\n"
+                    }
+                },
+                "conditions": [
+                    {
+                        "or": [
+                            "label=Skip tests",
+                            "-title~=^(feat|fix)",
+                            "files~=mergify_engine/tests",
+                        ]
+                    }
+                ],
+                "name": "testing requirements",
+            },
+        ],
+        "queue_rules": [
+            {
+                "allow_inplace_checks": False,
+                "conditions": ["schedule: MON-FRI 06:06-06:06"],
+                "name": "hotfix",
+            },
+            {
+                "allow_inplace_checks": True,
+                "conditions": [
+                    {
+                        "and": [
+                            {"or": ["-label=Docker", "check-success=docker"]},
+                            "check-success=import-checks",
+                            "check-success=pep8",
+                            "check-success=test",
+                            "check-success=docs",
+                        ]
+                    },
+                    "schedule=Mon-Fri 09:00-17:30[Europe/Paris]",
+                ],
+                "name": "default",
+                "speculative_checks": 5,
+            },
+            {
+                "allow_inplace_checks": True,
+                "batch_max_wait_time": "5min",
+                "batch_size": 5,
+                "conditions": [
+                    {
+                        "and": [
+                            {"or": ["-label=Docker", "check-success=docker"]},
+                            "check-success=import-checks",
+                            "check-success=pep8",
+                            "check-success=test",
+                            "check-success=docs",
+                        ]
+                    },
+                    "schedule=Mon-Fri 09:30-17:00[Europe/Paris]",
+                ],
+                "name": "lowprio",
+                "speculative_checks": 3,
+            },
+        ],
+    }
+
+    rules.merge_raw_configs(source_config, dest_config)
+    assert dest_config == expected_result
 
 
 def test_merge_raw_configs_empty() -> None:
-    assert rules.merge_raw_configs({}, {}) == {
+    config: dict[str, typing.Any] = {}
+    rules.merge_raw_configs({}, config)
+    assert config == {
         "pull_request_rules": [],
         "queue_rules": [],
     }
 
 
 def test_merge_raw_configs_src_empty() -> None:
-    assert rules.merge_raw_configs(
-        {},
-        {
-            "queue_rules": [
-                {
-                    "allow_inplace_checks": False,
-                    "conditions": ["schedule: MON-FRI 06:06-06:06"],
-                    "name": "hotfix",
-                }
-            ]
-        },
-    ) == {
+    config = {
+        "queue_rules": [
+            {
+                "allow_inplace_checks": False,
+                "conditions": ["schedule: MON-FRI 06:06-06:06"],
+                "name": "hotfix",
+            }
+        ]
+    }
+    rules.merge_raw_configs({}, config)
+    assert config == {
         "pull_request_rules": [],
         "queue_rules": [
             {
@@ -678,7 +682,8 @@ def test_merge_raw_configs_src_empty() -> None:
 
 
 def test_merge_raw_configs_dest_empty() -> None:
-    assert rules.merge_raw_configs(
+    config: dict[str, typing.Any] = {}
+    rules.merge_raw_configs(
         {
             "queue_rules": [
                 {
@@ -688,8 +693,9 @@ def test_merge_raw_configs_dest_empty() -> None:
                 }
             ]
         },
-        {},
-    ) == {
+        config,
+    )
+    assert config == {
         "pull_request_rules": [],
         "queue_rules": [
             {
@@ -702,42 +708,44 @@ def test_merge_raw_configs_dest_empty() -> None:
 
 
 def test_merge_raw_override_and_new_rules() -> None:
-    assert rules.merge_raw_configs(
+    config = {
+        "queue_rules": [
+            {
+                "allow_inplace_checks": False,
+                "conditions": ["schedule: MON-FRI 00:00-00:00"],
+                "name": "old_rule",
+            },
+            {
+                "allow_inplace_checks": False,
+                "conditions": ["schedule: MON-FRI 06:06-06:06"],
+                "name": "new_rule",
+            },
+        ]
+    }
+    rules.merge_raw_configs(
         {
             "queue_rules": [
                 {
-                    "allow_inplace_checks": False,
-                    "conditions": ["schedule: MON-FRI 00:00-00:00"],
-                    "name": "hotfix",
-                },
-                {
-                    "allow_inplace_checks": False,
-                    "conditions": ["schedule: MON-FRI 00:00-00:00"],
-                    "name": "old_rule",
-                },
-            ]
-        },
-        {
-            "queue_rules": [
-                {
-                    "allow_inplace_checks": False,
-                    "conditions": ["schedule: MON-FRI 06:06-06:06"],
-                    "name": "hotfix",
-                },
-                {
-                    "allow_inplace_checks": False,
+                    "allow_inplace_checks": True,
                     "conditions": ["schedule: MON-FRI 06:06-06:06"],
                     "name": "new_rule",
                 },
+                {
+                    "allow_inplace_checks": False,
+                    "conditions": ["schedule: MON-FRI 00:00-00:00"],
+                    "name": "hotfix",
+                },
             ]
         },
-    ) == {
+        config,
+    )
+    assert config == {
         "pull_request_rules": [],
         "queue_rules": [
             {
                 "allow_inplace_checks": False,
-                "conditions": ["schedule: MON-FRI 06:06-06:06"],
-                "name": "hotfix",
+                "conditions": ["schedule: MON-FRI 00:00-00:00"],
+                "name": "old_rule",
             },
             {
                 "allow_inplace_checks": False,
@@ -747,7 +755,7 @@ def test_merge_raw_override_and_new_rules() -> None:
             {
                 "allow_inplace_checks": False,
                 "conditions": ["schedule: MON-FRI 00:00-00:00"],
-                "name": "old_rule",
+                "name": "hotfix",
             },
         ],
     }
@@ -808,8 +816,8 @@ def test_merge_defaults(
     dest_defaults: rules.Defaults,
     expected_result: rules.Defaults,
 ) -> None:
-    merged_defaults = rules.merge_defaults(extended_defaults, dest_defaults)
-    assert merged_defaults == expected_result
+    rules.merge_defaults(extended_defaults, dest_defaults)
+    assert dest_defaults == expected_result
 
 
 @pytest.mark.parametrize(

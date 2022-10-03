@@ -708,30 +708,17 @@ class MergifyConfig(typing.TypedDict):
     raw_config: typing.Any
 
 
-def merge_defaults(
-    extended_defaults: Defaults,
-    dest_defaults: Defaults,
-) -> Defaults:
-    extended_actions = extended_defaults.get("actions", None)
-    if extended_actions is None:
-        return dest_defaults
-    merged_defaults = extended_defaults.copy()
-    merged_defaults_actions = extended_defaults.get("actions", {})
-
-    if dest_actions := dest_defaults.get("actions"):
-        for action_name, actions in dest_actions.items():
-            if action_name not in merged_defaults_actions:
-                merged_defaults_actions[action_name] = actions
-            else:
-                for effect_name, effect_value in actions.items():
-                    merged_defaults_actions[action_name][effect_name] = effect_value
-
-    return merged_defaults
+def merge_defaults(extended_defaults: Defaults, dest_defaults: Defaults) -> None:
+    for action_name, action in extended_defaults.get("actions", {}).items():
+        dest_actions = dest_defaults.setdefault("actions", {})
+        dest_action = dest_actions.setdefault(action_name, {})
+        for effect_name, effect_value in action.items():
+            dest_action.setdefault(effect_name, effect_value)
 
 
 def merge_config_with_defaults(
     config: typing.Dict[str, typing.Any], defaults: Defaults
-) -> typing.Dict[str, typing.Any]:
+) -> None:
     if defaults_actions := defaults.get("actions"):
         for rule in config.get("pull_request_rules", []):
             actions = rule["actions"]
@@ -747,17 +734,14 @@ def merge_config_with_defaults(
                 else:
                     merged_action = defaults_actions[action_name] | action
                     rule["actions"][action_name].update(merged_action)
-    return config
 
 
 def merge_raw_configs(
     extended_config: typing.Dict[str, typing.Any],
     dest_config: typing.Dict[str, typing.Any],
-) -> typing.Dict[str, typing.Any]:
-    merged_config = dest_config.copy()
-
+) -> None:
     for rule_to_merge in ("pull_request_rules", "queue_rules"):
-        dest_rules = merged_config.setdefault(rule_to_merge, [])
+        dest_rules = dest_config.setdefault(rule_to_merge, [])
         dest_rule_names = [rule["name"] for rule in dest_rules]
 
         for source_rule in extended_config.get(rule_to_merge, []):
@@ -765,12 +749,10 @@ def merge_raw_configs(
                 dest_rules.append(source_rule)
 
     for commands_restriction in extended_config.get("commands_restrictions", {}):
-        if commands_restriction not in merged_config["commands_restrictions"]:
-            merged_config["commands_restrictions"][
-                commands_restriction
-            ] = extended_config["commands_restrictions"][commands_restriction]
-
-    return merged_config
+        dest_config["commands_restrictions"].setdefault(
+            commands_restriction,
+            extended_config["commands_restrictions"][commands_restriction],
+        )
 
 
 async def get_mergify_config_from_file(
@@ -807,9 +789,7 @@ async def get_mergify_config_from_dict(
     defaults = config.pop("defaults", {})
 
     extended_path = config.get("extends")
-    if extended_path is None:
-        merged_config = merge_config_with_defaults(config, defaults)
-    else:
+    if extended_path is not None:
         if not allow_extend:
             raise InvalidRules(
                 voluptuous.Invalid(
@@ -823,18 +803,15 @@ async def get_mergify_config_from_dict(
         )
         # NOTE(jules): Anchor and shared elements can't be shared between files
         # because they are computed by YamlSchema already.
-        extended_defaults = merge_defaults(config_to_extend["defaults"], defaults)
-        extended_config = merge_raw_configs(config_to_extend["raw_config"], config)
-        merged_config = merge_config_with_defaults(extended_config, extended_defaults)
+        merge_defaults(config_to_extend["defaults"], defaults)
+        merge_raw_configs(config_to_extend["raw_config"], config)
+
+    merge_config_with_defaults(config, defaults)
 
     try:
-        final_config = UserConfigurationSchema(merged_config, partial_validation=False)
-        if extended_path:
-            final_config["defaults"] = extended_defaults
-            final_config["raw_config"] = extended_config
-        else:
-            final_config["defaults"] = defaults
-            final_config["raw_config"] = config
+        final_config = UserConfigurationSchema(config, partial_validation=False)
+        final_config["defaults"] = defaults
+        final_config["raw_config"] = config
         return typing.cast(MergifyConfig, final_config)
     except voluptuous.Invalid as e:
         raise InvalidRules(e, error_path)

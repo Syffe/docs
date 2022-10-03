@@ -1,4 +1,5 @@
 from base64 import encodebytes
+import copy
 import dataclasses
 import typing
 from unittest import mock
@@ -1489,7 +1490,7 @@ def test_check_runs_default() -> None:
 
 
 def test_merge_config() -> None:
-    config = {
+    config: dict[str, typing.Any] = {
         "defaults": {"actions": {"rebase": {"bot_account": "foo"}}},
         "pull_request_rules": [
             {
@@ -1500,13 +1501,12 @@ def test_merge_config() -> None:
         ],
     }
 
-    defaults = config.pop("defaults", {})
-    merged_config = rules.merge_config_with_defaults(config, defaults)  # type: ignore[arg-type]
+    defaults = config.pop("defaults")
+    expected_config = copy.deepcopy(config)
+    expected_config["pull_request_rules"][0]["actions"].update(defaults["actions"])
 
-    expected_config = config.copy()
-    expected_config["pull_request_rules"][0]["actions"].update(defaults["actions"])  # type: ignore[index]
-
-    assert merged_config == expected_config
+    rules.merge_config_with_defaults(config, defaults)
+    assert config == expected_config
 
     config = {
         "defaults": {
@@ -1524,10 +1524,10 @@ def test_merge_config() -> None:
         ],
     }
 
-    defaults = config.pop("defaults", {})
-    merged_config = rules.merge_config_with_defaults(config, defaults)  # type: ignore[arg-type]
-
-    assert merged_config == config
+    defaults = config.pop("defaults")
+    expected_config = copy.deepcopy(config)
+    rules.merge_config_with_defaults(config, defaults)
+    assert config == expected_config
 
     config = {
         "pull_request_rules": [
@@ -1538,11 +1538,10 @@ def test_merge_config() -> None:
             }
         ],
     }
-
     defaults = config.pop("defaults", {})
-    merged_config = rules.merge_config_with_defaults(config, defaults)  # type: ignore[arg-type]
-
-    assert merged_config == config
+    expected_config = copy.deepcopy(config)
+    rules.merge_config_with_defaults(config, defaults)
+    assert config == expected_config
 
 
 async def test_actions_with_options_none() -> None:
