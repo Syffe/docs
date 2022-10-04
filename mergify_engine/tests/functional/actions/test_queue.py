@@ -3659,8 +3659,8 @@ class TestQueueAction(base.FunctionalTestBase):
         # Merge a not queued PR manually
         p_merged_in_meantime = await self.create_pr()
         await self.merge_pull(p_merged_in_meantime["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
         await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for("pull_request", {"action": "closed"})
         p_merged_in_meantime = await self.get_pull(p_merged_in_meantime["number"])
 
         await self.run_engine()
@@ -5308,10 +5308,15 @@ pull_requests:
         tmp_pull = [p for p in pulls if p["number"] == car.queue_pull_request_number][0]
         assert tmp_pull["draft"]
         assert car.queue_branch_name is not None
-        # Ensure pull request is closed and re-created
+        # Ensure pull request is closed
+        with pytest.raises(merge_train.TrainCarPullRequestCreationFailure):
+            await car.start_checking_with_draft(queue_rule, None)
+
+        await self.wait_for("pull_request", {"action": "closed"})
+
+        # Ensure pull request is re-created
         await car.start_checking_with_draft(queue_rule, None)
         assert car.queue_pull_request_number is not None
-        await self.wait_for("pull_request", {"action": "closed"})
         await self.wait_for("pull_request", {"action": "opened"})
         pulls = await self.get_pulls()
         assert len(pulls) == 3

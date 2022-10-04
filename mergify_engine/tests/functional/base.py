@@ -404,7 +404,6 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
 
         mock.patch.object(branch_updater.gitter, "Gitter", self.get_gitter).start()  # type: ignore[attr-defined]
         mock.patch.object(duplicate_pull.gitter, "Gitter", self.get_gitter).start()  # type: ignore[attr-defined]
-        mock.patch.object(merge_train.gitter, "Gitter", self.get_gitter).start()  # type: ignore[attr-defined]
 
         # Web authentification always pass
         mock.patch("hmac.compare_digest", return_value=True).start()
@@ -522,6 +521,9 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
                     branch["name"].startswith("20")
                     or branch["name"].startswith("mergify")
                     or branch["name"].startswith("mq-")
+                    or branch["name"].startswith(
+                        merge_train.TrainCar.QUEUE_BRANCH_PREFIX
+                    )
                 ):
                     if branch["protected"]:
                         await self.branch_protection_unprotect(branch["name"])

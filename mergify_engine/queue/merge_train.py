@@ -19,7 +19,6 @@ from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import github_types
-from mergify_engine import gitter
 from mergify_engine import json
 from mergify_engine import queue
 from mergify_engine import refresher
@@ -249,14 +248,6 @@ class DraftPullRequestCreationTemporaryFailure(Exception):
 
 
 @dataclasses.dataclass
-class MergedPRMissingFromFetchedOrigin(Exception):
-    pull_number: github_types.GitHubPullRequestNumber
-
-
-IGNORABLE_GIT_ERRORS = ("Git process got killed",)
-
-
-@dataclasses.dataclass
 class TrainCar:
     train: "Train" = dataclasses.field(repr=False)
     initial_embarked_pulls: typing.List[EmbarkedPull]
@@ -279,6 +270,8 @@ class TrainCar:
     checks_ended_timestamp: typing.Optional[datetime.datetime] = None
     ci_has_passed: bool = False
     queue_branch_name: typing.Optional[github_types.GitHubRefType] = None
+
+    QUEUE_BRANCH_PREFIX: typing.ClassVar[str] = "tmp-"
 
     class Serialized(typing.TypedDict):
         initial_embarked_pulls: typing.List[EmbarkedPull.Serialized]
@@ -685,143 +678,67 @@ class TrainCar:
             await self._set_creation_failure(e.message)
             raise TrainCarPullRequestCreationFailure(self) from e
 
-    async def _merge_pr_in_draft_pr_branch(
-        self,
-        git: gitter.Gitter,
-        pull_number: github_types.GitHubPullRequestNumber,
-    ) -> None:
-        async for attempt in tenacity.AsyncRetrying(  # type: ignore[attr-defined]
-            retry=tenacity.retry_if_exception_type(gitter.GitErrorRetriable),  # type: ignore[attr-defined]
-            stop=tenacity.stop_after_attempt(2),  # type: ignore[attr-defined]
-            reraise=True,
-        ):
-            with attempt:
-                # Fetch the branch of the PR
-                await git("fetch", "--quiet", "origin", f"pull/{pull_number}/head")
-
-        try:
-            # Merge the branch of the PR, that we fetched, on our local branch
-            await git(
-                "merge",
-                "--no-ff",
-                "--commit",
-                "FETCH_HEAD",
-                "-m",
-                f"Merge of #{pull_number}",
-            )
-        except gitter.GitError as e:
-            if "merging conflict" in e.output or "CONFLICT (" in e.output:
-                pull_requests_ahead = self.parent_pull_request_numbers[:]
-                for ep in self.still_queued_embarked_pulls:
-                    if ep.user_pull_request_number == pull_number:
-                        break
-                    pull_requests_ahead.append(ep.user_pull_request_number)
-
-                message = "The pull request conflicts with at least one pull request ahead in queue: "
-                message += ", ".join([f"#{p}" for p in pull_requests_ahead])
-                await self._set_creation_failure(
-                    message,
-                    pull_requests=[pull_number],
-                )
-                raise TrainCarPullRequestCreationFailure(self) from e
-            else:
-                # Caller function will have to handle other errors
-                raise
-
     @tenacity.retry(
-        retry=tenacity.retry_if_exception_type(  # type: ignore[attr-defined]
-            MergedPRMissingFromFetchedOrigin
-        ),
-        # Add a stop just to avoid infinite loops
-        stop=tenacity.stop_after_attempt(3),  # type: ignore[attr-defined]
-        wait=tenacity.wait_exponential(multiplier=0.2),  # type: ignore[attr-defined]
+        retry=tenacity.retry_if_exception_type(tenacity.TryAgain),  # type: ignore[attr-defined]
+        stop=tenacity.stop_after_attempt(2),  # type: ignore[attr-defined]
     )
-    async def _create_draft_pr_branch(
+    async def _prepare_draft_pr_branch(
         self,
+        branch_name: github_types.GitHubRefType,
         base_sha: github_types.SHAType,
-        pulls_in_draft: typing.List[github_types.GitHubPullRequestNumber],
         github_user: typing.Optional[user_tokens.UserTokensUser],
     ) -> None:
-        git = gitter.Gitter(self.train.log)
-        await git.init()
-        await git.configure(github_user)
 
-        pull_number = None
         try:
-            if github_user is not None:
-                git_username = str(
-                    github_user["oauth_access_token"]
-                )  # cast to str just for type check
-                git_password = ""
+            await self.train.repository.installation.client.post(
+                f"/repos/{self.train.repository.installation.owner_login}/{self.train.repository.repo['name']}/git/refs",
+                oauth_token=github_user["oauth_access_token"] if github_user else None,
+                json={
+                    "ref": f"refs/heads/{branch_name}",
+                    "sha": base_sha,
+                },
+            )
+        except http.HTTPClientSideError as exc:
+            if exc.status_code == 422 and "Reference already exists" in exc.message:
+                try:
+                    await self._delete_branch()
+                except http.HTTPClientSideError as exc_patch:
+                    await self._set_creation_failure(exc_patch.message)
+                    raise TrainCarPullRequestCreationFailure(self) from exc_patch
+
+                raise tenacity.TryAgain
             else:
-                # https://docs.github.com/en/developers/apps/building-github-apps/authenticating-with-github-apps#http-based-git-access-by-an-installation
-                git_username = "x-access-token"
-                git_password = (
-                    await self.train.repository.installation.client.get_access_token()
-                )
+                await self._set_creation_failure(exc.message)
+                raise TrainCarPullRequestCreationFailure(self) from exc
 
-            await git.setup_remote(
-                "origin", self.train.repository.repo, git_username, git_password
+    @tenacity.retry(
+        retry=tenacity.retry_if_exception_type(tenacity.TryAgain),  # type: ignore[attr-defined]
+        stop=tenacity.stop_after_attempt(2),  # type: ignore[attr-defined]
+    )
+    async def _rename_branch(
+        self,
+        current_branch_name: github_types.GitHubRefType,
+        new_branch_name: github_types.GitHubRefType,
+        github_user: typing.Optional[user_tokens.UserTokensUser],
+    ) -> None:
+        try:
+            await self.train.repository.installation.client.post(
+                f"/repos/{self.train.repository.installation.owner_login}/{self.train.repository.repo['name']}/branches/{current_branch_name}/rename",
+                oauth_token=github_user["oauth_access_token"] if github_user else None,
+                json={"new_name": new_branch_name},
             )
+        except http.HTTPClientSideError as exc:
+            try:
+                await self._delete_branch()
+            except http.HTTPClientSideError as exc_patch:
+                await self._set_creation_failure(exc_patch.message)
+                raise TrainCarPullRequestCreationFailure(self) from exc_patch
 
-            await git("fetch", "--quiet", "origin", base_sha)
-            await git(
-                "checkout",
-                "-q",
-                "-b",
-                str(self.queue_branch_name),
-                str(base_sha),
-            )
-
-            for pull_number in pulls_in_draft:
-                await self._merge_pr_in_draft_pr_branch(git, pull_number)
-
-            pull_number = None
-            # Push the branch upstream
-            async for attempt in tenacity.AsyncRetrying(  # type: ignore[attr-defined]
-                retry=tenacity.retry_if_exception_type(gitter.GitErrorRetriable),  # type: ignore[attr-defined]
-                stop=tenacity.stop_after_attempt(3),  # type: ignore[attr-defined]
-                reraise=True,
-            ):
-                with attempt:
-                    await git(
-                        "push",
-                        "--verbose",
-                        "origin",
-                        str(self.queue_branch_name),
-                        "--force",
-                    )
-
-        except gitter.GitAuthenticationFailure as e:
-            self.train.log.info(
-                "fail to create the queue pull request due to GitHub App restriction",
-                embarked_pulls=[
-                    ep.user_pull_request_number
-                    for ep in self.still_queued_embarked_pulls
-                ],
-                error_message=e.output,
-            )
-            await self._delete_branch()
-            raise TrainCarPullRequestCreationPostponed(self) from e
-        except gitter.GitError as e:
-            if any(m in e.output for m in IGNORABLE_GIT_ERRORS):
-                log_method = self.train.log.warning
+            if exc.status_code == 422 and "New branch already exists" in exc.message:
+                raise tenacity.TryAgain
             else:
-                log_method = self.train.log.error
-
-            log_method(
-                f"Unable to create draft PR because of git error: {e.output}",
-                error_message=e.output,
-            )
-            await self._set_creation_failure(
-                e.output,
-                pull_requests=[pull_number] if pull_number else None,
-            )
-            await self._delete_branch()
-
-            raise TrainCarPullRequestCreationFailure(self) from e
-        finally:
-            await git.cleanup()
+                await self._set_creation_failure(exc.message)
+                raise TrainCarPullRequestCreationFailure(self) from exc
 
     async def _get_draft_pr_setup(
         self,
@@ -865,6 +782,7 @@ class TrainCar:
         queue_rule: "rules.QueueRule",
         previous_car: "TrainCar | None",
     ) -> None:
+
         self.head_branch = self._get_pulls_branch_ref(
             self.initial_embarked_pulls, self.parent_pull_request_numbers
         )
@@ -888,15 +806,67 @@ class TrainCar:
         base_sha, pulls_in_draft = await self._get_draft_pr_setup(
             queue_rule, previous_car
         )
-        try:
-            await self._create_draft_pr_branch(base_sha, pulls_in_draft, github_user)
-        except MergedPRMissingFromFetchedOrigin as e:
-            await self._set_creation_failure(
-                f"Unable to fetch pull request #{e.pull_number} from the base repository",
-                pull_requests=[e.pull_number],
-            )
-            await self._delete_branch()
-            raise TrainCarPullRequestCreationFailure(self) from e
+
+        self.queue_branch_name = github_types.GitHubRefType(
+            f"{self.QUEUE_BRANCH_PREFIX}{self.queue_branch_name}"
+        )
+        await self._prepare_draft_pr_branch(
+            self.queue_branch_name, base_sha, github_user
+        )
+
+        for pull_number in pulls_in_draft:
+            try:
+                await self.train.repository.installation.client.post(
+                    f"/repos/{self.train.repository.installation.owner_login}/{self.train.repository.repo['name']}/merges",
+                    oauth_token=github_user["oauth_access_token"]
+                    if github_user
+                    else None,
+                    json={
+                        "base": self.queue_branch_name,
+                        "head": f"refs/pull/{pull_number}/head",
+                        "commit_message": f"Merge of #{pull_number}",
+                    },
+                )
+            except http.HTTPClientSideError as e:
+                if (
+                    e.status_code == 403
+                    and "Resource not accessible by integration" in e.message
+                ):
+                    self.train.log.info(
+                        "fail to create the queue pull request due to GitHub App restriction",
+                        embarked_pulls=[
+                            ep.user_pull_request_number
+                            for ep in self.still_queued_embarked_pulls
+                        ],
+                        error_message=e.message,
+                    )
+                    await self._delete_branch()
+                    raise TrainCarPullRequestCreationPostponed(self) from e
+                elif "Merge conflict" in e.message:
+                    pull_requests_ahead = self.parent_pull_request_numbers[:]
+                    for ep in self.still_queued_embarked_pulls:
+                        if ep.user_pull_request_number == pull_number:
+                            break
+                        pull_requests_ahead.append(ep.user_pull_request_number)
+                    message = "The pull request conflicts with at least one pull request ahead in queue: "
+                    message += ", ".join([f"#{p}" for p in pull_requests_ahead])
+                    await self._set_creation_failure(
+                        message, pull_requests=[pull_number]
+                    )
+                    await self._delete_branch()
+                    raise TrainCarPullRequestCreationFailure(self) from e
+                else:
+                    await self._set_creation_failure(
+                        e.message, pull_requests=[pull_number]
+                    )
+                    await self._delete_branch()
+                    raise TrainCarPullRequestCreationFailure(self) from e
+
+        new_branch_name = github_types.GitHubRefType(
+            self.queue_branch_name.replace(self.QUEUE_BRANCH_PREFIX, "", 1)
+        )
+        await self._rename_branch(self.queue_branch_name, new_branch_name, github_user)
+        self.queue_branch_name = new_branch_name
 
         try:
             tmp_pull = await self._create_draft_pull_request(
@@ -906,7 +876,6 @@ class TrainCar:
         except DraftPullRequestCreationTemporaryFailure as e:
             await self._delete_branch()
             raise TrainCarPullRequestCreationPostponed(self) from e
-
         await self._set_initial_state("created", queue_rule, tmp_pull["number"])
 
     async def _set_initial_state(
