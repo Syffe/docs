@@ -767,17 +767,15 @@ class StreamProcessor:
     ) -> None:
         for source in sources:
             if "timestamp" in source:
-                if source["event_type"] == "push":
-                    metric = "engine.buckets.push-events.latency"
-                else:
-                    metric = "engine.buckets.events.latency"
-
                 statsd.histogram(
-                    metric,
+                    "engine.buckets.events.latency",
                     (
                         date.utcnow() - date.fromisoformat(source["timestamp"])
                     ).total_seconds(),
-                    tags=[f"worker_id:{self.worker_id}"],
+                    tags=[
+                        f"worker_id:{self.worker_id}",
+                        f"priority:{bucket.priority.name}",
+                    ],
                 )
 
         logger = daiquiri.getLogger(
