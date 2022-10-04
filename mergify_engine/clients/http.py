@@ -215,6 +215,7 @@ class AsyncClient(httpx.AsyncClient):
         headers: typing.Optional[httpx_types.HeaderTypes] = None,
         timeout: httpx_types.TimeoutTypes = DEFAULT_TIMEOUT,
         base_url: httpx_types.URLTypes = "",
+        transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
         final_headers = DEFAULT_HEADERS.copy()
         if headers is not None:

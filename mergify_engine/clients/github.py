@@ -298,6 +298,12 @@ def _inject_options(func: typing.Any) -> typing.Any:
     return wrapper
 
 
+DEFAULT_GITHUB_TRANSPORT = httpx.AsyncHTTPTransport(
+    limits=httpx.Limits(max_connections=None, max_keepalive_connections=20),
+    http2=True,
+)
+
+
 class AsyncGithubClient(http.AsyncClient):
     auth: typing.Union[
         github_app.GithubBearerAuth, GithubAppInstallationAuth, GithubTokenAuth
@@ -313,6 +319,7 @@ class AsyncGithubClient(http.AsyncClient):
             base_url=config.GITHUB_REST_API_URL,
             auth=auth,
             headers={"Accept": "application/vnd.github.machine-man-preview+json"},
+            transport=DEFAULT_GITHUB_TRANSPORT,
         )
 
     def _prepare_request_kwargs(
