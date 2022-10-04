@@ -261,18 +261,16 @@ def _check_rate_limit(response: httpx.Response) -> None:
                 + datetime.timedelta(seconds=5)
                 - datetime.datetime.utcnow()
             )
-            if delta < datetime.timedelta():
-                # NOTE(sileht): worker minimal retry is 3 sec, so no need to
-                # change the delta here.
-                LOG.warning(
-                    "got ratelimit with a reset date in the past",
-                    method=response.request.method,
-                    url=response.request.url,
-                    final_url=response.url,
-                    headers=response.headers,
-                    content=response.content,
-                )
         if response.url is not None:
+            LOG.warning(
+                "got ratelimited",
+                retry_planned_in=str(delta),
+                method=response.request.method,
+                url=response.request.url,
+                final_url=response.url,
+                headers=response.headers,
+                content=response.content,
+            )
             statsd.increment(
                 "http.client.rate_limited",
                 tags=[f"hostname:{response.url.host}"],
