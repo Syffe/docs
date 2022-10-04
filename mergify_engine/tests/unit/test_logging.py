@@ -28,7 +28,6 @@ def test_logging(
     request: pytest.FixtureRequest,
     enable_tracer: typing.Literal[None],
 ) -> None:
-    monkeypatch.setenv("DYNO", "worker-shared.1")
     monkeypatch.setenv("HEROKU_RELEASE_VERSION", "v1234")
 
     importlib.reload(logs)
@@ -65,6 +64,4 @@ def test_logging(
             "dd.env": "",
             "HEROKU_RELEASE_VERSION": "v1234",
             "worker_id": "shared-30",
-            "dyno": "worker-shared.1",
-            "dynotype": "worker-shared",
         }

@@ -44,6 +44,8 @@ CUSTOM_FORMATTER = CustomFormatter(
 
 
 class HerokuDatadogFormatter(daiquiri.formatter.DatadogFormatter):
+    # NOTE(sileht): for security reason we empty the os.environ at runtime
+    # We can access it only when modules load.
     HEROKU_LOG_EXTRAS = {
         envvar: os.environ[envvar]
         for envvar in ("HEROKU_RELEASE_VERSION",)
@@ -67,11 +69,6 @@ class HerokuDatadogFormatter(daiquiri.formatter.DatadogFormatter):
         worker_id = WORKER_ID.get(None)
         if worker_id is not None:
             log_record.update({"worker_id": worker_id})
-
-        dyno = os.getenv("DYNO")
-        if dyno is not None:
-            log_record.update({"dyno": dyno})
-            log_record.update({"dynotype": dyno.rsplit(".", 1)[0]})
 
 
 def config_log() -> None:
