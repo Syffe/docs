@@ -2,6 +2,7 @@ import dataclasses
 import datetime
 import functools
 import itertools
+import logging
 import typing
 from urllib import parse
 import uuid
@@ -851,13 +852,13 @@ class TrainCar:
                     message = "The pull request conflicts with at least one pull request ahead in queue: "
                     message += ", ".join([f"#{p}" for p in pull_requests_ahead])
                     await self._set_creation_failure(
-                        message, pull_requests=[pull_number]
+                        message, pull_requests_to_remove=[pull_number]
                     )
                     await self._delete_branch()
                     raise TrainCarPullRequestCreationFailure(self) from e
                 else:
                     await self._set_creation_failure(
-                        e.message, pull_requests=[pull_number]
+                        e.message, pull_requests_to_remove=[pull_number]
                     )
                     await self._delete_branch()
                     raise TrainCarPullRequestCreationFailure(self) from e
@@ -1123,7 +1124,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
         details: str,
         *,
         operation: typing.Literal["created", "update"] = "created",
-        pull_requests: typing.Optional[
+        pull_requests_to_remove: typing.Optional[
             typing.List[github_types.GitHubPullRequestNumber]
         ] = None,
     ) -> None:
@@ -1138,14 +1139,36 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
         summary += f"\nDetails: `{details}`"
 
-        # Update the original Pull Requests
-        for embarked_pull in self.still_queued_embarked_pulls:
-            if (
-                pull_requests is not None
-                and embarked_pull.user_pull_request_number not in pull_requests
-            ):
-                continue
+        if pull_requests_to_remove is None:
+            embarked_pulls_to_remove = self.still_queued_embarked_pulls
+        else:
+            embarked_pulls_to_remove = [
+                embarked_pull
+                for embarked_pull in self.still_queued_embarked_pulls
+                if embarked_pull.user_pull_request_number in pull_requests_to_remove
+            ]
 
+        log_level = logging.ERROR if not embarked_pulls_to_remove else logging.INFO
+        self.train.log.log(
+            log_level,
+            "train car creation failed",
+            gh_pull=self.queue_pull_request_number,
+            gh_pulls_queued=[
+                ep.user_pull_request_number for ep in self.still_queued_embarked_pulls
+            ],
+            gh_pulls_initially_queued=[
+                ep.user_pull_request_number for ep in self.initial_embarked_pulls
+            ],
+            operation=operation,
+            title=title,
+            summary=summary,
+            pull_requests_to_remove=pull_requests_to_remove,
+            details=details,
+            exc_info=True,
+        )
+
+        # Set the error on the original Pull Requests
+        for embarked_pull in embarked_pulls_to_remove:
             original_ctxt = await self.train.repository.get_pull_request_context(
                 embarked_pull.user_pull_request_number
             )
