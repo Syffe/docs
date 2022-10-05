@@ -387,8 +387,13 @@ class StreamProcessor:
                     sentry_sdk.set_tag("gh_owner", owner_login_for_tracing)
                     sentry_sdk.set_user({"username": owner_login_for_tracing})
 
-                    await self._consume_buckets(bucket_org_key, installation)
-                    await merge_train.Train.refresh_trains(installation)
+                    pulls_processed = await self._consume_buckets(
+                        bucket_org_key, installation
+                    )
+
+                    # NOTE(sileht): wew don't need to refresh trains if nothing changed.
+                    if pulls_processed > 0:
+                        await merge_train.Train.refresh_trains(installation)
 
         except redis_exceptions.ConnectionError:
             statsd.increment("redis.client.connection.errors")
@@ -529,7 +534,7 @@ class StreamProcessor:
         self,
         bucket_org_key: worker_lua.BucketOrgKeyType,
         installation: context.Installation,
-    ) -> None:
+    ) -> int:
         pr_finder = pull_request_finder.PullRequestFinder(installation)
 
         pulls_processed = 0
@@ -709,6 +714,7 @@ class StreamProcessor:
                     pass
 
         statsd.histogram("engine.buckets.read_size", pulls_processed)
+        return pulls_processed
 
     async def _convert_event_to_messages(
         self,
