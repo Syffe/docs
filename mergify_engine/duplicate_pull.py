@@ -271,9 +271,9 @@ async def duplicate(
 
         await git.setup_remote("origin", ctxt.pull["base"]["repo"], username, password)
 
-        await git("fetch", "--quiet", "origin", f"pull/{ctxt.pull['number']}/head")
-        await git("fetch", "--quiet", "origin", ctxt.pull["base"]["ref"])
-        await git("fetch", "--quiet", "origin", branch_name)
+        await git.fetch("origin", f"pull/{ctxt.pull['number']}/head")
+        await git.fetch("origin", ctxt.pull["base"]["ref"])
+        await git.fetch("origin", branch_name)
         await git("checkout", "--quiet", "-b", bp_branch, f"origin/{branch_name}")
 
         merge_commit = github_types.to_cached_github_branch_commit(

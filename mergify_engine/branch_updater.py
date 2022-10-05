@@ -120,7 +120,7 @@ async def _do_rebase(
             "upstream", ctxt.pull["base"]["repo"], user["oauth_access_token"], ""
         )
 
-        await git("fetch", "--quiet", "origin", head_branch)
+        await git.fetch("origin", head_branch)
         await git("checkout", "-q", "-b", head_branch, f"origin/{head_branch}")
 
         await git("fetch", "--quiet", "upstream", base_branch)

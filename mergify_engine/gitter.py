@@ -266,6 +266,13 @@ class Gitter(object):
         url = urllib.parse.urlunparse(parsed)
         await self("credential", "approve", _input=f"url={url}\n\n")
 
+    async def fetch(
+        self,
+        remote: str,
+        branch: str,
+    ) -> None:
+        await self("fetch", "--quiet", "--no-tags", remote, branch)
+
     async def setup_remote(
         self,
         name: str,

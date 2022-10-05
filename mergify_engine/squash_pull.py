@@ -53,8 +53,8 @@ async def _do_squash(
             "upstream", ctxt.pull["base"]["repo"], user["oauth_access_token"], ""
         )
 
-        await git("fetch", "--quiet", "origin", head_branch)
-        await git("fetch", "--quiet", "upstream", base_branch)
+        await git.fetch("origin", head_branch)
+        await git.fetch("upstream", base_branch)
         await git("checkout", "-q", "-b", tmp_branch, f"upstream/{base_branch}")
 
         await git("merge", "--squash", "--no-edit", f"origin/{head_branch}")
