@@ -450,8 +450,38 @@ def test_search(line: str, result: typing.Any) -> None:
         ("#-", "Invalid attribute"),
         ("commits-behind", "`#` modifier is required for attribute: `commits-behind`"),
         ("sender-permission=foo", "Permission must be one of"),
+        ("author=foo bar", "Invalid GitHub login"),
+        ("author=@team/foo/bar", "Invalid GitHub team name"),
     ),
 )
 def test_invalid(line: str, expected_error: str) -> None:
     with pytest.raises(parser.ConditionParsingError, match=re.escape(expected_error)):
         parser.parse(line)
+
+
+def test_is_github_team_name() -> None:
+    assert parser.is_github_team_name("@foo")
+    assert parser.is_github_team_name("@foo/bar")
+    assert not parser.is_github_team_name("foo")
+
+
+@pytest.mark.parametrize(
+    ("value",),
+    (("@foo/bar/baz",), ("@foo@bar",), ("@foo bar",), ("@é",)),
+)
+def test_validate_github_team_name(value: str) -> None:
+    with pytest.raises(
+        parser.ConditionParsingError, match=re.escape("Invalid GitHub team name")
+    ):
+        parser.validate_github_team_name(value)
+
+
+@pytest.mark.parametrize(
+    ("value",),
+    (("@foo",), ("foo/bar",), ("foo bar",), ("é",)),
+)
+def test_validate_github_login(value: str) -> None:
+    with pytest.raises(
+        parser.ConditionParsingError, match=re.escape("Invalid GitHub login")
+    ):
+        parser.validate_github_login(value)

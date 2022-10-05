@@ -2,6 +2,7 @@ import dataclasses
 import datetime
 import enum
 import re
+import string
 import typing
 
 from mergify_engine import date
@@ -153,10 +154,8 @@ SUPPORTED_OPERATORS = {
 
 INVALID_BRANCH_CHARS = "~^: []\\"
 
-ALPHASNUMS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-
-GITHUB_LOGIN_CHARS = ALPHASNUMS + "-[]"
-GITHUB_LOGIN_CHARS = GITHUB_LOGIN_CHARS + "@/"
+GITHUB_LOGIN_CHARS = string.ascii_letters + string.digits + "-[]"
+GITHUB_LOGIN_AND_TEAM_CHARS = GITHUB_LOGIN_CHARS + "@/"
 
 
 def _to_dict(
@@ -446,18 +445,10 @@ def parse(v: str) -> typing.Any:
                 if char in value:
                     raise ConditionParsingError("Invalid branch name")
         elif parser == Parser.LOGIN_AND_TEAMS:
-            if value and value[0] == "@":
-                if value.count("@") > 1 or value.count("/") > 1:
-                    raise ConditionParsingError("Invalid team name")
-                valid_chars = GITHUB_LOGIN_CHARS
+            if is_github_team_name(value):
+                validate_github_team_name(value)
             else:
-                valid_chars = GITHUB_LOGIN_CHARS
-            for char in value:
-                if char not in valid_chars:
-                    if value and value[0] == "@":
-                        raise ConditionParsingError("Invalid GitHub team name")
-                    else:
-                        raise ConditionParsingError("Invalid GitHub login")
+                validate_github_login(value)
         return _to_dict(negate, quantity, attribute, op, value)
     elif parser == Parser.PERMISSION:
         try:
@@ -467,3 +458,22 @@ def parse(v: str) -> typing.Any:
         return _to_dict(negate, False, attribute, op, permission)
     else:
         raise RuntimeError(f"unhandled parser: {parser}")
+
+
+def is_github_team_name(value: str) -> bool:
+    return value.startswith("@")
+
+
+def validate_github_team_name(value: str) -> None:
+    if value.count("@") > 1 or value.count("/") > 1:
+        raise ConditionParsingError("Invalid GitHub team name")
+
+    for char in value:
+        if char not in GITHUB_LOGIN_AND_TEAM_CHARS:
+            raise ConditionParsingError("Invalid GitHub team name")
+
+
+def validate_github_login(value: str) -> None:
+    for char in value:
+        if char not in GITHUB_LOGIN_CHARS:
+            raise ConditionParsingError("Invalid GitHub login")
