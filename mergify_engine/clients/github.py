@@ -517,6 +517,7 @@ class AsyncGithubInstallationClient(AsyncGithubClient):
         try:
             reply = await super().request(method, url, *args, **kwargs)
         except http.HTTPClientSideError as e:
+            reply = e.response
             if e.status_code == 403:
                 _check_rate_limit(e.response)
             raise
