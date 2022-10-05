@@ -135,6 +135,8 @@ CMD ["/datadog-wrapper.sh", "mergify-engine-worker", "--enabled-services=stream-
 
 ### ON PREMISE ###
 FROM runner-tagged as onpremise
+# FIXME(sileht): clearly a semgrep bug...
+# nosemgrep: dockerfile.security.last-user-is-root.last-user-is-root
 USER root
 COPY --from=js-builder /installer/build /installer/build
 COPY --from=js-builder /installer/Procfile /installer
