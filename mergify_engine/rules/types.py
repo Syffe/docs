@@ -9,9 +9,6 @@ from mergify_engine import context
 from mergify_engine import github_types
 
 
-_JINJA_ENV = jinja2.sandbox.SandboxedEnvironment(undefined=jinja2.StrictUndefined)
-
-
 @dataclasses.dataclass
 class LineColumnPath:
     line: int
