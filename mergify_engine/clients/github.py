@@ -488,6 +488,13 @@ class AsyncGithubClient(http.AsyncClient):
                 break
 
 
+@dataclasses.dataclass
+class RequestHistory:
+    method: str
+    url: str
+    response: httpx.Response | None
+
+
 class AsyncGithubInstallationClient(AsyncGithubClient):
     auth: typing.Union[
         GithubAppInstallationAuth,
@@ -501,7 +508,7 @@ class AsyncGithubInstallationClient(AsyncGithubClient):
             GithubTokenAuth,
         ],
     ) -> None:
-        self._requests: typing.List[typing.Tuple[str, str]] = []
+        self._requests: typing.List[RequestHistory] = []
         self._requests_ratio: int = 1
         super().__init__(auth=auth)
 
@@ -522,7 +529,7 @@ class AsyncGithubInstallationClient(AsyncGithubClient):
                 "http.client.requests",
                 tags=[f"hostname:{self.base_url.host}", f"status_code:{status_code}"],
             )
-            self._requests.append((method, url))
+            self._requests.append(RequestHistory(method, url, reply))
         return reply
 
     async def aclose(self) -> None:
@@ -543,6 +550,24 @@ class AsyncGithubInstallationClient(AsyncGithubClient):
 
     def _generate_metrics(self) -> None:
         nb_requests = len(self._requests)
+        gh_owner = http.extract_organization_login(self)
+
+        if gh_owner == "Mergifyio":
+            LOG.info(
+                "ratelimit debugging",
+                requests=[
+                    (
+                        f"{r.method} {r.url}",
+                        None
+                        if r.response is None
+                        else r.response.headers.get(
+                            "x-ratelimit-remaining", "no-rate-limit-header"
+                        ),
+                    )
+                    for r in self._requests
+                ],
+            )
+
         statsd.histogram(
             "http.client.session",
             nb_requests,
@@ -558,7 +583,7 @@ class AsyncGithubInstallationClient(AsyncGithubClient):
                 LOGGING_REQUESTS_THRESHOLD_ABSOLUTE,
                 nb_requests / self._requests_ratio,
                 nb_requests,
-                gh_owner=http.extract_organization_login(self),
+                gh_owner=gh_owner,
                 requests=self._requests,
                 requests_ratio=self._requests_ratio,
             )
