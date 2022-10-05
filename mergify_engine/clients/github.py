@@ -555,6 +555,7 @@ class AsyncGithubInstallationClient(AsyncGithubClient):
         if gh_owner == "Mergifyio":
             LOG.info(
                 "ratelimit debugging",
+                gh_owner=gh_owner,
                 requests=[
                     (
                         f"{r.method} {r.url}",
