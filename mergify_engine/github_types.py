@@ -148,6 +148,7 @@ class GitHubBranchCommitVerification(typing.TypedDict):
 class GitHubAuthorCommitterCommit(typing.TypedDict):
     name: str
     date: ISODateTimeType
+    email: str
 
 
 class GitHubBranchCommitCommit(typing.TypedDict):
@@ -174,6 +175,8 @@ class CachedGitHubBranchCommit:
     committer: str
     date_author: ISODateTimeType
     date_committer: ISODateTimeType
+    email_author: str
+    email_committer: str
     __string_like__ = True
 
     def __str__(self) -> str:
@@ -190,6 +193,8 @@ def to_cached_github_branch_commit(
         parents=[p["sha"] for p in commit["parents"]],
         author=commit["commit"]["author"]["name"],
         committer=commit["commit"]["committer"]["name"],
+        email_author=commit["commit"]["author"]["email"],
+        email_committer=commit["commit"]["committer"]["email"],
         date_author=commit["commit"]["author"]["date"],
         date_committer=commit["commit"]["committer"]["date"],
     )

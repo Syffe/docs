@@ -803,6 +803,8 @@ commits:
                 parents=[],
                 author="someone",
                 committer="someone-else",
+                email_author="",
+                email_committer="",
                 date_author=github_types.ISODateTimeType(""),
                 date_committer=github_types.ISODateTimeType(""),
             ),
@@ -813,6 +815,8 @@ commits:
                 parents=[],
                 author="someone",
                 committer="someone-else",
+                email_author="",
+                email_committer="",
                 date_author=github_types.ISODateTimeType(""),
                 date_committer=github_types.ISODateTimeType(""),
             ),
@@ -1307,6 +1311,8 @@ Yo!
             parents=[github_types.SHAType("6666aaaa")],
             author="someone",
             committer="someone 2",
+            email_author="",
+            email_committer="",
             date_author=github_types.ISODateTimeType("2012-04-14T16:00:49Z"),
             date_committer=github_types.ISODateTimeType("2013-04-14T16:00:49Z"),
         ),
@@ -1317,6 +1323,8 @@ Yo!
             parents=[github_types.SHAType("7777aaaa")],
             author="someone-else",
             committer="someone-else 2",
+            email_author="",
+            email_committer="",
             date_author=github_types.ISODateTimeType("2013-04-14T16:00:49Z"),
             date_committer=github_types.ISODateTimeType("2014-04-14T16:00:49Z"),
         ),
@@ -1327,6 +1335,8 @@ Yo!
             parents=[github_types.SHAType("8888aaaa")],
             author="another-someone",
             committer="another-someone 2",
+            email_author="",
+            email_committer="",
             date_author=github_types.ISODateTimeType("2014-04-14T16:00:49Z"),
             date_committer=github_types.ISODateTimeType("2015-04-14T16:00:49Z"),
         ),
@@ -1335,7 +1345,6 @@ Yo!
     ctxt._caches.commits.set(commits)
 
     template = await ctxt.pull_request.render_template(a_pull_request["body"])  # type: ignore[arg-type]
-    print(template)
     assert (
         template
         == """

@@ -211,10 +211,12 @@ def fake_client() -> mock.Mock:
                             "message": "",
                             "verification": {"verified": False},
                             "committer": {
+                                "email": "",
                                 "name": "",
                                 "date": github_types.ISODateTimeType(""),
                             },
                             "author": {
+                                "email": "",
                                 "name": "",
                                 "date": github_types.ISODateTimeType(""),
                             },

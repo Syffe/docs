@@ -17,10 +17,12 @@ def create_commit(sha: github_types.SHAType) -> github_types.GitHubBranchCommit:
                 "message": "",
                 "verification": {"verified": False},
                 "author": {
+                    "email": "",
                     "name": "someone",
                     "date": github_types.ISODateTimeType(str(datetime.utcnow())),
                 },
                 "committer": {
+                    "email": "",
                     "name": "someone-else",
                     "date": github_types.ISODateTimeType(str(datetime.utcnow())),
                 },

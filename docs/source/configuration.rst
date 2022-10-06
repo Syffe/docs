@@ -239,9 +239,19 @@ Example structure of a commit object:
         "commit_verification_verified": True,
         "author": "commit-author",
         "date_author": "2012-04-14T16:00:49Z",
+        "email_author": "user@example.com",
         "committer": "commit-committer",
         "date_committer": "2012-04-15T16:00:49Z"
+        "email_committer": "user@example.com",
     }
+
+Using the list of commit within a :ref:`template <data type template>`:
+
+.. code-block::
+
+    {% for commit in commits %}
+    Co-Authored-By: {{ commit.author }} <{{ commit.email_author }}> 
+    {% endfor %}
 
 .. _regular expressions:
 

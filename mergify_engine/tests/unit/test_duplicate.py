@@ -135,6 +135,8 @@ async def test_get_commits_to_cherry_pick_rebase(
         parents=[],
         author="someone",
         committer="someone-else",
+        email_author="",
+        email_committer="",
         date_author=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
         date_committer=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
     )
@@ -145,6 +147,8 @@ async def test_get_commits_to_cherry_pick_rebase(
         parents=[c1.sha],
         author="someone",
         committer="someone-else",
+        email_author="",
+        email_committer="",
         date_author=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
         date_committer=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
     )
@@ -168,12 +172,14 @@ async def test_get_commits_to_cherry_pick_rebase(
                 "message": "hello c1",
                 "verification": {"verified": False},
                 "author": {
+                    "email": "",
                     "name": "someone",
                     "date": github_types.ISODateTimeType(
                         str(datetime.datetime.utcnow())
                     ),
                 },
                 "committer": {
+                    "email": "",
                     "name": "someone-else",
                     "date": github_types.ISODateTimeType(
                         str(datetime.datetime.utcnow())
@@ -196,12 +202,14 @@ async def test_get_commits_to_cherry_pick_rebase(
                 "message": "hello c2",
                 "verification": {"verified": False},
                 "author": {
+                    "email": "",
                     "name": "someone",
                     "date": github_types.ISODateTimeType(
                         str(datetime.datetime.utcnow())
                     ),
                 },
                 "committer": {
+                    "email": "",
                     "name": "someone-else",
                     "date": github_types.ISODateTimeType(
                         str(datetime.datetime.utcnow())
@@ -251,6 +259,8 @@ async def test_get_commits_to_cherry_pick_merge(
         parents=[],
         author="someone",
         committer="someone-else",
+        email_author="",
+        email_committer="",
         date_author=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
         date_committer=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
     )
@@ -261,6 +271,8 @@ async def test_get_commits_to_cherry_pick_merge(
         parents=[c1.sha],
         author="someone",
         committer="someone-else",
+        email_author="",
+        email_committer="",
         date_author=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
         date_committer=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
     )
@@ -283,6 +295,8 @@ async def test_get_commits_to_cherry_pick_merge(
         parents=[],
         author="someone",
         committer="someone-else",
+        email_author="",
+        email_committer="",
         date_author=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
         date_committer=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
     )
@@ -293,6 +307,8 @@ async def test_get_commits_to_cherry_pick_merge(
         parents=[base_branch.sha, c2.sha],
         author="someone",
         committer="someone-else",
+        email_author="",
+        email_committer="",
         date_author=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
         date_committer=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
     )
