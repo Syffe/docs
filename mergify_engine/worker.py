@@ -493,10 +493,9 @@ class StreamProcessor:
             github_types.GitHubPullRequestNumber(int(pull_number)),
         )
 
-    async def _select_pull_request_bucket(
+    async def select_pull_request_bucket(
         self,
         bucket_org_key: worker_lua.BucketOrgKeyType,
-        installation: context.Installation,
     ) -> PullRequestBucket | None:
         bucket_sources_keys: typing.List[
             typing.Tuple[bytes, float]
@@ -505,11 +504,6 @@ class StreamProcessor:
             min=0,
             max="+inf",
             withscores=True,
-        )
-        LOG.debug(
-            "org bucket contains %d pulls",
-            len(bucket_sources_keys),
-            gh_owner=installation.owner_login,
         )
 
         now = date.utcnow()
@@ -540,9 +534,7 @@ class StreamProcessor:
         pulls_processed = 0
         started_at = time.monotonic()
         while True:
-            bucket = await self._select_pull_request_bucket(
-                bucket_org_key, installation
-            )
+            bucket = await self.select_pull_request_bucket(bucket_org_key)
             if bucket is None:
                 break
 
@@ -1014,6 +1006,12 @@ class Worker:
             "streams", min=0, max=now
         ):
             bucket_org_key = worker_lua.BucketOrgKeyType(org_bucket.decode())
+            has_pull_requests_to_process = (
+                await stream_processor.select_pull_request_bucket(bucket_org_key)
+            )
+            if not has_pull_requests_to_process:
+                continue
+
             owner_id = self.extract_owner(bucket_org_key)
             if stream_processor.should_handle_owner(
                 owner_id,
