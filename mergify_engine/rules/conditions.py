@@ -638,12 +638,14 @@ async def get_branch_protection_conditions(
                 "required_pull_request_reviews"
             )
         ) is not None:
-            conditions.append(
-                RuleCondition(
-                    "branch-protection-review-decision=APPROVED",
-                    description=BRANCH_PROTECTION_CONDITION_TAG,
+
+            if required_pull_request_reviews["require_code_owner_reviews"]:
+                conditions.append(
+                    RuleCondition(
+                        "branch-protection-review-decision=APPROVED",
+                        description=BRANCH_PROTECTION_CONDITION_TAG,
+                    )
                 )
-            )
 
             if required_pull_request_reviews["required_approving_review_count"] > 0:
                 conditions.extend(
