@@ -634,24 +634,30 @@ async def get_branch_protection_conditions(
                 )
 
         if (
-            "required_pull_request_reviews" in protection
-            and protection["required_pull_request_reviews"][
-                "required_approving_review_count"
-            ]
-            > 0
-        ):
-            conditions.extend(
-                [
-                    RuleCondition(
-                        f"#approved-reviews-by>={protection['required_pull_request_reviews']['required_approving_review_count']}",
-                        description=BRANCH_PROTECTION_CONDITION_TAG,
-                    ),
-                    RuleCondition(
-                        "#changes-requested-reviews-by=0",
-                        description=BRANCH_PROTECTION_CONDITION_TAG,
-                    ),
-                ]
+            required_pull_request_reviews := protection.get(
+                "required_pull_request_reviews"
             )
+        ) is not None:
+            conditions.append(
+                RuleCondition(
+                    "branch-protection-review-decision=APPROVED",
+                    description=BRANCH_PROTECTION_CONDITION_TAG,
+                )
+            )
+
+            if required_pull_request_reviews["required_approving_review_count"] > 0:
+                conditions.extend(
+                    [
+                        RuleCondition(
+                            f"#approved-reviews-by>={required_pull_request_reviews['required_approving_review_count']}",
+                            description=BRANCH_PROTECTION_CONDITION_TAG,
+                        ),
+                        RuleCondition(
+                            "#changes-requested-reviews-by=0",
+                            description=BRANCH_PROTECTION_CONDITION_TAG,
+                        ),
+                    ]
+                )
 
         if (
             "required_conversation_resolution" in protection

@@ -32,6 +32,7 @@ class Parser(enum.Enum):
     TIMESTAMP = enum.auto()
     BOOL = enum.auto()
     PERMISSION = enum.auto()
+    ENUM = enum.auto()
 
 
 CONDITION_PARSERS = {
@@ -94,8 +95,17 @@ CONDITION_PARSERS = {
     "dependabot-dependency-name": Parser.TEXT,
     "dependabot-dependency-type": Parser.TEXT,
     "dependabot-update-type": Parser.TEXT,
+    "branch-protection-review-decision": Parser.ENUM,
     "sender-permission": Parser.PERMISSION,
 }
+CONDITION_ENUMS = {
+    "branch-protection-review-decision": [
+        "APPROVED",
+        "REVIEW_REQUIRED",
+        "CHANGES_REQUESTED",
+    ]
+}
+
 # NOTE(sileht): From the longest string to the short one to ensure for
 # example that merged-at is selected before merged
 ATTRIBUTES = sorted(CONDITION_PARSERS, key=lambda v: (len(v), v), reverse=True)
@@ -136,6 +146,7 @@ ALL_OPERATORS = SIMPLE_OPERATORS + (REGEX_OPERATOR,)
 
 SUPPORTED_OPERATORS = {
     Parser.TEXT: ALL_OPERATORS,
+    Parser.ENUM: EQUALITY_OPERATORS,
     Parser.WORD: ALL_OPERATORS,
     Parser.BRANCH: ALL_OPERATORS,
     Parser.LOGIN_AND_TEAMS: ALL_OPERATORS,
@@ -405,6 +416,7 @@ def parse(v: str) -> typing.Any:
 
     elif parser in (
         Parser.TEXT,
+        Parser.ENUM,
         Parser.WORD,
         Parser.BRANCH,
         Parser.LOGIN_AND_TEAMS,
@@ -437,6 +449,12 @@ def parse(v: str) -> typing.Any:
 
         if parser == Parser.TEXT:
             value = _unquote(value)
+        elif parser == Parser.ENUM:
+            value = _unquote(value)
+            if value not in CONDITION_ENUMS[attribute]:
+                raise ConditionParsingError(
+                    f"Invalid `{attribute}` value, must be one of `{'`, `'.join(CONDITION_ENUMS[attribute])}`"
+                )
         elif parser == Parser.WORD:
             if " " in value:
                 raise ConditionParsingError(f"Invalid `{attribute}` format")

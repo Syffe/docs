@@ -144,6 +144,15 @@ Here's the list of pull request attribute that can be used in conditions:
    * - ``body-raw``
      - string
      - The contents of the pull request description.
+   * - ``branch-protection-review-decision``
+     - string
+     - The review decision, could be one of ``APPROVED``, ``CHANGES_REQUESTED``
+       and ``REVIEW_REQUIRED``:
+       <https://docs.github.com/en/graphql/reference/enums#pullrequestreviewdecision>`_
+       Can be useful to check if `CODEOWNERS
+       <https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners>`_
+       have reviewed the PR when the `Require review from Code Owners`
+       branch protection rule is enabled.
    * - ``changes-requested-reviews-by``
      - list of string
      - The list of GitHub user or team login that have requested changes in a

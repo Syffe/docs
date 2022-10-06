@@ -123,14 +123,6 @@ be validated before embarking and merging the pull request.
 Mergify also waits for dependent pull requests to get merged first (see
 :ref:`merge-depends-on`).
 
-.. note::
-
-   If you are using `branch protection`_ and ``Require review from Code
-   Owners`` is checked, Mergify will queue pull requests even if that condition
-   does not match. GitHub does not offer an API to know if the approval comes
-   from a code owner, therefore Mergify has to try to merge it to know if the
-   requirements are validated or not. If they don't match, the pull request
-   will be removed from the queue.
 
 .. _`branch protection`: https://docs.github.com/en/github/administering-a-repository/about-protected-branches
 

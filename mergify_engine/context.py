@@ -939,6 +939,9 @@ class ContextCaches:
     is_behind: cache.SingleCache[bool] = dataclasses.field(
         default_factory=cache.SingleCache
     )
+    review_decision: cache.SingleCache[
+        github_graphql_types.GitHubPullRequestReviewDecision
+    ] = dataclasses.field(default_factory=cache.SingleCache)
     is_conflicting: cache.SingleCache[bool] = dataclasses.field(
         default_factory=cache.SingleCache
     )
@@ -1090,9 +1093,31 @@ class Context(object):
                                 }
                             )
                         )
-
             self._caches.review_threads.set(review_threads)
         return review_threads
+
+    async def retrieve_review_decision(
+        self,
+    ) -> github_graphql_types.GitHubPullRequestReviewDecision:
+        review_decision = self._caches.review_decision.get()
+        if review_decision is cache.Unset:
+            response = await self.client.graphql_post(
+                f"""
+            {{
+      repository(owner: "{self.repository.repo["owner"]["login"]}", name: "{self.repository.repo["name"]}") {{
+        pullRequest(number: {self.pull["number"]}) {{
+          reviewDecision
+        }}
+      }}
+    }}
+    """
+            )
+            review_decision = typing.cast(
+                github_graphql_types.GitHubPullRequestReviewDecision,
+                response["data"]["repository"]["pullRequest"]["reviewDecision"],
+            )
+            self._caches.review_decision.set(review_decision)
+        return review_decision
 
     @classmethod
     async def create(
@@ -1635,6 +1660,8 @@ class Context(object):
                 return dependabot_attributes["update-type"]
             else:
                 raise PullRequestAttributeError(name)
+        elif name == "branch-protection-review-decision":
+            return await self.retrieve_review_decision()
         else:
             raise PullRequestAttributeError(name)
 
@@ -2187,6 +2214,7 @@ class PullRequest(BasePullRequest):
         "body",
         "body-raw",
         "queue-position",
+        "branch-protection-review-decision",
     }
 
     LIST_ATTRIBUTES = {

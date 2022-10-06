@@ -349,6 +349,8 @@ class TestAttributes(base.FunctionalTestBase):
 
         # Test underscore/dash attributes
         assert await ctxt.pull_request.review_requested == []
+        assert await ctxt.pull_request.branch_protection_review_decision is None
+        assert await ctxt.pull_request.review_threads_resolved == []
 
         with pytest.raises(AttributeError):
             assert await ctxt.pull_request.foobar
@@ -385,6 +387,7 @@ class TestAttributes(base.FunctionalTestBase):
             "review-threads-unresolved": [],
             "check-success": ["Summary"],
             "status-success": ["Summary"],
+            "branch-protection-review-decision": None,
             "changes-requested-reviews-by": [],
             "merged": False,
             "commits": [commit],
@@ -877,6 +880,79 @@ class TestAttributes(base.FunctionalTestBase):
         await self.wait_for("issue_comment", {"action": "created"})
         comments = await self.get_issue_comments(pr["number"])
         assert "review-thread-resolved comment showing success" == comments[-1]["body"]
+
+    async def test_review_decision(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "review decision APPROVE",
+                    "conditions": ["branch-protection-review-decision=APPROVED"],
+                    "actions": {"comment": {"message": "approved"}},
+                },
+                {
+                    "name": "review decision REVIEW_REQUIRED",
+                    "conditions": ["branch-protection-review-decision=REVIEW_REQUIRED"],
+                    "actions": {"comment": {"message": "review-required"}},
+                },
+                {
+                    "name": "review decision CHANGES_REQUESTED",
+                    "conditions": [
+                        "branch-protection-review-decision=CHANGES_REQUESTED"
+                    ],
+                    "actions": {"comment": {"message": "changes-requested"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        await self.push_file("CODEOWNERS", "*.py @mergify-test1")
+        await self.run_engine()
+
+        await self.branch_protection_protect(
+            self.main_branch_name,
+            {
+                "required_pull_request_reviews": {
+                    "require_code_owner_reviews": True,
+                    "required_approving_review_count": 1,
+                },
+                "enforce_admins": None,
+                "restrictions": None,
+                "required_status_checks": None,
+            },
+        )
+
+        pr = await self.create_pr(files={"test.py": "ok"})
+        await self.wait_for("pull_request", {"action": "review_requested"})
+        pr = await self.get_pull(pr["number"])
+
+        assert len(pr["requested_reviewers"]) == 1
+        assert pr["requested_reviewers"][0]["login"] == "mergify-test1"
+
+        await self.run_engine()
+
+        comments = await self.get_issue_comments(pr["number"])
+        assert len(comments) == 1
+        assert comments[-1]["body"] == "review-required"
+
+        await self.create_review(
+            pr["number"],
+            oauth_token=config.ORG_ADMIN_PERSONAL_TOKEN,
+            event="REQUEST_CHANGES",
+        )
+        await self.run_engine()
+
+        comments = await self.get_issue_comments(pr["number"])
+        assert len(comments) == 2
+        assert comments[-1]["body"] == "changes-requested"
+
+        await self.create_review(
+            pr["number"], oauth_token=config.ORG_ADMIN_PERSONAL_TOKEN
+        )
+        await self.run_engine()
+
+        comments = await self.get_issue_comments(pr["number"])
+        assert len(comments) == 3
+        assert comments[-1]["body"] == "approved"
 
 
 class TestAttributesWithSub(base.FunctionalTestBase):

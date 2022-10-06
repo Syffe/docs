@@ -92,3 +92,8 @@ class GraphqlMinimizedComment(typing.TypedDict):
 
 class GraphqlMinimizedCommentResponse(typing.TypedDict):
     minimizeComment: GraphqlMinimizedComment
+
+
+GitHubPullRequestReviewDecision = typing.Literal[
+    "APPROVED", "CHANGES_REQUESTED", "REVIEW_REQUIRED", None
+]

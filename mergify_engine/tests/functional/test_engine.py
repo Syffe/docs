@@ -411,6 +411,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         assert (
             f"""### Rule: merge (merge)
 - [ ] `#approved-reviews-by&gt;=1` [🛡 GitHub branch protection]
+- [ ] `branch-protection-review-decision=APPROVED` [🛡 GitHub branch protection]
 - [ ] any of: [🛡 GitHub branch protection]
   - [ ] `check-neutral=continuous-integration/fake-ci`
   - [ ] `check-skipped=continuous-integration/fake-ci`
