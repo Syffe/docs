@@ -1,5 +1,10 @@
+import datetime
+from unittest import mock
+
+from freezegun import freeze_time
 import msgpack
 
+from mergify_engine import config
 from mergify_engine import yaml
 from mergify_engine.queue import statistics
 from mergify_engine.tests.functional import base
@@ -58,3 +63,111 @@ class TestStatisticsRedis(base.FunctionalTestBase):
         bdata = await self.redis_links.stats.xrange(time_to_merge_key, min="-", max="+")
         for _, raw in bdata:
             statistics.TimeToMerge(**msgpack.unpackb(raw[b"data"], timestamp=3))
+
+    async def test_accuracy_measure(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [],
+                    "speculative_checks": 5,
+                    "batch_size": 2,
+                    "allow_inplace_checks": False,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+
+        start_date = datetime.datetime(2022, 8, 18, 10, tzinfo=datetime.timezone.utc)
+
+        with freeze_time(start_date, tick=True):
+            await self.setup_repo(yaml.dump(rules))
+
+            p1 = await self.create_pr()
+            p2 = await self.create_pr()
+            p3 = await self.create_pr()
+            p4 = await self.create_pr()
+
+            p = await self.create_pr()
+            await self.merge_pull(p["number"])
+            await self.wait_for("pull_request", {"action": "closed"})
+
+            await self.add_label(p1["number"], "queue")
+            await self.add_label(p2["number"], "queue")
+
+            await self.run_engine()
+
+            await self.wait_for("pull_request", {"action": "opened"})
+
+        with freeze_time(start_date + datetime.timedelta(hours=2), tick=True):
+            await self.run_engine()
+
+            await self.wait_for("pull_request", {"action": "closed"})
+            await self.wait_for("pull_request", {"action": "closed"})
+            await self.wait_for("pull_request", {"action": "closed"})
+
+            time_to_merge_key = self.get_statistic_redis_key("time_to_merge")
+            assert await self.redis_links.stats.xlen(time_to_merge_key) == 2
+
+            r = await self.app.get(
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge",
+                headers={
+                    "Authorization": f"bearer {self.api_key_admin}",
+                    "Content-type": "application/json",
+                },
+            )
+
+            estimated_value = r.json()["mean"]
+            assert r.status_code == 200
+
+        with freeze_time(
+            start_date + datetime.timedelta(hours=2, minutes=2), tick=True
+        ):
+            await self.add_label(p3["number"], "queue")
+            await self.add_label(p4["number"], "queue")
+
+            await self.run_engine()
+
+            await self.wait_for("pull_request", {"action": "opened"})
+
+        with freeze_time(
+            start_date + datetime.timedelta(hours=3), tick=True
+        ), mock.patch("mergify_engine.queue.statistics_accuracy.statsd") as statsd:
+            statsd.gauge = mock.Mock()
+            await self.run_engine()
+
+            await self.wait_for("pull_request", {"action": "closed"})
+            await self.wait_for("pull_request", {"action": "closed"})
+            await self.wait_for("pull_request", {"action": "closed"})
+
+            assert await self.redis_links.stats.xlen(time_to_merge_key) == 4
+
+            # Called once per PR that get out of the queue, so
+            # 4 times since we have 2 PR in merge-queue.
+            assert statsd.gauge.call_count == 4
+            assert statsd.gauge.call_args_list[0].args == (
+                "statistics.time_to_merge.accuracy.estimated_value",
+                estimated_value,
+            )
+
+            assert (
+                statsd.gauge.call_args_list[1].args[0]
+                == "statistics.time_to_merge.accuracy.real_value"
+            )
+
+            # Since the time is freezed but still ticking, we cannot know the real value.
+            # The best we can do is make sure its around the 58 minutes mark.
+            assert (
+                datetime.timedelta(minutes=56).total_seconds()
+                < statsd.gauge.call_args_list[1].args[1]
+                < datetime.timedelta(hours=1).total_seconds()
+            )
