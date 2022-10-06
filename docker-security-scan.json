@@ -39,8 +39,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2022-0563",
           "https://security.netapp.com/advisory/ntap-20220331-0002/"
         ],
-        "PublishedDate": "2022-02-21T19:15:00Z",
-        "LastModifiedDate": "2022-06-03T14:15:00Z"
+        "PublishedDate": "2022-02-21T19:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2016-2781",
@@ -83,8 +82,7 @@
           "https://lore.kernel.org/patchwork/patch/793178/",
           "https://nvd.nist.gov/vuln/detail/CVE-2016-2781"
         ],
-        "PublishedDate": "2017-02-07T15:59:00Z",
-        "LastModifiedDate": "2021-02-25T17:15:00Z"
+        "PublishedDate": "2017-02-07T15:59:00Z"
       },
       {
         "VulnerabilityID": "CVE-2017-18018",
@@ -119,8 +117,7 @@
           "http://lists.gnu.org/archive/html/coreutils/2017-12/msg00045.html",
           "https://access.redhat.com/security/cve/CVE-2017-18018"
         ],
-        "PublishedDate": "2018-01-04T04:29:00Z",
-        "LastModifiedDate": "2018-01-19T15:46:00Z"
+        "PublishedDate": "2018-01-04T04:29:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-22922",
@@ -167,8 +164,7 @@
           "https://security.netapp.com/advisory/ntap-20210902-0003/",
           "https://www.oracle.com/security-alerts/cpuoct2021.html"
         ],
-        "PublishedDate": "2021-08-05T21:15:00Z",
-        "LastModifiedDate": "2022-08-30T22:39:00Z"
+        "PublishedDate": "2021-08-05T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-22923",
@@ -211,8 +207,7 @@
           "https://security.netapp.com/advisory/ntap-20210902-0003/",
           "https://www.oracle.com/security-alerts/cpuoct2021.html"
         ],
-        "PublishedDate": "2021-08-05T21:15:00Z",
-        "LastModifiedDate": "2022-04-06T14:26:00Z"
+        "PublishedDate": "2021-08-05T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-1304",
@@ -252,8 +247,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2022-1304",
           "https://ubuntu.com/security/notices/USN-5464-1"
         ],
-        "PublishedDate": "2022-04-14T21:15:00Z",
-        "LastModifiedDate": "2022-04-21T15:36:00Z"
+        "PublishedDate": "2022-04-14T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-24765",
@@ -302,8 +296,7 @@
           "https://ubuntu.com/security/notices/USN-5376-2",
           "https://ubuntu.com/security/notices/USN-5376-3"
         ],
-        "PublishedDate": "2022-04-12T18:15:00Z",
-        "LastModifiedDate": "2022-07-29T03:15:00Z"
+        "PublishedDate": "2022-04-12T18:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-29187",
@@ -346,8 +339,7 @@
           "https://lore.kernel.org/git/xmqqv8s2fefi.fsf@gitster.g/T/#u",
           "https://ubuntu.com/security/notices/USN-5511-1"
         ],
-        "PublishedDate": "2022-07-12T21:15:00Z",
-        "LastModifiedDate": "2022-07-29T03:15:00Z"
+        "PublishedDate": "2022-07-12T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2018-1000021",
@@ -383,8 +375,7 @@
           "https://access.redhat.com/security/cve/CVE-2018-1000021",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2018-1000021"
         ],
-        "PublishedDate": "2018-02-09T23:29:00Z",
-        "LastModifiedDate": "2018-03-06T19:34:00Z"
+        "PublishedDate": "2018-02-09T23:29:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-24975",
@@ -420,8 +411,7 @@
           "https://github.com/git/git/blob/2dc94da3744bfbbf145eca587a0f5ff480cc5867/Documentation/git-clone.txt#L185-L191",
           "https://wwws.nightwatchcybersecurity.com/2022/02/11/gitbleed/"
         ],
-        "PublishedDate": "2022-02-11T20:15:00Z",
-        "LastModifiedDate": "2022-02-22T20:19:00Z"
+        "PublishedDate": "2022-02-11T20:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-24765",
@@ -470,8 +460,7 @@
           "https://ubuntu.com/security/notices/USN-5376-2",
           "https://ubuntu.com/security/notices/USN-5376-3"
         ],
-        "PublishedDate": "2022-04-12T18:15:00Z",
-        "LastModifiedDate": "2022-07-29T03:15:00Z"
+        "PublishedDate": "2022-04-12T18:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-29187",
@@ -514,8 +503,7 @@
           "https://lore.kernel.org/git/xmqqv8s2fefi.fsf@gitster.g/T/#u",
           "https://ubuntu.com/security/notices/USN-5511-1"
         ],
-        "PublishedDate": "2022-07-12T21:15:00Z",
-        "LastModifiedDate": "2022-07-29T03:15:00Z"
+        "PublishedDate": "2022-07-12T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2018-1000021",
@@ -551,8 +539,7 @@
           "https://access.redhat.com/security/cve/CVE-2018-1000021",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2018-1000021"
         ],
-        "PublishedDate": "2018-02-09T23:29:00Z",
-        "LastModifiedDate": "2018-03-06T19:34:00Z"
+        "PublishedDate": "2018-02-09T23:29:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-24975",
@@ -588,8 +575,7 @@
           "https://github.com/git/git/blob/2dc94da3744bfbbf145eca587a0f5ff480cc5867/Documentation/git-clone.txt#L185-L191",
           "https://wwws.nightwatchcybersecurity.com/2022/02/11/gitbleed/"
         ],
-        "PublishedDate": "2022-02-11T20:15:00Z",
-        "LastModifiedDate": "2022-02-22T20:19:00Z"
+        "PublishedDate": "2022-02-11T20:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2016-1585",
@@ -622,8 +608,7 @@
           "https://lists.apache.org/thread.html/rf9fa47ab66495c78bb4120b0754dd9531ca2ff0430f6685ac9b07772@%3Cdev.mina.apache.org%3E",
           "https://nvd.nist.gov/vuln/detail/CVE-2016-1585"
         ],
-        "PublishedDate": "2019-04-22T16:29:00Z",
-        "LastModifiedDate": "2021-02-25T17:15:00Z"
+        "PublishedDate": "2019-04-22T16:29:00Z"
       },
       {
         "VulnerabilityID": "CVE-2011-3374",
@@ -659,8 +644,7 @@
           "https://snyk.io/vuln/SNYK-LINUX-APT-116518",
           "https://ubuntu.com/security/CVE-2011-3374"
         ],
-        "PublishedDate": "2019-11-26T00:15:00Z",
-        "LastModifiedDate": "2021-02-09T16:08:00Z"
+        "PublishedDate": "2019-11-26T00:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-0563",
@@ -697,8 +681,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2022-0563",
           "https://security.netapp.com/advisory/ntap-20220331-0002/"
         ],
-        "PublishedDate": "2022-02-21T19:15:00Z",
-        "LastModifiedDate": "2022-06-03T14:15:00Z"
+        "PublishedDate": "2022-02-21T19:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-45940",
@@ -736,8 +719,7 @@
           "https://github.com/google/oss-fuzz-vulns/blob/main/vulns/libbpf/OSV-2021-1562.yaml",
           "https://nvd.nist.gov/vuln/detail/CVE-2021-45940"
         ],
-        "PublishedDate": "2022-01-01T01:15:00Z",
-        "LastModifiedDate": "2022-01-11T18:20:00Z"
+        "PublishedDate": "2022-01-01T01:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-45941",
@@ -775,8 +757,7 @@
           "https://github.com/google/oss-fuzz-vulns/blob/main/vulns/libbpf/OSV-2021-1576.yaml",
           "https://nvd.nist.gov/vuln/detail/CVE-2021-45941"
         ],
-        "PublishedDate": "2022-01-01T01:15:00Z",
-        "LastModifiedDate": "2022-01-11T18:18:00Z"
+        "PublishedDate": "2022-01-01T01:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2010-4756",
@@ -814,8 +795,7 @@
           "https://bugzilla.redhat.com/show_bug.cgi?id=CVE-2010-4756",
           "https://nvd.nist.gov/vuln/detail/CVE-2010-4756"
         ],
-        "PublishedDate": "2011-03-02T20:00:00Z",
-        "LastModifiedDate": "2021-09-01T12:15:00Z"
+        "PublishedDate": "2011-03-02T20:00:00Z"
       },
       {
         "VulnerabilityID": "CVE-2018-20796",
@@ -855,8 +835,7 @@
           "https://security.netapp.com/advisory/ntap-20190315-0002/",
           "https://support.f5.com/csp/article/K26346590?utm_source=f5support&amp;utm_medium=RSS"
         ],
-        "PublishedDate": "2019-02-26T02:29:00Z",
-        "LastModifiedDate": "2019-11-05T21:15:00Z"
+        "PublishedDate": "2019-02-26T02:29:00Z"
       },
       {
         "VulnerabilityID": "CVE-2019-1010022",
@@ -890,8 +869,7 @@
           "https://sourceware.org/bugzilla/show_bug.cgi?id=22850#c3",
           "https://ubuntu.com/security/CVE-2019-1010022"
         ],
-        "PublishedDate": "2019-07-15T04:15:00Z",
-        "LastModifiedDate": "2021-06-10T17:15:00Z"
+        "PublishedDate": "2019-07-15T04:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2019-1010023",
@@ -927,8 +905,7 @@
           "https://support.f5.com/csp/article/K11932200?utm_source=f5support&amp;utm_medium=RSS",
           "https://ubuntu.com/security/CVE-2019-1010023"
         ],
-        "PublishedDate": "2019-07-15T04:15:00Z",
-        "LastModifiedDate": "2020-11-16T20:15:00Z"
+        "PublishedDate": "2019-07-15T04:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2019-1010024",
@@ -968,8 +945,7 @@
           "https://support.f5.com/csp/article/K06046097?utm_source=f5support&amp;utm_medium=RSS",
           "https://ubuntu.com/security/CVE-2019-1010024"
         ],
-        "PublishedDate": "2019-07-15T04:15:00Z",
-        "LastModifiedDate": "2020-11-16T20:15:00Z"
+        "PublishedDate": "2019-07-15T04:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2019-1010025",
@@ -1008,8 +984,7 @@
           "https://support.f5.com/csp/article/K06046097?utm_source=f5support&amp;utm_medium=RSS",
           "https://ubuntu.com/security/CVE-2019-1010025"
         ],
-        "PublishedDate": "2019-07-15T04:15:00Z",
-        "LastModifiedDate": "2020-11-16T20:15:00Z"
+        "PublishedDate": "2019-07-15T04:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2019-9192",
@@ -1046,8 +1021,7 @@
           "https://sourceware.org/bugzilla/show_bug.cgi?id=24269",
           "https://support.f5.com/csp/article/K26346590?utm_source=f5support&amp;utm_medium=RSS"
         ],
-        "PublishedDate": "2019-02-26T18:29:00Z",
-        "LastModifiedDate": "2020-08-24T17:37:00Z"
+        "PublishedDate": "2019-02-26T18:29:00Z"
       },
       {
         "VulnerabilityID": "CVE-2010-4756",
@@ -1085,8 +1059,7 @@
           "https://bugzilla.redhat.com/show_bug.cgi?id=CVE-2010-4756",
           "https://nvd.nist.gov/vuln/detail/CVE-2010-4756"
         ],
-        "PublishedDate": "2011-03-02T20:00:00Z",
-        "LastModifiedDate": "2021-09-01T12:15:00Z"
+        "PublishedDate": "2011-03-02T20:00:00Z"
       },
       {
         "VulnerabilityID": "CVE-2018-20796",
@@ -1126,8 +1099,7 @@
           "https://security.netapp.com/advisory/ntap-20190315-0002/",
           "https://support.f5.com/csp/article/K26346590?utm_source=f5support&amp;utm_medium=RSS"
         ],
-        "PublishedDate": "2019-02-26T02:29:00Z",
-        "LastModifiedDate": "2019-11-05T21:15:00Z"
+        "PublishedDate": "2019-02-26T02:29:00Z"
       },
       {
         "VulnerabilityID": "CVE-2019-1010022",
@@ -1161,8 +1133,7 @@
           "https://sourceware.org/bugzilla/show_bug.cgi?id=22850#c3",
           "https://ubuntu.com/security/CVE-2019-1010022"
         ],
-        "PublishedDate": "2019-07-15T04:15:00Z",
-        "LastModifiedDate": "2021-06-10T17:15:00Z"
+        "PublishedDate": "2019-07-15T04:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2019-1010023",
@@ -1198,8 +1169,7 @@
           "https://support.f5.com/csp/article/K11932200?utm_source=f5support&amp;utm_medium=RSS",
           "https://ubuntu.com/security/CVE-2019-1010023"
         ],
-        "PublishedDate": "2019-07-15T04:15:00Z",
-        "LastModifiedDate": "2020-11-16T20:15:00Z"
+        "PublishedDate": "2019-07-15T04:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2019-1010024",
@@ -1239,8 +1209,7 @@
           "https://support.f5.com/csp/article/K06046097?utm_source=f5support&amp;utm_medium=RSS",
           "https://ubuntu.com/security/CVE-2019-1010024"
         ],
-        "PublishedDate": "2019-07-15T04:15:00Z",
-        "LastModifiedDate": "2020-11-16T20:15:00Z"
+        "PublishedDate": "2019-07-15T04:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2019-1010025",
@@ -1279,8 +1248,7 @@
           "https://support.f5.com/csp/article/K06046097?utm_source=f5support&amp;utm_medium=RSS",
           "https://ubuntu.com/security/CVE-2019-1010025"
         ],
-        "PublishedDate": "2019-07-15T04:15:00Z",
-        "LastModifiedDate": "2020-11-16T20:15:00Z"
+        "PublishedDate": "2019-07-15T04:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2019-9192",
@@ -1317,8 +1285,7 @@
           "https://sourceware.org/bugzilla/show_bug.cgi?id=24269",
           "https://support.f5.com/csp/article/K26346590?utm_source=f5support&amp;utm_medium=RSS"
         ],
-        "PublishedDate": "2019-02-26T18:29:00Z",
-        "LastModifiedDate": "2020-08-24T17:37:00Z"
+        "PublishedDate": "2019-02-26T18:29:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-1304",
@@ -1358,8 +1325,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2022-1304",
           "https://ubuntu.com/security/notices/USN-5464-1"
         ],
-        "PublishedDate": "2022-04-14T21:15:00Z",
-        "LastModifiedDate": "2022-04-21T15:36:00Z"
+        "PublishedDate": "2022-04-14T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-22922",
@@ -1406,8 +1372,7 @@
           "https://security.netapp.com/advisory/ntap-20210902-0003/",
           "https://www.oracle.com/security-alerts/cpuoct2021.html"
         ],
-        "PublishedDate": "2021-08-05T21:15:00Z",
-        "LastModifiedDate": "2022-08-30T22:39:00Z"
+        "PublishedDate": "2021-08-05T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-22923",
@@ -1450,8 +1415,7 @@
           "https://security.netapp.com/advisory/ntap-20210902-0003/",
           "https://www.oracle.com/security-alerts/cpuoct2021.html"
         ],
-        "PublishedDate": "2021-08-05T21:15:00Z",
-        "LastModifiedDate": "2022-04-06T14:26:00Z"
+        "PublishedDate": "2021-08-05T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-22922",
@@ -1498,8 +1462,7 @@
           "https://security.netapp.com/advisory/ntap-20210902-0003/",
           "https://www.oracle.com/security-alerts/cpuoct2021.html"
         ],
-        "PublishedDate": "2021-08-05T21:15:00Z",
-        "LastModifiedDate": "2022-08-30T22:39:00Z"
+        "PublishedDate": "2021-08-05T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-22923",
@@ -1542,8 +1505,7 @@
           "https://security.netapp.com/advisory/ntap-20210902-0003/",
           "https://www.oracle.com/security-alerts/cpuoct2021.html"
         ],
-        "PublishedDate": "2021-08-05T21:15:00Z",
-        "LastModifiedDate": "2022-04-06T14:26:00Z"
+        "PublishedDate": "2021-08-05T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2019-8457",
@@ -1599,8 +1561,7 @@
           "https://www.sqlite.org/releaselog/3_28_0.html",
           "https://www.sqlite.org/src/info/90acdbfce9c08858"
         ],
-        "PublishedDate": "2019-05-30T16:29:00Z",
-        "LastModifiedDate": "2021-07-31T08:15:00Z"
+        "PublishedDate": "2019-05-30T16:29:00Z"
       },
       {
         "VulnerabilityID": "CVE-2013-0340",
@@ -1657,8 +1618,7 @@
           "https://support.apple.com/kb/HT212815",
           "https://support.apple.com/kb/HT212819"
         ],
-        "PublishedDate": "2014-01-21T18:55:00Z",
-        "LastModifiedDate": "2022-07-05T18:57:00Z"
+        "PublishedDate": "2014-01-21T18:55:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-1304",
@@ -1698,8 +1658,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2022-1304",
           "https://ubuntu.com/security/notices/USN-5464-1"
         ],
-        "PublishedDate": "2022-04-14T21:15:00Z",
-        "LastModifiedDate": "2022-04-21T15:36:00Z"
+        "PublishedDate": "2022-04-14T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-33560",
@@ -1753,8 +1712,7 @@
           "https://www.oracle.com/security-alerts/cpujul2022.html",
           "https://www.oracle.com/security-alerts/cpuoct2021.html"
         ],
-        "PublishedDate": "2021-06-08T11:15:00Z",
-        "LastModifiedDate": "2022-07-25T18:15:00Z"
+        "PublishedDate": "2021-06-08T11:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2018-6829",
@@ -1792,8 +1750,7 @@
           "https://lists.gnupg.org/pipermail/gcrypt-devel/2018-February/004394.html",
           "https://www.oracle.com/security-alerts/cpujan2020.html"
         ],
-        "PublishedDate": "2018-02-07T23:29:00Z",
-        "LastModifiedDate": "2020-01-15T20:15:00Z"
+        "PublishedDate": "2018-02-07T23:29:00Z"
       },
       {
         "VulnerabilityID": "CVE-2011-3389",
@@ -1919,8 +1876,7 @@
           "https://oval.cisecurity.org/repository/search/definition/oval%3Aorg.mitre.oval%3Adef%3A14752",
           "https://ubuntu.com/security/notices/USN-1263-1"
         ],
-        "PublishedDate": "2011-09-06T19:55:00Z",
-        "LastModifiedDate": "2021-07-23T15:12:00Z"
+        "PublishedDate": "2011-09-06T19:55:00Z"
       },
       {
         "VulnerabilityID": "CVE-2004-0971",
@@ -1953,8 +1909,7 @@
           "https://lists.apache.org/thread.html/rc713534b10f9daeee2e0990239fa407e2118e4aa9e88a7041177497c@%3Cissues.guacamole.apache.org%3E",
           "https://oval.cisecurity.org/repository/search/definition/oval%3Aorg.mitre.oval%3Adef%3A10497"
         ],
-        "PublishedDate": "2005-02-09T05:00:00Z",
-        "LastModifiedDate": "2021-06-18T15:15:00Z"
+        "PublishedDate": "2005-02-09T05:00:00Z"
       },
       {
         "VulnerabilityID": "CVE-2018-5709",
@@ -1990,8 +1945,7 @@
           "https://github.com/poojamnit/Kerberos-V5-1.16-Vulnerabilities/tree/master/Integer%20Overflow",
           "https://lists.apache.org/thread.html/rf9fa47ab66495c78bb4120b0754dd9531ca2ff0430f6685ac9b07772@%3Cdev.mina.apache.org%3E"
         ],
-        "PublishedDate": "2018-01-16T09:29:00Z",
-        "LastModifiedDate": "2021-02-25T17:15:00Z"
+        "PublishedDate": "2018-01-16T09:29:00Z"
       },
       {
         "VulnerabilityID": "CVE-2012-2663",
@@ -2022,8 +1976,7 @@
           "https://access.redhat.com/security/cve/CVE-2012-2663",
           "https://bugzilla.redhat.com/show_bug.cgi?id=826702"
         ],
-        "PublishedDate": "2014-02-15T14:57:00Z",
-        "LastModifiedDate": "2021-02-01T14:12:00Z"
+        "PublishedDate": "2014-02-15T14:57:00Z"
       },
       {
         "VulnerabilityID": "CVE-2004-0971",
@@ -2056,8 +2009,7 @@
           "https://lists.apache.org/thread.html/rc713534b10f9daeee2e0990239fa407e2118e4aa9e88a7041177497c@%3Cissues.guacamole.apache.org%3E",
           "https://oval.cisecurity.org/repository/search/definition/oval%3Aorg.mitre.oval%3Adef%3A10497"
         ],
-        "PublishedDate": "2005-02-09T05:00:00Z",
-        "LastModifiedDate": "2021-06-18T15:15:00Z"
+        "PublishedDate": "2005-02-09T05:00:00Z"
       },
       {
         "VulnerabilityID": "CVE-2018-5709",
@@ -2093,8 +2045,7 @@
           "https://github.com/poojamnit/Kerberos-V5-1.16-Vulnerabilities/tree/master/Integer%20Overflow",
           "https://lists.apache.org/thread.html/rf9fa47ab66495c78bb4120b0754dd9531ca2ff0430f6685ac9b07772@%3Cdev.mina.apache.org%3E"
         ],
-        "PublishedDate": "2018-01-16T09:29:00Z",
-        "LastModifiedDate": "2021-02-25T17:15:00Z"
+        "PublishedDate": "2018-01-16T09:29:00Z"
       },
       {
         "VulnerabilityID": "CVE-2004-0971",
@@ -2127,8 +2078,7 @@
           "https://lists.apache.org/thread.html/rc713534b10f9daeee2e0990239fa407e2118e4aa9e88a7041177497c@%3Cissues.guacamole.apache.org%3E",
           "https://oval.cisecurity.org/repository/search/definition/oval%3Aorg.mitre.oval%3Adef%3A10497"
         ],
-        "PublishedDate": "2005-02-09T05:00:00Z",
-        "LastModifiedDate": "2021-06-18T15:15:00Z"
+        "PublishedDate": "2005-02-09T05:00:00Z"
       },
       {
         "VulnerabilityID": "CVE-2018-5709",
@@ -2164,8 +2114,7 @@
           "https://github.com/poojamnit/Kerberos-V5-1.16-Vulnerabilities/tree/master/Integer%20Overflow",
           "https://lists.apache.org/thread.html/rf9fa47ab66495c78bb4120b0754dd9531ca2ff0430f6685ac9b07772@%3Cdev.mina.apache.org%3E"
         ],
-        "PublishedDate": "2018-01-16T09:29:00Z",
-        "LastModifiedDate": "2021-02-25T17:15:00Z"
+        "PublishedDate": "2018-01-16T09:29:00Z"
       },
       {
         "VulnerabilityID": "CVE-2004-0971",
@@ -2198,8 +2147,7 @@
           "https://lists.apache.org/thread.html/rc713534b10f9daeee2e0990239fa407e2118e4aa9e88a7041177497c@%3Cissues.guacamole.apache.org%3E",
           "https://oval.cisecurity.org/repository/search/definition/oval%3Aorg.mitre.oval%3Adef%3A10497"
         ],
-        "PublishedDate": "2005-02-09T05:00:00Z",
-        "LastModifiedDate": "2021-06-18T15:15:00Z"
+        "PublishedDate": "2005-02-09T05:00:00Z"
       },
       {
         "VulnerabilityID": "CVE-2018-5709",
@@ -2235,8 +2183,7 @@
           "https://github.com/poojamnit/Kerberos-V5-1.16-Vulnerabilities/tree/master/Integer%20Overflow",
           "https://lists.apache.org/thread.html/rf9fa47ab66495c78bb4120b0754dd9531ca2ff0430f6685ac9b07772@%3Cdev.mina.apache.org%3E"
         ],
-        "PublishedDate": "2018-01-16T09:29:00Z",
-        "LastModifiedDate": "2021-02-25T17:15:00Z"
+        "PublishedDate": "2018-01-16T09:29:00Z"
       },
       {
         "VulnerabilityID": "CVE-2015-3276",
@@ -2275,8 +2222,7 @@
           "https://linux.oracle.com/errata/ELSA-2015-2131.html",
           "https://nvd.nist.gov/vuln/detail/CVE-2015-3276"
         ],
-        "PublishedDate": "2015-12-07T20:59:00Z",
-        "LastModifiedDate": "2016-10-15T02:01:00Z"
+        "PublishedDate": "2015-12-07T20:59:00Z"
       },
       {
         "VulnerabilityID": "CVE-2017-14159",
@@ -2312,8 +2258,7 @@
           "https://access.redhat.com/security/cve/CVE-2017-14159",
           "https://www.oracle.com/security-alerts/cpuapr2022.html"
         ],
-        "PublishedDate": "2017-09-05T18:29:00Z",
-        "LastModifiedDate": "2022-06-13T19:18:00Z"
+        "PublishedDate": "2017-09-05T18:29:00Z"
       },
       {
         "VulnerabilityID": "CVE-2017-17740",
@@ -2352,8 +2297,7 @@
           "https://kc.mcafee.com/corporate/index?page=content&id=SB10365",
           "https://www.oracle.com/security-alerts/cpuapr2022.html"
         ],
-        "PublishedDate": "2017-12-18T06:29:00Z",
-        "LastModifiedDate": "2022-06-13T19:10:00Z"
+        "PublishedDate": "2017-12-18T06:29:00Z"
       },
       {
         "VulnerabilityID": "CVE-2020-15719",
@@ -2394,8 +2338,7 @@
           "https://kc.mcafee.com/corporate/index?page=content&id=SB10365",
           "https://www.oracle.com/security-alerts/cpuapr2022.html"
         ],
-        "PublishedDate": "2020-07-14T14:15:00Z",
-        "LastModifiedDate": "2022-05-12T15:01:00Z"
+        "PublishedDate": "2020-07-14T14:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-0563",
@@ -2432,8 +2375,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2022-0563",
           "https://security.netapp.com/advisory/ntap-20220331-0002/"
         ],
-        "PublishedDate": "2022-02-21T19:15:00Z",
-        "LastModifiedDate": "2022-06-03T14:15:00Z"
+        "PublishedDate": "2022-02-21T19:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-29458",
@@ -2473,8 +2415,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2022-29458",
           "https://ubuntu.com/security/notices/USN-5477-1"
         ],
-        "PublishedDate": "2022-04-18T21:15:00Z",
-        "LastModifiedDate": "2022-04-27T13:14:00Z"
+        "PublishedDate": "2022-04-18T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-39537",
@@ -2514,8 +2455,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2021-39537",
           "https://ubuntu.com/security/notices/USN-5477-1"
         ],
-        "PublishedDate": "2021-09-20T16:15:00Z",
-        "LastModifiedDate": "2021-11-30T22:42:00Z"
+        "PublishedDate": "2021-09-20T16:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-29458",
@@ -2555,8 +2495,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2022-29458",
           "https://ubuntu.com/security/notices/USN-5477-1"
         ],
-        "PublishedDate": "2022-04-18T21:15:00Z",
-        "LastModifiedDate": "2022-04-27T13:14:00Z"
+        "PublishedDate": "2022-04-18T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-39537",
@@ -2596,8 +2535,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2021-39537",
           "https://ubuntu.com/security/notices/USN-5477-1"
         ],
-        "PublishedDate": "2021-09-20T16:15:00Z",
-        "LastModifiedDate": "2021-11-30T22:42:00Z"
+        "PublishedDate": "2021-09-20T16:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2013-4392",
@@ -2632,8 +2570,7 @@
           "https://access.redhat.com/security/cve/CVE-2013-4392",
           "https://bugzilla.redhat.com/show_bug.cgi?id=859060"
         ],
-        "PublishedDate": "2013-10-28T22:55:00Z",
-        "LastModifiedDate": "2022-01-31T17:49:00Z"
+        "PublishedDate": "2013-10-28T22:55:00Z"
       },
       {
         "VulnerabilityID": "CVE-2020-13529",
@@ -2679,8 +2616,7 @@
           "https://ubuntu.com/security/notices/USN-5013-1",
           "https://ubuntu.com/security/notices/USN-5013-2"
         ],
-        "PublishedDate": "2021-05-10T16:15:00Z",
-        "LastModifiedDate": "2022-04-28T19:15:00Z"
+        "PublishedDate": "2021-05-10T16:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2013-4392",
@@ -2715,8 +2651,7 @@
           "https://access.redhat.com/security/cve/CVE-2013-4392",
           "https://bugzilla.redhat.com/show_bug.cgi?id=859060"
         ],
-        "PublishedDate": "2013-10-28T22:55:00Z",
-        "LastModifiedDate": "2022-01-31T17:49:00Z"
+        "PublishedDate": "2013-10-28T22:55:00Z"
       },
       {
         "VulnerabilityID": "CVE-2020-13529",
@@ -2762,8 +2697,7 @@
           "https://ubuntu.com/security/notices/USN-5013-1",
           "https://ubuntu.com/security/notices/USN-5013-2"
         ],
-        "PublishedDate": "2021-05-10T16:15:00Z",
-        "LastModifiedDate": "2022-04-28T19:15:00Z"
+        "PublishedDate": "2021-05-10T16:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2017-11164",
@@ -2801,8 +2735,7 @@
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2017-11164",
           "https://lists.apache.org/thread.html/rf9fa47ab66495c78bb4120b0754dd9531ca2ff0430f6685ac9b07772@%3Cdev.mina.apache.org%3E"
         ],
-        "PublishedDate": "2017-07-11T03:29:00Z",
-        "LastModifiedDate": "2021-02-25T17:15:00Z"
+        "PublishedDate": "2017-07-11T03:29:00Z"
       },
       {
         "VulnerabilityID": "CVE-2017-16231",
@@ -2844,8 +2777,7 @@
           "https://access.redhat.com/security/cve/CVE-2017-16231",
           "https://bugs.exim.org/show_bug.cgi?id=2047"
         ],
-        "PublishedDate": "2019-03-21T15:59:00Z",
-        "LastModifiedDate": "2019-04-02T13:55:00Z"
+        "PublishedDate": "2019-03-21T15:59:00Z"
       },
       {
         "VulnerabilityID": "CVE-2017-7245",
@@ -2883,8 +2815,7 @@
           "https://blogs.gentoo.org/ago/2017/03/20/libpcre-two-stack-based-buffer-overflow-write-in-pcre32_copy_substring-pcre_get-c/",
           "https://security.gentoo.org/glsa/201710-25"
         ],
-        "PublishedDate": "2017-03-23T21:59:00Z",
-        "LastModifiedDate": "2018-08-17T10:29:00Z"
+        "PublishedDate": "2017-03-23T21:59:00Z"
       },
       {
         "VulnerabilityID": "CVE-2017-7246",
@@ -2922,8 +2853,7 @@
           "https://blogs.gentoo.org/ago/2017/03/20/libpcre-two-stack-based-buffer-overflow-write-in-pcre32_copy_substring-pcre_get-c/",
           "https://security.gentoo.org/glsa/201710-25"
         ],
-        "PublishedDate": "2017-03-23T21:59:00Z",
-        "LastModifiedDate": "2018-08-17T10:29:00Z"
+        "PublishedDate": "2017-03-23T21:59:00Z"
       },
       {
         "VulnerabilityID": "CVE-2019-20838",
@@ -2972,8 +2902,7 @@
           "https://ubuntu.com/security/notices/USN-5425-1",
           "https://www.pcre.org/original/changelog.txt"
         ],
-        "PublishedDate": "2020-06-15T17:15:00Z",
-        "LastModifiedDate": "2021-09-22T14:22:00Z"
+        "PublishedDate": "2020-06-15T17:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2020-16156",
@@ -3013,8 +2942,7 @@
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/SZ32AJIV4RHJMLWLU5QULGKMMIHYOMDC/",
           "https://metacpan.org/pod/distribution/CPAN/scripts/cpan"
         ],
-        "PublishedDate": "2021-12-13T18:15:00Z",
-        "LastModifiedDate": "2022-04-01T13:26:00Z"
+        "PublishedDate": "2021-12-13T18:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2011-4116",
@@ -3053,8 +2981,7 @@
           "https://rt.cpan.org/Public/Bug/Display.html?id=69106",
           "https://seclists.org/oss-sec/2011/q4/238"
         ],
-        "PublishedDate": "2020-01-31T18:15:00Z",
-        "LastModifiedDate": "2020-02-05T22:10:00Z"
+        "PublishedDate": "2020-01-31T18:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-36084",
@@ -3101,8 +3028,7 @@
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/U7ZYR3PIJ75N6U2IONJWCKZ5L2NKJTGR/",
           "https://ubuntu.com/security/notices/USN-5391-1"
         ],
-        "PublishedDate": "2021-07-01T03:15:00Z",
-        "LastModifiedDate": "2021-11-17T03:16:00Z"
+        "PublishedDate": "2021-07-01T03:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-36085",
@@ -3149,8 +3075,7 @@
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/U7ZYR3PIJ75N6U2IONJWCKZ5L2NKJTGR/",
           "https://ubuntu.com/security/notices/USN-5391-1"
         ],
-        "PublishedDate": "2021-07-01T03:15:00Z",
-        "LastModifiedDate": "2021-11-17T03:26:00Z"
+        "PublishedDate": "2021-07-01T03:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-36086",
@@ -3197,8 +3122,7 @@
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/U7ZYR3PIJ75N6U2IONJWCKZ5L2NKJTGR/",
           "https://ubuntu.com/security/notices/USN-5391-1"
         ],
-        "PublishedDate": "2021-07-01T03:15:00Z",
-        "LastModifiedDate": "2021-11-17T03:27:00Z"
+        "PublishedDate": "2021-07-01T03:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-36087",
@@ -3246,8 +3170,7 @@
           "https://lore.kernel.org/selinux/CAEN2sdqJKHvDzPnxS-J8grU8fSf32DDtx=kyh84OsCq_Vm+yaQ@mail.gmail.com/T/",
           "https://ubuntu.com/security/notices/USN-5391-1"
         ],
-        "PublishedDate": "2021-07-01T03:15:00Z",
-        "LastModifiedDate": "2021-11-17T14:05:00Z"
+        "PublishedDate": "2021-07-01T03:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-0563",
@@ -3284,8 +3207,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2022-0563",
           "https://security.netapp.com/advisory/ntap-20220331-0002/"
         ],
-        "PublishedDate": "2022-02-21T19:15:00Z",
-        "LastModifiedDate": "2022-06-03T14:15:00Z"
+        "PublishedDate": "2022-02-21T19:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-45346",
@@ -3322,8 +3244,7 @@
           "https://security.netapp.com/advisory/ntap-20220303-0001/",
           "https://sqlite.org/forum/forumpost/53de8864ba114bf6"
         ],
-        "PublishedDate": "2022-02-14T19:15:00Z",
-        "LastModifiedDate": "2022-07-01T11:48:00Z"
+        "PublishedDate": "2022-02-14T19:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-36690",
@@ -3354,8 +3275,7 @@
           "https://www.oracle.com/security-alerts/cpujan2022.html",
           "https://www.sqlite.org/forum/forumpost/718c0a8d17"
         ],
-        "PublishedDate": "2021-08-24T14:15:00Z",
-        "LastModifiedDate": "2022-05-03T16:04:00Z"
+        "PublishedDate": "2021-08-24T14:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-35737",
@@ -3393,8 +3313,7 @@
           "https://sqlite.org/releaselog/3_39_2.html",
           "https://www.sqlite.org/cves.html"
         ],
-        "PublishedDate": "2022-08-03T06:15:00Z",
-        "LastModifiedDate": "2022-09-15T18:15:00Z"
+        "PublishedDate": "2022-08-03T06:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-1304",
@@ -3434,8 +3353,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2022-1304",
           "https://ubuntu.com/security/notices/USN-5464-1"
         ],
-        "PublishedDate": "2022-04-14T21:15:00Z",
-        "LastModifiedDate": "2022-04-21T15:36:00Z"
+        "PublishedDate": "2022-04-14T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-2097",
@@ -3493,8 +3411,7 @@
           "https://ubuntu.com/security/notices/USN-5502-1",
           "https://www.openssl.org/news/secadv/20220705.txt"
         ],
-        "PublishedDate": "2022-07-05T11:15:00Z",
-        "LastModifiedDate": "2022-08-26T18:03:00Z"
+        "PublishedDate": "2022-07-05T11:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2007-6755",
@@ -3534,8 +3451,7 @@
           "https://access.redhat.com/security/cve/CVE-2007-6755",
           "https://www.schneier.com/blog/archives/2007/11/the_strange_sto.html"
         ],
-        "PublishedDate": "2013-10-11T22:55:00Z",
-        "LastModifiedDate": "2021-11-30T18:57:00Z"
+        "PublishedDate": "2013-10-11T22:55:00Z"
       },
       {
         "VulnerabilityID": "CVE-2010-0928",
@@ -3569,8 +3485,7 @@
           "https://access.redhat.com/security/cve/CVE-2010-0928",
           "https://exchange.xforce.ibmcloud.com/vulnerabilities/56750"
         ],
-        "PublishedDate": "2010-03-05T19:30:00Z",
-        "LastModifiedDate": "2017-08-17T01:32:00Z"
+        "PublishedDate": "2010-03-05T19:30:00Z"
       },
       {
         "VulnerabilityID": "CVE-2013-4392",
@@ -3605,8 +3520,7 @@
           "https://access.redhat.com/security/cve/CVE-2013-4392",
           "https://bugzilla.redhat.com/show_bug.cgi?id=859060"
         ],
-        "PublishedDate": "2013-10-28T22:55:00Z",
-        "LastModifiedDate": "2022-01-31T17:49:00Z"
+        "PublishedDate": "2013-10-28T22:55:00Z"
       },
       {
         "VulnerabilityID": "CVE-2020-13529",
@@ -3652,8 +3566,7 @@
           "https://ubuntu.com/security/notices/USN-5013-1",
           "https://ubuntu.com/security/notices/USN-5013-2"
         ],
-        "PublishedDate": "2021-05-10T16:15:00Z",
-        "LastModifiedDate": "2022-04-28T19:15:00Z"
+        "PublishedDate": "2021-05-10T16:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-29458",
@@ -3693,8 +3606,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2022-29458",
           "https://ubuntu.com/security/notices/USN-5477-1"
         ],
-        "PublishedDate": "2022-04-18T21:15:00Z",
-        "LastModifiedDate": "2022-04-27T13:14:00Z"
+        "PublishedDate": "2022-04-18T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-39537",
@@ -3734,8 +3646,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2021-39537",
           "https://ubuntu.com/security/notices/USN-5477-1"
         ],
-        "PublishedDate": "2021-09-20T16:15:00Z",
-        "LastModifiedDate": "2021-11-30T22:42:00Z"
+        "PublishedDate": "2021-09-20T16:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2013-4392",
@@ -3770,8 +3681,7 @@
           "https://access.redhat.com/security/cve/CVE-2013-4392",
           "https://bugzilla.redhat.com/show_bug.cgi?id=859060"
         ],
-        "PublishedDate": "2013-10-28T22:55:00Z",
-        "LastModifiedDate": "2022-01-31T17:49:00Z"
+        "PublishedDate": "2013-10-28T22:55:00Z"
       },
       {
         "VulnerabilityID": "CVE-2020-13529",
@@ -3817,8 +3727,7 @@
           "https://ubuntu.com/security/notices/USN-5013-1",
           "https://ubuntu.com/security/notices/USN-5013-2"
         ],
-        "PublishedDate": "2021-05-10T16:15:00Z",
-        "LastModifiedDate": "2022-04-28T19:15:00Z"
+        "PublishedDate": "2021-05-10T16:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-0563",
@@ -3855,8 +3764,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2022-0563",
           "https://security.netapp.com/advisory/ntap-20220331-0002/"
         ],
-        "PublishedDate": "2022-02-21T19:15:00Z",
-        "LastModifiedDate": "2022-06-03T14:15:00Z"
+        "PublishedDate": "2022-02-21T19:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2012-2663",
@@ -3887,8 +3795,7 @@
           "https://access.redhat.com/security/cve/CVE-2012-2663",
           "https://bugzilla.redhat.com/show_bug.cgi?id=826702"
         ],
-        "PublishedDate": "2014-02-15T14:57:00Z",
-        "LastModifiedDate": "2021-02-01T14:12:00Z"
+        "PublishedDate": "2014-02-15T14:57:00Z"
       },
       {
         "VulnerabilityID": "CVE-2007-5686",
@@ -3921,8 +3828,7 @@
           "http://www.vupen.com/english/advisories/2007/3474",
           "https://issues.rpath.com/browse/RPL-1825"
         ],
-        "PublishedDate": "2007-10-28T17:08:00Z",
-        "LastModifiedDate": "2018-10-15T21:45:00Z"
+        "PublishedDate": "2007-10-28T17:08:00Z"
       },
       {
         "VulnerabilityID": "CVE-2013-4235",
@@ -3963,8 +3869,7 @@
           "https://lists.apache.org/thread.html/rf9fa47ab66495c78bb4120b0754dd9531ca2ff0430f6685ac9b07772@%3Cdev.mina.apache.org%3E",
           "https://security-tracker.debian.org/tracker/CVE-2013-4235"
         ],
-        "PublishedDate": "2019-12-03T15:15:00Z",
-        "LastModifiedDate": "2021-02-25T17:15:00Z"
+        "PublishedDate": "2019-12-03T15:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2019-19882",
@@ -4004,8 +3909,7 @@
           "https://github.com/void-linux/void-packages/pull/17580",
           "https://security.gentoo.org/glsa/202008-09"
         ],
-        "PublishedDate": "2019-12-18T16:15:00Z",
-        "LastModifiedDate": "2020-08-25T15:15:00Z"
+        "PublishedDate": "2019-12-18T16:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-1304",
@@ -4045,8 +3949,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2022-1304",
           "https://ubuntu.com/security/notices/USN-5464-1"
         ],
-        "PublishedDate": "2022-04-14T21:15:00Z",
-        "LastModifiedDate": "2022-04-21T15:36:00Z"
+        "PublishedDate": "2022-04-14T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-0563",
@@ -4083,8 +3986,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2022-0563",
           "https://security.netapp.com/advisory/ntap-20220331-0002/"
         ],
-        "PublishedDate": "2022-02-21T19:15:00Z",
-        "LastModifiedDate": "2022-06-03T14:15:00Z"
+        "PublishedDate": "2022-02-21T19:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-29458",
@@ -4124,8 +4026,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2022-29458",
           "https://ubuntu.com/security/notices/USN-5477-1"
         ],
-        "PublishedDate": "2022-04-18T21:15:00Z",
-        "LastModifiedDate": "2022-04-27T13:14:00Z"
+        "PublishedDate": "2022-04-18T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-39537",
@@ -4165,8 +4066,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2021-39537",
           "https://ubuntu.com/security/notices/USN-5477-1"
         ],
-        "PublishedDate": "2021-09-20T16:15:00Z",
-        "LastModifiedDate": "2021-11-30T22:42:00Z"
+        "PublishedDate": "2021-09-20T16:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-29458",
@@ -4206,8 +4106,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2022-29458",
           "https://ubuntu.com/security/notices/USN-5477-1"
         ],
-        "PublishedDate": "2022-04-18T21:15:00Z",
-        "LastModifiedDate": "2022-04-27T13:14:00Z"
+        "PublishedDate": "2022-04-18T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-39537",
@@ -4247,8 +4146,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2021-39537",
           "https://ubuntu.com/security/notices/USN-5477-1"
         ],
-        "PublishedDate": "2021-09-20T16:15:00Z",
-        "LastModifiedDate": "2021-11-30T22:42:00Z"
+        "PublishedDate": "2021-09-20T16:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-29458",
@@ -4288,8 +4186,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2022-29458",
           "https://ubuntu.com/security/notices/USN-5477-1"
         ],
-        "PublishedDate": "2022-04-18T21:15:00Z",
-        "LastModifiedDate": "2022-04-27T13:14:00Z"
+        "PublishedDate": "2022-04-18T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-39537",
@@ -4329,8 +4226,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2021-39537",
           "https://ubuntu.com/security/notices/USN-5477-1"
         ],
-        "PublishedDate": "2021-09-20T16:15:00Z",
-        "LastModifiedDate": "2021-11-30T22:42:00Z"
+        "PublishedDate": "2021-09-20T16:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-41617",
@@ -4377,8 +4273,7 @@
           "https://www.oracle.com/security-alerts/cpuapr2022.html",
           "https://www.oracle.com/security-alerts/cpujul2022.html"
         ],
-        "PublishedDate": "2021-09-26T19:15:00Z",
-        "LastModifiedDate": "2022-07-25T18:17:00Z"
+        "PublishedDate": "2021-09-26T19:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2007-2243",
@@ -4412,8 +4307,7 @@
           "https://exchange.xforce.ibmcloud.com/vulnerabilities/33794",
           "https://security.netapp.com/advisory/ntap-20191107-0003/"
         ],
-        "PublishedDate": "2007-04-25T16:19:00Z",
-        "LastModifiedDate": "2017-07-29T01:31:00Z"
+        "PublishedDate": "2007-04-25T16:19:00Z"
       },
       {
         "VulnerabilityID": "CVE-2007-2768",
@@ -4444,8 +4338,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2007-2768",
           "https://security.netapp.com/advisory/ntap-20191107-0002/"
         ],
-        "PublishedDate": "2007-05-21T20:30:00Z",
-        "LastModifiedDate": "2021-04-01T15:32:00Z"
+        "PublishedDate": "2007-05-21T20:30:00Z"
       },
       {
         "VulnerabilityID": "CVE-2008-3234",
@@ -4475,8 +4368,7 @@
           "https://exchange.xforce.ibmcloud.com/vulnerabilities/44037",
           "https://www.exploit-db.com/exploits/6094"
         ],
-        "PublishedDate": "2008-07-18T16:41:00Z",
-        "LastModifiedDate": "2017-09-29T01:31:00Z"
+        "PublishedDate": "2008-07-18T16:41:00Z"
       },
       {
         "VulnerabilityID": "CVE-2016-20012",
@@ -4516,8 +4408,7 @@
           "https://utcc.utoronto.ca/~cks/space/blog/tech/SSHKeysAreInfoLeak",
           "https://www.openwall.com/lists/oss-security/2018/08/24/1"
         ],
-        "PublishedDate": "2021-09-15T20:15:00Z",
-        "LastModifiedDate": "2022-04-18T18:06:00Z"
+        "PublishedDate": "2021-09-15T20:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2018-15919",
@@ -4554,8 +4445,7 @@
           "https://access.redhat.com/security/cve/CVE-2018-15919",
           "https://security.netapp.com/advisory/ntap-20181221-0001/"
         ],
-        "PublishedDate": "2018-08-28T08:29:00Z",
-        "LastModifiedDate": "2019-03-07T16:29:00Z"
+        "PublishedDate": "2018-08-28T08:29:00Z"
       },
       {
         "VulnerabilityID": "CVE-2019-6110",
@@ -4595,8 +4485,7 @@
           "https://sintonen.fi/advisories/scp-client-multiple-vulnerabilities.txt",
           "https://www.exploit-db.com/exploits/46193/"
         ],
-        "PublishedDate": "2019-01-31T18:29:00Z",
-        "LastModifiedDate": "2020-08-24T17:37:00Z"
+        "PublishedDate": "2019-01-31T18:29:00Z"
       },
       {
         "VulnerabilityID": "CVE-2020-14145",
@@ -4643,8 +4532,7 @@
           "https://www.fzi.de/en/news/news/detail-en/artikel/fsa-2020-2-ausnutzung-eines-informationslecks-fuer-gezielte-mitm-angriffe-auf-ssh-clients/",
           "https://www.fzi.de/fileadmin/user_upload/2020-06-26-FSA-2020-2.pdf"
         ],
-        "PublishedDate": "2020-06-29T18:15:00Z",
-        "LastModifiedDate": "2022-04-28T19:34:00Z"
+        "PublishedDate": "2020-06-29T18:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2020-15778",
@@ -4685,8 +4573,7 @@
           "https://security.netapp.com/advisory/ntap-20200731-0007/",
           "https://www.openssh.com/security.html"
         ],
-        "PublishedDate": "2020-07-24T14:15:00Z",
-        "LastModifiedDate": "2021-06-22T14:47:00Z"
+        "PublishedDate": "2020-07-24T14:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-36368",
@@ -4722,8 +4609,7 @@
           "https://security-tracker.debian.org/tracker/CVE-2021-36368",
           "https://www.openssh.com/security.html"
         ],
-        "PublishedDate": "2022-03-13T00:15:00Z",
-        "LastModifiedDate": "2022-07-01T17:21:00Z"
+        "PublishedDate": "2022-03-13T00:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-41617",
@@ -4770,8 +4656,7 @@
           "https://www.oracle.com/security-alerts/cpuapr2022.html",
           "https://www.oracle.com/security-alerts/cpujul2022.html"
         ],
-        "PublishedDate": "2021-09-26T19:15:00Z",
-        "LastModifiedDate": "2022-07-25T18:17:00Z"
+        "PublishedDate": "2021-09-26T19:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2007-2243",
@@ -4805,8 +4690,7 @@
           "https://exchange.xforce.ibmcloud.com/vulnerabilities/33794",
           "https://security.netapp.com/advisory/ntap-20191107-0003/"
         ],
-        "PublishedDate": "2007-04-25T16:19:00Z",
-        "LastModifiedDate": "2017-07-29T01:31:00Z"
+        "PublishedDate": "2007-04-25T16:19:00Z"
       },
       {
         "VulnerabilityID": "CVE-2007-2768",
@@ -4837,8 +4721,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2007-2768",
           "https://security.netapp.com/advisory/ntap-20191107-0002/"
         ],
-        "PublishedDate": "2007-05-21T20:30:00Z",
-        "LastModifiedDate": "2021-04-01T15:32:00Z"
+        "PublishedDate": "2007-05-21T20:30:00Z"
       },
       {
         "VulnerabilityID": "CVE-2008-3234",
@@ -4868,8 +4751,7 @@
           "https://exchange.xforce.ibmcloud.com/vulnerabilities/44037",
           "https://www.exploit-db.com/exploits/6094"
         ],
-        "PublishedDate": "2008-07-18T16:41:00Z",
-        "LastModifiedDate": "2017-09-29T01:31:00Z"
+        "PublishedDate": "2008-07-18T16:41:00Z"
       },
       {
         "VulnerabilityID": "CVE-2016-20012",
@@ -4909,8 +4791,7 @@
           "https://utcc.utoronto.ca/~cks/space/blog/tech/SSHKeysAreInfoLeak",
           "https://www.openwall.com/lists/oss-security/2018/08/24/1"
         ],
-        "PublishedDate": "2021-09-15T20:15:00Z",
-        "LastModifiedDate": "2022-04-18T18:06:00Z"
+        "PublishedDate": "2021-09-15T20:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2018-15919",
@@ -4947,8 +4828,7 @@
           "https://access.redhat.com/security/cve/CVE-2018-15919",
           "https://security.netapp.com/advisory/ntap-20181221-0001/"
         ],
-        "PublishedDate": "2018-08-28T08:29:00Z",
-        "LastModifiedDate": "2019-03-07T16:29:00Z"
+        "PublishedDate": "2018-08-28T08:29:00Z"
       },
       {
         "VulnerabilityID": "CVE-2019-6110",
@@ -4988,8 +4868,7 @@
           "https://sintonen.fi/advisories/scp-client-multiple-vulnerabilities.txt",
           "https://www.exploit-db.com/exploits/46193/"
         ],
-        "PublishedDate": "2019-01-31T18:29:00Z",
-        "LastModifiedDate": "2020-08-24T17:37:00Z"
+        "PublishedDate": "2019-01-31T18:29:00Z"
       },
       {
         "VulnerabilityID": "CVE-2020-14145",
@@ -5036,8 +4915,7 @@
           "https://www.fzi.de/en/news/news/detail-en/artikel/fsa-2020-2-ausnutzung-eines-informationslecks-fuer-gezielte-mitm-angriffe-auf-ssh-clients/",
           "https://www.fzi.de/fileadmin/user_upload/2020-06-26-FSA-2020-2.pdf"
         ],
-        "PublishedDate": "2020-06-29T18:15:00Z",
-        "LastModifiedDate": "2022-04-28T19:34:00Z"
+        "PublishedDate": "2020-06-29T18:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2020-15778",
@@ -5078,8 +4956,7 @@
           "https://security.netapp.com/advisory/ntap-20200731-0007/",
           "https://www.openssh.com/security.html"
         ],
-        "PublishedDate": "2020-07-24T14:15:00Z",
-        "LastModifiedDate": "2021-06-22T14:47:00Z"
+        "PublishedDate": "2020-07-24T14:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-36368",
@@ -5115,8 +4992,7 @@
           "https://security-tracker.debian.org/tracker/CVE-2021-36368",
           "https://www.openssh.com/security.html"
         ],
-        "PublishedDate": "2022-03-13T00:15:00Z",
-        "LastModifiedDate": "2022-07-01T17:21:00Z"
+        "PublishedDate": "2022-03-13T00:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-41617",
@@ -5163,8 +5039,7 @@
           "https://www.oracle.com/security-alerts/cpuapr2022.html",
           "https://www.oracle.com/security-alerts/cpujul2022.html"
         ],
-        "PublishedDate": "2021-09-26T19:15:00Z",
-        "LastModifiedDate": "2022-07-25T18:17:00Z"
+        "PublishedDate": "2021-09-26T19:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2007-2243",
@@ -5198,8 +5073,7 @@
           "https://exchange.xforce.ibmcloud.com/vulnerabilities/33794",
           "https://security.netapp.com/advisory/ntap-20191107-0003/"
         ],
-        "PublishedDate": "2007-04-25T16:19:00Z",
-        "LastModifiedDate": "2017-07-29T01:31:00Z"
+        "PublishedDate": "2007-04-25T16:19:00Z"
       },
       {
         "VulnerabilityID": "CVE-2007-2768",
@@ -5230,8 +5104,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2007-2768",
           "https://security.netapp.com/advisory/ntap-20191107-0002/"
         ],
-        "PublishedDate": "2007-05-21T20:30:00Z",
-        "LastModifiedDate": "2021-04-01T15:32:00Z"
+        "PublishedDate": "2007-05-21T20:30:00Z"
       },
       {
         "VulnerabilityID": "CVE-2008-3234",
@@ -5261,8 +5134,7 @@
           "https://exchange.xforce.ibmcloud.com/vulnerabilities/44037",
           "https://www.exploit-db.com/exploits/6094"
         ],
-        "PublishedDate": "2008-07-18T16:41:00Z",
-        "LastModifiedDate": "2017-09-29T01:31:00Z"
+        "PublishedDate": "2008-07-18T16:41:00Z"
       },
       {
         "VulnerabilityID": "CVE-2016-20012",
@@ -5302,8 +5174,7 @@
           "https://utcc.utoronto.ca/~cks/space/blog/tech/SSHKeysAreInfoLeak",
           "https://www.openwall.com/lists/oss-security/2018/08/24/1"
         ],
-        "PublishedDate": "2021-09-15T20:15:00Z",
-        "LastModifiedDate": "2022-04-18T18:06:00Z"
+        "PublishedDate": "2021-09-15T20:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2018-15919",
@@ -5340,8 +5211,7 @@
           "https://access.redhat.com/security/cve/CVE-2018-15919",
           "https://security.netapp.com/advisory/ntap-20181221-0001/"
         ],
-        "PublishedDate": "2018-08-28T08:29:00Z",
-        "LastModifiedDate": "2019-03-07T16:29:00Z"
+        "PublishedDate": "2018-08-28T08:29:00Z"
       },
       {
         "VulnerabilityID": "CVE-2019-6110",
@@ -5381,8 +5251,7 @@
           "https://sintonen.fi/advisories/scp-client-multiple-vulnerabilities.txt",
           "https://www.exploit-db.com/exploits/46193/"
         ],
-        "PublishedDate": "2019-01-31T18:29:00Z",
-        "LastModifiedDate": "2020-08-24T17:37:00Z"
+        "PublishedDate": "2019-01-31T18:29:00Z"
       },
       {
         "VulnerabilityID": "CVE-2020-14145",
@@ -5429,8 +5298,7 @@
           "https://www.fzi.de/en/news/news/detail-en/artikel/fsa-2020-2-ausnutzung-eines-informationslecks-fuer-gezielte-mitm-angriffe-auf-ssh-clients/",
           "https://www.fzi.de/fileadmin/user_upload/2020-06-26-FSA-2020-2.pdf"
         ],
-        "PublishedDate": "2020-06-29T18:15:00Z",
-        "LastModifiedDate": "2022-04-28T19:34:00Z"
+        "PublishedDate": "2020-06-29T18:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2020-15778",
@@ -5471,8 +5339,7 @@
           "https://security.netapp.com/advisory/ntap-20200731-0007/",
           "https://www.openssh.com/security.html"
         ],
-        "PublishedDate": "2020-07-24T14:15:00Z",
-        "LastModifiedDate": "2021-06-22T14:47:00Z"
+        "PublishedDate": "2020-07-24T14:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-36368",
@@ -5508,8 +5375,7 @@
           "https://security-tracker.debian.org/tracker/CVE-2021-36368",
           "https://www.openssh.com/security.html"
         ],
-        "PublishedDate": "2022-03-13T00:15:00Z",
-        "LastModifiedDate": "2022-07-01T17:21:00Z"
+        "PublishedDate": "2022-03-13T00:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2007-5686",
@@ -5542,8 +5408,7 @@
           "http://www.vupen.com/english/advisories/2007/3474",
           "https://issues.rpath.com/browse/RPL-1825"
         ],
-        "PublishedDate": "2007-10-28T17:08:00Z",
-        "LastModifiedDate": "2018-10-15T21:45:00Z"
+        "PublishedDate": "2007-10-28T17:08:00Z"
       },
       {
         "VulnerabilityID": "CVE-2013-4235",
@@ -5584,8 +5449,7 @@
           "https://lists.apache.org/thread.html/rf9fa47ab66495c78bb4120b0754dd9531ca2ff0430f6685ac9b07772@%3Cdev.mina.apache.org%3E",
           "https://security-tracker.debian.org/tracker/CVE-2013-4235"
         ],
-        "PublishedDate": "2019-12-03T15:15:00Z",
-        "LastModifiedDate": "2021-02-25T17:15:00Z"
+        "PublishedDate": "2019-12-03T15:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2019-19882",
@@ -5625,8 +5489,7 @@
           "https://github.com/void-linux/void-packages/pull/17580",
           "https://security.gentoo.org/glsa/202008-09"
         ],
-        "PublishedDate": "2019-12-18T16:15:00Z",
-        "LastModifiedDate": "2020-08-25T15:15:00Z"
+        "PublishedDate": "2019-12-18T16:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2020-16156",
@@ -5666,8 +5529,7 @@
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/SZ32AJIV4RHJMLWLU5QULGKMMIHYOMDC/",
           "https://metacpan.org/pod/distribution/CPAN/scripts/cpan"
         ],
-        "PublishedDate": "2021-12-13T18:15:00Z",
-        "LastModifiedDate": "2022-04-01T13:26:00Z"
+        "PublishedDate": "2021-12-13T18:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2011-4116",
@@ -5706,8 +5568,7 @@
           "https://rt.cpan.org/Public/Bug/Display.html?id=69106",
           "https://seclists.org/oss-sec/2011/q4/238"
         ],
-        "PublishedDate": "2020-01-31T18:15:00Z",
-        "LastModifiedDate": "2020-02-05T22:10:00Z"
+        "PublishedDate": "2020-01-31T18:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2020-16156",
@@ -5747,8 +5608,7 @@
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/SZ32AJIV4RHJMLWLU5QULGKMMIHYOMDC/",
           "https://metacpan.org/pod/distribution/CPAN/scripts/cpan"
         ],
-        "PublishedDate": "2021-12-13T18:15:00Z",
-        "LastModifiedDate": "2022-04-01T13:26:00Z"
+        "PublishedDate": "2021-12-13T18:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2011-4116",
@@ -5787,8 +5647,7 @@
           "https://rt.cpan.org/Public/Bug/Display.html?id=69106",
           "https://seclists.org/oss-sec/2011/q4/238"
         ],
-        "PublishedDate": "2020-01-31T18:15:00Z",
-        "LastModifiedDate": "2020-02-05T22:10:00Z"
+        "PublishedDate": "2020-01-31T18:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2020-16156",
@@ -5828,8 +5687,7 @@
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/SZ32AJIV4RHJMLWLU5QULGKMMIHYOMDC/",
           "https://metacpan.org/pod/distribution/CPAN/scripts/cpan"
         ],
-        "PublishedDate": "2021-12-13T18:15:00Z",
-        "LastModifiedDate": "2022-04-01T13:26:00Z"
+        "PublishedDate": "2021-12-13T18:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2011-4116",
@@ -5868,8 +5726,7 @@
           "https://rt.cpan.org/Public/Bug/Display.html?id=69106",
           "https://seclists.org/oss-sec/2011/q4/238"
         ],
-        "PublishedDate": "2020-01-31T18:15:00Z",
-        "LastModifiedDate": "2020-02-05T22:10:00Z"
+        "PublishedDate": "2020-01-31T18:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2013-4392",
@@ -5904,8 +5761,7 @@
           "https://access.redhat.com/security/cve/CVE-2013-4392",
           "https://bugzilla.redhat.com/show_bug.cgi?id=859060"
         ],
-        "PublishedDate": "2013-10-28T22:55:00Z",
-        "LastModifiedDate": "2022-01-31T17:49:00Z"
+        "PublishedDate": "2013-10-28T22:55:00Z"
       },
       {
         "VulnerabilityID": "CVE-2020-13529",
@@ -5951,8 +5807,7 @@
           "https://ubuntu.com/security/notices/USN-5013-1",
           "https://ubuntu.com/security/notices/USN-5013-2"
         ],
-        "PublishedDate": "2021-05-10T16:15:00Z",
-        "LastModifiedDate": "2022-04-28T19:15:00Z"
+        "PublishedDate": "2021-05-10T16:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2013-4392",
@@ -5987,8 +5842,7 @@
           "https://access.redhat.com/security/cve/CVE-2013-4392",
           "https://bugzilla.redhat.com/show_bug.cgi?id=859060"
         ],
-        "PublishedDate": "2013-10-28T22:55:00Z",
-        "LastModifiedDate": "2022-01-31T17:49:00Z"
+        "PublishedDate": "2013-10-28T22:55:00Z"
       },
       {
         "VulnerabilityID": "CVE-2020-13529",
@@ -6034,8 +5888,7 @@
           "https://ubuntu.com/security/notices/USN-5013-1",
           "https://ubuntu.com/security/notices/USN-5013-2"
         ],
-        "PublishedDate": "2021-05-10T16:15:00Z",
-        "LastModifiedDate": "2022-04-28T19:15:00Z"
+        "PublishedDate": "2021-05-10T16:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2013-4392",
@@ -6070,8 +5923,7 @@
           "https://access.redhat.com/security/cve/CVE-2013-4392",
           "https://bugzilla.redhat.com/show_bug.cgi?id=859060"
         ],
-        "PublishedDate": "2013-10-28T22:55:00Z",
-        "LastModifiedDate": "2022-01-31T17:49:00Z"
+        "PublishedDate": "2013-10-28T22:55:00Z"
       },
       {
         "VulnerabilityID": "CVE-2020-13529",
@@ -6117,8 +5969,7 @@
           "https://ubuntu.com/security/notices/USN-5013-1",
           "https://ubuntu.com/security/notices/USN-5013-2"
         ],
-        "PublishedDate": "2021-05-10T16:15:00Z",
-        "LastModifiedDate": "2022-04-28T19:15:00Z"
+        "PublishedDate": "2021-05-10T16:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2005-2541",
@@ -6149,8 +6000,7 @@
           "https://access.redhat.com/security/cve/CVE-2005-2541",
           "https://lists.apache.org/thread.html/rc713534b10f9daeee2e0990239fa407e2118e4aa9e88a7041177497c@%3Cissues.guacamole.apache.org%3E"
         ],
-        "PublishedDate": "2005-08-10T04:00:00Z",
-        "LastModifiedDate": "2021-06-18T15:15:00Z"
+        "PublishedDate": "2005-08-10T04:00:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-0563",
@@ -6187,8 +6037,7 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2022-0563",
           "https://security.netapp.com/advisory/ntap-20220331-0002/"
         ],
-        "PublishedDate": "2022-02-21T19:15:00Z",
-        "LastModifiedDate": "2022-06-03T14:15:00Z"
+        "PublishedDate": "2022-02-21T19:15:00Z"
       }
     ]
   }
