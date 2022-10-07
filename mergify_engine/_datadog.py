@@ -22,7 +22,7 @@ class Signal(signals.SignalBase):
     ) -> None:
         if event.startswith("action"):
             tags = [
-                f"event:{event[7:]}",
+                f"event:{event.partition('action.')[-1]}",
             ]
             sub = repository.installation.subscription.has_feature(
                 subscription.Features.PRIVATE_REPOSITORY
