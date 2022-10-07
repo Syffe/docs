@@ -2296,7 +2296,7 @@ class PullRequest(BasePullRequest):
         with self._template_exceptions_mapping():
             used_variables = jinja2.meta.find_undeclared_variables(env.parse(template))
             infos = {}
-            for k in used_variables:
+            for k in sorted(used_variables):
                 if extra_variables and k in extra_variables:
                     infos[k] = extra_variables[k]
                 else:
