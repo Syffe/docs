@@ -115,15 +115,6 @@ pull_request_rules:
         method: rebase
         commit_message_template: null
 
-  - name: dependabot conflict fixer
-    conditions:
-      - author=dependabot[bot]
-      - conflict
-    actions:
-      comment:
-        bot_account: mergify-ci-bot
-        message: "@dependabot recreate"
-
   - name: dismiss reviews
     conditions: []
     actions:
