@@ -62,7 +62,9 @@ class TestUnQueueCommand(base.FunctionalTestBase):
 
         await self.create_comment_as_admin(p1["number"], "@mergifyio requeue")
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=p1["number"]
+        )
 
         comments = await self.get_issue_comments(p1["number"])
         assert (
@@ -88,7 +90,9 @@ class TestUnQueueCommand(base.FunctionalTestBase):
 
         await self.create_comment_as_admin(p1["number"], "@mergifyio unqueue")
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=p1["number"]
+        )
 
         await self.assert_merge_queue_contents(q, None, [])
 
@@ -120,7 +124,9 @@ class TestUnQueueCommand(base.FunctionalTestBase):
 
         await self.create_comment_as_admin(p1["number"], "@mergifyio requeue")
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=p1["number"]
+        )
 
         check = first(
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,

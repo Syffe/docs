@@ -27,8 +27,12 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
             p_nok["number"], f"@mergifyio copy {stable_branch}"
         )
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=p_ok["number"]
+        )
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=p_nok["number"]
+        )
         await self.run_engine()
 
         # only one copy done
@@ -73,7 +77,9 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
             pr["number"], f"@mergifyio copy {stable_branch}"
         )
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=pr["number"]
+        )
         await self.run_engine()
 
         # No copy done due to false sender
@@ -105,7 +111,9 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
             pr["number"], f"@mergifyio copy {stable_branch}"
         )
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=pr["number"]
+        )
         await self.run_engine()
 
         # Copy done successfully because sender is in the team
@@ -137,7 +145,9 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
             pr["number"], f"@mergifyio copy {stable_branch}"
         )
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=pr["number"]
+        )
         await self.run_engine()
 
         # No copy done
@@ -171,7 +181,9 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
             pr["number"], f"@mergifyio copy {stable_branch}"
         )
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=pr["number"]
+        )
         await self.run_engine()
 
         # No copy done
@@ -192,7 +204,9 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
             pr["number"], f"@mergifyio copy {stable_branch}"
         )
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=pr["number"]
+        )
         await self.run_engine()
 
         # Copy done successfully because sender is in the team

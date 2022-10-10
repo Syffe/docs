@@ -1395,7 +1395,9 @@ class TestQueueAction(base.FunctionalTestBase):
 
         await self.create_comment_as_admin(p1["number"], "@mergifyio unqueue")
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=p1["number"]
+        )
         await self.run_engine()
         await self.wait_for("pull_request", {"action": "opened"})
         tmp_pull_2 = await self.get_pull(
@@ -2643,7 +2645,9 @@ class TestQueueAction(base.FunctionalTestBase):
         assert mq_pr_number is not None
         await self.create_comment_as_admin(mq_pr_number, "@mergifyio update")
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=mq_pr_number
+        )
         comments = await self.get_issue_comments(mq_pr_number)
         assert (
             "Command not allowed on merge queue pull request." == comments[-1]["body"]
@@ -2651,7 +2655,9 @@ class TestQueueAction(base.FunctionalTestBase):
 
         await self.create_comment_as_admin(mq_pr_number, "@mergifyio refresh")
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=mq_pr_number
+        )
         comments = await self.get_issue_comments(mq_pr_number)
         assert (
             f"""> refresh

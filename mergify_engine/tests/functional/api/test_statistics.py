@@ -226,9 +226,6 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
         with freeze_time("2022-08-18T12:00:00", tick=True):
             await self.run_full_engine()
 
-            await self.wait_for(
-                "check_suite", {"check_suite": {"conclusion": "success"}}
-            )
             await self.wait_for("pull_request", {"action": "closed"})
             await self.wait_for("pull_request", {"action": "closed"})
 
@@ -543,9 +540,6 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
         with freeze_time("2022-08-18T12:00:00", tick=True):
             await self.run_full_engine()
 
-            await self.wait_for(
-                "check_suite", {"check_suite": {"conclusion": "success"}}
-            )
             await self.wait_for("pull_request", {"action": "closed"})
             await self.wait_for("pull_request", {"action": "closed"})
 

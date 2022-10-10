@@ -174,6 +174,7 @@ class EventReader:
         app: httpx.AsyncClient,
         integration_id: int,
         repository_id: github_types.GitHubRepositoryIdType,
+        test_name: str,
     ) -> None:
         self._app = app
         self._session = http.AsyncClient()
@@ -181,7 +182,14 @@ class EventReader:
         self._counter = 0
 
         hostname = parse.urlparse(config.GITHUB_URL).hostname
-        self._namespace_endpoint = f"{config.TESTING_FORWARDER_ENDPOINT}/{hostname}/{integration_id}/{repository_id}"
+        self.base_event_forwarder_url = f"{config.TESTING_FORWARDER_ENDPOINT}/events/{hostname}/{integration_id}/{repository_id}/"
+        self.test_name = test_name.replace("/", "-")
+
+    def get_events_forwarder_url(self, test_id: typing.Optional[str] = None) -> str:
+        if test_id is None:
+            test_id = self.test_name
+
+        return f"{self.base_event_forwarder_url}{test_id}"
 
     async def aclose(self) -> None:
         await self.drain()
@@ -191,7 +199,7 @@ class EventReader:
         # NOTE(sileht): Drop any pending events still on the server
         r = await self._session.request(
             "DELETE",
-            self._namespace_endpoint,
+            self.get_events_forwarder_url(),
             content=FAKE_DATA,
             headers={"X-Hub-Signature": "sha1=" + FAKE_HMAC},
         )
@@ -205,6 +213,7 @@ class EventReader:
         expected_payload: typing.Any,
         timeout: float = 15 if RECORD else 2,
         forward_to_engine: bool = True,
+        test_id: typing.Optional[str] = None,
     ) -> None:
         LOG.log(
             42,
@@ -220,7 +229,7 @@ class EventReader:
                 event = self._handled_events.get_nowait()
                 await self._process_event(event, forward_to_engine)
             except asyncio.QueueEmpty:
-                for event in await self._get_events():
+                for event in await self._get_events(test_id=test_id):
                     await self._handled_events.put(event)
                 else:
                     if RECORD:
@@ -247,7 +256,9 @@ class EventReader:
         else:
             return bool(data == expected_data)
 
-    async def _get_events(self) -> typing.List[ForwardedEvent]:
+    async def _get_events(
+        self, test_id: typing.Optional[str] = None
+    ) -> typing.List[ForwardedEvent]:
         # NOTE(sileht): we use a counter to make each call unique in cassettes
         self._counter += 1
         return typing.cast(
@@ -255,7 +266,7 @@ class EventReader:
             (
                 await self._session.request(
                     "GET",
-                    f"{self._namespace_endpoint}?counter={self._counter}",
+                    f"{self.get_events_forwarder_url(test_id)}?counter={self._counter}",
                     content=FAKE_DATA,
                     headers={"X-Hub-Signature": "sha1=" + FAKE_HMAC},
                 )
@@ -273,6 +284,7 @@ class EventReader:
             extra = f"/{payload.get('state')}"
         else:
             extra = ""
+
         LOG.log(
             42,
             "EVENT RECEIVED %s/%s%s: %s",
@@ -477,6 +489,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
             self.app,
             self.RECORD_CONFIG["integration_id"],
             self.RECORD_CONFIG["repository_id"],
+            self.get_full_branch_name(),
         )
         await self._event_reader.drain()
 
@@ -657,8 +670,13 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
             "repository", {"action": "edited"}, forward_to_engine=forward_to_engine
         )
 
-    def get_full_branch_name(self, name: str) -> str:
-        return f"{self.RECORD_CONFIG['branch_prefix']}/{self._testMethodName}/{name}"
+    def get_full_branch_name(self, name: typing.Optional[str] = None) -> str:
+        if name is not None:
+            return (
+                f"{self.RECORD_CONFIG['branch_prefix']}/{self._testMethodName}/{name}"
+            )
+        else:
+            return f"{self.RECORD_CONFIG['branch_prefix']}/{self._testMethodName}"
 
     async def create_pr(
         self,
@@ -891,7 +909,10 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
                 "context": context,
             },
         )
-        await self.wait_for("status", {"state": state})
+        # There is no way to retrieve the current test name in a "status" event,
+        # so we need to retrieve it based on the head sha of the PR
+        # (the test-events-forwarder stores the event like that).
+        await self.wait_for("status", {"state": state}, test_id=pull["head"]["sha"])
 
     async def get_check_runs(
         self,
@@ -978,7 +999,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         response = await client.post(
             f"{self.url_origin}/issues/{pull_number}/comments", json={"body": message}
         )
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for("issue_comment", {"action": "created"}, test_id=pull_number)
         return typing.cast(int, response.json()["id"])
 
     async def create_comment_as_fork(

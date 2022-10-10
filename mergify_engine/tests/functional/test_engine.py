@@ -638,7 +638,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         }
         await self.setup_repo(yaml.dump(rules), files={"TESTING": "foobar"})
         p1 = await self.create_pr(files={"TESTING": "p1"})
-        await self.create_pr(files={"TESTING": "p2"})
+        p2 = await self.create_pr(files={"TESTING": "p2"})
         await self.merge_pull(p1["number"])
         await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
 
@@ -651,6 +651,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         await self.wait_for(
             "issue_comment",
             {"action": "created", "comment": {"body": "It conflict!"}},
+            test_id=p2["number"],
         )
 
     async def test_refresh_on_draft_conflict(self) -> None:
@@ -665,7 +666,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         }
         await self.setup_repo(yaml.dump(rules), files={"TESTING": "foobar"})
         p1 = await self.create_pr(files={"TESTING": "p1"})
-        await self.create_pr(files={"TESTING": "p2"}, draft=True)
+        p2 = await self.create_pr(files={"TESTING": "p2"}, draft=True)
         await self.merge_pull(p1["number"])
         await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
 
@@ -678,6 +679,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         await self.wait_for(
             "issue_comment",
             {"action": "created", "comment": {"body": "It conflict!"}},
+            test_id=p2["number"],
         )
 
     async def test_set_summary_with_broken_checks(self) -> None:
@@ -734,7 +736,9 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         p1 = await self.create_pr()
         await self.create_review_request(p1["number"], reviewers=["mergify-test4"])
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=p1["number"]
+        )
 
         # FIXME(sileht): This doesn't work anymore MRGFY-227
         # p2 = await self.create_pr()
@@ -811,7 +815,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
 
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for("issue_comment", {"action": "created"}, test_id=p["number"])
 
         comments = await self.get_issue_comments(p["number"])
         assert "it works" == comments[-1]["body"]
@@ -953,12 +957,16 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         prs = await self.create_conflicting_prs()
 
         await self.run_full_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=prs[1]["number"]
+        )
 
         await self.create_comment_as_admin(prs[1]["number"], "@mergifyio refresh")
 
         await self.run_full_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=prs[1]["number"]
+        )
 
         if base.RECORD:
             await asyncio.sleep(15)

@@ -350,7 +350,9 @@ superRP!"""
 
         await self.create_comment_as_admin(p2["number"], "@mergifyio update")
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=p2["number"]
+        )
         await self.wait_for("pull_request", {"action": "synchronize"})
         await self.run_engine()
 

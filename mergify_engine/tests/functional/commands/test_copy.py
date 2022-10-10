@@ -16,7 +16,7 @@ class TestCommandCopy(base.FunctionalTestBase):
             p["number"], f"@mergifyio copy {stable_branch} {feature_branch}"
         )
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for("issue_comment", {"action": "created"}, test_id=p["number"])
         await self.run_engine()
 
         pulls_stable = await self.get_pulls(

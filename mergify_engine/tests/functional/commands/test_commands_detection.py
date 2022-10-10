@@ -25,10 +25,12 @@ class TestCommandsDetection(base.FunctionalTestBase):
         )
         await self.run_engine()
 
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=p1["number"]
+        )
         assert await self.hide_comment(p1["number"], comment_id)
 
-        await self.wait_for("issue_comment", {"action": "edited"})
+        await self.wait_for("issue_comment", {"action": "edited"}, test_id=p1["number"])
         await self.run_full_engine()
 
         # NOTE(greesb): We could also just wait_for "issue_comment/created", and check
@@ -57,10 +59,14 @@ class TestCommandsDetection(base.FunctionalTestBase):
         )
         await self.run_engine()
 
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=p1["number"]
+        )
         await self.delete_comment(comment_id)
 
-        await self.wait_for("issue_comment", {"action": "deleted"})
+        await self.wait_for(
+            "issue_comment", {"action": "deleted"}, test_id=p1["number"]
+        )
 
         await self.run_engine()
 

@@ -14,14 +14,14 @@ class TestCommandBackport(base.FunctionalTestBase):
             p["number"], f"@mergifyio backport {stable_branch} {feature_branch}"
         )
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for("issue_comment", {"action": "created"}, test_id=p["number"])
         comments = await self.get_issue_comments(p["number"])
         assert len(comments) == 2, comments
         assert "Waiting for conditions" in comments[-1]["body"]
         await self.merge_pull(p["number"])
         await self.wait_for("pull_request", {"action": "closed"})
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "edited"})
+        await self.wait_for("issue_comment", {"action": "edited"}, test_id=p["number"])
 
         pulls_stable = await self.get_pulls(
             params={"state": "all", "base": stable_branch}
@@ -87,7 +87,7 @@ class TestCommandBackport(base.FunctionalTestBase):
         await self.wait_for("pull_request", {"action": "closed"})
 
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for("issue_comment", {"action": "created"}, test_id=p["number"])
 
         pulls = await self.get_pulls(params={"state": "all", "base": stable_branch})
         assert 1 == len(pulls)
@@ -117,12 +117,12 @@ class TestCommandBackport(base.FunctionalTestBase):
             p["number"], f"@mergifyio backport {stable_branch} {feature_branch}"
         )
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for("issue_comment", {"action": "created"}, test_id=p["number"])
 
         await self.merge_pull(p["number"])
         await self.wait_for("pull_request", {"action": "closed"})
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "edited"})
+        await self.wait_for("issue_comment", {"action": "edited"}, test_id=p["number"])
 
         pulls_stable = await self.get_pulls(
             params={"state": "all", "base": stable_branch}

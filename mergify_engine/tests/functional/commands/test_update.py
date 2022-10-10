@@ -7,7 +7,7 @@ class TestCommandUpdate(base.FunctionalTestBase):
         p = await self.create_pr()
         await self.create_comment_as_admin(p["number"], "@mergifyio update")
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for("issue_comment", {"action": "created"}, test_id=p["number"])
         comments = await self.get_issue_comments(p["number"])
         assert len(comments) == 2, comments
         assert "Nothing to do" in comments[-1]["body"]
@@ -19,7 +19,7 @@ class TestCommandUpdate(base.FunctionalTestBase):
         await self.wait_for("pull_request", {"action": "closed"})
         await self.create_comment_as_admin(p["number"], "@mergifyio update")
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for("issue_comment", {"action": "created"}, test_id=p["number"])
         comments = await self.get_issue_comments(p["number"])
         assert len(comments) == 2, comments
         assert "Nothing to do" in comments[-1]["body"]

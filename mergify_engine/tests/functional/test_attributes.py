@@ -90,7 +90,9 @@ class TestAttributes(base.FunctionalTestBase):
 
         with freeze_time("2021-05-30T14:00:00", tick=True):
             await self.run_full_engine()
-            await self.wait_for("issue_comment", {"action": "created"})
+            await self.wait_for(
+                "issue_comment", {"action": "created"}, test_id=pr["number"]
+            )
             comments = await self.get_issue_comments(pr["number"])
             self.assertEqual("it's time", comments[-1]["body"])
 
@@ -157,7 +159,9 @@ class TestAttributes(base.FunctionalTestBase):
         # Wednesday
         with freeze_time("2021-06-02T14:00:00", tick=True):
             await self.run_full_engine()
-            await self.wait_for("issue_comment", {"action": "created"})
+            await self.wait_for(
+                "issue_comment", {"action": "created"}, test_id=pr["number"]
+            )
             comments = await self.get_issue_comments(pr["number"])
             self.assertEqual("it's time", comments[-1]["body"])
 
@@ -189,7 +193,9 @@ class TestAttributes(base.FunctionalTestBase):
         # Monday 09:00 for NZST (Auckland)
         with freeze_time("2022-09-04T21:00:00+00:00", tick=True):
             await self.run_full_engine()
-            await self.wait_for("issue_comment", {"action": "created"})
+            await self.wait_for(
+                "issue_comment", {"action": "created"}, test_id=pr["number"]
+            )
             comments = await self.get_issue_comments(pr["number"])
             self.assertEqual("it's time", comments[-1]["body"])
 
@@ -302,7 +308,9 @@ class TestAttributes(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
         pr = await self.create_pr()
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=pr["number"]
+        )
         comments = await self.get_issue_comments(pr["number"])
         self.assertEqual("it's time", comments[-1]["body"])
 
@@ -339,7 +347,9 @@ class TestAttributes(base.FunctionalTestBase):
         await self.merge_pull_as_admin(pr_ahead["number"])
 
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=pr["number"]
+        )
 
         ctxt = await context.Context.create(self.repository_ctxt, pr)
         assert await ctxt.pull_request.draft
@@ -436,7 +446,9 @@ class TestAttributes(base.FunctionalTestBase):
 
         pr = await self.create_pr()
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=pr["number"]
+        )
         comments = await self.get_issue_comments(pr["number"])
         self.assertEqual("repository name full", comments[-1]["body"])
 
@@ -467,7 +479,9 @@ class TestAttributes(base.FunctionalTestBase):
 
         pr = await self.create_pr()
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=pr["number"]
+        )
         comments = await self.get_issue_comments(pr["number"])
         self.assertEqual("repository name full (wrong)", comments[-1]["body"])
 
@@ -498,7 +512,9 @@ class TestAttributes(base.FunctionalTestBase):
 
         pr = await self.create_pr()
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=pr["number"]
+        )
         comments = await self.get_issue_comments(pr["number"])
         self.assertEqual("repository name full (wrong)", comments[-1]["body"])
 
@@ -529,7 +545,9 @@ class TestAttributes(base.FunctionalTestBase):
 
         pr = await self.create_pr()
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=pr["number"]
+        )
         comments = await self.get_issue_comments(pr["number"])
         self.assertEqual("repository name short", comments[-1]["body"])
 
@@ -564,7 +582,9 @@ class TestAttributes(base.FunctionalTestBase):
         await self.edit_pull(pr["number"], state="closed")
 
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=pr["number"]
+        )
 
         comments = await self.get_issue_comments(pr["number"])
         self.assertEqual("and or pr", comments[-1]["body"])
@@ -584,7 +604,9 @@ class TestAttributes(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
         pr = await self.create_pr()
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=pr["number"]
+        )
         comments = await self.get_issue_comments(pr["number"])
         self.assertEqual("list commits not empty", comments[-1]["body"])
 
@@ -601,7 +623,9 @@ class TestAttributes(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
         pr = await self.create_pr(two_commits=False)
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=pr["number"]
+        )
 
         comments = await self.get_issue_comments(pr["number"])
         self.assertEqual("commits unverified", comments[-1]["body"])
@@ -619,7 +643,9 @@ class TestAttributes(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
         pr = await self.create_pr(two_commits=True)
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=pr["number"]
+        )
 
         comments = await self.get_issue_comments(pr["number"])
         self.assertEqual("commits unverified", comments[-1]["body"])
@@ -640,7 +666,9 @@ class TestAttributes(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
         pr = await self.create_pr(two_commits=True)
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=pr["number"]
+        )
 
         comments = await self.get_issue_comments(pr["number"])
         self.assertEqual("commits unverified", comments[-1]["body"])
@@ -676,7 +704,9 @@ class TestAttributes(base.FunctionalTestBase):
         ctxt = await context.Context.create(self.repository_ctxt, pr)
         assert len(await ctxt.commits) == 1
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=pr["number"]
+        )
         comments = await self.get_issue_comments(pr["number"])
         self.assertEqual("commits verified", comments[-1]["body"])
 
@@ -695,7 +725,9 @@ class TestAttributes(base.FunctionalTestBase):
         ctxt = await context.Context.create(self.repository_ctxt, pr)
         assert len(await ctxt.commits) == 2
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=pr["number"]
+        )
         comments = await self.get_issue_comments(pr["number"])
         self.assertEqual("commits verified", comments[-1]["body"])
 
@@ -717,7 +749,9 @@ class TestAttributes(base.FunctionalTestBase):
             pr["number"], "you shouldn't write `foo` here", path="yves_testing_file"
         )
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=pr["number"]
+        )
         comments = await self.get_issue_comments(pr["number"])
         assert "review-threads-resolved comment" == comments[-1]["body"]
         review_threads = await self.get_review_comments(pull_number=pr["number"])
@@ -763,7 +797,9 @@ class TestAttributes(base.FunctionalTestBase):
             pr["number"], "...maybe too original", comment_id
         )
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=pr["number"]
+        )
         comments = await self.get_issue_comments(pr["number"])
         assert "review-threads-unresolved comment" == comments[-1]["body"]
         review_threads = await self.get_review_comments(pull_number=pr["number"])
@@ -834,7 +870,9 @@ class TestAttributes(base.FunctionalTestBase):
         ]["reviewThreads"]["edges"][2]["node"]
         assert thread_2["isResolved"]
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=pr["number"]
+        )
         comments = await self.get_issue_comments(pr["number"])
         assert "conditions matched; s u c c e s s" == comments[-1]["body"]
 
@@ -877,7 +915,9 @@ class TestAttributes(base.FunctionalTestBase):
         ]["reviewThreads"]["edges"][0]["node"]
         assert thread["isResolved"]
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"})
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=pr["number"]
+        )
         comments = await self.get_issue_comments(pr["number"])
         assert "review-thread-resolved comment showing success" == comments[-1]["body"]
 
