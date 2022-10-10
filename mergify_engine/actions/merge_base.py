@@ -17,16 +17,21 @@ FORBIDDEN_MERGE_COMMITS_MSG = "Merge commits are not allowed on this repository.
 FORBIDDEN_SQUASH_MERGE_MSG = "Squash merges are not allowed on this repository."
 FORBIDDEN_REBASE_MERGE_MSG = "Rebase merges are not allowed on this repository."
 
-T = typing.TypeVar("T")
+QueueT = typing.TypeVar("QueueT")
+QueueFreezeT = typing.TypeVar("QueueFreezeT")
 
 
-class MergeBaseAction(actions.BackwardCompatAction, abc.ABC, typing.Generic[T]):
+class MergeBaseAction(
+    actions.BackwardCompatAction,
+    abc.ABC,
+    typing.Generic[QueueT, QueueFreezeT],
+):
     @abc.abstractmethod
     async def send_signal(
         self,
         ctxt: context.Context,
         rule: "rules.EvaluatedRule",
-        q: T,
+        queue: QueueT,
     ) -> None:
         pass
 
@@ -35,7 +40,8 @@ class MergeBaseAction(actions.BackwardCompatAction, abc.ABC, typing.Generic[T]):
         self,
         ctxt: context.Context,
         rule: "rules.EvaluatedRule",
-        queue: T,
+        queue: QueueT,
+        queue_freeze: QueueFreezeT | None,
     ) -> check_api.Result:
         pass
 
@@ -43,7 +49,8 @@ class MergeBaseAction(actions.BackwardCompatAction, abc.ABC, typing.Generic[T]):
         self,
         ctxt: context.Context,
         rule: "rules.EvaluatedRule",
-        queue: T,
+        queue: QueueT,
+        queue_freeze: QueueFreezeT | None,
         merge_bot_account: typing.Optional[github_types.GitHubLogin],
     ) -> check_api.Result:
         if self.config["method"] != "rebase" or ctxt.pull["rebaseable"]:
@@ -86,7 +93,9 @@ class MergeBaseAction(actions.BackwardCompatAction, abc.ABC, typing.Generic[T]):
                 if ctxt.pull["merged"]:
                     ctxt.log.info("merged in the meantime")
                 else:
-                    return await self._handle_merge_error(e, ctxt, rule, queue)
+                    return await self._handle_merge_error(
+                        e, ctxt, rule, queue, queue_freeze
+                    )
             else:
                 await self.send_signal(ctxt, rule, queue)
                 ctxt.log.info("merged")
@@ -136,7 +145,9 @@ class MergeBaseAction(actions.BackwardCompatAction, abc.ABC, typing.Generic[T]):
                 if ctxt.pull["merged"]:
                     ctxt.log.info("merged in the meantime")
                 else:
-                    return await self._handle_merge_error(e, ctxt, rule, queue)
+                    return await self._handle_merge_error(
+                        e, ctxt, rule, queue, queue_freeze
+                    )
             else:
                 await self.send_signal(ctxt, rule, queue)
                 await ctxt.update(wait_merged=True)
@@ -157,7 +168,8 @@ class MergeBaseAction(actions.BackwardCompatAction, abc.ABC, typing.Generic[T]):
         e: http.HTTPClientSideError,
         ctxt: context.Context,
         rule: "rules.EvaluatedRule",
-        queue: T,
+        queue: QueueT,
+        queue_freeze: QueueFreezeT | None,
     ) -> check_api.Result:
         if "Head branch was modified" in e.message:
             ctxt.log.info(
@@ -165,7 +177,7 @@ class MergeBaseAction(actions.BackwardCompatAction, abc.ABC, typing.Generic[T]):
                 status_code=e.status_code,
                 error_message=e.message,
             )
-            return await self.get_queue_status(ctxt, rule, queue)
+            return await self.get_queue_status(ctxt, rule, queue, queue_freeze)
         elif "Base branch was modified" in e.message:
             # NOTE(sileht): The base branch was modified between pull.is_behind call and
             # here, usually by something not merged by mergify. So we need sync it again
@@ -175,7 +187,7 @@ class MergeBaseAction(actions.BackwardCompatAction, abc.ABC, typing.Generic[T]):
                 status_code=e.status_code,
                 error_message=e.message,
             )
-            return await self.get_queue_status(ctxt, rule, queue)
+            return await self.get_queue_status(ctxt, rule, queue, queue_freeze)
 
         elif e.status_code == 405:
             if REQUIRED_STATUS_RE.match(e.message):

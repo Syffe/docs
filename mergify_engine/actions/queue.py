@@ -30,7 +30,7 @@ if typing.TYPE_CHECKING:
     from mergify_engine import rules
 
 
-class QueueAction(merge_base.MergeBaseAction[merge_train.Train]):
+class QueueAction(merge_base.MergeBaseAction[merge_train.Train, freeze.QueueFreeze]):
     flags = (
         actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
         | actions.ActionFlag.SUCCESS_IS_FINAL_STATE
@@ -97,6 +97,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         ctxt: context.Context,
         rule: "rules.EvaluatedRule",
         queue: merge_train.Train,
+        queue_freeze: freeze.QueueFreeze | None,
         car: merge_train.TrainCar | None,
         merge_bot_account: typing.Optional[github_types.GitHubLogin],
     ) -> check_api.Result:
@@ -143,7 +144,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 json={"sha": newsha},
             )
         except http.HTTPClientSideError as e:  # pragma: no cover
-            return await self._handle_merge_error(e, ctxt, rule, queue)
+            return await self._handle_merge_error(e, ctxt, rule, queue, queue_freeze)
 
         for embarked_pull in car.still_queued_embarked_pulls.copy():
             other_ctxt = await queue.repository.get_pull_request_context(
@@ -393,21 +394,21 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     rule.get_signal_trigger(),
                 )
                 try:
-                    qf = await freeze.QueueFreeze.get(
-                        ctxt.repository, self.config["name"]
-                    )
+                    qf = await self._get_current_queue_freeze(ctxt)
                     if await self._should_be_merged(ctxt, q, qf):
                         if (
                             self.queue_rule.config["queue_branch_merge_method"]
                             == "fast-forward"
                         ):
                             result = await self._queue_branch_merge(
-                                ctxt, rule, q, car, merge_bot_account
+                                ctxt, rule, q, qf, car, merge_bot_account
                             )
                         elif (
                             self.queue_rule.config["queue_branch_merge_method"] is None
                         ):
-                            result = await self._merge(ctxt, rule, q, merge_bot_account)
+                            result = await self._merge(
+                                ctxt, rule, q, qf, merge_bot_account
+                            )
                         else:
                             raise RuntimeError(
                                 f"Unsupported queue_branch_merge_method: {self.queue_rule.config['queue_branch_merge_method']}"
@@ -512,7 +513,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 if await self._should_be_cancel(ctxt, rule, q):
                     result = actions.CANCELLED_CHECK_REPORT
                 else:
-                    result = await self.get_queue_status(ctxt, rule, q)
+                    qf = await self._get_current_queue_freeze(ctxt)
+                    result = await self.get_queue_status(ctxt, rule, q, qf)
             else:
                 result = await self.get_unqueue_status(ctxt, q)
 
@@ -562,6 +564,13 @@ Then, re-embark the pull request into the merge queue by posting the comment
             self.config["priority"]
             + self.queue_rule.config["priority"] * queue.QUEUE_PRIORITY_OFFSET,
         )
+
+    async def _get_current_queue_freeze(
+        self, ctxt: context.Context
+    ) -> freeze.QueueFreeze | None:
+        # FIXME(sileht): we should also check for queue freeze on queue with higher priority
+        # https://linear.app/mergify/issue/MRGFY-1604/pull-request-got-merged-during-a-freeze
+        return await freeze.QueueFreeze.get(ctxt.repository, self.config["name"])
 
     async def get_unqueue_status(
         self, ctxt: context.Context, q: merge_train.Train
@@ -615,17 +624,17 @@ Then, re-embark the pull request into the merge queue by posting the comment
     async def _should_be_merged(
         self,
         ctxt: context.Context,
-        q: merge_train.Train,
-        qf: typing.Optional[freeze.QueueFreeze],
+        queue: merge_train.Train,
+        queue_freeze: typing.Optional[freeze.QueueFreeze],
     ) -> bool:
 
-        if qf is not None:
+        if queue_freeze is not None:
             return False
 
-        if not await q.is_first_pull(ctxt):
+        if not await queue.is_first_pull(ctxt):
             return False
 
-        car = q.get_car(ctxt)
+        car = queue.get_car(ctxt)
         if car is None:
             return False
 
@@ -668,13 +677,13 @@ Then, re-embark the pull request into the merge queue by posting the comment
         self,
         ctxt: context.Context,
         rule: "rules.EvaluatedRule",
-        q: merge_train.Train,
-        qf: typing.Optional[freeze.QueueFreeze] = None,
+        queue: merge_train.Train,
+        queue_freeze: freeze.QueueFreeze | None,
     ) -> check_api.Result:
-        if qf is not None:
-            title = f'The queue "{qf.name}" is currently frozen, for the following reason: {qf.reason}'
+        if queue_freeze is not None:
+            title = f'The queue "{queue_freeze.name}" is currently frozen, for the following reason: {queue_freeze.reason}'
         else:
-            position, _ = q.find_embarked_pull(ctxt.pull["number"])
+            position, _ = queue.find_embarked_pull(ctxt.pull["number"])
             if position is None:
                 ctxt.log.error("expected queued pull request not found in queue")
                 title = "The pull request is queued to be merged"
@@ -682,14 +691,17 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 _ord = utils.to_ordinal_numeric(position + 1)
                 title = f"The pull request is the {_ord} in the queue to be merged"
 
-        summary = await q.get_pull_summary(ctxt, self.queue_rule, pull_rule=rule)
+        summary = await queue.get_pull_summary(ctxt, self.queue_rule, pull_rule=rule)
 
         return check_api.Result(check_api.Conclusion.PENDING, title, summary)
 
     async def send_signal(
-        self, ctxt: context.Context, rule: "rules.EvaluatedRule", q: merge_train.Train
+        self,
+        ctxt: context.Context,
+        rule: "rules.EvaluatedRule",
+        queue: merge_train.Train,
     ) -> None:
-        _, embarked_pull = q.find_embarked_pull(ctxt.pull["number"])
+        _, embarked_pull = queue.find_embarked_pull(ctxt.pull["number"])
         if embarked_pull is None:
             raise RuntimeError("Queue pull request with no embarked_pull")
         await signals.send(

@@ -41,7 +41,7 @@ def DeprecatedOption(
     return validator
 
 
-class MergeAction(merge_base.MergeBaseAction[None]):
+class MergeAction(merge_base.MergeBaseAction[None, None]):
     flags = (
         actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
         | actions.ActionFlag.SUCCESS_IS_FINAL_STATE
@@ -103,7 +103,7 @@ class MergeAction(merge_base.MergeBaseAction[None]):
         if report is not None:
             return report
 
-        return await self._merge(ctxt, rule, None, merge_bot_account)
+        return await self._merge(ctxt, rule, None, None, merge_bot_account)
 
     async def cancel(
         self, ctxt: context.Context, rule: "rules.EvaluatedRule"
@@ -115,13 +115,17 @@ class MergeAction(merge_base.MergeBaseAction[None]):
         ctxt: context.Context,
         rule: "rules.EvaluatedRule",
         queue: None,
+        queue_freeze: None,
     ) -> check_api.Result:
         title = "The pull request will be merged soon"
         summary = ""
         return check_api.Result(check_api.Conclusion.PENDING, title, summary)
 
     async def send_signal(
-        self, ctxt: context.Context, rule: "rules.EvaluatedRule", queue: None
+        self,
+        ctxt: context.Context,
+        rule: "rules.EvaluatedRule",
+        queue: None,
     ) -> None:
         await signals.send(
             ctxt.repository,
