@@ -2263,7 +2263,7 @@ class PullRequest(BasePullRequest):
 
     async def items(self) -> typing.Dict[str, ContextAttributeType]:
         d = {}
-        for k in self:
+        for k in sorted(self):
             d[k] = await getattr(self, k)
         return d
 
