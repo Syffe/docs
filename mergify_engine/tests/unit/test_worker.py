@@ -2610,3 +2610,50 @@ async def test_dedicated_multiple_processes(
     assert set(w_shared._dedicated_worker_tasks.keys()) == set()
     assert set(w1._dedicated_worker_tasks.keys()) == set()
     assert set(w2._dedicated_worker_tasks.keys()) == set()
+
+
+async def test_start_stop_cycle(
+    redis_links: redis_utils.RedisLinks,
+    logger_checker: None,
+    request: pytest.FixtureRequest,
+    event_loop: asyncio.BaseEventLoop,
+) -> None:
+    w = worker.Worker(
+        shared_stream_tasks_per_process=3,
+        idle_sleep_time=0.01,
+        dedicated_workers_spawner_idle_time=0.01,
+        dedicated_workers_syncer_idle_time=0.01,
+        dedicated_stream_processes=1,
+        process_index=0,
+    )
+    assert w._stopped.is_set()
+    assert w._stop_task is None
+
+    await w.start()
+
+    # NOTE(sileht): ensure it doesn't crash instantly
+    await asyncio.sleep(1)
+
+    assert len(w._shared_worker_tasks) == 3
+    assert len(w._dedicated_worker_tasks) == 0
+    assert w._stream_monitoring_task is not None
+    assert w._delayed_refresh_task is not None
+    assert w._dedicated_workers_spawner_task is not None
+    assert w._dedicated_workers_syncer_task is not None
+
+    assert not w._stopped.is_set()
+    assert w._stop_task is None
+
+    w.stop()
+
+    assert not w._stopped.is_set()
+    assert w._stop_task is not None
+
+    await w.wait_shutdown_complete()
+
+    assert w._stopped.is_set()
+    assert w._stop_task is None
+    assert w._stream_monitoring_task is None
+    assert w._delayed_refresh_task is None
+    assert w._dedicated_workers_spawner_task is None
+    assert w._dedicated_workers_syncer_task is None

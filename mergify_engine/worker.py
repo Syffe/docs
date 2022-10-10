@@ -974,6 +974,12 @@ WorkerServicesT = typing.Set[WorkerServiceT]
 AVAILABLE_WORKER_SERVICES = set(WorkerServiceT.__dict__["__args__"])
 
 
+def asyncio_event_set_by_default() -> asyncio.Event:
+    evt = asyncio.Event()
+    evt.set()
+    return evt
+
+
 @dataclasses.dataclass
 class Worker:
     idle_sleep_time: float = 0.42
@@ -996,6 +1002,9 @@ class Worker:
         init=False, default_factory=lambda: redis_utils.RedisLinks(name="worker")
     )
 
+    _stopped: asyncio.Event = dataclasses.field(
+        init=False, default_factory=asyncio_event_set_by_default
+    )
     _stop_task: asyncio.Task[None] | None = dataclasses.field(init=False, default=None)
 
     _shared_worker_tasks: typing.List[Task] = dataclasses.field(
@@ -1225,6 +1234,8 @@ class Worker:
         if self._stop_task is not None:
             raise RuntimeError("Worker can't be restarted")
 
+        self._stopped.clear()
+
         LOG.info(
             "worker process start",
             enabled_services=self.enabled_services,
@@ -1377,11 +1388,16 @@ class Worker:
 
         self._shared_worker_tasks = []
         self._dedicated_worker_tasks = {}
+        self._delayed_refresh_task = None
+        self._stream_monitoring_task = None
+        self._dedicated_workers_spawner_task = None
+        self._dedicated_workers_syncer_task = None
 
         LOG.info("redis finalizing")
         await self._redis_links.shutdown_all()
         LOG.info("redis finalized")
 
+        self._stopped.set()
         LOG.info("shutdown finished")
 
     @staticmethod
@@ -1404,6 +1420,7 @@ class Worker:
         self._stop_task = asyncio.create_task(self._shutdown(), name="shutdown")
 
     async def wait_shutdown_complete(self) -> None:
+        await self._stopped.wait()
         if self._stop_task:
             await self._stop_task
             self._stop_task = None
