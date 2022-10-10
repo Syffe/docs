@@ -78,8 +78,8 @@ async def fake_get_subscription(*args: typing.Any, **kwargs: typing.Any) -> mock
 
 async def stop_and_wait_worker(self: worker.Worker) -> None:
     self.stop()
-    await self._stopping.wait()
-    await self._stop_task
+    if self._stop_task is not None:
+        await self._stop_task
 
 
 FAKE_INSTALLATION = {
@@ -724,6 +724,7 @@ async def test_worker_start_redis_ping(
 
     w = worker.Worker(
         shared_stream_tasks_per_process=3,
+        idle_sleep_time=0.01,
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
         dedicated_workers_syncer_idle_time=0.01,
@@ -1314,6 +1315,7 @@ async def test_stream_processor_priority(
     assert 0 == len(await redis_links.stream.hgetall("attempts"))
 
     w = worker.Worker(
+        idle_sleep_time=0.01,
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
         shared_stream_tasks_per_process=1,
@@ -1389,6 +1391,7 @@ async def test_stream_processor_date_scheduling(
     assert 0 == len(await redis_links.stream.hgetall("attempts"))
 
     w = worker.Worker(
+        idle_sleep_time=0.01,
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
         shared_stream_tasks_per_process=1,
@@ -1771,6 +1774,7 @@ async def test_dedicated_worker_scaleup_scaledown(
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
 
     w = worker.Worker(
+        idle_sleep_time=0.01,
         shared_stream_tasks_per_process=3,
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
@@ -1850,7 +1854,7 @@ async def test_dedicated_worker_scaleup_scaledown(
         while (
             (await w._redis_links.stream.zcard("streams")) > 0
         ) and time.monotonic() - started_at < 10:
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(0.1)
 
     get_subscription.side_effect = fake_get_subscription_dedicated
     await push_and_wait()
@@ -1927,6 +1931,7 @@ async def test_dedicated_worker_process_scaleup_scaledown(
 
     w_dedicated = worker.Worker(
         enabled_services={"dedicated-stream"},
+        idle_sleep_time=0.01,
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
         dedicated_workers_syncer_idle_time=0.01,
@@ -1935,6 +1940,7 @@ async def test_dedicated_worker_process_scaleup_scaledown(
     w_shared = worker.Worker(
         enabled_services={"shared-stream"},
         shared_stream_tasks_per_process=3,
+        idle_sleep_time=0.01,
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
         dedicated_workers_syncer_idle_time=0.01,
@@ -2016,7 +2022,7 @@ async def test_dedicated_worker_process_scaleup_scaledown(
             (await w_shared._redis_links.stream.zcard("streams")) > 0
             and (await w_shared._redis_links.stream.zcard("streams")) > 0
         ) and time.monotonic() - started_at < 10:
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(0.1)
 
     get_subscription.side_effect = fake_get_subscription_dedicated
     await push_and_wait()
@@ -2114,6 +2120,7 @@ async def test_separate_dedicated_worker(
 
     shared_w = worker.Worker(
         shared_stream_tasks_per_process=3,
+        idle_sleep_time=0.01,
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
         enabled_services={"shared-stream"},
@@ -2122,6 +2129,7 @@ async def test_separate_dedicated_worker(
 
     dedicated_w = worker.Worker(
         shared_stream_tasks_per_process=3,
+        idle_sleep_time=0.01,
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
         enabled_services={"dedicated-stream"},
@@ -2200,7 +2208,7 @@ async def test_separate_dedicated_worker(
         while (
             (await redis_links.stream.zcard("streams")) > blocked_stream
         ) and time.monotonic() - started_at < 10:
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(0.1)
 
     get_subscription.side_effect = fake_get_subscription_dedicated
 
@@ -2240,7 +2248,7 @@ async def test_separate_dedicated_worker(
     side_effect=stop_and_wait_worker,
     autospec=True,
 )
-@mock.patch("mergify_engine.worker.Worker.loop_and_sleep_forever")
+@mock.patch("mergify_engine.worker.Task.loop_and_sleep_forever", autospec=True)
 def test_worker_start_all_tasks(
     loop_and_sleep_forever: mock.Mock,
     wait_shutdown_complete: mock.Mock,
@@ -2250,10 +2258,8 @@ def test_worker_start_all_tasks(
     delayed_refresh_task: mock.Mock,
     setup_signals: mock.Mock,
 ) -> None:
-    async def just_run_once(
-        name: str, idle_time: float, func: typing.Callable[[], typing.Awaitable[None]]
-    ) -> None:
-        await func()
+    async def just_run_once(self: worker.Task) -> None:
+        await self.func()
 
     loop_and_sleep_forever.side_effect = just_run_once
 
@@ -2276,7 +2282,7 @@ def test_worker_start_all_tasks(
     side_effect=stop_and_wait_worker,
     autospec=True,
 )
-@mock.patch("mergify_engine.worker.Worker.loop_and_sleep_forever")
+@mock.patch("mergify_engine.worker.Task.loop_and_sleep_forever", autospec=True)
 def test_worker_start_just_shared(
     loop_and_sleep_forever: mock.Mock,
     wait_shutdown_complete: mock.Mock,
@@ -2286,10 +2292,8 @@ def test_worker_start_just_shared(
     delayed_refresh_task: mock.Mock,
     setup_signals: mock.Mock,
 ) -> None:
-    async def just_run_once(
-        name: str, idle_time: float, func: typing.Callable[[], typing.Awaitable[None]]
-    ) -> None:
-        await func()
+    async def just_run_once(self: worker.Task) -> None:
+        await self.func()
 
     loop_and_sleep_forever.side_effect = just_run_once
 
@@ -2312,7 +2316,7 @@ def test_worker_start_just_shared(
     side_effect=stop_and_wait_worker,
     autospec=True,
 )
-@mock.patch("mergify_engine.worker.Worker.loop_and_sleep_forever")
+@mock.patch("mergify_engine.worker.Task.loop_and_sleep_forever", autospec=True)
 def test_worker_start_except_shared(
     loop_and_sleep_forever: mock.Mock,
     wait_shutdown_complete: mock.Mock,
@@ -2322,10 +2326,8 @@ def test_worker_start_except_shared(
     delayed_refresh_task: mock.Mock,
     setup_signals: mock.Mock,
 ) -> None:
-    async def just_run_once(
-        name: str, idle_time: float, func: typing.Callable[[], typing.Awaitable[None]]
-    ) -> None:
-        await func()
+    async def just_run_once(self: worker.Task) -> None:
+        await self.func()
 
     loop_and_sleep_forever.side_effect = just_run_once
 
@@ -2468,7 +2470,7 @@ async def test_dedicated_multiple_processes(
     w_shared = worker.Worker(
         enabled_services={"shared-stream"},
         shared_stream_tasks_per_process=3,
-        delayed_refresh_idle_time=0.01,
+        idle_sleep_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
         dedicated_workers_syncer_idle_time=0.01,
         dedicated_stream_processes=0,
@@ -2478,7 +2480,7 @@ async def test_dedicated_multiple_processes(
     w1 = worker.Worker(
         enabled_services={"dedicated-stream"},
         shared_stream_tasks_per_process=0,
-        delayed_refresh_idle_time=0.01,
+        idle_sleep_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
         dedicated_workers_syncer_idle_time=0.01,
         dedicated_stream_processes=2,
@@ -2490,6 +2492,7 @@ async def test_dedicated_multiple_processes(
         enabled_services={"dedicated-stream"},
         shared_stream_tasks_per_process=0,
         delayed_refresh_idle_time=0.01,
+        idle_sleep_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
         dedicated_workers_syncer_idle_time=0.01,
         dedicated_stream_processes=2,
@@ -2506,13 +2509,6 @@ async def test_dedicated_multiple_processes(
         await w2.wait_shutdown_complete()
 
     request.addfinalizer(lambda: event_loop.run_until_complete(cleanup()))
-
-    tracker = []
-
-    async def track_context(*args: typing.Any, **kwargs: typing.Any) -> None:
-        tracker.append(str(logs.WORKER_ID.get(None)))
-
-    run_engine.side_effect = track_context
 
     async def fake_get_subscription_dedicated(
         redis: redis_utils.RedisStream, owner_id: github_types.GitHubAccountIdType
@@ -2573,15 +2569,12 @@ async def test_dedicated_multiple_processes(
         while (
             await w_shared._redis_links.stream.zcard("streams")
         ) > 0 and time.monotonic() - started_at < 10:
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(0.1)
 
     get_subscription.side_effect = fake_get_subscription_dedicated
     await push_and_wait()
-    assert sorted(tracker) == [
-        "dedicated-1",
-        "dedicated-4446",
-        "shared-1",
-    ]
+    await push_and_wait()
+    await push_and_wait()
     assert set(w_shared._dedicated_worker_tasks.keys()) == set()
     assert set(w1._dedicated_worker_tasks.keys()) == {
         github_types.GitHubAccountIdType(1)
@@ -2589,35 +2582,19 @@ async def test_dedicated_multiple_processes(
     assert set(w2._dedicated_worker_tasks.keys()) == {
         github_types.GitHubAccountIdType(4446)
     }
-    tracker.clear()
 
     get_subscription.side_effect = fake_get_subscription_shared
     await push_and_wait()
     await push_and_wait()
-    assert sorted(tracker) == [
-        "shared-0",
-        "shared-0",
-        "shared-1",
-        "shared-1",
-        "shared-2",
-        "shared-2",
-    ]
+    await push_and_wait()
     assert set(w_shared._dedicated_worker_tasks.keys()) == set()
     assert set(w1._dedicated_worker_tasks.keys()) == set()
     assert set(w2._dedicated_worker_tasks.keys()) == set()
-    tracker.clear()
 
     get_subscription.side_effect = fake_get_subscription_dedicated
     await push_and_wait()
     await push_and_wait()
-    assert sorted(tracker) == [
-        "dedicated-1",
-        "dedicated-1",
-        "dedicated-4446",
-        "dedicated-4446",
-        "shared-1",
-        "shared-1",
-    ]
+    await push_and_wait()
     assert set(w_shared._dedicated_worker_tasks.keys()) == set()
     assert set(w1._dedicated_worker_tasks.keys()) == {
         github_types.GitHubAccountIdType(1)
@@ -2625,25 +2602,11 @@ async def test_dedicated_multiple_processes(
     assert set(w2._dedicated_worker_tasks.keys()) == {
         github_types.GitHubAccountIdType(4446)
     }
-    tracker.clear()
 
     get_subscription.side_effect = fake_get_subscription_shared
     await push_and_wait()
-    assert sorted(tracker) == [
-        "shared-0",
-        "shared-1",
-        "shared-2",
-    ]
-
     await push_and_wait()
-    assert sorted(tracker) == [
-        "shared-0",
-        "shared-0",
-        "shared-1",
-        "shared-1",
-        "shared-2",
-        "shared-2",
-    ]
+    await push_and_wait()
     assert set(w_shared._dedicated_worker_tasks.keys()) == set()
     assert set(w1._dedicated_worker_tasks.keys()) == set()
     assert set(w2._dedicated_worker_tasks.keys()) == set()

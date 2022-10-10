@@ -899,6 +899,71 @@ async def ping_redis(
     await r(redis.ping)()
 
 
+@dataclasses.dataclass
+class Task:
+    name: str
+    sleep_time: float
+    func: typing.Callable[[], typing.Awaitable[None]]
+
+    _task: asyncio.Task[None] = dataclasses.field(init=False)
+    _stopping: asyncio.Event = dataclasses.field(
+        init=False, default_factory=asyncio.Event
+    )
+
+    def __post_init__(self) -> None:
+        self._stopping.clear()
+        self._task = asyncio.create_task(
+            self.with_dedicated_sentry_hub(self.loop_and_sleep_forever()),
+            name=self.name,
+        )
+
+    def __hash__(self) -> int:
+        return hash(self._task)
+
+    def stop(self) -> None:
+        if self._stopping.is_set():
+            raise RuntimeError(f"Worker task `{self.name}` already stopped")
+        self._stopping.set()
+
+    def __await__(self) -> typing.Generator[None, None, None]:
+        yield from self._task
+
+    def cancel(self, msg: str) -> None:
+        self._task.cancel(msg=msg)
+
+    @staticmethod
+    async def with_dedicated_sentry_hub(coro: typing.Awaitable[None]) -> None:
+        with sentry_sdk.Hub(sentry_sdk.Hub.current):
+            await coro
+
+    async def loop_and_sleep_forever(self) -> None:
+        while not self._stopping.is_set():
+            try:
+                await self.func()
+            except asyncio.CancelledError:
+                LOG.info("%s task killed", self.name)
+                return
+            except redis_exceptions.ConnectionError:
+                statsd.increment("redis.client.connection.errors")
+                LOG.warning(
+                    "%s task lost Redis connection",
+                    self.name,
+                    exc_info=True,
+                )
+            except Exception:
+                LOG.error("%s task failed", self.name, exc_info=True)
+
+            try:
+                await asyncio.wait_for(self._stopping.wait(), timeout=self.sleep_time)
+            except asyncio.CancelledError:
+                LOG.info("%s task killed", self.name)
+                return
+            except asyncio.TimeoutError:
+                pass
+
+        LOG.debug("%s task exited", self.name)
+
+
 WorkerServiceT = typing.Literal[
     "shared-stream",
     "dedicated-stream",
@@ -913,6 +978,7 @@ AVAILABLE_WORKER_SERVICES = set(WorkerServiceT.__dict__["__args__"])
 class Worker:
     idle_sleep_time: float = 0.42
     shutdown_timeout: float = config.WORKER_SHUTDOWN_TIMEOUT
+    dedicated_workers_shutdown_timeout: float = 60.0
     shared_stream_tasks_per_process: int = config.SHARED_STREAM_TASKS_PER_PROCESS
     shared_stream_processes: int = config.SHARED_STREAM_PROCESSES
     dedicated_stream_processes: int = config.DEDICATED_STREAM_PROCESSES
@@ -930,33 +996,25 @@ class Worker:
         init=False, default_factory=lambda: redis_utils.RedisLinks(name="worker")
     )
 
-    _loop: asyncio.AbstractEventLoop = dataclasses.field(
-        init=False, default_factory=asyncio.get_running_loop
-    )
-    _stopping: asyncio.Event = dataclasses.field(
-        init=False, default_factory=asyncio.Event
-    )
+    _stop_task: asyncio.Task[None] | None = dataclasses.field(init=False, default=None)
 
-    _shared_worker_tasks: typing.List[asyncio.Task[None]] = dataclasses.field(
+    _shared_worker_tasks: typing.List[Task] = dataclasses.field(
         init=False, default_factory=list
     )
     _dedicated_worker_tasks: typing.Dict[
-        github_types.GitHubAccountIdType, asyncio.Task[None]
+        github_types.GitHubAccountIdType, Task
     ] = dataclasses.field(init=False, default_factory=dict)
-    _stream_monitoring_task: typing.Optional[asyncio.Task[None]] = dataclasses.field(
+
+    _stream_monitoring_task: Task | None = dataclasses.field(init=False, default=None)
+    _dedicated_workers_spawner_task: Task | None = dataclasses.field(
         init=False, default=None
     )
-    _dedicated_workers_spawner_task: typing.Optional[
-        asyncio.Task[None]
-    ] = dataclasses.field(init=False, default=None)
 
-    _dedicated_workers_syncer_task: typing.Optional[
-        asyncio.Task[None]
-    ] = dataclasses.field(init=False, default=None)
-
-    _delayed_refresh_task: typing.Optional[asyncio.Task[None]] = dataclasses.field(
+    _dedicated_workers_syncer_task: Task | None = dataclasses.field(
         init=False, default=None
     )
+
+    _delayed_refresh_task: Task | None = dataclasses.field(init=False, default=None)
     _owners_cache: OwnerLoginsCache = dataclasses.field(
         init=False, default_factory=OwnerLoginsCache
     )
@@ -1164,6 +1222,9 @@ class Worker:
         )
 
     async def start(self) -> None:
+        if self._stop_task is not None:
+            raise RuntimeError("Worker can't be restarted")
+
         LOG.info(
             "worker process start",
             enabled_services=self.enabled_services,
@@ -1173,12 +1234,10 @@ class Worker:
             shared_stream_processes=self.shared_stream_processes,
         )
 
-        self._stopping.clear()
-
         await ping_redis(self._redis_links.stream, "Stream")
         await ping_redis(self._redis_links.cache, "Cache")
 
-        self._dedicated_workers_syncer_task = self.create_task(
+        self._dedicated_workers_syncer_task = Task(
             "dedicated workers cache syncer",
             self.dedicated_workers_syncer_idle_time,
             self._sync_dedicated_workers_cache,
@@ -1194,7 +1253,7 @@ class Worker:
             )
             for worker_id in worker_ids:
                 self._shared_worker_tasks.append(
-                    self.create_task(
+                    Task(
                         f"worker {worker_id}",
                         self.idle_sleep_time,
                         functools.partial(
@@ -1212,7 +1271,7 @@ class Worker:
 
         if "dedicated-stream" in self.enabled_services:
             LOG.info("dedicated worker spawner starting")
-            self._dedicated_workers_spawner_task = self.create_task(
+            self._dedicated_workers_spawner_task = Task(
                 "dedicated workers spawner",
                 self.dedicated_workers_spawner_idle_time,
                 self.dedicated_workers_spawner_task,
@@ -1221,7 +1280,7 @@ class Worker:
 
         if "delayed-refresh" in self.enabled_services:
             LOG.info("delayed refresh starting")
-            self._delayed_refresh_task = self.create_task(
+            self._delayed_refresh_task = Task(
                 "delayed_refresh",
                 self.delayed_refresh_idle_time,
                 self.delayed_refresh_task,
@@ -1230,60 +1289,10 @@ class Worker:
 
         if "stream-monitoring" in self.enabled_services:
             LOG.info("monitoring starting")
-            self._stream_monitoring_task = self.create_task(
+            self._stream_monitoring_task = Task(
                 "monitoring", self.monitoring_idle_time, self.monitoring_task
             )
             LOG.info("monitoring started")
-
-    def create_task(
-        self,
-        name: str,
-        sleep_time: float,
-        func: typing.Callable[[], typing.Awaitable[None]],
-    ) -> asyncio.Task[typing.Any]:
-        return asyncio.create_task(
-            self.with_dedicated_sentry_hub(
-                self.loop_and_sleep_forever(name, sleep_time, func)
-            ),
-            name=name,
-        )
-
-    @staticmethod
-    async def with_dedicated_sentry_hub(coro: typing.Awaitable[None]) -> None:
-        with sentry_sdk.Hub(sentry_sdk.Hub.current):
-            await coro
-
-    async def loop_and_sleep_forever(
-        self,
-        task_name: str,
-        sleep_time: float,
-        func: typing.Callable[[], typing.Awaitable[None]],
-    ) -> None:
-        while not self._stopping.is_set():
-            try:
-                await func()
-            except asyncio.CancelledError:
-                LOG.info("%s task killed", task_name)
-                return
-            except redis_exceptions.ConnectionError:
-                statsd.increment("redis.client.connection.errors")
-                LOG.warning(
-                    "%s task lost Redis connection",
-                    task_name,
-                    exc_info=True,
-                )
-            except Exception:
-                LOG.error("%s task failed", task_name, exc_info=True)
-
-            try:
-                await asyncio.wait_for(self._stopping.wait(), timeout=sleep_time)
-            except asyncio.CancelledError:
-                LOG.info("%s task killed", task_name)
-                return
-            except asyncio.TimeoutError:
-                pass
-
-        LOG.debug("%s task exited", task_name)
 
     def get_my_dedicated_worker_ids_from_cache(
         self,
@@ -1304,7 +1313,6 @@ class Worker:
         to_stop = current_workers - expected_workers
         to_start = expected_workers - current_workers
 
-        shutdown_tasks: typing.List[asyncio.Task[None]] = []
         if to_stop:
             LOG.info(
                 "dedicated workers to stop",
@@ -1312,13 +1320,12 @@ class Worker:
                 process_index=self.process_index,
                 dedicated_stream_processes=self.dedicated_stream_processes,
             )
-        for owner_id in to_stop:
-            task = self._dedicated_worker_tasks[owner_id]
-            task.cancel(msg="dedicated worker shutdown")
-            shutdown_tasks.append(task)
 
-        if shutdown_tasks:
-            await asyncio.wait(shutdown_tasks)
+        tasks = [self._dedicated_worker_tasks[owner_id] for owner_id in to_stop]
+        if tasks:
+            await self.stop_wait_and_kill(
+                "old dedicated workers", tasks, self.dedicated_workers_shutdown_timeout
+            )
 
         for owner_id in to_stop:
             del self._dedicated_worker_tasks[owner_id]
@@ -1331,7 +1338,7 @@ class Worker:
                 dedicated_stream_processes=self.dedicated_stream_processes,
             )
         for owner_id in to_start:
-            self._dedicated_worker_tasks[owner_id] = self.create_task(
+            self._dedicated_worker_tasks[owner_id] = Task(
                 f"dedicated-{owner_id}",
                 self.idle_sleep_time,
                 functools.partial(self.dedicated_stream_worker_task, owner_id),
@@ -1346,27 +1353,27 @@ class Worker:
             )
 
     async def _shutdown(self) -> None:
-        LOG.info("shutdown start")
-        tasks = []
+        LOG.warning("shutdown start")
+
+        # Stop spawning new workers first
         if self._dedicated_workers_spawner_task is not None:
-            tasks.append(self._dedicated_workers_spawner_task)
-        if self._dedicated_workers_syncer_task is not None:
-            tasks.append(self._dedicated_workers_syncer_task)
+            self._dedicated_workers_spawner_task.stop()
+            await self._dedicated_workers_spawner_task
+
+        # then we can cleanup other tasks
+        tasks = []
         tasks.extend(self._shared_worker_tasks)
         tasks.extend(self._dedicated_worker_tasks.values())
+        if self._dedicated_workers_syncer_task is not None:
+            tasks.append(self._dedicated_workers_syncer_task)
         if self._delayed_refresh_task is not None:
             tasks.append(self._delayed_refresh_task)
         if self._stream_monitoring_task is not None:
             tasks.append(self._stream_monitoring_task)
 
-        LOG.info("workers and monitoring exiting", count=len(tasks))
-        _, pending = await asyncio.wait(tasks, timeout=self.shutdown_timeout)
-        if pending:
-            LOG.info("workers and monitoring being killed", count=len(pending))
-            for task in pending:
-                task.cancel(msg="shutdown")
-            await asyncio.wait(pending)
-        LOG.info("workers and monitoring exited", count=len(tasks))
+        await self.stop_wait_and_kill(
+            "workers and monitoring", tasks, self.shutdown_timeout
+        )
 
         self._shared_worker_tasks = []
         self._dedicated_worker_tasks = {}
@@ -1377,24 +1384,41 @@ class Worker:
 
         LOG.info("shutdown finished")
 
+    @staticmethod
+    async def stop_wait_and_kill(name: str, tasks: list[Task], timeout: float) -> None:
+        LOG.info(f"{name} exiting", count=len(tasks))
+        for task in tasks:
+            task.stop()
+        if tasks:
+            _, pendings = await asyncio.wait(tasks, timeout=timeout)
+            if pendings:
+                LOG.info(f"{name} being killed", count=len(pendings))
+                for pending in pendings:
+                    pending.cancel(msg="shutdown")
+                await asyncio.wait(pendings)
+        LOG.info(f"{name} exited", count=len(tasks))
+
     def stop(self) -> None:
-        self._stopping.set()
+        if self._stop_task is not None:
+            raise RuntimeError("Worker is already stopping")
         self._stop_task = asyncio.create_task(self._shutdown(), name="shutdown")
 
     async def wait_shutdown_complete(self) -> None:
-        await self._stopping.wait()
-        await self._stop_task
+        if self._stop_task:
+            await self._stop_task
+            self._stop_task = None
 
     def stop_with_signal(self, signame: str) -> None:
-        if not self._stopping.is_set():
+        if self._stop_task is None:
             LOG.info("got signal %s: cleanly shutdown workers", signame)
             self.stop()
         else:
             LOG.info("got signal %s: ignoring, shutdown already in process", signame)
 
     def setup_signals(self) -> None:
+        loop = asyncio.get_running_loop()
         for signame in ("SIGINT", "SIGTERM"):
-            self._loop.add_signal_handler(
+            loop.add_signal_handler(
                 getattr(signal, signame),
                 functools.partial(self.stop_with_signal, signame),
             )
