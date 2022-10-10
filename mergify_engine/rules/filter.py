@@ -662,7 +662,6 @@ class IncompleteChecksFilter(Filter[IncompleteChecksResult]):
         if not self.is_complete(op, attribute_name, ref_values_expanded):
             return IncompleteCheck
 
-        binary_op, iterable_op, _ = op
         return super()._eval_binary_op(
             op, attribute_name, attribute_values, ref_values_expanded
         )
