@@ -423,8 +423,7 @@ def parse(v: str) -> typing.Any:
     ):
         if (
             parser == Parser.LOGIN_AND_TEAMS
-            and value
-            and value[0] == "@"
+            and is_github_team_name(value)
             and op not in SIMPLE_OPERATORS
         ):
             raise ConditionParsingError(
