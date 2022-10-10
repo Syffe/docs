@@ -4,6 +4,8 @@ import typing
 import zoneinfo
 
 from freezegun import freeze_time
+import jinja2
+import jinja2.sandbox
 import pytest
 
 from mergify_engine import context
@@ -21,6 +23,20 @@ class FakePR(dict):  # type: ignore[type-arg]
             return self[k]
         except KeyError:
             raise context.PullRequestAttributeError(name=k)
+
+
+class AsyncFakePR:
+    def __init__(self, data: dict[str, typing.Any]) -> None:
+        self.data = data
+
+    async def __getattr__(self, k: typing.Any) -> typing.Any:
+        try:
+            return self.data[k]
+        except KeyError:
+            raise context.PullRequestAttributeError(name=k)
+
+    async def items(self) -> dict[str, typing.Any]:
+        return self.data
 
 
 async def test_binary() -> None:
@@ -1048,3 +1064,23 @@ async def test_schedule_with_timezone() -> None:
             )
             assert await f(get_scheduled_pr()) == next_refresh_dt
             frozen_time.move_to(next_refresh_dt)
+
+
+async def test_text_jinja_template(
+    jinja_environment: jinja2.sandbox.SandboxedEnvironment,
+) -> None:
+    template = filter.JinjaTemplateWrapper(jinja_environment.from_string("{{author}}"))
+    f = filter.BinaryFilter({"=": ("sender", template)})
+    assert await f(AsyncFakePR({"author": "foo", "sender": "foo"}))
+    assert not await f(AsyncFakePR({"author": "foo", "sender": "bar"}))
+
+
+async def test_regex_jinja_template(
+    jinja_environment: jinja2.sandbox.SandboxedEnvironment,
+) -> None:
+    template = filter.JinjaTemplateWrapper(
+        jinja_environment.from_string(r"{{author}} \d{6}")
+    )
+    f = filter.BinaryFilter({"~=": ("body", template)})
+    assert await f(AsyncFakePR({"author": "foo", "body": "hello foo 123456 !"}))
+    assert not await f(AsyncFakePR({"author": "foo", "body": "foo"}))

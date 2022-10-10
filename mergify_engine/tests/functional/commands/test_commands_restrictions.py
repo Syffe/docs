@@ -20,20 +20,12 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
         p_ok = await self.create_pr()
         p_nok = await self.create_pr(base=feature_branch)
 
-        await self.create_comment_as_admin(
-            p_ok["number"], f"@mergifyio copy {stable_branch}"
+        await self.create_command(
+            p_ok["number"], f"@mergifyio copy {stable_branch}", as_="admin"
         )
-        await self.create_comment_as_admin(
-            p_nok["number"], f"@mergifyio copy {stable_branch}"
+        await self.create_command(
+            p_nok["number"], f"@mergifyio copy {stable_branch}", as_="admin"
         )
-        await self.run_engine()
-        await self.wait_for(
-            "issue_comment", {"action": "created"}, test_id=p_ok["number"]
-        )
-        await self.wait_for(
-            "issue_comment", {"action": "created"}, test_id=p_nok["number"]
-        )
-        await self.run_engine()
 
         # only one copy done
         pulls_stable = await self.get_pulls(
@@ -73,14 +65,9 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
             test_branches=[stable_branch],
         )
         pr = await self.create_pr()
-        await self.create_comment_as_admin(
-            pr["number"], f"@mergifyio copy {stable_branch}"
+        await self.create_command(
+            pr["number"], f"@mergifyio copy {stable_branch}", as_="admin"
         )
-        await self.run_engine()
-        await self.wait_for(
-            "issue_comment", {"action": "created"}, test_id=pr["number"]
-        )
-        await self.run_engine()
 
         # No copy done due to false sender
         pulls_stable = await self.get_pulls(
@@ -107,14 +94,9 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
             test_branches=[stable_branch],
         )
         pr = await self.create_pr()
-        await self.create_comment_as_admin(
-            pr["number"], f"@mergifyio copy {stable_branch}"
+        await self.create_command(
+            pr["number"], f"@mergifyio copy {stable_branch}", as_="admin"
         )
-        await self.run_engine()
-        await self.wait_for(
-            "issue_comment", {"action": "created"}, test_id=pr["number"]
-        )
-        await self.run_engine()
 
         # Copy done successfully because sender is in the team
         pulls_stable = await self.get_pulls(
@@ -141,14 +123,9 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
             test_branches=[stable_branch],
         )
         pr = await self.create_pr()
-        await self.create_comment_as_admin(
-            pr["number"], f"@mergifyio copy {stable_branch}"
+        await self.create_command(
+            pr["number"], f"@mergifyio copy {stable_branch}", as_="admin"
         )
-        await self.run_engine()
-        await self.wait_for(
-            "issue_comment", {"action": "created"}, test_id=pr["number"]
-        )
-        await self.run_engine()
 
         # No copy done
         pulls_stable = await self.get_pulls(
@@ -177,14 +154,9 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
         pr = await self.create_pr()
 
         # Create command as non-admin user
-        await self.create_comment_as_fork(
-            pr["number"], f"@mergifyio copy {stable_branch}"
+        await self.create_command(
+            pr["number"], f"@mergifyio copy {stable_branch}", as_="fork"
         )
-        await self.run_engine()
-        await self.wait_for(
-            "issue_comment", {"action": "created"}, test_id=pr["number"]
-        )
-        await self.run_engine()
 
         # No copy done
         pulls_stable = await self.get_pulls(
@@ -200,14 +172,9 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
         assert "is not allowed to run commands" in comments[-1]["body"]
 
         # Create command as admin user
-        await self.create_comment_as_admin(
-            pr["number"], f"@mergifyio copy {stable_branch}"
+        await self.create_command(
+            pr["number"], f"@mergifyio copy {stable_branch}", as_="admin"
         )
-        await self.run_engine()
-        await self.wait_for(
-            "issue_comment", {"action": "created"}, test_id=pr["number"]
-        )
-        await self.run_engine()
 
         # Copy done successfully because sender is in the team
         pulls_stable = await self.get_pulls(
@@ -218,4 +185,63 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
         # Success comment
         comments = await self.get_issue_comments(pr["number"])
         assert len(comments) == 4
+        assert "Pull request copies have been created" in comments[-1]["body"]
+
+    async def test_jinja_template_condition_fail(self) -> None:
+        stable_branch = self.get_full_branch_name("stable/#3.1")
+        rules = {
+            "commands_restrictions": {
+                "copy": {
+                    "conditions": ["sender={{author}}"],
+                }
+            }
+        }
+        await self.setup_repo(
+            yaml.dump(rules),
+            test_branches=[stable_branch],
+        )
+        pr = await self.create_pr()
+
+        # Admin creates a command, he is NOT allowed to run it, as he is not the
+        # author
+        await self.create_command(
+            pr["number"], f"@mergifyio copy {stable_branch}", as_="admin"
+        )
+
+        pulls_stable = await self.get_pulls(
+            params={"state": "all", "base": stable_branch}
+        )
+        assert 0 == len(pulls_stable)
+
+        comments = await self.get_issue_comments(pr["number"])
+        assert len(comments) == 2
+        assert "Command disallowed due to [command restrictions]" in comments[1]["body"]
+
+    async def test_jinja_template_condition_success(self) -> None:
+        stable_branch = self.get_full_branch_name("stable/#3.1")
+        rules = {
+            "commands_restrictions": {
+                "copy": {
+                    "conditions": ["sender={{author}}"],
+                }
+            }
+        }
+        await self.setup_repo(
+            yaml.dump(rules),
+            test_branches=[stable_branch],
+        )
+        pr = await self.create_pr(as_="admin")
+
+        # Author of the PR creates a command, he is allowed to run it
+        await self.create_command(
+            pr["number"], f"@mergifyio copy {stable_branch}", as_="admin"
+        )
+
+        pulls_stable = await self.get_pulls(
+            params={"state": "all", "base": stable_branch}
+        )
+        assert 1 == len(pulls_stable)
+
+        comments = await self.get_issue_comments(pr["number"])
+        assert len(comments) == 2
         assert "Pull request copies have been created" in comments[-1]["body"]

@@ -33,6 +33,9 @@ A condition is a string that has the following format::
 - An ``operator`` is used to determine how the match between the pull request's
   ``attribute`` and the defined ``value`` occurs.
 
+- A ``value`` can be a simple expression to match with the pull request's
+  ``attribute``, or a :ref:`data type template` for more complex use cases.
+
 For example:
 
 - ``author=jd`` evaluates to true if the GitHub login of the author of the pull
@@ -48,6 +51,9 @@ For example:
   pull request.
 
 - ``-merged`` matches if the pull requested has not been merged.
+
+- ``sender={{ author }}`` evaluates to true if the GitHub login of the sender of
+  the command is the author of the pull request.
 
 .. important::
 

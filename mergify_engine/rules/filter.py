@@ -7,6 +7,8 @@ import operator
 import re
 import typing
 
+import jinja2
+
 from mergify_engine import date
 
 
@@ -96,11 +98,14 @@ FilterResultT = typing.TypeVar("FilterResultT")
 CompiledTreeT = typing.Callable[[GetAttrObjectT], typing.Awaitable[FilterResultT]]
 
 
+ValueCompilerT = typing.Callable[[typing.Any], typing.Any]
+
+
 UnaryOperatorT = typing.Callable[[typing.Any], FilterResultT]
 BinaryOperatorT = typing.Tuple[
     typing.Callable[[typing.Any, typing.Any], FilterResultT],
     typing.Callable[[typing.Iterable[object]], FilterResultT],
-    typing.Callable[[typing.Any], typing.Any],
+    ValueCompilerT,
 ]
 MultipleOperatorT = typing.Callable[..., FilterResultT]
 
@@ -259,7 +264,7 @@ class Filter(typing.Generic[FilterResultT]):
         attribute_values: typing.List[typing.Any],
         ref_values_expanded: typing.List[typing.Any],
     ) -> FilterResultT:
-        binary_op, iterable_op, compile_fn = op
+        binary_op, iterable_op, _ = op
         return iterable_op(
             binary_op(attribute_value, ref_value)
             for attribute_value in attribute_values
@@ -274,17 +279,26 @@ class Filter(typing.Generic[FilterResultT]):
         if len(nodes) != 2:
             raise InvalidArguments(nodes)
 
-        binary_op, iterable_op, compile_fn = op
-        try:
-            attribute_name, reference_value = (nodes[0], compile_fn(nodes[1]))
-        except Exception as e:
-            raise InvalidArguments(str(e))
+        attribute_name, reference_value = nodes
+        _, _, compile_fn = op
+        if isinstance(reference_value, JinjaTemplateWrapper):
+            reference_value.set_compile_func(compile_fn)
+        else:
+            try:
+                reference_value = compile_fn(reference_value)
+            except Exception as e:
+                raise InvalidArguments(str(e))
 
         async def _op(obj: GetAttrObjectT) -> FilterResultT:
+            nonlocal reference_value
             attribute_values = await self._find_attribute_values(obj, attribute_name)
             reference_value_expander = self.value_expanders.get(
                 attribute_name, self._to_list
             )
+
+            if isinstance(reference_value, JinjaTemplateWrapper):
+                reference_value = await reference_value.render_async(await obj.items())
+
             ref_values_expanded = reference_value_expander(reference_value)
             if inspect.iscoroutine(ref_values_expanded):
                 ref_values_expanded = await typing.cast(
@@ -718,3 +732,22 @@ class IncompleteChecksFilter(Filter[IncompleteChecksResult]):
                     if pending_result:
                         return False
         return True
+
+
+class JinjaTemplateWrapper:
+    def __init__(
+        self,
+        template: jinja2.Template,
+        compile_func: ValueCompilerT = _identity,
+    ) -> None:
+        self._template = template
+        self._compile_func = compile_func
+
+    def set_compile_func(self, compile_func: ValueCompilerT) -> None:
+        self._compile_func = compile_func
+
+    def render(self, data: dict[str, typing.Any]) -> typing.Any:
+        return self._compile_func(self._template.render(data))
+
+    async def render_async(self, data: dict[str, typing.Any]) -> typing.Any:
+        return self._compile_func(await self._template.render_async(data))

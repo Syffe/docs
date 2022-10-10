@@ -5,6 +5,9 @@ import re
 import string
 import typing
 
+import jinja2
+import jinja2.sandbox
+
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine.rules import filter
@@ -167,6 +170,10 @@ INVALID_BRANCH_CHARS = "~^: []\\"
 
 GITHUB_LOGIN_CHARS = string.ascii_letters + string.digits + "-[]"
 GITHUB_LOGIN_AND_TEAM_CHARS = GITHUB_LOGIN_CHARS + "@/"
+
+JINJA_ENV = jinja2.sandbox.SandboxedEnvironment(
+    undefined=jinja2.StrictUndefined, enable_async=True
+)
 
 
 def _to_dict(
@@ -437,6 +444,13 @@ def parse(v: str) -> typing.Any:
                 raise ConditionParsingError(f"{value} is not a number")
             return _to_dict(negate, True, attribute, op, number)
 
+        if is_jinja_template(value):
+            validate_jinja_template(value)
+            template = filter.JinjaTemplateWrapper(
+                JINJA_ENV.from_string(_unquote(value))
+            )
+            return _to_dict(negate, quantity, attribute, op, template)
+
         if op == REGEX_OPERATOR:
             try:
                 # TODO(sileht): we can keep the compiled version, so the
@@ -475,6 +489,17 @@ def parse(v: str) -> typing.Any:
         return _to_dict(negate, False, attribute, op, permission)
     else:
         raise RuntimeError(f"unhandled parser: {parser}")
+
+
+def is_jinja_template(value: str) -> bool:
+    return "{{" in value or "{%" in value or "{#" in value
+
+
+def validate_jinja_template(value: str) -> None:
+    try:
+        JINJA_ENV.parse(value)
+    except jinja2.exceptions.TemplateError:
+        raise ConditionParsingError("Invalid template")
 
 
 def is_github_team_name(value: str) -> bool:

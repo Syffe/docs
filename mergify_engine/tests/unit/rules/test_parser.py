@@ -8,6 +8,7 @@ import pytest
 
 from mergify_engine import date
 from mergify_engine import github_types
+from mergify_engine.rules import filter
 from mergify_engine.rules import parser
 
 
@@ -399,8 +400,30 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
     ),
 )
 @freeze_time(now)
-def test_search(line: str, result: typing.Any) -> None:
+def test_parse(line: str, result: typing.Any) -> None:
     assert result == parser.parse(line)
+
+
+@pytest.mark.parametrize(
+    "condition,expected_attribute,expected_operator,expected_rendering",
+    (
+        ("sender={{ author }}", "sender", "=", "foo"),
+        ("body='hello {{ author }}'", "body", "=", "hello foo"),
+        ("body~=hello {{ author }}", "body", "~=", "hello foo"),
+    ),
+)
+def test_parse_jinja_template(
+    condition: str,
+    expected_attribute: str,
+    expected_operator: str,
+    expected_rendering: str,
+) -> None:
+    result = parser.parse(condition)
+    assert expected_operator in result
+    attribute_name, template = result[expected_operator]
+    assert attribute_name == expected_attribute
+    assert isinstance(template, filter.JinjaTemplateWrapper)
+    assert template.render({"author": "foo"}) == expected_rendering
 
 
 @pytest.mark.parametrize(
@@ -452,9 +475,12 @@ def test_search(line: str, result: typing.Any) -> None:
         ("sender-permission=foo", "Permission must be one of"),
         ("author=foo bar", "Invalid GitHub login"),
         ("author=@team/foo/bar", "Invalid GitHub team name"),
+        ("author=foo/bar", "Invalid GitHub login"),
+        ("sender={{ author", "Invalid template"),
+        (r"sender={ author }", "Invalid GitHub login"),
     ),
 )
-def test_invalid(line: str, expected_error: str) -> None:
+def test_parse_invalid(line: str, expected_error: str) -> None:
     with pytest.raises(parser.ConditionParsingError, match=re.escape(expected_error)):
         parser.parse(line)
 
@@ -485,3 +511,20 @@ def test_validate_github_login(value: str) -> None:
         parser.ConditionParsingError, match=re.escape("Invalid GitHub login")
     ):
         parser.validate_github_login(value)
+
+
+@pytest.mark.parametrize(
+    ("value",),
+    (
+        (r"{{ author",),
+        (r"{{ foo bar }}",),
+        (r"{% for x in my_list %}{{x.foo}}{% wtf %}",),
+        (r"{% for x in my_list %}{{x.foo}}{% endfor %",),
+        (r"{# comment",),
+    ),
+)
+def test_validate_jinja_template(value: str) -> None:
+    with pytest.raises(
+        parser.ConditionParsingError, match=re.escape("Invalid template")
+    ):
+        parser.validate_jinja_template(value)

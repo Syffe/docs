@@ -3,6 +3,8 @@ import typing
 from unittest import mock
 
 import httpx
+import jinja2
+import jinja2.sandbox
 import pytest
 
 from mergify_engine import context
@@ -185,3 +187,10 @@ async def mergify_web_client() -> typing.AsyncGenerator[httpx.AsyncClient, None]
     finally:
         await client.aclose()
         await web_root.shutdown()
+
+
+@pytest.fixture
+async def jinja_environment() -> jinja2.sandbox.SandboxedEnvironment:
+    return jinja2.sandbox.SandboxedEnvironment(
+        undefined=jinja2.StrictUndefined, enable_async=True
+    )
