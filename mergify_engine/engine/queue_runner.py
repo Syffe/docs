@@ -53,7 +53,10 @@ async def handle(queue_rules: rules.QueueRules, ctxt: context.Context) -> None:
             await ctxt.repository.delete_branch_if_exists(ctxt.pull["head"]["ref"])
         return
 
-    if car.checks_conclusion != check_api.Conclusion.PENDING and ctxt.closed:
+    if (
+        car.train_car_state.queue_conditions_conclusion != check_api.Conclusion.PENDING
+        and ctxt.closed
+    ):
         ctxt.log.info(
             "train car temporary pull request has been closed", sources=ctxt.sources
         )
@@ -120,7 +123,7 @@ async def handle(queue_rules: rules.QueueRules, ctxt: context.Context) -> None:
             )
 
     if unexpected_changes is None:
-        real_status = status = await checks_status.get_rule_checks_status(
+        real_status = temporary_status = await checks_status.get_rule_checks_status(
             ctxt.log,
             ctxt.repository,
             pull_requests,
@@ -135,11 +138,11 @@ async def handle(queue_rules: rules.QueueRules, ctxt: context.Context) -> None:
             # yet which pull request is responsible for the failure.
             # * one of the batch ?
             # * one of the parent car ?
-            status = check_api.Conclusion.PENDING
+            temporary_status = check_api.Conclusion.PENDING
     elif isinstance(unexpected_changes, merge_train.UnexpectedDraftPullRequestChange):
-        real_status = status = check_api.Conclusion.FAILURE
+        real_status = temporary_status = check_api.Conclusion.FAILURE
     else:
-        real_status = status = check_api.Conclusion.PENDING
+        real_status = temporary_status = check_api.Conclusion.PENDING
 
     ctxt.log.info(
         "train car temporary pull request evaluation",
@@ -148,13 +151,15 @@ async def handle(queue_rules: rules.QueueRules, ctxt: context.Context) -> None:
         ],
         evaluated_queue_rule=evaluated_queue_rule.conditions.get_summary(),
         unexpected_changes=unexpected_changes,
-        temporary_status=status,
+        temporary_status=temporary_status,
         real_status=real_status,
         event_types=[se["event_type"] for se in ctxt.sources],
     )
 
-    await car.update_state(real_status, evaluated_queue_rule)
-    await car.update_summaries(status, unexpected_change=unexpected_changes)
+    await car.update_state(
+        real_status, evaluated_queue_rule, unexpected_change=unexpected_changes
+    )
+    await car.update_summaries(queue_conditions_conclusion=temporary_status)
     await train.save()
 
     # NOTE(Syffe): In order to differentiate the two types of unexpected_changes, and

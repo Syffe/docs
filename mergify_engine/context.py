@@ -1402,9 +1402,9 @@ class Context(object):
                 if car is None:
                     return None
                 else:
-                    started_at = car.creation_date
+                    started_at = car.train_car_state.creation_date
             else:
-                started_at = car.creation_date
+                started_at = car.train_car_state.creation_date
             if name == "queue-merge-started-at":
                 return started_at
             else:

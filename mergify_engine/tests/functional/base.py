@@ -52,7 +52,7 @@ class MergeQueueCarMatcher(typing.NamedTuple):
     user_pull_request_numbers: typing.List[github_types.GitHubPullRequestNumber]
     parent_pull_request_numbers: typing.List[github_types.GitHubPullRequestNumber]
     initial_current_base_sha: github_types.SHAType
-    creation_state: merge_train.TrainCarState
+    checks_type: typing.Optional[merge_train.TrainCarChecksType]
     queue_pull_request_number: typing.Optional[github_types.GitHubPullRequestNumber]
 
 
@@ -1446,7 +1446,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
             car.parent_pull_request_numbers == expected_car.parent_pull_request_numbers
         )
         assert car.initial_current_base_sha == expected_car.initial_current_base_sha
-        assert car.creation_state == expected_car.creation_state
+        assert car.train_car_state.checks_type == expected_car.checks_type
         assert car.queue_pull_request_number == expected_car.queue_pull_request_number
 
     async def assert_merge_queue_contents(

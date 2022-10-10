@@ -1,5 +1,6 @@
 import dataclasses
 import datetime
+import enum
 import functools
 import itertools
 import logging
@@ -36,7 +37,6 @@ from mergify_engine.queue import utils as queue_utils
 
 if typing.TYPE_CHECKING:
     from mergify_engine import rules
-    from mergify_engine.rules import checks_status
 
 
 def build_pr_link(
@@ -51,14 +51,6 @@ def build_pr_link(
 
 
 LOG = daiquiri.getLogger(__name__)
-
-TrainCarState = typing.Literal[
-    "pending",
-    "created",
-    "updated",
-    "failed",
-]
-
 
 CheckStateT = typing.Literal[
     "success",
@@ -248,16 +240,102 @@ class DraftPullRequestCreationTemporaryFailure(Exception):
     reason: str
 
 
+# NOTE(Syffe): type of the TrainCar's checks, can be created by rebasing a PR (inplace)
+# or by creating a separate draft PR (draft)
+# TODO "failed" needs to be refactored in another way since it is not relevant as a type anymore
+@enum.unique
+class TrainCarChecksType(enum.Enum):
+    INPLACE = "inplace"
+    DRAFT = "draft"
+    FAILED = "failed"
+
+
+@enum.unique
+class CiState(enum.Enum):
+    PENDING = "pending"
+    SUCCESS = "success"
+    FAILED = "failed"
+
+
+@enum.unique
+class TrainCarOutcome(enum.Enum):
+    MERGEABLE = "mergeable"
+    CHECKS_TIMEOUT = "checks_timeout"
+    CHECKS_FAILED = "checks_failed"
+    BASE_BRANCH_CHANGE = "base_branch_change"
+    DRAFT_PR_CHANGE = "draft_pr_change"
+    UPDATED_PR_CHANGE = "updated_pr_change"
+    UNKNWON = "unknown"
+
+
+json.register_type(CiState)
+json.register_type(TrainCarOutcome)
+json.register_type(TrainCarChecksType)
+
+CHECKS_TIMEOUT_MESSAGE = "The checks have timed out."
+CI_FAILED_MESSAGE = "The CI checks have failed."
+
+UNEXPECTED_CHANGE_COMPATIBILITY = {
+    UnexpectedDraftPullRequestChange: TrainCarOutcome.DRAFT_PR_CHANGE,
+    UnexpectedBaseBranchChange: TrainCarOutcome.BASE_BRANCH_CHANGE,
+    UnexpectedUpdatedPullRequestChange: TrainCarOutcome.UPDATED_PR_CHANGE,
+}
+
+
+@dataclasses.dataclass
+class TrainCarState:
+    outcome: TrainCarOutcome = TrainCarOutcome.UNKNWON
+    ci_state: CiState = CiState.PENDING
+    outcome_message: typing.Optional[str] = None
+    queue_conditions_conclusion: check_api.Conclusion = check_api.Conclusion.PENDING
+    checks_type: TrainCarChecksType | None = None
+    creation_date: datetime.datetime = dataclasses.field(default_factory=date.utcnow)
+
+    class Serialized(typing.TypedDict):
+        outcome: TrainCarOutcome
+        ci_state: CiState
+        outcome_message: typing.Optional[str]
+        queue_conditions_conclusion: check_api.Conclusion
+        checks_type: typing.Optional[TrainCarChecksType]
+        creation_date: datetime.datetime
+
+    def serialized(self) -> "TrainCarState.Serialized":
+        return self.Serialized(
+            outcome=self.outcome,
+            ci_state=self.ci_state,
+            outcome_message=self.outcome_message,
+            queue_conditions_conclusion=self.queue_conditions_conclusion,
+            checks_type=self.checks_type,
+            creation_date=self.creation_date,
+        )
+
+    @classmethod
+    def deserialize(
+        cls,
+        data: "TrainCarState.Serialized",
+    ) -> "TrainCarState":
+        return cls(
+            outcome=data["outcome"],
+            ci_state=data["ci_state"],
+            outcome_message=data["outcome_message"],
+            queue_conditions_conclusion=data["queue_conditions_conclusion"],
+            checks_type=data["checks_type"],
+            creation_date=data["creation_date"],
+        )
+
+    @property
+    def has_timed_out(self) -> bool:
+        return self.outcome == TrainCarOutcome.CHECKS_TIMEOUT
+
+
 @dataclasses.dataclass
 class TrainCar:
     train: "Train" = dataclasses.field(repr=False)
+    train_car_state: "TrainCarState" = dataclasses.field(repr=False)
     initial_embarked_pulls: typing.List[EmbarkedPull]
     still_queued_embarked_pulls: typing.List[EmbarkedPull]
     parent_pull_request_numbers: typing.List[github_types.GitHubPullRequestNumber]
     initial_current_base_sha: github_types.SHAType
-    creation_date: datetime.datetime = dataclasses.field(default_factory=date.utcnow)
-    creation_state: TrainCarState = "pending"
-    checks_conclusion: check_api.Conclusion = check_api.Conclusion.PENDING
     queue_pull_request_number: typing.Optional[
         github_types.GitHubPullRequestNumber
     ] = dataclasses.field(default=None)
@@ -267,34 +345,29 @@ class TrainCar:
     head_branch: typing.Optional[str] = None
     last_checks: typing.List[QueueCheck] = dataclasses.field(default_factory=list)
     last_evaluated_conditions: typing.Optional[str] = None
-    has_timed_out: bool = False
     checks_ended_timestamp: typing.Optional[datetime.datetime] = None
-    ci_has_passed: bool = False
     queue_branch_name: typing.Optional[github_types.GitHubRefType] = None
 
     QUEUE_BRANCH_PREFIX: typing.ClassVar[str] = "tmp-"
 
     class Serialized(typing.TypedDict):
+        train_car_state: TrainCarState.Serialized
         initial_embarked_pulls: typing.List[EmbarkedPull.Serialized]
         still_queued_embarked_pulls: typing.List[EmbarkedPull.Serialized]
         parent_pull_request_numbers: typing.List[github_types.GitHubPullRequestNumber]
         initial_current_base_sha: github_types.SHAType
-        checks_conclusion: check_api.Conclusion
-        creation_date: datetime.datetime
-        creation_state: TrainCarState
         queue_pull_request_number: typing.Optional[github_types.GitHubPullRequestNumber]
         # mymy can't parse recursive definition, yet
         failure_history: typing.List["TrainCar.Serialized"]  # type: ignore[misc]
         head_branch: typing.Optional[str]
         last_checks: typing.List[QueueCheck.Serialized]
         last_evaluated_conditions: typing.Optional[str]
-        has_timed_out: bool
         checks_ended_timestamp: typing.Optional[datetime.datetime]
-        ci_has_passed: bool
         queue_branch_name: typing.Optional[github_types.GitHubRefType]
 
     def serialized(self) -> "TrainCar.Serialized":
         return self.Serialized(
+            train_car_state=self.train_car_state.serialized(),
             initial_embarked_pulls=[
                 ep.serialized() for ep in self.initial_embarked_pulls
             ],
@@ -303,9 +376,6 @@ class TrainCar:
             ],
             parent_pull_request_numbers=self.parent_pull_request_numbers,
             initial_current_base_sha=self.initial_current_base_sha,
-            creation_date=self.creation_date,
-            creation_state=self.creation_state,
-            checks_conclusion=self.checks_conclusion,
             queue_pull_request_number=self.queue_pull_request_number,
             failure_history=[fh.serialized() for fh in self.failure_history],
             head_branch=self.head_branch,
@@ -317,9 +387,7 @@ class TrainCar:
                 for c in self.last_checks
             ],
             last_evaluated_conditions=self.last_evaluated_conditions,
-            has_timed_out=self.has_timed_out,
             checks_ended_timestamp=self.checks_ended_timestamp,
-            ci_has_passed=self.ci_has_passed,
             queue_branch_name=self.queue_branch_name,
         )
 
@@ -351,10 +419,23 @@ class TrainCar:
             ]
             still_queued_embarked_pulls = initial_embarked_pulls.copy()
 
+        checks_type: typing.Optional[TrainCarChecksType] = None
         if "creation_state" in data:
-            creation_state = data["creation_state"]
-        else:
-            creation_state = data["state"]  # type: ignore[typeddict-item]
+            if data["creation_state"] == "updated":  # type: ignore[typeddict-item]
+                checks_type = TrainCarChecksType.INPLACE
+            elif data["creation_state"] == "created":  # type: ignore[typeddict-item]
+                checks_type = TrainCarChecksType.DRAFT
+            elif data["creation_state"] == "failed":  # type: ignore[typeddict-item]
+                checks_type = TrainCarChecksType.FAILED
+        elif "state" in data:
+            if data["state"] == "updated":  # type: ignore[typeddict-item]
+                checks_type = TrainCarChecksType.INPLACE
+            elif data["state"] == "created":  # type: ignore[typeddict-item]
+                checks_type = TrainCarChecksType.DRAFT
+            elif data["state"] == "failed":  # type: ignore[typeddict-item]
+                checks_type = TrainCarChecksType.FAILED
+        elif "train_car_state" in data:
+            checks_type = data["train_car_state"]["checks_type"]
 
         if "failure_history" in data:
             failure_history = [
@@ -363,23 +444,21 @@ class TrainCar:
         else:
             failure_history = []
 
-        if "creation_date" in data:
-            creation_date = data["creation_date"]
-        else:
-            creation_date = date.utcnow()
-
         if "last_checks" in data:
             last_checks = [QueueCheck(**c) for c in data["last_checks"]]
         else:
             last_checks = []
 
-        if creation_state == "updated" and data["queue_pull_request_number"] is None:
+        if (
+            checks_type == TrainCarChecksType.INPLACE
+            and data["queue_pull_request_number"] is None
+        ):
             data["queue_pull_request_number"] = still_queued_embarked_pulls[
                 0
             ].user_pull_request_number
 
         if "head_branch" not in data:
-            if creation_state == "created":
+            if checks_type == TrainCarChecksType.DRAFT:
                 data["head_branch"] = cls._get_pulls_branch_ref(
                     initial_embarked_pulls,
                     data["parent_pull_request_numbers"],
@@ -393,27 +472,78 @@ class TrainCar:
                 f"{constants.MERGE_QUEUE_BRANCH_PREFIX}{train.ref}/{cls._get_pulls_branch_ref(initial_embarked_pulls)}"
             )
 
+        if "creation_date" in data:
+            creation_date = data["creation_date"]  # type: ignore[typeddict-item]
+        else:
+            creation_date = date.utcnow()
+
+        # NOTE(Syffe): Backward compatibility for old TrainCar without TrainCarState attribute
+        # (Released in version 6.0)
+        train_car_state = cls._deserialize_train_car_state(
+            data=data, checks_type=checks_type, creation_date=creation_date
+        )
+
         return cls(
             train,
+            train_car_state=train_car_state,
             initial_embarked_pulls=initial_embarked_pulls,
             still_queued_embarked_pulls=still_queued_embarked_pulls,
             parent_pull_request_numbers=data["parent_pull_request_numbers"],
             initial_current_base_sha=data["initial_current_base_sha"],
-            creation_date=creation_date,
-            creation_state=creation_state,
-            checks_conclusion=data.get(
-                "checks_conclusion", check_api.Conclusion.PENDING
-            ),
             queue_pull_request_number=data["queue_pull_request_number"],
             failure_history=failure_history,
             head_branch=data["head_branch"],
             last_checks=last_checks,
             last_evaluated_conditions=data.get("last_evaluated_conditions"),
-            has_timed_out=data.get("has_timed_out", False),
             checks_ended_timestamp=data.get("checks_ended_timestamp"),
-            ci_has_passed=data.get("ci_has_passed", False),
             queue_branch_name=data["queue_branch_name"],
         )
+
+    @classmethod
+    def _deserialize_train_car_state(
+        cls,
+        data: "TrainCar.Serialized",
+        checks_type: typing.Optional[TrainCarChecksType],
+        creation_date: datetime.datetime,
+    ) -> "TrainCarState":
+        if "train_car_state" in data:
+            return TrainCarState.deserialize(data["train_car_state"])
+        else:
+            outcome = TrainCarOutcome.UNKNWON
+            ci_state = CiState.PENDING
+            outcome_message = ""
+            queue_conditions_conclusion = check_api.Conclusion.PENDING
+
+            if "checks_conclusion" in data:
+                queue_conditions_conclusion = data["checks_conclusion"]  # type: ignore[typeddict-item]
+
+            if "has_timed_out" in data and data["has_timed_out"]:  # type: ignore[typeddict-item]
+                outcome = TrainCarOutcome.CHECKS_TIMEOUT
+                outcome_message = CHECKS_TIMEOUT_MESSAGE
+
+            if "ci_has_passed" in data:
+                if data["ci_has_passed"]:  # type: ignore[typeddict-item]
+                    ci_state = CiState.SUCCESS
+                elif queue_conditions_conclusion == check_api.Conclusion.FAILURE:
+                    outcome = TrainCarOutcome.CHECKS_FAILED
+                    ci_state = CiState.FAILED
+                    outcome_message = CI_FAILED_MESSAGE
+
+            if (
+                queue_conditions_conclusion == check_api.Conclusion.SUCCESS
+                and ci_state == CiState.SUCCESS
+                and outcome == TrainCarOutcome.UNKNWON
+            ):
+                outcome = TrainCarOutcome.MERGEABLE
+
+            return TrainCarState(
+                outcome=outcome,
+                ci_state=ci_state,
+                outcome_message=outcome_message,
+                queue_conditions_conclusion=queue_conditions_conclusion,
+                checks_type=checks_type,
+                creation_date=creation_date,
+            )
 
     def _generate_draft_pr_branch_suffix(self) -> str:
         namespace_bytes = self.train.ref.encode()
@@ -473,10 +603,13 @@ class TrainCar:
     async def get_pull_requests_to_evaluate(
         self,
     ) -> typing.List[context.BasePullRequest]:
-        if self.creation_state in ("created", "updated"):
+        if self.train_car_state.checks_type in (
+            TrainCarChecksType.INPLACE,
+            TrainCarChecksType.DRAFT,
+        ):
             if self.queue_pull_request_number is None:
                 raise RuntimeError(
-                    f"car state is {self.creation_state}, but queue_pull_request_number is None"
+                    f"car's spec checks type is {self.train_car_state.checks_type}, but queue_pull_request_number is None"
                 )
             tmp_ctxt = await self.train.repository.get_pull_request_context(
                 self.queue_pull_request_number
@@ -490,7 +623,7 @@ class TrainCar:
                 )
                 for ep in self.still_queued_embarked_pulls
             ]
-        elif self.creation_state == "failed":
+        elif self.train_car_state.checks_type == TrainCarChecksType.FAILED:
             # Will be splitted or dropped soon
             return [
                 (
@@ -501,13 +634,18 @@ class TrainCar:
                 for ep in self.still_queued_embarked_pulls
             ]
         else:
-            raise RuntimeError(f"Invalid state: {self.creation_state}")
+            raise RuntimeError(
+                f"Invalid spec checks type: {self.train_car_state.checks_type}"
+            )
 
     async def get_context_to_evaluate(self) -> typing.Optional[context.Context]:
-        if self.creation_state in ("created", "updated"):
+        if self.train_car_state.checks_type in (
+            TrainCarChecksType.INPLACE,
+            TrainCarChecksType.DRAFT,
+        ):
             if self.queue_pull_request_number is None:
                 raise RuntimeError(
-                    f"car state is {self.creation_state}, but queue_pull_request_number is None"
+                    f"car's spec check type is {self.train_car_state.checks_type}, but queue_pull_request_number is None"
                 )
             return await self.train.repository.get_pull_request_context(
                 self.queue_pull_request_number
@@ -571,7 +709,7 @@ class TrainCar:
             )
 
         await self._set_initial_state(
-            "updated",
+            TrainCarChecksType.INPLACE,
             queue_rule,
             embarked_pull.user_pull_request_number,
         )
@@ -756,7 +894,10 @@ class TrainCar:
         elif queue_branch_merge_method == "fast-forward":
             if previous_car is None:
                 base_sha = self.initial_current_base_sha
-            elif previous_car.creation_state in ("updated", "created"):
+            elif previous_car.train_car_state.checks_type in (
+                TrainCarChecksType.INPLACE,
+                TrainCarChecksType.DRAFT,
+            ):
                 if previous_car.queue_pull_request_number is None:
                     raise RuntimeError("previous_car without queue_pull_request_number")
                 ctxt = await self.train.repository.get_pull_request_context(
@@ -765,11 +906,11 @@ class TrainCar:
                 base_sha = ctxt.pull["head"]["sha"]
             else:
                 raise RuntimeError(
-                    f"previous_car with invalid creation_state: {previous_car.creation_state}"
+                    f"previous_car with invalid spec checks type: {previous_car.train_car_state.checks_type}"
                 )
         else:
             raise RuntimeError(
-                f"previous_car with invalid creation_state: {queue_branch_merge_method}"
+                f"invalid queue_branch_merge_method: {queue_branch_merge_method}"
             )
 
         pulls_in_draft += [
@@ -877,15 +1018,19 @@ class TrainCar:
         except DraftPullRequestCreationTemporaryFailure as e:
             await self._delete_branch()
             raise TrainCarPullRequestCreationPostponed(self) from e
-        await self._set_initial_state("created", queue_rule, tmp_pull["number"])
+        await self._set_initial_state(
+            TrainCarChecksType.DRAFT, queue_rule, tmp_pull["number"]
+        )
 
     async def _set_initial_state(
         self,
-        state: typing.Literal["created", "updated"],
+        checks_type: typing.Literal[
+            TrainCarChecksType.INPLACE, TrainCarChecksType.DRAFT
+        ],
         queue_rule: "rules.QueueRule",
         pull_request_number: github_types.GitHubPullRequestNumber,
     ) -> None:
-        self.creation_state = state
+        self.train_car_state.checks_type = checks_type
         self.queue_pull_request_number = pull_request_number
 
         queue_pull_requests = await self.get_pull_requests_to_evaluate()
@@ -914,10 +1059,11 @@ class TrainCar:
                         "queued_at": ep.queued_at,
                         "speculative_check_pull_request": {
                             "number": self.queue_pull_request_number,
-                            "in_place": self.creation_state == "updated",
-                            "checks_conclusion": self.checks_conclusion.value
+                            "in_place": self.train_car_state.checks_type
+                            == TrainCarChecksType.INPLACE,
+                            "checks_conclusion": self.train_car_state.queue_conditions_conclusion.value
                             or "pending",
-                            "checks_timed_out": self.has_timed_out,
+                            "checks_timed_out": self.train_car_state.has_timed_out,
                             "checks_ended_at": self.checks_ended_timestamp,
                         },
                     }
@@ -997,11 +1143,12 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
         abort_reason: None | queue_utils.BaseAbortReason = None
         if reason is None:
-            if self.has_timed_out:
+            if self.train_car_state.outcome == TrainCarOutcome.CHECKS_TIMEOUT:
                 aborted = True
                 abort_reason = queue_utils.ChecksTimeout()
             elif aborted := (
-                self.checks_conclusion is not check_api.Conclusion.SUCCESS
+                self.train_car_state.queue_conditions_conclusion
+                is not check_api.Conclusion.SUCCESS
             ):
                 abort_reason = queue_utils.ChecksFailed()
         else:
@@ -1015,10 +1162,10 @@ You don't need to do anything. Mergify will close this pull request automaticall
             abort_reason,
         )
 
-        if self.creation_state == "updated":
+        if self.train_car_state.checks_type == TrainCarChecksType.INPLACE:
             return
 
-        elif self.creation_state == "created":
+        elif self.train_car_state.checks_type == TrainCarChecksType.DRAFT:
             if reason is not None:
                 await self._set_final_draft_pr_summary(reason, remaning_embarked_pulls)
             await self._delete_branch()
@@ -1028,7 +1175,10 @@ You don't need to do anything. Mergify will close this pull request automaticall
         reason: typing.Optional[queue_utils.BaseAbortReason],
         remaning_embarked_pulls: typing.List[EmbarkedPull],
     ) -> None:
-        if self.creation_state != "created" or self.queue_pull_request_number is None:
+        if (
+            self.train_car_state.checks_type != TrainCarChecksType.DRAFT
+            or self.queue_pull_request_number is None
+        ):
             raise RuntimeError("can be called only on draft pr")
         tmp_pull_ctxt = await self.train.repository.get_pull_request_context(
             self.queue_pull_request_number
@@ -1073,8 +1223,9 @@ You don't need to do anything. Mergify will close this pull request automaticall
     ) -> None:
         abort_reason_str = str(abort_reason) if abort_reason is not None else ""
         abort_code = abort_reason.abort_code if abort_reason is not None else None
-        checks_conclusion = typing.cast(
-            signals.ChecksConclusion, self.checks_conclusion.value or "pending"
+        queue_conditions_conclusion = typing.cast(
+            signals.ChecksConclusion,
+            self.train_car_state.queue_conditions_conclusion.value or "pending",
         )
 
         for ep in self.initial_embarked_pulls:
@@ -1095,11 +1246,12 @@ You don't need to do anything. Mergify will close this pull request automaticall
                     "queued_at": ep.queued_at,
                     "speculative_check_pull_request": {
                         "number": queue_pull_request_number,
-                        "in_place": self.creation_state == "updated",
-                        "checks_conclusion": checks_conclusion,
-                        "checks_timed_out": self.has_timed_out,
+                        "in_place": self.train_car_state.checks_type
+                        == TrainCarChecksType.INPLACE,
+                        "checks_conclusion": queue_conditions_conclusion,
+                        "checks_timed_out": self.train_car_state.has_timed_out,
                         "checks_ended_at": self.checks_ended_timestamp,
-                        "checks_started_at": self.creation_date,
+                        "checks_started_at": self.train_car_state.creation_date,
                     },
                 }
             )
@@ -1128,7 +1280,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             typing.List[github_types.GitHubPullRequestNumber]
         ] = None,
     ) -> None:
-        self.creation_state = "failed"
+        self.train_car_state.checks_type = TrainCarChecksType.FAILED
 
         title = "This pull request cannot be embarked for merge"
 
@@ -1202,19 +1354,19 @@ You don't need to do anything. Mergify will close this pull request automaticall
     def checks_have_timed_out(
         self, checks_duration: datetime.datetime, timeout: datetime.timedelta
     ) -> bool:
-        return (checks_duration - self.creation_date) > timeout
+        return (checks_duration - self.train_car_state.creation_date) > timeout
 
     async def update_state(
         self,
-        checks_conclusion: "checks_status.ChecksCombinedStatus",
+        queue_conditions_conclusion: check_api.Conclusion,
         evaluated_queue_rule: "rules.EvaluatedQueueRule",
+        unexpected_change: typing.Optional[UnexpectedChange] = None,
     ) -> None:
-        self.checks_conclusion = checks_conclusion
+
+        self.train_car_state.queue_conditions_conclusion = queue_conditions_conclusion
         self.last_evaluated_conditions = evaluated_queue_rule.conditions.get_summary()
         self.last_checks = []
-        self.has_timed_out = False
-        self.ci_has_passed = False
-
+        outside_schedule = False
         rule = await self.train.get_queue_rule(
             self.initial_embarked_pulls[0].config["name"]
         )
@@ -1222,43 +1374,76 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
         if (
             self.checks_ended_timestamp is None
-            and self.checks_conclusion != check_api.Conclusion.PENDING
+            and self.train_car_state.queue_conditions_conclusion
+            != check_api.Conclusion.PENDING
         ):
             self.checks_ended_timestamp = date.utcnow()
 
-        if self.checks_conclusion == check_api.Conclusion.SUCCESS:
-            self.ci_has_passed = True
+        if (
+            self.train_car_state.queue_conditions_conclusion
+            == check_api.Conclusion.SUCCESS
+        ):
+            self.train_car_state.ci_state = CiState.SUCCESS
         else:
             conditions_with_only_checks = evaluated_queue_rule.conditions.copy()
             for condition_with_only_checks in conditions_with_only_checks.walk():
                 attr = condition_with_only_checks.get_attribute_name()
+                if attr == "schedule" and not condition_with_only_checks.match:
+                    outside_schedule = True
                 if not (attr.startswith("check-") or attr.startswith("status-")):
                     condition_with_only_checks.update("number>0")
 
             queue_pull_requests = await self.get_pull_requests_to_evaluate()
-            self.ci_has_passed = await conditions_with_only_checks(queue_pull_requests)
 
-        if (
-            timeout is not None
-            and self.checks_conclusion != check_api.Conclusion.FAILURE
-            and not self.ci_has_passed
-        ):
-            self.has_timed_out = self.checks_have_timed_out(date.utcnow(), timeout)
+            if await conditions_with_only_checks(queue_pull_requests):
+                self.train_car_state.ci_state = CiState.SUCCESS
+            elif (
+                self.train_car_state.queue_conditions_conclusion
+                == check_api.Conclusion.FAILURE
+            ):
+                self.train_car_state.ci_state = CiState.FAILED
+                self.train_car_state.outcome = TrainCarOutcome.CHECKS_FAILED
+                self.train_car_state.outcome_message = CI_FAILED_MESSAGE
+            else:
+                self.train_car_state.ci_state = CiState.PENDING
 
-            if self.queue_pull_request_number is not None and not self.has_timed_out:
+        if timeout is not None:
+            checks_duration_time = (
+                self.checks_ended_timestamp
+                if self.checks_ended_timestamp is not None
+                else date.utcnow()
+            )
+            if self.checks_have_timed_out(checks_duration_time, timeout):
+
+                # NOTE(Syffe): The timeout state has a priority over CI success or failure.
+                # if we notice that a timeout has occured, the reporting should notify of the timeout
+                # because it has occured before assessing the CI's state.
+                self.train_car_state.outcome = TrainCarOutcome.CHECKS_TIMEOUT
+                self.train_car_state.outcome_message = CHECKS_TIMEOUT_MESSAGE
+
+            if (
+                self.queue_pull_request_number is not None
+                and self.train_car_state.outcome != TrainCarOutcome.CHECKS_TIMEOUT
+                and self.train_car_state.queue_conditions_conclusion
+                != check_api.Conclusion.FAILURE
+                and self.train_car_state.ci_state != CiState.SUCCESS
+            ):
                 # Circular import
                 from mergify_engine import delayed_refresh
 
                 await delayed_refresh.plan_refresh_at_least_at(
                     self.train.repository,
                     self.queue_pull_request_number,
-                    self.creation_date + timeout,
+                    self.train_car_state.creation_date + timeout,
                 )
 
-        if self.creation_state in ("created", "updated"):
+        if self.train_car_state.checks_type in (
+            TrainCarChecksType.INPLACE,
+            TrainCarChecksType.DRAFT,
+        ):
             if self.queue_pull_request_number is None:
                 raise RuntimeError(
-                    f"car state is {self.creation_state}, but queue_pull_request_number is None"
+                    f"car's spec checks type is {self.train_car_state.checks_type}, but queue_pull_request_number is None"
                 )
 
             checked_ctxt = await self.train.repository.get_pull_request_context(
@@ -1266,6 +1451,28 @@ You don't need to do anything. Mergify will close this pull request automaticall
             )
         else:
             return
+
+        if unexpected_change is not None:
+            self.train_car_state.outcome_message = str(unexpected_change)
+            self.train_car_state.outcome = UNEXPECTED_CHANGE_COMPATIBILITY[
+                type(unexpected_change)
+            ]
+
+        if (
+            self.train_car_state.queue_conditions_conclusion
+            == check_api.Conclusion.SUCCESS
+            and self.train_car_state.outcome != TrainCarOutcome.CHECKS_TIMEOUT
+        ):
+            self.train_car_state.outcome = TrainCarOutcome.MERGEABLE
+
+        if (
+            self.train_car_state.outcome == TrainCarOutcome.CHECKS_TIMEOUT
+            and not outside_schedule
+        ):
+            # NOTE(Syffe): Timeout should not unqueue the PR if they are noticed outside of a schedule rule
+            self.train_car_state.queue_conditions_conclusion = (
+                check_api.Conclusion.FAILURE
+            )
 
         for check in await checked_ctxt.pull_check_runs:
             # Don't copy Summary/Rule/Queue/... checks
@@ -1299,29 +1506,41 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
     async def update_summaries(
         self,
-        conclusion: "checks_status.ChecksCombinedStatus",
-        unexpected_change: typing.Optional[UnexpectedChange] = None,
+        queue_conditions_conclusion: typing.Optional[check_api.Conclusion] = None,
         force_refresh: bool = False,
     ) -> None:
+
+        # NOTE(Syffe): queue_conditions_conclusion argument is used when we can't directly assess which PR is
+        # responsible for the car failure. (Used for batch, or parent TrainCar failure mitigation)
+        if queue_conditions_conclusion is None:
+            queue_conditions_conclusion = (
+                self.train_car_state.queue_conditions_conclusion
+            )
+
         refs = self._get_user_refs(create_link=False)
-        if conclusion == check_api.Conclusion.SUCCESS:
+        has_unexpected_change = self.train_car_state.outcome in [
+            TrainCarOutcome.DRAFT_PR_CHANGE,
+            TrainCarOutcome.UPDATED_PR_CHANGE,
+            TrainCarOutcome.BASE_BRANCH_CHANGE,
+        ]
+        if queue_conditions_conclusion == check_api.Conclusion.SUCCESS:
             if len(self.initial_embarked_pulls) == 1:
                 tmp_pull_title = f"The pull request {refs} is mergeable"
             else:
                 tmp_pull_title = f"The pull requests {refs} are mergeable"
-        elif conclusion == check_api.Conclusion.PENDING:
+        elif queue_conditions_conclusion == check_api.Conclusion.PENDING:
             if len(self.initial_embarked_pulls) == 1:
                 tmp_pull_title = f"The pull request {refs} is embarked for merge"
             else:
                 tmp_pull_title = f"The pull requests {refs} are embarked for merge"
         else:
             if len(self.initial_embarked_pulls) == 1:
-                if unexpected_change:
+                if has_unexpected_change:
                     tmp_pull_title = f"The pull request {refs} cannot be merged, due to unexpected changes in this draft PR, and has been disembarked."
                 else:
                     tmp_pull_title = f"The pull request {refs} cannot be merged and has been disembarked."
             else:
-                if unexpected_change:
+                if has_unexpected_change:
                     tmp_pull_title = f"The pull requests {refs} cannot be merged, due to unexpected changes in this draft PR, and have been disembarked."
                 else:
                     tmp_pull_title = (
@@ -1338,19 +1557,34 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
         if (
             timeout is not None
-            and not self.ci_has_passed
-            and self.checks_conclusion != check_api.Conclusion.SUCCESS
+            and self.train_car_state.ci_state != CiState.FAILED
+            and self.train_car_state.queue_conditions_conclusion
+            != check_api.Conclusion.SUCCESS
         ):
             expected_finish = (
-                date.pretty_datetime(date.RelativeDatetime(self.creation_date).value)
-                if self.creation_date.date() > date.utcnow().date()
-                else date.pretty_time(date.RelativeDatetime(self.creation_date).value)
+                date.pretty_datetime(
+                    date.RelativeDatetime(self.train_car_state.creation_date).value
+                )
+                if self.train_car_state.creation_date.date() > date.utcnow().date()
+                else date.pretty_time(
+                    date.RelativeDatetime(self.train_car_state.creation_date).value
+                )
             )
-            timeout_summary = (
-                f"\n⏲️  The checks have to pass before {expected_finish} ⏲\n️"
-                if not self.has_timed_out
-                else "\n❌⏲️️  The checks have timed out ⏲❌\n️"
-            )
+
+            if self.train_car_state.outcome != TrainCarOutcome.CHECKS_TIMEOUT:
+                timeout_summary = (
+                    f"\n⏲️  The checks have to pass before {expected_finish} ⏲\n️"
+                )
+            elif (
+                self.train_car_state.queue_conditions_conclusion
+                != check_api.Conclusion.FAILURE
+            ):
+                timeout_summary = (
+                    "\n❌⏲️️  The checks have timed out ⏲❌\n️"
+                    "PR has not been removed from the queue because checks have been run outside of the schedule time condition.\n"
+                )
+            else:
+                timeout_summary = "\n❌⏲️️  The checks have timed out ⏲❌\n️"
 
         queue_summary += timeout_summary
 
@@ -1361,12 +1595,12 @@ You don't need to do anything. Mergify will close this pull request automaticall
             )
             batch_failure_summary += "| ---: | :--- | :--- |\n"
             for failure in self.failure_history:
-                if failure.creation_state == "updated":
+                if failure.train_car_state.checks_type == TrainCarChecksType.INPLACE:
                     speculative_checks = "[in place]"
-                elif failure.creation_state == "created":
+                elif failure.train_car_state.checks_type == TrainCarChecksType.DRAFT:
                     if failure.queue_pull_request_number is None:
                         raise RuntimeError(
-                            "car state is created, but queue_pull_request_number is None"
+                            "car's spec checks type is draft, but queue_pull_request_number is None"
                         )
                     speculative_checks = build_pr_link(
                         self.train.repository, failure.queue_pull_request_number
@@ -1384,13 +1618,13 @@ You don't need to do anything. Mergify will close this pull request automaticall
             for ep in self.still_queued_embarked_pulls
         ]
 
-        if self.creation_state == "created":
+        if self.train_car_state.checks_type == TrainCarChecksType.DRAFT:
             summary = f"Embarking {self._get_embarked_refs(markdown=True)} together"
             summary += queue_summary + "\n" + batch_failure_summary
 
             if self.queue_pull_request_number is None:
                 raise RuntimeError(
-                    "car state is created, but queue_pull_request_number is None"
+                    "car's spec checks type is draft, but queue_pull_request_number is None"
                 )
 
             tmp_pull_ctxt = await self.train.repository.get_pull_request_context(
@@ -1399,19 +1633,22 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
             headline: typing.Optional[str] = None
             show_queue = True
-            if conclusion == check_api.Conclusion.SUCCESS:
+            if queue_conditions_conclusion == check_api.Conclusion.SUCCESS:
                 headline = "🎉 This combination of pull requests has been checked successfully 🎉"
                 show_queue = False
-            elif conclusion == check_api.Conclusion.FAILURE:
+            elif queue_conditions_conclusion == check_api.Conclusion.FAILURE:
                 headline = (
                     "🙁 This combination of pull requests has failed checks. "
                     f"{self._get_user_refs()} will be removed from the queue. 🙁"
                 )
                 show_queue = False
-            elif conclusion == check_api.Conclusion.PENDING:
-                if unexpected_change is not None:
-                    headline = f"✨ Unexpected queue change: {unexpected_change}. The pull request {self._get_user_refs()} will be re-embarked soon. ✨"
-                elif self.checks_conclusion == check_api.Conclusion.FAILURE:
+            elif queue_conditions_conclusion == check_api.Conclusion.PENDING:
+                if has_unexpected_change:
+                    headline = f"✨ Unexpected queue change: {self.train_car_state.outcome_message}. The pull request {self._get_user_refs()} will be re-embarked soon. ✨"
+                elif (
+                    self.train_car_state.queue_conditions_conclusion
+                    == check_api.Conclusion.FAILURE
+                ):
                     if self.has_previous_car_status_succeeded():
                         headline = "🕵️ This combination of pull requests has failed checks. Mergify will split this batch to understand which pull request is responsible for the failure. 🕵️"
                     else:
@@ -1431,17 +1668,17 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
             await tmp_pull_ctxt.set_summary_check(
                 check_api.Result(
-                    conclusion,
+                    queue_conditions_conclusion,
                     title=tmp_pull_title,
                     summary=summary,
                 )
             )
 
             checked_pull = self.queue_pull_request_number
-        elif self.creation_state == "updated":
+        elif self.train_car_state.checks_type == TrainCarChecksType.INPLACE:
             if self.queue_pull_request_number is None:
                 raise RuntimeError(
-                    "car state is updated, but queue_pull_request_number is None"
+                    "car's spec checks type is inplace, but queue_pull_request_number is None"
                 )
             checked_pull = self.queue_pull_request_number
         else:
@@ -1471,33 +1708,33 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
         # Update the original Pull Request
         unexpected_change_summary = ""
-        if unexpected_change is None:
-            if conclusion == check_api.Conclusion.SUCCESS:
+        if not has_unexpected_change:
+            if queue_conditions_conclusion == check_api.Conclusion.SUCCESS:
                 original_pull_title = f"The pull request embarked with {self._get_embarked_refs(include_my_self=False)} is mergeable"
-            elif conclusion == check_api.Conclusion.PENDING:
+            elif queue_conditions_conclusion == check_api.Conclusion.PENDING:
                 original_pull_title = f"The pull request is embarked with {self._get_embarked_refs(include_my_self=False)} for merge"
             else:
                 original_pull_title = f"The pull request embarked with {self._get_embarked_refs(include_my_self=False)} cannot be merged and has been disembarked"
         else:
-            if isinstance(unexpected_change, UnexpectedDraftPullRequestChange):
+            if self.train_car_state.outcome == TrainCarOutcome.DRAFT_PR_CHANGE:
                 original_pull_title = (
                     "The pull request has been removed from the queue."
                 )
-                unexpected_change_summary = (
-                    f"❌ Unexpected queue change: {unexpected_change}. ❌\n\n"
-                )
             else:
                 original_pull_title = "The pull request is going to be re-embarked soon"
-                unexpected_change_summary = (
-                    f"❌ Unexpected queue change: {unexpected_change}. ❌\n\n"
-                )
+            unexpected_change_summary = f"❌ Unexpected queue change: {self.train_car_state.outcome_message}. ❌\n\n"
 
-        if self.has_timed_out:
-            conclusion = check_api.Conclusion.FAILURE
+        if (
+            self.train_car_state.outcome == TrainCarOutcome.CHECKS_TIMEOUT
+            and self.train_car_state.queue_conditions_conclusion
+            == check_api.Conclusion.FAILURE
+            and queue_conditions_conclusion != check_api.Conclusion.FAILURE
+        ):
+            queue_conditions_conclusion = check_api.Conclusion.FAILURE
 
         self.train.log.info(
             "pull request train car status update",
-            conclusion=conclusion.value,
+            conclusion=queue_conditions_conclusion.value,
             original_pull_title=original_pull_title,
             gh_pull=checked_pull,
             unexpected_change_summary=unexpected_change_summary.strip(),
@@ -1519,7 +1756,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
         )
 
         report = check_api.Result(
-            conclusion,
+            queue_conditions_conclusion,
             title=original_pull_title,
             summary=original_pull_summary,
         )
@@ -1531,8 +1768,8 @@ You don't need to do anything. Mergify will close this pull request automaticall
             )
 
             if force_refresh or (
-                self.creation_state == "created"
-                and conclusion != check_api.Conclusion.PENDING
+                self.train_car_state.checks_type == TrainCarChecksType.DRAFT
+                and queue_conditions_conclusion != check_api.Conclusion.PENDING
             ):
                 # NOTE(sileht): refresh it, so the queue action will merge it and delete the
                 # tmp_pull_ctxt branch
@@ -1547,10 +1784,10 @@ You don't need to do anything. Mergify will close this pull request automaticall
                     else worker_pusher.Priority.high,
                 )
 
-        if self.creation_state != "created":
+        if self.train_car_state.checks_type != TrainCarChecksType.DRAFT:
             return
 
-        if conclusion in [
+        if queue_conditions_conclusion in [
             check_api.Conclusion.SUCCESS,
             check_api.Conclusion.FAILURE,
         ]:
@@ -1575,7 +1812,8 @@ You don't need to do anything. Mergify will close this pull request automaticall
         if position == 0:
             return True
         return all(
-            c.checks_conclusion == check_api.Conclusion.SUCCESS
+            c.train_car_state.queue_conditions_conclusion
+            == check_api.Conclusion.SUCCESS
             for c in self.train._cars[:position]
         )
 
@@ -1925,7 +2163,8 @@ class Train:
 
             car_can_be_interrupted = car is None or (
                 (
-                    car.checks_conclusion == check_api.Conclusion.PENDING
+                    car.train_car_state.queue_conditions_conclusion
+                    == check_api.Conclusion.PENDING
                     or (
                         embarked_pull.config["name"] != config["name"]
                         and embarked_pull.config["name"] in frozen_queues
@@ -2228,6 +2467,7 @@ class Train:
             self._cars.append(
                 TrainCar(
                     train=self,
+                    train_car_state=TrainCarState(),
                     initial_embarked_pulls=pulls,
                     still_queued_embarked_pulls=pulls.copy(),
                     parent_pull_request_numbers=car.parent_pull_request_numbers
@@ -2278,7 +2518,8 @@ class Train:
     async def _split_failed_batches(self, queue_rules: "rules.QueueRules") -> None:
         if (
             len(self._cars) == 1
-            and self._cars[0].checks_conclusion == check_api.Conclusion.FAILURE
+            and self._cars[0].train_car_state.queue_conditions_conclusion
+            == check_api.Conclusion.FAILURE
             and len(self._cars[0].initial_embarked_pulls) == 1
         ):
             # A earlier batch failed and it was the fault of the last PR of the batch
@@ -2299,7 +2540,8 @@ class Train:
             car
             for car in self._cars
             if (
-                car.checks_conclusion == check_api.Conclusion.FAILURE
+                car.train_car_state.queue_conditions_conclusion
+                == check_api.Conclusion.FAILURE
                 and car.has_previous_car_status_succeeded()
                 and len(car.initial_embarked_pulls) > 1
             )
@@ -2315,7 +2557,7 @@ class Train:
         if (
             self._cars
             and len(self._cars[0].failure_history) > 0
-            and self._cars[0].creation_state == "pending"
+            and self._cars[0].train_car_state.checks_type is None
         ):
             queue_name = self._cars[0].get_queue_name()
             try:
@@ -2343,8 +2585,9 @@ class Train:
 
     async def _populate_cars(self, queue_rules: "rules.QueueRules") -> None:
         if self._cars and (
-            self._cars[-1].creation_state == "failed"
-            or self._cars[-1].checks_conclusion == check_api.Conclusion.FAILURE
+            self._cars[-1].train_car_state.checks_type == TrainCarChecksType.FAILED
+            or self._cars[-1].train_car_state.queue_conditions_conclusion
+            == check_api.Conclusion.FAILURE
         ):
             # We are searching the responsible of a failure don't touch anything
             return
@@ -2367,7 +2610,9 @@ class Train:
                 queue_rules=queue_rules,
                 queue_name=head.config["name"],
             )
-            car = TrainCar(self, [head], [head], [], self._current_base_sha)
+            car = TrainCar(
+                self, TrainCarState(), [head], [head], [], self._current_base_sha
+            )
             await car._set_creation_failure(
                 f"queue named `{head.config['name']}` does not exist anymore"
             )
@@ -2433,6 +2678,7 @@ class Train:
 
                 car = TrainCar(
                     self,
+                    TrainCarState(),
                     pulls_to_check,
                     pulls_to_check.copy(),
                     parent_pull_request_numbers,
@@ -2620,16 +2866,16 @@ class Train:
 
                 speculative_checks = ""
                 if car is not None:
-                    if car.creation_state == "updated":
+                    if car.train_car_state.checks_type == TrainCarChecksType.INPLACE:
                         speculative_checks = build_pr_link(
                             self.repository,
                             embarked_pull.user_pull_request_number,
                             "in place",
                         )
-                    elif car.creation_state == "created":
+                    elif car.train_car_state.checks_type == TrainCarChecksType.DRAFT:
                         if car.queue_pull_request_number is None:
                             raise RuntimeError(
-                                "car state is created, but queue_pull_request_number is None"
+                                "car's spec checks type is draft, but queue_pull_request_number is None"
                             )
 
                         speculative_checks = build_pr_link(

@@ -113,7 +113,7 @@ async def test_rules_conditions_update() -> None:
 async def assert_queue_rule_checks_status(
     conds: typing.List[typing.Any],
     pull: FakeQueuePullRequest,
-    expected_state: checks_status.ChecksCombinedStatus,
+    expected_state: check_api.Conclusion,
 ) -> None:
     pull.sync_checks()
     schema = voluptuous.Schema(

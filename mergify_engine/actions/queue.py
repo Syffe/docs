@@ -123,19 +123,21 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     f"Please make sure `{merge_bot_account}` has logged in Mergify dashboard.",
                 )
 
-        if car.creation_state == "updated":
+        if car.train_car_state.checks_type == merge_train.TrainCarChecksType.INPLACE:
             newsha = ctxt.pull["head"]["sha"]
-        elif car.creation_state == "created":
+        elif car.train_car_state.checks_type == merge_train.TrainCarChecksType.DRAFT:
             if car.queue_pull_request_number is None:
                 raise RuntimeError(
-                    f"car state is {car.creation_state}, but queue_pull_request_number is None"
+                    f"car's checks type is {car.train_car_state.checks_type}, but queue_pull_request_number is None"
                 )
             tmp_ctxt = await queue.repository.get_pull_request_context(
                 car.queue_pull_request_number
             )
             newsha = tmp_ctxt.pull["head"]["sha"]
         else:
-            raise RuntimeError(f"Invalid state: {car.creation_state}")
+            raise RuntimeError(
+                f"Invalid car checks type: {car.train_car_state.checks_type}"
+            )
 
         try:
             await ctxt.client.put(
@@ -221,7 +223,12 @@ Then, re-embark the pull request into the merge queue by posting the comment
         car: typing.Optional[merge_train.TrainCar],
     ) -> None:
 
-        if car and car.creation_state == "updated" and not ctxt.closed:
+        if (
+            car
+            and car.train_car_state.checks_type
+            == merge_train.TrainCarChecksType.INPLACE
+            and not ctxt.closed
+        ):
             # NOTE(sileht): This car doesn't have tmp pull, so we have the
             # MERGE_QUEUE_SUMMARY and train reset here
             queue_rule_evaluated = await self.queue_rule.get_evaluated_queue_rule(
@@ -234,7 +241,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             )
 
             unexpected_changes: typing.Optional[merge_train.UnexpectedChange]
-            status: checks_status.ChecksCombinedStatus
+            status: check_api.Conclusion
             if await ctxt.has_been_synchronized_by_user() or await ctxt.is_behind:
                 unexpected_changes = merge_train.UnexpectedUpdatedPullRequestChange(
                     ctxt.pull["number"]
@@ -253,8 +260,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     queue_rule_evaluated,
                     unmatched_conditions_return_failure=False,
                 )
-            await car.update_state(status, queue_rule_evaluated)
-            await car.update_summaries(status, unexpected_change=unexpected_changes)
+            await car.update_state(
+                status, queue_rule_evaluated, unexpected_change=unexpected_changes
+            )
+            await car.update_summaries(status)
             await q.save()
 
     async def _render_bot_account(
@@ -433,7 +442,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
             # so the requeue can works.
             if (
                 car
-                and car.checks_conclusion == check_api.Conclusion.SUCCESS
+                and car.train_car_state.queue_conditions_conclusion
+                == check_api.Conclusion.SUCCESS
                 and result.conclusion is check_api.Conclusion.CANCELLED
             ):
                 await check_api.set_check_run(
@@ -457,7 +467,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
             car
             and car.queue_pull_request_number is not None
             and new_car
-            and new_car.creation_state == "created"
+            and new_car.train_car_state.checks_type
+            == merge_train.TrainCarChecksType.DRAFT
             and new_car.queue_pull_request_number is not None
             and new_car.queue_pull_request_number == car.queue_pull_request_number
             and self.need_draft_pull_request_refresh()
@@ -526,7 +537,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
         # NOTE(sileht): Only refresh if the car still exists
         if (
             newcar
-            and newcar.creation_state == "created"
+            and newcar.train_car_state.checks_type
+            == merge_train.TrainCarChecksType.DRAFT
             and newcar.queue_pull_request_number is not None
             and self.need_draft_pull_request_refresh()
             and not ctxt.has_been_only_refreshed()
@@ -606,7 +618,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
         return (
             await ctxt.has_been_synchronized_by_user()
             and car is not None
-            and car.creation_state == "updated"
+            and car.train_car_state.checks_type
+            == merge_train.TrainCarChecksType.INPLACE
         )
 
     async def _should_be_queued(
@@ -638,7 +651,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
         if car is None:
             return False
 
-        return car.checks_conclusion == check_api.Conclusion.SUCCESS
+        return (
+            car.train_car_state.queue_conditions_conclusion
+            == check_api.Conclusion.SUCCESS
+        )
 
     async def _should_be_cancel(
         self, ctxt: context.Context, rule: "rules.EvaluatedRule", q: merge_train.Train
@@ -655,7 +671,11 @@ Then, re-embark the pull request into the merge queue by posting the comment
             return True
 
         car = q.get_car(ctxt)
-        if car and car.creation_state == "updated":
+        if (
+            car
+            and car.train_car_state.checks_type
+            == merge_train.TrainCarChecksType.INPLACE
+        ):
             # NOTE(sileht) check first if PR should be removed from the queue
             pull_rule_checks_status = await checks_status.get_rule_checks_status(
                 ctxt.log, ctxt.repository, [ctxt.pull_request], rule

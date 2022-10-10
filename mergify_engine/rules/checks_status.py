@@ -8,13 +8,6 @@ from mergify_engine.rules import filter
 from mergify_engine.rules import live_resolvers
 
 
-ChecksCombinedStatus = typing.Literal[
-    check_api.Conclusion.FAILURE,
-    check_api.Conclusion.SUCCESS,
-    check_api.Conclusion.PENDING,
-]
-
-
 async def get_rule_checks_status(
     log: "logging.LoggerAdapter[logging.Logger]",
     repository: context.Repository,
@@ -23,7 +16,7 @@ async def get_rule_checks_status(
     *,
     unmatched_conditions_return_failure: bool = True,
     use_new_rule_checks_status: bool = True,
-) -> ChecksCombinedStatus:
+) -> check_api.Conclusion:
     if rule.conditions.match:
         return check_api.Conclusion.SUCCESS
 

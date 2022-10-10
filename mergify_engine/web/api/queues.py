@@ -286,24 +286,34 @@ async def repository_queues(
         for position, (embarked_pull, car) in enumerate(train._iter_embarked_pulls()):
             if car is None:
                 speculative_check_pull_request = None
-            elif car.creation_state in ["created", "updated"]:
+            elif car.train_car_state.checks_type in [
+                merge_train.TrainCarChecksType.DRAFT,
+                merge_train.TrainCarChecksType.INPLACE,
+            ]:
                 if car.queue_pull_request_number is None:
                     raise RuntimeError(
-                        f"car state is {car.creation_state}, but queue_pull_request_number is None"
+                        f"car's checks type is {car.train_car_state.checks_type}, but queue_pull_request_number is None"
                     )
                 speculative_check_pull_request = SpeculativeCheckPullRequest(
-                    in_place=car.creation_state == "updated",
+                    in_place=car.train_car_state.checks_type
+                    == merge_train.TrainCarChecksType.INPLACE,
                     number=car.queue_pull_request_number,
-                    started_at=car.creation_date,
+                    started_at=car.train_car_state.creation_date,
                     ended_at=car.checks_ended_timestamp,
-                    state=car.checks_conclusion.value or "pending",
+                    state=car.train_car_state.queue_conditions_conclusion.value
+                    or "pending",
                     checks=car.last_checks,
                     evaluated_conditions=car.last_evaluated_conditions,
                 )
-            elif car.creation_state in ("failed", "pending"):
+            elif car.train_car_state.checks_type in (
+                merge_train.TrainCarChecksType.FAILED,
+                None,
+            ):
                 speculative_check_pull_request = None
             else:
-                raise RuntimeError(f"Car creation state unknown: {car.creation_state}")
+                raise RuntimeError(
+                    f"Car's checks type unknown: {car.train_car_state.checks_type}"
+                )
 
             try:
                 queue_rule = queue_rules[embarked_pull.config["name"]]

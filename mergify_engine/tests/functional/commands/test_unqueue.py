@@ -44,7 +44,7 @@ class TestUnQueueCommand(base.FunctionalTestBase):
                     [p1["number"]],
                     [],
                     base_sha,
-                    "updated",
+                    merge_train.TrainCarChecksType.INPLACE,
                     p1["number"],
                 ),
             ],

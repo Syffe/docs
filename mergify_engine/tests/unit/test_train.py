@@ -27,7 +27,7 @@ async def fake_train_car_start_checking_with_draft(
     queue_rule: rules.QueueRule,
     previous_car: merge_train.TrainCar | None,
 ) -> None:
-    inner_self.creation_state = "created"
+    inner_self.train_car_state.checks_type = merge_train.TrainCarChecksType.DRAFT
     inner_self.queue_pull_request_number = github_types.GitHubPullRequestNumber(
         inner_self.still_queued_embarked_pulls[-1].user_pull_request_number + 10
     )
@@ -36,7 +36,7 @@ async def fake_train_car_start_checking_with_draft(
 async def fake_train_car_start_checking_inplace(
     inner_self: merge_train.TrainCar, queue_rule: rules.QueueRule
 ) -> None:
-    inner_self.creation_state = "updated"
+    inner_self.train_car_state.checks_type = merge_train.TrainCarChecksType.INPLACE
 
 
 async def fake_train_car_end_checking(
@@ -271,8 +271,12 @@ async def test_train_inplace_with_speculative_checks_out_of_date(
     with mock.patch.object(merge_train.TrainCar, "is_behind", side_effect=[True]):
         await t.refresh()
     assert [[12345], [12345, 54321]] == get_cars_content(t)
-    assert t._cars[0].creation_state == "created"
-    assert t._cars[1].creation_state == "created"
+    assert (
+        t._cars[0].train_car_state.checks_type == merge_train.TrainCarChecksType.DRAFT
+    )
+    assert (
+        t._cars[1].train_car_state.checks_type == merge_train.TrainCarChecksType.DRAFT
+    )
 
 
 async def test_train_inplace_with_speculative_checks_up_to_date(
@@ -289,8 +293,12 @@ async def test_train_inplace_with_speculative_checks_up_to_date(
     with mock.patch.object(merge_train.TrainCar, "is_behind", side_effect=[False]):
         await t.refresh()
     assert [[12345], [12345, 54321]] == get_cars_content(t)
-    assert t._cars[0].creation_state == "updated"
-    assert t._cars[1].creation_state == "created"
+    assert (
+        t._cars[0].train_car_state.checks_type == merge_train.TrainCarChecksType.INPLACE
+    )
+    assert (
+        t._cars[1].train_car_state.checks_type == merge_train.TrainCarChecksType.DRAFT
+    )
 
 
 async def test_train_add_pull(
@@ -798,7 +806,9 @@ async def test_train_queue_splitted_on_failure_1x2(
     assert [[41, 42]] == get_cars_content(t)
     assert list(range(6, 20)) == get_waiting_content(t)
 
-    t._cars[0].checks_conclusion = check_api.Conclusion.FAILURE
+    t._cars[
+        0
+    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.FAILURE
     await t.save()
     assert [[41, 42]] == get_cars_content(t)
     assert list(range(6, 20)) == get_waiting_content(t)
@@ -812,11 +822,17 @@ async def test_train_queue_splitted_on_failure_1x2(
     assert list(range(6, 20)) == get_waiting_content(t)
     assert len(t._cars[0].failure_history) == 1
     assert len(t._cars[1].failure_history) == 0
-    assert t._cars[0].creation_state == "created"
-    assert t._cars[1].creation_state == "created"
+    assert (
+        t._cars[0].train_car_state.checks_type == merge_train.TrainCarChecksType.DRAFT
+    )
+    assert (
+        t._cars[1].train_car_state.checks_type == merge_train.TrainCarChecksType.DRAFT
+    )
 
     # mark [41] as failed
-    t._cars[1].checks_conclusion = check_api.Conclusion.FAILURE
+    t._cars[
+        1
+    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.FAILURE
     await t.save()
     await t.remove_pull(await context_getter(41, merged=False), "", "")
 
@@ -825,7 +841,9 @@ async def test_train_queue_splitted_on_failure_1x2(
     assert [[42, 6]] == get_cars_content(t)
     assert list(range(7, 20)) == get_waiting_content(t)
     assert len(t._cars[0].failure_history) == 0
-    assert t._cars[0].creation_state == "created"
+    assert (
+        t._cars[0].train_car_state.checks_type == merge_train.TrainCarChecksType.DRAFT
+    )
 
 
 @mock.patch("mergify_engine.queue.merge_train.TrainCar._set_creation_failure")
@@ -847,7 +865,9 @@ async def test_train_queue_splitted_on_failure_1x5(
     assert [[41, 42, 43, 44, 45]] == get_cars_content(t)
     assert list(range(6, 20)) == get_waiting_content(t)
 
-    t._cars[0].checks_conclusion = check_api.Conclusion.FAILURE
+    t._cars[
+        0
+    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.FAILURE
     await t.save()
     assert [[41, 42, 43, 44, 45]] == get_cars_content(t)
     assert list(range(6, 20)) == get_waiting_content(t)
@@ -863,12 +883,18 @@ async def test_train_queue_splitted_on_failure_1x5(
     assert len(t._cars[0].failure_history) == 1
     assert len(t._cars[1].failure_history) == 1
     assert len(t._cars[2].failure_history) == 0
-    assert t._cars[0].creation_state == "created"
-    assert t._cars[1].creation_state == "pending"
-    assert t._cars[2].creation_state == "created"
+    assert (
+        t._cars[0].train_car_state.checks_type == merge_train.TrainCarChecksType.DRAFT
+    )
+    assert t._cars[1].train_car_state.checks_type is None
+    assert (
+        t._cars[2].train_car_state.checks_type == merge_train.TrainCarChecksType.DRAFT
+    )
 
     # mark [43+44] as failed
-    t._cars[1].checks_conclusion = check_api.Conclusion.FAILURE
+    t._cars[
+        1
+    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.FAILURE
     await t.save()
 
     # nothing should move yet as we don't known yet if [41+42] is broken or not
@@ -882,12 +908,18 @@ async def test_train_queue_splitted_on_failure_1x5(
     assert len(t._cars[0].failure_history) == 1
     assert len(t._cars[1].failure_history) == 1
     assert len(t._cars[2].failure_history) == 0
-    assert t._cars[0].creation_state == "created"
-    assert t._cars[1].creation_state == "pending"
-    assert t._cars[2].creation_state == "created"
+    assert (
+        t._cars[0].train_car_state.checks_type == merge_train.TrainCarChecksType.DRAFT
+    )
+    assert t._cars[1].train_car_state.checks_type is None
+    assert (
+        t._cars[2].train_car_state.checks_type == merge_train.TrainCarChecksType.DRAFT
+    )
 
     # mark [41+42] as ready and merge it
-    t._cars[0].checks_conclusion = check_api.Conclusion.SUCCESS
+    t._cars[
+        0
+    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.SUCCESS
     await t.save()
     fake_client.update_base_sha("sha41")
     await t.remove_pull(
@@ -907,11 +939,15 @@ async def test_train_queue_splitted_on_failure_1x5(
     assert [45] + list(range(6, 20)) == get_waiting_content(t)
     assert len(t._cars[0].failure_history) == 2
     assert len(t._cars[1].failure_history) == 1
-    assert t._cars[0].creation_state == "created"
-    assert t._cars[1].creation_state == "pending"
+    assert (
+        t._cars[0].train_car_state.checks_type == merge_train.TrainCarChecksType.DRAFT
+    )
+    assert t._cars[1].train_car_state.checks_type is None
 
     # mark [43] as failure
-    t._cars[0].checks_conclusion = check_api.Conclusion.FAILURE
+    t._cars[
+        0
+    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.FAILURE
     await t.save()
     await t.remove_pull(await context_getter(43, merged=False), "", "")
 
@@ -920,7 +956,9 @@ async def test_train_queue_splitted_on_failure_1x5(
     assert [[44, 45, 6, 7, 8]] == get_cars_content(t)
     assert list(range(9, 20)) == get_waiting_content(t)
     assert len(t._cars[0].failure_history) == 0
-    assert t._cars[0].creation_state == "created"
+    assert (
+        t._cars[0].train_car_state.checks_type == merge_train.TrainCarChecksType.DRAFT
+    )
 
 
 @mock.patch("mergify_engine.queue.merge_train.TrainCar._set_creation_failure")
@@ -945,7 +983,9 @@ async def test_train_queue_splitted_on_failure_2x5(
     ] == get_cars_content(t)
     assert list(range(11, 20)) == get_waiting_content(t)
 
-    t._cars[0].checks_conclusion = check_api.Conclusion.FAILURE
+    t._cars[
+        0
+    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.FAILURE
     await t.save()
     assert [
         [41, 42, 43, 44, 45],
@@ -964,12 +1004,20 @@ async def test_train_queue_splitted_on_failure_2x5(
     assert len(t._cars[0].failure_history) == 1
     assert len(t._cars[1].failure_history) == 1
     assert len(t._cars[2].failure_history) == 0
-    assert t._cars[0].creation_state == "created"
-    assert t._cars[1].creation_state == "created"
-    assert t._cars[2].creation_state == "created"
+    assert (
+        t._cars[0].train_car_state.checks_type == merge_train.TrainCarChecksType.DRAFT
+    )
+    assert (
+        t._cars[1].train_car_state.checks_type == merge_train.TrainCarChecksType.DRAFT
+    )
+    assert (
+        t._cars[2].train_car_state.checks_type == merge_train.TrainCarChecksType.DRAFT
+    )
 
     # mark [43+44] as failed
-    t._cars[1].checks_conclusion = check_api.Conclusion.FAILURE
+    t._cars[
+        1
+    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.FAILURE
     await t.save()
 
     # nothing should move yet as we don't known yet if [41+42] is broken or not
@@ -983,12 +1031,20 @@ async def test_train_queue_splitted_on_failure_2x5(
     assert len(t._cars[0].failure_history) == 1
     assert len(t._cars[1].failure_history) == 1
     assert len(t._cars[2].failure_history) == 0
-    assert t._cars[0].creation_state == "created"
-    assert t._cars[1].creation_state == "created"
-    assert t._cars[2].creation_state == "created"
+    assert (
+        t._cars[0].train_car_state.checks_type == merge_train.TrainCarChecksType.DRAFT
+    )
+    assert (
+        t._cars[1].train_car_state.checks_type == merge_train.TrainCarChecksType.DRAFT
+    )
+    assert (
+        t._cars[2].train_car_state.checks_type == merge_train.TrainCarChecksType.DRAFT
+    )
 
     # mark [41+42] as ready and merge it
-    t._cars[0].checks_conclusion = check_api.Conclusion.SUCCESS
+    t._cars[
+        0
+    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.SUCCESS
     await t.save()
     fake_client.update_base_sha("sha41")
     await t.remove_pull(
@@ -1008,11 +1064,17 @@ async def test_train_queue_splitted_on_failure_2x5(
     assert [45] + list(range(6, 20)) == get_waiting_content(t)
     assert len(t._cars[0].failure_history) == 2
     assert len(t._cars[1].failure_history) == 1
-    assert t._cars[0].creation_state == "created"
-    assert t._cars[1].creation_state == "created"
+    assert (
+        t._cars[0].train_car_state.checks_type == merge_train.TrainCarChecksType.DRAFT
+    )
+    assert (
+        t._cars[1].train_car_state.checks_type == merge_train.TrainCarChecksType.DRAFT
+    )
 
     # mark [43] as failure
-    t._cars[0].checks_conclusion = check_api.Conclusion.FAILURE
+    t._cars[
+        0
+    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.FAILURE
     await t.save()
     await t.remove_pull(await context_getter(43, merged=False), "", "")
 
@@ -1025,8 +1087,12 @@ async def test_train_queue_splitted_on_failure_2x5(
     assert list(range(14, 20)) == get_waiting_content(t)
     assert len(t._cars[0].failure_history) == 0
     assert len(t._cars[1].failure_history) == 0
-    assert t._cars[0].creation_state == "created"
-    assert t._cars[1].creation_state == "created"
+    assert (
+        t._cars[0].train_car_state.checks_type == merge_train.TrainCarChecksType.DRAFT
+    )
+    assert (
+        t._cars[1].train_car_state.checks_type == merge_train.TrainCarChecksType.DRAFT
+    )
 
 
 @mock.patch("mergify_engine.queue.merge_train.TrainCar._set_creation_failure")
@@ -1054,7 +1120,9 @@ async def test_train_queue_splitted_on_failure_5x3(
     ] == get_cars_content(t)
     assert list(range(16, 22)) == get_waiting_content(t)
 
-    t._cars[0].checks_conclusion = check_api.Conclusion.FAILURE
+    t._cars[
+        0
+    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.FAILURE
     await t.save()
     assert [
         [41, 42, 43],
@@ -1078,7 +1146,9 @@ async def test_train_queue_splitted_on_failure_5x3(
     assert len(t._cars[2].failure_history) == 0
 
     # mark [41] as failed
-    t._cars[0].checks_conclusion = check_api.Conclusion.FAILURE
+    t._cars[
+        0
+    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.FAILURE
     await t.save()
     await t.remove_pull(await context_getter(41, merged=False), "", "")
 
@@ -1099,8 +1169,12 @@ async def test_train_queue_splitted_on_failure_5x3(
     assert len(t._cars[4].failure_history) == 0
 
     # mark [42+43+44] as ready and merge it
-    t._cars[0].checks_conclusion = check_api.Conclusion.SUCCESS
-    t._cars[1].checks_conclusion = check_api.Conclusion.FAILURE
+    t._cars[
+        0
+    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.SUCCESS
+    t._cars[
+        1
+    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.FAILURE
     await t.save()
     fake_client.update_base_sha("sha42")
     await t.remove_pull(
@@ -1127,8 +1201,12 @@ async def test_train_queue_splitted_on_failure_5x3(
     assert len(t._cars[2].failure_history) == 0
 
     # mark [45] and [46+46] as success, so it's 7 fault !
-    t._cars[0].checks_conclusion = check_api.Conclusion.SUCCESS
-    t._cars[1].checks_conclusion = check_api.Conclusion.SUCCESS
+    t._cars[
+        0
+    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.SUCCESS
+    t._cars[
+        1
+    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.SUCCESS
     await t.save()
 
     # Nothing change yet!
@@ -1155,7 +1233,10 @@ async def test_train_queue_splitted_on_failure_5x3(
     assert [
         [42, 43, 44, 45, 46, 7],
     ] == get_cars_content(t)
-    assert t._cars[0].checks_conclusion == check_api.Conclusion.FAILURE
+    assert (
+        t._cars[0].train_car_state.queue_conditions_conclusion
+        == check_api.Conclusion.FAILURE
+    )
     assert len(t._cars[0].failure_history) == 0
 
     # remove the failed 7
@@ -1394,7 +1475,9 @@ async def test_train_queue_pr_with_higher_prio_enters_in_queue_during_merging_1x
     assert [[41, 42, 43, 44, 45]] == get_cars_content(t)
     assert [] == get_waiting_content(t)
 
-    t._cars[0].checks_conclusion = check_api.Conclusion.SUCCESS
+    t._cars[
+        0
+    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.SUCCESS
     await t.save()
     await t.refresh()
     assert [[41, 42, 43, 44, 45]] == get_cars_content(t)
@@ -1437,7 +1520,9 @@ async def test_train_queue_pr_with_higher_prio_enters_in_queue_during_merging_2x
     ] == get_cars_content(t)
     assert [51] == get_waiting_content(t)
 
-    t._cars[0].checks_conclusion = check_api.Conclusion.SUCCESS
+    t._cars[
+        0
+    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.SUCCESS
     await t.save()
     await t.refresh()
     assert [
@@ -1487,3 +1572,122 @@ def test_embarked_pull_old_serialization() -> None:
     assert ep.user_pull_request_number == 1234
     assert ep.config == config
     assert ep.queued_at == now
+
+
+@pytest.mark.parametrize(
+    "creation_state,checks_type,checks_conclusion,ci_state,outcome,ci_has_passed,has_timed_out,outcome_message",
+    (
+        (
+            "pending",
+            None,
+            check_api.Conclusion.PENDING,
+            merge_train.CiState.PENDING,
+            merge_train.TrainCarOutcome.UNKNWON,
+            False,
+            False,
+            "",
+        ),
+        (
+            "created",
+            merge_train.TrainCarChecksType.DRAFT,
+            check_api.Conclusion.PENDING,
+            merge_train.CiState.PENDING,
+            merge_train.TrainCarOutcome.UNKNWON,
+            False,
+            False,
+            "",
+        ),
+        (
+            "updated",
+            merge_train.TrainCarChecksType.INPLACE,
+            check_api.Conclusion.PENDING,
+            merge_train.CiState.PENDING,
+            merge_train.TrainCarOutcome.UNKNWON,
+            False,
+            False,
+            "",
+        ),
+        (
+            "failed",
+            merge_train.TrainCarChecksType.FAILED,
+            check_api.Conclusion.PENDING,
+            merge_train.CiState.PENDING,
+            merge_train.TrainCarOutcome.UNKNWON,
+            False,
+            False,
+            "",
+        ),
+        (
+            "failed",
+            merge_train.TrainCarChecksType.FAILED,
+            check_api.Conclusion.FAILURE,
+            merge_train.CiState.FAILED,
+            merge_train.TrainCarOutcome.CHECKS_FAILED,
+            False,
+            False,
+            merge_train.CI_FAILED_MESSAGE,
+        ),
+        (
+            "failed",
+            merge_train.TrainCarChecksType.FAILED,
+            check_api.Conclusion.PENDING,
+            merge_train.CiState.PENDING,
+            merge_train.TrainCarOutcome.CHECKS_TIMEOUT,
+            False,
+            True,
+            merge_train.CHECKS_TIMEOUT_MESSAGE,
+        ),
+        (
+            "updated",
+            merge_train.TrainCarChecksType.INPLACE,
+            check_api.Conclusion.SUCCESS,
+            merge_train.CiState.SUCCESS,
+            merge_train.TrainCarOutcome.MERGEABLE,
+            True,
+            False,
+            "",
+        ),
+    ),
+)
+def test_train_car_old_serialization(
+    creation_state: str,
+    checks_type: merge_train.TrainCarChecksType,
+    checks_conclusion: check_api.Conclusion,
+    ci_state: merge_train.CiState,
+    outcome: merge_train.TrainCarOutcome,
+    ci_has_passed: bool,
+    has_timed_out: bool,
+    outcome_message: str,
+) -> None:
+
+    old_serialized_payload = {
+        "initial_embarked_pulls": [],
+        "still_queued_embarked_pulls": [],
+        "parent_pull_request_numbers": [],
+        "initial_current_base_sha": github_types.SHAType("toto"),
+        "creation_date": date.utcnow(),
+        "creation_state": creation_state,
+        "checks_conclusion": checks_conclusion,
+        "queue_pull_request_number": github_types.GitHubPullRequestNumber(123),
+        "failure_history": [],
+        "head_branch": "head_branch",
+        "last_checks": [],
+        "last_evaluated_conditions": None,
+        "has_timed_out": has_timed_out,
+        "checks_ended_timestamp": date.utcnow(),
+        "ci_has_passed": ci_has_passed,
+        "queue_branch_name": github_types.GitHubRefType("queue_branch"),
+    }
+    old_serialized_untyped = json.loads(json.dumps(old_serialized_payload))
+    train_car = merge_train.TrainCar.deserialize(mock.Mock(), old_serialized_untyped)
+    assert train_car.train_car_state is not None
+    assert not hasattr(train_car, "check_conclusions")
+    assert not hasattr(train_car, "has_timed_out")
+    assert not hasattr(train_car, "ci_has_passed")
+    assert not hasattr(train_car, "creation_date")
+    assert not hasattr(train_car, "creation_state")
+    assert train_car.train_car_state.checks_type == checks_type
+    assert train_car.train_car_state.outcome == outcome
+    assert train_car.train_car_state.queue_conditions_conclusion == checks_conclusion
+    assert train_car.train_car_state.ci_state == ci_state
+    assert train_car.train_car_state.outcome_message == outcome_message
