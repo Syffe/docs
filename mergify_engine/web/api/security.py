@@ -14,6 +14,7 @@ from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.dashboard import application as application_mod
 from mergify_engine.dashboard import subscription
+from mergify_engine.models import github_user
 from mergify_engine.web import redis
 
 
@@ -72,28 +73,11 @@ class ApplicationAuth(fastapi.security.http.HTTPBearer):
 
 
 get_application = ApplicationAuth()
-
-# Just an alias to help readability of fastapi.Security
-require_authentication = get_application
-
-
-async def get_installation(
-    application: application_mod.Application = fastapi.Security(  # noqa: B008
-        get_application
-    ),
-) -> github_types.GitHubInstallation:
-    if application.account_scope is None:
-        raise fastapi.HTTPException(status_code=403)
-
-    try:
-        return await github.get_installation_from_account_id(
-            application.account_scope["id"]
-        )
-    except exceptions.MergifyNotInstalled:
-        raise fastapi.HTTPException(status_code=403)
+get_optional_application = ApplicationAuth(auto_error=False)
 
 
 async def get_repository_context(
+    request: fastapi.Request,
     owner: github_types.GitHubLogin = fastapi.Path(  # noqa: B008
         ..., description="The owner of the repository"
     ),
@@ -103,16 +87,33 @@ async def get_repository_context(
     redis_links: redis_utils.RedisLinks = fastapi.Depends(  # noqa: B008
         redis.get_redis_links
     ),
-    installation_json: github_types.GitHubInstallation = fastapi.Depends(  # noqa: B008
-        get_installation
-    ),
+    application: application_mod.Application
+    | None = fastapi.Security(get_optional_application),  # noqa: B008
 ) -> abc.AsyncGenerator[context.Repository, None]:
-    sub = await subscription.Subscription.get_subscription(
-        redis_links.cache, installation_json["account"]["id"]
-    )
-    async with github.aget_client(
-        installation_json,
-        extra_metrics=sub.has_feature(subscription.Features.PRIVATE_REPOSITORY),
+    try:
+        # FIXME(sileht): we should do this with the user token for cookie authentication
+        installation_json = await github.get_installation_from_login(owner)
+    except exceptions.MergifyNotInstalled:
+        raise fastapi.HTTPException(status_code=403)
+
+    auth: github.GithubAppInstallationAuth | github.GithubTokenAuth
+    if application is not None:
+        # Authenticated by token
+        if (
+            application.account_scope is not None
+            and application.account_scope["id"] != installation_json["account"]["id"]
+        ):
+            raise fastapi.HTTPException(status_code=403)
+        auth = github.GithubAppInstallationAuth(installation_json)
+    elif "auth" in request.scope and request.auth and request.auth.is_authenticated:
+        # Authenticated by cookie session
+        user = typing.cast(github_user.GitHubUser, request.auth.user)
+        auth = github.GithubTokenAuth(user.oauth_access_token)
+    else:
+        raise fastapi.HTTPException(403)
+
+    async with github.AsyncGithubInstallationClient(
+        auth,
     ) as client:
         try:
             # Check this token has access to this repository
@@ -122,6 +123,12 @@ async def get_repository_context(
             )
         except (http.HTTPNotFound, http.HTTPForbidden, http.HTTPUnauthorized):
             raise fastapi.HTTPException(status_code=404)
+
+        sub = await subscription.Subscription.get_subscription(
+            redis_links.cache, repo["owner"]["id"]
+        )
+        if sub.has_feature(subscription.Features.PRIVATE_REPOSITORY):
+            client.enable_extra_metrics()
 
         installation = context.Installation(installation_json, sub, client, redis_links)
 
@@ -134,6 +141,9 @@ async def get_repository_context(
         sentry_sdk.set_tag("gh_repo", repository_ctxt.repo["name"])
 
         yield repository_ctxt
+
+
+require_authentication = get_repository_context
 
 
 async def check_subscription_feature_queue_freeze(

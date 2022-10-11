@@ -7,6 +7,7 @@ from mergify_engine import config
 from mergify_engine import count_seats
 from mergify_engine import github_types
 from mergify_engine import json
+from mergify_engine import models
 from mergify_engine import yaml
 from mergify_engine.tests.functional import base
 
@@ -81,6 +82,7 @@ class TestCountSeats(base.FunctionalTestBase):
         args = argparse.Namespace(json=True, daemon=False)
         with mock.patch("sys.stdout") as stdout:
             with mock.patch.object(config, "SUBSCRIPTION_TOKEN"):
+                models.APP_STATE = None
                 await count_seats.report(args)
                 s = "".join(call.args[0] for call in stdout.write.mock_calls)
                 json_reports = json.loads(s)

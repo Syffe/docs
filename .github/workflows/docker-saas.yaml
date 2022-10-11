@@ -31,6 +31,13 @@ jobs:
         image: redis:latest
         ports:
           - 6363:6379
+      postgres:
+        # Pin PostgreSQL to the version that is in ubuntu-latest
+        image: postgres:12.5
+        env:
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
     steps:
       - name: Fetch job check run information
         id: fetch-check-run
@@ -202,6 +209,7 @@ jobs:
             docker run \
               --env-file fake.env \
               -e MERGIFYENGINE_STORAGE_URL=redis://redis:6363 \
+              -e MERGIFYENGINE_DATABASE_URL=postgresql://postgres:password@postgres:5432/postgres \
               --entrypoint /bin/bash \
               $i:tmp \
               -c '/datadog-wrapper.sh mergify-import-check-worker;

@@ -9,6 +9,7 @@ from mergify_engine.web import refresher
 from mergify_engine.web import subscriptions
 from mergify_engine.web import utils
 from mergify_engine.web.api import root as api_root
+from mergify_engine.web.front import root as front_root
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -25,7 +26,8 @@ def create_app() -> fastapi.FastAPI:
     app.include_router(refresher.router, prefix="/refresh")
     app.include_router(legacy_badges.router, prefix="/badges")
 
-    app.mount("/v1", api_root.create_app())
+    app.mount("/v1", api_root.create_app(cors_enabled=True))
+    app.mount("/front", front_root.create_app())
 
     utils.setup_exception_handlers(app)
 

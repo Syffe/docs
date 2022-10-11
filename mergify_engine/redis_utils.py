@@ -19,6 +19,7 @@ LOG = daiquiri.getLogger(__name__)
 
 
 RedisCache = typing.NewType("RedisCache", "redispy.Redis[str]")
+RedisAuthentication = typing.NewType("RedisAuthentication", "redispy.Redis[bytes]")
 RedisStream = typing.NewType("RedisStream", "redispy.Redis[bytes]")
 RedisQueue = typing.NewType("RedisQueue", "redispy.Redis[bytes]")
 RedisActiveUsers = typing.NewType("RedisActiveUsers", "redispy.Redis[bytes]")
@@ -120,6 +121,7 @@ class RedisLinks:
     queue_max_connections: int | None = None
     eventlogs_max_connections: int | None = None
     stats_max_connections: int | None = None
+    authentication_max_connections: int | None = None
 
     @functools.cached_property
     def queue(self) -> RedisQueue:
@@ -205,6 +207,16 @@ class RedisLinks:
         return RedisActiveUsers(client)
 
     @functools.cached_property
+    def authentication(self) -> RedisAuthentication:
+        client = self.redis_from_url(
+            "authentication",
+            config.AUTHENTICATION_URL,
+            decode_responses=False,
+            max_connections=self.authentication_max_connections,
+        )
+        return RedisAuthentication(client)
+
+    @functools.cached_property
     def cache(self) -> RedisCache:
         client = self.redis_from_url(
             "cache",
@@ -272,6 +284,7 @@ class RedisLinks:
             "active_users",
             "eventlogs",
             "stats",
+            "authentication",
         ):
             if db in self.__dict__:
                 await self.__dict__[db].close(close_connection_pool=True)
@@ -286,6 +299,7 @@ class RedisLinks:
         await self.active_users.flushdb()
         await self.eventlogs.flushdb()
         await self.stats.flushdb()
+        await self.authentication.flushdb()
 
 
 def get_expiration_minid(retention: datetime.timedelta) -> int:

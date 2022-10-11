@@ -21,7 +21,16 @@ def api_enabled() -> None:
         raise fastapi.HTTPException(status_code=404)
 
 
-def create_app() -> fastapi.FastAPI:
+def include_api_routes(router: fastapi.APIRouter | fastapi.FastAPI) -> None:
+    router.include_router(applications.router)
+    router.include_router(queues.router)
+    router.include_router(badges.router)
+    router.include_router(simulator.router)
+    router.include_router(eventlogs.router)
+    router.include_router(statistics.router)
+
+
+def create_app(cors_enabled: bool) -> fastapi.FastAPI:
     app = fastapi.FastAPI(
         title="Mergify API",
         description="Faster & safer code merge",
@@ -65,19 +74,16 @@ def create_app() -> fastapi.FastAPI:
         dependencies=[fastapi.Depends(api_enabled)],
         reponses=api.default_responses,
     )
-    app.add_middleware(
-        cors.CORSMiddleware,
-        allow_origins=["*"],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-    app.include_router(applications.router)
-    app.include_router(queues.router)
-    app.include_router(badges.router)
-    app.include_router(simulator.router)
-    app.include_router(eventlogs.router)
-    app.include_router(statistics.router)
+    if cors_enabled:
+        app.add_middleware(
+            cors.CORSMiddleware,
+            allow_origins=["*"],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
+
+    include_api_routes(app)
 
     web_utils.setup_exception_handlers(app)
     return app
@@ -92,6 +98,6 @@ def generate_openapi_spec() -> None:
     if path:
         os.makedirs(path, exist_ok=True)
 
-    app = create_app()
+    app = create_app(cors_enabled=True)
     with open(args.output, "w") as f:
         json.dump(fp=f, obj=app.openapi())

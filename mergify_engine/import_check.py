@@ -13,8 +13,6 @@ def import_check_worker() -> int:
 
 def import_check_web() -> int:
     from mergify_engine import config  # noqa isort:skip
-    from mergify_engine.web import asgi
-
-    asgi.service.setup("import-check-web")  # type: ignore[attr-defined]
+    from mergify_engine.web import asgi  # noqa isort:skip
 
     return 0

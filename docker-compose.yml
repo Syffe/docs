@@ -10,3 +10,9 @@ services:
     # If we need more than that, we might need to increment this or
     # make it a parameter in the run-tests.sh somehow.
     command: --databases 100
+  postgres:
+    image: postgres
+    ports:
+      - 0:5432
+    environment:
+      POSTGRES_PASSWORD: password

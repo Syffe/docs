@@ -142,9 +142,18 @@ Schema = voluptuous.Schema(
         # Dashboard settings
         #
         voluptuous.Required(
+            "DASHBOARD_UI_FRONT_BASE_URL", default=None
+        ): voluptuous.Any(None, str),
+        voluptuous.Required(
+            "DASHBOARD_UI_SITE_URLS", default=""
+        ): CommaSeparatedStringList,
+        voluptuous.Required("DASHBOARD_UI_SESSION_EXPIRATION_HOURS", default=24): int,
+        voluptuous.Required(
             "SUBSCRIPTION_BASE_URL", default="https://subscription.mergify.com"
         ): str,
+        #
         # OnPremise special config
+        #
         voluptuous.Required("SUBSCRIPTION_TOKEN", default=None): voluptuous.Any(
             None, str
         ),
@@ -178,6 +187,13 @@ Schema = voluptuous.Schema(
         #
         voluptuous.Required("BASE_URL", default="http://localhost:8802"): str,
         voluptuous.Required(
+            "DATABASE_URL", default="postgres://localhost:5432"
+        ): voluptuous.Url(),
+        voluptuous.Required("DATABASE_OAUTH_TOKEN_SECRET_CURRENT"): str,
+        voluptuous.Required(
+            "DATABASE_OAUTH_TOKEN_SECRET_OLD", default=None
+        ): voluptuous.Any(None, str),
+        voluptuous.Required(
             "REDIS_SSL_VERIFY_MODE_CERT_NONE", default=False
         ): CoercedBool,
         voluptuous.Required(
@@ -194,6 +210,9 @@ Schema = voluptuous.Schema(
         ): voluptuous.Any(None, voluptuous.Coerce(int)),
         voluptuous.Required(
             "REDIS_STATS_WEB_MAX_CONNECTIONS", default=None
+        ): voluptuous.Any(None, voluptuous.Coerce(int)),
+        voluptuous.Required(
+            "REDIS_AUTHENTICATION_WEB_MAX_CONNECTIONS", default=None
         ): voluptuous.Any(None, voluptuous.Coerce(int)),
         # NOTE(sileht): Unused anymore, but keep to detect legacy onpremise installation
         voluptuous.Required("STORAGE_URL", default=None): voluptuous.Any(None, str),
@@ -220,6 +239,9 @@ Schema = voluptuous.Schema(
         ),
         voluptuous.Required("EVENTLOGS_URL", default=None): voluptuous.Any(None, str),
         voluptuous.Required("STATISTICS_URL", default=None): voluptuous.Any(None, str),
+        voluptuous.Required("AUTHENTICATION_URL", default=None): voluptuous.Any(
+            None, str
+        ),
         voluptuous.Required("SHARED_STREAM_PROCESSES", default=1): voluptuous.Coerce(
             int
         ),
@@ -304,6 +326,10 @@ EXTERNAL_USER_PERSONAL_TOKEN: str
 BOT_USER_ID: github_types.GitHubAccountIdType
 BOT_USER_LOGIN: github_types.GitHubLogin
 
+DATABASE_URL: str
+DATABASE_OAUTH_TOKEN_SECRET_CURRENT: str
+DATABASE_OAUTH_TOKEN_SECRET_OLD: str | None
+
 STREAM_URL: str
 EVENTLOGS_URL: str
 QUEUE_URL: str
@@ -313,9 +339,13 @@ TEAM_MEMBERS_CACHE_URL: str
 USER_PERMISSIONS_CACHE_URL: str
 ACTIVE_USERS_URL: str
 STATISTICS_URL: str
+AUTHENTICATION_URL: str
 
 BUCKET_PROCESSING_MAX_SECONDS: int
 INTEGRATION_ID: int
+DASHBOARD_UI_FRONT_BASE_URL: str
+DASHBOARD_UI_SITE_URLS: list[str]
+DASHBOARD_UI_SESSION_EXPIRATION_HOURS: int
 SUBSCRIPTION_BASE_URL: str
 SUBSCRIPTION_TOKEN: str
 ENGINE_TO_DASHBOARD_API_KEY: str
@@ -332,6 +362,7 @@ REDIS_CACHE_WEB_MAX_CONNECTIONS: int | None
 REDIS_QUEUE_WEB_MAX_CONNECTIONS: int | None
 REDIS_EVENTLOGS_WEB_MAX_CONNECTIONS: int | None
 REDIS_STATS_WEB_MAX_CONNECTIONS: int | None
+REDIS_AUTHENTICATION_WEB_MAX_CONNECTIONS: int | None
 TESTING_ORGANIZATION_ID: github_types.GitHubAccountIdType
 TESTING_ORGANIZATION_NAME: github_types.GitHubLogin
 TESTING_REPOSITORY_ID: github_types.GitHubRepositoryIdType
@@ -410,6 +441,7 @@ def load() -> dict[str, typing.Any]:
         "EVENTLOGS_URL": 8,
         "ACTIVE_USERS_URL": 9,
         "STATISTICS_URL": 10,
+        "AUTHENTICATION_URL": 11,
     }
 
     default_redis_url_parsed = parse.urlparse(
@@ -451,6 +483,12 @@ def load() -> dict[str, typing.Any]:
     if not parsed_config["SAAS_MODE"] and not parsed_config["SUBSCRIPTION_TOKEN"]:
         print("SUBSCRIPTION_TOKEN is missing. Mergify can't start.")
         sys.exit(1)
+
+    if not parsed_config["DASHBOARD_UI_FRONT_BASE_URL"]:
+        parsed_config["DASHBOARD_UI_FRONT_BASE_URL"] = parsed_config["BASE_URL"]
+
+    if not parsed_config["DASHBOARD_UI_SITE_URLS"]:
+        parsed_config["DASHBOARD_UI_SITE_URLS"] = [parsed_config["BASE_URL"]]
 
     return parsed_config  # type: ignore[no-any-return]
 

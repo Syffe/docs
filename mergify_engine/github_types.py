@@ -778,6 +778,15 @@ GitHubApiVersion = typing.Literal[
 GitHubOAuthToken = typing.NewType("GitHubOAuthToken", str)
 
 
+class GitHubUserToServerAuthorization(typing.TypedDict):
+    access_token: GitHubOAuthToken
+    expires_in: int
+    refresh_token: str
+    refresh_token_expires_in: int
+    scope: typing.Literal[""]
+    token_type: typing.Literal["bearer"]
+
+
 GitHubAnnotationLevel = typing.Literal["failure"]
 
 

@@ -509,6 +509,9 @@ class AsyncGithubInstallationClient(AsyncGithubClient):
         self._extra_metrics = extra_metrics
         super().__init__(auth=auth)
 
+    def enable_extra_metrics(self) -> None:
+        self._extra_metrics = True
+
     async def request(self, method: str, url: str, *args: typing.Any, **kwargs: typing.Any) -> httpx.Response | None:  # type: ignore[override]
         reply = None
         try:

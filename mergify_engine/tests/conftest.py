@@ -13,14 +13,20 @@ import fastapi
 import freezegun
 import freezegun.api
 import httpx
+import imia
 import msgpack
 import pytest
 import respx
+import sqlalchemy
+import starlette
 
 from mergify_engine import config
 from mergify_engine import logs
+from mergify_engine import models
 from mergify_engine import redis_utils
 from mergify_engine.clients import github
+from mergify_engine.models import github_user
+from mergify_engine.models import manage
 from mergify_engine.web import root as web_root
 
 
@@ -113,6 +119,7 @@ CONFIG_URLS_TO_MOCK = (
     "EVENTLOGS_URL",
     "ACTIVE_USERS_URL",
     "STATISTICS_URL",
+    "AUTHENTICATION_URL",
 )
 
 
@@ -154,6 +161,25 @@ def mock_redis_db_values(worker_id: str) -> abc.Generator[None, None, None]:
         yield
 
 
+@pytest.fixture(autouse=True)
+async def setup_database() -> abc.AsyncGenerator[None, None]:
+    models.init_sqlalchemy()
+    await manage.create_all()
+    try:
+        yield
+    finally:
+        await manage.drop_all()
+        models.APP_STATE = None
+
+
+@pytest.fixture
+async def db(
+    setup_database: None,
+) -> abc.AsyncGenerator[sqlalchemy.ext.asyncio.AsyncSession, None]:
+    async with models.create_session() as session:
+        yield session
+
+
 @pytest.fixture()
 async def redis_links(
     mock_redis_db_values: typing.Any,
@@ -193,6 +219,70 @@ async def github_server(
         yield respx_mock
 
 
+log_as_router = fastapi.APIRouter()
+
+
+@log_as_router.post("/log-as/{user_id}")  # noqa: FS003
+async def log_as(request: fastapi.Request, user_id: int) -> fastapi.Response:
+    async with models.create_session() as session:
+        result = await session.execute(
+            sqlalchemy.select(github_user.GitHubUser).where(
+                github_user.GitHubUser.id == int(user_id),
+                github_user.GitHubUser.oauth_access_token.isnot(None),
+            )
+        )
+
+        user = typing.cast(github_user.GitHubUser, result.unique().scalar_one_or_none())
+
+    if user:
+        await imia.login_user(request, user, "whatever")
+        return fastapi.Response(status_code=200)
+    else:
+        return fastapi.Response(status_code=400, content=f"user id `{user_id}` invalid")
+
+
+@log_as_router.get("/logged-as")
+async def logged_as(request: fastapi.Request) -> fastapi.Response:
+    if request.auth.is_authenticated:
+        return fastapi.responses.JSONResponse({"login": request.auth.user.login})
+    else:
+        raise fastapi.HTTPException(401)
+
+
+class CustomTestClient(httpx.AsyncClient):
+    def __init__(self, app: abc.Callable[..., typing.Any]):
+        super().__init__(
+            base_url=config.DASHBOARD_UI_FRONT_BASE_URL,
+            app=app,
+            follow_redirects=True,
+        )
+
+    def get_front_app(self) -> fastapi.FastAPI:
+        self._transport: httpx.ASGITransport
+        web_app = typing.cast(fastapi.FastAPI, self._transport.app)
+        for route in web_app.routes:
+            if isinstance(route, starlette.routing.Mount) and route.path == "/front":
+                return typing.cast(fastapi.FastAPI, route.app)
+        else:
+            raise RuntimeError("/front app not found")
+
+    async def log_as(self, user_id: int) -> None:
+        resp = await self.post(f"/front/for-testing/log-as/{user_id}")
+        resp.raise_for_status()
+
+    async def logged_as(self) -> str | None:
+        resp = await self.get("/front/for-testing/logged-as")
+        if resp.status_code == 401:
+            return None
+        resp.raise_for_status()
+        data = resp.json()
+        return typing.cast(str, data["login"])
+
+    async def logout(self) -> None:
+        resp = await self.get("/front/auth/logout", follow_redirects=False)
+        assert resp.status_code == 204
+
+
 @pytest.fixture
 async def web_server() -> abc.AsyncGenerator[fastapi.FastAPI, None]:
     app = web_root.create_app()
@@ -204,5 +294,6 @@ async def web_server() -> abc.AsyncGenerator[fastapi.FastAPI, None]:
 async def web_client(
     web_server: fastapi.FastAPI,
 ) -> abc.AsyncGenerator[httpx.AsyncClient, None]:
-    async with httpx.AsyncClient(app=web_server, base_url="http://localhost") as client:
+    async with CustomTestClient(app=web_server) as client:
+        client.get_front_app().include_router(log_as_router, prefix="/for-testing")
         yield client

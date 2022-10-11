@@ -70,6 +70,10 @@ class HerokuDatadogFormatter(daiquiri.formatter.DatadogFormatter):
             log_record.update({"worker_id": worker_id})
 
 
+RE_PASSWORD_SEARCH = re.compile(r"://[^@]*@")
+RE_PASSWORD_REPLACE = "://*****@"
+
+
 def config_log() -> None:
     LOG.info("##################### CONFIGURATION ######################")
     for key, value in config.CONFIG.items():
@@ -82,7 +86,10 @@ def config_log() -> None:
         ) and value is not None:
             value = "*****"
         if "URL" in name and value is not None:
-            value = re.sub(r"://[^@]*@", "://*****@", value)
+            if isinstance(value, list):
+                value = [RE_PASSWORD_SEARCH.sub(RE_PASSWORD_REPLACE, v) for v in value]
+            else:
+                value = RE_PASSWORD_SEARCH.sub(RE_PASSWORD_REPLACE, value)
         LOG.info("* MERGIFYENGINE_%s: %s", name, value)
     LOG.info("* PATH: %s", os.environ.get("PATH"))
     LOG.info("##########################################################")

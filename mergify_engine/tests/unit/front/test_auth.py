@@ -1,0 +1,83 @@
+import pytest
+import sqlalchemy.orm
+import starlette
+
+from mergify_engine.models import github_user
+from mergify_engine.tests import conftest
+from mergify_engine.web.front import auth
+
+
+def build_request(path: str) -> starlette.requests.Request:
+    scope = {  # type: ignore[var-annotated]
+        "session": {},
+        "auth": None,
+        "type": "http",
+        "http_version": "1.1",
+        "method": "GET",
+        "scheme": "https",
+        "path": path,
+        "query_string": b"",
+        "headers": [(b"host", b"www.example.org"), (b"accept", b"application/json")],
+        "client": ("134.56.78.4", 1453),
+        "server": ("www.example.org", 443),
+    }
+    return starlette.requests.Request(scope=scope)
+
+
+async def test_new_user(
+    front_login_mock: None,
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+) -> None:
+    await auth.create_or_update_user(
+        build_request("/front/auth/authorized"),
+        db,
+        "user-token",
+    )
+
+    db.expire_all()
+
+    result = await db.execute(
+        sqlalchemy.select(github_user.GitHubUser).where(github_user.GitHubUser.id == 42)
+    )
+
+    new_account = result.unique().scalar_one()
+    assert new_account.id == 42
+    assert new_account.login == "user-login"
+    assert new_account.oauth_access_token == "user-token"
+
+
+@pytest.mark.parametrize(
+    "query_string, status_code, redirect_url",
+    (
+        (
+            "setup_action=install&installation_id=123",
+            200,
+            "/github/user-login?new=true",
+        ),
+        ("setup_action=install&installation_id=456", 200, "/github?new=true"),
+        ("setup_action=request", 200, "/?request=true"),
+        ("setup_action=unknown", 200, "/"),
+        ("setup_action=install", 400, None),
+    ),
+)
+async def test_auth_setup(
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    web_client: conftest.CustomTestClient,
+    query_string: str,
+    status_code: int,
+    redirect_url: str | None,
+    front_login_mock: None,
+) -> None:
+    user = github_user.GitHubUser(
+        id=42, login="user-login", oauth_access_token="user-token"
+    )
+    db.add(user)
+    await db.commit()
+
+    await web_client.log_as(user.id)
+    assert await web_client.logged_as() == "user-login"
+
+    r = await web_client.get(f"/front/auth/setup?{query_string}")
+    assert r.status_code == status_code
+    if redirect_url is not None:
+        assert r.json()["url"] == redirect_url

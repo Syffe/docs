@@ -1,0 +1,9 @@
+---
+upgrade:
+  - |
+    Mergify Enterprise now requires a postgres database >= 12, the following
+    configuration variables must be set before upgrading to this version:
+    * `MERGIFYENGINE_DATABASE_URL` with the url to the postgres database,
+      eg: postgres://login:password@postgresql-hostname:5432/database
+    * `MERGIFYENGINE_DATABASE_OAUTH_TOKEN_SECRET_CURRENT` with a random string
+      with at least 42 char.

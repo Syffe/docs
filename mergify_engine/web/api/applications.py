@@ -20,7 +20,7 @@ class ApplicationResponse:
 router = fastapi.APIRouter(
     tags=["applications"],
     dependencies=[
-        fastapi.Depends(security.require_authentication),
+        fastapi.Depends(security.get_application),
     ],
 )
 
