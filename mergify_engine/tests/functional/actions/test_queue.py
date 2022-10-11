@@ -2124,6 +2124,126 @@ class TestQueueAction(base.FunctionalTestBase):
 
         await self.assert_merge_queue_contents(q, None, [])
 
+    async def test_unqueue_on_synchronise_and_rule_still_match_then_requeue(
+        self,
+    ) -> None:
+        rules_config = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=other-ci",
+                    ],
+                    "allow_inplace_checks": True,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules_config))
+
+        p1 = await self.create_pr()
+        await self.run_engine()
+
+        q = await self.get_train()
+        await self.assert_merge_queue_contents(
+            q,
+            p1["base"]["sha"],
+            [
+                base.MergeQueueCarMatcher(
+                    [p1["number"]],
+                    [],
+                    p1["base"]["sha"],
+                    merge_train.TrainCarChecksType.INPLACE,
+                    p1["number"],
+                ),
+            ],
+        )
+        car = q._cars[0]
+
+        # we push changes to the draft PR's branch
+        await self.push_file(target_branch=p1["head"]["ref"])
+        await self.wait_for("pull_request", {"action": "synchronize"})
+        await self.run_engine()
+
+        p1 = await self.get_pull(p1["number"])
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 1st in the queue to be merged"
+        )
+
+        # Ensure this is not the same car, a new car has to be created
+        await q.load()
+        assert car != q._cars[0]
+
+    async def test_unqueue_on_synchronise_and_rule_unmatch(self) -> None:
+        rules_config = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=other-ci",
+                    ],
+                    "allow_inplace_checks": True,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules_config))
+
+        p1 = await self.create_pr()
+        await self.create_status(p1)
+        await self.run_engine()
+
+        q = await self.get_train()
+        await self.assert_merge_queue_contents(
+            q,
+            p1["base"]["sha"],
+            [
+                base.MergeQueueCarMatcher(
+                    [p1["number"]],
+                    [],
+                    p1["base"]["sha"],
+                    merge_train.TrainCarChecksType.INPLACE,
+                    p1["number"],
+                ),
+            ],
+        )
+
+        # we push changes to the draft PR's branch
+        await self.push_file(target_branch=p1["head"]["ref"])
+        await self.wait_for("pull_request", {"action": "synchronize"})
+        await self.run_engine()
+
+        p1 = await self.get_pull(p1["number"])
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+        )
+        assert check is not None
+        assert check["output"]["title"] == "The rule doesn't match anymore"
+
     async def test_unqueue_all_pr_when_unexpected_changes_on_draft_pr(self) -> None:
         rules_config = {
             "queue_rules": [

@@ -11,6 +11,7 @@ from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import queue
 from mergify_engine import refresher
+from mergify_engine import rules
 from mergify_engine import signals
 from mergify_engine import utils
 from mergify_engine import worker_pusher
@@ -24,10 +25,6 @@ from mergify_engine.queue import merge_train
 from mergify_engine.rules import checks_status
 from mergify_engine.rules import conditions
 from mergify_engine.rules import types
-
-
-if typing.TYPE_CHECKING:
-    from mergify_engine import rules
 
 
 class QueueAction(merge_base.MergeBaseAction[merge_train.Train, freeze.QueueFreeze]):
@@ -386,17 +383,23 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         result = await self.merge_report(ctxt, merge_bot_account)
         if result is None:
-            should_be_requeued = await self._should_be_requeued(ctxt, car)
-
-            if should_be_requeued:
+            # NOTE(sileht): the pull request gets checked and then changed
+            # by user, we should unqueue and requeue it as the conditions still match.
+            if await ctxt.has_been_synchronized_by_user():
                 await q.remove_pull(
                     ctxt,
                     rule.get_signal_trigger(),
                     "The pull request has been removed from the queue\n"
                     "The pull request code has been updated.",
                 )
+                if isinstance(rule, rules.CommandRule):
+                    return check_api.Result(
+                        check_api.Conclusion.CANCELLED,
+                        "The pull request has been removed from the queue",
+                        "The pull request code has been updated.",
+                    )
 
-            if should_be_requeued or await self._should_be_queued(ctxt, q):
+            if await self._should_be_queued(ctxt, q):
                 await q.add_pull(
                     ctxt,
                     typing.cast(queue.PullQueueConfig, self.config),
@@ -520,14 +523,14 @@ Then, re-embark the pull request into the merge queue by posting the comment
             # We just rebase the pull request, don't cancel it yet if CIs are
             # running. The pull request will be merged if all rules match again.
             # if not we will delete it when we received all CIs termination
-            if await self._should_be_queued(ctxt, q):
-                if await self._should_be_cancel(ctxt, rule, q):
-                    result = actions.CANCELLED_CHECK_REPORT
-                else:
+            if await self._should_be_cancel(ctxt, rule, q):
+                result = actions.CANCELLED_CHECK_REPORT
+            else:
+                if await self._should_be_queued(ctxt, q):
                     qf = await self._get_current_queue_freeze(ctxt)
                     result = await self.get_queue_status(ctxt, rule, q, qf)
-            else:
-                result = await self.get_unqueue_status(ctxt, q)
+                else:
+                    result = await self.get_unqueue_status(ctxt, q)
 
         if result.conclusion is not check_api.Conclusion.PENDING:
             await q.remove_pull(ctxt, rule.get_signal_trigger(), result.title)
@@ -595,8 +598,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
         )
         if manually_unqueued:
             reason = "The pull request has been manually removed from the queue by an `unqueue` command."
-        elif await ctxt.has_been_synchronized_by_user():
-            reason = "The pull request code has been updated."
         else:
             reason = (
                 "The queue conditions cannot be satisfied due to failing checks or checks timeout. "
@@ -608,25 +609,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
             reason,
         )
 
-    async def _should_be_requeued(
-        self,
-        ctxt: context.Context,
-        car: merge_train.TrainCar | None,
-    ) -> bool:
-        # NOTE(sileht): the pull request gets checked in-place and then changed
-        # by user, we should unqueue and requeue it as the conditions still match.
-        return (
-            await ctxt.has_been_synchronized_by_user()
-            and car is not None
-            and car.train_car_state.checks_type
-            == merge_train.TrainCarChecksType.INPLACE
-        )
-
     async def _should_be_queued(
         self, ctxt: context.Context, q: merge_train.Train
     ) -> bool:
-        if await ctxt.has_been_synchronized_by_user():
-            return False
         check = await ctxt.get_engine_check_run(constants.MERGE_QUEUE_SUMMARY_NAME)
         return not check or check_api.Conclusion(check["conclusion"]) in [
             check_api.Conclusion.SUCCESS,

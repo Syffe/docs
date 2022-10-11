@@ -1505,13 +1505,18 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         )
 
     async def push_file(
-        self, filename: str = "random_file.txt", content: str = ""
+        self,
+        filename: str = "random_file.txt",
+        content: str = "",
+        target_branch: str | None = None,
     ) -> None:
-        await self.git("fetch", "origin", f"{self.main_branch_name}")
-        await self.git("checkout", "-b", "random", f"origin/{self.main_branch_name}")
+        if target_branch is None:
+            target_branch = self.main_branch_name
+        await self.git("fetch", "origin", target_branch)
+        await self.git("checkout", "-b", "random", f"origin/{target_branch}")
         with open(self.git.repository + f"/{filename}", "w") as f:
             f.write(content)
         await self.git("add", filename)
         await self.git("commit", "--no-edit", "-m", "random update")
-        await self.git("push", "--quiet", "origin", f"random:{self.main_branch_name}")
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.git("push", "--quiet", "origin", f"random:{target_branch}")
+        await self.wait_for("push", {"ref": f"refs/heads/{target_branch}"})
