@@ -353,21 +353,7 @@ jobs:
           EOF
           heroku container:login
 
-      # The first phase upload all images to heroku
-      - name: 📜 Tag and Push (versioned)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        env:
-          SHA: ${{ steps.vars.outputs.SHA }}
-          HEROKU_ENVIRONMENT: ${{ steps.vars.outputs.HEROKU_ENVIRONMENT }}
-        run: |
-          for i in web worker-shared worker-dedicated worker-monitoring; do
-            image="registry.heroku.com/${HEROKU_ENVIRONMENT}/${i}:${SHA}"
-            docker tag "${i}:tmp" "$image"
-            docker push "$image"
-          done
-
-      # The second phase just upload a new tag that will be used for the release cycle
-      - name: 📜 Tag and Push (latest)
+      - name: 📜 Tag and Push
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           HEROKU_ENVIRONMENT: ${{ steps.vars.outputs.HEROKU_ENVIRONMENT }}
@@ -378,7 +364,6 @@ jobs:
             docker push "$image"
           done
 
-      # The third phase start the new latest images
       - name: 🚀 Release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
