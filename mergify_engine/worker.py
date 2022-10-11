@@ -1063,34 +1063,38 @@ class Worker:
         )
         return await self._stream_worker_task(stream_processor)
 
-    async def _stream_worker_task(self, stream_processor: StreamProcessor) -> None:
-        logs.WORKER_ID.set(stream_processor.worker_id)
-
-        bucket_org_key: typing.Optional[worker_lua.BucketOrgKeyType] = None
-
+    async def _get_next_bucket_to_proceed(
+        self,
+        stream_processor: StreamProcessor,
+    ) -> worker_lua.BucketOrgKeyType | None:
         now = time.time()
         for org_bucket in await self._redis_links.stream.zrangebyscore(
             "streams", min=0, max=now
         ):
             bucket_org_key = worker_lua.BucketOrgKeyType(org_bucket.decode())
+            owner_id = self.extract_owner(bucket_org_key)
+            if not stream_processor.should_handle_owner(
+                owner_id,
+                self._dedicated_workers_owners_cache,
+                self.global_shared_tasks_count,
+            ):
+                continue
+
             has_pull_requests_to_process = (
                 await stream_processor.select_pull_request_bucket(bucket_org_key)
             )
             if not has_pull_requests_to_process:
                 continue
 
-            owner_id = self.extract_owner(bucket_org_key)
-            if stream_processor.should_handle_owner(
-                owner_id,
-                self._dedicated_workers_owners_cache,
-                self.global_shared_tasks_count,
-            ):
-                statsd.increment(
-                    "engine.streams.selected",
-                    tags=[f"worker_id:{stream_processor.worker_id}"],
-                )
-                break
-        else:
+            return bucket_org_key
+
+        return None
+
+    async def _stream_worker_task(self, stream_processor: StreamProcessor) -> None:
+        logs.WORKER_ID.set(stream_processor.worker_id)
+
+        bucket_org_key = await self._get_next_bucket_to_proceed(stream_processor)
+        if bucket_org_key is None:
             return None
 
         LOG.debug(
@@ -1098,6 +1102,13 @@ class Worker:
             stream_processor.worker_id,
             bucket_org_key,
         )
+
+        statsd.increment(
+            "engine.streams.selected",
+            tags=[f"worker_id:{stream_processor.worker_id}"],
+        )
+
+        owner_id = self.extract_owner(bucket_org_key)
         owner_login_for_tracing = self._owners_cache.get(owner_id)
         try:
             with tracer.trace(
