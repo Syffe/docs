@@ -86,7 +86,9 @@ class PullRequestQueued:
     )
 
     position: int = dataclasses.field(
-        metadata={"description": "The position of the pull request in the queue"}
+        metadata={
+            "description": "The position of the pull request in the queue. The first pull request in the queue is at position 0"
+        }
     )
 
     priority: int = dataclasses.field(
