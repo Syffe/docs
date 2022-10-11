@@ -65,9 +65,13 @@ jobs:
           # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
           pip install -r requirements-dev.txt
           tox -e import-checks
+
   test:
     timeout-minutes: 20
     runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        group: [1, 2, 3, 4, 5]
     services:
       redis:
         image: redis:latest
@@ -86,7 +90,8 @@ jobs:
         run: |
           # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
           pip install -r requirements-dev.txt
-          tox -e py310
+          tox -e py310 -- --splits 5 --group ${{ matrix.group }}
+
   docs:
     timeout-minutes: 20
     runs-on: ubuntu-20.04

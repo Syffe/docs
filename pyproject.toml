@@ -131,6 +131,10 @@ anys = "^0.2.1"
   unqueue = "mergify_engine.actions.unqueue:UnqueueCommand"
   update = "mergify_engine.actions.update:UpdateAction"
 
+
+[tool.poetry.group.dev.dependencies]
+pytest-split = "^0.8.0"
+
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "--strict-markers"

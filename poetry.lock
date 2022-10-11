@@ -1114,6 +1114,17 @@ python-versions = ">=3.7,<4.0"
 Werkzeug = ">=2.0.0"
 
 [[package]]
+name = "pytest-split"
+version = "0.8.0"
+description = "Pytest plugin which splits the test suite to equally sized sub suites based on test execution time."
+category = "dev"
+optional = false
+python-versions = ">=3.7.1,<4.0"
+
+[package.dependencies]
+pytest = ">=5,<8"
+
+[[package]]
 name = "pytest-timeout"
 version = "2.1.0"
 description = "pytest plugin to abort hanging tests"
@@ -2738,6 +2749,10 @@ pytest-github-actions-annotate-failures = [
 pytest-httpserver = [
     {file = "pytest_httpserver-1.0.6-py3-none-any.whl", hash = "sha256:ac2379acc91fe8bdbe2911c93af8dd130e33b5899fb9934d15669480739c6d32"},
     {file = "pytest_httpserver-1.0.6.tar.gz", hash = "sha256:9040d07bf59ac45d8de3db1d4468fd2d1d607975e4da4c872ecc0402cdbf7b3e"},
+]
+pytest-split = [
+    {file = "pytest-split-0.8.0.tar.gz", hash = "sha256:8571a3f60ca8656c698ed86b0a3212bb9e79586ecb201daef9988c336ff0e6ff"},
+    {file = "pytest_split-0.8.0-py3-none-any.whl", hash = "sha256:2e06b8b1ab7ceb19d0b001548271abaf91d12415a8687086cf40581c555d309f"},
 ]
 pytest-timeout = [
     {file = "pytest-timeout-2.1.0.tar.gz", hash = "sha256:c07ca07404c612f8abbe22294b23c368e2e5104b521c1790195561f37e1ac3d9"},
