@@ -1392,13 +1392,6 @@ You don't need to do anything. Mergify will close this pull request automaticall
             self.train_car_state.ci_state = CiState.SUCCESS
         else:
             conditions_with_only_checks = evaluated_queue_rule.conditions.copy()
-            for condition_with_only_checks in conditions_with_only_checks.walk():
-                attr = condition_with_only_checks.get_attribute_name()
-                if attr == "schedule" and not condition_with_only_checks.match:
-                    outside_schedule = True
-                if not (attr.startswith("check-") or attr.startswith("status-")):
-                    condition_with_only_checks.update("number>0")
-
             queue_pull_requests = await self.get_pull_requests_to_evaluate()
 
             if await conditions_with_only_checks(queue_pull_requests):
@@ -1412,6 +1405,13 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 self.train_car_state.outcome_message = CI_FAILED_MESSAGE
             else:
                 self.train_car_state.ci_state = CiState.PENDING
+
+            for condition_with_only_checks in conditions_with_only_checks.walk():
+                attr = condition_with_only_checks.get_attribute_name()
+                if attr == "schedule" and not condition_with_only_checks.match:
+                    outside_schedule = True
+                if not (attr.startswith("check-") or attr.startswith("status-")):
+                    condition_with_only_checks.update("number>0")
 
         if timeout is not None:
             checks_duration_time = (
