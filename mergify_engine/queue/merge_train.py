@@ -52,6 +52,12 @@ def build_pr_link(
 
 LOG = daiquiri.getLogger(__name__)
 
+
+@dataclasses.dataclass
+class BaseBranchVanished(Exception):
+    branch_name: github_types.GitHubRefType
+
+
 CheckStateT = typing.Literal[
     "success",
     "failure",
@@ -2005,7 +2011,17 @@ class Train:
         await self._remove_duplicate_pulls()
         await self._sync_configuration_change(queue_rules)
         await self._split_failed_batches(queue_rules)
-        await self._populate_cars(queue_rules)
+        try:
+            await self._populate_cars(queue_rules)
+        except BaseBranchVanished:
+            self.log.warning("target branch vanished, deleting merge queue.")
+            for (embarked_pull, _) in list(self._iter_embarked_pulls()):
+                await self._remove_pull(
+                    embarked_pull.user_pull_request_number,
+                    "merge-queue internal",
+                    f"Target branch `{self.ref}` has vanished",
+                    False,
+                )
         await self.save()
 
     async def _remove_duplicate_pulls(self) -> None:
@@ -2308,18 +2324,35 @@ class Train:
     async def _is_head_of_train_merged(
         self, ctxt: context.Context, safely_merged_at: github_types.SHAType | None
     ) -> bool:
-        return bool(
-            (safely_merged_at or ctxt.pull["merged"])
-            and ctxt.pull["base"]["ref"] == self.ref
-            and self._cars
+        is_merged = bool(safely_merged_at or ctxt.pull["merged"])
+        if not is_merged:
+            return False
+
+        still_target_the_right_branch = ctxt.pull["base"]["ref"] == self.ref
+        if not still_target_the_right_branch:
+            return False
+
+        is_first_pull_in_queue = bool(
+            self._cars
             and ctxt.pull["number"]
             == self._cars[0].still_queued_embarked_pulls[0].user_pull_request_number
-            # We do it last to avoid two useless API calls
-            and (
-                safely_merged_at
-                or await self.is_synced_with_the_base_branch(await self.get_base_sha())
-            )
         )
+        if not is_first_pull_in_queue:
+            return False
+
+        try:
+            current_base_sha = await self.get_base_sha()
+        except BaseBranchVanished:
+            return False
+
+        base_branch_moved = not (
+            safely_merged_at
+            or await self.is_synced_with_the_base_branch(current_base_sha)
+        )
+        if base_branch_moved:
+            return False
+
+        return True
 
     async def _remove_merged_head_of_train(
         self,
@@ -2744,12 +2777,16 @@ class Train:
 
     async def get_base_sha(self) -> github_types.SHAType:
         escaped_branch_name = parse.quote(self.ref, safe="")
-        return typing.cast(
-            github_types.GitHubBranch,
-            await self.repository.installation.client.item(
-                f"repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/branches/{escaped_branch_name}"
-            ),
-        )["commit"]["sha"]
+        try:
+            branch = typing.cast(
+                github_types.GitHubBranch,
+                await self.repository.installation.client.item(
+                    f"repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/branches/{escaped_branch_name}"
+                ),
+            )
+        except http.HTTPNotFound:
+            raise BaseBranchVanished(self.ref)
+        return branch["commit"]["sha"]
 
     async def is_synced_with_the_base_branch(
         self, base_sha: github_types.SHAType

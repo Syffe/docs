@@ -105,6 +105,12 @@ async def handle(queue_rules: rules.QueueRules, ctxt: context.Context) -> None:
         # NOTE(sileht): Only comment/command, don't need to go further
         return None
 
+    try:
+        current_base_sha = await train.get_base_sha()
+    except merge_train.BaseBranchVanished:
+        ctxt.log.warning("target branch vanished, the merge queue will be deleted soon")
+        return None
+
     unexpected_changes: typing.Optional[merge_train.UnexpectedChange] = None
     queue_config = await train.get_queue_rule(
         car.initial_embarked_pulls[0].config["name"]
@@ -116,7 +122,6 @@ async def handle(queue_rules: rules.QueueRules, ctxt: context.Context) -> None:
             car.queue_pull_request_number
         )
     else:
-        current_base_sha = await train.get_base_sha()
         if not await train.is_synced_with_the_base_branch(current_base_sha):
             unexpected_changes = merge_train.UnexpectedBaseBranchChange(
                 current_base_sha

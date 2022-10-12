@@ -2,6 +2,7 @@ import copy
 import datetime
 import operator
 import typing
+from urllib import parse
 
 import anys
 from first import first
@@ -5221,6 +5222,51 @@ pull_request_rules:
             "Required conditions of queue** `new_default` **for merge"
             in check["output"]["summary"]
         )
+
+    async def test_target_branch_vanished(self) -> None:
+        featureA = self.get_full_branch_name("featureA")
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "speculative_checks": 1,
+                    "allow_inplace_checks": False,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={featureA}",
+                    ],
+                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules), test_branches=[featureA])
+
+        await self.create_pr(base=featureA)
+        await self.create_pr(base=featureA)
+        await self.run_engine()
+        await self.wait_for("pull_request", {"action": "opened"})
+
+        queues = [q async for q in merge_train.Train.iter_trains(self.repository_ctxt)]
+        assert len(queues) == 1
+        assert len(await queues[0].get_pulls()) == 2
+
+        await self.client_integration.delete(
+            f"{self.url_origin}/git/refs/heads/{parse.quote(featureA)}"
+        )
+        await self.wait_for("pull_request", {"action": "closed"})
+        await self.wait_for("pull_request", {"action": "closed"})
+        await self.wait_for("pull_request", {"action": "closed"})
+        await self.run_engine()
+
+        queues = [q async for q in merge_train.Train.iter_trains(self.repository_ctxt)]
+        assert len(queues) == 0
 
 
 class TestTrainApiCalls(base.FunctionalTestBase):
