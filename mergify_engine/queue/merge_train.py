@@ -873,13 +873,13 @@ class TrainCar:
                 json={"new_name": new_branch_name},
             )
         except http.HTTPClientSideError as exc:
-            try:
-                await self._delete_branch()
-            except http.HTTPClientSideError as exc_patch:
-                await self._set_creation_failure(exc_patch.message)
-                raise TrainCarPullRequestCreationFailure(self) from exc_patch
-
             if exc.status_code == 422 and "New branch already exists" in exc.message:
+                try:
+                    await self._delete_branch()
+                except http.HTTPClientSideError as exc_patch:
+                    await self._set_creation_failure(exc_patch.message)
+                    raise TrainCarPullRequestCreationFailure(self) from exc_patch
+
                 raise tenacity.TryAgain
             else:
                 await self._set_creation_failure(exc.message)
