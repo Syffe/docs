@@ -23,7 +23,7 @@ jobs:
       fail-fast: false
       matrix:
         target:
-          - {"name": "GitHub.com", "secret_name": "FIXTURES_RECORDER_CONFIG_GITHUB_DOT_COM"}
+          # - {"name": "GitHub.com", "secret_name": "FIXTURES_RECORDER_CONFIG_GITHUB_DOT_COM"}
           - {"name": "GitHub Enterprise Server", "secret_name": "FIXTURES_RECORDER_CONFIG_GHES_DEV"}
 
     steps:
