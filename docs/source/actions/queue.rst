@@ -520,6 +520,8 @@ A ``queue_rules`` takes the following parameter:
        instead of merging the original pull request that has been checked.
        (This only works when the queue action ``method`` is set to its default
        ``merge``).
+       If GitHub branch protections are enabled, checkout
+       :ref:`fastforward-and-branch-protection`.
 
    * - ``allow_queue_branch_edit``
      - bool
@@ -694,5 +696,17 @@ enqueued pull requests.
 
 To receive ``mentions`` on Slack, you can then use the `native GitHub
 integration <https://github.com/integrations/slack#scheduled-reminder>`_.
+
+.. _fastforward-and-branch-protection:
+
+
+🛡️ ``fast-forward`` merge and GitHub branch protection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If GitHub branch protections are enabled, ``fast-forward`` requires some
+additional configuration in branch protection settings, you also need to allow
+``Mergify`` to bypass the required pull requests to merge.
+
+.. image:: ../_static/mergify-required-pull-request.png
 
 .. include:: ../global-substitutions.rst
