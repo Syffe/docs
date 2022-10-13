@@ -22,6 +22,10 @@ class BackportAction(copy.CopyAction):
     SUCCESS_MESSAGE: str = "Backports have been created"
     FAILURE_MESSAGE: str = "No backport have been created"
 
+    default_restrictions: typing.ClassVar[list[typing.Any]] = [
+        "sender-permission>=write"
+    ]
+
     @property
     def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
         return ()

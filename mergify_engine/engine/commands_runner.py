@@ -342,19 +342,6 @@ async def handle(
         await ctxt.post_comment(MERGE_QUEUE_COMMAND_MESSAGE)
         return
 
-    # FIXME(sileht): should be done with restriction_conditions: MRGFY-1405
-    if (
-        user["id"] != ctxt.pull["user"]["id"]
-        and user["id"] != config.BOT_USER_ID
-        and not await ctxt.repository.has_write_permission(user)
-    ) or (
-        "queue" in command.name and not await ctxt.repository.has_write_permission(user)
-    ):
-        message = f"@{user['login']} is not allowed to run commands"
-        log(message)
-        await ctxt.post_comment(message)
-        return
-
     try:
         await check_command_restrictions(ctxt, mergify_config, command, user)
     except CommandNotAllowed as e:

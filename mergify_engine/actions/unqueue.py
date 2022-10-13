@@ -76,3 +76,7 @@ class UnqueueCommand(actions.Action):
 
     validator: typing.ClassVar[typing.Dict[typing.Any, typing.Any]] = {}
     executor_class = UnqueueExecutor
+
+    default_restrictions: typing.ClassVar[list[typing.Any]] = [
+        "sender-permission>=write"
+    ]

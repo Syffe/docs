@@ -191,6 +191,11 @@ class Action(abc.ABC):
     # NOTE(sileht): mypy didn't handle thing like typing.Type[ActionExecutorProtocol]
     executor_class: typing.ClassVar[typing.Any] = BackwardCompatActionExecutor
 
+    # Default command restrictions
+    # If the command does not define a default command restriction (e.g. a
+    # developper oversight), this restriction apply.
+    default_restrictions: typing.ClassVar[list[str]] = ["sender-permission>=write"]
+
     def __post_init__(self, raw_config_: RawConfigT | None) -> None:
         self.raw_config = raw_config_ or {}
         self.config = voluptuous.Schema(self.validator)(self.raw_config)

@@ -20,17 +20,10 @@ class TestCommandsDetection(base.FunctionalTestBase):
     async def test_hidden_comment_not_detected_twice(self) -> None:
         await self.setup_repo()
         p1 = await self.create_pr()
-        comment_id = await self.create_comment_as_admin(
-            p1["number"], "@mergifyio update"
-        )
-        await self.run_engine()
-
-        await self.wait_for(
-            "issue_comment", {"action": "created"}, test_id=p1["number"]
+        comment_id = await self.create_command(
+            p1["number"], "@mergifyio update", as_="admin"
         )
         assert await self.hide_comment(p1["number"], comment_id)
-
-        await self.wait_for("issue_comment", {"action": "edited"}, test_id=p1["number"])
         await self.run_full_engine()
 
         # NOTE(greesb): We could also just wait_for "issue_comment/created", and check

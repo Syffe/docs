@@ -18,8 +18,10 @@ The syntax of the comment is::
 
 .. note::
 
-  To run commands, a user needs to be the author of the pull request or have write access to the repository.
-  More restrictions can be added with :ref:`Commands Restrictions`.
+  Each command have default restrictions described below. A user might need to
+  be the author of the pull request or have write access to the repository to
+  run a command. More restrictions can be added with :ref:`Commands
+  Restrictions`.
 
 The list of available commands is listed below, with their parameters:
 
@@ -31,13 +33,15 @@ rebase
 Runs the :ref:`rebase action` action.
 
 .. list-table::
-  :widths: 1 7
+  :widths: 2 10
   :align: left
 
   * - Syntax
     - ``@Mergifyio rebase``
   * - Example
     - ``@Mergifyio rebase``
+  * - Default restrictions
+    - Write access or author of the pull request
 
 .. _update command:
 
@@ -47,13 +51,15 @@ update
 Runs the :ref:`update action` action.
 
 .. list-table::
-  :widths: 1 7
+  :widths: 2 10
   :align: left
 
   * - Syntax
     - ``@Mergifyio update``
   * - Example
     - ``@Mergifyio update``
+  * - Default restrictions
+    - Write access or author of the pull request
 
 .. _backport command:
 
@@ -63,13 +69,15 @@ backport
 Runs the :ref:`backport action` action.
 
 .. list-table::
-  :widths: 1 7
+  :widths: 2 10
   :align: left
 
   * - Syntax
     - ``@Mergifyio backport <branch name> <branch name 2> …``
   * - Example
     - ``@Mergifyio backport stable/3.1 stable/4.0``
+  * - Default restrictions
+    - Write access
 
 .. _copy command:
 
@@ -79,13 +87,15 @@ copy
 Runs the :ref:`copy action` action.
 
 .. list-table::
-  :widths: 1 7
+  :widths: 2 10
   :align: left
 
   * - Syntax
     - ``@Mergifyio copy <branch name> <branch name 2> …``
   * - Example
     - ``@Mergifyio copy stable/3.1 stable/4.0``
+  * - Default restrictions
+    - Write access
 
 squash
 ======
@@ -93,13 +103,15 @@ squash
 Runs the :ref:`squash action` action.
 
 .. list-table::
-  :widths: 1 7
+  :widths: 2 10
   :align: left
 
   * - Syntax
     - ``@Mergifyio squash [<commit_message format>]``
   * - Example
     - ``@Mergifyio squash first-commit``
+  * - Default restrictions
+    - Write access or author of the pull request
 
 
 .. _refresh command:
@@ -110,13 +122,15 @@ refresh
 Re-evaluates your Mergify rules on this pull request.
 
 .. list-table::
-  :widths: 1 7
+  :widths: 2 10
   :align: left
 
   * - Syntax
     - ``@Mergifyio refresh``
   * - Example
     - ``@Mergifyio refresh``
+  * - Default restrictions
+    - Write access or author of the pull request
 
 .. _queue command:
 
@@ -126,7 +140,7 @@ queue
 Add this pull request to the merge queue.
 
 .. list-table::
-  :widths: 1 7
+  :widths: 2 10
   :align: left
 
   * - Syntax
@@ -135,6 +149,8 @@ Add this pull request to the merge queue.
     - ``@Mergifyio queue``
 
       ``@Mergifyio queue default``
+  * - Default restrictions
+    - Write access
 
 
 unqueue
@@ -144,13 +160,15 @@ Removes this pull request from the merge queue if it has been queued with
 :ref:`queue action page` action or :ref:`queue command` command.
 
 .. list-table::
-  :widths: 1 7
+  :widths: 2 10
   :align: left
 
   * - Syntax
     - ``@Mergifyio unqueue``
   * - Example
     - ``@Mergifyio unqueue``
+  * - Default restrictions
+    - Write access
 
 .. _requeue command:
 
@@ -160,13 +178,15 @@ requeue
 Inform Mergify that the CI failure was not due to the pull request itself, but to a, e.g., a flaky test.
 
 .. list-table::
-  :widths: 1 7
+  :widths: 2 10
   :align: left
 
   * - Syntax
     - ``@Mergifyio requeue``
   * - Example
     - ``@Mergifyio requeue``
+  * - Default restrictions
+    - Write access
 
 
 .. include:: global-substitutions.rst

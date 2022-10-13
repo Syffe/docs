@@ -50,3 +50,7 @@ class RefreshCommand(actions.Action):
 
     validator: typing.ClassVar[typing.Dict[typing.Any, typing.Any]] = {}
     executor_class = RefreshExecutor
+
+    default_restrictions: typing.ClassVar[list[typing.Any]] = [
+        {"or": ["sender-permission>=write", "sender={{author}}"]}
+    ]

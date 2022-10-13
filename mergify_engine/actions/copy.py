@@ -52,6 +52,10 @@ class CopyAction(actions.BackwardCompatAction):
     SUCCESS_MESSAGE: str = "Pull request copies have been created"
     FAILURE_MESSAGE: str = "No copy have been created"
 
+    default_restrictions: typing.ClassVar[list[typing.Any]] = [
+        "sender-permission>=write"
+    ]
+
     @property
     def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
         return ()

@@ -221,3 +221,48 @@ Awesome body
 
         pr = await self.client_fork.item(f"{self.url_origin}/pulls/{pr['number']}")
         assert pr["commits"] == 1
+
+    async def test_default_squash_restrictions(self) -> None:
+        await self.setup_repo()
+        branch_name = self.get_full_branch_name("pr_squash_test")
+
+        await self.git(
+            "checkout", "--quiet", f"origin/{self.main_branch_name}", "-b", branch_name
+        )
+
+        for i in range(0, 3):
+            open(self.git.repository + f"/file{i}", "wb").close()
+            await self.git("add", f"file{i}")
+            await self.git("commit", "--no-edit", "-m", f"feat(): add file{i+1}")
+
+        await self.git("push", "--quiet", "origin", branch_name)
+        await self.wait_for("push", {"ref": f"refs/heads/{branch_name}"})
+
+        # Create a PR with several commits to squash
+        pr = (
+            await self.client_admin.post(
+                f"{self.url_origin}/pulls",
+                json={
+                    "base": self.main_branch_name,
+                    "head": f"mergifyio-testing:{branch_name}",
+                    "title": "squash the PR",
+                    "body": "This is a squash_test",
+                    "draft": False,
+                },
+            )
+        ).json()
+        await self.wait_for("pull_request", {"action": "opened"})
+        await self.run_engine()
+
+        # First squash by fork client, who can't do it as he is not the author
+        # of the PR
+        await self.create_command(pr["number"], "@mergifyio squash", as_="fork")
+        # Second squash by admin client, the author of the PR
+        await self.create_command(pr["number"], "@mergifyio squash", as_="admin")
+
+        comments = await self.get_issue_comments(pr["number"])
+        assert len(comments) == 4
+        # Response to the first squash
+        assert "Command disallowed due to [command restrictions]" in comments[1]["body"]
+        # Response to the second squash
+        assert "Pull request squashed successfully" in comments[3]["body"]

@@ -112,6 +112,10 @@ class RebaseAction(actions.Action):
     }
     executor_class = RebaseExecutor
 
+    default_restrictions: typing.ClassVar[list[typing.Any]] = [
+        {"or": ["sender-permission>=write", "sender={{author}}"]}
+    ]
+
     async def get_conditions_requirements(
         self, ctxt: context.Context
     ) -> list[conditions.RuleConditionNode]:

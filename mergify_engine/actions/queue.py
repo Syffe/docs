@@ -44,6 +44,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
 `@mergifyio refresh` on the pull request.
 """
 
+    default_restrictions: typing.ClassVar[list[typing.Any]] = [
+        "sender-permission>=write"
+    ]
+
     @property
     def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
         return ()

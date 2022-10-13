@@ -169,12 +169,6 @@ def create_fake_installation_client(
             None,
         ),
         (
-            666,
-            "nothing",
-            "@mergifyio squash",
-            "@wall-e is not allowed to run commands",
-        ),
-        (
             config.BOT_USER_ID,
             "nothing",
             "@mergifyio something",
@@ -229,6 +223,7 @@ async def test_run_command_with_user(
     client = create_fake_installation_client(user, permission)
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
     ctxt.repository.installation.client = client
+    ctxt._get_consolidated_data = mock.AsyncMock()  # type: ignore[assignment]
 
     await commands_runner.handle(
         ctxt=ctxt,
@@ -335,4 +330,38 @@ commands_restrictions:
         expected_result_str = "Command disallowed due to [command restrictions]"
 
     client.post.assert_called_once()
+    assert expected_result_str in client.post.call_args_list[0][1]["json"]["body"]
+
+
+async def test_default_commands_restrictions(
+    context_getter: conftest.ContextGetterFixture,
+) -> None:
+    mergify_config_file = context.MergifyConfigFile(
+        type="file",
+        content="whatever",
+        sha=github_types.SHAType("azertyuiop"),
+        path=github_types.GitHubFilePath("whatever"),
+        decoded_content="",
+    )
+
+    mergify_config = await rules.get_mergify_config_from_file(
+        mock.MagicMock(), mergify_config_file
+    )
+
+    user = create_fake_user()
+    client = create_fake_installation_client(user, "read")
+    ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
+    ctxt.repository.installation.client = client
+    ctxt._get_consolidated_data = mock.AsyncMock()  # type: ignore[assignment]
+
+    await commands_runner.handle(
+        ctxt=ctxt,
+        mergify_config=mergify_config,
+        comment_command="@mergify squash",
+        user=user,
+    )
+
+    client.post.assert_called_once()
+
+    expected_result_str = "Command disallowed due to [command restrictions]"
     assert expected_result_str in client.post.call_args_list[0][1]["json"]["body"]

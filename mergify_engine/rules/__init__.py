@@ -588,12 +588,17 @@ def FullifyPullRequestRules(v: "MergifyConfig") -> "MergifyConfig":
     return v
 
 
-CommandsRestrictionsSchema = {
-    voluptuous.Required("conditions", default=[]): voluptuous.All(
-        [voluptuous.Coerce(RuleConditionSchema)],
-        voluptuous.Coerce(conditions_mod.PullRequestRuleConditions),
-    )
-}
+def CommandsRestrictionsSchema(
+    command: typing.Type[actions_mod.Action],
+) -> voluptuous.Schema:
+    return {
+        voluptuous.Required(
+            "conditions", default=command.default_restrictions
+        ): voluptuous.All(
+            [voluptuous.Coerce(RuleConditionSchema)],
+            voluptuous.Coerce(conditions_mod.PullRequestRuleConditions),
+        )
+    }
 
 
 def UserConfigurationSchema(
@@ -614,8 +619,8 @@ def UserConfigurationSchema(
             "queue_rules", default=[{"name": "default", "conditions": []}]
         ): QueueRulesSchema,
         voluptuous.Required("commands_restrictions", default={}): {
-            voluptuous.Required(name, default={}): CommandsRestrictionsSchema
-            for name in actions_mod.get_commands()
+            voluptuous.Required(name, default={}): CommandsRestrictionsSchema(command)
+            for name, command in actions_mod.get_commands().items()
         },
         voluptuous.Required("defaults", default={}): get_defaults_schema(),
         voluptuous.Remove("shared"): voluptuous.Any(dict, list, str, int, float, bool),

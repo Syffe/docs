@@ -147,6 +147,10 @@ class SquashAction(actions.Action):
     }
     executor_class = SquashExecutor
 
+    default_restrictions: typing.ClassVar[list[typing.Any]] = [
+        {"or": ["sender-permission>=write", "sender={{author}}"]}
+    ]
+
     @staticmethod
     def command_to_config(string: str) -> typing.Dict[str, typing.Any]:
         if string:

@@ -1017,11 +1017,12 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         pull_number: github_types.GitHubPullRequestNumber,
         command: str,
         as_: typing.Literal["integration", "fork", "admin"] = "integration",
-    ) -> None:
-        await self.create_comment(pull_number, command, as_=as_)
+    ) -> int:
+        comment_id = await self.create_comment(pull_number, command, as_=as_)
         await self.run_engine()
         await self.wait_for("issue_comment", {"action": "created"}, test_id=pull_number)
         await self.run_engine()
+        return comment_id
 
     async def get_gql_id_of_comment_to_hide(
         self, pr_number: int, comment_number: int
