@@ -596,8 +596,11 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         qf = qf_by_name.get(self.config["name"])
         for queue_name, queue_freeze in qf_by_name.items():
+
             if (
-                self.queues_priorities[queue_name]
+                # NOTE(sileht): queue may have vanish, but freeze still there
+                queue_name in self.queues_priorities
+                and self.queues_priorities[queue_name]
                 > self.queues_priorities[self.config["name"]]
             ):
                 qf = queue_freeze
