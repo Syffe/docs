@@ -75,7 +75,7 @@ jobs:
 
       - name: Report Status
         if: always()
-        uses: slackapi/slack-github-action@v1.22.0
+        uses: slackapi/slack-github-action@v1.23.0
         with:
           payload: |
             {
