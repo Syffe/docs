@@ -190,7 +190,7 @@ colorama = {version = "*", markers = "platform_system == \"Windows\""}
 
 [[package]]
 name = "click-option-group"
-version = "0.5.4"
+version = "0.5.5"
 description = "Option groups missing in Click"
 category = "dev"
 optional = false
@@ -201,7 +201,8 @@ Click = ">=7.0,<9"
 
 [package.extras]
 docs = ["Pallets-Sphinx-Themes", "m2r2", "sphinx (>=3.0,<6)"]
-tests = ["coverage (<6)", "coveralls", "pytest", "pytest-cov"]
+tests = ["pytest"]
+tests-cov = ["coverage (<6)", "coveralls", "pytest", "pytest-cov"]
 
 [[package]]
 name = "colorama"
@@ -1973,8 +1974,8 @@ click = [
     {file = "click-8.1.3.tar.gz", hash = "sha256:7682dc8afb30297001674575ea00d1814d808d6a36af415a82bd481d37ba7b8e"},
 ]
 click-option-group = [
-    {file = "click-option-group-0.5.4.tar.gz", hash = "sha256:d4b8d808a1998f0f277ebe13c33d64863a5b2a619b1e54f67bc6e3723d91b910"},
-    {file = "click_option_group-0.5.4-py3-none-any.whl", hash = "sha256:0976f0dd15ab5f9f2ee0823f4b83c5a84f8748668c0c37a334739b287711940d"},
+    {file = "click-option-group-0.5.5.tar.gz", hash = "sha256:78ee474f07a0ca0ef6c0317bb3ebe79387aafb0c4a1e03b1d8b2b0be1e42fc78"},
+    {file = "click_option_group-0.5.5-py3-none-any.whl", hash = "sha256:0f8ca79bc9b1d6fcaafdbe194b17ba1a2dde44ddf19087235c3efed2ad288143"},
 ]
 colorama = [
     {file = "colorama-0.4.5-py2.py3-none-any.whl", hash = "sha256:854bf444933e37f5824ae7bfc1e98d5bce2ebe4160d46b5edf346a89358e99da"},
