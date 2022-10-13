@@ -3385,17 +3385,19 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:5818",
+          "https://access.redhat.com/errata/RHSA-2022:6224",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1292.json",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-2068.json",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-2097.json",
           "https://access.redhat.com/security/cve/CVE-2022-2097",
           "https://bugzilla.redhat.com/2081494",
+          "https://bugzilla.redhat.com/2087911",
+          "https://bugzilla.redhat.com/2087913",
           "https://bugzilla.redhat.com/2097310",
           "https://bugzilla.redhat.com/2104905",
           "https://crates.io/crates/openssl-src",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-2097",
-          "https://errata.almalinux.org/8/ALSA-2022-5818.html",
+          "https://errata.almalinux.org/9/ALSA-2022-6224.html",
           "https://git.openssl.org/gitweb/?p=openssl.git;a=commitdiff;h=919925673d6c9cfed3c1085497f5dfbbed5fc431",
           "https://git.openssl.org/gitweb/?p=openssl.git;a=commitdiff;h=a98f339ddd7e8f487d6e0088d4a9a42324885a93",
           "https://linux.oracle.com/cve/CVE-2022-2097.html",
@@ -4270,7 +4272,8 @@
           "https://www.openssh.com/txt/release-8.8",
           "https://www.openwall.com/lists/oss-security/2021/09/26/1",
           "https://www.oracle.com/security-alerts/cpuapr2022.html",
-          "https://www.oracle.com/security-alerts/cpujul2022.html"
+          "https://www.oracle.com/security-alerts/cpujul2022.html",
+          "https://www.starwindsoftware.com/security/sw-20220805-0001/"
         ],
         "PublishedDate": "2021-09-26T19:15:00Z"
       },
@@ -4654,7 +4657,8 @@
           "https://www.openssh.com/txt/release-8.8",
           "https://www.openwall.com/lists/oss-security/2021/09/26/1",
           "https://www.oracle.com/security-alerts/cpuapr2022.html",
-          "https://www.oracle.com/security-alerts/cpujul2022.html"
+          "https://www.oracle.com/security-alerts/cpujul2022.html",
+          "https://www.starwindsoftware.com/security/sw-20220805-0001/"
         ],
         "PublishedDate": "2021-09-26T19:15:00Z"
       },
@@ -5038,7 +5042,8 @@
           "https://www.openssh.com/txt/release-8.8",
           "https://www.openwall.com/lists/oss-security/2021/09/26/1",
           "https://www.oracle.com/security-alerts/cpuapr2022.html",
-          "https://www.oracle.com/security-alerts/cpujul2022.html"
+          "https://www.oracle.com/security-alerts/cpujul2022.html",
+          "https://www.starwindsoftware.com/security/sw-20220805-0001/"
         ],
         "PublishedDate": "2021-09-26T19:15:00Z"
       },
