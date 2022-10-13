@@ -21,7 +21,7 @@ app.include_router(github.router)
 app.include_router(refresher.router)
 app.include_router(legacy_badges.router, prefix="/badges")
 
-app.mount("/v1", api_root.app)
+app.mount("/v1", api_root.create_app())
 
 utils.setup_exception_handlers(app)
 

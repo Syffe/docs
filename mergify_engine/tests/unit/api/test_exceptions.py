@@ -8,7 +8,6 @@ from mergify_engine import exceptions
 from mergify_engine import pagination
 from mergify_engine.tests.functional.api import test_auth
 from mergify_engine.web import root as web_root
-from mergify_engine.web.api import root as api_root
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -38,7 +37,12 @@ def create_testing_router() -> None:
     async def test_exception_mergify_not_installed() -> None:
         raise exceptions.MergifyNotInstalled()
 
-    api_root.app.include_router(router)
+    api_app = [
+        r
+        for r in web_root.app.router.routes
+        if r.path == "/v1"  # type:ignore[attr-defined]
+    ][0].app
+    api_app.include_router(router)
     web_root.app.include_router(router)
 
 
