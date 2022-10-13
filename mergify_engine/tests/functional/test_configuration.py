@@ -532,7 +532,7 @@ did not find expected alphabetic or numeric character
             "404 Client Error: Not Found for url" in summary_check["output"]["summary"]
         )
         assert (
-            "https://api.github.com/repos/mergifyio-testing/this_repo_does_not_exist`"
+            "mergifyio-testing/this_repo_does_not_exist`"
             in summary_check["output"]["summary"]
         )
         assert "@ extends" in summary_check["output"]["summary"]
