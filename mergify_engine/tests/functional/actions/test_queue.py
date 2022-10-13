@@ -5485,15 +5485,11 @@ pull_requests:
         tmp_pull = [p for p in pulls if p["number"] == car.queue_pull_request_number][0]
         assert tmp_pull["draft"]
         assert car.queue_branch_name is not None
-        # Ensure pull request is closed
-        with pytest.raises(merge_train.TrainCarPullRequestCreationFailure):
-            await car.start_checking_with_draft(queue_rule, None)
 
-        await self.wait_for("pull_request", {"action": "closed"})
-
-        # Ensure pull request is re-created
+        # Ensure pull request is closed and re-created
         await car.start_checking_with_draft(queue_rule, None)
         assert car.queue_pull_request_number is not None
+        await self.wait_for("pull_request", {"action": "closed"})
         await self.wait_for("pull_request", {"action": "opened"})
         pulls = await self.get_pulls()
         assert len(pulls) == 3

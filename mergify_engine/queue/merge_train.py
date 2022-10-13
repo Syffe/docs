@@ -826,6 +826,7 @@ class TrainCar:
     @tenacity.retry(
         retry=tenacity.retry_if_exception_type(tenacity.TryAgain),  # type: ignore[attr-defined]
         stop=tenacity.stop_after_attempt(2),  # type: ignore[attr-defined]
+        reraise=True,
     )
     async def _prepare_draft_pr_branch(
         self,
@@ -859,6 +860,7 @@ class TrainCar:
     @tenacity.retry(
         retry=tenacity.retry_if_exception_type(tenacity.TryAgain),  # type: ignore[attr-defined]
         stop=tenacity.stop_after_attempt(2),  # type: ignore[attr-defined]
+        reraise=True,
     )
     async def _rename_branch(
         self,
@@ -873,14 +875,17 @@ class TrainCar:
                 json={"new_name": new_branch_name},
             )
         except http.HTTPClientSideError as exc:
-            if exc.status_code == 422 and "New branch already exists" in exc.message:
+            if exc.status_code == 404:
+                # NOTE(sileht): the merge queue we just created is missing ???, just retry just in case
+                raise tenacity.TryAgain
+
+            elif exc.status_code == 422 and "New branch already exists" in exc.message:
                 try:
                     await self._delete_branch()
                 except http.HTTPClientSideError as exc_patch:
                     await self._set_creation_failure(exc_patch.message)
                     raise TrainCarPullRequestCreationFailure(self) from exc_patch
 
-                raise tenacity.TryAgain
             else:
                 await self._set_creation_failure(exc.message)
                 raise TrainCarPullRequestCreationFailure(self) from exc
