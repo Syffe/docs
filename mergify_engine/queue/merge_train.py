@@ -2141,6 +2141,46 @@ class Train:
             # the Protocol can't be inherited
             yield EmbarkedPullWithCar(embarked_pull, None)
 
+    async def get_frozen_queues_names(self) -> typing.Set[str]:
+
+        # NOTE(Syffe): When checking for where to position a newly added PR in queues,
+        # all unfrozen queues with lower priorities than the highest frozen queue have
+        # to be considered as non-usable to queue the newly added PR.
+
+        frozen_queues = {
+            queue_freeze.name
+            async for queue_freeze in freeze.QueueFreeze.get_all(self.repository)
+        }
+        queue_rules = await self.get_queue_rules()
+
+        if queue_rules is not None:
+            queues_priorities = {
+                str(queue_rule.name): queue_rule.config["priority"]
+                for queue_rule in queue_rules
+            }
+            frozen_queues = {
+                queue_freeze.name
+                async for queue_freeze in freeze.QueueFreeze.get_all(self.repository)
+            }
+
+            if len(frozen_queues) > 0:
+                highest_frozen_priority = 0
+                for queue_name, priority in queues_priorities.items():
+                    if (
+                        queue_name in frozen_queues
+                        and priority > highest_frozen_priority
+                    ):
+                        highest_frozen_priority = priority
+
+                for queue_name, priority in queues_priorities.items():
+                    if (
+                        queue_name not in frozen_queues
+                        and priority < highest_frozen_priority
+                    ):
+                        frozen_queues.add(queue_name)
+
+        return frozen_queues
+
     async def add_pull(
         self, ctxt: context.Context, config: queue.PullQueueConfig, signal_trigger: str
     ) -> None:
@@ -2167,10 +2207,7 @@ class Train:
         new_pull_queue_rule = await self.get_queue_rule(config["name"])
         best_position = -1
         need_to_be_readded = False
-        frozen_queues = {
-            frozen_queue.name
-            async for frozen_queue in freeze.QueueFreeze.get_all(self.repository)
-        }
+        frozen_queues = await self.get_frozen_queues_names()
 
         for position, (embarked_pull, car) in enumerate(self._iter_embarked_pulls()):
             embarked_pull_queue_rule = await self.get_queue_rule(
@@ -2183,6 +2220,13 @@ class Train:
                     == check_api.Conclusion.PENDING
                     or (
                         embarked_pull.config["name"] != config["name"]
+                        # NOTE(Syffe): If we don't consider unfrozen queues with lower priority
+                        # than the highest frozen queue, this condition will be false,
+                        # and so car_can_be_interrupted will also be. In that case, adding
+                        # an urgent PR in the urgent queue will be impossible since embarked pull
+                        # in lower priority queues that are not frozen will not validate this condition
+                        # and thus, the best_position of the urgent PR will still be -1
+                        # See:
                         and embarked_pull.config["name"] in frozen_queues
                     )
                 )

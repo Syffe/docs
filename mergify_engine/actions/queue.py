@@ -568,6 +568,11 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         try:
             self.queue_rule = mergify_config["queue_rules"][self.config["name"]]
+            # NOTE(Syffe): The priorities contained here are not yet multiplied by any coefficient nor offset
+            self.queues_priorities = {
+                str(queue_rule.name): queue_rule.config["priority"]
+                for queue_rule in mergify_config["queue_rules"]
+            }
         except KeyError:
             raise voluptuous.error.Invalid(f"{self.config['name']} queue not found")
 
@@ -583,9 +588,21 @@ Then, re-embark the pull request into the merge queue by posting the comment
     async def _get_current_queue_freeze(
         self, ctxt: context.Context
     ) -> freeze.QueueFreeze | None:
-        # FIXME(sileht): we should also check for queue freeze on queue with higher priority
-        # https://linear.app/mergify/issue/MRGFY-1604/pull-request-got-merged-during-a-freeze
-        return await freeze.QueueFreeze.get(ctxt.repository, self.config["name"])
+
+        qf_by_name = {
+            queue_freeze.name: queue_freeze
+            async for queue_freeze in freeze.QueueFreeze.get_all(ctxt.repository)
+        }
+
+        qf = qf_by_name.get(self.config["name"])
+        for queue_name, queue_freeze in qf_by_name.items():
+            if (
+                self.queues_priorities[queue_name]
+                > self.queues_priorities[self.config["name"]]
+            ):
+                qf = queue_freeze
+                break
+        return qf
 
     async def get_unqueue_status(
         self, ctxt: context.Context, q: merge_train.Train
@@ -685,7 +702,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         queue: merge_train.Train,
         queue_freeze: freeze.QueueFreeze | None,
     ) -> check_api.Result:
-        if queue_freeze is not None:
+        if queue_freeze is not None and self.config["name"] == queue_freeze.name:
             title = f'The queue "{queue_freeze.name}" is currently frozen, for the following reason: {queue_freeze.reason}'
         else:
             position, _ = queue.find_embarked_pull(ctxt.pull["number"])
@@ -695,6 +712,11 @@ Then, re-embark the pull request into the merge queue by posting the comment
             else:
                 _ord = utils.to_ordinal_numeric(position + 1)
                 title = f"The pull request is the {_ord} in the queue to be merged"
+            if queue_freeze is not None:
+                title += (
+                    f'\nThe merge is currently blocked by the freeze of the queue "{queue_freeze.name}", '
+                    f"for the following reason: {queue_freeze.reason}"
+                )
 
         summary = await queue.get_pull_summary(ctxt, self.queue_rule, pull_rule=rule)
 
