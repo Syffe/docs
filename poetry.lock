@@ -1320,7 +1320,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "semgrep"
-version = "0.116.0"
+version = "0.117.0"
 description = "Lightweight static analysis for many languages. Find bug variants with patterns that look like source code."
 category = "dev"
 optional = false
@@ -1820,7 +1820,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.10,<4.0"
-content-hash = "331b14f9e1aa96499ce19459c997b14009535f99320b495e70f5969e9b1a7592"
+content-hash = "c5bf1144709f8def2e1fc6aaa39939a0c7afb81d3f8448af2ce31c2f810fa214"
 
 [metadata.files]
 aiofiles = [
@@ -2883,10 +2883,10 @@ rfc3986 = [
     {file = "ruamel.yaml.clib-0.2.6.tar.gz", hash = "sha256:4ff604ce439abb20794f05613c374759ce10e3595d1867764dd1ae675b85acbd"},
 ]
 semgrep = [
-    {file = "semgrep-0.116.0-cp37.cp38.cp39.py37.py38.py39-none-any.whl", hash = "sha256:680b5a8b008bfd1aacde8d4061210667839000c30371d85ab9440a4dc4f49272"},
-    {file = "semgrep-0.116.0-cp37.cp38.cp39.py37.py38.py39-none-macosx_10_14_x86_64.whl", hash = "sha256:3a603224a212fe9fd9dde9c9683d3fec6829e9b55d892b43341aba235bc44b7d"},
-    {file = "semgrep-0.116.0-cp37.cp38.cp39.py37.py38.py39-none-macosx_11_0_arm64.whl", hash = "sha256:f0060920b77ff77f475fc21d33293debd3be6f8deeb9264b4a4be02fc8205fc8"},
-    {file = "semgrep-0.116.0.tar.gz", hash = "sha256:d7ccf9c39e77151b6b59d78524034fa8a8dbc43cba4bcd6d87438fc7f4554fb6"},
+    {file = "semgrep-0.117.0-cp37.cp38.cp39.py37.py38.py39-none-any.whl", hash = "sha256:eb586ce36ecf4c65a7296ba01d984bfe44f79b5dc5f28fad7a940d4615754b3b"},
+    {file = "semgrep-0.117.0-cp37.cp38.cp39.py37.py38.py39-none-macosx_10_14_x86_64.whl", hash = "sha256:242af25d2a6f4e2c7c7004d7145e8911bb0d6abed2bb9d100404084e169b9238"},
+    {file = "semgrep-0.117.0-cp37.cp38.cp39.py37.py38.py39-none-macosx_11_0_arm64.whl", hash = "sha256:2cfc245221daea507d2649c1baf13cb1ff0e0ef86c2a0f6f6338e52849f49d4d"},
+    {file = "semgrep-0.117.0.tar.gz", hash = "sha256:ac2b06a2b3a2e83d60a3ab80254b68e726d01c953d1a52608804bb0b7e80a76d"},
 ]
 sentry-sdk = [
     {file = "sentry-sdk-1.9.10.tar.gz", hash = "sha256:4fbace9a763285b608c06f01a807b51acb35f6059da6a01236654e08b0ee81ff"},
