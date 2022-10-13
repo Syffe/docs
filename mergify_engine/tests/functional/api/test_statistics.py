@@ -51,7 +51,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             )
 
             assert r.status_code == 200
-            assert r.json()["mean"] is None
+            assert r.json()["median"] is None
 
             p1 = await self.create_pr()
             p2 = await self.create_pr()
@@ -86,10 +86,10 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             # always be the expected number. The best we can do is make sure
             # it is at least close to what we expect (around 2 hours).
             assert (
-                r.json()["mean"]
+                r.json()["median"]
                 > datetime.timedelta(hours=1, minutes=58).total_seconds()
             )
-            previous_result = r.json()["mean"]
+            previous_result = r.json()["median"]
 
         with freeze_time(
             start_date + (queue_statistics.QUERY_MERGE_QUEUE_STATS_RETENTION / 2),
@@ -105,7 +105,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             )
 
             assert r.status_code == 200
-            assert r.json()["mean"] == previous_result
+            assert r.json()["median"] == previous_result
 
     async def test_failure_by_reason_endpoint(self) -> None:
         rules = {
@@ -388,7 +388,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             )
 
             assert r.status_code == 200
-            assert r.json()["mean"] is None
+            assert r.json()["median"] is None
 
             p1 = await self.create_pr()
             p2 = await self.create_pr()
@@ -423,10 +423,10 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             # always be the expected number. The best we can do is make sure
             # it is at least close to what we expect (around 2 hours).
             assert (
-                r.json()["mean"]
+                r.json()["median"]
                 > datetime.timedelta(hours=1, minutes=58).total_seconds()
             )
-            previous_result = r.json()["mean"]
+            previous_result = r.json()["median"]
 
             r = await self.app.get(
                 f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge?branch={self.main_branch_name}",
@@ -437,7 +437,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             )
 
             assert r.status_code == 200
-            assert r.json()["mean"] == previous_result
+            assert r.json()["median"] == previous_result
 
             r = await self.app.get(
                 f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge?branch=abc123",
@@ -448,7 +448,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             )
 
             assert r.status_code == 200
-            assert r.json()["mean"] is None
+            assert r.json()["median"] is None
 
     async def test_queue_checks_outcome_endpoint(self) -> None:
         rules = {

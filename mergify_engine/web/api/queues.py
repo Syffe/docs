@@ -326,14 +326,14 @@ async def repository_queues(
             eta = None
             if (
                 embarked_pull.config["name"] in time_to_merge_stats
-                and time_to_merge_stats[embarked_pull.config["name"]]["mean"]
+                and time_to_merge_stats[embarked_pull.config["name"]]["median"]
                 is not None
             ):
                 eta = (
                     embarked_pull.queued_at
                     + datetime.timedelta(
                         seconds=time_to_merge_stats[embarked_pull.config["name"]][  # type: ignore[arg-type]
-                            "mean"
+                            "median"
                         ],
                     )
                 ).isoformat()

@@ -126,7 +126,7 @@ class TestStatisticsRedis(base.FunctionalTestBase):
                 },
             )
 
-            estimated_value = r.json()["mean"]
+            estimated_value = r.json()["median"]
             assert r.status_code == 200
 
         with freeze_time(
