@@ -81,7 +81,7 @@ class TestDeleteHeadBranchAction(base.FunctionalTestBase):
         assert len(r.json()["events"]) == 1
         assert r.json()["events"][0]["metadata"]["branch"] == second_branch
 
-    async def test_delete_branch_with_dep_no_force(self) -> None:
+    async def test_branch_not_deleted_if_has_dep_no_force(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -110,17 +110,18 @@ class TestDeleteHeadBranchAction(base.FunctionalTestBase):
         await self.wait_for("pull_request", {"action": "closed"})
         await self.add_label(p1["number"], "merge")
         await self.run_engine()
-
         await self.wait_for("check_run", {"check_run": {"conclusion": "success"}})
 
-        # NOTE(greesb): Base of second pr is automatically changed by github because p1 was merged
         pulls = await self.get_pulls(
             params={"state": "all", "base": self.main_branch_name}
         )
-        assert 2 == len(pulls)
+        assert 1 == len(pulls)
+        pulls = await self.get_pulls(params={"state": "all", "base": first_branch})
+        assert 1 == len(pulls)
 
         branches = await self.get_branches()
-        assert {"main", self.main_branch_name, second_branch} == {
+        assert 4 == len(branches)
+        assert {"main", self.main_branch_name, first_branch, second_branch} == {
             b["name"] for b in branches
         }
 
