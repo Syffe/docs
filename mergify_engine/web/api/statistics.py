@@ -1,9 +1,11 @@
+import collections
 import statistics
 import typing
 
 import fastapi
 
 from mergify_engine import context
+from mergify_engine import date
 from mergify_engine import rules
 from mergify_engine.queue import statistics as queue_statistics
 from mergify_engine.web.api import security
@@ -16,6 +18,23 @@ router = fastapi.APIRouter(
     ],
     include_in_schema=False,
 )
+
+
+def is_timestamp_in_future(timestamp: int) -> bool:
+    return timestamp > int(date.utcnow().timestamp())
+
+
+class TimestampNotInFuture(int):
+    @classmethod
+    def __get_validators__(cls) -> collections.abc.Generator[typing.Any, None, None]:
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, v: str) -> int:
+        if is_timestamp_in_future(int(v)):
+            raise ValueError("Timestamp cannot be in the future")
+
+        return int(v)
 
 
 class TimeToMergeResponse(typing.TypedDict):
@@ -85,7 +104,7 @@ async def get_average_time_to_merge_stats_endpoint(
         ...,
         description="Name of the queue",
     ),
-    at: int
+    at: TimestampNotInFuture
     | None = fastapi.Query(  # noqa: B008
         default=None,
         description="Retrieve the average time to merge for the queue at this timestamp (in seconds)",
@@ -185,12 +204,12 @@ async def get_checks_duration_stats_endpoint(
         ...,
         description="Name of the queue",
     ),
-    start_at: int
+    start_at: TimestampNotInFuture
     | None = fastapi.Query(  # noqa: B008
         default=None,
         description="Retrieve the stats that happened after this timestamp (in seconds)",
     ),
-    end_at: int
+    end_at: TimestampNotInFuture
     | None = fastapi.Query(  # noqa: B008
         default=None,
         description="Retrieve the stats that happened before this timestamp (in seconds)",
@@ -266,12 +285,12 @@ async def get_failure_by_reason_stats_endpoint(
         ...,
         description="Name of the queue",
     ),
-    start_at: int
+    start_at: TimestampNotInFuture
     | None = fastapi.Query(  # noqa: B008
         default=None,
         description="Retrieve the stats that happened after this timestamp (in seconds)",
     ),
-    end_at: int
+    end_at: TimestampNotInFuture
     | None = fastapi.Query(  # noqa: B008
         default=None,
         description="Retrieve the stats that happened before this timestamp (in seconds)",
@@ -328,12 +347,12 @@ async def get_queue_checks_outcome_stats_endpoint(
         ...,
         description="Name of the queue",
     ),
-    start_at: int
+    start_at: TimestampNotInFuture
     | None = fastapi.Query(  # noqa: B008
         default=None,
         description="Retrieve the stats that happened after this timestamp (in seconds)",
     ),
-    end_at: int
+    end_at: TimestampNotInFuture
     | None = fastapi.Query(  # noqa: B008
         default=None,
         description="Retrieve the stats that happened before this timestamp (in seconds)",

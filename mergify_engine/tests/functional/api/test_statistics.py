@@ -554,3 +554,46 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             assert r.status_code == 200
             assert r.json()[queue_utils.PrAheadDequeued.abort_code] == 3
             assert r.json()["SUCCESS"] == 1
+
+    async def test_stats_endpoint_timestamp_in_future(self) -> None:
+        with freeze_time("2022-08-18T10:00:00"):
+            future_timestamp = int(date.utcnow().timestamp()) + 1000
+            fail_urls = [
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge?at={future_timestamp}",
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/checks_duration?start_at={future_timestamp}",
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/checks_duration?end_at={future_timestamp}",
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/failure_by_reason?start_at={future_timestamp}",
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/failure_by_reason?end_at={future_timestamp}",
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/queue_checks_outcome?start_at={future_timestamp}",
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/queue_checks_outcome?end_at={future_timestamp}",
+            ]
+            now_ts = int(date.utcnow().timestamp())
+            valid_urls = [
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge?at={now_ts}",
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/checks_duration?start_at={now_ts}",
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/checks_duration?end_at={now_ts}",
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/failure_by_reason?start_at={now_ts}",
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/failure_by_reason?end_at={now_ts}",
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/queue_checks_outcome?start_at={now_ts}",
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/queue_checks_outcome?end_at={now_ts}",
+            ]
+
+            for url in fail_urls:
+                r = await self.app.get(
+                    url,
+                    headers={
+                        "Authorization": f"bearer {self.api_key_admin}",
+                        "Content-type": "application/json",
+                    },
+                )
+                assert r.status_code == 422
+
+            for url in valid_urls:
+                r = await self.app.get(
+                    url,
+                    headers={
+                        "Authorization": f"bearer {self.api_key_admin}",
+                        "Content-type": "application/json",
+                    },
+                )
+                assert r.status_code == 200
