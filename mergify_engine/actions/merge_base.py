@@ -191,6 +191,19 @@ class MergeBaseAction(
 
         elif e.status_code == 405:
             if REQUIRED_STATUS_RE.match(e.message):
+                # NOTE(sileht): when brand protection are enabled, we might get
+                # a 405 with branch protection issue, when the head branch was
+                # just updated. So we check if the head sha has changed in
+                # meantime to confirm
+                new_pull = await ctxt.client.item(f"{ctxt.pull}")
+                if new_pull["head"]["sha"] != ctxt.pull["head"]["sha"]:
+                    ctxt.log.info(
+                        "Head branch was modified in the meantime, retrying",
+                        status_code=e.status_code,
+                        error_message=e.message,
+                    )
+                    return await self.get_queue_status(ctxt, rule, queue, queue_freeze)
+
                 ctxt.log.info(
                     "Waiting for the branch protection required status checks to be validated",
                     status_code=e.status_code,
