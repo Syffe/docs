@@ -195,7 +195,9 @@ class MergeBaseAction(
                 # a 405 with branch protection issue, when the head branch was
                 # just updated. So we check if the head sha has changed in
                 # meantime to confirm
-                new_pull = await ctxt.client.item(f"{ctxt.pull}")
+                new_pull = await ctxt.client.item(
+                    f"{ctxt.base_url}/pulls/{ctxt.pull['number']}"
+                )
                 if new_pull["head"]["sha"] != ctxt.pull["head"]["sha"]:
                     ctxt.log.info(
                         "Head branch was modified in the meantime, retrying",
