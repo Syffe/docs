@@ -820,7 +820,7 @@ class TrainCar:
                     exc_info=True,
                 )
 
-            await self._set_creation_failure(e.message)
+            await self._set_creation_failure(e.message, report_as_error=True)
             raise TrainCarPullRequestCreationFailure(self) from e
 
     @tenacity.retry(
@@ -854,7 +854,7 @@ class TrainCar:
 
                 raise tenacity.TryAgain
             else:
-                await self._set_creation_failure(exc.message)
+                await self._set_creation_failure(exc.message, report_as_error=True)
                 raise TrainCarPullRequestCreationFailure(self) from exc
 
     @tenacity.retry(
@@ -887,7 +887,7 @@ class TrainCar:
                     raise TrainCarPullRequestCreationFailure(self) from exc_patch
 
             else:
-                await self._set_creation_failure(exc.message)
+                await self._set_creation_failure(exc.message, report_as_error=True)
                 raise TrainCarPullRequestCreationFailure(self) from exc
 
     async def _get_draft_pr_setup(
@@ -1010,7 +1010,9 @@ class TrainCar:
                     raise TrainCarPullRequestCreationFailure(self) from e
                 else:
                     await self._set_creation_failure(
-                        e.message, pull_requests_to_remove=[pull_number]
+                        e.message,
+                        pull_requests_to_remove=[pull_number],
+                        report_as_error=True,
                     )
                     await self._delete_branch()
                     raise TrainCarPullRequestCreationFailure(self) from e
@@ -1290,6 +1292,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
         pull_requests_to_remove: typing.Optional[
             typing.List[github_types.GitHubPullRequestNumber]
         ] = None,
+        report_as_error: bool = False,
     ) -> None:
         self.train_car_state.checks_type = TrainCarChecksType.FAILED
 
@@ -1311,7 +1314,11 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 if embarked_pull.user_pull_request_number in pull_requests_to_remove
             ]
 
-        log_level = logging.ERROR if not embarked_pulls_to_remove else logging.INFO
+        log_level = (
+            logging.ERROR
+            if report_as_error or not embarked_pulls_to_remove
+            else logging.INFO
+        )
         self.train.log.log(
             log_level,
             "train car creation failed",
@@ -2696,7 +2703,7 @@ class Train:
                 self, TrainCarState(), [head], [head], [], self._current_base_sha
             )
             await car._set_creation_failure(
-                f"queue named `{head.config['name']}` does not exist anymore"
+                f"queue named `{head.config['name']}` does not exist anymore",
             )
             return
 
