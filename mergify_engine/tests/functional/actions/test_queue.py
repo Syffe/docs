@@ -3786,8 +3786,15 @@ class TestQueueAction(base.FunctionalTestBase):
         # Merge a not queued PR manually
         p_merged_in_meantime = await self.create_pr()
         await self.merge_pull(p_merged_in_meantime["number"])
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
-        await self.wait_for("pull_request", {"action": "closed"})
+
+        if config.GITHUB_URL.startswith("https://github.com"):
+            await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+            await self.wait_for("pull_request", {"action": "closed"})
+        else:
+            # < GHES 3.2
+            await self.wait_for("pull_request", {"action": "closed"})
+            await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+
         p_merged_in_meantime = await self.get_pull(p_merged_in_meantime["number"])
 
         await self.run_engine()
