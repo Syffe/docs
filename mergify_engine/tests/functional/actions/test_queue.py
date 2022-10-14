@@ -2245,6 +2245,22 @@ class TestQueueAction(base.FunctionalTestBase):
         assert check is not None
         assert check["output"]["title"] == "The rule doesn't match anymore"
 
+    async def assert_api_checks_end_reason(
+        self, pr_number: github_types.GitHubPullRequestNumber, expected_reason: str
+    ) -> None:
+        r = await self.app.get(
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{pr_number}/events",
+            headers={
+                "Authorization": f"bearer {self.api_key_admin}",
+                "Content-type": "application/json",
+            },
+        )
+        assert r.status_code == 200
+        response = r.json()
+        for event in response["events"]:
+            if event["event"] == "action.queue.checks_end":
+                assert expected_reason in event["metadata"]["abort_reason"]
+
     async def test_unqueue_all_pr_when_unexpected_changes_on_draft_pr(self) -> None:
         rules_config = {
             "queue_rules": [
@@ -2309,6 +2325,13 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.git("push", "--quiet", "origin", f'random:{draft_pr["head"]["ref"]}')
         await self.wait_for("pull_request", {"action": "synchronize"})
         await self.run_engine()
+
+        await self.assert_api_checks_end_reason(
+            p1["number"], "has sustained unexpected changes from external sources"
+        )
+        await self.assert_api_checks_end_reason(
+            p2["number"], "has sustained unexpected changes from external sources"
+        )
 
         # when detecting external changes onto the draft PR, the engine should disembark it and
         # unqueue all its contained PRs
@@ -2403,6 +2426,11 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.git("push", "--quiet", "origin", f"random:{self.main_branch_name}")
         await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
         await self.run_engine()
+
+        await self.assert_api_checks_end_reason(
+            p1["number"],
+            "Unexpected queue change: an external action moved the branch head",
+        )
 
         # when detecting base branch changes, the engine should reset the train
         comments = await self.get_issue_comments(draft_pr["number"])

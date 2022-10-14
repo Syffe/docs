@@ -167,3 +167,7 @@ def strtobool(string: str) -> bool:
         return False
 
     raise ValueError(f"Could not convert '{string}' to boolean")
+
+
+def strip_comment_tags(line: str) -> str:
+    return line.removeprefix("<!--").removesuffix("-->").strip()

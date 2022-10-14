@@ -1,3 +1,4 @@
+import base64
 import dataclasses
 import datetime
 import enum
@@ -329,9 +330,48 @@ class TrainCarState:
             creation_date=data["creation_date"],
         )
 
+    @classmethod
+    def decode_train_car_state_from_summary(
+        cls,
+        summary_check: typing.Optional[github_types.CachedGitHubCheckRun],
+    ) -> typing.Optional["TrainCarState"]:
+        line = extract_encoded_train_car_state_data_from_summary(summary_check)
+        if line is not None:
+            train_car_state_serialized = typing.cast(
+                TrainCarState.Serialized,
+                json.loads(
+                    base64.b64decode(utils.strip_comment_tags(line).encode()).decode()
+                ),
+            )
+            return cls.deserialize(train_car_state_serialized)
+        return None
+
+    def to_base_64_json(
+        self,
+    ) -> str:
+        return (
+            "<!-- "
+            + base64.b64encode(json.dumps(self.serialized()).encode()).decode()
+            + " -->"
+        )
+
     @property
     def has_timed_out(self) -> bool:
         return self.outcome == TrainCarOutcome.CHECKS_TIMEOUT
+
+
+def extract_encoded_train_car_state_data_from_summary(
+    summary_check: typing.Optional[github_types.CachedGitHubCheckRun],
+) -> typing.Optional[str]:
+    if summary_check is not None and summary_check["output"]["summary"] is not None:
+        lines = summary_check["output"]["summary"].splitlines()
+        if not lines:
+            return None
+        if lines[-1].startswith("<!-- ") and lines[-1].endswith(" -->"):
+            return lines[-1]
+        elif lines[0].startswith("<!-- ") and lines[0].endswith(" -->"):
+            return lines[0]
+    return None
 
 
 @dataclasses.dataclass
@@ -1764,8 +1804,11 @@ You don't need to do anything. Mergify will close this pull request automaticall
             ],
         )
 
+        train_car_state_summary = self.train_car_state.to_base_64_json()
         original_pull_summary = (
-            unexpected_change_summary
+            train_car_state_summary
+            + "\n"
+            + unexpected_change_summary
             + queue_summary
             + "\n"
             + checks_copy_summary
@@ -2370,11 +2413,13 @@ class Train:
                 safely_merged_at,
             )
         else:
+            check = await ctxt.get_engine_check_run(constants.MERGE_QUEUE_SUMMARY_NAME)
             await self._remove_pull(
                 ctxt.pull["number"],
                 signal_trigger,
                 remove_reason,
                 ctxt.pull["merged"],
+                check,
             )
 
     async def _is_head_of_train_merged(
@@ -2467,6 +2512,7 @@ class Train:
         signal_trigger: str,
         remove_reason: str,
         merged: bool,
+        check: github_types.CachedGitHubCheckRun | None = None,
     ) -> None:
         position, embarked_pull_with_car = self.find_embarked_pull(pr_number)
         if position is None or embarked_pull_with_car is None:
@@ -2478,9 +2524,26 @@ class Train:
             )
             return
 
+        train_car_state = TrainCarState.decode_train_car_state_from_summary(check)
+        event_log_reason: queue_utils.BaseAbortReason
+        event_log_reason = queue_utils.PrAheadDequeued(pr_number=pr_number)
+        if (
+            train_car_state is not None
+            and train_car_state.outcome
+            in (
+                TrainCarOutcome.DRAFT_PR_CHANGE,
+                TrainCarOutcome.BASE_BRANCH_CHANGE,
+                TrainCarOutcome.UPDATED_PR_CHANGE,
+            )
+            and train_car_state.outcome_message is not None
+        ):
+            event_log_reason = queue_utils.UnexpectedQueueChange(
+                change=train_car_state.outcome_message
+            )
+
         await self._slice_cars(
             position,
-            reason=queue_utils.PrAheadDequeued(pr_number=pr_number),
+            reason=event_log_reason,
             drop_pull_request=pr_number,
         )
         await self.save()

@@ -16,6 +16,7 @@ from mergify_engine import delayed_refresh
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import rules
+from mergify_engine import utils
 from mergify_engine import yaml
 from mergify_engine.dashboard import subscription
 from mergify_engine.queue import merge_train
@@ -346,7 +347,7 @@ def load_conclusions(
         return {
             name: check_api.Conclusion(conclusion)
             for name, conclusion in yaml.safe_load(
-                base64.b64decode(line[5:-4].encode()).decode()
+                base64.b64decode(utils.strip_comment_tags(line).encode()).decode()
             ).items()
         }
 

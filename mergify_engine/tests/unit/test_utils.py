@@ -199,3 +199,15 @@ def test_strtobool(string: str, expected: bool) -> None:
 def test_strtobool_exc() -> None:
     with pytest.raises(ValueError):
         utils.strtobool("test")
+
+
+@pytest.mark.parametrize(
+    "string,expected",
+    (
+        ("<!-- test1 -->", "test1"),
+        ("<!-- test2      -->", "test2"),
+        ("<!--        test 3 -->", "test 3"),
+    ),
+)
+def test_stip_comment_tags(string: str, expected: str) -> None:
+    assert utils.strip_comment_tags(string) == expected
