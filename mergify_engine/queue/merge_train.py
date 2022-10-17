@@ -38,6 +38,7 @@ from mergify_engine.queue import utils as queue_utils
 
 if typing.TYPE_CHECKING:
     from mergify_engine import rules
+    from mergify_engine.rules import conditions
 
 
 def build_pr_link(
@@ -1493,10 +1494,24 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 priority=worker_pusher.Priority.immediate,
             )
 
-    def checks_have_timed_out(
-        self, checks_duration: datetime.datetime, timeout: datetime.timedelta
-    ) -> bool:
+    def checks_have_timed_out(self, timeout: datetime.timedelta) -> bool:
+        checks_duration = (
+            self.checks_ended_timestamp
+            if self.checks_ended_timestamp is not None
+            else date.utcnow()
+        )
         return (checks_duration - self.train_car_state.creation_date) > timeout
+
+    def _get_conditions_without_checks(
+        cls,
+        evaluated_queue_rule: "rules.EvaluatedQueueRule",
+    ) -> "conditions.QueueRuleConditions":
+        conditions_with_only_checks = evaluated_queue_rule.conditions.copy()
+        for condition_with_only_checks in conditions_with_only_checks.walk():
+            attr = condition_with_only_checks.get_attribute_name()
+            if not attr.startswith(("check-", "status-")):
+                condition_with_only_checks.update("number>0")
+        return conditions_with_only_checks
 
     async def update_state(
         self,
@@ -1509,11 +1524,14 @@ You don't need to do anything. Mergify will close this pull request automaticall
         self.last_evaluated_conditions = evaluated_queue_rule.conditions.get_summary()
         self.last_checks = []
         outside_schedule = False
+        has_failed_check_other_than_schedule = False
+
         rule = await self.train.get_queue_rule(
             self.initial_embarked_pulls[0].config["name"]
         )
         timeout = rule.config["checks_timeout"]
 
+        # Update checks end
         if (
             self.checks_ended_timestamp is None
             and self.train_car_state.queue_conditions_conclusion
@@ -1521,6 +1539,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
         ):
             self.checks_ended_timestamp = date.utcnow()
 
+        # Update CI state
         if (
             self.train_car_state.queue_conditions_conclusion
             == check_api.Conclusion.SUCCESS
@@ -1528,68 +1547,94 @@ You don't need to do anything. Mergify will close this pull request automaticall
             self.train_car_state.ci_state = CiState.SUCCESS
             self.train_car_state.add_waiting_for_schedule_end_date()
         else:
-            conditions_with_only_checks = evaluated_queue_rule.conditions.copy()
             queue_pull_requests = await self.get_pull_requests_to_evaluate()
-
+            conditions_with_only_checks = self._get_conditions_without_checks(
+                evaluated_queue_rule
+            )
             if await conditions_with_only_checks(queue_pull_requests):
                 self.train_car_state.ci_state = CiState.SUCCESS
+                self.train_car_state.add_waiting_for_schedule_end_date()
             elif (
                 self.train_car_state.queue_conditions_conclusion
                 == check_api.Conclusion.FAILURE
             ):
+                # FIXME(sileht) this is unperfect has the conclusion can be FAILURE
+                # for other reasons (eg: schedule)
                 self.train_car_state.ci_state = CiState.FAILED
-                self.train_car_state.outcome = TrainCarOutcome.CHECKS_FAILED
-                self.train_car_state.outcome_message = CI_FAILED_MESSAGE
             else:
                 self.train_car_state.ci_state = CiState.PENDING
 
-            has_failed_check_other_than_schedule = False
-            for condition_with_only_checks in conditions_with_only_checks.walk():
-                attr = condition_with_only_checks.get_attribute_name()
-                if not condition_with_only_checks.match:
+            # FIXME(sileht) this is unperfect has conditions tree may don't care about the schedule we are looking at, eg:
+            # or:
+            #   - label=foobar
+            #   - schedule=XXXXX
+            # if this label is set we should ignore this schedule attribute
+            for condition in evaluated_queue_rule.conditions.walk():
+                attr = condition.get_attribute_name()
+                if not condition.match:
                     if attr == "schedule":
                         outside_schedule = True
                     else:
                         has_failed_check_other_than_schedule = True
-
-                if not (attr.startswith("check-") or attr.startswith("status-")):
-                    condition_with_only_checks.update("number>0")
 
             if outside_schedule and not has_failed_check_other_than_schedule:
                 self.train_car_state.add_waiting_for_schedule_start_date()
             else:
                 self.train_car_state.add_waiting_for_schedule_end_date()
 
-        if timeout is not None:
-            checks_duration_time = (
-                self.checks_ended_timestamp
-                if self.checks_ended_timestamp is not None
-                else date.utcnow()
-            )
-            if self.checks_have_timed_out(checks_duration_time, timeout):
+        # Update Outcome
+        if unexpected_change is not None:
+            # Unexpected change always override any outcome
+            self.train_car_state.outcome = UNEXPECTED_CHANGE_COMPATIBILITY[
+                type(unexpected_change)
+            ]
+            self.train_car_state.outcome_message = str(unexpected_change)
 
+        elif self.train_car_state.outcome == TrainCarOutcome.UNKNWON:
+            if timeout is not None and self.checks_have_timed_out(timeout):
                 # NOTE(Syffe): The timeout state has a priority over CI success or failure.
                 # if we notice that a timeout has occured, the reporting should notify of the timeout
                 # because it has occured before assessing the CI's state.
                 self.train_car_state.outcome = TrainCarOutcome.CHECKS_TIMEOUT
                 self.train_car_state.outcome_message = CHECKS_TIMEOUT_MESSAGE
-
-            if (
-                self.queue_pull_request_number is not None
-                and self.train_car_state.outcome != TrainCarOutcome.CHECKS_TIMEOUT
-                and self.train_car_state.queue_conditions_conclusion
-                != check_api.Conclusion.FAILURE
-                and self.train_car_state.ci_state != CiState.SUCCESS
+            elif (
+                self.train_car_state.queue_conditions_conclusion
+                == check_api.Conclusion.SUCCESS
             ):
-                # Circular import
-                from mergify_engine import delayed_refresh
+                self.train_car_state.outcome = TrainCarOutcome.MERGEABLE
+                self.train_car_state.outcome_message = None
+            elif (
+                self.train_car_state.queue_conditions_conclusion
+                == check_api.Conclusion.FAILURE
+            ):
+                self.train_car_state.outcome = TrainCarOutcome.CHECKS_FAILED
+                self.train_car_state.outcome_message = CI_FAILED_MESSAGE
 
-                await delayed_refresh.plan_refresh_at_least_at(
-                    self.train.repository,
-                    self.queue_pull_request_number,
-                    self.train_car_state.creation_date + timeout,
-                )
+        # NOTE(Syffe): Timeout should not unqueue the PR if they are noticed outside of a schedule rule
+        if (
+            self.train_car_state.outcome == TrainCarOutcome.CHECKS_TIMEOUT
+            and not outside_schedule
+        ):
+            self.train_car_state.queue_conditions_conclusion = (
+                check_api.Conclusion.FAILURE
+            )
 
+        # Calcule next timeout refresh
+        if (
+            self.train_car_state.outcome == TrainCarOutcome.UNKNWON
+            and timeout is not None
+            and self.queue_pull_request_number is not None
+        ):
+            # Circular import
+            from mergify_engine import delayed_refresh
+
+            await delayed_refresh.plan_refresh_at_least_at(
+                self.train.repository,
+                self.queue_pull_request_number,
+                self.train_car_state.creation_date + timeout,
+            )
+
+        # Save the status of all check-runs/statuses for API/UI reporting
         if self.train_car_state.checks_type in (
             TrainCarChecksType.INPLACE,
             TrainCarChecksType.DRAFT,
@@ -1604,28 +1649,6 @@ You don't need to do anything. Mergify will close this pull request automaticall
             )
         else:
             return
-
-        if unexpected_change is not None:
-            self.train_car_state.outcome_message = str(unexpected_change)
-            self.train_car_state.outcome = UNEXPECTED_CHANGE_COMPATIBILITY[
-                type(unexpected_change)
-            ]
-
-        if (
-            self.train_car_state.queue_conditions_conclusion
-            == check_api.Conclusion.SUCCESS
-            and self.train_car_state.outcome != TrainCarOutcome.CHECKS_TIMEOUT
-        ):
-            self.train_car_state.outcome = TrainCarOutcome.MERGEABLE
-
-        if (
-            self.train_car_state.outcome == TrainCarOutcome.CHECKS_TIMEOUT
-            and not outside_schedule
-        ):
-            # NOTE(Syffe): Timeout should not unqueue the PR if they are noticed outside of a schedule rule
-            self.train_car_state.queue_conditions_conclusion = (
-                check_api.Conclusion.FAILURE
-            )
 
         for check in await checked_ctxt.pull_check_runs:
             # Don't copy Summary/Rule/Queue/... checks
@@ -1724,20 +1747,17 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 )
             )
 
-            if self.train_car_state.outcome != TrainCarOutcome.CHECKS_TIMEOUT:
+            if self.train_car_state.outcome == TrainCarOutcome.UNKNWON:
                 timeout_summary = (
                     f"\n⏲️  The checks have to pass before {expected_finish} ⏲\n️"
                 )
-            elif (
-                self.train_car_state.queue_conditions_conclusion
-                != check_api.Conclusion.FAILURE
-            ):
-                timeout_summary = (
-                    "\n❌⏲️️  The checks have timed out ⏲❌\n️"
-                    "PR has not been removed from the queue because checks have been run outside of the schedule time condition.\n"
-                )
-            else:
+            elif self.train_car_state.outcome.CHECKS_TIMEOUT:
                 timeout_summary = "\n❌⏲️️  The checks have timed out ⏲❌\n️"
+                if (
+                    self.train_car_state.queue_conditions_conclusion
+                    != check_api.Conclusion.FAILURE
+                ):
+                    timeout_summary += "PR has not been removed from the queue because checks have been run outside of the schedule time condition.\n"
 
         queue_summary += timeout_summary
 
