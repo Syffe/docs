@@ -557,7 +557,9 @@ in the queue, it will be updated with the latest commit of its base branch.
 
     queue_rules:
       - name: default
-        conditions: []  # no extra conditions needed to get merged
+        conditions:
+          - "#approved-reviews-by>=2"
+          - check-success=Travis CI - Pull Request
 
     pull_request_rules:
       - name: merge using the merge queue
@@ -584,15 +586,18 @@ higher priority queue.
     queue_rules:
       - name: urgent
         conditions:
-          # A PR can be queued without the CI passing, but needs to get merged though
+          - "#approved-reviews-by>=2"
           - check-success=Travis CI - Pull Request
 
       - name: default
-        conditions: []
+        conditions:
+          - "#approved-reviews-by>=2"
+          - check-success=Travis CI - Pull Request
 
     pull_request_rules:
       - name: move to urgent queue when 2 reviews and label urgent
         conditions:
+          # A PR can be queued without the CI passing, but needs it to get merged
           - base=main
           - "#approved-reviews-by>=2"
           - label=urgent
