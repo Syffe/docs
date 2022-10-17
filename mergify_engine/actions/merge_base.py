@@ -89,6 +89,14 @@ class MergeBaseAction(
                     json={"sha": ctxt.pull["head"]["sha"]},
                 )
             except http.HTTPClientSideError as e:  # pragma: no cover
+                if "Update is not a fast forward" in e.message:
+                    ctxt.log.info(
+                        "Base branch was modified in the meantime, retrying",
+                        status_code=e.status_code,
+                        error_message=e.message,
+                    )
+                    return await self.get_queue_status(ctxt, rule, queue, queue_freeze)
+
                 await ctxt.update()
                 if ctxt.pull["merged"]:
                     ctxt.log.info("merged in the meantime")
