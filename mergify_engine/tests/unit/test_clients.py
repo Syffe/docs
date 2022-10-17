@@ -295,7 +295,7 @@ async def test_client_retry_429_retry_after_as_seconds(
     now = date.utcnow()
     when = await _do_test_client_retry_429(respx_mock, "1")
     elapsed_seconds = (when - now).total_seconds()
-    assert 0.97 < elapsed_seconds <= 1.03
+    assert 0.97 < elapsed_seconds <= 1.5
 
 
 async def test_client_retry_429_retry_after_as_absolute_date(
