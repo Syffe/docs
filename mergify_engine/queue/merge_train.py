@@ -297,6 +297,18 @@ class TrainCarState:
     queue_conditions_conclusion: check_api.Conclusion = check_api.Conclusion.PENDING
     checks_type: TrainCarChecksType | None = None
     creation_date: datetime.datetime = dataclasses.field(default_factory=date.utcnow)
+    waiting_for_freeze_start_dates: list[datetime.datetime] = dataclasses.field(
+        default_factory=list
+    )
+    waiting_for_freeze_end_dates: list[datetime.datetime] = dataclasses.field(
+        default_factory=list
+    )
+    waiting_for_schedule_start_dates: list[datetime.datetime] = dataclasses.field(
+        default_factory=list
+    )
+    waiting_for_schedule_end_dates: list[datetime.datetime] = dataclasses.field(
+        default_factory=list
+    )
 
     class Serialized(typing.TypedDict):
         outcome: TrainCarOutcome
@@ -305,6 +317,10 @@ class TrainCarState:
         queue_conditions_conclusion: check_api.Conclusion
         checks_type: typing.Optional[TrainCarChecksType]
         creation_date: datetime.datetime
+        waiting_for_freeze_start_dates: list[datetime.datetime]
+        waiting_for_freeze_end_dates: list[datetime.datetime]
+        waiting_for_schedule_start_dates: list[datetime.datetime]
+        waiting_for_schedule_end_dates: list[datetime.datetime]
 
     def serialized(self) -> "TrainCarState.Serialized":
         return self.Serialized(
@@ -314,6 +330,10 @@ class TrainCarState:
             queue_conditions_conclusion=self.queue_conditions_conclusion,
             checks_type=self.checks_type,
             creation_date=self.creation_date,
+            waiting_for_freeze_start_dates=self.waiting_for_freeze_start_dates,
+            waiting_for_freeze_end_dates=self.waiting_for_freeze_end_dates,
+            waiting_for_schedule_start_dates=self.waiting_for_schedule_start_dates,
+            waiting_for_schedule_end_dates=self.waiting_for_schedule_end_dates,
         )
 
     @classmethod
@@ -321,6 +341,27 @@ class TrainCarState:
         cls,
         data: "TrainCarState.Serialized",
     ) -> "TrainCarState":
+        kwargs = {}
+        if "waiting_for_freeze_start_dates" in data:
+            kwargs["waiting_for_freeze_start_dates"] = data[
+                "waiting_for_freeze_start_dates"
+            ]
+
+        if "waiting_for_freeze_end_dates" in data:
+            kwargs["waiting_for_freeze_end_dates"] = data[
+                "waiting_for_freeze_end_dates"
+            ]
+
+        if "waiting_for_schedule_start_dates" in data:
+            kwargs["waiting_for_schedule_start_dates"] = data[
+                "waiting_for_schedule_start_dates"
+            ]
+
+        if "waiting_for_schedule_end_dates" in data:
+            kwargs["waiting_for_schedule_end_dates"] = data[
+                "waiting_for_schedule_end_dates"
+            ]
+
         return cls(
             outcome=data["outcome"],
             ci_state=data["ci_state"],
@@ -328,6 +369,7 @@ class TrainCarState:
             queue_conditions_conclusion=data["queue_conditions_conclusion"],
             checks_type=data["checks_type"],
             creation_date=data["creation_date"],
+            **kwargs,
         )
 
     @classmethod
@@ -358,6 +400,48 @@ class TrainCarState:
     @property
     def has_timed_out(self) -> bool:
         return self.outcome == TrainCarOutcome.CHECKS_TIMEOUT
+
+    def add_waiting_for_schedule_start_date(self) -> None:
+        if len(self.waiting_for_schedule_start_dates) == 0 or len(
+            self.waiting_for_schedule_start_dates
+        ) <= len(self.waiting_for_schedule_end_dates):
+            self.waiting_for_schedule_start_dates.append(date.utcnow())
+
+    def add_waiting_for_schedule_end_date(self) -> None:
+        if len(self.waiting_for_schedule_start_dates) > len(
+            self.waiting_for_schedule_end_dates
+        ):
+            self.waiting_for_schedule_end_dates.append(date.utcnow())
+
+    @staticmethod
+    def _compute_date_list(
+        start_dates_list: list[datetime.datetime],
+        end_dates_list: list[datetime.datetime],
+    ) -> int:
+        if len(start_dates_list) != len(end_dates_list):
+            raise RuntimeError(
+                "Got different sized date list to compute in TrainCarState"
+            )
+
+        seconds = 0
+        for i in range(len(start_dates_list)):
+            seconds += int((end_dates_list[i] - start_dates_list[i]).total_seconds())
+
+        return seconds
+
+    @property
+    def seconds_waiting_for_schedule(self) -> int:
+        return self._compute_date_list(
+            self.waiting_for_schedule_start_dates,
+            self.waiting_for_schedule_end_dates,
+        )
+
+    @property
+    def seconds_waiting_for_freeze(self) -> int:
+        return self._compute_date_list(
+            self.waiting_for_freeze_start_dates,
+            self.waiting_for_freeze_end_dates,
+        )
 
 
 def extract_encoded_train_car_state_data_from_summary(
@@ -1442,6 +1526,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             == check_api.Conclusion.SUCCESS
         ):
             self.train_car_state.ci_state = CiState.SUCCESS
+            self.train_car_state.add_waiting_for_schedule_end_date()
         else:
             conditions_with_only_checks = evaluated_queue_rule.conditions.copy()
             queue_pull_requests = await self.get_pull_requests_to_evaluate()
@@ -1458,12 +1543,22 @@ You don't need to do anything. Mergify will close this pull request automaticall
             else:
                 self.train_car_state.ci_state = CiState.PENDING
 
+            has_failed_check_other_than_schedule = False
             for condition_with_only_checks in conditions_with_only_checks.walk():
                 attr = condition_with_only_checks.get_attribute_name()
-                if attr == "schedule" and not condition_with_only_checks.match:
-                    outside_schedule = True
+                if not condition_with_only_checks.match:
+                    if attr == "schedule":
+                        outside_schedule = True
+                    else:
+                        has_failed_check_other_than_schedule = True
+
                 if not (attr.startswith("check-") or attr.startswith("status-")):
                     condition_with_only_checks.update("number>0")
+
+            if outside_schedule and not has_failed_check_other_than_schedule:
+                self.train_car_state.add_waiting_for_schedule_start_date()
+            else:
+                self.train_car_state.add_waiting_for_schedule_end_date()
 
         if timeout is not None:
             checks_duration_time = (
@@ -2464,6 +2559,23 @@ class Train:
         safely_merged_at: github_types.SHAType | None = None,
     ) -> None:
         embarked_pull = self._cars[0].still_queued_embarked_pulls[0]
+        # Need to create the event here because the `self._cars[0]` might get deleted in the `if` below
+        event_metadata = signals.EventQueueLeaveMetadata(
+            {
+                "reason": remove_reason,
+                "merged": True,
+                "queue_name": embarked_pull.config["name"],
+                "branch": self.ref,
+                "position": 0,
+                "queued_at": embarked_pull.queued_at,
+                "seconds_waiting_for_schedule": self._cars[
+                    0
+                ].train_car_state.seconds_waiting_for_schedule,
+                "seconds_waiting_for_freeze": self._cars[
+                    0
+                ].train_car_state.seconds_waiting_for_freeze,
+            }
+        )
         # Head of the train was merged and the base_sha haven't changed, we can keep
         # other running cars
         del self._cars[0].still_queued_embarked_pulls[0]
@@ -2493,16 +2605,7 @@ class Train:
             self.repository,
             pr_number,
             "action.queue.leave",
-            signals.EventQueueLeaveMetadata(
-                {
-                    "reason": remove_reason,
-                    "merged": True,
-                    "queue_name": embarked_pull.config["name"],
-                    "branch": self.ref,
-                    "position": 0,
-                    "queued_at": embarked_pull.queued_at,
-                }
-            ),
+            event_metadata,
             signal_trigger,
         )
 
@@ -2546,21 +2649,30 @@ class Train:
             reason=event_log_reason,
             drop_pull_request=pr_number,
         )
+        event_metadata = signals.EventQueueLeaveMetadata(
+            {
+                "reason": remove_reason,
+                "merged": merged,
+                "queue_name": embarked_pull_with_car.embarked_pull.config["name"],
+                "branch": self.ref,
+                "position": position,
+                "queued_at": embarked_pull_with_car.embarked_pull.queued_at,
+            }
+        )
+        if embarked_pull_with_car.car is not None:
+            event_metadata.update(
+                {
+                    "seconds_waiting_for_schedule": embarked_pull_with_car.car.train_car_state.seconds_waiting_for_schedule,
+                    "seconds_waiting_for_freeze": embarked_pull_with_car.car.train_car_state.seconds_waiting_for_freeze,
+                }
+            )
+
         await self.save()
         await signals.send(
             self.repository,
             pr_number,
             "action.queue.leave",
-            signals.EventQueueLeaveMetadata(
-                {
-                    "reason": remove_reason,
-                    "merged": merged,
-                    "queue_name": embarked_pull_with_car.embarked_pull.config["name"],
-                    "branch": self.ref,
-                    "position": position,
-                    "queued_at": embarked_pull_with_car.embarked_pull.queued_at,
-                }
-            ),
+            event_metadata,
             signal_trigger,
         )
 

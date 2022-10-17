@@ -110,6 +110,8 @@ class EventQueueLeaveMetadata(EventMetadata, total=False):
     branch: str
     position: int
     queued_at: datetime.datetime
+    seconds_waiting_for_schedule: int
+    seconds_waiting_for_freeze: int
 
 
 class EventDeleteHeadBranchMetadata(EventMetadata, total=False):

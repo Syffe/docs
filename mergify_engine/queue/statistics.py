@@ -157,7 +157,7 @@ def _get_seconds_since_datetime(past_datetime: datetime.datetime) -> int:
     return int((date.utcnow() - past_datetime).total_seconds())
 
 
-def get_stats_from_event_metadata(
+async def get_stats_from_event_metadata(
     event_name: signals.EventName,
     metadata: signals.EventMetadata,
 ) -> typing.Optional[BaseQueueStats]:
@@ -169,7 +169,11 @@ def get_stats_from_event_metadata(
         return TimeToMerge(
             queue_name=rules.QueueName(metadata["queue_name"]),
             branch_name=metadata["branch"],
-            time_seconds=_get_seconds_since_datetime(metadata["queued_at"]),
+            time_seconds=(
+                _get_seconds_since_datetime(metadata["queued_at"])
+                - metadata.get("seconds_waiting_for_schedule", 0)
+                - metadata.get("seconds_waiting_for_freeze", 0)
+            ),
         )
 
     elif event_name == "action.queue.checks_end":
@@ -233,7 +237,7 @@ class StatisticsSignal(signals.SignalBase):
         ):
             return
 
-        stats = get_stats_from_event_metadata(event, metadata)
+        stats = await get_stats_from_event_metadata(event, metadata)
         if stats is None:
             return
 

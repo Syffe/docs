@@ -450,7 +450,7 @@ async def test_train_add_remove_pull_idempotant(
     assert [[1], [1, 3]] == get_cars_content(t)
 
 
-async def test_train_mutiple_queue(
+async def test_train_multiple_queue(
     repository: context.Repository, context_getter: conftest.ContextGetterFixture
 ) -> None:
     t = merge_train.Train(repository, github_types.GitHubRefType("main"))

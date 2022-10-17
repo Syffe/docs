@@ -1066,6 +1066,8 @@ class TestQueueAction(base.FunctionalTestBase):
                         "The pull request has been merged "
                         "automatically at "
                         f"*{p1['merge_commit_sha']}*",
+                        "seconds_waiting_for_schedule": 0,
+                        "seconds_waiting_for_freeze": 0,
                     },
                     "pull_request": p1["number"],
                     "repository": self.repository_ctxt.repo["full_name"],
@@ -1286,6 +1288,8 @@ class TestQueueAction(base.FunctionalTestBase):
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
                         "reason": "The rule doesn't match anymore",
+                        "seconds_waiting_for_schedule": 0,
+                        "seconds_waiting_for_freeze": 0,
                     },
                     "repository": p1["base"]["repo"]["full_name"],
                     "pull_request": p1["number"],
