@@ -2249,3 +2249,47 @@ async def test_render_big_nested_summary() -> None:
     summary = c.get_summary()
     summary_split = summary.strip().split("\n")
     assert summary_split[-1] == "            - [ ] `base=main`"
+
+
+async def test_command_only_conditions(
+    context_getter: conftest.ContextGetterFixture,
+) -> None:
+    with pytest.raises(rules.InvalidRules) as e:
+        await utils.load_mergify_config(
+            """
+queue_rules:
+   - name: foo
+     conditions:
+      - sender=foobar
+      - sender-permission=write
+
+pull_request_rules:
+   - name: foo
+     conditions:
+      - sender=foobar
+      - sender-permission=write
+     actions:
+       comment:
+"""
+        )
+    assert (
+        str(e.value)
+        == """
+* Invalid condition 'sender-permission=write'. Attribute only allowed in commands_restrictions section @ pull_request_rules → item 0 → conditions → item 1
+```
+Attribute only allowed in commands_restrictions section
+```
+* Invalid condition 'sender-permission=write'. Attribute only allowed in commands_restrictions section @ queue_rules → item 0 → conditions → item 1
+```
+Attribute only allowed in commands_restrictions section
+```
+* Invalid condition 'sender=foobar'. Attribute only allowed in commands_restrictions section @ pull_request_rules → item 0 → conditions → item 0
+```
+Attribute only allowed in commands_restrictions section
+```
+* Invalid condition 'sender=foobar'. Attribute only allowed in commands_restrictions section @ queue_rules → item 0 → conditions → item 0
+```
+Attribute only allowed in commands_restrictions section
+```
+""".strip()
+    )

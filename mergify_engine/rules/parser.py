@@ -43,7 +43,6 @@ CONDITION_PARSERS = {
     "head": Parser.BRANCH,
     "base": Parser.BRANCH,
     "author": Parser.LOGIN_AND_TEAMS,
-    "sender": Parser.LOGIN_AND_TEAMS,
     "merged-by": Parser.LOGIN_AND_TEAMS,
     "body": Parser.TEXT,
     "body-raw": Parser.TEXT,
@@ -99,8 +98,10 @@ CONDITION_PARSERS = {
     "dependabot-dependency-type": Parser.TEXT,
     "dependabot-update-type": Parser.TEXT,
     "branch-protection-review-decision": Parser.ENUM,
+    "sender": Parser.LOGIN_AND_TEAMS,
     "sender-permission": Parser.PERMISSION,
 }
+COMMAND_ONLY_ATTRIBUTES = ("sender", "sender-permission")
 CONDITION_ENUMS = {
     "branch-protection-review-decision": [
         "APPROVED",
@@ -271,7 +272,7 @@ def _skip_ws(v: str, lenght: int, position: int) -> int:
     return position
 
 
-def parse(v: str) -> typing.Any:
+def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
     length = len(v)
     position = _skip_ws(v, length, 0)
     if position >= length:
@@ -309,6 +310,12 @@ def parse(v: str) -> typing.Any:
         raise ConditionParsingError(
             f"`#` modifier is required for attribute: `{attribute}`"
         )
+
+    if not allow_command_attributes and attribute in COMMAND_ONLY_ATTRIBUTES:
+        raise ConditionParsingError(
+            "Attribute only allowed in commands_restrictions section"
+        )
+
     # Get the type of parser
     parser = CONDITION_PARSERS[attribute]
 

@@ -401,7 +401,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
 )
 @freeze_time(now)
 def test_parse(line: str, result: typing.Any) -> None:
-    assert result == parser.parse(line)
+    assert result == parser.parse(line, allow_command_attributes=True)
 
 
 @pytest.mark.parametrize(
@@ -418,7 +418,7 @@ def test_parse_jinja_template(
     expected_operator: str,
     expected_rendering: str,
 ) -> None:
-    result = parser.parse(condition)
+    result = parser.parse(condition, allow_command_attributes=True)
     assert expected_operator in result
     attribute_name, template = result[expected_operator]
     assert attribute_name == expected_attribute
@@ -482,7 +482,22 @@ def test_parse_jinja_template(
 )
 def test_parse_invalid(line: str, expected_error: str) -> None:
     with pytest.raises(parser.ConditionParsingError, match=re.escape(expected_error)):
-        parser.parse(line)
+        parser.parse(line, allow_command_attributes=True)
+
+
+@pytest.mark.parametrize(
+    "line, expected_error",
+    (
+        ("sender=foobar", "Attribute only allowed in commands_restrictions section"),
+        (
+            "sender-permissions=write",
+            "Attribute only allowed in commands_restrictions section",
+        ),
+    ),
+)
+def test_parse_invalid_not_commands(line: str, expected_error: str) -> None:
+    with pytest.raises(parser.ConditionParsingError, match=re.escape(expected_error)):
+        parser.parse(line, allow_command_attributes=False)
 
 
 def test_is_github_team_name() -> None:

@@ -39,6 +39,7 @@ class RuleCondition:
     condition: typing.Union[str, FakeTreeT]
     label: typing.Optional[str] = None
     description: typing.Optional[str] = None
+    allow_command_attributes: bool = False
     partial_filter: filter.Filter[bool] = dataclasses.field(init=False)
     match: bool = dataclasses.field(init=False, default=False)
     _used: bool = dataclasses.field(init=False, default=False)
@@ -52,7 +53,7 @@ class RuleCondition:
 
         try:
             if isinstance(condition_raw, str):
-                condition = parser.parse(condition_raw)
+                condition = parser.parse(condition_raw, self.allow_command_attributes)
             else:
                 condition = condition_raw
             self.partial_filter = filter.BinaryFilter(
@@ -87,7 +88,9 @@ class RuleCondition:
             return str(self.partial_filter)
 
     def copy(self) -> "RuleCondition":
-        rc = RuleCondition(self.condition, self.label, self.description)
+        rc = RuleCondition(
+            self.condition, self.label, self.description, self.allow_command_attributes
+        )
         rc.partial_filter.value_expanders = self.partial_filter.value_expanders
         return rc
 
