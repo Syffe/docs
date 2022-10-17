@@ -1375,7 +1375,7 @@ class Worker:
             )
 
     async def _shutdown(self) -> None:
-        LOG.warning("shutdown start")
+        LOG.info("shutdown start")
 
         # Stop spawning new workers first
         if self._dedicated_workers_spawner_task is not None:
