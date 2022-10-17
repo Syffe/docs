@@ -2308,10 +2308,6 @@ class Train:
                 str(queue_rule.name): queue_rule.config["priority"]
                 for queue_rule in queue_rules
             }
-            frozen_queues = {
-                queue_freeze.name
-                async for queue_freeze in freeze.QueueFreeze.get_all(self.repository)
-            }
 
             if len(frozen_queues) > 0:
                 highest_frozen_priority = 0
