@@ -127,11 +127,8 @@ CMD ["/datadog-wrapper.sh", "mergify-engine-worker", "--enabled-services=shared-
 
 ### WORKER-DEDICATED ###
 FROM base-worker as saas-worker-dedicated
-CMD ["/datadog-wrapper.sh", "mergify-engine-worker", "--enabled-services=dedicated-stream"]
+CMD ["/datadog-wrapper.sh", "mergify-engine-worker", "--enabled-services=dedicated-stream,stream-monitoring,delayed-refresh"]
 
-### MONITORING ###
-FROM base-worker as saas-worker-monitoring
-CMD ["/datadog-wrapper.sh", "mergify-engine-worker", "--enabled-services=stream-monitoring,delayed-refresh"]
 
 ### ON PREMISE ###
 FROM runner-tagged as onpremise
