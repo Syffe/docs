@@ -2430,6 +2430,9 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.git("push", "--quiet", "origin", f"random:{self.main_branch_name}")
         await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
         await self.run_engine()
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=draft_pr["number"]
+        )
 
         await self.assert_api_checks_end_reason(
             p1["number"],
@@ -3819,13 +3822,8 @@ class TestQueueAction(base.FunctionalTestBase):
         p_merged_in_meantime = await self.create_pr()
         await self.merge_pull(p_merged_in_meantime["number"])
 
-        if config.GITHUB_URL.startswith("https://github.com"):
-            await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
-            await self.wait_for("pull_request", {"action": "closed"})
-        else:
-            # < GHES 3.2
-            await self.wait_for("pull_request", {"action": "closed"})
-            await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for("pull_request", {"action": "closed"})
+        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
 
         p_merged_in_meantime = await self.get_pull(p_merged_in_meantime["number"])
 
@@ -4751,20 +4749,11 @@ class TestQueueAction(base.FunctionalTestBase):
 
             p1 = await self.create_pr()
 
-            # To force others to be rebased
-            p = await self.create_pr()
-            await self.merge_pull(p["number"])
-            await self.wait_for("pull_request", {"action": "closed"})
-            await self.run_full_engine()
-
             await self.create_status(p1)
             await self.run_full_engine()
 
             await self.wait_for("pull_request", {"action": "opened"})
             await self.run_full_engine()
-
-            # p1 has been rebased
-            p1 = await self.get_pull(p1["number"])
 
             check = first(
                 await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
