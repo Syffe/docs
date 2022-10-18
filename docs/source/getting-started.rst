@@ -177,3 +177,49 @@ the pull request.
    :align: center
 
 You can consult the list of those commands on the :ref:`Commands` page.
+
+Required Permissions
+--------------------
+
+Below is the list of the required Mergify permission on GitHub to function.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 2 1 3
+
+   * - Permission
+     - Access
+     - Usage
+   * - Repository: Administration
+     - Read-only
+     - Used to access team details.
+   * - Repository: Checks
+     - Read and write
+     - Used to read and post checks.
+   * - Repository: Commit statuses
+     - Read-only
+     - Used to read checks status.
+   * - Repository: Contents
+     - Read and write
+     - Used to read repository content and write (merge).
+   * - Repository: Issues
+     - Read and write
+     - Used to close issues on merge.
+   * - Repository: Metadata
+     - Read-only
+     - Access repository metadata.
+   * - Repository: Pages
+     - Read and write
+     - Write required to trigger page workflow on merge.
+   * - Repository: Pull requests
+     - Read and write
+     - Used to read and edit pull requests.
+   * - Repository: Workflows
+     - Read and write
+     - Used to read workflows and merge pull requests modifying workflows.
+   * - Organization: Members
+     - Read-only
+     - Used to list organization members.
+   * - Account: Email addresses
+     - Read-only
+     - Used to read user email addresses.
