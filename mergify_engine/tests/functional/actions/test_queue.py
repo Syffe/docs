@@ -2433,7 +2433,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         await self.assert_api_checks_end_reason(
             p1["number"],
-            "Unexpected queue change: an external action moved the branch head",
+            "Unexpected queue change: an external action moved the target branch head to",
         )
 
         # when detecting base branch changes, the engine should reset the train

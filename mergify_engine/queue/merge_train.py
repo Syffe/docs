@@ -141,7 +141,7 @@ class UnexpectedBaseBranchChange(UnexpectedChange):
     base_sha: github_types.SHAType
 
     def __str__(self) -> str:
-        return f"an external action moved the branch head {self.base_sha}"
+        return f"an external action moved the target branch head to {self.base_sha}"
 
 
 @dataclasses.dataclass
