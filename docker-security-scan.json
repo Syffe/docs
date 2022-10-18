@@ -578,6 +578,98 @@
         "PublishedDate": "2022-02-11T20:15:00Z"
       },
       {
+        "VulnerabilityID": "CVE-2022-3527",
+        "PkgName": "iproute2",
+        "InstalledVersion": "5.10.0-4",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3527",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "A vulnerability, which was classified as problematic, has been found i ...",
+        "Description": "A vulnerability, which was classified as problematic, has been found in Linux Kernel. This issue affects the function ipneigh_get of the file ip/ipneigh.c of the component iproute2. The manipulation leads to memory leak. The attack may be initiated remotely. It is recommended to apply a patch to fix this issue. The identifier VDB-211025 was assigned to this vulnerability.",
+        "Severity": "UNKNOWN",
+        "CweIDs": [
+          "CWE-404",
+          "CWE-401"
+        ],
+        "References": [
+          "https://git.kernel.org/pub/scm/network/iproute2/iproute2-next.git/commit/?id=c5433c4b7a57d380f4cb351316f5ba5ebae9538e",
+          "https://vuldb.com/?id.211025"
+        ],
+        "PublishedDate": "2022-10-16T19:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2022-3528",
+        "PkgName": "iproute2",
+        "InstalledVersion": "5.10.0-4",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3528",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "A vulnerability, which was classified as problematic, was found in Lin ...",
+        "Description": "A vulnerability, which was classified as problematic, was found in Linux Kernel. Affected is the function mptcp_addr_show of the file ip/ipmptcp.c of the component iproute2. The manipulation leads to memory leak. It is possible to launch the attack remotely. It is recommended to apply a patch to fix this issue. VDB-211026 is the identifier assigned to this vulnerability.",
+        "Severity": "UNKNOWN",
+        "CweIDs": [
+          "CWE-404",
+          "CWE-401"
+        ],
+        "References": [
+          "https://git.kernel.org/pub/scm/network/iproute2/iproute2-next.git/commit/?id=afdbb0204a5872f1f76058a0db5a529b1f0c8de7",
+          "https://vuldb.com/?id.211026"
+        ],
+        "PublishedDate": "2022-10-16T19:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2022-3529",
+        "PkgName": "iproute2",
+        "InstalledVersion": "5.10.0-4",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3529",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "A vulnerability has been found in Linux Kernel and classified as probl ...",
+        "Description": "A vulnerability has been found in Linux Kernel and classified as problematic. Affected by this vulnerability is the function fdb_get of the file bridge/fdb.c of the component iproute2. The manipulation leads to memory leak. The attack can be launched remotely. It is recommended to apply a patch to fix this issue. The associated identifier of this vulnerability is VDB-211027.",
+        "Severity": "UNKNOWN",
+        "CweIDs": [
+          "CWE-404",
+          "CWE-401"
+        ],
+        "References": [
+          "https://git.kernel.org/pub/scm/network/iproute2/iproute2-next.git/commit/?id=6db01afd60748afbba114be2773be338c5be28ff",
+          "https://vuldb.com/?id.211027"
+        ],
+        "PublishedDate": "2022-10-16T19:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2022-3530",
+        "PkgName": "iproute2",
+        "InstalledVersion": "5.10.0-4",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3530",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "A vulnerability was found in Linux Kernel and classified as problemati ...",
+        "Description": "A vulnerability was found in Linux Kernel and classified as problematic. Affected by this issue is the function ipaddr_link_get of the file ip/ipaddress.c of the component iproute2. The manipulation leads to memory leak. The attack may be launched remotely. It is recommended to apply a patch to fix this issue. The identifier of this vulnerability is VDB-211028.",
+        "Severity": "UNKNOWN",
+        "CweIDs": [
+          "CWE-404",
+          "CWE-401"
+        ],
+        "References": [
+          "https://git.kernel.org/pub/scm/network/iproute2/iproute2-next.git/commit/?id=1d540336b026ed5bfe10eefac383db7f434d842f",
+          "https://vuldb.com/?id.211028"
+        ],
+        "PublishedDate": "2022-10-16T19:15:00Z"
+      },
+      {
         "VulnerabilityID": "CVE-2016-1585",
         "PkgName": "libapparmor1",
         "InstalledVersion": "2.13.6-10",
