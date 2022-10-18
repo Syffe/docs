@@ -414,14 +414,30 @@ class TrainCarState:
         ):
             self.waiting_for_schedule_end_dates.append(date.utcnow())
 
+    def add_waiting_for_freeze_start_date(self) -> None:
+        if len(self.waiting_for_freeze_start_dates) == 0 or len(
+            self.waiting_for_freeze_start_dates
+        ) <= len(self.waiting_for_freeze_end_dates):
+            self.waiting_for_freeze_start_dates.append(date.utcnow())
+
+    def add_waiting_for_freeze_end_date(self) -> None:
+        if len(self.waiting_for_freeze_start_dates) > len(
+            self.waiting_for_freeze_end_dates
+        ):
+            self.waiting_for_freeze_end_dates.append(date.utcnow())
+
     @staticmethod
-    def _compute_date_list(
+    def _compute_seconds_waiting_from_lists(
         start_dates_list: list[datetime.datetime],
         end_dates_list: list[datetime.datetime],
     ) -> int:
         if len(start_dates_list) != len(end_dates_list):
             raise RuntimeError(
-                "Got different sized date list to compute in TrainCarState"
+                (
+                    "Got different sized date list "
+                    f"(start={len(start_dates_list)} / end={len(end_dates_list)}) "
+                    "to compute in TrainCarState"
+                )
             )
 
         seconds = 0
@@ -432,14 +448,21 @@ class TrainCarState:
 
     @property
     def seconds_waiting_for_schedule(self) -> int:
-        return self._compute_date_list(
+        return self._compute_seconds_waiting_from_lists(
             self.waiting_for_schedule_start_dates,
             self.waiting_for_schedule_end_dates,
         )
 
     @property
     def seconds_waiting_for_freeze(self) -> int:
-        return self._compute_date_list(
+        if len(self.waiting_for_freeze_start_dates) - 1 == len(
+            self.waiting_for_freeze_end_dates
+        ):
+            # In this case, that means the queue has been unfrozen but the
+            # train car did not have time to receive an `update_state`.
+            self.waiting_for_freeze_end_dates.append(date.utcnow())
+
+        return self._compute_seconds_waiting_from_lists(
             self.waiting_for_freeze_start_dates,
             self.waiting_for_freeze_end_dates,
         )
@@ -1582,6 +1605,15 @@ You don't need to do anything. Mergify will close this pull request automaticall
             else:
                 self.train_car_state.add_waiting_for_schedule_end_date()
 
+        qf = await self.train.is_queue_frozen(
+            self.still_queued_embarked_pulls[0].config["name"],
+        )
+        if not qf:
+            self.train_car_state.add_waiting_for_freeze_end_date()
+        elif qf and self.train_car_state.ci_state == CiState.SUCCESS:
+            # Add start date only if the reason this isnt getting merged is because of the freeze
+            self.train_car_state.add_waiting_for_freeze_start_date()
+
         # Update Outcome
         if unexpected_change is not None:
             # Unexpected change always override any outcome
@@ -1589,7 +1621,6 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 type(unexpected_change)
             ]
             self.train_car_state.outcome_message = str(unexpected_change)
-
         elif self.train_car_state.outcome == TrainCarOutcome.UNKNWON:
             if timeout is not None and self.checks_have_timed_out(timeout):
                 # NOTE(Syffe): The timeout state has a priority over CI success or failure.
@@ -2310,6 +2341,9 @@ class Train:
             # NOTE(sileht): NamedTuple doesn't support multiple inheritance
             # the Protocol can't be inherited
             yield EmbarkedPullWithCar(embarked_pull, None)
+
+    async def is_queue_frozen(self, queue_name: "rules.QueueName") -> bool:
+        return queue_name in await self.get_frozen_queues_names()
 
     async def get_frozen_queues_names(self) -> typing.Set[str]:
 
