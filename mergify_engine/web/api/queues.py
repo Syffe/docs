@@ -302,8 +302,7 @@ async def repository_queues(
                     number=car.queue_pull_request_number,
                     started_at=car.train_car_state.creation_date,
                     ended_at=car.checks_ended_timestamp,
-                    state=car.train_car_state.queue_conditions_conclusion.value
-                    or "pending",
+                    state=car.get_queue_check_run_conclusion().value or "pending",
                     checks=car.last_checks,
                     evaluated_conditions=car.last_evaluated_conditions,
                 )

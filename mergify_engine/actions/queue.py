@@ -242,29 +242,29 @@ Then, re-embark the pull request into the merge queue by posting the comment
             )
 
             unexpected_changes: typing.Optional[merge_train.UnexpectedChange]
-            status: check_api.Conclusion
+            # FIXME(sileht): base branch check is missing
             if await ctxt.has_been_synchronized_by_user() or await ctxt.is_behind:
                 unexpected_changes = merge_train.UnexpectedUpdatedPullRequestChange(
                     ctxt.pull["number"]
                 )
-                status = check_api.Conclusion.PENDING
                 ctxt.log.info(
                     "train will be reset", unexpected_changes=unexpected_changes
                 )
                 await q.reset(unexpected_changes)
             else:
                 unexpected_changes = None
-                status = await checks_status.get_rule_checks_status(
-                    ctxt.log,
-                    ctxt.repository,
-                    [ctxt.pull_request],
-                    queue_rule_evaluated,
-                    unmatched_conditions_return_failure=False,
-                )
+
+            status = await checks_status.get_rule_checks_status(
+                ctxt.log,
+                ctxt.repository,
+                [ctxt.pull_request],
+                queue_rule_evaluated,
+                unmatched_conditions_return_failure=False,
+            )
             await car.update_state(
                 status, queue_rule_evaluated, unexpected_change=unexpected_changes
             )
-            await car.update_summaries(status)
+            await car.update_summaries()
             await q.save()
 
     async def _render_bot_account(
@@ -449,8 +449,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             # so the requeue can works.
             if (
                 car
-                and car.train_car_state.queue_conditions_conclusion
-                == check_api.Conclusion.SUCCESS
+                and car.train_car_state.outcome == merge_train.TrainCarOutcome.MERGEABLE
                 and result.conclusion is check_api.Conclusion.CANCELLED
             ):
                 await check_api.set_check_run(
@@ -636,6 +635,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
     async def _should_be_queued(
         self, ctxt: context.Context, q: merge_train.Train
     ) -> bool:
+        # TODO(sileht): load outcome from summary, so we known why it shouldn't
+        # be queued
         check = await ctxt.get_engine_check_run(constants.MERGE_QUEUE_SUMMARY_NAME)
         return not check or check_api.Conclusion(check["conclusion"]) in [
             check_api.Conclusion.SUCCESS,
@@ -660,10 +661,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         if car is None:
             return False
 
-        return (
-            car.train_car_state.queue_conditions_conclusion
-            == check_api.Conclusion.SUCCESS
-        )
+        return car.train_car_state.outcome == merge_train.TrainCarOutcome.MERGEABLE
 
     async def _should_be_cancel(
         self, ctxt: context.Context, rule: "rules.EvaluatedRule", q: merge_train.Train

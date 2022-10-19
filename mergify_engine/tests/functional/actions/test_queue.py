@@ -4790,7 +4790,7 @@ class TestQueueAction(base.FunctionalTestBase):
             assert check is not None
             assert "checks have timed out" in check["output"]["summary"]
 
-    async def test_queue_ci_timeout_outside_schedule_without_unqueuing(self) -> None:
+    async def test_queue_ci_timeout_outside_schedule(self) -> None:
         config = {
             "queue_rules": [
                 {
@@ -4825,20 +4825,90 @@ class TestQueueAction(base.FunctionalTestBase):
 
             p1 = await self.create_pr()
 
-            # To force others to be rebased
-            p = await self.create_pr()
-            await self.merge_pull(p["number"])
-            await self.wait_for("pull_request", {"action": "closed"})
-            await self.run_full_engine()
-
             await self.create_status(p1)
             await self.run_full_engine()
 
             await self.wait_for("pull_request", {"action": "opened"})
             await self.run_full_engine()
 
-            # p1 has been rebased
-            p1 = await self.get_pull(p1["number"])
+            check = first(
+                await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+                key=lambda c: c["name"] == "Rule: queue (queue)",
+            )
+            assert check is not None
+            assert (
+                check["output"]["title"]
+                == "The pull request is the 1st in the queue to be merged"
+            )
+            pulls_to_refresh: typing.List[
+                typing.Tuple[str, float]
+            ] = await self.redis_links.cache.zrangebyscore(
+                "delayed-refresh", "-inf", "+inf", withscores=True
+            )
+            assert len(pulls_to_refresh) == 1
+
+        with freeze_time("2021-05-30T20:12:00", tick=True):
+
+            await self.run_full_engine()
+            check = first(
+                await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+                key=lambda c: c["name"] == "Rule: queue (queue)",
+            )
+            assert check is not None
+            assert (
+                check["output"]["title"]
+                == "The pull request has been removed from the queue"
+            )
+            check = first(
+                await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+                key=lambda c: c["name"] == constants.MERGE_QUEUE_SUMMARY_NAME,
+            )
+            assert check is not None
+            assert (
+                "cannot be merged and has been disembarked" in check["output"]["title"]
+            )
+            assert "checks have timed out" in check["output"]["summary"]
+
+    async def test_queue_ci_timeout_ignored_outside_schedule(self) -> None:
+        config = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        {
+                            "or": [
+                                "check-success=continuous-integration/fake-ci",
+                                "check-success=continuous-integration/other-ci",
+                            ]
+                        },
+                        "schedule: MON-FRI 08:00-17:00",
+                    ],
+                    "checks_timeout": "10 m",
+                    "allow_inplace_checks": False,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "queue",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "check-success=continuous-integration/fake-ci",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+
+        with freeze_time("2021-05-30T20:00:00", tick=True):
+            await self.setup_repo(yaml.dump(config))
+
+            p1 = await self.create_pr()
+
+            await self.create_status(p1)
+            await self.run_full_engine()
+
+            await self.wait_for("pull_request", {"action": "opened"})
+            await self.run_full_engine()
 
             check = first(
                 await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
@@ -4856,30 +4926,21 @@ class TestQueueAction(base.FunctionalTestBase):
             )
             assert len(pulls_to_refresh) == 1
             tmp_pull = await self.get_pull(
-                github_types.GitHubPullRequestNumber(p["number"] + 1)
+                github_types.GitHubPullRequestNumber(p1["number"] + 1)
             )
             await self.create_status(tmp_pull)
 
         with freeze_time("2021-05-30T20:12:00", tick=True):
-
             await self.run_full_engine()
             check = first(
                 await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
                 key=lambda c: c["name"] == "Rule: queue (queue)",
             )
+            # Should not be unqueued as the CI succeed
             assert check is not None
             assert (
                 check["output"]["title"]
                 == "The pull request is the 1st in the queue to be merged"
-            )
-            check = first(
-                await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-                key=lambda c: c["name"] == "Queue: Embarked in merge train",
-            )
-            assert check is not None
-            assert "checks have timed out" in check["output"]["summary"]
-            assert (
-                "PR has not been removed from the queue" in check["output"]["summary"]
             )
 
     async def test_queue_with_default_config_branch_protection_only(self) -> None:

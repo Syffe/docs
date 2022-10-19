@@ -3,7 +3,6 @@ import typing
 
 from first import first
 
-from mergify_engine import check_api
 from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import delayed_refresh
@@ -54,7 +53,7 @@ async def handle(queue_rules: rules.QueueRules, ctxt: context.Context) -> None:
         return
 
     if (
-        car.train_car_state.queue_conditions_conclusion != check_api.Conclusion.PENDING
+        car.train_car_state.outcome != merge_train.TrainCarOutcome.UNKNWON
         and ctxt.closed
     ):
         ctxt.log.info(
@@ -127,27 +126,19 @@ async def handle(queue_rules: rules.QueueRules, ctxt: context.Context) -> None:
                 current_base_sha
             )
 
-    if unexpected_changes is None:
-        real_status = temporary_status = await checks_status.get_rule_checks_status(
-            ctxt.log,
-            ctxt.repository,
-            pull_requests,
-            evaluated_queue_rule,
-            unmatched_conditions_return_failure=False,
-        )
-        if real_status == check_api.Conclusion.FAILURE and (
-            not car.has_previous_car_status_succeeded()
-            or len(car.initial_embarked_pulls) != 1
-        ):
-            # NOTE(sileht): we can't set it as failed as we don't known
-            # yet which pull request is responsible for the failure.
-            # * one of the batch ?
-            # * one of the parent car ?
-            temporary_status = check_api.Conclusion.PENDING
-    elif isinstance(unexpected_changes, merge_train.UnexpectedDraftPullRequestChange):
-        real_status = temporary_status = check_api.Conclusion.FAILURE
-    else:
-        real_status = temporary_status = check_api.Conclusion.PENDING
+    status = await checks_status.get_rule_checks_status(
+        ctxt.log,
+        ctxt.repository,
+        pull_requests,
+        evaluated_queue_rule,
+        unmatched_conditions_return_failure=False,
+    )
+
+    await car.update_state(
+        status, evaluated_queue_rule, unexpected_change=unexpected_changes
+    )
+    await car.update_summaries()
+    await train.save()
 
     ctxt.log.info(
         "train car temporary pull request evaluation",
@@ -156,16 +147,13 @@ async def handle(queue_rules: rules.QueueRules, ctxt: context.Context) -> None:
         ],
         evaluated_queue_rule=evaluated_queue_rule.conditions.get_summary(),
         unexpected_changes=unexpected_changes,
-        temporary_status=temporary_status,
-        real_status=real_status,
+        status=status,
         event_types=[se["event_type"] for se in ctxt.sources],
+        outcome=car.train_car_state.outcome,
+        ci_state=car.train_car_state.ci_state,
+        ci_ended_at=car.train_car_state.ci_ended_at,
+        checks_end_at=car.checks_ended_timestamp,
     )
-
-    await car.update_state(
-        real_status, evaluated_queue_rule, unexpected_change=unexpected_changes
-    )
-    await car.update_summaries(queue_conditions_conclusion=temporary_status)
-    await train.save()
 
     # NOTE(Syffe): In order to differentiate the two types of unexpected_changes, and
     # only reset the train when it is a base branch change

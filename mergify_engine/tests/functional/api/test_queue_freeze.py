@@ -267,7 +267,9 @@ class TestQueueFreeze(base.FunctionalTestBase):
         assert check
         assert (
             check["output"]["title"]
-            == "The pull request is the 3rd in the queue to be merged"
+            == "The pull request is the 3rd in the queue to be merged\n"
+            'The merge is currently blocked by the freeze of the queue "default", '
+            "for the following reason: test freeze reason"
         )
 
         # merge p1
@@ -305,7 +307,9 @@ class TestQueueFreeze(base.FunctionalTestBase):
         assert check
         assert (
             check["output"]["title"]
-            == "The pull request is the 2nd in the queue to be merged"
+            == "The pull request is the 2nd in the queue to be merged\n"
+            'The merge is currently blocked by the freeze of the queue "default", '
+            "for the following reason: test freeze reason"
         )
 
     async def test_update_queue_freeze(self) -> None:

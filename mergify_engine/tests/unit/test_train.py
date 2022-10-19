@@ -806,9 +806,7 @@ async def test_train_queue_splitted_on_failure_1x2(
     assert [[41, 42]] == get_cars_content(t)
     assert list(range(6, 20)) == get_waiting_content(t)
 
-    t._cars[
-        0
-    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.FAILURE
+    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
     await t.save()
     assert [[41, 42]] == get_cars_content(t)
     assert list(range(6, 20)) == get_waiting_content(t)
@@ -830,9 +828,7 @@ async def test_train_queue_splitted_on_failure_1x2(
     )
 
     # mark [41] as failed
-    t._cars[
-        1
-    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.FAILURE
+    t._cars[1].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
     await t.save()
     await t.remove_pull(await context_getter(41, merged=False), "", "")
 
@@ -865,9 +861,7 @@ async def test_train_queue_splitted_on_failure_1x5(
     assert [[41, 42, 43, 44, 45]] == get_cars_content(t)
     assert list(range(6, 20)) == get_waiting_content(t)
 
-    t._cars[
-        0
-    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.FAILURE
+    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
     await t.save()
     assert [[41, 42, 43, 44, 45]] == get_cars_content(t)
     assert list(range(6, 20)) == get_waiting_content(t)
@@ -892,9 +886,7 @@ async def test_train_queue_splitted_on_failure_1x5(
     )
 
     # mark [43+44] as failed
-    t._cars[
-        1
-    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.FAILURE
+    t._cars[1].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
     await t.save()
 
     # nothing should move yet as we don't known yet if [41+42] is broken or not
@@ -917,9 +909,7 @@ async def test_train_queue_splitted_on_failure_1x5(
     )
 
     # mark [41+42] as ready and merge it
-    t._cars[
-        0
-    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.SUCCESS
+    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.MERGEABLE
     await t.save()
     fake_client.update_base_sha("sha41")
     await t.remove_pull(
@@ -945,9 +935,7 @@ async def test_train_queue_splitted_on_failure_1x5(
     assert t._cars[1].train_car_state.checks_type is None
 
     # mark [43] as failure
-    t._cars[
-        0
-    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.FAILURE
+    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
     await t.save()
     await t.remove_pull(await context_getter(43, merged=False), "", "")
 
@@ -983,9 +971,7 @@ async def test_train_queue_splitted_on_failure_2x5(
     ] == get_cars_content(t)
     assert list(range(11, 20)) == get_waiting_content(t)
 
-    t._cars[
-        0
-    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.FAILURE
+    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
     await t.save()
     assert [
         [41, 42, 43, 44, 45],
@@ -1015,9 +1001,7 @@ async def test_train_queue_splitted_on_failure_2x5(
     )
 
     # mark [43+44] as failed
-    t._cars[
-        1
-    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.FAILURE
+    t._cars[1].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
     await t.save()
 
     # nothing should move yet as we don't known yet if [41+42] is broken or not
@@ -1042,9 +1026,7 @@ async def test_train_queue_splitted_on_failure_2x5(
     )
 
     # mark [41+42] as ready and merge it
-    t._cars[
-        0
-    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.SUCCESS
+    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.MERGEABLE
     await t.save()
     fake_client.update_base_sha("sha41")
     await t.remove_pull(
@@ -1072,9 +1054,7 @@ async def test_train_queue_splitted_on_failure_2x5(
     )
 
     # mark [43] as failure
-    t._cars[
-        0
-    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.FAILURE
+    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
     await t.save()
     await t.remove_pull(await context_getter(43, merged=False), "", "")
 
@@ -1120,9 +1100,7 @@ async def test_train_queue_splitted_on_failure_5x3(
     ] == get_cars_content(t)
     assert list(range(16, 22)) == get_waiting_content(t)
 
-    t._cars[
-        0
-    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.FAILURE
+    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
     await t.save()
     assert [
         [41, 42, 43],
@@ -1146,9 +1124,7 @@ async def test_train_queue_splitted_on_failure_5x3(
     assert len(t._cars[2].failure_history) == 0
 
     # mark [41] as failed
-    t._cars[
-        0
-    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.FAILURE
+    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
     await t.save()
     await t.remove_pull(await context_getter(41, merged=False), "", "")
 
@@ -1169,12 +1145,8 @@ async def test_train_queue_splitted_on_failure_5x3(
     assert len(t._cars[4].failure_history) == 0
 
     # mark [42+43+44] as ready and merge it
-    t._cars[
-        0
-    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.SUCCESS
-    t._cars[
-        1
-    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.FAILURE
+    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.MERGEABLE
+    t._cars[1].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
     await t.save()
     fake_client.update_base_sha("sha42")
     await t.remove_pull(
@@ -1201,12 +1173,8 @@ async def test_train_queue_splitted_on_failure_5x3(
     assert len(t._cars[2].failure_history) == 0
 
     # mark [45] and [46+46] as success, so it's 7 fault !
-    t._cars[
-        0
-    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.SUCCESS
-    t._cars[
-        1
-    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.SUCCESS
+    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.MERGEABLE
+    t._cars[1].train_car_state.outcome = merge_train.TrainCarOutcome.MERGEABLE
     await t.save()
 
     # Nothing change yet!
@@ -1233,10 +1201,7 @@ async def test_train_queue_splitted_on_failure_5x3(
     assert [
         [42, 43, 44, 45, 46, 7],
     ] == get_cars_content(t)
-    assert (
-        t._cars[0].train_car_state.queue_conditions_conclusion
-        == check_api.Conclusion.FAILURE
-    )
+    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
     assert len(t._cars[0].failure_history) == 0
 
     # remove the failed 7
@@ -1475,9 +1440,7 @@ async def test_train_queue_pr_with_higher_prio_enters_in_queue_during_merging_1x
     assert [[41, 42, 43, 44, 45]] == get_cars_content(t)
     assert [] == get_waiting_content(t)
 
-    t._cars[
-        0
-    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.SUCCESS
+    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.MERGEABLE
     await t.save()
     await t.refresh()
     assert [[41, 42, 43, 44, 45]] == get_cars_content(t)
@@ -1520,9 +1483,7 @@ async def test_train_queue_pr_with_higher_prio_enters_in_queue_during_merging_2x
     ] == get_cars_content(t)
     assert [51] == get_waiting_content(t)
 
-    t._cars[
-        0
-    ].train_car_state.queue_conditions_conclusion = check_api.Conclusion.SUCCESS
+    t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.MERGEABLE
     await t.save()
     await t.refresh()
     assert [
@@ -1660,9 +1621,14 @@ def test_train_car_old_serialization(
     outcome_message: str,
 ) -> None:
 
+    ep = {
+        "user_pull_request_number": 1,
+        "config": {},
+        "queued_at": date.utcnow().isoformat(),
+    }
     old_serialized_payload = {
-        "initial_embarked_pulls": [],
-        "still_queued_embarked_pulls": [],
+        "initial_embarked_pulls": [ep],
+        "still_queued_embarked_pulls": [ep],
         "parent_pull_request_numbers": [],
         "initial_current_base_sha": github_types.SHAType("toto"),
         "creation_date": date.utcnow(),
@@ -1679,7 +1645,9 @@ def test_train_car_old_serialization(
         "queue_branch_name": github_types.GitHubRefType("queue_branch"),
     }
     old_serialized_untyped = json.loads(json.dumps(old_serialized_payload))
-    train_car = merge_train.TrainCar.deserialize(mock.Mock(), old_serialized_untyped)
+    train = mock.Mock()
+    train_car = merge_train.TrainCar.deserialize(train, old_serialized_untyped)
+    train._cars = [train_car]
     assert train_car.train_car_state is not None
     assert not hasattr(train_car, "check_conclusions")
     assert not hasattr(train_car, "has_timed_out")
@@ -1688,6 +1656,8 @@ def test_train_car_old_serialization(
     assert not hasattr(train_car, "creation_state")
     assert train_car.train_car_state.checks_type == checks_type
     assert train_car.train_car_state.outcome == outcome
-    assert train_car.train_car_state.queue_conditions_conclusion == checks_conclusion
+    assert train_car.get_queue_check_run_conclusion() == (
+        check_api.Conclusion.FAILURE if has_timed_out else checks_conclusion
+    )
     assert train_car.train_car_state.ci_state == ci_state
     assert train_car.train_car_state.outcome_message == outcome_message
