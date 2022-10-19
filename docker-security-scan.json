@@ -3860,6 +3860,98 @@
         "PublishedDate": "2022-02-21T19:15:00Z"
       },
       {
+        "VulnerabilityID": "CVE-2022-3554",
+        "PkgName": "libx11-6",
+        "InstalledVersion": "2:1.7.2-1",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3554",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "A vulnerability has been found in X.org libX11 and classified as probl ...",
+        "Description": "A vulnerability has been found in X.org libX11 and classified as problematic. This vulnerability affects the function _XimRegisterIMInstantiateCallback of the file modules/im/ximcp/imsClbk.c. The manipulation leads to memory leak. It is recommended to apply a patch to fix this issue. VDB-211054 is the identifier assigned to this vulnerability.",
+        "Severity": "UNKNOWN",
+        "CweIDs": [
+          "CWE-404",
+          "CWE-401"
+        ],
+        "References": [
+          "https://cgit.freedesktop.org/xorg/lib/libX11/commit/?id=1d11822601fd24a396b354fa616b04ed3df8b4ef",
+          "https://vuldb.com/?id.211054"
+        ],
+        "PublishedDate": "2022-10-17T13:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2022-3555",
+        "PkgName": "libx11-6",
+        "InstalledVersion": "2:1.7.2-1",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3555",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "A vulnerability was found in X.org libX11 and classified as problemati ...",
+        "Description": "A vulnerability was found in X.org libX11 and classified as problematic. This issue affects the function _XFreeX11XCBStructure of the file xcb_disp.c. The manipulation of the argument dpy leads to memory leak. It is recommended to apply a patch to fix this issue. The associated identifier of this vulnerability is VDB-211055.",
+        "Severity": "UNKNOWN",
+        "CweIDs": [
+          "CWE-404",
+          "CWE-401"
+        ],
+        "References": [
+          "https://cgit.freedesktop.org/xorg/lib/libX11/commit/?id=8a368d808fec166b5fb3dfe6312aab22c7ee20af",
+          "https://vuldb.com/?id.211055"
+        ],
+        "PublishedDate": "2022-10-17T13:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2022-3554",
+        "PkgName": "libx11-data",
+        "InstalledVersion": "2:1.7.2-1",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3554",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "A vulnerability has been found in X.org libX11 and classified as probl ...",
+        "Description": "A vulnerability has been found in X.org libX11 and classified as problematic. This vulnerability affects the function _XimRegisterIMInstantiateCallback of the file modules/im/ximcp/imsClbk.c. The manipulation leads to memory leak. It is recommended to apply a patch to fix this issue. VDB-211054 is the identifier assigned to this vulnerability.",
+        "Severity": "UNKNOWN",
+        "CweIDs": [
+          "CWE-404",
+          "CWE-401"
+        ],
+        "References": [
+          "https://cgit.freedesktop.org/xorg/lib/libX11/commit/?id=1d11822601fd24a396b354fa616b04ed3df8b4ef",
+          "https://vuldb.com/?id.211054"
+        ],
+        "PublishedDate": "2022-10-17T13:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2022-3555",
+        "PkgName": "libx11-data",
+        "InstalledVersion": "2:1.7.2-1",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3555",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "A vulnerability was found in X.org libX11 and classified as problemati ...",
+        "Description": "A vulnerability was found in X.org libX11 and classified as problematic. This issue affects the function _XFreeX11XCBStructure of the file xcb_disp.c. The manipulation of the argument dpy leads to memory leak. It is recommended to apply a patch to fix this issue. The associated identifier of this vulnerability is VDB-211055.",
+        "Severity": "UNKNOWN",
+        "CweIDs": [
+          "CWE-404",
+          "CWE-401"
+        ],
+        "References": [
+          "https://cgit.freedesktop.org/xorg/lib/libX11/commit/?id=8a368d808fec166b5fb3dfe6312aab22c7ee20af",
+          "https://vuldb.com/?id.211055"
+        ],
+        "PublishedDate": "2022-10-17T13:15:00Z"
+      },
+      {
         "VulnerabilityID": "CVE-2012-2663",
         "PkgName": "libxtables12",
         "InstalledVersion": "1.8.7-1",
