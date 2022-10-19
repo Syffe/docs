@@ -1,6 +1,7 @@
 import abc
 import dataclasses
 import functools
+import html
 import textwrap
 import typing
 
@@ -60,8 +61,10 @@ class RuleCondition:
                 typing.cast(filter.TreeT, condition)
             )
         except (parser.ConditionParsingError, filter.InvalidQuery) as e:
+            # Escape HTML chars that a user can insert in configuration
+            escaped_condition_raw = html.escape(str(condition_raw))
             raise voluptuous.Invalid(
-                message=f"Invalid condition '{condition_raw}'. {str(e)}",
+                message=f"Invalid condition '{escaped_condition_raw}'. {str(e)}",
                 error_message=str(e),
             )
 
@@ -689,7 +692,9 @@ async def get_depends_on_conditions(ctxt: context.Context) -> list[RuleCondition
         except http.HTTPNotFound:
             description = f"⛓️ ⚠️ *pull request not found* (#{pull_request_number})"
         else:
-            description = f"⛓️ **{dep_ctxt.pull['title']}** ([#{pull_request_number}]({dep_ctxt.pull['html_url']}))"
+            # Escape HTML chars in PR title, for security
+            escaped_pr_title = html.escape(dep_ctxt.pull["title"])
+            description = f"⛓️ **{escaped_pr_title}** ([#{pull_request_number}]({dep_ctxt.pull['html_url']}))"
         conds.append(
             RuleCondition(
                 {"=": ("depends-on", f"#{pull_request_number}")},

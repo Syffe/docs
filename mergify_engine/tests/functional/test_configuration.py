@@ -101,9 +101,9 @@ class TestConfiguration(base.FunctionalTestBase):
             == """Invalid YAML @ line 3, column 2
 ```
 while scanning an alias
-  in &quot;&lt;unicode string&gt;&quot;, line 3, column 1
+  in "<unicode string>", line 3, column 1
 did not find expected alphabetic or numeric character
-  in &quot;&lt;unicode string&gt;&quot;, line 3, column 2
+  in "<unicode string>", line 3, column 2
 ```"""
         )
 
@@ -537,6 +537,6 @@ did not find expected alphabetic or numeric character
         )
         assert "@ extends" in summary_check["output"]["summary"]
         assert (
-            "Extended configuration repository this_repo_does_not_exist was not found. This repository doesn&#x27;t exist or Mergify is not installed on it."
+            "Extended configuration repository `this_repo_does_not_exist` was not found. This repository doesn't exist or Mergify is not installed on it."
             in summary_check["output"]["summary"]
         )

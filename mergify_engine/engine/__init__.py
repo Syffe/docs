@@ -1,5 +1,4 @@
 import dataclasses
-import html
 import typing
 
 import daiquiri
@@ -121,7 +120,7 @@ async def _check_configuration_changes(
             check_api.Result(
                 check_api.Conclusion.FAILURE,
                 title="The new Mergify configuration is invalid",
-                summary=html.escape(str(e)),
+                summary=str(e),
                 annotations=e.get_annotations(e.filename),
             ),
         )
@@ -331,7 +330,7 @@ async def run(
                     return check_api.Result(
                         check_api.Conclusion.FAILURE,
                         title="The current Mergify configuration is invalid",
-                        summary=html.escape(str(e)),
+                        summary=str(e),
                         annotations=e.get_annotations(e.filename),
                     )
         return None

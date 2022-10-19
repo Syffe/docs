@@ -864,7 +864,7 @@ async def get_mergify_extended_config(
     except http.HTTPNotFound as e:
         exc = InvalidRules(
             voluptuous.Invalid(
-                f"Extended configuration repository {extended_path} was not found. This repository doesn't exist or Mergify is not installed on it.",
+                f"Extended configuration repository `{extended_path}` was not found. This repository doesn't exist or Mergify is not installed on it.",
                 ["extends"],
                 str(e),
             ),

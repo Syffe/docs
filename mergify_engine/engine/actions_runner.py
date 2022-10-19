@@ -111,7 +111,7 @@ async def gen_summary_rules(
                 f"### Rule: ~~{escaped_rule_name} ({', '.join(rule.actions)})~~\n"
             )
             summary += f":no_entry_sign: **Disabled: {html.escape(rule.disabled['reason'])}**\n"
-        summary += html.escape(rule.conditions.get_summary())
+        summary += rule.conditions.get_summary()
         summary += "\n"
         if display_action_configs:
             for action_name, action in rule.actions.items():

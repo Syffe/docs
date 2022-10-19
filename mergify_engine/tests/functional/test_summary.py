@@ -712,7 +712,7 @@ class TestQueueCISummary(base.FunctionalTestBase):
         assert (
             f"""
 ### Rule: no &lt;i&gt;manual&lt;/i&gt; merge (comment)
-- [ ] `label=&lt;h1&gt;foo&lt;/h1&gt;bar`
+- [ ] `label=<h1>foo</h1>bar`
 - [X] `base={self.main_branch_name}`
 """
             in summary["output"]["summary"]
