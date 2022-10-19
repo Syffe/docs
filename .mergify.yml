@@ -139,7 +139,7 @@ pull_request_rules:
       - "check-success=Rule: testing requirements (post_check)"
       - "#approved-reviews-by=0"
       - "#changes-requested-reviews-by=0"
-      - "#review-requested=0"
+      - "review-requested!=@devs"
     actions:
       request_reviews:
         teams:
