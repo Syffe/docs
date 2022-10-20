@@ -7,7 +7,6 @@ import msgpack
 from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
-from mergify_engine import github_types
 from mergify_engine import yaml
 from mergify_engine.tests.functional import base
 
@@ -293,11 +292,8 @@ class TestQueueApi(base.FunctionalTestBase):
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "opened"})
-
-        await self.create_status(
-            await self.get_pull(github_types.GitHubPullRequestNumber(p5["number"] + 1))
-        )
+        tmp_mq_pr_1 = await self.wait_for_new_pull_request()
+        await self.create_status(tmp_mq_pr_1["pull_request"])
         await self.run_engine()
         await self.wait_for("pull_request", {"action": "closed"})
         await self.wait_for("pull_request", {"action": "closed"})
@@ -305,10 +301,8 @@ class TestQueueApi(base.FunctionalTestBase):
         await self.add_label(p2["number"], "queue")
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "opened"})
-        await self.create_status(
-            await self.get_pull(github_types.GitHubPullRequestNumber(p5["number"] + 2))
-        )
+        tmp_mq_pr_2 = await self.wait_for_new_pull_request()
+        await self.create_status(tmp_mq_pr_2["pull_request"])
         await self.run_engine()
         await self.wait_for("pull_request", {"action": "closed"})
         await self.wait_for("pull_request", {"action": "closed"})
@@ -316,10 +310,8 @@ class TestQueueApi(base.FunctionalTestBase):
         await self.add_label(p3["number"], "queue")
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "opened"})
-        await self.create_status(
-            await self.get_pull(github_types.GitHubPullRequestNumber(p5["number"] + 3))
-        )
+        tmp_mq_pr_3 = await self.wait_for_new_pull_request()
+        await self.create_status(tmp_mq_pr_3["pull_request"])
         await self.run_engine()
         await self.wait_for("pull_request", {"action": "closed"})
         await self.wait_for("pull_request", {"action": "closed"})
@@ -331,7 +323,7 @@ class TestQueueApi(base.FunctionalTestBase):
         stats = [
             msgpack.unpackb(v[b"data"], timestamp=3)["time_seconds"] for _, v in items
         ]
-        avg_ttm = statistics.fmean(stats)
+        median_ttm = statistics.median(stats)
 
         await self.add_label(p4["number"], "queue")
         await self.run_engine()
@@ -355,5 +347,5 @@ class TestQueueApi(base.FunctionalTestBase):
         )
         assert (
             r.json()["queues"][0]["pull_requests"][0]["estimated_time_of_merge"]
-            == (queued_at + datetime.timedelta(seconds=avg_ttm)).isoformat()
+            == (queued_at + datetime.timedelta(seconds=median_ttm)).isoformat()
         )

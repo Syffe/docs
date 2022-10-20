@@ -36,18 +36,11 @@ class TestQueueCommand(base.FunctionalTestBase):
         await self.create_comment_as_admin(p2["number"], "@mergifyio queue default")
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "opened"})
-        await self.wait_for("pull_request", {"action": "opened"})
+        tmp_pull_1 = await self.wait_for_new_pull_request()
+        tmp_pull_2 = await self.wait_for_new_pull_request()
 
         pulls = await self.get_pulls()
         assert len(pulls) == 4
-
-        tmp_pull_1 = await self.get_pull(
-            github_types.GitHubPullRequestNumber(p["number"] + 1)
-        )
-        tmp_pull_2 = await self.get_pull(
-            github_types.GitHubPullRequestNumber(p["number"] + 2)
-        )
 
         ctxt = context.Context(self.repository_ctxt, p)
         q = await merge_train.Train.from_context(ctxt)
@@ -86,16 +79,16 @@ class TestQueueCommand(base.FunctionalTestBase):
         await assert_queued(p1, "1st")
         await assert_queued(p2, "2nd")
 
-        assert tmp_pull_1["commits"] == 2
-        assert tmp_pull_1["changed_files"] == 1
-        assert tmp_pull_2["commits"] == 5
-        assert tmp_pull_2["changed_files"] == 2
+        assert tmp_pull_1["pull_request"]["commits"] == 2
+        assert tmp_pull_1["pull_request"]["changed_files"] == 1
+        assert tmp_pull_2["pull_request"]["commits"] == 5
+        assert tmp_pull_2["pull_request"]["changed_files"] == 2
 
-        await self.create_status(tmp_pull_1)
+        await self.create_status(tmp_pull_1["pull_request"])
         await self.run_engine()
         await assert_queued(p2, "1st")
 
-        await self.create_status(tmp_pull_2)
+        await self.create_status(tmp_pull_2["pull_request"])
         await self.run_engine()
 
         pulls = await self.get_pulls()
@@ -204,14 +197,10 @@ class TestQueueCommand(base.FunctionalTestBase):
         await self.create_comment_as_admin(p["number"], "@mergifyio queue")
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "opened"})
+        tmp_pull = await self.wait_for_new_pull_request()
 
         pulls = await self.get_pulls()
         assert len(pulls) == 2
-
-        tmp_pull = await self.get_pull(
-            github_types.GitHubPullRequestNumber(p["number"] + 1)
-        )
 
         ctxt = context.Context(self.repository_ctxt, p)
         q = await merge_train.Train.from_context(ctxt)

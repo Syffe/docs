@@ -563,6 +563,12 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
     ) -> github_types.GitHubEvent:
         return await self._event_reader.wait_for(*args, **kwargs)
 
+    async def wait_for_new_pull_request(self) -> github_types.GitHubEventPullRequest:
+        return typing.cast(
+            github_types.GitHubEventPullRequest,
+            await self.wait_for("pull_request", {"action": "opened"}),
+        )
+
     async def run_full_engine(self) -> None:
         LOG.log(42, "RUNNING FULL ENGINE")
         w = worker.Worker(

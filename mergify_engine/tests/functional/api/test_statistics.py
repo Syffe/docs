@@ -4,7 +4,6 @@ from freezegun import freeze_time
 
 from mergify_engine import config
 from mergify_engine import date
-from mergify_engine import github_types
 from mergify_engine import yaml
 from mergify_engine.queue import statistics as queue_statistics
 from mergify_engine.queue import utils as queue_utils
@@ -158,16 +157,12 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
 
             await self.run_engine()
 
-            await self.wait_for("pull_request", {"action": "opened"})
+            tmp_mq_pr = await self.wait_for_new_pull_request()
 
         # Friday at 18:00, outside schedule
         with freeze_time(start_date + datetime.timedelta(hours=8), tick=True):
             # Create status for the schedule to be the only condition not valid
-            await self.create_status(
-                await self.get_pull(
-                    github_types.GitHubPullRequestNumber(p2["number"] + 1)
-                )
-            )
+            await self.create_status(tmp_mq_pr["pull_request"])
             # Run the engine for it to update train state
             await self.run_full_engine()
 
@@ -250,7 +245,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
 
             await self.run_engine()
 
-            await self.wait_for("pull_request", {"action": "opened"})
+            tmp_mq_pr = await self.wait_for_new_pull_request()
 
             r = await self.app.put(
                 f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/default/freeze",
@@ -265,11 +260,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
 
         with freeze_time(start_date + datetime.timedelta(days=1), tick=True):
 
-            await self.create_status(
-                await self.get_pull(
-                    github_types.GitHubPullRequestNumber(p2["number"] + 1)
-                )
-            )
+            await self.create_status(tmp_mq_pr["pull_request"])
             # Run the engine for it to update train state
             await self.run_full_engine()
 
@@ -731,12 +722,8 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             await self.add_label(p4["number"], "queue")
             await self.run_full_engine()
 
-            await self.wait_for("pull_request", {"action": "opened"})
-            await self.create_status(
-                await self.get_pull(
-                    github_types.GitHubPullRequestNumber(p5["number"] + 1)
-                )
-            )
+            tmp_mq_pr = await self.wait_for_new_pull_request()
+            await self.create_status(tmp_mq_pr["pull_request"])
 
         with freeze_time("2022-08-18T12:00:00", tick=True):
             await self.run_full_engine()

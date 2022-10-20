@@ -594,16 +594,12 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p["number"], "queue")
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "opened"})
+        tmp_pull = await self.wait_for_new_pull_request()
 
         pulls = await self.get_pulls()
         assert len(pulls) == 2
 
-        tmp_pull = await self.get_pull(
-            github_types.GitHubPullRequestNumber(p["number"] + 1)
-        )
-
-        await self.create_status(tmp_pull, state="failure")
+        await self.create_status(tmp_pull["pull_request"], state="failure")
         await self.run_engine()
         await self.wait_for("pull_request", {"action": "closed"})
         ctxt = context.Context(self.repository_ctxt, p)
@@ -661,18 +657,11 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p2["number"], "queue")
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "opened"})
-        await self.wait_for("pull_request", {"action": "opened"})
+        tmp_pull_1 = await self.wait_for_new_pull_request()
+        tmp_pull_2 = await self.wait_for_new_pull_request()
 
         pulls = await self.get_pulls()
         assert len(pulls) == 4
-
-        tmp_pull_1 = await self.get_pull(
-            github_types.GitHubPullRequestNumber(p["number"] + 1)
-        )
-        tmp_pull_2 = await self.get_pull(
-            github_types.GitHubPullRequestNumber(p["number"] + 2)
-        )
 
         ctxt = context.Context(self.repository_ctxt, p)
         q = await merge_train.Train.from_context(ctxt)
@@ -711,12 +700,12 @@ class TestQueueAction(base.FunctionalTestBase):
 
         await self.run_engine()
         await assert_queued()
-        assert tmp_pull_1["commits"] == 2
-        assert tmp_pull_1["changed_files"] == 1
-        assert tmp_pull_2["commits"] == 5
-        assert tmp_pull_2["changed_files"] == 2
+        assert tmp_pull_1["pull_request"]["commits"] == 2
+        assert tmp_pull_1["pull_request"]["changed_files"] == 1
+        assert tmp_pull_2["pull_request"]["commits"] == 5
+        assert tmp_pull_2["pull_request"]["changed_files"] == 2
 
-        await self.create_status(tmp_pull_2)
+        await self.create_status(tmp_pull_2["pull_request"])
         await self.run_engine()
         await assert_queued()
 
@@ -724,11 +713,11 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
         await assert_queued()
 
-        await self.create_status(tmp_pull_1, state="pending")
+        await self.create_status(tmp_pull_1["pull_request"], state="pending")
         await self.run_engine()
         await assert_queued()
 
-        await self.create_status(tmp_pull_1)
+        await self.create_status(tmp_pull_1["pull_request"])
         await self.run_engine()
 
         pulls = await self.get_pulls()
@@ -1195,11 +1184,8 @@ class TestQueueAction(base.FunctionalTestBase):
         pulls = await self.get_pulls()
         assert len(pulls) == 4
 
-        await self.wait_for("pull_request", {"action": "opened"})
+        tmp_pull_1 = await self.wait_for_new_pull_request()
         await self.run_full_engine()
-        tmp_pull_1 = await self.get_pull(
-            github_types.GitHubPullRequestNumber(p["number"] + 1)
-        )
 
         ctxt = context.Context(self.repository_ctxt, p)
         q = await merge_train.Train.from_context(ctxt)
@@ -1222,10 +1208,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
         await self.wait_for("pull_request", {"action": "closed"})
         await self.run_engine()
-        await self.wait_for("pull_request", {"action": "opened"})
-        tmp_pull_2 = await self.get_pull(
-            github_types.GitHubPullRequestNumber(p["number"] + 2)
-        )
+        tmp_pull_2 = await self.wait_for_new_pull_request()
         ctxt = context.Context(self.repository_ctxt, p)
         q = await merge_train.Train.from_context(ctxt)
         await self.assert_merge_queue_contents(
@@ -1315,7 +1298,7 @@ class TestQueueAction(base.FunctionalTestBase):
                             "checks_started_at": anys.ANY_AWARE_DATETIME_STR,
                             "checks_timed_out": False,
                             "in_place": False,
-                            "number": p1["number"] + 4,
+                            "number": tmp_pull_1["number"],
                         },
                     },
                     "repository": p1["base"]["repo"]["full_name"],
@@ -1375,11 +1358,8 @@ class TestQueueAction(base.FunctionalTestBase):
         pulls = await self.get_pulls()
         assert len(pulls) == 4
 
-        await self.wait_for("pull_request", {"action": "opened"})
+        tmp_pull_1 = await self.wait_for_new_pull_request()
         await self.run_engine()
-        tmp_pull_1 = await self.get_pull(
-            github_types.GitHubPullRequestNumber(p["number"] + 1)
-        )
 
         ctxt = context.Context(self.repository_ctxt, p)
         q = await merge_train.Train.from_context(ctxt)
@@ -1404,10 +1384,7 @@ class TestQueueAction(base.FunctionalTestBase):
             "issue_comment", {"action": "created"}, test_id=p1["number"]
         )
         await self.run_engine()
-        await self.wait_for("pull_request", {"action": "opened"})
-        tmp_pull_2 = await self.get_pull(
-            github_types.GitHubPullRequestNumber(p["number"] + 2)
-        )
+        tmp_pull_2 = await self.wait_for_new_pull_request()
         ctxt = context.Context(self.repository_ctxt, p)
         q = await merge_train.Train.from_context(ctxt)
         await self.assert_merge_queue_contents(
@@ -1508,15 +1485,11 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p5["number"], "queue")
         await self.run_engine()
 
+        tmp_pull_1 = await self.wait_for_new_pull_request()
+        tmp_pull_2 = await self.wait_for_new_pull_request()
+
         pulls = await self.get_pulls()
         assert len(pulls) == 7
-
-        tmp_pull_1 = await self.get_pull(
-            github_types.GitHubPullRequestNumber(p["number"] + 1)
-        )
-        tmp_pull_2 = await self.get_pull(
-            github_types.GitHubPullRequestNumber(p["number"] + 2)
-        )
 
         ctxt = context.Context(self.repository_ctxt, p)
         q = await merge_train.Train.from_context(ctxt)
@@ -1542,18 +1515,16 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             [p5["number"]],
         )
-        assert tmp_pull_1["changed_files"] == 2
-        assert tmp_pull_2["changed_files"] == 4
+        assert tmp_pull_1["pull_request"]["changed_files"] == 2
+        assert tmp_pull_2["pull_request"]["changed_files"] == 4
 
-        await self.create_status(tmp_pull_1)
+        await self.create_status(tmp_pull_1["pull_request"])
         await self.run_engine()
+
+        tmp_pull_3 = await self.wait_for_new_pull_request()
 
         pulls = await self.get_pulls()
         assert len(pulls) == 5
-
-        tmp_pull_3 = await self.get_pull(
-            github_types.GitHubPullRequestNumber(p["number"] + 3)
-        )
 
         p2 = await self.get_pull(p2["number"])
         assert p2["merge_commit_sha"] is not None
@@ -1577,12 +1548,12 @@ class TestQueueAction(base.FunctionalTestBase):
                 ),
             ],
         )
-        assert tmp_pull_2["changed_files"] == 4
-        assert tmp_pull_3["changed_files"] == 3
+        assert tmp_pull_2["pull_request"]["changed_files"] == 4
+        assert tmp_pull_3["pull_request"]["changed_files"] == 3
 
-        await self.create_status(tmp_pull_2)
+        await self.create_status(tmp_pull_2["pull_request"])
         await self.run_engine()
-        await self.create_status(tmp_pull_3)
+        await self.create_status(tmp_pull_3["pull_request"])
         await self.run_engine()
 
         pulls = await self.get_pulls()
@@ -2299,10 +2270,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p2["number"], "queue")
         await self.run_engine()
 
-        draft_pr = typing.cast(
-            github_types.GitHubEventPullRequest,
-            await self.wait_for("pull_request", {"action": "opened"}),
-        )
+        draft_pr = await self.wait_for_new_pull_request()
         assert draft_pr["number"] not in [p1["number"], p2["number"]]
 
         ctxt = context.Context(self.repository_ctxt, p1)
@@ -2402,10 +2370,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p2["number"], "queue")
         await self.run_engine()
 
-        draft_pr = typing.cast(
-            github_types.GitHubEventPullRequest,
-            await self.wait_for("pull_request", {"action": "opened"}),
-        )
+        draft_pr = await self.wait_for_new_pull_request()
         assert draft_pr["number"] not in [p1["number"], p2["number"]]
 
         ctxt = context.Context(self.repository_ctxt, p1)
@@ -2425,7 +2390,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
 
         # we push changes to the base branch
-        await self.git("fetch", "origin", f"{self.main_branch_name}")
+        await self.git("fetch", "origin", self.main_branch_name)
         await self.git("checkout", "-b", "random", f"origin/{self.main_branch_name}")
         open(self.git.repository + "/random_file.txt", "wb").close()
         await self.git("add", "random_file.txt")
@@ -2870,15 +2835,9 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p4["number"], "queue")
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "opened"})
-        await self.wait_for("pull_request", {"action": "opened"})
+        tmp_mq_p1 = await self.wait_for_new_pull_request()
+        tmp_mq_p2 = await self.wait_for_new_pull_request()
 
-        tmp_mq_p1 = await self.get_pull(
-            github_types.GitHubPullRequestNumber(p5["number"] + 1)
-        )
-        tmp_mq_p2 = await self.get_pull(
-            github_types.GitHubPullRequestNumber(p5["number"] + 2)
-        )
         q = await self.get_train()
         await self.assert_merge_queue_contents(
             q,
@@ -2902,7 +2861,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
 
         # Merge p1
-        await self.create_status(tmp_mq_p1)
+        await self.create_status(tmp_mq_p1["pull_request"])
         await self.run_engine()
         await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
         await self.run_engine()
@@ -2911,14 +2870,14 @@ class TestQueueAction(base.FunctionalTestBase):
             assert (await self.get_pull(p["number"]))["merged"]
 
         # ensure it's fast-forward
-        tmp_mq_p1 = await self.get_pull(tmp_mq_p1["number"])
+        tmp_mq_p1_refreshed = await self.get_pull(tmp_mq_p1["number"])
         branch = await self.repository_ctxt.get_branch(
             self.main_branch_name, bypass_cache=True
         )
-        assert branch["commit"]["sha"] == tmp_mq_p1["head"]["sha"]
+        assert branch["commit"]["sha"] == tmp_mq_p1_refreshed["head"]["sha"]
 
         # merge the second one
-        await self.create_status(tmp_mq_p2)
+        await self.create_status(tmp_mq_p2["pull_request"])
         await self.run_engine()
         await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
         await self.run_engine()
@@ -2926,11 +2885,11 @@ class TestQueueAction(base.FunctionalTestBase):
         assert (await self.get_pull(p4["number"]))["merged"]
 
         # ensure it's fast-forward
-        tmp_mq_p2 = await self.get_pull(tmp_mq_p2["number"])
+        tmp_mq_p2_refreshed = await self.get_pull(tmp_mq_p2["number"])
         branch = await self.repository_ctxt.get_branch(
             self.main_branch_name, bypass_cache=True
         )
-        assert branch["commit"]["sha"] == tmp_mq_p2["head"]["sha"]
+        assert branch["commit"]["sha"] == tmp_mq_p2_refreshed["head"]["sha"]
 
         # Queue is now empty, the process will restart
         await self.assert_merge_queue_contents(q, None, [])
@@ -2939,19 +2898,16 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p5["number"], "queue")
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "opened"})
-        tmp_mq_p3 = await self.get_pull(
-            github_types.GitHubPullRequestNumber(p5["number"] + 3)
-        )
+        tmp_mq_p3 = await self.wait_for_new_pull_request()
 
         await self.assert_merge_queue_contents(
             q,
-            tmp_mq_p2["head"]["sha"],
+            tmp_mq_p2_refreshed["head"]["sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p5["number"]],
                     [],
-                    tmp_mq_p2["head"]["sha"],
+                    tmp_mq_p2_refreshed["head"]["sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_mq_p3["number"],
                 ),
@@ -2959,18 +2915,18 @@ class TestQueueAction(base.FunctionalTestBase):
         )
 
         # merge the third one
-        await self.create_status(tmp_mq_p3)
+        await self.create_status(tmp_mq_p3["pull_request"])
         await self.run_engine()
         await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
         await self.run_engine()
         assert (await self.get_pull(p5["number"]))["merged"]
 
         # ensure it's fast-forward
-        tmp_mq_p3 = await self.get_pull(tmp_mq_p3["number"])
+        tmp_mq_p3_refreshed = await self.get_pull(tmp_mq_p3["number"])
         branch = await self.repository_ctxt.get_branch(
             self.main_branch_name, bypass_cache=True
         )
-        assert branch["commit"]["sha"] == tmp_mq_p3["head"]["sha"]
+        assert branch["commit"]["sha"] == tmp_mq_p3_refreshed["head"]["sha"]
 
         # Queue is now empty
         await self.assert_merge_queue_contents(q, None, [])
@@ -3013,16 +2969,17 @@ class TestQueueAction(base.FunctionalTestBase):
         # Queue PRs
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
+        tmp_mq_p1 = await self.wait_for_new_pull_request()
+
         await self.add_label(p2["number"], "queue")
         await self.run_engine()
+
+        tmp_mq_p2 = await self.wait_for_new_pull_request()
 
         # Check Queue
         pulls = await self.get_pulls()
         # 2 queue PR with its tmp PR + 1 one not queued PR
         assert len(pulls) == 5
-
-        tmp_mq_p1 = pulls[1]
-        tmp_mq_p2 = pulls[0]
         assert tmp_mq_p2["number"] not in [p1["number"], p2["number"], p3["number"]]
 
         ctxt = context.Context(self.repository_ctxt, p)
@@ -3050,7 +3007,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
 
         # Merge p1
-        await self.create_status(tmp_mq_p1)
+        await self.create_status(tmp_mq_p1["pull_request"])
         await self.run_engine()
         await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
         await self.run_engine()
@@ -3079,11 +3036,12 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p3["number"], "queue")
         await self.run_engine()
 
+        tmp_mq_p3 = await self.wait_for_new_pull_request()
+
         # Check train state
         pulls = await self.get_pulls()
         assert len(pulls) == 4
 
-        tmp_mq_p3 = pulls[0]
         assert tmp_mq_p3["number"] not in [
             p1["number"],
             p2["number"],
@@ -3264,25 +3222,29 @@ class TestQueueAction(base.FunctionalTestBase):
         }
         await self.setup_repo(yaml.dump(rules))
 
-        p = await self.create_pr()
+        await self.create_pr()
         await self.run_engine()
 
-        draft_pr_number = github_types.GitHubPullRequestNumber(p["number"] + 1)
-        draft_pr = await self.get_pull(draft_pr_number)
+        draft_pr = await self.wait_for_new_pull_request()
 
         # we push changes to the draft PR's branch
-        await self.git("fetch", "origin", f'{draft_pr["head"]["ref"]}')
-        await self.git("checkout", "-b", "random", f'origin/{draft_pr["head"]["ref"]}')
+        draft_pr_head_ref = draft_pr["pull_request"]["head"]["ref"]
+        await self.git("fetch", "origin", f"{draft_pr_head_ref}")
+        await self.git("checkout", "-b", "random", f"origin/{draft_pr_head_ref}")
         open(self.git.repository + "/random_file.txt", "wb").close()
         await self.git("add", "random_file.txt")
         await self.git("commit", "--no-edit", "-m", "random update")
-        await self.git("push", "--quiet", "origin", f'random:{draft_pr["head"]["ref"]}')
+        await self.git("push", "--quiet", "origin", f"random:{draft_pr_head_ref}")
         await self.wait_for("pull_request", {"action": "synchronize"})
         await self.run_engine()
 
         # Get the new state
-        draft_pr = await self.get_pull(draft_pr_number)
-        assert draft_pr["state"] == "open" if allow_queue_branch_edit else "closed"
+        draft_pr_refreshed = await self.get_pull(draft_pr["number"])
+        assert (
+            draft_pr_refreshed["state"] == "open"
+            if allow_queue_branch_edit
+            else "closed"
+        )
 
     async def test_queue_ci_failure(self) -> None:
         rules = {
@@ -3427,6 +3389,8 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p2["number"], "queue")
         await self.add_label(p3["number"], "queue")
         await self.run_engine()
+
+        await self.wait_for("pull_request", {"action": "opened"}),
 
         pulls = await self.get_pulls()
         assert len(pulls) == 4, [p["number"] for p in pulls]
@@ -3607,6 +3571,9 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p3["number"], "queue")
         await self.run_engine()
 
+        await self.wait_for("pull_request", {"action": "opened"}),
+        await self.wait_for("pull_request", {"action": "opened"}),
+
         pulls = await self.get_pulls()
         assert len(pulls) == 5
 
@@ -3675,13 +3642,12 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.create_status(tmp_mq_p2, state="failure")
         await self.run_engine()
 
+        tmp_mq_p3_bis = await self.wait_for_new_pull_request()
+
         # tmp merge-queue pr p2 and p3 have been closed
         pulls = await self.get_pulls()
         assert len(pulls) == 3
 
-        tmp_mq_p3_bis = await self.get_pull(
-            github_types.GitHubPullRequestNumber(tmp_mq_p3["number"] + 1)
-        )
         assert p1["merge_commit_sha"] is not None
         # p3 get a new draft PR
         await self.assert_merge_queue_contents(
@@ -4910,7 +4876,7 @@ class TestQueueAction(base.FunctionalTestBase):
             await self.create_status(p1)
             await self.run_full_engine()
 
-            await self.wait_for("pull_request", {"action": "opened"})
+            tmp_pull = await self.wait_for_new_pull_request()
             await self.run_full_engine()
 
             check = first(
@@ -4928,10 +4894,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 "delayed-refresh", "-inf", "+inf", withscores=True
             )
             assert len(pulls_to_refresh) == 1
-            tmp_pull = await self.get_pull(
-                github_types.GitHubPullRequestNumber(p1["number"] + 1)
-            )
-            await self.create_status(tmp_pull)
+            await self.create_status(tmp_pull["pull_request"])
 
         with freeze_time("2021-05-30T20:12:00", tick=True):
             await self.run_full_engine()
@@ -5666,13 +5629,12 @@ pull_requests:
         # NOTE(sileht): We don't save the merge train in Redis on purpose, so next
         # engine run should delete merge-queue branch of draft PR not tied to a
         # TrainCar
-        await self.wait_for("pull_request", {"action": "opened"})
+        draft_pr = await self.wait_for_new_pull_request()
         await self.run_engine()
         await self.wait_for("pull_request", {"action": "closed"})
-        draft_pr = await self.get_pull(
-            typing.cast(github_types.GitHubPullRequestNumber, p["number"] + 1)
-        )
-        assert draft_pr["state"] == "closed"
+
+        draft_pr_refreshed = await self.get_pull(draft_pr["number"])
+        assert draft_pr_refreshed["state"] == "closed"
 
     async def test_create_pull_conflicts(self) -> None:
         await self.setup_repo(yaml.dump({}), files={"conflicts": "foobar"})
