@@ -4,11 +4,11 @@ import daiquiri
 import fastapi
 from starlette import responses
 
-from mergify_engine.web import dashboard
-from mergify_engine.web import github
+from mergify_engine.web import github_webhook
 from mergify_engine.web import legacy_badges
 from mergify_engine.web import redis
 from mergify_engine.web import refresher
+from mergify_engine.web import subscriptions
 from mergify_engine.web import utils
 from mergify_engine.web.api import root as api_root
 
@@ -16,9 +16,15 @@ from mergify_engine.web.api import root as api_root
 LOG = daiquiri.getLogger(__name__)
 
 app = fastapi.FastAPI(openapi_url=None, redoc_url=None, docs_url=None)
-app.include_router(dashboard.router)
-app.include_router(github.router)
-app.include_router(refresher.router)
+
+# For backward compatibility until we migrate the dashboard side
+app.include_router(subscriptions.router)
+
+# /event can't be moved without breaking on-premise installation
+app.include_router(github_webhook.router)
+
+app.include_router(subscriptions.router, prefix="/subscriptions")
+app.include_router(refresher.router, prefix="/refresh")
 app.include_router(legacy_badges.router, prefix="/badges")
 
 app.mount("/v1", api_root.create_app())

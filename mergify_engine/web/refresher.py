@@ -18,7 +18,7 @@ RefreshActionSchema = voluptuous.Schema(voluptuous.Any("user", "admin", "interna
 
 
 @router.post(
-    "/refresh/{owner_login}/{repo_name}/pull/{pull_request_number}",  # noqa: FS003
+    "/{owner_login}/{repo_name}/pull/{pull_request_number}",  # noqa: FS003
     dependencies=[fastapi.Depends(auth.signature)],
 )
 async def refresh_pull(
@@ -52,7 +52,7 @@ async def refresh_pull(
 
 
 @router.post(
-    "/refresh/{owner_login}/{repo_name}/branch/{branch}",  # noqa: FS003
+    "/{owner_login}/{repo_name}/branch/{branch}",  # noqa: FS003
     dependencies=[fastapi.Depends(auth.signature)],
 )
 async def refresh_branch(
