@@ -529,17 +529,19 @@ def test_validate_github_login(value: str) -> None:
 
 
 @pytest.mark.parametrize(
-    ("value",),
+    ("value", "expected_error"),
     (
-        (r"{{ author",),
-        (r"{{ foo bar }}",),
-        (r"{% for x in my_list %}{{x.foo}}{% wtf %}",),
-        (r"{% for x in my_list %}{{x.foo}}{% endfor %",),
-        (r"{# comment",),
+        (r"{{ author", "Invalid template"),
+        (r"{{ foo bar }}", "Invalid template"),
+        (r"{% for x in my_list %}{{x.foo}}{% wtf %}", "Invalid template"),
+        (r"{% for x in my_list %}{{x.foo}}{% endfor %", "Invalid template"),
+        (r"{# comment", "Invalid template"),
+        (
+            r"{{ unknown_attr }}",
+            r"Invalid template, unexpected variables {'unknown_attr'}",
+        ),
     ),
 )
-def test_validate_jinja_template(value: str) -> None:
-    with pytest.raises(
-        parser.ConditionParsingError, match=re.escape("Invalid template")
-    ):
+def test_validate_jinja_template(value: str, expected_error: str) -> None:
+    with pytest.raises(parser.ConditionParsingError, match=re.escape(expected_error)):
         parser.validate_jinja_template(value)

@@ -6,6 +6,7 @@ import string
 import typing
 
 import jinja2
+import jinja2.meta
 import jinja2.sandbox
 
 from mergify_engine import date
@@ -504,9 +505,18 @@ def is_jinja_template(value: str) -> bool:
 
 def validate_jinja_template(value: str) -> None:
     try:
-        JINJA_ENV.parse(value)
+        template = JINJA_ENV.parse(value)
     except jinja2.exceptions.TemplateError:
         raise ConditionParsingError("Invalid template")
+
+    used_variables = jinja2.meta.find_undeclared_variables(template)
+    available_variables = set(CONDITION_PARSERS.keys())
+    unexpected_variables = used_variables - available_variables
+
+    if unexpected_variables:
+        raise ConditionParsingError(
+            f"Invalid template, unexpected variables {unexpected_variables}"
+        )
 
 
 def is_github_team_name(value: str) -> bool:
