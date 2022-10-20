@@ -2299,8 +2299,9 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p2["number"], "queue")
         await self.run_engine()
 
-        draft_pr = await self.get_pull(
-            github_types.GitHubPullRequestNumber(p2["number"] + 1)
+        draft_pr = typing.cast(
+            github_types.GitHubEventPullRequest,
+            await self.wait_for("pull_request", {"action": "opened"}),
         )
         assert draft_pr["number"] not in [p1["number"], p2["number"]]
 
@@ -2321,12 +2322,13 @@ class TestQueueAction(base.FunctionalTestBase):
         )
 
         # we push changes to the draft PR's branch
-        await self.git("fetch", "origin", f'{draft_pr["head"]["ref"]}')
-        await self.git("checkout", "-b", "random", f'origin/{draft_pr["head"]["ref"]}')
+        draft_pr_head_ref = draft_pr["pull_request"]["head"]["ref"]
+        await self.git("fetch", "origin", draft_pr_head_ref)
+        await self.git("checkout", "-b", "random", f"origin/{draft_pr_head_ref}")
         open(self.git.repository + "/random_file.txt", "wb").close()
         await self.git("add", "random_file.txt")
         await self.git("commit", "--no-edit", "-m", "random update")
-        await self.git("push", "--quiet", "origin", f'random:{draft_pr["head"]["ref"]}')
+        await self.git("push", "--quiet", "origin", f"random:{draft_pr_head_ref}")
         await self.wait_for("pull_request", {"action": "synchronize"})
         await self.run_engine()
 
@@ -2400,8 +2402,9 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p2["number"], "queue")
         await self.run_engine()
 
-        draft_pr = await self.get_pull(
-            github_types.GitHubPullRequestNumber(p2["number"] + 1)
+        draft_pr = typing.cast(
+            github_types.GitHubEventPullRequest,
+            await self.wait_for("pull_request", {"action": "opened"}),
         )
         assert draft_pr["number"] not in [p1["number"], p2["number"]]
 

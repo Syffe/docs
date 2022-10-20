@@ -453,6 +453,7 @@ class GitHubEventPullRequest(GitHubEvent):
     repository: GitHubRepository
     action: GitHubEventPullRequestActionType
     pull_request: GitHubPullRequest
+    number: GitHubPullRequestNumber
     # At least in action=synchronize
     after: SHAType
     before: SHAType

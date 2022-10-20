@@ -214,7 +214,7 @@ class EventReader:
         timeout: float = 15 if RECORD else 2,
         forward_to_engine: bool = True,
         test_id: typing.Optional[str] = None,
-    ) -> None:
+    ) -> github_types.GitHubEvent:
         LOG.log(
             42,
             "WAITING FOR %s/%s: %s",
@@ -239,7 +239,7 @@ class EventReader:
             if event["type"] == event_type and self._match(
                 event["payload"], expected_payload
             ):
-                return
+                return event["payload"]
 
         raise Exception(
             f"Never got event `{event_type}` with payload `{expected_payload}` (timeout)"
@@ -310,8 +310,6 @@ class EventReader:
             data.pop("installation", None)
             data.pop("sender", None)
             data.pop("repository", None)
-            data.pop("base", None)
-            data.pop("head", None)
             data.pop("id", None)
             data.pop("node_id", None)
             data.pop("tree_id", None)
@@ -560,7 +558,9 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         await self.redis_links.shutdown_all()
         mock.patch.stopall()
 
-    async def wait_for(self, *args: typing.Any, **kwargs: typing.Any) -> None:
+    async def wait_for(
+        self, *args: typing.Any, **kwargs: typing.Any
+    ) -> github_types.GitHubEvent:
         return await self._event_reader.wait_for(*args, **kwargs)
 
     async def run_full_engine(self) -> None:
