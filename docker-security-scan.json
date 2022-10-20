@@ -342,6 +342,44 @@
         "PublishedDate": "2022-07-12T21:15:00Z"
       },
       {
+        "VulnerabilityID": "CVE-2022-39253",
+        "PkgName": "git",
+        "InstalledVersion": "1:2.30.2-1",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-39253",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Description": "Git is an open source, scalable, distributed revision control system. Versions prior to 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4 are subject to exposure of sensitive information to a malicious actor. When performing a local clone (where the source and target of the clone are on the same volume), Git copies the contents of the source's `$GIT_DIR/objects` directory into the destination by either creating hardlinks to the source contents, or copying them (if hardlinks are disabled via `--no-hardlinks`). A malicious actor could convince a victim to clone a repository with a symbolic link pointing at sensitive information on the victim's machine. This can be done either by having the victim clone a malicious repository on the same machine, or having them clone a malicious repository embedded as a bare repository via a submodule from any source, provided they clone with the `--recurse-submodules` option. Git does not create symbolic links in the `$GIT_DIR/objects` directory. The problem has been patched in the versions published on 2022-10-18, and backported to v2.30.x. Potential workarounds: Avoid cloning untrusted repositories using the `--local` optimization when on a shared machine, either by passing the `--no-local` option to `git clone` or cloning from a URL that uses the `file://` scheme. Alternatively, avoid cloning repositories from untrusted sources with `--recurse-submodules` or run `git config --global protocol.file.allow user`.",
+        "Severity": "MEDIUM",
+        "References": [
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39253",
+          "https://github.com/git/git/security/advisories/GHSA-3wp6-j8xr-qw85",
+          "https://ubuntu.com/security/notices/USN-5686-1"
+        ],
+        "PublishedDate": "2022-10-19T11:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2022-39260",
+        "PkgName": "git",
+        "InstalledVersion": "1:2.30.2-1",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-39260",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Description": "Git is an open source, scalable, distributed revision control system. `git shell` is a restricted login shell that can be used to implement Git's push/pull functionality via SSH. In versions prior to 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4, the function that splits the command arguments into an array improperly uses an `int` to represent the number of entries in the array, allowing a malicious actor to intentionally overflow the return value, leading to arbitrary heap writes. Because the resulting array is then passed to `execv()`, it is possible to leverage this attack to gain remote code execution on a victim machine. Note that a victim must first allow access to `git shell` as a login shell in order to be vulnerable to this attack. This problem is patched in versions 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4 and users are advised to upgrade to the latest version. Disabling `git shell` access via remote logins is a viable short-term workaround.",
+        "Severity": "MEDIUM",
+        "References": [
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39260",
+          "https://github.com/git/git/security/advisories/GHSA-rjr6-wcq6-83p6",
+          "https://ubuntu.com/security/notices/USN-5686-1"
+        ],
+        "PublishedDate": "2022-10-19T12:15:00Z"
+      },
+      {
         "VulnerabilityID": "CVE-2018-1000021",
         "PkgName": "git",
         "InstalledVersion": "1:2.30.2-1",
@@ -506,6 +544,44 @@
         "PublishedDate": "2022-07-12T21:15:00Z"
       },
       {
+        "VulnerabilityID": "CVE-2022-39253",
+        "PkgName": "git-man",
+        "InstalledVersion": "1:2.30.2-1",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-39253",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Description": "Git is an open source, scalable, distributed revision control system. Versions prior to 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4 are subject to exposure of sensitive information to a malicious actor. When performing a local clone (where the source and target of the clone are on the same volume), Git copies the contents of the source's `$GIT_DIR/objects` directory into the destination by either creating hardlinks to the source contents, or copying them (if hardlinks are disabled via `--no-hardlinks`). A malicious actor could convince a victim to clone a repository with a symbolic link pointing at sensitive information on the victim's machine. This can be done either by having the victim clone a malicious repository on the same machine, or having them clone a malicious repository embedded as a bare repository via a submodule from any source, provided they clone with the `--recurse-submodules` option. Git does not create symbolic links in the `$GIT_DIR/objects` directory. The problem has been patched in the versions published on 2022-10-18, and backported to v2.30.x. Potential workarounds: Avoid cloning untrusted repositories using the `--local` optimization when on a shared machine, either by passing the `--no-local` option to `git clone` or cloning from a URL that uses the `file://` scheme. Alternatively, avoid cloning repositories from untrusted sources with `--recurse-submodules` or run `git config --global protocol.file.allow user`.",
+        "Severity": "MEDIUM",
+        "References": [
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39253",
+          "https://github.com/git/git/security/advisories/GHSA-3wp6-j8xr-qw85",
+          "https://ubuntu.com/security/notices/USN-5686-1"
+        ],
+        "PublishedDate": "2022-10-19T11:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2022-39260",
+        "PkgName": "git-man",
+        "InstalledVersion": "1:2.30.2-1",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-39260",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Description": "Git is an open source, scalable, distributed revision control system. `git shell` is a restricted login shell that can be used to implement Git's push/pull functionality via SSH. In versions prior to 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4, the function that splits the command arguments into an array improperly uses an `int` to represent the number of entries in the array, allowing a malicious actor to intentionally overflow the return value, leading to arbitrary heap writes. Because the resulting array is then passed to `execv()`, it is possible to leverage this attack to gain remote code execution on a victim machine. Note that a victim must first allow access to `git shell` as a login shell in order to be vulnerable to this attack. This problem is patched in versions 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4 and users are advised to upgrade to the latest version. Disabling `git shell` access via remote logins is a viable short-term workaround.",
+        "Severity": "MEDIUM",
+        "References": [
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39260",
+          "https://github.com/git/git/security/advisories/GHSA-rjr6-wcq6-83p6",
+          "https://ubuntu.com/security/notices/USN-5686-1"
+        ],
+        "PublishedDate": "2022-10-19T12:15:00Z"
+      },
+      {
         "VulnerabilityID": "CVE-2018-1000021",
         "PkgName": "git-man",
         "InstalledVersion": "1:2.30.2-1",
@@ -581,6 +657,7 @@
         "VulnerabilityID": "CVE-2022-3527",
         "PkgName": "iproute2",
         "InstalledVersion": "5.10.0-4",
+        "SeveritySource": "nvd",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3527",
         "DataSource": {
           "ID": "debian",
@@ -589,11 +666,16 @@
         },
         "Title": "A vulnerability, which was classified as problematic, has been found i ...",
         "Description": "A vulnerability, which was classified as problematic, has been found in Linux Kernel. This issue affects the function ipneigh_get of the file ip/ipneigh.c of the component iproute2. The manipulation leads to memory leak. The attack may be initiated remotely. It is recommended to apply a patch to fix this issue. The identifier VDB-211025 was assigned to this vulnerability.",
-        "Severity": "UNKNOWN",
+        "Severity": "HIGH",
         "CweIDs": [
-          "CWE-404",
           "CWE-401"
         ],
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 7.5
+          }
+        },
         "References": [
           "https://git.kernel.org/pub/scm/network/iproute2/iproute2-next.git/commit/?id=c5433c4b7a57d380f4cb351316f5ba5ebae9538e",
           "https://vuldb.com/?id.211025"
@@ -604,6 +686,7 @@
         "VulnerabilityID": "CVE-2022-3528",
         "PkgName": "iproute2",
         "InstalledVersion": "5.10.0-4",
+        "SeveritySource": "nvd",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3528",
         "DataSource": {
           "ID": "debian",
@@ -612,11 +695,16 @@
         },
         "Title": "A vulnerability, which was classified as problematic, was found in Lin ...",
         "Description": "A vulnerability, which was classified as problematic, was found in Linux Kernel. Affected is the function mptcp_addr_show of the file ip/ipmptcp.c of the component iproute2. The manipulation leads to memory leak. It is possible to launch the attack remotely. It is recommended to apply a patch to fix this issue. VDB-211026 is the identifier assigned to this vulnerability.",
-        "Severity": "UNKNOWN",
+        "Severity": "HIGH",
         "CweIDs": [
-          "CWE-404",
           "CWE-401"
         ],
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 7.5
+          }
+        },
         "References": [
           "https://git.kernel.org/pub/scm/network/iproute2/iproute2-next.git/commit/?id=afdbb0204a5872f1f76058a0db5a529b1f0c8de7",
           "https://vuldb.com/?id.211026"
@@ -627,6 +715,7 @@
         "VulnerabilityID": "CVE-2022-3529",
         "PkgName": "iproute2",
         "InstalledVersion": "5.10.0-4",
+        "SeveritySource": "nvd",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3529",
         "DataSource": {
           "ID": "debian",
@@ -635,11 +724,16 @@
         },
         "Title": "A vulnerability has been found in Linux Kernel and classified as probl ...",
         "Description": "A vulnerability has been found in Linux Kernel and classified as problematic. Affected by this vulnerability is the function fdb_get of the file bridge/fdb.c of the component iproute2. The manipulation leads to memory leak. The attack can be launched remotely. It is recommended to apply a patch to fix this issue. The associated identifier of this vulnerability is VDB-211027.",
-        "Severity": "UNKNOWN",
+        "Severity": "HIGH",
         "CweIDs": [
-          "CWE-404",
           "CWE-401"
         ],
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 7.5
+          }
+        },
         "References": [
           "https://git.kernel.org/pub/scm/network/iproute2/iproute2-next.git/commit/?id=6db01afd60748afbba114be2773be338c5be28ff",
           "https://vuldb.com/?id.211027"
@@ -650,6 +744,7 @@
         "VulnerabilityID": "CVE-2022-3530",
         "PkgName": "iproute2",
         "InstalledVersion": "5.10.0-4",
+        "SeveritySource": "nvd",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3530",
         "DataSource": {
           "ID": "debian",
@@ -658,16 +753,44 @@
         },
         "Title": "A vulnerability was found in Linux Kernel and classified as problemati ...",
         "Description": "A vulnerability was found in Linux Kernel and classified as problematic. Affected by this issue is the function ipaddr_link_get of the file ip/ipaddress.c of the component iproute2. The manipulation leads to memory leak. The attack may be launched remotely. It is recommended to apply a patch to fix this issue. The identifier of this vulnerability is VDB-211028.",
+        "Severity": "HIGH",
+        "CweIDs": [
+          "CWE-401"
+        ],
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 7.5
+          }
+        },
+        "References": [
+          "https://git.kernel.org/pub/scm/network/iproute2/iproute2-next.git/commit/?id=1d540336b026ed5bfe10eefac383db7f434d842f",
+          "https://vuldb.com/?id.211028"
+        ],
+        "PublishedDate": "2022-10-16T19:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2022-3593",
+        "PkgName": "iproute2",
+        "InstalledVersion": "5.10.0-4",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3593",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "A vulnerability was found in Linux Kernel. It has been classified as p ...",
+        "Description": "A vulnerability was found in Linux Kernel. It has been classified as problematic. Affected is the function mptcp_limit_get_set of the file ip/ipmptcp.c of the component iproute2. The manipulation leads to memory leak. It is possible to launch the attack remotely. It is recommended to apply a patch to fix this issue. VDB-211362 is the identifier assigned to this vulnerability.",
         "Severity": "UNKNOWN",
         "CweIDs": [
           "CWE-404",
           "CWE-401"
         ],
         "References": [
-          "https://git.kernel.org/pub/scm/network/iproute2/iproute2-next.git/commit/?id=1d540336b026ed5bfe10eefac383db7f434d842f",
-          "https://vuldb.com/?id.211028"
+          "https://git.kernel.org/pub/scm/network/iproute2/iproute2-next.git/commit/?id=2cb76253ed852559a4f2b315f5e23457a15d71e5",
+          "https://vuldb.com/?id.211362"
         ],
-        "PublishedDate": "2022-10-16T19:15:00Z"
+        "PublishedDate": "2022-10-18T20:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2016-1585",
@@ -3032,7 +3155,8 @@
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-16156",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/SD6RYOJII7HRJ6WVORFNVTYNOFY5JDXN/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/SZ32AJIV4RHJMLWLU5QULGKMMIHYOMDC/",
-          "https://metacpan.org/pod/distribution/CPAN/scripts/cpan"
+          "https://metacpan.org/pod/distribution/CPAN/scripts/cpan",
+          "https://ubuntu.com/security/notices/USN-5689-1"
         ],
         "PublishedDate": "2021-12-13T18:15:00Z"
       },
@@ -3863,6 +3987,7 @@
         "VulnerabilityID": "CVE-2022-3554",
         "PkgName": "libx11-6",
         "InstalledVersion": "2:1.7.2-1",
+        "SeveritySource": "nvd",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3554",
         "DataSource": {
           "ID": "debian",
@@ -3871,11 +3996,16 @@
         },
         "Title": "A vulnerability has been found in X.org libX11 and classified as probl ...",
         "Description": "A vulnerability has been found in X.org libX11 and classified as problematic. This vulnerability affects the function _XimRegisterIMInstantiateCallback of the file modules/im/ximcp/imsClbk.c. The manipulation leads to memory leak. It is recommended to apply a patch to fix this issue. VDB-211054 is the identifier assigned to this vulnerability.",
-        "Severity": "UNKNOWN",
+        "Severity": "HIGH",
         "CweIDs": [
-          "CWE-404",
           "CWE-401"
         ],
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 7.5
+          }
+        },
         "References": [
           "https://cgit.freedesktop.org/xorg/lib/libX11/commit/?id=1d11822601fd24a396b354fa616b04ed3df8b4ef",
           "https://vuldb.com/?id.211054"
@@ -3886,6 +4016,7 @@
         "VulnerabilityID": "CVE-2022-3555",
         "PkgName": "libx11-6",
         "InstalledVersion": "2:1.7.2-1",
+        "SeveritySource": "nvd",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3555",
         "DataSource": {
           "ID": "debian",
@@ -3894,11 +4025,16 @@
         },
         "Title": "A vulnerability was found in X.org libX11 and classified as problemati ...",
         "Description": "A vulnerability was found in X.org libX11 and classified as problematic. This issue affects the function _XFreeX11XCBStructure of the file xcb_disp.c. The manipulation of the argument dpy leads to memory leak. It is recommended to apply a patch to fix this issue. The associated identifier of this vulnerability is VDB-211055.",
-        "Severity": "UNKNOWN",
+        "Severity": "HIGH",
         "CweIDs": [
-          "CWE-404",
           "CWE-401"
         ],
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 7.5
+          }
+        },
         "References": [
           "https://cgit.freedesktop.org/xorg/lib/libX11/commit/?id=8a368d808fec166b5fb3dfe6312aab22c7ee20af",
           "https://vuldb.com/?id.211055"
@@ -3909,6 +4045,7 @@
         "VulnerabilityID": "CVE-2022-3554",
         "PkgName": "libx11-data",
         "InstalledVersion": "2:1.7.2-1",
+        "SeveritySource": "nvd",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3554",
         "DataSource": {
           "ID": "debian",
@@ -3917,11 +4054,16 @@
         },
         "Title": "A vulnerability has been found in X.org libX11 and classified as probl ...",
         "Description": "A vulnerability has been found in X.org libX11 and classified as problematic. This vulnerability affects the function _XimRegisterIMInstantiateCallback of the file modules/im/ximcp/imsClbk.c. The manipulation leads to memory leak. It is recommended to apply a patch to fix this issue. VDB-211054 is the identifier assigned to this vulnerability.",
-        "Severity": "UNKNOWN",
+        "Severity": "HIGH",
         "CweIDs": [
-          "CWE-404",
           "CWE-401"
         ],
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 7.5
+          }
+        },
         "References": [
           "https://cgit.freedesktop.org/xorg/lib/libX11/commit/?id=1d11822601fd24a396b354fa616b04ed3df8b4ef",
           "https://vuldb.com/?id.211054"
@@ -3932,6 +4074,7 @@
         "VulnerabilityID": "CVE-2022-3555",
         "PkgName": "libx11-data",
         "InstalledVersion": "2:1.7.2-1",
+        "SeveritySource": "nvd",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3555",
         "DataSource": {
           "ID": "debian",
@@ -3940,11 +4083,16 @@
         },
         "Title": "A vulnerability was found in X.org libX11 and classified as problemati ...",
         "Description": "A vulnerability was found in X.org libX11 and classified as problematic. This issue affects the function _XFreeX11XCBStructure of the file xcb_disp.c. The manipulation of the argument dpy leads to memory leak. It is recommended to apply a patch to fix this issue. The associated identifier of this vulnerability is VDB-211055.",
-        "Severity": "UNKNOWN",
+        "Severity": "HIGH",
         "CweIDs": [
-          "CWE-404",
           "CWE-401"
         ],
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 7.5
+          }
+        },
         "References": [
           "https://cgit.freedesktop.org/xorg/lib/libX11/commit/?id=8a368d808fec166b5fb3dfe6312aab22c7ee20af",
           "https://vuldb.com/?id.211055"
@@ -5718,7 +5866,8 @@
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-16156",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/SD6RYOJII7HRJ6WVORFNVTYNOFY5JDXN/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/SZ32AJIV4RHJMLWLU5QULGKMMIHYOMDC/",
-          "https://metacpan.org/pod/distribution/CPAN/scripts/cpan"
+          "https://metacpan.org/pod/distribution/CPAN/scripts/cpan",
+          "https://ubuntu.com/security/notices/USN-5689-1"
         ],
         "PublishedDate": "2021-12-13T18:15:00Z"
       },
@@ -5797,7 +5946,8 @@
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-16156",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/SD6RYOJII7HRJ6WVORFNVTYNOFY5JDXN/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/SZ32AJIV4RHJMLWLU5QULGKMMIHYOMDC/",
-          "https://metacpan.org/pod/distribution/CPAN/scripts/cpan"
+          "https://metacpan.org/pod/distribution/CPAN/scripts/cpan",
+          "https://ubuntu.com/security/notices/USN-5689-1"
         ],
         "PublishedDate": "2021-12-13T18:15:00Z"
       },
@@ -5876,7 +6026,8 @@
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-16156",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/SD6RYOJII7HRJ6WVORFNVTYNOFY5JDXN/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/SZ32AJIV4RHJMLWLU5QULGKMMIHYOMDC/",
-          "https://metacpan.org/pod/distribution/CPAN/scripts/cpan"
+          "https://metacpan.org/pod/distribution/CPAN/scripts/cpan",
+          "https://ubuntu.com/security/notices/USN-5689-1"
         ],
         "PublishedDate": "2021-12-13T18:15:00Z"
       },
