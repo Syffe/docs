@@ -270,11 +270,17 @@ class Schedule:
         days: str,
         times: str,
     ) -> "Schedule":
-        start_weekday, end_weekday = days.split("-")
+        try:
+            start_weekday, end_weekday = days.split("-")
+        except ValueError:
+            raise InvalidDate(f"Invalid schedule: missing separator in '{days}'")
         start_weekday_int = DayOfWeek.from_string(start_weekday).value
         end_weekday_int = DayOfWeek.from_string(end_weekday).value
 
-        start_hourminute, end_hourminute = times.split("-")
+        try:
+            start_hourminute, end_hourminute = times.split("-")
+        except ValueError:
+            raise InvalidDate(f"Invalid schedule: missing separator in '{times}'")
         start_time_obj = Time.from_string(start_hourminute)
         end_time_obj = Time.from_string(end_hourminute)
 
