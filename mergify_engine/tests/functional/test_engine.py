@@ -103,7 +103,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         p = await self.create_pr()
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
 
         logins = await live_resolvers.teams(
             self.repository_ctxt,
@@ -241,7 +241,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
         assert not await self.is_pull_merged(p["number"])
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         checks = [
             c
             for c in await ctxt.pull_engine_check_runs
@@ -399,7 +399,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
             },
         )
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         checks = [
             c
             for c in await ctxt.pull_engine_check_runs
@@ -562,7 +562,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
         await self.run_engine()
 
-        ctxt = await context.Context.create(
+        ctxt = context.Context(
             self.repository_ctxt,
             p,
         )
@@ -685,7 +685,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
     async def test_set_summary_with_broken_checks(self) -> None:
         await self.setup_repo()
         p = await self.create_pr()
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
 
         with mock.patch(
             "mergify_engine.context.Context.pull_check_runs",
@@ -760,7 +760,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
         pr = await self.create_pr()
         await self.run_engine()
-        pull = await context.Context.create(self.repository_ctxt, pr, [])
+        pull = context.Context(self.repository_ctxt, pr, [])
         check = await check_api.set_check_run(
             pull,
             "Test",
@@ -823,7 +823,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
     async def test_check_run_api(self) -> None:
         await self.setup_repo()
         p = await self.create_pr()
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
 
         await check_api.set_check_run(
             ctxt,

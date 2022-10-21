@@ -35,7 +35,7 @@ class TestConfiguration(base.FunctionalTestBase):
 
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         checks = await ctxt.pull_engine_check_runs
         assert len(checks) == 2
         summary_check = checks[0]
@@ -69,7 +69,7 @@ class TestConfiguration(base.FunctionalTestBase):
 
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         checks = await ctxt.pull_engine_check_runs
         assert len(checks) == 1
         check = checks[0]
@@ -88,7 +88,7 @@ class TestConfiguration(base.FunctionalTestBase):
 
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         checks = await ctxt.pull_engine_check_runs
         assert len(checks) == 1
         check = checks[0]
@@ -183,7 +183,7 @@ did not find expected alphabetic or numeric character
 
         # Open a PR and it's cached again
         p = await self.create_pr()
-        await context.Context.create(self.repository_ctxt, p, [])
+        context.Context(self.repository_ctxt, p, [])
         await self.run_engine()
 
         cached_config_file = await self.repository_ctxt.get_cached_config_file()
@@ -221,7 +221,7 @@ did not find expected alphabetic or numeric character
         p = await self.create_pr(
             git_tree_ready=True, files={f"f{i}": "data" for i in range(0, 160)}
         )
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         await self.run_engine()
 
         await self.git("checkout", "save-point", "-b", self.main_branch_name)
@@ -234,7 +234,7 @@ did not find expected alphabetic or numeric character
 
         # we didn't change the pull request no configuration must be detected
         p = await self.get_pull(p["number"])
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         checks = await ctxt.pull_engine_check_runs
         assert len(checks) == 1
         assert checks[0]["output"]["title"] == "no rules match, no planned actions"
@@ -256,7 +256,7 @@ did not find expected alphabetic or numeric character
 
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         checks = await ctxt.pull_engine_check_runs
         assert len(checks) == 2
         assert (
@@ -284,7 +284,7 @@ did not find expected alphabetic or numeric character
         )
         p1 = await self.create_pr(files={".mergify.yml": yaml.dump(rules)})
         await self.run_engine()
-        ctxt = await context.Context.create(self.repository_ctxt, p1, [])
+        ctxt = context.Context(self.repository_ctxt, p1, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
@@ -314,7 +314,7 @@ did not find expected alphabetic or numeric character
         await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert summary["output"]["title"] == "1 rule matches"
@@ -335,7 +335,7 @@ did not find expected alphabetic or numeric character
         p = await self.create_pr()
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
@@ -352,7 +352,7 @@ did not find expected alphabetic or numeric character
         await self.run_engine()
 
         p = await self.get_pull(p["number"])
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
@@ -367,7 +367,7 @@ did not find expected alphabetic or numeric character
         await self.run_engine()
 
         p = await self.get_pull(p["number"])
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
@@ -390,7 +390,7 @@ did not find expected alphabetic or numeric character
         await self.run_engine()
 
         p = await self.get_pull(p["number"])
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
@@ -406,7 +406,7 @@ did not find expected alphabetic or numeric character
         await self.run_engine()
 
         p = await self.get_pull(p["number"])
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
@@ -434,7 +434,7 @@ did not find expected alphabetic or numeric character
         assert await self.is_pull_merged(p["number"])
 
         p = await self.get_pull(p["number"])
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         for check in await ctxt.pull_check_runs:
             if check["name"] == "Rule: merge on main (merge)":
                 assert (
@@ -458,7 +458,7 @@ did not find expected alphabetic or numeric character
         p = await self.create_pr()
         await self.add_label(p["number"], "comment")
         await self.run_engine()
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         config = await ctxt.repository.get_mergify_config()
 
         assert len(config["queue_rules"]) == 3
@@ -492,7 +492,7 @@ did not find expected alphabetic or numeric character
         p = await self.create_pr()
         await self.add_label(p["number"], "comment")
         await self.run_engine()
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         config = await ctxt.repository.get_mergify_config()
 
         assert len(config["queue_rules"].rules) == 4
@@ -521,7 +521,7 @@ did not find expected alphabetic or numeric character
         await self.setup_repo(yaml.dump(rules))
         p = await self.create_pr()
         await self.run_engine()
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         checks = await ctxt.pull_engine_check_runs
         summary_check = checks[0]
         assert (

@@ -80,7 +80,7 @@ class BackportActionTestBase(base.FunctionalTestBase):
         if expected_author is not None:
             assert bp_pull["user"]["login"] == expected_author
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         checks = [
             c
             for c in await ctxt.pull_engine_check_runs
@@ -138,7 +138,7 @@ class TestBackportAction(BackportActionTestBase):
         await self.wait_for("pull_request", {"action": "closed"})
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         checks = [
             c
             for c in await ctxt.pull_engine_check_runs
@@ -203,7 +203,7 @@ class TestBackportAction(BackportActionTestBase):
         await self.wait_for("pull_request", {"action": "closed"})
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         return (
             p,
             [

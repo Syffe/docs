@@ -71,7 +71,7 @@ class TestDismissReviewsAction(base.FunctionalTestBase):
         await self.run_engine()
         p = await self.get_pull(p["number"])
 
-        ctxt = await context.Context.create(
+        ctxt = context.Context(
             self.repository_ctxt,
             p,
         )

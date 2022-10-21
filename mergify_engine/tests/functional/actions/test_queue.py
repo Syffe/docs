@@ -536,7 +536,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
 
         p2 = await self.get_pull(p2["number"])
-        ctxt = await context.Context.create(self.repository_ctxt, p2, [])
+        ctxt = context.Context(self.repository_ctxt, p2, [])
         check = first(
             await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge priority high (queue)",

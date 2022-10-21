@@ -42,7 +42,7 @@ class TestDeprecation(base.FunctionalTestBase):
         assert comments[-1]["body"] == "Ola quetal?"
         assert comments[-2]["body"] == "WTF?"
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (

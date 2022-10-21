@@ -78,7 +78,7 @@ class TestUpdateAction(base.FunctionalTestBase):
         # Now merge p2 so p1 is not up to date
         await self.add_label(p2["number"], "merge")
         await self.run_engine()
-        ctxt = await context.Context.create(self.repository_ctxt, p1, [])
+        ctxt = context.Context(self.repository_ctxt, p1, [])
         checks = await ctxt.pull_engine_check_runs
         for check in checks:
             assert check["conclusion"] == "success", check

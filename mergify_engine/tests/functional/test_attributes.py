@@ -123,7 +123,7 @@ class TestAttributes(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
 
         pr = await self.create_pr()
-        ctxt = await context.Context.create(self.repository_ctxt, pr)
+        ctxt = context.Context(self.repository_ctxt, pr)
         await self.run_engine()
         assert (await self.get_pull(pr["number"]))["state"] == "open"
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
@@ -242,7 +242,7 @@ class TestAttributes(base.FunctionalTestBase):
         await self.run_engine()
 
         p = await self.get_pull(p["number"])
-        ctxt = await context.Context.create(self.repository_ctxt, p)
+        ctxt = context.Context(self.repository_ctxt, p)
         assert await ctxt.is_behind
         assert await ctxt.commits_behind_count == 3
 
@@ -254,7 +254,7 @@ class TestAttributes(base.FunctionalTestBase):
         await self.wait_for("pull_request", {"action": "synchronize"})
 
         p = await self.get_pull(p["number"])
-        ctxt = await context.Context.create(self.repository_ctxt, p)
+        ctxt = context.Context(self.repository_ctxt, p)
         assert not await ctxt.is_behind
         assert await ctxt.commits_behind_count == 0
 
@@ -279,7 +279,7 @@ class TestAttributes(base.FunctionalTestBase):
         await self.git("reset", "--hard", "HEAD^^")
         p = await self.create_pr(git_tree_ready=True)
         await self.run_engine()
-        ctxt = await context.Context.create(self.repository_ctxt, p)
+        ctxt = context.Context(self.repository_ctxt, p)
         assert await ctxt.is_behind
         assert await ctxt.commits_behind_count == 3
 
@@ -291,7 +291,7 @@ class TestAttributes(base.FunctionalTestBase):
         await self.wait_for("pull_request", {"action": "synchronize"})
 
         p = await self.get_pull(p["number"])
-        ctxt = await context.Context.create(self.repository_ctxt, p)
+        ctxt = context.Context(self.repository_ctxt, p)
         assert not await ctxt.is_behind
         assert await ctxt.commits_behind_count == 0
 
@@ -338,7 +338,7 @@ class TestAttributes(base.FunctionalTestBase):
         await self.branch_protection_protect(self.main_branch_name, protection)
 
         pr = await self.create_pr()
-        ctxt = await context.Context.create(self.repository_ctxt, pr)
+        ctxt = context.Context(self.repository_ctxt, pr)
         assert not await ctxt.pull_request.draft
 
         pr = await self.create_pr(draft=True)
@@ -351,7 +351,7 @@ class TestAttributes(base.FunctionalTestBase):
             "issue_comment", {"action": "created"}, test_id=pr["number"]
         )
 
-        ctxt = await context.Context.create(self.repository_ctxt, pr)
+        ctxt = context.Context(self.repository_ctxt, pr)
         assert await ctxt.pull_request.draft
 
         comments = await self.get_issue_comments(pr["number"])
@@ -701,7 +701,7 @@ class TestAttributes(base.FunctionalTestBase):
         }
         await self.setup_repo(yaml.dump(rules))
         pr = await self.create_pr(verified=True)
-        ctxt = await context.Context.create(self.repository_ctxt, pr)
+        ctxt = context.Context(self.repository_ctxt, pr)
         assert len(await ctxt.commits) == 1
         await self.run_engine()
         await self.wait_for(
@@ -722,7 +722,7 @@ class TestAttributes(base.FunctionalTestBase):
         }
         await self.setup_repo(yaml.dump(rules))
         pr = await self.create_pr(verified=True, two_commits=True)
-        ctxt = await context.Context.create(self.repository_ctxt, pr)
+        ctxt = context.Context(self.repository_ctxt, pr)
         assert len(await ctxt.commits) == 2
         await self.run_engine()
         await self.wait_for(
@@ -1022,7 +1022,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
         await self.add_label(pr["number"], "automerge")
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, pr)
+        ctxt = context.Context(self.repository_ctxt, pr)
         assert ctxt.get_depends_on() == [pr1["number"], pr2["number"], 9999999]
         assert await ctxt._get_consolidated_data("depends-on") == [f"#{pr2['number']}"]
 
@@ -1052,7 +1052,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
         p = await self.create_pr()
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         sorted_checks = sorted(
             await ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
         )
@@ -1061,7 +1061,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
 
         await self.create_status(p, "sick-ci", "error")
         await self.run_engine()
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         sorted_checks = sorted(
             await ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
         )
@@ -1082,7 +1082,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
         p = await self.create_pr()
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         sorted_checks = sorted(
             await ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
         )
@@ -1092,7 +1092,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
         await self.create_check_run(p, "sick-ci", "failure")
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         sorted_checks = sorted(
             await ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
         )
@@ -1114,7 +1114,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
         p = await self.create_pr()
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         sorted_checks = sorted(
             await ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
         )
@@ -1124,7 +1124,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
         await self.create_check_run(p, "lazy-ci", "timed_out")
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         sorted_checks = sorted(
             await ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
         )

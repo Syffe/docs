@@ -69,7 +69,7 @@ class TestRebaseAction(base.FunctionalTestBase):
         # Now merge p2 so p1 is not up to date
         await self.add_label(p2["number"], "merge")
         await self.run_engine()
-        ctxt = await context.Context.create(self.repository_ctxt, p1, [])
+        ctxt = context.Context(self.repository_ctxt, p1, [])
         checks = await ctxt.pull_engine_check_runs
         for check in checks:
             assert check["conclusion"] == "success", check
@@ -120,7 +120,7 @@ class TestRebaseAction(base.FunctionalTestBase):
         p2_rebased = await self.get_pull(p2["number"])
         assert p2_updated["head"]["sha"] != p2_rebased["head"]["sha"]
 
-        ctxt = await context.Context.create(self.repository_ctxt, p2, [])
+        ctxt = context.Context(self.repository_ctxt, p2, [])
         checks = await ctxt.pull_engine_check_runs
         for check in checks:
             assert check["conclusion"] == "success", check

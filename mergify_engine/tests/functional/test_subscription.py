@@ -38,7 +38,7 @@ class TestSubscription(base.FunctionalTestBase):
         p = await self.create_pr()
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (

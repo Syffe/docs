@@ -121,7 +121,7 @@ class TestCommentAction(base.FunctionalTestBase):
         await self.run_engine()
         p = await self.get_pull(p["number"])
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
 
         checks = await ctxt.pull_engine_check_runs
         assert len(checks) == 1
@@ -179,7 +179,7 @@ Unknown pull request attribute: hello
         comments = await self.get_issue_comments(p["number"])
         assert len(comments) == 0
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         checks = await ctxt.pull_engine_check_runs
         assert (
             checks[-1]["output"]["title"]
@@ -213,7 +213,7 @@ Unknown pull request attribute: hello
         await self.run_engine()
 
         p = await self.get_pull(p["number"])
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         checks = await ctxt.pull_engine_check_runs
 
         assert len(checks) == 1

@@ -98,7 +98,7 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
         requests = await self.get_review_requests(pulls[0]["number"])
         assert ["mergify-test1"] == [user["login"] for user in requests["users"]]
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         checks = await ctxt.pull_engine_check_runs
         assert len(checks) == 2
         for check in checks:
@@ -153,7 +153,7 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
             user["login"] for user in requests["users"]
         )
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         checks = await ctxt.pull_engine_check_runs
         assert len(checks) == 2
         for check in checks:

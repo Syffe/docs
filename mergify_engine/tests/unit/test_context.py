@@ -595,7 +595,7 @@ async def test_length_optimisation(
 ) -> None:
     a_pull_request["commits"] = 10
     a_pull_request["changed_files"] = 5
-    ctxt = await context.Context.create(mock.Mock(), a_pull_request)
+    ctxt = context.Context(mock.Mock(), a_pull_request)
     assert await getattr(ctxt.pull_request, "#commits") == 10
     assert await getattr(ctxt.pull_request, "#files") == 5
 
@@ -624,7 +624,7 @@ DePeNdS-oN: {config.GITHUB_URL}/user/repo/pull/999 with crap
 footer
 """
 
-    ctxt = await context.Context.create(mock.Mock(), a_pull_request)
+    ctxt = context.Context(mock.Mock(), a_pull_request)
     assert ctxt.get_depends_on() == [42, 48, 50, 123, 456, 457, 789]
 
 
@@ -632,7 +632,7 @@ async def test_context_body_null(
     a_pull_request: github_types.GitHubPullRequest,
 ) -> None:
     a_pull_request["body"] = None
-    ctxt = await context.Context.create(mock.Mock(), a_pull_request)
+    ctxt = context.Context(mock.Mock(), a_pull_request)
     assert await ctxt._get_consolidated_data("body") == ""
 
 
@@ -739,7 +739,7 @@ You can trigger Dependabot actions by commenting on this PR:
 
 
 """  # noqa
-    ctxt = await context.Context.create(mock.Mock(), a_pull_request)
+    ctxt = context.Context(mock.Mock(), a_pull_request)
     assert await ctxt.pull_request.get_commit_message(
         "{{ title }} (#{{ number }})\n\n{{ body | markdownify }}"
     ) == (expected_title, expected_body)
@@ -793,7 +793,7 @@ commits:
 * azerty
 * qsdfgh
 """
-    ctxt = await context.Context.create(mock.Mock(), a_pull_request)
+    ctxt = context.Context(mock.Mock(), a_pull_request)
     ctxt._caches.commits.set(
         [
             github_types.CachedGitHubBranchCommit(
@@ -831,7 +831,7 @@ commits:
 async def test_context_unexisting_section(
     a_pull_request: github_types.GitHubPullRequest,
 ) -> None:
-    ctxt = await context.Context.create(mock.Mock(), a_pull_request)
+    ctxt = context.Context(mock.Mock(), a_pull_request)
     assert (
         await ctxt.pull_request.get_commit_message(
             "{{ body | get_section('### Description', '') }}",
@@ -843,7 +843,7 @@ async def test_context_unexisting_section(
 async def test_context_unexisting_section_with_templated_default(
     a_pull_request: github_types.GitHubPullRequest,
 ) -> None:
-    ctxt = await context.Context.create(mock.Mock(), a_pull_request)
+    ctxt = context.Context(mock.Mock(), a_pull_request)
     assert await ctxt.pull_request.get_commit_message(
         "{{ body | get_section('### Description', '{{number}}\n{{author}}') }}",
     ) == (str(a_pull_request["number"]), a_pull_request["user"]["login"])
@@ -863,7 +863,7 @@ Yo!
 BODY OF #{{number}}
 
 """
-    ctxt = await context.Context.create(mock.Mock(), a_pull_request)
+    ctxt = context.Context(mock.Mock(), a_pull_request)
     assert await ctxt.pull_request.get_commit_message(
         "TITLE\n{{ body | get_section('### Commit') }}",
     ) == ("TITLE", f"BODY OF #{a_pull_request['number']}")
@@ -885,7 +885,7 @@ Instructions
 ---
 
 """
-    ctxt = await context.Context.create(mock.Mock(), a_pull_request)
+    ctxt = context.Context(mock.Mock(), a_pull_request)
     with pytest.raises(context.RenderTemplateFailure):
         await ctxt.pull_request.get_commit_message(
             "TITLE\n{{ body | get_section('### Commit') }}",
@@ -898,7 +898,7 @@ async def test_check_runs_ordering(
     repo = mock.Mock()
     repo.get_branch_protection.side_effect = mock.AsyncMock(return_value=None)
     repo.installation.client.items = mock.MagicMock(__aiter__=[])
-    ctxt = await context.Context.create(repo, a_pull_request)
+    ctxt = context.Context(repo, a_pull_request)
     with mock.patch(
         "mergify_engine.check_api.get_checks_for_ref",
         return_value=[
@@ -1128,10 +1128,10 @@ async def test_reviews_filtering(
     repo = mock.Mock()
     repo.get_branch_protection.side_effect = mock.AsyncMock(return_value=None)
     repo.installation.client = mock.AsyncMock(items=fake_client_items)
-    ctxt = await context.Context.create(repo, a_pull_request)
+    ctxt = context.Context(repo, a_pull_request)
     assert await ctxt.reviews == all_reviews
 
-    ctxt = await context.Context.create(repo, a_pull_request)
+    ctxt = context.Context(repo, a_pull_request)
     ctxt.sources = [
         context.T_PayloadEventSource(
             {
@@ -1341,7 +1341,7 @@ Yo!
             date_committer=github_types.ISODateTimeType("2015-04-14T16:00:49Z"),
         ),
     ]
-    ctxt = await context.Context.create(mock.Mock(), a_pull_request)
+    ctxt = context.Context(mock.Mock(), a_pull_request)
     ctxt._caches.commits.set(commits)
 
     template = await ctxt.pull_request.render_template(a_pull_request["body"])  # type: ignore[arg-type]

@@ -44,7 +44,7 @@ class TestSummary(base.FunctionalTestBase):
         p = await self.create_pr()
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
 
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
@@ -84,7 +84,7 @@ class TestSummary(base.FunctionalTestBase):
         await self.add_label(p["number"], "test")
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
 
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
@@ -109,7 +109,7 @@ class TestSummary(base.FunctionalTestBase):
         p = await self.create_pr()
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
@@ -120,7 +120,7 @@ class TestSummary(base.FunctionalTestBase):
         await self.add_label(p["number"], "test")
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
@@ -152,7 +152,7 @@ class TestSummary(base.FunctionalTestBase):
         p = await self.create_pr()
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
@@ -163,7 +163,7 @@ class TestSummary(base.FunctionalTestBase):
         await self.add_label(p["number"], "test2")
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
@@ -174,7 +174,7 @@ class TestSummary(base.FunctionalTestBase):
         await self.add_label(p["number"], "test3")
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
@@ -206,7 +206,7 @@ class TestSummary(base.FunctionalTestBase):
         p = await self.create_pr()
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
@@ -217,7 +217,7 @@ class TestSummary(base.FunctionalTestBase):
         await self.add_label(p["number"], "test2")
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
@@ -228,7 +228,7 @@ class TestSummary(base.FunctionalTestBase):
         await self.add_label(p["number"], "test3")
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
@@ -705,7 +705,7 @@ class TestQueueCISummary(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
         pr = await self.create_pr()
         await self.run_engine()
-        ctxt = await context.Context.create(self.repository_ctxt, pr)
+        ctxt = context.Context(self.repository_ctxt, pr)
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert summary["output"] is not None
@@ -734,7 +734,7 @@ class TestQueueCISummary(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
         pr = await self.create_pr()
         await self.run_engine()
-        ctxt = await context.Context.create(self.repository_ctxt, pr)
+        ctxt = context.Context(self.repository_ctxt, pr)
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert summary["output"] is not None

@@ -63,7 +63,7 @@ class TestDebugger(base.FunctionalTestBase):
 
         assert s1.startswith(s2)
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         summary_html_url = [
             check for check in await ctxt.pull_check_runs if check["name"] == "Summary"
         ][0]["html_url"]

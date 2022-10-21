@@ -104,7 +104,7 @@ class TestReviewAction(base.FunctionalTestBase):
         p = await self.create_pr(as_="fork")
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         checks = await ctxt.pull_engine_check_runs
         assert len(checks) == 1
         assert "failure" == checks[0]["conclusion"]

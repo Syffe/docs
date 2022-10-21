@@ -165,7 +165,7 @@ async def build_fake_context(
         },
     }
     pull.update(kwargs)  # type: ignore
-    return await context.Context.create(repository, pull)
+    return context.Context(repository, pull)
 
 
 ContextGetterFixture = typing.Callable[

@@ -519,11 +519,7 @@ class Repository(object):
                 raise RuntimeError(
                     'get_pull_request_context() needs pull["number"] == pull_number'
                 )
-            ctxt = await Context.create(
-                self,
-                pull,
-            )
-            self.pull_contexts[pull_number] = ctxt
+            self.pull_contexts[pull_number] = Context(self, pull)
 
         return self.pull_contexts[pull_number]
 
@@ -993,6 +989,43 @@ class Context(object):
         default_factory=ContextCaches, repr=False
     )
 
+    def __post_init__(self) -> None:
+        self.pull_request = PullRequest(self)
+        self.log = daiquiri.getLogger(
+            self.__class__.__qualname__,
+            gh_owner=self.pull["base"]["user"]["login"]
+            if "base" in self.pull
+            else "<unknown-yet>",
+            gh_repo=(
+                self.pull["base"]["repo"]["name"]
+                if "base" in self.pull
+                else "<unknown-yet>"
+            ),
+            gh_private=(
+                self.pull["base"]["repo"]["private"]
+                if "base" in self.pull
+                else "<unknown-yet>"
+            ),
+            gh_branch=self.pull["base"]["ref"]
+            if "base" in self.pull
+            else "<unknown-yet>",
+            gh_pull=self.pull["number"],
+            gh_pull_base_sha=self.pull["base"]["sha"]
+            if "base" in self.pull
+            else "<unknown-yet>",
+            gh_pull_head_sha=self.pull["head"]["sha"]
+            if "head" in self.pull
+            else "<unknown-yet>",
+            gh_pull_locked=self.pull["locked"],
+            gh_pull_merge_commit_sha=self.pull["merge_commit_sha"],
+            gh_pull_url=self.pull.get("html_url", "<unknown-yet>"),
+            gh_pull_state=(
+                "merged"
+                if self.pull.get("merged")
+                else (self.pull.get("mergeable_state", "unknown") or "none")
+            ),
+        )
+
     @property
     def redis(self) -> redis_utils.RedisLinks:
         # TODO(sileht): remove me when context split if done
@@ -1118,54 +1151,6 @@ class Context(object):
             )
             self._caches.review_decision.set(review_decision)
         return review_decision
-
-    @classmethod
-    async def create(
-        cls,
-        repository: Repository,
-        pull: github_types.GitHubPullRequest,
-        sources: typing.Optional[typing.List[T_PayloadEventSource]] = None,
-    ) -> "Context":
-        if sources is None:
-            sources = []
-        self = cls(repository, pull, sources)
-        self.pull_request = PullRequest(self)
-
-        self.log = daiquiri.getLogger(
-            self.__class__.__qualname__,
-            gh_owner=self.pull["base"]["user"]["login"]
-            if "base" in self.pull
-            else "<unknown-yet>",
-            gh_repo=(
-                self.pull["base"]["repo"]["name"]
-                if "base" in self.pull
-                else "<unknown-yet>"
-            ),
-            gh_private=(
-                self.pull["base"]["repo"]["private"]
-                if "base" in self.pull
-                else "<unknown-yet>"
-            ),
-            gh_branch=self.pull["base"]["ref"]
-            if "base" in self.pull
-            else "<unknown-yet>",
-            gh_pull=self.pull["number"],
-            gh_pull_base_sha=self.pull["base"]["sha"]
-            if "base" in self.pull
-            else "<unknown-yet>",
-            gh_pull_head_sha=self.pull["head"]["sha"]
-            if "head" in self.pull
-            else "<unknown-yet>",
-            gh_pull_locked=self.pull["locked"],
-            gh_pull_merge_commit_sha=self.pull["merge_commit_sha"],
-            gh_pull_url=self.pull.get("html_url", "<unknown-yet>"),
-            gh_pull_state=(
-                "merged"
-                if self.pull.get("merged")
-                else (self.pull.get("mergeable_state", "unknown") or "none")
-            ),
-        )
-        return self
 
     async def set_summary_check(
         self,

@@ -71,7 +71,7 @@ class TestCloseAction(base.FunctionalTestBase):
 
         p = await self.get_pull(p["number"])
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
 
         checks = await ctxt.pull_engine_check_runs
         assert len(checks) == 1

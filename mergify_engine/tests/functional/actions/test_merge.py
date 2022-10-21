@@ -37,7 +37,7 @@ class TestMergeAction(base.FunctionalTestBase):
         await self.add_label(p["number"], "automerge")
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         checks = await ctxt.pull_engine_check_runs
         assert len(checks) == 2
         check = checks[1]
@@ -47,7 +47,7 @@ class TestMergeAction(base.FunctionalTestBase):
 
         await self.remove_label(p["number"], "automerge")
         await self.run_engine()
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         checks = await ctxt.pull_engine_check_runs
         assert len(checks) == 2
         check = checks[1]
@@ -98,7 +98,7 @@ class TestMergeAction(base.FunctionalTestBase):
         assert p["merged_by"]
         assert "mergify-test4" == p["merged_by"]["login"]
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         checks = await ctxt.pull_engine_check_runs
         assert len(checks) == 2
         check = checks[1]
@@ -156,7 +156,7 @@ class TestMergeAction(base.FunctionalTestBase):
 
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p1, [])
+        ctxt = context.Context(self.repository_ctxt, p1, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
 
@@ -212,7 +212,7 @@ class TestMergeAction(base.FunctionalTestBase):
         await self.run_engine()
         await self.wait_for("check_run", {"check_run": {"conclusion": "failure"}})
 
-        ctxt = await context.Context.create(self.repository_ctxt, p1, [])
+        ctxt = context.Context(self.repository_ctxt, p1, [])
         checks = [
             c
             for c in await ctxt.pull_engine_check_runs
@@ -290,7 +290,7 @@ mergify-test4
 superRP!"""
             == p3["commit"]["message"]
         )
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary
         assert (
@@ -343,7 +343,7 @@ superRP!"""
         await self.create_status(p2)
         await self.run_engine()
 
-        ctxt = await context.Context.create(self.repository_ctxt, p2, [])
+        ctxt = context.Context(self.repository_ctxt, p2, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert "[ ] `#commits-behind=0`" in summary["output"]["summary"]
@@ -359,7 +359,7 @@ superRP!"""
         p2 = await self.get_pull(p2["number"])
         await self.create_status(p2)
         await self.run_engine()
-        ctxt = await context.Context.create(self.repository_ctxt, p2, [])
+        ctxt = context.Context(self.repository_ctxt, p2, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert "[X] `#commits-behind=0`" in summary["output"]["summary"]
@@ -403,7 +403,7 @@ superRP!"""
         assert branch["commit"]["committer"] is not None
         assert branch["commit"]["committer"]["login"] == config.BOT_USER_LOGIN
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         checks = await ctxt.pull_engine_check_runs
         assert len(checks) == 2
         check = checks[1]

@@ -52,13 +52,11 @@ class TestPostCheckAction(base.FunctionalTestBase):
         await self.run_engine()
 
         # ensure no check is posted on unrelated branch
-        unrelated_ctxt = await context.Context.create(
-            self.repository_ctxt, unrelated_p, []
-        )
+        unrelated_ctxt = context.Context(self.repository_ctxt, unrelated_p, [])
         assert len(await unrelated_ctxt.pull_engine_check_runs) == 1
 
         # ensure a success check is posted on related branch
-        match_ctxt = await context.Context.create(self.repository_ctxt, match_p, [])
+        match_ctxt = context.Context(self.repository_ctxt, match_p, [])
         match_sorted_checks = sorted(
             await match_ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
         )
@@ -67,7 +65,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
         assert "success" == match_check["conclusion"]
 
         # ensure a failure check is posted on related branch
-        unmatch_ctxt = await context.Context.create(self.repository_ctxt, unmatch_p, [])
+        unmatch_ctxt = context.Context(self.repository_ctxt, unmatch_p, [])
         unmatch_sorted_checks = sorted(
             await unmatch_ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
         )
@@ -150,7 +148,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
         await self.add_label(match_p["number"], "ignore-guideline")
         await self.run_engine()
 
-        match_ctxt = await context.Context.create(self.repository_ctxt, match_p, [])
+        match_ctxt = context.Context(self.repository_ctxt, match_p, [])
         match_sorted_checks = sorted(
             await match_ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
         )
@@ -241,9 +239,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
         await self.run_engine()
 
         # ensure check is also posted on unrelated branch as failure
-        unrelated_ctxt = await context.Context.create(
-            self.repository_ctxt, unrelated_p, []
-        )
+        unrelated_ctxt = context.Context(self.repository_ctxt, unrelated_p, [])
         unrelated_sorted_checks = sorted(
             await unrelated_ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
         )
@@ -252,7 +248,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
         assert "failure" == unrelated_check["conclusion"]
 
         # ensure a success check is posted on related branch
-        match_ctxt = await context.Context.create(self.repository_ctxt, match_p, [])
+        match_ctxt = context.Context(self.repository_ctxt, match_p, [])
         match_sorted_checks = sorted(
             await match_ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
         )
@@ -261,7 +257,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
         assert "success" == match_check["conclusion"]
 
         # ensure a failure check is posted on related branch
-        unmatch_ctxt = await context.Context.create(self.repository_ctxt, unmatch_p, [])
+        unmatch_ctxt = context.Context(self.repository_ctxt, unmatch_p, [])
         unmatch_sorted_checks = sorted(
             await unmatch_ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
         )
@@ -349,7 +345,7 @@ Rule list:
         await self.run_engine()
         p = await self.get_pull(p["number"])
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         sorted_checks = sorted(
             await ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
         )
@@ -401,7 +397,7 @@ class TestPostCheckActionNoSub(base.FunctionalTestBase):
         await self.run_engine()
         p = await self.get_pull(p["number"])
 
-        ctxt = await context.Context.create(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p, [])
         sorted_checks = sorted(
             await ctxt.pull_engine_check_runs, key=operator.itemgetter("name")
         )
