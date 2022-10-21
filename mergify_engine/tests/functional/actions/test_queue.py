@@ -1043,6 +1043,18 @@ class TestQueueAction(base.FunctionalTestBase):
         assert r.json() == {
             "events": [
                 {
+                    "event": "action.queue.merged",
+                    "metadata": {
+                        "branch": self.main_branch_name,
+                        "queue_name": "default",
+                        "queued_at": anys.ANY_AWARE_DATETIME_STR,
+                    },
+                    "pull_request": p1["number"],
+                    "repository": self.repository_ctxt.repo["full_name"],
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "trigger": "Rule: Merge priority high",
+                },
+                {
                     "event": "action.queue.leave",
                     "metadata": {
                         "branch": self.main_branch_name,
@@ -1087,18 +1099,6 @@ class TestQueueAction(base.FunctionalTestBase):
                     "repository": self.repository_ctxt.repo["full_name"],
                     "timestamp": anys.ANY_AWARE_DATETIME_STR,
                     "trigger": "merge-queue internal",
-                },
-                {
-                    "event": "action.queue.merged",
-                    "metadata": {
-                        "branch": self.main_branch_name,
-                        "queue_name": "default",
-                        "queued_at": anys.ANY_AWARE_DATETIME_STR,
-                    },
-                    "pull_request": p1["number"],
-                    "repository": self.repository_ctxt.repo["full_name"],
-                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
-                    "trigger": "Rule: Merge priority high",
                 },
                 {
                     "event": "action.queue.checks_start",

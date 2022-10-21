@@ -425,6 +425,21 @@ Then, re-embark the pull request into the merge queue by posting the comment
                             result = await self._merge(
                                 ctxt, rule, q, qf, merge_bot_account
                             )
+                            if result.conclusion == check_api.Conclusion.SUCCESS:
+                                _, embarked_pull = q.find_embarked_pull(
+                                    ctxt.pull["number"]
+                                )
+                                if embarked_pull is None:
+                                    raise RuntimeError(
+                                        "Queue pull request with no embarked_pull"
+                                    )
+                                await q.remove_pull(
+                                    ctxt,
+                                    rule.get_signal_trigger(),
+                                    result.title + "\n" + result.summary,
+                                )
+                                await self.send_merge_signal(ctxt, rule, embarked_pull)
+
                         else:
                             raise RuntimeError(
                                 f"Unsupported queue_branch_merge_method: {self.queue_rule.config['queue_branch_merge_method']}"
@@ -727,15 +742,12 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         return check_api.Result(check_api.Conclusion.PENDING, title, summary)
 
-    async def send_signal(
+    async def send_merge_signal(
         self,
         ctxt: context.Context,
         rule: "rules.EvaluatedRule",
-        queue: merge_train.Train,
+        embarked_pull: merge_train.EmbarkedPullWithCar,
     ) -> None:
-        _, embarked_pull = queue.find_embarked_pull(ctxt.pull["number"])
-        if embarked_pull is None:
-            raise RuntimeError("Queue pull request with no embarked_pull")
         await signals.send(
             ctxt.repository,
             ctxt.pull["number"],

@@ -100,10 +100,11 @@ class MergeAction(merge_base.MergeBaseAction[None, None]):
                 )
 
         report = await self.merge_report(ctxt, merge_bot_account)
-        if report is not None:
-            return report
-
-        return await self._merge(ctxt, rule, None, None, merge_bot_account)
+        if report is None:
+            report = await self._merge(ctxt, rule, None, None, merge_bot_account)
+            if report.conclusion == check_api.Conclusion.SUCCESS:
+                await self.send_merge_signal(ctxt, rule, None)
+        return report
 
     async def cancel(
         self, ctxt: context.Context, rule: "rules.EvaluatedRule"
@@ -121,7 +122,7 @@ class MergeAction(merge_base.MergeBaseAction[None, None]):
         summary = ""
         return check_api.Result(check_api.Conclusion.PENDING, title, summary)
 
-    async def send_signal(
+    async def send_merge_signal(
         self,
         ctxt: context.Context,
         rule: "rules.EvaluatedRule",

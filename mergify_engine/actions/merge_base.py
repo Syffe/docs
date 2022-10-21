@@ -27,15 +27,6 @@ class MergeBaseAction(
     typing.Generic[QueueT, QueueFreezeT],
 ):
     @abc.abstractmethod
-    async def send_signal(
-        self,
-        ctxt: context.Context,
-        rule: "rules.EvaluatedRule",
-        queue: QueueT,
-    ) -> None:
-        pass
-
-    @abc.abstractmethod
     async def get_queue_status(
         self,
         ctxt: context.Context,
@@ -105,7 +96,6 @@ class MergeBaseAction(
                         e, ctxt, rule, queue, queue_freeze
                     )
             else:
-                await self.send_signal(ctxt, rule, queue)
                 ctxt.log.info("merged")
 
             # NOTE(sileht): We can't use merge_report() here, because it takes
@@ -157,7 +147,6 @@ class MergeBaseAction(
                         e, ctxt, rule, queue, queue_freeze
                     )
             else:
-                await self.send_signal(ctxt, rule, queue)
                 await ctxt.update(wait_merged=True)
                 ctxt.log.info("merged")
 
