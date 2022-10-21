@@ -1,6 +1,7 @@
 import dataclasses
 import datetime
 import functools
+import html
 import itertools
 import operator
 import typing
@@ -142,12 +143,24 @@ class QueueRule:
         repository: context.Repository,
         ref: github_types.GitHubRefType,
         pulls: typing.List[context.BasePullRequest],
+        evaluated_pull_request_rule: typing.Optional["EvaluatedRule"] = None,
     ) -> EvaluatedQueueRule:
         extra_conditions = await conditions_mod.get_branch_protection_conditions(
             repository, ref, strict=False
         )
+        if evaluated_pull_request_rule is not None:
+            conditions = evaluated_pull_request_rule.conditions.copy()
+            if conditions.condition.conditions:
+                extra_conditions.extend(
+                    [
+                        conditions_mod.RuleConditionCombination(
+                            {"and": conditions.condition.conditions},
+                            description=f"📃 From pull request rule **{html.escape(evaluated_pull_request_rule.name)}**",
+                        )
+                    ]
+                )
 
-        queue_rule_with_branch_protection = QueueRule(
+        queue_rule_with_extra_conditions = QueueRule(
             self.name,
             conditions_mod.QueueRuleConditions(
                 extra_conditions + self.conditions.condition.copy().conditions
@@ -155,7 +168,7 @@ class QueueRule:
             self.config,
         )
         queue_rules_evaluator = await QueuesRulesEvaluator.create(
-            [queue_rule_with_branch_protection],
+            [queue_rule_with_extra_conditions],
             repository,
             pulls,
             False,

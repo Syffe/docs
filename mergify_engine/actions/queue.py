@@ -236,6 +236,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 ctxt.repository,
                 ctxt.pull["base"]["ref"],
                 [ctxt.pull_request],
+                evaluated_pull_request_rule=rule,
             )
             await delayed_refresh.plan_next_refresh(
                 ctxt, [queue_rule_evaluated], ctxt.pull_request
