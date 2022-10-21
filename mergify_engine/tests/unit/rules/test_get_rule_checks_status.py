@@ -132,7 +132,6 @@ async def assert_queue_rule_checks_status(
         [typing.cast(context.BasePullRequest, pull)],
         mock.Mock(conditions=c),
         unmatched_conditions_return_failure=False,
-        use_new_rule_checks_status=True,
     )
     assert state == expected_state
 

@@ -15,7 +15,6 @@ async def get_rule_checks_status(
     rule: typing.Union["rules.EvaluatedRule", "rules.EvaluatedQueueRule"],
     *,
     unmatched_conditions_return_failure: bool = True,
-    use_new_rule_checks_status: bool = True,
 ) -> check_api.Conclusion:
     if rule.conditions.match:
         return check_api.Conclusion.SUCCESS
