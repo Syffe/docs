@@ -342,42 +342,64 @@
         "PublishedDate": "2022-07-12T21:15:00Z"
       },
       {
-        "VulnerabilityID": "CVE-2022-39253",
-        "PkgName": "git",
-        "InstalledVersion": "1:2.30.2-1",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-39253",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Description": "Git is an open source, scalable, distributed revision control system. Versions prior to 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4 are subject to exposure of sensitive information to a malicious actor. When performing a local clone (where the source and target of the clone are on the same volume), Git copies the contents of the source's `$GIT_DIR/objects` directory into the destination by either creating hardlinks to the source contents, or copying them (if hardlinks are disabled via `--no-hardlinks`). A malicious actor could convince a victim to clone a repository with a symbolic link pointing at sensitive information on the victim's machine. This can be done either by having the victim clone a malicious repository on the same machine, or having them clone a malicious repository embedded as a bare repository via a submodule from any source, provided they clone with the `--recurse-submodules` option. Git does not create symbolic links in the `$GIT_DIR/objects` directory. The problem has been patched in the versions published on 2022-10-18, and backported to v2.30.x. Potential workarounds: Avoid cloning untrusted repositories using the `--local` optimization when on a shared machine, either by passing the `--no-local` option to `git clone` or cloning from a URL that uses the `file://` scheme. Alternatively, avoid cloning repositories from untrusted sources with `--recurse-submodules` or run `git config --global protocol.file.allow user`.",
-        "Severity": "MEDIUM",
-        "References": [
-          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39253",
-          "https://github.com/git/git/security/advisories/GHSA-3wp6-j8xr-qw85",
-          "https://ubuntu.com/security/notices/USN-5686-1"
-        ],
-        "PublishedDate": "2022-10-19T11:15:00Z"
-      },
-      {
         "VulnerabilityID": "CVE-2022-39260",
         "PkgName": "git",
         "InstalledVersion": "1:2.30.2-1",
+        "SeveritySource": "nvd",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-39260",
         "DataSource": {
           "ID": "debian",
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
+        "Title": "Git is an open source, scalable, distributed revision control system.  ...",
         "Description": "Git is an open source, scalable, distributed revision control system. `git shell` is a restricted login shell that can be used to implement Git's push/pull functionality via SSH. In versions prior to 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4, the function that splits the command arguments into an array improperly uses an `int` to represent the number of entries in the array, allowing a malicious actor to intentionally overflow the return value, leading to arbitrary heap writes. Because the resulting array is then passed to `execv()`, it is possible to leverage this attack to gain remote code execution on a victim machine. Note that a victim must first allow access to `git shell` as a login shell in order to be vulnerable to this attack. This problem is patched in versions 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4 and users are advised to upgrade to the latest version. Disabling `git shell` access via remote logins is a viable short-term workaround.",
-        "Severity": "MEDIUM",
+        "Severity": "HIGH",
+        "CweIDs": [
+          "CWE-787"
+        ],
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H",
+            "V3Score": 8.8
+          }
+        },
         "References": [
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39260",
           "https://github.com/git/git/security/advisories/GHSA-rjr6-wcq6-83p6",
           "https://ubuntu.com/security/notices/USN-5686-1"
         ],
         "PublishedDate": "2022-10-19T12:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2022-39253",
+        "PkgName": "git",
+        "InstalledVersion": "1:2.30.2-1",
+        "SeveritySource": "nvd",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-39253",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "Git is an open source, scalable, distributed revision control system.  ...",
+        "Description": "Git is an open source, scalable, distributed revision control system. Versions prior to 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4 are subject to exposure of sensitive information to a malicious actor. When performing a local clone (where the source and target of the clone are on the same volume), Git copies the contents of the source's `$GIT_DIR/objects` directory into the destination by either creating hardlinks to the source contents, or copying them (if hardlinks are disabled via `--no-hardlinks`). A malicious actor could convince a victim to clone a repository with a symbolic link pointing at sensitive information on the victim's machine. This can be done either by having the victim clone a malicious repository on the same machine, or having them clone a malicious repository embedded as a bare repository via a submodule from any source, provided they clone with the `--recurse-submodules` option. Git does not create symbolic links in the `$GIT_DIR/objects` directory. The problem has been patched in the versions published on 2022-10-18, and backported to v2.30.x. Potential workarounds: Avoid cloning untrusted repositories using the `--local` optimization when on a shared machine, either by passing the `--no-local` option to `git clone` or cloning from a URL that uses the `file://` scheme. Alternatively, avoid cloning repositories from untrusted sources with `--recurse-submodules` or run `git config --global protocol.file.allow user`.",
+        "Severity": "MEDIUM",
+        "CweIDs": [
+          "CWE-59"
+        ],
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N",
+            "V3Score": 5.5
+          }
+        },
+        "References": [
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39253",
+          "https://github.com/git/git/security/advisories/GHSA-3wp6-j8xr-qw85",
+          "https://ubuntu.com/security/notices/USN-5686-1"
+        ],
+        "PublishedDate": "2022-10-19T11:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2018-1000021",
@@ -544,42 +566,64 @@
         "PublishedDate": "2022-07-12T21:15:00Z"
       },
       {
-        "VulnerabilityID": "CVE-2022-39253",
-        "PkgName": "git-man",
-        "InstalledVersion": "1:2.30.2-1",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-39253",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Description": "Git is an open source, scalable, distributed revision control system. Versions prior to 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4 are subject to exposure of sensitive information to a malicious actor. When performing a local clone (where the source and target of the clone are on the same volume), Git copies the contents of the source's `$GIT_DIR/objects` directory into the destination by either creating hardlinks to the source contents, or copying them (if hardlinks are disabled via `--no-hardlinks`). A malicious actor could convince a victim to clone a repository with a symbolic link pointing at sensitive information on the victim's machine. This can be done either by having the victim clone a malicious repository on the same machine, or having them clone a malicious repository embedded as a bare repository via a submodule from any source, provided they clone with the `--recurse-submodules` option. Git does not create symbolic links in the `$GIT_DIR/objects` directory. The problem has been patched in the versions published on 2022-10-18, and backported to v2.30.x. Potential workarounds: Avoid cloning untrusted repositories using the `--local` optimization when on a shared machine, either by passing the `--no-local` option to `git clone` or cloning from a URL that uses the `file://` scheme. Alternatively, avoid cloning repositories from untrusted sources with `--recurse-submodules` or run `git config --global protocol.file.allow user`.",
-        "Severity": "MEDIUM",
-        "References": [
-          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39253",
-          "https://github.com/git/git/security/advisories/GHSA-3wp6-j8xr-qw85",
-          "https://ubuntu.com/security/notices/USN-5686-1"
-        ],
-        "PublishedDate": "2022-10-19T11:15:00Z"
-      },
-      {
         "VulnerabilityID": "CVE-2022-39260",
         "PkgName": "git-man",
         "InstalledVersion": "1:2.30.2-1",
+        "SeveritySource": "nvd",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-39260",
         "DataSource": {
           "ID": "debian",
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
+        "Title": "Git is an open source, scalable, distributed revision control system.  ...",
         "Description": "Git is an open source, scalable, distributed revision control system. `git shell` is a restricted login shell that can be used to implement Git's push/pull functionality via SSH. In versions prior to 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4, the function that splits the command arguments into an array improperly uses an `int` to represent the number of entries in the array, allowing a malicious actor to intentionally overflow the return value, leading to arbitrary heap writes. Because the resulting array is then passed to `execv()`, it is possible to leverage this attack to gain remote code execution on a victim machine. Note that a victim must first allow access to `git shell` as a login shell in order to be vulnerable to this attack. This problem is patched in versions 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4 and users are advised to upgrade to the latest version. Disabling `git shell` access via remote logins is a viable short-term workaround.",
-        "Severity": "MEDIUM",
+        "Severity": "HIGH",
+        "CweIDs": [
+          "CWE-787"
+        ],
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H",
+            "V3Score": 8.8
+          }
+        },
         "References": [
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39260",
           "https://github.com/git/git/security/advisories/GHSA-rjr6-wcq6-83p6",
           "https://ubuntu.com/security/notices/USN-5686-1"
         ],
         "PublishedDate": "2022-10-19T12:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2022-39253",
+        "PkgName": "git-man",
+        "InstalledVersion": "1:2.30.2-1",
+        "SeveritySource": "nvd",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-39253",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "Git is an open source, scalable, distributed revision control system.  ...",
+        "Description": "Git is an open source, scalable, distributed revision control system. Versions prior to 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4 are subject to exposure of sensitive information to a malicious actor. When performing a local clone (where the source and target of the clone are on the same volume), Git copies the contents of the source's `$GIT_DIR/objects` directory into the destination by either creating hardlinks to the source contents, or copying them (if hardlinks are disabled via `--no-hardlinks`). A malicious actor could convince a victim to clone a repository with a symbolic link pointing at sensitive information on the victim's machine. This can be done either by having the victim clone a malicious repository on the same machine, or having them clone a malicious repository embedded as a bare repository via a submodule from any source, provided they clone with the `--recurse-submodules` option. Git does not create symbolic links in the `$GIT_DIR/objects` directory. The problem has been patched in the versions published on 2022-10-18, and backported to v2.30.x. Potential workarounds: Avoid cloning untrusted repositories using the `--local` optimization when on a shared machine, either by passing the `--no-local` option to `git clone` or cloning from a URL that uses the `file://` scheme. Alternatively, avoid cloning repositories from untrusted sources with `--recurse-submodules` or run `git config --global protocol.file.allow user`.",
+        "Severity": "MEDIUM",
+        "CweIDs": [
+          "CWE-59"
+        ],
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N",
+            "V3Score": 5.5
+          }
+        },
+        "References": [
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39253",
+          "https://github.com/git/git/security/advisories/GHSA-3wp6-j8xr-qw85",
+          "https://ubuntu.com/security/notices/USN-5686-1"
+        ],
+        "PublishedDate": "2022-10-19T11:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2018-1000021",
@@ -905,6 +949,35 @@
         "PublishedDate": "2022-02-21T19:15:00Z"
       },
       {
+        "VulnerabilityID": "CVE-2022-3534",
+        "PkgName": "libbpf0",
+        "InstalledVersion": "0.3-2",
+        "SeveritySource": "nvd",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3534",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "A vulnerability classified as critical has been found in Linux Kernel. ...",
+        "Description": "A vulnerability classified as critical has been found in Linux Kernel. Affected is the function btf_dump_name_dups of the file tools/lib/bpf/btf_dump.c of the component libbpf. The manipulation leads to use after free. It is recommended to apply a patch to fix this issue. The identifier of this vulnerability is VDB-211032.",
+        "Severity": "HIGH",
+        "CweIDs": [
+          "CWE-416"
+        ],
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:A/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+            "V3Score": 8
+          }
+        },
+        "References": [
+          "https://git.kernel.org/pub/scm/linux/kernel/git/bpf/bpf-next.git/commit/?id=93c660ca40b5d2f7c1b1626e955a8e9fa30e0749",
+          "https://vuldb.com/?id.211032"
+        ],
+        "PublishedDate": "2022-10-17T09:15:00Z"
+      },
+      {
         "VulnerabilityID": "CVE-2021-45940",
         "PkgName": "libbpf0",
         "InstalledVersion": "0.3-2",
@@ -979,6 +1052,36 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2021-45941"
         ],
         "PublishedDate": "2022-01-01T01:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2022-3606",
+        "PkgName": "libbpf0",
+        "InstalledVersion": "0.3-2",
+        "SeveritySource": "nvd",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3606",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "A vulnerability was found in Linux Kernel. It has been classified as p ...",
+        "Description": "A vulnerability was found in Linux Kernel. It has been classified as problematic. This affects the function find_prog_by_sec_insn of the file tools/lib/bpf/libbpf.c of the component BPF. The manipulation leads to null pointer dereference. It is recommended to apply a patch to fix this issue. The identifier VDB-211749 was assigned to this vulnerability.",
+        "Severity": "MEDIUM",
+        "CweIDs": [
+          "CWE-476",
+          "CWE-404"
+        ],
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 5.5
+          }
+        },
+        "References": [
+          "https://git.kernel.org/pub/scm/linux/kernel/git/bpf/bpf-next.git/commit/?id=d0d382f95a9270dcf803539d6781d6bd67e3f5b2",
+          "https://vuldb.com/?id.211749"
+        ],
+        "PublishedDate": "2022-10-19T09:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2010-4756",
