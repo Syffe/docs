@@ -327,6 +327,7 @@ async def repository_queues(
                 embarked_pull.config["name"] in time_to_merge_stats
                 and time_to_merge_stats[embarked_pull.config["name"]]["median"]
                 is not None
+                and not await train.is_queue_frozen(embarked_pull.config["name"])
             ):
                 eta = (
                     embarked_pull.queued_at

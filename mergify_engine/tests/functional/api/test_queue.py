@@ -349,3 +349,87 @@ class TestQueueApi(base.FunctionalTestBase):
             r.json()["queues"][0]["pull_requests"][0]["estimated_time_of_merge"]
             == (queued_at + datetime.timedelta(seconds=median_ttm)).isoformat()
         )
+
+    async def test_estimated_time_of_merge_when_queue_freezed(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "foo",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "check-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "queue",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "foo"}},
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        p2 = await self.create_pr()
+        p3 = await self.create_pr()
+
+        p4 = await self.create_pr()
+        await self.merge_pull(p4["number"])
+
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        tmp_mq_pr_1 = await self.wait_for_new_pull_request()
+        await self.create_status(tmp_mq_pr_1["pull_request"])
+        await self.run_engine()
+        await self.wait_for("pull_request", {"action": "closed"})
+        await self.wait_for("pull_request", {"action": "closed"})
+
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        tmp_mq_pr_2 = await self.wait_for_new_pull_request()
+        await self.create_status(tmp_mq_pr_2["pull_request"])
+        await self.run_engine()
+        await self.wait_for("pull_request", {"action": "closed"})
+        await self.wait_for("pull_request", {"action": "closed"})
+
+        await self.add_label(p3["number"], "queue")
+        await self.run_engine()
+
+        await self.wait_for_new_pull_request()
+
+        time_to_merge_key = self.get_statistic_redis_key("time_to_merge")
+        assert await self.redis_links.stats.xlen(time_to_merge_key) == 2
+
+        r = await self.app.put(
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/foo/freeze",
+            json={"reason": "test freeze"},
+            headers={
+                "Authorization": f"bearer {self.api_key_admin}",
+                "Content-type": "application/json",
+            },
+        )
+        assert r.status_code == 200
+
+        r = await self.app.get(
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues",
+            headers={
+                "Authorization": f"bearer {self.api_key_admin}",
+                "Content-type": "application/json",
+            },
+        )
+
+        assert len(r.json()["queues"]) == 1
+        assert len(r.json()["queues"][0]["pull_requests"]) == 1
+        assert "estimated_time_of_merge" in r.json()["queues"][0]["pull_requests"][0]
+        assert (
+            r.json()["queues"][0]["pull_requests"][0]["estimated_time_of_merge"] is None
+        )
