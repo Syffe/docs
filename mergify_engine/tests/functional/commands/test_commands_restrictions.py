@@ -167,9 +167,7 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
         # Failure comment
         comments = await self.get_issue_comments(pr["number"])
         assert len(comments) == 2
-        # FIXME(charly): should be done with restriction_conditions: MRGFY-1405
-        # assert "Command disallowed due to [command restrictions]" in comments[1]["body"]
-        assert "is not allowed to run commands" in comments[-1]["body"]
+        assert "Command disallowed due to" in comments[-1]["body"]
 
         # Create command as admin user
         await self.create_command(
