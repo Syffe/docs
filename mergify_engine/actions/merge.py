@@ -1,3 +1,4 @@
+from collections import abc
 import enum
 import typing
 
@@ -31,7 +32,7 @@ UnsetMarker: typing.Final = _UnsetMarker._MARKER
 def DeprecatedOption(
     message: str,
     default: typing.Any,
-) -> typing.Callable[[typing.Any], typing.Any]:
+) -> abc.Callable[[typing.Any], typing.Any]:
     def validator(v: typing.Any) -> typing.Any:
         if v is UnsetMarker:
             return default

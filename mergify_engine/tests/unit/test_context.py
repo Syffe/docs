@@ -1,3 +1,4 @@
+from collections import abc
 import typing
 from unittest import mock
 
@@ -201,7 +202,7 @@ async def test_team_members_cache(redis_links: redis_utils.RedisLinks) -> None:
 
         async def items(
             self, url: str, *args: typing.Any, **kwargs: typing.Any
-        ) -> typing.AsyncGenerator[dict[str, str], None] | None:
+        ) -> abc.AsyncGenerator[dict[str, str], None] | None:
             self.called += 1
             if url == f"/orgs/{self.owner}/teams/team1/members":
                 yield {"login": "member1"}

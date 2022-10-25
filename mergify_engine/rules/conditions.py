@@ -1,4 +1,7 @@
-import abc
+from __future__ import annotations
+
+import abc as abstract
+from collections import abc
 import dataclasses
 import functools
 import html
@@ -22,11 +25,16 @@ LOG = daiquiri.getLogger(__name__)
 # This helps mypy breaking the recursive definition
 FakeTreeT = dict[str, typing.Any]
 
+# FIXME(sileht): mypy doesn't work with | here as string as not interpretated
+# as Type, but as raw string
+# from __futures__ import annotations + quote removal, is supposed to fix that,
+# but the file can't load in our type are recursively dependant
+# I hope cpython will fix the issue before releasing __futures__.annotations
 RuleConditionNode = typing.Union[
-    "RuleConditionCombination", "RuleConditionNegation", "RuleCondition"
+    "RuleConditionCombination", "RuleConditionNegation", "RuleCondition"  # noqa : NU003
 ]
 
-ConditionFilterKeyT = typing.Callable[[RuleConditionNode], bool]
+ConditionFilterKeyT = abc.Callable[[RuleConditionNode], bool]
 
 
 @dataclasses.dataclass
@@ -119,9 +127,9 @@ class RuleCondition:
         return str(name)
 
 
-class RuleConditionGroup(abc.ABC):
-    @abc.abstractmethod
-    def copy(self) -> "RuleConditionGroup":
+class RuleConditionGroup(abstract.ABC):
+    @abstract.abstractmethod
+    def copy(self) -> RuleConditionGroup:
         pass
 
     async def __call__(self, obj: filter.GetAttrObjectT) -> bool:
@@ -133,17 +141,17 @@ class RuleConditionGroup(abc.ABC):
 
         return self.match
 
-    @abc.abstractmethod
+    @abstract.abstractmethod
     async def _get_filter_result(self, obj: filter.GetAttrObjectT) -> bool:
         pass
 
     @property
-    @abc.abstractmethod
+    @abstract.abstractmethod
     def operator_label(self) -> str:
         pass
 
     @property
-    @abc.abstractmethod
+    @abstract.abstractmethod
     def conditions(self) -> list[RuleConditionNode]:
         pass
 
@@ -155,7 +163,7 @@ class RuleConditionGroup(abc.ABC):
 
     @staticmethod
     def _conditions_sort_key(
-        condition: typing.Union[RuleCondition, "RuleConditionGroup"],
+        condition: RuleCondition | RuleConditionGroup,
         should_match: bool,
     ) -> tuple[bool, int, typing.Any, typing.Any]:
         """
@@ -264,7 +272,7 @@ class RuleConditionGroup(abc.ABC):
         self,
         conditions: None | list[RuleConditionNode] = None,
         parent_condition_matching: bool = False,
-    ) -> typing.Iterator[RuleCondition]:
+    ) -> abc.Iterator[RuleCondition]:
         if conditions is None:
             conditions = self.conditions
 
@@ -429,7 +437,7 @@ class QueueRuleConditions:
     @classmethod
     def _get_rule_condition_summary(
         cls,
-        conditions: typing.Mapping[github_types.GitHubPullRequestNumber, RuleCondition],
+        conditions: abc.Mapping[github_types.GitHubPullRequestNumber, RuleCondition],
     ) -> str:
 
         first_key = next(iter(conditions))
@@ -462,9 +470,7 @@ class QueueRuleConditions:
 
     @staticmethod
     def _conditions_sort_key(
-        condition: typing.Mapping[
-            github_types.GitHubPullRequestNumber, RuleConditionNode
-        ],
+        condition: abc.Mapping[github_types.GitHubPullRequestNumber, RuleConditionNode],
         should_match: bool,
     ) -> tuple[bool, int, typing.Any, typing.Any]:
         """
@@ -499,10 +505,10 @@ class QueueRuleConditions:
     def _get_conditions_ordered(
         cls,
         conditions: list[
-            typing.Mapping[github_types.GitHubPullRequestNumber, RuleConditionNode]
+            abc.Mapping[github_types.GitHubPullRequestNumber, RuleConditionNode]
         ],
         should_match: bool,
-    ) -> list[typing.Mapping[github_types.GitHubPullRequestNumber, RuleConditionNode]]:
+    ) -> list[abc.Mapping[github_types.GitHubPullRequestNumber, RuleConditionNode]]:
         cond_cpy = conditions.copy()
         cond_cpy.sort(
             key=functools.partial(
@@ -514,7 +520,7 @@ class QueueRuleConditions:
     @classmethod
     def _walk_for_summary(
         cls,
-        evaluated_conditions: typing.Mapping[
+        evaluated_conditions: abc.Mapping[
             github_types.GitHubPullRequestNumber, RuleConditionNode
         ],
         level: int = -1,
@@ -528,7 +534,7 @@ class QueueRuleConditions:
 
         if isinstance(first_evaluated_condition, RuleCondition):
             evaluated_conditions = typing.cast(
-                typing.Mapping[
+                abc.Mapping[
                     github_types.GitHubPullRequestNumber,
                     RuleCondition,
                 ],
@@ -537,7 +543,7 @@ class QueueRuleConditions:
             summary += cls._get_rule_condition_summary(evaluated_conditions)
         elif isinstance(first_evaluated_condition, RuleConditionGroup):
             evaluated_conditions = typing.cast(
-                typing.Mapping[
+                abc.Mapping[
                     github_types.GitHubPullRequestNumber,
                     RuleConditionCombination,
                 ],
@@ -554,7 +560,7 @@ class QueueRuleConditions:
                 summary += f"- [{checked}] {label}:\n"
 
             inner_conditions: list[
-                typing.Mapping[github_types.GitHubPullRequestNumber, RuleConditionNode]
+                abc.Mapping[github_types.GitHubPullRequestNumber, RuleConditionNode]
             ] = []
 
             for idx in range(len(first_evaluated_condition.conditions)):
@@ -589,7 +595,7 @@ class QueueRuleConditions:
         else:
             return self.condition.is_faulty()
 
-    def walk(self) -> typing.Iterator[RuleCondition]:
+    def walk(self) -> abc.Iterator[RuleCondition]:
         if self._used:
             for conditions in self._evaluated_conditions.values():
                 yield from conditions.walk()
@@ -733,7 +739,7 @@ class PullRequestRuleConditions:
     def is_faulty(self) -> bool:
         return self.condition.is_faulty()
 
-    def walk(self) -> typing.Iterator[RuleCondition]:
+    def walk(self) -> abc.Iterator[RuleCondition]:
         yield from self.condition.walk()
 
     def copy(self) -> "PullRequestRuleConditions":

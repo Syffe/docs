@@ -1,3 +1,4 @@
+from collections import abc
 import datetime
 import email.utils
 import typing
@@ -17,7 +18,7 @@ from mergify_engine.clients import http
 
 
 @pytest.fixture(autouse=True)
-def short_timing() -> typing.Generator[None, None, None]:
+def short_timing() -> abc.Generator[None, None, None]:
     wait_exp = http.AsyncClient.request.retry.wait.wait_funcs[1]  # type: ignore[attr-defined]
     with mock.patch.object(wait_exp, "multiplier", 0.00001):
         yield

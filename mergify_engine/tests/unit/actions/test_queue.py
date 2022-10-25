@@ -1,3 +1,4 @@
+from collections import abc
 import typing
 from unittest import mock
 
@@ -23,7 +24,7 @@ def pull_request_rule_from_list(lst: typing.Any) -> rules.PullRequestRules:
 def fake_client() -> mock.Mock:
     async def items_call(
         url: str, *args: typing.Any, **kwargs: typing.Any
-    ) -> typing.AsyncGenerator[github_types.GitHubCheckRun, None]:
+    ) -> abc.AsyncGenerator[github_types.GitHubCheckRun, None]:
         if url == "/repos/Mergifyio/mergify-engine/commits/the-head-sha/status":
             return
         elif url == "/repos/Mergifyio/mergify-engine/commits/the-head-sha/check-runs":

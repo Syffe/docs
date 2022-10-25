@@ -24,10 +24,10 @@
 # Pull key format: f"bucket-sources~{repo_id}~{pull_number or 0}"
 #
 
-
 import argparse
 import asyncio
 import collections
+from collections import abc
 import contextlib
 import dataclasses
 import datetime
@@ -260,7 +260,7 @@ class StreamProcessor:
         self,
         bucket_org_key: worker_lua.BucketOrgKeyType,
         bucket_sources_key: worker_lua.BucketSourcesKeyType | None = None,
-    ) -> typing.AsyncIterator[None]:
+    ) -> abc.AsyncIterator[None]:
         try:
             yield
         except Exception as e:
@@ -903,7 +903,7 @@ async def ping_redis(
 class Task:
     name: str
     sleep_time: float
-    func: typing.Callable[[], typing.Awaitable[None]]
+    func: abc.Callable[[], abc.Awaitable[None]]
 
     _task: asyncio.Task[None] = dataclasses.field(init=False)
     _stopping: asyncio.Event = dataclasses.field(
@@ -925,14 +925,14 @@ class Task:
             raise RuntimeError(f"Worker task `{self.name}` already stopped")
         self._stopping.set()
 
-    def __await__(self) -> typing.Generator[None, None, None]:
+    def __await__(self) -> abc.Generator[None, None, None]:
         yield from self._task
 
     def cancel(self, msg: str) -> None:
         self._task.cancel(msg=msg)
 
     @staticmethod
-    async def with_dedicated_sentry_hub(coro: typing.Awaitable[None]) -> None:
+    async def with_dedicated_sentry_hub(coro: abc.Awaitable[None]) -> None:
         with sentry_sdk.Hub(sentry_sdk.Hub.current):
             await coro
 

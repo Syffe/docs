@@ -1,4 +1,5 @@
 import abc
+import collections
 import datetime
 import importlib.metadata
 import typing
@@ -172,15 +173,15 @@ class EventNoMetadata(EventMetadata):
     pass
 
 
-SignalT = typing.Callable[
+SignalT = collections.abc.Callable[
     [
         "context.Repository",
         github_types.GitHubPullRequestNumber,
         EventName,
-        typing.Optional[EventMetadata],
+        EventMetadata | None,
         str,
     ],
-    typing.Coroutine[None, None, None],
+    collections.abc.Coroutine[None, None, None],
 ]
 
 

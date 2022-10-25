@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import base64
+from collections import abc
 import dataclasses
 import datetime
 import enum
@@ -156,7 +159,7 @@ class TrainCarPullRequestCreationFailure(Exception):
 
 class EmbarkedPullWithCar(typing.NamedTuple):
     embarked_pull: "EmbarkedPull"
-    car: typing.Optional["TrainCar"]
+    car: "TrainCar" | None
 
 
 @dataclasses.dataclass
@@ -180,7 +183,7 @@ class EmbarkedPull:
     def deserialize(
         cls,
         train: "Train",
-        data: typing.Union["EmbarkedPull.Serialized", "EmbarkedPull.OldSerialized"],
+        data: "EmbarkedPull.Serialized" | "EmbarkedPull.OldSerialized",
     ) -> "EmbarkedPull":
         if isinstance(data, (tuple, list)):
             user_pull_request_number = data[0]
@@ -381,7 +384,7 @@ class TrainCarState:
     def decode_train_car_state_from_summary(
         cls,
         summary_check: github_types.CachedGitHubCheckRun | None,
-    ) -> typing.Optional["TrainCarState"]:
+    ) -> "TrainCarState" | None:
         line = extract_encoded_train_car_state_data_from_summary(summary_check)
         if line is not None:
             train_car_state_serialized = typing.cast(
@@ -963,7 +966,7 @@ class TrainCar:
                 head = f"{self.train.repository.installation.owner_login}:{branch_name}"
                 closed_pulls = set()
                 async for pull in typing.cast(
-                    typing.AsyncIterator[github_types.GitHubPullRequest],
+                    abc.AsyncIterator[github_types.GitHubPullRequest],
                     self.train.repository.installation.client.items(
                         f"/repos/{self.train.repository.installation.owner_login}/{self.train.repository.repo['name']}/pulls",
                         params={"head": head},
@@ -1272,7 +1275,7 @@ class TrainCar:
         for_queue_pull_request: bool = False,
         show_queue: bool = True,
         headline: str | None = None,
-        pull_rule: typing.Optional["rules.EvaluatedRule"] = None,
+        pull_rule: "rules.EvaluatedRule" | None = None,
     ) -> str:
         description = ""
         if headline:
@@ -2022,7 +2025,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 json={"state": "closed"},
             )
 
-    def _get_previous_car(self) -> typing.Optional["TrainCar"]:
+    def _get_previous_car(self) -> "TrainCar" | None:
         position = self.train._cars.index(self)
         if position == 0:
             return None
@@ -2097,7 +2100,7 @@ class Train:
         repository: context.Repository,
         *,
         exclude_ref: github_types.GitHubRefType | None = None,
-    ) -> typing.AsyncIterator["Train"]:
+    ) -> abc.AsyncIterator["Train"]:
         repo_filter: (github_types.GitHubRepositoryIdType | typing.Literal["*"]) = "*"
         if repository is not None:
             repo_filter = repository.repo["id"]
@@ -2185,7 +2188,7 @@ class Train:
             key=lambda car: car.queue_pull_request_number == ctxt.pull["number"],
         )
 
-    async def get_queue_rules(self) -> typing.Optional["rules.QueueRules"]:
+    async def get_queue_rules(self) -> "rules.QueueRules" | None:
         # circular import
         from mergify_engine import rules
 
@@ -2343,7 +2346,7 @@ class Train:
 
     def _iter_embarked_pulls(
         self,
-    ) -> typing.Iterator[EmbarkedPullWithCar]:
+    ) -> abc.Iterator[EmbarkedPullWithCar]:
         for car in self._cars:
             for embarked_pull in car.still_queued_embarked_pulls:
                 yield EmbarkedPullWithCar(embarked_pull, car)
@@ -3159,7 +3162,7 @@ class Train:
         self,
         queue_rule_report: QueueRuleReport,
         *,
-        pull_rule: typing.Optional["rules.EvaluatedRule"] = None,
+        pull_rule: "rules.EvaluatedRule" | None = None,
         show_queue: bool = True,
         for_queue_pull_request: bool = False,
     ) -> str:
@@ -3234,7 +3237,7 @@ class Train:
         self,
         ctxt: context.Context,
         queue_rule: "rules.QueueRule",
-        pull_rule: typing.Optional["rules.EvaluatedRule"] = None,
+        pull_rule: "rules.EvaluatedRule" | None = None,
     ) -> str:
         # NOTE(sileht): beware before using this method, car.update_state() must have been called earlier
         # to have up2date informations

@@ -71,7 +71,7 @@ async def get_active_users_keys(
     redis: redis_utils.RedisActiveUsers,
     owner_id: typing.Literal["*"] | github_types.GitHubAccountIdType = "*",
     repo_id: (typing.Literal["*"] | github_types.GitHubRepositoryIdType) = "*",
-) -> typing.AsyncIterator[ActiveUserKeyT]:
+) -> collections.abc.AsyncIterator[ActiveUserKeyT]:
     async for key in redis.scan_iter(
         f"{ACTIVE_USERS_PREFIX}~{owner_id}~*~{repo_id}~*", count=10000
     ):

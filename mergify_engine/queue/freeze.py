@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from collections import abc
 import dataclasses
 import datetime
 import typing
@@ -44,7 +47,7 @@ class QueueFreeze:
     @classmethod
     async def get_all(
         cls, repository: context.Repository
-    ) -> typing.AsyncGenerator["QueueFreeze", None]:
+    ) -> abc.AsyncGenerator["QueueFreeze", None]:
 
         async for key, qf_raw in repository.installation.redis.queue.hscan_iter(
             name=cls._get_redis_hash(repository),
@@ -63,7 +66,7 @@ class QueueFreeze:
     @classmethod
     async def get(
         cls, repository: context.Repository, queue_name: str
-    ) -> typing.Optional["QueueFreeze"]:
+    ) -> "QueueFreeze" | None:
 
         qf_raw = await repository.installation.redis.queue.hget(
             cls._get_redis_hash(repository),

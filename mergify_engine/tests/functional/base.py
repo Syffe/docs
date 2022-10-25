@@ -1,4 +1,5 @@
 import asyncio
+from collections import abc
 import copy
 import datetime
 import itertools
@@ -616,7 +617,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
     async def setup_repo(
         self,
         mergify_config: str | None = None,
-        test_branches: typing.Iterable[str] | None = None,
+        test_branches: abc.Iterable[str] | None = None,
         files: dict[str, str] | None = None,
         forward_to_engine: bool = False,
     ) -> None:
@@ -1261,7 +1262,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         return [
             c
             async for c in typing.cast(
-                typing.AsyncGenerator[github_types.GitHubBranchCommit, None],
+                abc.AsyncGenerator[github_types.GitHubBranchCommit, None],
                 self.client_integration.items(
                     f"{self.url_origin}/pulls/{pull_number}/commits",
                     resource_name="commits",
@@ -1292,7 +1293,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         return [
             comment
             async for comment in typing.cast(
-                typing.AsyncGenerator[github_types.GitHubComment, None],
+                abc.AsyncGenerator[github_types.GitHubComment, None],
                 self.client_integration.items(
                     f"{self.url_origin}/issues/{pull_number}/comments",
                     resource_name="issue comments",
@@ -1307,7 +1308,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         return [
             review
             async for review in typing.cast(
-                typing.AsyncGenerator[github_types.GitHubReview, None],
+                abc.AsyncGenerator[github_types.GitHubReview, None],
                 self.client_integration.items(
                     f"{self.url_origin}/pulls/{pull_number}/reviews",
                     resource_name="reviews",
@@ -1322,7 +1323,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         return [
             review
             async for review in typing.cast(
-                typing.AsyncGenerator[github_types.GitHubReview, None],
+                abc.AsyncGenerator[github_types.GitHubReview, None],
                 self.client_integration.items(
                     f"{self.url_origin}/pulls/{pull_number}/comments",
                     resource_name="review comments",
@@ -1410,7 +1411,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         return [
             label
             async for label in typing.cast(
-                typing.AsyncGenerator[github_types.GitHubLabel, None],
+                abc.AsyncGenerator[github_types.GitHubLabel, None],
                 self.client_integration.items(
                     f"{self.url_origin}/labels", resource_name="labels", page_limit=3
                 ),
@@ -1419,10 +1420,10 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
 
     async def find_git_refs(
         self, url: str, matches: list[str]
-    ) -> typing.AsyncGenerator[github_types.GitHubGitRef, None]:
+    ) -> abc.AsyncGenerator[github_types.GitHubGitRef, None]:
         for match in matches:
             async for matchedBranch in typing.cast(
-                typing.AsyncGenerator[github_types.GitHubGitRef, None],
+                abc.AsyncGenerator[github_types.GitHubGitRef, None],
                 self.client_integration.items(
                     f"{url}/git/matching-refs/heads/{match}",
                     resource_name="branches",
@@ -1435,7 +1436,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         return [
             t
             async for t in typing.cast(
-                typing.AsyncGenerator[github_types.GitHubTeam, None],
+                abc.AsyncGenerator[github_types.GitHubTeam, None],
                 self.client_integration.items(
                     "/orgs/mergifyio-testing/teams", resource_name="teams", page_limit=5
                 ),

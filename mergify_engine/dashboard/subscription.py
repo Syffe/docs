@@ -1,4 +1,5 @@
-import abc
+import abc as abstract
+from collections import abc
 import dataclasses
 import enum
 import json
@@ -66,7 +67,7 @@ class SubscriptionDict(typing.TypedDict):
 
 
 @dataclasses.dataclass
-class SubscriptionBase(abc.ABC):
+class SubscriptionBase(abstract.ABC):
     redis: redis_utils.RedisCache
     owner_id: github_types.GitHubAccountIdType
     reason: str
@@ -80,7 +81,7 @@ class SubscriptionBase(abc.ABC):
         return f"subscription-cache-owner-{owner_id}"
 
     @classmethod
-    def _to_features(cls, feature_list: typing.Iterable[str]) -> frozenset[Features]:
+    def _to_features(cls, feature_list: abc.Iterable[str]) -> frozenset[Features]:
         features = []
         for f in feature_list:
             try:
@@ -181,7 +182,7 @@ class SubscriptionBase(abc.ABC):
         self.ttl = self.RETENTION_SECONDS
 
     @classmethod
-    @abc.abstractmethod
+    @abstract.abstractmethod
     async def _retrieve_subscription_from_db(
         cls: type[SubscriptionT],
         redis: redis_utils.RedisCache,

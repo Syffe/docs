@@ -1,4 +1,5 @@
 import asyncio
+from collections import abc
 import contextlib
 import functools
 import logging
@@ -52,7 +53,7 @@ original_os_environ = os.environ.copy()
 @pytest.fixture()
 def original_environment_variables(
     monkeypatch: pytest.MonkeyPatch,
-) -> typing.Generator[None, None, None]:
+) -> abc.Generator[None, None, None]:
     current = os.environ.copy()
     os.environ.clear()
     os.environ.update(original_os_environ)
@@ -66,7 +67,7 @@ def original_environment_variables(
 @pytest.fixture()
 def logger_checker(
     request: pytest.FixtureRequest, caplog: pytest.LogCaptureFixture
-) -> typing.Generator[None, None, None]:
+) -> abc.Generator[None, None, None]:
     # daiquiri removes all handlers during setup, as we want to sexy output and the pytest
     # capability at the same, we must add back the pytest handler
     logs.setup_logging()
@@ -106,7 +107,7 @@ CONFIG_URLS_TO_MOCK = (
 
 
 @pytest.fixture(autouse=True)
-def mock_redis_db_values(worker_id: str) -> typing.Generator[None, None, None]:
+def mock_redis_db_values(worker_id: str) -> abc.Generator[None, None, None]:
     # Need to have different database for each tests to avoid breaking
     # everything in other tests.
     if not re.match(r"gw\d+", worker_id):
@@ -146,7 +147,7 @@ def mock_redis_db_values(worker_id: str) -> typing.Generator[None, None, None]:
 @pytest.fixture()
 async def redis_links(
     mock_redis_db_values: typing.Any,
-) -> typing.AsyncGenerator[redis_utils.RedisLinks, None]:
+) -> abc.AsyncGenerator[redis_utils.RedisLinks, None]:
     links = redis_utils.RedisLinks(name="global-fixture")
     await links.flushall()
     try:
@@ -173,7 +174,7 @@ async def redis_stream(
 @pytest.fixture()
 async def github_server(
     monkeypatch: pytest.MonkeyPatch,
-) -> typing.AsyncGenerator[respx.MockRouter, None]:
+) -> abc.AsyncGenerator[respx.MockRouter, None]:
     monkeypatch.setattr(github.CachedToken, "STORAGE", {})
     async with respx.mock(base_url=config.GITHUB_REST_API_URL) as respx_mock:
         respx_mock.post("/app/installations/12345/access_tokens").respond(

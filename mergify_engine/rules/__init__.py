@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from collections import abc
 import dataclasses
 import datetime
 import functools
@@ -64,7 +67,7 @@ class PullRequestRule:
     def get_signal_trigger(self) -> str:
         return f"Rule: {self.name}"
 
-    async def evaluate(self, pulls: list[context.BasePullRequest]) -> "EvaluatedRule":
+    async def evaluate(self, pulls: list[context.BasePullRequest]) -> EvaluatedRule:
         evaluated_rule = typing.cast(EvaluatedRule, self)
         await evaluated_rule.conditions(pulls)
         for action in self.actions.values():
@@ -83,7 +86,9 @@ class CommandRule(PullRequestRule):
 EvaluatedRule = typing.NewType("EvaluatedRule", PullRequestRule)
 
 
-QueueBranchMergeMethod = typing.Optional[typing.Literal["fast-forward"]]
+# FIXME(sileht): intropection with __args__ doesn't work if the type looks
+# like: str | None
+QueueBranchMergeMethod = typing.Optional[typing.Literal["fast-forward"]]  # noqa: NU003
 
 
 class QueueConfig(typing.TypedDict):
@@ -117,7 +122,7 @@ class QueueRule:
         conditions: conditions_mod.QueueRuleConditions
 
     @classmethod
-    def from_dict(cls, d: T_from_dict) -> "QueueRule":
+    def from_dict(cls, d: T_from_dict) -> QueueRule:
         name = d.pop("name")
         conditions = d.pop("conditions")
 
@@ -141,7 +146,7 @@ class QueueRule:
         repository: context.Repository,
         ref: github_types.GitHubRefType,
         pulls: list[context.BasePullRequest],
-        evaluated_pull_request_rule: typing.Optional["EvaluatedRule"] = None,
+        evaluated_pull_request_rule: EvaluatedRule | None = None,
     ) -> EvaluatedQueueRule:
         extra_conditions = await conditions_mod.get_branch_protection_conditions(
             repository, ref, strict=False
@@ -309,7 +314,7 @@ class PullRequestRules:
                 rule.name += f" #{n + 1}"
                 self.has_multiple_rules_with_same_name = True
 
-    def __iter__(self) -> typing.Iterator[PullRequestRule]:
+    def __iter__(self) -> abc.Iterator[PullRequestRule]:
         return iter(self.rules)
 
     def has_user_rules(self) -> bool:
@@ -365,7 +370,7 @@ class PullRequestRules:
 class QueueRules:
     rules: list[QueueRule]
 
-    def __iter__(self) -> typing.Iterator[QueueRule]:
+    def __iter__(self) -> abc.Iterator[QueueRule]:
         return iter(self.rules)
 
     def __getitem__(self, key: QueueName) -> QueueRule:
@@ -672,9 +677,7 @@ def UserConfigurationSchema(
     return voluptuous.Schema(schema)(config)
 
 
-YamlSchema: typing.Callable[[str], typing.Any] = voluptuous.Schema(
-    voluptuous.Coerce(YAML)
-)
+YamlSchema: abc.Callable[[str], typing.Any] = voluptuous.Schema(voluptuous.Coerce(YAML))
 
 
 @dataclasses.dataclass
@@ -707,7 +710,7 @@ class InvalidRules(Exception):
     @classmethod
     def _walk_error(
         cls, root_error: voluptuous.Invalid
-    ) -> typing.Generator[voluptuous.Invalid, None, None]:
+    ) -> abc.Generator[voluptuous.Invalid, None, None]:
         if isinstance(root_error, voluptuous.MultipleInvalid):
             for error1 in root_error.errors:
                 yield from cls._walk_error(error1)

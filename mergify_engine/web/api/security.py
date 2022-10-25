@@ -1,3 +1,4 @@
+from collections import abc
 import typing
 
 import daiquiri
@@ -90,7 +91,7 @@ async def get_repository_context(
     installation_json: github_types.GitHubInstallation = fastapi.Depends(  # noqa: B008
         get_installation
     ),
-) -> typing.AsyncGenerator[context.Repository, None]:
+) -> abc.AsyncGenerator[context.Repository, None]:
     async with github.aget_client(installation_json) as client:
         try:
             # Check this token has access to this repository

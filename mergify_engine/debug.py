@@ -1,5 +1,6 @@
 import argparse
 import asyncio
+from collections import abc
 import datetime
 import itertools
 import pprint
@@ -252,7 +253,7 @@ async def report(
 
         if pull_number is None:
             async for branch in typing.cast(
-                typing.AsyncGenerator[github_types.GitHubBranch, None],
+                abc.AsyncGenerator[github_types.GitHubBranch, None],
                 client.items(
                     f"/repos/{owner_login}/{repo}/branches",
                     resource_name="branches",

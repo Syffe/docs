@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import dataclasses
 import json
 import typing
@@ -43,7 +45,7 @@ class UserTokensBase:
 
     @staticmethod
     async def select_users_for(
-        ctxt: "context.Context",
+        ctxt: context.Context,
         bot_account: github_types.GitHubLogin | None = None,
     ) -> list[UserTokensUser]:
         user_tokens = await ctxt.repository.installation.get_user_tokens()
@@ -117,9 +119,7 @@ class UserTokensSaas(UserTokensBase):
         )
 
     @classmethod
-    async def _get(
-        cls, redis: redis_utils.RedisCache, owner_id: int
-    ) -> "UserTokensSaas":
+    async def _get(cls, redis: redis_utils.RedisCache, owner_id: int) -> UserTokensSaas:
         cached_tokens = await cls._retrieve_from_cache(redis, owner_id)
         if cached_tokens is None or await cached_tokens._has_expired():
             try:
@@ -148,7 +148,7 @@ class UserTokensSaas(UserTokensBase):
     @classmethod
     async def _retrieve_from_cache(
         cls, redis: redis_utils.RedisCache, owner_id: int
-    ) -> typing.Optional["UserTokensSaas"]:
+    ) -> UserTokensSaas | None:
         async with await redis.pipeline() as pipe:
             await pipe.get(cls._cache_key(owner_id))
             await pipe.ttl(cls._cache_key(owner_id))
@@ -175,7 +175,7 @@ class UserTokensSaas(UserTokensBase):
     @classmethod
     async def _retrieve_from_db(
         cls, redis: redis_utils.RedisCache, owner_id: int
-    ) -> "UserTokensSaas":
+    ) -> UserTokensSaas:
         async with dashboard.AsyncDashboardSaasClient() as client:
             try:
                 resp = await client.get(f"/engine/user_tokens/{owner_id}")

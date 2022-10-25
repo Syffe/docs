@@ -1,3 +1,4 @@
+from collections import abc
 import functools
 import typing
 from unittest import mock
@@ -168,8 +169,8 @@ async def build_fake_context(
     return context.Context(repository, pull)
 
 
-ContextGetterFixture = typing.Callable[
-    ..., typing.Coroutine[typing.Any, typing.Any, context.Context]
+ContextGetterFixture = abc.Callable[
+    ..., abc.Coroutine[typing.Any, typing.Any, context.Context]
 ]
 
 
@@ -179,7 +180,7 @@ def context_getter(fake_repository: context.Repository) -> ContextGetterFixture:
 
 
 @pytest.fixture
-async def mergify_web_client() -> typing.AsyncGenerator[httpx.AsyncClient, None]:
+async def mergify_web_client() -> abc.AsyncGenerator[httpx.AsyncClient, None]:
     await web_root.startup()
     client = httpx.AsyncClient(app=web_root.app, base_url="http://localhost")
     try:

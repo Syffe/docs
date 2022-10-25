@@ -118,7 +118,7 @@ async def application_cache_update(
     ),
 ) -> responses.Response:
     data = typing.cast(
-        typing.Optional[application.ApplicationDashboardJSON], await request.json()
+        application.ApplicationDashboardJSON | None, await request.json()
     )
     if data is None:
         return responses.Response("Empty content", status_code=400)

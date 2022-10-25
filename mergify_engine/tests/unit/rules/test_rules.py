@@ -1,6 +1,8 @@
 from base64 import encodebytes
+from collections import abc
 import copy
 import dataclasses
+import re
 import typing
 from unittest import mock
 
@@ -976,7 +978,7 @@ unacceptable character #x0004: control characters are not allowed
     ),
 )
 def test_pull_request_rule_schema_invalid(
-    invalid: typing.Any, match: typing.Pattern[str]
+    invalid: typing.Any, match: re.Pattern[str]
 ) -> None:
     with pytest.raises(voluptuous.MultipleInvalid, match=match):
         pull_request_rule_from_list([invalid])
@@ -1026,7 +1028,7 @@ async def test_get_pull_request_rule(
 
     async def client_items(
         url: str, *args: typing.Any, **kwargs: typing.Any
-    ) -> typing.AsyncGenerator[dict[str, typing.Any], None] | None:
+    ) -> abc.AsyncGenerator[dict[str, typing.Any], None] | None:
         if url == "/repos/Mergifyio/mergify-engine/pulls/1/reviews":
             for r in get_reviews:
                 yield r

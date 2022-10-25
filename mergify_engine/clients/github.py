@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from collections import abc
 import contextlib
 import dataclasses
 import datetime
@@ -53,7 +56,7 @@ class CachedToken:
     @classmethod
     def get(
         cls, installation_id: github_types.GitHubInstallationIdType
-    ) -> typing.Optional["CachedToken"]:
+    ) -> CachedToken | None:
         return cls.STORAGE.get(installation_id)
 
     def invalidate(self) -> None:
@@ -71,7 +74,7 @@ class GithubTokenAuth(httpx.Auth):
         self._token = token
 
     @contextlib.contextmanager
-    def response_body_read(self) -> typing.Generator[None, None, None]:
+    def response_body_read(self) -> abc.Generator[None, None, None]:
         self.requires_response_body = True
         try:
             yield
@@ -80,7 +83,7 @@ class GithubTokenAuth(httpx.Auth):
 
     def auth_flow(
         self, request: httpx.Request
-    ) -> typing.Generator[httpx.Request, httpx.Response, None]:
+    ) -> abc.Generator[httpx.Request, httpx.Response, None]:
         request.headers["Authorization"] = f"token {self._token}"
         yield request
 
@@ -109,7 +112,7 @@ class GithubAppInstallationAuth(httpx.Auth):
         return self._installation["account"]["login"]
 
     @contextlib.contextmanager
-    def response_body_read(self) -> typing.Generator[None, None, None]:
+    def response_body_read(self) -> abc.Generator[None, None, None]:
         self.requires_response_body = True
         try:
             yield
@@ -118,7 +121,7 @@ class GithubAppInstallationAuth(httpx.Auth):
 
     def auth_flow(
         self, request: httpx.Request
-    ) -> typing.Generator[httpx.Request, httpx.Response, None]:
+    ) -> abc.Generator[httpx.Request, httpx.Response, None]:
         token = self.get_access_token()
         if token:
             request.headers["Authorization"] = f"token {token}"

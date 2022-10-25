@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import dataclasses
 import datetime
 import functools
@@ -94,7 +96,7 @@ class RelativeDatetime:
     value: datetime.datetime
 
     # PostgreSQL's day-time interval format without seconds and microseconds, e.g. "3 days 04:05"
-    _TIMEDELTA_TO_NOW_RE: typing.ClassVar[typing.Pattern[str]] = re.compile(
+    _TIMEDELTA_TO_NOW_RE: typing.ClassVar[re.Pattern[str]] = re.compile(
         r"^"
         r"(?:(?P<days>\d+) (days? ?))?"
         r"(?:"
@@ -201,7 +203,7 @@ class Time:
 
     @staticmethod
     def _to_dt(
-        obj: typing.Union["Time", datetime.datetime], ref: datetime.datetime
+        obj: Time | datetime.datetime, ref: datetime.datetime
     ) -> datetime.datetime:
         if isinstance(obj, datetime.datetime):
             return obj

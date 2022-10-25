@@ -8,7 +8,7 @@ DependabotAttributes = typing.TypedDict(
     {
         "dependency-name": str,
         "dependency-type": str,
-        "update-type": typing.Optional[str],
+        "update-type": str | None,
     },
 )
 

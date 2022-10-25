@@ -8,7 +8,7 @@ ISODateTimeType = typing.NewType("ISODateTimeType", str)
 
 GitHubLogin = typing.NewType("GitHubLogin", str)
 GitHubLoginUnknown = typing.NewType("GitHubLoginUnknown", str)
-GitHubLoginForTracing = typing.Union[GitHubLogin, GitHubLoginUnknown]
+GitHubLoginForTracing = GitHubLogin | GitHubLoginUnknown
 
 
 class GitHubInstallationAccessToken(typing.TypedDict):
@@ -68,9 +68,7 @@ GitHubRepositoryIdType = typing.NewType("GitHubRepositoryIdType", int)
 
 GitHubRepositoryName = typing.NewType("GitHubRepositoryName", str)
 GitHubRepositoryNameUnknown = typing.NewType("GitHubRepositoryNameUnknown", str)
-GitHubRepositoryNameForTracing = typing.Union[
-    GitHubRepositoryName, GitHubRepositoryNameUnknown
-]
+GitHubRepositoryNameForTracing = GitHubRepositoryName | GitHubRepositoryNameUnknown
 GitHubFilePath = typing.NewType("GitHubFilePath", str)
 
 

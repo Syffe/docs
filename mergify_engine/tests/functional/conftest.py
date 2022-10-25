@@ -1,4 +1,5 @@
 import asyncio
+from collections import abc
 import datetime
 import json
 import os
@@ -40,7 +41,7 @@ class RecordConfigType(typing.TypedDict):
 
 
 @pytest.fixture
-async def mergify_web_client() -> typing.AsyncGenerator[httpx.AsyncClient, None]:
+async def mergify_web_client() -> abc.AsyncGenerator[httpx.AsyncClient, None]:
     await web_root.startup()
     client = httpx.AsyncClient(app=web_root.app, base_url="http://localhost")
     try:

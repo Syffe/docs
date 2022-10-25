@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import dataclasses
 import datetime
 import functools
@@ -219,9 +221,7 @@ class RedisLinks:
         url: str,
         decode_responses: typing.Literal[True],
         max_connections: int | None = None,
-        redis_connect_func: typing.Optional[
-            "redispy.connection.ConnectCallbackT"
-        ] = None,
+        redis_connect_func: "redispy.connection.ConnectCallbackT" | None = None,
     ) -> "redispy.Redis[str]":
         ...
 
@@ -232,9 +232,7 @@ class RedisLinks:
         url: str,
         decode_responses: typing.Literal[False],
         max_connections: int | None = None,
-        redis_connect_func: typing.Optional[
-            "redispy.connection.ConnectCallbackT"
-        ] = None,
+        redis_connect_func: "redispy.connection.ConnectCallbackT" | None = None,
     ) -> "redispy.Redis[bytes]":
         ...
 
@@ -244,10 +242,8 @@ class RedisLinks:
         url: str,
         decode_responses: bool,
         max_connections: int | None = None,
-        redis_connect_func: typing.Optional[
-            "redispy.connection.ConnectCallbackT"
-        ] = None,
-    ) -> typing.Union["redispy.Redis[bytes]", "redispy.Redis[str]"]:
+        redis_connect_func: "redispy.connection.ConnectCallbackT" | None = None,
+    ) -> "redispy.Redis[bytes]" | "redispy.Redis[str]":
 
         options: dict[str, typing.Any] = {}
         if config.REDIS_SSL_VERIFY_MODE_CERT_NONE and url.startswith("rediss://"):

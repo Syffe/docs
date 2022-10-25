@@ -1,5 +1,8 @@
 # mypy: disallow-untyped-defs
+from __future__ import annotations
+
 import base64
+from collections import abc
 import contextlib
 import dataclasses
 import datetime
@@ -277,7 +280,7 @@ class RepositoryCaches:
         MergifyConfigFile | None
     ] = dataclasses.field(default_factory=cache.SingleCache)
     mergify_config: cache.SingleCache[
-        typing.Union["rules.MergifyConfig", Exception]
+        "rules.MergifyConfig" | Exception
     ] = dataclasses.field(default_factory=cache.SingleCache)
     branches: cache.Cache[
         github_types.GitHubRefType, github_types.GitHubBranch
@@ -331,7 +334,7 @@ class Repository:
         self,
         ref: github_types.SHAType | None = None,
         preferred_filename: github_types.GitHubFilePath | None = None,
-    ) -> typing.AsyncIterator[MergifyConfigFile]:
+    ) -> abc.AsyncIterator[MergifyConfigFile]:
         """Get the Mergify configuration file content.
 
         :return: The filename and its content.
@@ -855,7 +858,7 @@ class Repository:
             labels = [
                 label
                 async for label in typing.cast(
-                    typing.AsyncIterator[github_types.GitHubLabel],
+                    abc.AsyncIterator[github_types.GitHubLabel],
                     self.installation.client.items(
                         f"{self.base_url}/labels",
                         resource_name="labels",
@@ -948,23 +951,23 @@ class ContextCaches:
     )
 
 
-ContextAttributeType = typing.Union[
-    None,
-    bool,
-    list[str],
-    str,
-    int,
-    datetime.time,
-    date.PartialDatetime,
-    datetime.datetime,
-    datetime.timedelta,
-    date.RelativeDatetime,
-    list[github_types.SHAType],
-    list[github_types.GitHubLogin],
-    list[github_types.GitHubBranchCommit],
-    list[github_types.CachedGitHubBranchCommit],
-    github_types.GitHubRepositoryPermission,
-]
+ContextAttributeType = (
+    None
+    | bool
+    | list[str]
+    | str
+    | int
+    | datetime.time
+    | date.PartialDatetime
+    | datetime.datetime
+    | datetime.timedelta
+    | date.RelativeDatetime
+    | list[github_types.SHAType]
+    | list[github_types.GitHubLogin]
+    | list[github_types.GitHubBranchCommit]
+    | list[github_types.CachedGitHubBranchCommit]
+    | github_types.GitHubRepositoryPermission
+)
 
 
 @dataclasses.dataclass
@@ -1089,7 +1092,7 @@ class Context:
                 }}
             """
             responses = typing.cast(
-                typing.AsyncIterable[
+                abc.AsyncIterable[
                     dict[str, github_graphql_types.GraphqlRepositoryForReviewThreads]
                 ],
                 multi.multi_query(
@@ -1220,7 +1223,7 @@ class Context:
         pull: github_types.GitHubPullRequest,
     ) -> github_types.SHAType | None:
         return typing.cast(
-            typing.Optional[github_types.SHAType],
+            github_types.SHAType | None,
             await redis_cache.get(cls.redis_last_summary_head_sha_key(pull)),
         )
 
@@ -1750,7 +1753,7 @@ class Context:
             statuses = [
                 s
                 async for s in typing.cast(
-                    typing.AsyncIterable[github_types.GitHubStatus],
+                    abc.AsyncIterable[github_types.GitHubStatus],
                     self.client.items(
                         f"{self.base_url}/commits/{self.pull['head']['sha']}/status",
                         list_items="statuses",
@@ -1975,7 +1978,7 @@ class Context:
             reviews = [
                 review
                 async for review in typing.cast(
-                    typing.AsyncIterable[github_types.GitHubReview],
+                    abc.AsyncIterable[github_types.GitHubReview],
                     self.client.items(
                         f"{self.base_url}/pulls/{self.pull['number']}/reviews",
                         resource_name="reviews",
@@ -2002,7 +2005,7 @@ class Context:
             commits = [
                 github_types.to_cached_github_branch_commit(commit)
                 async for commit in typing.cast(
-                    typing.AsyncIterable[github_types.GitHubBranchCommit],
+                    abc.AsyncIterable[github_types.GitHubBranchCommit],
                     self.client.items(
                         f"{self.base_url}/pulls/{self.pull['number']}/commits",
                         resource_name="commits",
@@ -2023,7 +2026,7 @@ class Context:
                 files = [
                     github_types.CachedGitHubFile({"filename": file["filename"]})
                     async for file in typing.cast(
-                        typing.AsyncIterable[github_types.GitHubFile],
+                        abc.AsyncIterable[github_types.GitHubFile],
                         self.client.items(
                             f"{self.base_url}/pulls/{self.pull['number']}/files",
                             resource_name="files",
@@ -2212,7 +2215,7 @@ class PullRequest(BasePullRequest):
     async def __getattr__(self, name: str) -> ContextAttributeType:
         return await self.context._get_consolidated_data(name.replace("_", "-"))
 
-    def __iter__(self) -> typing.Iterator[str]:
+    def __iter__(self) -> abc.Iterator[str]:
         return iter(
             self.ATTRIBUTES
             | self.LIST_ATTRIBUTES
@@ -2299,7 +2302,7 @@ class PullRequest(BasePullRequest):
 
     @staticmethod
     @contextlib.contextmanager
-    def _template_exceptions_mapping() -> typing.Iterator[None]:
+    def _template_exceptions_mapping() -> abc.Iterator[None]:
         try:
             yield
         except jinja2.exceptions.TemplateSyntaxError as tse:

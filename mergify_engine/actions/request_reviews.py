@@ -15,13 +15,8 @@ from mergify_engine.dashboard import user_tokens
 from mergify_engine.rules import types
 
 
-ReviewEntityWithWeightT = typing.Union[
-    dict[types.GitHubLogin, int], dict[types.GitHubTeam, int]
-]
-ReviewEntityT = typing.Union[
-    list[types.GitHubLogin],
-    list[types.GitHubTeam],
-]
+ReviewEntityWithWeightT = dict[types.GitHubLogin, int] | dict[types.GitHubTeam, int]
+ReviewEntityT = list[types.GitHubLogin] | list[types.GitHubTeam]
 
 
 def _ensure_weight(entities: ReviewEntityT) -> ReviewEntityWithWeightT:

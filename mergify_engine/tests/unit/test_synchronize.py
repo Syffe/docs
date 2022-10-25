@@ -1,3 +1,4 @@
+from collections import abc
 import typing
 from unittest import mock
 
@@ -11,7 +12,7 @@ async def test_summary_synchronization_cache(
 ) -> None:
     async def items(
         *args: typing.Any, **kwargs: typing.Any
-    ) -> typing.AsyncGenerator[None, None]:
+    ) -> abc.AsyncGenerator[None, None]:
         if False:
             yield
         return

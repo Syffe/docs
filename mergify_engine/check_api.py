@@ -1,3 +1,4 @@
+from collections import abc
 import dataclasses
 import datetime
 import enum
@@ -149,7 +150,7 @@ async def get_checks_for_ref(
         checks = [
             to_check_run_light(check)
             async for check in typing.cast(
-                typing.AsyncGenerator[github_types.GitHubCheckRun, None],
+                abc.AsyncGenerator[github_types.GitHubCheckRun, None],
                 ctxt.client.items(
                     f"{ctxt.base_url}/commits/{sha}/check-runs",
                     resource_name="check runs",
@@ -172,7 +173,7 @@ _K = typing.TypeVar("_K")
 _V = typing.TypeVar("_V")
 
 
-def compare_dict(d1: dict[_K, _V], d2: dict[_K, _V], keys: typing.Iterable[_K]) -> bool:
+def compare_dict(d1: dict[_K, _V], d2: dict[_K, _V], keys: abc.Iterable[_K]) -> bool:
     for key in keys:
         if d1.get(key) != d2.get(key):
             return False

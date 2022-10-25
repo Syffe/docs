@@ -79,10 +79,12 @@ TreeT = typing.TypedDict(
         ">=": TreeBinaryLeafT,
         "!=": TreeBinaryLeafT,
         "~=": TreeBinaryLeafT,
-        "@": typing.Union["TreeT", "CompiledTreeT[GetAttrObject]"],  # type: ignore[misc]
-        "or": typing.Iterable[typing.Union["TreeT", "CompiledTreeT[GetAttrObject]"]],  # type: ignore[misc]
-        "and": typing.Iterable[typing.Union["TreeT", "CompiledTreeT[GetAttrObject]"]],  # type: ignore[misc]
-        "not": typing.Union["TreeT", "CompiledTreeT[GetAttrObject]"],  # type: ignore[misc]
+        # FIXME(sileht): can't use | as we can remove double quote around to Type
+        # because of recursive definition of these types
+        "@": typing.Union["TreeT", "CompiledTreeT[GetAttrObject]"],  # type: ignore[misc] # noqa: NU003
+        "or": abc.Iterable[typing.Union["TreeT", "CompiledTreeT[GetAttrObject]"]],  # type: ignore[misc] # noqa: NU003
+        "and": abc.Iterable[typing.Union["TreeT", "CompiledTreeT[GetAttrObject]"]],  # type: ignore[misc] # noqa: NU003
+        "not": typing.Union["TreeT", "CompiledTreeT[GetAttrObject]"],  # type: ignore[misc] # noqa: NU003
     },
     total=False,
 )
@@ -95,19 +97,19 @@ class GetAttrObject(typing.Protocol):
 
 GetAttrObjectT = typing.TypeVar("GetAttrObjectT", bound=GetAttrObject)
 FilterResultT = typing.TypeVar("FilterResultT")
-CompiledTreeT = typing.Callable[[GetAttrObjectT], typing.Awaitable[FilterResultT]]
+CompiledTreeT = abc.Callable[[GetAttrObjectT], abc.Awaitable[FilterResultT]]
 
 
-ValueCompilerT = typing.Callable[[typing.Any], typing.Any]
+ValueCompilerT = abc.Callable[[typing.Any], typing.Any]
 
 
-UnaryOperatorT = typing.Callable[[typing.Any], FilterResultT]
+UnaryOperatorT = abc.Callable[[typing.Any], FilterResultT]
 BinaryOperatorT = tuple[
-    typing.Callable[[typing.Any, typing.Any], FilterResultT],
-    typing.Callable[[typing.Iterable[object]], FilterResultT],
+    abc.Callable[[typing.Any, typing.Any], FilterResultT],
+    abc.Callable[[abc.Iterable[object]], FilterResultT],
     ValueCompilerT,
 ]
-MultipleOperatorT = typing.Callable[..., FilterResultT]
+MultipleOperatorT = abc.Callable[..., FilterResultT]
 
 
 @dataclasses.dataclass(repr=False)
@@ -118,7 +120,7 @@ class Filter(typing.Generic[FilterResultT]):
     multiple_operators: dict[str, MultipleOperatorT[FilterResultT]]
 
     value_expanders: dict[
-        str, typing.Callable[[typing.Any], list[typing.Any]]
+        str, abc.Callable[[typing.Any], list[typing.Any]]
     ] = dataclasses.field(default_factory=dict, init=False)
 
     _eval: CompiledTreeT[GetAttrObject, FilterResultT] = dataclasses.field(init=False)
@@ -175,7 +177,7 @@ class Filter(typing.Generic[FilterResultT]):
     LENGTH_OPERATOR = "#"
 
     @staticmethod
-    def _to_list(item: _T | typing.Iterable[_T]) -> list[_T]:
+    def _to_list(item: _T | abc.Iterable[_T]) -> list[_T]:
         if isinstance(item, str):
             return [typing.cast(_T, item)]
 
@@ -188,7 +190,7 @@ class Filter(typing.Generic[FilterResultT]):
         self,
         obj: GetAttrObjectT,
         attribute_name: str,
-        op: typing.Callable[[typing.Any], typing.Any],
+        op: abc.Callable[[typing.Any], typing.Any],
     ) -> list[typing.Any]:
         try:
             attr = getattr(obj, attribute_name)
@@ -209,7 +211,7 @@ class Filter(typing.Generic[FilterResultT]):
         obj: GetAttrObjectT,
         attribute_name: str,
     ) -> list[typing.Any]:
-        op: typing.Callable[[typing.Any], typing.Any]
+        op: abc.Callable[[typing.Any], typing.Any]
         if attribute_name.startswith(self.LENGTH_OPERATOR):
             try:
                 return await self._get_attribute_values(
@@ -302,7 +304,7 @@ class Filter(typing.Generic[FilterResultT]):
             ref_values_expanded = reference_value_expander(reference_value)
             if inspect.iscoroutine(ref_values_expanded):
                 ref_values_expanded = await typing.cast(
-                    typing.Awaitable[typing.Any], ref_values_expanded
+                    abc.Awaitable[typing.Any], ref_values_expanded
                 )
 
             return self._eval_binary_op(
@@ -324,7 +326,7 @@ class Filter(typing.Generic[FilterResultT]):
     def _handle_multiple_op(
         self,
         multiple_op: MultipleOperatorT[FilterResultT],
-        nodes: typing.Iterable[TreeT | CompiledTreeT[GetAttrObject, FilterResultT]],
+        nodes: abc.Iterable[TreeT | CompiledTreeT[GetAttrObject, FilterResultT]],
     ) -> CompiledTreeT[GetAttrObject, FilterResultT]:
         elements = [self.build_evaluator(node) for node in nodes]
 
@@ -359,7 +361,7 @@ def BinaryFilter(
     )
 
 
-def _minimal_datetime(dts: typing.Iterable[object]) -> datetime.datetime:
+def _minimal_datetime(dts: abc.Iterable[object]) -> datetime.datetime:
     _dts = list(typing.cast(list[datetime.datetime], Filter._to_list(dts)))
     if len(_dts) == 0:
         return date.DT_MAX
@@ -419,8 +421,8 @@ def _dt_in_future(value: datetime.datetime) -> datetime.datetime:
 
 
 def _dt_op(
-    op: typing.Callable[[typing.Any, typing.Any], bool],
-) -> typing.Callable[[typing.Any, typing.Any], datetime.datetime]:
+    op: abc.Callable[[typing.Any, typing.Any], bool],
+) -> abc.Callable[[typing.Any, typing.Any], datetime.datetime]:
     def _operator(value: typing.Any, ref: typing.Any) -> datetime.datetime:
         if value is None:
             return date.DT_MAX
@@ -553,13 +555,13 @@ class IncompleteMarkerType(enum.Enum):
 IncompleteCheck: typing.Final = IncompleteMarkerType._MARKER
 
 
-IncompleteChecksResult = typing.Union[bool, IncompleteMarkerType]
+IncompleteChecksResult = bool | IncompleteMarkerType
 
 
 def IncompleteChecksAll(
-    values: typing.Iterable[object],
+    values: abc.Iterable[object],
 ) -> IncompleteChecksResult:
-    values = typing.cast(typing.Iterable[IncompleteChecksResult], values)
+    values = typing.cast(abc.Iterable[IncompleteChecksResult], values)
     found_unknown = False
     for v in values:
         if v is False:
@@ -572,9 +574,9 @@ def IncompleteChecksAll(
 
 
 def IncompleteChecksAny(
-    values: typing.Iterable[object],
+    values: abc.Iterable[object],
 ) -> IncompleteChecksResult:
-    values = typing.cast(typing.Iterable[IncompleteChecksResult], values)
+    values = typing.cast(abc.Iterable[IncompleteChecksResult], values)
     found_true = False
     for v in values:
         if v is IncompleteCheck:
@@ -592,10 +594,10 @@ def IncompleteChecksNegate(value: IncompleteChecksResult) -> IncompleteChecksRes
 
 
 def cast_ret_to_incomplete_check_result(
-    op: typing.Callable[[typing.Any, typing.Any], bool]
-) -> typing.Callable[[typing.Any, typing.Any], IncompleteChecksResult]:
+    op: abc.Callable[[typing.Any, typing.Any], bool]
+) -> abc.Callable[[typing.Any, typing.Any], IncompleteChecksResult]:
     return typing.cast(
-        typing.Callable[[typing.Any, typing.Any], IncompleteChecksResult], op
+        abc.Callable[[typing.Any, typing.Any], IncompleteChecksResult], op
     )
 
 

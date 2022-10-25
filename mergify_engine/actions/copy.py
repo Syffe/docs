@@ -1,3 +1,4 @@
+from collections import abc
 import re
 import typing
 from urllib import parse
@@ -18,7 +19,7 @@ from mergify_engine.dashboard import subscription
 from mergify_engine.rules import types
 
 
-def Regex(value: str) -> typing.Pattern[str]:
+def Regex(value: str) -> re.Pattern[str]:
     try:
         return re.compile(value)
     except re.error as e:
@@ -242,7 +243,7 @@ class CopyAction(actions.BackwardCompatAction):
                 [
                     branch["name"]
                     async for branch in typing.cast(
-                        typing.AsyncGenerator[github_types.GitHubBranch, None],
+                        abc.AsyncGenerator[github_types.GitHubBranch, None],
                         ctxt.client.items(
                             f"{ctxt.base_url}/branches",
                             resource_name="branches",
@@ -307,7 +308,7 @@ class CopyAction(actions.BackwardCompatAction):
         pulls = [
             pull
             async for pull in typing.cast(
-                typing.AsyncGenerator[github_types.GitHubPullRequest, None],
+                abc.AsyncGenerator[github_types.GitHubPullRequest, None],
                 ctxt.client.items(
                     f"{ctxt.base_url}/pulls",
                     resource_name="pulls",

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import dataclasses
 import json
 import typing
@@ -232,7 +234,7 @@ class ApplicationSaas(ApplicationBase):
         api_access_key: str,
         api_secret_key: str,
         account_scope: github_types.GitHubLogin | None,
-    ) -> typing.Optional["ApplicationSaas"]:
+    ) -> ApplicationSaas | None:
         async with await redis.pipeline() as pipe:
             await pipe.get(cls._cache_key(api_access_key, account_scope))
             await pipe.ttl(cls._cache_key(api_access_key, account_scope))

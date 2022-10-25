@@ -1,3 +1,4 @@
+from collections import abc
 import dataclasses
 import os
 import threading
@@ -101,7 +102,7 @@ def permissions_need_to_be_updated(
 class GithubBearerAuth(httpx.Auth):
     def auth_flow(
         self, request: httpx.Request
-    ) -> typing.Generator[httpx.Request, httpx.Response, None]:
+    ) -> abc.Generator[httpx.Request, httpx.Response, None]:
         bearer = get_or_create_jwt()
         request.headers["Authorization"] = f"Bearer {bearer}"
         response = yield request

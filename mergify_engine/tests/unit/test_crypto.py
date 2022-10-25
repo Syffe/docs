@@ -1,5 +1,5 @@
+from collections import abc
 import importlib
-import typing
 
 import pytest
 
@@ -15,7 +15,7 @@ def test_encrypt() -> None:
 
 
 @pytest.fixture
-def cleanup_secrets() -> typing.Generator[None, None, None]:
+def cleanup_secrets() -> abc.Generator[None, None, None]:
     current_secret = config.CACHE_TOKEN_SECRET
     try:
         yield

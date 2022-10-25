@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import logging
-import typing
 
 from mergify_engine import check_api
 from mergify_engine import context
@@ -9,10 +10,10 @@ from mergify_engine.rules import live_resolvers
 
 
 async def get_rule_checks_status(
-    log: "logging.LoggerAdapter[logging.Logger]",
+    log: logging.LoggerAdapter[logging.Logger],
     repository: context.Repository,
     pulls: list[context.BasePullRequest],
-    rule: typing.Union["rules.EvaluatedRule", "rules.EvaluatedQueueRule"],
+    rule: rules.EvaluatedRule | rules.EvaluatedQueueRule,
     *,
     unmatched_conditions_return_failure: bool = True,
 ) -> check_api.Conclusion:

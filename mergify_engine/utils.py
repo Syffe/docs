@@ -1,3 +1,4 @@
+from collections import abc
 import hashlib
 import hmac
 import json
@@ -125,9 +126,7 @@ class FakePR:
 _T = typing.TypeVar("_T")
 
 
-def split_list(
-    remaining: list[_T], part: int
-) -> typing.Generator[list[_T], None, None]:
+def split_list(remaining: list[_T], part: int) -> abc.Generator[list[_T], None, None]:
     size = math.ceil(len(remaining) / part)
     while remaining:
         yield remaining[:size]

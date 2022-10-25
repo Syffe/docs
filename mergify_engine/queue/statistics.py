@@ -1,3 +1,4 @@
+from collections import abc
 import dataclasses
 import datetime
 import re
@@ -282,7 +283,7 @@ async def _get_stats_items(
     newer_event_id: str,
     queue_name: rules.QueueName | None = None,
     branch_name: str | None = None,
-) -> typing.AsyncGenerator[dict[str, typing.Any], None]:
+) -> abc.AsyncGenerator[dict[str, typing.Any], None]:
     redis = repository.installation.redis.stats
 
     if branch_name is None:
@@ -316,7 +317,7 @@ async def _get_stats_items_date_range(
     branch_name: str | None = None,
     start_at: int | None = None,
     end_at: int | None = None,
-) -> typing.AsyncGenerator[dict[str, typing.Any], None]:
+) -> abc.AsyncGenerator[dict[str, typing.Any], None]:
     redis_query_older_id = get_redis_query_older_id()
     if start_at is not None and start_at * 1000 < redis_query_older_id:
         older_event_id = str(start_at * 1000)
@@ -345,7 +346,7 @@ async def _get_stats_items_at_timestamp(
     queue_name: rules.QueueName | None = None,
     branch_name: str | None = None,
     at: int | None = None,
-) -> typing.AsyncGenerator[dict[str, typing.Any], None]:
+) -> abc.AsyncGenerator[dict[str, typing.Any], None]:
     redis_query_older_id = get_redis_query_older_id()
     if at is not None:
         if at * 1000 < redis_query_older_id:

@@ -165,7 +165,8 @@ def _get_pull_request_key(
     return f"eventlogs/{owner_id}/{repo_id}/{pull_request}"
 
 
-Event = typing.Union[
+# FIXME(sileht): if we use | here, we cannot introspec the __annotations__ with __args__
+Event = typing.Union[  # noqa: NU001
     EventAssign,
     EventBackport,
     EventClose,

@@ -1,5 +1,5 @@
+from collections import abc
 import datetime
-import typing
 from unittest import mock
 
 from mergify_engine import duplicate_pull
@@ -9,7 +9,7 @@ from mergify_engine.tests.unit import conftest
 
 async def fake_get_github_pulls_from_sha(
     url: str, resource_name: str, page_limit: str, api_version: None | str = None
-) -> typing.AsyncGenerator[github_types.GitHubPullRequest, None]:
+) -> abc.AsyncGenerator[github_types.GitHubPullRequest, None]:
     pr = github_types.GitHubPullRequest(
         {
             "id": github_types.GitHubPullRequestId(1),
