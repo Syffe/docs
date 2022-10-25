@@ -17,7 +17,7 @@ from mergify_engine.rules import types
 
 class RebaseExecutorConfig(typing.TypedDict):
     autosquash: bool
-    bot_account: typing.Optional[user_tokens.UserTokensUser]
+    bot_account: user_tokens.UserTokensUser | None
 
 
 class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig]):
@@ -39,7 +39,7 @@ class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig
         except action_utils.RenderBotAccountFailure as e:
             raise rules.InvalidPullRequestRule(e.title, e.reason)
 
-        github_user: typing.Optional[user_tokens.UserTokensUser] = None
+        github_user: user_tokens.UserTokensUser | None = None
         if bot_account:
             tokens = await ctxt.repository.installation.get_user_tokens()
             github_user = tokens.get_token_for(bot_account)

@@ -102,7 +102,7 @@ class UnexpectedQueueChange(BaseAbortReason):
     change: str
 
 
-def is_pr_body_a_merge_queue_pr(pull_request_body: typing.Optional[str]) -> bool:
+def is_pr_body_a_merge_queue_pr(pull_request_body: str | None) -> bool:
     if pull_request_body is None:
         return False
 

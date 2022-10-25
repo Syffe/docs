@@ -16,9 +16,7 @@ if typing.TYPE_CHECKING:
 
 
 class StatisticsAccuracyMeasurement(signals.SignalBase):
-    SUPPORTED_EVENT_NAMES: typing.ClassVar[typing.Tuple[str, ...]] = (
-        "action.queue.leave",
-    )
+    SUPPORTED_EVENT_NAMES: typing.ClassVar[tuple[str, ...]] = ("action.queue.leave",)
 
     async def __call__(
         self,

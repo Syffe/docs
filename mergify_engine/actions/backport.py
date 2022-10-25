@@ -27,11 +27,11 @@ class BackportAction(copy.CopyAction):
     ]
 
     @property
-    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
+    def silenced_conclusion(self) -> tuple[check_api.Conclusion, ...]:
         return ()
 
     @staticmethod
-    def command_to_config(string: str) -> typing.Dict[str, typing.Any]:
+    def command_to_config(string: str) -> dict[str, typing.Any]:
         if string:
             return {"branches": string.split(" ")}
         else:

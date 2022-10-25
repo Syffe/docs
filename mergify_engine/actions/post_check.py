@@ -13,7 +13,7 @@ from mergify_engine.rules import conditions
 from mergify_engine.rules import types
 
 
-def CheckRunJinja2(v: typing.Any) -> typing.Optional[str]:
+def CheckRunJinja2(v: typing.Any) -> str | None:
     return types.Jinja2(
         v,
         {
@@ -62,7 +62,7 @@ class PostCheckExecutor(
             rules.apply_configure_filter(ctxt.repository, check_conditions)
             await check_conditions([ctxt.pull_request])
 
-        extra_variables: typing.Dict[str, typing.Union[str, bool]] = {
+        extra_variables: dict[str, str | bool] = {
             "check_rule_name": rule.name,
             "check_succeeded": check_conditions.match,
             "check_conditions": check_conditions.get_summary(),
@@ -144,7 +144,7 @@ class PostCheckExecutor(
             return actions.CANCELLED_CHECK_REPORT
 
     @property
-    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
+    def silenced_conclusion(self) -> tuple[check_api.Conclusion, ...]:
         if self.config["always_show"]:
             return ()
         else:

@@ -36,10 +36,10 @@ async def legacy_push(
     repo_id: github_types.GitHubRepositoryIdType,
     repo_name: github_types.GitHubRepositoryName,
     tracing_repo_name: github_types.GitHubRepositoryNameForTracing,
-    pull_number: typing.Optional[github_types.GitHubPullRequestNumber],
+    pull_number: github_types.GitHubPullRequestNumber | None,
     event_type: github_types.GitHubEventType,
     data: github_types.GitHubEvent,
-    score: typing.Optional[str] = None,
+    score: str | None = None,
 ) -> None:
     now = date.utcnow()
     event = msgpack.packb(
@@ -135,7 +135,7 @@ WORKER_HAS_WORK_INTERVAL_CHECK = 0.02
 
 
 async def run_worker(
-    test_timeout: typing.Optional[float] = None, **kwargs: typing.Any
+    test_timeout: float | None = None, **kwargs: typing.Any
 ) -> worker.Worker:
     w = worker.Worker(
         idle_sleep_time=0.01,
@@ -1330,7 +1330,7 @@ async def test_stream_processor_priority(
         repo_id: github_types.GitHubRepositoryIdType,
         repo: github_types.GitHubRepositoryName,
         pull_number: github_types.GitHubPullRequestNumber,
-        sources: typing.List[context.T_PayloadEventSource],
+        sources: list[context.T_PayloadEventSource],
     ) -> None:
         received.append(pull_number)
 
@@ -1406,7 +1406,7 @@ async def test_stream_processor_date_scheduling(
         repo_id: github_types.GitHubRepositoryIdType,
         repo: github_types.GitHubRepositoryName,
         pull_number: github_types.GitHubPullRequestNumber,
-        sources: typing.List[context.T_PayloadEventSource],
+        sources: list[context.T_PayloadEventSource],
     ) -> None:
         received.append(installation.owner_login)
 

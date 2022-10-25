@@ -75,6 +75,8 @@ pytest-chunks = "^0.2.0"
 anys = "^0.2.1"
 pytest-split = "^0.8.0"
 tryceratops = "^1.1.0"
+flake8-pep585 = "^0.1.6"
+flake8-new-union-types = "^0.4.1"
 
 [tool.poetry.scripts]
   mergify-refresher = "mergify_engine.web_cli:refresher"

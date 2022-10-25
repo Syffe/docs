@@ -1,6 +1,5 @@
 import dataclasses
 import datetime
-import typing
 
 import daiquiri
 import fastapi
@@ -52,15 +51,15 @@ class SpeculativeCheckPullRequest:
             "description": "The timestamp when the checks has started for this pull request"
         }
     )
-    ended_at: typing.Optional[datetime.datetime] = dataclasses.field(
+    ended_at: datetime.datetime | None = dataclasses.field(
         metadata={
             "description": "The timestamp when the checks has ended for this pull request"
         }
     )
-    checks: typing.List[merge_train.QueueCheck] = dataclasses.field(
+    checks: list[merge_train.QueueCheck] = dataclasses.field(
         metadata={"description": "The list of pull request checks"}
     )
-    evaluated_conditions: typing.Optional[str] = dataclasses.field(
+    evaluated_conditions: str | None = dataclasses.field(
         metadata={"description": "The queue rule conditions evaluation report"}
     )
     state: merge_train.CheckStateT = dataclasses.field(
@@ -103,9 +102,9 @@ class PullRequestQueued:
             "description": "The timestamp when the pull requested has entered in the queue"
         }
     )
-    speculative_check_pull_request: typing.Optional[SpeculativeCheckPullRequest]
+    speculative_check_pull_request: SpeculativeCheckPullRequest | None
 
-    estimated_time_of_merge: typing.Optional[datetime.datetime] = dataclasses.field(
+    estimated_time_of_merge: datetime.datetime | None = dataclasses.field(
         metadata={
             "description": "The estimated timestamp when this pull request will be merged"
         }
@@ -118,7 +117,7 @@ class Queue:
         metadata={"description": "The branch of this queue"}
     )
 
-    pull_requests: typing.List[PullRequestQueued] = dataclasses.field(
+    pull_requests: list[PullRequestQueued] = dataclasses.field(
         default_factory=list,
         metadata={"description": "The pull requests in this queue"},
     )
@@ -126,7 +125,7 @@ class Queue:
 
 @pydantic.dataclasses.dataclass
 class QueuesConfig:
-    configuration: typing.List[QueueRule] = dataclasses.field(
+    configuration: list[QueueRule] = dataclasses.field(
         default_factory=list,
         metadata={"description": "The queues configuration of the repository"},
     )
@@ -134,7 +133,7 @@ class QueuesConfig:
 
 @pydantic.dataclasses.dataclass
 class Queues:
-    queues: typing.List[Queue] = dataclasses.field(
+    queues: list[Queue] = dataclasses.field(
         default_factory=list, metadata={"description": "The queues of the repository"}
     )
 
@@ -169,7 +168,7 @@ class QueueFreeze:
 
 @pydantic.dataclasses.dataclass
 class QueueFreezeResponse:
-    queue_freezes: typing.List[QueueFreeze] = dataclasses.field(
+    queue_freezes: list[QueueFreeze] = dataclasses.field(
         default_factory=list,
         metadata={"description": "The frozen queues of the repository"},
     )

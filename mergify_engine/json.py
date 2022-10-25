@@ -7,7 +7,7 @@ import typing
 _JSON_TYPES = {}
 
 
-def register_type(enum_cls: typing.Type[enum.Enum]) -> None:
+def register_type(enum_cls: type[enum.Enum]) -> None:
     if enum_cls.__name__ in _JSON_TYPES:
         raise RuntimeError(f"{enum_cls.__name__} already registered")
     else:
@@ -49,7 +49,7 @@ class JSONObjectDict(typing.TypedDict, total=False):
     __pytype__: JSONPyType
 
 
-def _decode(v: typing.Dict[typing.Any, typing.Any]) -> typing.Any:
+def _decode(v: dict[typing.Any, typing.Any]) -> typing.Any:
     if v.get("__pytype__") == "enum":
         cls_name = v["class"]
         enum_cls = _JSON_TYPES[cls_name]
@@ -68,5 +68,5 @@ def dumps(v: typing.Any) -> str:
     return json.dumps(v, cls=Encoder)
 
 
-def loads(v: typing.Union[str, bytes]) -> typing.Any:
+def loads(v: str | bytes) -> typing.Any:
     return json.loads(v, object_hook=_decode)

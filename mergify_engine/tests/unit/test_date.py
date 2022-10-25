@@ -1,5 +1,4 @@
 import datetime
-import typing
 import zoneinfo
 
 from freezegun import freeze_time
@@ -203,7 +202,7 @@ def test_time_from_string(
     ],
 )
 def test_invalid_date_string(
-    date_type: typing.Type[date.PartialDatetime], value: str, expected_message: str
+    date_type: type[date.PartialDatetime], value: str, expected_message: str
 ) -> None:
     with pytest.raises(date.InvalidDate) as exc:
         date_type.from_string(value)
@@ -272,7 +271,7 @@ def test_invalid_date_string(
     ],
 )
 def test_interval_from_string(
-    value: str, expected_interval: typing.Optional[datetime.timedelta]
+    value: str, expected_interval: datetime.timedelta | None
 ) -> None:
     if expected_interval is None:
         with pytest.raises(date.InvalidDate):

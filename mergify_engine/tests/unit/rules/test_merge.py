@@ -881,9 +881,9 @@ def test_merge_defaults(
     ],
 )
 async def test_merge_rules_and_defaults(
-    config: typing.Dict[str, typing.Any],
-    config_to_extend: typing.Dict[str, typing.Any],
-    expected_result: typing.Dict[str, typing.Any],
+    config: dict[str, typing.Any],
+    config_to_extend: dict[str, typing.Any],
+    expected_result: dict[str, typing.Any],
 ) -> None:
     defaults = config_to_extend.pop("defaults")
     mocked_ctxt = mock.MagicMock()

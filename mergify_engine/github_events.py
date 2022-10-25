@@ -35,7 +35,7 @@ async def get_pull_request_head_sha_to_number_mapping(
     owner_id: github_types.GitHubAccountIdType,
     repo_id: github_types.GitHubRepositoryIdType,
     sha: github_types.SHAType,
-) -> typing.Optional[github_types.GitHubPullRequestNumber]:
+) -> github_types.GitHubPullRequestNumber | None:
     ret = await redis_cache.get(
         context.Context.redis_last_summary_pulls_key(owner_id, repo_id, sha),
     )

@@ -97,7 +97,7 @@ class PullRequestAttributeError(AttributeError):
 @dataclasses.dataclass
 class InstallationCaches:
     team_members: cache.Cache[
-        github_types.GitHubTeamSlug, typing.List[github_types.GitHubLogin]
+        github_types.GitHubTeamSlug, list[github_types.GitHubLogin]
     ] = dataclasses.field(default_factory=cache.Cache)
 
 
@@ -111,7 +111,7 @@ class Installation:
     repositories: "typing.Dict[github_types.GitHubRepositoryName, Repository]" = (
         dataclasses.field(default_factory=dict, repr=False)
     )
-    _user_tokens: typing.Optional[user_tokens.UserTokens] = dataclasses.field(
+    _user_tokens: user_tokens.UserTokens | None = dataclasses.field(
         default=None, repr=False
     )
     _caches: InstallationCaches = dataclasses.field(
@@ -245,7 +245,7 @@ class Installation:
 
     async def get_team_members(
         self, team_slug: github_types.GitHubTeamSlug
-    ) -> typing.List[github_types.GitHubLogin]:
+    ) -> list[github_types.GitHubLogin]:
         members = self._caches.team_members.get(team_slug)
         if members is cache.Unset:
             key = self._team_members_cache_key_for_repo(self.owner_id)
@@ -265,7 +265,7 @@ class Installation:
                 await pipe.execute()
             else:
                 members = typing.cast(
-                    typing.List[github_types.GitHubLogin], msgpack.unpackb(members_raw)
+                    list[github_types.GitHubLogin], msgpack.unpackb(members_raw)
                 )
             self._caches.team_members.set(team_slug, members)
         return members
@@ -274,7 +274,7 @@ class Installation:
 @dataclasses.dataclass
 class RepositoryCaches:
     mergify_config_file: cache.SingleCache[
-        typing.Optional[MergifyConfigFile]
+        MergifyConfigFile | None
     ] = dataclasses.field(default_factory=cache.SingleCache)
     mergify_config: cache.SingleCache[
         typing.Union["rules.MergifyConfig", Exception]
@@ -282,14 +282,14 @@ class RepositoryCaches:
     branches: cache.Cache[
         github_types.GitHubRefType, github_types.GitHubBranch
     ] = dataclasses.field(default_factory=cache.Cache)
-    labels: cache.SingleCache[
-        typing.List[github_types.GitHubLabel]
-    ] = dataclasses.field(default_factory=cache.SingleCache)
+    labels: cache.SingleCache[list[github_types.GitHubLabel]] = dataclasses.field(
+        default_factory=cache.SingleCache
+    )
     branch_protections: cache.Cache[
-        github_types.GitHubRefType, typing.Optional[github_types.GitHubBranchProtection]
+        github_types.GitHubRefType, github_types.GitHubBranchProtection | None
     ] = dataclasses.field(default_factory=cache.Cache)
     commits: cache.Cache[
-        github_types.GitHubRefType, typing.List[github_types.GitHubBranchCommit]
+        github_types.GitHubRefType, list[github_types.GitHubBranchCommit]
     ] = dataclasses.field(default_factory=cache.Cache)
     user_permissions: cache.Cache[
         github_types.GitHubAccountIdType, github_types.GitHubRepositoryPermission
@@ -300,7 +300,7 @@ class RepositoryCaches:
 
 
 @dataclasses.dataclass
-class Repository(object):
+class Repository:
     installation: Installation
     repo: github_types.GitHubRepository
     pull_contexts: "typing.Dict[github_types.GitHubPullRequestNumber, Context]" = (
@@ -329,8 +329,8 @@ class Repository(object):
 
     async def iter_mergify_config_files(
         self,
-        ref: typing.Optional[github_types.SHAType] = None,
-        preferred_filename: typing.Optional[github_types.GitHubFilePath] = None,
+        ref: github_types.SHAType | None = None,
+        preferred_filename: github_types.GitHubFilePath | None = None,
     ) -> typing.AsyncIterator[MergifyConfigFile]:
         """Get the Mergify configuration file content.
 
@@ -403,7 +403,7 @@ class Repository(object):
         self._caches.mergify_config.set(mergify_config)
         return mergify_config
 
-    async def get_mergify_config_file(self) -> typing.Optional[MergifyConfigFile]:
+    async def get_mergify_config_file(self) -> MergifyConfigFile | None:
         mergify_config_file = self._caches.mergify_config_file.get()
         if mergify_config_file is not cache.Unset:
             return mergify_config_file
@@ -438,7 +438,7 @@ class Repository(object):
         self._caches.mergify_config_file.set(None)
         return None
 
-    async def get_cached_config_file(self) -> typing.Optional[MergifyConfigFile]:
+    async def get_cached_config_file(self) -> MergifyConfigFile | None:
         config_file_raw = await self.installation.redis.cache.get(
             self.get_config_file_cache_key(self.repo["id"]),
         )
@@ -454,7 +454,7 @@ class Repository(object):
     async def get_commits(
         self,
         branch_name: github_types.GitHubRefType,
-    ) -> typing.List[github_types.GitHubBranchCommit]:
+    ) -> list[github_types.GitHubBranchCommit]:
         """Returns the last commits from a branch.
 
         This only returns the last 100 commits."""
@@ -462,7 +462,7 @@ class Repository(object):
         commits = self._caches.commits.get(branch_name)
         if commits is cache.Unset:
             commits = typing.cast(
-                typing.List[github_types.GitHubBranchCommit],
+                list[github_types.GitHubBranchCommit],
                 await self.installation.client.item(
                     f"{self.base_url}/commits",
                     params={"per_page": "100", "sha": branch_name},
@@ -507,7 +507,7 @@ class Repository(object):
     async def get_pull_request_context(
         self,
         pull_number: github_types.GitHubPullRequestNumber,
-        pull: typing.Optional[github_types.GitHubPullRequest] = None,
+        pull: github_types.GitHubPullRequest | None = None,
         force_new: bool = False,
     ) -> "Context":
         if force_new or pull_number not in self.pull_contexts:
@@ -800,7 +800,7 @@ class Repository(object):
     async def _get_branch_protection_from_branch(
         self,
         branch_name: github_types.GitHubRefType,
-    ) -> typing.Optional[github_types.GitHubBranchProtection]:
+    ) -> github_types.GitHubBranchProtection | None:
         try:
             branch = await self.get_branch(branch_name)
         except http.HTTPNotFound:
@@ -819,7 +819,7 @@ class Repository(object):
     async def get_branch_protection(
         self,
         branch_name: github_types.GitHubRefType,
-    ) -> typing.Optional[github_types.GitHubBranchProtection]:
+    ) -> github_types.GitHubBranchProtection | None:
         branch_protection = self._caches.branch_protections.get(branch_name)
         if branch_protection is cache.Unset:
             escaped_branch_name = parse.quote(branch_name, safe="")
@@ -849,7 +849,7 @@ class Repository(object):
             self._caches.branch_protections.set(branch_name, branch_protection)
         return branch_protection
 
-    async def get_labels(self) -> typing.List[github_types.GitHubLabel]:
+    async def get_labels(self) -> list[github_types.GitHubLabel]:
         labels = self._caches.labels.get()
         if labels is cache.Unset:
             labels = [
@@ -892,13 +892,9 @@ class Repository(object):
 
     async def get_commits_diff_count(
         self,
-        base_ref: typing.Union[
-            github_types.GitHubBaseBranchLabel, github_types.SHAType
-        ],
-        head_ref: typing.Union[
-            github_types.GitHubHeadBranchLabel, github_types.SHAType
-        ],
-    ) -> typing.Optional[int]:
+        base_ref: (github_types.GitHubBaseBranchLabel | github_types.SHAType),
+        head_ref: (github_types.GitHubHeadBranchLabel | github_types.SHAType),
+    ) -> int | None:
         try:
             data = typing.cast(
                 github_types.GitHubCompareCommits,
@@ -915,23 +911,23 @@ class Repository(object):
 @dataclasses.dataclass
 class ContextCaches:
     review_threads: cache.SingleCache[
-        typing.List[github_graphql_types.CachedReviewThread],
+        list[github_graphql_types.CachedReviewThread],
     ] = dataclasses.field(default_factory=cache.SingleCache)
     consolidated_reviews: cache.SingleCache[
-        typing.Tuple[
-            typing.List[github_types.GitHubReview],
-            typing.List[github_types.GitHubReview],
+        tuple[
+            list[github_types.GitHubReview],
+            list[github_types.GitHubReview],
         ],
     ] = dataclasses.field(default_factory=cache.SingleCache)
     pull_check_runs: cache.SingleCache[
-        typing.List[github_types.CachedGitHubCheckRun]
+        list[github_types.CachedGitHubCheckRun]
     ] = dataclasses.field(default_factory=cache.SingleCache)
     pull_statuses: cache.SingleCache[
-        typing.List[github_types.GitHubStatus]
+        list[github_types.GitHubStatus]
     ] = dataclasses.field(default_factory=cache.SingleCache)
-    reviews: cache.SingleCache[
-        typing.List[github_types.GitHubReview]
-    ] = dataclasses.field(default_factory=cache.SingleCache)
+    reviews: cache.SingleCache[list[github_types.GitHubReview]] = dataclasses.field(
+        default_factory=cache.SingleCache
+    )
     is_behind: cache.SingleCache[bool] = dataclasses.field(
         default_factory=cache.SingleCache
     )
@@ -941,11 +937,11 @@ class ContextCaches:
     is_conflicting: cache.SingleCache[bool] = dataclasses.field(
         default_factory=cache.SingleCache
     )
-    files: cache.SingleCache[
-        typing.List[github_types.CachedGitHubFile]
-    ] = dataclasses.field(default_factory=cache.SingleCache)
+    files: cache.SingleCache[list[github_types.CachedGitHubFile]] = dataclasses.field(
+        default_factory=cache.SingleCache
+    )
     commits: cache.SingleCache[
-        typing.List[github_types.CachedGitHubBranchCommit]
+        list[github_types.CachedGitHubBranchCommit]
     ] = dataclasses.field(default_factory=cache.SingleCache)
     commits_behind_count: cache.SingleCache[int] = dataclasses.field(
         default_factory=cache.SingleCache
@@ -955,7 +951,7 @@ class ContextCaches:
 ContextAttributeType = typing.Union[
     None,
     bool,
-    typing.List[str],
+    list[str],
     str,
     int,
     datetime.time,
@@ -963,19 +959,19 @@ ContextAttributeType = typing.Union[
     datetime.datetime,
     datetime.timedelta,
     date.RelativeDatetime,
-    typing.List[github_types.SHAType],
-    typing.List[github_types.GitHubLogin],
-    typing.List[github_types.GitHubBranchCommit],
-    typing.List[github_types.CachedGitHubBranchCommit],
+    list[github_types.SHAType],
+    list[github_types.GitHubLogin],
+    list[github_types.GitHubBranchCommit],
+    list[github_types.CachedGitHubBranchCommit],
     github_types.GitHubRepositoryPermission,
 ]
 
 
 @dataclasses.dataclass
-class Context(object):
+class Context:
     repository: Repository
     pull: github_types.GitHubPullRequest
-    sources: typing.List[T_PayloadEventSource] = dataclasses.field(default_factory=list)
+    sources: list[T_PayloadEventSource] = dataclasses.field(default_factory=list)
     configuration_changed: bool = False
     pull_request: "PullRequest" = dataclasses.field(init=False, repr=False)
     github_has_pending_background_jobs: bool = dataclasses.field(
@@ -1046,7 +1042,7 @@ class Context(object):
         # TODO(sileht): remove me when context split if done
         return self.repository.base_url
 
-    async def retrieve_unverified_commits(self) -> typing.List[str]:
+    async def retrieve_unverified_commits(self) -> list[str]:
         return [
             commit.commit_message
             for commit in await self.commits
@@ -1054,7 +1050,7 @@ class Context(object):
         ]
 
     @functools.cached_property
-    def _most_recent_event_datetime(self) -> typing.Optional[datetime.datetime]:
+    def _most_recent_event_datetime(self) -> datetime.datetime | None:
         timestamps = [
             date.fromisoformat(source["data"]["received_at"])
             for source in self.sources
@@ -1069,7 +1065,7 @@ class Context(object):
 
     async def retrieve_review_threads(
         self,
-    ) -> typing.List[github_graphql_types.CachedReviewThread]:
+    ) -> list[github_graphql_types.CachedReviewThread]:
         review_threads = self._caches.review_threads.get()
         if review_threads is cache.Unset:
             query = """
@@ -1094,9 +1090,7 @@ class Context(object):
             """
             responses = typing.cast(
                 typing.AsyncIterable[
-                    typing.Dict[
-                        str, github_graphql_types.GraphqlRepositoryForReviewThreads
-                    ]
+                    dict[str, github_graphql_types.GraphqlRepositoryForReviewThreads]
                 ],
                 multi.multi_query(
                     query,
@@ -1224,7 +1218,7 @@ class Context(object):
         cls,
         redis_cache: redis_utils.RedisCache,
         pull: github_types.GitHubPullRequest,
-    ) -> typing.Optional[github_types.SHAType]:
+    ) -> github_types.SHAType | None:
         return typing.cast(
             typing.Optional[github_types.SHAType],
             await redis_cache.get(cls.redis_last_summary_head_sha_key(pull)),
@@ -1251,7 +1245,7 @@ class Context(object):
 
     async def get_cached_last_summary_head_sha(
         self,
-    ) -> typing.Optional[github_types.SHAType]:
+    ) -> github_types.SHAType | None:
         return await self.get_cached_last_summary_head_sha_from_pull(
             self.redis.cache,
             self.pull,
@@ -1273,7 +1267,7 @@ class Context(object):
     async def _save_cached_last_summary_head_sha(
         self,
         sha: github_types.SHAType,
-        old_sha: typing.Optional[github_types.SHAType] = None,
+        old_sha: github_types.SHAType | None = None,
     ) -> None:
         # NOTE(sileht): We store it only for 1 month, if we lose it it's not a big deal, as it's just
         # to avoid race conditions when too many synchronize events occur in a short period of time
@@ -1304,19 +1298,13 @@ class Context(object):
 
     async def consolidated_reviews(
         self,
-    ) -> typing.Tuple[
-        typing.List[github_types.GitHubReview], typing.List[github_types.GitHubReview]
-    ]:
+    ) -> tuple[list[github_types.GitHubReview], list[github_types.GitHubReview]]:
         consolidated_reviews = self._caches.consolidated_reviews.get()
         if consolidated_reviews is cache.Unset:
             # Ignore reviews that are not from someone with admin/write permissions
             # And only keep the last review for each user.
-            comments: typing.Dict[
-                github_types.GitHubLogin, github_types.GitHubReview
-            ] = {}
-            approvals: typing.Dict[
-                github_types.GitHubLogin, github_types.GitHubReview
-            ] = {}
+            comments: dict[github_types.GitHubLogin, github_types.GitHubReview] = {}
+            approvals: dict[github_types.GitHubLogin, github_types.GitHubReview] = {}
             valid_user_ids = {
                 r["user"]["id"]
                 for r in await self.reviews
@@ -1345,7 +1333,7 @@ class Context(object):
     @property
     async def dependabot_attributes(
         self,
-    ) -> typing.Optional[dependabot_types.DependabotAttributes]:
+    ) -> dependabot_types.DependabotAttributes | None:
         if (
             not self.pull["user"]["login"]
             == constants.DEPENDABOT_PULL_REQUEST_AUTHOR_LOGIN
@@ -1705,7 +1693,7 @@ class Context(object):
             return ""
         return self.pull["body"].replace("\r\n", "\n")
 
-    def get_depends_on(self) -> typing.List[github_types.GitHubPullRequestNumber]:
+    def get_depends_on(self) -> list[github_types.GitHubPullRequestNumber]:
         return sorted(
             {
                 github_types.GitHubPullRequestNumber(int(pull))
@@ -1731,7 +1719,7 @@ class Context(object):
         self._caches.pull_check_runs.set(pull_check_runs)
 
     @property
-    async def pull_check_runs(self) -> typing.List[github_types.CachedGitHubCheckRun]:
+    async def pull_check_runs(self) -> list[github_types.CachedGitHubCheckRun]:
         checks = self._caches.pull_check_runs.get()
         if checks is cache.Unset:
             checks = await check_api.get_checks_for_ref(self, self.pull["head"]["sha"])
@@ -1741,7 +1729,7 @@ class Context(object):
     @property
     async def pull_engine_check_runs(
         self,
-    ) -> typing.List[github_types.CachedGitHubCheckRun]:
+    ) -> list[github_types.CachedGitHubCheckRun]:
         return [
             c
             for c in await self.pull_check_runs
@@ -1750,13 +1738,13 @@ class Context(object):
 
     async def get_engine_check_run(
         self, name: str
-    ) -> typing.Optional[github_types.CachedGitHubCheckRun]:
+    ) -> github_types.CachedGitHubCheckRun | None:
         return first.first(
             await self.pull_engine_check_runs, key=lambda c: c["name"] == name
         )
 
     @property
-    async def pull_statuses(self) -> typing.List[github_types.GitHubStatus]:
+    async def pull_statuses(self) -> list[github_types.GitHubStatus]:
         statuses = self._caches.pull_statuses.get()
         if statuses is cache.Unset:
             statuses = [
@@ -1777,21 +1765,17 @@ class Context(object):
     @property
     async def checks(
         self,
-    ) -> typing.Dict[
+    ) -> dict[
         str,
-        typing.Union[
-            github_types.GitHubCheckRunConclusion, github_types.GitHubStatusState
-        ],
+        (github_types.GitHubCheckRunConclusion | github_types.GitHubStatusState),
     ]:
         # NOTE(sileht): check-runs are returned in reverse chronogical order,
         # so if it has ran twice we must keep only the more recent
         # statuses are good as GitHub already ensures the uniqueness of the name
 
-        checks: typing.Dict[
+        checks: dict[
             str,
-            typing.Union[
-                github_types.GitHubCheckRunConclusion, github_types.GitHubStatusState
-            ],
+            (github_types.GitHubCheckRunConclusion | github_types.GitHubStatusState),
         ] = {}
 
         # First put all branch protections checks as pending and then override with
@@ -1872,7 +1856,7 @@ class Context(object):
             raise tenacity.TryAgain
         self._caches.pull_check_runs.delete()
 
-    async def _get_external_parents(self) -> typing.Set[github_types.SHAType]:
+    async def _get_external_parents(self) -> set[github_types.SHAType]:
         known_commits_sha = [commit.sha for commit in await self.commits]
         external_parents_sha = set()
         for commit in await self.commits:
@@ -1985,7 +1969,7 @@ class Context(object):
         return f"{login}/{repo}/pull/{number}@{branch}"
 
     @property
-    async def reviews(self) -> typing.List[github_types.GitHubReview]:
+    async def reviews(self) -> list[github_types.GitHubReview]:
         reviews = self._caches.reviews.get()
         if reviews is cache.Unset:
             reviews = [
@@ -2012,7 +1996,7 @@ class Context(object):
         return reviews
 
     @property
-    async def commits(self) -> typing.List[github_types.CachedGitHubBranchCommit]:
+    async def commits(self) -> list[github_types.CachedGitHubBranchCommit]:
         commits = self._caches.commits.get()
         if commits is cache.Unset:
             commits = [
@@ -2032,7 +2016,7 @@ class Context(object):
         return commits
 
     @property
-    async def files(self) -> typing.List[github_types.CachedGitHubFile]:
+    async def files(self) -> list[github_types.CachedGitHubFile]:
         files = self._caches.files.get()
         if files is cache.Unset:
             try:
@@ -2153,7 +2137,7 @@ class Context(object):
 @dataclasses.dataclass
 class RenderTemplateFailure(Exception):
     message: str
-    lineno: typing.Optional[int] = None
+    lineno: int | None = None
 
     def __str__(self) -> str:
         return self.message
@@ -2235,7 +2219,7 @@ class PullRequest(BasePullRequest):
             | self.LIST_ATTRIBUTES_WITH_LENGTH_OPTIMIZATION
         )
 
-    async def items(self) -> typing.Dict[str, ContextAttributeType]:
+    async def items(self) -> dict[str, ContextAttributeType]:
         d = {}
         for k in sorted(self):
             d[k] = await getattr(self, k)
@@ -2252,9 +2236,7 @@ class PullRequest(BasePullRequest):
     async def render_template(
         self,
         template: str,
-        extra_variables: typing.Optional[
-            typing.Dict[str, typing.Union[str, bool]]
-        ] = None,
+        extra_variables: None | (dict[str, str | bool]) = None,
         allow_get_section: bool = True,
     ) -> str:
         """Render a template interpolating variables based on pull request attributes."""
@@ -2279,7 +2261,7 @@ class PullRequest(BasePullRequest):
 
     @staticmethod
     async def _filter_get_section(
-        pull: "PullRequest", v: str, section: str, default: typing.Optional[str] = None
+        pull: "PullRequest", v: str, section: str, default: str | None = None
     ) -> str:
         if not isinstance(section, str):
             raise jinja2.exceptions.TemplateError("level must be a string")
@@ -2329,8 +2311,8 @@ class PullRequest(BasePullRequest):
 
     async def get_commit_message(
         self,
-        template: typing.Optional[str] = None,
-    ) -> typing.Optional[typing.Tuple[str, str]]:
+        template: str | None = None,
+    ) -> tuple[str, str] | None:
 
         if template is None:
             # No template from configuration, looks at template from body

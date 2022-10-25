@@ -53,7 +53,7 @@ def create_commit(sha: github_types.SHAType) -> github_types.GitHubBranchCommit:
 )
 def commits_tree_generator(
     request: typing.Any,
-) -> typing.Tuple[bool, typing.List[github_types.GitHubBranchCommit]]:
+) -> tuple[bool, list[github_types.GitHubBranchCommit]]:
     # NOTE(sileht):
     # tree direction: ->
     # U: mean HEAD of base branch

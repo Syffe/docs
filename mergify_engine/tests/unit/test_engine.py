@@ -286,7 +286,7 @@ async def test_configuration_changed(
     )
     github_server.get(f"{BASE_URL}/pulls/1",).respond(
         200,
-        json=typing.cast(typing.Dict[typing.Any, typing.Any], GH_PULL),
+        json=typing.cast(dict[typing.Any, typing.Any], GH_PULL),
     )
 
     qs_ref = respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]})
@@ -296,7 +296,7 @@ async def test_configuration_changed(
     ).respond(
         200,
         json=typing.cast(
-            typing.Dict[typing.Any, typing.Any],
+            dict[typing.Any, typing.Any],
             github_types.GitHubContentFile(
                 {
                     "type": "file",
@@ -316,7 +316,7 @@ async def test_configuration_changed(
     ).respond(
         200,
         json=typing.cast(
-            typing.Dict[typing.Any, typing.Any],
+            dict[typing.Any, typing.Any],
             github_types.GitHubContentFile(
                 {
                     "type": "file",
@@ -344,7 +344,7 @@ async def test_configuration_changed(
     ).respond(200, json={"check_runs": []})
 
     github_server.post(f"{BASE_URL}/check-runs").respond(
-        200, json=typing.cast(typing.Dict[typing.Any, typing.Any], CHECK_RUN)
+        200, json=typing.cast(dict[typing.Any, typing.Any], CHECK_RUN)
     )
 
     installation_json = await github.get_installation_from_account_id(GH_OWNER["id"])
@@ -395,7 +395,7 @@ async def test_configuration_duplicated(
 
     github_server.get(f"{BASE_URL}/pulls/1",).respond(
         200,
-        json=typing.cast(typing.Dict[typing.Any, typing.Any], GH_PULL),
+        json=typing.cast(dict[typing.Any, typing.Any], GH_PULL),
     )
 
     qs_ref = respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]})
@@ -405,7 +405,7 @@ async def test_configuration_duplicated(
     ).respond(
         200,
         json=typing.cast(
-            typing.Dict[typing.Any, typing.Any],
+            dict[typing.Any, typing.Any],
             github_types.GitHubContentFile(
                 {
                     "type": "file",
@@ -425,7 +425,7 @@ async def test_configuration_duplicated(
     ).respond(
         200,
         json=typing.cast(
-            typing.Dict[typing.Any, typing.Any],
+            dict[typing.Any, typing.Any],
             github_types.GitHubContentFile(
                 {
                     "type": "file",
@@ -450,7 +450,7 @@ async def test_configuration_duplicated(
     ).respond(
         200,
         json=typing.cast(
-            typing.Dict[typing.Any, typing.Any],
+            dict[typing.Any, typing.Any],
             github_types.GitHubContentFile(
                 {
                     "type": "file",
@@ -515,7 +515,7 @@ async def test_configuration_not_changed(
     )
     github_server.get(f"{BASE_URL}/pulls/1",).respond(
         200,
-        json=typing.cast(typing.Dict[typing.Any, typing.Any], GH_PULL),
+        json=typing.cast(dict[typing.Any, typing.Any], GH_PULL),
     )
 
     qs_ref = respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]})
@@ -525,7 +525,7 @@ async def test_configuration_not_changed(
     ).respond(
         200,
         json=typing.cast(
-            typing.Dict[typing.Any, typing.Any],
+            dict[typing.Any, typing.Any],
             github_types.GitHubContentFile(
                 {
                     "type": "file",
@@ -545,7 +545,7 @@ async def test_configuration_not_changed(
     ).respond(
         200,
         json=typing.cast(
-            typing.Dict[typing.Any, typing.Any],
+            dict[typing.Any, typing.Any],
             github_types.GitHubContentFile(
                 {
                     "type": "file",
@@ -620,7 +620,7 @@ async def test_configuration_initial(
     )
     github_server.get(f"{BASE_URL}/pulls/1",).respond(
         200,
-        json=typing.cast(typing.Dict[typing.Any, typing.Any], GH_PULL),
+        json=typing.cast(dict[typing.Any, typing.Any], GH_PULL),
     )
 
     github_server.route(
@@ -644,7 +644,7 @@ async def test_configuration_initial(
     ).respond(
         200,
         json=typing.cast(
-            typing.Dict[typing.Any, typing.Any],
+            dict[typing.Any, typing.Any],
             github_types.GitHubContentFile(
                 {
                     "type": "file",
@@ -671,7 +671,7 @@ async def test_configuration_initial(
     ).respond(200, json={"check_runs": []})
 
     github_server.post(f"{BASE_URL}/check-runs").respond(
-        200, json=typing.cast(typing.Dict[typing.Any, typing.Any], CHECK_RUN)
+        200, json=typing.cast(dict[typing.Any, typing.Any], CHECK_RUN)
     )
 
     installation_json = await github.get_installation_from_account_id(GH_OWNER["id"])
@@ -720,12 +720,12 @@ async def test_configuration_check_not_needed_with_configuration_not_changed(
     )
     github_server.get(f"{BASE_URL}/pulls/1",).respond(
         200,
-        json=typing.cast(typing.Dict[typing.Any, typing.Any], GH_PULL),
+        json=typing.cast(dict[typing.Any, typing.Any], GH_PULL),
     )
     github_server.get(f"{BASE_URL}/contents/.mergify.yml").respond(
         200,
         json=typing.cast(
-            typing.Dict[typing.Any, typing.Any],
+            dict[typing.Any, typing.Any],
             github_types.GitHubContentFile(
                 {
                     "type": "file",
@@ -791,11 +791,11 @@ async def test_configuration_check_not_needed_with_configuration_changed(
     )
     github_server.get(
         f"{BASE_URL}/pulls/1",
-    ).respond(200, json=typing.cast(typing.Dict[typing.Any, typing.Any], GH_PULL))
+    ).respond(200, json=typing.cast(dict[typing.Any, typing.Any], GH_PULL))
     github_server.get(f"{BASE_URL}/contents/.mergify.yml").respond(
         200,
         json=typing.cast(
-            typing.Dict[typing.Any, typing.Any],
+            dict[typing.Any, typing.Any],
             github_types.GitHubContentFile(
                 {
                     "type": "file",
@@ -861,12 +861,12 @@ async def test_configuration_check_not_needed_with_configuration_deleted(
     )
     github_server.get(f"{BASE_URL}/pulls/1",).respond(
         200,
-        json=typing.cast(typing.Dict[typing.Any, typing.Any], GH_PULL),
+        json=typing.cast(dict[typing.Any, typing.Any], GH_PULL),
     )
     github_server.get(f"{BASE_URL}/contents/.mergify.yml").respond(
         200,
         json=typing.cast(
-            typing.Dict[typing.Any, typing.Any],
+            dict[typing.Any, typing.Any],
             github_types.GitHubContentFile(
                 {
                     "type": "file",

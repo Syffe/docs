@@ -56,7 +56,7 @@ class DashboardFixture(typing.NamedTuple):
     user_tokens: user_tokens_mod.UserTokens
 
 
-def get_all_subscription_features() -> typing.FrozenSet[subscription.Features]:
+def get_all_subscription_features() -> frozenset[subscription.Features]:
     return frozenset(
         getattr(subscription.Features, f) for f in subscription.Features.__members__
     )
@@ -64,7 +64,7 @@ def get_all_subscription_features() -> typing.FrozenSet[subscription.Features]:
 
 def extract_subscription_marker_features(
     marker: pytest.Mark,
-) -> typing.FrozenSet[subscription.Features]:
+) -> frozenset[subscription.Features]:
     if len(marker.args) == 0:
         return get_all_subscription_features()
 
@@ -228,9 +228,7 @@ async def dashboard(
     )
 
 
-def pyvcr_response_filter(
-    response: typing.Dict[str, typing.Any]
-) -> typing.Dict[str, typing.Any]:
+def pyvcr_response_filter(response: dict[str, typing.Any]) -> dict[str, typing.Any]:
     for h in [
         "CF-Cache-Status",
         "CF-RAY",
@@ -287,7 +285,7 @@ class RecorderFixture(typing.NamedTuple):
 async def recorder(
     request: pytest.FixtureRequest,
     monkeypatch: pytest.MonkeyPatch,
-) -> typing.Optional[RecorderFixture]:
+) -> RecorderFixture | None:
     is_unittest_class = request.cls is not None
 
     marker = request.node.get_closest_marker("recorder")
@@ -377,7 +375,7 @@ async def recorder(
                 )
             )
 
-    with open(record_config_file, "r") as f:
+    with open(record_config_file) as f:
         recorder_config = typing.cast(RecordConfigType, json.loads(f.read()))
         monkeypatch.setattr(config, "INTEGRATION_ID", recorder_config["integration_id"])
         monkeypatch.setattr(config, "BOT_USER_ID", recorder_config["app_user_id"])

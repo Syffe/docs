@@ -272,7 +272,7 @@ class EventLogsSignal(signals.SignalBase):
 async def get(
     repository: "context.Repository",
     page: pagination.CurrentPage,
-    pull_request: typing.Optional[github_types.GitHubPullRequestNumber] = None,
+    pull_request: github_types.GitHubPullRequestNumber | None = None,
 ) -> pagination.Page[Event]:
     redis = repository.installation.redis.eventlogs
     if redis is None:
@@ -352,7 +352,7 @@ async def get(
     else:
         cursor_next = None
 
-    events: typing.List[Event] = []
+    events: list[Event] = []
     for _, raw in items:
         event = typing.cast(GenericEvent, msgpack.unpackb(raw[b"data"], timestamp=3))
         if event["event"] == "action.assign":

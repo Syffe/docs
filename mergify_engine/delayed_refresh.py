@@ -31,7 +31,7 @@ def _redis_key(
 async def _get_current_refresh_datetime(
     repository: "context.Repository",
     pull_number: github_types.GitHubPullRequestNumber,
-) -> typing.Optional[datetime.datetime]:
+) -> datetime.datetime | None:
     score = await repository.installation.redis.cache.zscore(
         DELAYED_REFRESH_KEY, _redis_key(repository, pull_number)
     )
@@ -53,9 +53,7 @@ async def _set_current_refresh_datetime(
 
 async def plan_next_refresh(
     ctxt: "context.Context",
-    _rules: typing.Union[
-        typing.List["rules.EvaluatedRule"], typing.List["rules.EvaluatedQueueRule"]
-    ],
+    _rules: (list["rules.EvaluatedRule"] | list["rules.EvaluatedQueueRule"]),
     pull_request: "context.BasePullRequest",
 ) -> None:
     best_bet = await _get_current_refresh_datetime(ctxt.repository, ctxt.pull["number"])

@@ -13,7 +13,7 @@ GITHUB_SAMPLE_EVENTS = {}
 _EVENT_DIR = os.path.join(os.path.dirname(__file__), "events")
 for filename in os.listdir(_EVENT_DIR):
     event_type = filename.split(".")[0]
-    with open(os.path.join(_EVENT_DIR, filename), "r") as event:
+    with open(os.path.join(_EVENT_DIR, filename)) as event:
         GITHUB_SAMPLE_EVENTS[filename] = (event_type, json.load(event))
 
 

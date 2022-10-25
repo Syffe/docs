@@ -39,17 +39,17 @@ class DisabledDict(typing.TypedDict):
 @dataclasses.dataclass
 class PullRequestRule:
     name: str
-    disabled: typing.Union[DisabledDict, None]
+    disabled: DisabledDict | None
     conditions: conditions_mod.PullRequestRuleConditions
-    actions: typing.Dict[str, actions_mod.Action]
+    actions: dict[str, actions_mod.Action]
     hidden: bool = False
     from_command: bool = False
 
     class T_from_dict_required(typing.TypedDict):
         name: str
-        disabled: typing.Union[DisabledDict, None]
+        disabled: DisabledDict | None
         conditions: conditions_mod.PullRequestRuleConditions
-        actions: typing.Dict[str, actions_mod.Action]
+        actions: dict[str, actions_mod.Action]
 
     class T_from_dict(T_from_dict_required, total=False):
         hidden: bool
@@ -64,9 +64,7 @@ class PullRequestRule:
     def get_signal_trigger(self) -> str:
         return f"Rule: {self.name}"
 
-    async def evaluate(
-        self, pulls: typing.List[context.BasePullRequest]
-    ) -> "EvaluatedRule":
+    async def evaluate(self, pulls: list[context.BasePullRequest]) -> "EvaluatedRule":
         evaluated_rule = typing.cast(EvaluatedRule, self)
         await evaluated_rule.conditions(pulls)
         for action in self.actions.values():
@@ -94,10 +92,10 @@ class QueueConfig(typing.TypedDict):
     batch_size: int
     batch_max_wait_time: datetime.timedelta
     allow_inplace_checks: bool
-    disallow_checks_interruption_from_queues: typing.List[str]
-    checks_timeout: typing.Optional[datetime.timedelta]
-    draft_bot_account: typing.Optional[github_types.GitHubLogin]
-    queue_branch_prefix: typing.Optional[str]
+    disallow_checks_interruption_from_queues: list[str]
+    checks_timeout: datetime.timedelta | None
+    draft_bot_account: github_types.GitHubLogin | None
+    queue_branch_prefix: str | None
     queue_branch_merge_method: QueueBranchMergeMethod
     allow_queue_branch_edit: bool
 
@@ -142,7 +140,7 @@ class QueueRule:
         self,
         repository: context.Repository,
         ref: github_types.GitHubRefType,
-        pulls: typing.List[context.BasePullRequest],
+        pulls: list[context.BasePullRequest],
         evaluated_pull_request_rule: typing.Optional["EvaluatedRule"] = None,
     ) -> EvaluatedQueueRule:
         extra_conditions = await conditions_mod.get_branch_protection_conditions(
@@ -176,7 +174,7 @@ class QueueRule:
         return queue_rules_evaluator.matching_rules[0]
 
     async def evaluate(
-        self, pulls: typing.List[context.BasePullRequest]
+        self, pulls: list[context.BasePullRequest]
     ) -> EvaluatedQueueRule:
         await self.conditions(pulls)
         return typing.cast(EvaluatedQueueRule, self)
@@ -206,34 +204,34 @@ class GenericRulesEvaluator(typing.Generic[T_Rule, T_EvaluatedRule]):
     BASE_CHANGEABLE_ATTRIBUTES = ("base",)
 
     # The list of pull request rules to match against.
-    rules: typing.List[T_Rule]
+    rules: list[T_Rule]
 
     # The rules matching the pull request.
-    matching_rules: typing.List[T_EvaluatedRule] = dataclasses.field(
+    matching_rules: list[T_EvaluatedRule] = dataclasses.field(
         init=False, default_factory=list
     )
 
     # The rules that can't be computed due to runtime error (eg: team resolution failure)
-    faulty_rules: typing.List[T_EvaluatedRule] = dataclasses.field(
+    faulty_rules: list[T_EvaluatedRule] = dataclasses.field(
         init=False, default_factory=list
     )
 
     # The rules not matching the pull request.
-    ignored_rules: typing.List[T_EvaluatedRule] = dataclasses.field(
+    ignored_rules: list[T_EvaluatedRule] = dataclasses.field(
         init=False, default_factory=list
     )
 
     # The rules not matching the base changeable attributes
-    not_applicable_base_changeable_attributes_rules: typing.List[
+    not_applicable_base_changeable_attributes_rules: list[
         T_EvaluatedRule
     ] = dataclasses.field(init=False, default_factory=list)
 
     @classmethod
     async def create(
         cls,
-        rules: typing.List[T_Rule],
+        rules: list[T_Rule],
         repository: context.Repository,
-        pulls: typing.List[context.BasePullRequest],
+        pulls: list[context.BasePullRequest],
         rule_hidden_from_merge_queue: bool,
     ) -> "GenericRulesEvaluator[T_Rule, T_EvaluatedRule]":
         self = cls(rules)
@@ -294,7 +292,7 @@ QueuesRulesEvaluator = GenericRulesEvaluator[QueueRule, EvaluatedQueueRule]
 
 @dataclasses.dataclass
 class PullRequestRules:
-    rules: typing.List[PullRequestRule]
+    rules: list[PullRequestRule]
     has_multiple_rules_with_same_name: bool = False
 
     def __post_init__(self) -> None:
@@ -320,7 +318,7 @@ class PullRequestRules:
     @staticmethod
     def _gen_rule_from(
         rule: PullRequestRule,
-        new_actions: typing.Dict[str, actions_mod.Action],
+        new_actions: dict[str, actions_mod.Action],
         extra_conditions: list[conditions_mod.RuleConditionNode],
     ) -> PullRequestRule:
         return PullRequestRule(
@@ -365,7 +363,7 @@ class PullRequestRules:
 
 @dataclasses.dataclass
 class QueueRules:
-    rules: typing.List[QueueRule]
+    rules: list[QueueRule]
 
     def __iter__(self) -> typing.Iterator[QueueRule]:
         return iter(self.rules)
@@ -376,7 +374,7 @@ class QueueRules:
                 return rule
         raise KeyError(f"{key} not found")
 
-    def get(self, key: QueueName) -> typing.Optional[QueueRule]:
+    def get(self, key: QueueName) -> QueueRule | None:
         try:
             return self[key]
         except KeyError:
@@ -386,7 +384,7 @@ class QueueRules:
         return len(self.rules)
 
     def __post_init__(self) -> None:
-        names: typing.Set[QueueName] = set()
+        names: set[QueueName] = set()
         for i, rule in enumerate(reversed(self.rules)):
             rule.config["priority"] = i
             if rule.name in names:
@@ -407,7 +405,7 @@ class YAMLInvalid(voluptuous.Invalid):  # type: ignore[misc]
     def __str__(self) -> str:
         return f"{self.msg} at {self.path}"
 
-    def get_annotations(self, path: str) -> typing.List[github_types.GitHubAnnotation]:
+    def get_annotations(self, path: str) -> list[github_types.GitHubAnnotation]:
         if self.path:
             error_path = self.path[0]
             return [
@@ -604,7 +602,7 @@ QueueRulesSchema = voluptuous.All(
 )
 
 
-def get_defaults_schema() -> typing.Dict[typing.Any, typing.Any]:
+def get_defaults_schema() -> dict[typing.Any, typing.Any]:
     return {
         # FIXME(sileht): actions.get_action_schemas() returns only actions Actions
         # and not command only, since only refresh is command only and it doesn't
@@ -627,7 +625,7 @@ def FullifyPullRequestRules(v: "MergifyConfig") -> "MergifyConfig":
 
 
 def CommandsRestrictionsSchema(
-    command: typing.Type[actions_mod.Action],
+    command: type[actions_mod.Action],
 ) -> voluptuous.Schema:
     return {
         voluptuous.Required(
@@ -644,7 +642,7 @@ def CommandsRestrictionsSchema(
 
 
 def UserConfigurationSchema(
-    config: typing.Dict[str, typing.Any], partial_validation: bool = False
+    config: dict[str, typing.Any], partial_validation: bool = False
 ) -> voluptuous.Schema:
     schema = {
         voluptuous.Required("extends", default=None): voluptuous.Any(
@@ -712,13 +710,12 @@ class InvalidRules(Exception):
     ) -> typing.Generator[voluptuous.Invalid, None, None]:
         if isinstance(root_error, voluptuous.MultipleInvalid):
             for error1 in root_error.errors:
-                for error2 in cls._walk_error(error1):
-                    yield error2
+                yield from cls._walk_error(error1)
         else:
             yield root_error
 
     @property
-    def errors(self) -> typing.List[voluptuous.Invalid]:
+    def errors(self) -> list[voluptuous.Invalid]:
         return list(self._walk_error(self.error))
 
     def __str__(self) -> str:
@@ -726,7 +723,7 @@ class InvalidRules(Exception):
             return "* " + "\n* ".join(sorted(map(self.format_error, self.errors)))
         return self.format_error(self.errors[0])
 
-    def get_annotations(self, path: str) -> typing.List[github_types.GitHubAnnotation]:
+    def get_annotations(self, path: str) -> list[github_types.GitHubAnnotation]:
         return functools.reduce(
             operator.add,
             (
@@ -739,7 +736,7 @@ class InvalidRules(Exception):
 
 
 class Defaults(typing.TypedDict):
-    actions: typing.Dict[str, typing.Any]
+    actions: dict[str, typing.Any]
 
 
 class CommandsRestrictions(typing.TypedDict):
@@ -750,7 +747,7 @@ class MergifyConfig(typing.TypedDict):
     extends: github_types.GitHubRepositoryName | None
     pull_request_rules: PullRequestRules
     queue_rules: QueueRules
-    commands_restrictions: typing.Dict[str, CommandsRestrictions]
+    commands_restrictions: dict[str, CommandsRestrictions]
     defaults: Defaults
     raw_config: typing.Any
 
@@ -764,7 +761,7 @@ def merge_defaults(extended_defaults: Defaults, dest_defaults: Defaults) -> None
 
 
 def merge_config_with_defaults(
-    config: typing.Dict[str, typing.Any], defaults: Defaults
+    config: dict[str, typing.Any], defaults: Defaults
 ) -> None:
     if defaults_actions := defaults.get("actions"):
         for rule in config.get("pull_request_rules", []):
@@ -784,8 +781,8 @@ def merge_config_with_defaults(
 
 
 def merge_raw_configs(
-    extended_config: typing.Dict[str, typing.Any],
-    dest_config: typing.Dict[str, typing.Any],
+    extended_config: dict[str, typing.Any],
+    dest_config: dict[str, typing.Any],
 ) -> None:
     for rule_to_merge in ("pull_request_rules", "queue_rules"):
         dest_rules = dest_config.setdefault(rule_to_merge, [])
@@ -824,7 +821,7 @@ async def get_mergify_config_from_file(
 
 async def get_mergify_config_from_dict(
     repository_ctxt: context.Repository,
-    config: typing.Dict[str, typing.Any],
+    config: dict[str, typing.Any],
     error_path: str,
     allow_extend: bool = True,
 ) -> MergifyConfig:
@@ -899,9 +896,9 @@ async def get_mergify_extended_config(
 
 def apply_configure_filter(
     repository: "context.Repository",
-    conditions: typing.Union[
-        conditions_mod.PullRequestRuleConditions, conditions_mod.QueueRuleConditions
-    ],
+    conditions: (
+        conditions_mod.PullRequestRuleConditions | conditions_mod.QueueRuleConditions
+    ),
 ) -> None:
     for condition in conditions.walk():
         live_resolvers.configure_filter(repository, condition.partial_filter)

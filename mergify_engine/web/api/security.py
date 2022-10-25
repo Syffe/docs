@@ -33,7 +33,7 @@ async def get_application(
     ),
 ) -> application_mod.Application:
 
-    scope: typing.Optional[github_types.GitHubLogin] = request.path_params.get("owner")
+    scope: github_types.GitHubLogin | None = request.path_params.get("owner")
     api_access_key = credentials.credentials[: config.API_ACCESS_KEY_LEN]
     api_secret_key = credentials.credentials[config.API_ACCESS_KEY_LEN :]
     try:

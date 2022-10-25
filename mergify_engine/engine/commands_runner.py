@@ -162,7 +162,7 @@ async def run_pending_commands_tasks(
         reraise=True,
     ):
         with attempt:
-            comments: typing.List[github_types.GitHubComment] = [
+            comments: list[github_types.GitHubComment] = [
                 c
                 async for c in ctxt.client.items(
                     f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments",
@@ -220,7 +220,7 @@ async def run_command(
     ctxt: context.Context,
     mergify_config: rules.MergifyConfig,
     command: Command,
-    comment_result: typing.Optional[github_types.GitHubComment] = None,
+    comment_result: github_types.GitHubComment | None = None,
 ) -> None:
     statsd.increment("engine.commands.count", tags=[f"name:{command.name}"])
 

@@ -22,7 +22,7 @@ class BranchUpdateFailure(Exception):
         error_code = "err-code: " + uuid.uuid4().hex[-5:].upper()
         self.title = title
         self.message = msg + "\n" + error_code
-        super(BranchUpdateFailure, self).__init__(self.message)
+        super().__init__(self.message)
 
 
 @dataclasses.dataclass
@@ -88,7 +88,7 @@ async def pre_rebase_check(ctxt: context.Context) -> None:
 async def _do_rebase(
     ctxt: context.Context,
     user: user_tokens.UserTokensUser,
-    committer: typing.Optional[user_tokens.UserTokensUser],
+    committer: user_tokens.UserTokensUser | None,
     autosquash: bool,
 ) -> None:
     # NOTE(sileht):
@@ -215,7 +215,7 @@ async def update_with_api(
 
 async def rebase_with_git(
     ctxt: context.Context,
-    users: typing.List[user_tokens.UserTokensUser],
+    users: list[user_tokens.UserTokensUser],
     committer: user_tokens.UserTokensUser | None,
     autosquash: bool = False,
 ) -> None:
@@ -249,7 +249,7 @@ async def update(
     method: typing.Literal["merge", "rebase"],
     ctxt: context.Context,
     bot_account_feature: subscription.Features,
-    user: typing.Optional[github_types.GitHubLogin] = None,
+    user: github_types.GitHubLogin | None = None,
 ) -> None:
     if method == "merge":
         await update_with_api(ctxt)

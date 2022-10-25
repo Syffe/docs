@@ -23,8 +23,8 @@ USER_CREATED_CHECKS = "user-created-checkrun"
 class GitHubCheckRunOutputParameters(typing.TypedDict, total=False):
     title: str
     summary: str
-    text: typing.Optional[str]
-    annotations: typing.Optional[typing.List[github_types.GitHubAnnotation]]
+    text: str | None
+    annotations: list[github_types.GitHubAnnotation] | None
 
 
 class GitHubCheckRunParameters(typing.TypedDict, total=False):
@@ -33,7 +33,7 @@ class GitHubCheckRunParameters(typing.TypedDict, total=False):
     name: str
     status: github_types.GitHubCheckRunStatus
     output: GitHubCheckRunOutputParameters
-    conclusion: typing.Optional[github_types.GitHubCheckRunConclusion]
+    conclusion: github_types.GitHubCheckRunConclusion | None
     completed_at: github_types.ISODateTimeType
     started_at: github_types.ISODateTimeType
     details_url: str
@@ -63,7 +63,7 @@ class Conclusion(enum.Enum):
         return value.lower().replace("_", " ")
 
     @property
-    def emoji(self) -> typing.Optional[str]:
+    def emoji(self) -> str | None:
         if self.value is None:
             return "🟠"
         elif self.value == "success":
@@ -97,10 +97,10 @@ class Result:
     conclusion: Conclusion
     title: str
     summary: str
-    annotations: typing.Optional[typing.List[github_types.GitHubAnnotation]] = None
-    started_at: typing.Optional[datetime.datetime] = None
-    ended_at: typing.Optional[datetime.datetime] = None
-    log_details: typing.Optional[typing.Dict[str, typing.Any]] = None
+    annotations: list[github_types.GitHubAnnotation] | None = None
+    started_at: datetime.datetime | None = None
+    ended_at: datetime.datetime | None = None
+    log_details: dict[str, typing.Any] | None = None
 
 
 def to_check_run_light(
@@ -134,9 +134,9 @@ def to_check_run_light(
 async def get_checks_for_ref(
     ctxt: "context.Context",
     sha: github_types.SHAType,
-    check_name: typing.Optional[str] = None,
-    app_id: typing.Optional[int] = None,
-) -> typing.List[github_types.CachedGitHubCheckRun]:
+    check_name: str | None = None,
+    app_id: int | None = None,
+) -> list[github_types.CachedGitHubCheckRun]:
     if check_name is None:
         params = {}
     else:
@@ -172,9 +172,7 @@ _K = typing.TypeVar("_K")
 _V = typing.TypeVar("_V")
 
 
-def compare_dict(
-    d1: typing.Dict[_K, _V], d2: typing.Dict[_K, _V], keys: typing.Iterable[_K]
-) -> bool:
+def compare_dict(d1: dict[_K, _V], d2: dict[_K, _V], keys: typing.Iterable[_K]) -> bool:
     for key in keys:
         if d1.get(key) != d2.get(key):
             return False
@@ -186,15 +184,15 @@ def check_need_update(
     expected_check: GitHubCheckRunParameters,
 ) -> bool:
     if compare_dict(
-        typing.cast(typing.Dict[str, typing.Any], expected_check),
-        typing.cast(typing.Dict[str, typing.Any], previous_check),
+        typing.cast(dict[str, typing.Any], expected_check),
+        typing.cast(dict[str, typing.Any], previous_check),
         ("head_sha", "status", "conclusion", "details_url"),
     ):
         if previous_check["output"] is None and expected_check["output"] is None:
             return False
         elif previous_check["output"] is not None and compare_dict(
-            typing.cast(typing.Dict[str, typing.Any], expected_check["output"]),
-            typing.cast(typing.Dict[str, typing.Any], previous_check["output"]),
+            typing.cast(dict[str, typing.Any], expected_check["output"]),
+            typing.cast(dict[str, typing.Any], previous_check["output"]),
             ("title", "summary"),
         ):
             return False
@@ -206,7 +204,7 @@ async def set_check_run(
     ctxt: "context.Context",
     name: str,
     result: Result,
-    external_id: typing.Optional[str] = None,
+    external_id: str | None = None,
     skip_cache: bool = False,
 ) -> github_types.CachedGitHubCheckRun:
     if result.conclusion is Conclusion.PENDING:

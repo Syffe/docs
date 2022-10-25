@@ -16,7 +16,7 @@ class GraphqlCommentsEdge(typing.TypedDict):
 
 
 class GraphqlComments(typing.TypedDict):
-    edges: typing.List[GraphqlCommentsEdge]
+    edges: list[GraphqlCommentsEdge]
 
 
 class GraphqlReviewThread(typing.TypedDict):
@@ -34,7 +34,7 @@ class GraphqlReviewThreadsEdge(typing.TypedDict):
 
 
 class GraphqlReviewThreads(typing.TypedDict):
-    edges: typing.List[GraphqlReviewThreadsEdge]
+    edges: list[GraphqlReviewThreadsEdge]
 
 
 class GraphqlPullRequestForReviewThreads(typing.TypedDict):
@@ -60,7 +60,7 @@ class GraphqlCommentIds(typing.TypedDict):
 
 
 class GraphqlCommentsForHidingComments(typing.TypedDict):
-    nodes: typing.List[GraphqlCommentIds]
+    nodes: list[GraphqlCommentIds]
 
 
 class GraphqlPullRequestForHidingComments(typing.TypedDict):

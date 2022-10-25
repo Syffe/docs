@@ -318,7 +318,7 @@ async def test_dow_str() -> None:
 )
 @freeze_time("2012-01-14")
 async def test_partial_datetime_str(
-    klass: typing.Type[date.PartialDatetime],
+    klass: type[date.PartialDatetime],
 ) -> None:
     assert "foo>=5" == str(filter.BinaryFilter({">=": ("foo", klass(5))}))
     assert "foo<=4" == str(filter.BinaryFilter({"<=": ("foo", klass(4))}))
@@ -341,7 +341,7 @@ async def test_partial_datetime_year_str() -> None:
 )
 @freeze_time("2012-01-14")
 async def test_partial_datetime_binary(
-    klass: typing.Type[date.PartialDatetime],
+    klass: type[date.PartialDatetime],
 ) -> None:
 
     f = filter.BinaryFilter({"<=": ("foo", klass(5))})

@@ -93,7 +93,7 @@ STATUS_CODE_TO_EXC = {
 }
 
 
-def parse_date(value: str) -> typing.Optional[datetime.datetime]:
+def parse_date(value: str) -> datetime.datetime | None:
     try:
         dt = email.utils.parsedate_to_datetime(value)
     except (TypeError, ValueError):
@@ -126,7 +126,7 @@ class wait_retry_after_header(tenacity.wait.wait_base):
         return max(0, (d - date.utcnow()).total_seconds())
 
 
-def extract_organization_login(client: httpx.AsyncClient) -> typing.Optional[str]:
+def extract_organization_login(client: httpx.AsyncClient) -> str | None:
     if client.auth and hasattr(client.auth, "_owner_login"):
         return client.auth._owner_login  # type: ignore[attr-defined,no-any-return]
     return None
@@ -211,8 +211,8 @@ def raise_for_status(resp: httpx.Response) -> None:
 class AsyncClient(httpx.AsyncClient):
     def __init__(
         self,
-        auth: typing.Optional[httpx_types.AuthTypes] = None,
-        headers: typing.Optional[httpx_types.HeaderTypes] = None,
+        auth: httpx_types.AuthTypes | None = None,
+        headers: httpx_types.HeaderTypes | None = None,
         timeout: httpx_types.TimeoutTypes = DEFAULT_TIMEOUT,
         base_url: httpx_types.URLTypes = "",
         transport: httpx.AsyncBaseTransport | None = None,

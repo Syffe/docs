@@ -16,7 +16,7 @@ from mergify_engine.rules import types
 
 class SquashExecutorConfig(typing.TypedDict):
     commit_message: typing.Literal["all-commits", "first-commit", "title+body"]
-    bot_account: typing.Optional[user_tokens.UserTokensUser]
+    bot_account: user_tokens.UserTokensUser | None
 
 
 class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig]):
@@ -38,7 +38,7 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
         except action_utils.RenderBotAccountFailure as e:
             raise rules.InvalidPullRequestRule(e.title, e.reason)
 
-        github_user: typing.Optional[user_tokens.UserTokensUser] = None
+        github_user: user_tokens.UserTokensUser | None = None
 
         if bot_account:
             tokens = await ctxt.repository.installation.get_user_tokens()
@@ -152,7 +152,7 @@ class SquashAction(actions.Action):
     ]
 
     @staticmethod
-    def command_to_config(string: str) -> typing.Dict[str, typing.Any]:
+    def command_to_config(string: str) -> dict[str, typing.Any]:
         if string:
             return {"commit_message": string.strip()}
         else:

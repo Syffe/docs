@@ -1,5 +1,4 @@
 import os
-import typing
 from unittest import mock
 
 import pytest
@@ -69,7 +68,7 @@ error: failed to push some refs to 'git@gitlab.com:example/my-project.git'
     ),
 )
 def test_gitter_error_catching(
-    stdout: str, exception: typing.Type[Exception], exc_message: str
+    stdout: str, exception: type[Exception], exc_message: str
 ) -> None:
     with pytest.raises(exception) as excinfo:
         raise gitter.Gitter._get_git_exception(1, stdout)

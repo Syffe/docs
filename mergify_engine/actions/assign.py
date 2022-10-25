@@ -13,8 +13,8 @@ from mergify_engine.rules import types
 
 
 class AssignExecutorConfig(typing.TypedDict):
-    users_to_add: typing.Set[str]
-    users_to_remove: typing.Set[str]
+    users_to_add: set[str]
+    users_to_remove: set[str]
 
 
 class AssignExecutor(actions.ActionExecutor["AssignAction", AssignExecutorConfig]):

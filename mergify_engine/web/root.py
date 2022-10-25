@@ -1,5 +1,3 @@
-import typing
-
 import daiquiri
 import fastapi
 from starlette import responses
@@ -44,7 +42,7 @@ async def shutdown() -> None:
 
 @app.get("/")
 async def index(
-    setup_action: typing.Optional[str] = None,
+    setup_action: str | None = None,
 ) -> responses.Response:  # pragma: no cover
     if setup_action:
         return responses.Response(

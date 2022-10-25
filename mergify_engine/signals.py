@@ -68,8 +68,8 @@ class EventCopyMetadata(EventMetadata, total=False):
 
 
 class EventAssignMetadata(EventMetadata, total=False):
-    added: typing.List[str]
-    removed: typing.List[str]
+    added: list[str]
+    removed: list[str]
 
 
 class EventEditMetadata(EventMetadata, total=False):
@@ -77,8 +77,8 @@ class EventEditMetadata(EventMetadata, total=False):
 
 
 class EventLabelMetadata(EventMetadata, total=False):
-    added: typing.List[str]
-    removed: typing.List[str]
+    added: list[str]
+    removed: list[str]
 
 
 class EventPostCheckMetadata(EventMetadata, total=False):
@@ -88,12 +88,12 @@ class EventPostCheckMetadata(EventMetadata, total=False):
 
 
 class EventRequestReviewsMetadata(EventMetadata, total=False):
-    reviewers: typing.List[str]
-    team_reviewers: typing.List[str]
+    reviewers: list[str]
+    team_reviewers: list[str]
 
 
 class EventDismissReviewsMetadata(EventMetadata, total=False):
-    users: typing.List[str]
+    users: list[str]
 
 
 class EventQueueEnterMetadata(EventMetadata, total=False):
@@ -139,7 +139,7 @@ class SpeculativeCheckPullRequest(typing.TypedDict, total=False):
     checks_timed_out: bool
     checks_conclusion: ChecksConclusion
     checks_started_at: datetime.datetime
-    checks_ended_at: typing.Optional[datetime.datetime]
+    checks_ended_at: datetime.datetime | None
 
 
 class EventQueueMergedMetadata(EventMetadata, total=False):
@@ -150,12 +150,12 @@ class EventQueueMergedMetadata(EventMetadata, total=False):
 
 class EventQueueChecksEndMetadata(EventMetadata, total=False):
     aborted: bool
-    abort_reason: typing.Optional[str]
-    abort_code: typing.Optional[queue_utils.AbortCodeT]
+    abort_reason: str | None
+    abort_code: queue_utils.AbortCodeT | None
     abort_status: typing.Literal["DEFINITIVE", "REEMBARKED"]
     queue_name: str
     branch: str
-    position: typing.Optional[int]
+    position: int | None
     queued_at: datetime.datetime
     speculative_check_pull_request: SpeculativeCheckPullRequest
 
@@ -210,7 +210,7 @@ class NoopSignal(SignalBase):
 
 
 global SIGNALS
-SIGNALS: typing.Dict[str, SignalT] = {}
+SIGNALS: dict[str, SignalT] = {}
 
 
 def unregister() -> None:

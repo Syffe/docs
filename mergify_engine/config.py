@@ -25,16 +25,14 @@ def CoercedLoggingLevel(value: str) -> int:
     raise ValueError(value)
 
 
-def CommaSeparatedStringList(value: str) -> typing.List[str]:
+def CommaSeparatedStringList(value: str) -> list[str]:
     if value:
         return value.split(",")
     else:
         return []
 
 
-def CommaSeparatedStringTuple(
-    v: str, split: int = 2
-) -> typing.List[typing.Tuple[str, ...]]:
+def CommaSeparatedStringTuple(v: str, split: int = 2) -> list[tuple[str, ...]]:
     d = []
     for bot in v.split(","):
         if bot.strip():
@@ -45,12 +43,12 @@ def CommaSeparatedStringTuple(
     return d
 
 
-def AccountTokens(v: str) -> typing.List[typing.Tuple[int, str, str]]:
+def AccountTokens(v: str) -> list[tuple[int, str, str]]:
     try:
         return [
             (int(_id), login, token)
             for _id, login, token in typing.cast(
-                typing.List[typing.Tuple[int, str, str]],
+                list[tuple[int, str, str]],
                 CommaSeparatedStringTuple(v, split=3),
             )
         ]
@@ -69,7 +67,7 @@ class ApplicationAPIKey(typing.TypedDict):
     account_login: str
 
 
-def ApplicationAPIKeys(v: str) -> typing.Dict[str, ApplicationAPIKey]:
+def ApplicationAPIKeys(v: str) -> dict[str, ApplicationAPIKey]:
     try:
         applications = CommaSeparatedStringTuple(v, 3)
         for api_key, _, _ in applications:
@@ -279,7 +277,7 @@ API_ENABLE: bool
 SENTRY_URL: str
 SENTRY_ENVIRONMENT: str
 CACHE_TOKEN_SECRET: str
-CACHE_TOKEN_SECRET_OLD: typing.Optional[str]
+CACHE_TOKEN_SECRET_OLD: str | None
 PRIVATE_KEY: bytes
 GITHUB_URL: str
 GITHUB_REST_API_URL: str
@@ -288,7 +286,7 @@ WEBHOOK_MARKETPLACE_FORWARD_URL: str
 WEBHOOK_APP_FORWARD_URL: str
 WEBHOOK_FORWARD_EVENT_TYPES: str
 WEBHOOK_SECRET: str
-WEBHOOK_SECRET_PRE_ROTATION: typing.Optional[str]
+WEBHOOK_SECRET_PRE_ROTATION: str | None
 SHARED_STREAM_PROCESSES: int
 DEDICATED_STREAM_PROCESSES: int
 SHARED_STREAM_TASKS_PER_PROCESS: int
@@ -315,15 +313,15 @@ DASHBOARD_TO_ENGINE_API_KEY: str
 DASHBOARD_TO_ENGINE_API_KEY_PRE_ROTATION: str
 OAUTH_CLIENT_ID: str
 OAUTH_CLIENT_SECRET: str
-ACCOUNT_TOKENS: typing.List[typing.Tuple[int, str, str]]
-APPLICATION_APIKEYS: typing.Dict[str, ApplicationAPIKey]
+ACCOUNT_TOKENS: list[tuple[int, str, str]]
+APPLICATION_APIKEYS: dict[str, ApplicationAPIKey]
 WORKER_SHUTDOWN_TIMEOUT: float
 REDIS_SSL_VERIFY_MODE_CERT_NONE: bool
-REDIS_STREAM_WEB_MAX_CONNECTIONS: typing.Optional[int]
-REDIS_CACHE_WEB_MAX_CONNECTIONS: typing.Optional[int]
-REDIS_QUEUE_WEB_MAX_CONNECTIONS: typing.Optional[int]
-REDIS_EVENTLOGS_WEB_MAX_CONNECTIONS: typing.Optional[int]
-REDIS_STATS_WEB_MAX_CONNECTIONS: typing.Optional[int]
+REDIS_STREAM_WEB_MAX_CONNECTIONS: int | None
+REDIS_CACHE_WEB_MAX_CONNECTIONS: int | None
+REDIS_QUEUE_WEB_MAX_CONNECTIONS: int | None
+REDIS_EVENTLOGS_WEB_MAX_CONNECTIONS: int | None
+REDIS_STATS_WEB_MAX_CONNECTIONS: int | None
 TESTING_ORGANIZATION_ID: github_types.GitHubAccountIdType
 TESTING_ORGANIZATION_NAME: github_types.GitHubLogin
 TESTING_REPOSITORY_ID: github_types.GitHubRepositoryIdType
@@ -334,7 +332,7 @@ LOG_STDOUT: bool
 LOG_STDOUT_LEVEL: int  # This is converted to an int by voluptuous
 LOG_DATADOG: bool
 LOG_DATADOG_LEVEL: int  # This is converted to an int by voluptuous
-LOG_DEBUG_LOGGER_NAMES: typing.List[str]
+LOG_DEBUG_LOGGER_NAMES: list[str]
 ORG_ADMIN_PERSONAL_TOKEN: github_types.GitHubOAuthToken
 ORG_ADMIN_ID: github_types.GitHubAccountIdType
 ORG_USER_ID: github_types.GitHubAccountIdType
@@ -350,13 +348,13 @@ SAAS_MODE: bool
 GITHUB_DOMAIN: str
 
 
-def load() -> typing.Dict[str, typing.Any]:
+def load() -> dict[str, typing.Any]:
     configuration_file = os.getenv("MERGIFYENGINE_TEST_SETTINGS")
 
     if configuration_file is not None:
         dotenv.load_dotenv(dotenv_path=configuration_file, override=True)
 
-    raw_config: typing.Dict[str, typing.Any] = {}
+    raw_config: dict[str, typing.Any] = {}
     for key, _ in Schema.schema.items():
         val = os.getenv(f"MERGIFYENGINE_{key}")
         if val is not None:

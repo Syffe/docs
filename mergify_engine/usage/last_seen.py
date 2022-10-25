@@ -35,7 +35,7 @@ class Signal(signals.SignalBase):
 async def get(
     redis: "redis_utils.RedisCache",
     owner_id: github_types.GitHubAccountIdType,
-) -> typing.Optional[datetime.datetime]:
+) -> datetime.datetime | None:
     raw = await redis.get(get_last_seen_key(owner_id))
     if raw is None:
         return None

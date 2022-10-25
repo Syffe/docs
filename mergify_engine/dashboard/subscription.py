@@ -44,7 +44,7 @@ class Features(enum.Enum):
 
 class SubscriptionDict(typing.TypedDict):
     subscription_reason: str
-    features: typing.List[
+    features: list[
         typing.Literal[
             "private_repository",
             "public_repository",
@@ -70,7 +70,7 @@ class SubscriptionBase(abc.ABC):
     redis: redis_utils.RedisCache
     owner_id: github_types.GitHubAccountIdType
     reason: str
-    features: typing.FrozenSet[enum.Enum]
+    features: frozenset[enum.Enum]
     ttl: int = -2
 
     feature_flag_log_level: int = logging.ERROR
@@ -80,9 +80,7 @@ class SubscriptionBase(abc.ABC):
         return f"subscription-cache-owner-{owner_id}"
 
     @classmethod
-    def _to_features(
-        cls, feature_list: typing.Iterable[str]
-    ) -> typing.FrozenSet[Features]:
+    def _to_features(cls, feature_list: typing.Iterable[str]) -> frozenset[Features]:
         features = []
         for f in feature_list:
             try:
@@ -105,7 +103,7 @@ class SubscriptionBase(abc.ABC):
 
     @classmethod
     def from_dict(
-        cls: typing.Type[SubscriptionT],
+        cls: type[SubscriptionT],
         redis: redis_utils.RedisCache,
         owner_id: github_types.GitHubAccountIdType,
         sub: SubscriptionDict,
@@ -136,7 +134,7 @@ class SubscriptionBase(abc.ABC):
 
     @classmethod
     async def get_subscription(
-        cls: typing.Type[SubscriptionT],
+        cls: type[SubscriptionT],
         redis: redis_utils.RedisCache,
         owner_id: github_types.GitHubAccountIdType,
     ) -> SubscriptionT:
@@ -185,7 +183,7 @@ class SubscriptionBase(abc.ABC):
     @classmethod
     @abc.abstractmethod
     async def _retrieve_subscription_from_db(
-        cls: typing.Type[SubscriptionT],
+        cls: type[SubscriptionT],
         redis: redis_utils.RedisCache,
         owner_id: github_types.GitHubAccountIdType,
     ) -> SubscriptionT:
@@ -193,16 +191,14 @@ class SubscriptionBase(abc.ABC):
 
     @classmethod
     async def _retrieve_subscription_from_cache(
-        cls: typing.Type[SubscriptionT],
+        cls: type[SubscriptionT],
         redis: redis_utils.RedisCache,
         owner_id: github_types.GitHubAccountIdType,
-    ) -> typing.Optional[SubscriptionT]:
+    ) -> SubscriptionT | None:
         async with await redis.pipeline() as pipe:
             await pipe.get(cls._cache_key(owner_id))
             await pipe.ttl(cls._cache_key(owner_id))
-            encrypted_sub, ttl = typing.cast(
-                typing.Tuple[str, int], await pipe.execute()
-            )
+            encrypted_sub, ttl = typing.cast(tuple[str, int], await pipe.execute())
         if encrypted_sub:
             return cls.from_dict(
                 redis,
@@ -217,7 +213,7 @@ class SubscriptionBase(abc.ABC):
 class SubscriptionDashboardSaas(SubscriptionBase):
     @classmethod
     async def _retrieve_subscription_from_db(
-        cls: typing.Type[SubscriptionT],
+        cls: type[SubscriptionT],
         redis: redis_utils.RedisCache,
         owner_id: github_types.GitHubAccountIdType,
     ) -> SubscriptionT:
@@ -236,7 +232,7 @@ class SubscriptionDashboardOnPremise(SubscriptionBase):
 
     @classmethod
     async def _retrieve_subscription_from_db(
-        cls: typing.Type[SubscriptionT],
+        cls: type[SubscriptionT],
         redis: redis_utils.RedisCache,
         owner_id: github_types.GitHubAccountIdType,
     ) -> SubscriptionT:

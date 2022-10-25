@@ -163,8 +163,8 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         self,
         header: str,
         method: str = "squash",
-        msg: typing.Optional[str] = None,
-        commit_msg: typing.Optional[str] = None,
+        msg: str | None = None,
+        commit_msg: str | None = None,
     ) -> None:
         rules = {
             "pull_request_rules": [

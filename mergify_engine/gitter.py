@@ -7,7 +7,6 @@ import re
 import shutil
 import sys
 import tempfile
-import typing
 import urllib.parse
 
 from ddtrace import tracer
@@ -43,8 +42,8 @@ class GitMergifyNamespaceConflict(GitError):
     pass
 
 
-GIT_MESSAGE_TO_EXCEPTION: typing.Dict[
-    typing.Union[str, re.Pattern[str]], typing.Type[GitError]
+GIT_MESSAGE_TO_EXCEPTION: dict[
+    str | re.Pattern[str], type[GitError]
 ] = collections.OrderedDict(
     [
         ("Authentication failed", GitAuthenticationFailure),
@@ -77,9 +76,9 @@ GIT_MESSAGE_TO_EXCEPTION: typing.Dict[
 
 
 @dataclasses.dataclass
-class Gitter(object):
+class Gitter:
     logger: "logging.LoggerAdapter[logging.Logger]"
-    tmp: typing.Optional[str] = None
+    tmp: str | None = None
 
     # Worker timeout at 5 minutes, so ensure subprocess return before
     GIT_COMMAND_TIMEOUT: int = dataclasses.field(init=False, default=4 * 60 + 30)
@@ -128,8 +127,8 @@ class Gitter(object):
 
     def prepare_safe_env(
         self,
-        _env: typing.Optional[typing.Dict[str, str]] = None,
-    ) -> typing.Dict[str, str]:
+        _env: dict[str, str] | None = None,
+    ) -> dict[str, str]:
         safe_env = self.env.copy()
         if _env is not None:
             safe_env.update(_env)
@@ -138,8 +137,8 @@ class Gitter(object):
     async def __call__(
         self,
         *args: str,
-        _input: typing.Optional[str] = None,
-        _env: typing.Optional[typing.Dict[str, str]] = None,
+        _input: str | None = None,
+        _env: dict[str, str] | None = None,
     ) -> str:
         if self.repository is None:
             raise RuntimeError("__call__() called before init()")
@@ -240,9 +239,7 @@ class Gitter(object):
 
             self.logger.warning("git temporary directory cleanup fail.")
 
-    async def configure(
-        self, user: typing.Optional[user_tokens.UserTokensUser] = None
-    ) -> None:
+    async def configure(self, user: user_tokens.UserTokensUser | None = None) -> None:
         if user is None:
             name = "Mergify"
             login = config.BOT_USER_LOGIN

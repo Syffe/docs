@@ -15,8 +15,8 @@ from mergify_engine.rules import types
 
 
 class CommandExecutorConfig(typing.TypedDict):
-    message: typing.Optional[str]
-    bot_account: typing.Optional[user_tokens.UserTokensUser]
+    message: str | None
+    bot_account: user_tokens.UserTokensUser | None
 
 
 class CommentExecutor(actions.ActionExecutor["CommentAction", "CommandExecutorConfig"]):
@@ -46,7 +46,7 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommandExecutorCo
                 str(rmf),
             )
 
-        github_user: typing.Optional[user_tokens.UserTokensUser] = None
+        github_user: user_tokens.UserTokensUser | None = None
         if bot_account:
             tokens = await ctxt.repository.installation.get_user_tokens()
             github_user = tokens.get_token_for(bot_account)

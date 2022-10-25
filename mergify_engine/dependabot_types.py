@@ -20,6 +20,6 @@ DependabotAttributes.__optional_keys__ = frozenset({"update-type"})
 
 
 class DependabotYamlMessageSchema(pydantic.BaseModel):
-    updated_dependencies: typing.List[DependabotAttributes] = pydantic.Field(
+    updated_dependencies: list[DependabotAttributes] = pydantic.Field(
         alias="updated-dependencies", min_items=1, max_items=1
     )

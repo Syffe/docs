@@ -153,7 +153,7 @@ async def push(
     owner_login: github_types.GitHubLogin,
     repo_id: github_types.GitHubRepositoryIdType,
     tracing_repo_name: github_types.GitHubRepositoryNameForTracing,
-    pull_number: typing.Optional[github_types.GitHubPullRequestNumber],
+    pull_number: github_types.GitHubPullRequestNumber | None,
     event_type: github_types.GitHubEventType,
     data: github_types.GitHubEvent,
     priority: Priority | None = None,

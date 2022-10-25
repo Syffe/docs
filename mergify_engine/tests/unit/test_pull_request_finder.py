@@ -13,11 +13,10 @@ from mergify_engine import redis_utils
 async def _do_test_event_to_pull_check_run(
     redis_links: redis_utils.RedisLinks,
     filename: str,
-    expected_pulls: typing.Set[github_types.GitHubPullRequestNumber],
+    expected_pulls: set[github_types.GitHubPullRequestNumber],
 ) -> None:
     with open(
         os.path.join(os.path.dirname(__file__), "events", filename),
-        "r",
     ) as f:
         data = json.loads(
             f.read()

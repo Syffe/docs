@@ -66,8 +66,8 @@ SupportsLessThanT = typing.TypeVar("SupportsLessThanT", bound=SupportsLessThan)
 
 
 def get_random_choices(
-    random_number: int, population: typing.Dict[SupportsLessThanT, int], k: int = 1
-) -> typing.Set[SupportsLessThanT]:
+    random_number: int, population: dict[SupportsLessThanT, int], k: int = 1
+) -> set[SupportsLessThanT]:
     """Return a random number of item from a population without replacement.
 
     You need to provide the random number yourself.
@@ -86,7 +86,7 @@ def get_random_choices(
     if k > len(population):
         raise ValueError("k cannot be greater than the population size")
 
-    picked: typing.Set[SupportsLessThanT] = set()
+    picked: set[SupportsLessThanT] = set()
     population = population.copy()
 
     while len(picked) < k:
@@ -126,8 +126,8 @@ _T = typing.TypeVar("_T")
 
 
 def split_list(
-    remaining: typing.List[_T], part: int
-) -> typing.Generator[typing.List[_T], None, None]:
+    remaining: list[_T], part: int
+) -> typing.Generator[list[_T], None, None]:
     size = math.ceil(len(remaining) / part)
     while remaining:
         yield remaining[:size]

@@ -48,7 +48,7 @@ class BaseQueueStats:
     branch_name: str
     # List of variables to not include in the return of the `to_dict()`
     # if using an `_` is not enough/appropriate.
-    _todict_ignore_vars: typing.ClassVar[typing.Tuple[str, ...]] = ()
+    _todict_ignore_vars: typing.ClassVar[tuple[str, ...]] = ()
 
     @property
     def redis_key_name(self) -> str:
@@ -59,7 +59,7 @@ class BaseQueueStats:
             .lower()
         )
 
-    def to_dict(self) -> dict[str, typing.Union[str, int]]:
+    def to_dict(self) -> dict[str, str | int]:
         return {
             k: v
             for k, v in self.__dict__.items()
@@ -67,7 +67,7 @@ class BaseQueueStats:
         }
 
 
-TimeToMergeT = typing.List[int]
+TimeToMergeT = list[int]
 
 
 @dataclasses.dataclass
@@ -91,9 +91,7 @@ class FailureByReasonT(typing.TypedDict):
 
 @dataclasses.dataclass
 class FailureByReason(BaseQueueStats):
-    _ABORT_CODE_TO_INT_MAPPING: typing.ClassVar[
-        typing.Dict[queue_utils.AbortCodeT, int]
-    ] = {
+    _ABORT_CODE_TO_INT_MAPPING: typing.ClassVar[dict[queue_utils.AbortCodeT, int]] = {
         queue_utils.PrAheadDequeued.abort_code: 1,
         queue_utils.PrAheadFailedToMerge.abort_code: 2,
         queue_utils.PrWithHigherPriorityQueued.abort_code: 3,
@@ -104,9 +102,9 @@ class FailureByReason(BaseQueueStats):
         queue_utils.QueueRuleMissing.abort_code: 8,
         queue_utils.UnexpectedQueueChange.abort_code: 9,
     }
-    _INT_TO_ABORT_CODE_MAPPING: typing.ClassVar[
-        typing.Dict[int, queue_utils.AbortCodeT]
-    ] = {v: k for k, v in _ABORT_CODE_TO_INT_MAPPING.items()}
+    _INT_TO_ABORT_CODE_MAPPING: typing.ClassVar[dict[int, queue_utils.AbortCodeT]] = {
+        v: k for k, v in _ABORT_CODE_TO_INT_MAPPING.items()
+    }
 
     reason_code: int
     reason_code_str: queue_utils.AbortCodeT = dataclasses.field(init=False)
@@ -126,7 +124,7 @@ class FailureByReason(BaseQueueStats):
         )
 
 
-ChecksDurationT = typing.List[int]
+ChecksDurationT = list[int]
 
 
 @dataclasses.dataclass
@@ -160,7 +158,7 @@ def _get_seconds_since_datetime(past_datetime: datetime.datetime) -> int:
 async def get_stats_from_event_metadata(
     event_name: signals.EventName,
     metadata: signals.EventMetadata,
-) -> typing.Optional[BaseQueueStats]:
+) -> BaseQueueStats | None:
     if event_name == "action.queue.leave":
         metadata = typing.cast(signals.EventQueueLeaveMetadata, metadata)
         if not metadata["merged"]:
@@ -214,7 +212,7 @@ async def get_stats_from_event_metadata(
 
 
 class StatisticsSignal(signals.SignalBase):
-    SUPPORTED_EVENT_NAMES: typing.ClassVar[typing.Tuple[str, ...]] = (
+    SUPPORTED_EVENT_NAMES: typing.ClassVar[tuple[str, ...]] = (
         "action.queue.leave",  # time_to_merge
         "action.queue.checks_end",  # check_duration and failure_by_reason
     )
@@ -274,7 +272,7 @@ class StatisticsSignal(signals.SignalBase):
 
 
 # bytes = timestamp
-RedisXRangeT = typing.List[typing.Tuple[bytes, typing.Any]]
+RedisXRangeT = list[tuple[bytes, typing.Any]]
 
 
 async def _get_stats_items(
@@ -282,8 +280,8 @@ async def _get_stats_items(
     stats_name_list: list[AvailableStatsKeyT],
     older_event_id: str,
     newer_event_id: str,
-    queue_name: typing.Optional[rules.QueueName] = None,
-    branch_name: typing.Optional[str] = None,
+    queue_name: rules.QueueName | None = None,
+    branch_name: str | None = None,
 ) -> typing.AsyncGenerator[dict[str, typing.Any], None]:
     redis = repository.installation.redis.stats
 
@@ -314,10 +312,10 @@ async def _get_stats_items(
 async def _get_stats_items_date_range(
     repository: "context.Repository",
     stats_name_list: list[AvailableStatsKeyT],
-    queue_name: typing.Optional[rules.QueueName] = None,
-    branch_name: typing.Optional[str] = None,
-    start_at: typing.Optional[int] = None,
-    end_at: typing.Optional[int] = None,
+    queue_name: rules.QueueName | None = None,
+    branch_name: str | None = None,
+    start_at: int | None = None,
+    end_at: int | None = None,
 ) -> typing.AsyncGenerator[dict[str, typing.Any], None]:
     redis_query_older_id = get_redis_query_older_id()
     if start_at is not None and start_at * 1000 < redis_query_older_id:
@@ -344,9 +342,9 @@ async def _get_stats_items_date_range(
 async def _get_stats_items_at_timestamp(
     repository: "context.Repository",
     stats_name_list: list[AvailableStatsKeyT],
-    queue_name: typing.Optional[rules.QueueName] = None,
-    branch_name: typing.Optional[str] = None,
-    at: typing.Optional[int] = None,
+    queue_name: rules.QueueName | None = None,
+    branch_name: str | None = None,
+    at: int | None = None,
 ) -> typing.AsyncGenerator[dict[str, typing.Any], None]:
     redis_query_older_id = get_redis_query_older_id()
     if at is not None:
@@ -375,9 +373,9 @@ async def _get_stats_items_at_timestamp(
 
 async def get_time_to_merge_stats(
     repository: "context.Repository",
-    queue_name: typing.Optional[rules.QueueName] = None,
-    branch_name: typing.Optional[str] = None,
-    at: typing.Optional[int] = None,
+    queue_name: rules.QueueName | None = None,
+    branch_name: str | None = None,
+    at: int | None = None,
 ) -> dict[rules.QueueName, TimeToMergeT]:
     stats: dict[rules.QueueName, TimeToMergeT] = {}
 
@@ -399,10 +397,10 @@ async def get_time_to_merge_stats(
 
 async def get_checks_duration_stats(
     repository: "context.Repository",
-    queue_name: typing.Optional[rules.QueueName] = None,
-    branch_name: typing.Optional[str] = None,
-    start_at: typing.Optional[int] = None,
-    end_at: typing.Optional[int] = None,
+    queue_name: rules.QueueName | None = None,
+    branch_name: str | None = None,
+    start_at: int | None = None,
+    end_at: int | None = None,
 ) -> dict[rules.QueueName, ChecksDurationT]:
     stats: dict[rules.QueueName, ChecksDurationT] = {}
     async for stat in _get_stats_items_date_range(
@@ -439,10 +437,10 @@ BASE_FAILURE_BY_REASON_T_DICT: FailureByReasonT = FailureByReasonT(
 
 async def get_failure_by_reason_stats(
     repository: "context.Repository",
-    queue_name: typing.Optional[rules.QueueName] = None,
-    branch_name: typing.Optional[str] = None,
-    start_at: typing.Optional[int] = None,
-    end_at: typing.Optional[int] = None,
+    queue_name: rules.QueueName | None = None,
+    branch_name: str | None = None,
+    start_at: int | None = None,
+    end_at: int | None = None,
 ) -> dict[rules.QueueName, FailureByReasonT]:
     stats_dict: dict[rules.QueueName, FailureByReasonT] = {}
     async for stat in _get_stats_items_date_range(
@@ -480,10 +478,10 @@ BASE_QUEUE_CHECKS_OUTCOME_T_DICT: QueueChecksOutcomeT = QueueChecksOutcomeT(
 
 async def get_queue_checks_outcome_stats(
     repository: "context.Repository",
-    queue_name: typing.Optional[rules.QueueName] = None,
-    branch_name: typing.Optional[str] = None,
-    start_at: typing.Optional[int] = None,
-    end_at: typing.Optional[int] = None,
+    queue_name: rules.QueueName | None = None,
+    branch_name: str | None = None,
+    start_at: int | None = None,
+    end_at: int | None = None,
 ) -> dict[rules.QueueName, QueueChecksOutcomeT]:
     stats_dict: dict[rules.QueueName, QueueChecksOutcomeT] = {}
     # Retrieve all the checks duration on the same period of time, this will tell us

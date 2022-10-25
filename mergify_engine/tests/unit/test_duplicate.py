@@ -277,7 +277,7 @@ async def test_get_commits_to_cherry_pick_merge(
         date_committer=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
     )
 
-    async def fake_commits() -> typing.List[github_types.CachedGitHubBranchCommit]:
+    async def fake_commits() -> list[github_types.CachedGitHubBranchCommit]:
         return [c1, c2]
 
     commits.return_value = fake_commits()

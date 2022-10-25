@@ -1,4 +1,3 @@
-import typing
 from unittest import mock
 
 import pytest
@@ -23,7 +22,7 @@ from mergify_engine.tests.unit import conftest
         },
     ),
 )
-def test_config(config: typing.Dict[str, typing.List[str]]) -> None:
+def test_config(config: dict[str, list[str]]) -> None:
     request_reviews.RequestReviewsAction(config)
 
 

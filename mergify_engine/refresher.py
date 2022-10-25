@@ -19,8 +19,8 @@ async def _send_refresh(
     repository: github_types.GitHubRepository,
     action: github_types.GitHubEventRefreshActionType,
     source: str,
-    pull_request_number: typing.Optional[github_types.GitHubPullRequestNumber] = None,
-    ref: typing.Optional[github_types.GitHubRefType] = None,
+    pull_request_number: github_types.GitHubPullRequestNumber | None = None,
+    ref: github_types.GitHubRefType | None = None,
     priority: worker_pusher.Priority = worker_pusher.Priority.high,
 ) -> None:
 

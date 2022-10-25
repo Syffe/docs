@@ -65,7 +65,7 @@ def _format_attribute_value(value: _T) -> _T | list[str] | str:
     return value
 
 
-TreeBinaryLeafT = typing.Tuple[str, typing.Any]
+TreeBinaryLeafT = tuple[str, typing.Any]
 
 TreeT = typing.TypedDict(
     "TreeT",
@@ -102,7 +102,7 @@ ValueCompilerT = typing.Callable[[typing.Any], typing.Any]
 
 
 UnaryOperatorT = typing.Callable[[typing.Any], FilterResultT]
-BinaryOperatorT = typing.Tuple[
+BinaryOperatorT = tuple[
     typing.Callable[[typing.Any, typing.Any], FilterResultT],
     typing.Callable[[typing.Iterable[object]], FilterResultT],
     ValueCompilerT,
@@ -112,13 +112,13 @@ MultipleOperatorT = typing.Callable[..., FilterResultT]
 
 @dataclasses.dataclass(repr=False)
 class Filter(typing.Generic[FilterResultT]):
-    tree: typing.Union[TreeT, CompiledTreeT[GetAttrObject, FilterResultT]]
-    unary_operators: typing.Dict[str, UnaryOperatorT[FilterResultT]]
-    binary_operators: typing.Dict[str, BinaryOperatorT[FilterResultT]]
-    multiple_operators: typing.Dict[str, MultipleOperatorT[FilterResultT]]
+    tree: TreeT | CompiledTreeT[GetAttrObject, FilterResultT]
+    unary_operators: dict[str, UnaryOperatorT[FilterResultT]]
+    binary_operators: dict[str, BinaryOperatorT[FilterResultT]]
+    multiple_operators: dict[str, MultipleOperatorT[FilterResultT]]
 
-    value_expanders: typing.Dict[
-        str, typing.Callable[[typing.Any], typing.List[typing.Any]]
+    value_expanders: dict[
+        str, typing.Callable[[typing.Any], list[typing.Any]]
     ] = dataclasses.field(default_factory=dict, init=False)
 
     _eval: CompiledTreeT[GetAttrObject, FilterResultT] = dataclasses.field(init=False)
@@ -130,7 +130,7 @@ class Filter(typing.Generic[FilterResultT]):
         return self._tree_to_str(self.tree)
 
     def _tree_to_str(
-        self, tree: typing.Union[TreeT, CompiledTreeT[GetAttrObject, FilterResultT]]
+        self, tree: TreeT | CompiledTreeT[GetAttrObject, FilterResultT]
     ) -> str:
         if callable(tree):
             raise RuntimeError("Cannot convert compiled tree")
@@ -175,7 +175,7 @@ class Filter(typing.Generic[FilterResultT]):
     LENGTH_OPERATOR = "#"
 
     @staticmethod
-    def _to_list(item: typing.Union[_T, typing.Iterable[_T]]) -> typing.List[_T]:
+    def _to_list(item: _T | typing.Iterable[_T]) -> list[_T]:
         if isinstance(item, str):
             return [typing.cast(_T, item)]
 
@@ -189,7 +189,7 @@ class Filter(typing.Generic[FilterResultT]):
         obj: GetAttrObjectT,
         attribute_name: str,
         op: typing.Callable[[typing.Any], typing.Any],
-    ) -> typing.List[typing.Any]:
+    ) -> list[typing.Any]:
         try:
             attr = getattr(obj, attribute_name)
             if inspect.iscoroutine(attr):
@@ -208,7 +208,7 @@ class Filter(typing.Generic[FilterResultT]):
         self,
         obj: GetAttrObjectT,
         attribute_name: str,
-    ) -> typing.List[typing.Any]:
+    ) -> list[typing.Any]:
         op: typing.Callable[[typing.Any], typing.Any]
         if attribute_name.startswith(self.LENGTH_OPERATOR):
             try:
@@ -224,7 +224,7 @@ class Filter(typing.Generic[FilterResultT]):
 
     def build_evaluator(
         self,
-        tree: typing.Union[TreeT, CompiledTreeT[GetAttrObject, FilterResultT]],
+        tree: TreeT | CompiledTreeT[GetAttrObject, FilterResultT],
     ) -> CompiledTreeT[GetAttrObject, FilterResultT]:
         if callable(tree):
             return tree
@@ -237,7 +237,7 @@ class Filter(typing.Generic[FilterResultT]):
         if operator_name == "@":
             # NOTE(sileht): the value is already a TreeT, so just evaluate it.
             # e.g., {"@", ("schedule", {"and": [{"=", ("time", "10:10"), ...}]})}
-            return self.build_evaluator(typing.cast(typing.Tuple[str, TreeT], nodes)[1])
+            return self.build_evaluator(typing.cast(tuple[str, TreeT], nodes)[1])
 
         try:
             multiple_op = self.multiple_operators[operator_name]
@@ -261,8 +261,8 @@ class Filter(typing.Generic[FilterResultT]):
         self,
         op: BinaryOperatorT[FilterResultT],
         attribute_name: str,
-        attribute_values: typing.List[typing.Any],
-        ref_values_expanded: typing.List[typing.Any],
+        attribute_values: list[typing.Any],
+        ref_values_expanded: list[typing.Any],
     ) -> FilterResultT:
         binary_op, iterable_op, _ = op
         return iterable_op(
@@ -324,9 +324,7 @@ class Filter(typing.Generic[FilterResultT]):
     def _handle_multiple_op(
         self,
         multiple_op: MultipleOperatorT[FilterResultT],
-        nodes: typing.Iterable[
-            typing.Union[TreeT, CompiledTreeT[GetAttrObject, FilterResultT]]
-        ],
+        nodes: typing.Iterable[TreeT | CompiledTreeT[GetAttrObject, FilterResultT]],
     ) -> CompiledTreeT[GetAttrObject, FilterResultT]:
         elements = [self.build_evaluator(node) for node in nodes]
 
@@ -337,7 +335,7 @@ class Filter(typing.Generic[FilterResultT]):
 
 
 def BinaryFilter(
-    tree: typing.Union[TreeT, CompiledTreeT[GetAttrObject, bool]],
+    tree: TreeT | CompiledTreeT[GetAttrObject, bool],
 ) -> "Filter[bool]":
     return Filter[bool](
         tree,
@@ -362,7 +360,7 @@ def BinaryFilter(
 
 
 def _minimal_datetime(dts: typing.Iterable[object]) -> datetime.datetime:
-    _dts = list(typing.cast(typing.List[datetime.datetime], Filter._to_list(dts)))
+    _dts = list(typing.cast(list[datetime.datetime], Filter._to_list(dts)))
     if len(_dts) == 0:
         return date.DT_MAX
     else:
@@ -509,7 +507,7 @@ def _dt_op(
 
 
 def NearDatetimeFilter(
-    tree: typing.Union[TreeT, CompiledTreeT[GetAttrObject, datetime.datetime]],
+    tree: TreeT | CompiledTreeT[GetAttrObject, datetime.datetime],
 ) -> "Filter[datetime.datetime]":
     """
     The principles:
@@ -603,8 +601,8 @@ def cast_ret_to_incomplete_check_result(
 
 @dataclasses.dataclass(repr=False)
 class IncompleteChecksFilter(Filter[IncompleteChecksResult]):
-    tree: typing.Union[TreeT, CompiledTreeT[GetAttrObject, bool]]
-    unary_operators: typing.Dict[
+    tree: TreeT | CompiledTreeT[GetAttrObject, bool]
+    unary_operators: dict[
         str, UnaryOperatorT[IncompleteChecksResult]
     ] = dataclasses.field(
         default_factory=lambda: {
@@ -612,7 +610,7 @@ class IncompleteChecksFilter(Filter[IncompleteChecksResult]):
             "not": IncompleteChecksNegate,
         }
     )
-    binary_operators: typing.Dict[
+    binary_operators: dict[
         str, BinaryOperatorT[IncompleteChecksResult]
     ] = dataclasses.field(
         default_factory=lambda: {
@@ -655,7 +653,7 @@ class IncompleteChecksFilter(Filter[IncompleteChecksResult]):
             ),
         }
     )
-    multiple_operators: typing.Dict[
+    multiple_operators: dict[
         str, MultipleOperatorT[IncompleteChecksResult]
     ] = dataclasses.field(
         default_factory=lambda: {
@@ -663,15 +661,15 @@ class IncompleteChecksFilter(Filter[IncompleteChecksResult]):
             "and": IncompleteChecksAll,
         }
     )
-    pending_checks: typing.List[str] = dataclasses.field(default_factory=list)
-    all_checks: typing.List[str] = dataclasses.field(default_factory=list)
+    pending_checks: list[str] = dataclasses.field(default_factory=list)
+    all_checks: list[str] = dataclasses.field(default_factory=list)
 
     def _eval_binary_op(
         self,
         op: BinaryOperatorT[IncompleteChecksResult],
         attribute_name: str,
-        attribute_values: typing.List[typing.Any],
-        ref_values_expanded: typing.List[typing.Any],
+        attribute_values: list[typing.Any],
+        ref_values_expanded: list[typing.Any],
     ) -> IncompleteChecksResult:
         if not self.is_complete(op, attribute_name, ref_values_expanded):
             return IncompleteCheck
@@ -684,7 +682,7 @@ class IncompleteChecksFilter(Filter[IncompleteChecksResult]):
         self,
         op: BinaryOperatorT[FilterResultT],
         attribute_name: str,
-        ref_values: typing.List[typing.Any],
+        ref_values: list[typing.Any],
     ) -> bool:
         binary_op, iterable_op, _ = op
 

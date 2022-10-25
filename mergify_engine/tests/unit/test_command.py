@@ -1,4 +1,3 @@
-import typing
 from unittest import mock
 
 import pytest
@@ -216,7 +215,7 @@ async def test_run_command_with_user(
     user_id: int,
     permission: str,
     comment: str,
-    result: typing.Optional[str],
+    result: str | None,
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
     user = create_fake_user(user_id)

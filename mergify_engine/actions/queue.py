@@ -49,7 +49,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
     ]
 
     @property
-    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
+    def silenced_conclusion(self) -> tuple[check_api.Conclusion, ...]:
         return ()
 
     validator = {
@@ -78,7 +78,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
     }
 
     @staticmethod
-    def command_to_config(command_arguments: str) -> typing.Dict[str, typing.Any]:
+    def command_to_config(command_arguments: str) -> dict[str, typing.Any]:
         # NOTE(sileht): requiring branch_protection before putting in queue
         # doesn't play well with command subsystem, and it's not intuitive as
         # the user tell us to put the PR in queue and by default we don't. So
@@ -100,7 +100,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         queue: merge_train.Train,
         queue_freeze: freeze.QueueFreeze | None,
         car: merge_train.TrainCar | None,
-        merge_bot_account: typing.Optional[github_types.GitHubLogin],
+        merge_bot_account: github_types.GitHubLogin | None,
     ) -> check_api.Result:
 
         if car is None:
@@ -113,7 +113,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 "Only `method=merge` is supported with `queue_branch_merge_method=fast-forward`",
             )
 
-        github_user: typing.Optional[user_tokens.UserTokensUser] = None
+        github_user: user_tokens.UserTokensUser | None = None
         if merge_bot_account:
             tokens = await ctxt.repository.installation.get_user_tokens()
             github_user = tokens.get_token_for(merge_bot_account)
@@ -168,7 +168,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
     async def _subscription_status(
         self, ctxt: context.Context
-    ) -> typing.Optional[check_api.Result]:
+    ) -> check_api.Result | None:
         if self.queue_count > 1 and not ctxt.subscription.has_feature(
             subscription.Features.QUEUE_ACTION
         ):
@@ -221,7 +221,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         ctxt: context.Context,
         rule: "rules.EvaluatedRule",
         q: merge_train.Train,
-        car: typing.Optional[merge_train.TrainCar],
+        car: merge_train.TrainCar | None,
     ) -> None:
 
         if (
@@ -242,7 +242,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 ctxt, [queue_rule_evaluated], ctxt.pull_request
             )
 
-            unexpected_changes: typing.Optional[merge_train.UnexpectedChange]
+            unexpected_changes: merge_train.UnexpectedChange | None
             # FIXME(sileht): base branch check is missing
             if await ctxt.has_been_synchronized_by_user() or await ctxt.is_behind:
                 unexpected_changes = merge_train.UnexpectedUpdatedPullRequestChange(
@@ -270,7 +270,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
     async def _render_bot_account(
         self, ctxt: context.Context
-    ) -> typing.Optional[github_types.GitHubLogin]:
+    ) -> github_types.GitHubLogin | None:
         return await action_utils.render_bot_account(
             ctxt,
             self.config["merge_bot_account"],
@@ -664,7 +664,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         self,
         ctxt: context.Context,
         queue: merge_train.Train,
-        queue_freeze: typing.Optional[freeze.QueueFreeze],
+        queue_freeze: freeze.QueueFreeze | None,
     ) -> bool:
 
         if queue_freeze is not None:

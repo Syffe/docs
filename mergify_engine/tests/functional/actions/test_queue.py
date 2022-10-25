@@ -3936,9 +3936,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
 
         # Change the configuration and introduce disallow_checks_interruption_from_queues
-        updated_rules = typing.cast(
-            typing.Dict[typing.Any, typing.Any], copy.deepcopy(rules)
-        )
+        updated_rules = typing.cast(dict[typing.Any, typing.Any], copy.deepcopy(rules))
         updated_rules["queue_rules"][0]["disallow_checks_interruption_from_queues"] = [
             "default"
         ]
@@ -4664,8 +4662,8 @@ class TestQueueAction(base.FunctionalTestBase):
                 check["output"]["title"]
                 == "The pull request is the 1st in the queue to be merged"
             )
-            pulls_to_refresh: typing.List[
-                typing.Tuple[str, float]
+            pulls_to_refresh: list[
+                tuple[str, float]
             ] = await self.redis_links.cache.zrangebyscore(
                 "delayed-refresh", "-inf", "+inf", withscores=True
             )
@@ -4739,8 +4737,8 @@ class TestQueueAction(base.FunctionalTestBase):
                 check["output"]["title"]
                 == "The pull request is the 1st in the queue to be merged"
             )
-            pulls_to_refresh: typing.List[
-                typing.Tuple[str, float]
+            pulls_to_refresh: list[
+                tuple[str, float]
             ] = await self.redis_links.cache.zrangebyscore(
                 "delayed-refresh", "-inf", "+inf", withscores=True
             )
@@ -4808,8 +4806,8 @@ class TestQueueAction(base.FunctionalTestBase):
                 check["output"]["title"]
                 == "The pull request is the 1st in the queue to be merged"
             )
-            pulls_to_refresh: typing.List[
-                typing.Tuple[str, float]
+            pulls_to_refresh: list[
+                tuple[str, float]
             ] = await self.redis_links.cache.zrangebyscore(
                 "delayed-refresh", "-inf", "+inf", withscores=True
             )
@@ -4884,8 +4882,8 @@ class TestQueueAction(base.FunctionalTestBase):
                 check["output"]["title"]
                 == "The pull request is the 1st in the queue to be merged"
             )
-            pulls_to_refresh: typing.List[
-                typing.Tuple[str, float]
+            pulls_to_refresh: list[
+                tuple[str, float]
             ] = await self.redis_links.cache.zrangebyscore(
                 "delayed-refresh", "-inf", "+inf", withscores=True
             )
@@ -4963,8 +4961,8 @@ class TestQueueAction(base.FunctionalTestBase):
                 check["output"]["title"]
                 == "The pull request is the 1st in the queue to be merged"
             )
-            pulls_to_refresh: typing.List[
-                typing.Tuple[str, float]
+            pulls_to_refresh: list[
+                tuple[str, float]
             ] = await self.redis_links.cache.zrangebyscore(
                 "delayed-refresh", "-inf", "+inf", withscores=True
             )

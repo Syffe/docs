@@ -22,7 +22,7 @@ empty: list[str] = []
 
 @dataclasses.dataclass
 class FakeQueuePullRequest:
-    attrs: typing.Dict[str, context.ContextAttributeType]
+    attrs: dict[str, context.ContextAttributeType]
 
     async def __getattr__(self, name: str) -> context.ContextAttributeType:
         fancy_name = name.replace("_", "-")
@@ -104,14 +104,14 @@ async def test_rules_conditions_update() -> None:
     state = await checks_status.get_rule_checks_status(
         mock.Mock(),
         FAKE_REPO,
-        typing.cast(typing.List[context.BasePullRequest], pulls),
+        typing.cast(list[context.BasePullRequest], pulls),
         mock.Mock(conditions=c),
     )
     assert state == check_api.Conclusion.FAILURE
 
 
 async def assert_queue_rule_checks_status(
-    conds: typing.List[typing.Any],
+    conds: list[typing.Any],
     pull: FakeQueuePullRequest,
     expected_state: check_api.Conclusion,
 ) -> None:

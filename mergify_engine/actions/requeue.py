@@ -85,7 +85,7 @@ class RequeueExecutor(
 class RequeueCommand(actions.Action):
     flags = actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
 
-    validator: typing.ClassVar[typing.Dict[typing.Any, typing.Any]] = {}
+    validator: typing.ClassVar[dict[typing.Any, typing.Any]] = {}
 
     executor_class = RequeueExecutor
 

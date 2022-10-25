@@ -28,7 +28,7 @@ LOG = daiquiri.getLogger(__name__)
 
 async def get_repositories_setuped(
     token: str, install_id: int
-) -> typing.List[github_types.GitHubRepository]:  # pragma: no cover
+) -> list[github_types.GitHubRepository]:  # pragma: no cover
     repositories = []
     url = f"{config.GITHUB_REST_API_URL}/user/installations/{install_id}/repositories"
     token = f"token {token}"
@@ -56,7 +56,7 @@ async def report_dashboard_synchro(
     sub: subscription.Subscription,
     uts: user_tokens.UserTokens,
     title: str,
-    slug: typing.Optional[str] = None,
+    slug: str | None = None,
 ) -> None:
     print(f"* {title} SUB DETAIL: {sub.reason}")
     print(
@@ -68,9 +68,7 @@ async def report_worker_status(
     redis_links: redis_utils.RedisLinks, owner: github_types.GitHubLogin
 ) -> None:
     stream_name = f"stream~{owner}".encode()
-    streams: typing.List[
-        typing.Tuple[bytes, float]
-    ] = await redis_links.stream.zrangebyscore(
+    streams: list[tuple[bytes, float]] = await redis_links.stream.zrangebyscore(
         "streams", min=0, max="+inf", withscores=True
     )
 
@@ -108,10 +106,10 @@ async def report_queue(title: str, q: merge_train.Train) -> None:
 
     async def _get_config(
         p: github_types.GitHubPullRequestNumber,
-    ) -> typing.Tuple[github_types.GitHubPullRequestNumber, int]:
+    ) -> tuple[github_types.GitHubPullRequestNumber, int]:
         return p, (await q.get_config(p))["priority"]
 
-    pulls_priorities: typing.Dict[github_types.GitHubPullRequestNumber, int] = dict(
+    pulls_priorities: dict[github_types.GitHubPullRequestNumber, int] = dict(
         await asyncio.gather(*(_get_config(p) for p in pulls))
     )
 
@@ -122,22 +120,22 @@ async def report_queue(title: str, q: merge_train.Train) -> None:
             fancy_priority = queue.PriorityAliases(priority).name
         except ValueError:
             fancy_priority = str(priority)
-        formatted_pulls = ", ".join((f"#{p}" for p in grouped_pulls))
+        formatted_pulls = ", ".join(f"#{p}" for p in grouped_pulls)
         print(f"** {formatted_pulls} (priority: {fancy_priority})")
 
 
 def _url_parser(
     url: str,
-) -> typing.Tuple[
+) -> tuple[
     github_types.GitHubLogin,
-    typing.Optional[github_types.GitHubRepositoryName],
-    typing.Optional[github_types.GitHubPullRequestNumber],
+    github_types.GitHubRepositoryName | None,
+    github_types.GitHubPullRequestNumber | None,
 ]:
 
     path = [el for el in urllib.parse.urlparse(url).path.split("/") if el != ""]
 
-    pull_number: typing.Optional[str]
-    repo: typing.Optional[str]
+    pull_number: str | None
+    repo: str | None
 
     try:
         owner, repo, _, pull_number = path
@@ -163,7 +161,7 @@ def _url_parser(
 
 async def report(
     url: str,
-) -> typing.Union[context.Context, github.AsyncGithubInstallationClient, None]:
+) -> context.Context | github.AsyncGithubInstallationClient | None:
     redis_links = redis_utils.RedisLinks(name="debug")
 
     try:

@@ -3,7 +3,6 @@ import logging
 import os
 import re
 import sys
-import typing
 
 import daiquiri
 import daiquiri.formatter
@@ -54,9 +53,9 @@ class HerokuDatadogFormatter(daiquiri.formatter.DatadogFormatter):
 
     def add_fields(
         self,
-        log_record: typing.Dict[str, str],
+        log_record: dict[str, str],
         record: logging.LogRecord,
-        message_dict: typing.Dict[str, str],
+        message_dict: dict[str, str],
     ) -> None:
         super().add_fields(log_record, record, message_dict)
         log_record.update(self.HEROKU_LOG_EXTRAS)
@@ -112,7 +111,7 @@ MERGIFYENGINE_GITHUB_API_URL configuration environment is deprecated and must be
 
 
 def setup_logging(dump_config: bool = True) -> None:
-    outputs: typing.List[daiquiri.output.Output] = []
+    outputs: list[daiquiri.output.Output] = []
 
     if config.LOG_STDOUT:
         outputs.append(

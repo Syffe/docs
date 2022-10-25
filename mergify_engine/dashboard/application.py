@@ -27,7 +27,7 @@ class CachedApplication(typing.TypedDict):
     name: str
     api_access_key: str
     api_secret_key: str
-    account_scope: typing.Optional[ApplicationAccountScope]
+    account_scope: ApplicationAccountScope | None
 
 
 class ApplicationUserNotFound(Exception):
@@ -44,7 +44,7 @@ class ApplicationBase:
     name: str
     api_access_key: str
     api_secret_key: str
-    account_scope: typing.Optional[ApplicationAccountScope]
+    account_scope: ApplicationAccountScope | None
 
     @classmethod
     async def delete(cls, redis: redis_utils.RedisCache, api_access_key: str) -> None:
@@ -52,11 +52,11 @@ class ApplicationBase:
 
     @classmethod
     async def get(
-        cls: typing.Type[ApplicationClassT],
+        cls: type[ApplicationClassT],
         redis: redis_utils.RedisCache,
         api_access_key: str,
         api_secret_key: str,
-        account_scope: typing.Optional[github_types.GitHubLogin],
+        account_scope: github_types.GitHubLogin | None,
     ) -> ApplicationClassT:
         raise NotImplementedError
 
@@ -80,9 +80,7 @@ class ApplicationSaas(ApplicationBase):
     @staticmethod
     def _cache_key(
         api_access_key: str,
-        account_scope: typing.Union[
-            typing.Literal["*"], typing.Optional[github_types.GitHubLogin]
-        ],
+        account_scope: (typing.Literal["*"] | github_types.GitHubLogin | None),
     ) -> str:
         if account_scope is None:
             account_scope_key = "#"
@@ -111,11 +109,11 @@ class ApplicationSaas(ApplicationBase):
 
     @classmethod
     async def get(
-        cls: typing.Type[ApplicationClassT],
+        cls: type[ApplicationClassT],
         redis: redis_utils.RedisCache,
         api_access_key: str,
         api_secret_key: str,
-        account_scope: typing.Optional[github_types.GitHubLogin],
+        account_scope: github_types.GitHubLogin | None,
     ) -> ApplicationClassT:
         return typing.cast(
             ApplicationClassT,
@@ -130,7 +128,7 @@ class ApplicationSaas(ApplicationBase):
         redis: redis_utils.RedisCache,
         api_access_key: str,
         api_secret_key: str,
-        account_scope: typing.Optional[github_types.GitHubLogin],
+        account_scope: github_types.GitHubLogin | None,
     ) -> "ApplicationSaas":
         cached_application = await cls._retrieve_from_cache(
             redis, api_access_key, api_secret_key, account_scope
@@ -233,13 +231,13 @@ class ApplicationSaas(ApplicationBase):
         redis: redis_utils.RedisCache,
         api_access_key: str,
         api_secret_key: str,
-        account_scope: typing.Optional[github_types.GitHubLogin],
+        account_scope: github_types.GitHubLogin | None,
     ) -> typing.Optional["ApplicationSaas"]:
         async with await redis.pipeline() as pipe:
             await pipe.get(cls._cache_key(api_access_key, account_scope))
             await pipe.ttl(cls._cache_key(api_access_key, account_scope))
             encrypted_application, ttl = typing.cast(
-                typing.Tuple[str, int], await pipe.execute()
+                tuple[str, int], await pipe.execute()
             )
         if encrypted_application:
             decrypted_application = typing.cast(
@@ -275,10 +273,10 @@ class ApplicationSaas(ApplicationBase):
         redis: redis_utils.RedisCache,
         api_access_key: str,
         api_secret_key: str,
-        account_scope: typing.Optional[github_types.GitHubLogin],
+        account_scope: github_types.GitHubLogin | None,
     ) -> "ApplicationSaas":
         async with dashboard.AsyncDashboardSaasClient() as client:
-            headers: typing.Dict[str, str]
+            headers: dict[str, str]
             if account_scope is None:
                 headers = {}
             else:
@@ -314,11 +312,11 @@ class ApplicationOnPremise(ApplicationBase):
 
     @classmethod
     async def get(
-        cls: typing.Type[ApplicationClassT],
+        cls: type[ApplicationClassT],
         redis: redis_utils.RedisCache,
         api_access_key: str,
         api_secret_key: str,
-        account_scope: typing.Optional[github_types.GitHubLogin],
+        account_scope: github_types.GitHubLogin | None,
     ) -> ApplicationClassT:
         data = config.APPLICATION_APIKEYS.get(api_access_key)
         if data is None or data["api_secret_key"] != api_secret_key:

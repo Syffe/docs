@@ -11,7 +11,7 @@ from mergify_engine.rules import live_resolvers
 async def get_rule_checks_status(
     log: "logging.LoggerAdapter[logging.Logger]",
     repository: context.Repository,
-    pulls: typing.List[context.BasePullRequest],
+    pulls: list[context.BasePullRequest],
     rule: typing.Union["rules.EvaluatedRule", "rules.EvaluatedQueueRule"],
     *,
     unmatched_conditions_return_failure: bool = True,
@@ -42,7 +42,7 @@ async def get_rule_checks_status(
     # instead of just True/False, this allows us to known if a condition can
     # change in the future or if its a final state.
     tree = rule.conditions.extract_raw_filter_tree()
-    results: typing.Dict[int, filter.IncompleteChecksResult] = {}
+    results: dict[int, filter.IncompleteChecksResult] = {}
 
     for pull in pulls:
         f = filter.IncompleteChecksFilter(

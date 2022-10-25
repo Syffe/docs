@@ -42,9 +42,7 @@ async def fake_train_car_start_checking_inplace(
 async def fake_train_car_end_checking(
     inner_self: merge_train.TrainCar,
     reason: queue_utils.BaseAbortReason,
-    not_reembarked_pull_request: typing.Optional[
-        github_types.GitHubPullRequestNumber
-    ] = None,
+    not_reembarked_pull_request: None | (github_types.GitHubPullRequestNumber) = None,
 ) -> None:
     pass
 
@@ -185,7 +183,7 @@ def fake_client() -> mock.Mock:
 
     def item_call(
         url: str, *args: typing.Any, **kwargs: typing.Any
-    ) -> typing.Dict[str, typing.Any]:
+    ) -> dict[str, typing.Any]:
         if url == "/repos/Mergifyio/mergify-engine/contents/.mergify.yml":
             return {
                 "type": "file",
@@ -222,7 +220,7 @@ def repository(
 
 def get_cars_content(
     train: merge_train.Train,
-) -> typing.List[typing.List[github_types.GitHubPullRequestNumber]]:
+) -> list[list[github_types.GitHubPullRequestNumber]]:
     cars = []
     for car in train._cars:
         cars.append(
@@ -234,7 +232,7 @@ def get_cars_content(
 
 def get_waiting_content(
     train: merge_train.Train,
-) -> typing.List[github_types.GitHubPullRequestNumber]:
+) -> list[github_types.GitHubPullRequestNumber]:
     return [
         wp.user_pull_request_number for wp in train._waiting_pulls_ordered_by_priority
     ]

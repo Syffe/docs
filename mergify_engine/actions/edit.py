@@ -16,7 +16,7 @@ from mergify_engine.rules import types
 
 class EditExecutorConfig(typing.TypedDict):
     draft: bool | None
-    bot_account: typing.Optional[user_tokens.UserTokensUser]
+    bot_account: user_tokens.UserTokensUser | None
 
 
 class EditExecutor(actions.ActionExecutor["EditAction", EditExecutorConfig]):
@@ -38,7 +38,7 @@ class EditExecutor(actions.ActionExecutor["EditAction", EditExecutorConfig]):
         except action_utils.RenderBotAccountFailure as e:
             raise rules.InvalidPullRequestRule(e.title, e.reason)
 
-        github_user: typing.Optional[user_tokens.UserTokensUser] = None
+        github_user: user_tokens.UserTokensUser | None = None
         tokens = await ctxt.repository.installation.get_user_tokens()
 
         if bot_account:

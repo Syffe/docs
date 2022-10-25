@@ -35,11 +35,11 @@ DUPLICATE_TITLE_EXTRA_VARIABLES: dict[str, str | bool] = {
 }
 
 
-def DuplicateBodyJinja2(v: typing.Any) -> typing.Optional[str]:
+def DuplicateBodyJinja2(v: typing.Any) -> str | None:
     return types.Jinja2(v, DUPLICATE_BODY_EXTRA_VARIABLES)
 
 
-def DuplicateTitleJinja2(v: typing.Any) -> typing.Optional[str]:
+def DuplicateTitleJinja2(v: typing.Any) -> str | None:
     return types.Jinja2(v, DUPLICATE_TITLE_EXTRA_VARIABLES)
 
 
@@ -57,7 +57,7 @@ class CopyAction(actions.BackwardCompatAction):
     ]
 
     @property
-    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
+    def silenced_conclusion(self) -> tuple[check_api.Conclusion, ...]:
         return ()
 
     @property
@@ -84,7 +84,7 @@ class CopyAction(actions.BackwardCompatAction):
         }
 
     @staticmethod
-    def command_to_config(string: str) -> typing.Dict[str, typing.Any]:
+    def command_to_config(string: str) -> dict[str, typing.Any]:
         if string:
             return {"branches": string.split(" ")}
         else:
@@ -95,8 +95,8 @@ class CopyAction(actions.BackwardCompatAction):
         ctxt: context.Context,
         rule: rules.EvaluatedRule,
         branch_name: github_types.GitHubRefType,
-        bot_account: typing.Optional[github_types.GitHubLogin],
-    ) -> typing.Tuple[check_api.Conclusion, str]:
+        bot_account: github_types.GitHubLogin | None,
+    ) -> tuple[check_api.Conclusion, str]:
         """Copy the PR to a branch.
 
         Returns a tuple of strings (state, reason).
@@ -236,7 +236,7 @@ class CopyAction(actions.BackwardCompatAction):
         except action_utils.RenderBotAccountFailure as e:
             return check_api.Result(e.status, e.title, e.reason)
 
-        branches: typing.List[github_types.GitHubRefType] = self.config["branches"]
+        branches: list[github_types.GitHubRefType] = self.config["branches"]
         if self.config["regexes"]:
             branches.extend(
                 [
@@ -300,7 +300,7 @@ class CopyAction(actions.BackwardCompatAction):
     @classmethod
     async def get_existing_duplicate_pull(
         cls, ctxt: context.Context, branch_name: github_types.GitHubRefType
-    ) -> typing.Optional[github_types.GitHubPullRequest]:
+    ) -> github_types.GitHubPullRequest | None:
         bp_branch = duplicate_pull.get_destination_branch_name(
             ctxt.pull["number"], branch_name, cls.BRANCH_PREFIX
         )
@@ -324,9 +324,7 @@ class CopyAction(actions.BackwardCompatAction):
 
         return pulls[-1] if pulls else None
 
-    async def _verify_template(
-        self, ctxt: context.Context
-    ) -> typing.Optional[check_api.Result]:
+    async def _verify_template(self, ctxt: context.Context) -> check_api.Result | None:
         try:
             await ctxt.pull_request.render_template(
                 self.config["title"], extra_variables=DUPLICATE_TITLE_EXTRA_VARIABLES

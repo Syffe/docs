@@ -42,7 +42,7 @@ class MergeBaseAction(
         rule: "rules.EvaluatedRule",
         queue: QueueT,
         queue_freeze: QueueFreezeT | None,
-        merge_bot_account: typing.Optional[github_types.GitHubLogin],
+        merge_bot_account: github_types.GitHubLogin | None,
     ) -> check_api.Result:
         if self.config["method"] != "rebase" or ctxt.pull["rebaseable"]:
             method = self.config["method"]
@@ -59,7 +59,7 @@ class MergeBaseAction(
 
         data = {}
 
-        github_user: typing.Optional[user_tokens.UserTokensUser] = None
+        github_user: user_tokens.UserTokensUser | None = None
         if merge_bot_account:
             tokens = await ctxt.repository.installation.get_user_tokens()
             github_user = tokens.get_token_for(merge_bot_account)
@@ -290,8 +290,8 @@ class MergeBaseAction(
     async def merge_report(
         self,
         ctxt: context.Context,
-        merge_bot_account: typing.Optional[github_types.GitHubLogin],
-    ) -> typing.Optional[check_api.Result]:
+        merge_bot_account: github_types.GitHubLogin | None,
+    ) -> check_api.Result | None:
         if ctxt.pull["draft"]:
             conclusion = check_api.Conclusion.PENDING
             title = "Draft flag needs to be removed"

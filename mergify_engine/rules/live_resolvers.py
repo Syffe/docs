@@ -19,7 +19,7 @@ class LiveResolutionFailure(Exception):
 
 async def _resolve_login(
     repository: "context.Repository", name: str
-) -> typing.List[github_types.GitHubLogin]:
+) -> list[github_types.GitHubLogin]:
     if not name:
         return []
     elif not isinstance(name, str):
@@ -59,8 +59,8 @@ async def _resolve_login(
 
 async def teams(
     repository: "context.Repository",
-    values: typing.Optional[typing.Union[typing.List[str], typing.Tuple[str], str]],
-) -> typing.List[github_types.GitHubLogin]:
+    values: list[str] | tuple[str] | str | None,
+) -> list[github_types.GitHubLogin]:
 
     if not values:
         return []

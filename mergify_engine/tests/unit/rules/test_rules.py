@@ -31,7 +31,7 @@ def test_valid_condition() -> None:
     assert str(c) == "head~=bar"
 
 
-def fake_expander(v: str) -> typing.List[str]:
+def fake_expander(v: str) -> list[str]:
     return ["foo", "bar"]
 
 
@@ -53,7 +53,7 @@ def test_invalid_condition_re() -> None:
 
 @dataclasses.dataclass
 class FakeQueuePullRequest(context.BasePullRequest):
-    attrs: typing.Dict[str, context.ContextAttributeType]
+    attrs: dict[str, context.ContextAttributeType]
 
     async def __getattr__(self, name: str) -> context.ContextAttributeType:
         fancy_name = name.replace("_", "-")
@@ -606,7 +606,7 @@ async def test_get_mergify_config_location_from_cache(
         http.HTTPNotFound("Not Found", request=mock.Mock(), response=mock.Mock()),
         github_types.GitHubContentFile(
             {
-                "content": encodebytes("whatever".encode()).decode(),
+                "content": encodebytes(b"whatever").decode(),
                 "type": "file",
                 "path": github_types.GitHubFilePath(".github/mergify.yml"),
                 "sha": github_types.SHAType("zeazeaze"),
@@ -636,7 +636,7 @@ async def test_get_mergify_config_location_from_cache(
     client.item.side_effect = [
         github_types.GitHubContentFile(
             {
-                "content": encodebytes("whatever".encode()).decode(),
+                "content": encodebytes(b"whatever").decode(),
                 "type": "file",
                 "path": github_types.GitHubFilePath(".github/mergify.yml"),
                 "sha": github_types.SHAType("zeazeaze"),
@@ -818,7 +818,7 @@ def test_extends_parsing(extends: str) -> None:
         "",
     ],
 )
-def test_extends_ko(extends: typing.Optional[str]) -> None:
+def test_extends_ko(extends: str | None) -> None:
     with pytest.raises(voluptuous.Invalid) as i:
         rules.UserConfigurationSchema({"extends": extends})
     assert str(i.value) == "not a valid value for dictionary value @ data['extends']"
@@ -998,8 +998,8 @@ async def test_get_pull_request_rule(
     get_files = [{"filename": "README.rst"}, {"filename": "setup.py"}]
     get_team_members = [{"login": "sileht", "id": 12321}, {"login": "jd", "id": 2644}]
 
-    get_checks: typing.List[github_types.GitHubCheckRun] = []
-    get_statuses: typing.List[github_types.GitHubStatus] = [
+    get_checks: list[github_types.GitHubCheckRun] = []
+    get_statuses: list[github_types.GitHubStatus] = [
         {
             "context": "continuous-integration/fake-ci",
             "state": "success",
@@ -1011,7 +1011,7 @@ async def test_get_pull_request_rule(
 
     async def client_item(
         url: str, *args: typing.Any, **kwargs: typing.Any
-    ) -> typing.Optional[typing.Dict[str, str]]:
+    ) -> dict[str, str] | None:
         if url == "/repos/Mergifyio/mergify-engine/collaborators/sileht/permission":
             return {"permission": "write"}
         elif url == "/repos/Mergifyio/mergify-engine/collaborators/jd/permission":
@@ -1026,7 +1026,7 @@ async def test_get_pull_request_rule(
 
     async def client_items(
         url: str, *args: typing.Any, **kwargs: typing.Any
-    ) -> typing.Optional[typing.AsyncGenerator[typing.Dict[str, typing.Any], None]]:
+    ) -> typing.AsyncGenerator[dict[str, typing.Any], None] | None:
         if url == "/repos/Mergifyio/mergify-engine/pulls/1/reviews":
             for r in get_reviews:
                 yield r
@@ -1391,9 +1391,7 @@ async def test_get_pull_request_rule(
     # branch protection
     async def client_item_with_branch_protection_enabled(
         url: str, *args: typing.Any, **kwargs: typing.Any
-    ) -> typing.Optional[
-        typing.Dict[str, typing.Dict[str, typing.Union[typing.List[str], bool]]]
-    ]:
+    ) -> None | (dict[str, dict[str, list[str] | bool]]):
         if url == "/repos/Mergifyio/mergify-engine/branches/main/protection":
             return {
                 "required_status_checks": {"contexts": ["awesome-ci"], "strict": False},

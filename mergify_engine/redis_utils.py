@@ -32,7 +32,7 @@ RedisStats = typing.NewType("RedisStats", "redispy.Redis[bytes]")
 
 ScriptIdT = typing.NewType("ScriptIdT", uuid.UUID)
 
-SCRIPTS: typing.Dict[ScriptIdT, typing.Tuple[bytes, str]] = {}
+SCRIPTS: dict[ScriptIdT, tuple[bytes, str]] = {}
 
 
 # TODO(sileht): Redis script management can be moved back to Redis.register_script() mechanism
@@ -93,10 +93,10 @@ async def load_stream_scripts(redis: "redispy.connection.Connection") -> None:
 
 
 async def run_script(
-    redis: typing.Union[RedisCache, RedisStream],
+    redis: RedisCache | RedisStream,
     script_id: ScriptIdT,
-    keys: typing.Tuple[str, ...],
-    args: typing.Optional[typing.Tuple[typing.Union[str], ...]] = None,
+    keys: tuple[str, ...],
+    args: tuple[str, ...] | None = None,
 ) -> typing.Any:
     global SCRIPTS
     sha, script = SCRIPTS[script_id]
@@ -113,11 +113,11 @@ class RedisLinks:
 
     # NOTE(sileht): This is used, only to limit connection on webserver side.
     # The worker open only one connection per asyncio tasks per worker.
-    cache_max_connections: typing.Optional[int] = None
-    stream_max_connections: typing.Optional[int] = None
-    queue_max_connections: typing.Optional[int] = None
-    eventlogs_max_connections: typing.Optional[int] = None
-    stats_max_connections: typing.Optional[int] = None
+    cache_max_connections: int | None = None
+    stream_max_connections: int | None = None
+    queue_max_connections: int | None = None
+    eventlogs_max_connections: int | None = None
+    stats_max_connections: int | None = None
 
     @functools.cached_property
     def queue(self) -> RedisQueue:
@@ -218,7 +218,7 @@ class RedisLinks:
         name: str,
         url: str,
         decode_responses: typing.Literal[True],
-        max_connections: typing.Optional[int] = None,
+        max_connections: int | None = None,
         redis_connect_func: typing.Optional[
             "redispy.connection.ConnectCallbackT"
         ] = None,
@@ -231,7 +231,7 @@ class RedisLinks:
         name: str,
         url: str,
         decode_responses: typing.Literal[False],
-        max_connections: typing.Optional[int] = None,
+        max_connections: int | None = None,
         redis_connect_func: typing.Optional[
             "redispy.connection.ConnectCallbackT"
         ] = None,
@@ -243,13 +243,13 @@ class RedisLinks:
         name: str,
         url: str,
         decode_responses: bool,
-        max_connections: typing.Optional[int] = None,
+        max_connections: int | None = None,
         redis_connect_func: typing.Optional[
             "redispy.connection.ConnectCallbackT"
         ] = None,
     ) -> typing.Union["redispy.Redis[bytes]", "redispy.Redis[str]"]:
 
-        options: typing.Dict[str, typing.Any] = {}
+        options: dict[str, typing.Any] = {}
         if config.REDIS_SSL_VERIFY_MODE_CERT_NONE and url.startswith("rediss://"):
             options["ssl_check_hostname"] = False
             options["ssl_cert_reqs"] = None

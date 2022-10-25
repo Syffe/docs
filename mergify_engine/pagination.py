@@ -19,17 +19,17 @@ class InvalidCursor(Exception):
 class CurrentPage:
     request: fastapi.Request
     response: fastapi.Response
-    cursor: typing.Optional[str] = None
+    cursor: str | None = None
     per_page: int = dataclasses.field(default=DEFAULT_PER_PAGE)
 
 
 @dataclasses.dataclass
 class Page(typing.Generic[T]):
-    items: typing.List[T]
+    items: list[T]
     current: CurrentPage
     total: int = dataclasses.field(default=0)
-    cursor_prev: typing.Optional[str] = dataclasses.field(default=None)
-    cursor_next: typing.Optional[str] = dataclasses.field(default=None)
+    cursor_prev: str | None = dataclasses.field(default=None)
+    cursor_next: str | None = dataclasses.field(default=None)
     cursor_first: str = dataclasses.field(default="")
     cursor_last: str = dataclasses.field(default="-")
 
@@ -41,7 +41,8 @@ class Page(typing.Generic[T]):
 def get_current_page(
     request: fastapi.Request,
     response: fastapi.Response,
-    cursor: typing.Optional[str] = fastapi.Query(  # noqa: B008
+    cursor: str
+    | None = fastapi.Query(  # noqa: B008
         default=None,
         description="The opaque cursor of the current page. Must be extracted for RFC 5988 pagination links to get first/previous/next/last pages",
     ),

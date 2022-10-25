@@ -50,12 +50,12 @@ class SeatsCountResultT(typing.NamedTuple):
 
 
 class CollaboratorsSetsT(typing.TypedDict):
-    active_users: typing.Optional[typing.Set[ActiveUser]]
+    active_users: set[ActiveUser] | None
 
 
-CollaboratorsT = typing.Dict[
+CollaboratorsT = dict[
     SeatAccount,
-    typing.Dict[SeatRepository, CollaboratorsSetsT],
+    dict[SeatRepository, CollaboratorsSetsT],
 ]
 
 
@@ -69,10 +69,8 @@ def _get_active_users_key(
 
 async def get_active_users_keys(
     redis: redis_utils.RedisActiveUsers,
-    owner_id: typing.Union[typing.Literal["*"], github_types.GitHubAccountIdType] = "*",
-    repo_id: typing.Union[
-        typing.Literal["*"], github_types.GitHubRepositoryIdType
-    ] = "*",
+    owner_id: typing.Literal["*"] | github_types.GitHubAccountIdType = "*",
+    repo_id: (typing.Literal["*"] | github_types.GitHubRepositoryIdType) = "*",
 ) -> typing.AsyncIterator[ActiveUserKeyT]:
     async for key in redis.scan_iter(
         f"{ACTIVE_USERS_PREFIX}~{owner_id}~*~{repo_id}~*", count=10000
@@ -89,7 +87,7 @@ def _parse_user(user: str) -> ActiveUser:
 
 async def get_active_users(
     redis: redis_utils.RedisActiveUsers, key: ActiveUserKeyT
-) -> typing.Set[ActiveUser]:
+) -> set[ActiveUser]:
     one_month_ago = datetime.datetime.utcnow() - datetime.timedelta(days=30)
     return {
         _parse_user(user.decode())
@@ -104,15 +102,13 @@ async def store_active_users(
     event_type: str,
     event: github_types.GitHubEvent,
 ) -> None:
-    typed_event: typing.Optional[
-        typing.Union[
-            github_types.GitHubEventPush,
-            github_types.GitHubEventIssueComment,
-            github_types.GitHubEventPullRequest,
-            github_types.GitHubEventPullRequestReview,
-            github_types.GitHubEventPullRequestReviewComment,
-        ]
-    ] = None
+    typed_event: None | (
+        github_types.GitHubEventPush
+        | github_types.GitHubEventIssueComment
+        | github_types.GitHubEventPullRequest
+        | github_types.GitHubEventPullRequestReview
+        | github_types.GitHubEventPullRequestReviewComment
+    ) = None
 
     users = {}
 
@@ -174,7 +170,7 @@ class SeatCollaboratorJsonT(typing.TypedDict):
 
 
 class SeatCollaboratorsJsonT(typing.TypedDict):
-    active_users: typing.Optional[typing.List[SeatCollaboratorJsonT]]
+    active_users: list[SeatCollaboratorJsonT] | None
 
 
 class SeatRepositoryJsonT(typing.TypedDict):
@@ -186,11 +182,11 @@ class SeatRepositoryJsonT(typing.TypedDict):
 class SeatOrganizationJsonT(typing.TypedDict):
     id: int
     login: str
-    repositories: typing.List[SeatRepositoryJsonT]
+    repositories: list[SeatRepositoryJsonT]
 
 
 class SeatsJsonT(typing.TypedDict):
-    organizations: typing.List[SeatOrganizationJsonT]
+    organizations: list[SeatOrganizationJsonT]
 
 
 @dataclasses.dataclass
@@ -205,7 +201,7 @@ class Seats:
     async def get(
         cls,
         redis: redis_utils.RedisActiveUsers,
-        owner_id: typing.Optional[github_types.GitHubAccountIdType] = None,
+        owner_id: github_types.GitHubAccountIdType | None = None,
     ) -> "Seats":
         seats = cls()
         await seats.populate_with_active_users(redis, owner_id)
@@ -259,7 +255,7 @@ class Seats:
     async def populate_with_active_users(
         self,
         redis: redis_utils.RedisActiveUsers,
-        owner_id: typing.Optional[github_types.GitHubAccountIdType] = None,
+        owner_id: github_types.GitHubAccountIdType | None = None,
     ) -> None:
         async for key in get_active_users_keys(
             redis, owner_id="*" if owner_id is None else owner_id

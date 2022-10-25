@@ -1,4 +1,3 @@
-import typing
 from urllib import parse
 
 import voluptuous
@@ -26,8 +25,8 @@ class LabelAction(actions.BackwardCompatAction):
     async def run(
         self, ctxt: context.Context, rule: rules.EvaluatedRule
     ) -> check_api.Result:
-        labels_added: typing.Set[str] = set()
-        labels_removed: typing.Set[str] = set()
+        labels_added: set[str] = set()
+        labels_removed: set[str] = set()
 
         pull_labels = {label["name"].lower() for label in ctxt.pull["labels"]}
 

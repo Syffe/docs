@@ -1,10 +1,9 @@
 import datetime
-import typing
 
 from . import github_types
 
 
-MERGIFY_CONFIG_FILENAMES: typing.List[github_types.GitHubFilePath] = [
+MERGIFY_CONFIG_FILENAMES: list[github_types.GitHubFilePath] = [
     github_types.GitHubFilePath(".mergify.yml"),
     github_types.GitHubFilePath(".mergify/config.yml"),
     github_types.GitHubFilePath(".github/mergify.yml"),

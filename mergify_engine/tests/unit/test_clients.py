@@ -267,7 +267,7 @@ async def test_client_connection_error() -> None:
 async def _do_test_client_retry_429(
     respx_mock: respx.MockRouter, retry_after: str
 ) -> datetime.datetime:
-    records: typing.List[datetime.datetime] = []
+    records: list[datetime.datetime] = []
 
     def record_date(_: typing.Any) -> httpx.Response:
         if records:

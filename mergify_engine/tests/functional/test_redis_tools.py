@@ -75,7 +75,7 @@ class TestRedisTools(base.FunctionalTestBase):
             f"{temporary_folder}/config_file-{self.repository_ctxt.repo['id']}.txt"
         )
         with open(
-            f"{temporary_folder}/config_file-{self.repository_ctxt.repo['id']}.txt", "r"
+            f"{temporary_folder}/config_file-{self.repository_ctxt.repo['id']}.txt"
         ) as file:
             jsoned_content = json.loads(file.read())
 

@@ -19,7 +19,7 @@ TIMEZONES = {f"[{tz}]" for tz in zoneinfo.available_timezones()}
 
 def extract_timezone(
     value: str,
-) -> typing.Tuple[str, typing.Union[datetime.timezone, zoneinfo.ZoneInfo]]:
+) -> tuple[str, datetime.timezone | zoneinfo.ZoneInfo]:
     if value[-1] == "]":
         for timezone in TIMEZONES:
             if value.endswith(timezone):
@@ -81,11 +81,11 @@ class PartialDatetime:
 
 
 class TimedeltaRegexResultT(typing.TypedDict):
-    filled: typing.Optional[str]
-    days: typing.Optional[str]
-    hours: typing.Optional[str]
-    minutes: typing.Optional[str]
-    seconds: typing.Optional[str]
+    filled: str | None
+    days: str | None
+    hours: str | None
+    minutes: str | None
+    seconds: str | None
 
 
 @dataclasses.dataclass(order=True)
@@ -388,7 +388,7 @@ class Schedule:
         ):
             # 1 minute after the end just to invalidate the summary condition
             return return_as_origin_timezone(
-                (from_time_as_tz + datetime.timedelta(minutes=1))
+                from_time_as_tz + datetime.timedelta(minutes=1)
             )
 
         # Outside of the whole schedule

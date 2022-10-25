@@ -45,8 +45,8 @@ class TimeToMergeResponse(typing.TypedDict):
 async def get_time_to_merge_stats_for_queue(
     repository_ctxt: context.Repository,
     queue_name: rules.QueueName,
-    branch_name: typing.Optional[str] = None,
-    at: typing.Optional[int] = None,
+    branch_name: str | None = None,
+    at: int | None = None,
 ) -> TimeToMergeResponse:
     stats = await queue_statistics.get_time_to_merge_stats(
         repository_ctxt,
@@ -64,8 +64,8 @@ async def get_time_to_merge_stats_for_queue(
 
 async def get_time_to_merge_stats_for_all_queues(
     repository_ctxt: context.Repository,
-    branch_name: typing.Optional[str] = None,
-    at: typing.Optional[int] = None,
+    branch_name: str | None = None,
+    at: int | None = None,
 ) -> dict[rules.QueueName, TimeToMergeResponse]:
     """
     Returns a dict containing a TimeToMergeResponse for each queue.
@@ -143,9 +143,9 @@ class ChecksDurationResponse(typing.TypedDict):
 async def get_checks_duration_stats_for_queue(
     repository_ctxt: context.Repository,
     queue_name: rules.QueueName,
-    branch_name: typing.Optional[str] = None,
-    start_at: typing.Optional[int] = None,
-    end_at: typing.Optional[int] = None,
+    branch_name: str | None = None,
+    start_at: int | None = None,
+    end_at: int | None = None,
 ) -> ChecksDurationResponse:
     stats = await queue_statistics.get_checks_duration_stats(
         repository_ctxt,
@@ -163,9 +163,9 @@ async def get_checks_duration_stats_for_queue(
 
 async def get_checks_duration_stats_for_all_queues(
     repository_ctxt: context.Repository,
-    branch_name: typing.Optional[str] = None,
-    start_at: typing.Optional[int] = None,
-    end_at: typing.Optional[int] = None,
+    branch_name: str | None = None,
+    start_at: int | None = None,
+    end_at: int | None = None,
 ) -> dict[rules.QueueName, ChecksDurationResponse]:
     """
     Returns a dict containing a ChecksDurationResponse for each queue.
@@ -235,9 +235,9 @@ async def get_checks_duration_stats_endpoint(
 async def get_failure_by_reason_stats_for_queue(
     repository_ctxt: context.Repository,
     queue_name: rules.QueueName,
-    branch_name: typing.Optional[str] = None,
-    start_at: typing.Optional[int] = None,
-    end_at: typing.Optional[int] = None,
+    branch_name: str | None = None,
+    start_at: int | None = None,
+    end_at: int | None = None,
 ) -> queue_statistics.FailureByReasonT:
     stats = await queue_statistics.get_failure_by_reason_stats(
         repository_ctxt,
@@ -254,9 +254,9 @@ async def get_failure_by_reason_stats_for_queue(
 
 async def get_failure_by_reason_stats_for_all_queues(
     repository_ctxt: context.Repository,
-    branch_name: typing.Optional[str] = None,
-    start_at: typing.Optional[int] = None,
-    end_at: typing.Optional[int] = None,
+    branch_name: str | None = None,
+    start_at: int | None = None,
+    end_at: int | None = None,
 ) -> dict[rules.QueueName, queue_statistics.FailureByReasonT]:
     """
     Returns a dict containing a `queue_statistics.FailureByReasonT` for each queue.
@@ -316,9 +316,9 @@ async def get_failure_by_reason_stats_endpoint(
 async def get_queue_checks_outcome_for_queue(
     repository_ctxt: context.Repository,
     queue_name: rules.QueueName,
-    branch_name: typing.Optional[str] = None,
-    start_at: typing.Optional[int] = None,
-    end_at: typing.Optional[int] = None,
+    branch_name: str | None = None,
+    start_at: int | None = None,
+    end_at: int | None = None,
 ) -> queue_statistics.QueueChecksOutcomeT:
     stats = await queue_statistics.get_queue_checks_outcome_stats(
         repository_ctxt,

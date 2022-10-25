@@ -16,11 +16,11 @@ from mergify_engine.rules import types
 
 
 ReviewEntityWithWeightT = typing.Union[
-    typing.Dict[types.GitHubLogin, int], typing.Dict[types.GitHubTeam, int]
+    dict[types.GitHubLogin, int], dict[types.GitHubTeam, int]
 ]
 ReviewEntityT = typing.Union[
-    typing.List[types.GitHubLogin],
-    typing.List[types.GitHubTeam],
+    list[types.GitHubLogin],
+    list[types.GitHubTeam],
 ]
 
 
@@ -78,9 +78,7 @@ class RequestReviewsAction(actions.BackwardCompatAction):
         voluptuous.Required("bot_account", default=None): types.Jinja2WithNone,
     }
 
-    def _get_random_reviewers(
-        self, random_number: int, pr_author: str
-    ) -> typing.Set[str]:
+    def _get_random_reviewers(self, random_number: int, pr_author: str) -> set[str]:
         choices = {
             **{user.lower(): weight for user, weight in self.config["users"].items()},
             **{
@@ -103,8 +101,8 @@ class RequestReviewsAction(actions.BackwardCompatAction):
         )
 
     def _get_reviewers(
-        self, pr_id: int, existing_reviews: typing.Set[str], pr_author: str
-    ) -> typing.Tuple[typing.Set[str], typing.Set[str]]:
+        self, pr_id: int, existing_reviews: set[str], pr_author: str
+    ) -> tuple[set[str], set[str]]:
         if "random_count" in self.config:
             team_reviews_to_request = set()
             user_reviews_to_request = set()
@@ -157,7 +155,7 @@ class RequestReviewsAction(actions.BackwardCompatAction):
         except action_utils.RenderBotAccountFailure as e:
             return check_api.Result(e.status, e.title, e.reason)
 
-        github_user: typing.Optional[user_tokens.UserTokensUser] = None
+        github_user: user_tokens.UserTokensUser | None = None
         if bot_account:
             tokens = await ctxt.repository.installation.get_user_tokens()
             github_user = tokens.get_token_for(bot_account)
@@ -219,7 +217,7 @@ class RequestReviewsAction(actions.BackwardCompatAction):
 
         if user_reviews_to_request or team_reviews_to_request:
             requested_reviews_nb = len(
-                typing.cast(typing.List[str], await ctxt.pull_request.review_requested)
+                typing.cast(list[str], await ctxt.pull_request.review_requested)
             )
 
             already_at_max = requested_reviews_nb == self.GITHUB_MAXIMUM_REVIEW_REQUEST

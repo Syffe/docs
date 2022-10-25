@@ -1,4 +1,3 @@
-import typing
 from unittest import mock
 
 import pytest
@@ -46,7 +45,7 @@ async def test_init(redis_cache: redis_utils.RedisCache) -> None:
     ),
 )
 async def test_save_ut(
-    users: typing.List[user_tokens.UserTokensUser], redis_cache: redis_utils.RedisCache
+    users: list[user_tokens.UserTokensUser], redis_cache: redis_utils.RedisCache
 ) -> None:
     owner_id = 1234
     ut = user_tokens.UserTokens(

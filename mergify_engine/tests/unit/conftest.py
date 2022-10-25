@@ -80,7 +80,7 @@ async def build_fake_context(
     number: github_types.GitHubPullRequestNumber,
     *,
     repository: context.Repository,
-    **kwargs: typing.Dict[str, typing.Any],
+    **kwargs: dict[str, typing.Any],
 ) -> context.Context:
     pull_request_author = github_types.GitHubAccount(
         {

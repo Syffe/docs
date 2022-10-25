@@ -12,7 +12,7 @@ from mergify_engine import github_types
 @dataclasses.dataclass
 class LineColumnPath:
     line: int
-    column: typing.Optional[int] = None
+    column: int | None = None
 
     def __repr__(self) -> str:
         if self.column is None:
@@ -50,7 +50,7 @@ class DummyPullRequest(context.PullRequest):
     def __getattr__(self, name: str) -> typing.Any:
         return self.context._get_consolidated_data(name.replace("_", "-"))
 
-    def render_template(self, template: str, extra_variables: typing.Optional[typing.Dict[str, str]] = None) -> str:  # type: ignore[override]
+    def render_template(self, template: str, extra_variables: dict[str, str] | None = None) -> str:  # type: ignore[override]
         """Render a template interpolating variables based on pull request attributes."""
         env = jinja2.sandbox.SandboxedEnvironment(
             undefined=jinja2.StrictUndefined,
@@ -70,9 +70,7 @@ class DummyPullRequest(context.PullRequest):
             return env.from_string(template).render(**infos)
 
     @staticmethod
-    def dummy_get_section(
-        v: str, section: str, default: typing.Optional[str] = None
-    ) -> str:
+    def dummy_get_section(v: str, section: str, default: str | None = None) -> str:
         return v
 
 
@@ -178,8 +176,8 @@ _DUMMY_PR = DummyPullRequest(
 
 def Jinja2(
     value: typing.Any,
-    extra_variables: typing.Optional[typing.Dict[str, typing.Any]] = None,
-) -> typing.Optional[str]:
+    extra_variables: dict[str, typing.Any] | None = None,
+) -> str | None:
     """A Jinja2 type for voluptuous Schemas."""
     if value is None:
         raise voluptuous.Invalid("Template cannot be null")
@@ -200,8 +198,8 @@ def Jinja2(
 
 
 def Jinja2WithNone(
-    value: str, extra_variables: typing.Optional[typing.Dict[str, typing.Any]] = None
-) -> typing.Optional[str]:
+    value: str, extra_variables: dict[str, typing.Any] | None = None
+) -> str | None:
     if value is None:
         return None
 
@@ -209,7 +207,7 @@ def Jinja2WithNone(
 
 
 def _check_GitHubLogin_format(
-    value: typing.Optional[str],
+    value: str | None,
     _type: typing.Literal["login", "organization"] = "login",
 ) -> github_types.GitHubLogin:
     # GitHub says login cannot:
@@ -239,7 +237,7 @@ class InvalidTeam(Exception):
 @dataclasses.dataclass(unsafe_hash=True)
 class _GitHubTeam:
     team: github_types.GitHubTeamSlug
-    organization: typing.Optional[github_types.GitHubLogin]
+    organization: github_types.GitHubLogin | None
     raw: str
 
     @classmethod

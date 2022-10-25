@@ -19,7 +19,7 @@ class PriorityAliases(enum.Enum):
     high = 3000
 
 
-def Priority(v: typing.Union[int, str]) -> int:
+def Priority(v: int | str) -> int:
     if isinstance(v, int):
         return v
 
@@ -43,6 +43,6 @@ class PullQueueConfig(typing.TypedDict):
     update_method: typing.Literal["merge", "rebase"]
     priority: int
     effective_priority: int
-    bot_account: typing.Optional[github_types.GitHubLogin]
-    update_bot_account: typing.Optional[github_types.GitHubLogin]
+    bot_account: github_types.GitHubLogin | None
+    update_bot_account: github_types.GitHubLogin | None
     name: "rules.QueueName"

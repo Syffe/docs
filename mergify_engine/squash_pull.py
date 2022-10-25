@@ -1,5 +1,4 @@
 import dataclasses
-import typing
 
 from mergify_engine import context
 from mergify_engine import exceptions
@@ -112,7 +111,7 @@ async def _do_squash(
 
 
 async def squash(
-    ctxt: context.Context, message: str, users: typing.List[user_tokens.UserTokensUser]
+    ctxt: context.Context, message: str, users: list[user_tokens.UserTokensUser]
 ) -> None:
 
     if ctxt.pull["commits"] <= 1:

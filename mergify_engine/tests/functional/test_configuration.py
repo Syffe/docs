@@ -1,4 +1,3 @@
-import typing
 from unittest import mock
 
 import pytest
@@ -145,7 +144,7 @@ did not find expected alphabetic or numeric character
             ],
         }
 
-        rules_default: typing.Dict[str, typing.List[str]] = {"pull_request_rules": []}
+        rules_default: dict[str, list[str]] = {"pull_request_rules": []}
 
         await self.setup_repo(yaml.dump(rules_default))
         assert self.git.repository is not None

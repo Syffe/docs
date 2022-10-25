@@ -110,7 +110,7 @@ async def handle(queue_rules: rules.QueueRules, ctxt: context.Context) -> None:
         ctxt.log.warning("target branch vanished, the merge queue will be deleted soon")
         return None
 
-    unexpected_changes: typing.Optional[merge_train.UnexpectedChange] = None
+    unexpected_changes: merge_train.UnexpectedChange | None = None
     queue_config = await train.get_queue_rule(
         car.initial_embarked_pulls[0].config["name"]
     )

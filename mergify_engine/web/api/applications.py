@@ -1,5 +1,3 @@
-import typing
-
 import daiquiri
 import fastapi
 import pydantic
@@ -16,7 +14,7 @@ LOG = daiquiri.getLogger(__name__)
 class ApplicationResponse:
     id: int
     name: str
-    account_scope: typing.Optional[application_mod.ApplicationAccountScope]
+    account_scope: application_mod.ApplicationAccountScope | None
 
 
 router = fastapi.APIRouter(

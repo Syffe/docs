@@ -1,5 +1,3 @@
-import typing
-
 import pytest
 
 from mergify_engine import context
@@ -109,7 +107,7 @@ async def test_merge_commit_message(
     body: str,
     title: str,
     message: str,
-    template: typing.Optional[str],
+    template: str | None,
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
     ctxt = await context_getter(

@@ -49,11 +49,11 @@ FAKE_HMAC = utils.compute_hmac(FAKE_DATA.encode("utf8"), config.WEBHOOK_SECRET)
 
 
 class MergeQueueCarMatcher(typing.NamedTuple):
-    user_pull_request_numbers: typing.List[github_types.GitHubPullRequestNumber]
-    parent_pull_request_numbers: typing.List[github_types.GitHubPullRequestNumber]
+    user_pull_request_numbers: list[github_types.GitHubPullRequestNumber]
+    parent_pull_request_numbers: list[github_types.GitHubPullRequestNumber]
     initial_current_base_sha: github_types.SHAType
-    checks_type: typing.Optional[merge_train.TrainCarChecksType]
-    queue_pull_request_number: typing.Optional[github_types.GitHubPullRequestNumber]
+    checks_type: merge_train.TrainCarChecksType | None
+    queue_pull_request_number: github_types.GitHubPullRequestNumber | None
 
 
 class ForwardedEvent(typing.TypedDict):
@@ -75,8 +75,8 @@ class RecordExc(typing.TypedDict, total=False):
 
 
 class Record(RecordExc):
-    args: typing.List[typing.Any]
-    kwargs: typing.Dict[typing.Any, typing.Any]
+    args: list[typing.Any]
+    kwargs: dict[typing.Any, typing.Any]
     out: str
 
 
@@ -87,10 +87,10 @@ class GitterRecorder(gitter.Gitter):
         cassette_library_dir: str,
         suffix: str,
     ) -> None:
-        super(GitterRecorder, self).__init__(logger)
+        super().__init__(logger)
         self.cassette_path = os.path.join(cassette_library_dir, f"git-{suffix}.json")
         if RECORD:
-            self.records: typing.List[Record] = []
+            self.records: list[Record] = []
         else:
             self.load_records()
 
@@ -109,7 +109,7 @@ class GitterRecorder(gitter.Gitter):
     async def __call__(self, *args: typing.Any, **kwargs: typing.Any) -> str:
         if RECORD:
             try:
-                output = await super(GitterRecorder, self).__call__(*args, **kwargs)
+                output = await super().__call__(*args, **kwargs)
             except gitter.GitError as e:
                 self.records.append(
                     {
@@ -148,7 +148,7 @@ class GitterRecorder(gitter.Gitter):
                 ), f'{r["kwargs"]} != {self.prepare_kwargs(kwargs)}'
                 return r["out"]
 
-    def prepare_args(self, args: typing.Any) -> typing.List[str]:
+    def prepare_args(self, args: typing.Any) -> list[str]:
         prepared_args = [
             arg.replace(self.tmp, "/tmp/mergify-gitter<random>") for arg in args
         ]
@@ -163,7 +163,7 @@ class GitterRecorder(gitter.Gitter):
         return kwargs
 
     async def cleanup(self) -> None:
-        await super(GitterRecorder, self).cleanup()
+        await super().cleanup()
         if RECORD:
             self.save_records()
 
@@ -185,7 +185,7 @@ class EventReader:
         self.base_event_forwarder_url = f"{config.TESTING_FORWARDER_ENDPOINT}/events/{hostname}/{integration_id}/{repository_id}/"
         self.test_name = test_name.replace("/", "-")
 
-    def get_events_forwarder_url(self, test_id: typing.Optional[str] = None) -> str:
+    def get_events_forwarder_url(self, test_id: str | None = None) -> str:
         if test_id is None:
             test_id = self.test_name
 
@@ -213,7 +213,7 @@ class EventReader:
         expected_payload: typing.Any,
         timeout: float = 15 if RECORD else 2,
         forward_to_engine: bool = True,
-        test_id: typing.Optional[str] = None,
+        test_id: str | None = None,
     ) -> github_types.GitHubEvent:
         LOG.log(
             42,
@@ -256,13 +256,11 @@ class EventReader:
         else:
             return bool(data == expected_data)
 
-    async def _get_events(
-        self, test_id: typing.Optional[str] = None
-    ) -> typing.List[ForwardedEvent]:
+    async def _get_events(self, test_id: str | None = None) -> list[ForwardedEvent]:
         # NOTE(sileht): we use a counter to make each call unique in cassettes
         self._counter += 1
         return typing.cast(
-            typing.List[ForwardedEvent],
+            list[ForwardedEvent],
             (
                 await self._session.request(
                     "GET",
@@ -387,7 +385,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         asyncio.set_event_loop(loop)
 
     async def asyncSetUp(self) -> None:
-        super(FunctionalTestBase, self).setUp()
+        super().setUp()
 
         # NOTE(sileht): don't preempted bucket consumption
         # Otherwise preemption doesn't occur at the same moment during record
@@ -408,7 +406,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
             datetime.timedelta(seconds=0),
         ).start()
 
-        self.existing_labels: typing.List[str] = []
+        self.existing_labels: list[str] = []
         self.pr_counter: int = 0
         self.git_counter: int = 0
 
@@ -518,7 +516,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         self.addCleanup(cleanup_consume)
 
     async def asyncTearDown(self) -> None:
-        await super(FunctionalTestBase, self).asyncTearDown()
+        await super().asyncTearDown()
 
         # NOTE(sileht): Wait a bit to ensure all remaining events arrive.
         if RECORD:
@@ -617,9 +615,9 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
 
     async def setup_repo(
         self,
-        mergify_config: typing.Optional[str] = None,
-        test_branches: typing.Optional[typing.Iterable[str]] = None,
-        files: typing.Optional[typing.Dict[str, str]] = None,
+        mergify_config: str | None = None,
+        test_branches: typing.Iterable[str] | None = None,
+        files: dict[str, str] | None = None,
         forward_to_engine: bool = False,
     ) -> None:
 
@@ -676,7 +674,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
             "repository", {"action": "edited"}, forward_to_engine=forward_to_engine
         )
 
-    def get_full_branch_name(self, name: typing.Optional[str] = None) -> str:
+    def get_full_branch_name(self, name: str | None = None) -> str:
         if name is not None:
             return (
                 f"{self.RECORD_CONFIG['branch_prefix']}/{self._testMethodName}/{name}"
@@ -686,17 +684,17 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
 
     async def create_pr(
         self,
-        base: typing.Optional[str] = None,
-        files: typing.Optional[typing.Dict[str, str]] = None,
+        base: str | None = None,
+        files: dict[str, str] | None = None,
         two_commits: bool = False,
         as_: typing.Literal["integration", "fork", "admin"] = "integration",
-        branch: typing.Optional[str] = None,
-        message: typing.Optional[str] = None,
+        branch: str | None = None,
+        message: str | None = None,
         draft: bool = False,
         git_tree_ready: bool = False,
         verified: bool = False,
-        commit_headline: typing.Optional[str] = None,
-        commit_body: typing.Optional[str] = None,
+        commit_headline: str | None = None,
+        commit_body: str | None = None,
     ) -> github_types.GitHubPullRequest:
         self.pr_counter += 1
 
@@ -801,7 +799,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
 
         return typing.cast(github_types.GitHubPullRequest, resp.json())
 
-    async def _git_create_files(self, files: typing.Dict[str, str]) -> None:
+    async def _git_create_files(self, files: dict[str, str]) -> None:
         if self.git.repository is None:
             raise RuntimeError("self.git.init() not called, tmp dir empty")
 
@@ -847,8 +845,8 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
     async def create_pr_with_autosquash_commit(
         self,
         commit_type: typing.Literal["fixup", "squash", "fixup=amend", "fixup=reword"],
-        commit_body: typing.Optional[str] = None,
-        autosquash_commit_body: typing.Optional[str] = None,
+        commit_body: str | None = None,
+        autosquash_commit_body: str | None = None,
     ) -> github_types.GitHubPullRequest:
         # if autosquash_commit_body is not None and commit_type in ("fixup=amend", "fixup=reword"):
         #     raise RuntimeError("Git doesn't allow `-m` with `--fixup=amend` and `--fixup=reword`")
@@ -958,7 +956,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         event: typing.Literal[
             "APPROVE", "REQUEST_CHANGES", "COMMENT", "PENDING"
         ] = "APPROVE",
-        oauth_token: typing.Optional[github_types.GitHubOAuthToken] = None,
+        oauth_token: github_types.GitHubOAuthToken | None = None,
     ) -> None:
         await self.client_admin.post(
             f"{self.url_origin}/pulls/{pull_number}/reviews",
@@ -981,7 +979,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
     async def create_review_request(
         self,
         pull_number: github_types.GitHubPullRequestNumber,
-        reviewers: typing.List[str],
+        reviewers: list[str],
     ) -> None:
         await self.client_integration.post(
             f"{self.url_origin}/pulls/{pull_number}/requested_reviewers",
@@ -1032,7 +1030,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
 
     async def get_gql_id_of_comment_to_hide(
         self, pr_number: int, comment_number: int
-    ) -> typing.Optional[str]:
+    ) -> str | None:
         query = f"""
         query {{
             repository(owner: "{self.repository_ctxt.repo["owner"]["login"]}", name: "{self.repository_ctxt.repo["name"]}") {{
@@ -1061,9 +1059,8 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         self,
         pull_number: github_types.GitHubPullRequestNumber,
         comment_number: int,
-        hide_reason: typing.Optional[
-            github_graphql_types.ReportedContentClassifiers
-        ] = "OUTDATED",
+        hide_reason: None
+        | (github_graphql_types.ReportedContentClassifiers) = "OUTDATED",
     ) -> bool:
         gql_comment_id = await self.get_gql_id_of_comment_to_hide(
             pull_number, comment_number
@@ -1096,8 +1093,8 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         self,
         pull_number: github_types.GitHubPullRequestNumber,
         message: str,
-        line: typing.Optional[int] = 1,
-        path: typing.Optional[str] = "test1",
+        line: int | None = 1,
+        path: str | None = "test1",
     ) -> int:
         commits = await self.get_commits(pull_number=pull_number)
         response = await self.client_integration.post(
@@ -1238,7 +1235,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         )
 
     async def branch_protection_protect(
-        self, branch: str, protection: typing.Dict[str, typing.Any]
+        self, branch: str, protection: dict[str, typing.Any]
     ) -> None:
         if protection["required_pull_request_reviews"]:
             protection = copy.deepcopy(protection)
@@ -1250,7 +1247,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
             headers={"Accept": "application/vnd.github.luke-cage-preview+json"},
         )
 
-    async def get_branches(self) -> typing.List[github_types.GitHubBranch]:
+    async def get_branches(self) -> list[github_types.GitHubBranch]:
         return [
             c
             async for c in self.client_integration.items(
@@ -1260,7 +1257,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
 
     async def get_commits(
         self, pull_number: github_types.GitHubPullRequestNumber
-    ) -> typing.List[github_types.GitHubBranchCommit]:
+    ) -> list[github_types.GitHubBranchCommit]:
         return [
             c
             async for c in typing.cast(
@@ -1291,7 +1288,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
 
     async def get_issue_comments(
         self, pull_number: github_types.GitHubPullRequestNumber
-    ) -> typing.List[github_types.GitHubComment]:
+    ) -> list[github_types.GitHubComment]:
         return [
             comment
             async for comment in typing.cast(
@@ -1306,7 +1303,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
 
     async def get_reviews(
         self, pull_number: github_types.GitHubPullRequestNumber
-    ) -> typing.List[github_types.GitHubReview]:
+    ) -> list[github_types.GitHubReview]:
         return [
             review
             async for review in typing.cast(
@@ -1321,7 +1318,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
 
     async def get_review_comments(
         self, pull_number: github_types.GitHubPullRequestNumber
-    ) -> typing.List[github_types.GitHubReview]:
+    ) -> list[github_types.GitHubReview]:
         return [
             review
             async for review in typing.cast(
@@ -1347,7 +1344,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
     async def get_pulls(
         self,
         **kwargs: typing.Any,
-    ) -> typing.List[github_types.GitHubPullRequest]:
+    ) -> list[github_types.GitHubPullRequest]:
         return [
             i
             async for i in self.client_integration.items(
@@ -1409,7 +1406,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
     ) -> None:
         await self.client_admin.put(f"{self.url_origin}/pulls/{pull_number}/merge")
 
-    async def get_labels(self) -> typing.List[github_types.GitHubLabel]:
+    async def get_labels(self) -> list[github_types.GitHubLabel]:
         return [
             label
             async for label in typing.cast(
@@ -1421,7 +1418,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         ]
 
     async def find_git_refs(
-        self, url: str, matches: typing.List[str]
+        self, url: str, matches: list[str]
     ) -> typing.AsyncGenerator[github_types.GitHubGitRef, None]:
         for match in matches:
             async for matchedBranch in typing.cast(
@@ -1434,7 +1431,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
             ):
                 yield matchedBranch
 
-    async def get_teams(self) -> typing.List[github_types.GitHubTeam]:
+    async def get_teams(self) -> list[github_types.GitHubTeam]:
         return [
             t
             async for t in typing.cast(
@@ -1470,11 +1467,10 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
     async def assert_merge_queue_contents(
         self,
         q: merge_train.Train,
-        expected_base_sha: typing.Optional[github_types.SHAType],
-        expected_cars: typing.List[MergeQueueCarMatcher],
-        expected_waiting_pulls: typing.Optional[
-            typing.List[github_types.GitHubPullRequestNumber]
-        ] = None,
+        expected_base_sha: github_types.SHAType | None,
+        expected_cars: list[MergeQueueCarMatcher],
+        expected_waiting_pulls: None
+        | (list[github_types.GitHubPullRequestNumber]) = None,
     ) -> None:
         if expected_waiting_pulls is None:
             expected_waiting_pulls = []

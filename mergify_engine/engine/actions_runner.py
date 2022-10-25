@@ -96,7 +96,7 @@ def _sanitize_action_config(config_key: str, config_value: typing.Any) -> typing
 
 async def gen_summary_rules(
     ctxt: context.Context,
-    _rules: typing.List[rules.EvaluatedRule],
+    _rules: list[rules.EvaluatedRule],
     display_action_configs: bool,
 ) -> str:
     summary = ""
@@ -141,7 +141,7 @@ async def gen_summary(
     pull_request_rules: rules.PullRequestRules,
     match: rules.RulesEvaluator,
     display_action_configs: bool = False,
-) -> typing.Tuple[str, str]:
+) -> tuple[str, str]:
     summary = ""
     summary += await get_already_merged_summary(ctxt, match)
 
@@ -239,10 +239,10 @@ async def get_summary_check_result(
     ctxt: context.Context,
     pull_request_rules: rules.PullRequestRules,
     match: rules.RulesEvaluator,
-    summary_check: typing.Optional[github_types.CachedGitHubCheckRun],
-    conclusions: typing.Dict[str, check_api.Conclusion],
-    previous_conclusions: typing.Dict[str, check_api.Conclusion],
-) -> typing.Optional[check_api.Result]:
+    summary_check: github_types.CachedGitHubCheckRun | None,
+    conclusions: dict[str, check_api.Conclusion],
+    previous_conclusions: dict[str, check_api.Conclusion],
+) -> check_api.Result | None:
     summary_title, summary = await gen_summary(
         ctxt,
         pull_request_rules,
@@ -324,8 +324,8 @@ async def exec_action(
 
 def load_conclusions_line(
     ctxt: context.Context,
-    summary_check: typing.Optional[github_types.CachedGitHubCheckRun],
-) -> typing.Optional[str]:
+    summary_check: github_types.CachedGitHubCheckRun | None,
+) -> str | None:
     if summary_check is not None and summary_check["output"]["summary"] is not None:
         lines = summary_check["output"]["summary"].splitlines()
         if not lines:
@@ -340,8 +340,8 @@ def load_conclusions_line(
 
 def load_conclusions(
     ctxt: context.Context,
-    summary_check: typing.Optional[github_types.CachedGitHubCheckRun],
-) -> typing.Dict[str, check_api.Conclusion]:
+    summary_check: github_types.CachedGitHubCheckRun | None,
+) -> dict[str, check_api.Conclusion]:
     line = load_conclusions_line(ctxt, summary_check)
     if line:
         return {
@@ -359,7 +359,7 @@ def load_conclusions(
     return {}
 
 
-def serialize_conclusions(conclusions: typing.Dict[str, check_api.Conclusion]) -> str:
+def serialize_conclusions(conclusions: dict[str, check_api.Conclusion]) -> str:
     return (
         "<!-- "
         + base64.b64encode(
@@ -372,9 +372,9 @@ def serialize_conclusions(conclusions: typing.Dict[str, check_api.Conclusion]) -
 
 
 def get_previous_conclusion(
-    previous_conclusions: typing.Dict[str, check_api.Conclusion],
+    previous_conclusions: dict[str, check_api.Conclusion],
     name: str,
-    checks: typing.Dict[str, github_types.CachedGitHubCheckRun],
+    checks: dict[str, github_types.CachedGitHubCheckRun],
 ) -> check_api.Conclusion:
     if name in previous_conclusions:
         return previous_conclusions[name]
@@ -388,9 +388,9 @@ def get_previous_conclusion(
 async def run_actions(
     ctxt: context.Context,
     match: rules.RulesEvaluator,
-    checks: typing.Dict[str, github_types.CachedGitHubCheckRun],
-    previous_conclusions: typing.Dict[str, check_api.Conclusion],
-) -> typing.Dict[str, check_api.Conclusion]:
+    checks: dict[str, github_types.CachedGitHubCheckRun],
+    previous_conclusions: dict[str, check_api.Conclusion],
+) -> dict[str, check_api.Conclusion]:
     """
     What action.run() and action.cancel() return should be reworked a bit. Currently the
     meaning is not really clear, it could be:
@@ -555,8 +555,8 @@ async def run_actions(
 
 async def cleanup_pending_actions_with_no_associated_rules(
     ctxt: context.Context,
-    current_conclusions: typing.Dict[str, check_api.Conclusion],
-    previous_conclusions: typing.Dict[str, check_api.Conclusion],
+    current_conclusions: dict[str, check_api.Conclusion],
+    previous_conclusions: dict[str, check_api.Conclusion],
 ) -> None:
 
     check_to_cancel = set()
@@ -598,7 +598,7 @@ async def cleanup_pending_actions_with_no_associated_rules(
 
 async def handle(
     pull_request_rules: rules.PullRequestRules, ctxt: context.Context
-) -> typing.Optional[check_api.Result]:
+) -> check_api.Result | None:
     try:
         match = await pull_request_rules.get_pull_request_rule(ctxt)
     except rules.InvalidPullRequestRule as e:

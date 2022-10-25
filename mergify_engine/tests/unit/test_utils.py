@@ -1,5 +1,4 @@
 import datetime
-import typing
 
 from freezegun import freeze_time
 import pytest
@@ -54,7 +53,7 @@ from mergify_engine import utils
 def test_unicode_truncate(
     length: int,
     placeholder: str,
-    expected: typing.Optional[str],
+    expected: str | None,
 ) -> None:
     s = "hé ho! how are you√2?"
     if expected is None:

@@ -104,7 +104,7 @@ class DeleteHeadBranchExecutor(
         return actions.CANCELLED_CHECK_REPORT
 
     @property
-    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
+    def silenced_conclusion(self) -> tuple[check_api.Conclusion, ...]:
         return ()
 
 

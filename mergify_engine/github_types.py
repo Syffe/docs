@@ -48,7 +48,7 @@ GitHubInstallationPermissionsV = typing.Literal[
     "write",
 ]
 
-GitHubInstallationPermissions = typing.Dict[
+GitHubInstallationPermissions = dict[
     GitHubInstallationPermissionsK, GitHubInstallationPermissionsV
 ]
 
@@ -160,7 +160,7 @@ class GitHubBranchCommitCommit(typing.TypedDict):
 
 class GitHubBranchCommit(typing.TypedDict):
     sha: SHAType
-    parents: typing.List[GitHubBranchCommitParent]
+    parents: list[GitHubBranchCommitParent]
     commit: GitHubBranchCommitCommit
     committer: GitHubAccount
 
@@ -168,7 +168,7 @@ class GitHubBranchCommit(typing.TypedDict):
 @dataclasses.dataclass
 class CachedGitHubBranchCommit:
     sha: SHAType
-    parents: typing.List[SHAType]
+    parents: list[SHAType]
     commit_message: str
     commit_verification_verified: bool
     author: str
@@ -201,7 +201,7 @@ def to_cached_github_branch_commit(
 
 
 class GitHubBranchProtectionRequiredStatusChecks(typing.TypedDict):
-    contexts: typing.List[str]
+    contexts: list[str]
     strict: bool
 
 
@@ -251,7 +251,7 @@ class GitHubHeadBranchRef(typing.TypedDict):
     label: GitHubHeadBranchLabel
     ref: GitHubRefType
     sha: SHAType
-    repo: typing.Optional[GitHubRepository]
+    repo: GitHubRepository | None
     user: GitHubAccount
 
 
@@ -292,7 +292,7 @@ class GitHubFile(typing.TypedDict):
     sha: SHAType
     filename: str
     contents_url: str
-    status: typing.Union[typing.Literal["added"], typing.Literal["removed"]]
+    status: typing.Literal["added"] | typing.Literal["removed"]
     additions: int
     deletions: int
     changes: int
@@ -364,29 +364,29 @@ class GitHubPullRequest(GitHubIssueOrPullRequest):
     head: GitHubHeadBranchRef
     state: GitHubPullRequestState
     user: GitHubAccount
-    labels: typing.List[GitHubLabel]
+    labels: list[GitHubLabel]
     merged: bool
-    merged_by: typing.Optional[GitHubAccount]
-    merged_at: typing.Optional[ISODateTimeType]
+    merged_by: GitHubAccount | None
+    merged_at: ISODateTimeType | None
     rebaseable: bool
     draft: bool
-    merge_commit_sha: typing.Optional[SHAType]
-    mergeable: typing.Optional[bool]
+    merge_commit_sha: SHAType | None
+    mergeable: bool | None
     mergeable_state: GitHubPullRequestMergeableState
     html_url: str
     issue_url: str
     title: str
-    body: typing.Optional[str]
+    body: str | None
     changed_files: int
     commits: int
     locked: bool
-    assignees: typing.List[GitHubAccount]
-    requested_reviewers: typing.List[GitHubAccount]
-    requested_teams: typing.List[GitHubTeam]
-    milestone: typing.Optional[GitHubMilestone]
+    assignees: list[GitHubAccount]
+    requested_reviewers: list[GitHubAccount]
+    requested_teams: list[GitHubTeam]
+    milestone: GitHubMilestone | None
     updated_at: ISODateTimeType
     created_at: ISODateTimeType
-    closed_at: typing.Optional[ISODateTimeType]
+    closed_at: ISODateTimeType | None
     node_id: str
 
 
@@ -426,8 +426,8 @@ GitHubEventRefreshActionType = typing.Literal[
 class GitHubEventRefresh(GitHubEvent):
     repository: GitHubRepository
     action: GitHubEventRefreshActionType
-    ref: typing.Optional[GitHubRefType]
-    pull_request_number: typing.Optional[GitHubPullRequestNumber]
+    ref: GitHubRefType | None
+    pull_request_number: GitHubPullRequestNumber | None
     source: str
 
 
@@ -488,8 +488,8 @@ GitHubEventPullRequestReviewCommentActionType = typing.Literal[
 class GitHubEventPullRequestReviewComment(GitHubEvent):
     repository: GitHubRepository
     action: GitHubEventPullRequestReviewCommentActionType
-    pull_request: typing.Optional[GitHubPullRequest]
-    comment: typing.Optional[GitHubComment]
+    pull_request: GitHubPullRequest | None
+    comment: GitHubComment | None
 
 
 GitHubEventPullRequestReviewActionType = typing.Literal[
@@ -530,7 +530,7 @@ GitHubCommentAuthorAssociation = typing.Literal[
 class GitHubReview(typing.TypedDict):
     id: GitHubReviewIdType
     user: GitHubAccount
-    body: typing.Optional[str]
+    body: str | None
     pull_request: GitHubPullRequest
     repository: GitHubRepository
     state: GitHubReviewStateType
@@ -565,9 +565,9 @@ class GitHubEventIssueComment(GitHubEvent):
 
 
 class GitHubEventPushCommit(typing.TypedDict):
-    added: typing.List[str]
-    modified: typing.List[str]
-    removed: typing.List[str]
+    added: list[str]
+    modified: list[str]
+    removed: list[str]
 
 
 class GitHubEventPush(GitHubEvent):
@@ -576,7 +576,7 @@ class GitHubEventPush(GitHubEvent):
     forced: bool
     before: SHAType
     after: SHAType
-    commits: typing.List[GitHubEventPushCommit]
+    commits: list[GitHubEventPushCommit]
 
 
 class GitHubEventStatus(GitHubEvent):
@@ -606,8 +606,8 @@ GitHubCheckRunConclusion = typing.Literal[
 class GitHubCheckRunOutput(typing.TypedDict):
     title: str
     summary: str
-    text: typing.Optional[str]
-    annotations: typing.Optional[typing.List[str]]
+    text: str | None
+    annotations: list[str] | None
     annotations_count: int
     annotations_url: str
 
@@ -639,14 +639,14 @@ class GitHubCheckRun(typing.TypedDict):
     id: int
     app: GitHubApp
     external_id: str
-    pull_requests: typing.List[GitHubPullRequest]
+    pull_requests: list[GitHubPullRequest]
     head_sha: SHAType
     before: SHAType
     after: SHAType
     name: str
     status: GitHubCheckRunStatus
     output: GitHubCheckRunOutput
-    conclusion: typing.Optional[GitHubCheckRunConclusion]
+    conclusion: GitHubCheckRunConclusion | None
     started_at: ISODateTimeType
     completed_at: ISODateTimeType | None
     html_url: str
@@ -664,7 +664,7 @@ class CachedGitHubCheckRun(typing.TypedDict):
     name: str
     status: GitHubCheckRunStatus
     output: GitHubCheckRunOutput
-    conclusion: typing.Optional[GitHubCheckRunConclusion]
+    conclusion: GitHubCheckRunConclusion | None
     completed_at: ISODateTimeType | None
     html_url: str
 
@@ -673,7 +673,7 @@ class GitHubCheckSuite(typing.TypedDict):
     id: int
     app: GitHubApp
     external_id: str
-    pull_requests: typing.List[GitHubPullRequest]
+    pull_requests: list[GitHubPullRequest]
     head_sha: SHAType
     before: SHAType
     after: SHAType
@@ -749,7 +749,7 @@ GitHubEventTeamActionType = typing.Literal[
 
 class GitHubEventTeam(GitHubEvent):
     action: GitHubEventTeamActionType
-    repository: typing.Optional[GitHubRepository]
+    repository: GitHubRepository | None
     team: GitHubTeam
 
 
@@ -766,8 +766,8 @@ class GitHubGitRef(typing.TypedDict):
 
 
 class GitHubRequestedReviewers(typing.TypedDict):
-    users: typing.List[GitHubAccount]
-    teams: typing.List[GitHubTeam]
+    users: list[GitHubAccount]
+    teams: list[GitHubTeam]
 
 
 GitHubApiVersion = typing.Literal[

@@ -1,7 +1,6 @@
 import dataclasses
 import datetime
 import re
-import typing
 
 from redis import exceptions as redis_exceptions
 
@@ -30,8 +29,8 @@ class EngineNeedRetry(Exception):
 
 RATE_LIMIT_RETRY_MIN = datetime.timedelta(seconds=3)
 
-IGNORED_HTTP_ERROR_REASONS: typing.Dict[int, typing.List[str]] = {451: ["dmca"]}
-IGNORED_HTTP_ERROR_MESSAGES: typing.Dict[int, typing.List[str | re.Pattern[str]]] = {
+IGNORED_HTTP_ERROR_REASONS: dict[int, list[str]] = {451: ["dmca"]}
+IGNORED_HTTP_ERROR_MESSAGES: dict[int, list[str | re.Pattern[str]]] = {
     403: [
         "Repository access blocked",  # Blocked Github Account or Repo
         "Resource not accessible by integration",  # missing permission
@@ -85,7 +84,7 @@ def should_be_ignored(exception: Exception) -> bool:
 
 def need_retry(
     exception: Exception,
-) -> typing.Optional[datetime.timedelta]:  # pragma: no cover
+) -> datetime.timedelta | None:  # pragma: no cover
     if isinstance(exception, RateLimited):
         # NOTE(sileht): when we are close to reset date, and since utc time between us and
         # github differ a bit, we can have negative delta, so set a minimun for retrying

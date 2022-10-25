@@ -44,7 +44,7 @@ if typing.TYPE_CHECKING:
 def build_pr_link(
     repository: context.Repository,
     pull_request_number: github_types.GitHubPullRequestNumber,
-    label: typing.Optional[str] = None,
+    label: str | None = None,
 ) -> str:
     if label is None:
         label = f"#{pull_request_number}"
@@ -73,7 +73,7 @@ CheckStateT = typing.Literal[
     "stale",
 ]
 
-CHECK_ASSERTS: typing.Dict[CheckStateT | None, str] = {
+CHECK_ASSERTS: dict[CheckStateT | None, str] = {
     # green check mark
     "success": "https://raw.githubusercontent.com/Mergifyio/mergify-engine/master/assets/check-green-16.png",
     # red x
@@ -92,7 +92,7 @@ CHECK_ASSERTS: typing.Dict[CheckStateT | None, str] = {
 }
 
 # Lower value will be displayed first
-CHECK_SORTING: typing.Dict[CheckStateT | None, int] = {
+CHECK_SORTING: dict[CheckStateT | None, int] = {
     "failure": 0,
     "error": 0,
     "cancelled": 0,
@@ -213,25 +213,23 @@ class EmbarkedPull:
 class QueueCheck:
     name: str = dataclasses.field(metadata={"description": "Check name"})
     description: str = dataclasses.field(metadata={"description": "Check description"})
-    url: typing.Optional[str] = dataclasses.field(
-        metadata={"description": "Check detail url"}
-    )
+    url: str | None = dataclasses.field(metadata={"description": "Check detail url"})
     state: CheckStateT = dataclasses.field(metadata={"description": "Check state"})
-    avatar_url: typing.Optional[str] = dataclasses.field(
+    avatar_url: str | None = dataclasses.field(
         metadata={"description": "Check avatar_url"}
     )
 
     class Serialized(typing.TypedDict):
         name: str
         description: str
-        url: typing.Optional[str]
+        url: str | None
         state: CheckStateT
-        avatar_url: typing.Optional[str]
+        avatar_url: str | None
 
 
 def get_check_list_ordered(
-    checks: typing.List[QueueCheck],
-) -> typing.List[QueueCheck]:
+    checks: list[QueueCheck],
+) -> list[QueueCheck]:
     checks_cpy = checks.copy()
     checks_cpy.sort(
         key=lambda c: (
@@ -295,7 +293,7 @@ class TrainCarState:
     outcome: TrainCarOutcome = TrainCarOutcome.UNKNWON
     ci_state: CiState = CiState.PENDING
     ci_ended_at: datetime.datetime | None = None
-    outcome_message: typing.Optional[str] = None
+    outcome_message: str | None = None
     checks_type: TrainCarChecksType | None = None
     creation_date: datetime.datetime = dataclasses.field(default_factory=date.utcnow)
     waiting_for_freeze_start_dates: list[datetime.datetime] = dataclasses.field(
@@ -315,8 +313,8 @@ class TrainCarState:
         outcome: TrainCarOutcome
         ci_state: CiState
         ci_ended_at: datetime.datetime | None
-        outcome_message: typing.Optional[str]
-        checks_type: typing.Optional[TrainCarChecksType]
+        outcome_message: str | None
+        checks_type: TrainCarChecksType | None
         creation_date: datetime.datetime
         waiting_for_freeze_start_dates: list[datetime.datetime]
         waiting_for_freeze_end_dates: list[datetime.datetime]
@@ -382,7 +380,7 @@ class TrainCarState:
     @classmethod
     def decode_train_car_state_from_summary(
         cls,
-        summary_check: typing.Optional[github_types.CachedGitHubCheckRun],
+        summary_check: github_types.CachedGitHubCheckRun | None,
     ) -> typing.Optional["TrainCarState"]:
         line = extract_encoded_train_car_state_data_from_summary(summary_check)
         if line is not None:
@@ -435,11 +433,9 @@ class TrainCarState:
     ) -> int:
         if len(start_dates_list) != len(end_dates_list):
             raise RuntimeError(
-                (
-                    "Got different sized date list "
-                    f"(start={len(start_dates_list)} / end={len(end_dates_list)}) "
-                    "to compute in TrainCarState"
-                )
+                "Got different sized date list "
+                f"(start={len(start_dates_list)} / end={len(end_dates_list)}) "
+                "to compute in TrainCarState"
             )
 
         seconds = 0
@@ -471,8 +467,8 @@ class TrainCarState:
 
 
 def extract_encoded_train_car_state_data_from_summary(
-    summary_check: typing.Optional[github_types.CachedGitHubCheckRun],
-) -> typing.Optional[str]:
+    summary_check: github_types.CachedGitHubCheckRun | None,
+) -> str | None:
     if summary_check is not None and summary_check["output"]["summary"] is not None:
         lines = summary_check["output"]["summary"].splitlines()
         if not lines:
@@ -488,38 +484,38 @@ def extract_encoded_train_car_state_data_from_summary(
 class TrainCar:
     train: "Train" = dataclasses.field(repr=False)
     train_car_state: "TrainCarState" = dataclasses.field(repr=False)
-    initial_embarked_pulls: typing.List[EmbarkedPull]
-    still_queued_embarked_pulls: typing.List[EmbarkedPull]
-    parent_pull_request_numbers: typing.List[github_types.GitHubPullRequestNumber]
+    initial_embarked_pulls: list[EmbarkedPull]
+    still_queued_embarked_pulls: list[EmbarkedPull]
+    parent_pull_request_numbers: list[github_types.GitHubPullRequestNumber]
     initial_current_base_sha: github_types.SHAType
-    queue_pull_request_number: typing.Optional[
+    queue_pull_request_number: None | (
         github_types.GitHubPullRequestNumber
-    ] = dataclasses.field(default=None)
-    failure_history: typing.List["TrainCar"] = dataclasses.field(
+    ) = dataclasses.field(default=None)
+    failure_history: list["TrainCar"] = dataclasses.field(
         default_factory=list, repr=False
     )
-    head_branch: typing.Optional[str] = None
-    last_checks: typing.List[QueueCheck] = dataclasses.field(default_factory=list)
-    last_evaluated_conditions: typing.Optional[str] = None
-    checks_ended_timestamp: typing.Optional[datetime.datetime] = None
-    queue_branch_name: typing.Optional[github_types.GitHubRefType] = None
+    head_branch: str | None = None
+    last_checks: list[QueueCheck] = dataclasses.field(default_factory=list)
+    last_evaluated_conditions: str | None = None
+    checks_ended_timestamp: datetime.datetime | None = None
+    queue_branch_name: github_types.GitHubRefType | None = None
 
     QUEUE_BRANCH_PREFIX: typing.ClassVar[str] = "tmp-"
 
     class Serialized(typing.TypedDict):
         train_car_state: TrainCarState.Serialized
-        initial_embarked_pulls: typing.List[EmbarkedPull.Serialized]
-        still_queued_embarked_pulls: typing.List[EmbarkedPull.Serialized]
-        parent_pull_request_numbers: typing.List[github_types.GitHubPullRequestNumber]
+        initial_embarked_pulls: list[EmbarkedPull.Serialized]
+        still_queued_embarked_pulls: list[EmbarkedPull.Serialized]
+        parent_pull_request_numbers: list[github_types.GitHubPullRequestNumber]
         initial_current_base_sha: github_types.SHAType
-        queue_pull_request_number: typing.Optional[github_types.GitHubPullRequestNumber]
+        queue_pull_request_number: github_types.GitHubPullRequestNumber | None
         # mymy can't parse recursive definition, yet
-        failure_history: typing.List["TrainCar.Serialized"]  # type: ignore[misc]
-        head_branch: typing.Optional[str]
-        last_checks: typing.List[QueueCheck.Serialized]
-        last_evaluated_conditions: typing.Optional[str]
-        checks_ended_timestamp: typing.Optional[datetime.datetime]
-        queue_branch_name: typing.Optional[github_types.GitHubRefType]
+        failure_history: list["TrainCar.Serialized"]  # type: ignore[misc]
+        head_branch: str | None
+        last_checks: list[QueueCheck.Serialized]
+        last_evaluated_conditions: str | None
+        checks_ended_timestamp: datetime.datetime | None
+        queue_branch_name: github_types.GitHubRefType | None
 
     def serialized(self) -> "TrainCar.Serialized":
         return self.Serialized(
@@ -575,7 +571,7 @@ class TrainCar:
             ]
             still_queued_embarked_pulls = initial_embarked_pulls.copy()
 
-        checks_type: typing.Optional[TrainCarChecksType] = None
+        checks_type: TrainCarChecksType | None = None
         if "creation_state" in data:
             if data["creation_state"] == "updated":  # type: ignore[typeddict-item]
                 checks_type = TrainCarChecksType.INPLACE
@@ -659,7 +655,7 @@ class TrainCar:
     def _deserialize_train_car_state(
         cls,
         data: "TrainCar.Serialized",
-        checks_type: typing.Optional[TrainCarChecksType],
+        checks_type: TrainCarChecksType | None,
         creation_date: datetime.datetime,
     ) -> "TrainCarState":
         if "train_car_state" in data:
@@ -758,7 +754,7 @@ class TrainCar:
     def _get_user_refs(
         self,
         create_link: bool = True,
-        embarked_pulls: typing.Optional[typing.List[EmbarkedPull]] = None,
+        embarked_pulls: list[EmbarkedPull] | None = None,
     ) -> str:
         if embarked_pulls is None:
             embarked_pulls = self.initial_embarked_pulls
@@ -797,7 +793,7 @@ class TrainCar:
 
     async def get_pull_requests_to_evaluate(
         self,
-    ) -> typing.List[context.BasePullRequest]:
+    ) -> list[context.BasePullRequest]:
         if self.train_car_state.checks_type in (
             TrainCarChecksType.INPLACE,
             TrainCarChecksType.DRAFT,
@@ -833,7 +829,7 @@ class TrainCar:
                 f"Invalid spec checks type: {self.train_car_state.checks_type}"
             )
 
-    async def get_context_to_evaluate(self) -> typing.Optional[context.Context]:
+    async def get_context_to_evaluate(self) -> context.Context | None:
         if self.train_car_state.checks_type in (
             TrainCarChecksType.INPLACE,
             TrainCarChecksType.DRAFT,
@@ -911,10 +907,8 @@ class TrainCar:
 
     @staticmethod
     def _get_pulls_branch_ref(
-        embarked_pulls: typing.List[EmbarkedPull],
-        parent_pr_numbers: typing.Optional[
-            list[github_types.GitHubPullRequestNumber]
-        ] = None,
+        embarked_pulls: list[EmbarkedPull],
+        parent_pr_numbers: None | (list[github_types.GitHubPullRequestNumber]) = None,
     ) -> str:
         pr_numbers = [ep.user_pull_request_number for ep in embarked_pulls]
         if parent_pr_numbers:
@@ -933,7 +927,7 @@ class TrainCar:
     async def _create_draft_pull_request(
         self,
         branch_name: github_types.GitHubRefType,
-        github_user: typing.Optional[user_tokens.UserTokensUser],
+        github_user: user_tokens.UserTokensUser | None,
     ) -> github_types.GitHubPullRequest:
 
         try:
@@ -1021,7 +1015,7 @@ class TrainCar:
         self,
         branch_name: github_types.GitHubRefType,
         base_sha: github_types.SHAType,
-        github_user: typing.Optional[user_tokens.UserTokensUser],
+        github_user: user_tokens.UserTokensUser | None,
     ) -> None:
 
         try:
@@ -1055,7 +1049,7 @@ class TrainCar:
         self,
         current_branch_name: github_types.GitHubRefType,
         new_branch_name: github_types.GitHubRefType,
-        github_user: typing.Optional[user_tokens.UserTokensUser],
+        github_user: user_tokens.UserTokensUser | None,
     ) -> None:
         try:
             await self.train.repository.installation.client.post(
@@ -1083,9 +1077,7 @@ class TrainCar:
         self,
         queue_rule: "rules.QueueRule",
         previous_car: "TrainCar | None",
-    ) -> typing.Tuple[
-        github_types.SHAType, typing.List[github_types.GitHubPullRequestNumber]
-    ]:
+    ) -> tuple[github_types.SHAType, list[github_types.GitHubPullRequestNumber]]:
         pulls_in_draft = []
         queue_branch_merge_method = queue_rule.config["queue_branch_merge_method"]
         if queue_branch_merge_method is None:
@@ -1134,7 +1126,7 @@ class TrainCar:
             )
 
         bot_account = queue_rule.config["draft_bot_account"]
-        github_user: typing.Optional[user_tokens.UserTokensUser] = None
+        github_user: user_tokens.UserTokensUser | None = None
         if bot_account:
             tokens = await self.train.repository.installation.get_user_tokens()
             github_user = tokens.get_token_for(bot_account)
@@ -1279,7 +1271,7 @@ class TrainCar:
         *,
         for_queue_pull_request: bool = False,
         show_queue: bool = True,
-        headline: typing.Optional[str] = None,
+        headline: str | None = None,
         pull_rule: typing.Optional["rules.EvaluatedRule"] = None,
     ) -> str:
         description = ""
@@ -1329,10 +1321,9 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
     async def end_checking(
         self,
-        reason: typing.Optional[queue_utils.BaseAbortReason],
-        not_reembarked_pull_request: typing.Optional[
-            github_types.GitHubPullRequestNumber
-        ] = None,
+        reason: queue_utils.BaseAbortReason | None,
+        not_reembarked_pull_request: None
+        | (github_types.GitHubPullRequestNumber) = None,
     ) -> None:
         if self.queue_pull_request_number is None:
             return
@@ -1375,8 +1366,8 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
     async def _set_final_draft_pr_summary(
         self,
-        reason: typing.Optional[queue_utils.BaseAbortReason],
-        remaning_embarked_pulls: typing.List[EmbarkedPull],
+        reason: queue_utils.BaseAbortReason | None,
+        remaning_embarked_pulls: list[EmbarkedPull],
     ) -> None:
         if (
             self.train_car_state.checks_type != TrainCarChecksType.DRAFT
@@ -1477,9 +1468,8 @@ You don't need to do anything. Mergify will close this pull request automaticall
         details: str,
         *,
         operation: typing.Literal["created", "update"] = "created",
-        pull_requests_to_remove: typing.Optional[
-            typing.List[github_types.GitHubPullRequestNumber]
-        ] = None,
+        pull_requests_to_remove: None
+        | (list[github_types.GitHubPullRequestNumber]) = None,
         report_as_error: bool = False,
     ) -> None:
         self.train_car_state.checks_type = TrainCarChecksType.FAILED
@@ -1572,7 +1562,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
         self,
         queue_conditions_conclusion: check_api.Conclusion,
         evaluated_queue_rule: "rules.EvaluatedQueueRule",
-        unexpected_change: typing.Optional[UnexpectedChange] = None,
+        unexpected_change: UnexpectedChange | None = None,
     ) -> None:
 
         self.last_evaluated_conditions = evaluated_queue_rule.conditions.get_summary()
@@ -1855,7 +1845,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 self.queue_pull_request_number
             )
 
-            headline: typing.Optional[str] = None
+            headline: str | None = None
             if self.train_car_state.outcome == TrainCarOutcome.MERGEABLE:
                 headline = "🎉 This combination of pull requests has been checked successfully 🎉"
                 show_queue = False
@@ -2055,16 +2045,14 @@ class Train:
     ref: github_types.GitHubRefType
 
     # Stored in redis
-    _cars: typing.List[TrainCar] = dataclasses.field(default_factory=list)
-    _waiting_pulls: typing.List[EmbarkedPull] = dataclasses.field(default_factory=list)
-    _current_base_sha: typing.Optional[github_types.SHAType] = dataclasses.field(
-        default=None
-    )
+    _cars: list[TrainCar] = dataclasses.field(default_factory=list)
+    _waiting_pulls: list[EmbarkedPull] = dataclasses.field(default_factory=list)
+    _current_base_sha: github_types.SHAType | None = dataclasses.field(default=None)
 
     class Serialized(typing.TypedDict):
-        cars: typing.List[TrainCar.Serialized]
-        waiting_pulls: typing.List[EmbarkedPull.Serialized]
-        current_base_sha: typing.Optional[github_types.SHAType]
+        cars: list[TrainCar.Serialized]
+        waiting_pulls: list[EmbarkedPull.Serialized]
+        current_base_sha: github_types.SHAType | None
 
     @classmethod
     async def from_context(cls, ctxt: context.Context) -> "Train":
@@ -2108,11 +2096,9 @@ class Train:
         cls,
         repository: context.Repository,
         *,
-        exclude_ref: typing.Optional[github_types.GitHubRefType] = None,
+        exclude_ref: github_types.GitHubRefType | None = None,
     ) -> typing.AsyncIterator["Train"]:
-        repo_filter: typing.Union[
-            github_types.GitHubRepositoryIdType, typing.Literal["*"]
-        ] = "*"
+        repo_filter: (github_types.GitHubRepositoryIdType | typing.Literal["*"]) = "*"
         if repository is not None:
             repo_filter = repository.repo["id"]
 
@@ -2130,7 +2116,7 @@ class Train:
             await train.load(train_raw)
             yield train
 
-    async def load(self, train_raw: typing.Optional[str] = None) -> None:
+    async def load(self, train_raw: str | None = None) -> None:
         if train_raw is None:
             train_raw = await self.repository.installation.redis.cache.hget(
                 self._get_redis_key(), self._get_redis_hash_key()
@@ -2149,7 +2135,7 @@ class Train:
             self._current_base_sha = None
 
     @property
-    def log_queue_extras(self) -> typing.Dict[str, typing.Any]:
+    def log_queue_extras(self) -> dict[str, typing.Any]:
         return {
             "train_cars": [
                 [ep.user_pull_request_number for ep in c.still_queued_embarked_pulls]
@@ -2186,14 +2172,14 @@ class Train:
                 self._get_redis_key(), self._get_redis_hash_key()
             )
 
-    def get_car(self, ctxt: context.Context) -> typing.Optional[TrainCar]:
+    def get_car(self, ctxt: context.Context) -> TrainCar | None:
         return first.first(
             self._cars,
             key=lambda car: ctxt.pull["number"]
             in [ep.user_pull_request_number for ep in car.still_queued_embarked_pulls],
         )
 
-    def get_car_by_tmp_pull(self, ctxt: context.Context) -> typing.Optional[TrainCar]:
+    def get_car_by_tmp_pull(self, ctxt: context.Context) -> TrainCar | None:
         return first.first(
             self._cars,
             key=lambda car: car.queue_pull_request_number == ctxt.pull["number"],
@@ -2294,11 +2280,11 @@ class Train:
         self,
         new_queue_size: int,
         reason: queue_utils.BaseAbortReason,
-        drop_pull_request: typing.Optional[github_types.GitHubPullRequestNumber] = None,
+        drop_pull_request: github_types.GitHubPullRequestNumber | None = None,
     ) -> None:
         sliced = False
-        new_cars: typing.List[TrainCar] = []
-        new_waiting_pulls: typing.List[EmbarkedPull] = []
+        new_cars: list[TrainCar] = []
+        new_waiting_pulls: list[EmbarkedPull] = []
         for c in self._cars:
             new_queue_size -= len(c.still_queued_embarked_pulls)
             if new_queue_size >= 0:
@@ -2327,10 +2313,10 @@ class Train:
 
     def find_embarked_pull(
         self, pull_number: github_types.GitHubPullRequestNumber
-    ) -> typing.Union[
-        typing.Tuple[int, EmbarkedPullWithCar],
-        typing.Tuple[typing.Literal[None], typing.Literal[None]],
-    ]:
+    ) -> (
+        tuple[int, EmbarkedPullWithCar]
+        | tuple[typing.Literal[None], typing.Literal[None]]
+    ):
         for position, embarked_pull_with_car in enumerate(self._iter_embarked_pulls()):
             if (
                 embarked_pull_with_car.embarked_pull.user_pull_request_number
@@ -2342,14 +2328,14 @@ class Train:
     @staticmethod
     def _waiting_pulls_sorter(
         pull: EmbarkedPull,
-    ) -> typing.Tuple[int, datetime.datetime]:
+    ) -> tuple[int, datetime.datetime]:
         return (
             pull.config["effective_priority"] * -1,
             pull.queued_at,
         )
 
     @property
-    def _waiting_pulls_ordered_by_priority(self) -> typing.List[EmbarkedPull]:
+    def _waiting_pulls_ordered_by_priority(self) -> list[EmbarkedPull]:
         return sorted(
             self._waiting_pulls,
             key=self._waiting_pulls_sorter,
@@ -2369,7 +2355,7 @@ class Train:
     async def is_queue_frozen(self, queue_name: "rules.QueueName") -> bool:
         return queue_name in await self.get_frozen_queues_names()
 
-    async def get_frozen_queues_names(self) -> typing.Set[str]:
+    async def get_frozen_queues_names(self) -> set[str]:
 
         # NOTE(Syffe): When checking for where to position a newly added PR in queues,
         # all unfrozen queues with lower priorities than the highest frozen queue have
@@ -2797,7 +2783,7 @@ class Train:
         # in two parts, but check only the first one
         parts = max(2, queue_rule.config["speculative_checks"])
 
-        parents: typing.List[EmbarkedPull] = []
+        parents: list[EmbarkedPull] = []
         for pos, pulls in enumerate(
             utils.split_list(car.still_queued_embarked_pulls[:-1], parts)
         ):
@@ -3124,7 +3110,7 @@ class Train:
 
         raise RuntimeError("get_config on unknown pull request")
 
-    async def get_pulls(self) -> typing.List[github_types.GitHubPullRequestNumber]:
+    async def get_pulls(self) -> list[github_types.GitHubPullRequestNumber]:
         return [
             item.embarked_pull.user_pull_request_number
             for item in self._iter_embarked_pulls()
@@ -3139,8 +3125,8 @@ class Train:
 
     @staticmethod
     def _get_next_batch(
-        pulls: typing.List[EmbarkedPull], queue_name: str, batch_size: int = 1
-    ) -> typing.Tuple[typing.List[EmbarkedPull], typing.List[EmbarkedPull]]:
+        pulls: list[EmbarkedPull], queue_name: str, batch_size: int = 1
+    ) -> tuple[list[EmbarkedPull], list[EmbarkedPull]]:
         if not pulls:
             return [], []
 
@@ -3159,7 +3145,7 @@ class Train:
         ctxt: context.Context,
         signal_trigger: str,
         *,
-        exclude_ref: typing.Optional[github_types.GitHubRefType] = None,
+        exclude_ref: github_types.GitHubRefType | None = None,
     ) -> None:
         async for train in cls.iter_trains(
             ctxt.repository,
@@ -3286,9 +3272,7 @@ class Train:
     async def refresh_pulls(
         self,
         source: str,
-        additional_pull_request: typing.Optional[
-            github_types.GitHubPullRequestNumber
-        ] = None,
+        additional_pull_request: None | (github_types.GitHubPullRequestNumber) = None,
     ) -> None:
 
         pulls = await self.get_pulls()

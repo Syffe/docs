@@ -113,7 +113,7 @@ class UnexpectedPullRetry(Exception):
     pass
 
 
-T_MessagePayload = typing.NewType("T_MessagePayload", typing.Dict[bytes, bytes])
+T_MessagePayload = typing.NewType("T_MessagePayload", dict[bytes, bytes])
 # FIXME(sileht): redis returns bytes, not str
 T_MessageID = typing.NewType("T_MessageID", str)
 
@@ -145,7 +145,7 @@ async def run_engine(
     repo_id: github_types.GitHubRepositoryIdType,
     tracing_repo_name: github_types.GitHubRepositoryNameForTracing,
     pull_number: github_types.GitHubPullRequestNumber,
-    sources: typing.List[context.T_PayloadEventSource],
+    sources: list[context.T_PayloadEventSource],
 ) -> None:
     logger = daiquiri.getLogger(
         __name__,
@@ -228,7 +228,7 @@ class OwnerLoginsCache:
     # we can assume github_types.GitHubLogin is ~ 104 bytes
     # and github_types.GitHubAccountIdType 32 bytes
     # and 10% dict overhead
-    _mapping: typing.Dict[
+    _mapping: dict[
         github_types.GitHubAccountIdType, github_types.GitHubLogin
     ] = dataclasses.field(default_factory=dict, repr=False)
 
@@ -251,7 +251,7 @@ class OwnerLoginsCache:
 class StreamProcessor:
     redis_links: redis_utils.RedisLinks
     worker_id: str
-    dedicated_owner_id: typing.Optional[github_types.GitHubAccountIdType]
+    dedicated_owner_id: github_types.GitHubAccountIdType | None
     owners_cache: OwnerLoginsCache
     retry_unhandled_exception_forever: bool = True
 
@@ -259,7 +259,7 @@ class StreamProcessor:
     async def _translate_exception_to_retries(
         self,
         bucket_org_key: worker_lua.BucketOrgKeyType,
-        bucket_sources_key: typing.Optional[worker_lua.BucketSourcesKeyType] = None,
+        bucket_sources_key: worker_lua.BucketSourcesKeyType | None = None,
     ) -> typing.AsyncIterator[None]:
         try:
             yield
@@ -478,7 +478,7 @@ class StreamProcessor:
     @staticmethod
     def _extract_infos_from_bucket_sources_key(
         bucket_sources_key: worker_lua.BucketSourcesKeyType,
-    ) -> typing.Tuple[
+    ) -> tuple[
         github_types.GitHubRepositoryIdType,
         github_types.GitHubPullRequestNumber,
     ]:
@@ -497,8 +497,8 @@ class StreamProcessor:
         self,
         bucket_org_key: worker_lua.BucketOrgKeyType,
     ) -> PullRequestBucket | None:
-        bucket_sources_keys: typing.List[
-            typing.Tuple[bytes, float]
+        bucket_sources_keys: list[
+            tuple[bytes, float]
         ] = await self.redis_links.stream.zrangebyscore(
             bucket_org_key,
             min=0,
@@ -715,7 +715,7 @@ class StreamProcessor:
         repo_id: github_types.GitHubRepositoryIdType,
         tracing_repo_name: github_types.GitHubRepositoryNameForTracing,
         source: context.T_PayloadEventSource,
-        score: typing.Optional[str] = None,
+        score: str | None = None,
     ) -> int:
         # NOTE(sileht): the event is incomplete (push, refresh, checks, status)
         # So we get missing pull numbers, add them to the stream to
@@ -760,8 +760,8 @@ class StreamProcessor:
         installation: context.Installation,
         bucket: PullRequestBucket,
         tracing_repo_name: github_types.GitHubRepositoryNameForTracing,
-        message_ids: typing.List[T_MessageID],
-        sources: typing.List[context.T_PayloadEventSource],
+        message_ids: list[T_MessageID],
+        sources: list[context.T_PayloadEventSource],
     ) -> None:
         for source in sources:
             if "timestamp" in source:
@@ -848,7 +848,7 @@ class StreamProcessor:
     def should_handle_owner(
         self,
         owner_id: github_types.GitHubAccountIdType,
-        dedicated_worker_owner_ids: typing.Set[github_types.GitHubAccountIdType],
+        dedicated_worker_owner_ids: set[github_types.GitHubAccountIdType],
         global_shared_tasks_count: int,
     ) -> bool:
         if self.dedicated_owner_id is None:
@@ -880,7 +880,7 @@ def wait_before_next_retry(retry_state: tenacity.RetryCallState) -> typing.Any:
 
 
 async def ping_redis(
-    redis: typing.Union[redis_utils.RedisStream, redis_utils.RedisCache],
+    redis: redis_utils.RedisStream | redis_utils.RedisCache,
     redis_name: str,
 ) -> None:
     def retry_log(retry_state: tenacity.RetryCallState) -> None:
@@ -970,7 +970,7 @@ WorkerServiceT = typing.Literal[
     "stream-monitoring",
     "delayed-refresh",
 ]
-WorkerServicesT = typing.Set[WorkerServiceT]
+WorkerServicesT = set[WorkerServiceT]
 AVAILABLE_WORKER_SERVICES = set(WorkerServiceT.__dict__["__args__"])
 
 
@@ -1007,10 +1007,10 @@ class Worker:
     )
     _stop_task: asyncio.Task[None] | None = dataclasses.field(init=False, default=None)
 
-    _shared_worker_tasks: typing.List[Task] = dataclasses.field(
+    _shared_worker_tasks: list[Task] = dataclasses.field(
         init=False, default_factory=list
     )
-    _dedicated_worker_tasks: typing.Dict[
+    _dedicated_worker_tasks: dict[
         github_types.GitHubAccountIdType, Task
     ] = dataclasses.field(init=False, default_factory=dict)
 
@@ -1027,7 +1027,7 @@ class Worker:
     _owners_cache: OwnerLoginsCache = dataclasses.field(
         init=False, default_factory=OwnerLoginsCache
     )
-    _dedicated_workers_owners_cache: typing.Set[
+    _dedicated_workers_owners_cache: set[
         github_types.GitHubAccountIdType
     ] = dataclasses.field(init=False, default_factory=set)
 
@@ -1134,7 +1134,7 @@ class Worker:
     @staticmethod
     async def get_dedicated_worker_owner_ids_from_redis(
         redis_stream: redis_utils.RedisStream,
-    ) -> typing.Set[github_types.GitHubAccountIdType]:
+    ) -> set[github_types.GitHubAccountIdType]:
         dedicated_workers_data = await redis_stream.smembers(DEDICATED_WORKERS_KEY)
         if dedicated_workers_data is None:
             return set()
@@ -1156,8 +1156,8 @@ class Worker:
         # TODO(sileht): maybe also graph streams that are before `now`
         # to see the diff between the backlog and the upcoming work to do
         now = time.time()
-        org_buckets: typing.List[
-            typing.Tuple[bytes, float]
+        org_buckets: list[
+            tuple[bytes, float]
         ] = await self._redis_links.stream.zrangebyscore(
             "streams",
             min=0,
@@ -1190,8 +1190,8 @@ class Worker:
 
         # TODO(sileht): maybe we can do something with the bucket scores to
         # build a latency metric
-        bucket_backlogs: typing.Dict[
-            worker_pusher.Priority, typing.Dict[str, int]
+        bucket_backlogs: dict[
+            worker_pusher.Priority, dict[str, int]
         ] = collections.defaultdict(lambda: collections.defaultdict(lambda: 0))
 
         for org_bucket, _ in org_buckets:
@@ -1204,8 +1204,8 @@ class Worker:
                 worker_id = self.get_shared_worker_id_for(
                     owner_id, self.global_shared_tasks_count
                 )
-            bucket_contents: typing.List[
-                typing.Tuple[bytes, float]
+            bucket_contents: list[
+                tuple[bytes, float]
             ] = await self._redis_links.stream.zrangebyscore(
                 org_bucket, min=0, max="+inf", withscores=True
             )
@@ -1233,7 +1233,7 @@ class Worker:
         shared_id = int(hashed.hexdigest(), 16) % global_shared_tasks_count
         return f"shared-{shared_id}"
 
-    def get_shared_worker_ids(self) -> typing.List[int]:
+    def get_shared_worker_ids(self) -> list[int]:
         return list(
             range(
                 self.process_index * self.shared_stream_tasks_per_process,
@@ -1470,7 +1470,7 @@ def ServicesSet(v: str) -> WorkerServicesT:
     return typing.cast(WorkerServicesT, values)
 
 
-def main(argv: typing.Optional[typing.List[str]] = None) -> None:
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Mergify Engine Worker")
     parser.add_argument(
         "--enabled-services",
@@ -1497,7 +1497,7 @@ async def async_status() -> None:
         redis_links.stream
     )
 
-    def sorter(item: typing.Tuple[bytes, float]) -> str:
+    def sorter(item: tuple[bytes, float]) -> str:
         org_bucket, score = item
         owner_id = Worker.extract_owner(
             worker_lua.BucketOrgKeyType(org_bucket.decode())
@@ -1507,7 +1507,7 @@ async def async_status() -> None:
         else:
             return Worker.get_shared_worker_id_for(owner_id, global_shared_tasks_count)
 
-    org_buckets: typing.List[typing.Tuple[bytes, float]] = sorted(
+    org_buckets: list[tuple[bytes, float]] = sorted(
         await redis_links.stream.zrangebyscore(
             "streams", min=0, max="+inf", withscores=True
         ),

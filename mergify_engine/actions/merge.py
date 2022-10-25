@@ -71,7 +71,7 @@ class MergeAction(merge_base.MergeBaseAction[None, None]):
     }
 
     @property
-    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
+    def silenced_conclusion(self) -> tuple[check_api.Conclusion, ...]:
         return ()
 
     async def run(

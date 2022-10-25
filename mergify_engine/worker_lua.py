@@ -77,7 +77,7 @@ return sources
 )
 
 
-def lua_table_to_dict(table: typing.List[bytes]) -> typing.Dict[bytes, bytes]:
+def lua_table_to_dict(table: list[bytes]) -> dict[bytes, bytes]:
     it = iter(table)
     return dict(zip(it, it))
 
@@ -88,7 +88,7 @@ async def get_pull_messages(
     bucket_org_key: BucketOrgKeyType,
     bucket_sources_key: BucketSourcesKeyType,
     score_offset: int,
-) -> typing.List[typing.Tuple[bytes, typing.Dict[bytes, bytes]]]:
+) -> list[tuple[bytes, dict[bytes, bytes]]]:
     """Get all messages for a pull requests and program next run with score_offset"""
 
     messages = await redis_utils.run_script(
@@ -131,7 +131,7 @@ async def remove_pull(
     redis: redis_utils.RedisStream,
     bucket_org_key: BucketOrgKeyType,
     bucket_sources_key: BucketSourcesKeyType,
-    message_ids: typing.Tuple[str, ...],
+    message_ids: tuple[str, ...],
 ) -> None:
     await redis_utils.run_script(
         redis,

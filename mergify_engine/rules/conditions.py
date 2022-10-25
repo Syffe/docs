@@ -20,7 +20,7 @@ LOG = daiquiri.getLogger(__name__)
 
 
 # This helps mypy breaking the recursive definition
-FakeTreeT = typing.Dict[str, typing.Any]
+FakeTreeT = dict[str, typing.Any]
 
 RuleConditionNode = typing.Union[
     "RuleConditionCombination", "RuleConditionNegation", "RuleCondition"
@@ -37,19 +37,19 @@ class RuleCondition:
     -merged
     """
 
-    condition: typing.Union[str, FakeTreeT]
-    label: typing.Optional[str] = None
-    description: typing.Optional[str] = None
+    condition: str | FakeTreeT
+    label: str | None = None
+    description: str | None = None
     allow_command_attributes: bool = False
     partial_filter: filter.Filter[bool] = dataclasses.field(init=False)
     match: bool = dataclasses.field(init=False, default=False)
     _used: bool = dataclasses.field(init=False, default=False)
-    evaluation_error: typing.Optional[str] = dataclasses.field(init=False, default=None)
+    evaluation_error: str | None = dataclasses.field(init=False, default=None)
 
     def __post_init__(self) -> None:
         self.update(self.condition)
 
-    def update(self, condition_raw: typing.Union[str, FakeTreeT]) -> None:
+    def update(self, condition_raw: str | FakeTreeT) -> None:
         self.condition = condition_raw
 
         try:
@@ -157,7 +157,7 @@ class RuleConditionGroup(abc.ABC):
     def _conditions_sort_key(
         condition: typing.Union[RuleCondition, "RuleConditionGroup"],
         should_match: bool,
-    ) -> typing.Tuple[bool, int, typing.Any, typing.Any]:
+    ) -> tuple[bool, int, typing.Any, typing.Any]:
         """
         Group conditions based on (in order):
         - If `condition.match` != `should_match`
@@ -203,7 +203,7 @@ class RuleConditionGroup(abc.ABC):
         cls,
         conditions: list[RuleConditionNode],
         level: int = 0,
-        filter_key: typing.Optional[ConditionFilterKeyT] = None,
+        filter_key: ConditionFilterKeyT | None = None,
         parent_condition_matching: bool = False,
     ) -> str:
         ordered_conditions = RuleConditionGroup._get_conditions_ordered(
@@ -276,10 +276,9 @@ class RuleConditionGroup(abc.ABC):
             if isinstance(condition, RuleCondition):
                 yield condition
             elif isinstance(condition, RuleConditionGroup):
-                for sub_condition in self.walk(
+                yield from self.walk(
                     condition.conditions, parent_condition_matching=condition.match
-                ):
-                    yield sub_condition
+                )
             else:
                 raise RuntimeError(f"Unsupported condition type: {type(condition)}")
 
@@ -313,7 +312,7 @@ class RuleConditionCombination(RuleConditionGroup):
     ]
     operator: typing.Literal["and", "or"] = dataclasses.field(init=False)
     _conditions: list[RuleConditionNode] = dataclasses.field(init=False)
-    description: typing.Optional[str] = None
+    description: str | None = None
     match: bool = dataclasses.field(init=False, default=False)
 
     def __post_init__(
@@ -363,7 +362,7 @@ class RuleConditionNegation(RuleConditionGroup):
     data: dataclasses.InitVar[dict[typing.Literal["not"], RuleConditionCombination]]
     operator: typing.Literal["not"] = dataclasses.field(init=False)
     condition: RuleConditionCombination = dataclasses.field(init=False)
-    description: typing.Optional[str] = None
+    description: str | None = None
     match: bool = dataclasses.field(init=False, default=False)
 
     def __post_init__(
@@ -397,7 +396,7 @@ class RuleConditionNegation(RuleConditionGroup):
 class QueueRuleConditions:
     conditions: dataclasses.InitVar[list[RuleConditionNode]]
     condition: RuleConditionCombination = dataclasses.field(init=False)
-    _evaluated_conditions: typing.Dict[
+    _evaluated_conditions: dict[
         github_types.GitHubPullRequestNumber, RuleConditionCombination
     ] = dataclasses.field(default_factory=dict, init=False, repr=False)
     match: bool = dataclasses.field(init=False, default=False)
@@ -412,9 +411,7 @@ class QueueRuleConditions:
     def extract_raw_filter_tree(self) -> filter.TreeT:
         return self.condition.extract_raw_filter_tree()
 
-    async def __call__(
-        self, pull_requests: typing.List[context.BasePullRequest]
-    ) -> bool:
+    async def __call__(self, pull_requests: list[context.BasePullRequest]) -> bool:
         if self._used:
             raise RuntimeError(f"{self.__class__.__name__} cannot be re-used")
         self._used = True
@@ -469,7 +466,7 @@ class QueueRuleConditions:
             github_types.GitHubPullRequestNumber, RuleConditionNode
         ],
         should_match: bool,
-    ) -> typing.Tuple[bool, int, typing.Any, typing.Any]:
+    ) -> tuple[bool, int, typing.Any, typing.Any]:
         """
         Group conditions based on (in order):
         - If `condition.match` != `should_match`
@@ -595,11 +592,9 @@ class QueueRuleConditions:
     def walk(self) -> typing.Iterator[RuleCondition]:
         if self._used:
             for conditions in self._evaluated_conditions.values():
-                for cond in conditions.walk():
-                    yield cond
+                yield from conditions.walk()
         else:
-            for cond in self.condition.walk():
-                yield cond
+            yield from self.condition.walk()
 
 
 BRANCH_PROTECTION_CONDITION_TAG = "🛡 GitHub branch protection"
@@ -712,7 +707,7 @@ class PullRequestRuleConditions:
     def __post_init__(self, conditions: list[RuleConditionNode]) -> None:
         self.condition = RuleConditionCombination({"and": conditions})
 
-    async def __call__(self, objs: typing.List[context.BasePullRequest]) -> bool:
+    async def __call__(self, objs: list[context.BasePullRequest]) -> bool:
         if len(objs) > 1:
             raise RuntimeError(
                 f"{self.__class__.__name__} take only one pull request at a time"
@@ -739,8 +734,7 @@ class PullRequestRuleConditions:
         return self.condition.is_faulty()
 
     def walk(self) -> typing.Iterator[RuleCondition]:
-        for cond in self.condition.walk():
-            yield cond
+        yield from self.condition.walk()
 
     def copy(self) -> "PullRequestRuleConditions":
         return PullRequestRuleConditions(self.condition.copy().conditions)

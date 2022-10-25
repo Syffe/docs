@@ -23,13 +23,13 @@ PluginGroupT = typing.Literal["mergify_commands", "mergify_actions"]
 
 
 class PluginClassT(typing.TypedDict, total=False):
-    mergify_actions: typing.Dict[str, typing.Type["Action"]]
-    mergify_commands: typing.Dict[str, typing.Type["Action"]]
+    mergify_actions: dict[str, type["Action"]]
+    mergify_commands: dict[str, type["Action"]]
 
 
 _CLASSES: PluginClassT = {}
 
-RawConfigT = typing.Dict[str, typing.Any]
+RawConfigT = dict[str, typing.Any]
 
 
 @enum.unique
@@ -51,7 +51,7 @@ class ActionFlag(enum.Flag):
     SUCCESS_IS_FINAL_STATE = enum.auto()
 
 
-def get_classes(group: PluginGroupT) -> typing.Dict[str, typing.Type["Action"]]:
+def get_classes(group: PluginGroupT) -> dict[str, type["Action"]]:
     if group not in _CLASSES:
         _CLASSES[group] = {
             ep.name: ep.load() for ep in importlib.metadata.entry_points(group=group)
@@ -59,14 +59,14 @@ def get_classes(group: PluginGroupT) -> typing.Dict[str, typing.Type["Action"]]:
     return _CLASSES[group]
 
 
-def get_action_schemas() -> typing.Dict[str, typing.Type["Action"]]:
+def get_action_schemas() -> dict[str, type["Action"]]:
     return {
         name: voluptuous.Coerce(obj)
         for name, obj in get_classes("mergify_actions").items()
     }
 
 
-def get_commands() -> typing.Dict[str, typing.Type["Action"]]:
+def get_commands() -> dict[str, type["Action"]]:
     return {name: obj for name, obj in get_classes("mergify_commands").items()}
 
 
@@ -89,7 +89,7 @@ class ActionExecutor(abc.ABC, typing.Generic[ActionT, ActionExecutorConfigT]):
         ...
 
     @property
-    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
+    def silenced_conclusion(self) -> tuple[check_api.Conclusion, ...]:
         # Be default, we create check-run only on failure, CANCELLED is not a
         # failure it's part of the expected state when the conditions that
         # trigger the action didn't match anyore
@@ -121,7 +121,7 @@ class BackwardCompatActionExecutor(ActionExecutor["BackwardCompatAction", RawCon
         return await self.action.cancel(self.ctxt, self.rule)
 
     @property
-    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
+    def silenced_conclusion(self) -> tuple[check_api.Conclusion, ...]:
         return self.action.silenced_conclusion
 
     @classmethod
@@ -148,7 +148,7 @@ class ActionExecutorProtocol(typing.Protocol):
         ...
 
     @property
-    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
+    def silenced_conclusion(self) -> tuple[check_api.Conclusion, ...]:
         # Be default, we create check-run only on failure, CANCELLED is not a
         # failure it's part of the expected state when the conditions that
         # trigger the action didn't match anyore
@@ -169,7 +169,7 @@ class ActionExecutorProtocol(typing.Protocol):
         ...
 
 
-ValidatorT = typing.Dict[voluptuous.Required, typing.Any]
+ValidatorT = dict[voluptuous.Required, typing.Any]
 
 
 @dataclasses.dataclass
@@ -211,7 +211,7 @@ class Action(abc.ABC):
         pass
 
     @staticmethod
-    def command_to_config(string: str) -> typing.Dict[str, typing.Any]:
+    def command_to_config(string: str) -> dict[str, typing.Any]:
         """Convert string to dict config"""
         return {}
 
@@ -223,7 +223,7 @@ class Action(abc.ABC):
 
 class BackwardCompatAction(Action):
     @property
-    def silenced_conclusion(self) -> typing.Tuple[check_api.Conclusion, ...]:
+    def silenced_conclusion(self) -> tuple[check_api.Conclusion, ...]:
         # Be default, we create check-run only on failure, CANCELLED is not a
         # failure it's part of the expected state when the conditions that
         # trigger the action didn't match anymore

@@ -26,12 +26,12 @@ LOG = daiquiri.getLogger(__name__)
 
 @dataclasses.dataclass
 class MultipleConfigurationFileFound(Exception):
-    files: typing.List[context.MergifyConfigFile]
+    files: list[context.MergifyConfigFile]
 
 
 async def _check_configuration_changes(
     ctxt: context.Context,
-    current_mergify_config_file: typing.Optional[context.MergifyConfigFile],
+    current_mergify_config_file: context.MergifyConfigFile | None,
 ) -> bool:
     if ctxt.pull["base"]["repo"]["default_branch"] != ctxt.pull["base"]["ref"]:
         return False
@@ -70,7 +70,7 @@ async def _check_configuration_changes(
     # open and not the merge-base/fork-point. So we compare the configuration from the base
     # branch with the one of the merge commit. If the configuration is changed by the PR, they will be
     # different.
-    config_files: typing.Dict[str, context.MergifyConfigFile] = {}
+    config_files: dict[str, context.MergifyConfigFile] = {}
     async for config_file in ctxt.repository.iter_mergify_config_files(
         ref=ctxt.pull["merge_commit_sha"], preferred_filename=preferred_filename
     ):
@@ -140,7 +140,7 @@ async def _check_configuration_changes(
 
 async def _get_summary_from_sha(
     ctxt: context.Context, sha: github_types.SHAType
-) -> typing.Optional[github_types.CachedGitHubCheckRun]:
+) -> github_types.CachedGitHubCheckRun | None:
     return first.first(
         await check_api.get_checks_for_ref(
             ctxt,
@@ -153,7 +153,7 @@ async def _get_summary_from_sha(
 
 async def _get_summary_from_synchronize_event(
     ctxt: context.Context,
-) -> typing.Optional[github_types.CachedGitHubCheckRun]:
+) -> github_types.CachedGitHubCheckRun | None:
     synchronize_events = {
         typing.cast(github_types.GitHubEventPullRequest, s["data"])[
             "after"
@@ -246,12 +246,12 @@ class T_PayloadEventIssueCommentSource(typing.TypedDict):
 
 async def run(
     ctxt: context.Context,
-    sources: typing.List[context.T_PayloadEventSource],
-) -> typing.Optional[check_api.Result]:
+    sources: list[context.T_PayloadEventSource],
+) -> check_api.Result | None:
     LOG.debug("engine get context")
     ctxt.log.debug("engine start processing context")
 
-    issue_comment_sources: typing.List[T_PayloadEventIssueCommentSource] = []
+    issue_comment_sources: list[T_PayloadEventIssueCommentSource] = []
 
     for source in sources:
         if source["event_type"] == "issue_comment":

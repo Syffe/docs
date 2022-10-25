@@ -23,15 +23,13 @@ class RenderBotAccountFailure(Exception):
 
 async def render_bot_account(
     ctxt: context.Context,
-    bot_account_template: typing.Optional[str],
+    bot_account_template: str | None,
     *,
     option_name: str = "bot_account",
     required_feature: subscription.Features,
     missing_feature_message: str = "Cannot use `bot_account`",
-    required_permissions: typing.Optional[
-        typing.List[github_types.GitHubRepositoryPermission]
-    ] = None,
-) -> typing.Optional[github_types.GitHubLogin]:
+    required_permissions: None | (list[github_types.GitHubRepositoryPermission]) = None,
+) -> github_types.GitHubLogin | None:
     if bot_account_template is None:
         return None
 
@@ -106,9 +104,7 @@ async def render_bot_account(
     return bot_account
 
 
-async def render_users_template(
-    ctxt: context.Context, users: typing.List[str]
-) -> typing.Set[str]:
+async def render_users_template(ctxt: context.Context, users: list[str]) -> set[str]:
     wanted = set()
     for user in set(users):
         try:

@@ -1,7 +1,6 @@
 import dataclasses
 import functools
 import typing
-from typing import List
 
 import tenacity
 
@@ -106,7 +105,7 @@ def is_base_branch_merge_commit(
 
 async def _get_commits_without_base_branch_merge(
     ctxt: context.Context,
-) -> typing.List[github_types.CachedGitHubBranchCommit]:
+) -> list[github_types.CachedGitHubBranchCommit]:
     base_branch = ctxt.pull["base"]["ref"]
     return list(
         filter(
@@ -118,12 +117,12 @@ async def _get_commits_without_base_branch_merge(
 
 async def _get_commits_to_cherrypick(
     ctxt: context.Context, merge_commit: github_types.CachedGitHubBranchCommit
-) -> typing.List[github_types.CachedGitHubBranchCommit]:
+) -> list[github_types.CachedGitHubBranchCommit]:
     if len(merge_commit.parents) == 1:
         # NOTE(sileht): We have a rebase+merge or squash+merge
         # We pick all commits until a sha is not linked with our PR
 
-        out_commits: typing.List[github_types.CachedGitHubBranchCommit] = []
+        out_commits: list[github_types.CachedGitHubBranchCommit] = []
         commit = merge_commit
         while True:
             if len(commit.parents) != 1:
@@ -216,13 +215,13 @@ async def duplicate(
     *,
     title_template: str,
     body_template: str,
-    bot_account: typing.Optional[github_types.GitHubLogin] = None,
-    labels: typing.Optional[List[str]] = None,
-    label_conflicts: typing.Optional[str] = None,
+    bot_account: github_types.GitHubLogin | None = None,
+    labels: list[str] | None = None,
+    label_conflicts: str | None = None,
     ignore_conflicts: bool = False,
-    assignees: typing.Optional[List[str]] = None,
+    assignees: list[str] | None = None,
     branch_prefix: str = "bp",
-) -> typing.Optional[DuplicatePull]:
+) -> DuplicatePull | None:
     """Duplicate a pull request.
 
     :param pull: The pull request.
@@ -242,7 +241,7 @@ async def duplicate(
 
     cherry_pick_error: str = ""
     has_conflicts = False
-    bot_account_user: typing.Optional[UserTokensUser] = None
+    bot_account_user: UserTokensUser | None = None
     if bot_account is not None:
         user_tokens = await ctxt.repository.installation.get_user_tokens()
         bot_account_user = user_tokens.get_token_for(bot_account)

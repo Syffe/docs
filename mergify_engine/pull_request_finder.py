@@ -38,7 +38,7 @@ class PullRequestFinder:
         repo_id: github_types.GitHubRepositoryIdType,
         event_type: github_types.GitHubEventType,
         data: github_types.GitHubEvent,
-    ) -> typing.Set[github_types.GitHubPullRequestNumber]:
+    ) -> set[github_types.GitHubPullRequestNumber]:
         if event_type == "refresh":
             data = typing.cast(github_types.GitHubEventRefresh, data)
             if (pull_request_number := data.get("pull_request_number")) is not None:
@@ -85,7 +85,7 @@ class PullRequestFinder:
         self,
         repo_id: github_types.GitHubRepositoryIdType,
         sha: github_types.SHAType,
-    ) -> typing.Set[github_types.GitHubPullRequestNumber]:
+    ) -> set[github_types.GitHubPullRequestNumber]:
         if "sha" not in self.sha_to_pull_numbers:
             await self._fetch_open_pull_requests(repo_id)
 
@@ -98,7 +98,7 @@ class PullRequestFinder:
         self,
         repo_id: github_types.GitHubRepositoryIdType,
         branch: github_types.GitHubRefType,
-    ) -> typing.Set[github_types.GitHubPullRequestNumber]:
+    ) -> set[github_types.GitHubPullRequestNumber]:
         if branch not in self.opened_pulls_by_repo_and_branch[repo_id]:
             await self._fetch_open_pull_requests(repo_id)
 

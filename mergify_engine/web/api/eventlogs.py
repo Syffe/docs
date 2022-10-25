@@ -33,7 +33,7 @@ Event = typing.Annotated[
 @pydantic.dataclasses.dataclass
 class EventLogsResponse(pagination.PageResponse[Event]):
     items_key = "events"
-    events: typing.List[Event] = dataclasses.field(
+    events: list[Event] = dataclasses.field(
         init=False,
         metadata={
             "description": "The list of events of a pull request",

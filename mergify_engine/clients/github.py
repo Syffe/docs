@@ -40,7 +40,7 @@ class GraphqlError(Exception):
 @dataclasses.dataclass
 class CachedToken:
     STORAGE: typing.ClassVar[
-        typing.Dict[github_types.GitHubInstallationIdType, "CachedToken"]
+        dict[github_types.GitHubInstallationIdType, "CachedToken"]
     ] = {}
 
     installation_id: github_types.GitHubInstallationIdType
@@ -184,7 +184,7 @@ class GithubAppInstallationAuth(httpx.Auth):
         )
         return self._cached_token.token
 
-    def get_access_token(self) -> typing.Optional[str]:
+    def get_access_token(self) -> str | None:
         now = datetime.datetime.utcnow()
         if not self._cached_token:
             return None
@@ -282,8 +282,8 @@ def _inject_options(func: typing.Any) -> typing.Any:
     async def wrapper(
         self: "AsyncGithubInstallationClient",
         url: str,
-        api_version: typing.Optional[github_types.GitHubApiVersion] = None,
-        oauth_token: typing.Optional[github_types.GitHubOAuthToken] = None,
+        api_version: github_types.GitHubApiVersion | None = None,
+        oauth_token: github_types.GitHubOAuthToken | None = None,
         **kwargs: typing.Any,
     ) -> typing.Any:
         headers = kwargs.pop("headers", {})
@@ -303,15 +303,13 @@ DEFAULT_GITHUB_TRANSPORT = httpx.AsyncHTTPTransport(
 
 
 class AsyncGithubClient(http.AsyncClient):
-    auth: typing.Union[
-        github_app.GithubBearerAuth, GithubAppInstallationAuth, GithubTokenAuth
-    ]
+    auth: (github_app.GithubBearerAuth | GithubAppInstallationAuth | GithubTokenAuth)
 
     def __init__(
         self,
-        auth: typing.Union[
-            github_app.GithubBearerAuth, GithubAppInstallationAuth, GithubTokenAuth
-        ],
+        auth: (
+            github_app.GithubBearerAuth | GithubAppInstallationAuth | GithubTokenAuth
+        ),
     ) -> None:
         super().__init__(
             base_url=config.GITHUB_REST_API_URL,
@@ -322,8 +320,8 @@ class AsyncGithubClient(http.AsyncClient):
 
     def _prepare_request_kwargs(
         self,
-        api_version: typing.Optional[github_types.GitHubApiVersion] = None,
-        oauth_token: typing.Optional[github_types.GitHubOAuthToken] = None,
+        api_version: github_types.GitHubApiVersion | None = None,
+        oauth_token: github_types.GitHubOAuthToken | None = None,
         **kwargs: typing.Any,
     ) -> typing.Any:
         if api_version:
@@ -341,8 +339,8 @@ class AsyncGithubClient(http.AsyncClient):
     async def get(  # type: ignore[override]
         self,
         url: str,
-        api_version: typing.Optional[github_types.GitHubApiVersion] = None,
-        oauth_token: typing.Optional[github_types.GitHubOAuthToken] = None,
+        api_version: github_types.GitHubApiVersion | None = None,
+        oauth_token: github_types.GitHubOAuthToken | None = None,
         **kwargs: typing.Any,
     ) -> httpx.Response:
         return await super().get(
@@ -352,8 +350,8 @@ class AsyncGithubClient(http.AsyncClient):
     async def post(  # type: ignore[override]
         self,
         url: str,
-        api_version: typing.Optional[github_types.GitHubApiVersion] = None,
-        oauth_token: typing.Optional[github_types.GitHubOAuthToken] = None,
+        api_version: github_types.GitHubApiVersion | None = None,
+        oauth_token: github_types.GitHubOAuthToken | None = None,
         **kwargs: typing.Any,
     ) -> httpx.Response:
         return await super().post(
@@ -363,8 +361,8 @@ class AsyncGithubClient(http.AsyncClient):
     async def put(  # type: ignore[override]
         self,
         url: str,
-        api_version: typing.Optional[github_types.GitHubApiVersion] = None,
-        oauth_token: typing.Optional[github_types.GitHubOAuthToken] = None,
+        api_version: github_types.GitHubApiVersion | None = None,
+        oauth_token: github_types.GitHubOAuthToken | None = None,
         **kwargs: typing.Any,
     ) -> httpx.Response:
         return await super().put(
@@ -374,8 +372,8 @@ class AsyncGithubClient(http.AsyncClient):
     async def patch(  # type: ignore[override]
         self,
         url: str,
-        api_version: typing.Optional[github_types.GitHubApiVersion] = None,
-        oauth_token: typing.Optional[github_types.GitHubOAuthToken] = None,
+        api_version: github_types.GitHubApiVersion | None = None,
+        oauth_token: github_types.GitHubOAuthToken | None = None,
         **kwargs: typing.Any,
     ) -> httpx.Response:
         return await super().patch(
@@ -385,8 +383,8 @@ class AsyncGithubClient(http.AsyncClient):
     async def head(  # type: ignore[override]
         self,
         url: str,
-        api_version: typing.Optional[github_types.GitHubApiVersion] = None,
-        oauth_token: typing.Optional[github_types.GitHubOAuthToken] = None,
+        api_version: github_types.GitHubApiVersion | None = None,
+        oauth_token: github_types.GitHubOAuthToken | None = None,
         **kwargs: typing.Any,
     ) -> httpx.Response:
         return await super().head(
@@ -396,8 +394,8 @@ class AsyncGithubClient(http.AsyncClient):
     async def delete(  # type: ignore[override]
         self,
         url: str,
-        api_version: typing.Optional[github_types.GitHubApiVersion] = None,
-        oauth_token: typing.Optional[github_types.GitHubOAuthToken] = None,
+        api_version: github_types.GitHubApiVersion | None = None,
+        oauth_token: github_types.GitHubOAuthToken | None = None,
         **kwargs: typing.Any,
     ) -> httpx.Response:
         return await super().delete(
@@ -407,7 +405,7 @@ class AsyncGithubClient(http.AsyncClient):
     async def graphql_post(
         self,
         query: str,
-        oauth_token: typing.Optional[github_types.GitHubOAuthToken] = None,
+        oauth_token: github_types.GitHubOAuthToken | None = None,
     ) -> typing.Any:
         response = await self.post(
             config.GITHUB_GRAPHQL_API_URL,
@@ -424,9 +422,9 @@ class AsyncGithubClient(http.AsyncClient):
     async def item(
         self,
         url: str,
-        api_version: typing.Optional[github_types.GitHubApiVersion] = None,
-        oauth_token: typing.Optional[github_types.GitHubOAuthToken] = None,
-        params: typing.Optional[typing.Dict[str, str]] = None,
+        api_version: github_types.GitHubApiVersion | None = None,
+        oauth_token: github_types.GitHubOAuthToken | None = None,
+        params: dict[str, str] | None = None,
     ) -> typing.Any:
         response = await self.get(
             url, api_version=api_version, oauth_token=oauth_token, params=params
@@ -439,15 +437,15 @@ class AsyncGithubClient(http.AsyncClient):
         *,
         resource_name: str,
         page_limit: int,
-        api_version: typing.Optional[github_types.GitHubApiVersion] = None,
-        oauth_token: typing.Optional[github_types.GitHubOAuthToken] = None,
-        list_items: typing.Optional[str] = None,
-        params: typing.Optional[typing.Dict[str, str]] = None,
+        api_version: github_types.GitHubApiVersion | None = None,
+        oauth_token: github_types.GitHubOAuthToken | None = None,
+        list_items: str | None = None,
+        params: dict[str, str] | None = None,
     ) -> typing.Any:
 
         # NOTE(sileht): can't be on the same line...
         # https://github.com/python/mypy/issues/10743
-        final_params: typing.Optional[typing.Dict[str, str]]
+        final_params: dict[str, str] | None
         final_params = {"per_page": "100"}
 
         if params is not None:
@@ -496,23 +494,17 @@ class RequestHistory:
 
 
 class AsyncGithubInstallationClient(AsyncGithubClient):
-    auth: typing.Union[
-        GithubAppInstallationAuth,
-        GithubTokenAuth,
-    ]
+    auth: (GithubAppInstallationAuth | GithubTokenAuth)
 
     def __init__(
         self,
-        auth: typing.Union[
-            GithubAppInstallationAuth,
-            GithubTokenAuth,
-        ],
+        auth: (GithubAppInstallationAuth | GithubTokenAuth),
     ) -> None:
-        self._requests: typing.List[RequestHistory] = []
+        self._requests: list[RequestHistory] = []
         self._requests_ratio: int = 1
         super().__init__(auth=auth)
 
-    async def request(self, method: str, url: str, *args: typing.Any, **kwargs: typing.Any) -> typing.Optional[httpx.Response]:  # type: ignore[override]
+    async def request(self, method: str, url: str, *args: typing.Any, **kwargs: typing.Any) -> httpx.Response | None:  # type: ignore[override]
         reply = None
         try:
             reply = await super().request(method, url, *args, **kwargs)
@@ -539,9 +531,9 @@ class AsyncGithubInstallationClient(AsyncGithubClient):
 
     async def __aexit__(
         self,
-        exc_type: typing.Optional[typing.Type[BaseException]] = None,
-        exc_value: typing.Optional[BaseException] = None,
-        traceback: typing.Optional[types.TracebackType] = None,
+        exc_type: type[BaseException] | None = None,
+        exc_value: BaseException | None = None,
+        traceback: types.TracebackType | None = None,
     ) -> None:
         await super().__aexit__(exc_type, exc_value, traceback)
         self._generate_metrics()

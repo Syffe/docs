@@ -1,7 +1,6 @@
 import base64
 import binascii
 import os
-import typing
 
 import cryptography.exceptions
 from cryptography.hazmat.backends import default_backend
@@ -17,7 +16,7 @@ digest_current.update(config.CACHE_TOKEN_SECRET.encode())
 SECRET_KEY = digest_current.finalize()
 del digest_current
 
-SECRET_KEY_OLD: typing.Optional[bytes]
+SECRET_KEY_OLD: bytes | None
 
 if config.CACHE_TOKEN_SECRET_OLD:
     digest_old = hashes.Hash(hashes.SHA256(), backend=default_backend())

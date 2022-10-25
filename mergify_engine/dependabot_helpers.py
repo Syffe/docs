@@ -1,5 +1,4 @@
 import logging
-import typing
 
 import first
 import pydantic
@@ -11,7 +10,7 @@ from mergify_engine import yaml
 def get_dependabot_consolidated_data_from_commit_msg(
     log: "logging.LoggerAdapter[logging.Logger]",
     commit_msg: str,
-) -> typing.Optional[dependabot_types.DependabotAttributes]:
+) -> dependabot_types.DependabotAttributes | None:
     """
     Returned dict example:
     {

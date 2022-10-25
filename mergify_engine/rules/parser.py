@@ -213,7 +213,7 @@ def _unquote(value: str) -> str:
 
 
 def _extract_date(
-    date_type: typing.Type[date.PartialDatetime], value: str
+    date_type: type[date.PartialDatetime], value: str
 ) -> date.PartialDatetime:
     try:
         return date_type.from_string(value)
@@ -228,7 +228,7 @@ def _extract_time(value: str) -> date.Time:
         raise ConditionParsingError(e.message)
 
 
-def _extract_dow_range(days: str) -> typing.Dict[str, typing.Any]:
+def _extract_dow_range(days: str) -> dict[str, typing.Any]:
     dow1_str, sep, dow2_str = days.partition("-")
     if sep != "-":
         raise ConditionParsingError(
@@ -246,7 +246,7 @@ def _extract_dow_range(days: str) -> typing.Dict[str, typing.Any]:
     }
 
 
-def _extract_time_range(times: str) -> typing.Dict[str, typing.Any]:
+def _extract_time_range(times: str) -> dict[str, typing.Any]:
     time1_str, sep, time2_str = times.partition("-")
     if sep != "-":
         raise ConditionParsingError("Invalid schedule")
@@ -356,7 +356,7 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
         if op == "!=":
             negate = True
 
-        cond: typing.Dict[str, typing.Any]
+        cond: dict[str, typing.Any]
         days, has_times, times = value.partition(" ")
         if not has_times or not times:
             try:

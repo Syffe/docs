@@ -2,12 +2,11 @@ import argparse
 import asyncio
 import os.path
 import sys
-import typing
 
 from mergify_engine import redis_utils
 
 
-async def download_redis_cached_keys(argv: typing.List[str]) -> None:
+async def download_redis_cached_keys(argv: list[str]) -> None:
     # NOTE(Syffe): By default, this scripts downloads all cached config files,
     # though it can be used to download every other data stored in RedisCache.
     # It could be improved by adding an argument making it possible to choose

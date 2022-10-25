@@ -38,7 +38,7 @@ class UpdateExecutor(actions.ActionExecutor["UpdateAction", "UpdateExecutorConfi
         except action_utils.RenderBotAccountFailure as e:
             raise rules.InvalidPullRequestRule(e.title, e.reason)
 
-        github_user: typing.Optional[user_tokens.UserTokensUser] = None
+        github_user: user_tokens.UserTokensUser | None = None
         if bot_account:
             tokens = await ctxt.repository.installation.get_user_tokens()
             github_user = tokens.get_token_for(bot_account)
@@ -84,7 +84,7 @@ class UpdateAction(actions.Action):
         | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
         | actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
     )
-    validator: typing.ClassVar[typing.Dict[typing.Any, typing.Any]] = {
+    validator: typing.ClassVar[dict[typing.Any, typing.Any]] = {
         voluptuous.Required("bot_account", default=None): types.Jinja2WithNone,
     }
 

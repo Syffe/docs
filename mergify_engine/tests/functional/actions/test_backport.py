@@ -11,7 +11,7 @@ class BackportActionTestBase(base.FunctionalTestBase):
     async def _do_test_backport(
         self,
         method: str,
-        config: None | typing.Dict[str, typing.Any] = None,
+        config: None | dict[str, typing.Any] = None,
         expected_title: None | str = None,
         expected_body: None | str = None,
         expected_author: None | str = None,
@@ -152,10 +152,8 @@ class TestBackportAction(BackportActionTestBase):
         )
 
     async def _do_backport_conflicts(
-        self, ignore_conflicts: bool, labels: None | typing.List[str] = None
-    ) -> typing.Tuple[
-        github_types.GitHubPullRequest, typing.List[github_types.CachedGitHubCheckRun]
-    ]:
+        self, ignore_conflicts: bool, labels: None | list[str] = None
+    ) -> tuple[github_types.GitHubPullRequest, list[github_types.CachedGitHubCheckRun]]:
         stable_branch = self.get_full_branch_name("stable/#3.1")
         rules = {
             "pull_request_rules": [

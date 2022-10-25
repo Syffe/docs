@@ -28,8 +28,8 @@ class UserTokensUser(typing.TypedDict):
     id: github_types.GitHubAccountIdType
     login: github_types.GitHubLogin
     oauth_access_token: github_types.GitHubOAuthToken
-    name: typing.Optional[str]
-    email: typing.Optional[str]
+    name: str | None
+    email: str | None
 
 
 UserTokensT = typing.TypeVar("UserTokensT", bound="UserTokensBase")
@@ -39,13 +39,13 @@ UserTokensT = typing.TypeVar("UserTokensT", bound="UserTokensBase")
 class UserTokensBase:
     redis: redis_utils.RedisCache
     owner_id: int
-    users: typing.List[UserTokensUser]
+    users: list[UserTokensUser]
 
     @staticmethod
     async def select_users_for(
         ctxt: "context.Context",
-        bot_account: typing.Optional[github_types.GitHubLogin] = None,
-    ) -> typing.List[UserTokensUser]:
+        bot_account: github_types.GitHubLogin | None = None,
+    ) -> list[UserTokensUser]:
         user_tokens = await ctxt.repository.installation.get_user_tokens()
         if bot_account:
             user = user_tokens.get_token_for(bot_account)
@@ -64,7 +64,7 @@ class UserTokensBase:
 
     def get_token_for(
         self, wanted_login: github_types.GitHubLogin
-    ) -> typing.Optional[UserTokensUser]:
+    ) -> UserTokensUser | None:
         wanted_login_lower = wanted_login.lower()
         for user in self.users:
             if user["login"].lower() == wanted_login_lower:
@@ -73,13 +73,13 @@ class UserTokensBase:
 
     @classmethod
     async def delete(
-        cls: typing.Type[UserTokensT], redis: redis_utils.RedisCache, owner_id: int
+        cls: type[UserTokensT], redis: redis_utils.RedisCache, owner_id: int
     ) -> None:
         raise NotImplementedError
 
     @classmethod
     async def get(
-        cls: typing.Type[UserTokensT], redis: redis_utils.RedisCache, owner_id: int
+        cls: type[UserTokensT], redis: redis_utils.RedisCache, owner_id: int
     ) -> UserTokensT:
         raise NotImplementedError
 
@@ -103,13 +103,13 @@ class UserTokensSaas(UserTokensBase):
 
     @classmethod
     async def delete(
-        cls: typing.Type[UserTokensT], redis: redis_utils.RedisCache, owner_id: int
+        cls: type[UserTokensT], redis: redis_utils.RedisCache, owner_id: int
     ) -> None:
         await redis.delete(typing.cast(UserTokensSaas, cls)._cache_key(owner_id))
 
     @classmethod
     async def get(
-        cls: typing.Type[UserTokensT], redis: redis_utils.RedisCache, owner_id: int
+        cls: type[UserTokensT], redis: redis_utils.RedisCache, owner_id: int
     ) -> UserTokensT:
         return typing.cast(
             UserTokensT,
@@ -152,9 +152,7 @@ class UserTokensSaas(UserTokensBase):
         async with await redis.pipeline() as pipe:
             await pipe.get(cls._cache_key(owner_id))
             await pipe.ttl(cls._cache_key(owner_id))
-            encrypted_tokens, ttl = typing.cast(
-                typing.Tuple[str, int], await pipe.execute()
-            )
+            encrypted_tokens, ttl = typing.cast(tuple[str, int], await pipe.execute())
         if encrypted_tokens:
             decrypted_tokens = json.loads(
                 crypto.decrypt(encrypted_tokens.encode()).decode()
@@ -192,13 +190,13 @@ class UserTokensSaas(UserTokensBase):
 class UserTokensOnPremise(UserTokensBase):
     @classmethod
     async def delete(
-        cls: typing.Type[UserTokensT], redis: redis_utils.RedisCache, owner_id: int
+        cls: type[UserTokensT], redis: redis_utils.RedisCache, owner_id: int
     ) -> None:
         pass
 
     @classmethod
     async def get(
-        cls: typing.Type[UserTokensT], redis: redis_utils.RedisCache, owner_id: int
+        cls: type[UserTokensT], redis: redis_utils.RedisCache, owner_id: int
     ) -> UserTokensT:
         return cls(
             redis,

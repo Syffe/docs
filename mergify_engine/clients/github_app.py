@@ -15,7 +15,7 @@ from mergify_engine import github_types
 
 LOG = daiquiri.getLogger(__name__)
 
-EXPECTED_MINIMAL_PERMISSIONS: typing.Dict[
+EXPECTED_MINIMAL_PERMISSIONS: dict[
     github_types.GitHubAccountType, github_types.GitHubInstallationPermissions
 ] = {
     "Organization": {
@@ -48,8 +48,8 @@ if os.getenv("MERGIFYENGINE_TEST_SETTINGS") is not None:
 
 @dataclasses.dataclass
 class JwtHandler:
-    jwt: typing.Optional[str] = None
-    jwt_expiration: typing.Optional[float] = None
+    jwt: str | None = None
+    jwt_expiration: float | None = None
     lock: threading.Lock = dataclasses.field(default_factory=threading.Lock)
 
     JWT_EXPIRATION: typing.ClassVar[int] = 60

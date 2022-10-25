@@ -1,7 +1,6 @@
 import argparse
 import operator
 import time
-import typing
 from unittest import mock
 
 from mergify_engine import config
@@ -135,8 +134,8 @@ class TestCountSeats(base.FunctionalTestBase):
         repository_name = self.RECORD_CONFIG["repository_name"]
         organization_name = self.RECORD_CONFIG["organization_name"]
         key = f"active-users~{organization_id}~{organization_name}~{repository_id}~{repository_name}"
-        active_users: typing.List[
-            typing.Tuple[bytes, float]
+        active_users: list[
+            tuple[bytes, float]
         ] = await self.redis_links.active_users.zrangebyscore(
             key, min="-inf", max="+inf", withscores=True
         )
