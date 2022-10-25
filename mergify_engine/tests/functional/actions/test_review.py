@@ -121,7 +121,7 @@ class TestReviewAction(base.FunctionalTestBase):
         assert (
             """Template syntax error @ pull_request_rules → item 0 → actions → review → message → line 1
 ```
-unexpected &#x27;end of template&#x27;
+unexpected 'end of template'
 ```"""
             == check["output"]["summary"]
         )
