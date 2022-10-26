@@ -17,6 +17,7 @@ from unittest import mock
 from urllib import parse
 
 import daiquiri
+from first import first
 import httpx
 import pytest
 
@@ -1573,3 +1574,20 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         await self.git("commit", "--no-edit", "-m", "random update")
         await self.git("push", "--quiet", "origin", f"random:{target_branch}")
         await self.wait_for("push", {"ref": f"refs/heads/{target_branch}"})
+
+    @staticmethod
+    async def assert_check_run(
+        ctxt: context.Context,
+        check_name: str,
+        expected_conclusion: str,
+        expected_title: str,
+        expected_summary: str,
+    ) -> None:
+        check = first(
+            await ctxt.pull_engine_check_runs,
+            key=lambda c: c["name"] == check_name,
+        )
+        assert check is not None
+        assert check["conclusion"] == expected_conclusion
+        assert check["output"]["title"] == expected_title
+        assert check["output"]["summary"] == expected_summary

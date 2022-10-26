@@ -1,3 +1,4 @@
+import dataclasses
 import typing
 
 import voluptuous
@@ -25,6 +26,20 @@ from mergify_engine.queue import merge_train
 from mergify_engine.rules import checks_status
 from mergify_engine.rules import conditions
 from mergify_engine.rules import types
+
+
+BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT = (
+    "Require branches to be up to date before merging"
+)
+
+
+@dataclasses.dataclass
+class IncompatibleBranchProtection(Exception):
+    """Incompatibility between Mergify configuration and branch protection settings"""
+
+    configuration: str
+    branch_protection_setting: str
+    message = "Configuration not compatible with a branch protection setting"
 
 
 class QueueAction(merge_base.MergeBaseAction[merge_train.Train, freeze.QueueFreeze]):
@@ -321,27 +336,16 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     "The merge `method` or the queue configuration must be updated.",
                 )
 
-        protection = await ctxt.repository.get_branch_protection(
-            ctxt.pull["base"]["ref"]
-        )
-        if (
-            protection
-            and "required_status_checks" in protection
-            and "strict" in protection["required_status_checks"]
-            and protection["required_status_checks"]["strict"]
-        ):
-            if self.queue_rule.config["batch_size"] > 1:
-                return check_api.Result(
-                    check_api.Conclusion.FAILURE,
-                    "batch_size > 1 is not compatible with branch protection setting",
-                    "The branch protection setting `Require branches to be up to date before merging` must be unset.",
-                )
-            elif self.queue_rule.config["speculative_checks"] > 1:
-                return check_api.Result(
-                    check_api.Conclusion.FAILURE,
-                    "speculative_checks > 1 is not compatible with branch protection setting",
-                    "The branch protection setting `Require branches to be up to date before merging` must be unset.",
-                )
+        try:
+            await self._check_config_compatibility_with_branch_protection(ctxt)
+        except IncompatibleBranchProtection as e:
+            return check_api.Result(
+                check_api.Conclusion.FAILURE,
+                e.message,
+                "The branch protection setting "
+                f"`{e.branch_protection_setting}` is not compatible with `{e.configuration}` "
+                "and must be unset.",
+            )
 
         # FIXME(sileht): we should use the computed update_bot_account in TrainCar.update_pull(),
         # not the original one
@@ -788,3 +792,37 @@ Then, re-embark the pull request into the merge queue by posting the comment
             )
         depends_on_conditions = await conditions.get_depends_on_conditions(ctxt)
         return branch_protection_conditions + depends_on_conditions
+
+    async def _check_config_compatibility_with_branch_protection(
+        self, ctxt: context.Context
+    ) -> None:
+        protection = await ctxt.repository.get_branch_protection(
+            ctxt.pull["base"]["ref"]
+        )
+        if self._has_required_status_checks_strict(protection):
+            if self.queue_rule.config["batch_size"] > 1:
+                raise IncompatibleBranchProtection(
+                    "batch_size>1",
+                    BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT,
+                )
+            elif self.queue_rule.config["speculative_checks"] > 1:
+                raise IncompatibleBranchProtection(
+                    "speculative_checks>1",
+                    BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT,
+                )
+            elif self.queue_rule.config["allow_inplace_checks"] is False:
+                raise IncompatibleBranchProtection(
+                    "allow_inplace_checks=false",
+                    BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT,
+                )
+
+    @staticmethod
+    def _has_required_status_checks_strict(
+        protection: github_types.GitHubBranchProtection | None,
+    ) -> bool:
+        return (
+            protection is not None
+            and "required_status_checks" in protection
+            and "strict" in protection["required_status_checks"]
+            and protection["required_status_checks"]["strict"]
+        )
