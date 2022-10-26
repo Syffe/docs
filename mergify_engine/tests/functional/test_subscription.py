@@ -1,8 +1,6 @@
 from unittest import mock
 
 from mergify_engine import config
-from mergify_engine import constants
-from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine.dashboard import subscription
@@ -35,14 +33,16 @@ class TestSubscription(base.FunctionalTestBase):
         self.addCleanup(patcher.stop)
 
         await self.setup_repo()
-        p = await self.create_pr()
+        await self.create_pr()
         await self.run_engine()
 
-        ctxt = context.Context(self.repository_ctxt, p, [])
-        summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
-        assert summary is not None
+        check_run = await self.wait_for_check_run(conclusion="failure")
+
         assert (
             "⚠ The [subscription](https://dashboard.mergify.com/github/mergifyio-testing/subscription) needs to be updated to enable this feature."
-            == summary["output"]["summary"]
+            == check_run["check_run"]["output"]["summary"]
         )
-        assert "Cannot use Mergify on a public repository" == summary["output"]["title"]
+        assert (
+            "Cannot use Mergify on a public repository"
+            == check_run["check_run"]["output"]["title"]
+        )

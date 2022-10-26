@@ -37,10 +37,10 @@ class TestDeprecation(base.FunctionalTestBase):
         p = await self.create_pr(message="mergify-test4")
         await self.run_engine()
 
-        p = await self.get_pull(p["number"])
-        comments = await self.get_issue_comments(p["number"])
-        assert comments[-1]["body"] == "Ola quetal?"
-        assert comments[-2]["body"] == "WTF?"
+        comment_1 = await self.wait_for_issue_comment(str(p["number"]), "created")
+        assert comment_1["comment"]["body"] == "WTF?"
+        comment_2 = await self.wait_for_issue_comment(str(p["number"]), "created")
+        assert comment_2["comment"]["body"] == "Ola quetal?"
 
         ctxt = context.Context(self.repository_ctxt, p, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)

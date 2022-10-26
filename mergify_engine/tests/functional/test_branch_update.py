@@ -27,10 +27,10 @@ class TestBranchUpdatePublic(base.FunctionalTestBase):
         await self.create_comment_as_admin(p2["number"], "@mergifyio update")
         await self.run_engine()
 
+        p2_updated = await self.wait_for_pull_request("synchronize")
         oldsha = p2["head"]["sha"]
-        p2 = await self.get_pull(p2["number"])
-        assert p2["commits"] == 2
-        assert oldsha != p2["head"]["sha"]
+        assert p2_updated["pull_request"]["commits"] == 2
+        assert oldsha != p2_updated["pull_request"]["head"]["sha"]
 
     async def test_command_rebase_ok(self) -> None:
         rules = {
@@ -55,8 +55,9 @@ class TestBranchUpdatePublic(base.FunctionalTestBase):
 
         oldsha = p2["head"]["sha"]
         await self.merge_pull(p2["number"])
-        p2 = await self.get_pull(p2["number"])
-        assert oldsha != p2["head"]["sha"]
+
+        p2_merged = await self.wait_for_pull_request("closed")
+        assert oldsha != p2_merged["pull_request"]["head"]["sha"]
         f = typing.cast(
             github_types.GitHubContentFile,
             await self.client_integration.item(f"{self.url_origin}/contents/TESTING"),
