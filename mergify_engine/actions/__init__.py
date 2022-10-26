@@ -205,7 +205,7 @@ class Action(abc.ABC):
     ) -> None:
         self.executor = await self.executor_class.create(self, ctxt, rule)
 
-    def validate_config(
+    def validate_config(  # noqa: B027
         self, mergify_config: "rules.MergifyConfig"
     ) -> None:  # pragma: no cover
         pass
