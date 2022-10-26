@@ -36,8 +36,8 @@ class TestQueueCommand(base.FunctionalTestBase):
         await self.create_comment_as_admin(p2["number"], "@mergifyio queue default")
         await self.run_engine()
 
-        tmp_pull_1 = await self.wait_for_new_pull_request()
-        tmp_pull_2 = await self.wait_for_new_pull_request()
+        tmp_pull_1 = await self.wait_for_pull_request("opened")
+        tmp_pull_2 = await self.wait_for_pull_request("opened")
 
         pulls = await self.get_pulls()
         assert len(pulls) == 4
@@ -197,7 +197,7 @@ class TestQueueCommand(base.FunctionalTestBase):
         await self.create_comment_as_admin(p["number"], "@mergifyio queue")
         await self.run_engine()
 
-        tmp_pull = await self.wait_for_new_pull_request()
+        tmp_pull = await self.wait_for_pull_request("opened")
 
         pulls = await self.get_pulls()
         assert len(pulls) == 2

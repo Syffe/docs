@@ -444,6 +444,7 @@ GitHubEventPullRequestActionType = typing.Literal[
     "locked",
     "unlocked",
     "reopened",
+    "converted_to_draft",
 ]
 
 
@@ -500,6 +501,9 @@ GitHubEventPullRequestReviewActionType = typing.Literal[
 GitHubReviewIdType = typing.NewType("GitHubReviewIdType", int)
 GitHubReviewStateType = typing.Literal[
     "APPROVED", "COMMENTED", "DISMISSED", "CHANGES_REQUESTED"
+]
+GitHubEventReviewStateType = typing.Literal[
+    "approved", "commented", "dismissed", "changes_requested"
 ]
 GitHubReviewStateChangeType = typing.Literal["APPROVE", "REQUEST_CHANGES", "COMMENT"]
 

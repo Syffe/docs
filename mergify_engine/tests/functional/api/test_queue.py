@@ -292,7 +292,7 @@ class TestQueueApi(base.FunctionalTestBase):
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
 
-        tmp_mq_pr_1 = await self.wait_for_new_pull_request()
+        tmp_mq_pr_1 = await self.wait_for_pull_request("opened")
         await self.create_status(tmp_mq_pr_1["pull_request"])
         await self.run_engine()
         await self.wait_for("pull_request", {"action": "closed"})
@@ -301,7 +301,7 @@ class TestQueueApi(base.FunctionalTestBase):
         await self.add_label(p2["number"], "queue")
         await self.run_engine()
 
-        tmp_mq_pr_2 = await self.wait_for_new_pull_request()
+        tmp_mq_pr_2 = await self.wait_for_pull_request("opened")
         await self.create_status(tmp_mq_pr_2["pull_request"])
         await self.run_engine()
         await self.wait_for("pull_request", {"action": "closed"})
@@ -310,7 +310,7 @@ class TestQueueApi(base.FunctionalTestBase):
         await self.add_label(p3["number"], "queue")
         await self.run_engine()
 
-        tmp_mq_pr_3 = await self.wait_for_new_pull_request()
+        tmp_mq_pr_3 = await self.wait_for_pull_request("opened")
         await self.create_status(tmp_mq_pr_3["pull_request"])
         await self.run_engine()
         await self.wait_for("pull_request", {"action": "closed"})
@@ -386,7 +386,7 @@ class TestQueueApi(base.FunctionalTestBase):
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
 
-        tmp_mq_pr_1 = await self.wait_for_new_pull_request()
+        tmp_mq_pr_1 = await self.wait_for_pull_request("opened")
         await self.create_status(tmp_mq_pr_1["pull_request"])
         await self.run_engine()
         await self.wait_for("pull_request", {"action": "closed"})
@@ -395,7 +395,7 @@ class TestQueueApi(base.FunctionalTestBase):
         await self.add_label(p2["number"], "queue")
         await self.run_engine()
 
-        tmp_mq_pr_2 = await self.wait_for_new_pull_request()
+        tmp_mq_pr_2 = await self.wait_for_pull_request("opened")
         await self.create_status(tmp_mq_pr_2["pull_request"])
         await self.run_engine()
         await self.wait_for("pull_request", {"action": "closed"})
@@ -404,7 +404,7 @@ class TestQueueApi(base.FunctionalTestBase):
         await self.add_label(p3["number"], "queue")
         await self.run_engine()
 
-        await self.wait_for_new_pull_request()
+        await self.wait_for_pull_request("opened")
 
         time_to_merge_key = self.get_statistic_redis_key("time_to_merge")
         assert await self.redis_links.stats.xlen(time_to_merge_key) == 2

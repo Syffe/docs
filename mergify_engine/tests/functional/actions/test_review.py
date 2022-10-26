@@ -10,7 +10,7 @@ from mergify_engine.tests.functional import base
 class TestReviewAction(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
 
-    async def test_review(self) -> None:
+    async def test_review_normal(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -33,18 +33,13 @@ class TestReviewAction(base.FunctionalTestBase):
 
         await self.setup_repo(yaml.dump(rules))
 
-        p = await self.create_pr(as_="fork")
+        await self.create_pr(as_="fork")
         await self.run_engine()
-        await self.wait_for("pull_request_review", {})
+        await self.wait_for_pull_request_review("approved")
 
         await self.run_engine()
-        await self.wait_for("pull_request_review", {})
-
-        reviews = await self.get_reviews(p["number"])
-        self.assertEqual(2, len(reviews))
-        self.assertEqual("APPROVED", reviews[-2]["state"])
-        self.assertEqual("CHANGES_REQUESTED", reviews[-1]["state"])
-        self.assertEqual("WTF?", reviews[-1]["body"])
+        r2 = await self.wait_for_pull_request_review("changes_requested")
+        assert r2["review"]["body"] == "WTF?"
 
     async def test_review_template(self) -> None:
         rules = {
@@ -72,17 +67,14 @@ class TestReviewAction(base.FunctionalTestBase):
 
         await self.setup_repo(yaml.dump(rules))
 
-        p = await self.create_pr(as_="fork")
+        await self.create_pr(as_="fork")
         await self.run_engine()
 
-        await self.wait_for("pull_request_review", {})
+        await self.wait_for_pull_request_review("approved")
         await self.run_engine()
 
-        reviews = await self.get_reviews(p["number"])
-        self.assertEqual(2, len(reviews))
-        self.assertEqual("APPROVED", reviews[-2]["state"])
-        self.assertEqual("CHANGES_REQUESTED", reviews[-1]["state"])
-        self.assertEqual("WTF mergify-test2?", reviews[-1]["body"])
+        r2 = await self.wait_for_pull_request_review("changes_requested")
+        assert r2["review"]["body"] == "WTF mergify-test2?"
 
     async def _test_review_template_error(
         self, msg: str
@@ -169,15 +161,12 @@ Unknown pull request attribute: hello
         p = await self.create_pr(as_="fork", message="mergify-test4")
         await self.run_engine()
 
-        await self.wait_for("pull_request_review", {})
+        await self.wait_for_pull_request_review("approved")
         await self.run_engine()
 
-        reviews = await self.get_reviews(p["number"])
-        self.assertEqual(2, len(reviews))
-        self.assertEqual("APPROVED", reviews[-2]["state"])
-        self.assertEqual("CHANGES_REQUESTED", reviews[-1]["state"])
-        self.assertEqual("WTF?", reviews[-1]["body"])
-        self.assertEqual("mergify-test4", reviews[-1]["user"]["login"])
+        r2 = await self.wait_for_pull_request_review("changes_requested")
+        assert r2["review"]["body"] == "WTF?"
+        assert r2["review"]["user"]["login"] == "mergify-test4"
 
         # ensure review don't get posted twice
         await self.create_comment(p["number"], "@mergifyio refresh")

@@ -39,22 +39,21 @@ class TestLabelAction(base.FunctionalTestBase):
         await self.add_label(p["number"], "ReMoVe-Me")
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        self.assertEqual(1, len(pulls))
+        await self.wait_for("pull_request", {"action": "labeled"})
+        p_updated = await self.wait_for_pull_request("unlabeled")
         self.assertEqual(
             sorted(["unstable", "foobar", "vEcToR"]),
-            sorted(label["name"] for label in pulls[0]["labels"]),
+            sorted(label["name"] for label in p_updated["pull_request"]["labels"]),
         )
 
         # Ensure it's idempotant
         await self.remove_label(p["number"], "unstable")
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        self.assertEqual(1, len(pulls))
+        p_updated = await self.wait_for_pull_request("labeled")
         self.assertEqual(
             sorted(["unstable", "foobar", "vEcToR"]),
-            sorted(label["name"] for label in pulls[0]["labels"]),
+            sorted(label["name"] for label in p_updated["pull_request"]["labels"]),
         )
 
         r = await self.app.get(
@@ -68,8 +67,10 @@ class TestLabelAction(base.FunctionalTestBase):
         assert r.json() == {
             "events": [
                 {
-                    "repository": p["base"]["repo"]["full_name"],
-                    "pull_request": p["number"],
+                    "repository": p_updated["pull_request"]["base"]["repo"][
+                        "full_name"
+                    ],
+                    "pull_request": p_updated["number"],
                     "timestamp": mock.ANY,
                     "event": "action.label",
                     "metadata": {
@@ -79,8 +80,10 @@ class TestLabelAction(base.FunctionalTestBase):
                     "trigger": "Rule: rename label",
                 },
                 {
-                    "repository": p["base"]["repo"]["full_name"],
-                    "pull_request": p["number"],
+                    "repository": p_updated["pull_request"]["base"]["repo"][
+                        "full_name"
+                    ],
+                    "pull_request": p_updated["number"],
                     "timestamp": mock.ANY,
                     "event": "action.label",
                     "metadata": {
@@ -117,11 +120,10 @@ class TestLabelAction(base.FunctionalTestBase):
         await self.add_label(p["number"], "stable")
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        self.assertEqual(1, len(pulls))
+        p = await self.get_pull(p["number"])
         self.assertEqual(
             sorted(["stable"]),
-            sorted(label["name"] for label in pulls[0]["labels"]),
+            sorted(label["name"] for label in p["labels"]),
         )
 
         r = await self.app.get(
@@ -156,12 +158,8 @@ class TestLabelAction(base.FunctionalTestBase):
         await self.add_label(p["number"], "stable")
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        self.assertEqual(1, len(pulls))
-        self.assertEqual(
-            [],
-            pulls[0]["labels"],
-        )
+        p_updated = await self.wait_for_pull_request("unlabeled")
+        self.assertEqual([], p_updated["pull_request"]["labels"])
 
         r = await self.app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
@@ -174,8 +172,10 @@ class TestLabelAction(base.FunctionalTestBase):
         assert r.json() == {
             "events": [
                 {
-                    "repository": p["base"]["repo"]["full_name"],
-                    "pull_request": p["number"],
+                    "repository": p_updated["pull_request"]["base"]["repo"][
+                        "full_name"
+                    ],
+                    "pull_request": p_updated["number"],
                     "timestamp": mock.ANY,
                     "event": "action.label",
                     "metadata": {"added": [], "removed": ["stable"]},

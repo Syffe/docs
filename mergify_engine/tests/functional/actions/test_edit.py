@@ -36,11 +36,8 @@ class TestEditAction(base.FunctionalTestBase):
         assert p["draft"] is False
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        self.assertEqual(1, len(pulls))
-
-        p = await self.get_pull(p["number"])
-        assert p["draft"] is True
+        p_updated = await self.wait_for_pull_request("converted_to_draft")
+        assert p_updated["pull_request"]["draft"] is True
 
         r = await self.app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
@@ -58,7 +55,9 @@ class TestEditAction(base.FunctionalTestBase):
                     "metadata": {"draft": True},
                     "timestamp": mock.ANY,
                     "trigger": "Rule: convert Pull Request to Draft",
-                    "repository": p["base"]["repo"]["full_name"],
+                    "repository": p_updated["pull_request"]["base"]["repo"][
+                        "full_name"
+                    ],
                 },
             ],
             "per_page": 10,
@@ -85,11 +84,8 @@ class TestEditAction(base.FunctionalTestBase):
         assert p["draft"] is True
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        self.assertEqual(1, len(pulls))
-
-        p = await self.get_pull(p["number"])
-        assert p["draft"] is False
+        p_updated = await self.wait_for_pull_request("ready_for_review")
+        assert p_updated["pull_request"]["draft"] is False
 
         r = await self.app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
@@ -107,7 +103,9 @@ class TestEditAction(base.FunctionalTestBase):
                     "metadata": {"draft": False},
                     "timestamp": mock.ANY,
                     "trigger": "Rule: convert Pull Request to Draft",
-                    "repository": p["base"]["repo"]["full_name"],
+                    "repository": p_updated["pull_request"]["base"]["repo"][
+                        "full_name"
+                    ],
                 },
             ],
             "per_page": 10,
@@ -137,9 +135,6 @@ class TestEditAction(base.FunctionalTestBase):
         p = await self.create_pr(draft=True)
         assert p["draft"] is True
         await self.run_engine()
-
-        pulls = await self.get_pulls()
-        self.assertEqual(1, len(pulls))
 
         p = await self.get_pull(p["number"])
         assert p["draft"] is True
@@ -177,9 +172,6 @@ class TestEditAction(base.FunctionalTestBase):
         p = await self.create_pr(draft=False)
         assert p["draft"] is False
         await self.run_engine()
-
-        pulls = await self.get_pulls()
-        self.assertEqual(1, len(pulls))
 
         p = await self.get_pull(p["number"])
         assert p["draft"] is False

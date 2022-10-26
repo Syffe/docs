@@ -1,5 +1,4 @@
 from mergify_engine import config
-from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import yaml
 from mergify_engine.tests.functional import base
@@ -20,13 +19,12 @@ class TestCloseAction(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
 
         p = await self.create_pr()
-
         await self.run_engine()
 
-        p = await self.get_pull(p["number"])
-        self.assertEqual("closed", p["state"])
-        comments = await self.get_issue_comments(p["number"])
-        self.assertEqual("WTF?", comments[-1]["body"])
+        await self.wait_for_pull_request("closed")
+
+        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
+        assert comment["comment"]["body"] == "WTF?"
 
     async def test_close_template(self) -> None:
         rules = {
@@ -42,17 +40,14 @@ class TestCloseAction(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
 
         p = await self.create_pr()
-
         await self.run_engine()
 
-        p = await self.get_pull(p["number"])
-        self.assertEqual("closed", p["state"])
-        comments = await self.get_issue_comments(p["number"])
-        self.assertEqual(f"Thank you {config.BOT_USER_LOGIN}", comments[-1]["body"])
+        await self.wait_for_pull_request("closed")
 
-    async def _test_close_template_error(
-        self, msg: str
-    ) -> github_types.CachedGitHubCheckRun:
+        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
+        assert comment["comment"]["body"] == f"Thank you {config.BOT_USER_LOGIN}"
+
+    async def _test_close_template_error(self, msg: str) -> github_types.GitHubCheckRun:
         rules = {
             "pull_request_rules": [
                 {
@@ -65,22 +60,18 @@ class TestCloseAction(base.FunctionalTestBase):
 
         await self.setup_repo(yaml.dump(rules))
 
-        p = await self.create_pr()
-
+        await self.create_pr()
         await self.run_engine()
 
-        p = await self.get_pull(p["number"])
+        check_run = await self.wait_for_check_run(
+            action="completed", status="completed", conclusion="failure"
+        )
 
-        ctxt = context.Context(self.repository_ctxt, p, [])
-
-        checks = await ctxt.pull_engine_check_runs
-        assert len(checks) == 1
-        assert "failure" == checks[0]["conclusion"]
         assert (
             "The current Mergify configuration is invalid"
-            == checks[0]["output"]["title"]
+            == check_run["check_run"]["output"]["title"]
         )
-        return checks[0]
+        return check_run["check_run"]
 
     async def test_close_template_syntax_error(self) -> None:
         check = await self._test_close_template_error(

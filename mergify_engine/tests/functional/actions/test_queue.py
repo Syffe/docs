@@ -594,7 +594,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p["number"], "queue")
         await self.run_engine()
 
-        tmp_pull = await self.wait_for_new_pull_request()
+        tmp_pull = await self.wait_for_pull_request("opened")
 
         pulls = await self.get_pulls()
         assert len(pulls) == 2
@@ -657,8 +657,8 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p2["number"], "queue")
         await self.run_engine()
 
-        tmp_pull_1 = await self.wait_for_new_pull_request()
-        tmp_pull_2 = await self.wait_for_new_pull_request()
+        tmp_pull_1 = await self.wait_for_pull_request("opened")
+        tmp_pull_2 = await self.wait_for_pull_request("opened")
 
         pulls = await self.get_pulls()
         assert len(pulls) == 4
@@ -1184,7 +1184,7 @@ class TestQueueAction(base.FunctionalTestBase):
         pulls = await self.get_pulls()
         assert len(pulls) == 4
 
-        tmp_pull_1 = await self.wait_for_new_pull_request()
+        tmp_pull_1 = await self.wait_for_pull_request("opened")
         await self.run_full_engine()
 
         ctxt = context.Context(self.repository_ctxt, p)
@@ -1208,7 +1208,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
         await self.wait_for("pull_request", {"action": "closed"})
         await self.run_engine()
-        tmp_pull_2 = await self.wait_for_new_pull_request()
+        tmp_pull_2 = await self.wait_for_pull_request("opened")
         ctxt = context.Context(self.repository_ctxt, p)
         q = await merge_train.Train.from_context(ctxt)
         await self.assert_merge_queue_contents(
@@ -1358,7 +1358,7 @@ class TestQueueAction(base.FunctionalTestBase):
         pulls = await self.get_pulls()
         assert len(pulls) == 4
 
-        tmp_pull_1 = await self.wait_for_new_pull_request()
+        tmp_pull_1 = await self.wait_for_pull_request("opened")
         await self.run_engine()
 
         ctxt = context.Context(self.repository_ctxt, p)
@@ -1384,7 +1384,7 @@ class TestQueueAction(base.FunctionalTestBase):
             "issue_comment", {"action": "created"}, test_id=p1["number"]
         )
         await self.run_engine()
-        tmp_pull_2 = await self.wait_for_new_pull_request()
+        tmp_pull_2 = await self.wait_for_pull_request("opened")
         ctxt = context.Context(self.repository_ctxt, p)
         q = await merge_train.Train.from_context(ctxt)
         await self.assert_merge_queue_contents(
@@ -1485,8 +1485,8 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p5["number"], "queue")
         await self.run_engine()
 
-        tmp_pull_1 = await self.wait_for_new_pull_request()
-        tmp_pull_2 = await self.wait_for_new_pull_request()
+        tmp_pull_1 = await self.wait_for_pull_request("opened")
+        tmp_pull_2 = await self.wait_for_pull_request("opened")
 
         pulls = await self.get_pulls()
         assert len(pulls) == 7
@@ -1521,7 +1521,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.create_status(tmp_pull_1["pull_request"])
         await self.run_engine()
 
-        tmp_pull_3 = await self.wait_for_new_pull_request()
+        tmp_pull_3 = await self.wait_for_pull_request("opened")
 
         pulls = await self.get_pulls()
         assert len(pulls) == 5
@@ -2270,7 +2270,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p2["number"], "queue")
         await self.run_engine()
 
-        draft_pr = await self.wait_for_new_pull_request()
+        draft_pr = await self.wait_for_pull_request("opened")
         assert draft_pr["number"] not in [p1["number"], p2["number"]]
 
         ctxt = context.Context(self.repository_ctxt, p1)
@@ -2370,7 +2370,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p2["number"], "queue")
         await self.run_engine()
 
-        draft_pr = await self.wait_for_new_pull_request()
+        draft_pr = await self.wait_for_pull_request("opened")
         assert draft_pr["number"] not in [p1["number"], p2["number"]]
 
         ctxt = context.Context(self.repository_ctxt, p1)
@@ -2835,8 +2835,8 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p4["number"], "queue")
         await self.run_engine()
 
-        tmp_mq_p1 = await self.wait_for_new_pull_request()
-        tmp_mq_p2 = await self.wait_for_new_pull_request()
+        tmp_mq_p1 = await self.wait_for_pull_request("opened")
+        tmp_mq_p2 = await self.wait_for_pull_request("opened")
 
         q = await self.get_train()
         await self.assert_merge_queue_contents(
@@ -2898,7 +2898,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p5["number"], "queue")
         await self.run_engine()
 
-        tmp_mq_p3 = await self.wait_for_new_pull_request()
+        tmp_mq_p3 = await self.wait_for_pull_request("opened")
 
         await self.assert_merge_queue_contents(
             q,
@@ -2969,12 +2969,12 @@ class TestQueueAction(base.FunctionalTestBase):
         # Queue PRs
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
-        tmp_mq_p1 = await self.wait_for_new_pull_request()
+        tmp_mq_p1 = await self.wait_for_pull_request("opened")
 
         await self.add_label(p2["number"], "queue")
         await self.run_engine()
 
-        tmp_mq_p2 = await self.wait_for_new_pull_request()
+        tmp_mq_p2 = await self.wait_for_pull_request("opened")
 
         # Check Queue
         pulls = await self.get_pulls()
@@ -3036,7 +3036,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p3["number"], "queue")
         await self.run_engine()
 
-        tmp_mq_p3 = await self.wait_for_new_pull_request()
+        tmp_mq_p3 = await self.wait_for_pull_request("opened")
 
         # Check train state
         pulls = await self.get_pulls()
@@ -3225,7 +3225,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.create_pr()
         await self.run_engine()
 
-        draft_pr = await self.wait_for_new_pull_request()
+        draft_pr = await self.wait_for_pull_request("opened")
 
         # we push changes to the draft PR's branch
         draft_pr_head_ref = draft_pr["pull_request"]["head"]["ref"]
@@ -3642,7 +3642,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.create_status(tmp_mq_p2, state="failure")
         await self.run_engine()
 
-        tmp_mq_p3_bis = await self.wait_for_new_pull_request()
+        tmp_mq_p3_bis = await self.wait_for_pull_request("opened")
 
         # tmp merge-queue pr p2 and p3 have been closed
         pulls = await self.get_pulls()
@@ -4949,7 +4949,7 @@ class TestQueueAction(base.FunctionalTestBase):
             await self.create_status(p1)
             await self.run_full_engine()
 
-            tmp_pull = await self.wait_for_new_pull_request()
+            tmp_pull = await self.wait_for_pull_request("opened")
             await self.run_full_engine()
 
             check = first(
@@ -5702,12 +5702,11 @@ pull_requests:
         # NOTE(sileht): We don't save the merge train in Redis on purpose, so next
         # engine run should delete merge-queue branch of draft PR not tied to a
         # TrainCar
-        draft_pr = await self.wait_for_new_pull_request()
+        draft_pr = await self.wait_for_pull_request("opened")
         await self.run_engine()
-        await self.wait_for("pull_request", {"action": "closed"})
-
-        draft_pr_refreshed = await self.get_pull(draft_pr["number"])
-        assert draft_pr_refreshed["state"] == "closed"
+        await self.wait_for(
+            "pull_request", {"action": "closed", "number": draft_pr["number"]}
+        )
 
     async def test_create_pull_conflicts(self) -> None:
         await self.setup_repo(yaml.dump({}), files={"conflicts": "foobar"})

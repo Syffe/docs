@@ -26,19 +26,16 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
         await self.create_pr()
         await self.run_engine()
 
-        pulls = await self.get_pulls(params={"base": self.main_branch_name})
-        assert 1 == len(pulls)
-
-        requests = await self.get_review_requests(pulls[0]["number"])
+        pr = await self.wait_for_pull_request("review_requested")
         assert sorted(["mergify-test1"]) == sorted(
-            user["login"] for user in requests["users"]
+            user["login"] for user in pr["pull_request"]["requested_reviewers"]
         )
 
         for review_type in ("APPROVE", "REQUEST_CHANGES"):
-            await self.create_review(pulls[0]["number"], review_type)  # type: ignore[arg-type]
+            await self.create_review(pr["number"], review_type)  # type: ignore[arg-type]
             await self.run_engine()
 
-            requests = await self.get_review_requests(pulls[0]["number"])
+            requests = await self.get_review_requests(pr["number"])
             assert len(requests["users"]) == 0
 
     async def test_request_reviews_teams(self) -> None:
@@ -60,11 +57,9 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
         await self.create_pr()
         await self.run_engine()
 
-        pulls = await self.get_pulls(params={"base": self.main_branch_name})
-        assert 1 == len(pulls)
-        requests = await self.get_review_requests(pulls[0]["number"])
+        pr = await self.wait_for_pull_request("review_requested")
         assert sorted([team["slug"]]) == sorted(
-            team["slug"] for team in requests["teams"]
+            team["slug"] for team in pr["pull_request"]["requested_teams"]
         )
 
     @mock.patch.object(
@@ -90,15 +85,15 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
 
         await self.setup_repo(yaml.dump(rules))
 
-        p = await self.create_pr(as_="fork")
+        await self.create_pr(as_="fork")
         await self.run_engine()
 
-        pulls = await self.get_pulls(params={"base": self.main_branch_name})
-        assert 1 == len(pulls)
-        requests = await self.get_review_requests(pulls[0]["number"])
-        assert ["mergify-test1"] == [user["login"] for user in requests["users"]]
+        p_updated = await self.wait_for_pull_request("review_requested")
+        assert ["mergify-test1"] == [
+            user["login"] for user in p_updated["pull_request"]["requested_reviewers"]
+        ]
 
-        ctxt = context.Context(self.repository_ctxt, p, [])
+        ctxt = context.Context(self.repository_ctxt, p_updated["pull_request"], [])
         checks = await ctxt.pull_engine_check_runs
         assert len(checks) == 2
         for check in checks:
@@ -144,13 +139,12 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
         p = await self.create_pr()
         await self.run_engine()
 
-        pulls = await self.get_pulls(params={"base": self.main_branch_name})
-        assert 1 == len(pulls)
-        await self.create_review_request(pulls[0]["number"], ["mergify-test1"])
+        await self.create_review_request(p["number"], ["mergify-test1"])
         await self.run_engine()
-        requests = await self.get_review_requests(pulls[0]["number"])
+
+        p_updated = await self.wait_for_pull_request("review_requested")
         assert sorted(["mergify-test1", "mergify-test4"]) == sorted(
-            user["login"] for user in requests["users"]
+            user["login"] for user in p_updated["pull_request"]["requested_reviewers"]
         )
 
         ctxt = context.Context(self.repository_ctxt, p, [])
@@ -197,8 +191,6 @@ class TestRequestReviewsSubAction(base.FunctionalTestBase):
         await self.create_pr()
         await self.run_engine()
 
-        pulls = await self.get_pulls(params={"base": self.main_branch_name})
-        assert 1 == len(pulls)
-        requests = await self.get_review_requests(pulls[0]["number"])
-        assert len(requests["users"]) == 2
-        assert len(requests["teams"]) == 0
+        pr = await self.wait_for_pull_request("review_requested")
+        assert len(pr["pull_request"]["requested_reviewers"]) == 2
+        assert len(pr["pull_request"]["requested_teams"]) == 0

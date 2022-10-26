@@ -562,10 +562,59 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
     ) -> github_types.GitHubEvent:
         return await self._event_reader.wait_for(*args, **kwargs)
 
-    async def wait_for_new_pull_request(self) -> github_types.GitHubEventPullRequest:
+    async def wait_for_pull_request(
+        self, action: github_types.GitHubEventPullRequestActionType
+    ) -> github_types.GitHubEventPullRequest:
         return typing.cast(
             github_types.GitHubEventPullRequest,
-            await self.wait_for("pull_request", {"action": "opened"}),
+            await self.wait_for("pull_request", {"action": action}),
+        )
+
+    async def wait_for_issue_comment(
+        self,
+        test_id: str,
+        action: github_types.GitHubEventIssueCommentActionType,
+    ) -> github_types.GitHubEventIssueComment:
+        return typing.cast(
+            github_types.GitHubEventIssueComment,
+            await self.wait_for("issue_comment", {"action": action}, test_id=test_id),
+        )
+
+    async def wait_for_check_run(
+        self,
+        action: github_types.GitHubCheckRunActionType | None = None,
+        status: github_types.GitHubCheckRunStatus | None = None,
+        conclusion: github_types.GitHubCheckRunConclusion | None = None,
+    ) -> github_types.GitHubEventCheckRun:
+        if not action and not status and not conclusion:
+            raise RuntimeError(
+                "Need at least one of `action`, `status` or `conclusion` when waiting for `check_run` event"
+            )
+
+        wait_for_payload: dict[str, typing.Any] = {}
+        if action:
+            wait_for_payload["action"] = action
+        if status or conclusion:
+            wait_for_payload["check_run"] = {}
+            if status:
+                wait_for_payload["check_run"]["status"] = status
+            if conclusion:
+                wait_for_payload["check_run"]["conclusion"] = conclusion
+
+        return typing.cast(
+            github_types.GitHubEventCheckRun,
+            await self.wait_for(
+                "check_run",
+                wait_for_payload,
+            ),
+        )
+
+    async def wait_for_pull_request_review(
+        self, state: github_types.GitHubEventReviewStateType
+    ) -> github_types.GitHubEventPullRequestReview:
+        return typing.cast(
+            github_types.GitHubEventPullRequestReview,
+            await self.wait_for("pull_request_review", {"review": {"state": state}}),
         )
 
     async def run_full_engine(self) -> None:

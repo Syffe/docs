@@ -157,7 +157,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
 
             await self.run_engine()
 
-            tmp_mq_pr = await self.wait_for_new_pull_request()
+            tmp_mq_pr = await self.wait_for_pull_request("opened")
 
         # Friday at 18:00, outside schedule
         with freeze_time(start_date + datetime.timedelta(hours=8), tick=True):
@@ -245,7 +245,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
 
             await self.run_engine()
 
-            tmp_mq_pr = await self.wait_for_new_pull_request()
+            tmp_mq_pr = await self.wait_for_pull_request("opened")
 
             r = await self.app.put(
                 f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/default/freeze",
@@ -722,7 +722,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             await self.add_label(p4["number"], "queue")
             await self.run_full_engine()
 
-            tmp_mq_pr = await self.wait_for_new_pull_request()
+            tmp_mq_pr = await self.wait_for_pull_request("opened")
             await self.create_status(tmp_mq_pr["pull_request"])
 
         with freeze_time("2022-08-18T12:00:00", tick=True):

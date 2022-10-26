@@ -3,7 +3,6 @@ from unittest import mock
 import pytest
 
 from mergify_engine import config
-from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import yaml
 from mergify_engine.dashboard import subscription
@@ -33,9 +32,7 @@ class TestDismissReviewsAction(base.FunctionalTestBase):
         await self.git("commit", "--no-edit", "-m", filename)
         await self.git("push", "--quiet", remote, branch)
 
-    async def _test_dismiss_reviews_fail(
-        self, msg: str
-    ) -> github_types.CachedGitHubCheckRun:
+    async def _test_dismiss_reviews_fail(self, msg: str) -> github_types.GitHubCheckRun:
         rules = {
             "pull_request_rules": [
                 {
@@ -69,21 +66,13 @@ class TestDismissReviewsAction(base.FunctionalTestBase):
 
         await self.wait_for("pull_request", {"action": "synchronize"})
         await self.run_engine()
-        p = await self.get_pull(p["number"])
 
-        ctxt = context.Context(
-            self.repository_ctxt,
-            p,
-        )
-
-        checks = await ctxt.pull_engine_check_runs
-        assert len(checks) == 1
-        assert "failure" == checks[0]["conclusion"]
+        check_run = await self.wait_for_check_run(conclusion="failure")
         assert (
             "The current Mergify configuration is invalid"
-            == checks[0]["output"]["title"]
+            == check_run["check_run"]["output"]["title"]
         )
-        return checks[0]
+        return check_run["check_run"]
 
     async def test_dismiss_reviews_custom_message_syntax_error(self) -> None:
         check = await self._test_dismiss_reviews_fail("{{Loser")

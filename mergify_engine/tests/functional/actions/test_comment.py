@@ -1,5 +1,4 @@
 from mergify_engine import config
-from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import yaml
 from mergify_engine.tests.functional import base
@@ -26,10 +25,9 @@ class TestCommentActionWithSub(base.FunctionalTestBase):
         p = await self.create_pr(message="mergify-test4")
         await self.run_engine()
 
-        p = await self.get_pull(p["number"])
-        comments = await self.get_issue_comments(p["number"])
-        assert comments[-1]["body"] == "WTF?"
-        assert comments[-1]["user"]["login"] == "mergify-test4"
+        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
+        assert comment["comment"]["body"] == "WTF?"
+        assert comment["comment"]["user"]["login"] == "mergify-test4"
 
 
 class TestCommentAction(base.FunctionalTestBase):
@@ -49,9 +47,8 @@ class TestCommentAction(base.FunctionalTestBase):
         p = await self.create_pr()
         await self.run_engine()
 
-        p = await self.get_pull(p["number"])
-        comments = await self.get_issue_comments(p["number"])
-        assert comments[-1]["body"] == "WTF?"
+        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
+        assert comment["comment"]["body"] == "WTF?"
 
         # Add a label to trigger mergify
         await self.add_label(p["number"], "stable")
@@ -73,12 +70,11 @@ class TestCommentAction(base.FunctionalTestBase):
         )
 
         await self.wait_for("pull_request", {"action": "synchronize"})
-
         await self.run_engine()
 
         # Ensure nothing changed
         new_comments = await self.get_issue_comments(p["number"])
-        self.assertEqual(len(comments), len(new_comments))
+        assert len(new_comments) == 1
         assert new_comments[-1]["body"] == "WTF?"
 
     async def test_comment_template(self) -> None:
@@ -95,15 +91,15 @@ class TestCommentAction(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
 
         p = await self.create_pr()
-
         await self.run_engine()
 
-        new_comments = await self.get_issue_comments(p["number"])
-        assert new_comments[-1]["body"] == f"Thank you {config.BOT_USER_LOGIN}"
+        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
+
+        assert comment["comment"]["body"] == f"Thank you {config.BOT_USER_LOGIN}"
 
     async def _test_comment_template_error(
         self, msg: str
-    ) -> github_types.CachedGitHubCheckRun:
+    ) -> github_types.GitHubCheckRun:
         rules = {
             "pull_request_rules": [
                 {
@@ -116,21 +112,18 @@ class TestCommentAction(base.FunctionalTestBase):
 
         await self.setup_repo(yaml.dump(rules))
 
-        p = await self.create_pr()
-
+        await self.create_pr()
         await self.run_engine()
-        p = await self.get_pull(p["number"])
 
-        ctxt = context.Context(self.repository_ctxt, p, [])
+        check_run = await self.wait_for_check_run(
+            action="completed", status="completed", conclusion="failure"
+        )
 
-        checks = await ctxt.pull_engine_check_runs
-        assert len(checks) == 1
-        assert "failure" == checks[0]["conclusion"]
         assert (
             "The current Mergify configuration is invalid"
-            == checks[0]["output"]["title"]
+            == check_run["check_run"]["output"]["title"]
         )
-        return checks[0]
+        return check_run["check_run"]
 
     async def test_comment_template_syntax_error(self) -> None:
         check = await self._test_comment_template_error(
@@ -174,18 +167,19 @@ Unknown pull request attribute: hello
         p = await self.create_pr()
         await self.run_engine()
 
-        p = await self.get_pull(p["number"])
+        check_run = await self.wait_for_check_run(
+            action="completed", status="completed", conclusion="action_required"
+        )
 
+        # Make sure no message have been posted
         comments = await self.get_issue_comments(p["number"])
         assert len(comments) == 0
 
-        ctxt = context.Context(self.repository_ctxt, p, [])
-        checks = await ctxt.pull_engine_check_runs
         assert (
-            checks[-1]["output"]["title"]
+            check_run["check_run"]["output"]["title"]
             == "The current Mergify configuration is invalid"
         )
-        assert checks[-1]["output"]["summary"].startswith(
+        assert check_run["check_run"]["output"]["summary"].startswith(
             "### Comments with `bot_account` set are disabled"
         )
 
@@ -212,13 +206,8 @@ Unknown pull request attribute: hello
         p = await self.create_pr()
         await self.run_engine()
 
-        p = await self.get_pull(p["number"])
-        ctxt = context.Context(self.repository_ctxt, p, [])
-        checks = await ctxt.pull_engine_check_runs
-
-        assert len(checks) == 1
-        assert checks[0]["conclusion"] == "success"
-
-        comments = await self.get_issue_comments(p["number"])
-        assert len(comments) == 1
-        assert comments[0]["body"] == "Hello World!"
+        await self.wait_for_check_run(
+            action="completed", status="completed", conclusion="success"
+        )
+        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
+        assert comment["comment"]["body"] == "Hello World!"

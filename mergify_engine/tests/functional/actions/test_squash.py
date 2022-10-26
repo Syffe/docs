@@ -23,7 +23,7 @@ class TestActionSquash(base.FunctionalTestBase):
             "checkout", "--quiet", f"origin/{self.main_branch_name}", "-b", branch_name
         )
 
-        for i in range(0, 3):
+        for i in range(3):
             open(self.git.repository + f"/file{i}", "wb").close()
             await self.git("add", f"file{i}")
             await self.git("commit", "--no-edit", "-m", f"feat(): add file{i+1}")
@@ -31,37 +31,30 @@ class TestActionSquash(base.FunctionalTestBase):
         await self.git("push", "--quiet", "fork", branch_name)
 
         # create a PR with several commits to squash
-        pr = (
-            await self.client_fork.post(
-                f"{self.url_origin}/pulls",
-                json={
-                    "base": self.main_branch_name,
-                    "head": f"mergify-test2:{branch_name}",
-                    "title": "squash the PR",
-                    "body": """This is a squash_test
+        await self.client_fork.post(
+            f"{self.url_origin}/pulls",
+            json={
+                "base": self.main_branch_name,
+                "head": f"mergify-test2:{branch_name}",
+                "title": "squash the PR",
+                "body": """This is a squash_test
 
 # Commit message
 Awesome title
 
 Awesome body
 """,
-                },
-            )
-        ).json()
+            },
+        )
 
-        await self.wait_for("pull_request", {"action": "opened"})
-
-        commits = await self.get_commits(pr["number"])
-        assert len(commits) > 1
+        p = await self.wait_for_pull_request("opened")
+        assert p["pull_request"]["commits"] == 3
 
         # do the squash
         await self.run_engine()
-
-        await self.wait_for("pull_request", {"action": "synchronize"})
+        p = await self.wait_for_pull_request("synchronize")
+        assert p["pull_request"]["commits"] == 1
 
         # get the PR
-        pr = await self.client_fork.item(f"{self.url_origin}/pulls/{pr['number']}")
-        assert pr["commits"] == 1
-
-        ctxt = context.Context(self.repository_ctxt, pr, [])
+        ctxt = context.Context(self.repository_ctxt, p["pull_request"], [])
         assert (await ctxt.commits)[0].commit_message == "Awesome title\n\nAwesome body"

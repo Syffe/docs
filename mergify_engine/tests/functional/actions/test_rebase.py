@@ -30,10 +30,8 @@ class TestRebaseAction(base.FunctionalTestBase):
         await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
 
         await self.run_engine()
-        await self.wait_for("pull_request", {"action": "synchronize"})
-        p = await self.get_pull(p["number"])
-
-        final_sha = p["head"]["sha"]
+        p_updated = await self.wait_for_pull_request("synchronize")
+        final_sha = p_updated["pull_request"]["head"]["sha"]
 
         self.assertNotEqual(pr_initial_sha, final_sha)
 
@@ -62,17 +60,16 @@ class TestRebaseAction(base.FunctionalTestBase):
         await self.add_label(p1["number"], "merge")
 
         await self.run_engine()
-        p1 = await self.get_pull(p1["number"])
-        assert p1["merged"]
+        p1_updated = await self.wait_for_pull_request("closed")
+        assert p1_updated["pull_request"]["merged"]
+
         commits = await self.get_commits(p2["number"])
         assert len(commits) == 1
         # Now merge p2 so p1 is not up to date
         await self.add_label(p2["number"], "merge")
         await self.run_engine()
-        ctxt = context.Context(self.repository_ctxt, p1, [])
-        checks = await ctxt.pull_engine_check_runs
-        for check in checks:
-            assert check["conclusion"] == "success", check
+
+        await self.wait_for_check_run(conclusion="success")
 
     async def test_rebase_on_uptodate_pr_branch(self) -> None:
         rules = {
@@ -101,8 +98,9 @@ class TestRebaseAction(base.FunctionalTestBase):
         p2 = await self.create_pr()
         await self.add_label(p1["number"], "merge")
         await self.run_engine()
-        p1 = await self.get_pull(p1["number"])
-        assert p1["merged"]
+
+        p1_updated = await self.wait_for_pull_request("closed")
+        assert p1_updated["pull_request"]["merged"]
         commits = await self.get_commits(p2["number"])
         assert len(commits) == 1
 
@@ -115,10 +113,8 @@ class TestRebaseAction(base.FunctionalTestBase):
         # Now rebase p2
         await self.add_label(p2["number"], "rebase")
         await self.run_engine()
-        await self.wait_for("pull_request", {"action": "synchronize"})
-
-        p2_rebased = await self.get_pull(p2["number"])
-        assert p2_updated["head"]["sha"] != p2_rebased["head"]["sha"]
+        p2_rebased = await self.wait_for_pull_request("synchronize")
+        assert p2_updated["head"]["sha"] != p2_rebased["pull_request"]["head"]["sha"]
 
         ctxt = context.Context(self.repository_ctxt, p2, [])
         checks = await ctxt.pull_engine_check_runs
