@@ -152,7 +152,7 @@ class Gitter:
                 # helper function for each git command to double check the input is
                 # safe, eg: like a second seatbelt. See: MRGFY-930
                 # nosemgrep: python.lang.security.audit.dangerous-asyncio-create-exec.dangerous-asyncio-create-exec
-                p = await asyncio.create_subprocess_exec(
+                process = await asyncio.create_subprocess_exec(
                     "git",
                     *args,
                     cwd=self.repository,
@@ -163,21 +163,26 @@ class Gitter:
                 )
 
                 stdout, _ = await asyncio.wait_for(
-                    p.communicate(
+                    process.communicate(
                         input=None if _input is None else _input.encode("utf8")
                     ),
                     self.GIT_COMMAND_TIMEOUT,
                 )
                 output = stdout.decode("utf-8")
-                if p.returncode:
-                    raise self._get_git_exception(p.returncode, output)
-                else:
-                    return output
+                self._check_git_output(process, output)
             finally:
                 self.logger.debug("finish: %s", " ".join(args))
 
+            return output
+
+    def _check_git_output(
+        self, process: asyncio.subprocess.Process, output: str
+    ) -> None:
+        if process.returncode:
+            raise self._create_git_exception(process.returncode, output)
+
     @classmethod
-    def _get_git_exception(cls, returncode: int, output: str) -> GitError:
+    def _create_git_exception(cls, returncode: int, output: str) -> GitError:
         if output == "":
             # SIGKILL...
             return GitErrorRetriable(returncode, "Git process got killed")

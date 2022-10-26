@@ -71,5 +71,5 @@ def test_gitter_error_catching(
     stdout: str, exception: type[Exception], exc_message: str
 ) -> None:
     with pytest.raises(exception) as excinfo:
-        raise gitter.Gitter._get_git_exception(1, stdout)
+        raise gitter.Gitter._create_git_exception(1, stdout)
     assert exc_message in str(excinfo.value)
