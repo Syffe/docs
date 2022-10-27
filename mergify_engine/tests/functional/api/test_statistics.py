@@ -334,21 +334,17 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
         p = await self.create_pr()
         await self.merge_pull(p["number"])
         await self.wait_for("pull_request", {"action": "closed"})
-        await self.run_engine()
 
         await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")
         await self.add_label(p3["number"], "queue")
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 4
-
         await self.wait_for("pull_request", {"action": "opened"})
-        await self.run_full_engine()
 
         await self.remove_label(p1["number"], "queue")
         await self.run_engine()
+
         await self.wait_for("pull_request", {"action": "closed"})
 
         failure_by_reason_key = self.get_statistic_redis_key("failure_by_reason")
@@ -408,7 +404,6 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             p = await self.create_pr()
             await self.merge_pull(p["number"])
             await self.wait_for("pull_request", {"action": "closed"})
-            await self.run_engine()
 
             await self.add_label(p1["number"], "queue")
             await self.run_engine()
@@ -479,21 +474,17 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
         p = await self.create_pr()
         await self.merge_pull(p["number"])
         await self.wait_for("pull_request", {"action": "closed"})
-        await self.run_engine()
 
         await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")
         await self.add_label(p3["number"], "queue")
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 4
-
         await self.wait_for("pull_request", {"action": "opened"})
-        await self.run_full_engine()
 
         await self.remove_label(p1["number"], "queue")
         await self.run_engine()
+
         await self.wait_for("pull_request", {"action": "closed"})
 
         failure_by_reason_key = self.get_statistic_redis_key("failure_by_reason")
@@ -682,18 +673,13 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             p = await self.create_pr()
             await self.merge_pull(p["number"])
             await self.wait_for("pull_request", {"action": "closed"})
-            await self.run_engine()
 
             await self.add_label(p1["number"], "queue")
             await self.add_label(p2["number"], "queue")
             await self.add_label(p3["number"], "queue")
             await self.run_engine()
 
-            pulls = await self.get_pulls()
-            assert len(pulls) == 4
-
             await self.wait_for("pull_request", {"action": "opened"})
-            await self.run_engine()
 
             await self.remove_label(p1["number"], "queue")
             await self.run_engine()
@@ -717,7 +703,6 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             p5 = await self.create_pr()
             await self.merge_pull(p5["number"])
             await self.wait_for("pull_request", {"action": "closed"})
-            await self.run_engine()
 
             await self.add_label(p4["number"], "queue")
             await self.run_full_engine()

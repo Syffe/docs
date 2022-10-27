@@ -564,11 +564,21 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         return await self._event_reader.wait_for(*args, **kwargs)
 
     async def wait_for_pull_request(
-        self, action: github_types.GitHubEventPullRequestActionType
+        self,
+        action: github_types.GitHubEventPullRequestActionType,
+        pr_number: github_types.GitHubPullRequestNumber | None = None,
     ) -> github_types.GitHubEventPullRequest:
+        wait_for_payload: dict[
+            str,
+            github_types.GitHubEventPullRequestActionType
+            | github_types.GitHubPullRequestNumber,
+        ] = {"action": action}
+        if pr_number is not None:
+            wait_for_payload["number"] = pr_number
+
         return typing.cast(
             github_types.GitHubEventPullRequest,
-            await self.wait_for("pull_request", {"action": action}),
+            await self.wait_for("pull_request", wait_for_payload),
         )
 
     async def wait_for_issue_comment(
@@ -586,21 +596,24 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         action: github_types.GitHubCheckRunActionType | None = None,
         status: github_types.GitHubCheckRunStatus | None = None,
         conclusion: github_types.GitHubCheckRunConclusion | None = None,
+        name: str | None = None,
     ) -> github_types.GitHubEventCheckRun:
-        if not action and not status and not conclusion:
+        if not action and not status and not conclusion and not name:
             raise RuntimeError(
-                "Need at least one of `action`, `status` or `conclusion` when waiting for `check_run` event"
+                "Need at least one of `action`, `status`, `conclusion` or `name` when waiting for `check_run` event"
             )
 
         wait_for_payload: dict[str, typing.Any] = {}
         if action:
             wait_for_payload["action"] = action
-        if status or conclusion:
+        if status or conclusion or name:
             wait_for_payload["check_run"] = {}
             if status:
                 wait_for_payload["check_run"]["status"] = status
             if conclusion:
                 wait_for_payload["check_run"]["conclusion"] = conclusion
+            if name:
+                wait_for_payload["check_run"]["name"] = name
 
         return typing.cast(
             github_types.GitHubEventCheckRun,

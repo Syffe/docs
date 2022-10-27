@@ -46,15 +46,11 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         await self.merge_pull(p1["number"])
 
         await self.add_label(p2["number"], "squash")
-
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "closed"})
-
-        assert await self.is_pull_merged(p2["number"])
-
-        p2 = await self.get_pull(p2["number"])
-        assert 2 == p2["commits"]
+        p2_merged = await self.wait_for_pull_request("closed", pr_number=p2["number"])
+        assert p2_merged["pull_request"]["merged"]
+        assert p2_merged["pull_request"]["commits"] == 2
 
     async def test_teams(self) -> None:
         rules = {
@@ -183,18 +179,19 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
         if msg is None:
             msg = "This is the title\n\nAnd this is the message"
+
         p = await self.create_pr(message=f"It fixes it\n\n## {header}{msg}")
         await self.create_status(p)
 
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "closed"})
-
-        assert await self.is_pull_merged(p["number"])
+        p_merged = await self.wait_for_pull_request("closed", pr_number=p["number"])
+        assert p_merged["pull_request"]["merged"]
 
         commit = (await self.get_head_commit())["commit"]
         if commit_msg is None:
             commit_msg = msg
+
         assert commit_msg == commit["message"]
 
     async def test_merge_custom_msg(self) -> None:
@@ -241,18 +238,15 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
         assert not await self.is_pull_merged(p["number"])
 
-        ctxt = context.Context(self.repository_ctxt, p, [])
-        checks = [
-            c
-            for c in await ctxt.pull_engine_check_runs
-            if c["name"] == "Rule: merge (merge)"
-        ]
-        assert "completed" == checks[0]["status"]
-        assert checks[0]["conclusion"] == "action_required"
-        assert (
-            "Unknown pull request attribute: invalid" == checks[0]["output"]["summary"]
+        check_run_p = await self.wait_for_check_run(
+            conclusion="action_required", status="completed", name="Rule: merge (merge)"
         )
-        assert "Invalid commit message" == checks[0]["output"]["title"]
+        assert check_run_p["check_run"]["pull_requests"][0]["number"] == p["number"]
+        assert (
+            "Unknown pull request attribute: invalid"
+            == check_run_p["check_run"]["output"]["summary"]
+        )
+        assert "Invalid commit message" == check_run_p["check_run"]["output"]["title"]
 
         # Edit and fixes the typo
         await self.edit_pull(
@@ -262,23 +256,12 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "closed"})
-        await self.wait_for(
-            "check_run",
-            {"check_run": {"conclusion": "success", "status": "completed"}},
+        p_merged = await self.wait_for_pull_request("closed", pr_number=p["number"])
+        assert p_merged["pull_request"]["merged"]
+
+        await self.wait_for_check_run(
+            conclusion="success", status="completed", name="Rule: merge (merge)"
         )
-
-        # delete check run cache
-        ctxt._caches.pull_check_runs.delete()
-        checks = [
-            c
-            for c in await ctxt.pull_engine_check_runs
-            if c["name"] == "Rule: merge (merge)"
-        ]
-        assert "completed" == checks[0]["status"]
-        assert checks[0]["conclusion"] == "success"
-
-        assert await self.is_pull_merged(p["number"])
 
     async def test_merge_and_closes_issues(self) -> None:
         rules = {
@@ -304,16 +287,8 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "closed"})
-
-        assert await self.is_pull_merged(p["number"])
-
-        pulls = await self.get_pulls(
-            params={"state": "all", "base": self.main_branch_name}
-        )
-        assert 1 == len(pulls)
-        assert p["number"] == pulls[0]["number"]
-        assert "closed" == pulls[0]["state"]
+        p_merged = await self.wait_for_pull_request("closed", pr_number=p["number"])
+        assert p_merged["pull_request"]["merged"]
 
         issue = await self.client_integration.item(
             f"{self.url_origin}/issues/{i['number']}"
@@ -337,15 +312,14 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
         await self.setup_repo(yaml.dump(rules))
 
-        p2 = await self.create_pr()
-        await self.create_status(p2)
-        await self.create_review(p2["number"])
+        p = await self.create_pr()
+        await self.create_status(p)
+        await self.create_review(p["number"])
 
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "closed"})
-
-        assert await self.is_pull_merged(p2["number"])
+        p_merged = await self.wait_for_pull_request("closed")
+        assert p_merged["pull_request"]["merged"]
 
     async def test_merge_branch_protection_ci(self) -> None:
         rules = {
@@ -385,29 +359,13 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         await self.branch_protection_protect(self.main_branch_name, protection)
 
         p = await self.create_pr()
-
         await self.run_engine()
 
-        await self.wait_for(
-            "check_run",
-            {
-                "check_run": {
-                    "conclusion": "success",
-                    "status": "completed",
-                    "name": "Summary",
-                }
-            },
+        check_run_summary_p = await self.wait_for_check_run(
+            conclusion="success",
+            status="completed",
+            name="Summary",
         )
-
-        ctxt = context.Context(self.repository_ctxt, p, [])
-        checks = [
-            c
-            for c in await ctxt.pull_engine_check_runs
-            if c["name"] == "Rule: merge (merge)"
-        ]
-        assert checks == []
-        summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
-        assert summary is not None
         assert (
             f"""### Rule: merge (merge)
 - [ ] `#approved-reviews-by>=1` [🛡 GitHub branch protection]
@@ -430,8 +388,16 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 ### Rule: merge (comment)
 - [X] `base={self.main_branch_name}`
 """
-            in summary["output"]["summary"]
+            in check_run_summary_p["check_run"]["output"]["summary"]
         )
+
+        ctxt = context.Context(self.repository_ctxt, p, [])
+        checks = [
+            c
+            for c in await ctxt.pull_engine_check_runs
+            if c["name"] == "Rule: merge (merge)"
+        ]
+        assert checks == []
 
         await self.create_status(p)
         await self.create_review(p["number"])
@@ -450,9 +416,8 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "closed"})
-
-        assert await self.is_pull_merged(p["number"])
+        p_merged = await self.wait_for_pull_request("closed", pr_number=p["number"])
+        assert p_merged["pull_request"]["merged"]
 
     async def test_refresh_via_check_suite_rerequest(self) -> None:
         rules = {
@@ -584,12 +549,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
         await self.run_engine()
 
-        ctxt._caches.pull_check_runs.delete()
-        summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
-        assert summary is not None
-        assert completed_at != summary["completed_at"]
-
-        comments = await self.get_issue_comments(p["number"])
+        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
         assert (
             f"""> refresh
 
@@ -598,8 +558,13 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
 
 {utils.get_mergify_payload({"command": "refresh", "conclusion": "success"})}"""
-            == comments[-1]["body"]
+            == comment["comment"]["body"]
         )
+
+        check_run_summary = await self.wait_for_check_run(
+            name=constants.SUMMARY_NAME, action="completed", conclusion="success"
+        )
+        assert completed_at != check_run_summary["check_run"]["completed_at"]
 
     async def test_marketplace_event(self) -> None:
         with mock.patch(
@@ -736,9 +701,9 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         p1 = await self.create_pr()
         await self.create_review_request(p1["number"], reviewers=["mergify-test4"])
         await self.run_engine()
-        await self.wait_for(
-            "issue_comment", {"action": "created"}, test_id=p1["number"]
-        )
+
+        comment = await self.wait_for_issue_comment(str(p1["number"]), "created")
+        assert "review-requested user" == comment["comment"]["body"]
 
         # FIXME(sileht): This doesn't work anymore MRGFY-227
         # p2 = await self.create_pr()
@@ -746,11 +711,6 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         # await self.wait_for("pull_request", {"action": "review_requested"})
         # await self.run_engine()
         # await self.wait_for("issue_comment", {"action": "created"})
-
-        comments = await self.get_issue_comments(p1["number"])
-        assert "review-requested user" == comments[0]["body"]
-
-        # assert "review-requested team" == list(p2.get_issue_comments())[0].body
 
     async def test_truncated_check_output(self) -> None:
         # not used anyhow
@@ -777,18 +737,21 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
 
         # Run the engine once, to initialiaze the config location cache
-        p = await self.create_pr()
+        await self.create_pr()
         await self.run_engine()
 
         # Check initial summary is submitted
-        p = await self.create_pr()
-        await self.wait_for("check_run", {})
-        ctxt = await self.repository_ctxt.get_pull_request_context(p["number"], p)
-        checks = await ctxt.pull_engine_check_runs
-        assert len(checks) == 1
-        assert checks[0]["output"]["title"] == "Your rules are under evaluation"
+        await self.create_pr()
+        check_run_p2 = await self.wait_for_check_run(
+            action="created", status="in_progress"
+        )
+
         assert (
-            checks[0]["output"]["summary"]
+            check_run_p2["check_run"]["output"]["title"]
+            == "Your rules are under evaluation"
+        )
+        assert (
+            check_run_p2["check_run"]["output"]["summary"]
             == "Be patient, the page will be updated soon."
         )
 
@@ -815,10 +778,8 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
 
         await self.run_engine()
-        await self.wait_for("issue_comment", {"action": "created"}, test_id=p["number"])
-
-        comments = await self.get_issue_comments(p["number"])
-        assert "it works" == comments[-1]["body"]
+        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
+        assert "it works" == comment["comment"]["body"]
 
     async def test_check_run_api(self) -> None:
         await self.setup_repo()
@@ -956,27 +917,26 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         await self.setup_repo()
         prs = await self.create_conflicting_prs()
 
-        await self.run_full_engine()
+        await self.run_engine()
         await self.wait_for(
             "issue_comment", {"action": "created"}, test_id=prs[1]["number"]
         )
 
         await self.create_comment_as_admin(prs[1]["number"], "@mergifyio refresh")
 
-        await self.run_full_engine()
+        await self.run_engine()
+        # Wait for the refresh comment
         await self.wait_for(
             "issue_comment", {"action": "created"}, test_id=prs[1]["number"]
         )
-
-        if base.RECORD:
-            await asyncio.sleep(15)
 
         resp = await self.app.post(
             f"/refresh/{prs[1]['base']['repo']['full_name']}/pull/{prs[1]['number']}",
             headers={"X-Hub-Signature": "sha1=" + base.FAKE_HMAC},
         )
         assert resp.status_code == 202, resp.text
-        await self.run_full_engine()
+        await self.run_engine()
 
+        # Ensure the sha collision message it is not posted twice
         comments = await self.get_issue_comments(prs[1]["number"])
         assert len(comments) == 3
