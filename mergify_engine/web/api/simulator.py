@@ -75,7 +75,7 @@ class SimulatorResponse:
     },
 )
 async def simulator_pull(
-    body: SimulatorPayload,  # noqa: B008
+    body: SimulatorPayload,
     repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
         security.get_repository_context
     ),
@@ -118,7 +118,7 @@ async def simulator_pull(
     },
 )
 async def simulator_repo(
-    body: SimulatorPayload,  # noqa: B008
+    body: SimulatorPayload,
     repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
         security.get_repository_context
     ),

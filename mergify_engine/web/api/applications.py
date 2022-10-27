@@ -26,7 +26,7 @@ router = fastapi.APIRouter(
 
 
 @router.get(
-    "/application",  # noqa: FS003
+    "/application",
     summary="Get current application",
     description="Get the current authenticated application",
     response_model=ApplicationResponse,

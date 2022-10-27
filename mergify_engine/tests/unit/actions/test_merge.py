@@ -78,7 +78,7 @@ my body""",
 
 my title     
 WATCHOUT ^^^ there is empty spaces above for testing ^^^^
-my body""",  # noqa:W293,W291
+my body""",  # noqa: W291
             "my title",
             "WATCHOUT ^^^ there is empty spaces above for testing ^^^^\nmy body",
             None,
