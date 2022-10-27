@@ -296,7 +296,7 @@ async def exec_action(
             method = executor.cancel
         else:
             raise RuntimeError("wrong method_name")
-        return await method()
+        result = await method()
     except Exception as e:  # pragma: no cover
         # Forward those to worker
         if (
@@ -320,6 +320,8 @@ async def exec_action(
             f"Action '{action}' has unexpectedly failed, Mergify team is working on it, the state will be refreshed automatically.",
             "",
         )
+    else:
+        return result
 
 
 def load_conclusions_line(

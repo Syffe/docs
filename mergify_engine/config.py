@@ -70,10 +70,14 @@ class ApplicationAPIKey(typing.TypedDict):
 def ApplicationAPIKeys(v: str) -> dict[str, ApplicationAPIKey]:
     try:
         applications = CommaSeparatedStringTuple(v, 3)
-        for api_key, _, _ in applications:
-            if len(api_key) != API_ACCESS_KEY_LEN + API_ACCESS_KEY_LEN:
-                raise ValueError
-
+        _validate_application_api_keys(applications)
+    except ValueError:
+        raise ValueError(
+            "wrong format, "
+            "expect `api_key1:github_account_id1:github_account_login1,api_key1:github_account_id2:github_account_login2`, "
+            "api_key must be 64 character long"
+        )
+    else:
         return {
             api_key[:API_ACCESS_KEY_LEN]: {
                 "api_access_key": api_key[:API_ACCESS_KEY_LEN],
@@ -83,10 +87,12 @@ def ApplicationAPIKeys(v: str) -> dict[str, ApplicationAPIKey]:
             }
             for api_key, account_id, account_login in applications
         }
-    except ValueError:
-        raise ValueError(
-            "wrong format, expect `api_key1:github_account_id1:github_account_login1,api_key1:github_account_id2:github_account_login2`, api_key must be 64 character long"
-        )
+
+
+def _validate_application_api_keys(applications: list[tuple[str, ...]]) -> None:
+    for api_key, _, _ in applications:
+        if len(api_key) != API_ACCESS_KEY_LEN + API_ACCESS_KEY_LEN:
+            raise ValueError("api_key must be 64 character long")
 
 
 Schema = voluptuous.Schema(

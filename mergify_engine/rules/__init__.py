@@ -859,9 +859,10 @@ async def get_mergify_config_from_dict(
         final_config = UserConfigurationSchema(config, partial_validation=False)
         final_config["defaults"] = defaults
         final_config["raw_config"] = config
-        return typing.cast(MergifyConfig, final_config)
     except voluptuous.Invalid as e:
         raise InvalidRules(e, error_path)
+    else:
+        return typing.cast(MergifyConfig, final_config)
 
 
 async def get_mergify_extended_config(

@@ -936,23 +936,16 @@ class TrainCar:
         try:
             title = f"merge-queue: embarking {self._get_embarked_refs()} together"
             body = await self.generate_merge_queue_summary(for_queue_pull_request=True)
-            return typing.cast(
-                github_types.GitHubPullRequest,
-                (
-                    await self.train.repository.installation.client.post(
-                        f"/repos/{self.train.repository.installation.owner_login}/{self.train.repository.repo['name']}/pulls",
-                        json={
-                            "title": title,
-                            "body": body,
-                            "base": self.train.ref,
-                            "head": branch_name,
-                            "draft": True,
-                        },
-                        oauth_token=github_user["oauth_access_token"]
-                        if github_user
-                        else None,
-                    )
-                ).json(),
+            response = await self.train.repository.installation.client.post(
+                f"/repos/{self.train.repository.installation.owner_login}/{self.train.repository.repo['name']}/pulls",
+                json={
+                    "title": title,
+                    "body": body,
+                    "base": self.train.ref,
+                    "head": branch_name,
+                    "draft": True,
+                },
+                oauth_token=github_user["oauth_access_token"] if github_user else None,
             )
         except http.HTTPClientSideError as e:
 
@@ -1008,6 +1001,9 @@ class TrainCar:
 
             await self._set_creation_failure(e.message, report_as_error=True)
             raise TrainCarPullRequestCreationFailure(self) from e
+
+        else:
+            return typing.cast(github_types.GitHubPullRequest, response.json())
 
     @tenacity.retry(
         retry=tenacity.retry_if_exception_type(tenacity.TryAgain),  # type: ignore[attr-defined]
