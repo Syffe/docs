@@ -416,6 +416,42 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 )
                 try:
                     qf = await self._get_current_queue_freeze(ctxt)
+                    current_base_sha = await q.get_base_sha()
+                    if car is not None and not await q.is_synced_with_the_base_branch(
+                        current_base_sha
+                    ):
+                        unexpected_changes = merge_train.UnexpectedBaseBranchChange(
+                            current_base_sha
+                        )
+                        pull_requests_to_evaluate = (
+                            await car.get_pull_requests_to_evaluate()
+                        )
+                        queue_rule_evaluated = (
+                            await self.queue_rule.get_evaluated_queue_rule(
+                                ctxt.repository,
+                                ctxt.pull["base"]["ref"],
+                                pull_requests_to_evaluate,
+                                evaluated_pull_request_rule=rule,
+                            )
+                        )
+                        status = await checks_status.get_rule_checks_status(
+                            ctxt.log,
+                            ctxt.repository,
+                            pull_requests_to_evaluate,
+                            queue_rule_evaluated,
+                            unmatched_conditions_return_failure=False,
+                        )
+                        ctxt.log.info(
+                            "train will be reset", unexpected_changes=unexpected_changes
+                        )
+
+                        await car.update_state(
+                            status,
+                            queue_rule_evaluated,
+                            unexpected_change=unexpected_changes,
+                        )
+                        await q.reset(unexpected_changes)
+
                     if await self._should_be_merged(ctxt, q, qf):
                         if (
                             self.queue_rule.config["queue_branch_merge_method"]
@@ -444,7 +480,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
                                     result.title + "\n" + result.summary,
                                 )
                                 await self.send_merge_signal(ctxt, rule, embarked_pull)
-
                         else:
                             raise RuntimeError(
                                 f"Unsupported queue_branch_merge_method: {self.queue_rule.config['queue_branch_merge_method']}"

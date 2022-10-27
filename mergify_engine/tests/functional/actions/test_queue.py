@@ -15,6 +15,7 @@ from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
+from mergify_engine import engine
 from mergify_engine import eventlogs
 from mergify_engine import github_types
 from mergify_engine import queue
@@ -1029,7 +1030,6 @@ class TestQueueAction(base.FunctionalTestBase):
         assert "- `label=merge`\n  - [X]" in summary
         assert "Required conditions to stay in the queue:" in summary
         assert "- [ ] `status-success=continuous-integration/fake-ci`" in summary
-        assert f"base={self.main_branch_name}" not in summary
 
         # Check event logs
         r = await self.app.get(
@@ -1436,6 +1436,123 @@ class TestQueueAction(base.FunctionalTestBase):
         assert (
             check["output"]["title"]
             == "The pull request is the 2nd in the queue to be merged"
+        )
+
+    async def test_train_reset_after_unexpected_base_branch_change_while_merging_batch(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "batch_size": 2,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        p2 = await self.create_pr()
+
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        sources = [
+            context.T_PayloadEventSource(
+                {
+                    "event_type": "refresh",
+                    "data": github_types.GitHubEventRefresh(
+                        {
+                            "received_at": github_types.ISODateTimeType(
+                                "2022-07-26T14:14:14.000000+00:00"
+                            ),
+                            "organization": p1["base"]["repo"]["owner"],
+                            "installation": {
+                                "id": github_types.GitHubInstallationIdType(123456),
+                                "account": p1["base"]["repo"]["owner"],
+                                "target_type": "User",
+                                "permissions": {},
+                            },
+                            "sender": p1["user"],
+                            "repository": p1["base"]["repo"],
+                            "action": "user",
+                            "ref": p1["base"]["ref"],
+                            "pull_request_number": p1["number"],
+                            "source": "internal",
+                        }
+                    ),
+                    "timestamp": github_types.ISODateTimeType(
+                        "2022-07-26T14:14:14.000000+00:00"
+                    ),
+                }
+            ),
+        ]
+
+        batch_draft_pr = await self.wait_for_pull_request("opened")
+
+        ctxt = await self.repository_ctxt.get_pull_request_context(
+            batch_draft_pr["number"], batch_draft_pr["pull_request"]
+        )
+        q = await merge_train.Train.from_context(ctxt)
+        base_sha = await q.get_base_sha()
+        await self.assert_merge_queue_contents(
+            q,
+            base_sha,
+            [
+                base.MergeQueueCarMatcher(
+                    [p1["number"], p2["number"]],
+                    [],
+                    base_sha,
+                    merge_train.TrainCarChecksType.DRAFT,
+                    batch_draft_pr["number"],
+                ),
+            ],
+        )
+        await self.create_status(batch_draft_pr["pull_request"])
+        await engine.run(ctxt, sources)
+
+        ctxt = await self.repository_ctxt.get_pull_request_context(p1["number"], p1)
+        await engine.run(ctxt, sources)
+
+        await self.wait_for_pull_request("closed", pr_number=batch_draft_pr["number"])
+
+        p1_merged = await self.wait_for_pull_request("closed", pr_number=p1["number"])
+        assert p1_merged["pull_request"]["merged"]
+
+        p2 = await self.get_pull(p2["number"])
+        assert not p2["merged"]
+
+        # we push unexpected changes to the base branch
+        await self.push_file()
+
+        ctxt = await self.repository_ctxt.get_pull_request_context(p2["number"], p2)
+        await engine.run(ctxt, sources)
+
+        p2 = await self.get_pull(p2["number"])
+        assert not p2["merged"]
+
+        check = first(
+            await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 1st in the queue to be merged"
         )
 
     async def test_batch_queue(self) -> None:

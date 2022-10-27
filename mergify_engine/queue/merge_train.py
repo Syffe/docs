@@ -3095,6 +3095,7 @@ class Train:
         # * We run it when we remove the top car
         # * We run it when a tmp PR is refreshed
         # * We run it on each push events
+        # * We run it before merge
         pull: github_types.GitHubPullRequest = await self.repository.installation.client.item(
             f"{self.repository.base_url}/pulls/{self._cars[0].still_queued_embarked_pulls[0].user_pull_request_number}"
         )
