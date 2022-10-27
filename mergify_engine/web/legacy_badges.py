@@ -1,6 +1,8 @@
 import fastapi
 from starlette import responses
 
+from mergify_engine import config
+
 
 router = fastapi.APIRouter()
 
@@ -9,7 +11,7 @@ def _get_badge_url(
     owner: str, repo: str, ext: str, style: str
 ) -> responses.RedirectResponse:
     return responses.RedirectResponse(
-        url=f"https://img.shields.io/endpoint.{ext}?url=https://dashboard.mergify.com/badges/{owner}/{repo}&style={style}",
+        url=f"https://img.shields.io/endpoint.{ext}?url={config.SUBSCRIPTION_BASE_URL}/badges/{owner}/{repo}&style={style}",
         status_code=302,
     )
 
@@ -31,5 +33,5 @@ async def badge_svg(
 @router.get("/{owner}/{repo}")  # noqa: FS003
 async def badge(owner: str, repo: str) -> responses.RedirectResponse:
     return responses.RedirectResponse(
-        url=f"https://dashboard.mergify.com/badges/{owner}/{repo}"
+        url=f"{config.SUBSCRIPTION_BASE_URL}/badges/{owner}/{repo}"
     )
