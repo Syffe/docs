@@ -366,7 +366,12 @@ class StreamProcessor:
                 installation_raw = await github.get_installation_from_account_id(
                     owner_id
                 )
-                async with github.aget_client(installation_raw) as client:
+                async with github.aget_client(
+                    installation_raw,
+                    extra_metrics=sub.has_feature(
+                        subscription.Features.PRIVATE_REPOSITORY
+                    ),
+                ) as client:
                     installation = context.Installation(
                         installation_raw,
                         sub,
@@ -546,7 +551,6 @@ class StreamProcessor:
                 break
 
             pulls_processed += 1
-            installation.client.set_requests_ratio(pulls_processed)
 
             messages = await worker_lua.get_pull_messages(
                 self.redis_links.stream,

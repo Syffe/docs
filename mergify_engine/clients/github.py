@@ -11,6 +11,7 @@ from urllib import parse
 
 import daiquiri
 from datadog import statsd  # type: ignore[attr-defined]
+import first
 import httpx
 
 from mergify_engine import config
@@ -502,9 +503,10 @@ class AsyncGithubInstallationClient(AsyncGithubClient):
     def __init__(
         self,
         auth: (GithubAppInstallationAuth | GithubTokenAuth),
+        extra_metrics: bool = False,
     ) -> None:
         self._requests: list[RequestHistory] = []
-        self._requests_ratio: int = 1
+        self._extra_metrics = extra_metrics
         super().__init__(auth=auth)
 
     async def request(self, method: str, url: str, *args: typing.Any, **kwargs: typing.Any) -> httpx.Response | None:  # type: ignore[override]
@@ -541,49 +543,41 @@ class AsyncGithubInstallationClient(AsyncGithubClient):
         await super().__aexit__(exc_type, exc_value, traceback)
         self._generate_metrics()
 
-    def set_requests_ratio(self, ratio: int) -> None:
-        self._requests_ratio = ratio
-
     def _generate_metrics(self) -> None:
         nb_requests = len(self._requests)
         gh_owner = http.extract_organization_login(self)
 
-        if gh_owner == "Mergifyio":
-            LOG.info(
-                "ratelimit debugging",
-                gh_owner=gh_owner,
-                requests=[
-                    (
-                        f"{r.method} {r.url}",
-                        None
-                        if r.response is None
-                        else r.response.headers.get(
-                            "x-ratelimit-remaining", "no-rate-limit-header"
-                        ),
-                    )
-                    for r in self._requests
-                ],
-            )
+        tags = [f"hostname:{self.base_url.host}"]
+        if self._extra_metrics:
+            tags.append(f"gh_owner:{gh_owner}")
 
         statsd.histogram(
             "http.client.session",
             nb_requests,
-            tags=[f"hostname:{self.base_url.host}"],
+            tags=tags,
+        )
+
+        request_with_ratelimit = first.first(
+            r
+            for r in self._requests
+            if r.response and "x-ratelimit-remaining" in r.response.headers
         )
         if (
-            (nb_requests / self._requests_ratio) >= LOGGING_REQUESTS_THRESHOLD
-            or nb_requests >= LOGGING_REQUESTS_THRESHOLD_ABSOLUTE
+            self._extra_metrics
+            and request_with_ratelimit is not None
+            and request_with_ratelimit.response is not None
         ):
-            LOG.warning(
-                "number of GitHub requests for this session crossed the threshold (%s/%s): %s/%s",
-                LOGGING_REQUESTS_THRESHOLD,
-                LOGGING_REQUESTS_THRESHOLD_ABSOLUTE,
-                nb_requests / self._requests_ratio,
-                nb_requests,
-                gh_owner=gh_owner,
-                requests=self._requests,
-                requests_ratio=self._requests_ratio,
+            statsd.histogram(
+                "http.client.ratelimit.limit",
+                request_with_ratelimit.response.headers["x-ratelimit-limit"],
+                tags=tags,
             )
+            statsd.histogram(
+                "http.client.ratelimit.remaining",
+                request_with_ratelimit.response.headers["x-ratelimit-remaining"],
+                tags=tags,
+            )
+
         self._requests = []
 
     async def get_access_token(self) -> str:
@@ -601,6 +595,8 @@ class AsyncGithubInstallationClient(AsyncGithubClient):
 
 
 def aget_client(
-    installation: github_types.GitHubInstallation,
+    installation: github_types.GitHubInstallation, extra_metrics: bool = False
 ) -> AsyncGithubInstallationClient:
-    return AsyncGithubInstallationClient(GithubAppInstallationAuth(installation))
+    return AsyncGithubInstallationClient(
+        GithubAppInstallationAuth(installation), extra_metrics=extra_metrics
+    )

@@ -92,7 +92,13 @@ async def get_repository_context(
         get_installation
     ),
 ) -> abc.AsyncGenerator[context.Repository, None]:
-    async with github.aget_client(installation_json) as client:
+    sub = await subscription.Subscription.get_subscription(
+        redis_links.cache, installation_json["account"]["id"]
+    )
+    async with github.aget_client(
+        installation_json,
+        extra_metrics=sub.has_feature(subscription.Features.PRIVATE_REPOSITORY),
+    ) as client:
         try:
             # Check this token has access to this repository
             repo = typing.cast(
@@ -101,10 +107,6 @@ async def get_repository_context(
             )
         except (http.HTTPNotFound, http.HTTPForbidden, http.HTTPUnauthorized):
             raise fastapi.HTTPException(status_code=404)
-
-        sub = await subscription.Subscription.get_subscription(
-            redis_links.cache, installation_json["account"]["id"]
-        )
 
         installation = context.Installation(installation_json, sub, client, redis_links)
 
