@@ -73,7 +73,13 @@ def logger_checker(
     logs.setup_logging()
     logging.getLogger(None).addHandler(caplog.handler)
     yield
-    for when in ("setup", "call", "teardown"):
+
+    whens: tuple[typing.Literal["setup", "call", "teardown"], ...] = (
+        "setup",
+        "call",
+        "teardown",
+    )
+    for when in whens:
         messages = [
             rec.getMessage()
             for rec in caplog.get_records(when)
