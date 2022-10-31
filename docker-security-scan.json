@@ -141,7 +141,9 @@
         "References": [
           "https://access.redhat.com/security/cve/CVE-2022-32221",
           "https://curl.se/docs/CVE-2022-32221.html",
-          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-32221"
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-32221",
+          "https://ubuntu.com/security/notices/USN-5702-1",
+          "https://ubuntu.com/security/notices/USN-5702-2"
         ]
       },
       {
@@ -155,7 +157,7 @@
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
         "Title": "curl: HSTS bypass via IDN",
-        "Description": "A vulnerability was found in curl. The issue occurs because curl's HSTS check can be bypassed to trick it to keep using HTTP. Using its HSTS support, it can instruct curl to use HTTPS directly instead of using an insecure clear-text HTTP step even when HTTP is provided in the URL. This mechanism can be bypassed if the hostname in the given URL uses IDN characters that get replaced with ASCII counterparts as part of the IDN conversion. Like using the character UTF-8 U+3002 (IDEOGRAPHIC FULL STOP) instead of the common ASCII full stop (U+002E) `.`.",
+        "Description": "In curl before 7.86.0, the HSTS check could be bypassed to trick it into staying with HTTP. Using its HSTS support, curl can be instructed to use HTTPS directly (instead of using an insecure cleartext HTTP step) even when HTTP is provided in the URL. This mechanism could be bypassed if the host name in the given URL uses IDN characters that get replaced with ASCII counterparts as part of the IDN conversion, e.g., using the character UTF-8 U+3002 (IDEOGRAPHIC FULL STOP) instead of the common ASCII full stop of U+002E (.). The earliest affected version is 7.77.0 2021-05-26.",
         "Severity": "MEDIUM",
         "CVSS": {
           "redhat": {
@@ -166,8 +168,10 @@
         "References": [
           "https://access.redhat.com/security/cve/CVE-2022-42916",
           "https://curl.se/docs/CVE-2022-42916.html",
-          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-42916"
-        ]
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-42916",
+          "https://ubuntu.com/security/notices/USN-5702-1"
+        ],
+        "PublishedDate": "2022-10-29T02:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-22922",
@@ -422,6 +426,7 @@
           "https://access.redhat.com/security/cve/CVE-2022-39260",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39260",
           "https://github.com/git/git/security/advisories/GHSA-rjr6-wcq6-83p6",
+          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/UKFHE4KVD7EKS5J3KTDFVBEKU3CLXGVV/",
           "https://ubuntu.com/security/notices/USN-5686-1"
         ],
         "PublishedDate": "2022-10-19T12:15:00Z"
@@ -457,6 +462,7 @@
           "https://access.redhat.com/security/cve/CVE-2022-39253",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39253",
           "https://github.com/git/git/security/advisories/GHSA-3wp6-j8xr-qw85",
+          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/UKFHE4KVD7EKS5J3KTDFVBEKU3CLXGVV/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/VFYXCTLOSESYIP72BUYD6ECDIMUM4WMB/",
           "https://ubuntu.com/security/notices/USN-5686-1"
         ],
@@ -657,6 +663,7 @@
           "https://access.redhat.com/security/cve/CVE-2022-39260",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39260",
           "https://github.com/git/git/security/advisories/GHSA-rjr6-wcq6-83p6",
+          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/UKFHE4KVD7EKS5J3KTDFVBEKU3CLXGVV/",
           "https://ubuntu.com/security/notices/USN-5686-1"
         ],
         "PublishedDate": "2022-10-19T12:15:00Z"
@@ -692,6 +699,7 @@
           "https://access.redhat.com/security/cve/CVE-2022-39253",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39253",
           "https://github.com/git/git/security/advisories/GHSA-3wp6-j8xr-qw85",
+          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/UKFHE4KVD7EKS5J3KTDFVBEKU3CLXGVV/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/VFYXCTLOSESYIP72BUYD6ECDIMUM4WMB/",
           "https://ubuntu.com/security/notices/USN-5686-1"
         ],
@@ -1600,7 +1608,9 @@
         "References": [
           "https://access.redhat.com/security/cve/CVE-2022-32221",
           "https://curl.se/docs/CVE-2022-32221.html",
-          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-32221"
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-32221",
+          "https://ubuntu.com/security/notices/USN-5702-1",
+          "https://ubuntu.com/security/notices/USN-5702-2"
         ]
       },
       {
@@ -1614,7 +1624,7 @@
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
         "Title": "curl: HSTS bypass via IDN",
-        "Description": "A vulnerability was found in curl. The issue occurs because curl's HSTS check can be bypassed to trick it to keep using HTTP. Using its HSTS support, it can instruct curl to use HTTPS directly instead of using an insecure clear-text HTTP step even when HTTP is provided in the URL. This mechanism can be bypassed if the hostname in the given URL uses IDN characters that get replaced with ASCII counterparts as part of the IDN conversion. Like using the character UTF-8 U+3002 (IDEOGRAPHIC FULL STOP) instead of the common ASCII full stop (U+002E) `.`.",
+        "Description": "In curl before 7.86.0, the HSTS check could be bypassed to trick it into staying with HTTP. Using its HSTS support, curl can be instructed to use HTTPS directly (instead of using an insecure cleartext HTTP step) even when HTTP is provided in the URL. This mechanism could be bypassed if the host name in the given URL uses IDN characters that get replaced with ASCII counterparts as part of the IDN conversion, e.g., using the character UTF-8 U+3002 (IDEOGRAPHIC FULL STOP) instead of the common ASCII full stop of U+002E (.). The earliest affected version is 7.77.0 2021-05-26.",
         "Severity": "MEDIUM",
         "CVSS": {
           "redhat": {
@@ -1625,8 +1635,10 @@
         "References": [
           "https://access.redhat.com/security/cve/CVE-2022-42916",
           "https://curl.se/docs/CVE-2022-42916.html",
-          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-42916"
-        ]
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-42916",
+          "https://ubuntu.com/security/notices/USN-5702-1"
+        ],
+        "PublishedDate": "2022-10-29T02:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-22922",
@@ -1740,7 +1752,9 @@
         "References": [
           "https://access.redhat.com/security/cve/CVE-2022-32221",
           "https://curl.se/docs/CVE-2022-32221.html",
-          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-32221"
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-32221",
+          "https://ubuntu.com/security/notices/USN-5702-1",
+          "https://ubuntu.com/security/notices/USN-5702-2"
         ]
       },
       {
@@ -1754,7 +1768,7 @@
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
         "Title": "curl: HSTS bypass via IDN",
-        "Description": "A vulnerability was found in curl. The issue occurs because curl's HSTS check can be bypassed to trick it to keep using HTTP. Using its HSTS support, it can instruct curl to use HTTPS directly instead of using an insecure clear-text HTTP step even when HTTP is provided in the URL. This mechanism can be bypassed if the hostname in the given URL uses IDN characters that get replaced with ASCII counterparts as part of the IDN conversion. Like using the character UTF-8 U+3002 (IDEOGRAPHIC FULL STOP) instead of the common ASCII full stop (U+002E) `.`.",
+        "Description": "In curl before 7.86.0, the HSTS check could be bypassed to trick it into staying with HTTP. Using its HSTS support, curl can be instructed to use HTTPS directly (instead of using an insecure cleartext HTTP step) even when HTTP is provided in the URL. This mechanism could be bypassed if the host name in the given URL uses IDN characters that get replaced with ASCII counterparts as part of the IDN conversion, e.g., using the character UTF-8 U+3002 (IDEOGRAPHIC FULL STOP) instead of the common ASCII full stop of U+002E (.). The earliest affected version is 7.77.0 2021-05-26.",
         "Severity": "MEDIUM",
         "CVSS": {
           "redhat": {
@@ -1765,8 +1779,10 @@
         "References": [
           "https://access.redhat.com/security/cve/CVE-2022-42916",
           "https://curl.se/docs/CVE-2022-42916.html",
-          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-42916"
-        ]
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-42916",
+          "https://ubuntu.com/security/notices/USN-5702-1"
+        ],
+        "PublishedDate": "2022-10-29T02:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-22922",
@@ -1916,8 +1932,12 @@
       },
       {
         "VulnerabilityID": "CVE-2022-43680",
+        "VendorIDs": [
+          "DSA-5266-1"
+        ],
         "PkgName": "libexpat1",
         "InstalledVersion": "2.2.10-2+deb11u4",
+        "FixedVersion": "2.2.10-2+deb11u5",
         "SeveritySource": "nvd",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-43680",
         "DataSource": {
@@ -1941,6 +1961,7 @@
           "https://github.com/libexpat/libexpat/issues/649",
           "https://github.com/libexpat/libexpat/pull/616",
           "https://github.com/libexpat/libexpat/pull/650",
+          "https://lists.debian.org/debian-lts-announce/2022/10/msg00033.html",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-43680"
         ],
         "PublishedDate": "2022-10-24T14:15:00Z"
@@ -2792,6 +2813,7 @@
           "https://access.redhat.com/security/cve/CVE-2022-29458",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-29458",
           "https://invisible-island.net/ncurses/NEWS.html#t20220416",
+          "https://lists.debian.org/debian-lts-announce/2022/10/msg00037.html",
           "https://lists.gnu.org/archive/html/bug-ncurses/2022-04/msg00014.html",
           "https://lists.gnu.org/archive/html/bug-ncurses/2022-04/msg00016.html",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-29458",
@@ -2836,6 +2858,8 @@
           "https://lists.gnu.org/archive/html/bug-ncurses/2020-08/msg00006.html",
           "https://lists.gnu.org/archive/html/bug-ncurses/2021-10/msg00023.html",
           "https://nvd.nist.gov/vuln/detail/CVE-2021-39537",
+          "https://support.apple.com/kb/HT213443",
+          "https://support.apple.com/kb/HT213444",
           "https://support.apple.com/kb/HT213488",
           "https://ubuntu.com/security/notices/USN-5477-1"
         ],
@@ -2874,6 +2898,7 @@
           "https://access.redhat.com/security/cve/CVE-2022-29458",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-29458",
           "https://invisible-island.net/ncurses/NEWS.html#t20220416",
+          "https://lists.debian.org/debian-lts-announce/2022/10/msg00037.html",
           "https://lists.gnu.org/archive/html/bug-ncurses/2022-04/msg00014.html",
           "https://lists.gnu.org/archive/html/bug-ncurses/2022-04/msg00016.html",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-29458",
@@ -2918,6 +2943,8 @@
           "https://lists.gnu.org/archive/html/bug-ncurses/2020-08/msg00006.html",
           "https://lists.gnu.org/archive/html/bug-ncurses/2021-10/msg00023.html",
           "https://nvd.nist.gov/vuln/detail/CVE-2021-39537",
+          "https://support.apple.com/kb/HT213443",
+          "https://support.apple.com/kb/HT213444",
           "https://support.apple.com/kb/HT213488",
           "https://ubuntu.com/security/notices/USN-5477-1"
         ],
@@ -3658,6 +3685,9 @@
         "References": [
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-36690",
           "https://nvd.nist.gov/vuln/detail/CVE-2021-36690",
+          "https://support.apple.com/kb/HT213446",
+          "https://support.apple.com/kb/HT213486",
+          "https://support.apple.com/kb/HT213487",
           "https://support.apple.com/kb/HT213488",
           "https://ubuntu.com/security/notices/USN-5403-1",
           "https://www.sqlite.org/forum/forumpost/718c0a8d17"
@@ -3694,6 +3724,7 @@
         "References": [
           "https://access.redhat.com/security/cve/CVE-2022-35737",
           "https://blog.trailofbits.com/2022/10/25/sqlite-vulnerability-july-2022-library-api/",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-35737",
           "https://kb.cert.org/vuls/id/720344",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-35737",
           "https://security.netapp.com/advisory/ntap-20220915-0009/",
@@ -4025,6 +4056,7 @@
           "https://access.redhat.com/security/cve/CVE-2022-29458",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-29458",
           "https://invisible-island.net/ncurses/NEWS.html#t20220416",
+          "https://lists.debian.org/debian-lts-announce/2022/10/msg00037.html",
           "https://lists.gnu.org/archive/html/bug-ncurses/2022-04/msg00014.html",
           "https://lists.gnu.org/archive/html/bug-ncurses/2022-04/msg00016.html",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-29458",
@@ -4069,6 +4101,8 @@
           "https://lists.gnu.org/archive/html/bug-ncurses/2020-08/msg00006.html",
           "https://lists.gnu.org/archive/html/bug-ncurses/2021-10/msg00023.html",
           "https://nvd.nist.gov/vuln/detail/CVE-2021-39537",
+          "https://support.apple.com/kb/HT213443",
+          "https://support.apple.com/kb/HT213444",
           "https://support.apple.com/kb/HT213488",
           "https://ubuntu.com/security/notices/USN-5477-1"
         ],
@@ -4567,6 +4601,7 @@
           "https://access.redhat.com/security/cve/CVE-2022-29458",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-29458",
           "https://invisible-island.net/ncurses/NEWS.html#t20220416",
+          "https://lists.debian.org/debian-lts-announce/2022/10/msg00037.html",
           "https://lists.gnu.org/archive/html/bug-ncurses/2022-04/msg00014.html",
           "https://lists.gnu.org/archive/html/bug-ncurses/2022-04/msg00016.html",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-29458",
@@ -4611,6 +4646,8 @@
           "https://lists.gnu.org/archive/html/bug-ncurses/2020-08/msg00006.html",
           "https://lists.gnu.org/archive/html/bug-ncurses/2021-10/msg00023.html",
           "https://nvd.nist.gov/vuln/detail/CVE-2021-39537",
+          "https://support.apple.com/kb/HT213443",
+          "https://support.apple.com/kb/HT213444",
           "https://support.apple.com/kb/HT213488",
           "https://ubuntu.com/security/notices/USN-5477-1"
         ],
@@ -4649,6 +4686,7 @@
           "https://access.redhat.com/security/cve/CVE-2022-29458",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-29458",
           "https://invisible-island.net/ncurses/NEWS.html#t20220416",
+          "https://lists.debian.org/debian-lts-announce/2022/10/msg00037.html",
           "https://lists.gnu.org/archive/html/bug-ncurses/2022-04/msg00014.html",
           "https://lists.gnu.org/archive/html/bug-ncurses/2022-04/msg00016.html",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-29458",
@@ -4693,6 +4731,8 @@
           "https://lists.gnu.org/archive/html/bug-ncurses/2020-08/msg00006.html",
           "https://lists.gnu.org/archive/html/bug-ncurses/2021-10/msg00023.html",
           "https://nvd.nist.gov/vuln/detail/CVE-2021-39537",
+          "https://support.apple.com/kb/HT213443",
+          "https://support.apple.com/kb/HT213444",
           "https://support.apple.com/kb/HT213488",
           "https://ubuntu.com/security/notices/USN-5477-1"
         ],
@@ -4731,6 +4771,7 @@
           "https://access.redhat.com/security/cve/CVE-2022-29458",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-29458",
           "https://invisible-island.net/ncurses/NEWS.html#t20220416",
+          "https://lists.debian.org/debian-lts-announce/2022/10/msg00037.html",
           "https://lists.gnu.org/archive/html/bug-ncurses/2022-04/msg00014.html",
           "https://lists.gnu.org/archive/html/bug-ncurses/2022-04/msg00016.html",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-29458",
@@ -4775,6 +4816,8 @@
           "https://lists.gnu.org/archive/html/bug-ncurses/2020-08/msg00006.html",
           "https://lists.gnu.org/archive/html/bug-ncurses/2021-10/msg00023.html",
           "https://nvd.nist.gov/vuln/detail/CVE-2021-39537",
+          "https://support.apple.com/kb/HT213443",
+          "https://support.apple.com/kb/HT213444",
           "https://support.apple.com/kb/HT213488",
           "https://ubuntu.com/security/notices/USN-5477-1"
         ],
