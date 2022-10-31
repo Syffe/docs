@@ -321,21 +321,11 @@ async def repository_queues(
                 # This car is going to be deleted so skip it
                 continue
 
-            eta = None
-            if (
-                embarked_pull.config["name"] in time_to_merge_stats
-                and time_to_merge_stats[embarked_pull.config["name"]]["median"]
-                is not None
-                and not await train.is_queue_frozen(embarked_pull.config["name"])
-            ):
-                eta = (
-                    embarked_pull.queued_at
-                    + datetime.timedelta(
-                        seconds=time_to_merge_stats[embarked_pull.config["name"]][  # type: ignore[arg-type]
-                            "median"
-                        ],
-                    )
-                ).isoformat()
+            estimated_time_of_merge = await get_estimated_time_of_merge(
+                embarked_pull,
+                train,
+                time_to_merge_stats,
+            )
 
             queue.pull_requests.append(
                 PullRequestQueued(
@@ -347,13 +337,33 @@ async def repository_queues(
                     ),
                     embarked_pull.queued_at,
                     speculative_check_pull_request,
-                    estimated_time_of_merge=eta,
+                    estimated_time_of_merge=estimated_time_of_merge,
                 )
             )
 
         queues.queues.append(queue)
 
     return queues
+
+
+async def get_estimated_time_of_merge(
+    embarked_pull: merge_train.EmbarkedPull,
+    train: merge_train.Train,
+    time_to_merge_stats: dict[rules.QueueName, statistics_api.TimeToMergeResponse],
+) -> datetime.datetime | None:
+    queue_name = embarked_pull.config["name"]
+
+    if await train.is_queue_frozen(queue_name):
+        return None
+
+    queue_time_to_merge_stats = time_to_merge_stats.get(
+        queue_name,
+        statistics_api.TimeToMergeResponse(mean=None, median=None),
+    )
+    if queue_time_to_merge_stats["median"] is not None:
+        time_to_merge = datetime.timedelta(seconds=queue_time_to_merge_stats["median"])
+        return embarked_pull.queued_at + time_to_merge
+    return None
 
 
 @router.get(
