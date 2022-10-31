@@ -15,6 +15,16 @@ SERVICE_NAME: str = "engine-<unknown>"
 VERSION: str = os.environ.get("MERGIFYENGINE_SHA", "unknown")
 
 
+def ddtrace_hook(span: ddtrace.Span) -> None:
+    root_span = ddtrace.tracer.current_root_span()
+    if root_span is None:
+        return
+
+    owner = root_span.get_tag("gh_owner")
+    if owner and span.get_tag("gh_owner") is None:
+        span.set_tag("gh_owner", owner)
+
+
 def setup(service_name: str, dump_config: bool = True) -> None:
     global SERVICE_NAME
     SERVICE_NAME = "engine-" + service_name
@@ -38,6 +48,7 @@ def setup(service_name: str, dump_config: bool = True) -> None:
     ddtrace.config.service = SERVICE_NAME
 
     ddtrace.config.httpx["split_by_domain"] = True
+    ddtrace.tracer.on_start_span(ddtrace_hook)
 
     logs.setup_logging(dump_config=dump_config)
 
