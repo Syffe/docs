@@ -937,7 +937,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 {
                     "name": "default",
                     "conditions": [
-                        "label=merge",
+                        "status-success=another-ci",
                     ],
                 }
             ],
@@ -970,7 +970,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         # Merge p1 to force p2 to be rebased
         # The action triggers all CI again, including the one that put p2 in queue
-        await self.add_label(p1["number"], "merge")
+        await self.create_status(p1, context="another-ci")
         await self.run_engine()
         p1 = await self.get_pull(p1["number"])
 
@@ -998,7 +998,7 @@ class TestQueueAction(base.FunctionalTestBase):
         assert p2["head"]["sha"] != head_sha
 
         # Complete condition for merge
-        await self.add_label(p2["number"], "merge")
+        await self.create_status(p2, context="another-ci")
         await self.run_engine()
         assert p1["merge_commit_sha"] is not None
         # Ensure p2 is still in queue
@@ -1027,7 +1027,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check is not None
         summary = check["output"]["summary"]
-        assert "- `label=merge`\n  - [X]" in summary
+        assert "- [X] `status-success=another-ci`" in summary
         assert "Required conditions to stay in the queue:" in summary
         assert "- [ ] `status-success=continuous-integration/fake-ci`" in summary
 
@@ -2611,127 +2611,6 @@ class TestQueueAction(base.FunctionalTestBase):
 
         pulls = await self.get_pulls()
         assert len(pulls) == 0
-
-    async def test_queue_with_labels(self) -> None:
-        rules = {
-            "queue_rules": [
-                {
-                    "name": "default",
-                    "conditions": [
-                        "status-success=continuous-integration/fake-ci",
-                        "label=foobar",
-                    ],
-                    "speculative_checks": 5,
-                }
-            ],
-            "pull_request_rules": [
-                {
-                    "name": "Merge priority high",
-                    "conditions": [
-                        f"base={self.main_branch_name}",
-                        "label=queue",
-                    ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
-                },
-            ],
-        }
-        await self.setup_repo(yaml.dump(rules))
-
-        p1 = await self.create_pr()
-        p2 = await self.create_pr()
-
-        # To force others to be rebased
-        p = await self.create_pr()
-        await self.merge_pull(p["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
-        await self.run_engine()
-        p = await self.get_pull(p["number"])
-
-        await self.add_label(p1["number"], "queue")
-        await self.add_label(p2["number"], "queue")
-        await self.run_engine()
-
-        await self.wait_for("pull_request", {"action": "opened"})
-        await self.wait_for("pull_request", {"action": "opened"})
-
-        pulls = await self.get_pulls()
-        assert len(pulls) == 4
-
-        tmp_mq_p1 = await self.get_pull(pulls[1]["number"])
-        tmp_mq_p2 = await self.get_pull(pulls[0]["number"])
-        assert tmp_mq_p1["number"] not in [p1["number"], p2["number"]]
-        assert tmp_mq_p2["number"] not in [p1["number"], p2["number"]]
-
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
-        assert p["merge_commit_sha"] is not None
-        await self.assert_merge_queue_contents(
-            q,
-            p["merge_commit_sha"],
-            [
-                base.MergeQueueCarMatcher(
-                    [p1["number"]],
-                    [],
-                    p["merge_commit_sha"],
-                    merge_train.TrainCarChecksType.DRAFT,
-                    tmp_mq_p1["number"],
-                ),
-                base.MergeQueueCarMatcher(
-                    [p2["number"]],
-                    [p1["number"]],
-                    p["merge_commit_sha"],
-                    merge_train.TrainCarChecksType.DRAFT,
-                    tmp_mq_p2["number"],
-                ),
-            ],
-        )
-
-        assert tmp_mq_p1["commits"] == 2
-        assert tmp_mq_p1["changed_files"] == 1
-        assert tmp_mq_p2["commits"] == 4
-        assert tmp_mq_p2["changed_files"] == 2
-        await self.create_status(tmp_mq_p2)
-        await self.run_engine()
-
-        async def assert_queued(pull: github_types.GitHubPullRequest) -> None:
-            check = first(
-                await context.Context(
-                    self.repository_ctxt, pull
-                ).pull_engine_check_runs,
-                key=lambda c: c["name"] == constants.MERGE_QUEUE_SUMMARY_NAME,
-            )
-            assert check is not None
-            assert check["conclusion"] is None
-
-        await assert_queued(p1)
-        await assert_queued(p2)
-
-        await self.create_status(tmp_mq_p1, state="pending")
-        await self.create_status(tmp_mq_p2, state="pending")
-        await self.run_engine()
-        await assert_queued(p1)
-        await assert_queued(p2)
-
-        pulls = await self.get_pulls()
-        assert len(pulls) == 4
-
-        await self.create_status(tmp_mq_p1)
-        await self.create_status(tmp_mq_p2)
-        await self.run_engine()
-        await assert_queued(p1)
-        await assert_queued(p2)
-
-        pulls = await self.get_pulls()
-        assert len(pulls) == 4
-
-        await self.add_label(p1["number"], "foobar")
-        await self.add_label(p2["number"], "foobar")
-        await self.run_engine()
-
-        pulls = await self.get_pulls()
-        assert len(pulls) == 0
-
-        await self.assert_merge_queue_contents(q, None, [])
 
     async def test_queue_with_ci_in_pull_request_rules(self) -> None:
         rules = {

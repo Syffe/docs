@@ -5,44 +5,51 @@ import logging
 from mergify_engine import check_api
 from mergify_engine import context
 from mergify_engine import rules
+from mergify_engine.rules import conditions as rules_conditions
 from mergify_engine.rules import filter
 from mergify_engine.rules import live_resolvers
 
 
-async def get_rule_checks_status(
-    log: logging.LoggerAdapter[logging.Logger],
+def get_conditions_with_ignored_attributes(
+    rule: rules.EvaluatedRule | rules.EvaluatedQueueRule,
+    attribute_prefixes: tuple[str, ...],
+) -> rules_conditions.PullRequestRuleConditions | rules_conditions.QueueRuleConditions:
+    conditions = rule.conditions.copy()
+    for condition in conditions.walk():
+        attr = condition.get_attribute_name()
+        if attr.startswith(attribute_prefixes):
+            condition.update("number>0")
+    return conditions
+
+
+async def conditions_without_some_attributes_match_p(
+    log: "logging.LoggerAdapter[logging.Logger]",
+    pulls: list[context.BasePullRequest],
+    rule: "rules.EvaluatedRule | rules.EvaluatedQueueRule",
+    attribute_prefixes: tuple[str, ...],
+) -> bool:
+    conditions = get_conditions_with_ignored_attributes(rule, attribute_prefixes)
+    await conditions(pulls)
+    log.debug(
+        "does_conditions_without_some_attributes_match ?",
+        attribute_prefixes=attribute_prefixes,
+        match=conditions.match,
+        summary=conditions.get_summary(),
+    )
+    return conditions.match
+
+
+async def _get_checks_result(
     repository: context.Repository,
     pulls: list[context.BasePullRequest],
-    rule: rules.EvaluatedRule | rules.EvaluatedQueueRule,
-    *,
-    unmatched_conditions_return_failure: bool = True,
+    conditions: rules_conditions.PullRequestRuleConditions
+    | rules_conditions.QueueRuleConditions,
 ) -> check_api.Conclusion:
-    if rule.conditions.match:
-        return check_api.Conclusion.SUCCESS
-
-    conditions_without_checks = rule.conditions.copy()
-    for condition_without_check in conditions_without_checks.walk():
-        attr = condition_without_check.get_attribute_name()
-        if attr.startswith("check-") or attr.startswith("status-"):
-            condition_without_check.update("number>0")
-
-    # NOTE(sileht): Something unrelated to checks unmatch?
-    await conditions_without_checks(pulls)
-    log.debug(
-        "something unrelated to checks doesn't match? %s",
-        conditions_without_checks.get_summary(),
-    )
-    if not conditions_without_checks.match:
-        if unmatched_conditions_return_failure:
-            return check_api.Conclusion.FAILURE
-        else:
-            return check_api.Conclusion.PENDING
-
     # NOTE(sileht): we replace BinaryFilter by IncompleteChecksFilter to ensure
     # all required CIs have finished. IncompleteChecksFilter return 3 states
     # instead of just True/False, this allows us to known if a condition can
     # change in the future or if its a final state.
-    tree = rule.conditions.extract_raw_filter_tree()
+    tree = conditions.extract_raw_filter_tree()
     results: dict[int, filter.IncompleteChecksResult] = {}
 
     for pull in pulls:
@@ -55,20 +62,64 @@ async def get_rule_checks_status(
 
         ret = await f(pull)
         if ret is filter.IncompleteCheck:
-            log.debug("found an incomplete check")
             return check_api.Conclusion.PENDING
 
         pr_number = await pull.number  # type: ignore[attr-defined]
         results[pr_number] = ret
 
     if all(results.values()):
-        # This can't occur!, we should have returned SUCCESS earlier.
-        log.error(
-            "filter.IncompleteChecksFilter unexpectly returned true",
-            tree=tree,
-            results=results,
-        )
-        # So don't merge broken stuff
-        return check_api.Conclusion.PENDING
+        return check_api.Conclusion.SUCCESS
     else:
         return check_api.Conclusion.FAILURE
+
+
+async def get_rule_checks_status(
+    log: "logging.LoggerAdapter[logging.Logger]",
+    repository: context.Repository,
+    pulls: list[context.BasePullRequest],
+    rule: rules.EvaluatedRule | rules.EvaluatedQueueRule,
+    *,
+    wait_for_schedule_to_match: bool = False,
+) -> check_api.Conclusion:
+    if rule.conditions.match:
+        return check_api.Conclusion.SUCCESS
+
+    only_checks_does_not_match = await conditions_without_some_attributes_match_p(
+        log, pulls, rule, ("check-", "status-")
+    )
+    if only_checks_does_not_match:
+        result = await _get_checks_result(repository, pulls, rule.conditions)
+        if result == check_api.Conclusion.SUCCESS:
+            log.error(
+                "_get_checks_result() unexpectly returned check_api.Conclusion.SUCCESS "
+                "while rule.conditions.match is false",
+                tree=rule.conditions.extract_raw_filter_tree(),
+            )
+            # So don't merge broken stuff
+            return check_api.Conclusion.PENDING
+        return result
+    else:
+        if wait_for_schedule_to_match:
+            schedule_match = await conditions_without_some_attributes_match_p(
+                log, pulls, rule, ("check-", "status-", "schedule", "current-")
+            )
+            # NOTE(sileht): when something not related to checks does not match
+            # we now also remove schedule from the tree, if it match
+            # afterwards, it means that a schedule didn't match yet
+            if schedule_match:
+                # NOTE(sileht): now we look at the CIs result and if it fail
+                # we fail too, otherwise we wait for the schedule to match
+                result_without_schedule = await _get_checks_result(
+                    repository,
+                    pulls,
+                    get_conditions_with_ignored_attributes(
+                        rule, ("schedule", "current-")
+                    ),
+                )
+                if result_without_schedule == check_api.Conclusion.FAILURE:
+                    return result_without_schedule
+                return check_api.Conclusion.PENDING
+            else:
+                return check_api.Conclusion.FAILURE
+        else:
+            return check_api.Conclusion.FAILURE

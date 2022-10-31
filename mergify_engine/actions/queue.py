@@ -275,7 +275,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 ctxt.repository,
                 [ctxt.pull_request],
                 queue_rule_evaluated,
-                unmatched_conditions_return_failure=False,
+                wait_for_schedule_to_match=True,
             )
             await car.update_state(
                 status, queue_rule_evaluated, unexpected_change=unexpected_changes
@@ -439,7 +439,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                             ctxt.repository,
                             pull_requests_to_evaluate,
                             queue_rule_evaluated,
-                            unmatched_conditions_return_failure=False,
+                            wait_for_schedule_to_match=True,
                         )
                         ctxt.log.info(
                             "train will be reset", unexpected_changes=unexpected_changes

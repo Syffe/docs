@@ -131,7 +131,7 @@ async def handle(queue_rules: rules.QueueRules, ctxt: context.Context) -> None:
         ctxt.repository,
         pull_requests,
         evaluated_queue_rule,
-        unmatched_conditions_return_failure=False,
+        wait_for_schedule_to_match=True,
     )
 
     await car.update_state(

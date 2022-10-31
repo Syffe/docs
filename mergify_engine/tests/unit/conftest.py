@@ -1,4 +1,5 @@
 from collections import abc
+import dataclasses
 import functools
 import typing
 from unittest import mock
@@ -195,3 +196,39 @@ async def jinja_environment() -> jinja2.sandbox.SandboxedEnvironment:
     return jinja2.sandbox.SandboxedEnvironment(
         undefined=jinja2.StrictUndefined, enable_async=True
     )
+
+
+@dataclasses.dataclass
+class FakePullRequest:
+    attrs: dict[str, context.ContextAttributeType]
+
+    async def __getattr__(self, name: str) -> context.ContextAttributeType:
+        fancy_name = name.replace("_", "-")
+        try:
+            return self.attrs[fancy_name]
+        except KeyError:
+            raise context.PullRequestAttributeError(name=fancy_name)
+
+    def sync_checks(self) -> None:
+        self.attrs["check-success-or-neutral"] = (
+            self.attrs.get("check-success", [])  # type: ignore
+            + self.attrs.get("check-neutral", [])
+            + self.attrs.get("check-pending", [])
+        )
+        self.attrs["check-success-or-neutral-or-pending"] = (
+            self.attrs.get("check-success", [])  # type: ignore
+            + self.attrs.get("check-neutral", [])
+            + self.attrs.get("check-pending", [])
+        )
+        self.attrs["check"] = (
+            self.attrs.get("check-success", [])  # type: ignore
+            + self.attrs.get("check-neutral", [])
+            + self.attrs.get("check-pending", [])
+            + self.attrs.get("check-failure", [])
+            + self.attrs.get("check-timed-out", [])
+            + self.attrs.get("check-skipped", [])
+        )
+
+        self.attrs["status-success"] = self.attrs.get("check-success", [])  # type: ignore
+        self.attrs["status-neutral"] = self.attrs.get("check-neutral", [])  # type: ignore
+        self.attrs["status-failure"] = self.attrs.get("check-failure", [])  # type: ignore

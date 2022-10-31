@@ -1,4 +1,3 @@
-import dataclasses
 import typing
 from unittest import mock
 
@@ -13,6 +12,7 @@ from mergify_engine.rules import checks_status
 from mergify_engine.rules import conditions
 from mergify_engine.rules import filter
 from mergify_engine.rules import live_resolvers
+from mergify_engine.tests.unit import conftest
 
 
 FAKE_REPO = mock.Mock(repo={"owner": {"login": "org"}})
@@ -20,45 +20,9 @@ FAKE_REPO = mock.Mock(repo={"owner": {"login": "org"}})
 empty: list[str] = []
 
 
-@dataclasses.dataclass
-class FakeQueuePullRequest:
-    attrs: dict[str, context.ContextAttributeType]
-
-    async def __getattr__(self, name: str) -> context.ContextAttributeType:
-        fancy_name = name.replace("_", "-")
-        try:
-            return self.attrs[fancy_name]
-        except KeyError:
-            raise context.PullRequestAttributeError(name=fancy_name)
-
-    def sync_checks(self) -> None:
-        self.attrs["check-success-or-neutral"] = (
-            self.attrs.get("check-success", [])  # type: ignore
-            + self.attrs.get("check-neutral", [])
-            + self.attrs.get("check-pending", [])
-        )
-        self.attrs["check-success-or-neutral-or-pending"] = (
-            self.attrs.get("check-success", [])  # type: ignore
-            + self.attrs.get("check-neutral", [])
-            + self.attrs.get("check-pending", [])
-        )
-        self.attrs["check"] = (
-            self.attrs.get("check-success", [])  # type: ignore
-            + self.attrs.get("check-neutral", [])
-            + self.attrs.get("check-pending", [])
-            + self.attrs.get("check-failure", [])
-            + self.attrs.get("check-timed-out", [])
-            + self.attrs.get("check-skipped", [])
-        )
-
-        self.attrs["status-success"] = self.attrs.get("check-success", [])  # type: ignore
-        self.attrs["status-neutral"] = self.attrs.get("check-neutral", [])  # type: ignore
-        self.attrs["status-failure"] = self.attrs.get("check-failure", [])  # type: ignore
-
-
 async def test_rules_conditions_update() -> None:
     pulls = [
-        FakeQueuePullRequest(
+        conftest.FakePullRequest(
             {
                 "number": 1,
                 "current-year": date.Year(2018),
@@ -112,7 +76,7 @@ async def test_rules_conditions_update() -> None:
 
 async def assert_queue_rule_checks_status(
     conds: list[typing.Any],
-    pull: FakeQueuePullRequest,
+    pull: conftest.FakePullRequest,
     expected_state: check_api.Conclusion,
 ) -> None:
     pull.sync_checks()
@@ -131,13 +95,13 @@ async def assert_queue_rule_checks_status(
         FAKE_REPO,
         [typing.cast(context.BasePullRequest, pull)],
         mock.Mock(conditions=c),
-        unmatched_conditions_return_failure=False,
+        wait_for_schedule_to_match=True,
     )
     assert state == expected_state
 
 
 async def test_rules_checks_basic(logger_checker: None) -> None:
-    pull = FakeQueuePullRequest(
+    pull = conftest.FakePullRequest(
         {
             "number": 1,
             "current-year": date.Year(2018),
@@ -153,14 +117,14 @@ async def test_rules_checks_basic(logger_checker: None) -> None:
             "check-stale": empty,
         }
     )
-    conds = ["check-success=fake-ci", "label=foobar"]
+    conds = ["check-success=fake-ci", "label=foobar", "current-year<=2200"]
 
     # Label missing and nothing reported
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
 
     # Label missing and success
     pull.attrs["check-success"] = ["fake-ci"]
-    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
 
     # label ok and nothing reported
     pull.attrs["label"] = ["foobar"]
@@ -185,9 +149,30 @@ async def test_rules_checks_basic(logger_checker: None) -> None:
     pull.attrs["check-success"] = ["fake-ci", "test-starter"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
 
+    # Pending reported and schedule missing
+    pull.attrs["current-year"] = date.Year(2300)
+    pull.attrs["check-pending"] = ["fake-ci"]
+    pull.attrs["check-failure"] = empty
+    pull.attrs["check-success"] = ["test-starter"]
+    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+
+    # Failure reported and schedule missing
+    pull.attrs["current-year"] = date.Year(2300)
+    pull.attrs["check-pending"] = ["whatever"]
+    pull.attrs["check-failure"] = ["foo", "fake-ci"]
+    pull.attrs["check-success"] = ["test-starter"]
+    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
+
+    # Success reported and schedule missing
+    pull.attrs["current-year"] = date.Year(2300)
+    pull.attrs["check-pending"] = ["whatever"]
+    pull.attrs["check-failure"] = ["foo"]
+    pull.attrs["check-success"] = ["fake-ci", "test-starter"]
+    await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
+
 
 async def test_rules_checks_with_and_or(logger_checker: None) -> None:
-    pull = FakeQueuePullRequest(
+    pull = conftest.FakePullRequest(
         {
             "number": 1,
             "current-year": date.Year(2018),
@@ -262,7 +247,7 @@ async def test_rules_checks_with_and_or(logger_checker: None) -> None:
 async def test_rules_checks_status_with_negative_conditions1(
     logger_checker: None,
 ) -> None:
-    pull = FakeQueuePullRequest(
+    pull = conftest.FakePullRequest(
         {
             "number": 1,
             "current-year": date.Year(2018),
@@ -325,7 +310,7 @@ async def test_rules_checks_status_with_negative_conditions1(
 
 
 async def test_rules_checks_status_with_negative_conditions2() -> None:
-    pull = FakeQueuePullRequest(
+    pull = conftest.FakePullRequest(
         {
             "number": 1,
             "current-year": date.Year(2018),
@@ -377,7 +362,7 @@ async def test_rules_checks_status_with_negative_conditions2() -> None:
 async def test_rules_checks_status_with_negative_conditions3(
     logger_checker: None,
 ) -> None:
-    pull = FakeQueuePullRequest(
+    pull = conftest.FakePullRequest(
         {
             "number": 1,
             "current-year": date.Year(2018),
@@ -427,7 +412,7 @@ async def test_rules_checks_status_with_negative_conditions3(
 
 
 async def test_rules_checks_status_with_or_conditions() -> None:
-    pull = FakeQueuePullRequest(
+    pull = conftest.FakePullRequest(
         {
             "number": 1,
             "current-year": date.Year(2018),
@@ -489,7 +474,7 @@ async def test_rules_checks_status_with_or_conditions() -> None:
 
 
 async def test_rules_checks_status_expected_failure() -> None:
-    pull = FakeQueuePullRequest(
+    pull = conftest.FakePullRequest(
         {
             "number": 1,
             "current-year": date.Year(2018),
@@ -529,7 +514,7 @@ async def test_rules_checks_status_expected_failure() -> None:
 
 
 async def test_rules_checks_status_regular() -> None:
-    pull = FakeQueuePullRequest(
+    pull = conftest.FakePullRequest(
         {
             "number": 1,
             "current-year": date.Year(2018),
@@ -581,7 +566,7 @@ async def test_rules_checks_status_regular() -> None:
 
 
 async def test_rules_checks_status_regex() -> None:
-    pull = FakeQueuePullRequest(
+    pull = conftest.FakePullRequest(
         {
             "number": 1,
             "current-year": date.Year(2018),
@@ -635,7 +620,7 @@ async def test_rules_checks_status_regex() -> None:
 @freeze_time("2021-09-22T08:00:05", tz_offset=0)
 async def test_rules_conditions_schedule() -> None:
     pulls = [
-        FakeQueuePullRequest(
+        conftest.FakePullRequest(
             {
                 "number": 1,
                 "author": "me",
@@ -678,7 +663,7 @@ async def test_rules_conditions_schedule() -> None:
 
 
 async def test_rules_checks_status_depop(logger_checker: None) -> None:
-    pull = FakeQueuePullRequest(
+    pull = conftest.FakePullRequest(
         {
             "number": 1,
             "current-year": date.Year(2018),
@@ -783,7 +768,7 @@ async def test_rules_checks_status_depop(logger_checker: None) -> None:
 
 
 async def test_rules_checks_status_ceph(logger_checker: None) -> None:
-    pull = FakeQueuePullRequest(
+    pull = conftest.FakePullRequest(
         {
             "number": 1,
             "current-year": date.Year(2018),
