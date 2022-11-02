@@ -6,6 +6,7 @@
     "Vulnerabilities": [
       {
         "VulnerabilityID": "CVE-2022-0563",
+        "PkgID": "bsdutils@1:2.36.1-8+deb11u1",
         "PkgName": "bsdutils",
         "InstalledVersion": "2.36.1-8+deb11u1",
         "SeveritySource": "debian",
@@ -43,6 +44,7 @@
       },
       {
         "VulnerabilityID": "CVE-2016-2781",
+        "PkgID": "coreutils@8.32-4+b1",
         "PkgName": "coreutils",
         "InstalledVersion": "8.32-4",
         "SeveritySource": "debian",
@@ -86,6 +88,7 @@
       },
       {
         "VulnerabilityID": "CVE-2017-18018",
+        "PkgID": "coreutils@8.32-4+b1",
         "PkgName": "coreutils",
         "InstalledVersion": "8.32-4",
         "SeveritySource": "debian",
@@ -120,7 +123,45 @@
         "PublishedDate": "2018-01-04T04:29:00Z"
       },
       {
+        "VulnerabilityID": "CVE-2022-42916",
+        "PkgID": "curl@7.74.0-1.3+deb11u3",
+        "PkgName": "curl",
+        "InstalledVersion": "7.74.0-1.3+deb11u3",
+        "SeveritySource": "nvd",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-42916",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "curl: HSTS bypass via IDN",
+        "Description": "In curl before 7.86.0, the HSTS check could be bypassed to trick it into staying with HTTP. Using its HSTS support, curl can be instructed to use HTTPS directly (instead of using an insecure cleartext HTTP step) even when HTTP is provided in the URL. This mechanism could be bypassed if the host name in the given URL uses IDN characters that get replaced with ASCII counterparts as part of the IDN conversion, e.g., using the character UTF-8 U+3002 (IDEOGRAPHIC FULL STOP) instead of the common ASCII full stop of U+002E (.). The earliest affected version is 7.77.0 2021-05-26.",
+        "Severity": "HIGH",
+        "CweIDs": [
+          "CWE-319"
+        ],
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+            "V3Score": 7.5
+          },
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
+            "V3Score": 5.3
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2022-42916",
+          "https://curl.se/docs/CVE-2022-42916.html",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-42916",
+          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/HVU3IMZCKR4VE6KJ4GCWRL2ILLC6OV76/",
+          "https://ubuntu.com/security/notices/USN-5702-1"
+        ],
+        "PublishedDate": "2022-10-29T02:15:00Z"
+      },
+      {
         "VulnerabilityID": "CVE-2022-32221",
+        "PkgID": "curl@7.74.0-1.3+deb11u3",
         "PkgName": "curl",
         "InstalledVersion": "7.74.0-1.3+deb11u3",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-32221",
@@ -147,34 +188,8 @@
         ]
       },
       {
-        "VulnerabilityID": "CVE-2022-42916",
-        "PkgName": "curl",
-        "InstalledVersion": "7.74.0-1.3+deb11u3",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-42916",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Title": "curl: HSTS bypass via IDN",
-        "Description": "In curl before 7.86.0, the HSTS check could be bypassed to trick it into staying with HTTP. Using its HSTS support, curl can be instructed to use HTTPS directly (instead of using an insecure cleartext HTTP step) even when HTTP is provided in the URL. This mechanism could be bypassed if the host name in the given URL uses IDN characters that get replaced with ASCII counterparts as part of the IDN conversion, e.g., using the character UTF-8 U+3002 (IDEOGRAPHIC FULL STOP) instead of the common ASCII full stop of U+002E (.). The earliest affected version is 7.77.0 2021-05-26.",
-        "Severity": "MEDIUM",
-        "CVSS": {
-          "redhat": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
-            "V3Score": 5.3
-          }
-        },
-        "References": [
-          "https://access.redhat.com/security/cve/CVE-2022-42916",
-          "https://curl.se/docs/CVE-2022-42916.html",
-          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-42916",
-          "https://ubuntu.com/security/notices/USN-5702-1"
-        ],
-        "PublishedDate": "2022-10-29T02:15:00Z"
-      },
-      {
         "VulnerabilityID": "CVE-2021-22922",
+        "PkgID": "curl@7.74.0-1.3+deb11u3",
         "PkgName": "curl",
         "InstalledVersion": "7.74.0-1.3+deb11u3",
         "SeveritySource": "debian",
@@ -222,6 +237,7 @@
       },
       {
         "VulnerabilityID": "CVE-2021-22923",
+        "PkgID": "curl@7.74.0-1.3+deb11u3",
         "PkgName": "curl",
         "InstalledVersion": "7.74.0-1.3+deb11u3",
         "SeveritySource": "debian",
@@ -265,6 +281,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-1304",
+        "PkgID": "e2fsprogs@1.46.2-2",
         "PkgName": "e2fsprogs",
         "InstalledVersion": "1.46.2-2",
         "SeveritySource": "nvd",
@@ -305,6 +322,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-24765",
+        "PkgID": "git@1:2.30.2-1",
         "PkgName": "git",
         "InstalledVersion": "1:2.30.2-1",
         "SeveritySource": "nvd",
@@ -354,6 +372,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-29187",
+        "PkgID": "git@1:2.30.2-1",
         "PkgName": "git",
         "InstalledVersion": "1:2.30.2-1",
         "SeveritySource": "nvd",
@@ -397,6 +416,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-39260",
+        "PkgID": "git@1:2.30.2-1",
         "PkgName": "git",
         "InstalledVersion": "1:2.30.2-1",
         "SeveritySource": "nvd",
@@ -433,6 +453,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-39253",
+        "PkgID": "git@1:2.30.2-1",
         "PkgName": "git",
         "InstalledVersion": "1:2.30.2-1",
         "SeveritySource": "nvd",
@@ -470,6 +491,7 @@
       },
       {
         "VulnerabilityID": "CVE-2018-1000021",
+        "PkgID": "git@1:2.30.2-1",
         "PkgName": "git",
         "InstalledVersion": "1:2.30.2-1",
         "SeveritySource": "debian",
@@ -506,6 +528,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-24975",
+        "PkgID": "git@1:2.30.2-1",
         "PkgName": "git",
         "InstalledVersion": "1:2.30.2-1",
         "SeveritySource": "debian",
@@ -542,6 +565,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-24765",
+        "PkgID": "git-man@1:2.30.2-1",
         "PkgName": "git-man",
         "InstalledVersion": "1:2.30.2-1",
         "SeveritySource": "nvd",
@@ -591,6 +615,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-29187",
+        "PkgID": "git-man@1:2.30.2-1",
         "PkgName": "git-man",
         "InstalledVersion": "1:2.30.2-1",
         "SeveritySource": "nvd",
@@ -634,6 +659,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-39260",
+        "PkgID": "git-man@1:2.30.2-1",
         "PkgName": "git-man",
         "InstalledVersion": "1:2.30.2-1",
         "SeveritySource": "nvd",
@@ -670,6 +696,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-39253",
+        "PkgID": "git-man@1:2.30.2-1",
         "PkgName": "git-man",
         "InstalledVersion": "1:2.30.2-1",
         "SeveritySource": "nvd",
@@ -707,6 +734,7 @@
       },
       {
         "VulnerabilityID": "CVE-2018-1000021",
+        "PkgID": "git-man@1:2.30.2-1",
         "PkgName": "git-man",
         "InstalledVersion": "1:2.30.2-1",
         "SeveritySource": "debian",
@@ -743,6 +771,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-24975",
+        "PkgID": "git-man@1:2.30.2-1",
         "PkgName": "git-man",
         "InstalledVersion": "1:2.30.2-1",
         "SeveritySource": "debian",
@@ -779,6 +808,7 @@
       },
       {
         "VulnerabilityID": "CVE-2016-1585",
+        "PkgID": "libapparmor1@2.13.6-10",
         "PkgName": "libapparmor1",
         "InstalledVersion": "2.13.6-10",
         "SeveritySource": "debian",
@@ -812,6 +842,7 @@
       },
       {
         "VulnerabilityID": "CVE-2011-3374",
+        "PkgID": "libapt-pkg6.0@2.2.4",
         "PkgName": "libapt-pkg6.0",
         "InstalledVersion": "2.2.4",
         "SeveritySource": "debian",
@@ -848,6 +879,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-0563",
+        "PkgID": "libblkid1@2.36.1-8+deb11u1",
         "PkgName": "libblkid1",
         "InstalledVersion": "2.36.1-8+deb11u1",
         "SeveritySource": "debian",
@@ -885,6 +917,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-3534",
+        "PkgID": "libbpf0@1:0.3-2",
         "PkgName": "libbpf0",
         "InstalledVersion": "0.3-2",
         "SeveritySource": "nvd",
@@ -914,6 +947,7 @@
       },
       {
         "VulnerabilityID": "CVE-2021-45940",
+        "PkgID": "libbpf0@1:0.3-2",
         "PkgName": "libbpf0",
         "InstalledVersion": "0.3-2",
         "SeveritySource": "nvd",
@@ -952,6 +986,7 @@
       },
       {
         "VulnerabilityID": "CVE-2021-45941",
+        "PkgID": "libbpf0@1:0.3-2",
         "PkgName": "libbpf0",
         "InstalledVersion": "0.3-2",
         "SeveritySource": "nvd",
@@ -990,6 +1025,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-3606",
+        "PkgID": "libbpf0@1:0.3-2",
         "PkgName": "libbpf0",
         "InstalledVersion": "0.3-2",
         "SeveritySource": "nvd",
@@ -1020,6 +1056,7 @@
       },
       {
         "VulnerabilityID": "CVE-2010-4756",
+        "PkgID": "libc-bin@2.31-13+deb11u5",
         "PkgName": "libc-bin",
         "InstalledVersion": "2.31-13+deb11u5",
         "SeveritySource": "debian",
@@ -1058,6 +1095,7 @@
       },
       {
         "VulnerabilityID": "CVE-2018-20796",
+        "PkgID": "libc-bin@2.31-13+deb11u5",
         "PkgName": "libc-bin",
         "InstalledVersion": "2.31-13+deb11u5",
         "SeveritySource": "debian",
@@ -1098,6 +1136,7 @@
       },
       {
         "VulnerabilityID": "CVE-2019-1010022",
+        "PkgID": "libc-bin@2.31-13+deb11u5",
         "PkgName": "libc-bin",
         "InstalledVersion": "2.31-13+deb11u5",
         "SeveritySource": "debian",
@@ -1132,6 +1171,7 @@
       },
       {
         "VulnerabilityID": "CVE-2019-1010023",
+        "PkgID": "libc-bin@2.31-13+deb11u5",
         "PkgName": "libc-bin",
         "InstalledVersion": "2.31-13+deb11u5",
         "SeveritySource": "debian",
@@ -1168,6 +1208,7 @@
       },
       {
         "VulnerabilityID": "CVE-2019-1010024",
+        "PkgID": "libc-bin@2.31-13+deb11u5",
         "PkgName": "libc-bin",
         "InstalledVersion": "2.31-13+deb11u5",
         "SeveritySource": "debian",
@@ -1208,6 +1249,7 @@
       },
       {
         "VulnerabilityID": "CVE-2019-1010025",
+        "PkgID": "libc-bin@2.31-13+deb11u5",
         "PkgName": "libc-bin",
         "InstalledVersion": "2.31-13+deb11u5",
         "SeveritySource": "debian",
@@ -1247,6 +1289,7 @@
       },
       {
         "VulnerabilityID": "CVE-2019-9192",
+        "PkgID": "libc-bin@2.31-13+deb11u5",
         "PkgName": "libc-bin",
         "InstalledVersion": "2.31-13+deb11u5",
         "SeveritySource": "debian",
@@ -1284,6 +1327,7 @@
       },
       {
         "VulnerabilityID": "CVE-2010-4756",
+        "PkgID": "libc6@2.31-13+deb11u5",
         "PkgName": "libc6",
         "InstalledVersion": "2.31-13+deb11u5",
         "SeveritySource": "debian",
@@ -1322,6 +1366,7 @@
       },
       {
         "VulnerabilityID": "CVE-2018-20796",
+        "PkgID": "libc6@2.31-13+deb11u5",
         "PkgName": "libc6",
         "InstalledVersion": "2.31-13+deb11u5",
         "SeveritySource": "debian",
@@ -1362,6 +1407,7 @@
       },
       {
         "VulnerabilityID": "CVE-2019-1010022",
+        "PkgID": "libc6@2.31-13+deb11u5",
         "PkgName": "libc6",
         "InstalledVersion": "2.31-13+deb11u5",
         "SeveritySource": "debian",
@@ -1396,6 +1442,7 @@
       },
       {
         "VulnerabilityID": "CVE-2019-1010023",
+        "PkgID": "libc6@2.31-13+deb11u5",
         "PkgName": "libc6",
         "InstalledVersion": "2.31-13+deb11u5",
         "SeveritySource": "debian",
@@ -1432,6 +1479,7 @@
       },
       {
         "VulnerabilityID": "CVE-2019-1010024",
+        "PkgID": "libc6@2.31-13+deb11u5",
         "PkgName": "libc6",
         "InstalledVersion": "2.31-13+deb11u5",
         "SeveritySource": "debian",
@@ -1472,6 +1520,7 @@
       },
       {
         "VulnerabilityID": "CVE-2019-1010025",
+        "PkgID": "libc6@2.31-13+deb11u5",
         "PkgName": "libc6",
         "InstalledVersion": "2.31-13+deb11u5",
         "SeveritySource": "debian",
@@ -1511,6 +1560,7 @@
       },
       {
         "VulnerabilityID": "CVE-2019-9192",
+        "PkgID": "libc6@2.31-13+deb11u5",
         "PkgName": "libc6",
         "InstalledVersion": "2.31-13+deb11u5",
         "SeveritySource": "debian",
@@ -1548,6 +1598,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-1304",
+        "PkgID": "libcom-err2@1.46.2-2",
         "PkgName": "libcom-err2",
         "InstalledVersion": "1.46.2-2",
         "SeveritySource": "nvd",
@@ -1587,7 +1638,45 @@
         "PublishedDate": "2022-04-14T21:15:00Z"
       },
       {
+        "VulnerabilityID": "CVE-2022-42916",
+        "PkgID": "libcurl3-gnutls@7.74.0-1.3+deb11u3",
+        "PkgName": "libcurl3-gnutls",
+        "InstalledVersion": "7.74.0-1.3+deb11u3",
+        "SeveritySource": "nvd",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-42916",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "curl: HSTS bypass via IDN",
+        "Description": "In curl before 7.86.0, the HSTS check could be bypassed to trick it into staying with HTTP. Using its HSTS support, curl can be instructed to use HTTPS directly (instead of using an insecure cleartext HTTP step) even when HTTP is provided in the URL. This mechanism could be bypassed if the host name in the given URL uses IDN characters that get replaced with ASCII counterparts as part of the IDN conversion, e.g., using the character UTF-8 U+3002 (IDEOGRAPHIC FULL STOP) instead of the common ASCII full stop of U+002E (.). The earliest affected version is 7.77.0 2021-05-26.",
+        "Severity": "HIGH",
+        "CweIDs": [
+          "CWE-319"
+        ],
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+            "V3Score": 7.5
+          },
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
+            "V3Score": 5.3
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2022-42916",
+          "https://curl.se/docs/CVE-2022-42916.html",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-42916",
+          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/HVU3IMZCKR4VE6KJ4GCWRL2ILLC6OV76/",
+          "https://ubuntu.com/security/notices/USN-5702-1"
+        ],
+        "PublishedDate": "2022-10-29T02:15:00Z"
+      },
+      {
         "VulnerabilityID": "CVE-2022-32221",
+        "PkgID": "libcurl3-gnutls@7.74.0-1.3+deb11u3",
         "PkgName": "libcurl3-gnutls",
         "InstalledVersion": "7.74.0-1.3+deb11u3",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-32221",
@@ -1614,34 +1703,8 @@
         ]
       },
       {
-        "VulnerabilityID": "CVE-2022-42916",
-        "PkgName": "libcurl3-gnutls",
-        "InstalledVersion": "7.74.0-1.3+deb11u3",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-42916",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Title": "curl: HSTS bypass via IDN",
-        "Description": "In curl before 7.86.0, the HSTS check could be bypassed to trick it into staying with HTTP. Using its HSTS support, curl can be instructed to use HTTPS directly (instead of using an insecure cleartext HTTP step) even when HTTP is provided in the URL. This mechanism could be bypassed if the host name in the given URL uses IDN characters that get replaced with ASCII counterparts as part of the IDN conversion, e.g., using the character UTF-8 U+3002 (IDEOGRAPHIC FULL STOP) instead of the common ASCII full stop of U+002E (.). The earliest affected version is 7.77.0 2021-05-26.",
-        "Severity": "MEDIUM",
-        "CVSS": {
-          "redhat": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
-            "V3Score": 5.3
-          }
-        },
-        "References": [
-          "https://access.redhat.com/security/cve/CVE-2022-42916",
-          "https://curl.se/docs/CVE-2022-42916.html",
-          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-42916",
-          "https://ubuntu.com/security/notices/USN-5702-1"
-        ],
-        "PublishedDate": "2022-10-29T02:15:00Z"
-      },
-      {
         "VulnerabilityID": "CVE-2021-22922",
+        "PkgID": "libcurl3-gnutls@7.74.0-1.3+deb11u3",
         "PkgName": "libcurl3-gnutls",
         "InstalledVersion": "7.74.0-1.3+deb11u3",
         "SeveritySource": "debian",
@@ -1689,6 +1752,7 @@
       },
       {
         "VulnerabilityID": "CVE-2021-22923",
+        "PkgID": "libcurl3-gnutls@7.74.0-1.3+deb11u3",
         "PkgName": "libcurl3-gnutls",
         "InstalledVersion": "7.74.0-1.3+deb11u3",
         "SeveritySource": "debian",
@@ -1731,7 +1795,45 @@
         "PublishedDate": "2021-08-05T21:15:00Z"
       },
       {
+        "VulnerabilityID": "CVE-2022-42916",
+        "PkgID": "libcurl4@7.74.0-1.3+deb11u3",
+        "PkgName": "libcurl4",
+        "InstalledVersion": "7.74.0-1.3+deb11u3",
+        "SeveritySource": "nvd",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-42916",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "curl: HSTS bypass via IDN",
+        "Description": "In curl before 7.86.0, the HSTS check could be bypassed to trick it into staying with HTTP. Using its HSTS support, curl can be instructed to use HTTPS directly (instead of using an insecure cleartext HTTP step) even when HTTP is provided in the URL. This mechanism could be bypassed if the host name in the given URL uses IDN characters that get replaced with ASCII counterparts as part of the IDN conversion, e.g., using the character UTF-8 U+3002 (IDEOGRAPHIC FULL STOP) instead of the common ASCII full stop of U+002E (.). The earliest affected version is 7.77.0 2021-05-26.",
+        "Severity": "HIGH",
+        "CweIDs": [
+          "CWE-319"
+        ],
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+            "V3Score": 7.5
+          },
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
+            "V3Score": 5.3
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2022-42916",
+          "https://curl.se/docs/CVE-2022-42916.html",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-42916",
+          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/HVU3IMZCKR4VE6KJ4GCWRL2ILLC6OV76/",
+          "https://ubuntu.com/security/notices/USN-5702-1"
+        ],
+        "PublishedDate": "2022-10-29T02:15:00Z"
+      },
+      {
         "VulnerabilityID": "CVE-2022-32221",
+        "PkgID": "libcurl4@7.74.0-1.3+deb11u3",
         "PkgName": "libcurl4",
         "InstalledVersion": "7.74.0-1.3+deb11u3",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-32221",
@@ -1758,34 +1860,8 @@
         ]
       },
       {
-        "VulnerabilityID": "CVE-2022-42916",
-        "PkgName": "libcurl4",
-        "InstalledVersion": "7.74.0-1.3+deb11u3",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-42916",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Title": "curl: HSTS bypass via IDN",
-        "Description": "In curl before 7.86.0, the HSTS check could be bypassed to trick it into staying with HTTP. Using its HSTS support, curl can be instructed to use HTTPS directly (instead of using an insecure cleartext HTTP step) even when HTTP is provided in the URL. This mechanism could be bypassed if the host name in the given URL uses IDN characters that get replaced with ASCII counterparts as part of the IDN conversion, e.g., using the character UTF-8 U+3002 (IDEOGRAPHIC FULL STOP) instead of the common ASCII full stop of U+002E (.). The earliest affected version is 7.77.0 2021-05-26.",
-        "Severity": "MEDIUM",
-        "CVSS": {
-          "redhat": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
-            "V3Score": 5.3
-          }
-        },
-        "References": [
-          "https://access.redhat.com/security/cve/CVE-2022-42916",
-          "https://curl.se/docs/CVE-2022-42916.html",
-          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-42916",
-          "https://ubuntu.com/security/notices/USN-5702-1"
-        ],
-        "PublishedDate": "2022-10-29T02:15:00Z"
-      },
-      {
         "VulnerabilityID": "CVE-2021-22922",
+        "PkgID": "libcurl4@7.74.0-1.3+deb11u3",
         "PkgName": "libcurl4",
         "InstalledVersion": "7.74.0-1.3+deb11u3",
         "SeveritySource": "debian",
@@ -1833,6 +1909,7 @@
       },
       {
         "VulnerabilityID": "CVE-2021-22923",
+        "PkgID": "libcurl4@7.74.0-1.3+deb11u3",
         "PkgName": "libcurl4",
         "InstalledVersion": "7.74.0-1.3+deb11u3",
         "SeveritySource": "debian",
@@ -1876,6 +1953,7 @@
       },
       {
         "VulnerabilityID": "CVE-2019-8457",
+        "PkgID": "libdb5.3@5.3.28+dfsg1-0.8",
         "PkgName": "libdb5.3",
         "InstalledVersion": "5.3.28+dfsg1-0.8",
         "SeveritySource": "nvd",
@@ -1931,45 +2009,10 @@
         "PublishedDate": "2019-05-30T16:29:00Z"
       },
       {
-        "VulnerabilityID": "CVE-2022-43680",
-        "VendorIDs": [
-          "DSA-5266-1"
-        ],
-        "PkgName": "libexpat1",
-        "InstalledVersion": "2.2.10-2+deb11u4",
-        "FixedVersion": "2.2.10-2+deb11u5",
-        "SeveritySource": "nvd",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-43680",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Title": "In libexpat through 2.4.9, there is a use-after free caused by overeag ...",
-        "Description": "In libexpat through 2.4.9, there is a use-after free caused by overeager destruction of a shared DTD in XML_ExternalEntityParserCreate in out-of-memory situations.",
-        "Severity": "HIGH",
-        "CweIDs": [
-          "CWE-416"
-        ],
-        "CVSS": {
-          "nvd": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
-            "V3Score": 7.5
-          }
-        },
-        "References": [
-          "https://github.com/libexpat/libexpat/issues/649",
-          "https://github.com/libexpat/libexpat/pull/616",
-          "https://github.com/libexpat/libexpat/pull/650",
-          "https://lists.debian.org/debian-lts-announce/2022/10/msg00033.html",
-          "https://nvd.nist.gov/vuln/detail/CVE-2022-43680"
-        ],
-        "PublishedDate": "2022-10-24T14:15:00Z"
-      },
-      {
         "VulnerabilityID": "CVE-2013-0340",
+        "PkgID": "libexpat1@2.2.10-2+deb11u5",
         "PkgName": "libexpat1",
-        "InstalledVersion": "2.2.10-2+deb11u4",
+        "InstalledVersion": "2.2.10-2+deb11u5",
         "SeveritySource": "debian",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2013-0340",
         "DataSource": {
@@ -2025,6 +2068,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-1304",
+        "PkgID": "libext2fs2@1.46.2-2",
         "PkgName": "libext2fs2",
         "InstalledVersion": "1.46.2-2",
         "SeveritySource": "nvd",
@@ -2065,6 +2109,7 @@
       },
       {
         "VulnerabilityID": "CVE-2021-33560",
+        "PkgID": "libgcrypt20@1.8.7-6",
         "PkgName": "libgcrypt20",
         "InstalledVersion": "1.8.7-6",
         "SeveritySource": "nvd",
@@ -2108,6 +2153,7 @@
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/BKKTOIGFW2SGN3DO2UHHVZ7MJSYN4AAB/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/R7OAPCUGPF3VLA7QAJUQSL255D4ITVTL/",
           "https://nvd.nist.gov/vuln/detail/CVE-2021-33560",
+          "https://security.gentoo.org/glsa/202210-13",
           "https://ubuntu.com/security/notices/USN-5080-1",
           "https://ubuntu.com/security/notices/USN-5080-2",
           "https://www.oracle.com/security-alerts/cpuapr2022.html",
@@ -2119,6 +2165,7 @@
       },
       {
         "VulnerabilityID": "CVE-2018-6829",
+        "PkgID": "libgcrypt20@1.8.7-6",
         "PkgName": "libgcrypt20",
         "InstalledVersion": "1.8.7-6",
         "SeveritySource": "debian",
@@ -2157,6 +2204,7 @@
       },
       {
         "VulnerabilityID": "CVE-2011-3389",
+        "PkgID": "libgnutls30@3.7.1-5+deb11u2",
         "PkgName": "libgnutls30",
         "InstalledVersion": "3.7.1-5+deb11u2",
         "SeveritySource": "debian",
@@ -2283,6 +2331,7 @@
       },
       {
         "VulnerabilityID": "CVE-2004-0971",
+        "PkgID": "libgssapi-krb5-2@1.18.3-6+deb11u2",
         "PkgName": "libgssapi-krb5-2",
         "InstalledVersion": "1.18.3-6+deb11u2",
         "SeveritySource": "debian",
@@ -2316,6 +2365,7 @@
       },
       {
         "VulnerabilityID": "CVE-2018-5709",
+        "PkgID": "libgssapi-krb5-2@1.18.3-6+deb11u2",
         "PkgName": "libgssapi-krb5-2",
         "InstalledVersion": "1.18.3-6+deb11u2",
         "SeveritySource": "debian",
@@ -2352,6 +2402,7 @@
       },
       {
         "VulnerabilityID": "CVE-2012-2663",
+        "PkgID": "libip4tc2@1.8.7-1",
         "PkgName": "libip4tc2",
         "InstalledVersion": "1.8.7-1",
         "SeveritySource": "debian",
@@ -2383,6 +2434,7 @@
       },
       {
         "VulnerabilityID": "CVE-2004-0971",
+        "PkgID": "libk5crypto3@1.18.3-6+deb11u2",
         "PkgName": "libk5crypto3",
         "InstalledVersion": "1.18.3-6+deb11u2",
         "SeveritySource": "debian",
@@ -2416,6 +2468,7 @@
       },
       {
         "VulnerabilityID": "CVE-2018-5709",
+        "PkgID": "libk5crypto3@1.18.3-6+deb11u2",
         "PkgName": "libk5crypto3",
         "InstalledVersion": "1.18.3-6+deb11u2",
         "SeveritySource": "debian",
@@ -2452,6 +2505,7 @@
       },
       {
         "VulnerabilityID": "CVE-2004-0971",
+        "PkgID": "libkrb5-3@1.18.3-6+deb11u2",
         "PkgName": "libkrb5-3",
         "InstalledVersion": "1.18.3-6+deb11u2",
         "SeveritySource": "debian",
@@ -2485,6 +2539,7 @@
       },
       {
         "VulnerabilityID": "CVE-2018-5709",
+        "PkgID": "libkrb5-3@1.18.3-6+deb11u2",
         "PkgName": "libkrb5-3",
         "InstalledVersion": "1.18.3-6+deb11u2",
         "SeveritySource": "debian",
@@ -2521,6 +2576,7 @@
       },
       {
         "VulnerabilityID": "CVE-2004-0971",
+        "PkgID": "libkrb5support0@1.18.3-6+deb11u2",
         "PkgName": "libkrb5support0",
         "InstalledVersion": "1.18.3-6+deb11u2",
         "SeveritySource": "debian",
@@ -2554,6 +2610,7 @@
       },
       {
         "VulnerabilityID": "CVE-2018-5709",
+        "PkgID": "libkrb5support0@1.18.3-6+deb11u2",
         "PkgName": "libkrb5support0",
         "InstalledVersion": "1.18.3-6+deb11u2",
         "SeveritySource": "debian",
@@ -2590,6 +2647,7 @@
       },
       {
         "VulnerabilityID": "CVE-2015-3276",
+        "PkgID": "libldap-2.4-2@2.4.57+dfsg-3+deb11u1",
         "PkgName": "libldap-2.4-2",
         "InstalledVersion": "2.4.57+dfsg-3+deb11u1",
         "SeveritySource": "debian",
@@ -2629,6 +2687,7 @@
       },
       {
         "VulnerabilityID": "CVE-2017-14159",
+        "PkgID": "libldap-2.4-2@2.4.57+dfsg-3+deb11u1",
         "PkgName": "libldap-2.4-2",
         "InstalledVersion": "2.4.57+dfsg-3+deb11u1",
         "SeveritySource": "debian",
@@ -2665,6 +2724,7 @@
       },
       {
         "VulnerabilityID": "CVE-2017-17740",
+        "PkgID": "libldap-2.4-2@2.4.57+dfsg-3+deb11u1",
         "PkgName": "libldap-2.4-2",
         "InstalledVersion": "2.4.57+dfsg-3+deb11u1",
         "SeveritySource": "debian",
@@ -2704,6 +2764,7 @@
       },
       {
         "VulnerabilityID": "CVE-2020-15719",
+        "PkgID": "libldap-2.4-2@2.4.57+dfsg-3+deb11u1",
         "PkgName": "libldap-2.4-2",
         "InstalledVersion": "2.4.57+dfsg-3+deb11u1",
         "SeveritySource": "debian",
@@ -2745,6 +2806,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-0563",
+        "PkgID": "libmount1@2.36.1-8+deb11u1",
         "PkgName": "libmount1",
         "InstalledVersion": "2.36.1-8+deb11u1",
         "SeveritySource": "debian",
@@ -2782,6 +2844,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-29458",
+        "PkgID": "libncurses6@6.2+20201114-2",
         "PkgName": "libncurses6",
         "InstalledVersion": "6.2+20201114-2",
         "SeveritySource": "nvd",
@@ -2810,6 +2873,7 @@
           }
         },
         "References": [
+          "http://seclists.org/fulldisclosure/2022/Oct/41",
           "https://access.redhat.com/security/cve/CVE-2022-29458",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-29458",
           "https://invisible-island.net/ncurses/NEWS.html#t20220416",
@@ -2824,6 +2888,7 @@
       },
       {
         "VulnerabilityID": "CVE-2021-39537",
+        "PkgID": "libncurses6@6.2+20201114-2",
         "PkgName": "libncurses6",
         "InstalledVersion": "6.2+20201114-2",
         "SeveritySource": "debian",
@@ -2853,6 +2918,10 @@
         },
         "References": [
           "http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/devel/ncurses/patches/patch-ncurses_tinfo_captoinfo.c?rev=1.1&content-type=text/x-cvsweb-markup",
+          "http://seclists.org/fulldisclosure/2022/Oct/28",
+          "http://seclists.org/fulldisclosure/2022/Oct/41",
+          "http://seclists.org/fulldisclosure/2022/Oct/43",
+          "http://seclists.org/fulldisclosure/2022/Oct/45",
           "https://access.redhat.com/security/cve/CVE-2021-39537",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-39537",
           "https://lists.gnu.org/archive/html/bug-ncurses/2020-08/msg00006.html",
@@ -2867,6 +2936,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-29458",
+        "PkgID": "libncursesw6@6.2+20201114-2",
         "PkgName": "libncursesw6",
         "InstalledVersion": "6.2+20201114-2",
         "SeveritySource": "nvd",
@@ -2895,6 +2965,7 @@
           }
         },
         "References": [
+          "http://seclists.org/fulldisclosure/2022/Oct/41",
           "https://access.redhat.com/security/cve/CVE-2022-29458",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-29458",
           "https://invisible-island.net/ncurses/NEWS.html#t20220416",
@@ -2909,6 +2980,7 @@
       },
       {
         "VulnerabilityID": "CVE-2021-39537",
+        "PkgID": "libncursesw6@6.2+20201114-2",
         "PkgName": "libncursesw6",
         "InstalledVersion": "6.2+20201114-2",
         "SeveritySource": "debian",
@@ -2938,6 +3010,10 @@
         },
         "References": [
           "http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/devel/ncurses/patches/patch-ncurses_tinfo_captoinfo.c?rev=1.1&content-type=text/x-cvsweb-markup",
+          "http://seclists.org/fulldisclosure/2022/Oct/28",
+          "http://seclists.org/fulldisclosure/2022/Oct/41",
+          "http://seclists.org/fulldisclosure/2022/Oct/43",
+          "http://seclists.org/fulldisclosure/2022/Oct/45",
           "https://access.redhat.com/security/cve/CVE-2021-39537",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-39537",
           "https://lists.gnu.org/archive/html/bug-ncurses/2020-08/msg00006.html",
@@ -2952,6 +3028,7 @@
       },
       {
         "VulnerabilityID": "CVE-2013-4392",
+        "PkgID": "libnss-systemd@247.3-7+deb11u1",
         "PkgName": "libnss-systemd",
         "InstalledVersion": "247.3-7+deb11u1",
         "SeveritySource": "debian",
@@ -2987,6 +3064,7 @@
       },
       {
         "VulnerabilityID": "CVE-2020-13529",
+        "PkgID": "libnss-systemd@247.3-7+deb11u1",
         "PkgName": "libnss-systemd",
         "InstalledVersion": "247.3-7+deb11u1",
         "SeveritySource": "debian",
@@ -3033,6 +3111,7 @@
       },
       {
         "VulnerabilityID": "CVE-2013-4392",
+        "PkgID": "libpam-systemd@247.3-7+deb11u1",
         "PkgName": "libpam-systemd",
         "InstalledVersion": "247.3-7+deb11u1",
         "SeveritySource": "debian",
@@ -3068,6 +3147,7 @@
       },
       {
         "VulnerabilityID": "CVE-2020-13529",
+        "PkgID": "libpam-systemd@247.3-7+deb11u1",
         "PkgName": "libpam-systemd",
         "InstalledVersion": "247.3-7+deb11u1",
         "SeveritySource": "debian",
@@ -3114,6 +3194,7 @@
       },
       {
         "VulnerabilityID": "CVE-2017-11164",
+        "PkgID": "libpcre3@2:8.39-13",
         "PkgName": "libpcre3",
         "InstalledVersion": "2:8.39-13",
         "SeveritySource": "debian",
@@ -3152,6 +3233,7 @@
       },
       {
         "VulnerabilityID": "CVE-2017-16231",
+        "PkgID": "libpcre3@2:8.39-13",
         "PkgName": "libpcre3",
         "InstalledVersion": "2:8.39-13",
         "SeveritySource": "debian",
@@ -3194,6 +3276,7 @@
       },
       {
         "VulnerabilityID": "CVE-2017-7245",
+        "PkgID": "libpcre3@2:8.39-13",
         "PkgName": "libpcre3",
         "InstalledVersion": "2:8.39-13",
         "SeveritySource": "debian",
@@ -3232,6 +3315,7 @@
       },
       {
         "VulnerabilityID": "CVE-2017-7246",
+        "PkgID": "libpcre3@2:8.39-13",
         "PkgName": "libpcre3",
         "InstalledVersion": "2:8.39-13",
         "SeveritySource": "debian",
@@ -3270,6 +3354,7 @@
       },
       {
         "VulnerabilityID": "CVE-2019-20838",
+        "PkgID": "libpcre3@2:8.39-13",
         "PkgName": "libpcre3",
         "InstalledVersion": "2:8.39-13",
         "SeveritySource": "debian",
@@ -3319,6 +3404,7 @@
       },
       {
         "VulnerabilityID": "CVE-2020-16156",
+        "PkgID": "libperl5.32@5.32.1-4+deb11u2",
         "PkgName": "libperl5.32",
         "InstalledVersion": "5.32.1-4+deb11u2",
         "SeveritySource": "nvd",
@@ -3360,6 +3446,7 @@
       },
       {
         "VulnerabilityID": "CVE-2011-4116",
+        "PkgID": "libperl5.32@5.32.1-4+deb11u2",
         "PkgName": "libperl5.32",
         "InstalledVersion": "5.32.1-4+deb11u2",
         "SeveritySource": "debian",
@@ -3399,6 +3486,7 @@
       },
       {
         "VulnerabilityID": "CVE-2021-36084",
+        "PkgID": "libsepol1@3.1-1",
         "PkgName": "libsepol1",
         "InstalledVersion": "3.1-1",
         "SeveritySource": "nvd",
@@ -3446,6 +3534,7 @@
       },
       {
         "VulnerabilityID": "CVE-2021-36085",
+        "PkgID": "libsepol1@3.1-1",
         "PkgName": "libsepol1",
         "InstalledVersion": "3.1-1",
         "SeveritySource": "nvd",
@@ -3493,6 +3582,7 @@
       },
       {
         "VulnerabilityID": "CVE-2021-36086",
+        "PkgID": "libsepol1@3.1-1",
         "PkgName": "libsepol1",
         "InstalledVersion": "3.1-1",
         "SeveritySource": "nvd",
@@ -3540,6 +3630,7 @@
       },
       {
         "VulnerabilityID": "CVE-2021-36087",
+        "PkgID": "libsepol1@3.1-1",
         "PkgName": "libsepol1",
         "InstalledVersion": "3.1-1",
         "SeveritySource": "nvd",
@@ -3588,6 +3679,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-0563",
+        "PkgID": "libsmartcols1@2.36.1-8+deb11u1",
         "PkgName": "libsmartcols1",
         "InstalledVersion": "2.36.1-8+deb11u1",
         "SeveritySource": "debian",
@@ -3625,6 +3717,7 @@
       },
       {
         "VulnerabilityID": "CVE-2021-45346",
+        "PkgID": "libsqlite3-0@3.34.1-3",
         "PkgName": "libsqlite3-0",
         "InstalledVersion": "3.34.1-3",
         "SeveritySource": "nvd",
@@ -3635,7 +3728,7 @@
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
         "Title": "sqlite: crafted SQL query allows a malicious user to obtain sensitive information",
-        "Description": "A Memory Leak vulnerabilty exists in SQLite Project SQLite3 3.35.1 and 3.37.0 via maliciously crafted SQL Queries (made via editing the Database File), it is possible to query a record, and leak subsequent bytes of memory that extend beyond the record, which could let a malicous user obtain sensitive information..",
+        "Description": "** DISPUTED ** A Memory Leak vulnerability exists in SQLite Project SQLite3 3.35.1 and 3.37.0 via maliciously crafted SQL Queries (made via editing the Database File), it is possible to query a record, and leak subsequent bytes of memory that extend beyond the record, which could let a malicious user obtain sensitive information. NOTE: The developer disputes this as a vulnerability stating that If you give SQLite a corrupted database file and submit a query against the database, it might read parts of the database that you did not intend or expect.",
         "Severity": "MEDIUM",
         "CweIDs": [
           "CWE-401"
@@ -3656,12 +3749,15 @@
           "https://access.redhat.com/security/cve/CVE-2021-45346",
           "https://github.com/guyinatuxedo/sqlite3_record_leaking",
           "https://security.netapp.com/advisory/ntap-20220303-0001/",
-          "https://sqlite.org/forum/forumpost/53de8864ba114bf6"
+          "https://sqlite.org/forum/forumpost/056d557c2f8c452ed5",
+          "https://sqlite.org/forum/forumpost/53de8864ba114bf6",
+          "https://www.sqlite.org/cves.html#status_of_recent_sqlite_cves"
         ],
         "PublishedDate": "2022-02-14T19:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-36690",
+        "PkgID": "libsqlite3-0@3.34.1-3",
         "PkgName": "libsqlite3-0",
         "InstalledVersion": "3.34.1-3",
         "SeveritySource": "debian",
@@ -3683,6 +3779,11 @@
           }
         },
         "References": [
+          "http://seclists.org/fulldisclosure/2022/Oct/28",
+          "http://seclists.org/fulldisclosure/2022/Oct/39",
+          "http://seclists.org/fulldisclosure/2022/Oct/41",
+          "http://seclists.org/fulldisclosure/2022/Oct/47",
+          "http://seclists.org/fulldisclosure/2022/Oct/49",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-36690",
           "https://nvd.nist.gov/vuln/detail/CVE-2021-36690",
           "https://support.apple.com/kb/HT213446",
@@ -3696,6 +3797,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-35737",
+        "PkgID": "libsqlite3-0@3.34.1-3",
         "PkgName": "libsqlite3-0",
         "InstalledVersion": "3.34.1-3",
         "SeveritySource": "debian",
@@ -3727,6 +3829,7 @@
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-35737",
           "https://kb.cert.org/vuls/id/720344",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-35737",
+          "https://security.gentoo.org/glsa/202210-40",
           "https://security.netapp.com/advisory/ntap-20220915-0009/",
           "https://sqlite.org/forum/forumpost/3607259d3c",
           "https://sqlite.org/releaselog/3_39_2.html",
@@ -3736,6 +3839,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-1304",
+        "PkgID": "libss2@1.46.2-2",
         "PkgName": "libss2",
         "InstalledVersion": "1.46.2-2",
         "SeveritySource": "nvd",
@@ -3776,6 +3880,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-2097",
+        "PkgID": "libssl1.1@1.1.1n-0+deb11u3",
         "PkgName": "libssl1.1",
         "InstalledVersion": "1.1.1n-0+deb11u3",
         "SeveritySource": "nvd",
@@ -3839,6 +3944,7 @@
       },
       {
         "VulnerabilityID": "CVE-2007-6755",
+        "PkgID": "libssl1.1@1.1.1n-0+deb11u3",
         "PkgName": "libssl1.1",
         "InstalledVersion": "1.1.1n-0+deb11u3",
         "SeveritySource": "debian",
@@ -3879,6 +3985,7 @@
       },
       {
         "VulnerabilityID": "CVE-2010-0928",
+        "PkgID": "libssl1.1@1.1.1n-0+deb11u3",
         "PkgName": "libssl1.1",
         "InstalledVersion": "1.1.1n-0+deb11u3",
         "SeveritySource": "debian",
@@ -3913,6 +4020,7 @@
       },
       {
         "VulnerabilityID": "CVE-2013-4392",
+        "PkgID": "libsystemd0@247.3-7+deb11u1",
         "PkgName": "libsystemd0",
         "InstalledVersion": "247.3-7+deb11u1",
         "SeveritySource": "debian",
@@ -3948,6 +4056,7 @@
       },
       {
         "VulnerabilityID": "CVE-2020-13529",
+        "PkgID": "libsystemd0@247.3-7+deb11u1",
         "PkgName": "libsystemd0",
         "InstalledVersion": "247.3-7+deb11u1",
         "SeveritySource": "debian",
@@ -3994,6 +4103,7 @@
       },
       {
         "VulnerabilityID": "CVE-2021-46848",
+        "PkgID": "libtasn1-6@4.16.0-2",
         "PkgName": "libtasn1-6",
         "InstalledVersion": "4.16.0-2",
         "SeveritySource": "nvd",
@@ -4017,14 +4127,18 @@
         },
         "References": [
           "https://bugs.gentoo.org/866237",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-46848",
           "https://gitlab.com/gnutls/libtasn1/-/commit/44a700d2051a666235748970c2df047ff207aeb5",
+          "https://gitlab.com/gnutls/libtasn1/-/commit/44a700d2051a666235748970c2df047ff207aeb5 (v4.19.0)",
           "https://gitlab.com/gnutls/libtasn1/-/issues/32",
-          "https://nvd.nist.gov/vuln/detail/CVE-2021-46848"
+          "https://nvd.nist.gov/vuln/detail/CVE-2021-46848",
+          "https://ubuntu.com/security/notices/USN-5707-1"
         ],
         "PublishedDate": "2022-10-24T14:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-29458",
+        "PkgID": "libtinfo6@6.2+20201114-2",
         "PkgName": "libtinfo6",
         "InstalledVersion": "6.2+20201114-2",
         "SeveritySource": "nvd",
@@ -4053,6 +4167,7 @@
           }
         },
         "References": [
+          "http://seclists.org/fulldisclosure/2022/Oct/41",
           "https://access.redhat.com/security/cve/CVE-2022-29458",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-29458",
           "https://invisible-island.net/ncurses/NEWS.html#t20220416",
@@ -4067,6 +4182,7 @@
       },
       {
         "VulnerabilityID": "CVE-2021-39537",
+        "PkgID": "libtinfo6@6.2+20201114-2",
         "PkgName": "libtinfo6",
         "InstalledVersion": "6.2+20201114-2",
         "SeveritySource": "debian",
@@ -4096,6 +4212,10 @@
         },
         "References": [
           "http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/devel/ncurses/patches/patch-ncurses_tinfo_captoinfo.c?rev=1.1&content-type=text/x-cvsweb-markup",
+          "http://seclists.org/fulldisclosure/2022/Oct/28",
+          "http://seclists.org/fulldisclosure/2022/Oct/41",
+          "http://seclists.org/fulldisclosure/2022/Oct/43",
+          "http://seclists.org/fulldisclosure/2022/Oct/45",
           "https://access.redhat.com/security/cve/CVE-2021-39537",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-39537",
           "https://lists.gnu.org/archive/html/bug-ncurses/2020-08/msg00006.html",
@@ -4110,6 +4230,7 @@
       },
       {
         "VulnerabilityID": "CVE-2013-4392",
+        "PkgID": "libudev1@247.3-7+deb11u1",
         "PkgName": "libudev1",
         "InstalledVersion": "247.3-7+deb11u1",
         "SeveritySource": "debian",
@@ -4145,6 +4266,7 @@
       },
       {
         "VulnerabilityID": "CVE-2020-13529",
+        "PkgID": "libudev1@247.3-7+deb11u1",
         "PkgName": "libudev1",
         "InstalledVersion": "247.3-7+deb11u1",
         "SeveritySource": "debian",
@@ -4191,6 +4313,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-0563",
+        "PkgID": "libuuid1@2.36.1-8+deb11u1",
         "PkgName": "libuuid1",
         "InstalledVersion": "2.36.1-8+deb11u1",
         "SeveritySource": "debian",
@@ -4228,6 +4351,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-3554",
+        "PkgID": "libx11-6@2:1.7.2-1",
         "PkgName": "libx11-6",
         "InstalledVersion": "2:1.7.2-1",
         "SeveritySource": "nvd",
@@ -4258,6 +4382,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-3555",
+        "PkgID": "libx11-6@2:1.7.2-1",
         "PkgName": "libx11-6",
         "InstalledVersion": "2:1.7.2-1",
         "SeveritySource": "nvd",
@@ -4288,6 +4413,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-3554",
+        "PkgID": "libx11-data@2:1.7.2-1",
         "PkgName": "libx11-data",
         "InstalledVersion": "2:1.7.2-1",
         "SeveritySource": "nvd",
@@ -4318,6 +4444,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-3555",
+        "PkgID": "libx11-data@2:1.7.2-1",
         "PkgName": "libx11-data",
         "InstalledVersion": "2:1.7.2-1",
         "SeveritySource": "nvd",
@@ -4348,6 +4475,7 @@
       },
       {
         "VulnerabilityID": "CVE-2012-2663",
+        "PkgID": "libxtables12@1.8.7-1",
         "PkgName": "libxtables12",
         "InstalledVersion": "1.8.7-1",
         "SeveritySource": "debian",
@@ -4379,6 +4507,7 @@
       },
       {
         "VulnerabilityID": "CVE-2007-5686",
+        "PkgID": "login@1:4.8.1-1",
         "PkgName": "login",
         "InstalledVersion": "1:4.8.1-1",
         "SeveritySource": "debian",
@@ -4412,6 +4541,7 @@
       },
       {
         "VulnerabilityID": "CVE-2013-4235",
+        "PkgID": "login@1:4.8.1-1",
         "PkgName": "login",
         "InstalledVersion": "1:4.8.1-1",
         "SeveritySource": "debian",
@@ -4447,12 +4577,14 @@
           "https://bugzilla.redhat.com/show_bug.cgi?id=CVE-2013-4235",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2013-4235",
           "https://lists.apache.org/thread.html/rf9fa47ab66495c78bb4120b0754dd9531ca2ff0430f6685ac9b07772@%3Cdev.mina.apache.org%3E",
-          "https://security-tracker.debian.org/tracker/CVE-2013-4235"
+          "https://security-tracker.debian.org/tracker/CVE-2013-4235",
+          "https://security.gentoo.org/glsa/202210-26"
         ],
         "PublishedDate": "2019-12-03T15:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2019-19882",
+        "PkgID": "login@1:4.8.1-1",
         "PkgName": "login",
         "InstalledVersion": "1:4.8.1-1",
         "SeveritySource": "debian",
@@ -4493,6 +4625,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-1304",
+        "PkgID": "logsave@1.46.2-2",
         "PkgName": "logsave",
         "InstalledVersion": "1.46.2-2",
         "SeveritySource": "nvd",
@@ -4533,6 +4666,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-0563",
+        "PkgID": "mount@2.36.1-8+deb11u1",
         "PkgName": "mount",
         "InstalledVersion": "2.36.1-8+deb11u1",
         "SeveritySource": "debian",
@@ -4570,6 +4704,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-29458",
+        "PkgID": "ncurses-base@6.2+20201114-2",
         "PkgName": "ncurses-base",
         "InstalledVersion": "6.2+20201114-2",
         "SeveritySource": "nvd",
@@ -4598,6 +4733,7 @@
           }
         },
         "References": [
+          "http://seclists.org/fulldisclosure/2022/Oct/41",
           "https://access.redhat.com/security/cve/CVE-2022-29458",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-29458",
           "https://invisible-island.net/ncurses/NEWS.html#t20220416",
@@ -4612,6 +4748,7 @@
       },
       {
         "VulnerabilityID": "CVE-2021-39537",
+        "PkgID": "ncurses-base@6.2+20201114-2",
         "PkgName": "ncurses-base",
         "InstalledVersion": "6.2+20201114-2",
         "SeveritySource": "debian",
@@ -4641,6 +4778,10 @@
         },
         "References": [
           "http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/devel/ncurses/patches/patch-ncurses_tinfo_captoinfo.c?rev=1.1&content-type=text/x-cvsweb-markup",
+          "http://seclists.org/fulldisclosure/2022/Oct/28",
+          "http://seclists.org/fulldisclosure/2022/Oct/41",
+          "http://seclists.org/fulldisclosure/2022/Oct/43",
+          "http://seclists.org/fulldisclosure/2022/Oct/45",
           "https://access.redhat.com/security/cve/CVE-2021-39537",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-39537",
           "https://lists.gnu.org/archive/html/bug-ncurses/2020-08/msg00006.html",
@@ -4655,6 +4796,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-29458",
+        "PkgID": "ncurses-bin@6.2+20201114-2",
         "PkgName": "ncurses-bin",
         "InstalledVersion": "6.2+20201114-2",
         "SeveritySource": "nvd",
@@ -4683,6 +4825,7 @@
           }
         },
         "References": [
+          "http://seclists.org/fulldisclosure/2022/Oct/41",
           "https://access.redhat.com/security/cve/CVE-2022-29458",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-29458",
           "https://invisible-island.net/ncurses/NEWS.html#t20220416",
@@ -4697,6 +4840,7 @@
       },
       {
         "VulnerabilityID": "CVE-2021-39537",
+        "PkgID": "ncurses-bin@6.2+20201114-2",
         "PkgName": "ncurses-bin",
         "InstalledVersion": "6.2+20201114-2",
         "SeveritySource": "debian",
@@ -4726,6 +4870,10 @@
         },
         "References": [
           "http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/devel/ncurses/patches/patch-ncurses_tinfo_captoinfo.c?rev=1.1&content-type=text/x-cvsweb-markup",
+          "http://seclists.org/fulldisclosure/2022/Oct/28",
+          "http://seclists.org/fulldisclosure/2022/Oct/41",
+          "http://seclists.org/fulldisclosure/2022/Oct/43",
+          "http://seclists.org/fulldisclosure/2022/Oct/45",
           "https://access.redhat.com/security/cve/CVE-2021-39537",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-39537",
           "https://lists.gnu.org/archive/html/bug-ncurses/2020-08/msg00006.html",
@@ -4740,6 +4888,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-29458",
+        "PkgID": "ncurses-term@6.2+20201114-2",
         "PkgName": "ncurses-term",
         "InstalledVersion": "6.2+20201114-2",
         "SeveritySource": "nvd",
@@ -4768,6 +4917,7 @@
           }
         },
         "References": [
+          "http://seclists.org/fulldisclosure/2022/Oct/41",
           "https://access.redhat.com/security/cve/CVE-2022-29458",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-29458",
           "https://invisible-island.net/ncurses/NEWS.html#t20220416",
@@ -4782,6 +4932,7 @@
       },
       {
         "VulnerabilityID": "CVE-2021-39537",
+        "PkgID": "ncurses-term@6.2+20201114-2",
         "PkgName": "ncurses-term",
         "InstalledVersion": "6.2+20201114-2",
         "SeveritySource": "debian",
@@ -4811,6 +4962,10 @@
         },
         "References": [
           "http://cvsweb.netbsd.org/bsdweb.cgi/pkgsrc/devel/ncurses/patches/patch-ncurses_tinfo_captoinfo.c?rev=1.1&content-type=text/x-cvsweb-markup",
+          "http://seclists.org/fulldisclosure/2022/Oct/28",
+          "http://seclists.org/fulldisclosure/2022/Oct/41",
+          "http://seclists.org/fulldisclosure/2022/Oct/43",
+          "http://seclists.org/fulldisclosure/2022/Oct/45",
           "https://access.redhat.com/security/cve/CVE-2021-39537",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-39537",
           "https://lists.gnu.org/archive/html/bug-ncurses/2020-08/msg00006.html",
@@ -4825,6 +4980,7 @@
       },
       {
         "VulnerabilityID": "CVE-2021-41617",
+        "PkgID": "openssh-client@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-client",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "nvd",
@@ -4874,6 +5030,7 @@
       },
       {
         "VulnerabilityID": "CVE-2007-2243",
+        "PkgID": "openssh-client@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-client",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -4908,6 +5065,7 @@
       },
       {
         "VulnerabilityID": "CVE-2007-2768",
+        "PkgID": "openssh-client@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-client",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -4939,6 +5097,7 @@
       },
       {
         "VulnerabilityID": "CVE-2008-3234",
+        "PkgID": "openssh-client@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-client",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -4969,6 +5128,7 @@
       },
       {
         "VulnerabilityID": "CVE-2016-20012",
+        "PkgID": "openssh-client@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-client",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -5009,6 +5169,7 @@
       },
       {
         "VulnerabilityID": "CVE-2018-15919",
+        "PkgID": "openssh-client@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-client",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -5046,6 +5207,7 @@
       },
       {
         "VulnerabilityID": "CVE-2019-6110",
+        "PkgID": "openssh-client@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-client",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -5086,6 +5248,7 @@
       },
       {
         "VulnerabilityID": "CVE-2020-14145",
+        "PkgID": "openssh-client@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-client",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -5133,6 +5296,7 @@
       },
       {
         "VulnerabilityID": "CVE-2020-15778",
+        "PkgID": "openssh-client@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-client",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -5174,6 +5338,7 @@
       },
       {
         "VulnerabilityID": "CVE-2021-36368",
+        "PkgID": "openssh-client@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-client",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -5210,6 +5375,7 @@
       },
       {
         "VulnerabilityID": "CVE-2021-41617",
+        "PkgID": "openssh-server@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-server",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "nvd",
@@ -5259,6 +5425,7 @@
       },
       {
         "VulnerabilityID": "CVE-2007-2243",
+        "PkgID": "openssh-server@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-server",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -5293,6 +5460,7 @@
       },
       {
         "VulnerabilityID": "CVE-2007-2768",
+        "PkgID": "openssh-server@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-server",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -5324,6 +5492,7 @@
       },
       {
         "VulnerabilityID": "CVE-2008-3234",
+        "PkgID": "openssh-server@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-server",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -5354,6 +5523,7 @@
       },
       {
         "VulnerabilityID": "CVE-2016-20012",
+        "PkgID": "openssh-server@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-server",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -5394,6 +5564,7 @@
       },
       {
         "VulnerabilityID": "CVE-2018-15919",
+        "PkgID": "openssh-server@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-server",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -5431,6 +5602,7 @@
       },
       {
         "VulnerabilityID": "CVE-2019-6110",
+        "PkgID": "openssh-server@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-server",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -5471,6 +5643,7 @@
       },
       {
         "VulnerabilityID": "CVE-2020-14145",
+        "PkgID": "openssh-server@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-server",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -5518,6 +5691,7 @@
       },
       {
         "VulnerabilityID": "CVE-2020-15778",
+        "PkgID": "openssh-server@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-server",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -5559,6 +5733,7 @@
       },
       {
         "VulnerabilityID": "CVE-2021-36368",
+        "PkgID": "openssh-server@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-server",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -5595,6 +5770,7 @@
       },
       {
         "VulnerabilityID": "CVE-2021-41617",
+        "PkgID": "openssh-sftp-server@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-sftp-server",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "nvd",
@@ -5644,6 +5820,7 @@
       },
       {
         "VulnerabilityID": "CVE-2007-2243",
+        "PkgID": "openssh-sftp-server@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-sftp-server",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -5678,6 +5855,7 @@
       },
       {
         "VulnerabilityID": "CVE-2007-2768",
+        "PkgID": "openssh-sftp-server@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-sftp-server",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -5709,6 +5887,7 @@
       },
       {
         "VulnerabilityID": "CVE-2008-3234",
+        "PkgID": "openssh-sftp-server@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-sftp-server",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -5739,6 +5918,7 @@
       },
       {
         "VulnerabilityID": "CVE-2016-20012",
+        "PkgID": "openssh-sftp-server@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-sftp-server",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -5779,6 +5959,7 @@
       },
       {
         "VulnerabilityID": "CVE-2018-15919",
+        "PkgID": "openssh-sftp-server@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-sftp-server",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -5816,6 +5997,7 @@
       },
       {
         "VulnerabilityID": "CVE-2019-6110",
+        "PkgID": "openssh-sftp-server@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-sftp-server",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -5856,6 +6038,7 @@
       },
       {
         "VulnerabilityID": "CVE-2020-14145",
+        "PkgID": "openssh-sftp-server@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-sftp-server",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -5903,6 +6086,7 @@
       },
       {
         "VulnerabilityID": "CVE-2020-15778",
+        "PkgID": "openssh-sftp-server@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-sftp-server",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -5944,6 +6128,7 @@
       },
       {
         "VulnerabilityID": "CVE-2021-36368",
+        "PkgID": "openssh-sftp-server@1:8.4p1-5+deb11u1",
         "PkgName": "openssh-sftp-server",
         "InstalledVersion": "1:8.4p1-5+deb11u1",
         "SeveritySource": "debian",
@@ -5980,6 +6165,7 @@
       },
       {
         "VulnerabilityID": "CVE-2007-5686",
+        "PkgID": "passwd@1:4.8.1-1",
         "PkgName": "passwd",
         "InstalledVersion": "1:4.8.1-1",
         "SeveritySource": "debian",
@@ -6013,6 +6199,7 @@
       },
       {
         "VulnerabilityID": "CVE-2013-4235",
+        "PkgID": "passwd@1:4.8.1-1",
         "PkgName": "passwd",
         "InstalledVersion": "1:4.8.1-1",
         "SeveritySource": "debian",
@@ -6048,12 +6235,14 @@
           "https://bugzilla.redhat.com/show_bug.cgi?id=CVE-2013-4235",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2013-4235",
           "https://lists.apache.org/thread.html/rf9fa47ab66495c78bb4120b0754dd9531ca2ff0430f6685ac9b07772@%3Cdev.mina.apache.org%3E",
-          "https://security-tracker.debian.org/tracker/CVE-2013-4235"
+          "https://security-tracker.debian.org/tracker/CVE-2013-4235",
+          "https://security.gentoo.org/glsa/202210-26"
         ],
         "PublishedDate": "2019-12-03T15:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2019-19882",
+        "PkgID": "passwd@1:4.8.1-1",
         "PkgName": "passwd",
         "InstalledVersion": "1:4.8.1-1",
         "SeveritySource": "debian",
@@ -6094,6 +6283,7 @@
       },
       {
         "VulnerabilityID": "CVE-2020-16156",
+        "PkgID": "perl@5.32.1-4+deb11u2",
         "PkgName": "perl",
         "InstalledVersion": "5.32.1-4+deb11u2",
         "SeveritySource": "nvd",
@@ -6135,6 +6325,7 @@
       },
       {
         "VulnerabilityID": "CVE-2011-4116",
+        "PkgID": "perl@5.32.1-4+deb11u2",
         "PkgName": "perl",
         "InstalledVersion": "5.32.1-4+deb11u2",
         "SeveritySource": "debian",
@@ -6174,6 +6365,7 @@
       },
       {
         "VulnerabilityID": "CVE-2020-16156",
+        "PkgID": "perl-base@5.32.1-4+deb11u2",
         "PkgName": "perl-base",
         "InstalledVersion": "5.32.1-4+deb11u2",
         "SeveritySource": "nvd",
@@ -6215,6 +6407,7 @@
       },
       {
         "VulnerabilityID": "CVE-2011-4116",
+        "PkgID": "perl-base@5.32.1-4+deb11u2",
         "PkgName": "perl-base",
         "InstalledVersion": "5.32.1-4+deb11u2",
         "SeveritySource": "debian",
@@ -6254,6 +6447,7 @@
       },
       {
         "VulnerabilityID": "CVE-2020-16156",
+        "PkgID": "perl-modules-5.32@5.32.1-4+deb11u2",
         "PkgName": "perl-modules-5.32",
         "InstalledVersion": "5.32.1-4+deb11u2",
         "SeveritySource": "nvd",
@@ -6295,6 +6489,7 @@
       },
       {
         "VulnerabilityID": "CVE-2011-4116",
+        "PkgID": "perl-modules-5.32@5.32.1-4+deb11u2",
         "PkgName": "perl-modules-5.32",
         "InstalledVersion": "5.32.1-4+deb11u2",
         "SeveritySource": "debian",
@@ -6334,6 +6529,7 @@
       },
       {
         "VulnerabilityID": "CVE-2013-4392",
+        "PkgID": "systemd@247.3-7+deb11u1",
         "PkgName": "systemd",
         "InstalledVersion": "247.3-7+deb11u1",
         "SeveritySource": "debian",
@@ -6369,6 +6565,7 @@
       },
       {
         "VulnerabilityID": "CVE-2020-13529",
+        "PkgID": "systemd@247.3-7+deb11u1",
         "PkgName": "systemd",
         "InstalledVersion": "247.3-7+deb11u1",
         "SeveritySource": "debian",
@@ -6415,6 +6612,7 @@
       },
       {
         "VulnerabilityID": "CVE-2013-4392",
+        "PkgID": "systemd-sysv@247.3-7+deb11u1",
         "PkgName": "systemd-sysv",
         "InstalledVersion": "247.3-7+deb11u1",
         "SeveritySource": "debian",
@@ -6450,6 +6648,7 @@
       },
       {
         "VulnerabilityID": "CVE-2020-13529",
+        "PkgID": "systemd-sysv@247.3-7+deb11u1",
         "PkgName": "systemd-sysv",
         "InstalledVersion": "247.3-7+deb11u1",
         "SeveritySource": "debian",
@@ -6496,6 +6695,7 @@
       },
       {
         "VulnerabilityID": "CVE-2013-4392",
+        "PkgID": "systemd-timesyncd@247.3-7+deb11u1",
         "PkgName": "systemd-timesyncd",
         "InstalledVersion": "247.3-7+deb11u1",
         "SeveritySource": "debian",
@@ -6531,6 +6731,7 @@
       },
       {
         "VulnerabilityID": "CVE-2020-13529",
+        "PkgID": "systemd-timesyncd@247.3-7+deb11u1",
         "PkgName": "systemd-timesyncd",
         "InstalledVersion": "247.3-7+deb11u1",
         "SeveritySource": "debian",
@@ -6577,6 +6778,7 @@
       },
       {
         "VulnerabilityID": "CVE-2005-2541",
+        "PkgID": "tar@1.34+dfsg-1",
         "PkgName": "tar",
         "InstalledVersion": "1.34+dfsg-1",
         "SeveritySource": "debian",
@@ -6608,6 +6810,7 @@
       },
       {
         "VulnerabilityID": "CVE-2022-0563",
+        "PkgID": "util-linux@2.36.1-8+deb11u1",
         "PkgName": "util-linux",
         "InstalledVersion": "2.36.1-8+deb11u1",
         "SeveritySource": "debian",
