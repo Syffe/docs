@@ -1874,12 +1874,9 @@ class Context:
         if commits_behind_count is cache.Unset:
             if self.pull["merged"]:
                 commits_behind_count = 0
-            elif self.pull["head"]["label"] is None:
-                # label can be null... see: MERGIFY-ENGINE-2SJ
-                commits_behind_count = 1000000
             else:
                 commits_diff_count = await self.repository.get_commits_diff_count(
-                    self.pull["base"]["label"], self.pull["head"]["label"]
+                    self.pull["base"]["label"], self.pull["head"]["sha"]
                 )
                 if commits_diff_count is None:
                     commits_behind_count = 1000000
@@ -1893,29 +1890,20 @@ class Context:
         is_behind = self._caches.is_behind.get()
         if is_behind is cache.Unset:
             # FIXME(sileht): check if we can leverage compare API here like
-            # commits_behind_count but using sha instead of label
-            branch_name_escaped = parse.quote(self.pull["base"]["ref"], safe="")
-            branch = typing.cast(
-                github_types.GitHubBranch,
-                await self.client.item(
-                    f"{self.base_url}/branches/{branch_name_escaped}"
-                ),
+            # commits_behind_count by comparing branch label with head sha
+            branch = await self.repository.get_branch(
+                self.pull["base"]["ref"], bypass_cache=True
             )
             external_parents_sha = await self._get_external_parents()
             is_behind = branch["commit"]["sha"] not in external_parents_sha
-            diff = await self.repository.get_commits_diff_count(
-                branch["commit"]["sha"], self.pull["head"]["sha"]
-            )
-            if diff is not None:
-                is_behind_testing = diff == 0
-                if is_behind_testing != is_behind:
-                    self.log.info(
-                        "is_behind_testing different from expected value",
-                        is_behind_testing=is_behind_testing,
-                        is_behind=is_behind,
-                    )
-            else:
-                self.log.info("is_behind_testing can't be computed")
+            is_behind_testing = await self.commits_behind_count != 0
+            if is_behind_testing != is_behind:
+                self.log.error(
+                    "is_behind_testing different from expected value",
+                    is_behind_testing=is_behind_testing,
+                    is_behind=is_behind,
+                    behind_by=await self.commits_behind_count,
+                )
 
             self._caches.is_behind.set(is_behind)
         return is_behind
