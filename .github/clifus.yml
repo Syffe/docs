@@ -37,7 +37,7 @@ targets:
     sourceID: python-version
     spec:
       file: tox.ini
-      lineMatchPattern: '(.*python)(3.\d+)(.+)'
+      lineMatchPattern: '(.*python)(3.\d+)(^\d)'
     transformers:
       - find: '^\d+\.\d+'
       - replaceRegexGroup: 2
@@ -122,7 +122,7 @@ targets:
     sourceID: python-version
     spec:
       file: pyproject.toml
-      lineMatchPattern: '(python = ">=)(3\.\d+)(,<4.0)"'
+      lineMatchPattern: '(python = ">=)(3\.\d+)(,<4.0")'
     transformers:
       - find: '^\d+\.\d+'
       - replaceRegexGroup: 2
