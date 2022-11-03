@@ -632,7 +632,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 for queue_rule in mergify_config["queue_rules"]
             }
         except KeyError:
-            raise voluptuous.error.Invalid(f"{self.config['name']} queue not found")
+            raise voluptuous.error.Invalid(f"`{self.config['name']}` queue not found")
 
         self.queue_count = len(mergify_config["queue_rules"])
 

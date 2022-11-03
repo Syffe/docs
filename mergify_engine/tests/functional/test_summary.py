@@ -361,6 +361,5 @@ class TestQueueCISummary(base.FunctionalTestBase):
         assert summary is not None
         assert summary["output"] is not None
         assert (
-            summary["output"]["summary"]
-            == "not &lt;h1&gt;exists&lt;/h1&gt; !! queue not found"
+            summary["output"]["summary"] == "`not <h1>exists</h1> !!` queue not found"
         )

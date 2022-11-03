@@ -1627,7 +1627,7 @@ pull_request_rules:
     with pytest.raises(rules.InvalidRules) as e:
         await rules.get_mergify_config_from_file(mock.MagicMock(), file)
 
-    assert str(e.value.error) == "missing queue not found"
+    assert str(e.value.error) == "`missing` queue not found"
 
 
 async def test_default_with_no_pull_requests_rules() -> None:
