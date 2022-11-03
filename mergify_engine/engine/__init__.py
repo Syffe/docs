@@ -238,6 +238,61 @@ async def _ensure_summary_on_head_sha(ctxt: context.Context) -> None:
         )
 
 
+async def get_context_with_sha_collision(
+    ctxt: context.Context, summary: github_types.CachedGitHubCheckRun | None
+) -> context.Context | None:
+    if not (
+        summary
+        and summary["external_id"] is not None
+        and summary["external_id"] != ""
+        and summary["external_id"] != str(ctxt.pull["number"])
+    ):
+        return None
+
+    try:
+        conflicting_ctxt = await ctxt.repository.get_pull_request_context(
+            github_types.GitHubPullRequestNumber(int(summary["external_id"]))
+        )
+    except http.HTTPNotFound:
+        return None
+    else:
+        # NOTE(sileht): allow to override the summary of another pull request
+        # only if this one is closed, but this can still confuse users as the
+        # check-runs created by merge/queue action will not be cleaned.
+        # TODO(sileht): maybe cancel all other mergify engine check-runs in this case?
+        if conflicting_ctxt.closed:
+            return None
+
+        # TODO(sileht): try to report that without check-runs/statuses to the user
+        # and without spamming him with comment
+        ctxt.log.info(
+            "sha collision detected between pull requests",
+            other_pull=summary["external_id"],
+        )
+        return conflicting_ctxt
+
+
+async def report_sha_collision(
+    ctxt: context.Context, conflicting_ctxt: context.Context
+) -> None:
+    if not (await conflicting_ctxt.get_warned_about_sha_collision()):
+        try:
+            comment = await ctxt.post_comment(
+                (
+                    ":warning: The sha of the head commit of this PR conflicts with "
+                    f"#{conflicting_ctxt.pull['number']}. Mergify cannot evaluate rules on this PR. :warning:"
+                ),
+            )
+        except http.HTTPClientSideError as e:
+            LOG.warning(
+                "Unable to post sha collision detection comment",
+                status_code=e.status_code,
+                error_message=e.message,
+            )
+        else:
+            await conflicting_ctxt.set_warned_about_sha_collision(comment["url"])
+
+
 class T_PayloadEventIssueCommentSource(typing.TypedDict):
     event_type: github_types.GitHubEventType
     data: github_types.GitHubEventIssueComment
@@ -352,44 +407,11 @@ async def run(
     await _ensure_summary_on_head_sha(ctxt)
 
     summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
-    if (
-        summary
-        and summary["external_id"] is not None
-        and summary["external_id"] != ""
-        and summary["external_id"] != str(ctxt.pull["number"])
-    ):
-        other_ctxt = await ctxt.repository.get_pull_request_context(
-            github_types.GitHubPullRequestNumber(int(summary["external_id"]))
-        )
-        # NOTE(sileht): allow to override the summary of another pull request
-        # only if this one is closed, but this can still confuse users as the
-        # check-runs created by merge/queue action will not be cleaned.
-        # TODO(sileht): maybe cancel all other mergify engine check-runs in this case?
-        if not other_ctxt.closed:
-            # TODO(sileht): try to report that without check-runs/statuses to the user
-            # and without spamming him with comment
-            ctxt.log.info(
-                "sha collision detected between pull requests",
-                other_pull=summary["external_id"],
-            )
-            if not (await other_ctxt.get_warned_about_sha_collision()):
-                try:
-                    comment = await ctxt.post_comment(
-                        (
-                            ":warning: The sha of the head commit of this PR conflicts with "
-                            f"#{other_ctxt.pull['number']}. Mergify cannot evaluate rules on this PR. :warning:"
-                        ),
-                    )
-                except http.HTTPClientSideError as e:
-                    LOG.warning(
-                        "Unable to post sha collision detection comment",
-                        status_code=e.status_code,
-                        error_message=e.message,
-                    )
-                else:
-                    await other_ctxt.set_warned_about_sha_collision(comment["url"])
 
-            return None
+    conflicting_ctxt = await get_context_with_sha_collision(ctxt, summary)
+    if conflicting_ctxt is not None:
+        await report_sha_collision(ctxt, conflicting_ctxt)
+        return None
 
     if not ctxt.has_been_opened() and summary is None:
         ctxt.log.warning(
