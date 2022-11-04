@@ -1889,22 +1889,24 @@ class Context:
     async def is_behind(self) -> bool:
         is_behind = self._caches.is_behind.get()
         if is_behind is cache.Unset:
-            # FIXME(sileht): check if we can leverage compare API here like
-            # commits_behind_count by comparing branch label with head sha
-            branch = await self.repository.get_branch(
-                self.pull["base"]["ref"], bypass_cache=True
-            )
-            external_parents_sha = await self._get_external_parents()
-            is_behind = branch["commit"]["sha"] not in external_parents_sha
-            is_behind_testing = await self.commits_behind_count != 0
-            if is_behind_testing != is_behind:
-                self.log.error(
-                    "is_behind_testing different from expected value",
-                    is_behind_testing=is_behind_testing,
-                    is_behind=is_behind,
-                    behind_by=await self.commits_behind_count,
+            if self.pull["merged"]:
+                is_behind = False
+            else:
+                # FIXME(sileht): check if we can leverage compare API here like
+                # commits_behind_count by comparing branch label with head sha
+                branch = await self.repository.get_branch(
+                    self.pull["base"]["ref"], bypass_cache=True
                 )
-
+                external_parents_sha = await self._get_external_parents()
+                is_behind = branch["commit"]["sha"] not in external_parents_sha
+                is_behind_testing = await self.commits_behind_count != 0
+                if is_behind_testing != is_behind:
+                    self.log.error(
+                        "is_behind_testing different from expected value",
+                        is_behind_testing=is_behind_testing,
+                        is_behind=is_behind,
+                        behind_by=await self.commits_behind_count,
+                    )
             self._caches.is_behind.set(is_behind)
         return is_behind
 
