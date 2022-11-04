@@ -11,17 +11,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN printf 'APT::Get::Install-Recommends "false";\nAPT::Get::Install-Suggests "false";\n' > /etc/apt/apt.conf.d/99local
 RUN apt update -y && apt upgrade -y && apt install -y git && apt autoremove --purge -y
 
-### BUILDER JS ###
-FROM node:16-buster-slim as js-builder
-ARG BUILD_DATE
-RUN test -n "$BUILD_DATE"
-# Real install that can't be cached
-ADD installer /installer
-WORKDIR /installer
-RUN npm ci
-RUN npm run build
-RUN rm -rf node_modules
-
 ### BUILDER PYTHON ###
 FROM python-base as python-builder
 
@@ -104,42 +93,3 @@ LABEL mergify-engine.version="$MERGIFYENGINE_VERSION"
 ENV MERGIFYENGINE_VERSION=$MERGIFYENGINE_VERSION
 RUN test -n "$MERGIFYENGINE_VERSION"
 
-### WEB ###
-FROM runner-tagged as saas-web
-ENV DD_EXTRA_TAGS=service:engine-web
-ADD datadog/conf.d/engine-web-process.yaml /etc/datadog-agent/conf.d/process.d/conf.yaml
-ADD datadog/conf.d/engine-web.yaml /etc/datadog-agent/conf.d/engine-web.d/conf.yaml
-ENV PORT=8002
-EXPOSE $PORT
-USER mergify
-CMD ["/datadog-wrapper.sh", "gunicorn", "--worker-class=uvicorn.workers.UvicornH11Worker", "--statsd-host=localhost:8125", "--log-level=warning", "mergify_engine.web.asgi"]
-
-### BASE WORKER ###
-FROM runner-tagged as base-worker
-ENV DD_EXTRA_TAGS=service:engine-worker
-ADD datadog/conf.d/engine-worker-process.yaml /etc/datadog-agent/conf.d/process.d/conf.yaml
-ADD datadog/conf.d/engine-worker.yaml /etc/datadog-agent/conf.d/engine-worker.d/conf.yaml
-
-### WORKER-SHARED ###
-FROM base-worker as saas-worker-shared
-USER mergify
-CMD ["/datadog-wrapper.sh", "mergify-engine-worker", "--enabled-services=shared-stream"]
-
-### WORKER-DEDICATED ###
-FROM base-worker as saas-worker-dedicated
-CMD ["/datadog-wrapper.sh", "mergify-engine-worker", "--enabled-services=dedicated-stream,stream-monitoring,delayed-refresh"]
-
-
-### ON PREMISE ###
-FROM runner-tagged as onpremise
-# FIXME(sileht): clearly a semgrep bug...
-# nosemgrep: dockerfile.security.last-user-is-root.last-user-is-root
-USER root
-COPY --from=js-builder /installer/build /installer/build
-COPY --from=js-builder /installer/Procfile /installer
-COPY --from=js-builder /installer/asgi.py /installer
-ADD onpremise /onpremise
-ENV DD_DOGSTATSD_DISABLE=1
-ENV DD_TRACE_ENABLED=0
-USER mergify
-ENTRYPOINT ["/onpremise/entrypoint.sh"]

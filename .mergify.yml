@@ -19,7 +19,9 @@ queue_rules:
       - and: &CheckRuns
           - or:
               - -label=Docker
-              - check-success=docker
+              - and:
+                  - check-success=docker-saas
+                  - check-success=docker-onpremise
           - check-success=import-checks
           - check-success=pep8
           - check-success=semgrep

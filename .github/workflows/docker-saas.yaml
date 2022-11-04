@@ -1,23 +1,21 @@
-name: Docker
+name: Docker SaaS
 permissions: read-all
 
 on:
   push:
     branches:
       - main
-    tags:
-      - "*"
   pull_request:
     branches:
       - main
     paths:
-      - 'Dockerfile'
+      - 'dockerfiles/**'
       - 'datadog/**'
       - 'datadog-wrapper.sh'
       - 'installer/**'
       - 'onpremise/**'
       - 'fake.env'
-      - '.github/workflows/docker.yaml'
+      - '.github/workflows/docker-*.yaml'
 
 concurrency:
   # yamllint disable-line rule:line-length
@@ -25,7 +23,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  docker:
+  docker-saas:
     timeout-minutes: 15
     runs-on: ubuntu-20.04
     services:
@@ -51,37 +49,6 @@ jobs:
             )
             core.setOutput("job_url", job.html_url);
             core.setOutput("job_id", String(job.id));
-
-      - name: Release start
-        if: always() && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
-        uses: slackapi/slack-github-action@v1.23.0
-        with:
-          # yamllint disable rule:line-length
-          payload: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Starting release (${{ steps.fetch-check-run.outputs.job_id }}) of Mergify Enterprise ${{ github.ref_name }}*"
-                  },
-                  "accessory": {
-                    "type": "button",
-                    "text": {
-                      "type": "plain_text",
-                      "text": "Job log",
-                      "emoji": true
-                    },
-                    "url": "${{ steps.fetch-check-run.outputs.job_url }}"
-                  }
-                }
-              ]
-            }
-          # yamllint enable rule:line-length
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
       - name: Deployment start
         if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -141,6 +108,11 @@ jobs:
 
           BUILD_DATE="$(date '+%Y-%m-%d')"
           echo "::set-output name=BUILD_DATE::${BUILD_DATE}"
+
+          cat \
+            dockerfiles/Dockerfile.common \
+            dockerfiles/Dockerfile.saas \
+            > Dockerfile
 
       - name: ⚙️ Set up Docker Buildx
         id: buildx
@@ -224,25 +196,9 @@ jobs:
           push: false
           cache-from: type=local,src=/home/runner/docker-cache
 
-      - name: ⚙️ Build onpremise
-        uses: docker/build-push-action@v3
-        with:
-          target: onpremise
-          tags: onpremise:tmp
-          outputs: type=docker
-          # COMMON
-          build-args: |
-            PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
-            MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
-            MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
-            BUILD_DATE=${{ steps.vars.outputs.BUILD_DATE }}
-          context: .
-          push: false
-          cache-from: type=local,src=/home/runner/docker-cache
-
       - name: 🏓 Testing
         run: |
-          for i in web worker-shared worker-dedicated onpremise; do
+          for i in web worker-shared worker-dedicated; do
             docker run \
               --env-file fake.env \
               -e MERGIFYENGINE_STORAGE_URL=redis://redis:6363 \
@@ -251,73 +207,6 @@ jobs:
               -c '/datadog-wrapper.sh mergify-import-check-worker;
                   /datadog-wrapper.sh mergify-import-check-web;'
           done
-
-      ######################
-      # ON PREMISE RELEASE #
-      ######################
-      #
-      # Next steps are only on tags for pushing change to DockerHub
-      #
-
-      - name: Login to DockerHub
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
-        uses: docker/login-action@v2.1.0
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      # The second phase just upload a new tag that will be used for the release cycle
-      - name: 📜 Tag and Push (on-premise)
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
-        run: |
-          image="docker.io/mergifyio/engine"
-          docker tag "onpremise:tmp" "$image:latest"
-          docker tag "onpremise:tmp" "$image:${{ github.ref_name }}"
-          docker push "$image:latest"
-          docker push "$image:${{ github.ref_name }}"
-
-      - name: Prepare report status
-        id: report-status-onpremise
-        if: always() && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
-        run: |
-          if [ "${{ job.status }}" == "success" ] ; then
-            echo "::set-output name=emoji::🦾"
-          elif [ "${{ job.status }}" == "cancelled" ] ; then
-            echo "::set-output name=emoji::✋"
-          else
-            echo "::set-output name=emoji::💥"
-          fi
-
-      - name: Report Status
-        if: always() && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
-        uses: slackapi/slack-github-action@v1.23.0
-        with:
-          # yamllint disable rule:line-length
-          payload: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Release (${{ steps.fetch-check-run.outputs.job_id }}) of Mergify Enterprise ${{ github.ref_name }} finished ${{ steps.report-status-onpremise.outputs.emoji }}*\nConclusion: ${{ job.status }}"
-                  },
-                  "accessory": {
-                    "type": "button",
-                    "text": {
-                      "type": "plain_text",
-                      "text": "Job log",
-                      "emoji": true
-                    },
-                    "url": "${{ steps.fetch-check-run.outputs.job_url }}"
-                  }
-                }
-              ]
-            }
-          # yamllint enable rule:line-length
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
       ################
       # SaaS RELEASE #

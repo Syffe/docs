@@ -8,7 +8,7 @@ on:
     branches:
       - main
     paths:
-      - 'Dockerfile'
+      - 'dockerfiles/**'
       - 'datadog/**'
       - 'datadog-wrapper.sh'
       - 'installer/**'

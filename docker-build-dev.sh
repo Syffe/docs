@@ -8,6 +8,17 @@ TO_BUILD="${@:-saas-web saas-worker-shared saas-worker-dedicated onpremise}"
 for img in ${TO_BUILD[@]}; do
     # NOTE(sileht): build date is always the same to leverage/test the layer caching mechanism
     # if devs want to rebuild they just need to use --no-cache
+    if [ "$img" == "onpremise" ]; then
+      cat \
+        dockerfiles/Dockerfile.common \
+        dockerfiles/Dockerfile.onpremise \
+        > Dockerfile
+    else
+      cat \
+        dockerfiles/Dockerfile.common \
+        dockerfiles/Dockerfile.saas \
+        > Dockerfile
+    fi
     docker buildx build \
         --platform linux/amd64 \
         --build-arg PYTHON_VERSION="$(cut -d- -f2 runtime.txt)" \
