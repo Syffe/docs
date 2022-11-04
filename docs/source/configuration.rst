@@ -405,71 +405,7 @@ week, or abbreviations or plurals of these units;
    1 d 15 h 6 m 42 s
 
 
-YAML Anchors and Aliases
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-The configuration file supports `YAML anchors and aliases <https://yaml.org/spec/1.2.2/#anchors-and-aliases>`.
-It allows reusing configuration sections. For example, you could reuse the list of continuous integration checks:
-
-.. code-block:: yaml
-
-    queue_rules:
-      - name: hotfix
-        conditions:
-          - and: &CheckRuns
-            - check-success=linters
-            - check-success=unit
-            - check-success=functionnal
-            - check-success=e2e
-            - check-success=docker
-
-      - name: default
-        conditions:
-          - and: *CheckRuns
-          - schedule=Mon-Fri 09:00-17:30[Europe/Paris]
-
-    pull_request_rules:
-      - name: automatic merge for hotfix
-        conditions:
-          - label=hotfix
-          - and: *CheckRuns
-        actions:
-          queue:
-            name: hotfix
-
-      - name: automatic merge reviewed pull request
-        conditions:
-          - "#approved-reviews-by>=1"
-          - and: *CheckRuns
-        actions:
-          queue:
-            name: default
-
-
-Disabling Rules
-~~~~~~~~~~~~~~~
-
-You can disable a rule while keeping it in the configuration. This allows
-gracefully handling the cancellation of any ongoing actions (e.g., like stopping
-the merge queue).
-
-Examples
-++++++++
-
-.. code-block:: yaml
-
-      - name: automatic merge for main when the title does not contain “WIP” (ignoring case)
-        disabled:
-          reason: code freeze
-        conditions:
-          - base=main
-          - -title~=(?i)wip
-        actions:
-          merge:
-            method: merge
-
 .. _data type template:
-
 
 Template
 ~~~~~~~~
@@ -536,8 +472,74 @@ We also provide custom Jinja2 filters:
    full body, you can use the ``body_raw`` attribute.
 
 
-Extends
+YAML Anchors and Aliases
+------------------------
+
+The configuration file supports `YAML anchors and aliases
+<https://yaml.org/spec/1.2.2/#anchors-and-aliases>`_. It allows reusing
+configuration sections. For example, you could reuse the list of continuous
+integration checks:
+
+.. code-block:: yaml
+
+    queue_rules:
+      - name: hotfix
+        conditions:
+          - and: &CheckRuns
+            - check-success=linters
+            - check-success=unit
+            - check-success=functionnal
+            - check-success=e2e
+            - check-success=docker
+
+      - name: default
+        conditions:
+          - and: *CheckRuns
+          - schedule=Mon-Fri 09:00-17:30[Europe/Paris]
+
+    pull_request_rules:
+      - name: automatic merge for hotfix
+        conditions:
+          - label=hotfix
+          - and: *CheckRuns
+        actions:
+          queue:
+            name: hotfix
+
+      - name: automatic merge reviewed pull request
+        conditions:
+          - "#approved-reviews-by>=1"
+          - and: *CheckRuns
+        actions:
+          queue:
+            name: default
+
+
+Disabling Rules
+---------------
+
+You can disable a rule while keeping it in the configuration. This allows
+gracefully handling the cancellation of any ongoing actions (e.g., like stopping
+the merge queue).
+
+Example
 ~~~~~~~
+
+.. code-block:: yaml
+
+      - name: automatic merge for main when the title does not contain “WIP” (ignoring case)
+        disabled:
+          reason: code freeze
+        conditions:
+          - base=main
+          - -title~=(?i)wip
+        actions:
+          merge:
+            method: merge
+
+Extends
+-------
+
 ``extends`` is an optional key with its value type being a string.
 
 
