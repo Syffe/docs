@@ -146,8 +146,8 @@
             "V3Score": 7.5
           },
           "redhat": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
-            "V3Score": 5.3
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+            "V3Score": 7.5
           }
         },
         "References": [
@@ -447,6 +447,7 @@
           "https://access.redhat.com/security/cve/CVE-2022-39260",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39260",
           "https://github.com/git/git/security/advisories/GHSA-rjr6-wcq6-83p6",
+          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/OHNO2FB55CPX47BAXMBWUBGWHO6N6ZZH/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/UKFHE4KVD7EKS5J3KTDFVBEKU3CLXGVV/",
           "https://support.apple.com/kb/HT213496",
           "https://ubuntu.com/security/notices/USN-5686-1"
@@ -485,6 +486,7 @@
           "https://access.redhat.com/security/cve/CVE-2022-39253",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39253",
           "https://github.com/git/git/security/advisories/GHSA-3wp6-j8xr-qw85",
+          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/OHNO2FB55CPX47BAXMBWUBGWHO6N6ZZH/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/UKFHE4KVD7EKS5J3KTDFVBEKU3CLXGVV/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/VFYXCTLOSESYIP72BUYD6ECDIMUM4WMB/",
           "https://support.apple.com/kb/HT213496",
@@ -693,6 +695,7 @@
           "https://access.redhat.com/security/cve/CVE-2022-39260",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39260",
           "https://github.com/git/git/security/advisories/GHSA-rjr6-wcq6-83p6",
+          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/OHNO2FB55CPX47BAXMBWUBGWHO6N6ZZH/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/UKFHE4KVD7EKS5J3KTDFVBEKU3CLXGVV/",
           "https://support.apple.com/kb/HT213496",
           "https://ubuntu.com/security/notices/USN-5686-1"
@@ -731,6 +734,7 @@
           "https://access.redhat.com/security/cve/CVE-2022-39253",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39253",
           "https://github.com/git/git/security/advisories/GHSA-3wp6-j8xr-qw85",
+          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/OHNO2FB55CPX47BAXMBWUBGWHO6N6ZZH/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/UKFHE4KVD7EKS5J3KTDFVBEKU3CLXGVV/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/VFYXCTLOSESYIP72BUYD6ECDIMUM4WMB/",
           "https://support.apple.com/kb/HT213496",
@@ -1667,8 +1671,8 @@
             "V3Score": 7.5
           },
           "redhat": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
-            "V3Score": 5.3
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+            "V3Score": 7.5
           }
         },
         "References": [
@@ -1824,8 +1828,8 @@
             "V3Score": 7.5
           },
           "redhat": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
-            "V3Score": 5.3
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+            "V3Score": 7.5
           }
         },
         "References": [
@@ -3837,7 +3841,6 @@
           "https://nvd.nist.gov/vuln/detail/CVE-2022-35737",
           "https://security.gentoo.org/glsa/202210-40",
           "https://security.netapp.com/advisory/ntap-20220915-0009/",
-          "https://sqlite.org/forum/forumpost/3607259d3c",
           "https://sqlite.org/releaselog/3_39_2.html",
           "https://www.sqlite.org/cves.html"
         ],
@@ -3919,18 +3922,16 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:6224",
+          "https://access.redhat.com/errata/RHSA-2022:5818",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1292.json",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-2068.json",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-2097.json",
           "https://access.redhat.com/security/cve/CVE-2022-2097",
           "https://bugzilla.redhat.com/2081494",
-          "https://bugzilla.redhat.com/2087911",
-          "https://bugzilla.redhat.com/2087913",
           "https://bugzilla.redhat.com/2097310",
           "https://bugzilla.redhat.com/2104905",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-2097",
-          "https://errata.almalinux.org/9/ALSA-2022-6224.html",
+          "https://errata.almalinux.org/8/ALSA-2022-5818.html",
           "https://git.openssl.org/gitweb/?p=openssl.git;a=commitdiff;h=919925673d6c9cfed3c1085497f5dfbbed5fc431",
           "https://git.openssl.org/gitweb/?p=openssl.git;a=commitdiff;h=a98f339ddd7e8f487d6e0088d4a9a42324885a93",
           "https://github.com/advisories/GHSA-3wx7-46ch-7rq2",
@@ -4135,7 +4136,6 @@
           "https://bugs.gentoo.org/866237",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-46848",
           "https://gitlab.com/gnutls/libtasn1/-/commit/44a700d2051a666235748970c2df047ff207aeb5",
-          "https://gitlab.com/gnutls/libtasn1/-/commit/44a700d2051a666235748970c2df047ff207aeb5 (v4.19.0)",
           "https://gitlab.com/gnutls/libtasn1/-/issues/32",
           "https://nvd.nist.gov/vuln/detail/CVE-2021-46848",
           "https://ubuntu.com/security/notices/USN-5707-1"
@@ -4354,138 +4354,6 @@
           "https://security.netapp.com/advisory/ntap-20220331-0002/"
         ],
         "PublishedDate": "2022-02-21T19:15:00Z"
-      },
-      {
-        "VulnerabilityID": "CVE-2022-3554",
-        "PkgID": "libx11-6@2:1.7.2-1",
-        "PkgName": "libx11-6",
-        "InstalledVersion": "2:1.7.2-1",
-        "SeveritySource": "nvd",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3554",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Title": "libX11: memory leak in _XimRegisterIMInstantiateCallback() of modules/im/ximcp/imsClbk.c",
-        "Description": "A vulnerability has been found in X.org libX11 and classified as problematic. This vulnerability affects the function _XimRegisterIMInstantiateCallback of the file modules/im/ximcp/imsClbk.c. The manipulation leads to memory leak. It is recommended to apply a patch to fix this issue. VDB-211054 is the identifier assigned to this vulnerability.",
-        "Severity": "HIGH",
-        "CweIDs": [
-          "CWE-401"
-        ],
-        "CVSS": {
-          "nvd": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
-            "V3Score": 7.5
-          },
-          "redhat": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L",
-            "V3Score": 5.3
-          }
-        },
-        "References": [
-          "https://access.redhat.com/security/cve/CVE-2022-3554",
-          "https://cgit.freedesktop.org/xorg/lib/libX11/commit/?id=1d11822601fd24a396b354fa616b04ed3df8b4ef",
-          "https://vuldb.com/?id.211054"
-        ],
-        "PublishedDate": "2022-10-17T13:15:00Z"
-      },
-      {
-        "VulnerabilityID": "CVE-2022-3555",
-        "PkgID": "libx11-6@2:1.7.2-1",
-        "PkgName": "libx11-6",
-        "InstalledVersion": "2:1.7.2-1",
-        "SeveritySource": "nvd",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3555",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Title": "libX11: memory leak in _XFreeX11XCBStructure() of xcb_disp.c",
-        "Description": "A vulnerability was found in X.org libX11 and classified as problematic. This issue affects the function _XFreeX11XCBStructure of the file xcb_disp.c. The manipulation of the argument dpy leads to memory leak. It is recommended to apply a patch to fix this issue. The associated identifier of this vulnerability is VDB-211055.",
-        "Severity": "HIGH",
-        "CweIDs": [
-          "CWE-401"
-        ],
-        "CVSS": {
-          "nvd": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
-            "V3Score": 7.5
-          }
-        },
-        "References": [
-          "https://access.redhat.com/security/cve/CVE-2022-3555",
-          "https://cgit.freedesktop.org/xorg/lib/libX11/commit/?id=8a368d808fec166b5fb3dfe6312aab22c7ee20af",
-          "https://vuldb.com/?id.211055"
-        ],
-        "PublishedDate": "2022-10-17T13:15:00Z"
-      },
-      {
-        "VulnerabilityID": "CVE-2022-3554",
-        "PkgID": "libx11-data@2:1.7.2-1",
-        "PkgName": "libx11-data",
-        "InstalledVersion": "2:1.7.2-1",
-        "SeveritySource": "nvd",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3554",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Title": "libX11: memory leak in _XimRegisterIMInstantiateCallback() of modules/im/ximcp/imsClbk.c",
-        "Description": "A vulnerability has been found in X.org libX11 and classified as problematic. This vulnerability affects the function _XimRegisterIMInstantiateCallback of the file modules/im/ximcp/imsClbk.c. The manipulation leads to memory leak. It is recommended to apply a patch to fix this issue. VDB-211054 is the identifier assigned to this vulnerability.",
-        "Severity": "HIGH",
-        "CweIDs": [
-          "CWE-401"
-        ],
-        "CVSS": {
-          "nvd": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
-            "V3Score": 7.5
-          },
-          "redhat": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L",
-            "V3Score": 5.3
-          }
-        },
-        "References": [
-          "https://access.redhat.com/security/cve/CVE-2022-3554",
-          "https://cgit.freedesktop.org/xorg/lib/libX11/commit/?id=1d11822601fd24a396b354fa616b04ed3df8b4ef",
-          "https://vuldb.com/?id.211054"
-        ],
-        "PublishedDate": "2022-10-17T13:15:00Z"
-      },
-      {
-        "VulnerabilityID": "CVE-2022-3555",
-        "PkgID": "libx11-data@2:1.7.2-1",
-        "PkgName": "libx11-data",
-        "InstalledVersion": "2:1.7.2-1",
-        "SeveritySource": "nvd",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3555",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Title": "libX11: memory leak in _XFreeX11XCBStructure() of xcb_disp.c",
-        "Description": "A vulnerability was found in X.org libX11 and classified as problematic. This issue affects the function _XFreeX11XCBStructure of the file xcb_disp.c. The manipulation of the argument dpy leads to memory leak. It is recommended to apply a patch to fix this issue. The associated identifier of this vulnerability is VDB-211055.",
-        "Severity": "HIGH",
-        "CweIDs": [
-          "CWE-401"
-        ],
-        "CVSS": {
-          "nvd": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
-            "V3Score": 7.5
-          }
-        },
-        "References": [
-          "https://access.redhat.com/security/cve/CVE-2022-3555",
-          "https://cgit.freedesktop.org/xorg/lib/libX11/commit/?id=8a368d808fec166b5fb3dfe6312aab22c7ee20af",
-          "https://vuldb.com/?id.211055"
-        ],
-        "PublishedDate": "2022-10-17T13:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2012-2663",
