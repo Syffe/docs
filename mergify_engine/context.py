@@ -905,8 +905,13 @@ class Repository:
                     f"{self.base_url}/compare/{parse.quote(base_ref, safe='')}...{parse.quote(head_ref, safe='')}"
                 ),
             )
-        except http.HTTPNotFound:
-            return None
+        except http.HTTPClientSideError as e:
+            if e.status_code == 404 or (
+                e.status_code == 422
+                and "this diff is taking too long to generate." in e.message
+            ):
+                return None
+            raise
         else:
             return data["behind_by"]
 
