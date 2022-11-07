@@ -8,10 +8,10 @@ from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import conftest as func_conftest
 
 
-async def test_fixture_mergify_web_client(
-    mergify_web_client: httpx.AsyncClient,
+async def test_fixture_web_client(
+    web_client: httpx.AsyncClient,
 ) -> None:
-    r = await mergify_web_client.get("/foobar")
+    r = await web_client.get("/foobar")
     assert r.status_code == 404
 
 

@@ -7,10 +7,10 @@ from mergify_engine.tests.functional import conftest as func_conftest
 
 @pytest.mark.recorder
 async def test_api_application(
-    mergify_web_client: httpx.AsyncClient,
+    web_client: httpx.AsyncClient,
     dashboard: func_conftest.DashboardFixture,
 ) -> None:
-    r = await mergify_web_client.get(
+    r = await web_client.get(
         "/v1/application",
         headers={"Authorization": f"bearer {dashboard.api_key_admin}"},
     )

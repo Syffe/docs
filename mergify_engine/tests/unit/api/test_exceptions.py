@@ -47,15 +47,13 @@ def create_testing_router() -> None:
 
 
 async def test_handler_exception_rate_limited(
-    mergify_web_client: httpx.AsyncClient,
+    web_client: httpx.AsyncClient,
 ) -> None:
 
     endpoints = ["/", "/v1/"]
 
     for endpoint in endpoints:
-        r = await mergify_web_client.get(
-            f"{ endpoint }testing-endpoint-exception-rate-limited"
-        )
+        r = await web_client.get(f"{ endpoint }testing-endpoint-exception-rate-limited")
         assert r.status_code == 403, r.json()
         assert (
             r.json()["message"] == "Organization or user has hit GitHub API rate limit"
@@ -63,13 +61,13 @@ async def test_handler_exception_rate_limited(
 
 
 async def test_handler_exception_mergify_not_installed(
-    mergify_web_client: httpx.AsyncClient,
+    web_client: httpx.AsyncClient,
 ) -> None:
 
     endpoints = ["/", "/v1/"]
 
     for endpoint in endpoints:
-        r = await mergify_web_client.get(
+        r = await web_client.get(
             f"{ endpoint }testing-endpoint-exception-mergify-not-installed"
         )
         assert r.status_code == 403, r.json()
@@ -80,13 +78,13 @@ async def test_handler_exception_mergify_not_installed(
 
 
 async def test_handler_pagination_invalid_cursor(
-    mergify_web_client: httpx.AsyncClient,
+    web_client: httpx.AsyncClient,
 ) -> None:
 
     endpoints = ["/", "/v1/"]
 
     for endpoint in endpoints:
-        r = await mergify_web_client.get(
+        r = await web_client.get(
             f"{ endpoint }testing-endpoint-pagination-invalid-cursor"
         )
         assert r.status_code == 422, r.json()

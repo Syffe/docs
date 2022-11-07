@@ -181,7 +181,7 @@ def context_getter(fake_repository: context.Repository) -> ContextGetterFixture:
 
 
 @pytest.fixture
-async def mergify_web_client() -> abc.AsyncGenerator[httpx.AsyncClient, None]:
+async def web_client() -> abc.AsyncGenerator[httpx.AsyncClient, None]:
     await web_root.startup()
     client = httpx.AsyncClient(app=web_root.app, base_url="http://localhost")
     try:

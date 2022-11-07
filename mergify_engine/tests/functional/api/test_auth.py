@@ -52,20 +52,20 @@ def create_testing_router() -> None:
 
 
 async def test_api_auth_unknown_path(
-    mergify_web_client: httpx.AsyncClient,
+    web_client: httpx.AsyncClient,
 ) -> None:
     # Default
-    r = await mergify_web_client.get("/v1/foobar")
+    r = await web_client.get("/v1/foobar")
     assert r.status_code == 404
     assert r.json() == {"detail": "Not Found"}
 
 
 @pytest.mark.recorder
 async def test_api_auth(
-    mergify_web_client: httpx.AsyncClient,
+    web_client: httpx.AsyncClient,
     dashboard: func_conftest.DashboardFixture,
 ) -> None:
-    r = await mergify_web_client.get(
+    r = await web_client.get(
         "/v1/testing-endpoint-with-explicit-dep",
         headers={"Authorization": f"bearer {dashboard.api_key_admin}"},
     )
@@ -75,11 +75,11 @@ async def test_api_auth(
 
 @pytest.mark.recorder
 async def test_api_auth_scoped(
-    mergify_web_client: httpx.AsyncClient,
+    web_client: httpx.AsyncClient,
     dashboard: func_conftest.DashboardFixture,
 ) -> None:
 
-    r = await mergify_web_client.get(
+    r = await web_client.get(
         f"/v1/testing-endpoint-with-owner/{config.TESTING_ORGANIZATION_NAME}",
         headers={"Authorization": f"bearer {dashboard.api_key_admin}"},
     )
@@ -87,7 +87,7 @@ async def test_api_auth_scoped(
     assert r.json()["user_login"] == config.TESTING_ORGANIZATION_NAME
 
     # check case insensitive
-    r = await mergify_web_client.get(
+    r = await web_client.get(
         f"/v1/testing-endpoint-with-owner/{config.TESTING_ORGANIZATION_NAME.upper()}",
         headers={"Authorization": f"bearer {dashboard.api_key_admin}"},
     )
@@ -97,11 +97,11 @@ async def test_api_auth_scoped(
 
 @pytest.mark.recorder
 async def test_api_auth_invalid_token(
-    mergify_web_client: httpx.AsyncClient,
+    web_client: httpx.AsyncClient,
     dashboard: func_conftest.DashboardFixture,
 ) -> None:
     # invalid header
-    r = await mergify_web_client.get(
+    r = await web_client.get(
         "/v1/testing-endpoint-with-explicit-dep",
         headers={"Authorization": "whatever"},
     )
@@ -109,7 +109,7 @@ async def test_api_auth_invalid_token(
     assert r.json() == {"detail": "Not authenticated"}
 
     # invalid token too short
-    r = await mergify_web_client.get(
+    r = await web_client.get(
         "/v1/testing-endpoint-with-explicit-dep",
         headers={"Authorization": "bearer whatever"},
     )
@@ -118,12 +118,12 @@ async def test_api_auth_invalid_token(
 
     # invalid token good size
     invalid_token = "6" * 64
-    r = await mergify_web_client.get(
+    r = await web_client.get(
         "/v1/foobar/", headers={"Authorization": f"bearer {invalid_token}"}
     )
     assert r.status_code == 404
     assert r.json() == {"detail": "Not Found"}
-    r = await mergify_web_client.get(
+    r = await web_client.get(
         "/v1/testing-endpoint-with-explicit-dep",
         headers={"Authorization": f"bearer {invalid_token}"},
     )
@@ -132,9 +132,9 @@ async def test_api_auth_invalid_token(
 
 
 async def test_api_auth_no_token(
-    mergify_web_client: httpx.AsyncClient,
+    web_client: httpx.AsyncClient,
     dashboard: func_conftest.DashboardFixture,
 ) -> None:
-    r = await mergify_web_client.get("/v1/testing-endpoint-with-explicit-dep")
+    r = await web_client.get("/v1/testing-endpoint-with-explicit-dep")
     assert r.status_code == 403
     assert r.json() == {"detail": "Not authenticated"}

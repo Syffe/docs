@@ -41,7 +41,7 @@ class RecordConfigType(typing.TypedDict):
 
 
 @pytest.fixture
-async def mergify_web_client() -> abc.AsyncGenerator[httpx.AsyncClient, None]:
+async def web_client() -> abc.AsyncGenerator[httpx.AsyncClient, None]:
     await web_root.startup()
     client = httpx.AsyncClient(app=web_root.app, base_url="http://localhost")
     try:
@@ -387,14 +387,14 @@ async def recorder(
 @pytest.fixture
 def unittest_glue(
     dashboard: DashboardFixture,
-    mergify_web_client: httpx.AsyncClient,
+    web_client: httpx.AsyncClient,
     recorder: RecorderFixture,
     event_loop: asyncio.AbstractEventLoop,
     request: pytest.FixtureRequest,
 ) -> None:
     request.cls.api_key_admin = dashboard.api_key_admin
     request.cls.pytest_event_loop = event_loop
-    request.cls.app = mergify_web_client
+    request.cls.app = web_client
     request.cls.RECORD_CONFIG = recorder.config
     request.cls.cassette_library_dir = recorder.vcr.cassette_library_dir
     request.cls.subscription = dashboard.subscription
