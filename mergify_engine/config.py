@@ -155,8 +155,12 @@ Schema = voluptuous.Schema(
             ApplicationAPIKeys
         ),
         # Saas Special config
-        voluptuous.Required("ENGINE_TO_DASHBOARD_API_KEY"): str,
-        voluptuous.Required("DASHBOARD_TO_ENGINE_API_KEY"): str,
+        voluptuous.Required(
+            "ENGINE_TO_DASHBOARD_API_KEY", default=secrets.token_hex(16)
+        ): str,
+        voluptuous.Required(
+            "DASHBOARD_TO_ENGINE_API_KEY", default=secrets.token_hex(16)
+        ): str,
         voluptuous.Required(
             "DASHBOARD_TO_ENGINE_API_KEY_PRE_ROTATION", default=None
         ): voluptuous.Any(None, str),
@@ -365,11 +369,6 @@ def load() -> dict[str, typing.Any]:
         val = os.getenv(f"MERGIFYENGINE_{key}")
         if val is not None:
             raw_config[key] = val
-
-    # DASHBOARD API KEYS are required only for Saas
-    if "SUBSCRIPTION_TOKEN" in raw_config:
-        for key in ("DASHBOARD_TO_ENGINE_API_KEY", "ENGINE_TO_DASHBOARD_API_KEY"):
-            raw_config[key] = secrets.token_hex(16)
 
     legacy_api_url = os.getenv("MERGIFYENGINE_GITHUB_API_URL")
     if legacy_api_url is not None:
