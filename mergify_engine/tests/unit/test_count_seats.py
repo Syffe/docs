@@ -15,8 +15,6 @@ from mergify_engine import redis_utils
 from mergify_engine import signals
 from mergify_engine import utils
 from mergify_engine.tests.unit import conftest
-from mergify_engine.web import redis
-from mergify_engine.web import root
 
 
 def test_seats_renamed_account_repo() -> None:
@@ -130,100 +128,99 @@ async def test_store_active_users(
 @freeze_time("2011-11-11")
 @pytest.mark.parametrize("event_type, event", list(GITHUB_SAMPLE_EVENTS.values()))
 async def test_get_usage_count_seats(
+    web_client: httpx.AsyncClient,
     event_type: str,
     event: github_types.GitHubEvent,
     redis_links: redis_utils.RedisLinks,
 ) -> None:
     await (count_seats.store_active_users(redis_links.active_users, event_type, event))
     charset = "utf8"
-    await redis.startup()
-    async with httpx.AsyncClient(base_url="http://whatever", app=root.app) as client:
-        data = b"a" * 123
-        headers = {
-            "Authorization": f"Bearer {config.DASHBOARD_TO_ENGINE_API_KEY}",
-            "Content-Type": f"application/json; charset={charset}",
+
+    data = b"a" * 123
+    headers = {
+        "Authorization": f"Bearer {config.DASHBOARD_TO_ENGINE_API_KEY}",
+        "Content-Type": f"application/json; charset={charset}",
+    }
+    reply = await web_client.request(
+        "GET", "/organization/1234/usage", content=data, headers=headers
+    )
+    assert reply.status_code == 200, reply.content
+    assert json.loads(reply.content) == {"repositories": [], "last_seen_at": None}
+
+    reply = await web_client.request(
+        "GET", "/organization/21031067/usage", content=data, headers=headers
+    )
+    assert reply.status_code == 200, reply.content
+    if event_type == "pull_request":
+        assert json.loads(reply.content) == {
+            "repositories": [
+                {
+                    "collaborators": {
+                        "active_users": [
+                            {"id": 21031067, "login": "Codertocat"},
+                            {"id": 12345678, "login": "AnotherUser"},
+                        ],
+                    },
+                    "id": 186853002,
+                    "name": "Hello-World",
+                }
+            ],
+            "last_seen_at": None,
         }
-        reply = await client.request(
-            "GET", "/organization/1234/usage", content=data, headers=headers
-        )
-        assert reply.status_code == 200, reply.content
-        assert json.loads(reply.content) == {"repositories": [], "last_seen_at": None}
+    elif event_type == "push":
+        assert json.loads(reply.content) == {
+            "repositories": [
+                {
+                    "collaborators": {
+                        "active_users": [
+                            {"id": 21031067, "login": "Codertocat"},
+                        ],
+                    },
+                    "id": 186853002,
+                    "name": "Hello-World",
+                }
+            ],
+            "last_seen_at": None,
+        }
 
-        reply = await client.request(
-            "GET", "/organization/21031067/usage", content=data, headers=headers
-        )
-        assert reply.status_code == 200, reply.content
-        if event_type == "pull_request":
-            assert json.loads(reply.content) == {
-                "repositories": [
-                    {
-                        "collaborators": {
-                            "active_users": [
-                                {"id": 21031067, "login": "Codertocat"},
-                                {"id": 12345678, "login": "AnotherUser"},
-                            ],
-                        },
-                        "id": 186853002,
-                        "name": "Hello-World",
-                    }
-                ],
-                "last_seen_at": None,
-            }
-        elif event_type == "push":
-            assert json.loads(reply.content) == {
-                "repositories": [
-                    {
-                        "collaborators": {
-                            "active_users": [
-                                {"id": 21031067, "login": "Codertocat"},
-                            ],
-                        },
-                        "id": 186853002,
-                        "name": "Hello-World",
-                    }
-                ],
-                "last_seen_at": None,
-            }
-
-        else:
-            assert json.loads(reply.content) == {
-                "repositories": [],
-                "last_seen_at": None,
-            }
+    else:
+        assert json.loads(reply.content) == {
+            "repositories": [],
+            "last_seen_at": None,
+        }
 
 
 @freeze_time("2011-11-11")
 async def test_get_usage_last_seen(
-    context_getter: conftest.ContextGetterFixture,
+    context_getter: conftest.ContextGetterFixture, web_client: httpx.AsyncClient
 ) -> None:
     ctxt = await context_getter(number=1)
-    await redis.startup()
+
     signals.register()
-    async with httpx.AsyncClient(base_url="http://whatever", app=root.app) as client:
-        data = b"a" * 123
-        headers = {
-            "X-Hub-Signature": f"sha1={utils.compute_hmac(data, config.WEBHOOK_SECRET)}",
-            "Content-Type": "application/json; charset=utf8",
-        }
-        reply = await client.request(
-            "GET", "/organization/0/usage", content=data, headers=headers
-        )
-        assert reply.status_code == 200, reply.content
-        assert json.loads(reply.content) == {"repositories": [], "last_seen_at": None}
+    data = b"a" * 123
+    headers = {
+        "X-Hub-Signature": f"sha1={utils.compute_hmac(data, config.WEBHOOK_SECRET)}",
+        "Content-Type": "application/json; charset=utf8",
+    }
+    reply = await web_client.request(
+        "GET", "/organization/0/usage", content=data, headers=headers
+    )
+    assert reply.status_code == 200, reply.content
+    assert json.loads(reply.content) == {"repositories": [], "last_seen_at": None}
 
-        await signals.send(
-            ctxt.repository,
-            ctxt.pull["number"],
-            "action.refresh",
-            signals.EventNoMetadata(),
-            "Rule: testing",
-        )
+    await signals.send(
+        ctxt.repository,
+        ctxt.pull["number"],
+        "action.refresh",
+        signals.EventNoMetadata(),
+        "Rule: testing",
+    )
 
-        reply = await client.request(
-            "GET", "/organization/0/usage", content=data, headers=headers
-        )
-        assert reply.status_code == 200, reply.content
-        assert json.loads(reply.content) == {
-            "repositories": [],
-            "last_seen_at": "2011-11-11T00:00:00+00:00",
-        }
+    reply = await web_client.request(
+        "GET", "/organization/0/usage", content=data, headers=headers
+    )
+    assert reply.status_code == 200, reply.content
+    assert json.loads(reply.content) == {
+        "repositories": [],
+        "last_seen_at": "2011-11-11T00:00:00+00:00",
+    }

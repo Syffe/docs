@@ -8,8 +8,11 @@ import re
 import typing
 from unittest import mock
 
+import asgi_lifespan
+import fastapi
 import freezegun
 import freezegun.api
+import httpx
 import msgpack
 import pytest
 import respx
@@ -18,6 +21,7 @@ from mergify_engine import config
 from mergify_engine import logs
 from mergify_engine import redis_utils
 from mergify_engine.clients import github
+from mergify_engine.web import root as web_root
 
 
 # for jwt generation
@@ -187,3 +191,18 @@ async def github_server(
             200, json={"token": "<app_token>", "expires_at": "2100-12-31T23:59:59Z"}
         )
         yield respx_mock
+
+
+@pytest.fixture
+async def web_server() -> abc.AsyncGenerator[fastapi.FastAPI, None]:
+    app = web_root.create_app()
+    async with asgi_lifespan.LifespanManager(app):
+        yield app
+
+
+@pytest.fixture
+async def web_client(
+    web_server: fastapi.FastAPI,
+) -> abc.AsyncGenerator[httpx.AsyncClient, None]:
+    async with httpx.AsyncClient(app=web_server, base_url="http://localhost") as client:
+        yield client

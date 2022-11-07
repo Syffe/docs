@@ -41,7 +41,6 @@ from mergify_engine.dashboard import subscription
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import statistics as queue_statistics
 from mergify_engine.tests.functional import conftest as func_conftest
-from mergify_engine.web import root
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -551,7 +550,6 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
                 await self.edit_pull(pull["number"], state="closed")
 
         await self.app.aclose()
-        await root.shutdown()
 
         await self._event_reader.aclose()
         await self.redis_links.flushall()

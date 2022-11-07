@@ -2,13 +2,12 @@ import json
 import os
 from unittest import mock
 
+import httpx
 import pytest
-from starlette import testclient
 
 from mergify_engine import config
 from mergify_engine import github_types
 from mergify_engine import utils
-from mergify_engine.web import root
 
 
 with open(os.path.join(os.path.dirname(__file__), "events", "push.json")) as f:
@@ -28,7 +27,7 @@ with open(os.path.join(os.path.dirname(__file__), "events", "pull_request.json")
                 },
                 "event_type": "foobar",
             },
-            None,
+            "foobar",
             200,
             b"Event ignored: unexpected event_type",
         ),
@@ -50,42 +49,34 @@ with open(os.path.join(os.path.dirname(__file__), "events", "pull_request.json")
     "mergify_engine.config.WEBHOOK_SECRET_PRE_ROTATION",
     new_callable=mock.PropertyMock(return_value="secret!!"),
 )
-def test_push_event(
+async def test_push_event(
     _: mock.PropertyMock,
     event: github_types.GitHubEvent,
     event_type: str,
     status_code: int,
     reason: bytes,
+    web_client: httpx.AsyncClient,
 ) -> None:
-    with testclient.TestClient(root.app) as client:
-        charset = "utf-8"
-        data = json.dumps(event).encode(charset)
-        headers = {
-            "X-Hub-Signature": f"sha1={utils.compute_hmac(data, config.WEBHOOK_SECRET)}",
-            "X-GitHub-Event": event_type,
-            "Content-Type": f"application/json; charset={charset}",
-        }
-        reply = client.post(
-            "/event",
-            data=data,
-            headers=headers,
-        )
-        assert reply.content == reason
-        assert reply.status_code == status_code
+    charset = "utf-8"
+    data = json.dumps(event).encode(charset)
+    headers = {
+        "X-Hub-Signature": f"sha1={utils.compute_hmac(data, config.WEBHOOK_SECRET)}",
+        "X-GitHub-Event": event_type,
+        "Content-Type": f"application/json; charset={charset}",
+    }
+    reply = await web_client.post("/event", content=data, headers=headers)
+    assert reply.content == reason
+    assert reply.status_code == status_code
 
-        # Same with WEBHOOK_SECRET_PRE_ROTATION for key rotation
-        assert config.WEBHOOK_SECRET_PRE_ROTATION is not None
-        charset = "utf-8"
-        data = json.dumps(event).encode(charset)
-        headers = {
-            "X-Hub-Signature": f"sha1={utils.compute_hmac(data, config.WEBHOOK_SECRET_PRE_ROTATION)}",
-            "X-GitHub-Event": event_type,
-            "Content-Type": f"application/json; charset={charset}",
-        }
-        reply = client.post(
-            "/event",
-            data=data,
-            headers=headers,
-        )
-        assert reply.content == reason
-        assert reply.status_code == status_code
+    # Same with WEBHOOK_SECRET_PRE_ROTATION for key rotation
+    assert config.WEBHOOK_SECRET_PRE_ROTATION is not None
+    charset = "utf-8"
+    data = json.dumps(event).encode(charset)
+    headers = {
+        "X-Hub-Signature": f"sha1={utils.compute_hmac(data, config.WEBHOOK_SECRET_PRE_ROTATION)}",
+        "X-GitHub-Event": event_type,
+        "Content-Type": f"application/json; charset={charset}",
+    }
+    reply = await web_client.post("/event", content=data, headers=headers)
+    assert reply.content == reason
+    assert reply.status_code == status_code

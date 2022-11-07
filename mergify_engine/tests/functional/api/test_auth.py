@@ -7,7 +7,6 @@ from mergify_engine import config
 from mergify_engine import github_types
 from mergify_engine.clients import github
 from mergify_engine.tests.functional import conftest as func_conftest
-from mergify_engine.web import root as web_root
 from mergify_engine.web.api import security
 
 
@@ -16,8 +15,8 @@ class ResponseTest:
     user_login: github_types.GitHubLogin
 
 
-@pytest.fixture(scope="module", autouse=True)
-def create_testing_router() -> None:
+@pytest.fixture(autouse=True)
+def create_testing_router(web_server: fastapi.FastAPI) -> None:
     router = fastapi.APIRouter()
 
     @router.get("/testing-endpoint-with-explicit-dep", response_model=ResponseTest)
@@ -45,7 +44,7 @@ def create_testing_router() -> None:
 
     api_app = [
         r
-        for r in web_root.app.router.routes
+        for r in web_server.router.routes
         if r.path == "/v1"  # type:ignore[attr-defined]
     ][0].app
     api_app.include_router(router)

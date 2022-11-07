@@ -13,40 +13,39 @@ from mergify_engine.web.api import root as api_root
 
 LOG = daiquiri.getLogger(__name__)
 
-app = fastapi.FastAPI(openapi_url=None, redoc_url=None, docs_url=None)
 
-# For backward compatibility until we migrate the dashboard side
-app.include_router(subscriptions.router)
+def create_app() -> fastapi.FastAPI:
+    app = fastapi.FastAPI(openapi_url=None, redoc_url=None, docs_url=None)
+    app.include_router(subscriptions.router)
 
-# /event can't be moved without breaking on-premise installation
-app.include_router(github_webhook.router)
+    # /event can't be moved without breaking on-premise installation
+    app.include_router(github_webhook.router)
 
-app.include_router(subscriptions.router, prefix="/subscriptions")
-app.include_router(refresher.router, prefix="/refresh")
-app.include_router(legacy_badges.router, prefix="/badges")
+    app.include_router(subscriptions.router, prefix="/subscriptions")
+    app.include_router(refresher.router, prefix="/refresh")
+    app.include_router(legacy_badges.router, prefix="/badges")
 
-app.mount("/v1", api_root.create_app())
+    app.mount("/v1", api_root.create_app())
 
-utils.setup_exception_handlers(app)
+    utils.setup_exception_handlers(app)
 
+    @app.on_event("startup")
+    async def startup() -> None:
+        await redis.startup()
 
-@app.on_event("startup")
-async def startup() -> None:
-    await redis.startup()
+    @app.on_event("shutdown")
+    async def shutdown() -> None:
+        await redis.shutdown()
 
+    @app.get("/")
+    async def index(
+        setup_action: str | None = None,
+    ) -> responses.Response:  # pragma: no cover
+        if setup_action:
+            return responses.Response(
+                "Your Mergify installation succeeded.",
+                status_code=200,
+            )
+        return responses.JSONResponse({})
 
-@app.on_event("shutdown")
-async def shutdown() -> None:
-    await redis.shutdown()
-
-
-@app.get("/")
-async def index(
-    setup_action: str | None = None,
-) -> responses.Response:  # pragma: no cover
-    if setup_action:
-        return responses.Response(
-            "Your Mergify installation succeeded.",
-            status_code=200,
-        )
-    return responses.JSONResponse({})
+    return app

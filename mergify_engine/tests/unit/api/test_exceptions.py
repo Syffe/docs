@@ -7,11 +7,10 @@ import pytest
 from mergify_engine import exceptions
 from mergify_engine import pagination
 from mergify_engine.tests.functional.api import test_auth
-from mergify_engine.web import root as web_root
 
 
-@pytest.fixture(scope="module", autouse=True)
-def create_testing_router() -> None:
+@pytest.fixture(autouse=True)
+def create_testing_router(web_server: fastapi.FastAPI) -> None:
     router = fastapi.APIRouter()
 
     @router.get(
@@ -39,11 +38,11 @@ def create_testing_router() -> None:
 
     api_app = [
         r
-        for r in web_root.app.router.routes
-        if r.path == "/v1"  # type:ignore[attr-defined]
+        for r in web_server.router.routes
+        if r.path == "/v1"  # type: ignore[attr-defined]
     ][0].app
     api_app.include_router(router)
-    web_root.app.include_router(router)
+    web_server.include_router(router)
 
 
 async def test_handler_exception_rate_limited(

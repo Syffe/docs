@@ -1,5 +1,4 @@
 import asyncio
-from collections import abc
 import datetime
 import json
 import os
@@ -21,7 +20,6 @@ from mergify_engine.clients import github_app
 from mergify_engine.dashboard import application as application_mod
 from mergify_engine.dashboard import subscription
 from mergify_engine.dashboard import user_tokens as user_tokens_mod
-from mergify_engine.web import root as web_root
 
 
 RECORD = bool(os.getenv("MERGIFYENGINE_RECORD", False))
@@ -38,17 +36,6 @@ class RecordConfigType(typing.TypedDict):
     repository_id: github_types.GitHubRepositoryIdType
     repository_name: github_types.GitHubRepositoryName
     branch_prefix: str
-
-
-@pytest.fixture
-async def web_client() -> abc.AsyncGenerator[httpx.AsyncClient, None]:
-    await web_root.startup()
-    client = httpx.AsyncClient(app=web_root.app, base_url="http://localhost")
-    try:
-        yield client
-    finally:
-        await client.aclose()
-        await web_root.shutdown()
 
 
 class DashboardFixture(typing.NamedTuple):

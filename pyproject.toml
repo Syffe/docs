@@ -78,6 +78,7 @@ flake8-pep585 = "^0.1.6"
 flake8-new-union-types = "^0.4.1"
 pytest-xdist = "^2.5.0"
 yesqa = "^1.4.0"
+asgi-lifespan = "^1.0.1"
 
 [tool.poetry.scripts]
   mergify-refresher = "mergify_engine.web_cli:refresher"
@@ -165,6 +166,7 @@ module = [
        "bs4.*",
        "graphql_utils",
        "markdownify",
+       "asgi_lifespan",
 ]
 ignore_missing_imports = true
 
