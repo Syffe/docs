@@ -950,6 +950,7 @@
           }
         },
         "References": [
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3534",
           "https://git.kernel.org/pub/scm/linux/kernel/git/bpf/bpf-next.git/commit/?id=93c660ca40b5d2f7c1b1626e955a8e9fa30e0749",
           "https://vuldb.com/?id.211032"
         ],
@@ -1059,6 +1060,7 @@
           }
         },
         "References": [
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3606",
           "https://git.kernel.org/pub/scm/linux/kernel/git/bpf/bpf-next.git/commit/?id=d0d382f95a9270dcf803539d6781d6bd67e3f5b2",
           "https://vuldb.com/?id.211749"
         ],
@@ -3842,6 +3844,7 @@
           "https://security.gentoo.org/glsa/202210-40",
           "https://security.netapp.com/advisory/ntap-20220915-0009/",
           "https://sqlite.org/releaselog/3_39_2.html",
+          "https://ubuntu.com/security/notices/USN-5712-1",
           "https://www.sqlite.org/cves.html"
         ],
         "PublishedDate": "2022-08-03T06:15:00Z"
@@ -3922,16 +3925,18 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:5818",
+          "https://access.redhat.com/errata/RHSA-2022:6224",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1292.json",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-2068.json",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-2097.json",
           "https://access.redhat.com/security/cve/CVE-2022-2097",
           "https://bugzilla.redhat.com/2081494",
+          "https://bugzilla.redhat.com/2087911",
+          "https://bugzilla.redhat.com/2087913",
           "https://bugzilla.redhat.com/2097310",
           "https://bugzilla.redhat.com/2104905",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-2097",
-          "https://errata.almalinux.org/8/ALSA-2022-5818.html",
+          "https://errata.almalinux.org/9/ALSA-2022-6224.html",
           "https://git.openssl.org/gitweb/?p=openssl.git;a=commitdiff;h=919925673d6c9cfed3c1085497f5dfbbed5fc431",
           "https://git.openssl.org/gitweb/?p=openssl.git;a=commitdiff;h=a98f339ddd7e8f487d6e0088d4a9a42324885a93",
           "https://github.com/advisories/GHSA-3wx7-46ch-7rq2",
@@ -4120,7 +4125,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "GNU Libtasn1 before 4.19.0 has an ETYPE_OK off-by-one array size check ...",
+        "Title": "libtasn1: Out-of-bound access in ETYPE_OK",
         "Description": "GNU Libtasn1 before 4.19.0 has an ETYPE_OK off-by-one array size check that affects asn1_encode_simple_der.",
         "Severity": "CRITICAL",
         "CweIDs": [
@@ -4130,9 +4135,14 @@
           "nvd": {
             "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:H",
             "V3Score": 9.1
+          },
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:H",
+            "V3Score": 7.4
           }
         },
         "References": [
+          "https://access.redhat.com/security/cve/CVE-2021-46848",
           "https://bugs.gentoo.org/866237",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-46848",
           "https://gitlab.com/gnutls/libtasn1/-/commit/44a700d2051a666235748970c2df047ff207aeb5",
