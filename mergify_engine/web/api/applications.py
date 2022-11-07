@@ -50,7 +50,7 @@ router = fastapi.APIRouter(
     },
 )
 async def application(
-    application: application_mod.Application = fastapi.Depends(  # noqa: B008
+    application: application_mod.Application = fastapi.Security(  # noqa: B008
         security.get_application
     ),
 ) -> ApplicationResponse:

@@ -24,7 +24,7 @@ LOG = daiquiri.getLogger(__name__)
 router = fastapi.APIRouter(
     tags=["queues"],
     dependencies=[
-        fastapi.Depends(security.require_authentication),
+        fastapi.Security(security.require_authentication),
     ],
 )
 
@@ -414,7 +414,7 @@ async def repository_queues_configuration(
 )
 async def create_queue_freeze(
     queue_freeze_payload: QueueFreezePayload,
-    application: application_mod.Application = fastapi.Depends(  # noqa: B008
+    application: application_mod.Application = fastapi.Security(  # noqa: B008
         security.get_application
     ),
     queue_name: rules.QueueName = fastapi.Path(  # noqa: B008
@@ -483,7 +483,7 @@ async def create_queue_freeze(
     },
 )
 async def delete_queue_freeze(
-    application: application_mod.Application = fastapi.Depends(  # noqa: B008
+    application: application_mod.Application = fastapi.Security(  # noqa: B008
         security.get_application
     ),
     queue_name: rules.QueueName = fastapi.Path(  # noqa: B008

@@ -19,7 +19,7 @@ LOG = daiquiri.getLogger(__name__)
 router = fastapi.APIRouter(
     tags=["simulator"],
     dependencies=[
-        fastapi.Depends(security.require_authentication),
+        fastapi.Security(security.require_authentication),
     ],
 )
 

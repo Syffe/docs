@@ -21,49 +21,64 @@ LOG = daiquiri.getLogger(__name__)
 
 ScopeT = typing.NewType("ScopeT", str)
 
-security = fastapi.security.http.HTTPBearer()
 
+class ApplicationAuth(fastapi.security.http.HTTPBearer):
+    async def __call__(  # type: ignore[override]
+        self,
+        request: fastapi.Request,
+        redis_links: redis_utils.RedisLinks = fastapi.Depends(  # noqa: B008
+            redis.get_redis_links
+        ),
+    ) -> application_mod.Application | None:
 
-async def get_application(
-    request: fastapi.Request,
-    credentials: fastapi.security.HTTPAuthorizationCredentials = fastapi.Security(  # noqa: B008
-        security
-    ),
-    redis_links: redis_utils.RedisLinks = fastapi.Depends(  # noqa: B008
-        redis.get_redis_links
-    ),
-) -> application_mod.Application:
+        credentials = await super().__call__(request)
+        if credentials is None:
+            if self.auto_error:
+                # Not really possible it has been raised earlier but I please mypy
+                raise fastapi.HTTPException(status_code=403)
+            else:
+                return None
 
-    scope: github_types.GitHubLogin | None = request.path_params.get("owner")
-    api_access_key = credentials.credentials[: config.API_ACCESS_KEY_LEN]
-    api_secret_key = credentials.credentials[config.API_ACCESS_KEY_LEN :]
-    try:
-        app = await application_mod.Application.get(
-            redis_links.cache, api_access_key, api_secret_key, scope
+        scope: github_types.GitHubLogin | None = request.path_params.get("owner")
+        api_access_key = credentials.credentials[: config.API_ACCESS_KEY_LEN]
+        api_secret_key = credentials.credentials[config.API_ACCESS_KEY_LEN :]
+        try:
+            app = await application_mod.Application.get(
+                redis_links.cache, api_access_key, api_secret_key, scope
+            )
+        except application_mod.ApplicationUserNotFound:
+            if self.auto_error:
+                raise fastapi.HTTPException(status_code=403)
+            else:
+                return None
+
+        # Seatbelt
+        current_scope = (
+            None if app.account_scope is None else app.account_scope["login"]
         )
-    except application_mod.ApplicationUserNotFound:
-        raise fastapi.HTTPException(status_code=403)
-
-    # Seatbelt
-    current_scope = None if app.account_scope is None else app.account_scope["login"]
-    if scope is not None and (
-        current_scope is None or current_scope.lower() != scope.lower()
-    ):
-        LOG.error(
-            "got application with wrong scope",
-            expected_scope=scope,
-            current_scope=current_scope,
-        )
-        raise fastapi.HTTPException(status_code=403)
-    return app
+        if scope is not None and (
+            current_scope is None or current_scope.lower() != scope.lower()
+        ):
+            LOG.error(
+                "got application with wrong scope",
+                expected_scope=scope,
+                current_scope=current_scope,
+            )
+            if self.auto_error:
+                raise fastapi.HTTPException(status_code=403)
+            else:
+                return None
+        return app
 
 
-# Just an alias to help readability of fastapi.Depends
+get_application = ApplicationAuth()
+
+# Just an alias to help readability of fastapi.Security
 require_authentication = get_application
 
 
 async def get_installation(
-    application: application_mod.Application = fastapi.Depends(  # noqa: B008
+    application: application_mod.Application = fastapi.Security(  # noqa: B008
         get_application
     ),
 ) -> github_types.GitHubInstallation:

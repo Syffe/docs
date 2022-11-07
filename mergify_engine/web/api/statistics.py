@@ -14,7 +14,7 @@ from mergify_engine.web.api import security
 router = fastapi.APIRouter(
     tags=["statistics"],
     dependencies=[
-        fastapi.Depends(security.require_authentication),
+        fastapi.Security(security.require_authentication),
     ],
     include_in_schema=False,
 )
