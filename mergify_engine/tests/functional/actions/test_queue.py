@@ -1173,31 +1173,28 @@ class TestQueueAction(base.FunctionalTestBase):
         # To force others to be rebased
         p = await self.create_pr()
         await self.merge_pull(p["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
+        p_closed = await self.wait_for_pull_request("closed", pr_number=p["number"])
         await self.run_engine()
-        p = await self.get_pull(p["number"])
+
         await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")
         await self.add_label(p3["number"], "queue")
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 4
-
         tmp_pull_1 = await self.wait_for_pull_request("opened")
         await self.run_full_engine()
 
-        ctxt = context.Context(self.repository_ctxt, p)
+        ctxt = context.Context(self.repository_ctxt, p_closed["pull_request"])
         q = await merge_train.Train.from_context(ctxt)
-        assert p["merge_commit_sha"] is not None
+        assert p_closed["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
-            p["merge_commit_sha"],
+            p_closed["pull_request"]["merge_commit_sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p1["number"], p2["number"], p3["number"]],
                     [],
-                    p["merge_commit_sha"],
+                    p_closed["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_pull_1["number"],
                 ),
@@ -1208,17 +1205,18 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
         await self.wait_for("pull_request", {"action": "closed"})
         await self.run_engine()
+
         tmp_pull_2 = await self.wait_for_pull_request("opened")
-        ctxt = context.Context(self.repository_ctxt, p)
+        ctxt = context.Context(self.repository_ctxt, p_closed["pull_request"])
         q = await merge_train.Train.from_context(ctxt)
         await self.assert_merge_queue_contents(
             q,
-            p["merge_commit_sha"],
+            p_closed["pull_request"]["merge_commit_sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p2["number"], p3["number"]],
                     [],
-                    p["merge_commit_sha"],
+                    p_closed["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_pull_2["number"],
                 ),
@@ -5777,3 +5775,80 @@ pull_requests:
             "Details: `The pull request conflicts with at least one pull request ahead in queue: "
             f"#{p1['number']}, #{p2['number']}`"
         )
+
+    async def test_train_car_state_waiting_for_schedule_after_pr_ahead_dequeued(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "schedule=MON-FRI 08:00-17:00[UTC]",
+                    ],
+                    "speculative_checks": 1,
+                    "allow_inplace_checks": True,
+                    "batch_size": 3,
+                    "batch_max_wait_time": "0 s",
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                },
+            ],
+        }
+        # Friday, 18:00 UTC
+        start_date = datetime.datetime(2022, 11, 4, 18, tzinfo=datetime.timezone.utc)
+
+        with freeze_time(start_date, tick=True):
+            await self.setup_repo(yaml.dump(rules))
+
+            p1 = await self.create_pr()
+            p2 = await self.create_pr(two_commits=True)
+            p3 = await self.create_pr()
+
+            # To force others to be rebased
+            p = await self.create_pr()
+            await self.merge_pull(p["number"])
+            p_closed = await self.wait_for_pull_request("closed", pr_number=p["number"])
+            await self.run_engine()
+
+            await self.add_label(p1["number"], "queue")
+            await self.add_label(p2["number"], "queue")
+            await self.add_label(p3["number"], "queue")
+            await self.run_engine()
+
+            tmp_pull_1 = await self.wait_for_pull_request("opened")
+            await self.run_full_engine()
+
+            ctxt = context.Context(self.repository_ctxt, p_closed["pull_request"])
+            q = await merge_train.Train.from_context(ctxt)
+            assert p_closed["pull_request"]["merge_commit_sha"] is not None
+            await self.assert_merge_queue_contents(
+                q,
+                p_closed["pull_request"]["merge_commit_sha"],
+                [
+                    base.MergeQueueCarMatcher(
+                        [p1["number"], p2["number"], p3["number"]],
+                        [],
+                        p_closed["pull_request"]["merge_commit_sha"],
+                        merge_train.TrainCarChecksType.DRAFT,
+                        tmp_pull_1["number"],
+                    ),
+                ],
+            )
+
+            await self.remove_label(p1["number"], "queue")
+            await self.run_engine()
+            await self.wait_for("pull_request", {"action": "closed"})
+
+            # If the seconds_waiting_for_schedule computation failed, the new pull
+            # request with the sliced car will not be opened
+            await self.run_engine()
+            await self.wait_for_pull_request("opened")

@@ -449,6 +449,13 @@ class TrainCarState:
 
     @property
     def seconds_waiting_for_schedule(self) -> int:
+        if len(self.waiting_for_schedule_start_dates) - 1 == len(
+            self.waiting_for_schedule_end_dates
+        ):
+            # In this case, that means a PR has been unexpectedly unqueued
+            # and the train car did not have time to receive an `update_state`.
+            self.waiting_for_schedule_end_dates.append(date.utcnow())
+
         return self._compute_seconds_waiting_from_lists(
             self.waiting_for_schedule_start_dates,
             self.waiting_for_schedule_end_dates,
