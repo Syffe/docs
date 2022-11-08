@@ -267,9 +267,6 @@ jobs:
           \`\`\`
           EOF
           SLACK_MESSAGE=$(cat slack_message)
-          SLACK_MESSAGE="${SLACK_MESSAGE//'%'/'%25'}"
-          SLACK_MESSAGE="${SLACK_MESSAGE//$'\n'/'%0A'}"
-          SLACK_MESSAGE="${SLACK_MESSAGE//$'\r'/'%0D'}"
           echo "slack_message=$SLACK_MESSAGE" >> "$GITHUB_OUTPUT"
 
       - name: Report Status
