@@ -1,24 +1,15 @@
 #!/bin/bash
 
+set -e
+set -o pipefail
 
 echo "Starting Mergify Enterprise"
 echo "MERGIFYENGINE_VERSION=$MERGIFYENGINE_VERSION"
 echo "MERGIFYENGINE_SHA=$MERGIFYENGINE_SHA"
 
-get_command() {
-    sed -n -e "s/^$1://p" Procfile
-}
-
-MODE="${1:-aio}"
-
 if [ "$MERGIFYENGINE_INTEGRATION_ID" ]; then
   cd /onpremise
-  case "${MODE}" in
-      # nosemgrep: bash.lang.correctness.unquoted-expansion.unquoted-command-substitution-in-command
-      web|worker) exec $(get_command "$1");;
-      aio) exec honcho start;;
-      *) echo "usage: $0 (web|worker|aio)";;
-  esac
+  exec honcho start
 elif [ "$MERGIFYENGINE_INSTALLER" ]; then
   cd /installer
   exec honcho start
