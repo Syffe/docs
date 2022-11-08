@@ -271,7 +271,7 @@ jobs:
           # Replace newline with explicit \n
           SLACK_TEXT_MESSAGE=$(echo "$SLACK_TEXT_MESSAGE" | awk '{printf "%s\\n", $0}')
 
-          cat > "$RUNNER_TEMP/slack_message_payload_${{ steps.fetch-check-run.outputs.job_id }}" <<EOF
+          cat > "${{ runner.temp }}/slack_message_payload_${{ steps.fetch-check-run.outputs.job_id }}" <<EOF
           {
             "blocks": [
               {
@@ -298,7 +298,8 @@ jobs:
         if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: slackapi/slack-github-action@v1.23.0
         with:
-          payload-file-path: "$RUNNER_TEMP/slack_message_payload_${{ steps.fetch-check-run.outputs.job_id }}"
+          # yamllint disable-line rule:line-length
+          payload-file-path: "${{ runner.temp }}/slack_message_payload_${{ steps.fetch-check-run.outputs.job_id }}"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
