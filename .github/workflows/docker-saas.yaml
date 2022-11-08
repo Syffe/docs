@@ -95,19 +95,19 @@ jobs:
         id: vars
         run: |
           HEROKU_ENVIRONMENT="mergify-engine"
-          echo "::set-output name=HEROKU_ENVIRONMENT::${HEROKU_ENVIRONMENT}"
+          echo "HEROKU_ENVIRONMENT=${HEROKU_ENVIRONMENT}" >> "$GITHUB_OUTPUT"
 
           VERSION="${{ github.ref_name }}"
-          echo "::set-output name=VERSION::${VERSION}"
+          echo "VERSION=${VERSION}" >> "$GITHUB_OUTPUT"
 
           SHA="$(/usr/bin/git log -1 --format='%H')"
-          echo "::set-output name=SHA::${SHA}"
+          echo "SHA=${SHA}" >> "$GITHUB_OUTPUT"
 
           PYTHON_VERSION="$(cut -d- -f2 runtime.txt)"
-          echo "::set-output name=PYTHON_VERSION::${PYTHON_VERSION}"
+          echo "PYTHON_VERSION=${PYTHON_VERSION}" >> "$GITHUB_OUTPUT"
 
           BUILD_DATE="$(date '+%Y-%m-%d')"
-          echo "::set-output name=BUILD_DATE::${BUILD_DATE}"
+          echo "BUILD_DATE=${BUILD_DATE}" >> "$GITHUB_OUTPUT"
 
           cat \
             dockerfiles/Dockerfile.common \
@@ -270,7 +270,7 @@ jobs:
           SLACK_MESSAGE="${SLACK_MESSAGE//'%'/'%25'}"
           SLACK_MESSAGE="${SLACK_MESSAGE//$'\n'/'%0A'}"
           SLACK_MESSAGE="${SLACK_MESSAGE//$'\r'/'%0D'}"
-          echo "::set-output name=slack_message::$SLACK_MESSAGE"
+          echo "slack_message=$SLACK_MESSAGE" >> "$GITHUB_OUTPUT"
 
       - name: Report Status
         if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'

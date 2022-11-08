@@ -52,7 +52,7 @@ jobs:
           echo "✂┅┅┅"
 
           git tag "${VERSION}"
-          echo "::set-output name=VERSION::$VERSION"
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Push git tag 🏎️
         if: ${{ !github.event.inputs.dry_run }}

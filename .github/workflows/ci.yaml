@@ -151,5 +151,5 @@ jobs:
           path: docs/build
 
       # yamllint disable-line rule:line-length
-      - run: echo "::set-output name=docs::https://docs-preview.mergify.com/${{ github.event.pull_request.number }}/docs"
+      - run: echo "docs=https://docs-preview.mergify.com/${{ github.event.pull_request.number }}/docs" >> "$GITHUB_OUTPUT"
         shell: bash

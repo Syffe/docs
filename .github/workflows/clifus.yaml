@@ -21,7 +21,7 @@ jobs:
         id: clifus
         run: |
           python clifus.py -c ./.github/clifus.yml -s python-version
-          echo "::set-output name=PYTHON_VERSION::$(cut -d- -f2 < runtime.txt)"
+          echo "PYTHON_VERSION=$(cut -d- -f2 < runtime.txt)" >> "$GITHUB_OUTPUT"
           rm clifus.py
 
       - name: Create the Pull Request
@@ -57,7 +57,7 @@ jobs:
         id: clifus
         run: |
           python clifus.py -c ./.github/clifus.yml -s datadog-agent-version
-          echo "::set-output name=DD_AGENT_VERSION::$(cat datadog/agent-version.txt)"
+          echo "DD_AGENT_VERSION=$(cat datadog/agent-version.txt)" >> "$GITHUB_OUTPUT"
           rm clifus.py
 
       - name: Create the Pull Request
