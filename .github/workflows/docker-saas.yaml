@@ -259,7 +259,7 @@ jobs:
             emoji="💥"
           fi
 
-          SLACK_MESSAGE=$(cat <<EOF
+          SLACK_TEXT_MESSAGE=$(cat <<EOF
           *Deployment (${{ steps.fetch-check-run.outputs.job_id }}) of mergify-engine finished ${emoji}*
           Conclusion: ${{ job.status }}
           \`\`\`
@@ -267,39 +267,38 @@ jobs:
           \`\`\`
           EOF
           )
+
+          # Replace newline with explicit \n
+          SLACK_TEXT_MESSAGE=$(echo "$SLACK_TEXT_MESSAGE" | awk '{printf "%s\\n", $0}')
+
+          cat > "$RUNNER_TEMP/slack_message_payload_${{ steps.fetch-check-run.outputs.job_id }}" <<EOF
           {
-            echo "slack_message=<<EOF"
-            echo "$SLACK_MESSAGE"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "$SLACK_TEXT_MESSAGE",
+                },
+                "accessory": {
+                  "type": "button",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "Job log",
+                    "emoji": true
+                  },
+                  "url": "${{ steps.fetch-check-run.outputs.job_url }}"
+                }
+              }
+            ]
+          }
+          EOF
 
       - name: Report Status
         if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: slackapi/slack-github-action@v1.23.0
         with:
-          # yamllint disable rule:line-length
-          payload: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": ${{ toJSON(steps.report-status.outputs.slack_message) }}
-                  },
-                  "accessory": {
-                    "type": "button",
-                    "text": {
-                      "type": "plain_text",
-                      "text": "Job log",
-                      "emoji": true
-                    },
-                    "url": "${{ steps.fetch-check-run.outputs.job_url }}"
-                  }
-                }
-              ]
-            }
-          # yamllint enable rule:line-length
+          payload-file-path: "$RUNNER_TEMP/slack_message_payload_${{ steps.fetch-check-run.outputs.job_id }}"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
