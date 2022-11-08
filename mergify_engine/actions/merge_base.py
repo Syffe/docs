@@ -7,7 +7,9 @@ from mergify_engine import check_api
 from mergify_engine import config
 from mergify_engine import context
 from mergify_engine import github_types
+from mergify_engine import refresher
 from mergify_engine import rules
+from mergify_engine import worker_pusher
 from mergify_engine.clients import http
 from mergify_engine.dashboard import user_tokens
 
@@ -35,6 +37,16 @@ class MergeBaseAction(
         queue_freeze: QueueFreezeT | None,
     ) -> check_api.Result:
         pass
+
+    async def _refresh_for_retry(self, ctxt: context.Context) -> None:
+        await refresher.send_pull_refresh(
+            ctxt.repository.installation.redis.stream,
+            ctxt.pull["base"]["repo"],
+            pull_request_number=ctxt.pull["number"],
+            action="internal",
+            source="merge failed and need to be retried",
+            priority=worker_pusher.Priority.immediate,
+        )
 
     async def _merge(
         self,
@@ -86,6 +98,7 @@ class MergeBaseAction(
                         status_code=e.status_code,
                         error_message=e.message,
                     )
+                    await self._refresh_for_retry(ctxt)
                     return await self.get_queue_status(ctxt, rule, queue, queue_freeze)
 
                 await ctxt.update()
@@ -174,6 +187,7 @@ class MergeBaseAction(
                 status_code=e.status_code,
                 error_message=e.message,
             )
+            await self._refresh_for_retry(ctxt)
             return await self.get_queue_status(ctxt, rule, queue, queue_freeze)
         elif "Base branch was modified" in e.message:
             # NOTE(sileht): The base branch was modified between pull.is_behind call and
@@ -184,6 +198,7 @@ class MergeBaseAction(
                 status_code=e.status_code,
                 error_message=e.message,
             )
+            await self._refresh_for_retry(ctxt)
             return await self.get_queue_status(ctxt, rule, queue, queue_freeze)
 
         elif e.status_code == 405:
@@ -201,6 +216,7 @@ class MergeBaseAction(
                         status_code=e.status_code,
                         error_message=e.message,
                     )
+                    await self._refresh_for_retry(ctxt)
                     return await self.get_queue_status(ctxt, rule, queue, queue_freeze)
 
                 ctxt.log.info(
