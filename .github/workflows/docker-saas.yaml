@@ -259,15 +259,19 @@ jobs:
             emoji="💥"
           fi
 
-          cat > slack_message <<EOF
+          SLACK_MESSAGE=$(cat <<EOF
           *Deployment (${{ steps.fetch-check-run.outputs.job_id }}) of mergify-engine finished ${emoji}*
           Conclusion: ${{ job.status }}
           \`\`\`
           $(git log -1)
           \`\`\`
           EOF
-          SLACK_MESSAGE=$(cat slack_message)
-          echo "slack_message=$SLACK_MESSAGE" >> "$GITHUB_OUTPUT"
+          )
+          {
+            echo "slack_message=<<EOF"
+            echo "$SLACK_MESSAGE"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Report Status
         if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
