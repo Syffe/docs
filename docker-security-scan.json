@@ -3819,7 +3819,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "sqlite: assertion failure via query when compiled with -DSQLITE_ENABLE_STAT4",
+        "Title": "sqlite: an array-bounds overflow if billions of bytes are used in a string argument to a C API",
         "Description": "SQLite 1.0.12 through 3.39.x before 3.39.2 sometimes allows an array-bounds overflow if billions of bytes are used in a string argument to a C API.",
         "Severity": "LOW",
         "CweIDs": [
@@ -3831,8 +3831,8 @@
             "V3Score": 7.5
           },
           "redhat": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:N",
-            "V3Score": 6.8
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 7.5
           }
         },
         "References": [
@@ -3845,6 +3845,7 @@
           "https://security.netapp.com/advisory/ntap-20220915-0009/",
           "https://sqlite.org/releaselog/3_39_2.html",
           "https://ubuntu.com/security/notices/USN-5712-1",
+          "https://ubuntu.com/security/notices/USN-5716-1",
           "https://www.sqlite.org/cves.html"
         ],
         "PublishedDate": "2022-08-03T06:15:00Z"
@@ -4137,8 +4138,8 @@
             "V3Score": 9.1
           },
           "redhat": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:H",
-            "V3Score": 7.4
+            "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 5.9
           }
         },
         "References": [
