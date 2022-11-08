@@ -94,6 +94,9 @@ const StepCreateGitHubApp = function StepCreateGitHubApp() {
       hook_attributes: {
         url: `${window.location.origin}/event`,
       },
+      callback_urls: [
+        `${window.location.origin}/auth/callback`,
+      ],
       redirect_url: window.location.origin,
       setup_url: window.location.origin,
       // avatar: 'https://raw.githubusercontent.com/Mergifyio/mergify-engine/master/docs/source/_static/logo.png',
