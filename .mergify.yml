@@ -86,6 +86,7 @@ pull_request_rules:
       - and: *CheckRuns
       - "check-success=Rule: feature requirements (post_check)"
       - "check-success=Rule: testing requirements (post_check)"
+      - "check-success=Rule: changelog requirements (post_check)"
       - "#approved-reviews-by>=2"
       - "#changes-requested-reviews-by=0"
       - "#review-threads-unresolved=0"
@@ -222,4 +223,19 @@ pull_request_rules:
           Testing requirements are present.
           {% else %}
           Testing requirements are missing.
+          {% endif %}
+
+  - name: changelog requirements
+    conditions:
+      - or:
+          - "-title~=^feat"
+          - label=Skip changelog
+          - label=need-changelog
+    actions:
+      post_check:
+        title: |
+          {% if check_succeed %}
+          Changelog requirements are present.
+          {% else %}
+          Changelog requirements are missing.
           {% endif %}
