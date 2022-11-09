@@ -402,6 +402,7 @@
           }
         },
         "References": [
+          "http://seclists.org/fulldisclosure/2022/Nov/1",
           "http://www.openwall.com/lists/oss-security/2022/07/14/1",
           "https://access.redhat.com/security/cve/CVE-2022-29187",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-29187",
@@ -444,6 +445,7 @@
           }
         },
         "References": [
+          "http://seclists.org/fulldisclosure/2022/Nov/1",
           "https://access.redhat.com/security/cve/CVE-2022-39260",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39260",
           "https://github.com/git/git/security/advisories/GHSA-rjr6-wcq6-83p6",
@@ -483,6 +485,7 @@
           }
         },
         "References": [
+          "http://seclists.org/fulldisclosure/2022/Nov/1",
           "https://access.redhat.com/security/cve/CVE-2022-39253",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39253",
           "https://github.com/git/git/security/advisories/GHSA-3wp6-j8xr-qw85",
@@ -650,6 +653,7 @@
           }
         },
         "References": [
+          "http://seclists.org/fulldisclosure/2022/Nov/1",
           "http://www.openwall.com/lists/oss-security/2022/07/14/1",
           "https://access.redhat.com/security/cve/CVE-2022-29187",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-29187",
@@ -692,6 +696,7 @@
           }
         },
         "References": [
+          "http://seclists.org/fulldisclosure/2022/Nov/1",
           "https://access.redhat.com/security/cve/CVE-2022-39260",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39260",
           "https://github.com/git/git/security/advisories/GHSA-rjr6-wcq6-83p6",
@@ -731,6 +736,7 @@
           }
         },
         "References": [
+          "http://seclists.org/fulldisclosure/2022/Nov/1",
           "https://access.redhat.com/security/cve/CVE-2022-39253",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39253",
           "https://github.com/git/git/security/advisories/GHSA-3wp6-j8xr-qw85",
