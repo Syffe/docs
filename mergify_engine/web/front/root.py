@@ -7,6 +7,7 @@ import starsessions
 from mergify_engine import config
 from mergify_engine.web import utils
 from mergify_engine.web.front import auth
+from mergify_engine.web.front import configuration
 from mergify_engine.web.front import sessions
 from mergify_engine.web.front.middlewares import logging
 
@@ -43,5 +44,6 @@ def create_app() -> fastapi.FastAPI:
     app.add_middleware(logging.LoggingMiddleware)
     utils.setup_exception_handlers(app)
 
+    app.include_router(configuration.router)
     app.include_router(auth.router, prefix="/auth")
     return app

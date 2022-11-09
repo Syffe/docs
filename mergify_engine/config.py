@@ -147,6 +147,12 @@ Schema = voluptuous.Schema(
         voluptuous.Required(
             "DASHBOARD_UI_SITE_URLS", default=""
         ): CommaSeparatedStringList,
+        voluptuous.Required(
+            "DASHBOARD_UI_DATADOG_CLIENT_TOKEN", default=None
+        ): voluptuous.Any(None, str),
+        voluptuous.Required(
+            "DASHBOARD_UI_FEATURES", default=""
+        ): CommaSeparatedStringList,
         voluptuous.Required("DASHBOARD_UI_SESSION_EXPIRATION_HOURS", default=24): int,
         voluptuous.Required(
             "SUBSCRIPTION_BASE_URL", default="https://subscription.mergify.com"
@@ -346,6 +352,8 @@ INTEGRATION_ID: int
 DASHBOARD_UI_FRONT_BASE_URL: str
 DASHBOARD_UI_SITE_URLS: list[str]
 DASHBOARD_UI_SESSION_EXPIRATION_HOURS: int
+DASHBOARD_UI_FEATURES: list[str]
+DASHBOARD_UI_DATADOG_CLIENT_TOKEN: str | None
 SUBSCRIPTION_BASE_URL: str
 SUBSCRIPTION_TOKEN: str
 ENGINE_TO_DASHBOARD_API_KEY: str
