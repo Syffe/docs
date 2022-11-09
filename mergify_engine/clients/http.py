@@ -134,9 +134,15 @@ def extract_organization_login(client: httpx.AsyncClient) -> str | None:
 
 def before_log(retry_state: tenacity.RetryCallState) -> None:
     client = retry_state.args[0]
-    method = retry_state.args[1]
+    if len(retry_state.args) >= 2:
+        method = retry_state.args[1]
+    else:
+        method = None
     gh_owner = extract_organization_login(client)
-    url = retry_state.args[2]
+    if len(retry_state.args) >= 3:
+        url = retry_state.args[2]
+    else:
+        url = None
     LOG.debug(
         "http request starts",
         method=method,
