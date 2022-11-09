@@ -161,15 +161,20 @@ def mock_redis_db_values(worker_id: str) -> abc.Generator[None, None, None]:
         yield
 
 
-@pytest.fixture(autouse=True)
-async def setup_database() -> abc.AsyncGenerator[None, None]:
-    models.init_sqlalchemy()
-    await manage.create_all()
+@pytest.fixture
+async def database_cleanup() -> abc.AsyncGenerator[None, None]:
     try:
         yield
     finally:
         await manage.drop_all()
         models.APP_STATE = None
+
+
+@pytest.fixture
+async def setup_database(database_cleanup: None) -> abc.AsyncGenerator[None, None]:
+    models.init_sqlalchemy()
+    await manage.create_all()
+    yield
 
 
 @pytest.fixture

@@ -16,7 +16,6 @@ from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import logs
-from mergify_engine import models
 from mergify_engine import pull_request_finder
 from mergify_engine import redis_utils
 from mergify_engine import worker
@@ -2258,13 +2257,13 @@ def test_worker_start_all_tasks(
     monitoring_task: mock.Mock,
     delayed_refresh_task: mock.Mock,
     setup_signals: mock.Mock,
+    database_cleanup: None,
 ) -> None:
     async def just_run_once(self: worker.Task) -> None:
         await self.func()
 
     loop_and_sleep_forever.side_effect = just_run_once
 
-    models.APP_STATE = None
     worker.main([])
     while not wait_shutdown_complete.called:
         time.sleep(0.01)
@@ -2293,13 +2292,13 @@ def test_worker_start_just_shared(
     monitoring_task: mock.Mock,
     delayed_refresh_task: mock.Mock,
     setup_signals: mock.Mock,
+    database_cleanup: None,
 ) -> None:
     async def just_run_once(self: worker.Task) -> None:
         await self.func()
 
     loop_and_sleep_forever.side_effect = just_run_once
 
-    models.APP_STATE = None
     worker.main(["--enabled-services=shared-stream"])
     while not wait_shutdown_complete.called:
         time.sleep(0.01)
@@ -2328,13 +2327,13 @@ def test_worker_start_except_shared(
     monitoring_task: mock.Mock,
     delayed_refresh_task: mock.Mock,
     setup_signals: mock.Mock,
+    database_cleanup: None,
 ) -> None:
     async def just_run_once(self: worker.Task) -> None:
         await self.func()
 
     loop_and_sleep_forever.side_effect = just_run_once
 
-    models.APP_STATE = None
     worker.main(
         ["--enabled-services=dedicated-stream,stream-monitoring,delayed-refresh"]
     )

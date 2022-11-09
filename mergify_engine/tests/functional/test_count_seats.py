@@ -1,18 +1,26 @@
 import argparse
+from collections import abc
 import operator
 import time
 from unittest import mock
+
+import pytest
 
 from mergify_engine import config
 from mergify_engine import count_seats
 from mergify_engine import github_types
 from mergify_engine import json
-from mergify_engine import models
 from mergify_engine import yaml
 from mergify_engine.tests.functional import base
 
 
 class TestCountSeats(base.FunctionalTestBase):
+    @pytest.fixture(autouse=True)
+    def prepare_fixture(
+        self, database_cleanup: None
+    ) -> abc.Generator[None, None, None]:
+        yield
+
     async def _prepare_repo(self) -> count_seats.Seats:
         await self.setup_repo()
         await self.create_pr(as_="admin")
@@ -82,7 +90,6 @@ class TestCountSeats(base.FunctionalTestBase):
         args = argparse.Namespace(json=True, daemon=False)
         with mock.patch("sys.stdout") as stdout:
             with mock.patch.object(config, "SUBSCRIPTION_TOKEN"):
-                models.APP_STATE = None
                 await count_seats.report(args)
                 s = "".join(call.args[0] for call in stdout.write.mock_calls)
                 json_reports = json.loads(s)
