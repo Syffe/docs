@@ -7,3 +7,5 @@ upgrade:
       eg: postgres://login:password@postgresql-hostname:5432/database
     * `MERGIFYENGINE_DATABASE_OAUTH_TOKEN_SECRET_CURRENT` with a random string
       with at least 42 char.
+  - The Mergify GitHub App on GitHub must be updated, you must set the `Callback
+    URL` to `https://mymergify.example.com/auth/callback`
