@@ -7,7 +7,6 @@ import sentry_sdk
 
 from mergify_engine import config
 from mergify_engine import context
-from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine.clients import github
@@ -76,6 +75,37 @@ get_application = ApplicationAuth()
 get_optional_application = ApplicationAuth(auto_error=False)
 
 
+async def get_http_auth(
+    request: fastapi.Request,
+    owner: github_types.GitHubLogin,
+    application: application_mod.Application | None,
+) -> tuple[
+    github_types.GitHubInstallation,
+    github.GithubAppInstallationAuth | github.GithubTokenAuth,
+]:
+    auth: github.GithubAppInstallationAuth | github.GithubTokenAuth
+
+    if application is not None:
+        installation_json = await github.get_installation_from_login(owner)
+        # Authenticated by token
+        if (
+            application.account_scope is not None
+            and application.account_scope["id"] != installation_json["account"]["id"]
+        ):
+            raise fastapi.HTTPException(status_code=403)
+        auth = github.GithubAppInstallationAuth(installation_json)
+
+    elif "auth" in request.scope and request.auth and request.auth.is_authenticated:
+        # Authenticated by cookie session
+        user = typing.cast(github_user.GitHubUser, request.auth.user)
+        installation_json = await github.get_installation_from_login(owner)
+        auth = github.GithubTokenAuth(user.oauth_access_token)
+    else:
+        raise fastapi.HTTPException(403)
+
+    return installation_json, auth
+
+
 async def get_repository_context(
     request: fastapi.Request,
     owner: github_types.GitHubLogin = fastapi.Path(  # noqa: B008
@@ -90,28 +120,8 @@ async def get_repository_context(
     application: application_mod.Application
     | None = fastapi.Security(get_optional_application),  # noqa: B008
 ) -> abc.AsyncGenerator[context.Repository, None]:
-    try:
-        # FIXME(sileht): we should do this with the user token for cookie authentication
-        installation_json = await github.get_installation_from_login(owner)
-    except exceptions.MergifyNotInstalled:
-        raise fastapi.HTTPException(status_code=403)
 
-    auth: github.GithubAppInstallationAuth | github.GithubTokenAuth
-    if application is not None:
-        # Authenticated by token
-        if (
-            application.account_scope is not None
-            and application.account_scope["id"] != installation_json["account"]["id"]
-        ):
-            raise fastapi.HTTPException(status_code=403)
-        auth = github.GithubAppInstallationAuth(installation_json)
-    elif "auth" in request.scope and request.auth and request.auth.is_authenticated:
-        # Authenticated by cookie session
-        user = typing.cast(github_user.GitHubUser, request.auth.user)
-        auth = github.GithubTokenAuth(user.oauth_access_token)
-    else:
-        raise fastapi.HTTPException(403)
-
+    installation_json, auth = await get_http_auth(request, owner, application)
     async with github.AsyncGithubInstallationClient(
         auth,
     ) as client:
