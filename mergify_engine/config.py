@@ -157,6 +157,9 @@ Schema = voluptuous.Schema(
         voluptuous.Required(
             "SUBSCRIPTION_BASE_URL", default="https://subscription.mergify.com"
         ): str,
+        voluptuous.Required(
+            "DASHBOARD_UI_STATIC_FILES_DIRECTORY", default=None
+        ): voluptuous.Any(None, str),
         #
         # OnPremise special config
         #
@@ -349,6 +352,7 @@ AUTHENTICATION_URL: str
 
 BUCKET_PROCESSING_MAX_SECONDS: int
 INTEGRATION_ID: int
+DASHBOARD_UI_STATIC_FILES_DIRECTORY: str | None
 DASHBOARD_UI_FRONT_BASE_URL: str
 DASHBOARD_UI_SITE_URLS: list[str]
 DASHBOARD_UI_SESSION_EXPIRATION_HOURS: int

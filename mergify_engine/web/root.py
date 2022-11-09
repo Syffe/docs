@@ -1,6 +1,5 @@
 import daiquiri
 import fastapi
-from starlette import responses
 
 from mergify_engine.web import github_webhook
 from mergify_engine.web import legacy_badges
@@ -9,6 +8,7 @@ from mergify_engine.web import refresher
 from mergify_engine.web import subscriptions
 from mergify_engine.web import utils
 from mergify_engine.web.api import root as api_root
+from mergify_engine.web.front import react
 from mergify_engine.web.front import root as front_root
 
 
@@ -29,6 +29,8 @@ def create_app() -> fastapi.FastAPI:
     app.mount("/v1", api_root.create_app(cors_enabled=True))
     app.mount("/front", front_root.create_app())
 
+    app.include_router(react.router)
+
     utils.setup_exception_handlers(app)
 
     @app.on_event("startup")
@@ -38,16 +40,5 @@ def create_app() -> fastapi.FastAPI:
     @app.on_event("shutdown")
     async def shutdown() -> None:
         await redis.shutdown()
-
-    @app.get("/")
-    async def index(
-        setup_action: str | None = None,
-    ) -> responses.Response:  # pragma: no cover
-        if setup_action:
-            return responses.Response(
-                "Your Mergify installation succeeded.",
-                status_code=200,
-            )
-        return responses.JSONResponse({})
 
     return app
