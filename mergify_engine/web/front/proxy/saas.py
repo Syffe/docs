@@ -23,7 +23,9 @@ async def saas_subscription(
 ) -> fastapi.responses.Response:
     if config.SAAS_MODE:
         return await saas_proxy(
-            request, github_account_id, "subscription-details", current_user
+            request,
+            f"github-account/{github_account_id}/subscription-details",
+            current_user,
         )
 
     return fastapi.responses.JSONResponse(
@@ -59,12 +61,11 @@ async def saas_subscription(
 
 
 @router.api_route(
-    "/saas/github-account/{github_account_id}/{path:path}",  # noqa: FS003
+    "/saas/{path:path}",  # noqa: FS003
     methods=["GET", "POST", "PATCH", "PUT", "DELETE"],
 )
 async def saas_proxy(
     request: fastapi.Request,
-    github_account_id: int,
     path: str,
     current_user: github_user.GitHubUser = fastapi.Depends(  # noqa: B008
         security.get_current_user
@@ -81,7 +82,7 @@ async def saas_proxy(
         try:
             resp = await client.request(
                 method=request.method,
-                url=f"/engine/saas/github-account/{github_account_id}/{path}",
+                url=f"/engine/saas/{path}",
                 headers={"Mergify-On-Behalf-Of": str(current_user.id)},
                 params=request.url.query,
                 content=await request.body(),

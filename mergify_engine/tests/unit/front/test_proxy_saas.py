@@ -180,3 +180,47 @@ async def test_saas_subscription_with_saas_mode_false(
     await web_client.logout()
     resp = await web_client.get(url, headers={"dnt": "1"})
     assert resp.status_code == 401
+
+
+async def test_saas_intercom_with_saas_mode_true(
+    monkeypatch: pytest.MonkeyPatch,
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    respx_mock: respx.MockRouter,
+    web_client: conftest.CustomTestClient,
+    front_login_mock: None,
+) -> None:
+    monkeypatch.setattr(config, "SAAS_MODE", True)
+
+    user = github_user.GitHubUser(
+        id=42, login="user-login", oauth_access_token="user-token"
+    )
+    db.add(user)
+    await db.commit()
+
+    unwanted_headers = respx.patterns.M(headers={"dnt": "1"})
+    assert unwanted_headers is not None
+    respx_mock.route(
+        respx.patterns.M(
+            method="get",
+            url="http://localhost:5000/engine/saas/intercom",
+            headers={
+                "Authorization": f"Bearer {config.ENGINE_TO_DASHBOARD_API_KEY}",
+                "Mergify-On-Behalf-Of": str(user.id),
+            },
+        )
+        & ~unwanted_headers
+    ).respond(200, json={"yo": "ya"})
+
+    url = "/front/proxy/saas/intercom"
+
+    resp = await web_client.get(url, headers={"dnt": "1"})
+    assert resp.status_code == 401
+
+    await web_client.log_as(user.id)
+
+    resp = await web_client.get(url, headers={"dnt": "1"})
+    assert resp.json() == {"yo": "ya"}
+
+    await web_client.logout()
+    resp = await web_client.get(url, headers={"dnt": "1"})
+    assert resp.status_code == 401
