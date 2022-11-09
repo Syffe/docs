@@ -1,8 +1,8 @@
 import contextvars
 import logging
 import os
-import re
 import sys
+from urllib import parse
 
 import daiquiri
 import daiquiri.formatter
@@ -70,8 +70,16 @@ class HerokuDatadogFormatter(daiquiri.formatter.DatadogFormatter):
             log_record.update({"worker_id": worker_id})
 
 
-RE_PASSWORD_SEARCH = re.compile(r"://[^@]*@")
-RE_PASSWORD_REPLACE = "://*****@"
+def strip_url_credentials(url: str) -> str:
+    parsed = parse.urlparse(url)
+    if parsed.password or parsed.username:
+        netloc = "*****@"
+        if parsed.hostname is not None:
+            netloc += parsed.hostname
+        if parsed.port is not None:
+            netloc += f":{parsed.port}"
+        url = parsed._replace(netloc=netloc).geturl()
+    return url
 
 
 def config_log() -> None:
@@ -87,9 +95,9 @@ def config_log() -> None:
             value = "*****"
         if "URL" in name and value is not None:
             if isinstance(value, list):
-                value = [RE_PASSWORD_SEARCH.sub(RE_PASSWORD_REPLACE, v) for v in value]
+                value = [strip_url_credentials(v) for v in value]
             else:
-                value = RE_PASSWORD_SEARCH.sub(RE_PASSWORD_REPLACE, value)
+                value = strip_url_credentials(value)
         LOG.info("* MERGIFYENGINE_%s: %s", name, value)
     LOG.info("* PATH: %s", os.environ.get("PATH"))
     LOG.info("##########################################################")
