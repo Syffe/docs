@@ -7,6 +7,7 @@ import os
 import re
 import typing
 from unittest import mock
+from urllib import parse
 
 import asgi_lifespan
 import fastapi
@@ -123,15 +124,18 @@ CONFIG_URLS_TO_MOCK = (
 )
 
 
-@pytest.fixture(autouse=True)
+def get_worker_id_as_int(worker_id: str) -> int:
+    if not re.match(r"gw\d+", worker_id):
+        return 0
+
+    return int(worker_id.replace("gw", ""))
+
+
+@pytest.fixture(autouse=True, scope="session")
 def mock_redis_db_values(worker_id: str) -> abc.Generator[None, None, None]:
+    worker_id_int = get_worker_id_as_int(worker_id)
     # Need to have different database for each tests to avoid breaking
     # everything in other tests.
-    if not re.match(r"gw\d+", worker_id):
-        worker_id_int = 0
-    else:
-        worker_id_int = int(worker_id.replace("gw", ""))
-
     mocks = []
     for config_url_to_mock in CONFIG_URLS_TO_MOCK:
         config_url = getattr(config, config_url_to_mock)
@@ -161,6 +165,36 @@ def mock_redis_db_values(worker_id: str) -> abc.Generator[None, None, None]:
         yield
 
 
+async def create_database(db_url: str, db_name: str) -> None:
+    engine = sqlalchemy.ext.asyncio.create_async_engine(db_url)
+    async with engine.connect() as conn:
+        await conn.execute(sqlalchemy.text("commit"))
+        # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
+        await conn.execute(sqlalchemy.text(f"CREATE DATABASE {db_name}"))
+
+
+@pytest.fixture(autouse=True, scope="session")
+def mock_postgres_db_value(worker_id: str) -> abc.Generator[None, None, None]:
+    worker_id_int = get_worker_id_as_int(worker_id)
+
+    db_name = f"postgres{worker_id_int}"
+    db_url = models.get_async_database_url()
+
+    mocked_url = parse.urlparse(db_url)._replace(path=f"/{db_name}")
+    mocked_url_unparsed = parse.urlunparse(mocked_url)
+
+    db_url_without_db_name = parse.urlunparse(parse.urlparse(db_url)._replace(path=""))
+    # We need to manually run the coroutine in an event loop because
+    # pytest-asyncio has its own `event_loop` fixture that is function scoped and
+    # in autouse (session scope fixture cannot require function scoped fixture)
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    loop.run_until_complete(create_database(db_url_without_db_name, db_name))
+    loop.close()
+
+    with mock.patch.object(config, "DATABASE_URL", mocked_url_unparsed):
+        yield
+
+
 @pytest.fixture
 async def database_cleanup() -> abc.AsyncGenerator[None, None]:
     try:
@@ -171,7 +205,9 @@ async def database_cleanup() -> abc.AsyncGenerator[None, None]:
 
 
 @pytest.fixture
-async def setup_database(database_cleanup: None) -> abc.AsyncGenerator[None, None]:
+async def setup_database(
+    database_cleanup: None, mock_postgres_db_value: None
+) -> abc.AsyncGenerator[None, None]:
     models.init_sqlalchemy()
     await manage.create_all()
     yield
