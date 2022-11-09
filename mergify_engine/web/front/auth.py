@@ -31,8 +31,8 @@ oauth.register(
     client_id=config.OAUTH_CLIENT_ID,
     client_secret=config.OAUTH_CLIENT_SECRET,
     api_base_url=config.GITHUB_REST_API_URL,
-    authorize_url=f"{config.GITHUB_DOMAIN}/login/oauth/authorize",
-    access_token_url=f"{config.GITHUB_DOMAIN}/login/oauth/access_token",
+    authorize_url=f"{config.GITHUB_URL}/login/oauth/authorize",
+    access_token_url=f"{config.GITHUB_URL}/login/oauth/access_token",
 )
 
 
