@@ -18,7 +18,7 @@ queue_rules:
     conditions:
       - and: &CheckRuns
           - or:
-              - -label=Docker
+              - -label=docker
               - and:
                   - check-success=docker-saas
                   - check-success=docker-onpremise
@@ -73,7 +73,7 @@ pull_request_rules:
       - label=hotfix
       - "#changes-requested-reviews-by=0"
       - "#review-requested=0"
-      - label!=work-in-progress
+      - label!=work in progress
       - label!=manual merge
     actions:
       queue:
@@ -91,7 +91,7 @@ pull_request_rules:
       - "#changes-requested-reviews-by=0"
       - "#review-threads-unresolved=0"
       - "#review-requested=0"
-      - label!=work-in-progress
+      - label!=work in progress
       - label!=manual merge
     actions:
       queue:
@@ -101,7 +101,7 @@ pull_request_rules:
       - and: *CheckRuns
       - check-success=semantic-pull-request
       - author=mergify-ci-bot
-      - label!=work-in-progress
+      - label!=work in progress
       - label!=manual merge
       - "title~=^chore: bump"
       - "#commits=1"
@@ -117,9 +117,9 @@ pull_request_rules:
       - check-success=semantic-pull-request
       - head=trivy/daily-report
       - author=mergify-ci-bot
-      - label!=work-in-progress
+      - label!=work in progress
       - label!=manual merge
-      - label!=New CVEs
+      - label!=new cve
       - "#commits=1"
     actions:
       queue:
@@ -131,7 +131,7 @@ pull_request_rules:
       - and: *CheckRuns
       - check-success=semantic-pull-request
       - author=dependabot[bot]
-      - label!=work-in-progress
+      - label!=work in progress
       - label!=manual merge
       - "#commits=1"
     actions:
@@ -149,7 +149,7 @@ pull_request_rules:
     conditions:
       - -author=dependabot[bot]
       - -author=mergify-ci-bot
-      - label!=work-in-progress
+      - label!=work in progress
       - -merged
       - -closed
       - and: *CheckRuns
@@ -210,10 +210,10 @@ pull_request_rules:
           - "-title~=^feat"
           - and:
               - or:
-                  - label=Skip release note
+                  - label=skip release note
                   - files~=^releasenotes/notes
               - or:
-                  - label=Skip documentation
+                  - label=skip documentation
                   - files~=^docs/source
               - body~=MRGFY-
     actions:
@@ -228,7 +228,7 @@ pull_request_rules:
   - name: testing requirements
     conditions:
       - or:
-          - label=Skip tests
+          - label=skip tests
           - "-title~=^(feat|fix)"
           - "files~=mergify_engine/tests"
     actions:
@@ -244,8 +244,8 @@ pull_request_rules:
     conditions:
       - or:
           - "-title~=^feat"
-          - label=Skip changelog
-          - label=need-changelog
+          - label=skip changelog
+          - label=need changelog
     actions:
       post_check:
         title: |

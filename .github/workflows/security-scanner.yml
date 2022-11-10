@@ -52,7 +52,7 @@ jobs:
           rm -f docker-security-scan.json.tmp
           AFTER="$(jq '.[].Vulnerabilities|length' < docker-security-scan.json)"
           if [[ $BEFORE -lt $AFTER ]]; then
-            echo "labels=New CVEs" >> "$GITHUB_OUTPUT"
+            echo "labels=new cve" >> "$GITHUB_OUTPUT"
           fi
 
         # yamllint enable rule:line-length

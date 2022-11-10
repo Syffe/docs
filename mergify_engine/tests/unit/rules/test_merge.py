@@ -34,7 +34,7 @@ source_config = {
                 "title~=^(revert|fix)",
                 "#approved-reviews-by>=1",
                 "#changes-requested-reviews-by=0",
-                "label!=work-in-progress",
+                "label!=work in progress",
                 "label!=manual merge",
             ],
             "name": "automatic merge for hotfix",
@@ -61,7 +61,7 @@ source_config = {
                 "check-success=semantic-pull-request",
                 {
                     "and": [
-                        {"or": ["-label=Docker", "check-success=docker"]},
+                        {"or": ["-label=docker", "check-success=docker"]},
                         "check-success=import-checks",
                         "check-success=pep8",
                         "check-success=test",
@@ -73,7 +73,7 @@ source_config = {
                 "#approved-reviews-by>=2",
                 "#changes-requested-reviews-by=0",
                 "#review-threads-unresolved=0",
-                "label!=work-in-progress",
+                "label!=work in progress",
                 "label!=manual merge",
             ],
             "name": "automatic merge",
@@ -98,7 +98,7 @@ source_config = {
             "conditions": [
                 {
                     "and": [
-                        {"or": ["-label=Docker", "check-success=docker"]},
+                        {"or": ["-label=docker", "check-success=docker"]},
                         "check-success=import-checks",
                         "check-success=pep8",
                         "check-success=test",
@@ -107,7 +107,7 @@ source_config = {
                 },
                 "check-success=semantic-pull-request",
                 "author=mergify-ci-bot",
-                "label!=work-in-progress",
+                "label!=work in progress",
                 "label!=manual merge",
                 "title~=^chore: bump",
                 "#commits=1",
@@ -126,7 +126,7 @@ source_config = {
             "conditions": [
                 {
                     "and": [
-                        {"or": ["-label=Docker", "check-success=docker"]},
+                        {"or": ["-label=docker", "check-success=docker"]},
                         "check-success=import-checks",
                         "check-success=pep8",
                         "check-success=test",
@@ -135,7 +135,7 @@ source_config = {
                 },
                 "check-success=semantic-pull-request",
                 "author=dependabot[bot]",
-                "label!=work-in-progress",
+                "label!=work in progress",
                 "label!=manual merge",
                 "#commits=1",
             ],
@@ -156,12 +156,12 @@ source_config = {
             "conditions": [
                 "-author=dependabot[bot]",
                 "-author=mergify-ci-bot",
-                "label!=work-in-progress",
+                "label!=work in progress",
                 "-merged",
                 "-closed",
                 {
                     "and": [
-                        {"or": ["-label=Docker", "check-success=docker"]},
+                        {"or": ["-label=docker", "check-success=docker"]},
                         "check-success=import-checks",
                         "check-success=pep8",
                         "check-success=test",
@@ -271,7 +271,7 @@ source_config = {
             "conditions": [
                 {
                     "or": [
-                        "label=Skip tests",
+                        "label=skip tests",
                         "-title~=^(feat|fix)",
                         "files~=mergify_engine/tests",
                     ]
@@ -286,7 +286,7 @@ source_config = {
             "conditions": [
                 {
                     "and": [
-                        {"or": ["-label=Docker", "check-success=docker"]},
+                        {"or": ["-label=docker", "check-success=docker"]},
                         "check-success=import-checks",
                         "check-success=pep8",
                         "check-success=test",
@@ -302,7 +302,7 @@ source_config = {
             "conditions": [
                 {
                     "and": [
-                        {"or": ["-label=Docker", "check-success=docker"]},
+                        {"or": ["-label=docker", "check-success=docker"]},
                         "check-success=import-checks",
                         "check-success=pep8",
                         "check-success=test",
@@ -321,7 +321,7 @@ source_config = {
             "conditions": [
                 {
                     "and": [
-                        {"or": ["-label=Docker", "check-success=docker"]},
+                        {"or": ["-label=docker", "check-success=docker"]},
                         "check-success=import-checks",
                         "check-success=pep8",
                         "check-success=test",
@@ -391,7 +391,7 @@ def test_merge_raw_configs() -> None:
                     "title~=^(revert|fix)",
                     "#approved-reviews-by>=1",
                     "#changes-requested-reviews-by=0",
-                    "label!=work-in-progress",
+                    "label!=work in progress",
                     "label!=manual merge",
                 ],
                 "name": "automatic merge for hotfix",
@@ -416,7 +416,7 @@ def test_merge_raw_configs() -> None:
                 "conditions": [
                     {
                         "and": [
-                            {"or": ["-label=Docker", "check-success=docker"]},
+                            {"or": ["-label=docker", "check-success=docker"]},
                             "check-success=import-checks",
                             "check-success=pep8",
                             "check-success=test",
@@ -425,7 +425,7 @@ def test_merge_raw_configs() -> None:
                     },
                     "check-success=semantic-pull-request",
                     "author=mergify-ci-bot",
-                    "label!=work-in-progress",
+                    "label!=work in progress",
                     "label!=manual merge",
                     "title~=^chore: bump",
                     "#commits=1",
@@ -444,7 +444,7 @@ def test_merge_raw_configs() -> None:
                 "conditions": [
                     {
                         "and": [
-                            {"or": ["-label=Docker", "check-success=docker"]},
+                            {"or": ["-label=docker", "check-success=docker"]},
                             "check-success=import-checks",
                             "check-success=pep8",
                             "check-success=test",
@@ -453,7 +453,7 @@ def test_merge_raw_configs() -> None:
                     },
                     "check-success=semantic-pull-request",
                     "author=dependabot[bot]",
-                    "label!=work-in-progress",
+                    "label!=work in progress",
                     "label!=manual merge",
                     "#commits=1",
                 ],
@@ -474,12 +474,12 @@ def test_merge_raw_configs() -> None:
                 "conditions": [
                     "-author=dependabot[bot]",
                     "-author=mergify-ci-bot",
-                    "label!=work-in-progress",
+                    "label!=work in progress",
                     "-merged",
                     "-closed",
                     {
                         "and": [
-                            {"or": ["-label=Docker", "check-success=docker"]},
+                            {"or": ["-label=docker", "check-success=docker"]},
                             "check-success=import-checks",
                             "check-success=pep8",
                             "check-success=test",
@@ -591,7 +591,7 @@ def test_merge_raw_configs() -> None:
                 "conditions": [
                     {
                         "or": [
-                            "label=Skip tests",
+                            "label=skip tests",
                             "-title~=^(feat|fix)",
                             "files~=mergify_engine/tests",
                         ]
@@ -611,7 +611,7 @@ def test_merge_raw_configs() -> None:
                 "conditions": [
                     {
                         "and": [
-                            {"or": ["-label=Docker", "check-success=docker"]},
+                            {"or": ["-label=docker", "check-success=docker"]},
                             "check-success=import-checks",
                             "check-success=pep8",
                             "check-success=test",
@@ -630,7 +630,7 @@ def test_merge_raw_configs() -> None:
                 "conditions": [
                     {
                         "and": [
-                            {"or": ["-label=Docker", "check-success=docker"]},
+                            {"or": ["-label=docker", "check-success=docker"]},
                             "check-success=import-checks",
                             "check-success=pep8",
                             "check-success=test",
