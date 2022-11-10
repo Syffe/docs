@@ -155,6 +155,7 @@
           "https://curl.se/docs/CVE-2022-42916.html",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-42916",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/HVU3IMZCKR4VE6KJ4GCWRL2ILLC6OV76/",
+          "https://nvd.nist.gov/vuln/detail/CVE-2022-42916",
           "https://ubuntu.com/security/notices/USN-5702-1"
         ],
         "PublishedDate": "2022-10-29T02:15:00Z"
@@ -1688,6 +1689,7 @@
           "https://curl.se/docs/CVE-2022-42916.html",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-42916",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/HVU3IMZCKR4VE6KJ4GCWRL2ILLC6OV76/",
+          "https://nvd.nist.gov/vuln/detail/CVE-2022-42916",
           "https://ubuntu.com/security/notices/USN-5702-1"
         ],
         "PublishedDate": "2022-10-29T02:15:00Z"
@@ -1845,6 +1847,7 @@
           "https://curl.se/docs/CVE-2022-42916.html",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-42916",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/HVU3IMZCKR4VE6KJ4GCWRL2ILLC6OV76/",
+          "https://nvd.nist.gov/vuln/detail/CVE-2022-42916",
           "https://ubuntu.com/security/notices/USN-5702-1"
         ],
         "PublishedDate": "2022-10-29T02:15:00Z"
@@ -3045,6 +3048,44 @@
         "PublishedDate": "2021-09-20T16:15:00Z"
       },
       {
+        "VulnerabilityID": "CVE-2022-3821",
+        "PkgID": "libnss-systemd@247.3-7+deb11u1",
+        "PkgName": "libnss-systemd",
+        "InstalledVersion": "247.3-7+deb11u1",
+        "SeveritySource": "nvd",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3821",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "systemd: buffer overrun in format_timespan() function.",
+        "Description": "An off-by-one Error issue was discovered in Systemd in format_timespan() function of time-util.c. An attacker could supply specific values for time and accuracy that leads to buffer overrun in format_timespan(), leading to a Denial of Service.",
+        "Severity": "MEDIUM",
+        "CweIDs": [
+          "CWE-193"
+        ],
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 5.5
+          },
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 5.5
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2022-3821",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
+          "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
+          "https://github.com/systemd/systemd/issues/23928",
+          "https://github.com/systemd/systemd/pull/23933"
+        ],
+        "PublishedDate": "2022-11-08T22:15:00Z"
+      },
+      {
         "VulnerabilityID": "CVE-2013-4392",
         "PkgID": "libnss-systemd@247.3-7+deb11u1",
         "PkgName": "libnss-systemd",
@@ -3126,6 +3167,44 @@
           "https://ubuntu.com/security/notices/USN-5013-2"
         ],
         "PublishedDate": "2021-05-10T16:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2022-3821",
+        "PkgID": "libpam-systemd@247.3-7+deb11u1",
+        "PkgName": "libpam-systemd",
+        "InstalledVersion": "247.3-7+deb11u1",
+        "SeveritySource": "nvd",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3821",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "systemd: buffer overrun in format_timespan() function.",
+        "Description": "An off-by-one Error issue was discovered in Systemd in format_timespan() function of time-util.c. An attacker could supply specific values for time and accuracy that leads to buffer overrun in format_timespan(), leading to a Denial of Service.",
+        "Severity": "MEDIUM",
+        "CweIDs": [
+          "CWE-193"
+        ],
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 5.5
+          },
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 5.5
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2022-3821",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
+          "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
+          "https://github.com/systemd/systemd/issues/23928",
+          "https://github.com/systemd/systemd/pull/23933"
+        ],
+        "PublishedDate": "2022-11-08T22:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2013-4392",
@@ -4038,6 +4117,44 @@
         "PublishedDate": "2010-03-05T19:30:00Z"
       },
       {
+        "VulnerabilityID": "CVE-2022-3821",
+        "PkgID": "libsystemd0@247.3-7+deb11u1",
+        "PkgName": "libsystemd0",
+        "InstalledVersion": "247.3-7+deb11u1",
+        "SeveritySource": "nvd",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3821",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "systemd: buffer overrun in format_timespan() function.",
+        "Description": "An off-by-one Error issue was discovered in Systemd in format_timespan() function of time-util.c. An attacker could supply specific values for time and accuracy that leads to buffer overrun in format_timespan(), leading to a Denial of Service.",
+        "Severity": "MEDIUM",
+        "CweIDs": [
+          "CWE-193"
+        ],
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 5.5
+          },
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 5.5
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2022-3821",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
+          "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
+          "https://github.com/systemd/systemd/issues/23928",
+          "https://github.com/systemd/systemd/pull/23933"
+        ],
+        "PublishedDate": "2022-11-08T22:15:00Z"
+      },
+      {
         "VulnerabilityID": "CVE-2013-4392",
         "PkgID": "libsystemd0@247.3-7+deb11u1",
         "PkgName": "libsystemd0",
@@ -4250,6 +4367,44 @@
           "https://ubuntu.com/security/notices/USN-5477-1"
         ],
         "PublishedDate": "2021-09-20T16:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2022-3821",
+        "PkgID": "libudev1@247.3-7+deb11u1",
+        "PkgName": "libudev1",
+        "InstalledVersion": "247.3-7+deb11u1",
+        "SeveritySource": "nvd",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3821",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "systemd: buffer overrun in format_timespan() function.",
+        "Description": "An off-by-one Error issue was discovered in Systemd in format_timespan() function of time-util.c. An attacker could supply specific values for time and accuracy that leads to buffer overrun in format_timespan(), leading to a Denial of Service.",
+        "Severity": "MEDIUM",
+        "CweIDs": [
+          "CWE-193"
+        ],
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 5.5
+          },
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 5.5
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2022-3821",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
+          "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
+          "https://github.com/systemd/systemd/issues/23928",
+          "https://github.com/systemd/systemd/pull/23933"
+        ],
+        "PublishedDate": "2022-11-08T22:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2013-4392",
@@ -6427,6 +6582,44 @@
         "PublishedDate": "2020-01-31T18:15:00Z"
       },
       {
+        "VulnerabilityID": "CVE-2022-3821",
+        "PkgID": "systemd@247.3-7+deb11u1",
+        "PkgName": "systemd",
+        "InstalledVersion": "247.3-7+deb11u1",
+        "SeveritySource": "nvd",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3821",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "systemd: buffer overrun in format_timespan() function.",
+        "Description": "An off-by-one Error issue was discovered in Systemd in format_timespan() function of time-util.c. An attacker could supply specific values for time and accuracy that leads to buffer overrun in format_timespan(), leading to a Denial of Service.",
+        "Severity": "MEDIUM",
+        "CweIDs": [
+          "CWE-193"
+        ],
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 5.5
+          },
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 5.5
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2022-3821",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
+          "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
+          "https://github.com/systemd/systemd/issues/23928",
+          "https://github.com/systemd/systemd/pull/23933"
+        ],
+        "PublishedDate": "2022-11-08T22:15:00Z"
+      },
+      {
         "VulnerabilityID": "CVE-2013-4392",
         "PkgID": "systemd@247.3-7+deb11u1",
         "PkgName": "systemd",
@@ -6510,6 +6703,44 @@
         "PublishedDate": "2021-05-10T16:15:00Z"
       },
       {
+        "VulnerabilityID": "CVE-2022-3821",
+        "PkgID": "systemd-sysv@247.3-7+deb11u1",
+        "PkgName": "systemd-sysv",
+        "InstalledVersion": "247.3-7+deb11u1",
+        "SeveritySource": "nvd",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3821",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "systemd: buffer overrun in format_timespan() function.",
+        "Description": "An off-by-one Error issue was discovered in Systemd in format_timespan() function of time-util.c. An attacker could supply specific values for time and accuracy that leads to buffer overrun in format_timespan(), leading to a Denial of Service.",
+        "Severity": "MEDIUM",
+        "CweIDs": [
+          "CWE-193"
+        ],
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 5.5
+          },
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 5.5
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2022-3821",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
+          "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
+          "https://github.com/systemd/systemd/issues/23928",
+          "https://github.com/systemd/systemd/pull/23933"
+        ],
+        "PublishedDate": "2022-11-08T22:15:00Z"
+      },
+      {
         "VulnerabilityID": "CVE-2013-4392",
         "PkgID": "systemd-sysv@247.3-7+deb11u1",
         "PkgName": "systemd-sysv",
@@ -6591,6 +6822,44 @@
           "https://ubuntu.com/security/notices/USN-5013-2"
         ],
         "PublishedDate": "2021-05-10T16:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2022-3821",
+        "PkgID": "systemd-timesyncd@247.3-7+deb11u1",
+        "PkgName": "systemd-timesyncd",
+        "InstalledVersion": "247.3-7+deb11u1",
+        "SeveritySource": "nvd",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3821",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "systemd: buffer overrun in format_timespan() function.",
+        "Description": "An off-by-one Error issue was discovered in Systemd in format_timespan() function of time-util.c. An attacker could supply specific values for time and accuracy that leads to buffer overrun in format_timespan(), leading to a Denial of Service.",
+        "Severity": "MEDIUM",
+        "CweIDs": [
+          "CWE-193"
+        ],
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 5.5
+          },
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 5.5
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2022-3821",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
+          "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
+          "https://github.com/systemd/systemd/issues/23928",
+          "https://github.com/systemd/systemd/pull/23933"
+        ],
+        "PublishedDate": "2022-11-08T22:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2013-4392",
