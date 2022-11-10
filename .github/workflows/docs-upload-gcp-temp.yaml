@@ -42,7 +42,7 @@ jobs:
       - run: unzip docs.zip -d docs
 
       - name: Setup Google Auth 🔧
-        uses: 'google-github-actions/auth@v0'
+        uses: 'google-github-actions/auth@v1'
         with:
           credentials_json: '${{ secrets.GCP_DOCS_CREDENTIAL_JSON }}'
 
