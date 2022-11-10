@@ -1,17 +1,14 @@
 from base64 import encodebytes
 from collections import abc
 import copy
-import dataclasses
 import re
 import typing
 from unittest import mock
 
-from freezegun import freeze_time
 import pytest
 import voluptuous
 
 from mergify_engine import context
-from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import rules
 from mergify_engine.clients import http
@@ -53,18 +50,6 @@ def test_invalid_condition_re() -> None:
         conditions.RuleCondition("head~=(bar")
 
 
-@dataclasses.dataclass
-class FakeQueuePullRequest(context.BasePullRequest):
-    attrs: dict[str, context.ContextAttributeType]
-
-    async def __getattr__(self, name: str) -> context.ContextAttributeType:
-        fancy_name = name.replace("_", "-")
-        try:
-            return self.attrs[fancy_name]
-        except KeyError:
-            raise context.PullRequestAttributeError(name=fancy_name)
-
-
 async def test_multiple_pulls_to_match() -> None:
     c = conditions.QueueRuleConditions(
         [
@@ -78,32 +63,32 @@ async def test_multiple_pulls_to_match() -> None:
             )
         ]
     )
-    assert await c([FakeQueuePullRequest({"number": 1, "base": "main"})])
+    assert await c([conftest.FakePullRequest({"number": 1, "base": "main"})])
     c = c.copy()
-    assert await c([FakeQueuePullRequest({"number": 1, "base": "main"})])
+    assert await c([conftest.FakePullRequest({"number": 1, "base": "main"})])
     c = c.copy()
-    assert not await c([FakeQueuePullRequest({"number": 1, "base": "other"})])
+    assert not await c([conftest.FakePullRequest({"number": 1, "base": "other"})])
     c = c.copy()
     assert await c(
         [
-            FakeQueuePullRequest({"number": 1, "base": "main"}),
-            FakeQueuePullRequest({"number": 1, "base": "main"}),
+            conftest.FakePullRequest({"number": 1, "base": "main"}),
+            conftest.FakePullRequest({"number": 1, "base": "main"}),
         ]
     )
     c = c.copy()
     assert await c(
         [
-            FakeQueuePullRequest({"number": 1, "base": "main"}),
-            FakeQueuePullRequest({"number": 1, "base": "main"}),
-            FakeQueuePullRequest({"number": 1, "base": "main"}),
+            conftest.FakePullRequest({"number": 1, "base": "main"}),
+            conftest.FakePullRequest({"number": 1, "base": "main"}),
+            conftest.FakePullRequest({"number": 1, "base": "main"}),
         ]
     )
     c = c.copy()
     assert not await c(
         [
-            FakeQueuePullRequest({"number": 1, "base": "main"}),
-            FakeQueuePullRequest({"number": 1, "base": "main"}),
-            FakeQueuePullRequest({"number": 1, "base": "other"}),
+            conftest.FakePullRequest({"number": 1, "base": "main"}),
+            conftest.FakePullRequest({"number": 1, "base": "main"}),
+            conftest.FakePullRequest({"number": 1, "base": "other"}),
         ]
     )
 
@@ -1719,218 +1704,6 @@ Invalid GitHub login
     )
 
 
-async def test_queue_rules_summary() -> None:
-    schema = voluptuous.Schema(
-        voluptuous.All(
-            [voluptuous.Coerce(rules.RuleConditionSchema)],
-            voluptuous.Coerce(conditions.QueueRuleConditions),
-        )
-    )
-
-    c = schema(
-        [
-            "base=main",
-            {"or": ["head=feature-1", "head=feature-2", "head=feature-3"]},
-            {"or": ["label=urgent", "status-failure!=noway"]},
-            {"or": ["label=bar", "check-success=first-ci"]},
-            {"or": ["label=foo", "check-success!=first-ci"]},
-            {"and": ["label=foo", "check-success=first-ci"]},
-            {"and": ["label=foo", "check-success!=first-ci"]},
-            {"not": {"and": ["label=fizz", "label=buzz"]}},
-            "current-year=2018",
-        ]
-    )
-    c.condition.conditions.extend(
-        [
-            conditions.RuleCondition(
-                "#approved-reviews-by>=2",
-                description="🛡 GitHub branch protection",
-            ),
-            conditions.RuleConditionCombination(
-                {
-                    "or": [
-                        conditions.RuleCondition("check-success=my-awesome-ci"),
-                        conditions.RuleCondition("check-neutral=my-awesome-ci"),
-                        conditions.RuleCondition("check-skipped=my-awesome-ci"),
-                    ]
-                },
-                description="🛡 GitHub branch protection",
-            ),
-            conditions.RuleCondition(
-                "author=me",
-                description="Another mechanism to get condtions",
-            ),
-        ]
-    )
-
-    pulls = [
-        FakeQueuePullRequest(
-            {
-                "number": 1,
-                "current-year": date.Year(2018),
-                "author": "me",
-                "base": "main",
-                "head": "feature-1",
-                "label": ["foo", "bar"],
-                "check-success": ["first-ci", "my-awesome-ci"],
-                "check-neutral": None,
-                "check-skipped": None,
-                "status-failure": ["noway"],
-                "approved-reviews-by": ["jd", "sileht"],
-            }
-        ),
-        FakeQueuePullRequest(
-            {
-                "number": 2,
-                "current-year": date.Year(2018),
-                "author": "me",
-                "base": "main",
-                "head": "feature-2",
-                "label": ["foo", "urgent"],
-                "check-success": ["first-ci", "my-awesome-ci"],
-                "check-neutral": None,
-                "check-skipped": None,
-                "status-failure": ["noway"],
-                "approved-reviews-by": ["jd", "sileht"],
-            }
-        ),
-        FakeQueuePullRequest(
-            {
-                "number": 3,
-                "current-year": date.Year(2018),
-                "author": "not-me",
-                "base": "main",
-                "head": "feature-3",
-                "label": ["foo", "urgent"],
-                "check-success": ["first-ci", "my-awesome-ci"],
-                "check-neutral": None,
-                "check-skipped": None,
-                "status-failure": ["noway"],
-                "approved-reviews-by": ["jd", "sileht"],
-            }
-        ),
-    ]
-    await c(pulls)
-
-    assert (
-        c.get_summary()
-        == """\
-- `author=me` [Another mechanism to get condtions]
-  - [X] #1
-  - [X] #2
-  - [ ] #3
-- [ ] all of:
-  - [ ] `check-success!=first-ci`
-  - `label=foo`
-    - [X] #1
-    - [X] #2
-    - [X] #3
-- [ ] any of:
-  - `label=urgent`
-    - [ ] #1
-    - [X] #2
-    - [X] #3
-  - [ ] `status-failure!=noway`
-- `#approved-reviews-by>=2` [🛡 GitHub branch protection]
-  - [X] #1
-  - [X] #2
-  - [X] #3
-- [X] `base=main`
-- [X] `current-year=2018`
-- [X] all of:
-  - [X] `check-success=first-ci`
-  - `label=foo`
-    - [X] #1
-    - [X] #2
-    - [X] #3
-- [X] any of:
-  - `head=feature-1`
-    - [X] #1
-    - [ ] #2
-    - [ ] #3
-  - `head=feature-2`
-    - [ ] #1
-    - [X] #2
-    - [ ] #3
-  - `head=feature-3`
-    - [ ] #1
-    - [ ] #2
-    - [X] #3
-- [X] any of:
-  - [X] `check-success=first-ci`
-  - `label=bar`
-    - [X] #1
-    - [ ] #2
-    - [ ] #3
-- [X] any of:
-  - `label=foo`
-    - [X] #1
-    - [X] #2
-    - [X] #3
-  - [ ] `check-success!=first-ci`
-- [X] any of [🛡 GitHub branch protection]:
-  - [X] `check-success=my-awesome-ci`
-  - [ ] `check-neutral=my-awesome-ci`
-  - [ ] `check-skipped=my-awesome-ci`
-- [X] not:
-  - [ ] all of:
-    - `label=buzz`
-      - [ ] #1
-      - [ ] #2
-      - [ ] #3
-    - `label=fizz`
-      - [ ] #1
-      - [ ] #2
-      - [ ] #3
-"""
-    )
-
-
-@freeze_time("2021-09-22T08:00:05", tz_offset=0)
-async def test_rules_conditions_schedule() -> None:
-    pulls = [
-        FakeQueuePullRequest(
-            {
-                "number": 1,
-                "author": "me",
-                "base": "main",
-                "current-timestamp": date.utcnow(),
-                "current-time": date.utcnow(),
-                "current-day": date.Day(22),
-                "current-month": date.Month(9),
-                "current-year": date.Year(2021),
-                "current-day-of-week": date.DayOfWeek(3),
-            }
-        ),
-    ]
-    schema = voluptuous.Schema(
-        voluptuous.All(
-            [voluptuous.Coerce(rules.RuleConditionSchema)],
-            voluptuous.Coerce(conditions.QueueRuleConditions),
-        )
-    )
-
-    c = schema(
-        [
-            "base=main",
-            "schedule=MON-FRI 08:00-17:00",
-            "schedule=MONDAY-FRIDAY 10:00-12:00",
-            "schedule=SAT-SUN 07:00-12:00",
-        ]
-    )
-
-    await c(pulls)
-
-    assert (
-        c.get_summary()
-        == """- [ ] `schedule=MONDAY-FRIDAY 10:00-12:00`
-- [ ] `schedule=SAT-SUN 07:00-12:00`
-- [X] `base=main`
-- [X] `schedule=MON-FRI 08:00-17:00`
-"""
-    )
-
-
 async def test_queue_action_defaults() -> None:
     file = context.MergifyConfigFile(
         type="file",
@@ -2068,71 +1841,6 @@ queue_rules:
     )
 
 
-async def test_condition_summary_simple() -> None:
-    single_condition_checked = conditions.RuleCondition("base=main")
-    single_condition_checked.match = True
-    pr_conditions = conditions.PullRequestRuleConditions([single_condition_checked])
-
-    expected_summary = "- [X] `base=main`\n"
-    assert pr_conditions.get_summary() == expected_summary
-
-    expected_summary = ""
-    assert pr_conditions.get_unmatched_summary() == expected_summary
-
-
-async def test_condition_summary_complex() -> None:
-    schema = voluptuous.Schema(
-        voluptuous.All(
-            [voluptuous.Coerce(rules.RuleConditionSchema)],
-            voluptuous.Coerce(conditions.PullRequestRuleConditions),
-        )
-    )
-    pr_conditions = schema(
-        [
-            "base=main",
-            {"or": ["label=foo", "label=bar"]},
-            {"and": ["label=foo", "label=baz"]},
-        ]
-    )
-    pr_conditions.condition.conditions[0].match = True
-    pr_conditions.condition.conditions[2].conditions[1].match = True
-
-    expected_summary = """- [ ] all of:
-  - [ ] `label=foo`
-  - [X] `label=baz`
-- [ ] any of:
-  - [ ] `label=bar`
-  - [ ] `label=foo`
-- [X] `base=main`
-"""
-    assert pr_conditions.get_summary() == expected_summary
-
-    expected_summary = """- [ ] all of:
-  - [ ] `label=foo`
-- [ ] any of:
-  - [ ] `label=bar`
-  - [ ] `label=foo`
-"""
-    assert pr_conditions.get_unmatched_summary() == expected_summary
-
-
-async def test_rule_condition_negation_summary() -> None:
-    rule_condition_negation = rules.RuleConditionSchema(
-        {"not": {"or": ["base=main", "label=foo"]}}
-    )
-    pr_conditions = conditions.PullRequestRuleConditions([rule_condition_negation])
-    pr_conditions.condition.conditions[0].match = True
-
-    expected_summary = """- [X] not:
-  - [ ] any of:
-    - [ ] `base=main`
-    - [ ] `label=foo`
-"""
-    assert pr_conditions.get_summary() == expected_summary
-
-    assert pr_conditions.get_unmatched_summary() == ""
-
-
 async def test_has_unmatched_conditions() -> None:
     condition = conditions.RuleCondition("base=main")
     pr_conditions = conditions.PullRequestRuleConditions([condition])
@@ -2227,65 +1935,6 @@ async def test_rule_condition_negation_extract_raw_filter_tree() -> None:
     }
 
     assert pr_conditions.extract_raw_filter_tree() == expected_tree
-
-
-async def test_render_big_nested_summary() -> None:
-    c = conditions.QueueRuleConditions(
-        [
-            conditions.RuleConditionCombination(
-                {
-                    "or": [
-                        conditions.RuleCondition("base=main"),
-                        conditions.RuleConditionCombination(
-                            {
-                                "or": [
-                                    conditions.RuleCondition("base=main"),
-                                    conditions.RuleConditionCombination(
-                                        {
-                                            "or": [
-                                                conditions.RuleCondition("base=main"),
-                                                conditions.RuleConditionCombination(
-                                                    {
-                                                        "or": [
-                                                            conditions.RuleCondition(
-                                                                "base=main"
-                                                            ),
-                                                            conditions.RuleConditionCombination(
-                                                                {
-                                                                    "or": [
-                                                                        conditions.RuleCondition(
-                                                                            "base=main"
-                                                                        ),
-                                                                        conditions.RuleConditionCombination(
-                                                                            {
-                                                                                "or": [
-                                                                                    conditions.RuleCondition(
-                                                                                        "base=main"
-                                                                                    ),
-                                                                                ]
-                                                                            }
-                                                                        ),
-                                                                    ]
-                                                                }
-                                                            ),
-                                                        ]
-                                                    }
-                                                ),
-                                            ]
-                                        }
-                                    ),
-                                ]
-                            }
-                        ),
-                    ]
-                }
-            )
-        ]
-    )
-
-    summary = c.get_summary()
-    summary_split = summary.strip().split("\n")
-    assert summary_split[-1] == "            - [ ] `base=main`"
 
 
 async def test_command_only_conditions(

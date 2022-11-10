@@ -1,7 +1,6 @@
 import typing
 from unittest import mock
 
-from freezegun import freeze_time
 import voluptuous
 
 from mergify_engine import check_api
@@ -61,8 +60,7 @@ async def test_rules_conditions_update() -> None:
         == """- [ ] `check-success=jenkins/fake-tests`
 - [X] `check-success=tests`
 - `label=foo`
-  - [X] #1
-"""
+  - [X] #1"""
     )
 
     state = await checks_status.get_rule_checks_status(
@@ -615,51 +613,6 @@ async def test_rules_checks_status_regex() -> None:
     pull.attrs["check-pending"] = empty
     pull.attrs["check-success"] = empty
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
-
-
-@freeze_time("2021-09-22T08:00:05", tz_offset=0)
-async def test_rules_conditions_schedule() -> None:
-    pulls = [
-        conftest.FakePullRequest(
-            {
-                "number": 1,
-                "author": "me",
-                "base": "main",
-                "current-timestamp": date.utcnow(),
-                "current-time": date.utcnow(),
-                "current-day": date.Day(22),
-                "current-month": date.Month(9),
-                "current-year": date.Year(2021),
-                "current-day-of-week": date.DayOfWeek(3),
-            }
-        ),
-    ]
-    schema = voluptuous.Schema(
-        voluptuous.All(
-            [voluptuous.Coerce(rules.RuleConditionSchema)],
-            voluptuous.Coerce(conditions.QueueRuleConditions),
-        )
-    )
-
-    c = schema(
-        [
-            "base=main",
-            "schedule=MON-FRI 08:00-17:00",
-            "schedule=MONDAY-FRIDAY 10:00-12:00",
-            "schedule=SAT-SUN 07:00-12:00",
-        ]
-    )
-
-    await c(pulls)
-
-    assert (
-        c.get_summary()
-        == """- [ ] `schedule=MONDAY-FRIDAY 10:00-12:00`
-- [ ] `schedule=SAT-SUN 07:00-12:00`
-- [X] `base=main`
-- [X] `schedule=MON-FRI 08:00-17:00`
-"""
-    )
 
 
 async def test_rules_checks_status_depop(logger_checker: None) -> None:

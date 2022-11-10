@@ -95,7 +95,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
                         "- [X] `-label=ignore-guideline`\n"
                         "- [X] `approved-reviews-by=@testing`\n"
                         "- [X] `body~=(?m)^(Fixes|Related|Closes) "
-                        "(MERGIFY-ENGINE|MRGFY)-`\n",
+                        "(MERGIFY-ENGINE|MRGFY)-`",
                         "title": "'body need sentry ticket' succeeded",
                     },
                     "repository": match_p["base"]["repo"]["full_name"],
@@ -130,7 +130,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
                         "- [X] `#files<100`\n"
                         "- [X] `#title<100`\n"
                         "- [X] `#title>10`\n"
-                        "- [X] `-label=ignore-guideline`\n",
+                        "- [X] `-label=ignore-guideline`",
                         "title": "'body need sentry ticket' failed",
                     },
                     "repository": unmatch_p["base"]["repo"]["full_name"],
@@ -177,7 +177,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
                         "- [X] `#title>10`\n"
                         "- [X] `approved-reviews-by=@testing`\n"
                         "- [X] `body~=(?m)^(Fixes|Related|Closes) "
-                        "(MERGIFY-ENGINE|MRGFY)-`\n",
+                        "(MERGIFY-ENGINE|MRGFY)-`",
                         "title": "'body need sentry ticket' failed",
                     },
                     "pull_request": match_p["number"],
@@ -196,7 +196,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
                         "- [X] `-label=ignore-guideline`\n"
                         "- [X] `approved-reviews-by=@testing`\n"
                         "- [X] `body~=(?m)^(Fixes|Related|Closes) "
-                        "(MERGIFY-ENGINE|MRGFY)-`\n",
+                        "(MERGIFY-ENGINE|MRGFY)-`",
                         "title": "'body need sentry ticket' succeeded",
                     },
                     "repository": match_p["base"]["repo"]["full_name"],
@@ -287,7 +287,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
                         "- [X] `#title<100`\n"
                         "- [X] `#title>10`\n"
                         "- [X] `-label=ignore-guideline`\n"
-                        f"- [X] `base={self.main_branch_name}`\n",
+                        f"- [X] `base={self.main_branch_name}`",
                         "title": "'body need sentry ticket' failed",
                     },
                     "repository": unmatch_p["base"]["repo"]["full_name"],

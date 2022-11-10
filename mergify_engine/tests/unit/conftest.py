@@ -186,7 +186,7 @@ async def jinja_environment() -> jinja2.sandbox.SandboxedEnvironment:
 
 
 @dataclasses.dataclass
-class FakePullRequest:
+class FakePullRequest(context.BasePullRequest):
     attrs: dict[str, context.ContextAttributeType]
 
     async def __getattr__(self, name: str) -> context.ContextAttributeType:

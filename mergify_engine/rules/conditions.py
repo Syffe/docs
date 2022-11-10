@@ -9,6 +9,7 @@ import textwrap
 import typing
 
 import daiquiri
+from first import first
 import voluptuous
 
 from mergify_engine import context
@@ -35,6 +36,15 @@ RuleConditionNode = typing.Union[
 ]
 
 ConditionFilterKeyT = abc.Callable[[RuleConditionNode], bool]
+
+EvaluatedConditionNodeT = abc.Mapping[
+    github_types.GitHubPullRequestNumber, RuleConditionNode
+]
+EvaluatedConditionT = abc.Mapping[github_types.GitHubPullRequestNumber, "RuleCondition"]
+EvaluatedConditionGroupT = abc.Mapping[
+    github_types.GitHubPullRequestNumber,
+    typing.Union["RuleConditionCombination", "RuleConditionNegation"],  # noqa : NU003
+]
 
 
 @dataclasses.dataclass
@@ -156,14 +166,23 @@ class RuleConditionGroup(abstract.ABC):
         pass
 
     def get_summary(self) -> str:
-        return self._walk_for_summary(self.conditions)
+        return self.get_evaluation_result().as_markdown()
 
     def get_unmatched_summary(self) -> str:
-        return self._walk_for_summary(self.conditions, filter_key=lambda c: not c.match)
+        return self.get_evaluation_result(
+            filter_key=lambda c: not c.match
+        ).as_markdown()
+
+    def get_evaluation_result(
+        self, filter_key: ConditionFilterKeyT | None = None
+    ) -> ConditionEvaluationResult:
+        return ConditionEvaluationResult(
+            self, filter_key=filter_key  # type:ignore [arg-type]
+        )
 
     @staticmethod
     def _conditions_sort_key(
-        condition: RuleCondition | RuleConditionGroup,
+        condition: RuleConditionNode,
         should_match: bool,
     ) -> tuple[bool, int, typing.Any, typing.Any]:
         """
@@ -190,7 +209,7 @@ class RuleConditionGroup(abstract.ABC):
             should_match != condition.match,
             1,
             condition.operator_label,
-            condition.description or "",  # type: ignore[attr-defined]
+            condition.description or "",
         )
 
     @staticmethod
@@ -205,55 +224,6 @@ class RuleConditionGroup(abstract.ABC):
             )
         )
         return cond_cpy
-
-    @classmethod
-    def _walk_for_summary(
-        cls,
-        conditions: list[RuleConditionNode],
-        level: int = 0,
-        filter_key: ConditionFilterKeyT | None = None,
-        parent_condition_matching: bool = False,
-    ) -> str:
-        ordered_conditions = RuleConditionGroup._get_conditions_ordered(
-            conditions, should_match=parent_condition_matching
-        )
-
-        summary = ""
-        for condition in ordered_conditions:
-            if filter_key and not filter_key(condition):
-                continue
-
-            if isinstance(condition, RuleCondition):
-                summary += cls._get_rule_condition_summary(condition)
-            elif isinstance(condition, RuleConditionGroup):
-                checked = "X" if condition.match else " "
-                summary += f"- [{checked}] {condition.operator_label}:"
-                if condition.description:
-                    summary += f" [{condition.description}]"
-                summary += "\n"
-
-                summary += cls._walk_for_summary(
-                    condition.conditions,
-                    level + 1,
-                    filter_key=filter_key,
-                    parent_condition_matching=condition.match,
-                )
-            else:
-                raise RuntimeError(f"Unsupported condition type: {type(condition)}")
-
-        return textwrap.indent(summary, "  " * min(level, 1))
-
-    @staticmethod
-    def _get_rule_condition_summary(condition: RuleCondition) -> str:
-        summary = ""
-        checked = "X" if condition.match else " "
-        summary += f"- [{checked}] `{condition}`"
-        if condition.description:
-            summary += f" [{condition.description}]"
-        if condition.evaluation_error:
-            summary += f" ⚠️ {condition.evaluation_error}"
-        summary += "\n"
-        return summary
 
     def has_unmatched_conditions(self) -> bool:
         for condition in self.conditions:
@@ -434,44 +404,9 @@ class QueueRuleConditions:
         self.match = all(c.match for c in self._evaluated_conditions.values())
         return self.match
 
-    @classmethod
-    def _get_rule_condition_summary(
-        cls,
-        conditions: abc.Mapping[github_types.GitHubPullRequestNumber, RuleCondition],
-    ) -> str:
-
-        first_key = next(iter(conditions))
-        display_detail = (
-            conditions[first_key].get_attribute_name()
-            not in context.QueuePullRequest.QUEUE_ATTRIBUTES
-        )
-
-        summary = "- "
-        if not display_detail:
-            checked = "X" if conditions[first_key].match else " "
-            summary += f"[{checked}] "
-
-        summary += f"`{conditions[first_key]}`"
-
-        if conditions[first_key].description:
-            summary += f" [{conditions[first_key].description}]"
-
-        summary += "\n"
-
-        if display_detail:
-            for pull_number, cond in conditions.items():
-                checked = "X" if cond.match else " "
-                summary += f"  - [{checked}] #{pull_number}"
-                if cond.evaluation_error:
-                    summary += f" ⚠️ {cond.evaluation_error}"
-                summary += "\n"
-
-        return summary
-
     @staticmethod
     def _conditions_sort_key(
-        condition: abc.Mapping[github_types.GitHubPullRequestNumber, RuleConditionNode],
-        should_match: bool,
+        condition: EvaluatedConditionNodeT, should_match: bool
     ) -> tuple[bool, int, typing.Any, typing.Any]:
         """
         Group conditions based on (in order):
@@ -493,7 +428,7 @@ class QueueRuleConditions:
                 condition[first_key].description or "",
             )
 
-        # RuleConditionCombination
+        # RuleConditionGroup
         return (
             should_match != all(cond.match for cond in condition.values()),
             1,
@@ -501,14 +436,10 @@ class QueueRuleConditions:
             condition[first_key].description or "",
         )
 
-    @classmethod
+    @staticmethod
     def _get_conditions_ordered(
-        cls,
-        conditions: list[
-            abc.Mapping[github_types.GitHubPullRequestNumber, RuleConditionNode]
-        ],
-        should_match: bool,
-    ) -> list[abc.Mapping[github_types.GitHubPullRequestNumber, RuleConditionNode]]:
+        conditions: list[EvaluatedConditionNodeT], should_match: bool
+    ) -> list[EvaluatedConditionNodeT]:
         cond_cpy = conditions.copy()
         cond_cpy.sort(
             key=functools.partial(
@@ -517,77 +448,14 @@ class QueueRuleConditions:
         )
         return cond_cpy
 
-    @classmethod
-    def _walk_for_summary(
-        cls,
-        evaluated_conditions: abc.Mapping[
-            github_types.GitHubPullRequestNumber, RuleConditionNode
-        ],
-        level: int = -1,
-    ) -> str:
-        if not evaluated_conditions:
-            raise RuntimeError("Empty conditions group")
-
-        summary = ""
-        first_key = next(iter(evaluated_conditions))
-        first_evaluated_condition = evaluated_conditions[first_key]
-
-        if isinstance(first_evaluated_condition, RuleCondition):
-            evaluated_conditions = typing.cast(
-                abc.Mapping[
-                    github_types.GitHubPullRequestNumber,
-                    RuleCondition,
-                ],
-                evaluated_conditions,
-            )
-            summary += cls._get_rule_condition_summary(evaluated_conditions)
-        elif isinstance(first_evaluated_condition, RuleConditionGroup):
-            evaluated_conditions = typing.cast(
-                abc.Mapping[
-                    github_types.GitHubPullRequestNumber,
-                    RuleConditionCombination,
-                ],
-                evaluated_conditions,
-            )
-            global_match = False
-            if level >= 0:
-                label = first_evaluated_condition.operator_label
-                if first_evaluated_condition.description:
-                    label += f" [{first_evaluated_condition.description}]"
-
-                global_match = all(c.match for c in evaluated_conditions.values())
-                checked = "X" if global_match else " "
-                summary += f"- [{checked}] {label}:\n"
-
-            inner_conditions: list[
-                abc.Mapping[github_types.GitHubPullRequestNumber, RuleConditionNode]
-            ] = []
-
-            for idx in range(len(first_evaluated_condition.conditions)):
-                inner_conditions.append(
-                    {p: c.conditions[idx] for p, c in evaluated_conditions.items()}
-                )
-
-            inner_conditions = cls._get_conditions_ordered(
-                inner_conditions, global_match
-            )
-            for inner_condition in inner_conditions:
-                summary += cls._walk_for_summary(
-                    inner_condition,
-                    level + 1,
-                )
-        else:
-            raise RuntimeError(
-                f"Unsupported condition type: {type(first_evaluated_condition).__name__}"
-            )
-
-        return textwrap.indent(summary, "  " * min(level, 1))
-
     def get_summary(self) -> str:
         if self._used:
-            return self._walk_for_summary(self._evaluated_conditions)
+            return self.get_evaluation_result().as_markdown()
         else:
             return self.condition.get_summary()
+
+    def get_evaluation_result(self) -> QueueConditionEvaluationResult:
+        return QueueConditionEvaluationResult(self._evaluated_conditions)
 
     def is_faulty(self) -> bool:
         if self._used:
@@ -744,3 +612,168 @@ class PullRequestRuleConditions:
 
     def copy(self) -> "PullRequestRuleConditions":
         return PullRequestRuleConditions(self.condition.copy().conditions)
+
+
+@dataclasses.dataclass
+class ConditionEvaluationResult:
+    init_data: dataclasses.InitVar[RuleConditionNode]
+    filter_key: dataclasses.InitVar[ConditionFilterKeyT | None] = None
+
+    match: bool = dataclasses.field(init=False)
+    label: str = dataclasses.field(init=False)
+    description: str | None = dataclasses.field(init=False, default=None)
+    evaluation_error: str | None = dataclasses.field(init=False, default=None)
+    subconditions: list[ConditionEvaluationResult] = dataclasses.field(
+        init=False, default_factory=list
+    )
+
+    def __post_init__(
+        self, init_data: RuleConditionNode, filter_key: ConditionFilterKeyT | None
+    ) -> None:
+        if isinstance(init_data, RuleConditionGroup):
+            self.match = init_data.match
+            self.label = init_data.operator_label
+            self.description = init_data.description
+            self.subconditions = self._create_subconditions(init_data, filter_key)
+        elif isinstance(init_data, RuleCondition):
+            self.match = init_data.match
+            self.label = f"`{init_data}`"
+            self.description = init_data.description
+            self.evaluation_error = init_data.evaluation_error
+        else:
+            raise RuntimeError(f"Unsupported condition type: {type(init_data)}")
+
+    def _create_subconditions(
+        self,
+        condition_group: RuleConditionGroup,
+        filter_key: ConditionFilterKeyT | None,
+    ) -> list[ConditionEvaluationResult]:
+        sorted_subconditions = RuleConditionGroup._get_conditions_ordered(
+            condition_group.conditions, self.match
+        )
+        return [
+            ConditionEvaluationResult(c, filter_key)
+            for c in sorted_subconditions
+            if filter_key is None or filter_key(c)
+        ]
+
+    def as_markdown(self) -> str:
+        return "\n".join(self._markdown_iterator())
+
+    def _markdown_iterator(self) -> abc.Generator[str, None, None]:
+        for condition in self.subconditions:
+            text = condition._as_markdown_element()
+            if condition.subconditions:
+                text += "\n"
+                text += textwrap.indent(condition.as_markdown(), "  ")
+            yield text
+
+    def _as_markdown_element(self) -> str:
+        check = "X" if self.match else " "
+        text = f"- [{check}] {self.label}"
+
+        if self.description:
+            text += f" [{self.description}]"
+        if self.evaluation_error:
+            text += f" ⚠️ {self.evaluation_error}"
+        if self.subconditions:
+            text += ":"
+
+        return text
+
+
+@dataclasses.dataclass
+class QueueConditionEvaluationResult:
+    init_data: dataclasses.InitVar[EvaluatedConditionNodeT]
+
+    match: bool = dataclasses.field(init=False)
+    label: str = dataclasses.field(init=False)
+    description: str | None = dataclasses.field(init=False, default=None)
+    attribute_name: str | None = dataclasses.field(init=False, default=None)
+    subconditions: list[QueueConditionEvaluationResult] = dataclasses.field(
+        init=False, default_factory=list
+    )
+    pull_request_evaluations: dict[
+        github_types.GitHubPullRequestNumber, Evaluation
+    ] = dataclasses.field(init=False, default_factory=dict)
+
+    class Evaluation(typing.NamedTuple):
+        match: bool
+        evaluation_error: str | None
+
+    def __post_init__(self, init_data: EvaluatedConditionNodeT) -> None:
+        first_evaluated_condition = first(init_data.values())
+
+        if isinstance(first_evaluated_condition, RuleConditionGroup):
+            init_data = typing.cast(EvaluatedConditionGroupT, init_data)
+
+            self.match = all(c.match for c in init_data.values())
+            self.label = first_evaluated_condition.operator_label
+            self.description = first_evaluated_condition.description
+            self.subconditions = self._create_subconditions(init_data)
+        elif isinstance(first_evaluated_condition, RuleCondition):
+            init_data = typing.cast(EvaluatedConditionT, init_data)
+
+            self.match = first_evaluated_condition.match
+            self.label = f"`{first_evaluated_condition}`"
+            self.description = first_evaluated_condition.description
+            self.pull_request_evaluations = {
+                pull_request: QueueConditionEvaluationResult.Evaluation(
+                    condition.match, condition.evaluation_error
+                )
+                for pull_request, condition in init_data.items()
+            }
+            self.attribute_name = first_evaluated_condition.get_attribute_name()
+        else:
+            raise RuntimeError(
+                f"Unsupported condition type: {type(first_evaluated_condition)}"
+            )
+
+    @property
+    def display_pull_request_evaluations(self) -> bool:
+        return self.attribute_name not in context.QueuePullRequest.QUEUE_ATTRIBUTES
+
+    def _create_subconditions(
+        self, evaluated_condition_group: EvaluatedConditionGroupT
+    ) -> list[QueueConditionEvaluationResult]:
+        first_evaluated_condition = next(iter(evaluated_condition_group.values()))
+        evaluated_subconditions: list[EvaluatedConditionNodeT] = [
+            {p: c.conditions[i] for p, c in evaluated_condition_group.items()}
+            for i, _ in enumerate(first_evaluated_condition.conditions)
+        ]
+        sorted_subconditions = QueueRuleConditions._get_conditions_ordered(
+            evaluated_subconditions, self.match
+        )
+        return [QueueConditionEvaluationResult(c) for c in sorted_subconditions]
+
+    def as_markdown(self) -> str:
+        return "\n".join(self._markdown_iterator())
+
+    def _markdown_iterator(self) -> abc.Generator[str, None, None]:
+        for condition in self.subconditions:
+            text = condition._as_markdown_element()
+            if condition.subconditions:
+                text += "\n"
+                text += textwrap.indent(condition.as_markdown(), "  ")
+            yield text
+
+    def _as_markdown_element(self) -> str:
+        if self.pull_request_evaluations and self.display_pull_request_evaluations:
+            text = f"- {self.label}"
+        else:
+            check = "X" if self.match else " "
+            text = f"- [{check}] {self.label}"
+
+        if self.description:
+            text += f" [{self.description}]"
+        if self.subconditions:
+            text += ":"
+
+        if self.pull_request_evaluations and self.display_pull_request_evaluations:
+            for pull_number, evaluation in self.pull_request_evaluations.items():
+                check = "X" if evaluation.match else " "
+                text += f"\n  - [{check}] #{pull_number}"
+                if evaluation.evaluation_error:
+                    text += f" ⚠️ {evaluation.evaluation_error}"
+
+        return text

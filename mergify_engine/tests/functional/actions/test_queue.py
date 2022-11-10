@@ -4171,7 +4171,7 @@ class TestQueueAction(base.FunctionalTestBase):
                                 "ended_at": None,
                                 "state": "pending",
                                 "checks": [],
-                                "evaluated_conditions": "- [ ] `status-success=continuous-integration/fast-ci`\n",
+                                "evaluated_conditions": "- [ ] `status-success=continuous-integration/fast-ci`",
                             },
                             "estimated_time_of_merge": None,
                         },

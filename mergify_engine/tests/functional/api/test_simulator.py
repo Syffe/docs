@@ -69,7 +69,6 @@ class TestApiSimulator(base.FunctionalTestBase):
 - [X] any of:
   - [X] `schedule=MON-SUN 00:00-23:59`
   - [ ] `label=foobar`
-
 **post_check action configuration:**
 ```
 always_show: false
