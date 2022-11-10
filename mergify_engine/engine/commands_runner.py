@@ -37,7 +37,7 @@ CONFIGURATION_CHANGE_MESSAGE = (
 
 @dataclasses.dataclass
 class Command:
-    name: str
+    name: rules.PullRequestRuleName
     args: str
     action: actions.Action
 
@@ -103,7 +103,7 @@ def load_command(
         )
 
     if match[1] in action_classes:
-        action_name = match[1]
+        action_name = rules.PullRequestRuleName(match[1])
         action_class = action_classes[action_name]
         command_args = match[2].strip()
 
@@ -233,7 +233,9 @@ async def run_command(
             await command.action.load_context(
                 ctxt,
                 rules.EvaluatedRule(
-                    rules.CommandRule(str(command), None, conds, {}, False)
+                    rules.CommandRule(
+                        rules.PullRequestRuleName(str(command)), None, conds, {}, False
+                    )
                 ),
             )
         except rules.InvalidPullRequestRule as e:

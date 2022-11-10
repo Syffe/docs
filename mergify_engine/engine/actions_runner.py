@@ -145,9 +145,6 @@ async def gen_summary(
     summary = ""
     summary += await get_already_merged_summary(ctxt, match)
 
-    if pull_request_rules.has_multiple_rules_with_same_name:
-        summary = MSG_RULE_WITH_SAME_NAME_DEPRECATION + summary
-
     matching_rules_to_display = match.matching_rules[:]
     not_applicable_base_changeable_attributes_rules_to_display = []
     for rule in match.matching_rules:

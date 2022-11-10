@@ -4035,7 +4035,7 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "Merge priority high urgent",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue-urgent",
@@ -4043,7 +4043,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "actions": {"queue": {"name": "urgent"}},
                 },
                 {
-                    "name": "Merge priority high",
+                    "name": "Merge priority high default",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue",

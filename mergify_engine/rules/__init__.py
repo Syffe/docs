@@ -5,7 +5,6 @@ import dataclasses
 import datetime
 import functools
 import html
-import itertools
 import operator
 import typing
 
@@ -39,9 +38,12 @@ class DisabledDict(typing.TypedDict):
     reason: str
 
 
+PullRequestRuleName = typing.NewType("PullRequestRuleName", str)
+
+
 @dataclasses.dataclass
 class PullRequestRule:
-    name: str
+    name: PullRequestRuleName
     disabled: DisabledDict | None
     conditions: conditions_mod.PullRequestRuleConditions
     actions: dict[str, actions_mod.Action]
@@ -49,7 +51,7 @@ class PullRequestRule:
     from_command: bool = False
 
     class T_from_dict_required(typing.TypedDict):
-        name: str
+        name: PullRequestRuleName
         disabled: DisabledDict | None
         conditions: conditions_mod.PullRequestRuleConditions
         actions: dict[str, actions_mod.Action]
@@ -298,21 +300,15 @@ QueuesRulesEvaluator = GenericRulesEvaluator[QueueRule, EvaluatedQueueRule]
 @dataclasses.dataclass
 class PullRequestRules:
     rules: list[PullRequestRule]
-    has_multiple_rules_with_same_name: bool = False
 
     def __post_init__(self) -> None:
-        # NOTE(sileht): Make sure each rule has a unique name because they are
-        # used to serialize the rule/action result in summary. And the summary
-        # uses as unique key something like: f"{rule.name} ({action.name})"
-        sorted_rules = sorted(self.rules, key=operator.attrgetter("name"))
-        grouped_rules = itertools.groupby(sorted_rules, operator.attrgetter("name"))
-        for _, sub_rules in grouped_rules:
-            sub_rules_list = list(sub_rules)
-            if len(sub_rules_list) == 1:
-                continue
-            for n, rule in enumerate(sub_rules_list):
-                rule.name += f" #{n + 1}"
-                self.has_multiple_rules_with_same_name = True
+        names: set[PullRequestRuleName] = set()
+        for rule in self.rules:
+            if rule.name in names:
+                raise voluptuous.error.Invalid(
+                    f"pull_request_rules names must be unique, found `{rule.name}` twice"
+                )
+            names.add(rule.name)
 
     def __iter__(self) -> abc.Iterator[PullRequestRule]:
         return iter(self.rules)

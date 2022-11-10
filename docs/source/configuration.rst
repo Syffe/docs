@@ -48,7 +48,8 @@ Each dictionary must have the following keys:
    * - ``name``
      - string
      - The name of the rule. This is not used by the engine directly, but is
-       used when reporting information about a rule.
+       used when reporting information about a rule. It's not possible to
+       have two rules with the same name.
    * - ``disabled``
      - dictionary with ``reason`` key
      - This optional key allows to disabled a rule and cancel any ongoing

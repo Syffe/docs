@@ -228,19 +228,56 @@ def test_invalid_pull_request_rule(invalid: typing.Any, error: str) -> None:
     assert error in str(i.value)
 
 
-def test_same_names() -> None:
-    pull_request_rules = pull_request_rule_from_list(
-        [
-            {"name": "hello", "conditions": [], "actions": {}},
-            {"name": "foobar", "conditions": [], "actions": {}},
-            {"name": "hello", "conditions": [], "actions": {}},
-        ]
+async def test_same_pull_request_rules_name() -> None:
+    with pytest.raises(rules.InvalidRules) as x:
+        await rules.get_mergify_config_from_dict(
+            mock.MagicMock(),
+            {
+                "pull_request_rules": [
+                    {
+                        "name": "merge on main",
+                        "conditions": ["base=new_rule", "-merged"],
+                        "actions": {"merge": {}},
+                    },
+                    {
+                        "name": "merge on main",
+                        "conditions": ["base=new_rule", "-merged"],
+                        "actions": {"merge": {}},
+                    },
+                ]
+            },
+            "",
+        )
+    assert (
+        str(x.value)
+        == "pull_request_rules names must be unique, found `merge on main` twice for dictionary value @ pull_request_rules"
     )
-    assert [rule.name for rule in pull_request_rules] == [
-        "hello #1",
-        "foobar",
-        "hello #2",
-    ]
+
+
+async def test_same_queue_rules_name() -> None:
+    with pytest.raises(rules.InvalidRules) as x:
+        await rules.get_mergify_config_from_dict(
+            mock.MagicMock(),
+            {
+                "queue_rules": [
+                    {
+                        "name": "default",
+                        "conditions": ["schedule: MON-FRI 08:00-17:00"],
+                        "allow_inplace_checks": False,
+                    },
+                    {
+                        "name": "default",
+                        "conditions": ["schedule: MON-FRI 08:00-17:00"],
+                        "allow_inplace_checks": False,
+                    },
+                ]
+            },
+            "",
+        )
+    assert (
+        str(x.value)
+        == "queue_rules names must be unique, found `default` twice for dictionary value @ queue_rules"
+    )
 
 
 async def test_jinja_with_list_attribute() -> None:
@@ -1056,7 +1093,7 @@ async def test_get_pull_request_rule(
     pull_request_rules = rules.PullRequestRules(
         [
             rules.PullRequestRule(
-                name="default",
+                name=rules.PullRequestRuleName("default"),
                 disabled=None,
                 conditions=conditions.PullRequestRuleConditions([]),
                 actions={},

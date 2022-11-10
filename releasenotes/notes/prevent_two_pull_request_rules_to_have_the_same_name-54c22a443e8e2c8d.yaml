@@ -1,0 +1,4 @@
+---
+fixes:
+  - |
+    Having multiples pull_request_rules with the same name in the configuration will raise an error.
