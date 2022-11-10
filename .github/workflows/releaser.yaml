@@ -7,8 +7,8 @@ permissions: write-all
 on:
   workflow_dispatch:
     inputs:
-      dry_run:
-        description: "don't push thing"
+      publish_release:
+        description: "set to `true` to publish the release"
         required: false
         default: false
 jobs:
@@ -55,7 +55,7 @@ jobs:
           echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Push git tag 🏎️
-        if: ${{ !github.event.inputs.dry_run }}
+        if: ${{ github.event.inputs.publish_release }}
         run: |
           set -e
           set -x
