@@ -1027,9 +1027,19 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check is not None
         summary = check["output"]["summary"]
-        assert "- [X] `status-success=another-ci`" in summary
-        assert "Required conditions to stay in the queue:" in summary
-        assert "- [ ] `status-success=continuous-integration/fake-ci`" in summary
+        assert (
+            """- [X] `status-success=another-ci`
+
+**Required conditions to stay in the queue:**
+
+- [ ] `status-success=continuous-integration/fake-ci`
+
+**The following pull requests are queued:**
+
+| | Pull request | Queue/Priority | Speculative checks | Queued
+"""
+            in summary
+        )
 
         # Check event logs
         r = await self.app.get(

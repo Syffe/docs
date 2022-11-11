@@ -1801,15 +1801,15 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
             if self.train_car_state.outcome == TrainCarOutcome.UNKNWON:
                 timeout_summary = (
-                    f"\n⏲️  The checks have to pass before {expected_finish} ⏲\n️"
+                    f"\n\n⏲️  The checks have to pass before {expected_finish} ⏲"
                 )
             elif self.train_car_state.outcome == TrainCarOutcome.CHECKS_TIMEOUT:
-                timeout_summary = "\n❌⏲️️  The checks have timed out ⏲❌\n️"
+                timeout_summary = "\n\n❌⏲️️  The checks have timed out ⏲❌"
 
         queue_summary += timeout_summary
 
         if self.failure_history:
-            batch_failure_summary = f"\n\nThe pull request {self._get_user_refs()} is part of a speculative checks batch that previously failed:\n"
+            batch_failure_summary = f"\n\nThe pull request {self._get_user_refs()} is part of a speculative checks batch that previously failed:\n\n"
             batch_failure_summary += (
                 "| Pull request | Parents pull requests | Speculative checks |\n"
             )
@@ -1840,7 +1840,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
         if self.train_car_state.checks_type == TrainCarChecksType.DRAFT:
             summary = f"Embarking {self._get_embarked_refs(markdown=True)} together"
-            summary += queue_summary + "\n" + batch_failure_summary
+            summary += queue_summary + batch_failure_summary
 
             if self.queue_pull_request_number is None:
                 raise RuntimeError(
@@ -1957,7 +1957,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
         unexpected_change_summary = ""
         if has_unexpected_change:
-            unexpected_change_summary = f"❌ Unexpected queue change: {self.train_car_state.outcome_message}. ❌\n\n"
+            unexpected_change_summary = f"\n\n❌ Unexpected queue change: {self.train_car_state.outcome_message}. ❌"
 
         self.train.log.info(
             "pull request train car status update",
@@ -1977,12 +1977,9 @@ You don't need to do anything. Mergify will close this pull request automaticall
         train_car_state_summary = self.train_car_state.to_base_64_json()
         original_pull_summary = (
             train_car_state_summary
-            + "\n"
             + unexpected_change_summary
             + queue_summary
-            + "\n"
             + checks_copy_summary
-            + "\n"
             + batch_failure_summary
         )
 
@@ -3225,15 +3222,14 @@ class Train:
                 )
 
             description += (
-                "\n**The following pull requests are queued:**\n"
-                + "\n".join(table)
-                + "\n"
+                "\n\n**The following pull requests are queued:**\n\n" + "\n".join(table)
             )
 
-        description += "\n---\n\n"
         description += constants.MERGIFY_MERGE_QUEUE_PULL_REQUEST_DOC
 
         if for_queue_pull_request:
+            # FIXME(sileht): This should be on top of the description in case
+            # of the summary is truncated
             description += utils.get_mergify_payload(constants.MERGE_QUEUE_BODY_INFO)
         return description
 

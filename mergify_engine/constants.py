@@ -35,6 +35,8 @@ MERGIFY_OPENSOURCE_SPONSOR_DOC = (
 )
 MERGIFY_MERGE_QUEUE_PULL_REQUEST_DOC = """
 
+---
+
 More informations about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).
 
 <details>
