@@ -297,11 +297,6 @@ class Schedule:
         )
 
     def __post_init__(self) -> None:
-        if self.start_weekday > self.end_weekday:
-            raise InvalidDate(
-                "Starting weekday of schedule needs to be before the last day"
-            )
-
         if self.start_hour > self.end_hour:
             raise InvalidDate(
                 "Starting hour of schedule needs to be less or equal than the ending hour"
@@ -410,10 +405,16 @@ class Schedule:
             # for clarity.
             pass
         elif from_time_as_tz.isoweekday() == self.end_weekday:
-            # Next time is next week at the start of schedule
-            from_time_as_tz += datetime.timedelta(
-                days=self.start_weekday + (7 - from_time_as_tz.isoweekday())
-            )
+            if self.start_weekday > self.end_weekday:
+                # Next time is this week at the start of schedule
+                from_time_as_tz += datetime.timedelta(
+                    days=self.start_weekday - self.end_weekday
+                )
+            else:
+                # Next time is next week at the start of schedule
+                from_time_as_tz += datetime.timedelta(
+                    days=self.start_weekday + (7 - from_time_as_tz.isoweekday())
+                )
         else:
             # Next time is next day at start hour + start minute
             from_time_as_tz += datetime.timedelta(days=1)
