@@ -87,4 +87,4 @@ datadog-agent run &
 /opt/datadog-agent/embedded/bin/process-agent --config=/etc/datadog-agent/datadog.yaml &
 
 startup_message
-exec /venv/bin/ddtrace-run "$@"
+exec /app/.venv/bin/ddtrace-run "$@"
