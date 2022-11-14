@@ -22,15 +22,15 @@ ADD poetry-version.txt /
 # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
 RUN python3 -m pip install -r poetry-version.txt
 
-RUN python3 -m venv /venv
-ENV VIRTUAL_ENV=/venv
-ENV PATH="/venv/bin:${PATH}"
 
 # First cache build requirements
 RUN mkdir /app
 ADD pyproject.toml /app
 ADD poetry.lock /app
 WORKDIR /app
+RUN poetry config virtualenvs.in-project true
+RUN poetry config virtualenvs.options.no-pip true
+RUN poetry config virtualenvs.options.no-setuptools true
 RUN poetry install --no-dev --sync --no-root
 ADD . /app
 RUN poetry install --no-dev --sync
@@ -76,13 +76,12 @@ RUN test -n "$PYTHON_VERSION"
 RUN test -n "$MERGIFYENGINE_SHA"
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
-COPY --from=python-builder /venv /venv
 COPY --from=python-builder /app /app
 ADD ./.profile.d /app/.profile.d
 WORKDIR /app
-ENV VIRTUAL_ENV=/venv
+ENV VIRTUAL_ENV=/app/.venv
 ENV PYTHONUNBUFFERED=1
-ENV PATH="/venv/bin:${PATH}"
+ENV PATH="/app/.venv/bin:${PATH}"
 USER mergify
 
 # ALL LAYER ABOVE MUST BE THE SAME FOR ALL VERSIONS, BUILD ARGS MUST BE THE SAME FOR ALL VERSIONS
