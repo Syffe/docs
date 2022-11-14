@@ -1841,15 +1841,6 @@ queue_rules:
     )
 
 
-async def test_has_unmatched_conditions() -> None:
-    condition = conditions.RuleCondition("base=main")
-    pr_conditions = conditions.PullRequestRuleConditions([condition])
-    assert pr_conditions.has_unmatched_conditions()
-
-    condition.match = True
-    assert not pr_conditions.has_unmatched_conditions()
-
-
 async def test_template_with_empty_body() -> None:
     config = await utils.load_mergify_config(
         """pull_request_rules:

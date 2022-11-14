@@ -3171,7 +3171,7 @@ class Train:
         description = f"\n\n**Required conditions of queue** `{queue_rule_report.name}` **for merge:**\n\n"
         description += queue_rule_report.summary
 
-        if pull_rule and pull_rule.conditions.has_unmatched_conditions():
+        if pull_rule and not pull_rule.conditions.match:
             description += "\n\n**Required conditions to stay in the queue:**\n\n"
             description += pull_rule.conditions.get_unmatched_summary()
 

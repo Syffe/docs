@@ -225,19 +225,6 @@ class RuleConditionGroup(abstract.ABC):
         )
         return cond_cpy
 
-    def has_unmatched_conditions(self) -> bool:
-        for condition in self.conditions:
-            if not condition.match:
-                return True
-
-            if (
-                isinstance(condition, RuleConditionGroup)
-                and condition.has_unmatched_conditions()
-            ):
-                return True
-
-        return False
-
     def walk(
         self,
         conditions: None | list[RuleConditionNode] = None,
@@ -596,9 +583,6 @@ class PullRequestRuleConditions:
 
     def get_unmatched_summary(self) -> str:
         return self.condition.get_unmatched_summary()
-
-    def has_unmatched_conditions(self) -> bool:
-        return self.condition.has_unmatched_conditions()
 
     @property
     def match(self) -> bool:
