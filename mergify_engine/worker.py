@@ -634,7 +634,7 @@ class StreamProcessor:
                             source,
                             score,
                         )
-                        logger.info(
+                        logger.debug(
                             "assiociated non pull request event to pull requests",
                             event_type=source["event_type"],
                             pull_requests_found=converted_messages,
