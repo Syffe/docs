@@ -298,6 +298,14 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
         if position >= length:
             raise ConditionParsingError("Incomplete condition")
 
+    # circular import
+    from mergify_engine.rules import conditions
+
+    if conditions.DEPRECATE_CURRENT_CONDITIONS_BOOLEAN:
+        for name in conditions.DEPRECATED_CURRENT_CONDITIONS_NAMES:
+            if name in ATTRIBUTES:
+                del ATTRIBUTES[ATTRIBUTES.index(name)]
+
     # Get the attribute
     for attribute in ATTRIBUTES:
         if v[position:].startswith(attribute):

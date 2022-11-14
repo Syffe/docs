@@ -9,6 +9,7 @@ from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import yaml
+from mergify_engine.rules import conditions
 from mergify_engine.tests.functional import base
 
 
@@ -79,7 +80,7 @@ class TestAttributes(base.FunctionalTestBase):
                 },
             )
 
-    async def test_time(self) -> None:
+    async def test_time_attribute(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -105,6 +106,36 @@ class TestAttributes(base.FunctionalTestBase):
             await self.run_full_engine()
             comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
             assert comment["comment"]["body"] == "it's time"
+
+        ctxt = context.Context(self.repository_ctxt, pr, [])
+        summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
+        assert summary is not None
+        assert (
+            conditions.DEPRECATED_CURRENT_CONDITIONS_MESSAGE
+            in summary["output"]["summary"]
+        )
+
+    async def test_time_attribute_deprecation(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "no-draft",
+                    "conditions": ["current-time>=12:00"],
+                    "actions": {"comment": {"message": "it's time"}},
+                }
+            ]
+        }
+        with mock.patch.object(
+            conditions, "DEPRECATE_CURRENT_CONDITIONS_BOOLEAN", True
+        ):
+            await self.setup_repo(yaml.dump(rules))
+            pr = await self.create_pr()
+            await self.run_engine()
+
+            ctxt = context.Context(self.repository_ctxt, pr, [])
+            summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
+            assert summary is not None
+            assert "Invalid attribute" in summary["output"]["summary"]
 
     async def test_disabled(self) -> None:
         rules = {

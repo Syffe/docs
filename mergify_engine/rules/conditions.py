@@ -47,6 +47,23 @@ EvaluatedConditionGroupT = abc.Mapping[
 ]
 
 
+DEPRECATE_CURRENT_CONDITIONS_BOOLEAN = False
+DEPRECATED_CURRENT_CONDITIONS_NAMES = (
+    "current-time",
+    "current-day-of-week",
+    "current-day",
+    "current-month",
+    "current-year",
+    "current-timestamp",
+)
+DEPRECATED_CURRENT_CONDITIONS_MESSAGE = f"""⚠️  The following conditions are deprecated and must be replaced with the `schedule` condition: {', '.join([f"`{n}`" for n in DEPRECATED_CURRENT_CONDITIONS_NAMES])}.
+A brownout day is planned for the whole day of January 11th, 2023.
+Those conditions will be removed on February 11th, 2023.
+
+For more informations and examples on how to use the `schedule` condition: https://docs.mergify.com/conditions/#attributes, https://docs.mergify.com/configuration/#time
+"""
+
+
 @dataclasses.dataclass
 class RuleCondition:
     """This describe a leaf of the `conditions:` tree, eg:
@@ -437,9 +454,15 @@ class QueueRuleConditions:
 
     def get_summary(self) -> str:
         if self._used:
-            return self.get_evaluation_result().as_markdown()
+            summary = self.get_evaluation_result().as_markdown()
         else:
-            return self.condition.get_summary()
+            summary = self.condition.get_summary()
+
+        for cond in self.walk():
+            if cond.get_attribute_name() in DEPRECATED_CURRENT_CONDITIONS_NAMES:
+                return summary + "\n" + DEPRECATED_CURRENT_CONDITIONS_MESSAGE
+
+        return summary
 
     def get_evaluation_result(self) -> QueueConditionEvaluationResult:
         return QueueConditionEvaluationResult(self._evaluated_conditions)
@@ -579,9 +602,25 @@ class PullRequestRuleConditions:
         return self.condition.extract_raw_filter_tree()
 
     def get_summary(self) -> str:
+        for cond in self.walk():
+            if cond.get_attribute_name() in DEPRECATED_CURRENT_CONDITIONS_NAMES:
+                return (
+                    self.condition.get_summary()
+                    + "\n"
+                    + DEPRECATED_CURRENT_CONDITIONS_MESSAGE
+                )
+
         return self.condition.get_summary()
 
     def get_unmatched_summary(self) -> str:
+        for cond in self.walk():
+            if cond.get_attribute_name() in DEPRECATED_CURRENT_CONDITIONS_NAMES:
+                return (
+                    self.condition.get_unmatched_summary()
+                    + "\n"
+                    + DEPRECATED_CURRENT_CONDITIONS_MESSAGE
+                )
+
         return self.condition.get_unmatched_summary()
 
     @property

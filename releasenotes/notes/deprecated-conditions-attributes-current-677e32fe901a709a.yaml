@@ -1,0 +1,9 @@
+---
+deprecations:
+  - |
+    The conditions attributes ``current-time``, ``current-day-of-week``, ``current-day``,
+    ``current-timestamp`` are deprecated in favor of the ``schedule`` attribute.
+    The conditions attributes ``current-month``, ``current-year`` are also being deprecated
+    but do not have a replacement attribute.
+    A brownout day is scheduled for the 11th January 2023 and they will all be completely
+    removed on 11th February 2023.
