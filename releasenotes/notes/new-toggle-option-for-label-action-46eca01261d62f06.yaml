@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    The `label` action now has a new option called `toggle`.
+    This option will add labels if the rule's conditions are a success and
+    will remove those labels if the rule's conditions fail.

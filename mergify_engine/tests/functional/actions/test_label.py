@@ -186,3 +186,77 @@ class TestLabelAction(base.FunctionalTestBase):
             "size": 1,
             "total": 1,
         }
+
+    async def test_label_toggle(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "toggle labels",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "check-failure=continuous-integration/fake-ci",
+                    ],
+                    "actions": {
+                        "label": {
+                            "toggle": [
+                                "CI:fail",
+                            ]
+                        }
+                    },
+                }
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        p = await self.create_pr()
+        await self.create_status(p, state="failure")
+        await self.run_engine()
+
+        p_updated = await self.wait_for_pull_request("labeled")
+        self.assertEqual(
+            ["CI:fail"],
+            [label["name"] for label in p_updated["pull_request"]["labels"]],
+        )
+
+        await self.create_status(p_updated["pull_request"])
+        await self.run_engine()
+
+        p_updated = await self.wait_for_pull_request("unlabeled")
+        self.assertEqual([], p_updated["pull_request"]["labels"])
+
+        r = await self.app.get(
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
+            headers={
+                "Authorization": f"bearer {self.api_key_admin}",
+                "Content-type": "application/json",
+            },
+        )
+        assert r.status_code == 200
+        assert r.json() == {
+            "events": [
+                {
+                    "repository": p_updated["pull_request"]["base"]["repo"][
+                        "full_name"
+                    ],
+                    "pull_request": p_updated["number"],
+                    "timestamp": mock.ANY,
+                    "event": "action.label",
+                    "metadata": {"added": [], "removed": ["CI:fail"]},
+                    "trigger": "Rule: toggle labels",
+                },
+                {
+                    "repository": p_updated["pull_request"]["base"]["repo"][
+                        "full_name"
+                    ],
+                    "pull_request": p_updated["number"],
+                    "timestamp": mock.ANY,
+                    "event": "action.label",
+                    "metadata": {"added": ["CI:fail"], "removed": []},
+                    "trigger": "Rule: toggle labels",
+                },
+            ],
+            "per_page": 10,
+            "size": 2,
+            "total": 2,
+        }

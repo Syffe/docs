@@ -1727,6 +1727,10 @@ class Context:
         self._caches.pull_check_runs.set(pull_check_runs)
 
     @property
+    def pull_labels_names(self) -> set[str]:
+        return {label["name"].lower() for label in self.pull["labels"]}
+
+    @property
     async def pull_check_runs(self) -> list[github_types.CachedGitHubCheckRun]:
         checks = self._caches.pull_check_runs.get()
         if checks is cache.Unset:

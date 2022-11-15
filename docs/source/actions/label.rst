@@ -35,6 +35,10 @@ Options
      - Boolean
      - ``false``
      - Remove all labels from the pull request.
+   * - ``toggle``
+     - list of string
+     - ``[]``
+     - Toggle labels in the list based on the conditions. If all the conditions are a success, all the labels in the list will be added, otherwise, they will all be removed.
 
 Examples
 --------
@@ -70,3 +74,18 @@ adding a label.
 Then, you pull request list will look like this on conflict:
 
 .. image:: ../_static/conflict-pr-list.png
+
+
+Toggle a label based on CI status
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: yaml
+
+    pull_request_rules:
+      - name: toggle labels based on CI state
+        conditions:
+          - check-failure=CI
+        actions:
+          label:
+            toggle:
+              - "CI:fail"
