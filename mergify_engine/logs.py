@@ -107,21 +107,10 @@ def config_log() -> None:
             "MERGIFYENGINE_STORAGE_URL is set, on-premise legacy Redis database setup detected."
         )
 
-    legacy_api_url = os.getenv("MERGIFYENGINE_GITHUB_API_URL")
-    if legacy_api_url is not None:
-        if legacy_api_url[-1] == "/":
-            legacy_api_url = legacy_api_url[:-1]
-        if legacy_api_url.endswith("/api/v3"):
+    for env in ("GITHUB_API_URL", "GITHUB_REST_API_URL", "GITHUB_GRAPHQL_API_URL"):
+        if f"MERGIFYENGINE_{env}" in os.environ:
             LOG.warning(
-                """
-MERGIFYENGINE_GITHUB_API_URL configuration environment is deprecated and must be replaced by:
-
-  MERGIFYENGINE_GITHUB_REST_API_URL=%s
-  MERGIFYENGINE_GITHUB_GRAPHQL_API_URL=%s
-
-  """,
-                legacy_api_url,
-                f"{legacy_api_url[:-3]}/graphql",
+                f"MERGIFYENGINE_{env} configuration environment variable is deprecated and can be removed"
             )
 
 

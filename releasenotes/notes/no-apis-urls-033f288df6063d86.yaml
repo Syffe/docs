@@ -1,0 +1,5 @@
+---
+deprecations:
+  - |
+    The environment variables `MERGIFYENGINE_GITHUB_REST_API_URL` and
+    `MERGIFYENGINE_GITHUB_GRAPHQL_API_URL` are no longer required.

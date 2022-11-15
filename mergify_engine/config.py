@@ -132,12 +132,6 @@ Schema = voluptuous.Schema(
         voluptuous.Required("BOT_USER_LOGIN"): str,
         # GitHub optional
         voluptuous.Required("GITHUB_URL", default="https://github.com"): str,
-        voluptuous.Required(
-            "GITHUB_REST_API_URL", default="https://api.github.com"
-        ): str,
-        voluptuous.Required(
-            "GITHUB_GRAPHQL_API_URL", default="https://api.github.com/graphql"
-        ): str,
         #
         # Dashboard settings
         #
@@ -413,14 +407,6 @@ def load() -> dict[str, typing.Any]:
         if val is not None:
             raw_config[key] = val
 
-    legacy_api_url = os.getenv("MERGIFYENGINE_GITHUB_API_URL")
-    if legacy_api_url is not None:
-        if legacy_api_url[-1] == "/":
-            legacy_api_url = legacy_api_url[:-1]
-        if legacy_api_url.endswith("/api/v3"):
-            raw_config["GITHUB_REST_API_URL"] = legacy_api_url
-            raw_config["GITHUB_GRAPHQL_API_URL"] = f"{legacy_api_url[:-3]}/graphql"
-
     parsed_config = Schema(raw_config)
 
     # NOTE(sileht): on legacy on-premise installation, before things were auto
@@ -501,6 +487,17 @@ def load() -> dict[str, typing.Any]:
 
     if not parsed_config["DASHBOARD_UI_SITE_URLS"]:
         parsed_config["DASHBOARD_UI_SITE_URLS"] = [parsed_config["BASE_URL"]]
+
+    parsed_config["GITHUB_URL"] = parsed_config["GITHUB_URL"].removesuffix("/")
+
+    if parsed_config["GITHUB_URL"].startswith("https://github.com"):
+        parsed_config["GITHUB_REST_API_URL"] = "https://api.github.com"
+        parsed_config["GITHUB_GRAPHQL_API_URL"] = "https://api.github.com/graphql"
+    else:
+        parsed_config["GITHUB_REST_API_URL"] = f"{parsed_config['GITHUB_URL']}/api/v3"
+        parsed_config[
+            "GITHUB_GRAPHQL_API_URL"
+        ] = f"{parsed_config['GITHUB_URL']}/api/graphql"
 
     return parsed_config  # type: ignore[no-any-return]
 
