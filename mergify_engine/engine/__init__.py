@@ -9,6 +9,7 @@ from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
+from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import rules
@@ -65,6 +66,11 @@ async def _check_configuration_changes(
         if current_mergify_config_file is None
         else current_mergify_config_file["path"]
     )
+
+    # NOTE(sileht): When GitHub didn't yet compute the mergeability of the pull request
+    # it's not safe to check if the config file has changed
+    if ctxt.pull["merge_commit_sha"] is None:
+        raise exceptions.EngineNeedRetry
 
     # NOTE(sileht): pull.base.sha is unreliable as its the sha when the PR is
     # open and not the merge-base/fork-point. So we compare the configuration from the base
