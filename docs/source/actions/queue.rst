@@ -261,7 +261,7 @@ To get the pull request back in the queue, you can either:
 
 * retrigger the CI if the problem was due to a CI failure (such as a flaky test) or a timeout;
 * update the code inside the pull request, which will retrigger the CI
-* use the :ref:`requeue command` to inform Mergify that the CI failure was not due to the pull request itself, but to a, e.g., a flaky test.
+* use the :ref:`requeue command` to inform Mergify that the CI failure was not due to the pull request itself, but to, e.g., a flaky test.
 
 .. _merge-depends-on:
 

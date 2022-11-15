@@ -175,7 +175,7 @@ Removes this pull request from the merge queue if it has been queued with
 requeue
 =======
 
-Inform Mergify that the CI failure was not due to the pull request itself, but to a, e.g., a flaky test.
+Inform Mergify that the CI failure was not due to the pull request itself, but to, e.g., a flaky test.
 
 .. list-table::
   :widths: 2 10
