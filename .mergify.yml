@@ -73,7 +73,6 @@ pull_request_rules:
       - label=hotfix
       - "#changes-requested-reviews-by=0"
       - "#review-requested=0"
-      - label!=work in progress
       - label!=manual merge
     actions:
       queue:
@@ -91,7 +90,6 @@ pull_request_rules:
       - "#changes-requested-reviews-by=0"
       - "#review-threads-unresolved=0"
       - "#review-requested=0"
-      - label!=work in progress
       - label!=manual merge
     actions:
       queue:
@@ -101,7 +99,6 @@ pull_request_rules:
       - and: *CheckRuns
       - check-success=semantic-pull-request
       - author=mergify-ci-bot
-      - label!=work in progress
       - label!=manual merge
       - "title~=^chore: bump"
       - "#commits=1"
@@ -117,7 +114,6 @@ pull_request_rules:
       - check-success=semantic-pull-request
       - head=trivy/daily-report
       - author=mergify-ci-bot
-      - label!=work in progress
       - label!=manual merge
       - label!=new CVE
       - "#commits=1"
@@ -131,7 +127,6 @@ pull_request_rules:
       - and: *CheckRuns
       - check-success=semantic-pull-request
       - author=dependabot[bot]
-      - label!=work in progress
       - label!=manual merge
       - "#commits=1"
     actions:
@@ -149,7 +144,6 @@ pull_request_rules:
     conditions:
       - -author=dependabot[bot]
       - -author=mergify-ci-bot
-      - label!=work in progress
       - -merged
       - -closed
       - and: *CheckRuns
@@ -186,7 +180,7 @@ pull_request_rules:
     actions:
       label:
         add:
-          - Review Threads Unresolved
+          - review threads unresolved
 
   - name: unlabel on resolved
     conditions:
@@ -194,7 +188,7 @@ pull_request_rules:
     actions:
       label:
         remove:
-          - Review Threads Unresolved
+          - review threads unresolved
 
   - name: warn on CI failure for hotfix
     conditions:
