@@ -269,6 +269,11 @@ class RecorderFixture(typing.NamedTuple):
     vcr: vcr.VCR
 
 
+def cleanup_github_app_info() -> None:
+    github.GitHubAppInfo._bot = None
+    github.GitHubAppInfo._app = None
+
+
 @pytest.fixture(autouse=True)
 async def recorder(
     request: pytest.FixtureRequest,
@@ -341,14 +346,15 @@ async def recorder(
     record_config_file = os.path.join(cassette_library_dir, "config.json")
 
     if RECORD:
+        mergify_bot = await github.GitHubAppInfo.get_bot()
         with open(record_config_file, "w") as f:
             f.write(
                 json.dumps(
                     RecordConfigType(
                         {
                             "integration_id": config.INTEGRATION_ID,
-                            "app_user_id": config.BOT_USER_ID,
-                            "app_user_login": config.BOT_USER_LOGIN,
+                            "app_user_id": mergify_bot["id"],
+                            "app_user_login": mergify_bot["login"],
                             "organization_id": config.TESTING_ORGANIZATION_ID,
                             "organization_name": config.TESTING_ORGANIZATION_NAME,
                             "repository_id": config.TESTING_REPOSITORY_ID,
@@ -363,11 +369,22 @@ async def recorder(
                 )
             )
 
+    request.addfinalizer(cleanup_github_app_info)
     with open(record_config_file) as f:
         recorder_config = typing.cast(RecordConfigType, json.loads(f.read()))
         monkeypatch.setattr(config, "INTEGRATION_ID", recorder_config["integration_id"])
-        monkeypatch.setattr(config, "BOT_USER_ID", recorder_config["app_user_id"])
-        monkeypatch.setattr(config, "BOT_USER_LOGIN", recorder_config["app_user_login"])
+        monkeypatch.setattr(
+            github.GitHubAppInfo,
+            "_bot",
+            github_types.GitHubAccount(
+                {
+                    "id": recorder_config["app_user_id"],
+                    "login": recorder_config["app_user_login"],
+                    "type": "Bot",
+                    "avatar_url": "",
+                }
+            ),
+        )
         return RecorderFixture(recorder_config, recorder)
 
 

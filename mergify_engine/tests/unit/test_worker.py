@@ -82,12 +82,20 @@ async def stop_and_wait_worker(self: worker.Worker) -> None:
         await self._stop_task
 
 
-FAKE_INSTALLATION = {
-    "id": 12345,
-    "account": {"id": 123, "login": "owner-123"},
-    "target_type": "Organization",
-    "permissions": github_app.EXPECTED_MINIMAL_PERMISSIONS["Organization"],
-}
+FAKE_INSTALLATION = github_types.GitHubInstallation(
+    {
+        "id": github_types.GitHubInstallationIdType(12345),
+        "account": {
+            "id": github_types.GitHubAccountIdType(123),
+            "login": github_types.GitHubLogin("owner-123"),
+            "type": "Organization",
+            "avatar_url": "",
+        },
+        "target_type": "Organization",
+        "permissions": github_app.EXPECTED_MINIMAL_PERMISSIONS["Organization"],
+        "suspended_at": None,
+    }
+)
 
 HTTP_500_EXCEPTION = http.HTTPServerSideError(
     "no way",
@@ -121,6 +129,7 @@ def fake_get_installation_from_account_id(
         },
         "target_type": "Organization",
         "permissions": github_app.EXPECTED_MINIMAL_PERMISSIONS["Organization"],
+        "suspended_at": None,
     }
 
 

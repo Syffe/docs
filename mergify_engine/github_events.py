@@ -16,6 +16,7 @@ from mergify_engine import github_types
 from mergify_engine import pull_request_finder
 from mergify_engine import redis_utils
 from mergify_engine import worker_pusher
+from mergify_engine.clients import github
 from mergify_engine.engine import commands_runner
 from mergify_engine.queue import utils as queue_utils
 
@@ -44,8 +45,10 @@ async def get_pull_request_head_sha_to_number_mapping(
     return github_types.GitHubPullRequestNumber(int(ret))
 
 
-def meter_event(
-    event_type: github_types.GitHubEventType, event: github_types.GitHubEvent
+async def meter_event(
+    event_type: github_types.GitHubEventType,
+    event: github_types.GitHubEvent,
+    mergify_bot: github_types.GitHubAccount,
 ) -> None:
     tags = [f"event_type:{event_type}"]
 
@@ -55,7 +58,7 @@ def meter_event(
         if event["action"] == "closed" and event["pull_request"]["merged"]:
             if (
                 event["pull_request"]["merged_by"] is not None
-                and event["pull_request"]["merged_by"]["id"] == config.BOT_USER_ID
+                and event["pull_request"]["merged_by"]["id"] == mergify_bot["id"]
             ):
                 tags.append("by_mergify")
 
@@ -85,6 +88,7 @@ async def push_to_worker(
     event_type: github_types.GitHubEventType,
     event_id: str,
     event: github_types.GitHubEvent,
+    mergify_bot: github_types.GitHubAccount,
 ) -> None:
 
     pull_number = None
@@ -121,7 +125,7 @@ async def push_to_worker(
                 _log_on_exception(e, "fail to create initial summary")
         elif (
             event["action"] == "edited"
-            and event["sender"]["id"] == config.BOT_USER_ID
+            and event["sender"]["id"] == mergify_bot["id"]
             and (
                 # NOTE(greesb): For retrocompatibility. To remove once there are no more
                 # PR using this.
@@ -211,8 +215,8 @@ async def push_to_worker(
         elif (
             # When someone else edit our comment the user id is still us
             # but the sender id is the one that edited the comment
-            event["comment"]["user"]["id"] == config.BOT_USER_ID
-            and event["sender"]["id"] == config.BOT_USER_ID
+            event["comment"]["user"]["id"] == mergify_bot["id"]
+            and event["sender"]["id"] == mergify_bot["id"]
         ):
             ignore_reason = "comment by Mergify[bot]"
 
@@ -523,6 +527,7 @@ async def filter_and_dispatch(
     event_id: str,
     event: github_types.GitHubEvent,
 ) -> None:
-    meter_event(event_type, event)
+    mergify_bot = await github.GitHubAppInfo.get_bot()
+    await meter_event(event_type, event, mergify_bot)
     await count_seats.store_active_users(redis_links.active_users, event_type, event)
-    await push_to_worker(redis_links, event_type, event_id, event)
+    await push_to_worker(redis_links, event_type, event_id, event, mergify_bot)

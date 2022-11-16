@@ -44,6 +44,7 @@ async def _send_refresh(
                 "account": repository["owner"],
                 "target_type": repository["owner"]["type"],
                 "permissions": {},
+                "suspended_at": None,
             },
         }
     )

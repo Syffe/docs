@@ -691,6 +691,8 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         if files is None:
             files = {}
 
+        self.mergify_bot = await github.GitHubAppInfo.get_bot()
+
         await self.git.configure()
         await self.git.add_cred(
             config.ORG_ADMIN_PERSONAL_TOKEN,
@@ -1222,7 +1224,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
 
         mutation = f"""
         mutation {{
-            resolveReviewThread(input:{{clientMutationId: "{config.BOT_USER_ID}", threadId: "{thread_id}"}}) {{
+            resolveReviewThread(input:{{clientMutationId: "{self.mergify_bot['id']}", threadId: "{thread_id}"}}) {{
                 thread {{
                     isResolved
                 }}

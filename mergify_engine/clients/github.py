@@ -440,7 +440,7 @@ class AsyncGithubClient(http.AsyncClient):
         url: str,
         *,
         resource_name: str,
-        page_limit: int,
+        page_limit: int | None,
         api_version: github_types.GitHubApiVersion | None = None,
         oauth_token: github_types.GitHubOAuthToken | None = None,
         list_items: str | None = None,
@@ -469,7 +469,7 @@ class AsyncGithubClient(http.AsyncClient):
                 last_page = int(
                     parse.parse_qs(parse.urlparse(last_url).query)["page"][0]
                 )
-                if last_page > page_limit:
+                if page_limit is not None and last_page > page_limit:
                     raise TooManyPages(
                         f"The pull request reports more than {(last_page - 1) * per_page} {resource_name}, "
                         f"reaching the limit of {page_limit * per_page} {resource_name}.",
@@ -603,3 +603,49 @@ def aget_client(
     return AsyncGithubInstallationClient(
         GithubAppInstallationAuth(installation), extra_metrics=extra_metrics
     )
+
+
+@dataclasses.dataclass
+class GitHubAppInfo:
+    _app: typing.ClassVar[github_types.GitHubApp | None] = None
+    _bot: typing.ClassVar[github_types.GitHubAccount | None] = None
+
+    @staticmethod
+    async def _get_random_installation_auth() -> GithubAppInstallationAuth:
+        # NOTE(sileht): we can't query the /users endpoint with the
+        # JWT, so just pick a random installation.
+        async with AsyncGithubClient(auth=github_app.GithubBearerAuth()) as client:
+            async for installation in typing.cast(
+                abc.AsyncGenerator[github_types.GitHubInstallation, None],
+                client.items(
+                    "/app/installations", page_limit=None, resource_name="installation"
+                ),
+            ):
+                if installation["suspended_at"]:
+                    continue
+
+                return GithubAppInstallationAuth(installation)
+        raise RuntimeError(
+            "Can't find an installation that can retrieve the GitHubApp bot account"
+        )
+
+    @classmethod
+    async def _fetch_bot(cls) -> github_types.GitHubAccount:
+        app = await cls.get_app()
+        auth = await cls._get_random_installation_auth()
+        async with AsyncGithubClient(auth=auth) as client_install:
+            bot = await client_install.item(f"/users/{app['slug']}[bot]")
+            return typing.cast(github_types.GitHubAccount, bot)
+
+    @classmethod
+    async def get_bot(cls) -> github_types.GitHubAccount:
+        if cls._bot is None:
+            cls._bot = await cls._fetch_bot()
+        return cls._bot
+
+    @classmethod
+    async def get_app(cls) -> github_types.GitHubApp:
+        if cls._app is None:
+            async with AsyncGithubClient(auth=github_app.GithubBearerAuth()) as client:
+                cls._app = await client.item("/app")
+        return cls._app

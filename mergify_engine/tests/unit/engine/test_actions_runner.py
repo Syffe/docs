@@ -2,7 +2,6 @@ from unittest import mock
 
 import pytest
 
-from mergify_engine import config
 from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import rules
@@ -14,8 +13,8 @@ from mergify_engine.tests.unit import conftest
     "merged_by,merged_by_id,raw_config,result",
     [
         (
-            config.BOT_USER_LOGIN,
-            config.BOT_USER_ID,
+            None,
+            None,
             """
 pull_request_rules:
  - name: Automatic merge on approval
@@ -49,8 +48,8 @@ pull_request_rules:
             "⚠️ The pull request has been merged by @foobar\n\n",
         ),
         (
-            config.BOT_USER_LOGIN,
-            config.BOT_USER_ID,
+            None,
+            None,
             """
 pull_request_rules:
  - name: Automatic queue on approval
@@ -66,12 +65,18 @@ pull_request_rules:
     ],
 )
 async def test_get_already_merged_summary(
-    merged_by: github_types.GitHubLogin,
-    merged_by_id: github_types.GitHubAccountIdType,
+    merged_by: github_types.GitHubLogin | None,
+    merged_by_id: github_types.GitHubAccountIdType | None,
     raw_config: str,
     result: str,
     context_getter: conftest.ContextGetterFixture,
+    fake_mergify_bot: github_types.GitHubAccount,
 ) -> None:
+    if merged_by is None:
+        merged_by = fake_mergify_bot["login"]
+    if merged_by_id is None:
+        merged_by_id = fake_mergify_bot["id"]
+
     ctxt = await context_getter(
         github_types.GitHubPullRequestNumber(1),
         merged=True,

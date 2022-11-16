@@ -56,6 +56,7 @@ async def test_push_event(
     status_code: int,
     reason: bytes,
     web_client: httpx.AsyncClient,
+    fake_github_app_info: None,
 ) -> None:
     charset = "utf-8"
     data = json.dumps(event).encode(charset)

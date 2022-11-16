@@ -24,6 +24,7 @@ async def test_filter_and_dispatch(
     event_type: github_types.GitHubEventType,
     event: github_types.GitHubEvent,
     redis_links: redis_utils.RedisLinks,
+    fake_github_app_info: None,
 ) -> None:
     event_id = "my_event_id"
     try:

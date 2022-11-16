@@ -34,6 +34,7 @@ async def test_summary_synchronization_cache(
                         "app": {
                             "id": 1234,
                             "name": "CI",
+                            "slug": "ci",
                             "owner": {
                                 "type": "User",
                                 "id": github_types.GitHubAccountIdType(1234),

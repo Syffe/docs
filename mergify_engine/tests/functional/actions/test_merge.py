@@ -74,7 +74,7 @@ class TestMergeAction(base.FunctionalTestBase):
         p = await self.get_pull(p["number"])
         self.assertEqual(True, p["merged"])
         assert p["merged_by"]
-        assert config.BOT_USER_LOGIN == p["merged_by"]["login"]
+        assert self.RECORD_CONFIG["app_user_id"] == p["merged_by"]["id"]
 
     async def test_merge_with_oauth_token(self) -> None:
         rules = {
@@ -390,7 +390,7 @@ superRP!"""
         p = await self.get_pull(p["number"])
         assert p["merged"]
         assert p["merged_by"]
-        assert p["merged_by"]["login"] == config.BOT_USER_LOGIN
+        assert self.RECORD_CONFIG["app_user_id"] == p["merged_by"]["id"]
 
         branch = typing.cast(
             github_types.GitHubBranch,
@@ -401,7 +401,10 @@ superRP!"""
         assert p["head"]["sha"] == branch["commit"]["sha"]
 
         assert branch["commit"]["committer"] is not None
-        assert branch["commit"]["committer"]["login"] == config.BOT_USER_LOGIN
+        assert (
+            branch["commit"]["committer"]["login"]
+            == self.RECORD_CONFIG["app_user_login"]
+        )
 
         ctxt = context.Context(self.repository_ctxt, p, [])
         checks = await ctxt.pull_engine_check_runs
@@ -449,4 +452,7 @@ superRP!"""
         assert p["head"]["sha"] == branch["commit"]["sha"]
 
         assert branch["commit"]["committer"] is not None
-        assert branch["commit"]["committer"]["login"] == config.BOT_USER_LOGIN
+        assert (
+            branch["commit"]["committer"]["login"]
+            == self.RECORD_CONFIG["app_user_login"]
+        )

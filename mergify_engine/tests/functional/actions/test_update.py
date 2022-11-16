@@ -1,4 +1,3 @@
-from mergify_engine import config
 from mergify_engine import context
 from mergify_engine import yaml
 from mergify_engine.tests.functional import base
@@ -38,7 +37,10 @@ class TestUpdateAction(base.FunctionalTestBase):
         await self.wait_for("pull_request", {"action": "synchronize"})
         commits = await self.get_commits(p2["number"])
         assert len(commits) == 2
-        assert commits[-1]["commit"]["author"]["name"] == config.BOT_USER_LOGIN
+        assert (
+            commits[-1]["commit"]["author"]["name"]
+            == self.RECORD_CONFIG["app_user_login"]
+        )
         assert commits[-1]["commit"]["message"].startswith("Merge branch")
 
     async def test_update_action_on_closed_pr_deleted_branch(self) -> None:
@@ -75,7 +77,10 @@ class TestUpdateAction(base.FunctionalTestBase):
         await self.wait_for("pull_request", {"action": "synchronize"})
         commits = await self.get_commits(p2["number"])
         assert len(commits) == 2
-        assert commits[-1]["commit"]["author"]["name"] == config.BOT_USER_LOGIN
+        assert (
+            commits[-1]["commit"]["author"]["name"]
+            == self.RECORD_CONFIG["app_user_login"]
+        )
         assert commits[-1]["commit"]["message"].startswith("Merge branch")
 
         # Now merge p2 so p1 is not up to date

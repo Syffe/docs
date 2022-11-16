@@ -1,0 +1,5 @@
+---
+deprecations:
+  - |
+    The environment variables `MERGIFYENGINE_BOT_USER_ID` and
+    `MERGIFYENGINE_BOT_USER_LOGIN` are no longer required.

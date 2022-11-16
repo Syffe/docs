@@ -128,6 +128,7 @@ CHECK_RUN = github_types.GitHubCheckRun(
         "app": {
             "id": 1234,
             "name": "CI",
+            "slug": "ci",
             "owner": {
                 "type": "User",
                 "id": github_types.GitHubAccountIdType(1234),
@@ -179,10 +180,11 @@ SUMMARY_CHECK = github_types.GitHubCheckRun(
         "app": {
             "id": config.INTEGRATION_ID,
             "name": "Mergify",
+            "slug": "mergify",
             "owner": {
                 "type": "Bot",
-                "id": github_types.GitHubAccountIdType(config.BOT_USER_ID),
-                "login": github_types.GitHubLogin(config.BOT_USER_LOGIN),
+                "id": github_types.GitHubAccountIdType(123),
+                "login": github_types.GitHubLogin("mergify"),
                 "avatar_url": "https://example.com",
             },
         },
@@ -216,10 +218,11 @@ CONFIGURATION_DELETED_CHECK = github_types.GitHubCheckRun(
         "app": {
             "id": config.INTEGRATION_ID,
             "name": "Mergify",
+            "slug": "mergify",
             "owner": {
                 "type": "Bot",
-                "id": github_types.GitHubAccountIdType(config.BOT_USER_ID),
-                "login": github_types.GitHubLogin(config.BOT_USER_LOGIN),
+                "id": github_types.GitHubAccountIdType(123),
+                "login": github_types.GitHubLogin("mergify"),
                 "avatar_url": "https://example.com",
             },
         },
@@ -253,10 +256,11 @@ CONFIGURATION_CHANGED_CHECK = github_types.GitHubCheckRun(
         "app": {
             "id": config.INTEGRATION_ID,
             "name": "Mergify",
+            "slug": "mergify",
             "owner": {
                 "type": "Bot",
-                "id": github_types.GitHubAccountIdType(config.BOT_USER_ID),
-                "login": github_types.GitHubLogin(config.BOT_USER_LOGIN),
+                "id": github_types.GitHubAccountIdType(1234),
+                "login": github_types.GitHubLogin("mergify"),
                 "avatar_url": "https://example.com",
             },
         },

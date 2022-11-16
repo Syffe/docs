@@ -66,6 +66,7 @@ def fake_repository(
             "target_type": gh_owner["type"],
             "permissions": {},
             "account": gh_owner,
+            "suspended_at": None,
         }
     )
 

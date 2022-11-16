@@ -1,4 +1,3 @@
-from mergify_engine import config
 from mergify_engine import github_types
 from mergify_engine import yaml
 from mergify_engine.tests.functional import base
@@ -45,7 +44,10 @@ class TestCloseAction(base.FunctionalTestBase):
         await self.wait_for_pull_request("closed")
 
         comment = await self.wait_for_issue_comment(str(p["number"]), "created")
-        assert comment["comment"]["body"] == f"Thank you {config.BOT_USER_LOGIN}"
+        assert (
+            comment["comment"]["body"]
+            == f"Thank you {self.RECORD_CONFIG['app_user_login']}"
+        )
 
     async def _test_close_template_error(self, msg: str) -> github_types.GitHubCheckRun:
         rules = {

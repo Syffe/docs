@@ -13,6 +13,7 @@ from ddtrace import tracer
 
 from mergify_engine import config
 from mergify_engine import github_types
+from mergify_engine.clients import github
 from mergify_engine.dashboard import user_tokens
 
 
@@ -247,8 +248,9 @@ class Gitter:
     async def configure(self, user: user_tokens.UserTokensUser | None = None) -> None:
         if user is None:
             name = "Mergify"
-            login = config.BOT_USER_LOGIN
-            account_id = config.BOT_USER_ID
+            mergify_bot = await github.GitHubAppInfo.get_bot()
+            login = mergify_bot["login"]
+            account_id = mergify_bot["id"]
         else:
             name = user["name"] or user["login"]
             login = user["login"]

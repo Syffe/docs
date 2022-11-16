@@ -129,9 +129,6 @@ Schema = voluptuous.Schema(
         voluptuous.Required(
             "WEBHOOK_SECRET_PRE_ROTATION", default=None
         ): voluptuous.Any(None, str),
-        # GitHub common
-        voluptuous.Required("BOT_USER_ID"): voluptuous.Coerce(int),
-        voluptuous.Required("BOT_USER_LOGIN"): str,
         # GitHub optional
         voluptuous.Required("GITHUB_URL", default="https://github.com"): str,
         #
@@ -328,8 +325,6 @@ SHARED_STREAM_PROCESSES: int
 DEDICATED_STREAM_PROCESSES: int
 SHARED_STREAM_TASKS_PER_PROCESS: int
 EXTERNAL_USER_PERSONAL_TOKEN: str
-BOT_USER_ID: github_types.GitHubAccountIdType
-BOT_USER_LOGIN: github_types.GitHubLogin
 
 DATABASE_URL: str
 DATABASE_OAUTH_TOKEN_SECRET_CURRENT: str

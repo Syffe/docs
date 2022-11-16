@@ -168,7 +168,7 @@ def create_fake_installation_client(
             None,
         ),
         (
-            config.BOT_USER_ID,
+            None,
             "nothing",
             "@mergifyio something",
             "Sorry but I didn't understand the command",
@@ -212,12 +212,15 @@ def create_fake_installation_client(
     ],
 )
 async def test_run_command_with_user(
-    user_id: int,
+    user_id: int | None,
     permission: str,
     comment: str,
     result: str | None,
     context_getter: conftest.ContextGetterFixture,
+    fake_mergify_bot: github_types.GitHubAccount,
 ) -> None:
+    if user_id is None:
+        user_id = fake_mergify_bot["id"]
     user = create_fake_user(user_id)
     client = create_fake_installation_client(user, permission)
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))

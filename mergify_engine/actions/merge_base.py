@@ -4,12 +4,12 @@ import typing
 
 from mergify_engine import actions
 from mergify_engine import check_api
-from mergify_engine import config
 from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import refresher
 from mergify_engine import rules
 from mergify_engine import worker_pusher
+from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.dashboard import user_tokens
 
@@ -313,10 +313,11 @@ class MergeBaseAction(
             title = "Draft flag needs to be removed"
             summary = ""
         elif ctxt.pull["merged"]:
+            mergify_bot = await github.GitHubAppInfo.get_bot()
             if ctxt.pull["merged_by"] is None:
                 mode = "somehow"
             elif (
-                ctxt.pull["merged_by"]["id"] == config.BOT_USER_ID
+                ctxt.pull["merged_by"]["id"] == mergify_bot["id"]
                 or ctxt.pull["merged_by"]["login"] == merge_bot_account
             ):
                 mode = "automatically"

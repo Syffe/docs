@@ -100,6 +100,7 @@ async def test_user_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
             "target_type": gh_owner["type"],
             "permissions": {},
             "account": gh_owner,
+            "suspended_at": None,
         }
     )
 
@@ -242,6 +243,7 @@ async def test_team_members_cache(redis_links: redis_utils.RedisLinks) -> None:
             "target_type": gh_owner["type"],
             "permissions": {},
             "account": gh_owner,
+            "suspended_at": None,
         }
     )
 
@@ -398,6 +400,7 @@ async def test_team_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
             "target_type": gh_owner["type"],
             "permissions": {},
             "account": gh_owner,
+            "suspended_at": None,
         }
     )
 
@@ -1148,6 +1151,7 @@ async def test_reviews_filtering(
                             "account": a_pull_request["base"]["repo"]["owner"],
                             "target_type": "User",
                             "permissions": {},
+                            "suspended_at": None,
                         },
                         "sender": a_pull_request["user"],
                         "repository": a_pull_request["base"]["repo"],

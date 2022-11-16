@@ -4,12 +4,12 @@ import voluptuous
 
 from mergify_engine import actions
 from mergify_engine import check_api
-from mergify_engine import config
 from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import rules
 from mergify_engine import signals
 from mergify_engine.actions import utils as action_utils
+from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
 from mergify_engine.dashboard import user_tokens
@@ -93,7 +93,8 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
             )
 
         if self.config["bot_account"] is None:
-            review_user_id = config.BOT_USER_ID
+            mergify_bot = await github.GitHubAppInfo.get_bot()
+            review_user_id = mergify_bot["id"]
         else:
             review_user_id = self.config["bot_account"]["id"]
 

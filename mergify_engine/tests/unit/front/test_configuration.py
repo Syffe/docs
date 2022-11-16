@@ -7,11 +7,11 @@ from mergify_engine.tests import conftest
 async def test_site_configuration(
     web_client: conftest.CustomTestClient,
     monkeypatch: pytest.MonkeyPatch,
+    fake_github_app_info: None,
 ) -> None:
     monkeypatch.setattr(
         config, "DASHBOARD_UI_DATADOG_CLIENT_TOKEN", "a-not-so-secret-token"
     )
-    monkeypatch.setattr(config, "BOT_USER_LOGIN", "mergify-test[bot]")
     monkeypatch.setattr(
         config, "DASHBOARD_UI_FEATURES", ["applications", "intercom", "subscriptions"]
     )

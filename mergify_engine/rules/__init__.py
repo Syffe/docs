@@ -13,12 +13,12 @@ from ddtrace import tracer
 import voluptuous
 
 from mergify_engine import actions as actions_mod
-from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import yaml
+from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.rules import conditions as conditions_mod
 from mergify_engine.rules import live_resolvers
@@ -904,18 +904,27 @@ def apply_configure_filter(
         live_resolvers.configure_filter(repository, condition.partial_filter)
 
 
-MERGIFY_BUILTIN_CONFIG_YAML = f"""
+MERGIFY_BUILTIN_CONFIG_YAML = """
 pull_request_rules:
   - name: delete backport/copy branch (Mergify rule)
     hidden: true
     conditions:
-      - author={config.BOT_USER_LOGIN}
+      - author={author}
       - head~=^mergify/(bp|copy)/
       - closed
     actions:
         delete_head_branch:
 """
 
-MERGIFY_BUILTIN_CONFIG = UserConfigurationSchema(
-    YamlSchema(MERGIFY_BUILTIN_CONFIG_YAML)
-)
+global _MERGIFY_BUILTIN_CONFIG
+_MERGIFY_BUILTIN_CONFIG: voluptuous.Schema | None = None
+
+
+async def get_mergify_builtin_config() -> voluptuous.Schema:
+    global _MERGIFY_BUILTIN_CONFIG
+    if _MERGIFY_BUILTIN_CONFIG is None:
+        mergify_bot = await github.GitHubAppInfo.get_bot()
+        _MERGIFY_BUILTIN_CONFIG = UserConfigurationSchema(
+            YamlSchema(MERGIFY_BUILTIN_CONFIG_YAML.format(author=mergify_bot["login"]))
+        )
+    return _MERGIFY_BUILTIN_CONFIG

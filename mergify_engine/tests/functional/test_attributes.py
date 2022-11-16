@@ -432,7 +432,7 @@ class TestAttributes(base.FunctionalTestBase):
             "merged": False,
             "commits": [commit],
             "head": self.get_full_branch_name("integration/pr2"),
-            "author": config.BOT_USER_LOGIN,
+            "author": self.RECORD_CONFIG["app_user_login"],
             "dismissed-reviews-by": [],
             "merged-by": "",
             "queue-position": -1,
@@ -1212,10 +1212,6 @@ class TestAttributesWithSub(base.FunctionalTestBase):
             label["name"] for label in p_unlabeled["pull_request"]["labels"]
         ]
 
-    @mock.patch(
-        "mergify_engine.constants.DEPENDABOT_PULL_REQUEST_AUTHOR_LOGIN",
-        config.BOT_USER_LOGIN,
-    )
     async def test_dependabot_attributes(self) -> None:
         rules_config = [
             ("dependabot-dependency-name", "bootstrap"),
@@ -1252,7 +1248,12 @@ class TestAttributesWithSub(base.FunctionalTestBase):
             Signed-off-by: dependabot[bot] <support@github.com>
             """,
         )
-        await self.run_engine()
+
+        with mock.patch(
+            "mergify_engine.constants.DEPENDABOT_PULL_REQUEST_AUTHOR_LOGIN",
+            self.RECORD_CONFIG["app_user_login"],
+        ):
+            await self.run_engine()
 
         comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
         assert comment["comment"]["body"] == "dependabot was here"

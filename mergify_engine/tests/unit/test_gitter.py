@@ -6,7 +6,10 @@ import pytest
 from mergify_engine import gitter
 
 
-async def test_gitter(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_gitter(
+    monkeypatch: pytest.MonkeyPatch,
+    fake_github_app_info: None,
+) -> None:
     monkeypatch.setenv("LANG", "C")
     git = gitter.Gitter(mock.Mock())
     try:

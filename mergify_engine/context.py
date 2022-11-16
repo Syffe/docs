@@ -399,8 +399,9 @@ class Repository:
             raise
 
         # Add global and mandatory rules
+        builtin_mergify_config = await rules.get_mergify_builtin_config()
         mergify_config["pull_request_rules"].rules.extend(
-            rules.MERGIFY_BUILTIN_CONFIG["pull_request_rules"].rules
+            builtin_mergify_config["pull_request_rules"].rules
         )
         self._caches.mergify_config.set(mergify_config)
         return mergify_config
@@ -1934,9 +1935,10 @@ class Context:
             if source["event_type"] == "pull_request":
                 event = typing.cast(github_types.GitHubEventPullRequest, source["data"])
                 if event["action"] == "synchronize":
-                    is_mergify = event["sender"][
+                    mergify_bot = await github.GitHubAppInfo.get_bot()
+                    is_mergify = event["sender"]["id"] == mergify_bot[
                         "id"
-                    ] == config.BOT_USER_ID or await self.redis.cache.get(
+                    ] or await self.redis.cache.get(
                         f"branch-update-{self.pull['head']['sha']}"
                     )
                     if not is_mergify:

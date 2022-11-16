@@ -1494,6 +1494,7 @@ class TestQueueAction(base.FunctionalTestBase):
                                 "account": p1["base"]["repo"]["owner"],
                                 "target_type": "User",
                                 "permissions": {},
+                                "suspended_at": None,
                             },
                             "sender": p1["user"],
                             "repository": p1["base"]["repo"],

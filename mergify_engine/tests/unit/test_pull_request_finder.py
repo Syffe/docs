@@ -38,6 +38,7 @@ async def _do_test_event_to_pull_check_run(
             "target_type": gh_owner["type"],
             "permissions": {},
             "account": gh_owner,
+            "suspended_at": None,
         }
     )
     client = mock.Mock()

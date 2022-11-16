@@ -22,6 +22,11 @@ from mergify_engine.queue import utils as queue_utils
 from mergify_engine.tests.unit import conftest
 
 
+@pytest.fixture(autouse=True)
+def setup_fake_mergify_bot_user(fake_mergify_bot: None) -> None:
+    pass
+
+
 async def fake_train_car_start_checking_with_draft(
     inner_self: merge_train.TrainCar,
     queue_rule: rules.QueueRule,

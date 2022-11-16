@@ -204,7 +204,7 @@ Unknown pull request attribute: hello
                     "metadata": {
                         "message": None,
                         "type": "APPROVE",
-                        "reviewer": config.BOT_USER_LOGIN,
+                        "reviewer": self.RECORD_CONFIG["app_user_login"],
                     },
                     "trigger": "Rule: approve",
                 },

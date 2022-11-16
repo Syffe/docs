@@ -172,7 +172,8 @@ async def run_pending_commands_tasks(
             ]
 
     for comment in comments:
-        if comment["user"]["id"] != config.BOT_USER_ID:
+        mergify_bot = await github.GitHubAppInfo.get_bot()
+        if comment["user"]["id"] != mergify_bot["id"]:
             continue
 
         payload = typing.cast(

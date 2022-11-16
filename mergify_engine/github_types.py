@@ -59,6 +59,7 @@ class GitHubInstallation(typing.TypedDict):
     account: GitHubAccount
     target_type: GitHubAccountType
     permissions: GitHubInstallationPermissions
+    suspended_at: ISODateTimeType | None
 
 
 GitHubRefType = typing.NewType("GitHubRefType", str)
@@ -589,6 +590,7 @@ class GitHubEventStatus(GitHubEvent):
 class GitHubApp(typing.TypedDict):
     id: int
     name: str
+    slug: str
     owner: GitHubAccount
 
 

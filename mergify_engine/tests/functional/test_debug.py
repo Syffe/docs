@@ -1,6 +1,5 @@
 from unittest import mock
 
-from mergify_engine import config
 from mergify_engine import context
 from mergify_engine import debug
 from mergify_engine import yaml
@@ -109,7 +108,7 @@ pull_request_rules:
  '#files': 1,
  'approved-reviews-by': [],
  'assignee': [],
- 'author': '{config.BOT_USER_LOGIN}',
+ 'author': '{self.RECORD_CONFIG['app_user_login']}',
  'base': '{self.main_branch_name}',
  'body': 'test_debugger: pull request n1 from integration',
  'body-raw': 'test_debugger: pull request n1 from integration',
