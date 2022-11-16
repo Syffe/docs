@@ -112,7 +112,9 @@ Schema = voluptuous.Schema(
         voluptuous.Required("LOG_STDOUT_LEVEL", default=None): voluptuous.Any(
             None, CoercedLoggingLevel
         ),
-        voluptuous.Required("LOG_DATADOG", default=False): CoercedBool,
+        voluptuous.Required("LOG_DATADOG", default=False): voluptuous.Any(
+            CoercedBool, voluptuous.Url
+        ),
         voluptuous.Required("LOG_DATADOG_LEVEL", default=None): voluptuous.Any(
             None, CoercedLoggingLevel
         ),
@@ -377,7 +379,7 @@ TESTING_FORWARDER_ENDPOINT: str
 LOG_LEVEL: int  # This is converted to an int by voluptuous
 LOG_STDOUT: bool
 LOG_STDOUT_LEVEL: int  # This is converted to an int by voluptuous
-LOG_DATADOG: bool
+LOG_DATADOG: bool | str
 LOG_DATADOG_LEVEL: int  # This is converted to an int by voluptuous
 LOG_DEBUG_LOGGER_NAMES: list[str]
 ORG_ADMIN_PERSONAL_TOKEN: github_types.GitHubOAuthToken

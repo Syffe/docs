@@ -1,5 +1,9 @@
+import logging
+import typing
+
 import pytest
 
+from mergify_engine import config
 from mergify_engine import logs
 
 
@@ -20,3 +24,33 @@ from mergify_engine import logs
 )
 def test_strip_url_credentials(url: str, url_expected: str) -> None:
     assert logs.strip_url_credentials(url) == url_expected
+
+
+@pytest.mark.parametrize(
+    "config_value,expected_hostname,expected_port",
+    (
+        (False, None, None),
+        (True, "127.0.0.1", 10518),
+        ("udp://foobar.example.com:1234", "foobar.example.com", 1234),
+    ),
+)
+def test_datadog_logger(
+    monkeypatch: pytest.MonkeyPatch,
+    config_value: str | None,
+    expected_hostname: str | None,
+    expected_port: int | None,
+) -> None:
+    root_logger = logging.getLogger()
+    root_logger.handlers = []
+
+    monkeypatch.setattr(config, "LOG_DATADOG", config_value)
+    monkeypatch.setattr(config, "LOG_STDOUT", False)
+    logs.setup_logging(dump_config=False)
+
+    if expected_hostname is None:
+        assert root_logger.handlers == []
+    else:
+        assert len(root_logger.handlers) == 1
+        handler = typing.cast(logging.handlers.SocketHandler, root_logger.handlers[0])
+        assert handler.host == expected_hostname
+        assert handler.port == expected_port

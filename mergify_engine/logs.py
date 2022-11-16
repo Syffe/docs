@@ -125,11 +125,23 @@ def setup_logging(dump_config: bool = True) -> None:
         )
 
     if config.LOG_DATADOG:
+        dd_extras: dict[str, int | str] = {}
+        if isinstance(config.LOG_DATADOG, str):
+            dd_agent_parsed = parse.urlparse(config.LOG_DATADOG)
+            if dd_agent_parsed.scheme != "udp":
+                raise RuntimeError(
+                    "Only UDP protocol is supported for MERGIFYENGINE_LOG_DATADOG"
+                )
+            if dd_agent_parsed.hostname:
+                dd_extras["hostname"] = dd_agent_parsed.hostname
+            if dd_agent_parsed.port:
+                dd_extras["port"] = dd_agent_parsed.port
         outputs.append(
             daiquiri.output.Datadog(
                 level=config.LOG_DATADOG_LEVEL,
                 handler_class=daiquiri.handlers.PlainTextDatagramHandler,
                 formatter=HerokuDatadogFormatter(),
+                **dd_extras,  # type:ignore [arg-type]
             )
         )
 
