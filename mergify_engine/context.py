@@ -1438,7 +1438,7 @@ class Context:
             return await self.is_conflicting()
 
         elif name == "linear-history":
-            return all(len(commit.parents) == 1 for commit in await self.commits)
+            return await self.has_linear_history()
 
         elif name == "base":
             return self.pull["base"]["ref"]
@@ -1893,6 +1893,9 @@ class Context:
             self._caches.commits_behind_count.set(commits_behind_count)
         return commits_behind_count
 
+    async def has_linear_history(self) -> bool:
+        return all(len(commit.parents) == 1 for commit in await self.commits)
+
     @property
     async def is_behind(self) -> bool:
         is_behind = self._caches.is_behind.get()
@@ -2015,6 +2018,14 @@ class Context:
                 self.log.warning("more than 250 commits found, is_behind maybe wrong")
             self._caches.commits.set(commits)
         return commits
+
+    async def has_squashable_commits(self) -> bool:
+        return any(
+            commit.commit_message.startswith("squash!")
+            or commit.commit_message.startswith("fixup!")
+            or commit.commit_message.startswith("amend!")
+            for commit in await self.commits
+        )
 
     @property
     async def files(self) -> list[github_types.CachedGitHubFile]:

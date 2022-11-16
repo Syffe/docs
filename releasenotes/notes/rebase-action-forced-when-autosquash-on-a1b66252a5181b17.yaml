@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    The ``rebase`` action will now rebase a PR, even if it has no commits behind,
+    if the ``autosquash`` option is enabled.

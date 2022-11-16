@@ -70,6 +70,16 @@ class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig
             users = tokens.users
             committer = None
 
+        if (
+            self.config["autosquash"]
+            and await self.ctxt.commits_behind_count == 0
+            and await self.ctxt.has_linear_history()
+            and not await self.ctxt.has_squashable_commits()
+        ):
+            return check_api.Result(
+                check_api.Conclusion.SUCCESS, "Nothing to do for rebase action", ""
+            )
+
         try:
             await branch_updater.rebase_with_git(
                 self.ctxt,
@@ -120,23 +130,28 @@ class RebaseAction(actions.Action):
         self, ctxt: context.Context
     ) -> list[conditions.RuleConditionNode]:
         description = ":pushpin: rebase requirement"
-        return [
+        conds: list[conditions.RuleConditionNode] = [
             conditions.RuleCondition(
                 "-closed",
                 description=description,
             ),
-            conditions.RuleConditionCombination(
-                {
-                    "or": [
-                        conditions.RuleCondition(
-                            "#commits-behind>0",
-                            description=description,
-                        ),
-                        conditions.RuleCondition(
-                            "-linear-history",
-                            description=description,
-                        ),
-                    ],
-                }
-            ),
         ]
+        if not self.config["autosquash"]:
+            conds.append(
+                conditions.RuleConditionCombination(
+                    {
+                        "or": [
+                            conditions.RuleCondition(
+                                "#commits-behind>0",
+                                description=description,
+                            ),
+                            conditions.RuleCondition(
+                                "-linear-history",
+                                description=description,
+                            ),
+                        ],
+                    }
+                )
+            )
+
+        return conds

@@ -294,3 +294,37 @@ class TestRebaseAction(base.FunctionalTestBase):
         assert len(fixup_commits) == 1
 
         assert "\n\ntest123" in fixup_commits[0]["commit"]["message"]
+
+    async def test_rebase_forced_with_autosquash_and_squashable_commits(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "rebase",
+                    "conditions": [f"base={self.main_branch_name}", "label=rebase"],
+                    "actions": {"rebase": {"autosquash": True}},
+                },
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        pr_fixup = await self.create_pr_with_autosquash_commit("fixup")
+        await self.add_label(pr_fixup["number"], "rebase")
+        await self.run_engine()
+
+        await self.wait_for("pull_request", {"action": "synchronize"})
+
+        fixup_commits = await self.get_commits(pr_fixup["number"])
+        assert len(fixup_commits) == 1
+
+    async def test_rebase_forced_with_autosquash_and_no_squashable_commits(
+        self,
+    ) -> None:
+        await self.setup_repo()
+
+        pr = await self.create_pr(two_commits=True)
+        await self.create_comment_as_admin(pr["number"], "@mergifyio rebase")
+        await self.run_engine()
+
+        comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
+        assert "Nothing to do for rebase action" in comment["comment"]["body"]
