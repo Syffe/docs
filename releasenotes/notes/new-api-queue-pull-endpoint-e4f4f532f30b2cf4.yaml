@@ -1,0 +1,4 @@
+features:
+  - |
+    Add new `/queue/{queue_name}/pull/{pr_number}` endpoint to the API. This
+    endpoint returns data from a queued pull request.

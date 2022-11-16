@@ -285,58 +285,30 @@ async def repository_queues(
 
         queue = Queue(Branch(train.ref))
         for position, (embarked_pull, car) in enumerate(train._iter_embarked_pulls()):
-            if car is None:
-                speculative_check_pull_request = None
-            elif car.train_car_state.checks_type in [
-                merge_train.TrainCarChecksType.DRAFT,
-                merge_train.TrainCarChecksType.INPLACE,
-            ]:
-                if car.queue_pull_request_number is None:
-                    raise RuntimeError(
-                        f"car's checks type is {car.train_car_state.checks_type}, but queue_pull_request_number is None"
-                    )
-                speculative_check_pull_request = SpeculativeCheckPullRequest(
-                    in_place=car.train_car_state.checks_type
-                    == merge_train.TrainCarChecksType.INPLACE,
-                    number=car.queue_pull_request_number,
-                    started_at=car.train_car_state.creation_date,
-                    ended_at=car.checks_ended_timestamp,
-                    state=car.get_queue_check_run_conclusion().value or "pending",
-                    checks=car.last_checks,
-                    evaluated_conditions=car.last_evaluated_conditions,
-                )
-            elif car.train_car_state.checks_type in (
-                merge_train.TrainCarChecksType.FAILED,
-                None,
-            ):
-                speculative_check_pull_request = None
-            else:
-                raise RuntimeError(
-                    f"Car's checks type unknown: {car.train_car_state.checks_type}"
-                )
-
             try:
                 queue_rule = queue_rules[embarked_pull.config["name"]]
             except KeyError:
                 # This car is going to be deleted so skip it
                 continue
 
-            estimated_time_of_merge = await get_estimated_time_of_merge(
-                embarked_pull,
+            speculative_check_pull_request = create_speculative_check_pull_request(car)
+            estimated_time_of_merge = await get_estimated_time_of_merge_from_stats(
                 train,
+                embarked_pull.config["name"],
+                embarked_pull.queued_at,
                 time_to_merge_stats,
             )
 
             queue.pull_requests.append(
                 PullRequestQueued(
-                    embarked_pull.user_pull_request_number,
-                    position,
-                    embarked_pull.config["priority"],
-                    QueueRule(
+                    number=embarked_pull.user_pull_request_number,
+                    position=position,
+                    priority=embarked_pull.config["priority"],
+                    queue_rule=QueueRule(
                         name=embarked_pull.config["name"], config=queue_rule.config
                     ),
-                    embarked_pull.queued_at,
-                    speculative_check_pull_request,
+                    queued_at=embarked_pull.queued_at,
+                    speculative_check_pull_request=speculative_check_pull_request,
                     estimated_time_of_merge=estimated_time_of_merge,
                 )
             )
@@ -346,13 +318,171 @@ async def repository_queues(
     return queues
 
 
+@router.get(
+    "/repos/{owner}/{repository}/queue/{queue_name}/pull/{pr_number}",  # noqa: FS003
+    summary="Get a queued pull request",
+    description="Get a pull request queued in a merge queue of a repository",
+    response_model=PullRequestQueued,
+    responses={
+        **api.default_responses,  # type: ignore
+        200: {
+            "content": {
+                "application/json": {
+                    "example": {
+                        "number": 5678,
+                        "position": 1,
+                        "priority": 100,
+                        "queue_rule": {
+                            "name": "default",
+                            "config": {
+                                "priority": 100,
+                                "batch_size": 1,
+                                "batch_max_wait_time": 0,
+                                "speculative_checks": 2,
+                                "allow_inplace_checks": True,
+                                "allow_queue_branch_edit": False,
+                                "disallow_checks_interruption_from_queues": [],
+                                "checks_timeout": 60,
+                                "draft_bot_account": "",
+                                "queue_branch_prefix": constants.MERGE_QUEUE_BRANCH_PREFIX,
+                                "queue_branch_merge_method": "fast-forward",
+                            },
+                        },
+                        "speculative_check_pull_request": {
+                            "in_place": True,
+                            "number": 5678,
+                            "started_at": "2021-10-14T14:19:12+00:00",
+                            "ended_at": "2021-10-14T15:00:42+00:00",
+                            "checks": [],
+                            "evaluated_conditions": "",
+                            "state": "success",
+                        },
+                        "queued_at": "2021-10-14T14:19:12+00:00",
+                        "estimated_time_of_merge": "2021-10-14T15:19:12+00:00",
+                    }
+                }
+            }
+        },
+        404: {"description": "The queue or the pull request is not found."},
+    },
+)
+async def repository_queue_pull_request(
+    owner: github_types.GitHubLogin = fastapi.Path(  # noqa: B008
+        ..., description="The owner of the repository"
+    ),
+    repository: github_types.GitHubRepositoryName = fastapi.Path(  # noqa: B008
+        ..., description="The name of the repository"
+    ),
+    queue_name: rules.QueueName = fastapi.Path(  # noqa: B008
+        ..., description="The queue name"
+    ),
+    pr_number: github_types.GitHubPullRequestNumber = fastapi.Path(  # noqa: B008
+        ..., description="The queued pull request number"
+    ),
+    repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
+        security.get_repository_context
+    ),
+) -> PullRequestQueued:
+    async for train in merge_train.Train.iter_trains(repository_ctxt):
+        queue_rules = await train.get_queue_rules()
+        if queue_rules is None:
+            # The train is going the be deleted, so skip it.
+            continue
+
+        try:
+            queue_rule = queue_rules[queue_name]
+        except KeyError:
+            # The queue we seek is not in this train
+            continue
+
+        for position, (embarked_pull, car) in enumerate(train._iter_embarked_pulls()):
+            if embarked_pull.user_pull_request_number != pr_number:
+                continue
+
+            speculative_check_pull_request = create_speculative_check_pull_request(car)
+            estimated_time_of_merge = await get_estimated_time_of_merge(
+                repository_ctxt, train, queue_name, embarked_pull.queued_at
+            )
+
+            return PullRequestQueued(
+                number=embarked_pull.user_pull_request_number,
+                position=position,
+                priority=embarked_pull.config["priority"],
+                queue_rule=QueueRule(
+                    name=embarked_pull.config["name"], config=queue_rule.config
+                ),
+                queued_at=embarked_pull.queued_at,
+                speculative_check_pull_request=speculative_check_pull_request,
+                estimated_time_of_merge=estimated_time_of_merge,
+            )
+
+    raise fastapi.HTTPException(
+        status_code=404,
+        detail="Pull request not found.",
+    )
+
+
+def create_speculative_check_pull_request(
+    car: merge_train.TrainCar | None,
+) -> SpeculativeCheckPullRequest | None:
+    if car is None:
+        speculative_check_pull_request = None
+    elif car.train_car_state.checks_type in [
+        merge_train.TrainCarChecksType.DRAFT,
+        merge_train.TrainCarChecksType.INPLACE,
+    ]:
+        if car.queue_pull_request_number is None:
+            raise RuntimeError(
+                f"car's checks type is {car.train_car_state.checks_type}, but queue_pull_request_number is None"
+            )
+        speculative_check_pull_request = SpeculativeCheckPullRequest(
+            in_place=car.train_car_state.checks_type
+            == merge_train.TrainCarChecksType.INPLACE,
+            number=car.queue_pull_request_number,
+            started_at=car.train_car_state.creation_date,
+            ended_at=car.checks_ended_timestamp,
+            state=car.get_queue_check_run_conclusion().value or "pending",
+            checks=car.last_checks,
+            evaluated_conditions=car.last_evaluated_conditions,
+        )
+    elif car.train_car_state.checks_type in (
+        merge_train.TrainCarChecksType.FAILED,
+        None,
+    ):
+        speculative_check_pull_request = None
+    else:
+        raise RuntimeError(
+            f"Car's checks type unknown: {car.train_car_state.checks_type}"
+        )
+
+    return speculative_check_pull_request
+
+
 async def get_estimated_time_of_merge(
-    embarked_pull: merge_train.EmbarkedPull,
+    repository_ctxt: context.Repository,
     train: merge_train.Train,
+    queue_name: rules.QueueName,
+    queued_at: datetime.datetime,
+) -> datetime.datetime | None:
+    if await train.is_queue_frozen(queue_name):
+        return None
+    else:
+        queue_time_to_merge_stats = (
+            await statistics_api.get_time_to_merge_stats_for_queue(
+                repository_ctxt, queue_name, branch_name=train.ref
+            )
+        )
+        return compute_estimated_time_of_merge(
+            queued_at, queue_time_to_merge_stats["median"]
+        )
+
+
+async def get_estimated_time_of_merge_from_stats(
+    train: merge_train.Train,
+    queue_name: rules.QueueName,
+    queued_at: datetime.datetime,
     time_to_merge_stats: dict[rules.QueueName, statistics_api.TimeToMergeResponse],
 ) -> datetime.datetime | None:
-    queue_name = embarked_pull.config["name"]
-
     if await train.is_queue_frozen(queue_name):
         return None
 
@@ -360,10 +490,19 @@ async def get_estimated_time_of_merge(
         queue_name,
         statistics_api.TimeToMergeResponse(mean=None, median=None),
     )
-    if queue_time_to_merge_stats["median"] is not None:
-        time_to_merge = datetime.timedelta(seconds=queue_time_to_merge_stats["median"])
-        return embarked_pull.queued_at + time_to_merge
-    return None
+    return compute_estimated_time_of_merge(
+        queued_at, queue_time_to_merge_stats["median"]
+    )
+
+
+def compute_estimated_time_of_merge(
+    queued_at: datetime.datetime,
+    time_to_merge: float | None,
+) -> datetime.datetime | None:
+    if time_to_merge is None:
+        return None
+
+    return queued_at + datetime.timedelta(seconds=time_to_merge)
 
 
 @router.get(

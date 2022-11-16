@@ -14,6 +14,12 @@ from mergify_engine.tests.functional import base
 class TestQueueApi(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
 
+    def get_headers(self, content_type: str) -> dict[str, str]:
+        return {
+            "Authorization": f"bearer {self.api_key_admin}",
+            "Content-type": content_type,
+        }
+
     async def test_invalid_rules_in_config(self) -> None:
         invalid_rules = {
             "queue_rules": [
@@ -77,10 +83,7 @@ class TestQueueApi(base.FunctionalTestBase):
 
         r = await self.app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/configuration",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
+            headers=self.get_headers(content_type="application/json"),
         )
 
         assert r.status_code == 422
@@ -161,10 +164,7 @@ class TestQueueApi(base.FunctionalTestBase):
 
         r = await self.app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/configuration",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
+            headers=self.get_headers(content_type="application/json"),
         )
 
         mock_get_mergify_config_file.stop()
@@ -195,10 +195,7 @@ class TestQueueApi(base.FunctionalTestBase):
 
         r = await self.app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/configuration",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
+            headers=self.get_headers(content_type="application/json"),
         )
 
         assert r.status_code == 200
@@ -255,7 +252,7 @@ class TestQueueApi(base.FunctionalTestBase):
             ]
         }
 
-    async def test_estimated_time_of_merge(self) -> None:
+    async def test_get_queues(self) -> None:
         rules = {
             "queue_rules": [
                 {
@@ -330,25 +327,50 @@ class TestQueueApi(base.FunctionalTestBase):
 
         await self.wait_for("pull_request", {"action": "opened"})
 
+        # GET /queues
+        repository_name = self.RECORD_CONFIG["repository_name"]
         r = await self.app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queues",
+            headers=self.get_headers(content_type="application/json"),
         )
 
         assert len(r.json()["queues"]) == 1
         assert len(r.json()["queues"][0]["pull_requests"]) == 1
-        assert "estimated_time_of_merge" in r.json()["queues"][0]["pull_requests"][0]
+        queue_pr_data = r.json()["queues"][0]["pull_requests"][0]
+        assert "estimated_time_of_merge" in queue_pr_data
 
-        queued_at = datetime.datetime.fromisoformat(
-            r.json()["queues"][0]["pull_requests"][0]["queued_at"]
-        )
+        queued_at = datetime.datetime.fromisoformat(queue_pr_data["queued_at"])
+        expected_time_of_merge = queued_at + datetime.timedelta(seconds=median_ttm)
         assert (
-            r.json()["queues"][0]["pull_requests"][0]["estimated_time_of_merge"]
-            == (queued_at + datetime.timedelta(seconds=median_ttm)).isoformat()
+            queue_pr_data["estimated_time_of_merge"]
+            == expected_time_of_merge.isoformat()
         )
+
+        # GET /queue/{queue_name}/pull/{pr_number}
+        queue_name = queue_pr_data["queue_rule"]["name"]
+        pr_number = queue_pr_data["number"]
+        r = await self.app.get(
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/{queue_name}/pull/{pr_number}",
+            headers=self.get_headers(content_type="application/json"),
+        )
+        assert r.status_code == 200
+        assert r.json()["number"] == pr_number
+        assert r.json()["queue_rule"]["name"] == queue_name
+        assert r.json()["estimated_time_of_merge"] == expected_time_of_merge.isoformat()
+
+        r = await self.app.get(
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/unknown_queue/pull/{pr_number}",
+            headers=self.get_headers(content_type="application/json"),
+        )
+        assert r.status_code == 404
+        assert r.json()["detail"] == "Pull request not found."
+
+        r = await self.app.get(
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/{queue_name}/pull/0",
+            headers=self.get_headers(content_type="application/json"),
+        )
+        assert r.status_code == 404
+        assert r.json()["detail"] == "Pull request not found."
 
     async def test_estimated_time_of_merge_when_queue_freezed(self) -> None:
         rules = {
@@ -412,19 +434,13 @@ class TestQueueApi(base.FunctionalTestBase):
         r = await self.app.put(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/foo/freeze",
             json={"reason": "test freeze"},
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
+            headers=self.get_headers(content_type="application/json"),
         )
         assert r.status_code == 200
 
         r = await self.app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
+            headers=self.get_headers(content_type="application/json"),
         )
 
         assert len(r.json()["queues"]) == 1
