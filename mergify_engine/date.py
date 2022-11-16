@@ -364,6 +364,10 @@ class Schedule:
         )
 
     def get_next_valid_time(self, from_time: datetime.datetime) -> datetime.datetime:
+        """
+        Returns the next earliest datetime, from `from_time`, at which this `Schedule` will match.
+        """
+
         def return_as_origin_timezone(dt: datetime.datetime) -> datetime.datetime:
             return dt.astimezone(from_time.tzinfo)
 
@@ -388,13 +392,29 @@ class Schedule:
                 from_time_as_tz + datetime.timedelta(minutes=1)
             )
 
-        # Outside of the whole schedule
-        if self.start_weekday > from_time_as_tz.isoweekday() > self.end_weekday:
-            # Add the number of days missing to go to the starting weekday
-            # of the next week
-            from_time_as_tz += datetime.timedelta(
-                days=self.start_weekday + (7 - from_time_as_tz.isoweekday())
+        # Outside of the day schedule
+        if (
+            self.start_weekday > self.end_weekday
+            and self.end_weekday < from_time_as_tz.isoweekday() < self.start_weekday
+        ) or (
+            self.start_weekday <= self.end_weekday
+            and (
+                from_time_as_tz.isoweekday() < self.start_weekday
+                or from_time_as_tz.isoweekday() > self.end_weekday
             )
+        ):
+            if self.start_weekday > self.end_weekday:
+                # Next time is this week at the start of schedule
+                from_time_as_tz += datetime.timedelta(
+                    days=self.start_weekday - from_time_as_tz.isoweekday()
+                )
+
+            else:
+                # Add the number of days missing to go to the starting weekday
+                # of the next week
+                from_time_as_tz += datetime.timedelta(
+                    days=self.start_weekday + (7 - from_time_as_tz.isoweekday())
+                )
         # Inside day schedule but oustide of hour+minute schedule
         elif from_time_as_tz.hour < self.start_hour or (
             from_time_as_tz.hour == self.start_hour
@@ -404,14 +424,16 @@ class Schedule:
             # The hour+minute replace is done at the end, this elif is just
             # for clarity.
             pass
+        # Outside of hour+minute schedule and last day of schedule
         elif from_time_as_tz.isoweekday() == self.end_weekday:
             if self.start_weekday > self.end_weekday:
                 # Next time is this week at the start of schedule
                 from_time_as_tz += datetime.timedelta(
-                    days=self.start_weekday - self.end_weekday
+                    days=self.start_weekday - from_time_as_tz.isoweekday()
                 )
+
             else:
-                # Next time is next week at the start of schedule
+                # Next time is next week at the start of the schedule
                 from_time_as_tz += datetime.timedelta(
                     days=self.start_weekday + (7 - from_time_as_tz.isoweekday())
                 )
