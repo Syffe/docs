@@ -10,6 +10,7 @@ import typing
 
 import daiquiri
 from first import first
+import pydantic
 import voluptuous
 
 from mergify_engine import context
@@ -193,7 +194,7 @@ class RuleConditionGroup(abstract.ABC):
     def get_evaluation_result(
         self, filter_key: ConditionFilterKeyT | None = None
     ) -> ConditionEvaluationResult:
-        return ConditionEvaluationResult(
+        return ConditionEvaluationResult.from_rule_condition_node(
             self, filter_key=filter_key  # type:ignore [arg-type]
         )
 
@@ -465,7 +466,9 @@ class QueueRuleConditions:
         return summary
 
     def get_evaluation_result(self) -> QueueConditionEvaluationResult:
-        return QueueConditionEvaluationResult(self._evaluated_conditions)
+        return QueueConditionEvaluationResult.from_evaluated_condition_node(
+            self._evaluated_conditions
+        )
 
     def is_faulty(self) -> bool:
         if self._used:
@@ -623,6 +626,9 @@ class PullRequestRuleConditions:
 
         return self.condition.get_unmatched_summary()
 
+    def get_evaluation_result(self) -> ConditionEvaluationResult:
+        return self.condition.get_evaluation_result()
+
     @property
     def match(self) -> bool:
         return self.condition.match
@@ -637,48 +643,87 @@ class PullRequestRuleConditions:
         return PullRequestRuleConditions(self.condition.copy().conditions)
 
 
-@dataclasses.dataclass
+@pydantic.dataclasses.dataclass
 class ConditionEvaluationResult:
-    init_data: dataclasses.InitVar[RuleConditionNode]
-    filter_key: dataclasses.InitVar[ConditionFilterKeyT | None] = None
-
-    match: bool = dataclasses.field(init=False)
-    label: str = dataclasses.field(init=False)
-    description: str | None = dataclasses.field(init=False, default=None)
-    evaluation_error: str | None = dataclasses.field(init=False, default=None)
+    match: bool
+    label: str
+    description: str | None = None
+    evaluation_error: str | None = None
     subconditions: list[ConditionEvaluationResult] = dataclasses.field(
-        init=False, default_factory=list
+        default_factory=list
     )
 
-    def __post_init__(
-        self, init_data: RuleConditionNode, filter_key: ConditionFilterKeyT | None
-    ) -> None:
-        if isinstance(init_data, RuleConditionGroup):
-            self.match = init_data.match
-            self.label = init_data.operator_label
-            self.description = init_data.description
-            self.subconditions = self._create_subconditions(init_data, filter_key)
-        elif isinstance(init_data, RuleCondition):
-            self.match = init_data.match
-            self.label = f"`{init_data}`"
-            self.description = init_data.description
-            self.evaluation_error = init_data.evaluation_error
-        else:
-            raise RuntimeError(f"Unsupported condition type: {type(init_data)}")
+    class Serialized(typing.TypedDict):
+        match: bool
+        label: str
+        description: str | None
+        evaluation_error: str | None
+        # mypy can't parse recursive definition
+        subconditions: list["ConditionEvaluationResult.Serialized"]  # type: ignore[misc]
 
+    @classmethod
+    def from_rule_condition_node(
+        cls,
+        rule_condition_node: RuleConditionNode,
+        filter_key: ConditionFilterKeyT | None,
+    ) -> ConditionEvaluationResult:
+        if isinstance(rule_condition_node, RuleConditionGroup):
+            return cls(
+                match=rule_condition_node.match,
+                label=rule_condition_node.operator_label,
+                description=rule_condition_node.description,
+                subconditions=cls._create_subconditions(
+                    rule_condition_node, filter_key
+                ),
+            )
+        elif isinstance(rule_condition_node, RuleCondition):
+            return cls(
+                match=rule_condition_node.match,
+                label=f"`{rule_condition_node}`",
+                description=rule_condition_node.description,
+                evaluation_error=rule_condition_node.evaluation_error,
+            )
+        else:
+            raise RuntimeError(
+                f"Unsupported condition type: {type(rule_condition_node)}"
+            )
+
+    @classmethod
     def _create_subconditions(
-        self,
+        cls,
         condition_group: RuleConditionGroup,
         filter_key: ConditionFilterKeyT | None,
     ) -> list[ConditionEvaluationResult]:
         sorted_subconditions = RuleConditionGroup._get_conditions_ordered(
-            condition_group.conditions, self.match
+            condition_group.conditions, condition_group.match
         )
         return [
-            ConditionEvaluationResult(c, filter_key)
+            cls.from_rule_condition_node(c, filter_key)
             for c in sorted_subconditions
             if filter_key is None or filter_key(c)
         ]
+
+    @classmethod
+    def from_dict(
+        cls, data: ConditionEvaluationResult.Serialized
+    ) -> ConditionEvaluationResult:
+        evaluation_result = cls(
+            match=data["match"],
+            label=data["label"],
+            description=data["description"],
+            evaluation_error=data["evaluation_error"],
+            subconditions=[cls.from_dict(c) for c in data["subconditions"]],
+        )
+        return evaluation_result
+
+    def as_dict(self) -> ConditionEvaluationResult.Serialized:
+        return self.Serialized(
+            match=self.match,
+            label=self.label,
+            description=self.description,
+            evaluation_error=self.evaluation_error,
+            subconditions=[c.as_dict() for c in self.subconditions],
+        )
 
     def as_markdown(self) -> str:
         return "\n".join(self._markdown_iterator())
@@ -705,59 +750,84 @@ class ConditionEvaluationResult:
         return text
 
 
-@dataclasses.dataclass
+@pydantic.dataclasses.dataclass
 class QueueConditionEvaluationResult:
-    init_data: dataclasses.InitVar[EvaluatedConditionNodeT]
-
-    match: bool = dataclasses.field(init=False)
-    label: str = dataclasses.field(init=False)
-    description: str | None = dataclasses.field(init=False, default=None)
-    attribute_name: str | None = dataclasses.field(init=False, default=None)
+    match: bool
+    label: str
+    description: str | None = None
+    attribute_name: str | None = None
     subconditions: list[QueueConditionEvaluationResult] = dataclasses.field(
-        init=False, default_factory=list
+        default_factory=list
     )
-    pull_request_evaluations: dict[
-        github_types.GitHubPullRequestNumber, Evaluation
-    ] = dataclasses.field(init=False, default_factory=dict)
+    pull_request_evaluations: list[
+        "QueueConditionEvaluationResult.Evaluation"
+    ] = dataclasses.field(default_factory=list)
 
-    class Evaluation(typing.NamedTuple):
+    class Evaluation(typing.TypedDict):
+        pull_request: github_types.GitHubPullRequestNumber
         match: bool
         evaluation_error: str | None
 
-    def __post_init__(self, init_data: EvaluatedConditionNodeT) -> None:
-        first_evaluated_condition = first(init_data.values())
-
-        if isinstance(first_evaluated_condition, RuleConditionGroup):
-            init_data = typing.cast(EvaluatedConditionGroupT, init_data)
-
-            self.match = all(c.match for c in init_data.values())
-            self.label = first_evaluated_condition.operator_label
-            self.description = first_evaluated_condition.description
-            self.subconditions = self._create_subconditions(init_data)
-        elif isinstance(first_evaluated_condition, RuleCondition):
-            init_data = typing.cast(EvaluatedConditionT, init_data)
-
-            self.match = first_evaluated_condition.match
-            self.label = f"`{first_evaluated_condition}`"
-            self.description = first_evaluated_condition.description
-            self.pull_request_evaluations = {
-                pull_request: QueueConditionEvaluationResult.Evaluation(
-                    condition.match, condition.evaluation_error
-                )
-                for pull_request, condition in init_data.items()
-            }
-            self.attribute_name = first_evaluated_condition.get_attribute_name()
-        else:
-            raise RuntimeError(
-                f"Unsupported condition type: {type(first_evaluated_condition)}"
-            )
+    class Serialized(typing.TypedDict):
+        match: bool
+        label: str
+        description: str | None
+        attribute_name: str | None
+        # mypy can't parse recursive definition
+        subconditions: list["QueueConditionEvaluationResult.Serialized"]  # type: ignore[misc]
+        pull_request_evaluations: list["QueueConditionEvaluationResult.Evaluation"]
 
     @property
     def display_pull_request_evaluations(self) -> bool:
         return self.attribute_name not in context.QueuePullRequest.QUEUE_ATTRIBUTES
 
+    @classmethod
+    def from_evaluated_condition_node(
+        cls, evaluated_condition_node: EvaluatedConditionNodeT
+    ) -> QueueConditionEvaluationResult:
+        first_evaluated_condition = first(evaluated_condition_node.values())
+
+        if isinstance(first_evaluated_condition, RuleConditionGroup):
+            evaluated_condition_group = typing.cast(
+                EvaluatedConditionGroupT, evaluated_condition_node
+            )
+            global_match = all(c.match for c in evaluated_condition_group.values())
+
+            return cls(
+                match=global_match,
+                label=first_evaluated_condition.operator_label,
+                description=first_evaluated_condition.description,
+                subconditions=cls._create_subconditions(
+                    evaluated_condition_group, global_match
+                ),
+            )
+        elif isinstance(first_evaluated_condition, RuleCondition):
+            evaluated_condition = typing.cast(
+                EvaluatedConditionT, evaluated_condition_node
+            )
+
+            return cls(
+                match=first_evaluated_condition.match,
+                label=f"`{first_evaluated_condition}`",
+                description=first_evaluated_condition.description,
+                pull_request_evaluations=[
+                    cls.Evaluation(
+                        pull_request=pull_request,
+                        match=condition.match,
+                        evaluation_error=condition.evaluation_error,
+                    )
+                    for pull_request, condition in evaluated_condition.items()
+                ],
+                attribute_name=first_evaluated_condition.get_attribute_name(),
+            )
+        else:
+            raise RuntimeError(
+                f"Unsupported condition type: {type(first_evaluated_condition)}"
+            )
+
+    @classmethod
     def _create_subconditions(
-        self, evaluated_condition_group: EvaluatedConditionGroupT
+        cls, evaluated_condition_group: EvaluatedConditionGroupT, global_match: bool
     ) -> list[QueueConditionEvaluationResult]:
         first_evaluated_condition = next(iter(evaluated_condition_group.values()))
         evaluated_subconditions: list[EvaluatedConditionNodeT] = [
@@ -765,9 +835,32 @@ class QueueConditionEvaluationResult:
             for i, _ in enumerate(first_evaluated_condition.conditions)
         ]
         sorted_subconditions = QueueRuleConditions._get_conditions_ordered(
-            evaluated_subconditions, self.match
+            evaluated_subconditions, global_match
         )
-        return [QueueConditionEvaluationResult(c) for c in sorted_subconditions]
+        return [cls.from_evaluated_condition_node(c) for c in sorted_subconditions]
+
+    @classmethod
+    def from_dict(
+        cls, data: QueueConditionEvaluationResult.Serialized
+    ) -> QueueConditionEvaluationResult:
+        return cls(
+            match=data["match"],
+            label=data["label"],
+            description=data["description"],
+            attribute_name=data["attribute_name"],
+            subconditions=[cls.from_dict(c) for c in data["subconditions"]],
+            pull_request_evaluations=data["pull_request_evaluations"],
+        )
+
+    def as_dict(self) -> QueueConditionEvaluationResult.Serialized:
+        return self.Serialized(
+            match=self.match,
+            label=self.label,
+            description=self.description,
+            attribute_name=self.attribute_name,
+            subconditions=[c.as_dict() for c in self.subconditions],
+            pull_request_evaluations=self.pull_request_evaluations.copy(),
+        )
 
     def as_markdown(self) -> str:
         return "\n".join(self._markdown_iterator())
@@ -793,10 +886,10 @@ class QueueConditionEvaluationResult:
             text += ":"
 
         if self.pull_request_evaluations and self.display_pull_request_evaluations:
-            for pull_number, evaluation in self.pull_request_evaluations.items():
-                check = "X" if evaluation.match else " "
-                text += f"\n  - [{check}] #{pull_number}"
-                if evaluation.evaluation_error:
-                    text += f" ⚠️ {evaluation.evaluation_error}"
+            for evaluation in self.pull_request_evaluations:
+                check = "X" if evaluation["match"] else " "
+                text += f"\n  - [{check}] #{evaluation['pull_request']}"
+                if evaluation["evaluation_error"]:
+                    text += f" ⚠️ {evaluation['evaluation_error']}"
 
         return text
