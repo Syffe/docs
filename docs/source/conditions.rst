@@ -250,28 +250,34 @@ Here's the list of pull request attribute that can be used in conditions:
      - The time the pull request was created at.
    * - ``current-day``
      - integer
-     - | The current day of the month, from 1 to 31.
-       | ⚠️  This option is deprecated in favor of ``schedule`` and will be removed on February 11, 2023.
+     - | |deprecated tag|
+       | The current day of the month, from 1 to 31.
+       | This option is deprecated in favor of ``schedule`` and will be removed on February 11, 2023.
    * - ``current-day-of-week``
      - integer or string
-     - | The current day of the week. From 1 (Monday) to 7 (Sunday), or one of ``Mon``, ``Tue``, ``Wed``, ``Thu``, ``Fri``, ``Sat``, ``Sun``, ``Monday``, ``Tuesday``, ``Wednesday``, ``Thursday``, ``Friday``, ``Saturday``, ``Sunday``. Weeks start on Monday.
-       | ⚠️  This option is deprecated in favor of ``schedule`` and will be removed on February 11, 2023.
+     - | |deprecated tag|
+       | The current day of the week. From 1 (Monday) to 7 (Sunday), or one of ``Mon``, ``Tue``, ``Wed``, ``Thu``, ``Fri``, ``Sat``, ``Sun``, ``Monday``, ``Tuesday``, ``Wednesday``, ``Thursday``, ``Friday``, ``Saturday``, ``Sunday``. Weeks start on Monday.
+       | This option is deprecated in favor of ``schedule`` and will be removed on February 11, 2023.
    * - ``current-month``
      - integer
-     - | The current month, from 1 to 12.
-       | ⚠️  This option is deprecated and will be removed on February 11, 2023.
+     - | |deprecated tag|
+       | The current month, from 1 to 12.
+       | This option is deprecated and will be removed on February 11, 2023.
    * - ``current-time``
      - :ref:`Time <time format>`
-     - | The current time in format ``HH:MM``.
-       | ⚠️  This option is deprecated in favor of ``schedule`` and will be removed on February 11, 2023.
+     - | |deprecated tag|
+       | The current time in format ``HH:MM``.
+       | This option is deprecated in favor of ``schedule`` and will be removed on February 11 2023.
    * - ``current-timestamp``
      - :ref:`Timestamp <iso timestamp>`
-     - | The current date and time.
-       | ⚠️  This option is deprecated in favor of ``schedule`` and will be removed on February 11, 2023.
+     - | |deprecated tag|
+       | The current date and time.
+       | This option is deprecated in favor of ``schedule`` and will be removed on February 11, 2023.
    * - ``current-year``
      - integer
-     - | The current year, from 1900 to 9999.
-       | ⚠️  This option is deprecated and will be removed on February 11, 2023.
+     - | |deprecated tag|
+       | The current year, from 1900 to 9999.
+       | This option is deprecated and will be removed on February 11, 2023.
    * - ``dependabot-dependency-name``
      - string
      - The dependency-name value included in the Dependabot commit message.
@@ -632,3 +638,5 @@ a description note in order to notify its provenance.
 
 .. image:: _static/branch-protection-description.png
    :alt: GitHub branch protection description example
+
+.. include:: global-substitutions.rst
