@@ -153,11 +153,10 @@ Here's the list of pull request attribute that can be used in conditions:
    * - ``branch-protection-review-decision``
      - string
      - The review decision, could be one of ``APPROVED``, ``CHANGES_REQUESTED``
-       and ``REVIEW_REQUIRED``:
-       <https://docs.github.com/en/graphql/reference/enums#pullrequestreviewdecision>`_
-       Can be useful to check if `CODEOWNERS
+       or ``REVIEW_REQUIRED``.
+       This indicates if `CODEOWNERS
        <https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners>`_
-       have reviewed the PR when the `Require review from Code Owners`
+       have reviewed the pull request when the `Require review from Code Owners`
        branch protection rule is enabled.
    * - ``changes-requested-reviews-by``
      - list of string
