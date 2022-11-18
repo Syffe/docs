@@ -65,7 +65,7 @@ async def sentry_tunnel(request: fastapi.Request) -> fastapi.Response:
             resp = None
             proxy_request = e.request
 
-        if resp is None:
+        if resp is None or resp.status_code >= 500:
             resp = httpx.Response(
                 status_code=502,
                 content="Bad Gateway",
