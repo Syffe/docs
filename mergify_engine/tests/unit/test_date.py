@@ -354,3 +354,80 @@ def test_schedule_next_valid_time(
     schedule: date.Schedule, from_time: datetime.datetime, expected: datetime.datetime
 ) -> None:
     assert schedule.get_next_valid_time(from_time) == expected
+
+
+@pytest.mark.parametrize(
+    "schedule,date_to_test,expected",
+    (
+        (
+            date.Schedule.from_strings("MON-FRI", "7:00-15:00"),
+            # Friday, 15:00 UTC
+            datetime.datetime(2022, 11, 11, 15, tzinfo=datetime.timezone.utc),
+            True,
+        ),
+        (
+            date.Schedule.from_strings("MON-FRI", "7:00-15:00"),
+            # Friday, 15:00:01 UTC
+            datetime.datetime(2022, 11, 11, 15, 0, 1, tzinfo=datetime.timezone.utc),
+            False,
+        ),
+        (
+            date.Schedule.from_strings("MON-FRI", "7:00-15:00"),
+            # Sunday, 14:00 UTC
+            datetime.datetime(2022, 11, 12, 14, tzinfo=datetime.timezone.utc),
+            False,
+        ),
+        (
+            date.Schedule.from_strings("MON-FRI", "7:00-15:00"),
+            # Sunday, 16:00 UTC
+            datetime.datetime(2022, 11, 12, 16, tzinfo=datetime.timezone.utc),
+            False,
+        ),
+        (
+            date.Schedule.from_strings("FRI-MON", "7:00-15:00"),
+            # Monday, 8:00 UTC
+            datetime.datetime(2022, 11, 14, 8, tzinfo=datetime.timezone.utc),
+            True,
+        ),
+        (
+            date.Schedule.from_strings("FRI-TUE", "7:00-15:00"),
+            # Monday, 8:00 UTC
+            datetime.datetime(2022, 11, 14, 8, tzinfo=datetime.timezone.utc),
+            True,
+        ),
+        (
+            date.Schedule.from_strings("FRI-MON", "7:00-15:00"),
+            # Tuesday, 8:00 UTC
+            datetime.datetime(2022, 11, 15, 8, tzinfo=datetime.timezone.utc),
+            True,
+        ),
+        (
+            date.Schedule.from_strings("FRI-MON", "7:00-15:00"),
+            # Friday, 15:00 UTC
+            datetime.datetime(2022, 11, 11, 15, tzinfo=datetime.timezone.utc),
+            True,
+        ),
+        (
+            date.Schedule.from_strings("FRI-MON", "7:00-15:00"),
+            # Friday, 16:00 UTC
+            datetime.datetime(2022, 11, 11, 16, tzinfo=datetime.timezone.utc),
+            False,
+        ),
+        (
+            date.Schedule.from_strings("FRI-MON", "7:00-15:00"),
+            # Saturday, 14:00 UTC
+            datetime.datetime(2022, 11, 12, 14, tzinfo=datetime.timezone.utc),
+            True,
+        ),
+        (
+            date.Schedule.from_strings("FRI-MON", "7:00-15:00"),
+            # Saturday, 16:00 UTC
+            datetime.datetime(2022, 11, 12, 16, tzinfo=datetime.timezone.utc),
+            False,
+        ),
+    ),
+)
+def test_schedule_eq_with_datetime(
+    schedule: date.Schedule, date_to_test: datetime.datetime, expected: bool
+) -> None:
+    assert expected == (date_to_test == schedule)

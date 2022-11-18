@@ -344,10 +344,16 @@ class Schedule:
 
         # Allow to check if a datetime is in a schedule
         dother = other.astimezone(self.tzinfo)
-        return (
-            self.start_weekday <= dother.isoweekday() <= self.end_weekday
-            and self.is_datetime_between_time_range(dother, strict=False)
-        )
+        if self.start_weekday < self.end_weekday:
+            return (
+                self.start_weekday <= dother.isoweekday() <= self.end_weekday
+                and self.is_datetime_between_time_range(dother, strict=False)
+            )
+        else:
+            return (
+                self.end_weekday <= dother.isoweekday()
+                or dother.isoweekday() <= self.start_weekday
+            ) and self.is_datetime_between_time_range(dother, strict=False)
 
     def is_datetime_between_time_range(
         self,
