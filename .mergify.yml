@@ -44,7 +44,7 @@ queue_rules:
     allow_inplace_checks: true
     conditions:
       - and: *CheckRuns
-      - schedule=Mon-Fri 09:30-17:00[Europe/Paris]
+      - schedule=Mon-Fri 09:00-17:00[Europe/Paris]
     batch_size: 7
     batch_max_wait_time: 5min
     queue_branch_merge_method: fast-forward
