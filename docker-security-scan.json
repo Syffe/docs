@@ -339,13 +339,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:7720",
+          "https://access.redhat.com/errata/RHSA-2022:8361",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
+          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-7720.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -487,7 +487,8 @@
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/OHNO2FB55CPX47BAXMBWUBGWHO6N6ZZH/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/UKFHE4KVD7EKS5J3KTDFVBEKU3CLXGVV/",
           "https://support.apple.com/kb/HT213496",
-          "https://ubuntu.com/security/notices/USN-5686-1"
+          "https://ubuntu.com/security/notices/USN-5686-1",
+          "https://ubuntu.com/security/notices/USN-5686-2"
         ],
         "PublishedDate": "2022-10-19T12:15:00Z"
       },
@@ -741,7 +742,8 @@
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/OHNO2FB55CPX47BAXMBWUBGWHO6N6ZZH/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/UKFHE4KVD7EKS5J3KTDFVBEKU3CLXGVV/",
           "https://support.apple.com/kb/HT213496",
-          "https://ubuntu.com/security/notices/USN-5686-1"
+          "https://ubuntu.com/security/notices/USN-5686-1",
+          "https://ubuntu.com/security/notices/USN-5686-2"
         ],
         "PublishedDate": "2022-10-19T12:15:00Z"
       },
@@ -1686,13 +1688,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:7720",
+          "https://access.redhat.com/errata/RHSA-2022:8361",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
+          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-7720.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -2168,13 +2170,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:7720",
+          "https://access.redhat.com/errata/RHSA-2022:8361",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
+          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-7720.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -2407,9 +2409,13 @@
       },
       {
         "VulnerabilityID": "CVE-2022-42898",
+        "VendorIDs": [
+          "DSA-5286-1"
+        ],
         "PkgID": "libgssapi-krb5-2@1.18.3-6+deb11u2",
         "PkgName": "libgssapi-krb5-2",
         "InstalledVersion": "1.18.3-6+deb11u2",
+        "FixedVersion": "1.18.3-6+deb11u3",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-42898",
         "DataSource": {
           "ID": "debian",
@@ -2535,9 +2541,13 @@
       },
       {
         "VulnerabilityID": "CVE-2022-42898",
+        "VendorIDs": [
+          "DSA-5286-1"
+        ],
         "PkgID": "libk5crypto3@1.18.3-6+deb11u2",
         "PkgName": "libk5crypto3",
         "InstalledVersion": "1.18.3-6+deb11u2",
+        "FixedVersion": "1.18.3-6+deb11u3",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-42898",
         "DataSource": {
           "ID": "debian",
@@ -2631,9 +2641,13 @@
       },
       {
         "VulnerabilityID": "CVE-2022-42898",
+        "VendorIDs": [
+          "DSA-5286-1"
+        ],
         "PkgID": "libkrb5-3@1.18.3-6+deb11u2",
         "PkgName": "libkrb5-3",
         "InstalledVersion": "1.18.3-6+deb11u2",
+        "FixedVersion": "1.18.3-6+deb11u3",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-42898",
         "DataSource": {
           "ID": "debian",
@@ -2727,9 +2741,13 @@
       },
       {
         "VulnerabilityID": "CVE-2022-42898",
+        "VendorIDs": [
+          "DSA-5286-1"
+        ],
         "PkgID": "libkrb5support0@1.18.3-6+deb11u2",
         "PkgName": "libkrb5support0",
         "InstalledVersion": "1.18.3-6+deb11u2",
+        "FixedVersion": "1.18.3-6+deb11u3",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-42898",
         "DataSource": {
           "ID": "debian",
@@ -3237,6 +3255,7 @@
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
           "https://github.com/systemd/systemd/pull/23933",
+          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/RVBQC2VLSDVQAPJTEMTREXDL4HYLXG2P/",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-3821"
         ],
         "PublishedDate": "2022-11-08T22:15:00Z"
@@ -3359,6 +3378,7 @@
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
           "https://github.com/systemd/systemd/pull/23933",
+          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/RVBQC2VLSDVQAPJTEMTREXDL4HYLXG2P/",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-3821"
         ],
         "PublishedDate": "2022-11-08T22:15:00Z"
@@ -4125,13 +4145,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:7720",
+          "https://access.redhat.com/errata/RHSA-2022:8361",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
+          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-7720.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -4175,16 +4195,18 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:5818",
+          "https://access.redhat.com/errata/RHSA-2022:6224",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1292.json",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-2068.json",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-2097.json",
           "https://access.redhat.com/security/cve/CVE-2022-2097",
           "https://bugzilla.redhat.com/2081494",
+          "https://bugzilla.redhat.com/2087911",
+          "https://bugzilla.redhat.com/2087913",
           "https://bugzilla.redhat.com/2097310",
           "https://bugzilla.redhat.com/2104905",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-2097",
-          "https://errata.almalinux.org/8/ALSA-2022-5818.html",
+          "https://errata.almalinux.org/9/ALSA-2022-6224.html",
           "https://git.openssl.org/gitweb/?p=openssl.git;a=commitdiff;h=919925673d6c9cfed3c1085497f5dfbbed5fc431",
           "https://git.openssl.org/gitweb/?p=openssl.git;a=commitdiff;h=a98f339ddd7e8f487d6e0088d4a9a42324885a93",
           "https://github.com/advisories/GHSA-3wx7-46ch-7rq2",
@@ -4313,6 +4335,7 @@
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
           "https://github.com/systemd/systemd/pull/23933",
+          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/RVBQC2VLSDVQAPJTEMTREXDL4HYLXG2P/",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-3821"
         ],
         "PublishedDate": "2022-11-08T22:15:00Z"
@@ -4436,7 +4459,9 @@
           "https://gitlab.com/gnutls/libtasn1/-/issues/32",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/AV4SHDJF2XLB4CUPTBPQQ6CLGZ5LKXPZ/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/OGO7XST4EIJGX4B2ITZCYSWM24534BSU/",
+          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/V5LWOGF7QRMNFRUCZY6TDYQJVFI6MOQ2/",
           "https://nvd.nist.gov/vuln/detail/CVE-2021-46848",
+          "https://security.netapp.com/advisory/ntap-20221118-0006/",
           "https://ubuntu.com/security/notices/USN-5707-1"
         ],
         "PublishedDate": "2022-10-24T14:15:00Z"
@@ -4568,6 +4593,7 @@
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
           "https://github.com/systemd/systemd/pull/23933",
+          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/RVBQC2VLSDVQAPJTEMTREXDL4HYLXG2P/",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-3821"
         ],
         "PublishedDate": "2022-11-08T22:15:00Z"
@@ -4796,6 +4822,8 @@
           "https://access.redhat.com/security/cve/cve-2013-4235",
           "https://bugzilla.redhat.com/show_bug.cgi?id=CVE-2013-4235",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2013-4235",
+          "https://github.com/shadow-maint/shadow/issues/317",
+          "https://github.com/shadow-maint/shadow/pull/545",
           "https://lists.apache.org/thread.html/rf9fa47ab66495c78bb4120b0754dd9531ca2ff0430f6685ac9b07772@%3Cdev.mina.apache.org%3E",
           "https://security-tracker.debian.org/tracker/CVE-2013-4235",
           "https://security.gentoo.org/glsa/202210-26"
@@ -4875,13 +4903,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:7720",
+          "https://access.redhat.com/errata/RHSA-2022:8361",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
+          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-7720.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -6460,6 +6488,8 @@
           "https://access.redhat.com/security/cve/cve-2013-4235",
           "https://bugzilla.redhat.com/show_bug.cgi?id=CVE-2013-4235",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2013-4235",
+          "https://github.com/shadow-maint/shadow/issues/317",
+          "https://github.com/shadow-maint/shadow/pull/545",
           "https://lists.apache.org/thread.html/rf9fa47ab66495c78bb4120b0754dd9531ca2ff0430f6685ac9b07772@%3Cdev.mina.apache.org%3E",
           "https://security-tracker.debian.org/tracker/CVE-2013-4235",
           "https://security.gentoo.org/glsa/202210-26"
@@ -6788,6 +6818,7 @@
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
           "https://github.com/systemd/systemd/pull/23933",
+          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/RVBQC2VLSDVQAPJTEMTREXDL4HYLXG2P/",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-3821"
         ],
         "PublishedDate": "2022-11-08T22:15:00Z"
@@ -6910,6 +6941,7 @@
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
           "https://github.com/systemd/systemd/pull/23933",
+          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/RVBQC2VLSDVQAPJTEMTREXDL4HYLXG2P/",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-3821"
         ],
         "PublishedDate": "2022-11-08T22:15:00Z"
@@ -7032,6 +7064,7 @@
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
           "https://github.com/systemd/systemd/pull/23933",
+          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/RVBQC2VLSDVQAPJTEMTREXDL4HYLXG2P/",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-3821"
         ],
         "PublishedDate": "2022-11-08T22:15:00Z"
