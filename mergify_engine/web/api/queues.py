@@ -320,6 +320,7 @@ async def repository_queues(
 
 @router.get(
     "/repos/{owner}/{repository}/queue/{queue_name}/pull/{pr_number}",  # noqa: FS003
+    include_in_schema=False,
     summary="Get a queued pull request",
     description="Get a pull request queued in a merge queue of a repository",
     response_model=PullRequestQueued,
