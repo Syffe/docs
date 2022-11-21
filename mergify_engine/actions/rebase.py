@@ -45,7 +45,7 @@ class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig
             github_user = tokens.get_token_for(bot_account)
             if not github_user:
                 raise rules.InvalidPullRequestRule(
-                    f"Unable to comment: user `{bot_account}` is unknown. ",
+                    f"Unable to rebase: user `{bot_account}` is unknown. ",
                     f"Please make sure `{bot_account}` has logged in Mergify dashboard.",
                 )
 
