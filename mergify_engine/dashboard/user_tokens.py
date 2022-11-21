@@ -15,9 +15,6 @@ from mergify_engine.clients import dashboard
 from mergify_engine.clients import http
 
 
-if typing.TYPE_CHECKING:
-    from mergify_engine import context
-
 LOG = daiquiri.getLogger(__name__)
 
 
@@ -42,27 +39,6 @@ class UserTokensBase:
     redis: redis_utils.RedisCache
     owner_id: int
     users: list[UserTokensUser]
-
-    @staticmethod
-    async def select_users_for(
-        ctxt: context.Context,
-        bot_account: github_types.GitHubLogin | None = None,
-    ) -> list[UserTokensUser]:
-        user_tokens = await ctxt.repository.installation.get_user_tokens()
-        if bot_account:
-            user = user_tokens.get_token_for(bot_account)
-            if user:
-                users = [user]
-            else:
-                raise UserTokensUserNotFound(
-                    f"User `{bot_account}` is unknown. Please make sure `{bot_account}` has logged in Mergify dashboard."
-                )
-        else:
-            users = user_tokens.users
-
-        # Pick author first
-        users = sorted(users, key=lambda x: x["login"] != ctxt.pull["user"]["login"])
-        return users
 
     def get_token_for(
         self, wanted_login: github_types.GitHubLogin

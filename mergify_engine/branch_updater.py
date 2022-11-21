@@ -1,15 +1,12 @@
 import dataclasses
-import typing
 import uuid
 
 import tenacity
 
 from mergify_engine import context
 from mergify_engine import exceptions
-from mergify_engine import github_types
 from mergify_engine import gitter
 from mergify_engine.clients import http
-from mergify_engine.dashboard import subscription
 from mergify_engine.dashboard import user_tokens
 
 
@@ -215,17 +212,26 @@ async def update_with_api(
 
 async def rebase_with_git(
     ctxt: context.Context,
-    users: list[user_tokens.UserTokensUser],
-    committer: user_tokens.UserTokensUser | None,
+    on_behalf: user_tokens.UserTokensUser | None,
     autosquash: bool = False,
 ) -> None:
     ctxt.log.info("updating base branch with git")
 
     await pre_rebase_check(ctxt)
 
+    if on_behalf is not None:
+        users = [on_behalf]
+    else:
+        # TODO(sileht): drop me and make on_behalf mandatory
+        tokens = await ctxt.repository.installation.get_user_tokens()
+        # Pick author first
+        users = sorted(
+            tokens.users, key=lambda x: x["login"] != ctxt.pull["user"]["login"]
+        )
+
     for user in users:
         try:
-            await _do_rebase(ctxt, user, committer, autosquash)
+            await _do_rebase(ctxt, user, on_behalf, autosquash)
         except gitter.GitAuthenticationFailure as e:  # pragma: no cover
             ctxt.log.info(
                 "authentification failure, will retry another token: %s",
@@ -243,26 +249,3 @@ async def rebase_with_git(
         )
 
     raise BranchUpdateFailure("No oauth valid tokens")
-
-
-async def update(
-    method: typing.Literal["merge", "rebase"],
-    ctxt: context.Context,
-    bot_account_feature: subscription.Features,
-    user: github_types.GitHubLogin | None = None,
-) -> None:
-    if method == "merge":
-        await update_with_api(ctxt)
-    else:
-        try:
-            users = await user_tokens.UserTokens.select_users_for(ctxt, user)
-        except user_tokens.UserTokensUserNotFound as e:
-            raise BranchUpdateFailure(f"Unable to rebase: {e.reason}")
-
-        # NOTE(sileht): select_users_for returns only one item if bot_account is set
-        if user is not None and ctxt.subscription.has_feature(bot_account_feature):
-            committer = users[0]
-        else:
-            committer = None
-
-        await rebase_with_git(ctxt, users, committer)

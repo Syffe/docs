@@ -40,8 +40,8 @@ class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig
             raise rules.InvalidPullRequestRule(e.title, e.reason)
 
         github_user: user_tokens.UserTokensUser | None = None
+        tokens = await ctxt.repository.installation.get_user_tokens()
         if bot_account:
-            tokens = await ctxt.repository.installation.get_user_tokens()
             github_user = tokens.get_token_for(bot_account)
             if not github_user:
                 raise rules.InvalidPullRequestRule(
@@ -63,12 +63,11 @@ class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig
         ] is not None and self.ctxt.subscription.has_feature(
             subscription.Features.BOT_ACCOUNT
         ):
-            users = [self.config["bot_account"]]
-            committer = self.config["bot_account"]
+            on_behalf = self.config["bot_account"]
         else:
-            tokens = await self.ctxt.repository.installation.get_user_tokens()
-            users = tokens.users
-            committer = None
+            # TODO(sileht): deprecated random user pick, instead put {{ author
+            # }} in bot_account default template
+            on_behalf = None
 
         if (
             self.config["autosquash"]
@@ -83,8 +82,7 @@ class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig
         try:
             await branch_updater.rebase_with_git(
                 self.ctxt,
-                users,
-                committer,
+                on_behalf,
                 self.config["autosquash"],
             )
         except branch_updater.BranchUpdateFailure as e:

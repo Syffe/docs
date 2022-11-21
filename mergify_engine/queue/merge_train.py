@@ -33,7 +33,6 @@ from mergify_engine import utils
 from mergify_engine import worker_pusher
 from mergify_engine import yaml
 from mergify_engine.clients import http
-from mergify_engine.dashboard import subscription
 from mergify_engine.dashboard import user_tokens
 from mergify_engine.queue import freeze
 from mergify_engine.queue import utils as queue_utils
@@ -875,19 +874,35 @@ class TrainCar:
         )
 
         if await ctxt.is_behind:
+
+            bot_account = self.still_queued_embarked_pulls[0].config.get(
+                "update_bot_account"
+            )
+            github_user: user_tokens.UserTokensUser | None = None
+            if bot_account:
+                tokens = await ctxt.repository.installation.get_user_tokens()
+                github_user = tokens.get_token_for(bot_account)
+                if not github_user:
+                    await self._set_creation_failure(
+                        f"Unable to update: user `{bot_account}` is unknown.\n\n"
+                        f"Please make sure `{bot_account}` has logged in Mergify dashboard.",
+                        operation="update",
+                    )
+                    raise TrainCarPullRequestCreationFailure(self)
+
+            # TODO(sileht): fallback to "merge" and None until all configs has
+            # the new fields
+            method = self.still_queued_embarked_pulls[0].config.get(
+                "update_method", "merge"
+            )
             try:
-                # TODO(sileht): fallback to "merge" and None until all configs has
-                # the new fields
-                await branch_updater.update(
-                    self.still_queued_embarked_pulls[0].config.get(
-                        "update_method", "merge"
-                    ),
-                    ctxt,
-                    subscription.Features.MERGE_BOT_ACCOUNT,
-                    self.still_queued_embarked_pulls[0].config.get(
-                        "update_bot_account"
-                    ),
-                )
+                if method == "merge":
+                    # FIXME(sileht): we should have passed on_behalf to update_with_api ...
+                    # MRGFY-1742
+                    await branch_updater.update_with_api(ctxt)
+                else:
+                    # FIXME(sileht): should we enabled autosquash here? MRGFY-279
+                    await branch_updater.rebase_with_git(ctxt, github_user, False)
             except branch_updater.BranchUpdateFailure as exc:
                 await self._set_creation_failure(
                     f"{exc.title}\n\n{exc.message}", operation="update"
