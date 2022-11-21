@@ -8,13 +8,13 @@ on:
     branches:
       - main
     paths:
-      - 'dockerfiles/**'
-      - 'datadog/**'
-      - 'datadog-wrapper.sh'
-      - 'installer/**'
-      - 'onpremise/**'
-      - 'fake.env'
-      - '.github/workflows/docker.yaml'
+      - "dockerfiles/**"
+      - "datadog/**"
+      - "datadog-wrapper.sh"
+      - "installer/**"
+      - "onpremise/**"
+      - "fake.env"
+      - ".github/workflows/docker.yaml"
 
 jobs:
   docker-label:

@@ -32,16 +32,15 @@ jobs:
           heroku container:login
 
       - name: ☁️  Download latest image
-        run:
-          docker pull registry.heroku.com/mergify-engine/web:latest
+        run: docker pull registry.heroku.com/mergify-engine/web:latest
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'registry.heroku.com/mergify-engine/web:latest'
-          format: 'json'
-          security-checks: 'vuln'
-          output: 'docker-security-scan.json.tmp'
+          image-ref: "registry.heroku.com/mergify-engine/web:latest"
+          format: "json"
+          security-checks: "vuln"
+          output: "docker-security-scan.json.tmp"
 
       - name: Keep only the results section
         id: update

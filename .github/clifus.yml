@@ -27,9 +27,9 @@ targets:
     sourceID: python-version
     spec:
       file: tox.ini
-      lineMatchPattern: '(basepython = python)(.*)'
+      lineMatchPattern: "(basepython = python)(.*)"
     transformers:
-      - find: '^\d+\.\d+'
+      - find: "^\\d+\\.\\d+"
       - replaceRegexGroup: 2
   tox-python3.X:
     name: "Update tox.ini python3.X version"
@@ -37,9 +37,9 @@ targets:
     sourceID: python-version
     spec:
       file: tox.ini
-      lineMatchPattern: '(.*python)(3.\d+)(^\d)'
+      lineMatchPattern: "(.*python)(3.\\d+)(^\\d)"
     transformers:
-      - find: '^\d+\.\d+'
+      - find: "^\\d+\\.\\d+"
       - replaceRegexGroup: 2
   tox-py3X:
     name: "Update tox.ini py3 version"
@@ -47,9 +47,9 @@ targets:
     sourceID: python-version
     spec:
       file: tox.ini
-      lineMatchPattern: '(.*py)(3\d+)(.*)'
+      lineMatchPattern: "(.*py)(3\\d+)(.*)"
     transformers:
-      - find: '^\d+\.\d+'
+      - find: "^\\d+\\.\\d+"
       - replacer:
           from: "."
           to: ""
@@ -60,9 +60,9 @@ targets:
     sourceID: python-version
     spec:
       file: ".github/workflows/ci.yaml"
-      lineMatchPattern: '(\s+tox -e py)(3\d+)(.*)'
+      lineMatchPattern: "(\\s+tox -e py)(3\\d+)(.*)"
     transformers:
-      - find: '^\d+\.\d+'
+      - find: "^\\d+\\.\\d+"
       - replacer:
           from: "."
           to: ""
@@ -73,7 +73,7 @@ targets:
     sourceID: python-version
     spec:
       file: ".github/workflows/ci.yaml"
-      lineMatchPattern: '(\s+python-version: )(.+)'
+      lineMatchPattern: "(\\s+python-version: )(.+)"
     transformers:
       - replaceRegexGroup: 2
   ci-record-file:
@@ -82,7 +82,7 @@ targets:
     sourceID: python-version
     spec:
       file: ".github/workflows/ci-record.yaml"
-      lineMatchPattern: '(\s+python-version: )(.+)'
+      lineMatchPattern: "(\\s+python-version: )(.+)"
     transformers:
       - replaceRegexGroup: 2
   # DATADOG AGENT VERSION
@@ -100,18 +100,18 @@ targets:
     kind: file
     spec:
       file: Dockerfile
-      lineMatchPattern: '^ARG DD_AGENT_VERSION='
+      lineMatchPattern: "^ARG DD_AGENT_VERSION="
     transformers:
-      - addPrefix: 'ARG DD_AGENT_VERSION='
+      - addPrefix: "ARG DD_AGENT_VERSION="
   pyproject.toml-py3X:
     name: "Update pyproject.toml py3X target-version"
     kind: file
     sourceID: python-version
     spec:
       file: pyproject.toml
-      lineMatchPattern: '(target-version = .*py)(3\d+)(.*)'
+      lineMatchPattern: "(target-version = .*py)(3\\d+)(.*)"
     transformers:
-      - find: '^\d+\.\d+'
+      - find: "^\\d+\\.\\d+"
       - replacer:
           from: "."
           to: ""
@@ -122,9 +122,9 @@ targets:
     sourceID: python-version
     spec:
       file: pyproject.toml
-      lineMatchPattern: '(python = ">=)(3\.\d+)(,<4.0")'
+      lineMatchPattern: "(python = \">=)(3\\.\\d+)(,<4.0\")"
     transformers:
-      - find: '^\d+\.\d+'
+      - find: "^\\d+\\.\\d+"
       - replaceRegexGroup: 2
   pyproject.toml-classifers-py-version:
     name: "Update pyproject.toml python classifier version"
@@ -132,7 +132,7 @@ targets:
     sourceID: python-version
     spec:
       file: pyproject.toml
-      lineMatchPattern: '(classifiers = .*)(3\.\d+)(.*)'
+      lineMatchPattern: "(classifiers = .*)(3\\.\\d+)(.*)"
     transformers:
-      - find: '^\d+\.\d+'
+      - find: "^\\d+\\.\\d+"
       - replaceRegexGroup: 2
