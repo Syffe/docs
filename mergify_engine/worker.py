@@ -841,6 +841,8 @@ class StreamProcessor:
             raise
         except OrgBucketUnused:
             raise
+        except redis_exceptions.ConnectionError:
+            raise
         except Exception:
             logger.error("failed to process pull request", exc_info=True)
             if self.retry_unhandled_exception_forever:
