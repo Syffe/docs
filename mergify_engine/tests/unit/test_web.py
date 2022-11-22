@@ -64,6 +64,7 @@ async def test_push_event(
         "X-Hub-Signature": f"sha1={utils.compute_hmac(data, config.WEBHOOK_SECRET)}",
         "X-GitHub-Event": event_type,
         "Content-Type": f"application/json; charset={charset}",
+        "X-GitHub-Delivery": "f00bar",
     }
     reply = await web_client.post("/event", content=data, headers=headers)
     assert reply.content == reason
@@ -77,6 +78,7 @@ async def test_push_event(
         "X-Hub-Signature": f"sha1={utils.compute_hmac(data, config.WEBHOOK_SECRET_PRE_ROTATION)}",
         "X-GitHub-Event": event_type,
         "Content-Type": f"application/json; charset={charset}",
+        "X-GitHub-Delivery": "f00bar",
     }
     reply = await web_client.post("/event", content=data, headers=headers)
     assert reply.content == reason

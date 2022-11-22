@@ -573,6 +573,8 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
             r = await self.app.post(
                 "/marketplace",
                 headers={
+                    "X-GitHub-Event": "push",
+                    "X-GitHub-Delivery": "x",
                     "X-Hub-Signature": "sha1=whatever",
                     "Content-type": "application/json",
                 },
