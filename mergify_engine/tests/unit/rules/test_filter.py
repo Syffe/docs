@@ -1033,7 +1033,6 @@ async def test_schedule_with_timezone() -> None:
 
         next_refreshes = [
             "2021-10-20T07:00:01",
-            "2021-10-20T15:30:00",
             "2021-10-20T15:31:00",
             "2021-10-21T07:00:01",
         ]
@@ -1112,7 +1111,7 @@ async def test_schedule_neardatetime_filter() -> None:
         f = filter.NearDatetimeFilter(tree)
         # Correct datetime should be current day, at end_hour and end_minute of the schedule
         assert await f(FakePR({"current-time": date.utcnow()})) == datetime.datetime(
-            2022, 11, 11, 17, tzinfo=datetime.timezone.utc
+            2022, 11, 11, 17, 1, tzinfo=datetime.timezone.utc
         )
 
         # Friday, 17:00 UTC

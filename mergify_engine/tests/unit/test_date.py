@@ -348,12 +348,26 @@ def test_datetime_between_range(
             # Friday, 7:00:01 UTC
             datetime.datetime(2022, 11, 11, 7, 0, 1, tzinfo=datetime.timezone.utc),
         ),
+        (
+            date.Schedule.from_strings("MON-FRI", "7:00-15:00"),
+            # Saturday, 14:00 UTC
+            datetime.datetime(2022, 11, 5, 14, tzinfo=datetime.timezone.utc),
+            # Monday, 7:00:01 UTC
+            datetime.datetime(2022, 11, 7, 7, 0, 1, tzinfo=datetime.timezone.utc),
+        ),
+        (
+            date.Schedule.from_strings("MON-FRI", "7:00-15:00"),
+            # Saturday, 16:00 UTC
+            datetime.datetime(2022, 11, 5, 16, tzinfo=datetime.timezone.utc),
+            # Monday, 7:00:01 UTC
+            datetime.datetime(2022, 11, 7, 7, 0, 1, tzinfo=datetime.timezone.utc),
+        ),
     ),
 )
-def test_schedule_next_valid_time(
+def test_schedule_next_datetime(
     schedule: date.Schedule, from_time: datetime.datetime, expected: datetime.datetime
 ) -> None:
-    assert schedule.get_next_valid_time(from_time) == expected
+    assert schedule.get_next_datetime(from_time) == expected
 
 
 @pytest.mark.parametrize(

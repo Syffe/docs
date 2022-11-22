@@ -369,34 +369,18 @@ class Schedule:
             strict,
         )
 
-    def get_next_valid_time(self, from_time: datetime.datetime) -> datetime.datetime:
+    def get_next_datetime(self, from_time: datetime.datetime) -> datetime.datetime:
         """
-        Returns the next earliest datetime, from `from_time`, at which this `Schedule` will match.
+        * If the `from_time` is out of the schedule,
+          returns the next earliest datetime, from `from_time`, at which this `Schedule` will match.
+        * If `from_time` is inside the schedule,
+          returns a datetime.datetime 1 minute after the end of the schedule.
         """
 
         def return_as_origin_timezone(dt: datetime.datetime) -> datetime.datetime:
             return dt.astimezone(from_time.tzinfo)
 
         from_time_as_tz = from_time.astimezone(self.tzinfo)
-
-        if self.is_datetime_between_time_range(from_time_as_tz, strict=True):
-            # We are between the correct date+time range,
-            # next try is same day at the end_hour + end_minute
-            return return_as_origin_timezone(
-                from_time_as_tz.replace(
-                    hour=self.end_hour,
-                    minute=self.end_minute,
-                    second=0,
-                )
-            )
-        elif (
-            from_time_as_tz.hour == self.end_hour
-            and from_time_as_tz.minute == self.end_minute
-        ):
-            # 1 minute after the end just to invalidate the summary condition
-            return return_as_origin_timezone(
-                from_time_as_tz + datetime.timedelta(minutes=1)
-            )
 
         # Outside of the day schedule
         if (
@@ -421,6 +405,18 @@ class Schedule:
                 from_time_as_tz += datetime.timedelta(
                     days=self.start_weekday + (7 - from_time_as_tz.isoweekday())
                 )
+        # Inside day+time schedule
+        elif self.is_datetime_between_time_range(from_time_as_tz, strict=False):
+            # We are between the correct date+time range,
+            # next try is 1 minute after the end of the schedule.
+            return return_as_origin_timezone(
+                from_time_as_tz.replace(
+                    hour=self.end_hour,
+                    minute=self.end_minute,
+                    second=0,
+                )
+                + datetime.timedelta(minutes=1)
+            )
         # Inside day schedule but oustide of hour+minute schedule
         elif from_time_as_tz.hour < self.start_hour or (
             from_time_as_tz.hour == self.start_hour
