@@ -113,7 +113,7 @@ async def gen_summary_rules(
             )
             summary += f":no_entry_sign: **Disabled: {html.escape(rule.disabled['reason'])}**\n"
         summary += rule.conditions.get_summary()
-        summary += "\n"
+        summary += "\n\n"
         if display_action_configs:
             for action_name, action in rule.actions.items():
                 # TODO(sileht): drop me once all actions has been migrated to actions.ActionExecutor base class

@@ -740,12 +740,12 @@ class ConditionEvaluationResult:
         check = "X" if self.match else " "
         text = f"- [{check}] {self.label}"
 
+        if self.subconditions:
+            text += ":"
         if self.description:
             text += f" [{self.description}]"
         if self.evaluation_error:
             text += f" ⚠️ {self.evaluation_error}"
-        if self.subconditions:
-            text += ":"
 
         return text
 

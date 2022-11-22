@@ -315,6 +315,7 @@ async def test_condition_summary_complex() -> None:
         ]
     )
     pr_conditions.condition.conditions[0].match = True
+    pr_conditions.condition.conditions[1].description = "GitHub branch protection"
     pr_conditions.condition.conditions[2].conditions[  # type:ignore [union-attr]
         1
     ].match = True
@@ -323,7 +324,7 @@ async def test_condition_summary_complex() -> None:
 - [ ] all of:
   - [ ] `label=foo`
   - [X] `label=baz`
-- [ ] any of:
+- [ ] any of: [GitHub branch protection]
   - [ ] `label=bar`
   - [ ] `label=foo`
 - [X] `base=main`"""
@@ -332,7 +333,7 @@ async def test_condition_summary_complex() -> None:
     expected_summary = """\
 - [ ] all of:
   - [ ] `label=foo`
-- [ ] any of:
+- [ ] any of: [GitHub branch protection]
   - [ ] `label=bar`
   - [ ] `label=foo`"""
     assert pr_conditions.get_unmatched_summary() == expected_summary
@@ -369,7 +370,7 @@ async def test_condition_summary_complex() -> None:
             {
                 "match": False,
                 "label": "any of",
-                "description": None,
+                "description": "GitHub branch protection",
                 "evaluation_error": None,
                 "subconditions": [
                     {

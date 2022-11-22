@@ -208,6 +208,7 @@ mergeable_state: clean
 > - [X] all of:
 >   - [X] `number>0`
 >   - [X] `title~=pull request`
+> 
 > <hr />
 > :sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for free to open source projects.
 > 
