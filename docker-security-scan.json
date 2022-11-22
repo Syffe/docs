@@ -488,7 +488,8 @@
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/UKFHE4KVD7EKS5J3KTDFVBEKU3CLXGVV/",
           "https://support.apple.com/kb/HT213496",
           "https://ubuntu.com/security/notices/USN-5686-1",
-          "https://ubuntu.com/security/notices/USN-5686-2"
+          "https://ubuntu.com/security/notices/USN-5686-2",
+          "https://ubuntu.com/security/notices/USN-5686-3"
         ],
         "PublishedDate": "2022-10-19T12:15:00Z"
       },
@@ -531,7 +532,8 @@
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/UKFHE4KVD7EKS5J3KTDFVBEKU3CLXGVV/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/VFYXCTLOSESYIP72BUYD6ECDIMUM4WMB/",
           "https://support.apple.com/kb/HT213496",
-          "https://ubuntu.com/security/notices/USN-5686-1"
+          "https://ubuntu.com/security/notices/USN-5686-1",
+          "https://ubuntu.com/security/notices/USN-5686-3"
         ],
         "PublishedDate": "2022-10-19T11:15:00Z"
       },
@@ -743,7 +745,8 @@
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/UKFHE4KVD7EKS5J3KTDFVBEKU3CLXGVV/",
           "https://support.apple.com/kb/HT213496",
           "https://ubuntu.com/security/notices/USN-5686-1",
-          "https://ubuntu.com/security/notices/USN-5686-2"
+          "https://ubuntu.com/security/notices/USN-5686-2",
+          "https://ubuntu.com/security/notices/USN-5686-3"
         ],
         "PublishedDate": "2022-10-19T12:15:00Z"
       },
@@ -786,7 +789,8 @@
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/UKFHE4KVD7EKS5J3KTDFVBEKU3CLXGVV/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/VFYXCTLOSESYIP72BUYD6ECDIMUM4WMB/",
           "https://support.apple.com/kb/HT213496",
-          "https://ubuntu.com/security/notices/USN-5686-1"
+          "https://ubuntu.com/security/notices/USN-5686-1",
+          "https://ubuntu.com/security/notices/USN-5686-3"
         ],
         "PublishedDate": "2022-10-19T11:15:00Z"
       },
@@ -2408,39 +2412,10 @@
         "PublishedDate": "2011-09-06T19:55:00Z"
       },
       {
-        "VulnerabilityID": "CVE-2022-42898",
-        "VendorIDs": [
-          "DSA-5286-1"
-        ],
-        "PkgID": "libgssapi-krb5-2@1.18.3-6+deb11u2",
-        "PkgName": "libgssapi-krb5-2",
-        "InstalledVersion": "1.18.3-6+deb11u2",
-        "FixedVersion": "1.18.3-6+deb11u3",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-42898",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Title": "krb5: integer overflow vulnerabilities in PAC parsing",
-        "Description": "A vulnerability was found in MIT krb5. This flaw allows an authenticated attacker to cause a KDC or kadmind process to crash by reading beyond the bounds of allocated memory, creating a denial of service. A privileged attacker may similarly be able to cause a Kerberos or GSS application service to crash.",
-        "Severity": "MEDIUM",
-        "CVSS": {
-          "redhat": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:H/A:L",
-            "V3Score": 6.4
-          }
-        },
-        "References": [
-          "https://access.redhat.com/security/cve/CVE-2022-42898",
-          "https://mailman.mit.edu/pipermail/krbdev/2022-November/013576.html"
-        ]
-      },
-      {
         "VulnerabilityID": "CVE-2004-0971",
-        "PkgID": "libgssapi-krb5-2@1.18.3-6+deb11u2",
+        "PkgID": "libgssapi-krb5-2@1.18.3-6+deb11u3",
         "PkgName": "libgssapi-krb5-2",
-        "InstalledVersion": "1.18.3-6+deb11u2",
+        "InstalledVersion": "1.18.3-6+deb11u3",
         "SeveritySource": "debian",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2004-0971",
         "DataSource": {
@@ -2472,9 +2447,9 @@
       },
       {
         "VulnerabilityID": "CVE-2018-5709",
-        "PkgID": "libgssapi-krb5-2@1.18.3-6+deb11u2",
+        "PkgID": "libgssapi-krb5-2@1.18.3-6+deb11u3",
         "PkgName": "libgssapi-krb5-2",
-        "InstalledVersion": "1.18.3-6+deb11u2",
+        "InstalledVersion": "1.18.3-6+deb11u3",
         "SeveritySource": "debian",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-5709",
         "DataSource": {
@@ -2540,39 +2515,10 @@
         "PublishedDate": "2014-02-15T14:57:00Z"
       },
       {
-        "VulnerabilityID": "CVE-2022-42898",
-        "VendorIDs": [
-          "DSA-5286-1"
-        ],
-        "PkgID": "libk5crypto3@1.18.3-6+deb11u2",
-        "PkgName": "libk5crypto3",
-        "InstalledVersion": "1.18.3-6+deb11u2",
-        "FixedVersion": "1.18.3-6+deb11u3",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-42898",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Title": "krb5: integer overflow vulnerabilities in PAC parsing",
-        "Description": "A vulnerability was found in MIT krb5. This flaw allows an authenticated attacker to cause a KDC or kadmind process to crash by reading beyond the bounds of allocated memory, creating a denial of service. A privileged attacker may similarly be able to cause a Kerberos or GSS application service to crash.",
-        "Severity": "MEDIUM",
-        "CVSS": {
-          "redhat": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:H/A:L",
-            "V3Score": 6.4
-          }
-        },
-        "References": [
-          "https://access.redhat.com/security/cve/CVE-2022-42898",
-          "https://mailman.mit.edu/pipermail/krbdev/2022-November/013576.html"
-        ]
-      },
-      {
         "VulnerabilityID": "CVE-2004-0971",
-        "PkgID": "libk5crypto3@1.18.3-6+deb11u2",
+        "PkgID": "libk5crypto3@1.18.3-6+deb11u3",
         "PkgName": "libk5crypto3",
-        "InstalledVersion": "1.18.3-6+deb11u2",
+        "InstalledVersion": "1.18.3-6+deb11u3",
         "SeveritySource": "debian",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2004-0971",
         "DataSource": {
@@ -2604,9 +2550,9 @@
       },
       {
         "VulnerabilityID": "CVE-2018-5709",
-        "PkgID": "libk5crypto3@1.18.3-6+deb11u2",
+        "PkgID": "libk5crypto3@1.18.3-6+deb11u3",
         "PkgName": "libk5crypto3",
-        "InstalledVersion": "1.18.3-6+deb11u2",
+        "InstalledVersion": "1.18.3-6+deb11u3",
         "SeveritySource": "debian",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-5709",
         "DataSource": {
@@ -2640,39 +2586,10 @@
         "PublishedDate": "2018-01-16T09:29:00Z"
       },
       {
-        "VulnerabilityID": "CVE-2022-42898",
-        "VendorIDs": [
-          "DSA-5286-1"
-        ],
-        "PkgID": "libkrb5-3@1.18.3-6+deb11u2",
-        "PkgName": "libkrb5-3",
-        "InstalledVersion": "1.18.3-6+deb11u2",
-        "FixedVersion": "1.18.3-6+deb11u3",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-42898",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Title": "krb5: integer overflow vulnerabilities in PAC parsing",
-        "Description": "A vulnerability was found in MIT krb5. This flaw allows an authenticated attacker to cause a KDC or kadmind process to crash by reading beyond the bounds of allocated memory, creating a denial of service. A privileged attacker may similarly be able to cause a Kerberos or GSS application service to crash.",
-        "Severity": "MEDIUM",
-        "CVSS": {
-          "redhat": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:H/A:L",
-            "V3Score": 6.4
-          }
-        },
-        "References": [
-          "https://access.redhat.com/security/cve/CVE-2022-42898",
-          "https://mailman.mit.edu/pipermail/krbdev/2022-November/013576.html"
-        ]
-      },
-      {
         "VulnerabilityID": "CVE-2004-0971",
-        "PkgID": "libkrb5-3@1.18.3-6+deb11u2",
+        "PkgID": "libkrb5-3@1.18.3-6+deb11u3",
         "PkgName": "libkrb5-3",
-        "InstalledVersion": "1.18.3-6+deb11u2",
+        "InstalledVersion": "1.18.3-6+deb11u3",
         "SeveritySource": "debian",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2004-0971",
         "DataSource": {
@@ -2704,9 +2621,9 @@
       },
       {
         "VulnerabilityID": "CVE-2018-5709",
-        "PkgID": "libkrb5-3@1.18.3-6+deb11u2",
+        "PkgID": "libkrb5-3@1.18.3-6+deb11u3",
         "PkgName": "libkrb5-3",
-        "InstalledVersion": "1.18.3-6+deb11u2",
+        "InstalledVersion": "1.18.3-6+deb11u3",
         "SeveritySource": "debian",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-5709",
         "DataSource": {
@@ -2740,39 +2657,10 @@
         "PublishedDate": "2018-01-16T09:29:00Z"
       },
       {
-        "VulnerabilityID": "CVE-2022-42898",
-        "VendorIDs": [
-          "DSA-5286-1"
-        ],
-        "PkgID": "libkrb5support0@1.18.3-6+deb11u2",
-        "PkgName": "libkrb5support0",
-        "InstalledVersion": "1.18.3-6+deb11u2",
-        "FixedVersion": "1.18.3-6+deb11u3",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-42898",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Title": "krb5: integer overflow vulnerabilities in PAC parsing",
-        "Description": "A vulnerability was found in MIT krb5. This flaw allows an authenticated attacker to cause a KDC or kadmind process to crash by reading beyond the bounds of allocated memory, creating a denial of service. A privileged attacker may similarly be able to cause a Kerberos or GSS application service to crash.",
-        "Severity": "MEDIUM",
-        "CVSS": {
-          "redhat": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:L/I:H/A:L",
-            "V3Score": 6.4
-          }
-        },
-        "References": [
-          "https://access.redhat.com/security/cve/CVE-2022-42898",
-          "https://mailman.mit.edu/pipermail/krbdev/2022-November/013576.html"
-        ]
-      },
-      {
         "VulnerabilityID": "CVE-2004-0971",
-        "PkgID": "libkrb5support0@1.18.3-6+deb11u2",
+        "PkgID": "libkrb5support0@1.18.3-6+deb11u3",
         "PkgName": "libkrb5support0",
-        "InstalledVersion": "1.18.3-6+deb11u2",
+        "InstalledVersion": "1.18.3-6+deb11u3",
         "SeveritySource": "debian",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2004-0971",
         "DataSource": {
@@ -2804,9 +2692,9 @@
       },
       {
         "VulnerabilityID": "CVE-2018-5709",
-        "PkgID": "libkrb5support0@1.18.3-6+deb11u2",
+        "PkgID": "libkrb5support0@1.18.3-6+deb11u3",
         "PkgName": "libkrb5support0",
-        "InstalledVersion": "1.18.3-6+deb11u2",
+        "InstalledVersion": "1.18.3-6+deb11u3",
         "SeveritySource": "debian",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-5709",
         "DataSource": {
