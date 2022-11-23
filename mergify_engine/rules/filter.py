@@ -369,7 +369,9 @@ def _minimal_datetime(dts: abc.Iterable[object]) -> datetime.datetime:
         return min(_dts)
 
 
-def _as_datetime(value: typing.Any) -> datetime.datetime:
+def _as_datetime(
+    value: typing.Any, default_value: datetime.datetime
+) -> datetime.datetime:
     if isinstance(value, datetime.datetime):
         return value
     elif isinstance(value, date.RelativeDatetime):
@@ -393,7 +395,7 @@ def _as_datetime(value: typing.Any) -> datetime.datetime:
         elif isinstance(value, date.Year):
             return dt.replace(year=value.value, month=1, day=1)
         else:
-            return date.DT_MAX
+            return default_value
     elif isinstance(value, date.Time):
         return date.utcnow().replace(
             hour=value.hour,
@@ -403,7 +405,7 @@ def _as_datetime(value: typing.Any) -> datetime.datetime:
             tzinfo=value.tzinfo,
         )
     else:
-        return date.DT_MAX
+        return default_value
 
 
 def _dt_max(value: typing.Any, ref: typing.Any) -> datetime.datetime:
@@ -427,12 +429,14 @@ def _dt_op(
         if value is None:
             return date.DT_MAX
         try:
-            dt_value = _as_datetime(value).astimezone(datetime.timezone.utc)
+            dt_value = _as_datetime(value, date.DT_MAX).astimezone(
+                datetime.timezone.utc
+            )
 
             if isinstance(ref, date.Schedule):
                 return ref.get_next_datetime(dt_value)
 
-            dt_ref = _as_datetime(ref).astimezone(datetime.timezone.utc)
+            dt_ref = _as_datetime(ref, date.DT_MAX).astimezone(datetime.timezone.utc)
 
             handle_equality = op in (
                 operator.eq,
@@ -496,6 +500,7 @@ def _dt_op(
                         dt_ref = dt_ref.replace(month=1, day=1)
                 else:
                     return date.DT_MAX
+
                 if op in (operator.eq, operator.ne):
                     return _dt_in_future(dt_ref)
                 else:
@@ -540,6 +545,125 @@ def NearDatetimeFilter(
         {
             "or": _minimal_datetime,
             "and": _minimal_datetime,
+        },
+    )
+
+
+FarthestNonMatchingScheduleDatetimeResult = bool | datetime.datetime
+
+
+def FarthestNonMatchingScheduleDatetimeFilterAll(
+    values: abc.Iterable[object],
+) -> FarthestNonMatchingScheduleDatetimeResult:
+    values = typing.cast(
+        abc.Iterable[FarthestNonMatchingScheduleDatetimeResult], list(values)
+    )
+    if all(x is True for x in values):
+        return True
+
+    result: FarthestNonMatchingScheduleDatetimeResult = False
+    for v in values:
+        if isinstance(v, datetime.datetime) and (
+            isinstance(result, bool) or v > result
+        ):
+            result = v
+    return result
+
+
+def FarthestNonMatchingScheduleDatetimeFilterAny(
+    values: abc.Iterable[object],
+) -> FarthestNonMatchingScheduleDatetimeResult:
+    values = typing.cast(
+        abc.Iterable[FarthestNonMatchingScheduleDatetimeResult], list(values)
+    )
+    result: FarthestNonMatchingScheduleDatetimeResult = False
+    for v in values:
+        if v is True:
+            return True
+        elif isinstance(v, datetime.datetime) and (
+            isinstance(result, bool) or v > result
+        ):
+            result = v
+
+    return result
+
+
+def FarthestNonMatchingScheduleDatetimeFilterOp(
+    op: abc.Callable[[typing.Any, typing.Any], bool]
+) -> abc.Callable[[typing.Any, typing.Any], FarthestNonMatchingScheduleDatetimeResult]:
+    def _operator(
+        value: typing.Any, ref: typing.Any
+    ) -> FarthestNonMatchingScheduleDatetimeResult:
+        if isinstance(ref, date.Schedule):
+            dt_value = _as_datetime(value, date.DT_MIN).astimezone(
+                datetime.timezone.utc
+            )
+            if op(ref, dt_value):
+                return True
+
+            # Schedule check failed
+            if op == operator.eq:
+                # Operation is == so we must return next datetime inside Schedule
+                # to have a datetime that matches the condition
+                return ref.get_next_datetime(dt_value)
+            # op == operator.ne
+            else:
+                # Operation is != so we must return next datetime outside of Schedule
+                # to have a datetime that matches the condition
+                return ref.get_next_datetime_out_of_schedule(dt_value)
+
+        return op(value, ref)
+
+    return _operator
+
+
+def FarthestNonMatchingScheduleDatetimeFilterNegate(
+    value: FarthestNonMatchingScheduleDatetimeResult,
+) -> FarthestNonMatchingScheduleDatetimeResult:
+    if isinstance(value, bool):
+        return not value
+
+    # We have a datetime, since a datetime means the schedule condition is False, we return True.
+    #
+    # TODO(Greesb): Maybe use some kind of special object that keeps both the
+    # farthest datetime.datetime value of all the nodes in lower level
+    # and the match status so that the "not" can reverse it.
+    return True
+
+
+def FarthestNonMatchingScheduleDatetimeFilter(
+    tree: TreeT | CompiledTreeT[GetAttrObject, datetime.datetime],
+) -> "Filter[FarthestNonMatchingScheduleDatetimeResult]":
+    return Filter[FarthestNonMatchingScheduleDatetimeResult](
+        tree,
+        {
+            "not": FarthestNonMatchingScheduleDatetimeFilterNegate,
+            # NOTE(Greesb): This is not allowed in parser on schedule attribute
+            # so we can just re-use the BinaryFilter's operation
+            "-": operator.not_,
+        },
+        {
+            "=": (
+                FarthestNonMatchingScheduleDatetimeFilterOp(operator.eq),
+                FarthestNonMatchingScheduleDatetimeFilterAny,
+                _identity,
+            ),
+            "!=": (
+                FarthestNonMatchingScheduleDatetimeFilterOp(operator.ne),
+                FarthestNonMatchingScheduleDatetimeFilterAll,
+                _identity,
+            ),
+            # NOTE(Greesb): All of those below are not allowed in parser on schedule attribute,
+            # so we can just re-use the BinaryFilter's operations
+            "<": (lambda a, b: a is not None and a < b, any, _identity),
+            ">": (lambda a, b: a is not None and a > b, any, _identity),
+            "<=": (lambda a, b: a == b or (a is not None and a <= b), any, _identity),
+            ">=": (lambda a, b: a == b or (a is not None and a >= b), any, _identity),
+            "~=": (lambda a, b: a is not None and b.search(a), any, re.compile),
+        },
+        {
+            "or": FarthestNonMatchingScheduleDatetimeFilterAny,
+            "and": FarthestNonMatchingScheduleDatetimeFilterAll,
         },
     )
 
