@@ -202,7 +202,9 @@ async def database_cleanup() -> abc.AsyncGenerator[None, None]:
         yield
     finally:
         await manage.drop_all()
-        models.APP_STATE = None
+        if models.APP_STATE is not None:
+            await models.APP_STATE["engine"].dispose()
+            models.APP_STATE = None
 
 
 @pytest.fixture
