@@ -1,5 +1,4 @@
 import email.utils
-import json
 import os
 
 import fastapi
@@ -9,18 +8,7 @@ from mergify_engine import config
 from mergify_engine import date
 
 
-def react_proxy_enabled(request: fastapi.Request) -> None:
-    if config.DASHBOARD_UI_STATIC_FILES_DIRECTORY is None:
-        if request.url.path == "/":
-            raise fastapi.HTTPException(200, detail=json.dumps({}))
-        else:
-            raise fastapi.HTTPException(404)
-
-
-router = fastapi.APIRouter(
-    tags=["react"],
-    dependencies=[fastapi.Depends(react_proxy_enabled)],
-)
+router = fastapi.APIRouter(tags=["react"])
 
 
 async def serve_static_file(

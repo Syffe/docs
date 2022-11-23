@@ -1,6 +1,7 @@
 import daiquiri
 import fastapi
 
+from mergify_engine import config
 from mergify_engine.web import github_webhook
 from mergify_engine.web import legacy_badges
 from mergify_engine.web import redis
@@ -13,6 +14,10 @@ from mergify_engine.web.front import root as front_root
 
 
 LOG = daiquiri.getLogger(__name__)
+
+
+def saas_root_endpoint() -> fastapi.Response:
+    return fastapi.responses.JSONResponse({})
 
 
 def create_app() -> fastapi.FastAPI:
@@ -29,7 +34,10 @@ def create_app() -> fastapi.FastAPI:
     app.mount("/v1", api_root.create_app(cors_enabled=True))
     app.mount("/front", front_root.create_app())
 
-    app.include_router(react.router)
+    if config.DASHBOARD_UI_STATIC_FILES_DIRECTORY is None:
+        app.get("/")(saas_root_endpoint)
+    else:
+        app.include_router(react.router)
 
     utils.setup_exception_handlers(app)
 
