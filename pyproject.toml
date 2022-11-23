@@ -155,7 +155,9 @@ filterwarnings = [
     "error",
     # FIXME(sileht): no idea where it comes from, backtraces are cryptic
     #  ResourceWarning: unclosed <socket.socket fd=14, family=AddressFamily.AF_UNIX, type=SocketKind.SOCK_STREAM, proto=0>
-    "ignore::ResourceWarning"
+    "ignore::ResourceWarning",
+    # NOTE(sileht): until https://github.com/kvesteri/sqlalchemy-utils/issues/646 is fixed and released
+    "ignore:'crypt' is deprecated and slated for removal:DeprecationWarning"
 ]
 
 [tool.black]
