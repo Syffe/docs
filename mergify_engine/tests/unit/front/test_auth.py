@@ -2,6 +2,7 @@ import pytest
 import sqlalchemy.orm
 import starlette
 
+from mergify_engine import github_types
 from mergify_engine.models import github_user
 from mergify_engine.tests import conftest
 from mergify_engine.web.front import auth
@@ -31,7 +32,7 @@ async def test_new_user(
     await auth.create_or_update_user(
         build_request("/front/auth/authorized"),
         db,
-        "user-token",
+        github_types.GitHubOAuthToken("user-token"),
     )
 
     db.expire_all()
@@ -69,7 +70,9 @@ async def test_auth_setup(
     front_login_mock: None,
 ) -> None:
     user = github_user.GitHubUser(
-        id=42, login="user-login", oauth_access_token="user-token"
+        id=github_types.GitHubAccountIdType(42),
+        login=github_types.GitHubLogin("user-login"),
+        oauth_access_token=github_types.GitHubOAuthToken("user-token"),
     )
     db.add(user)
     await db.commit()

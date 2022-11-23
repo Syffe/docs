@@ -310,7 +310,8 @@ class CustomTestClient(httpx.AsyncClient):
 
     async def log_as(self, user_id: int) -> None:
         resp = await self.post(f"/front/for-testing/log-as/{user_id}")
-        resp.raise_for_status()
+        if resp.status_code != 200:
+            raise Exception(resp.text)
 
     async def logged_as(self) -> str | None:
         resp = await self.get("/front/for-testing/logged-as")

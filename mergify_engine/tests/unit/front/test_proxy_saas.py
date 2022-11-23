@@ -3,6 +3,7 @@ import respx
 import sqlalchemy
 
 from mergify_engine import config
+from mergify_engine import github_types
 from mergify_engine.models import github_user
 from mergify_engine.tests import conftest
 
@@ -17,7 +18,9 @@ async def test_saas_proxy_saas_mode_true(
     monkeypatch.setattr(config, "SAAS_MODE", True)
 
     user = github_user.GitHubUser(
-        id=42, login="user-login", oauth_access_token="user-token"
+        id=github_types.GitHubAccountIdType(42),
+        login=github_types.GitHubLogin("user-login"),
+        oauth_access_token=github_types.GitHubOAuthToken("user-token"),
     )
     db.add(user)
     await db.commit()
@@ -61,7 +64,9 @@ async def test_saas_proxy_saas_mode_false(
     monkeypatch.setattr(config, "SAAS_MODE", False)
 
     user = github_user.GitHubUser(
-        id=42, login="user-login", oauth_access_token="user-token"
+        id=github_types.GitHubAccountIdType(42),
+        login=github_types.GitHubLogin("user-login"),
+        oauth_access_token=github_types.GitHubOAuthToken("user-token"),
     )
     db.add(user)
     await db.commit()
@@ -91,7 +96,9 @@ async def test_saas_subscription_with_saas_mode_true(
     monkeypatch.setattr(config, "SAAS_MODE", True)
 
     user = github_user.GitHubUser(
-        id=42, login="user-login", oauth_access_token="user-token"
+        id=github_types.GitHubAccountIdType(42),
+        login=github_types.GitHubLogin("user-login"),
+        oauth_access_token=github_types.GitHubOAuthToken("user-token"),
     )
     db.add(user)
     await db.commit()
@@ -135,7 +142,9 @@ async def test_saas_subscription_with_saas_mode_false(
     monkeypatch.setattr(config, "SAAS_MODE", False)
 
     user = github_user.GitHubUser(
-        id=42, login="user-login", oauth_access_token="user-token"
+        id=github_types.GitHubAccountIdType(42),
+        login=github_types.GitHubLogin("user-login"),
+        oauth_access_token=github_types.GitHubOAuthToken("user-token"),
     )
     db.add(user)
     await db.commit()
@@ -192,7 +201,9 @@ async def test_saas_intercom_with_saas_mode_true(
     monkeypatch.setattr(config, "SAAS_MODE", True)
 
     user = github_user.GitHubUser(
-        id=42, login="user-login", oauth_access_token="user-token"
+        id=github_types.GitHubAccountIdType(42),
+        login=github_types.GitHubLogin("user-login"),
+        oauth_access_token=github_types.GitHubOAuthToken("user-token"),
     )
     db.add(user)
     await db.commit()

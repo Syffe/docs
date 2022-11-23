@@ -14,6 +14,7 @@ import sqlalchemy_utils
 from sqlalchemy_utils.types.encrypted import encrypted_type
 
 from mergify_engine import config
+from mergify_engine import github_types
 from mergify_engine import models
 
 
@@ -58,17 +59,17 @@ class OAuthTokenEncryptedType(sqlalchemy_utils.StringEncryptedType):  # type: ig
 class GitHubUser(models.Base):
     __tablename__ = "github_user"
 
-    id: sqlalchemy.orm.Mapped[int] = sqlalchemy.Column(
+    id: sqlalchemy.orm.Mapped[github_types.GitHubAccountIdType] = sqlalchemy.Column(
         sqlalchemy.Integer, primary_key=True
     )
 
-    login: sqlalchemy.orm.Mapped[str] = sqlalchemy.Column(
+    login: sqlalchemy.orm.Mapped[github_types.GitHubLogin] = sqlalchemy.Column(
         sqlalchemy.String(255), nullable=False
     )
 
-    oauth_access_token: sqlalchemy.orm.Mapped[str] = sqlalchemy.Column(
-        OAuthTokenEncryptedType()
-    )
+    oauth_access_token: sqlalchemy.orm.Mapped[
+        github_types.GitHubOAuthToken
+    ] = sqlalchemy.Column(OAuthTokenEncryptedType())
 
     def get_id(self) -> int:
         # NOTE(silet): for imia UserLike protocol
@@ -88,7 +89,7 @@ class GitHubUser(models.Base):
     async def get_by_id(
         cls,
         session: sqlalchemy.ext.asyncio.AsyncSession,
-        _id: int,
+        _id: github_types.GitHubAccountIdType,
     ) -> GitHubUser | None:
         result = await session.execute(sqlalchemy.select(cls).where(cls.id == _id))
         return result.unique().scalar_one_or_none()
@@ -97,9 +98,9 @@ class GitHubUser(models.Base):
     async def create_or_update(
         cls,
         session: sqlalchemy.ext.asyncio.AsyncSession,
-        _id: int,
-        login: str,
-        oauth_access_token: str,
+        _id: github_types.GitHubAccountIdType,
+        login: github_types.GitHubLogin,
+        oauth_access_token: github_types.GitHubOAuthToken,
     ) -> GitHubUser:
         user = await cls.get_by_id(session, _id)
         if user is None:

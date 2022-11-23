@@ -80,7 +80,9 @@ async def login_via_github(
 
 
 async def create_or_update_user(
-    request: fastapi.Request, session: sqlalchemy.ext.asyncio.AsyncSession, token: str
+    request: fastapi.Request,
+    session: sqlalchemy.ext.asyncio.AsyncSession,
+    token: github_types.GitHubOAuthToken,
 ) -> github_user.GitHubUser:
     async with github.AsyncGithubInstallationClient(
         github.GithubTokenAuth(token)
