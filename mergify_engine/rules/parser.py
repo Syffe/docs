@@ -369,10 +369,13 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
         if not has_times or not times:
             try:
                 # Only days
-                cond = _extract_dow_range(days)
-            except ConditionParsingError:
+                schedule = date.Schedule.from_days_string(days)
+            except date.InvalidDate:
                 # Only hours+minutes
-                cond = _extract_time_range(days)
+                try:
+                    schedule = date.Schedule.from_times_string(days)
+                except date.InvalidDate as e:
+                    raise ConditionParsingError(e.message)
         else:
             # Days + Times
             try:
@@ -380,7 +383,7 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
             except date.InvalidDate as e:
                 raise ConditionParsingError(e.message)
 
-            cond = {"=": ("current-time", schedule)}
+        cond = {"=": ("current-time", schedule)}
 
         return _to_dict(negate, False, attribute, "@", cond)
 

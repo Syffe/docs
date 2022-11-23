@@ -265,6 +265,62 @@ class Schedule:
     start_minute: int
     end_minute: int
     tzinfo: datetime.tzinfo
+    is_only_days: bool = dataclasses.field(default=False)
+    is_only_times: bool = dataclasses.field(default=False)
+
+    @staticmethod
+    def get_weekdays_from_string(days: str) -> tuple[int, int]:
+        try:
+            start_weekday, end_weekday = days.split("-")
+        except ValueError:
+            raise InvalidDate(f"Invalid schedule: missing separator in '{days}'")
+
+        return (
+            DayOfWeek.from_string(start_weekday).value,
+            DayOfWeek.from_string(end_weekday).value,
+        )
+
+    @staticmethod
+    def get_start_and_end_time_obj_from_string(times: str) -> tuple[Time, Time]:
+        try:
+            start_hourminute, end_hourminute = times.split("-")
+        except ValueError:
+            raise InvalidDate(f"Invalid schedule: missing separator in '{times}'")
+        return (
+            Time.from_string(start_hourminute),
+            Time.from_string(end_hourminute),
+        )
+
+    @classmethod
+    def from_days_string(cls, days: str) -> "Schedule":
+        start_weekday, end_weekday = Schedule.get_weekdays_from_string(days)
+        return cls(
+            start_weekday=start_weekday,
+            end_weekday=end_weekday,
+            start_hour=0,
+            end_hour=23,
+            start_minute=0,
+            end_minute=59,
+            # TODO(Greesb): Allow timezone with only day of weeks
+            tzinfo=datetime.timezone.utc,
+            is_only_days=True,
+        )
+
+    @classmethod
+    def from_times_string(cls, times: str) -> "Schedule":
+        start_time_obj, end_time_obj = Schedule.get_start_and_end_time_obj_from_string(
+            times
+        )
+        return cls(
+            start_weekday=1,
+            end_weekday=7,
+            start_hour=start_time_obj.hour,
+            end_hour=end_time_obj.hour,
+            start_minute=start_time_obj.minute,
+            end_minute=end_time_obj.minute,
+            tzinfo=end_time_obj.tzinfo,
+            is_only_times=True,
+        )
 
     @classmethod
     def from_strings(
@@ -272,23 +328,14 @@ class Schedule:
         days: str,
         times: str,
     ) -> "Schedule":
-        try:
-            start_weekday, end_weekday = days.split("-")
-        except ValueError:
-            raise InvalidDate(f"Invalid schedule: missing separator in '{days}'")
-        start_weekday_int = DayOfWeek.from_string(start_weekday).value
-        end_weekday_int = DayOfWeek.from_string(end_weekday).value
-
-        try:
-            start_hourminute, end_hourminute = times.split("-")
-        except ValueError:
-            raise InvalidDate(f"Invalid schedule: missing separator in '{times}'")
-        start_time_obj = Time.from_string(start_hourminute)
-        end_time_obj = Time.from_string(end_hourminute)
+        start_weekday, end_weekday = Schedule.get_weekdays_from_string(days)
+        start_time_obj, end_time_obj = Schedule.get_start_and_end_time_obj_from_string(
+            times
+        )
 
         return cls(
-            start_weekday=start_weekday_int,
-            end_weekday=end_weekday_int,
+            start_weekday=start_weekday,
+            end_weekday=end_weekday,
             start_hour=start_time_obj.hour,
             end_hour=end_time_obj.hour,
             start_minute=start_time_obj.minute,
@@ -347,15 +394,32 @@ class Schedule:
         if self.start_weekday < self.end_weekday:
             return (
                 self.start_weekday <= dother.isoweekday() <= self.end_weekday
-                and self.is_datetime_between_time_range(dother, strict=False)
+                and self.is_datetime_inside_time_schedule(dother, strict=False)
             )
         else:
             return (
                 self.end_weekday <= dother.isoweekday()
                 or dother.isoweekday() <= self.start_weekday
-            ) and self.is_datetime_between_time_range(dother, strict=False)
+            ) and self.is_datetime_inside_time_schedule(dother, strict=False)
 
-    def is_datetime_between_time_range(
+    def is_datetime_inside_day_schedule(self, time_to_check: datetime.datetime) -> bool:
+        time_to_check_as_tz = time_to_check.astimezone(self.tzinfo)
+        return (
+            self.start_weekday > self.end_weekday
+            and (
+                self.start_weekday <= time_to_check_as_tz.isoweekday()
+                or time_to_check_as_tz.isoweekday() <= self.end_weekday
+            )
+        ) or (
+            self.start_weekday <= self.end_weekday
+            and (
+                self.start_weekday
+                <= time_to_check_as_tz.isoweekday()
+                <= self.end_weekday
+            )
+        )
+
+    def is_datetime_inside_time_schedule(
         self,
         time_to_check: datetime.datetime,
         strict: bool,
@@ -383,30 +447,60 @@ class Schedule:
         from_time_as_tz = from_time.astimezone(self.tzinfo)
 
         # Outside of the day schedule
-        if (
-            self.start_weekday > self.end_weekday
-            and self.end_weekday < from_time_as_tz.isoweekday() < self.start_weekday
-        ) or (
-            self.start_weekday <= self.end_weekday
-            and (
-                from_time_as_tz.isoweekday() < self.start_weekday
-                or from_time_as_tz.isoweekday() > self.end_weekday
-            )
-        ):
-            if self.start_weekday > self.end_weekday:
+        if not self.is_datetime_inside_day_schedule(from_time_as_tz):
+            if (
+                self.start_weekday > self.end_weekday
+                or from_time_as_tz.isoweekday() < self.start_weekday
+            ):
                 # Next time is this week at the start of schedule
                 from_time_as_tz += datetime.timedelta(
                     days=self.start_weekday - from_time_as_tz.isoweekday()
                 )
 
+            # self.start_weekday <= self.end_weekday and from_time_as_tz.isoweekday() >= self.end_weekday
             else:
                 # Add the number of days missing to go to the starting weekday
                 # of the next week
                 from_time_as_tz += datetime.timedelta(
                     days=self.start_weekday + (7 - from_time_as_tz.isoweekday())
                 )
+
+            if self.is_only_days:
+                return return_as_origin_timezone(
+                    from_time_as_tz.replace(
+                        hour=0,
+                        minute=0,
+                        second=0,
+                        microsecond=0,
+                    )
+                )
+        # Inside of day schedule and is only a day schedule
+        elif self.is_only_days:
+            # Next time is outside of day schedule
+            if (
+                self.start_weekday <= self.end_weekday
+                or from_time_as_tz.isoweekday() < self.start_weekday
+            ):
+                # Next time is this week at the end of the schedule
+                from_time_as_tz += datetime.timedelta(
+                    days=(self.end_weekday + 1) - from_time_as_tz.isoweekday()
+                )
+            # self.start_weekday > self.end_weekday and from_time_as_tz.isoweekday() >= self.start_weekday
+            else:
+                # Next time is next week at the end of the schedule
+                from_time_as_tz += datetime.timedelta(
+                    days=7 - (from_time_as_tz.isoweekday() - (self.end_weekday + 1))
+                )
+            return return_as_origin_timezone(
+                from_time_as_tz.replace(
+                    hour=0,
+                    minute=0,
+                    second=0,
+                    microsecond=0,
+                )
+            )
         # Inside day+time schedule
-        elif self.is_datetime_between_time_range(from_time_as_tz, strict=False):
+        elif self.is_datetime_inside_time_schedule(from_time_as_tz, strict=False):
             # We are between the correct date+time range,
             # next try is 1 minute after the end of the schedule.
             return return_as_origin_timezone(
