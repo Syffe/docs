@@ -2035,7 +2035,15 @@ class Context:
         if files is cache.Unset:
             try:
                 files = [
-                    github_types.CachedGitHubFile({"filename": file["filename"]})
+                    github_types.CachedGitHubFile(
+                        {
+                            "filename": file["filename"],
+                            "contents_url": file["contents_url"],
+                            "status": file["status"],
+                            "sha": file["sha"],
+                            "previous_filename": file.get("previous_filename"),
+                        }
+                    )
                     async for file in typing.cast(
                         abc.AsyncIterable[github_types.GitHubFile],
                         self.client.items(

@@ -359,6 +359,25 @@ did not find expected alphabetic or numeric character
             == summary["output"]["title"]
         )
 
+    async def test_configuration_moved(self) -> None:
+        await self.setup_repo("")
+        await self.git("mv", ".mergify.yml", "disabled.yml")
+        p = await self.create_pr(git_tree_ready=True)
+        await self.run_engine()
+
+        p = await self.get_pull(p["number"])
+        ctxt = context.Context(self.repository_ctxt, p, [])
+        summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
+        assert summary is not None
+        assert (
+            "Configuration changed. This pull request must be merged manually"
+            in summary["output"]["title"]
+        )
+        additionnal_check = await ctxt.get_engine_check_run(
+            "Configuration has been deleted"
+        )
+        assert additionnal_check is not None
+
     async def test_configuration_deleted(self) -> None:
         await self.setup_repo("")
         await self.git("rm", "-rf", ".mergify.yml")
@@ -379,13 +398,10 @@ did not find expected alphabetic or numeric character
         assert additionnal_check is not None
 
     async def test_multiple_configurations(self) -> None:
-        await self.setup_repo(
-            files={
-                ".mergify.yml": "",
-                ".github/mergify.yml": "pull_request_rules: []",
-            }
+        await self.setup_repo(files={".mergify.yml": ""})
+        p = await self.create_pr(
+            files={".github/mergify.yml": "pull_request_rules: []"}
         )
-        p = await self.create_pr()
         await self.run_engine()
 
         p = await self.get_pull(p["number"])

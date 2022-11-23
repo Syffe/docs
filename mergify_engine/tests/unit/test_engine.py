@@ -58,7 +58,7 @@ GH_PULL = github_types.GitHubPullRequest(
         "draft": False,
         "merge_commit_sha": github_types.SHAType("base-sha"),
         "labels": [],
-        "number": github_types.GitHubPullRequestNumber(6),
+        "number": github_types.GitHubPullRequestNumber(1),
         "merged": False,
         "commits": 1,
         "state": "open",
@@ -260,7 +260,7 @@ CONFIGURATION_CHANGED_CHECK = github_types.GitHubCheckRun(
             "owner": {
                 "type": "Bot",
                 "id": github_types.GitHubAccountIdType(1234),
-                "login": github_types.GitHubLogin("mergify"),
+                "login": github_types.GitHubLogin("goo"),
                 "avatar_url": "https://example.com",
             },
         },
@@ -314,6 +314,7 @@ async def test_configuration_changed(
         ),
     )
 
+    qs_ref = respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]})
     github_server.route(
         respx.patterns.M(method="GET", path=f"{BASE_URL}/contents/.mergify.yml")
         & qs_ref
@@ -324,24 +325,38 @@ async def test_configuration_changed(
             github_types.GitHubContentFile(
                 {
                     "type": "file",
-                    "content": OTHER_FAKE_MERGIFY_CONTENT,
+                    "content": FAKE_MERGIFY_CONTENT,
                     "path": github_types.GitHubFilePath(".mergify.yml"),
                     "sha": github_types.SHAType(
-                        "ab739e5ec79e358bae7a150941a148b4131233ce"
+                        "739e5ec79e358bae7a150941a148b4131233ce2c"
                     ),
                 }
             ),
         ),
     )
 
-    github_server.get(
-        f"{BASE_URL}/contents/.github/mergify.yml",
-        params__contains={"ref": GH_PULL["merge_commit_sha"]},
-    ).respond(404, json={})
-    github_server.get(
-        f"{BASE_URL}/contents/.mergify/config.yml",
-        params__contains={"ref": GH_PULL["merge_commit_sha"]},
-    ).respond(404, json={})
+    github_server.get(f"{BASE_URL}/pulls/1/files").respond(
+        200,
+        json=[
+            github_types.GitHubFile(
+                {
+                    "raw_url": "",
+                    "blob_url": "",
+                    "patch": "",
+                    "contents_url": f"{BASE_URL}/contents/.mergify.yml?ref={GH_PULL['merge_commit_sha']}",
+                    "status": "changed",
+                    "additions": 2,
+                    "deletions": 0,
+                    "changes": 10,
+                    "filename": github_types.GitHubFilePath(".mergify.yml"),
+                    "previous_filename": "",
+                    "sha": github_types.SHAType(
+                        "ab739e5ec79e358bae7a150941a148b4131233ce"
+                    ),
+                }
+            )
+        ],
+    )
 
     github_server.get(
         f"{BASE_URL}/commits/{GH_PULL['head']['sha']}/check-runs"
@@ -423,49 +438,27 @@ async def test_configuration_duplicated(
         ),
     )
 
-    github_server.route(
-        respx.patterns.M(method="GET", path=f"{BASE_URL}/contents/.mergify.yml")
-        & qs_ref
-    ).respond(
+    github_server.get(f"{BASE_URL}/pulls/1/files").respond(
         200,
-        json=typing.cast(
-            dict[typing.Any, typing.Any],
-            github_types.GitHubContentFile(
+        json=[
+            github_types.GitHubFile(
                 {
-                    "type": "file",
-                    "content": FAKE_MERGIFY_CONTENT,
-                    "path": github_types.GitHubFilePath(".mergify.yml"),
-                    "sha": github_types.SHAType(
-                        "739e5ec79e358bae7a150941a148b4131233ce2c"
-                    ),
-                }
-            ),
-        ),
-    )
-
-    github_server.get(
-        f"{BASE_URL}/contents/.mergify/config.yml",
-        params__contains={"ref": GH_PULL["merge_commit_sha"]},
-    ).respond(404)
-
-    github_server.route(
-        respx.patterns.M(method="GET", path=f"{BASE_URL}/contents/.github/mergify.yml")
-        & qs_ref
-    ).respond(
-        200,
-        json=typing.cast(
-            dict[typing.Any, typing.Any],
-            github_types.GitHubContentFile(
-                {
-                    "type": "file",
-                    "content": OTHER_FAKE_MERGIFY_CONTENT,
-                    "path": github_types.GitHubFilePath(".github/mergify.yml"),
+                    "raw_url": "",
+                    "blob_url": "",
+                    "patch": "",
+                    "contents_url": f"{BASE_URL}/contents/.github/mergify.yml?ref={GH_PULL['merge_commit_sha']}",
+                    "status": "added",
+                    "additions": 2,
+                    "deletions": 0,
+                    "changes": 10,
+                    "filename": github_types.GitHubFilePath(".github/mergify.yml"),
+                    "previous_filename": "",
                     "sha": github_types.SHAType(
                         "ab739e5ec79e358bae7a150941a148b4131233ce"
                     ),
                 }
-            ),
-        ),
+            )
+        ],
     )
 
     github_server.get(
@@ -522,6 +515,11 @@ async def test_configuration_not_changed(
         json=typing.cast(dict[typing.Any, typing.Any], GH_PULL),
     )
 
+    github_server.get(f"{BASE_URL}/pulls/1/files").respond(
+        200,
+        json=[],
+    )
+
     qs_ref = respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]})
     github_server.route(
         respx.patterns.M(method="GET", path=f"{BASE_URL}/contents/.mergify.yml")
@@ -542,36 +540,6 @@ async def test_configuration_not_changed(
             ),
         ),
     )
-
-    github_server.route(
-        respx.patterns.M(method="GET", path=f"{BASE_URL}/contents/.mergify.yml")
-        & qs_ref
-    ).respond(
-        200,
-        json=typing.cast(
-            dict[typing.Any, typing.Any],
-            github_types.GitHubContentFile(
-                {
-                    "type": "file",
-                    "content": FAKE_MERGIFY_CONTENT,
-                    "path": github_types.GitHubFilePath(".mergify.yml"),
-                    "sha": github_types.SHAType(
-                        "739e5ec79e358bae7a150941a148b4131233ce2c"
-                    ),
-                }
-            ),
-        ),
-    )
-
-    github_server.get(
-        f"{BASE_URL}/contents/.mergify/config.yml",
-        params__contains={"ref": GH_PULL["merge_commit_sha"]},
-    ).respond(404)
-
-    github_server.get(
-        f"{BASE_URL}/contents/.github/mergify.yml",
-        params__contains={"ref": GH_PULL["merge_commit_sha"]},
-    ).respond(404)
 
     github_server.get(
         f"{BASE_URL}/commits/{GH_PULL['head']['sha']}/check-runs"
@@ -627,6 +595,28 @@ async def test_configuration_initial(
         json=typing.cast(dict[typing.Any, typing.Any], GH_PULL),
     )
 
+    github_server.get(f"{BASE_URL}/pulls/1/files").respond(
+        200,
+        json=[
+            github_types.GitHubFile(
+                {
+                    "raw_url": "",
+                    "blob_url": "",
+                    "patch": "",
+                    "contents_url": f"{BASE_URL}/contents/.mergify.yml?ref={GH_PULL['merge_commit_sha']}",
+                    "status": "changed",
+                    "additions": 2,
+                    "deletions": 0,
+                    "changes": 10,
+                    "filename": github_types.GitHubFilePath(".mergify.yml"),
+                    "previous_filename": "",
+                    "sha": github_types.SHAType(
+                        "ab739e5ec79e358bae7a150941a148b4131233ce"
+                    ),
+                }
+            )
+        ],
+    )
     github_server.route(
         respx.patterns.M(method="GET", path=f"{BASE_URL}/contents/.mergify.yml")
         & ~respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]})
@@ -661,14 +651,6 @@ async def test_configuration_initial(
             ),
         ),
     )
-    github_server.route(
-        respx.patterns.M(method="GET", path=f"{BASE_URL}/contents/.github/mergify.yml")
-        & respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]})
-    ).respond(404)
-    github_server.route(
-        respx.patterns.M(method="GET", path=f"{BASE_URL}/contents/.mergify/config.yml")
-        & respx.patterns.M(params__contains={"ref": GH_PULL["merge_commit_sha"]})
-    ).respond(404)
 
     github_server.get(
         f"{BASE_URL}/commits/{GH_PULL['head']['sha']}/check-runs"

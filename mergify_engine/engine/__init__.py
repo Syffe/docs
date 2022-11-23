@@ -26,7 +26,7 @@ LOG = daiquiri.getLogger(__name__)
 
 @dataclasses.dataclass
 class MultipleConfigurationFileFound(Exception):
-    files: list[context.MergifyConfigFile]
+    filenames: set[str]
 
 
 async def _check_configuration_changes(
@@ -60,57 +60,77 @@ async def _check_configuration_changes(
         else:
             return False
 
-    preferred_filename = (
-        None
-        if current_mergify_config_file is None
-        else current_mergify_config_file["path"]
-    )
-
     # NOTE(sileht): pull.base.sha is unreliable as its the sha when the PR is
     # open and not the merge-base/fork-point. So we compare the configuration from the base
     # branch with the one of the merge commit. If the configuration is changed by the PR, they will be
     # different.
-    config_files: dict[str, context.MergifyConfigFile] = {}
-    async for config_file in ctxt.repository.iter_mergify_config_files(
-        ref=ctxt.pull["merge_commit_sha"], preferred_filename=preferred_filename
+    modified_config_files = [
+        f
+        for f in await ctxt.files
+        if f["filename"] in constants.MERGIFY_CONFIG_FILENAMES
+        and f["status"] not in ("removed", "unchanged")
+    ]
+
+    deleted_config_files = [
+        f
+        for f in await ctxt.files
+        if (
+            f["filename"] in constants.MERGIFY_CONFIG_FILENAMES
+            and f["status"] == "removed"
+        )
+        or (
+            f["status"] == "renamed"
+            and f["previous_filename"] in constants.MERGIFY_CONFIG_FILENAMES
+            and f["filename"] not in constants.MERGIFY_CONFIG_FILENAMES
+        )
+    ]
+
+    if not modified_config_files and deleted_config_files:
+        await check_api.set_check_run(
+            ctxt,
+            constants.CONFIGURATION_DELETED_CHECK_NAME,
+            check_api.Result(
+                check_api.Conclusion.SUCCESS,
+                title="The Mergify configuration has been deleted",
+                summary="Mergify will still continue to listen to commands.",
+            ),
+        )
+        return True
+
+    if not modified_config_files:
+        return False
+
+    config_filenames = {f["filename"] for f in modified_config_files}
+    if current_mergify_config_file is not None:
+        config_filenames.add(current_mergify_config_file["path"])
+
+    if len(config_filenames) >= 2:
+        raise MultipleConfigurationFileFound(config_filenames)
+
+    if len(modified_config_files) != 1:
+        raise RuntimeError(
+            "modified_config_files must have only one element at this point"
+        )
+
+    future_mergify_config_file = modified_config_files[0]
+
+    if (
+        current_mergify_config_file is not None
+        and current_mergify_config_file["path"]
+        == future_mergify_config_file["filename"]
+        and current_mergify_config_file["sha"] == future_mergify_config_file["sha"]
     ):
-        config_files[config_file["path"]] = config_file
+        # Nothing change between main branch and the pull request
+        return False
 
-    if len(config_files) >= 2:
-        raise MultipleConfigurationFileFound(list(config_files.values()))
-
-    future_mergify_config_file = (
-        list(config_files.values())[0] if config_files else None
+    config_content = typing.cast(
+        github_types.GitHubContentFile,
+        await ctxt.client.item(future_mergify_config_file["contents_url"]),
     )
-
-    if current_mergify_config_file is None:
-        if future_mergify_config_file is None:
-            return False
-    else:
-        if future_mergify_config_file is None:
-            # Configuration is deleted by the pull request
-            await check_api.set_check_run(
-                ctxt,
-                constants.CONFIGURATION_DELETED_CHECK_NAME,
-                check_api.Result(
-                    check_api.Conclusion.SUCCESS,
-                    title="The Mergify configuration has been deleted",
-                    summary="Mergify will still continue to listen to commands.",
-                ),
-            )
-            return True
-
-        elif (
-            current_mergify_config_file["path"] == future_mergify_config_file["path"]
-            and current_mergify_config_file["sha"] == future_mergify_config_file["sha"]
-        ):
-            # Nothing change between main branch and the pull request
-            return False
 
     try:
         await rules.get_mergify_config_from_file(
-            ctxt.repository,
-            future_mergify_config_file,
+            ctxt.repository, context.content_file_to_config_file(config_content)
         )
     except rules.InvalidRules as e:
         # Not configured, post status check with the error message
@@ -358,7 +378,7 @@ async def run(
             ctxt, config_file
         )
     except MultipleConfigurationFileFound as e:
-        files = "\n * " + "\n * ".join(f["path"] for f in e.files)
+        files = "\n * " + "\n * ".join(f for f in e.filenames)
         # NOTE(sileht): This replaces the summary, so we will may lost the
         # state of queue/comment action. But since we can't choice which config
         # file we need to use... we can't do much.

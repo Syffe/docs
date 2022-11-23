@@ -287,21 +287,31 @@ class GitHubContentFile(typing.TypedDict):
     path: GitHubFilePath
 
 
+GitHubFileStatus = typing.Literal[
+    "added", "removed", "modified", "renamed", "copied", "changed", "unchanged"
+]
+
+
 class GitHubFile(typing.TypedDict):
     sha: SHAType
     filename: str
     contents_url: str
-    status: typing.Literal["added"] | typing.Literal["removed"]
+    status: GitHubFileStatus
     additions: int
     deletions: int
     changes: int
     blob_url: str
     raw_url: str
     patch: str
+    previous_filename: str | None
 
 
 class CachedGitHubFile(typing.TypedDict):
+    sha: SHAType
     filename: str
+    contents_url: str
+    status: GitHubFileStatus
+    previous_filename: str | None
 
 
 class GitHubIssueOrPullRequest(typing.TypedDict):

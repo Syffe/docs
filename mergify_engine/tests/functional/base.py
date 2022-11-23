@@ -773,6 +773,9 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         if base is None:
             base = self.main_branch_name
 
+        if files is None:
+            files = {f"test{self.pr_counter}": ""}
+
         if not branch:
             branch = f"{as_}/pr{self.pr_counter}"
             branch = self.get_full_branch_name(branch)
@@ -786,11 +789,7 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         else:
             await self.git("checkout", "--quiet", f"origin/{base}", "-b", branch)
 
-        if files is not None:
-            await self._git_create_files(files)
-        else:
-            open(self.git.repository + f"/test{self.pr_counter}", "wb").close()
-            await self.git("add", f"test{self.pr_counter}")
+        await self._git_create_files(files)
 
         args_commit = ["commit", "--no-edit", "-m", commit_headline]
         if commit_body is not None:
