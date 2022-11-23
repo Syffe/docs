@@ -299,68 +299,6 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
                 > datetime.timedelta(hours=23, minutes=58).total_seconds()
             )
 
-    async def test_failure_by_reason_endpoint(self) -> None:
-        rules = {
-            "queue_rules": [
-                {
-                    "name": "default",
-                    "conditions": [
-                        "status-success=continuous-integration/fake-ci",
-                    ],
-                    "speculative_checks": 1,
-                    "allow_inplace_checks": True,
-                    "batch_size": 3,
-                    "batch_max_wait_time": "0 s",
-                }
-            ],
-            "pull_request_rules": [
-                {
-                    "name": "Merge priority high",
-                    "conditions": [
-                        f"base={self.main_branch_name}",
-                        "label=queue",
-                    ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
-                },
-            ],
-        }
-        await self.setup_repo(yaml.dump(rules))
-
-        p1 = await self.create_pr()
-        p2 = await self.create_pr(two_commits=True)
-        p3 = await self.create_pr()
-
-        # To force others to be rebased
-        p = await self.create_pr()
-        await self.merge_pull(p["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
-
-        await self.add_label(p1["number"], "queue")
-        await self.add_label(p2["number"], "queue")
-        await self.add_label(p3["number"], "queue")
-        await self.run_engine()
-
-        await self.wait_for("pull_request", {"action": "opened"})
-
-        await self.remove_label(p1["number"], "queue")
-        await self.run_engine()
-
-        await self.wait_for("pull_request", {"action": "closed"})
-
-        failure_by_reason_key = self.get_statistic_redis_key("failure_by_reason")
-        assert await self.redis_links.stats.xlen(failure_by_reason_key) == 3
-
-        r = await self.app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/failure_by_reason",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
-        )
-
-        assert r.status_code == 200
-        assert r.json()[queue_utils.PrAheadDequeued.abort_code] == 3
-
     async def test_checks_duration_endpoint(self) -> None:
         rules = {
             "queue_rules": [
@@ -491,7 +429,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
         assert await self.redis_links.stats.xlen(failure_by_reason_key) == 3
 
         r = await self.app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/failure_by_reason?start_at={timestamp}",
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/queue_checks_outcome?start_at={timestamp}",
             headers={
                 "Authorization": f"bearer {self.api_key_admin}",
                 "Content-type": "application/json",
@@ -502,7 +440,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
         assert r.json()[queue_utils.PrAheadDequeued.abort_code] == 3
 
         r = await self.app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/failure_by_reason?end_at={timestamp}",
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/queue_checks_outcome?end_at={timestamp}",
             headers={
                 "Authorization": f"bearer {self.api_key_admin}",
                 "Content-type": "application/json",
@@ -735,8 +673,6 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
                 f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge?at={future_timestamp}",
                 f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/checks_duration?start_at={future_timestamp}",
                 f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/checks_duration?end_at={future_timestamp}",
-                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/failure_by_reason?start_at={future_timestamp}",
-                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/failure_by_reason?end_at={future_timestamp}",
                 f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/queue_checks_outcome?start_at={future_timestamp}",
                 f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/queue_checks_outcome?end_at={future_timestamp}",
             ]
@@ -745,8 +681,6 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
                 f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge?at={now_ts}",
                 f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/checks_duration?start_at={now_ts}",
                 f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/checks_duration?end_at={now_ts}",
-                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/failure_by_reason?start_at={now_ts}",
-                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/failure_by_reason?end_at={now_ts}",
                 f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/queue_checks_outcome?start_at={now_ts}",
                 f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/queue_checks_outcome?end_at={now_ts}",
             ]

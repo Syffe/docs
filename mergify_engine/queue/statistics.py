@@ -421,46 +421,6 @@ async def get_checks_duration_stats(
     return stats
 
 
-BASE_FAILURE_BY_REASON_T_DICT: FailureByReasonT = FailureByReasonT(
-    {
-        "PR_AHEAD_DEQUEUED": 0,
-        "PR_AHEAD_FAILED_TO_MERGE": 0,
-        "PR_WITH_HIGHER_PRIORITY_QUEUED": 0,
-        "PR_QUEUED_TWICE": 0,
-        "SPECULATIVE_CHECK_NUMBER_REDUCED": 0,
-        "CHECKS_TIMEOUT": 0,
-        "CHECKS_FAILED": 0,
-        "QUEUE_RULE_MISSING": 0,
-        "UNEXPECTED_QUEUE_CHANGE": 0,
-    }
-)
-
-
-async def get_failure_by_reason_stats(
-    repository: "context.Repository",
-    queue_name: rules.QueueName | None = None,
-    branch_name: str | None = None,
-    start_at: int | None = None,
-    end_at: int | None = None,
-) -> dict[rules.QueueName, FailureByReasonT]:
-    stats_dict: dict[rules.QueueName, FailureByReasonT] = {}
-    async for stat in _get_stats_items_date_range(
-        repository,
-        ["failure_by_reason"],
-        queue_name=queue_name,
-        branch_name=branch_name,
-        start_at=start_at,
-        end_at=end_at,
-    ):
-        stat_obj = FailureByReason(**stat)
-        if stat_obj.queue_name not in stats_dict:
-            stats_dict[stat_obj.queue_name] = BASE_FAILURE_BY_REASON_T_DICT.copy()
-
-        stats_dict[stat_obj.queue_name][stat_obj.reason_code_str] += 1
-
-    return stats_dict
-
-
 BASE_QUEUE_CHECKS_OUTCOME_T_DICT: QueueChecksOutcomeT = QueueChecksOutcomeT(
     {
         "PR_AHEAD_DEQUEUED": 0,
