@@ -14,12 +14,12 @@ from mergify_engine.dashboard import user_tokens
 from mergify_engine.rules import types
 
 
-class CommandExecutorConfig(typing.TypedDict):
+class CommentExecutorConfig(typing.TypedDict):
     message: str | None
     bot_account: user_tokens.UserTokensUser | None
 
 
-class CommentExecutor(actions.ActionExecutor["CommentAction", "CommandExecutorConfig"]):
+class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorConfig"]):
     @classmethod
     async def create(
         cls,
@@ -58,7 +58,7 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommandExecutorCo
         return cls(
             ctxt,
             rule,
-            CommandExecutorConfig({"message": message, "bot_account": github_user}),
+            CommentExecutorConfig({"message": message, "bot_account": github_user}),
         )
 
     async def run(self) -> check_api.Result:
