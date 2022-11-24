@@ -364,7 +364,9 @@ Here's the list of pull request attribute that can be used in conditions:
      - The list of bodies associated to review threads that are NOT marked as ``resolved`` by GitHub.
    * - ``schedule``
      - string
-     - A schedule, e.g., ``Mon-Fri``, ``12:00-18:00`` or ``Mon-Fri 12:00-18:00``
+     - | A schedule, e.g., ``Mon-Fri``, ``12:00-18:00`` or ``Mon-Fri 12:00-18:00``.
+       | You can also add a timezone (`IANA format <https://www.iana.org/time-zones>`_) after the time, e.g., ``08:00-17:00[Europe/Madrid]``.
+       | The default timezone used is UTC.
    * - ``title``
      - string
      - The title of the pull request.
