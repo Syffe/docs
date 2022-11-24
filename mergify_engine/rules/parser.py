@@ -9,6 +9,8 @@ import jinja2
 import jinja2.meta
 import jinja2.sandbox
 
+from mergify_engine import config
+from mergify_engine import constants
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine.rules import filter
@@ -298,11 +300,8 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
         if position >= length:
             raise ConditionParsingError("Incomplete condition")
 
-    # circular import
-    from mergify_engine.rules import conditions
-
-    if conditions.DEPRECATE_CURRENT_CONDITIONS_BOOLEAN:
-        for name in conditions.DEPRECATED_CURRENT_CONDITIONS_NAMES:
+    if config.DEPRECATE_CURRENT_CONDITIONS:
+        for name in constants.DEPRECATED_CURRENT_CONDITIONS_NAMES:
             if name in ATTRIBUTES:
                 del ATTRIBUTES[ATTRIBUTES.index(name)]
 

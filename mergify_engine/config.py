@@ -185,6 +185,10 @@ Schema = voluptuous.Schema(
             "WEBHOOK_FORWARD_EVENT_TYPES", default=None
         ): voluptuous.Any(None, CommaSeparatedStringList),
         #
+        voluptuous.Required(
+            "DEPRECATE_CURRENT_CONDITIONS",
+            default=False,
+        ): bool,
         # Mergify Engine settings
         #
         voluptuous.Required("BASE_URL", default="http://localhost:8802"): str,
@@ -387,6 +391,7 @@ TESTING_GPGKEY_SECRET: bytes
 TESTING_ID_GPGKEY_SECRET: str
 TESTING_INSTALLATION_ID: github_types.GitHubAccountIdType
 SAAS_MODE: bool
+DEPRECATE_CURRENT_CONDITIONS: bool
 
 # config variables built
 GITHUB_DOMAIN: str

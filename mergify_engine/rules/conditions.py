@@ -13,6 +13,7 @@ from first import first
 import pydantic
 import voluptuous
 
+from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine.clients import http
@@ -46,23 +47,6 @@ EvaluatedConditionGroupT = abc.Mapping[
     github_types.GitHubPullRequestNumber,
     typing.Union["RuleConditionCombination", "RuleConditionNegation"],  # noqa : NU003
 ]
-
-
-DEPRECATE_CURRENT_CONDITIONS_BOOLEAN = False
-DEPRECATED_CURRENT_CONDITIONS_NAMES = (
-    "current-time",
-    "current-day-of-week",
-    "current-day",
-    "current-month",
-    "current-year",
-    "current-timestamp",
-)
-DEPRECATED_CURRENT_CONDITIONS_MESSAGE = f"""⚠️  The following conditions are deprecated and must be replaced with the `schedule` condition: {', '.join([f"`{n}`" for n in DEPRECATED_CURRENT_CONDITIONS_NAMES])}.
-A brownout day is planned for the whole day of January 11th, 2023.
-Those conditions will be removed on February 11th, 2023.
-
-For more informations and examples on how to use the `schedule` condition: https://docs.mergify.com/conditions/#attributes, https://docs.mergify.com/configuration/#time
-"""
 
 
 @dataclasses.dataclass
@@ -460,8 +444,11 @@ class QueueRuleConditions:
             summary = self.condition.get_summary()
 
         for cond in self.walk():
-            if cond.get_attribute_name() in DEPRECATED_CURRENT_CONDITIONS_NAMES:
-                return summary + "\n" + DEPRECATED_CURRENT_CONDITIONS_MESSAGE
+            if (
+                cond.get_attribute_name()
+                in constants.DEPRECATED_CURRENT_CONDITIONS_NAMES
+            ):
+                return summary + "\n" + constants.DEPRECATED_CURRENT_CONDITIONS_MESSAGE
 
         return summary
 
@@ -606,22 +593,28 @@ class PullRequestRuleConditions:
 
     def get_summary(self) -> str:
         for cond in self.walk():
-            if cond.get_attribute_name() in DEPRECATED_CURRENT_CONDITIONS_NAMES:
+            if (
+                cond.get_attribute_name()
+                in constants.DEPRECATED_CURRENT_CONDITIONS_NAMES
+            ):
                 return (
                     self.condition.get_summary()
                     + "\n"
-                    + DEPRECATED_CURRENT_CONDITIONS_MESSAGE
+                    + constants.DEPRECATED_CURRENT_CONDITIONS_MESSAGE
                 )
 
         return self.condition.get_summary()
 
     def get_unmatched_summary(self) -> str:
         for cond in self.walk():
-            if cond.get_attribute_name() in DEPRECATED_CURRENT_CONDITIONS_NAMES:
+            if (
+                cond.get_attribute_name()
+                in constants.DEPRECATED_CURRENT_CONDITIONS_NAMES
+            ):
                 return (
                     self.condition.get_unmatched_summary()
                     + "\n"
-                    + DEPRECATED_CURRENT_CONDITIONS_MESSAGE
+                    + constants.DEPRECATED_CURRENT_CONDITIONS_MESSAGE
                 )
 
         return self.condition.get_unmatched_summary()

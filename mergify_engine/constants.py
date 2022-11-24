@@ -88,3 +88,19 @@ DEPENDABOT_PULL_REQUEST_AUTHOR_LOGIN = "dependabot[bot]"
 NORMAL_DELAY_BETWEEN_SAME_PULL_REQUEST = datetime.timedelta(seconds=30)
 # minimun delay to wait between two processing of the same PR
 MIN_DELAY_BETWEEN_SAME_PULL_REQUEST = datetime.timedelta(seconds=3)
+
+
+DEPRECATED_CURRENT_CONDITIONS_NAMES = (
+    "current-time",
+    "current-day-of-week",
+    "current-day",
+    "current-month",
+    "current-year",
+    "current-timestamp",
+)
+DEPRECATED_CURRENT_CONDITIONS_MESSAGE = f"""⚠️  The following conditions are deprecated and must be replaced with the `schedule` condition: {', '.join([f"`{n}`" for n in DEPRECATED_CURRENT_CONDITIONS_NAMES])}.
+A brownout day is planned for the whole day of January 11th, 2023.
+Those conditions will be removed on February 11th, 2023.
+
+For more informations and examples on how to use the `schedule` condition: https://docs.mergify.com/conditions/#attributes, https://docs.mergify.com/configuration/#time
+"""

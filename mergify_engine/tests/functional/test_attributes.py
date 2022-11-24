@@ -9,7 +9,6 @@ from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import yaml
-from mergify_engine.rules import conditions
 from mergify_engine.tests.functional import base
 
 
@@ -111,7 +110,7 @@ class TestAttributes(base.FunctionalTestBase):
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
-            conditions.DEPRECATED_CURRENT_CONDITIONS_MESSAGE
+            constants.DEPRECATED_CURRENT_CONDITIONS_MESSAGE
             in summary["output"]["summary"]
         )
 
@@ -125,9 +124,7 @@ class TestAttributes(base.FunctionalTestBase):
                 }
             ]
         }
-        with mock.patch.object(
-            conditions, "DEPRECATE_CURRENT_CONDITIONS_BOOLEAN", True
-        ):
+        with mock.patch.object(config, "DEPRECATE_CURRENT_CONDITIONS", True):
             await self.setup_repo(yaml.dump(rules))
             pr = await self.create_pr()
             await self.run_engine()
