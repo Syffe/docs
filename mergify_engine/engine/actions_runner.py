@@ -1,6 +1,7 @@
 import base64
 import datetime
 import html
+import re
 import typing
 
 from datadog import statsd  # type: ignore[attr-defined]
@@ -92,6 +93,8 @@ def _sanitize_action_config(config_key: str, config_value: typing.Any) -> typing
         return list(config_value)
     elif isinstance(config_value, str) and "\n" in config_value:
         return yaml.LiteralYamlString(config_value)
+    elif isinstance(config_value, re.Pattern):
+        return config_value.pattern
     return config_value
 
 

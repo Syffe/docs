@@ -8,12 +8,7 @@ from mergify_engine.actions import copy
 from mergify_engine.rules import conditions
 
 
-class BackportAction(copy.CopyAction):
-    flags = (
-        actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
-        | actions.ActionFlag.ALLOW_AS_PENDING_COMMAND
-    )
-
+class BackportExecutor(copy.CopyExecutor):
     KIND: duplicate_pull.KindT = "backport"
     HOOK_EVENT_NAME: typing.Literal[
         "action.backport", "action.copy"
@@ -22,13 +17,23 @@ class BackportAction(copy.CopyAction):
     SUCCESS_MESSAGE: str = "Backports have been created"
     FAILURE_MESSAGE: str = "No backport have been created"
 
+    @property
+    def silenced_conclusion(self) -> tuple[check_api.Conclusion, ...]:
+        return ()
+
+
+class BackportAction(copy.CopyAction):
+    flags = (
+        actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
+        | actions.ActionFlag.ALLOW_AS_PENDING_COMMAND
+    )
+    executor_class = BackportExecutor
+
     default_restrictions: typing.ClassVar[list[typing.Any]] = [
         "sender-permission>=write"
     ]
 
-    @property
-    def silenced_conclusion(self) -> tuple[check_api.Conclusion, ...]:
-        return ()
+    KIND: duplicate_pull.KindT = "backport"
 
     @staticmethod
     def command_to_config(string: str) -> dict[str, typing.Any]:

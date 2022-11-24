@@ -9,7 +9,7 @@ from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import gitter
 from mergify_engine.clients import http
-from mergify_engine.dashboard.user_tokens import UserTokensUser
+from mergify_engine.dashboard import user_tokens
 
 
 @dataclasses.dataclass
@@ -215,7 +215,7 @@ async def duplicate(
     *,
     title_template: str,
     body_template: str,
-    bot_account: github_types.GitHubLogin | None = None,
+    on_behalf: user_tokens.UserTokensUser | None = None,
     labels: list[str] | None = None,
     label_conflicts: str | None = None,
     ignore_conflicts: bool = False,
@@ -241,15 +241,6 @@ async def duplicate(
 
     cherry_pick_error: str = ""
     has_conflicts = False
-    bot_account_user: UserTokensUser | None = None
-    if bot_account is not None:
-        user_tokens = await ctxt.repository.installation.get_user_tokens()
-        bot_account_user = user_tokens.get_token_for(bot_account)
-        if not bot_account_user:
-            raise DuplicateFailed(
-                f"User `{bot_account}` is unknown. "
-                f"Please make sure `{bot_account}` exists and has logged in [Mergify dashboard](https://dashboard.mergify.com).",
-            )
 
     # TODO(sileht): This can be done with the Github API only I think:
     # An example:
@@ -258,14 +249,14 @@ async def duplicate(
     try:
         await git.init()
 
-        if bot_account_user is None:
+        if on_behalf is None:
             token = await ctxt.client.get_access_token()
             await git.configure()
             username = "x-access-token"
             password = token
         else:
-            await git.configure(bot_account_user)
-            username = bot_account_user["oauth_access_token"]
+            await git.configure(on_behalf)
+            username = on_behalf["oauth_access_token"]
             password = ""  # nosec
 
         await git.setup_remote("origin", ctxt.pull["base"]["repo"], username, password)
@@ -323,7 +314,7 @@ async def duplicate(
             f"```\n{e.output}\n```\n"
         )
     except gitter.GitAuthenticationFailure as e:
-        if bot_account_user is None:
+        if on_behalf is None:
             # Need to get a new token
             raise DuplicateNeedRetry(
                 f"Git reported the following error:\n```\n{e.output}\n```\n"
@@ -395,9 +386,7 @@ async def duplicate(
                         "base": branch_name,
                         "head": bp_branch,
                     },
-                    oauth_token=bot_account_user["oauth_access_token"]
-                    if bot_account_user
-                    else None,
+                    oauth_token=on_behalf["oauth_access_token"] if on_behalf else None,
                 )
             ).json(),
         )
