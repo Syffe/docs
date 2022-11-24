@@ -282,12 +282,14 @@ async def test_condition_summary_simple() -> None:
     assert evaluation_result.as_dict() == {
         "match": False,
         "label": "all of",
+        "is_label_user_input": False,
         "description": None,
         "evaluation_error": None,
         "subconditions": [
             {
                 "match": True,
-                "label": "`base=main`",
+                "label": "base=main",
+                "is_label_user_input": True,
                 "description": "Description",
                 "evaluation_error": "Error",
                 "subconditions": [],
@@ -342,25 +344,29 @@ async def test_condition_summary_complex() -> None:
     assert evaluation_result.as_dict() == {
         "match": False,
         "label": "all of",
+        "is_label_user_input": False,
         "description": None,
         "evaluation_error": None,
         "subconditions": [
             {
                 "match": False,
                 "label": "all of",
+                "is_label_user_input": False,
                 "description": None,
                 "evaluation_error": None,
                 "subconditions": [
                     {
                         "match": False,
-                        "label": "`label=foo`",
+                        "label": "label=foo",
+                        "is_label_user_input": True,
                         "description": None,
                         "evaluation_error": None,
                         "subconditions": [],
                     },
                     {
                         "match": True,
-                        "label": "`label=baz`",
+                        "label": "label=baz",
+                        "is_label_user_input": True,
                         "description": None,
                         "evaluation_error": None,
                         "subconditions": [],
@@ -370,19 +376,22 @@ async def test_condition_summary_complex() -> None:
             {
                 "match": False,
                 "label": "any of",
+                "is_label_user_input": False,
                 "description": "GitHub branch protection",
                 "evaluation_error": None,
                 "subconditions": [
                     {
                         "match": False,
-                        "label": "`label=bar`",
+                        "label": "label=bar",
+                        "is_label_user_input": True,
                         "description": None,
                         "evaluation_error": None,
                         "subconditions": [],
                     },
                     {
                         "match": False,
-                        "label": "`label=foo`",
+                        "label": "label=foo",
+                        "is_label_user_input": True,
                         "description": None,
                         "evaluation_error": None,
                         "subconditions": [],
@@ -391,7 +400,8 @@ async def test_condition_summary_complex() -> None:
             },
             {
                 "match": True,
-                "label": "`base=main`",
+                "label": "base=main",
+                "is_label_user_input": True,
                 "description": None,
                 "evaluation_error": None,
                 "subconditions": [],
@@ -424,31 +434,36 @@ async def test_rule_condition_negation_summary() -> None:
     assert evaluation_result.as_dict() == {
         "match": False,
         "label": "all of",
+        "is_label_user_input": False,
         "description": None,
         "evaluation_error": None,
         "subconditions": [
             {
                 "match": True,
                 "label": "not",
+                "is_label_user_input": False,
                 "description": None,
                 "evaluation_error": None,
                 "subconditions": [
                     {
                         "match": False,
                         "label": "any of",
+                        "is_label_user_input": False,
                         "description": None,
                         "evaluation_error": None,
                         "subconditions": [
                             {
                                 "match": False,
-                                "label": "`base=main`",
+                                "label": "base=main",
+                                "is_label_user_input": True,
                                 "description": None,
                                 "evaluation_error": None,
                                 "subconditions": [],
                             },
                             {
                                 "match": False,
-                                "label": "`label=foo`",
+                                "label": "label=foo",
+                                "is_label_user_input": True,
                                 "description": None,
                                 "evaluation_error": None,
                                 "subconditions": [],
@@ -643,23 +658,25 @@ async def test_queue_rules_summary() -> None:
     assert evaluation_result.as_dict() == {
         "match": False,
         "label": "all of",
+        "is_label_user_input": False,
         "description": None,
         "attribute_name": None,
         "subconditions": anys.AnyContains(
             {
                 "match": True,
-                "label": "`author=me`",
+                "label": "author=me",
+                "is_label_user_input": True,
                 "description": "Another mechanism to get condtions",
                 "attribute_name": "author",
                 "subconditions": [],
-                "pull_request_evaluations": [
+                "evaluations": [
                     {"pull_request": 1, "match": True, "evaluation_error": "Error"},
                     {"pull_request": 2, "match": True, "evaluation_error": None},
                     {"pull_request": 3, "match": False, "evaluation_error": None},
                 ],
             }
         ),
-        "pull_request_evaluations": [],
+        "evaluations": [],
     }
 
     assert evaluation_result == conditions_mod.QueueConditionEvaluationResult.from_dict(

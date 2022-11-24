@@ -506,6 +506,7 @@ class TrainCar:
     head_branch: str | None = None
     last_checks: list[QueueCheck] = dataclasses.field(default_factory=list)
     last_evaluated_conditions: str | None = None
+    last_conditions_evaluation: conditions.QueueConditionEvaluationResult | None = None
     checks_ended_timestamp: datetime.datetime | None = None
     queue_branch_name: github_types.GitHubRefType | None = None
 
@@ -523,10 +524,16 @@ class TrainCar:
         head_branch: str | None
         last_checks: list[QueueCheck.Serialized]
         last_evaluated_conditions: str | None
+        last_conditions_evaluation: conditions.QueueConditionEvaluationResult.Serialized | None  # type:ignore[misc]
         checks_ended_timestamp: datetime.datetime | None
         queue_branch_name: github_types.GitHubRefType | None
 
     def serialized(self) -> "TrainCar.Serialized":
+        if self.last_conditions_evaluation is not None:
+            last_conditions_evaluation = self.last_conditions_evaluation.as_dict()
+        else:
+            last_conditions_evaluation = None
+
         return self.Serialized(
             train_car_state=self.train_car_state.serialized(),
             initial_embarked_pulls=[
@@ -548,6 +555,7 @@ class TrainCar:
                 for c in self.last_checks
             ],
             last_evaluated_conditions=self.last_evaluated_conditions,
+            last_conditions_evaluation=last_conditions_evaluation,
             checks_ended_timestamp=self.checks_ended_timestamp,
             queue_branch_name=self.queue_branch_name,
         )
@@ -558,6 +566,9 @@ class TrainCar:
         train: "Train",
         data: "TrainCar.Serialized",
     ) -> "TrainCar":
+        # Avoid circular import
+        from mergify_engine.rules import conditions
+
         if "initial_embarked_pulls" in data:
             initial_embarked_pulls = [
                 EmbarkedPull.deserialize(train, ep)
@@ -644,6 +655,18 @@ class TrainCar:
             data=data, checks_type=checks_type, creation_date=creation_date
         )
 
+        if (
+            "last_conditions_evaluation" in data
+            and data["last_conditions_evaluation"] is not None
+        ):
+            last_conditions_evaluation = (
+                conditions.QueueConditionEvaluationResult.from_dict(
+                    data["last_conditions_evaluation"]
+                )
+            )
+        else:
+            last_conditions_evaluation = None
+
         return cls(
             train,
             train_car_state=train_car_state,
@@ -656,6 +679,7 @@ class TrainCar:
             head_branch=data["head_branch"],
             last_checks=last_checks,
             last_evaluated_conditions=data.get("last_evaluated_conditions"),
+            last_conditions_evaluation=last_conditions_evaluation,
             checks_ended_timestamp=data.get("checks_ended_timestamp"),
             queue_branch_name=data["queue_branch_name"],
         )
@@ -1587,6 +1611,9 @@ You don't need to do anything. Mergify will close this pull request automaticall
     ) -> None:
 
         self.last_evaluated_conditions = evaluated_queue_rule.conditions.get_summary()
+        self.last_conditions_evaluation = (
+            evaluated_queue_rule.conditions.get_evaluation_result()
+        )
         self.last_checks = []
         outside_schedule = False
         has_failed_check_other_than_schedule = False

@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    Add `conditions_evaluation` property to
+    `/queue/{queue_name}/pull/{pr_number}` endpoint. This property contains a
+    JSON tree with queue rule conditions evaluation.

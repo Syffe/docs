@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import dataclasses
 import datetime
+import typing
 
 import daiquiri
 import fastapi
@@ -14,6 +17,7 @@ from mergify_engine import rules
 from mergify_engine.dashboard import application as application_mod
 from mergify_engine.queue import freeze
 from mergify_engine.queue import merge_train
+from mergify_engine.rules import conditions as condition_mod
 from mergify_engine.rules import filter
 from mergify_engine.rules import live_resolvers
 from mergify_engine.web import api
@@ -50,12 +54,12 @@ class SpeculativeCheckPullRequest:
     )
     started_at: datetime.datetime = dataclasses.field(
         metadata={
-            "description": "The timestamp when the checks has started for this pull request"
+            "description": "The timestamp when the checks have started for this pull request"
         }
     )
     ended_at: datetime.datetime | None = dataclasses.field(
         metadata={
-            "description": "The timestamp when the checks has ended for this pull request"
+            "description": "The timestamp when the checks have ended for this pull request"
         }
     )
     checks: list[merge_train.QueueCheck] = dataclasses.field(
@@ -321,12 +325,87 @@ async def repository_queues(
     return queues
 
 
+TRAIN_CAR_CHECKS_TYPE_MAPPING: dict[
+    merge_train.TrainCarChecksType, typing.Literal["in_place", "draft_pr"]
+] = {
+    merge_train.TrainCarChecksType.INPLACE: "in_place",
+    merge_train.TrainCarChecksType.DRAFT: "draft_pr",
+}
+
+
+@pydantic.dataclasses.dataclass
+class MergeabilityCheck:
+    check_type: typing.Literal["in_place", "draft_pr"] = dataclasses.field(
+        metadata={"description": "The type of queue check (in_place or draft_pr)"}
+    )
+    pull_request_number: github_types.GitHubPullRequestNumber = dataclasses.field(
+        metadata={
+            "description": "The number of the pull request used by the speculative check"
+        }
+    )
+    started_at: datetime.datetime = dataclasses.field(
+        metadata={
+            "description": "The timestamp when the checks have started for this pull request"
+        }
+    )
+    ended_at: datetime.datetime | None = dataclasses.field(
+        metadata={
+            "description": "The timestamp when the checks have ended for this pull request"
+        }
+    )
+    checks: list[merge_train.QueueCheck] = dataclasses.field(
+        metadata={"description": "The list of pull request checks"}
+    )
+    evaluated_conditions: str | None = dataclasses.field(
+        metadata={"description": "The queue rule conditions evaluation report"}
+    )
+    state: merge_train.CheckStateT = dataclasses.field(
+        metadata={"description": "The global state of the checks"}
+    )
+    conditions_evaluation: condition_mod.QueueConditionEvaluationJsonSerialized | None = dataclasses.field(
+        metadata={"description": "The queue rule conditions evaluation"}
+    )
+
+
+@pydantic.dataclasses.dataclass
+class EnhancedPullRequestQueued:
+    number: github_types.GitHubPullRequestNumber = dataclasses.field(
+        metadata={"description": "The number of the pull request"}
+    )
+
+    position: int = dataclasses.field(
+        metadata={
+            "description": "The position of the pull request in the queue. The first pull request in the queue is at position 0"
+        }
+    )
+
+    priority: int = dataclasses.field(
+        metadata={"description": "The priority of this pull request"}
+    )
+    queue_rule: QueueRule = dataclasses.field(
+        metadata={"description": "The queue rule associated to this pull request"}
+    )
+
+    queued_at: datetime.datetime = dataclasses.field(
+        metadata={
+            "description": "The timestamp when the pull requested has entered in the queue"
+        }
+    )
+    mergeability_check: MergeabilityCheck | None
+
+    estimated_time_of_merge: datetime.datetime | None = dataclasses.field(
+        metadata={
+            "description": "The estimated timestamp when this pull request will be merged"
+        }
+    )
+
+
 @router.get(
     "/repos/{owner}/{repository}/queue/{queue_name}/pull/{pr_number}",  # noqa: FS003
     include_in_schema=False,
     summary="Get a queued pull request",
     description="Get a pull request queued in a merge queue of a repository",
-    response_model=PullRequestQueued,
+    response_model=EnhancedPullRequestQueued,
     responses={
         **api.default_responses,  # type: ignore
         200: {
@@ -352,13 +431,47 @@ async def repository_queues(
                                 "queue_branch_merge_method": "fast-forward",
                             },
                         },
-                        "speculative_check_pull_request": {
-                            "in_place": True,
-                            "number": 5678,
+                        "mergeability_check": {
+                            "check_type": "draft_pr",
+                            "pull_request_number": 5678,
                             "started_at": "2021-10-14T14:19:12+00:00",
                             "ended_at": "2021-10-14T15:00:42+00:00",
                             "checks": [],
                             "evaluated_conditions": "",
+                            "conditions_evaluation": {
+                                "match": False,
+                                "label": "all of",
+                                "description": None,
+                                "subconditions": [
+                                    {
+                                        "match": False,
+                                        "label": "check-success=continuous-integration/fake-ci",
+                                        "description": None,
+                                        "subconditions": [],
+                                        "evaluations": [
+                                            {
+                                                "pull_request": 5678,
+                                                "match": False,
+                                                "evaluation_error": None,
+                                            }
+                                        ],
+                                    },
+                                    {
+                                        "match": True,
+                                        "label": "base=main",
+                                        "description": None,
+                                        "subconditions": [],
+                                        "evaluations": [
+                                            {
+                                                "pull_request": 5678,
+                                                "match": True,
+                                                "evaluation_error": None,
+                                            }
+                                        ],
+                                    },
+                                ],
+                                "evaluations": [],
+                            },
                             "state": "success",
                         },
                         "queued_at": "2021-10-14T14:19:12+00:00",
@@ -386,7 +499,7 @@ async def repository_queue_pull_request(
     repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
         security.get_repository_context
     ),
-) -> PullRequestQueued:
+) -> EnhancedPullRequestQueued:
     async for train in merge_train.Train.iter_trains(repository_ctxt):
         queue_rules = await train.get_queue_rules()
         if queue_rules is None:
@@ -403,12 +516,12 @@ async def repository_queue_pull_request(
             if embarked_pull.user_pull_request_number != pr_number:
                 continue
 
-            speculative_check_pull_request = create_speculative_check_pull_request(car)
+            mergeability_check = create_mergeability_check(car)
             estimated_time_of_merge = await get_estimated_time_of_merge(
                 train, embarked_pull, position, queue_rule
             )
 
-            return PullRequestQueued(
+            return EnhancedPullRequestQueued(
                 number=embarked_pull.user_pull_request_number,
                 position=position,
                 priority=embarked_pull.config["priority"],
@@ -416,7 +529,7 @@ async def repository_queue_pull_request(
                     name=embarked_pull.config["name"], config=queue_rule.config
                 ),
                 queued_at=embarked_pull.queued_at,
-                speculative_check_pull_request=speculative_check_pull_request,
+                mergeability_check=mergeability_check,
                 estimated_time_of_merge=estimated_time_of_merge,
             )
 
@@ -431,10 +544,10 @@ def create_speculative_check_pull_request(
 ) -> SpeculativeCheckPullRequest | None:
     if car is None:
         speculative_check_pull_request = None
-    elif car.train_car_state.checks_type in [
+    elif car.train_car_state.checks_type in (
         merge_train.TrainCarChecksType.DRAFT,
         merge_train.TrainCarChecksType.INPLACE,
-    ]:
+    ):
         if car.queue_pull_request_number is None:
             raise RuntimeError(
                 f"car's checks type is {car.train_car_state.checks_type}, but queue_pull_request_number is None"
@@ -460,6 +573,47 @@ def create_speculative_check_pull_request(
         )
 
     return speculative_check_pull_request
+
+
+def create_mergeability_check(
+    car: merge_train.TrainCar | None,
+) -> MergeabilityCheck | None:
+    if car is None:
+        mergeability_check = None
+    elif car.train_car_state.checks_type in (
+        merge_train.TrainCarChecksType.DRAFT,
+        merge_train.TrainCarChecksType.INPLACE,
+    ):
+        if car.queue_pull_request_number is None:
+            raise RuntimeError(
+                f"car's checks type is {car.train_car_state.checks_type}, but queue_pull_request_number is None"
+            )
+        conditions_evaluation = (
+            car.last_conditions_evaluation.as_json_dict()
+            if car.last_conditions_evaluation is not None
+            else None
+        )
+        mergeability_check = MergeabilityCheck(
+            check_type=TRAIN_CAR_CHECKS_TYPE_MAPPING[car.train_car_state.checks_type],
+            pull_request_number=car.queue_pull_request_number,
+            started_at=car.train_car_state.creation_date,
+            ended_at=car.checks_ended_timestamp,
+            state=car.get_queue_check_run_conclusion().value or "pending",
+            checks=car.last_checks,
+            evaluated_conditions=car.last_evaluated_conditions,
+            conditions_evaluation=conditions_evaluation,
+        )
+    elif car.train_car_state.checks_type in (
+        merge_train.TrainCarChecksType.FAILED,
+        None,
+    ):
+        mergeability_check = None
+    else:
+        raise RuntimeError(
+            f"Car's checks type unknown: {car.train_car_state.checks_type}"
+        )
+
+    return mergeability_check
 
 
 async def get_estimated_time_of_merge(

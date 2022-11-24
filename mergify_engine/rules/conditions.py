@@ -640,6 +640,7 @@ class PullRequestRuleConditions:
 class ConditionEvaluationResult:
     match: bool
     label: str
+    is_label_user_input: bool
     description: str | None = None
     evaluation_error: str | None = None
     subconditions: list[ConditionEvaluationResult] = dataclasses.field(
@@ -649,6 +650,7 @@ class ConditionEvaluationResult:
     class Serialized(typing.TypedDict):
         match: bool
         label: str
+        is_label_user_input: bool
         description: str | None
         evaluation_error: str | None
         # mypy can't parse recursive definition
@@ -664,6 +666,7 @@ class ConditionEvaluationResult:
             return cls(
                 match=rule_condition_node.match,
                 label=rule_condition_node.operator_label,
+                is_label_user_input=False,
                 description=rule_condition_node.description,
                 subconditions=cls._create_subconditions(
                     rule_condition_node, filter_key
@@ -672,7 +675,8 @@ class ConditionEvaluationResult:
         elif isinstance(rule_condition_node, RuleCondition):
             return cls(
                 match=rule_condition_node.match,
-                label=f"`{rule_condition_node}`",
+                label=str(rule_condition_node),
+                is_label_user_input=True,
                 description=rule_condition_node.description,
                 evaluation_error=rule_condition_node.evaluation_error,
             )
@@ -703,6 +707,7 @@ class ConditionEvaluationResult:
         evaluation_result = cls(
             match=data["match"],
             label=data["label"],
+            is_label_user_input=data["is_label_user_input"],
             description=data["description"],
             evaluation_error=data["evaluation_error"],
             subconditions=[cls.from_dict(c) for c in data["subconditions"]],
@@ -713,6 +718,7 @@ class ConditionEvaluationResult:
         return self.Serialized(
             match=self.match,
             label=self.label,
+            is_label_user_input=self.is_label_user_input,
             description=self.description,
             evaluation_error=self.evaluation_error,
             subconditions=[c.as_dict() for c in self.subconditions],
@@ -731,7 +737,8 @@ class ConditionEvaluationResult:
 
     def _as_markdown_element(self) -> str:
         check = "X" if self.match else " "
-        text = f"- [{check}] {self.label}"
+        label = f"`{self.label}`" if self.is_label_user_input else self.label
+        text = f"- [{check}] {label}"
 
         if self.subconditions:
             text += ":"
@@ -747,14 +754,15 @@ class ConditionEvaluationResult:
 class QueueConditionEvaluationResult:
     match: bool
     label: str
+    is_label_user_input: bool
     description: str | None = None
     attribute_name: str | None = None
     subconditions: list[QueueConditionEvaluationResult] = dataclasses.field(
         default_factory=list
     )
-    pull_request_evaluations: list[
-        "QueueConditionEvaluationResult.Evaluation"
-    ] = dataclasses.field(default_factory=list)
+    evaluations: list["QueueConditionEvaluationResult.Evaluation"] = dataclasses.field(
+        default_factory=list
+    )
 
     class Evaluation(typing.TypedDict):
         pull_request: github_types.GitHubPullRequestNumber
@@ -764,14 +772,15 @@ class QueueConditionEvaluationResult:
     class Serialized(typing.TypedDict):
         match: bool
         label: str
+        is_label_user_input: bool
         description: str | None
         attribute_name: str | None
         # mypy can't parse recursive definition
         subconditions: list["QueueConditionEvaluationResult.Serialized"]  # type: ignore[misc]
-        pull_request_evaluations: list["QueueConditionEvaluationResult.Evaluation"]
+        evaluations: list["QueueConditionEvaluationResult.Evaluation"]
 
     @property
-    def display_pull_request_evaluations(self) -> bool:
+    def display_evaluations(self) -> bool:
         return self.attribute_name not in context.QueuePullRequest.QUEUE_ATTRIBUTES
 
     @classmethod
@@ -793,6 +802,7 @@ class QueueConditionEvaluationResult:
                 subconditions=cls._create_subconditions(
                     evaluated_condition_group, global_match
                 ),
+                is_label_user_input=False,
             )
         elif isinstance(first_evaluated_condition, RuleCondition):
             evaluated_condition = typing.cast(
@@ -801,9 +811,9 @@ class QueueConditionEvaluationResult:
 
             return cls(
                 match=first_evaluated_condition.match,
-                label=f"`{first_evaluated_condition}`",
+                label=str(first_evaluated_condition),
                 description=first_evaluated_condition.description,
-                pull_request_evaluations=[
+                evaluations=[
                     cls.Evaluation(
                         pull_request=pull_request,
                         match=condition.match,
@@ -812,6 +822,7 @@ class QueueConditionEvaluationResult:
                     for pull_request, condition in evaluated_condition.items()
                 ],
                 attribute_name=first_evaluated_condition.get_attribute_name(),
+                is_label_user_input=True,
             )
         else:
             raise RuntimeError(
@@ -842,7 +853,8 @@ class QueueConditionEvaluationResult:
             description=data["description"],
             attribute_name=data["attribute_name"],
             subconditions=[cls.from_dict(c) for c in data["subconditions"]],
-            pull_request_evaluations=data["pull_request_evaluations"],
+            evaluations=data["evaluations"],
+            is_label_user_input=data["is_label_user_input"],
         )
 
     def as_dict(self) -> QueueConditionEvaluationResult.Serialized:
@@ -852,7 +864,17 @@ class QueueConditionEvaluationResult:
             description=self.description,
             attribute_name=self.attribute_name,
             subconditions=[c.as_dict() for c in self.subconditions],
-            pull_request_evaluations=self.pull_request_evaluations.copy(),
+            evaluations=self.evaluations.copy(),
+            is_label_user_input=self.is_label_user_input,
+        )
+
+    def as_json_dict(self) -> QueueConditionEvaluationJsonSerialized:
+        return QueueConditionEvaluationJsonSerialized(
+            match=self.match,
+            label=self.label,
+            description=self.description,
+            subconditions=[c.as_json_dict() for c in self.subconditions],
+            evaluations=self.evaluations.copy(),
         )
 
     def as_markdown(self) -> str:
@@ -867,22 +889,41 @@ class QueueConditionEvaluationResult:
             yield text
 
     def _as_markdown_element(self) -> str:
-        if self.pull_request_evaluations and self.display_pull_request_evaluations:
-            text = f"- {self.label}"
+        label = f"`{self.label}`" if self.is_label_user_input else self.label
+
+        if self.evaluations and self.display_evaluations:
+            text = f"- {label}"
         else:
             check = "X" if self.match else " "
-            text = f"- [{check}] {self.label}"
+            text = f"- [{check}] {label}"
 
         if self.description:
             text += f" [{self.description}]"
         if self.subconditions:
             text += ":"
 
-        if self.pull_request_evaluations and self.display_pull_request_evaluations:
-            for evaluation in self.pull_request_evaluations:
+        if self.evaluations and self.display_evaluations:
+            for evaluation in self.evaluations:
                 check = "X" if evaluation["match"] else " "
                 text += f"\n  - [{check}] #{evaluation['pull_request']}"
                 if evaluation["evaluation_error"]:
                     text += f" ⚠️ {evaluation['evaluation_error']}"
 
         return text
+
+
+@pydantic.dataclasses.dataclass
+class QueueConditionEvaluationJsonSerialized:
+    # Due to some pydantic limitation, this type cannot be defined inside
+    # `QueueConditionEvaluationResult` without having an error in the API.
+
+    match: bool
+    label: str
+    description: str | None
+    subconditions: list[QueueConditionEvaluationJsonSerialized]
+    evaluations: list["QueueConditionEvaluationJsonSerialized.Evaluation"]
+
+    class Evaluation(typing.TypedDict):
+        pull_request: github_types.GitHubPullRequestNumber
+        match: bool
+        evaluation_error: str | None

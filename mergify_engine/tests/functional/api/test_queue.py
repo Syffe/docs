@@ -2,6 +2,7 @@ import datetime
 import statistics
 from unittest import mock
 
+import anys
 from freezegun import freeze_time
 import msgpack
 
@@ -355,9 +356,60 @@ class TestQueueApi(base.FunctionalTestBase):
             headers=self.get_headers(content_type="application/json"),
         )
         assert r.status_code == 200
-        assert r.json()["number"] == pr_number
-        assert r.json()["queue_rule"]["name"] == queue_name
-        assert r.json()["estimated_time_of_merge"] == expected_time_of_merge.isoformat()
+        assert r.json() == {
+            "number": pr_number,
+            "position": anys.ANY_INT,
+            "priority": anys.ANY_INT,
+            "queue_rule": {
+                "name": queue_name,
+                "config": anys.ANY_MAPPING,
+            },
+            "mergeability_check": {
+                "check_type": "draft_pr",
+                "pull_request_number": anys.ANY_INT,
+                "started_at": anys.ANY_DATETIME_STR,
+                "ended_at": None,
+                "checks": [],
+                "evaluated_conditions": anys.ANY_STR,
+                "conditions_evaluation": {
+                    "match": False,
+                    "label": "all of",
+                    "description": None,
+                    "subconditions": [
+                        {
+                            "match": False,
+                            "label": "check-success=continuous-integration/fake-ci",
+                            "description": None,
+                            "subconditions": [],
+                            "evaluations": [
+                                {
+                                    "pull_request": pr_number,
+                                    "match": False,
+                                    "evaluation_error": None,
+                                }
+                            ],
+                        },
+                        {
+                            "match": True,
+                            "label": f"base={self.main_branch_name}",
+                            "description": None,
+                            "subconditions": [],
+                            "evaluations": [
+                                {
+                                    "pull_request": pr_number,
+                                    "match": True,
+                                    "evaluation_error": None,
+                                }
+                            ],
+                        },
+                    ],
+                    "evaluations": [],
+                },
+                "state": "pending",
+            },
+            "queued_at": anys.ANY_DATETIME_STR,
+            "estimated_time_of_merge": expected_time_of_merge.isoformat(),
+        }
 
         r = await self.app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/unknown_queue/pull/{pr_number}",
