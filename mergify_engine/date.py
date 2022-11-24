@@ -9,7 +9,6 @@ import zoneinfo
 
 
 DT_MAX = datetime.datetime.max.replace(tzinfo=datetime.timezone.utc)
-DT_MIN = datetime.datetime.min.replace(tzinfo=datetime.timezone.utc)
 
 
 @dataclasses.dataclass
@@ -35,7 +34,7 @@ def utcnow() -> datetime.datetime:
     return datetime.datetime.now(tz=datetime.timezone.utc)
 
 
-def is_datetime_inside_time_range(
+def is_datetime_between_time_range(
     time_to_check: datetime.datetime,
     begin_hour: int,
     begin_minute: int,
@@ -425,58 +424,13 @@ class Schedule:
         time_to_check: datetime.datetime,
         strict: bool,
     ) -> bool:
-        return is_datetime_inside_time_range(
+        return is_datetime_between_time_range(
             time_to_check.astimezone(self.tzinfo),
             self.start_hour,
             self.start_minute,
             self.end_hour,
             self.end_minute,
             strict,
-        )
-
-    def get_next_datetime_out_of_schedule(
-        self, from_time: datetime.datetime
-    ) -> datetime.datetime:
-        def return_as_origin_timezone(dt: datetime.datetime) -> datetime.datetime:
-            return dt.astimezone(from_time.tzinfo)
-
-        from_time_as_tz = from_time.astimezone(self.tzinfo)
-        if not self.is_datetime_inside_day_schedule(
-            from_time_as_tz
-        ) or not self.is_datetime_inside_time_schedule(from_time_as_tz, strict=False):
-            # Already out of day schedule and/or time schedule
-            return from_time
-
-        if self.is_only_days:
-            # Next time is outside of day schedule
-            if (
-                self.start_weekday <= self.end_weekday
-                or from_time_as_tz.isoweekday() < self.start_weekday
-            ):
-                # Next time is this week at the end of the schedule
-                from_time_as_tz += datetime.timedelta(
-                    days=(self.end_weekday + 1) - from_time_as_tz.isoweekday()
-                )
-            # self.start_weekday > self.end_weekday and from_time_as_tz.isoweekday() >= self.start_weekday
-            else:
-                # Next time is next week at the end of the schedule
-                from_time_as_tz += datetime.timedelta(
-                    days=7 - (from_time_as_tz.isoweekday() - (self.end_weekday + 1))
-                )
-            return return_as_origin_timezone(
-                from_time_as_tz.replace(
-                    hour=0,
-                    minute=0,
-                    second=0,
-                    microsecond=0,
-                )
-            )
-
-        from_time_as_tz = from_time_as_tz.replace(
-            hour=self.end_hour, minute=self.end_minute
-        )
-        return return_as_origin_timezone(
-            from_time_as_tz + datetime.timedelta(minutes=1)
         )
 
     def get_next_datetime(self, from_time: datetime.datetime) -> datetime.datetime:
@@ -523,7 +477,28 @@ class Schedule:
         # Inside of day schedule and is only a day schedule
         elif self.is_only_days:
             # Next time is outside of day schedule
-            return self.get_next_datetime_out_of_schedule(from_time)
+            if (
+                self.start_weekday <= self.end_weekday
+                or from_time_as_tz.isoweekday() < self.start_weekday
+            ):
+                # Next time is this week at the end of the schedule
+                from_time_as_tz += datetime.timedelta(
+                    days=(self.end_weekday + 1) - from_time_as_tz.isoweekday()
+                )
+            # self.start_weekday > self.end_weekday and from_time_as_tz.isoweekday() >= self.start_weekday
+            else:
+                # Next time is next week at the end of the schedule
+                from_time_as_tz += datetime.timedelta(
+                    days=7 - (from_time_as_tz.isoweekday() - (self.end_weekday + 1))
+                )
+            return return_as_origin_timezone(
+                from_time_as_tz.replace(
+                    hour=0,
+                    minute=0,
+                    second=0,
+                    microsecond=0,
+                )
+            )
         # Inside day+time schedule
         elif self.is_datetime_inside_time_schedule(from_time_as_tz, strict=False):
             # We are between the correct date+time range,

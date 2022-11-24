@@ -3,7 +3,6 @@ import statistics
 from unittest import mock
 
 import anys
-from freezegun import freeze_time
 import msgpack
 
 from mergify_engine import config
@@ -502,87 +501,3 @@ class TestQueueApi(base.FunctionalTestBase):
         assert (
             r.json()["queues"][0]["pull_requests"][0]["estimated_time_of_merge"] is None
         )
-
-    async def test_estimated_time_of_merge_with_schedule(self) -> None:
-        rules = {
-            "queue_rules": [
-                {
-                    "name": "foo",
-                    "conditions": [
-                        f"base={self.main_branch_name}",
-                        "check-success=continuous-integration/fake-ci",
-                        "schedule=MON-FRI 08:00-17:00[UTC]",
-                    ],
-                    "allow_inplace_checks": False,
-                }
-            ],
-            "pull_request_rules": [
-                {
-                    "name": "queue",
-                    "conditions": [
-                        f"base={self.main_branch_name}",
-                        "label=queue",
-                    ],
-                    "actions": {"queue": {"name": "foo"}},
-                },
-            ],
-        }
-
-        # Friday, 15:00 UTC
-        start_date = datetime.datetime(2022, 10, 14, 15, tzinfo=datetime.timezone.utc)
-        with freeze_time(start_date, tick=True):
-            await self.setup_repo(yaml.dump(rules))
-
-            p1 = await self.create_pr()
-            p2 = await self.create_pr()
-
-            p3 = await self.create_pr()
-            await self.merge_pull(p3["number"])
-
-            # Merge p1
-            await self.add_label(p1["number"], "queue")
-            await self.run_engine()
-
-            tmp_mq_pr_1 = await self.wait_for_pull_request("opened")
-            await self.create_status(tmp_mq_pr_1["pull_request"])
-
-            await self.run_engine()
-            await self.wait_for("pull_request", {"action": "closed"})
-            await self.wait_for("pull_request", {"action": "closed"})
-
-            time_to_merge_key = self.get_statistic_redis_key("time_to_merge")
-            assert await self.redis_links.stats.xlen(time_to_merge_key) == 1
-
-            # Create draft pr for p2 but dont merge it
-            await self.add_label(p2["number"], "queue")
-            await self.run_engine()
-
-            await self.wait_for("pull_request", {"action": "opened"})
-
-        # Friday, 18:00 UTC
-        with freeze_time(start_date + datetime.timedelta(hours=3), tick=True):
-            await self.run_engine()
-
-            r = await self.app.get(
-                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues",
-                headers={
-                    "Authorization": f"bearer {self.api_key_admin}",
-                    "Content-type": "application/json",
-                },
-            )
-
-            assert len(r.json()["queues"]) == 1
-            assert len(r.json()["queues"][0]["pull_requests"]) == 1
-            assert (
-                "estimated_time_of_merge" in r.json()["queues"][0]["pull_requests"][0]
-            )
-
-            assert (
-                r.json()["queues"][0]["pull_requests"][0]["estimated_time_of_merge"]
-                is not None
-            )
-
-            # Make sure the eta is after the schedule start
-            assert datetime.datetime.fromisoformat(
-                r.json()["queues"][0]["pull_requests"][0]["estimated_time_of_merge"]
-            ) > datetime.datetime(2022, 10, 17, 8, tzinfo=datetime.timezone.utc)

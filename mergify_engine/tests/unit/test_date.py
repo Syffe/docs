@@ -310,7 +310,7 @@ def test_datetime_between_range(
     result: bool,
 ) -> None:
     assert (
-        date.is_datetime_inside_time_range(
+        date.is_datetime_between_time_range(
             time_to_check, begin_hour, begin_minute, end_hour, end_minute, strict
         )
         == result
@@ -529,51 +529,3 @@ def test_schedule_eq_with_datetime(
     schedule: date.Schedule, date_to_test: datetime.datetime, expected: bool
 ) -> None:
     assert expected == (date_to_test == schedule)
-
-
-@pytest.mark.parametrize(
-    "schedule,date_to_test,expected",
-    (
-        (
-            date.Schedule.from_strings("MON-FRI", "7:00-15:00"),
-            # Friday, 15:00 UTC
-            datetime.datetime(2022, 11, 11, 15, tzinfo=datetime.timezone.utc),
-            # Friday, 15:01 UTC
-            datetime.datetime(2022, 11, 11, 15, 1, tzinfo=datetime.timezone.utc),
-        ),
-        (
-            date.Schedule.from_strings("MON-FRI", "7:00-15:00"),
-            # Monday, 16:00 UTC
-            datetime.datetime(2022, 11, 7, 16, tzinfo=datetime.timezone.utc),
-            # Monday, 16:00 UTC
-            datetime.datetime(2022, 11, 7, 16, tzinfo=datetime.timezone.utc),
-        ),
-        (
-            date.Schedule.from_strings("MON-FRI", "7:00-15:00"),
-            # Monday, 14:00 UTC
-            datetime.datetime(2022, 11, 7, 14, tzinfo=datetime.timezone.utc),
-            # Monday, 15:01 UTC
-            datetime.datetime(2022, 11, 7, 15, 1, tzinfo=datetime.timezone.utc),
-        ),
-        (
-            date.Schedule.from_strings("FRI-MON", "7:00-15:00"),
-            # Friday, 16:00 UTC
-            datetime.datetime(2022, 11, 11, 16, tzinfo=datetime.timezone.utc),
-            # Friday, 16:00 UTC
-            datetime.datetime(2022, 11, 11, 16, tzinfo=datetime.timezone.utc),
-        ),
-        (
-            date.Schedule.from_strings("FRI-MON", "7:00-15:00"),
-            # Friday, 14:00 UTC
-            datetime.datetime(2022, 11, 11, 14, tzinfo=datetime.timezone.utc),
-            # Friday, 15:01 UTC
-            datetime.datetime(2022, 11, 11, 15, 1, tzinfo=datetime.timezone.utc),
-        ),
-    ),
-)
-def test_schedule_next_datetime_out_of_schedule(
-    schedule: date.Schedule,
-    date_to_test: datetime.datetime,
-    expected: datetime.datetime,
-) -> None:
-    assert schedule.get_next_datetime_out_of_schedule(date_to_test) == expected

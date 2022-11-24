@@ -21,45 +21,49 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
         (
             "schedule!=Mon-Fri 12:00-23:59[Europe/Paris]",
             {
-                "@": (
-                    "schedule",
-                    {
-                        "!=": (
-                            "current-time",
-                            date.Schedule(
-                                start_weekday=1,
-                                end_weekday=5,
-                                start_hour=12,
-                                end_hour=23,
-                                start_minute=0,
-                                end_minute=59,
-                                tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
-                            ),
-                        )
-                    },
-                )
+                "-": {
+                    "@": (
+                        "schedule",
+                        {
+                            "=": (
+                                "current-time",
+                                date.Schedule(
+                                    start_weekday=1,
+                                    end_weekday=5,
+                                    start_hour=12,
+                                    end_hour=23,
+                                    start_minute=0,
+                                    end_minute=59,
+                                    tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
+                                ),
+                            )
+                        },
+                    )
+                }
             },
         ),
         (
             "schedule!=Mon-Fri 12:00-23:59",
             {
-                "@": (
-                    "schedule",
-                    {
-                        "!=": (
-                            "current-time",
-                            date.Schedule(
-                                start_weekday=1,
-                                end_weekday=5,
-                                start_hour=12,
-                                end_hour=23,
-                                start_minute=0,
-                                end_minute=59,
-                                tzinfo=datetime.timezone.utc,
-                            ),
-                        )
-                    },
-                )
+                "-": {
+                    "@": (
+                        "schedule",
+                        {
+                            "=": (
+                                "current-time",
+                                date.Schedule(
+                                    start_weekday=1,
+                                    end_weekday=5,
+                                    start_hour=12,
+                                    end_hour=23,
+                                    start_minute=0,
+                                    end_minute=59,
+                                    tzinfo=datetime.timezone.utc,
+                                ),
+                            )
+                        },
+                    )
+                }
             },
         ),
         ("base:main", {"=": ("base", "main")}),
