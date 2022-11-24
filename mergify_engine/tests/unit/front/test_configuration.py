@@ -13,7 +13,9 @@ async def test_site_configuration(
         config, "DASHBOARD_UI_DATADOG_CLIENT_TOKEN", "a-not-so-secret-token"
     )
     monkeypatch.setattr(
-        config, "DASHBOARD_UI_FEATURES", ["applications", "intercom", "subscriptions"]
+        config,
+        "DASHBOARD_UI_FEATURES",
+        ["applications", "intercom", "subscriptions", "statuspage"],
     )
 
     resp = await web_client.get("/front/configuration")
@@ -22,9 +24,5 @@ async def test_site_configuration(
         "dd_client_token": "a-not-so-secret-token",
         "github_application_name": "mergify-test",
         "github_server_url": config.GITHUB_URL,
-        "ui_features": [
-            "applications",
-            "intercom",
-            "subscriptions",
-        ],
+        "ui_features": ["applications", "intercom", "statuspage", "subscriptions"],
     }
