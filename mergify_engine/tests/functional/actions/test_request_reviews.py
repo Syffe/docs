@@ -63,7 +63,7 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
         )
 
     @mock.patch.object(
-        request_reviews.RequestReviewsAction, "GITHUB_MAXIMUM_REVIEW_REQUEST", new=1
+        request_reviews.RequestReviewsExecutor, "GITHUB_MAXIMUM_REVIEW_REQUEST", new=1
     )
     async def test_request_reviews_already_max(self) -> None:
         rules = {
@@ -113,7 +113,7 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
             pytest.fail("Unable to find request review check run")
 
     @mock.patch.object(
-        request_reviews.RequestReviewsAction, "GITHUB_MAXIMUM_REVIEW_REQUEST", new=2
+        request_reviews.RequestReviewsExecutor, "GITHUB_MAXIMUM_REVIEW_REQUEST", new=2
     )
     async def test_request_reviews_going_above_max(self) -> None:
         rules = {

@@ -1,3 +1,4 @@
+import typing
 from unittest import mock
 
 import pytest
@@ -5,8 +6,10 @@ import voluptuous
 
 from mergify_engine import check_api
 from mergify_engine import github_types
+from mergify_engine import rules
 from mergify_engine.actions import request_reviews
 from mergify_engine.clients import http
+from mergify_engine.dashboard import subscription
 from mergify_engine.tests.unit import conftest
 
 
@@ -26,10 +29,9 @@ def test_config(config: dict[str, list[str]]) -> None:
     request_reviews.RequestReviewsAction(config)
 
 
-def test_random_reviewers() -> None:
+async def test_random_reviewers(context_getter: conftest.ContextGetterFixture) -> None:
     action = request_reviews.RequestReviewsAction(
         {
-            "random_count": 2,
             "teams": {
                 "foobar": 2,
                 "foobaz": 1,
@@ -40,18 +42,27 @@ def test_random_reviewers() -> None:
             },
         },
     )
-    reviewers = action._get_random_reviewers(123, "jd")
+
+    client = mock.MagicMock()
+    client.get = mock.AsyncMock(return_value={})
+    ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
+    ctxt.repository.installation.client = client
+    await action.load_context(ctxt, mock.Mock())
+    executor = typing.cast(request_reviews.RequestReviewsExecutor, action.executor)
+
+    reviewers = executor._get_random_reviewers(2, 123, "jd")
     assert reviewers == {"@foobar", "sileht"}
-    reviewers = action._get_random_reviewers(124, "sileht")
+    reviewers = executor._get_random_reviewers(2, 124, "sileht")
     assert reviewers == {"jd", "@foobar"}
-    reviewers = action._get_random_reviewers(124, "jd")
+    reviewers = executor._get_random_reviewers(2, 124, "jd")
     assert reviewers == {"@foobaz", "@foobar"}
 
 
-def test_random_reviewers_no_weight() -> None:
+async def test_random_reviewers_no_weight(
+    context_getter: conftest.ContextGetterFixture,
+) -> None:
     action = request_reviews.RequestReviewsAction(
         {
-            "random_count": 2,
             "teams": {
                 "foobar": 2,
                 "foobaz": 1,
@@ -59,18 +70,28 @@ def test_random_reviewers_no_weight() -> None:
             "users": ["jd", "sileht"],
         },
     )
-    reviewers = action._get_random_reviewers(123, "another-jd")
+
+    client = mock.MagicMock()
+    client.get = mock.AsyncMock(return_value={})
+    ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
+    ctxt.repository.installation.client = client
+    await action.load_context(ctxt, mock.Mock())
+    executor = typing.cast(request_reviews.RequestReviewsExecutor, action.executor)
+
+    reviewers = executor._get_random_reviewers(2, 123, "another-jd")
     assert reviewers == {"sileht", "jd"}
-    reviewers = action._get_random_reviewers(124, "another-jd")
+    reviewers = executor._get_random_reviewers(2, 124, "another-jd")
     assert reviewers == {"sileht", "@foobar"}
-    reviewers = action._get_random_reviewers(124, "sileht")
+    reviewers = executor._get_random_reviewers(2, 124, "sileht")
     assert reviewers == {"@foobaz", "@foobar"}
 
 
-def test_random_reviewers_count_bigger() -> None:
+@pytest.mark.subscription(subscription.Features.RANDOM_REQUEST_REVIEWS)
+async def test_random_reviewers_count_bigger(
+    context_getter: conftest.ContextGetterFixture,
+) -> None:
     action = request_reviews.RequestReviewsAction(
         {
-            "random_count": 15,
             "teams": {
                 "foobar": 2,
                 "foobaz": 1,
@@ -81,14 +102,23 @@ def test_random_reviewers_count_bigger() -> None:
             },
         }
     )
-    reviewers = action._get_random_reviewers(123, "foobar")
+
+    client = mock.MagicMock()
+    client.get = mock.AsyncMock(return_value={})
+    ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
+    ctxt.repository.installation.client = client
+    await action.load_context(ctxt, mock.Mock())
+    executor = typing.cast(request_reviews.RequestReviewsExecutor, action.executor)
+
+    reviewers = executor._get_random_reviewers(15, 123, "foobar")
     assert reviewers == {"@foobar", "@foobaz", "jd", "sileht"}
-    reviewers = action._get_random_reviewers(124, "another-jd")
+    reviewers = executor._get_random_reviewers(15, 124, "another-jd")
     assert reviewers == {"@foobar", "@foobaz", "jd", "sileht"}
-    reviewers = action._get_random_reviewers(124, "jd")
+    reviewers = executor._get_random_reviewers(15, 124, "jd")
     assert reviewers == {"@foobar", "@foobaz", "sileht"}
 
 
+@pytest.mark.subscription(subscription.Features.RANDOM_REQUEST_REVIEWS)
 def test_random_config_too_much_count() -> None:
     with pytest.raises(voluptuous.MultipleInvalid) as p:
         request_reviews.RequestReviewsAction(
@@ -110,7 +140,8 @@ def test_random_config_too_much_count() -> None:
     )
 
 
-def test_get_reviewers() -> None:
+@pytest.mark.subscription(subscription.Features.RANDOM_REQUEST_REVIEWS)
+async def test_get_reviewers(context_getter: conftest.ContextGetterFixture) -> None:
     action = request_reviews.RequestReviewsAction(
         {
             "random_count": 2,
@@ -124,17 +155,25 @@ def test_get_reviewers() -> None:
             },
         },
     )
-    reviewers = action._get_reviewers(843, set(), "another-jd")
+
+    client = mock.MagicMock()
+    client.get = mock.AsyncMock(return_value={})
+    ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
+    ctxt.repository.installation.client = client
+    await action.load_context(ctxt, mock.Mock())
+    executor = typing.cast(request_reviews.RequestReviewsExecutor, action.executor)
+
+    reviewers = executor._get_reviewers(843, set(), "another-jd")
     assert reviewers == ({"jd", "sileht"}, set())
-    reviewers = action._get_reviewers(844, set(), "another-jd")
+    reviewers = executor._get_reviewers(844, set(), "another-jd")
     assert reviewers == ({"jd"}, {"foobar"})
-    reviewers = action._get_reviewers(845, set(), "another-jd")
+    reviewers = executor._get_reviewers(845, set(), "another-jd")
     assert reviewers == ({"sileht"}, {"foobar"})
-    reviewers = action._get_reviewers(845, {"sileht"}, "another-jd")
+    reviewers = executor._get_reviewers(845, {"sileht"}, "another-jd")
     assert reviewers == (set(), {"foobar"})
-    reviewers = action._get_reviewers(845, {"jd"}, "another-jd")
+    reviewers = executor._get_reviewers(845, {"jd"}, "another-jd")
     assert reviewers == ({"sileht"}, {"foobar"})
-    reviewers = action._get_reviewers(845, set(), "SILEHT")
+    reviewers = executor._get_reviewers(845, set(), "SILEHT")
     assert reviewers == ({"jd"}, {"foobar"})
 
 
@@ -153,13 +192,13 @@ async def test_disabled(context_getter: conftest.ContextGetterFixture) -> None:
         },
     )
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
-    result = await action.run(ctxt, mock.Mock())
-    assert result.conclusion == check_api.Conclusion.ACTION_REQUIRED
-    assert result.title == "Random request reviews are disabled"
-    assert result.summary == (
-        "⚠ The [subscription](https://dashboard.mergify.com/github/Mergifyio/subscription) "
-        "needs to be updated to enable this feature."
-    )
+    with pytest.raises(rules.InvalidPullRequestRule) as excinfo:
+        await action.load_context(ctxt, mock.Mock())
+        assert excinfo.value.reason == "Random request reviews are disabled"
+        assert excinfo.value.details == (
+            "⚠ The [subscription](https://dashboard.mergify.com/github/Mergifyio/subscription) "
+            "needs to be updated to enable this feature."
+        )
 
 
 @pytest.mark.subscription
@@ -187,14 +226,14 @@ async def test_team_permissions_missing(
     )
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
     ctxt.repository.installation.client = client
-    result = await action.run(ctxt, mock.Mock())
-    assert result.conclusion == check_api.Conclusion.ACTION_REQUIRED
-    assert result.title == "Invalid requested teams"
-    for error in (
-        "Team `foobar` does not exist or has not access to this repository",
-        "Team `@other/foobaz` is not part of the organization `Mergifyio`",
-    ):
-        assert error in result.summary
+    with pytest.raises(rules.InvalidPullRequestRule) as excinfo:
+        await action.load_context(ctxt, mock.Mock())
+        assert excinfo.value.reason == "Invalid requested teams"
+        for error in (
+            "Team `foobar` does not exist or has not access to this repository",
+            "Team `@other/foobaz` is not part of the organization `Mergifyio`",
+        ):
+            assert error in excinfo.value.details
 
 
 @pytest.mark.subscription
@@ -218,7 +257,8 @@ async def test_team_permissions_ok(
     client.get = mock.AsyncMock(return_value={})
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
     ctxt.repository.installation.client = client
-    result = await action.run(ctxt, mock.Mock())
+    await action.load_context(ctxt, mock.Mock())
+    result = await action.executor.run()
     assert result.summary == ""
     assert result.title == "No new reviewers to request"
     assert result.conclusion == check_api.Conclusion.SUCCESS
