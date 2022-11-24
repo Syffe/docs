@@ -32,6 +32,10 @@ def CommaSeparatedStringList(value: str) -> list[str]:
         return []
 
 
+def CommaSeparatedIntList(value: str) -> list[int]:
+    return [int(v) for v in CommaSeparatedStringList(value)]
+
+
 def CommaSeparatedStringTuple(v: str, split: int = 2) -> list[tuple[str, ...]]:
     d = []
     for bot in v.split(","):
@@ -154,6 +158,9 @@ Schema = voluptuous.Schema(
             "DASHBOARD_UI_STATIC_FILES_DIRECTORY", default=None
         ): voluptuous.Any(None, str),
         #
+        voluptuous.Required(
+            "DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO", default=""
+        ): CommaSeparatedIntList,
         # OnPremise special config
         #
         voluptuous.Required("SUBSCRIPTION_TOKEN", default=None): voluptuous.Any(
@@ -353,6 +360,7 @@ DASHBOARD_UI_SITE_URLS: list[str]
 DASHBOARD_UI_SESSION_EXPIRATION_HOURS: int
 DASHBOARD_UI_FEATURES: list[str]
 DASHBOARD_UI_DATADOG_CLIENT_TOKEN: str | None
+DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO: list[int]
 SUBSCRIPTION_BASE_URL: str
 SUBSCRIPTION_TOKEN: str
 ENGINE_TO_DASHBOARD_API_KEY: str
