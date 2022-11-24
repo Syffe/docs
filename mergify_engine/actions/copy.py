@@ -137,12 +137,6 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 ]
             )
 
-        if len(branches) == 0:
-            raise rules.InvalidPullRequestRule(
-                cls.FAILURE_MESSAGE,
-                "No destination branches found",
-            )
-
         assignees = [
             user
             for user in await action_utils.render_users_template(
@@ -286,6 +280,13 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
         )
 
     async def run(self) -> check_api.Result:
+        if len(self.config["branches"]) == 0:
+            return check_api.Result(
+                check_api.Conclusion.FAILURE,
+                self.FAILURE_MESSAGE,
+                "No destination branches found",
+            )
+
         if (
             not self.ctxt.can_change_github_workflow()
             and await self.ctxt.github_workflow_changed()
