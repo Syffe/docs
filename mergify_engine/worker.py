@@ -911,20 +911,20 @@ class Task:
     sleep_time: float
     func: abc.Callable[[], abc.Awaitable[None]]
 
-    _task: asyncio.Task[None] = dataclasses.field(init=False)
+    task: asyncio.Task[None] = dataclasses.field(init=False)
     _stopping: asyncio.Event = dataclasses.field(
         init=False, default_factory=asyncio.Event
     )
 
     def __post_init__(self) -> None:
         self._stopping.clear()
-        self._task = asyncio.create_task(
+        self.task = asyncio.create_task(
             self.with_dedicated_sentry_hub(self.loop_and_sleep_forever()),
             name=self.name,
         )
 
     def __hash__(self) -> int:
-        return hash(self._task)
+        return hash(self.task)
 
     def stop(self) -> None:
         if self._stopping.is_set():
@@ -932,10 +932,10 @@ class Task:
         self._stopping.set()
 
     def __await__(self) -> abc.Generator[None, None, None]:
-        yield from self._task
+        yield from self.task
 
     def cancel(self, msg: str) -> None:
-        self._task.cancel(msg=msg)
+        self.task.cancel(msg=msg)
 
     @staticmethod
     async def with_dedicated_sentry_hub(coro: abc.Awaitable[None]) -> None:
@@ -1423,7 +1423,7 @@ class Worker:
         for task in tasks:
             task.stop()
         if tasks:
-            _, pendings = await asyncio.wait(tasks, timeout=timeout)
+            _, pendings = await asyncio.wait([t.task for t in tasks], timeout=timeout)
             if pendings:
                 LOG.info(f"{name} being killed", count=len(pendings))
                 for pending in pendings:
