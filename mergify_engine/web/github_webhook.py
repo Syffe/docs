@@ -1,3 +1,5 @@
+import typing
+
 import daiquiri
 import fastapi
 import httpx
@@ -6,6 +8,7 @@ from starlette import responses
 
 from mergify_engine import config
 from mergify_engine import github_events
+from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
@@ -31,8 +34,8 @@ async def marketplace_handler(
         redis.get_redis_links
     ),
 ) -> responses.Response:
-    event_type = request.headers.get("X-GitHub-Event")
-    event_id = request.headers.get("X-GitHub-Delivery")
+    event_type = request.headers["X-GitHub-Event"]
+    event_id = request.headers["X-GitHub-Delivery"]
     data = await request.json()
 
     LOG.info(
@@ -57,9 +60,9 @@ async def marketplace_handler(
                     headers={
                         "X-GitHub-Event": event_type,
                         "X-GitHub-Delivery": event_id,
-                        "X-Hub-Signature": request.headers.get("X-Hub-Signature"),
-                        "User-Agent": request.headers.get("User-Agent"),
-                        "Content-Type": request.headers.get("Content-Type"),
+                        "X-Hub-Signature": request.headers["X-Hub-Signature"],
+                        "User-Agent": request.headers["User-Agent"],
+                        "Content-Type": request.headers["Content-Type"],
                     },
                 )
         except httpx.HTTPError:
@@ -81,8 +84,10 @@ async def event_handler(
         redis.get_redis_links
     ),
 ) -> responses.Response:
-    event_type = request.headers.get("X-GitHub-Event")
-    event_id = request.headers.get("X-GitHub-Delivery")
+    event_type = typing.cast(
+        github_types.GitHubEventType, request.headers["X-GitHub-Event"]
+    )
+    event_id = request.headers["X-GitHub-Delivery"]
     data = await request.json()
 
     # FIXME: complete payload with fake data. A ticket has been created at
@@ -119,9 +124,9 @@ async def event_handler(
                     headers={
                         "X-GitHub-Event": event_type,
                         "X-GitHub-Delivery": event_id,
-                        "X-Hub-Signature": request.headers.get("X-Hub-Signature"),
-                        "User-Agent": request.headers.get("User-Agent"),
-                        "Content-Type": request.headers.get("Content-Type"),
+                        "X-Hub-Signature": request.headers["X-Hub-Signature"],
+                        "User-Agent": request.headers["User-Agent"],
+                        "Content-Type": request.headers["Content-Type"],
                     },
                 )
         except httpx.HTTPError:
