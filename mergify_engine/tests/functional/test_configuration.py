@@ -476,8 +476,8 @@ did not find expected alphabetic or numeric character
         ctxt = context.Context(self.repository_ctxt, p, [])
         config = await ctxt.repository.get_mergify_config()
 
-        assert len(config["queue_rules"]) == 3
-        assert len(config["pull_request_rules"].rules) == 15
+        assert len(config["queue_rules"]) == 1
+        assert len(config["pull_request_rules"].rules) == 2
 
     @pytest.mark.subscription(
         subscription.Features.CUSTOM_CHECKS, subscription.Features.BOT_ACCOUNT
@@ -510,8 +510,9 @@ did not find expected alphabetic or numeric character
         ctxt = context.Context(self.repository_ctxt, p, [])
         config = await ctxt.repository.get_mergify_config()
 
-        assert len(config["queue_rules"].rules) == 4
-        assert len(config["pull_request_rules"].rules) == 16
+        assert len(config["queue_rules"].rules) == 2
+        # One from default config, one from extends, one from this repo
+        assert len(config["pull_request_rules"].rules) == 3
         assert len(config["commands_restrictions"]) == 9
 
         rule = config["pull_request_rules"].rules[0].conditions.condition.conditions[0]
