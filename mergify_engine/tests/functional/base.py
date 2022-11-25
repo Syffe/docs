@@ -363,7 +363,21 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
     # delayed-refreshes to be flaky
     WORKER_HAS_WORK_INTERVAL_CHECK = 0.04
 
+    def _setupAsyncioRunner(self) -> None:
+        # NOTE(sileht): py311 unittest internal interface
+        # We reuse the event loop created by pytest-asyncio
+        self._asyncioRunner = asyncio.Runner(  # type: ignore[attr-defined]
+            debug=True, loop_factory=lambda: self.pytest_event_loop  # type: ignore[attr-defined]
+        )
+
+    def _tearDownAsyncioRunner(self) -> None:
+        # NOTE(sileht): py311 unittest internal interface
+        # We don't run the loop.close() of unittest and let pytest doing it
+        pass
+
     def _setupAsyncioLoop(self) -> None:
+        # NOTE(sileht): py310 unittest internal interface
+
         # We reuse the event loop created by pytest-asyncio
         loop = self.pytest_event_loop  # type: ignore[attr-defined]
 
@@ -377,6 +391,8 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         loop.run_until_complete(fut)
 
     def _tearDownAsyncioLoop(self) -> None:
+        # NOTE(sileht): py310 unittest internal interface
+
         # Part of the cleanup must be done by pytest-asyncio
         loop = self.pytest_event_loop  # type: ignore[attr-defined]
         loop_close = loop.close
