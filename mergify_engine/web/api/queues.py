@@ -70,6 +70,41 @@ class SpeculativeCheckPullRequest:
         metadata={"description": "The global state of the checks"}
     )
 
+    @classmethod
+    def from_train_car(
+        cls,
+        car: merge_train.TrainCar | None,
+    ) -> SpeculativeCheckPullRequest | None:
+        if car is None:
+            return None
+        elif car.train_car_state.checks_type in (
+            merge_train.TrainCarChecksType.FAILED,
+            None,
+        ):
+            return None
+        elif car.train_car_state.checks_type in (
+            merge_train.TrainCarChecksType.DRAFT,
+            merge_train.TrainCarChecksType.INPLACE,
+        ):
+            if car.queue_pull_request_number is None:
+                raise RuntimeError(
+                    f"car's checks type is {car.train_car_state.checks_type}, but queue_pull_request_number is None"
+                )
+            return cls(
+                in_place=car.train_car_state.checks_type
+                == merge_train.TrainCarChecksType.INPLACE,
+                number=car.queue_pull_request_number,
+                started_at=car.train_car_state.creation_date,
+                ended_at=car.checks_ended_timestamp,
+                state=car.get_queue_check_run_conclusion().value or "pending",
+                checks=car.last_checks,
+                evaluated_conditions=car.last_evaluated_conditions,
+            )
+        else:
+            raise RuntimeError(
+                f"Car's checks type unknown: {car.train_car_state.checks_type}"
+            )
+
 
 @pydantic.dataclasses.dataclass
 class BriefMergeabilityCheck:
@@ -94,6 +129,15 @@ class BriefMergeabilityCheck:
     state: merge_train.CheckStateT = dataclasses.field(
         metadata={"description": "The global state of the checks"}
     )
+
+    @classmethod
+    def from_train_car(
+        cls, car: merge_train.TrainCar | None
+    ) -> BriefMergeabilityCheck | None:
+        mergeability_check = MergeabilityCheck.from_train_car(car)
+        if mergeability_check is not None:
+            return cls(**dataclasses.asdict(mergeability_check))
+        return None
 
 
 @pydantic.dataclasses.dataclass
@@ -327,7 +371,9 @@ async def repository_queues(
                 # This car is going to be deleted so skip it
                 continue
 
-            speculative_check_pull_request = create_speculative_check_pull_request(car)
+            speculative_check_pull_request = SpeculativeCheckPullRequest.from_train_car(
+                car
+            )
             estimated_time_of_merge = await get_estimated_time_of_merge_from_stats(
                 train,
                 embarked_pull.config["name"],
@@ -345,7 +391,7 @@ async def repository_queues(
                     ),
                     queued_at=embarked_pull.queued_at,
                     speculative_check_pull_request=speculative_check_pull_request,
-                    mergeability_check=create_brief_mergeability_check(car),
+                    mergeability_check=BriefMergeabilityCheck.from_train_car(car),
                     estimated_time_of_merge=estimated_time_of_merge,
                 )
             )
@@ -395,6 +441,48 @@ class MergeabilityCheck:
     conditions_evaluation: condition_mod.QueueConditionEvaluationJsonSerialized | None = dataclasses.field(
         metadata={"description": "The queue rule conditions evaluation"}
     )
+
+    @classmethod
+    def from_train_car(
+        cls,
+        car: merge_train.TrainCar | None,
+    ) -> MergeabilityCheck | None:
+        if car is None:
+            return None
+        elif car.train_car_state.checks_type in (
+            merge_train.TrainCarChecksType.FAILED,
+            None,
+        ):
+            return None
+        elif car.train_car_state.checks_type in (
+            merge_train.TrainCarChecksType.DRAFT,
+            merge_train.TrainCarChecksType.INPLACE,
+        ):
+            if car.queue_pull_request_number is None:
+                raise RuntimeError(
+                    f"car's checks type is {car.train_car_state.checks_type}, but queue_pull_request_number is None"
+                )
+            conditions_evaluation = (
+                car.last_conditions_evaluation.as_json_dict()
+                if car.last_conditions_evaluation is not None
+                else None
+            )
+            return MergeabilityCheck(
+                check_type=TRAIN_CAR_CHECKS_TYPE_MAPPING[
+                    car.train_car_state.checks_type
+                ],
+                pull_request_number=car.queue_pull_request_number,
+                started_at=car.train_car_state.creation_date,
+                ended_at=car.checks_ended_timestamp,
+                state=car.get_queue_check_run_conclusion().value or "pending",
+                checks=car.last_checks,
+                evaluated_conditions=car.last_evaluated_conditions,
+                conditions_evaluation=conditions_evaluation,
+            )
+        else:
+            raise RuntimeError(
+                f"Car's checks type unknown: {car.train_car_state.checks_type}"
+            )
 
 
 @pydantic.dataclasses.dataclass
@@ -546,7 +634,7 @@ async def repository_queue_pull_request(
             if embarked_pull.user_pull_request_number != pr_number:
                 continue
 
-            mergeability_check = create_mergeability_check(car)
+            mergeability_check = MergeabilityCheck.from_train_car(car)
             estimated_time_of_merge = await get_estimated_time_of_merge(
                 repository_ctxt, train, queue_name, embarked_pull.queued_at
             )
@@ -567,92 +655,6 @@ async def repository_queue_pull_request(
         status_code=404,
         detail="Pull request not found.",
     )
-
-
-def create_speculative_check_pull_request(
-    car: merge_train.TrainCar | None,
-) -> SpeculativeCheckPullRequest | None:
-    if car is None:
-        speculative_check_pull_request = None
-    elif car.train_car_state.checks_type in (
-        merge_train.TrainCarChecksType.DRAFT,
-        merge_train.TrainCarChecksType.INPLACE,
-    ):
-        if car.queue_pull_request_number is None:
-            raise RuntimeError(
-                f"car's checks type is {car.train_car_state.checks_type}, but queue_pull_request_number is None"
-            )
-        speculative_check_pull_request = SpeculativeCheckPullRequest(
-            in_place=car.train_car_state.checks_type
-            == merge_train.TrainCarChecksType.INPLACE,
-            number=car.queue_pull_request_number,
-            started_at=car.train_car_state.creation_date,
-            ended_at=car.checks_ended_timestamp,
-            state=car.get_queue_check_run_conclusion().value or "pending",
-            checks=car.last_checks,
-            evaluated_conditions=car.last_evaluated_conditions,
-        )
-    elif car.train_car_state.checks_type in (
-        merge_train.TrainCarChecksType.FAILED,
-        None,
-    ):
-        speculative_check_pull_request = None
-    else:
-        raise RuntimeError(
-            f"Car's checks type unknown: {car.train_car_state.checks_type}"
-        )
-
-    return speculative_check_pull_request
-
-
-def create_mergeability_check(
-    car: merge_train.TrainCar | None,
-) -> MergeabilityCheck | None:
-    if car is None:
-        mergeability_check = None
-    elif car.train_car_state.checks_type in (
-        merge_train.TrainCarChecksType.DRAFT,
-        merge_train.TrainCarChecksType.INPLACE,
-    ):
-        if car.queue_pull_request_number is None:
-            raise RuntimeError(
-                f"car's checks type is {car.train_car_state.checks_type}, but queue_pull_request_number is None"
-            )
-        conditions_evaluation = (
-            car.last_conditions_evaluation.as_json_dict()
-            if car.last_conditions_evaluation is not None
-            else None
-        )
-        mergeability_check = MergeabilityCheck(
-            check_type=TRAIN_CAR_CHECKS_TYPE_MAPPING[car.train_car_state.checks_type],
-            pull_request_number=car.queue_pull_request_number,
-            started_at=car.train_car_state.creation_date,
-            ended_at=car.checks_ended_timestamp,
-            state=car.get_queue_check_run_conclusion().value or "pending",
-            checks=car.last_checks,
-            evaluated_conditions=car.last_evaluated_conditions,
-            conditions_evaluation=conditions_evaluation,
-        )
-    elif car.train_car_state.checks_type in (
-        merge_train.TrainCarChecksType.FAILED,
-        None,
-    ):
-        mergeability_check = None
-    else:
-        raise RuntimeError(
-            f"Car's checks type unknown: {car.train_car_state.checks_type}"
-        )
-
-    return mergeability_check
-
-
-def create_brief_mergeability_check(
-    car: merge_train.TrainCar | None,
-) -> BriefMergeabilityCheck | None:
-    mergeability_check = create_mergeability_check(car)
-    if mergeability_check is not None:
-        return BriefMergeabilityCheck(**dataclasses.asdict(mergeability_check))
-    return None
 
 
 async def get_estimated_time_of_merge(
