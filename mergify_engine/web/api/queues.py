@@ -72,6 +72,31 @@ class SpeculativeCheckPullRequest:
 
 
 @pydantic.dataclasses.dataclass
+class BriefMergeabilityCheck:
+    check_type: typing.Literal["in_place", "draft_pr"] = dataclasses.field(
+        metadata={"description": "The type of queue check (in_place or draft_pr)"}
+    )
+    pull_request_number: github_types.GitHubPullRequestNumber = dataclasses.field(
+        metadata={
+            "description": "The number of the pull request used by the speculative check"
+        }
+    )
+    started_at: datetime.datetime = dataclasses.field(
+        metadata={
+            "description": "The timestamp when the checks have started for this pull request"
+        }
+    )
+    ended_at: datetime.datetime | None = dataclasses.field(
+        metadata={
+            "description": "The timestamp when the checks have ended for this pull request"
+        }
+    )
+    state: merge_train.CheckStateT = dataclasses.field(
+        metadata={"description": "The global state of the checks"}
+    )
+
+
+@pydantic.dataclasses.dataclass
 class QueueRule:
     name: rules.QueueName = dataclasses.field(
         metadata={"description": "The name of the queue rule"}
@@ -84,34 +109,27 @@ class QueueRule:
 
 @pydantic.dataclasses.dataclass
 class PullRequestQueued:
-    number: github_types.GitHubPullRequestNumber = dataclasses.field(
-        metadata={"description": "The number of the pull request"}
+    number: github_types.GitHubPullRequestNumber = pydantic.Field(
+        description="The number of the pull request"
     )
-
-    position: int = dataclasses.field(
-        metadata={
-            "description": "The position of the pull request in the queue. The first pull request in the queue is at position 0"
-        }
+    position: int = pydantic.Field(
+        description="The position of the pull request in the queue. The first pull request in the queue is at position 0"
     )
-
-    priority: int = dataclasses.field(
-        metadata={"description": "The priority of this pull request"}
+    priority: int = pydantic.Field(description="The priority of this pull request")
+    queue_rule: QueueRule = pydantic.Field(
+        description="The queue rule associated to this pull request"
     )
-    queue_rule: QueueRule = dataclasses.field(
-        metadata={"description": "The queue rule associated to this pull request"}
+    queued_at: datetime.datetime = pydantic.Field(
+        description="The timestamp when the pull requested has entered in the queue"
     )
-
-    queued_at: datetime.datetime = dataclasses.field(
-        metadata={
-            "description": "The timestamp when the pull requested has entered in the queue"
-        }
+    speculative_check_pull_request: SpeculativeCheckPullRequest | None = pydantic.Field(
+        ..., deprecated=True, description="Use `mergeability_check` instead"
     )
-    speculative_check_pull_request: SpeculativeCheckPullRequest | None
-
-    estimated_time_of_merge: datetime.datetime | None = dataclasses.field(
-        metadata={
-            "description": "The estimated timestamp when this pull request will be merged"
-        }
+    mergeability_check: BriefMergeabilityCheck | None = pydantic.Field(
+        description="Information about the mergeability check currently processed"
+    )
+    estimated_time_of_merge: datetime.datetime | None = pydantic.Field(
+        description="The estimated timestamp when this pull request will be merged"
     )
 
 
@@ -222,6 +240,13 @@ class QueueFreezeResponse:
                                             "evaluated_conditions": "",
                                             "state": "success",
                                         },
+                                        "mergeability_check": {
+                                            "check_type": "in_place",
+                                            "pull_request_number": 5678,
+                                            "started_at": "2021-10-14T14:19:12+00:00",
+                                            "ended_at": "2021-10-14T15:00:42+00:00",
+                                            "state": "success",
+                                        },
                                         "queued_at": "2021-10-14T14:19:12+00:00",
                                         "estimated_time_of_merge": "2021-10-14T15:19:12+00:00",
                                     },
@@ -252,6 +277,13 @@ class QueueFreezeResponse:
                                             "ended_at": "2021-10-14T15:00:42+00:00",
                                             "checks": [],
                                             "evaluated_conditions": "",
+                                            "state": "success",
+                                        },
+                                        "mergeability_check": {
+                                            "check_type": "draft_pr",
+                                            "pull_request_number": 7899,
+                                            "started_at": "2021-10-14T14:19:12+00:00",
+                                            "ended_at": "2021-10-14T15:00:42+00:00",
                                             "state": "success",
                                         },
                                         "queued_at": "2021-10-14T14:19:12+00:00",
@@ -313,6 +345,7 @@ async def repository_queues(
                     ),
                     queued_at=embarked_pull.queued_at,
                     speculative_check_pull_request=speculative_check_pull_request,
+                    mergeability_check=create_brief_mergeability_check(car),
                     estimated_time_of_merge=estimated_time_of_merge,
                 )
             )
@@ -611,6 +644,15 @@ def create_mergeability_check(
         )
 
     return mergeability_check
+
+
+def create_brief_mergeability_check(
+    car: merge_train.TrainCar | None,
+) -> BriefMergeabilityCheck | None:
+    mergeability_check = create_mergeability_check(car)
+    if mergeability_check is not None:
+        return BriefMergeabilityCheck(**dataclasses.asdict(mergeability_check))
+    return None
 
 
 async def get_estimated_time_of_merge(

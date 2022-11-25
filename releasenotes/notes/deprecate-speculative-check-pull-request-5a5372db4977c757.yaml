@@ -1,0 +1,6 @@
+deprecations:
+  - |
+    Deprecate property `speculative_check_pull_request` in `/queues` API
+    endpoint. This property is replaced by `mergeability_check` which is
+    shorter. Details can be retrieved with new endpoint
+    `/queue/{queue_name}/pull/{pr_number}`.

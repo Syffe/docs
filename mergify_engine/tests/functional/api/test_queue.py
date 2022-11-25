@@ -338,29 +338,52 @@ class TestQueueApi(base.FunctionalTestBase):
         assert len(r.json()["queues"]) == 1
         assert len(r.json()["queues"][0]["pull_requests"]) == 1
         queue_pr_data = r.json()["queues"][0]["pull_requests"][0]
-        assert "estimated_time_of_merge" in queue_pr_data
-
         queued_at = datetime.datetime.fromisoformat(queue_pr_data["queued_at"])
         expected_time_of_merge = queued_at + datetime.timedelta(seconds=median_ttm)
         assert (
             queue_pr_data["estimated_time_of_merge"]
             == expected_time_of_merge.isoformat()
         )
+        assert queue_pr_data == {
+            "number": p4["number"],
+            "position": anys.ANY_INT,
+            "priority": anys.ANY_INT,
+            "queue_rule": {
+                "name": "foo",
+                "config": anys.ANY_MAPPING,
+            },
+            "speculative_check_pull_request": {
+                "in_place": False,
+                "number": anys.ANY_INT,
+                "started_at": anys.ANY_DATETIME_STR,
+                "ended_at": None,
+                "checks": [],
+                "evaluated_conditions": anys.ANY_STR,
+                "state": "pending",
+            },
+            "mergeability_check": {
+                "check_type": "draft_pr",
+                "pull_request_number": anys.ANY_INT,
+                "started_at": anys.ANY_DATETIME_STR,
+                "ended_at": None,
+                "state": "pending",
+            },
+            "queued_at": anys.ANY_DATETIME_STR,
+            "estimated_time_of_merge": expected_time_of_merge.isoformat(),
+        }
 
         # GET /queue/{queue_name}/pull/{pr_number}
-        queue_name = queue_pr_data["queue_rule"]["name"]
-        pr_number = queue_pr_data["number"]
         r = await self.app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/{queue_name}/pull/{pr_number}",
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/foo/pull/{p4['number']}",
             headers=self.get_headers(content_type="application/json"),
         )
         assert r.status_code == 200
         assert r.json() == {
-            "number": pr_number,
+            "number": p4["number"],
             "position": anys.ANY_INT,
             "priority": anys.ANY_INT,
             "queue_rule": {
-                "name": queue_name,
+                "name": "foo",
                 "config": anys.ANY_MAPPING,
             },
             "mergeability_check": {
@@ -382,7 +405,7 @@ class TestQueueApi(base.FunctionalTestBase):
                             "subconditions": [],
                             "evaluations": [
                                 {
-                                    "pull_request": pr_number,
+                                    "pull_request": p4["number"],
                                     "match": False,
                                     "evaluation_error": None,
                                 }
@@ -395,7 +418,7 @@ class TestQueueApi(base.FunctionalTestBase):
                             "subconditions": [],
                             "evaluations": [
                                 {
-                                    "pull_request": pr_number,
+                                    "pull_request": p4["number"],
                                     "match": True,
                                     "evaluation_error": None,
                                 }
@@ -411,14 +434,14 @@ class TestQueueApi(base.FunctionalTestBase):
         }
 
         r = await self.app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/unknown_queue/pull/{pr_number}",
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/unknown_queue/pull/{p4['number']}",
             headers=self.get_headers(content_type="application/json"),
         )
         assert r.status_code == 404
         assert r.json()["detail"] == "Pull request not found."
 
         r = await self.app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/{queue_name}/pull/0",
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/foo/pull/0",
             headers=self.get_headers(content_type="application/json"),
         )
         assert r.status_code == 404
