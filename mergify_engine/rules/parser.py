@@ -300,13 +300,16 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
         if position >= length:
             raise ConditionParsingError("Incomplete condition")
 
+    supported_attributes = ATTRIBUTES.copy()
     if config.DEPRECATE_CURRENT_CONDITIONS:
-        for name in constants.DEPRECATED_CURRENT_CONDITIONS_NAMES:
-            if name in ATTRIBUTES:
-                del ATTRIBUTES[ATTRIBUTES.index(name)]
+        supported_attributes = [
+            name
+            for name in supported_attributes
+            if name not in constants.DEPRECATED_CURRENT_CONDITIONS_NAMES
+        ]
 
     # Get the attribute
-    for attribute in ATTRIBUTES:
+    for attribute in supported_attributes:
         if v[position:].startswith(attribute):
             break
     else:
