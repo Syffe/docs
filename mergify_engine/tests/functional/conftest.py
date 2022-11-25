@@ -389,15 +389,21 @@ async def recorder(
 
 
 @pytest.fixture
+def unittest_asyncio_glue(
+    request: pytest.FixtureRequest,
+    event_loop: asyncio.AbstractEventLoop,
+) -> None:
+    request.cls.pytest_event_loop = event_loop
+
+
+@pytest.fixture
 def unittest_glue(
     dashboard: DashboardFixture,
     web_client: httpx.AsyncClient,
     recorder: RecorderFixture,
-    event_loop: asyncio.AbstractEventLoop,
     request: pytest.FixtureRequest,
 ) -> None:
     request.cls.api_key_admin = dashboard.api_key_admin
-    request.cls.pytest_event_loop = event_loop
     request.cls.app = web_client
     request.cls.RECORD_CONFIG = recorder.config
     request.cls.cassette_library_dir = recorder.vcr.cassette_library_dir

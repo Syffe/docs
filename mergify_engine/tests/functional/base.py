@@ -338,31 +338,8 @@ class EventReader:
             return data
 
 
-@pytest.mark.usefixtures("logger_checker", "unittest_glue")
-class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
-    # Compat mypy/pytest fixtures
-    app: httpx.AsyncClient
-    RECORD_CONFIG: func_conftest.RecordConfigType
-    subscription: subscription.Subscription
-    cassette_library_dir: str
-    api_key_admin: str
-
-    # NOTE(sileht): The repository have been manually created in mergifyio-testing
-    # organization and then forked in mergify-test2 user account
-    FORK_PERSONAL_TOKEN = config.EXTERNAL_USER_PERSONAL_TOKEN
-    SUBSCRIPTION_ACTIVE = False
-
-    # To run tests on private repository, you can use:
-    # FORK_PERSONAL_TOKEN = config.ORG_USER_PERSONAL_TOKEN
-    # SUBSCRIPTION_ACTIVE = True
-
-    WAIT_TIME_BEFORE_TEARDOWN = 0.20
-    WORKER_IDLE_SLEEP_TIME = 0.20
-
-    # NOTE(Syffe): If too low (previously 0.02), this value can cause some tests using
-    # delayed-refreshes to be flaky
-    WORKER_HAS_WORK_INTERVAL_CHECK = 0.04
-
+@pytest.mark.usefixtures("logger_checker", "unittest_asyncio_glue")
+class IsolatedAsyncioTestCaseWithPytestAsyncioGlue(unittest.IsolatedAsyncioTestCase):
     def _setupAsyncioRunner(self) -> None:
         # NOTE(sileht): py311 unittest internal interface
         # We reuse the event loop created by pytest-asyncio
@@ -400,6 +377,32 @@ class FunctionalTestBase(unittest.IsolatedAsyncioTestCase):
         super()._tearDownAsyncioLoop()  # type: ignore[misc]
         loop.close = loop_close
         asyncio.set_event_loop(loop)
+
+
+@pytest.mark.usefixtures("logger_checker", "unittest_glue")
+class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
+    # Compat mypy/pytest fixtures
+    app: httpx.AsyncClient
+    RECORD_CONFIG: func_conftest.RecordConfigType
+    subscription: subscription.Subscription
+    cassette_library_dir: str
+    api_key_admin: str
+
+    # NOTE(sileht): The repository have been manually created in mergifyio-testing
+    # organization and then forked in mergify-test2 user account
+    FORK_PERSONAL_TOKEN = config.EXTERNAL_USER_PERSONAL_TOKEN
+    SUBSCRIPTION_ACTIVE = False
+
+    # To run tests on private repository, you can use:
+    # FORK_PERSONAL_TOKEN = config.ORG_USER_PERSONAL_TOKEN
+    # SUBSCRIPTION_ACTIVE = True
+
+    WAIT_TIME_BEFORE_TEARDOWN = 0.20
+    WORKER_IDLE_SLEEP_TIME = 0.20
+
+    # NOTE(Syffe): If too low (previously 0.02), this value can cause some tests using
+    # delayed-refreshes to be flaky
+    WORKER_HAS_WORK_INTERVAL_CHECK = 0.04
 
     async def asyncSetUp(self) -> None:
         super().setUp()
