@@ -1,6 +1,5 @@
 import copy
 import datetime
-import operator
 import typing
 from urllib import parse
 
@@ -72,8 +71,6 @@ class TestQueueAction(base.FunctionalTestBase):
 
         p = await self.create_pr()
         await self.run_engine()
-        pulls = await self.get_pulls()
-        assert len(pulls) == 1
 
         ctxt = context.Context(self.repository_ctxt, p)
         q = await merge_train.Train.from_context(ctxt)
@@ -274,18 +271,13 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p2["number"], "queue")
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "opened"})
-        await self.wait_for("pull_request", {"action": "opened"})
+        tmp_pull_1 = await self.wait_for_pull_request("opened")
+        tmp_pull_2 = await self.wait_for_pull_request("opened")
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 4
-
-        tmp_pull_1 = await self.get_pull(pulls[1]["number"])
-        tmp_pull_2 = await self.get_pull(pulls[0]["number"])
         assert tmp_pull_1["number"] not in [p1["number"], p2["number"]]
-        assert tmp_pull_1["user"]["login"] == "mergify-test4"
+        assert tmp_pull_1["pull_request"]["user"]["login"] == "mergify-test4"
         assert tmp_pull_2["number"] not in [p1["number"], p2["number"]]
-        assert tmp_pull_2["user"]["login"] == "mergify-test4"
+        assert tmp_pull_2["pull_request"]["user"]["login"] == "mergify-test4"
 
         ctxt = context.Context(self.repository_ctxt, p)
         q = await merge_train.Train.from_context(ctxt)
@@ -324,20 +316,26 @@ class TestQueueAction(base.FunctionalTestBase):
 
         await self.run_engine()
         await assert_queued()
-        assert tmp_pull_1["commits"] == 2
-        assert tmp_pull_1["changed_files"] == 1
-        assert tmp_pull_2["commits"] == 5
-        assert tmp_pull_2["changed_files"] == 2
+        assert tmp_pull_1["pull_request"]["commits"] == 2
+        assert tmp_pull_1["pull_request"]["changed_files"] == 1
+        assert tmp_pull_2["pull_request"]["commits"] == 5
+        assert tmp_pull_2["pull_request"]["changed_files"] == 2
 
-        await self.create_status(tmp_pull_2)
+        await self.create_status(tmp_pull_2["pull_request"])
         await self.run_engine()
         await assert_queued()
 
-        await self.create_status(tmp_pull_1)
+        await self.wait_for_pull_request("closed", tmp_pull_2["number"])
+
+        await self.create_status(tmp_pull_1["pull_request"])
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 0
+        await self.wait_for_pull_request("closed", tmp_pull_1["number"])
+        p_closed = [
+            await self.wait_for_pull_request("closed"),
+            await self.wait_for_pull_request("closed"),
+        ]
+        assert sorted([p["number"] for p in p_closed]) == [p1["number"], p2["number"]]
 
         await self.assert_merge_queue_contents(q, None, [])
 
@@ -380,18 +378,13 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p2["number"], "queue")
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "opened"})
-        await self.wait_for("pull_request", {"action": "opened"})
+        tmp_pull_1 = await self.wait_for_pull_request("opened")
+        tmp_pull_2 = await self.wait_for_pull_request("opened")
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 4
-
-        tmp_pull_1 = await self.get_pull(pulls[1]["number"])
-        tmp_pull_2 = await self.get_pull(pulls[0]["number"])
         assert tmp_pull_1["number"] not in [p1["number"], p2["number"]]
-        assert tmp_pull_1["head"]["ref"].startswith("mq-")
-        assert tmp_pull_2["number"] not in [p1["number"], p2["number"]]
-        assert tmp_pull_2["head"]["ref"].startswith("mq-")
+        assert tmp_pull_1["pull_request"]["head"]["ref"].startswith("mq-")
+        assert tmp_pull_2["pull_request"]["number"] not in [p1["number"], p2["number"]]
+        assert tmp_pull_2["pull_request"]["head"]["ref"].startswith("mq-")
 
     async def test_queue_fast_forward(self) -> None:
         rules = {
@@ -477,9 +470,11 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.create_status(p1)
         await self.run_engine()
 
-        p1 = await self.get_pull(p1["number"])
+        p1_merged = await self.wait_for_pull_request("closed", p1["number"])
         check = first(
-            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            await context.Context(
+                self.repository_ctxt, p1_merged["pull_request"]
+            ).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
         )
         assert check is not None
@@ -489,7 +484,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert (
             check["output"]["summary"]
-            == f"The pull request has been merged automatically at *{p1['head']['sha']}*"
+            == f"The pull request has been merged automatically at *{p1_merged['pull_request']['head']['sha']}*"
         )
 
         branch = typing.cast(
@@ -498,12 +493,9 @@ class TestQueueAction(base.FunctionalTestBase):
                 f"{self.url_origin}/branches/{self.main_branch_name}"
             ),
         )
-        assert p1["head"]["sha"] == branch["commit"]["sha"]
+        assert p1_merged["pull_request"]["head"]["sha"] == branch["commit"]["sha"]
 
         # Continue with the second PR
-        pulls = await self.get_pulls()
-        assert len(pulls) == 1
-
         await self.assert_merge_queue_contents(
             q,
             p1["head"]["sha"],
@@ -511,7 +503,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 base.MergeQueueCarMatcher(
                     [p2["number"]],
                     [],
-                    p1["head"]["sha"],
+                    p1_merged["pull_request"]["head"]["sha"],
                     merge_train.TrainCarChecksType.INPLACE,
                     p2["number"],
                 )
@@ -520,7 +512,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         head_sha = p2["head"]["sha"]
         p2 = await self.get_pull(p2["number"])
-        assert p2["head"]["sha"] != head_sha  # ensure it have been rebased
+        assert p2["head"]["sha"] != head_sha  # ensure it has been rebased
 
         await self.run_engine()
         check = first(
@@ -536,10 +528,12 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.create_status(p2)
         await self.run_engine()
 
-        p2 = await self.get_pull(p2["number"])
-        ctxt = context.Context(self.repository_ctxt, p2, [])
+        p2_merged = await self.wait_for_pull_request("closed", p2["number"])
+        ctxt = context.Context(self.repository_ctxt, p2_merged["pull_request"], [])
         check = first(
-            await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
+            await context.Context(
+                self.repository_ctxt, p2_merged["pull_request"]
+            ).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
         )
         assert check is not None
@@ -549,7 +543,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert (
             check["output"]["summary"]
-            == f"The pull request has been merged automatically at *{p2['head']['sha']}*"
+            == f"The pull request has been merged automatically at *{p2_merged['pull_request']['head']['sha']}*"
         )
 
         branch = typing.cast(
@@ -558,7 +552,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 f"{self.url_origin}/branches/{self.main_branch_name}"
             ),
         )
-        assert p2["head"]["sha"] == branch["commit"]["sha"]
+        assert p2_merged["pull_request"]["head"]["sha"] == branch["commit"]["sha"]
         await self.assert_merge_queue_contents(q, None, [])
 
     async def test_queue_with_ci_and_files(self) -> None:
@@ -597,12 +591,10 @@ class TestQueueAction(base.FunctionalTestBase):
 
         tmp_pull = await self.wait_for_pull_request("opened")
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 2
-
         await self.create_status(tmp_pull["pull_request"], state="failure")
         await self.run_engine()
         await self.wait_for("pull_request", {"action": "closed"})
+
         ctxt = context.Context(self.repository_ctxt, p)
         q = await merge_train.Train.from_context(ctxt)
         await self.assert_merge_queue_contents(q, None, [])
@@ -650,9 +642,8 @@ class TestQueueAction(base.FunctionalTestBase):
         # To force others to be rebased
         p = await self.create_pr()
         await self.merge_pull(p["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
+        p_merged = await self.wait_for_pull_request("closed", p["number"])
         await self.run_engine()
-        p = await self.get_pull(p["number"])
 
         await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")
@@ -661,27 +652,24 @@ class TestQueueAction(base.FunctionalTestBase):
         tmp_pull_1 = await self.wait_for_pull_request("opened")
         tmp_pull_2 = await self.wait_for_pull_request("opened")
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 4
-
         ctxt = context.Context(self.repository_ctxt, p)
         q = await merge_train.Train.from_context(ctxt)
-        assert p["merge_commit_sha"] is not None
+        assert p_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
-            p["merge_commit_sha"],
+            p_merged["pull_request"]["merge_commit_sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p1["number"]],
                     [],
-                    p["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_pull_1["number"],
                 ),
                 base.MergeQueueCarMatcher(
                     [p2["number"]],
                     [p1["number"]],
-                    p["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_pull_2["number"],
                 ),
@@ -795,7 +783,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         head_sha = p1["head"]["sha"]
         p1 = await self.get_pull(p1["number"])
-        assert p1["head"]["sha"] != head_sha  # ensure it have been rebased
+        assert p1["head"]["sha"] != head_sha  # ensure it has been rebased
         commits = await self.get_commits(p1["number"])
         assert len(commits) == 1
         assert commits[0]["commit"]["committer"]["name"] == "mergify-test4"
@@ -814,17 +802,18 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.create_status(p1)
         await self.run_engine()
 
+        p1_merged = await self.wait_for_pull_request("closed", p1["number"])
         await self.wait_for("pull_request", {"action": "synchronize"})
-        p1 = await self.get_pull(p1["number"])
-        assert p1["merge_commit_sha"] is not None
+
+        assert p1_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
-            p1["merge_commit_sha"],
+            p1_merged["pull_request"]["merge_commit_sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p2["number"]],
                     [],
-                    p1["merge_commit_sha"],
+                    p1_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.INPLACE,
                     p2["number"],
                 ),
@@ -833,7 +822,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         head_sha = p2["head"]["sha"]
         p2 = await self.get_pull(p2["number"])
-        assert p2["head"]["sha"] != head_sha  # ensure it have been rebased
+        assert p2["head"]["sha"] != head_sha  # ensure it has been rebased
         commits = await self.get_commits(p2["number"])
         assert len(commits) == 2
         assert commits[0]["commit"]["committer"]["name"] == "mergify-test4"
@@ -842,11 +831,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.create_status(p2)
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "closed"})
-
-        pulls = await self.get_pulls()
-        assert len(pulls) == 0
-
+        await self.wait_for_pull_request("closed", p2["number"])
         await self.assert_merge_queue_contents(q, None, [])
 
     async def test_queue_no_inplace(self) -> None:
@@ -886,14 +871,9 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "opened"})
-
-        pulls = await self.get_pulls()
-        assert len(pulls) == 2
-
-        tmp_pull = await self.get_pull(pulls[0]["number"])
+        tmp_pull = await self.wait_for_pull_request("opened")
         assert tmp_pull["number"] not in [p1["number"]]
-        assert tmp_pull["changed_files"] == 1
+        assert tmp_pull["pull_request"]["changed_files"] == 1
 
         # No parent PR, but created instead updated
         ctxt = context.Context(self.repository_ctxt, p)
@@ -913,19 +893,20 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
         )
 
-        await self.create_status(tmp_pull)
+        await self.create_status(tmp_pull["pull_request"])
         await self.run_engine()
+
+        await self.wait_for_pull_request("closed", tmp_pull["number"])
+        p1_merged = await self.wait_for_pull_request("closed", p1["number"])
 
         await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 0
-
         await self.assert_merge_queue_contents(q, None, [])
-        p1 = await self.get_pull(p1["number"])
         # ensure the MERGE QUEUE SUMMARY succeed
         check = first(
-            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            await context.Context(
+                self.repository_ctxt, p1_merged["pull_request"]
+            ).pull_engine_check_runs,
             key=lambda c: c["name"] == constants.MERGE_QUEUE_SUMMARY_NAME,
         )
         assert check is not None
@@ -1354,32 +1335,28 @@ class TestQueueAction(base.FunctionalTestBase):
         # To force others to be rebased
         p = await self.create_pr()
         await self.merge_pull(p["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
+        p_merged = await self.wait_for_pull_request("closed", p["number"])
         await self.run_engine()
-        p = await self.get_pull(p["number"])
 
         await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")
         await self.add_label(p3["number"], "queue")
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 4
-
         tmp_pull_1 = await self.wait_for_pull_request("opened")
         await self.run_engine()
 
         ctxt = context.Context(self.repository_ctxt, p)
         q = await merge_train.Train.from_context(ctxt)
-        assert p["merge_commit_sha"] is not None
+        assert p_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
-            p["merge_commit_sha"],
+            p_merged["pull_request"]["merge_commit_sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p1["number"], p2["number"], p3["number"]],
                     [],
-                    p["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_pull_1["number"],
                 ),
@@ -1397,12 +1374,12 @@ class TestQueueAction(base.FunctionalTestBase):
         q = await merge_train.Train.from_context(ctxt)
         await self.assert_merge_queue_contents(
             q,
-            p["merge_commit_sha"],
+            p_merged["pull_request"]["merge_commit_sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p2["number"], p3["number"]],
                     [],
-                    p["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_pull_2["number"],
                 ),
@@ -1600,9 +1577,8 @@ class TestQueueAction(base.FunctionalTestBase):
         # To force others to be rebased
         p = await self.create_pr()
         await self.merge_pull(p["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
+        p_merged = await self.wait_for_pull_request("closed", p["number"])
         await self.run_engine()
-        p = await self.get_pull(p["number"])
 
         await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")
@@ -1614,27 +1590,24 @@ class TestQueueAction(base.FunctionalTestBase):
         tmp_pull_1 = await self.wait_for_pull_request("opened")
         tmp_pull_2 = await self.wait_for_pull_request("opened")
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 7
-
         ctxt = context.Context(self.repository_ctxt, p)
         q = await merge_train.Train.from_context(ctxt)
-        assert p["merge_commit_sha"] is not None
+        assert p_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
-            p["merge_commit_sha"],
+            p_merged["pull_request"]["merge_commit_sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p1["number"], p2["number"]],
                     [],
-                    p["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_pull_1["number"],
                 ),
                 base.MergeQueueCarMatcher(
                     [p3["number"], p4["number"]],
                     [p1["number"], p2["number"]],
-                    p["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_pull_2["number"],
                 ),
@@ -1647,10 +1620,14 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.create_status(tmp_pull_1["pull_request"])
         await self.run_engine()
 
-        tmp_pull_3 = await self.wait_for_pull_request("opened")
+        await self.wait_for_pull_request("closed", tmp_pull_1["number"])
+        p_closed = [
+            await self.wait_for_pull_request("closed"),
+            await self.wait_for_pull_request("closed"),
+        ]
+        assert sorted([p["number"] for p in p_closed]) == [p1["number"], p2["number"]]
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 5
+        tmp_pull_3 = await self.wait_for_pull_request("opened")
 
         p2 = await self.get_pull(p2["number"])
         assert p2["merge_commit_sha"] is not None
@@ -1661,7 +1638,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 base.MergeQueueCarMatcher(
                     [p3["number"], p4["number"]],
                     [p1["number"], p2["number"]],
-                    p["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_pull_2["number"],
                 ),
@@ -1679,11 +1656,18 @@ class TestQueueAction(base.FunctionalTestBase):
 
         await self.create_status(tmp_pull_2["pull_request"])
         await self.run_engine()
+
+        await self.wait_for_pull_request("closed", tmp_pull_2["number"])
+        p_closed = [
+            await self.wait_for_pull_request("closed"),
+            await self.wait_for_pull_request("closed"),
+        ]
+        assert sorted([p["number"] for p in p_closed]) == [p3["number"], p4["number"]]
+
         await self.create_status(tmp_pull_3["pull_request"])
         await self.run_engine()
-
-        pulls = await self.get_pulls()
-        assert len(pulls) == 0
+        await self.wait_for_pull_request("closed", tmp_pull_3["number"])
+        await self.wait_for_pull_request("closed", p5["number"])
 
         await self.assert_merge_queue_contents(q, None, [])
 
@@ -1722,9 +1706,8 @@ class TestQueueAction(base.FunctionalTestBase):
         # To force others to be rebased
         p = await self.create_pr()
         await self.merge_pull(p["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
+        p_merged = await self.wait_for_pull_request("closed", p["number"])
         await self.run_engine()
-        p = await self.get_pull(p["number"])
 
         await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")
@@ -1732,90 +1715,57 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p4["number"], "queue")
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 5
-
-        tmp_pulls = sorted(
-            [
-                tmp
-                for tmp in pulls
-                if tmp["number"]
-                not in (
-                    p1["number"],
-                    p2["number"],
-                    p3["number"],
-                    p4["number"],
-                    p["number"],
-                )
-            ],
-            key=operator.itemgetter("number"),
-        )
+        tmp_pull = await self.wait_for_pull_request("opened")
 
         ctxt = context.Context(self.repository_ctxt, p)
         q = await merge_train.Train.from_context(ctxt)
-        assert p["merge_commit_sha"] is not None
+        assert p_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
-            p["merge_commit_sha"],
+            p_merged["pull_request"]["merge_commit_sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p1["number"], p2["number"], p3["number"]],
                     [],
-                    p["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
-                    tmp_pulls[0]["number"],
+                    tmp_pull["number"],
                 ),
             ],
             [p4["number"]],
         )
 
-        await self.create_status(tmp_pulls[0], state="failure")
+        await self.create_status(tmp_pull["pull_request"], state="failure")
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 6
-        tmp_pulls = sorted(
-            [
-                tmp
-                for tmp in pulls
-                if tmp["number"]
-                not in (
-                    p1["number"],
-                    p2["number"],
-                    p3["number"],
-                    p4["number"],
-                    p["number"],
-                )
-            ],
-            key=operator.itemgetter("number"),
-        )
-        assert p["merge_commit_sha"] is not None
+        tmp_pull_sliced_1 = await self.wait_for_pull_request("opened")
+
         # The train car has been splitted, the second car is in pending
         # state as speculative_checks=1
         await self.assert_merge_queue_contents(
             q,
-            p["merge_commit_sha"],
+            p_merged["pull_request"]["merge_commit_sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p1["number"]],
                     [],
-                    p["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
-                    tmp_pulls[1]["number"],
+                    tmp_pull_sliced_1["number"],
                 ),
                 base.MergeQueueCarMatcher(
                     [p2["number"]],
                     [p1["number"]],
-                    p["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     None,
                     None,
                 ),
                 base.MergeQueueCarMatcher(
                     [p3["number"]],
                     [p1["number"], p2["number"]],
-                    p["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
-                    tmp_pulls[0]["number"],
+                    tmp_pull["number"],
                 ),
             ],
             [p4["number"]],
@@ -1823,87 +1773,67 @@ class TestQueueAction(base.FunctionalTestBase):
 
         # Merge p1, p2 should be started to be checked, second car must go to
         # created state
-        await self.create_status(tmp_pulls[1])
+        await self.create_status(tmp_pull_sliced_1["pull_request"])
         await self.run_engine()
+
+        await self.wait_for_pull_request("closed", tmp_pull_sliced_1["number"])
 
         await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
 
-        p1 = await self.get_pull(p1["number"])
-        assert p1["merged"]
+        p1_merged = await self.wait_for_pull_request("closed", p1["number"])
+        assert p1_merged["pull_request"]["merged"]
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 5
-        tmp_pulls = sorted(
-            [
-                tmp
-                for tmp in pulls
-                if tmp["number"]
-                not in (
-                    p1["number"],
-                    p2["number"],
-                    p3["number"],
-                    p4["number"],
-                    p["number"],
-                )
-            ],
-            key=operator.itemgetter("number"),
-        )
+        tmp_pull_2 = await self.wait_for_pull_request("opened")
 
         await self.assert_merge_queue_contents(
             q,
-            p1["merge_commit_sha"],
+            p1_merged["pull_request"]["merge_commit_sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p2["number"]],
                     [p1["number"]],
-                    p["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
-                    tmp_pulls[1]["number"],
+                    tmp_pull_2["number"],
                 ),
                 base.MergeQueueCarMatcher(
                     [p3["number"]],
                     [p1["number"], p2["number"]],
-                    p["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
-                    tmp_pulls[0]["number"],
+                    tmp_pull["number"],
                 ),
             ],
             [p4["number"]],
         )
 
         # It's fault of p2!
-        await self.create_status(tmp_pulls[1], state="failure")
+        await self.create_status(tmp_pull_2["pull_request"], state="failure")
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 4
-        tmp_pulls = sorted(
-            [
-                tmp
-                for tmp in pulls
-                if tmp["number"]
-                not in (
-                    p1["number"],
-                    p2["number"],
-                    p3["number"],
-                    p4["number"],
-                    p["number"],
-                )
-            ],
-            key=operator.itemgetter("number"),
-        )
-        assert p1["merge_commit_sha"] is not None
+        p_closed = [
+            await self.wait_for_pull_request("closed"),
+            await self.wait_for_pull_request("closed"),
+        ]
+        assert sorted([p["number"] for p in p_closed]) == [
+            tmp_pull["number"],
+            tmp_pull_2["number"],
+        ]
+
+        tmp_pull_3 = await self.wait_for_pull_request("opened")
+
+        assert p1_merged["pull_request"]["merge_commit_sha"] is not None
         # Thing move on and restart from p3 but based on p1 merge commit
         await self.assert_merge_queue_contents(
             q,
-            p1["merge_commit_sha"],
+            p1_merged["pull_request"]["merge_commit_sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p3["number"], p4["number"]],
                     [],
-                    p1["merge_commit_sha"],
+                    p1_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
-                    tmp_pulls[0]["number"],
+                    tmp_pull_3["number"],
                 ),
             ],
             [],
@@ -1944,9 +1874,8 @@ class TestQueueAction(base.FunctionalTestBase):
         # To force others to be rebased
         p = await self.create_pr()
         await self.merge_pull(p["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
+        p_merged = await self.wait_for_pull_request("closed", p["number"])
         await self.run_engine()
-        p = await self.get_pull(p["number"])
 
         await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")
@@ -1955,127 +1884,91 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p5["number"], "queue")
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 7
-
-        tmp_pulls = sorted(
-            [
-                tmp
-                for tmp in pulls
-                if tmp["number"]
-                not in (
-                    p1["number"],
-                    p2["number"],
-                    p3["number"],
-                    p4["number"],
-                    p5["number"],
-                    p["number"],
-                )
-            ],
-            key=operator.itemgetter("number"),
-        )
+        tmp_pull_1 = await self.wait_for_pull_request("opened")
+        tmp_pull_2 = await self.wait_for_pull_request("opened")
 
         ctxt = context.Context(self.repository_ctxt, p)
         q = await merge_train.Train.from_context(ctxt)
-        assert p["merge_commit_sha"] is not None
+        assert p_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
-            p["merge_commit_sha"],
+            p_merged["pull_request"]["merge_commit_sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p1["number"], p2["number"], p3["number"]],
                     [],
-                    p["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
-                    tmp_pulls[0]["number"],
+                    tmp_pull_1["number"],
                 ),
                 base.MergeQueueCarMatcher(
                     [p4["number"], p5["number"]],
                     [p1["number"], p2["number"], p3["number"]],
-                    p["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
-                    tmp_pulls[1]["number"],
+                    tmp_pull_2["number"],
                 ),
             ],
         )
 
-        await self.create_status(tmp_pulls[0], state="failure")
+        await self.create_status(tmp_pull_1["pull_request"], state="failure")
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 8
-        tmp_pulls = sorted(
-            [
-                tmp
-                for tmp in pulls
-                if tmp["number"]
-                not in (
-                    p1["number"],
-                    p2["number"],
-                    p3["number"],
-                    p4["number"],
-                    p5["number"],
-                    p["number"],
-                )
-            ],
-            key=operator.itemgetter("number"),
-        )
+        await self.wait_for_pull_request("closed", tmp_pull_2["number"])
+        tmp_pull_3 = await self.wait_for_pull_request("opened")
+        tmp_pull_4 = await self.wait_for_pull_request("opened")
 
         # The train car has been splitted
         await self.assert_merge_queue_contents(
             q,
-            p["merge_commit_sha"],
+            p_merged["pull_request"]["merge_commit_sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p1["number"]],
                     [],
-                    p["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
-                    tmp_pulls[1]["number"],
+                    tmp_pull_3["number"],
                 ),
                 base.MergeQueueCarMatcher(
                     [p2["number"]],
                     [p1["number"]],
-                    p["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
-                    tmp_pulls[2]["number"],
+                    tmp_pull_4["number"],
                 ),
                 base.MergeQueueCarMatcher(
                     [p3["number"]],
                     [p1["number"], p2["number"]],
-                    p["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
-                    tmp_pulls[0]["number"],
+                    tmp_pull_1["number"],
                 ),
             ],
             [p4["number"], p5["number"]],
         )
 
         # Merge p1 and p2, p3 should be dropped and p4 et p5 checked
-        await self.create_status(tmp_pulls[1])
-        await self.create_status(tmp_pulls[2])
+        await self.create_status(tmp_pull_3["pull_request"])
+        await self.create_status(tmp_pull_4["pull_request"])
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "opened"})
+        p_closed = [
+            await self.wait_for_pull_request("closed"),
+            await self.wait_for_pull_request("closed"),
+            await self.wait_for_pull_request("closed"),
+            await self.wait_for_pull_request("closed"),
+            await self.wait_for_pull_request("closed"),
+        ]
+        assert sorted([p["number"] for p in p_closed]) == [
+            p1["number"],
+            p2["number"],
+            tmp_pull_1["number"],
+            tmp_pull_3["number"],
+            tmp_pull_4["number"],
+        ]
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 4
-        tmp_pulls = sorted(
-            [
-                tmp
-                for tmp in pulls
-                if tmp["number"]
-                not in (
-                    p1["number"],
-                    p2["number"],
-                    p3["number"],
-                    p4["number"],
-                    p5["number"],
-                    p["number"],
-                )
-            ],
-            key=operator.itemgetter("number"),
-        )
+        tmp_pull_6 = await self.wait_for_pull_request("opened")
 
         p2 = await self.get_pull(p2["number"])
         assert p2["merge_commit_sha"] is not None
@@ -2088,16 +1981,20 @@ class TestQueueAction(base.FunctionalTestBase):
                     [],
                     p2["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
-                    tmp_pulls[0]["number"],
+                    tmp_pull_6["number"],
                 ),
             ],
         )
 
-        await self.create_status(tmp_pulls[0])
+        await self.create_status(tmp_pull_6["pull_request"])
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 1
+        await self.wait_for_pull_request("closed", tmp_pull_6["number"])
+        p_closed = [
+            await self.wait_for_pull_request("closed"),
+            await self.wait_for_pull_request("closed"),
+        ]
+        assert sorted([p["number"] for p in p_closed]) == [p4["number"], p5["number"]]
 
         await self.assert_merge_queue_contents(q, None, [])
 
@@ -2133,96 +2030,74 @@ class TestQueueAction(base.FunctionalTestBase):
         # To force others to create draft PR
         p = await self.create_pr()
         await self.merge_pull(p["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
+        p_merged = await self.wait_for_pull_request("closed", p["number"])
         await self.run_engine()
-        p = await self.get_pull(p["number"])
 
         await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 3
-
-        tmp_pulls = sorted(
-            [
-                tmp
-                for tmp in pulls
-                if tmp["number"]
-                not in (
-                    p1["number"],
-                    p2["number"],
-                    p["number"],
-                )
-            ],
-            key=operator.itemgetter("number"),
-        )
+        tmp_pull = await self.wait_for_pull_request("opened")
 
         ctxt = context.Context(self.repository_ctxt, p)
         q = await merge_train.Train.from_context(ctxt)
-        assert p["merge_commit_sha"] is not None
+        assert p_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
-            p["merge_commit_sha"],
+            p_merged["pull_request"]["merge_commit_sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p1["number"], p2["number"]],
                     [],
-                    p["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
-                    tmp_pulls[0]["number"],
+                    tmp_pull["number"],
                 ),
             ],
         )
 
-        await self.create_status(tmp_pulls[0], state="failure")
+        await self.create_status(tmp_pull["pull_request"], state="failure")
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 4
-        tmp_pulls = sorted(
-            [
-                tmp
-                for tmp in pulls
-                if tmp["number"]
-                not in (
-                    p1["number"],
-                    p2["number"],
-                    p["number"],
-                )
-            ],
-            key=operator.itemgetter("number"),
-        )
+        tmp_pull_2 = await self.wait_for_pull_request("opened")
 
         # The train car has been splitted
         await self.assert_merge_queue_contents(
             q,
-            p["merge_commit_sha"],
+            p_merged["pull_request"]["merge_commit_sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p1["number"]],
                     [],
-                    p["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
-                    tmp_pulls[1]["number"],
+                    tmp_pull_2["number"],
                 ),
                 base.MergeQueueCarMatcher(
                     [p2["number"]],
                     [p1["number"]],
-                    p["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
-                    tmp_pulls[0]["number"],
+                    tmp_pull["number"],
                 ),
             ],
             [],
         )
 
         # Merge p1, p2 should be marked as failure
-        await self.create_status(tmp_pulls[1])
+        await self.create_status(tmp_pull_2["pull_request"])
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 1
+        p_closed = [
+            await self.wait_for_pull_request("closed"),
+            await self.wait_for_pull_request("closed"),
+            await self.wait_for_pull_request("closed"),
+        ]
+        assert sorted([p["number"] for p in p_closed]) == [
+            p1["number"],
+            tmp_pull["number"],
+            tmp_pull_2["number"],
+        ]
 
         await self.assert_merge_queue_contents(q, None, [])
 
@@ -2515,7 +2390,7 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
         )
 
-        # we push changes to the base branch
+        # We push changes to the base branch
         await self.git("fetch", "origin", self.main_branch_name)
         await self.git("checkout", "-b", "random", f"origin/{self.main_branch_name}")
         open(self.git.repository + "/random_file.txt", "wb").close()
@@ -2524,9 +2399,6 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.git("push", "--quiet", "origin", f"random:{self.main_branch_name}")
         await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
         await self.run_engine()
-        await self.wait_for(
-            "issue_comment", {"action": "created"}, test_id=draft_pr["number"]
-        )
 
         await self.assert_api_checks_end_reason(
             p1["number"],
@@ -2534,8 +2406,8 @@ class TestQueueAction(base.FunctionalTestBase):
         )
 
         # when detecting base branch changes, the engine should reset the train
-        comments = await self.get_issue_comments(draft_pr["number"])
-        assert "The whole train will be reset." in comments[-1]["body"]
+        comment = await self.wait_for_issue_comment(str(draft_pr["number"]), "created")
+        assert "The whole train will be reset." in comment["comment"]["body"]
         check = first(
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
@@ -3395,13 +3267,9 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p3["number"], "queue")
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "opened"}),
+        tmp_mq_pr = await self.wait_for_pull_request("opened")
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 4, [p["number"] for p in pulls]
-
-        tmp_mq = pulls[0]
-        assert tmp_mq["number"] not in [p1["number"], p2["number"], p3["number"]]
+        assert tmp_mq_pr["number"] not in [p1["number"], p2["number"], p3["number"]]
 
         # Check only p1 and p3 are in the train
         ctxt_p1 = context.Context(self.repository_ctxt, p1)
@@ -3415,7 +3283,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     [],
                     p1["base"]["sha"],
                     merge_train.TrainCarChecksType.DRAFT,
-                    tmp_mq["number"],
+                    tmp_mq_pr["number"],
                 ),
             ],
         )
@@ -3437,15 +3305,24 @@ class TestQueueAction(base.FunctionalTestBase):
         )
 
         # Merge the train
-        await self.create_status(tmp_mq)
+        await self.create_status(tmp_mq_pr["pull_request"])
         await self.run_engine()
+
+        pulls = [
+            await self.wait_for_pull_request("closed"),
+            await self.wait_for_pull_request("closed"),
+            await self.wait_for_pull_request("closed"),
+        ]
+
+        assert sorted([p["number"] for p in pulls]) == [
+            p1["number"],
+            p3["number"],
+            tmp_mq_pr["number"],
+        ]
+
         await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
 
         # Only p2 is remaining and not in train
-        pulls = await self.get_pulls()
-        assert len(pulls) == 1
-        assert pulls[0]["number"] == p2["number"]
-
         await self.assert_merge_queue_contents(q, None, [])
 
     async def test_queue_cant_create_tmp_pull_request(self) -> None:
@@ -3481,11 +3358,9 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p3["number"], "queue")
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 4, [p["number"] for p in pulls]
+        tmp_mq_pr = await self.wait_for_pull_request("opened")
 
-        tmp_mq_p3 = pulls[0]
-        assert tmp_mq_p3["number"] not in [p1["number"], p2["number"], p3["number"]]
+        assert tmp_mq_pr["number"] not in [p1["number"], p2["number"], p3["number"]]
 
         # Check only p1 and p3 are in the train
         ctxt_p1 = context.Context(self.repository_ctxt, p1)
@@ -3506,7 +3381,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     [p1["number"]],
                     p1["base"]["sha"],
                     merge_train.TrainCarChecksType.DRAFT,
-                    tmp_mq_p3["number"],
+                    tmp_mq_pr["number"],
                 ),
             ],
         )
@@ -3530,16 +3405,17 @@ class TestQueueAction(base.FunctionalTestBase):
         # Merge the train
         await self.create_status(p1)
         await self.run_engine()
+        await self.wait_for_pull_request("closed", p1["number"])
         await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
-        await self.create_status(tmp_mq_p3)
+
+        await self.create_status(tmp_mq_pr["pull_request"])
         await self.run_engine()
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
 
         # Only p2 is remaining and not in train
-        pulls = await self.get_pulls()
-        assert len(pulls) == 1
-        assert pulls[0]["number"] == p2["number"]
+        await self.wait_for_pull_request("closed", tmp_mq_pr["number"])
+        await self.wait_for_pull_request("closed", p3["number"])
 
+        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
         await self.assert_merge_queue_contents(q, None, [])
 
     async def test_queue_cancel_and_refresh(self) -> None:
@@ -3576,14 +3452,9 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p3["number"], "queue")
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "opened"}),
-        await self.wait_for("pull_request", {"action": "opened"}),
+        tmp_mq_p2 = await self.wait_for_pull_request("opened")
+        tmp_mq_p3 = await self.wait_for_pull_request("opened")
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 5
-
-        tmp_mq_p3 = pulls[0]
-        tmp_mq_p2 = pulls[1]
         assert tmp_mq_p3["number"] not in [p1["number"], p2["number"], p3["number"]]
         assert tmp_mq_p2["number"] not in [p1["number"], p2["number"], p3["number"]]
 
@@ -3620,23 +3491,25 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.create_status(p1)
         await self.run_engine()
 
+        p1_merged = await self.wait_for_pull_request("closed", pr_number=p1["number"])
+        assert p1_merged["pull_request"]["merge_commit_sha"] is not None
+
         # Ensure p1 is removed and current["head"]["sha"] have been updated on p2 and p3
-        p1 = await self.get_pull(p1["number"])
         await self.assert_merge_queue_contents(
             q,
-            p1["merge_commit_sha"],
+            p1_merged["pull_request"]["merge_commit_sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p2["number"]],
                     [p1["number"]],
-                    p1["base"]["sha"],
+                    p1_merged["pull_request"]["base"]["sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_mq_p2["number"],
                 ),
                 base.MergeQueueCarMatcher(
                     [p3["number"]],
                     [p1["number"], p2["number"]],
-                    p1["base"]["sha"],
+                    p1_merged["pull_request"]["base"]["sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_mq_p3["number"],
                 ),
@@ -3644,25 +3517,23 @@ class TestQueueAction(base.FunctionalTestBase):
         )
 
         # tmp merge-queue pr p2, CI fails
-        await self.create_status(tmp_mq_p2, state="failure")
+        await self.create_status(tmp_mq_p2["pull_request"], state="failure")
         await self.run_engine()
+
+        await self.wait_for_pull_request("closed")
+        await self.wait_for_pull_request("closed")
 
         tmp_mq_p3_bis = await self.wait_for_pull_request("opened")
 
-        # tmp merge-queue pr p2 and p3 have been closed
-        pulls = await self.get_pulls()
-        assert len(pulls) == 3
-
-        assert p1["merge_commit_sha"] is not None
         # p3 get a new draft PR
         await self.assert_merge_queue_contents(
             q,
-            p1["merge_commit_sha"],
+            p1_merged["pull_request"]["merge_commit_sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p3["number"]],
                     [],
-                    p1["merge_commit_sha"],
+                    p1_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_mq_p3_bis["number"],
                 ),
@@ -3691,29 +3562,25 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.wait_for("check_suite", {"action": "rerequested"})
         await self.run_engine()
 
+        tmp_mq_p2_bis = await self.wait_for_pull_request("opened")
+
         # Check pull is back to the queue and tmp pull recreated
-
-        pulls = await self.get_pulls()
-        assert len(pulls) == 4
-
-        tmp_mq_p2_bis = pulls[0]
         assert tmp_mq_p2_bis["number"] not in [p1["number"], p2["number"], p3["number"]]
-        assert p1["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
-            p1["merge_commit_sha"],
+            p1_merged["pull_request"]["merge_commit_sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p3["number"]],
                     [],
-                    p1["merge_commit_sha"],
+                    p1_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_mq_p3_bis["number"],
                 ),
                 base.MergeQueueCarMatcher(
                     [p2["number"]],
                     [p3["number"]],
-                    p1["merge_commit_sha"],
+                    p1_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_mq_p2_bis["number"],
                 ),
@@ -3750,9 +3617,8 @@ class TestQueueAction(base.FunctionalTestBase):
         # To force others to be rebased
         p = await self.create_pr()
         await self.merge_pull(p["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
+        p_merged = await self.wait_for_pull_request("closed", pr_number=p["number"])
         await self.run_engine()
-        p = await self.get_pull(p["number"])
 
         # Queue PRs
         await self.add_label(p1["number"], "queue")
@@ -3760,32 +3626,30 @@ class TestQueueAction(base.FunctionalTestBase):
 
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 4
+        tmp_mq_p1 = await self.wait_for_pull_request("opened")
+        tmp_mq_p2 = await self.wait_for_pull_request("opened")
 
-        tmp_mq_p1 = pulls[1]
-        tmp_mq_p2 = pulls[0]
         assert tmp_mq_p2["number"] not in [p1["number"], p2["number"]]
         assert tmp_mq_p1["number"] not in [p1["number"], p2["number"]]
 
-        ctxt_p_merged = context.Context(self.repository_ctxt, p)
+        ctxt_p_merged = context.Context(self.repository_ctxt, p_merged["pull_request"])
         q = await merge_train.Train.from_context(ctxt_p_merged)
-        assert p["merge_commit_sha"] is not None
+        assert p_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
-            p["merge_commit_sha"],
+            p_merged["pull_request"]["merge_commit_sha"],
             [
                 base.MergeQueueCarMatcher(
                     [p1["number"]],
                     [],
-                    p["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_mq_p1["number"],
                 ),
                 base.MergeQueueCarMatcher(
                     [p2["number"]],
                     [p1["number"]],
-                    p["merge_commit_sha"],
+                    p_merged["pull_request"]["merge_commit_sha"],
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_mq_p2["number"],
                 ),
@@ -3803,11 +3667,11 @@ class TestQueueAction(base.FunctionalTestBase):
 
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 4
+        await self.wait_for_pull_request("closed")
+        await self.wait_for_pull_request("closed")
+        tmp_mq_p1_bis = await self.wait_for_pull_request("opened")
+        tmp_mq_p2_bis = await self.wait_for_pull_request("opened")
 
-        tmp_mq_p1_bis = await self.get_pull(pulls[1]["number"])
-        tmp_mq_p2_bis = await self.get_pull(pulls[0]["number"])
         assert tmp_mq_p1_bis["number"] not in [
             p1["number"],
             p2["number"],
@@ -3843,18 +3707,20 @@ class TestQueueAction(base.FunctionalTestBase):
         )
 
         # Ensurep1 and p2 got recreate with more commits
-        assert tmp_mq_p1_bis["commits"] == 2
-        assert tmp_mq_p1_bis["changed_files"] == 1
-        assert tmp_mq_p2_bis["commits"] == 4
-        assert tmp_mq_p2_bis["changed_files"] == 2
+        assert tmp_mq_p1_bis["pull_request"]["commits"] == 2
+        assert tmp_mq_p1_bis["pull_request"]["changed_files"] == 1
+        assert tmp_mq_p2_bis["pull_request"]["commits"] == 4
+        assert tmp_mq_p2_bis["pull_request"]["changed_files"] == 2
 
         # Merge the train
-        await self.create_status(tmp_mq_p1_bis)
-        await self.create_status(tmp_mq_p2_bis)
+        await self.create_status(tmp_mq_p1_bis["pull_request"])
+        await self.create_status(tmp_mq_p2_bis["pull_request"])
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 0
+        await self.wait_for_pull_request("closed")
+        await self.wait_for_pull_request("closed")
+        await self.wait_for_pull_request("closed")
+        await self.wait_for_pull_request("closed")
 
         await self.assert_merge_queue_contents(q, None, [])
 

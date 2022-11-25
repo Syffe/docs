@@ -1260,6 +1260,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             f"{self.url_origin}/issues", json={"body": body, "title": title}
         )
         # NOTE(sileht):Our GitHubApp doesn't subscribe to issues event
+        # because we don't request the permissions for it.
         # await self.wait_for("issues", {"action": "created"})
         return typing.cast(github_types.GitHubIssue, resp.json())
 
