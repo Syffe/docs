@@ -102,8 +102,8 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
         except context.RenderTemplateFailure as rmf:
             # can't occur, template have been checked earlier
             raise rules.InvalidPullRequestRule(
-                cls.FAILURE_MESSAGE,
-                f"Invalid title message: {rmf}",
+                "Invalid title message",
+                str(rmf),
             )
 
         try:
@@ -113,8 +113,8 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
         except context.RenderTemplateFailure as rmf:
             # can't occur, template have been checked earlier
             raise rules.InvalidPullRequestRule(
-                cls.FAILURE_MESSAGE,
-                f"Invalid body message: {rmf}",
+                "Invalid body message",
+                str(rmf),
             )
 
         branches: list[github_types.GitHubRefType] = action.config["branches"].copy()
