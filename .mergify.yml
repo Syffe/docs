@@ -1,16 +1,4 @@
-defaults:
-  actions:
-    queue:
-      name: default
-      method: squash
-      rebase_fallback: none
-      commit_message_template: |
-        {{ title }} (#{{ number }})
-
-        {{ body }}
-    squash:
-      commit_message: first-commit
-      bot_account: mergify-ci-bot
+extends: .github
 
 queue_rules:
   - name: hotfix
@@ -135,11 +123,6 @@ pull_request_rules:
         method: merge
         commit_message_template: null
 
-  - name: dismiss reviews
-    conditions: []
-    actions:
-      dismiss_reviews: {}
-
   - name: request review
     conditions:
       - -author=dependabot[bot]
@@ -156,47 +139,6 @@ pull_request_rules:
       request_reviews:
         teams:
           - devs
-  - name: warn on conflicts
-    conditions:
-      - conflict
-      - -closed
-    actions:
-      comment:
-        message: "@{{author}} this pull request is now in conflict 😩"
-      label:
-        add:
-          - conflict
-  - name: remove conflict label if not needed
-    conditions:
-      - -conflict
-    actions:
-      label:
-        remove:
-          - conflict
-
-  - name: label on unresolved
-    conditions:
-      - "#review-threads-unresolved>0"
-    actions:
-      label:
-        add:
-          - review threads unresolved
-
-  - name: unlabel on resolved
-    conditions:
-      - "#review-threads-unresolved=0"
-    actions:
-      label:
-        remove:
-          - review threads unresolved
-
-  - name: warn on CI failure for hotfix
-    conditions:
-      - label=hotfix
-      - "#check-failure>0"
-    actions:
-      comment:
-        message: Your hotfix is failing CI @{{author}} 🥺
 
   - name: feature requirements
     conditions:
@@ -232,19 +174,4 @@ pull_request_rules:
           Testing requirements are present.
           {% else %}
           Testing requirements are missing.
-          {% endif %}
-
-  - name: changelog requirements
-    conditions:
-      - or:
-          - "-title~=^feat"
-          - label=skip changelog
-          - label=need changelog
-    actions:
-      post_check:
-        title: |
-          {% if check_succeed %}
-          Changelog requirements are present.
-          {% else %}
-          Changelog requirements are missing.
           {% endif %}
