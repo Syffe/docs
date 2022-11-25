@@ -104,6 +104,14 @@ HTTP_500_EXCEPTION = http.HTTPServerSideError(
 )
 
 
+async def just_run_once(
+    self: worker.TaskRetriedForever,
+    coro: worker.TaskRetriedForeverFuncT,
+    sleep_time: float,
+) -> None:
+    await coro()
+
+
 @pytest.fixture
 def stream_processor(redis_links: redis_utils.RedisLinks) -> worker.StreamProcessor:
     return worker.StreamProcessor(
@@ -2257,7 +2265,9 @@ async def test_separate_dedicated_worker(
     side_effect=stop_and_wait_worker,
     autospec=True,
 )
-@mock.patch("mergify_engine.worker.Task.loop_and_sleep_forever", autospec=True)
+@mock.patch(
+    "mergify_engine.worker.TaskRetriedForever.loop_and_sleep_forever", autospec=True
+)
 def test_worker_start_all_tasks(
     loop_and_sleep_forever: mock.Mock,
     wait_shutdown_complete: mock.Mock,
@@ -2268,9 +2278,6 @@ def test_worker_start_all_tasks(
     setup_signals: mock.Mock,
     database_cleanup: None,
 ) -> None:
-    async def just_run_once(self: worker.Task) -> None:
-        await self.func()
-
     loop_and_sleep_forever.side_effect = just_run_once
 
     worker.main([])
@@ -2292,7 +2299,9 @@ def test_worker_start_all_tasks(
     side_effect=stop_and_wait_worker,
     autospec=True,
 )
-@mock.patch("mergify_engine.worker.Task.loop_and_sleep_forever", autospec=True)
+@mock.patch(
+    "mergify_engine.worker.TaskRetriedForever.loop_and_sleep_forever", autospec=True
+)
 def test_worker_start_just_shared(
     loop_and_sleep_forever: mock.Mock,
     wait_shutdown_complete: mock.Mock,
@@ -2303,9 +2312,6 @@ def test_worker_start_just_shared(
     setup_signals: mock.Mock,
     database_cleanup: None,
 ) -> None:
-    async def just_run_once(self: worker.Task) -> None:
-        await self.func()
-
     loop_and_sleep_forever.side_effect = just_run_once
 
     worker.main(["--enabled-services=shared-stream"])
@@ -2327,7 +2333,9 @@ def test_worker_start_just_shared(
     side_effect=stop_and_wait_worker,
     autospec=True,
 )
-@mock.patch("mergify_engine.worker.Task.loop_and_sleep_forever", autospec=True)
+@mock.patch(
+    "mergify_engine.worker.TaskRetriedForever.loop_and_sleep_forever", autospec=True
+)
 def test_worker_start_except_shared(
     loop_and_sleep_forever: mock.Mock,
     wait_shutdown_complete: mock.Mock,
@@ -2338,9 +2346,6 @@ def test_worker_start_except_shared(
     setup_signals: mock.Mock,
     database_cleanup: None,
 ) -> None:
-    async def just_run_once(self: worker.Task) -> None:
-        await self.func()
-
     loop_and_sleep_forever.side_effect = just_run_once
 
     worker.main(
