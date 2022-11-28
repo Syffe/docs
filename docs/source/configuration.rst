@@ -251,7 +251,7 @@ Using the list of commit within a :ref:`template <data type template>`:
 .. code-block::
 
     {% for commit in commits %}
-    Co-Authored-By: {{ commit.author }} <{{ commit.email_author }}> 
+    Co-Authored-By: {{ commit.author }} <{{ commit.email_author }}>
     {% endfor %}
 
 .. _regular expressions:
@@ -544,26 +544,23 @@ Extends
 ``extends`` is an optional key with its value type being a string.
 
 
-You can extend a configuration once by inheriting the configuration from another repository configuration where Mergify is installed.
-The value of the ``extends`` key is a repository name.
+You can extend a configuration once by inheriting the configuration from another
+repository configuration where Mergify is installed. The value of the
+``extends`` key is a repository name.
 
 .. code-block:: yaml
 
   extends: my_repo
 
 
-The local configuration inherits rules from the remote configuration. Remote rules will be overridden by the local configuration if they have the same name.
+The local configuration inherits rules from the remote configuration. Remote
+rules will be overridden by the local configuration if they have the same name.
 
 Example:
 
 ``remote_repository/.mergify.yml``
 
 .. code-block:: yaml
-
-  defaults:
-    actions:
-      comment:
-        bot_account: Autobot
 
   pull_request_rules:
     - name: comment with default
@@ -614,14 +611,12 @@ The result will be:
       actions:
         comment:
           message: I 💙 Mergify
-          bot_account: Autobot
     - name: comment when closed
       conditions:
         - label=closed
       actions:
         comment:
           message: Closed by Mergify 🔒
-          bot_account: Autobot
 
     commands_restrictions:
       backport:
@@ -631,4 +626,11 @@ The result will be:
 
 .. warning::
 
-   Values in  the ``shared`` key will not be merged and shared between local and remote configurations.
+   Values in the ``shared`` key will not be merged and shared between local and
+   remote configurations.
+
+
+.. note::
+
+   Values in the ``default`` key will be merged and remote default values will
+   apply to local configuration.
