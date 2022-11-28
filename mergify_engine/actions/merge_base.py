@@ -1,8 +1,7 @@
-import abc
+from collections import abc
 import re
 import typing
 
-from mergify_engine import actions
 from mergify_engine import check_api
 from mergify_engine import context
 from mergify_engine import github_types
@@ -19,25 +18,14 @@ FORBIDDEN_MERGE_COMMITS_MSG = "Merge commits are not allowed on this repository.
 FORBIDDEN_SQUASH_MERGE_MSG = "Squash merges are not allowed on this repository."
 FORBIDDEN_REBASE_MERGE_MSG = "Rebase merges are not allowed on this repository."
 
-QueueT = typing.TypeVar("QueueT")
-QueueFreezeT = typing.TypeVar("QueueFreezeT")
+PendingResultBuilderT = abc.Callable[
+    [context.Context, "rules.EvaluatedRule"],
+    abc.Awaitable[check_api.Result],
+]
+MergeMethodT = typing.Literal["merge", "rebase", "squash", "fast-forward"]
 
 
-class MergeBaseAction(
-    actions.BackwardCompatAction,
-    abc.ABC,
-    typing.Generic[QueueT, QueueFreezeT],
-):
-    @abc.abstractmethod
-    async def get_queue_status(
-        self,
-        ctxt: context.Context,
-        rule: "rules.EvaluatedRule",
-        queue: QueueT,
-        queue_freeze: QueueFreezeT | None,
-    ) -> check_api.Result:
-        pass
-
+class MergeUtilsMixin:
     async def _refresh_for_retry(self, ctxt: context.Context) -> None:
         await refresher.send_pull_refresh(
             ctxt.repository.installation.redis.stream,
@@ -52,16 +40,18 @@ class MergeBaseAction(
         self,
         ctxt: context.Context,
         rule: "rules.EvaluatedRule",
-        queue: QueueT,
-        queue_freeze: QueueFreezeT | None,
+        merge_method: MergeMethodT,
+        merge_rebase_fallback: typing.Literal["merge", "rebase"] | None,
         merge_bot_account: github_types.GitHubLogin | None,
+        commit_message_template: str | None,
+        pending_result_builder: PendingResultBuilderT,
     ) -> check_api.Result:
-        if self.config["method"] != "rebase" or ctxt.pull["rebaseable"]:
-            method = self.config["method"]
-        elif self.config["rebase_fallback"] in ["merge", "squash"]:
-            method = self.config["rebase_fallback"]
+        if merge_method != "rebase" or ctxt.pull["rebaseable"]:
+            pass
+        elif merge_rebase_fallback in ["merge", "squash"]:
+            merge_method = merge_rebase_fallback
         else:
-            if self.config["rebase_fallback"] is None:
+            if merge_rebase_fallback is None:
                 ctxt.log.info("legacy rebase_fallback=null used")
             return check_api.Result(
                 check_api.Conclusion.ACTION_REQUIRED,
@@ -82,7 +72,7 @@ class MergeBaseAction(
                     f"Please make sure `{merge_bot_account}` has logged in Mergify dashboard.",
                 )
 
-        if method == "fast-forward":
+        if merge_method == "fast-forward":
             try:
                 await ctxt.client.put(
                     f"{ctxt.base_url}/git/refs/heads/{ctxt.pull['base']['ref']}",
@@ -99,14 +89,14 @@ class MergeBaseAction(
                         error_message=e.message,
                     )
                     await self._refresh_for_retry(ctxt)
-                    return await self.get_queue_status(ctxt, rule, queue, queue_freeze)
+                    return await pending_result_builder(ctxt, rule)
 
                 await ctxt.update()
                 if ctxt.pull["merged"]:
                     ctxt.log.info("merged in the meantime")
                 else:
                     return await self._handle_merge_error(
-                        e, ctxt, rule, queue, queue_freeze
+                        e, ctxt, rule, pending_result_builder
                     )
             else:
                 ctxt.log.info("merged")
@@ -126,7 +116,7 @@ class MergeBaseAction(
 
             try:
                 commit_title_and_message = await ctxt.pull_request.get_commit_message(
-                    self.config["commit_message_template"],
+                    commit_message_template,
                 )
             except context.RenderTemplateFailure as rmf:
                 return check_api.Result(
@@ -141,7 +131,7 @@ class MergeBaseAction(
                 data["commit_message"] = message
 
             data["sha"] = ctxt.pull["head"]["sha"]
-            data["merge_method"] = method
+            data["merge_method"] = merge_method
 
             try:
                 await ctxt.client.put(
@@ -157,13 +147,13 @@ class MergeBaseAction(
                     ctxt.log.info("merged in the meantime")
                 else:
                     return await self._handle_merge_error(
-                        e, ctxt, rule, queue, queue_freeze
+                        e, ctxt, rule, pending_result_builder
                     )
             else:
                 await ctxt.update(wait_merged=True)
                 ctxt.log.info("merged")
 
-        result = await self.merge_report(ctxt, merge_bot_account)
+        result = await self.merge_report(ctxt, merge_method, merge_bot_account)
         if result:
             return result
         else:
@@ -178,8 +168,7 @@ class MergeBaseAction(
         e: http.HTTPClientSideError,
         ctxt: context.Context,
         rule: "rules.EvaluatedRule",
-        queue: QueueT,
-        queue_freeze: QueueFreezeT | None,
+        pending_result_builder: PendingResultBuilderT,
     ) -> check_api.Result:
         if "Head branch was modified" in e.message:
             ctxt.log.info(
@@ -188,7 +177,7 @@ class MergeBaseAction(
                 error_message=e.message,
             )
             await self._refresh_for_retry(ctxt)
-            return await self.get_queue_status(ctxt, rule, queue, queue_freeze)
+            return await pending_result_builder(ctxt, rule)
         elif "Base branch was modified" in e.message:
             # NOTE(sileht): The base branch was modified between pull.is_behind call and
             # here, usually by something not merged by mergify. So we need sync it again
@@ -199,7 +188,7 @@ class MergeBaseAction(
                 error_message=e.message,
             )
             await self._refresh_for_retry(ctxt)
-            return await self.get_queue_status(ctxt, rule, queue, queue_freeze)
+            return await pending_result_builder(ctxt, rule)
 
         elif e.status_code == 405:
             if REQUIRED_STATUS_RE.match(e.message):
@@ -217,7 +206,7 @@ class MergeBaseAction(
                         error_message=e.message,
                     )
                     await self._refresh_for_retry(ctxt)
-                    return await self.get_queue_status(ctxt, rule, queue, queue_freeze)
+                    return await pending_result_builder(ctxt, rule)
 
                 ctxt.log.info(
                     "Waiting for the branch protection required status checks to be validated",
@@ -306,6 +295,7 @@ class MergeBaseAction(
     async def merge_report(
         self,
         ctxt: context.Context,
+        merge_method: MergeMethodT,
         merge_bot_account: github_types.GitHubLogin | None,
     ) -> check_api.Result | None:
         if ctxt.pull["draft"]:
@@ -333,7 +323,7 @@ class MergeBaseAction(
 
         elif (
             await self._is_branch_protection_linear_history_enabled(ctxt)
-            and self.config["method"] == "merge"
+            and merge_method == "merge"
         ):
             conclusion = check_api.Conclusion.FAILURE
             title = "Branch protection setting 'linear history' conflicts with Mergify configuration"

@@ -42,7 +42,7 @@ def DeprecatedOption(
     return validator
 
 
-class MergeAction(merge_base.MergeBaseAction[None, None]):
+class MergeAction(actions.BackwardCompatAction, merge_base.MergeUtilsMixin):
     flags = (
         actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
         | actions.ActionFlag.SUCCESS_IS_FINAL_STATE
@@ -100,9 +100,17 @@ class MergeAction(merge_base.MergeBaseAction[None, None]):
                     "`commit_message_template` must not be set if `method: fast-forward` is set.",
                 )
 
-        report = await self.merge_report(ctxt, merge_bot_account)
+        report = await self.merge_report(ctxt, self.config["method"], merge_bot_account)
         if report is None:
-            report = await self._merge(ctxt, rule, None, None, merge_bot_account)
+            report = await self._merge(
+                ctxt,
+                rule,
+                self.config["method"],
+                self.config["rebase_fallback"],
+                merge_bot_account,
+                self.config["commit_message_template"],
+                self.get_pending_merge_status,
+            )
             if report.conclusion == check_api.Conclusion.SUCCESS:
                 await self.send_merge_signal(ctxt, rule, None)
         return report
@@ -112,16 +120,12 @@ class MergeAction(merge_base.MergeBaseAction[None, None]):
     ) -> check_api.Result:
         return actions.CANCELLED_CHECK_REPORT
 
-    async def get_queue_status(
-        self,
-        ctxt: context.Context,
-        rule: "rules.EvaluatedRule",
-        queue: None,
-        queue_freeze: None,
+    async def get_pending_merge_status(
+        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
     ) -> check_api.Result:
-        title = "The pull request will be merged soon"
-        summary = ""
-        return check_api.Result(check_api.Conclusion.PENDING, title, summary)
+        return check_api.Result(
+            check_api.Conclusion.PENDING, "The pull request will be merged soon", ""
+        )
 
     async def send_merge_signal(
         self,

@@ -1,4 +1,5 @@
 import dataclasses
+import functools
 import typing
 
 import voluptuous
@@ -42,7 +43,7 @@ class IncompatibleBranchProtection(Exception):
     message = "Configuration not compatible with a branch protection setting"
 
 
-class QueueAction(merge_base.MergeBaseAction[merge_train.Train, freeze.QueueFreeze]):
+class QueueAction(actions.BackwardCompatAction, merge_base.MergeUtilsMixin):
     flags = (
         actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
         | actions.ActionFlag.SUCCESS_IS_FINAL_STATE
@@ -162,7 +163,16 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 json={"sha": newsha},
             )
         except http.HTTPClientSideError as e:  # pragma: no cover
-            return await self._handle_merge_error(e, ctxt, rule, queue, queue_freeze)
+            return await self._handle_merge_error(
+                e,
+                ctxt,
+                rule,
+                functools.partial(
+                    self.get_pending_queue_status,
+                    queue=queue,
+                    queue_freeze=queue_freeze,
+                ),
+            )
 
         for embarked_pull in car.still_queued_embarked_pulls.copy():
             other_ctxt = await queue.repository.get_pull_request_context(
@@ -390,7 +400,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         self._set_effective_priority(ctxt)
 
-        result = await self.merge_report(ctxt, merge_bot_account)
+        result = await self.merge_report(ctxt, self.config["method"], merge_bot_account)
         if result is None:
             # NOTE(sileht): the pull request gets checked and then changed
             # by user, we should unqueue and requeue it as the conditions still match.
@@ -464,7 +474,17 @@ Then, re-embark the pull request into the merge queue by posting the comment
                             self.queue_rule.config["queue_branch_merge_method"] is None
                         ):
                             result = await self._merge(
-                                ctxt, rule, q, qf, merge_bot_account
+                                ctxt,
+                                rule,
+                                self.config["method"],
+                                self.config["rebase_fallback"],
+                                merge_bot_account,
+                                self.config["commit_message_template"],
+                                functools.partial(
+                                    self.get_pending_queue_status,
+                                    queue=q,
+                                    queue_freeze=qf,
+                                ),
                             )
                             if result.conclusion == check_api.Conclusion.SUCCESS:
                                 _, embarked_pull = q.find_embarked_pull(
@@ -485,7 +505,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                                 f"Unsupported queue_branch_merge_method: {self.queue_rule.config['queue_branch_merge_method']}"
                             )
                     else:
-                        result = await self.get_queue_status(ctxt, rule, q, qf)
+                        result = await self.get_pending_queue_status(ctxt, rule, q, qf)
 
                 except Exception as e:
                     if not exceptions.need_retry(e):
@@ -576,7 +596,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         car = q.get_car(ctxt)
         await self._update_merge_queue_summary(ctxt, rule, q, car)
 
-        result = await self.merge_report(ctxt, merge_bot_account)
+        result = await self.merge_report(ctxt, self.config["method"], merge_bot_account)
         if result is None:
             # We just rebase the pull request, don't cancel it yet if CIs are
             # running. The pull request will be merged if all rules match again.
@@ -586,7 +606,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             else:
                 if await self._should_be_queued(ctxt, q):
                     qf = await self._get_current_queue_freeze(ctxt)
-                    result = await self.get_queue_status(ctxt, rule, q, qf)
+                    result = await self.get_pending_queue_status(ctxt, rule, q, qf)
                 else:
                     result = await self.get_unqueue_status(ctxt, q)
 
@@ -755,7 +775,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         return True
 
-    async def get_queue_status(
+    async def get_pending_queue_status(
         self,
         ctxt: context.Context,
         rule: "rules.EvaluatedRule",
