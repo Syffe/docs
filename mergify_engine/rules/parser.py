@@ -363,8 +363,6 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
 
     if parser == Parser.SCHEDULE:
         value = _unquote(value)
-        if op == "!=":
-            negate = True
 
         cond: dict[str, typing.Any]
         days, has_times, times = value.partition(" ")
@@ -385,9 +383,9 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
             except date.InvalidDate as e:
                 raise ConditionParsingError(e.message)
 
-        cond = {"=": ("current-time", schedule)}
+        cond = {op: ("current-time", schedule)}
 
-        return _to_dict(negate, False, attribute, "@", cond)
+        return _to_dict(False, False, attribute, "@", cond)
 
     elif parser == Parser.TIME:
         value = _unquote(value)

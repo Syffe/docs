@@ -34,7 +34,7 @@ def utcnow() -> datetime.datetime:
     return datetime.datetime.now(tz=datetime.timezone.utc)
 
 
-def is_datetime_between_time_range(
+def is_datetime_inside_time_range(
     time_to_check: datetime.datetime,
     begin_hour: int,
     begin_minute: int,
@@ -424,7 +424,7 @@ class Schedule:
         time_to_check: datetime.datetime,
         strict: bool,
     ) -> bool:
-        return is_datetime_between_time_range(
+        return is_datetime_inside_time_range(
             time_to_check.astimezone(self.tzinfo),
             self.start_hour,
             self.start_minute,

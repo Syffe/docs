@@ -310,7 +310,7 @@ def test_datetime_between_range(
     result: bool,
 ) -> None:
     assert (
-        date.is_datetime_between_time_range(
+        date.is_datetime_inside_time_range(
             time_to_check, begin_hour, begin_minute, end_hour, end_minute, strict
         )
         == result
@@ -529,3 +529,4 @@ def test_schedule_eq_with_datetime(
     schedule: date.Schedule, date_to_test: datetime.datetime, expected: bool
 ) -> None:
     assert expected == (date_to_test == schedule)
+    assert not expected == (date_to_test != schedule)
