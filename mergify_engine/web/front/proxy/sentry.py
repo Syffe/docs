@@ -37,7 +37,7 @@ async def sentry_tunnel(request: fastapi.Request) -> fastapi.Response:
 
     try:
         project_id = int(dsn.path.strip("/"))
-    except ValueError:
+    except (ValueError, TypeError):
         raise fastapi.HTTPException(403)
 
     # required to not become an open sentry tunnel
