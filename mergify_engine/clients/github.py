@@ -246,6 +246,8 @@ async def get_installation_from_login(
 
 
 def _check_rate_limit(response: httpx.Response) -> None:
+    if response.status_code != 403:
+        return
     remaining = response.headers.get("X-RateLimit-Remaining")
 
     if remaining is None:
@@ -492,9 +494,37 @@ class AsyncGithubClient(http.AsyncClient):
 
 @dataclasses.dataclass
 class RequestHistory:
-    method: str
-    url: str
+    request: httpx.Request
     response: httpx.Response | None
+
+    @staticmethod
+    def _header_to_str(key: str, value: str) -> str:
+        if key == "authorization":
+            value = "*****"
+        return f'"{key}: {value}"'
+
+    async def to_curl_request(self) -> str:
+        headers = [self._header_to_str(k, v) for k, v in self.request.headers.items()]
+        headers_str = " -H ".join(headers)
+        body = await self.request.aread()
+        if body:
+            body_str = f"-d '{body.decode() if isinstance(body, bytes) else body}'"
+        return f"curl -X {self.request.method} -H {headers_str} {body_str} {self.request.url}"
+
+    async def to_curl_response(self) -> str:
+        if self.response is None:
+            return "<no response>"
+
+        host = self.request.url.netloc.decode()
+        headers = [self._header_to_str(k, v) for k, v in self.response.headers.items()]
+        headers_str = "\n< ".join(headers)
+        body = (await self.response.aread()).decode()
+        return f"""< {self.response.http_version} {self.response.status_code}
+< {headers_str}
+<
+* Connection #0 to host {host} left intact
+{body}
+"""
 
 
 class AsyncGithubInstallationClient(AsyncGithubClient):
@@ -512,26 +542,39 @@ class AsyncGithubInstallationClient(AsyncGithubClient):
     def enable_extra_metrics(self) -> None:
         self._extra_metrics = True
 
-    async def request(self, method: str, url: str, *args: typing.Any, **kwargs: typing.Any) -> httpx.Response | None:  # type: ignore[override]
-        reply = None
+    async def send(
+        self,
+        request: httpx.Request,
+        *,
+        stream: bool = False,
+        auth: httpx._types.AuthTypes
+        | httpx._client.UseClientDefault
+        | None = httpx._client.USE_CLIENT_DEFAULT,
+        follow_redirects: bool
+        | httpx._client.UseClientDefault = httpx._client.USE_CLIENT_DEFAULT,
+    ) -> httpx.Response:
+        response = None
         try:
-            reply = await super().request(method, url, *args, **kwargs)
-        except http.HTTPClientSideError as e:
-            reply = e.response
-            if e.status_code == 403:
-                _check_rate_limit(e.response)
-            raise
+            response = await super().send(
+                request, auth=auth, follow_redirects=follow_redirects
+            )
+            _check_rate_limit(response)
         finally:
-            if reply is None:
+            if response is None:
                 status_code = "error"
             else:
-                status_code = str(reply.status_code)
+                status_code = str(response.status_code)
             statsd.increment(
                 "http.client.requests",
                 tags=[f"hostname:{self.base_url.host}", f"status_code:{status_code}"],
             )
-            self._requests.append(RequestHistory(method, url, reply))
-        return reply
+            self._requests.append(RequestHistory(request, response))
+
+        return response
+
+    @property
+    def last_request(self) -> RequestHistory:
+        return self._requests[-1]
 
     async def aclose(self) -> None:
         await super().aclose()

@@ -1136,21 +1136,44 @@ class Context:
     ) -> github_graphql_types.GitHubPullRequestReviewDecision:
         review_decision = self._caches.review_decision.get()
         if review_decision is cache.Unset:
-            response = await self.client.graphql_post(
-                f"""
-            {{
-      repository(owner: "{self.repository.repo["owner"]["login"]}", name: "{self.repository.repo["name"]}") {{
-        pullRequest(number: {self.pull["number"]}) {{
-          reviewDecision
-        }}
-      }}
+            query = f"""
+{{
+  repository(owner: "{self.repository.repo["owner"]["login"]}", name: "{self.repository.repo["name"]}") {{
+    pullRequest(number: {self.pull["number"]}) {{
+      reviewDecision
     }}
-    """
-            )
+  }}
+}}
+"""
+            response = await self.client.graphql_post(query)
             review_decision = typing.cast(
                 github_graphql_types.GitHubPullRequestReviewDecision,
                 response["data"]["repository"]["pullRequest"]["reviewDecision"],
             )
+
+            # NOTE(sileht): for debugging MRGFY-1703
+            protection = await self.repository.get_branch_protection(
+                self.pull["base"]["ref"]
+            )
+            require_code_owner_reviews = (
+                protection
+                and protection.get("required_pull_request_reviews") is not None
+                and protection["required_pull_request_reviews"][
+                    "require_code_owner_reviews"
+                ]
+            )
+
+            if review_decision is None and require_code_owner_reviews:
+                self.log.error(
+                    "review_decision is None while code owner is set",
+                    query=query,
+                    data=response["data"],
+                    request=await self.client.last_request.to_curl_request(),
+                    response=await self.client.last_request.to_curl_response(),
+                    branch_protection=protection,
+                )
+            # NOTE(sileht): end of debugging MRGFY-1703
+
             self._caches.review_decision.set(review_decision)
         return review_decision
 

@@ -453,3 +453,65 @@ async def test_client_abuse_403_no_header(respx_mock: respx.MockRouter) -> None:
     assert exc_info.value.status_code == 403
     assert exc_info.value.response.status_code == 403
     assert str(exc_info.value.request.url) == f"{config.GITHUB_REST_API_URL}/"
+
+
+@mock.patch.object(github.CachedToken, "STORAGE", {})
+@pytest.mark.respx(base_url=config.GITHUB_REST_API_URL)
+async def test_to_curl(
+    respx_mock: respx.MockRouter,
+) -> None:
+    respx_mock.get("/user/12345/installation").respond(
+        200,
+        json={
+            "id": 12345,
+            "target_type": "User",
+            "permissions": {
+                "checks": "write",
+                "contents": "write",
+                "pull_requests": "write",
+            },
+            "account": {"login": "testing", "id": 12345},
+        },
+    )
+
+    respx_mock.post("/app/installations/12345/access_tokens").respond(
+        200,
+        json={"token": "<installation-token>", "expires_at": "2100-12-31T23:59:59Z"},
+    )
+
+    respx_mock.post(
+        "/",
+        headers__contains={"Authorization": "token <installation-token>", "Foo": "Bar"},
+    ).respond(200, json={"work": True})
+
+    installation_json = await github.get_installation_from_account_id(
+        github_types.GitHubAccountIdType(12345)
+    )
+    async with github.AsyncGithubInstallationClient(
+        github.GithubAppInstallationAuth(installation_json)
+    ) as client:
+        await client.post("/", headers={"Foo": "Bar"}, json={"ask": "What?"})
+        assert await client.last_request.to_curl_request() == (
+            "curl -X POST "
+            '-H "host: api.github.com" '
+            '-H "accept-encoding: gzip, deflate" '
+            '-H "connection: keep-alive" '
+            f'-H "user-agent: mergify-engine/unknown python/{http.PYTHON_VERSION} httpx/{http.HTTPX_VERSION}" '
+            '-H "accept: application/vnd.github.machine-man-preview+json" '
+            '-H "foo: Bar" '
+            '-H "content-length: 16" '
+            '-H "content-type: application/json" '
+            '-H "authorization: *****" '
+            """-d '{"ask": "What?"}' """  # noqa: FS003
+            "https://api.github.com/"
+        )
+        assert (
+            await client.last_request.to_curl_response()
+            == """< HTTP/1.1 200
+< "content-length: 14"
+< "content-type: application/json"
+<
+* Connection #0 to host api.github.com left intact
+{"work": true}
+"""
+        )
