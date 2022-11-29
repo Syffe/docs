@@ -38,7 +38,7 @@ jobs:
       - name: Setup Python 🔧
         uses: actions/setup-python@v4.3.0
         with:
-          python-version: 3.10.8
+          python-version: 3.11.0
 
       - name: Build 🔧 & Test 🔍
         run: |
@@ -57,7 +57,7 @@ jobs:
       - name: Setup Python 🔧
         uses: actions/setup-python@v4.3.0
         with:
-          python-version: 3.10.8
+          python-version: 3.11.0
 
       - name: Build 🔧 & Test 🔍
         run: |
@@ -89,7 +89,7 @@ jobs:
       - name: Setup Python 🔧
         uses: actions/setup-python@v4.3.0
         with:
-          python-version: 3.10.8
+          python-version: 3.11.0
 
       - name: Build 🔧 & Test 🔍
         run: |
@@ -122,13 +122,13 @@ jobs:
       - name: Setup Python 🔧
         uses: actions/setup-python@v4.3.0
         with:
-          python-version: 3.10.8
+          python-version: 3.11.0
 
       - name: Build 🔧 & Test 🔍
         run: |
           # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
           pip install -r requirements-dev.txt
-          tox -e py310 -- --splits 5 --group ${{ matrix.group }}
+          tox -e py311 -- --splits 5 --group ${{ matrix.group }}
 
   docs:
     timeout-minutes: 20
@@ -140,7 +140,7 @@ jobs:
       - name: Setup Python 🔧
         uses: actions/setup-python@v4.3.0
         with:
-          python-version: 3.10.8
+          python-version: 3.11.0
 
       - name: Setup Node 🔧
         uses: actions/setup-node@v3

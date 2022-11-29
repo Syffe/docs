@@ -6,12 +6,12 @@ build-backend = "poetry.core.masonry.api"
 name = "mergify_engine"
 version = "0.0.0"
 description = "mergify is a GitHub Application to automate pull requests"
-classifiers = ["Intended Audience :: Information Technology", "License :: OSI Approved :: Apache Software License", "Operating System :: POSIX", "Programming Language :: Python", "Programming Language :: Python :: 3", "Programming Language :: Python :: 3.10"]
+classifiers = ["Intended Audience :: Information Technology", "License :: OSI Approved :: Apache Software License", "Operating System :: POSIX", "Programming Language :: Python", "Programming Language :: Python :: 3", "Programming Language :: Python :: 3.11"]
 homepage = "https://github.com/mergifyio/engine"
 authors = ["Mergify <hello@mergify.com>"]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<4.0"
+python = ">=3.11,<4.0"
 aiofiles = "*"
 cryptography = "*"
 daiquiri = ">=3"
@@ -161,7 +161,7 @@ filterwarnings = [
 ]
 
 [tool.black]
-target-version = ['py310']
+target-version = ['py311']
 
 [tool.mypy]
 strict = true
