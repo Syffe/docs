@@ -79,12 +79,10 @@ TreeT = typing.TypedDict(
         ">=": TreeBinaryLeafT,
         "!=": TreeBinaryLeafT,
         "~=": TreeBinaryLeafT,
-        # FIXME(sileht): can't use | as we can remove double quote around to Type
-        # because of recursive definition of these types
-        "@": typing.Union["TreeT", "CompiledTreeT[GetAttrObject]"],  # type: ignore[misc] # noqa: NU003
-        "or": abc.Iterable[typing.Union["TreeT", "CompiledTreeT[GetAttrObject]"]],  # type: ignore[misc] # noqa: NU003
-        "and": abc.Iterable[typing.Union["TreeT", "CompiledTreeT[GetAttrObject]"]],  # type: ignore[misc] # noqa: NU003
-        "not": typing.Union["TreeT", "CompiledTreeT[GetAttrObject]"],  # type: ignore[misc] # noqa: NU003
+        "@": "TreeT | CompiledTreeT[GetAttrObject]",  # type: ignore[misc]
+        "or": abc.Iterable["TreeT | CompiledTreeT[GetAttrObject]"],  # type: ignore[misc]
+        "and": abc.Iterable["TreeT | CompiledTreeT[GetAttrObject]"],  # type: ignore[misc]
+        "not": "TreeT | CompiledTreeT[GetAttrObject]",  # type: ignore[misc]
     },
     total=False,
 )
