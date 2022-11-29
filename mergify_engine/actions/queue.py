@@ -1,3 +1,4 @@
+from collections import abc
 import dataclasses
 import functools
 import typing
@@ -109,7 +110,41 @@ Then, re-embark the pull request into the merge queue by posting the comment
             config["name"] = args[0]
         return config
 
-    async def _queue_branch_merge(
+    async def _queue_branch_merge_pull_request(
+        self,
+        ctxt: context.Context,
+        rule: "rules.EvaluatedRule",
+        queue: merge_train.Train,
+        queue_freeze: freeze.QueueFreeze | None,
+        car: merge_train.TrainCar | None,
+        merge_bot_account: github_types.GitHubLogin | None,
+    ) -> check_api.Result:
+        result = await self.common_merge(
+            ctxt,
+            rule,
+            self.config["method"],
+            self.config["rebase_fallback"],
+            merge_bot_account,
+            self.config["commit_message_template"],
+            functools.partial(
+                self.get_pending_queue_status,
+                queue=queue,
+                queue_freeze=queue_freeze,
+            ),
+        )
+        if result.conclusion == check_api.Conclusion.SUCCESS:
+            _, embarked_pull = queue.find_embarked_pull(ctxt.pull["number"])
+            if embarked_pull is None:
+                raise RuntimeError("Queue pull request with no embarked_pull")
+            await queue.remove_pull(
+                ctxt,
+                rule.get_signal_trigger(),
+                result.title + "\n" + result.summary,
+            )
+            await self.send_merge_signal(ctxt, rule, embarked_pull)
+        return result
+
+    async def _queue_branch_merge_fastforward(
         self,
         ctxt: context.Context,
         rule: "rules.EvaluatedRule",
@@ -190,6 +225,30 @@ Then, re-embark the pull request into the merge queue by posting the comment
             "The pull request has been merged automatically",
             f"The pull request has been merged automatically at *{newsha}*",
         )
+
+    @property
+    def _merge(
+        self,
+    ) -> abc.Callable[
+        [
+            context.Context,
+            "rules.EvaluatedRule",
+            merge_train.Train,
+            freeze.QueueFreeze | None,
+            merge_train.TrainCar | None,
+            github_types.GitHubLogin | None,
+        ],
+        abc.Coroutine[typing.Any, typing.Any, check_api.Result],
+    ]:
+        queue_branch_merge_method = self.queue_rule.config["queue_branch_merge_method"]
+        if queue_branch_merge_method is None:
+            return self._queue_branch_merge_pull_request
+        elif queue_branch_merge_method == "fast-forward":
+            return self._queue_branch_merge_fastforward
+        else:
+            raise RuntimeError(
+                f"Unsupported queue_branch_merge_method: {queue_branch_merge_method}"
+            )
 
     async def _subscription_status(
         self, ctxt: context.Context
@@ -306,6 +365,41 @@ Then, re-embark the pull request into the merge queue by posting the comment
             # enabled, but not enforced on admins, we may bypass them
             required_permissions=[github_types.GitHubRepositoryPermission.WRITE],
         )
+
+    async def _check_for_unexpected_changes(
+        self,
+        ctxt: context.Context,
+        rule: "rules.EvaluatedRule",
+        car: merge_train.TrainCar | None,
+        queue: merge_train.Train,
+    ) -> None:
+        current_base_sha = await queue.get_base_sha()
+        if car is None or await queue.is_synced_with_the_base_branch(current_base_sha):
+            return
+
+        unexpected_changes = merge_train.UnexpectedBaseBranchChange(current_base_sha)
+        pull_requests_to_evaluate = await car.get_pull_requests_to_evaluate()
+        queue_rule_evaluated = await self.queue_rule.get_evaluated_queue_rule(
+            ctxt.repository,
+            ctxt.pull["base"]["ref"],
+            pull_requests_to_evaluate,
+            evaluated_pull_request_rule=rule,
+        )
+        status = await checks_status.get_rule_checks_status(
+            ctxt.log,
+            ctxt.repository,
+            pull_requests_to_evaluate,
+            queue_rule_evaluated,
+            wait_for_schedule_to_match=True,
+        )
+        ctxt.log.info("train will be reset", unexpected_changes=unexpected_changes)
+
+        await car.update_state(
+            status,
+            queue_rule_evaluated,
+            unexpected_change=unexpected_changes,
+        )
+        await queue.reset(unexpected_changes)
 
     async def run(
         self, ctxt: context.Context, rule: "rules.EvaluatedRule"
@@ -426,84 +520,11 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 )
                 try:
                     qf = await self._get_current_queue_freeze(ctxt)
-                    current_base_sha = await q.get_base_sha()
-                    if car is not None and not await q.is_synced_with_the_base_branch(
-                        current_base_sha
-                    ):
-                        unexpected_changes = merge_train.UnexpectedBaseBranchChange(
-                            current_base_sha
-                        )
-                        pull_requests_to_evaluate = (
-                            await car.get_pull_requests_to_evaluate()
-                        )
-                        queue_rule_evaluated = (
-                            await self.queue_rule.get_evaluated_queue_rule(
-                                ctxt.repository,
-                                ctxt.pull["base"]["ref"],
-                                pull_requests_to_evaluate,
-                                evaluated_pull_request_rule=rule,
-                            )
-                        )
-                        status = await checks_status.get_rule_checks_status(
-                            ctxt.log,
-                            ctxt.repository,
-                            pull_requests_to_evaluate,
-                            queue_rule_evaluated,
-                            wait_for_schedule_to_match=True,
-                        )
-                        ctxt.log.info(
-                            "train will be reset", unexpected_changes=unexpected_changes
-                        )
-
-                        await car.update_state(
-                            status,
-                            queue_rule_evaluated,
-                            unexpected_change=unexpected_changes,
-                        )
-                        await q.reset(unexpected_changes)
-
+                    await self._check_for_unexpected_changes(ctxt, rule, car, q)
                     if await self._should_be_merged(ctxt, q, qf):
-                        if (
-                            self.queue_rule.config["queue_branch_merge_method"]
-                            == "fast-forward"
-                        ):
-                            result = await self._queue_branch_merge(
-                                ctxt, rule, q, qf, car, merge_bot_account
-                            )
-                        elif (
-                            self.queue_rule.config["queue_branch_merge_method"] is None
-                        ):
-                            result = await self._merge(
-                                ctxt,
-                                rule,
-                                self.config["method"],
-                                self.config["rebase_fallback"],
-                                merge_bot_account,
-                                self.config["commit_message_template"],
-                                functools.partial(
-                                    self.get_pending_queue_status,
-                                    queue=q,
-                                    queue_freeze=qf,
-                                ),
-                            )
-                            if result.conclusion == check_api.Conclusion.SUCCESS:
-                                _, embarked_pull = q.find_embarked_pull(
-                                    ctxt.pull["number"]
-                                )
-                                if embarked_pull is None:
-                                    raise RuntimeError(
-                                        "Queue pull request with no embarked_pull"
-                                    )
-                                await q.remove_pull(
-                                    ctxt,
-                                    rule.get_signal_trigger(),
-                                    result.title + "\n" + result.summary,
-                                )
-                                await self.send_merge_signal(ctxt, rule, embarked_pull)
-                        else:
-                            raise RuntimeError(
-                                f"Unsupported queue_branch_merge_method: {self.queue_rule.config['queue_branch_merge_method']}"
-                            )
+                        result = await self._merge(
+                            ctxt, rule, q, qf, car, merge_bot_account
+                        )
                     else:
                         result = await self.get_pending_queue_status(ctxt, rule, q, qf)
 

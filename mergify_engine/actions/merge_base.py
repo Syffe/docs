@@ -36,7 +36,7 @@ class MergeUtilsMixin:
             priority=worker_pusher.Priority.immediate,
         )
 
-    async def _merge(
+    async def common_merge(
         self,
         ctxt: context.Context,
         rule: "rules.EvaluatedRule",

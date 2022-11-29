@@ -102,7 +102,7 @@ class MergeAction(actions.BackwardCompatAction, merge_base.MergeUtilsMixin):
 
         report = await self.merge_report(ctxt, self.config["method"], merge_bot_account)
         if report is None:
-            report = await self._merge(
+            report = await self.common_merge(
                 ctxt,
                 rule,
                 self.config["method"],
