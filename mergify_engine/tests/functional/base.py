@@ -340,11 +340,14 @@ class EventReader:
 
 @pytest.mark.usefixtures("logger_checker", "unittest_asyncio_glue")
 class IsolatedAsyncioTestCaseWithPytestAsyncioGlue(unittest.IsolatedAsyncioTestCase):
+
+    # TODO(sileht): remove this when upgrade of python 3.11 is done
+    @typing.no_type_check
     def _setupAsyncioRunner(self) -> None:
         # NOTE(sileht): py311 unittest internal interface
         # We reuse the event loop created by pytest-asyncio
-        self._asyncioRunner = asyncio.Runner(  # type: ignore[attr-defined]
-            debug=True, loop_factory=lambda: self.pytest_event_loop  # type: ignore[attr-defined]
+        self._asyncioRunner = asyncio.Runner(
+            debug=True, loop_factory=lambda: self.pytest_event_loop
         )
 
     def _tearDownAsyncioRunner(self) -> None:
