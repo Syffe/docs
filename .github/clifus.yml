@@ -95,11 +95,11 @@ targets:
       forcecreate: true
       content: "{{ source `datadog-agent-version` }}"
   dockerfile:
-    name: "Update DD_AGENT_VERSION in Dockerfile"
+    name: "Update DD_AGENT_VERSION in dockerfiles/Dockerfile.common"
     sourceID: datadog-agent-version
     kind: file
     spec:
-      file: Dockerfile
+      file: dockerfiles/Dockerfile.common
       lineMatchPattern: "^ARG DD_AGENT_VERSION="
     transformers:
       - addPrefix: "ARG DD_AGENT_VERSION="
