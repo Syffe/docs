@@ -37,7 +37,7 @@ targets:
     sourceID: python-version
     spec:
       file: tox.ini
-      lineMatchPattern: "(.*python)(3.\\d+)(^\\d)"
+      lineMatchPattern: "(.*python)(3.\\d+)(.*)"
     transformers:
       - find: "^\\d+\\.\\d+"
       - replaceRegexGroup: 2
