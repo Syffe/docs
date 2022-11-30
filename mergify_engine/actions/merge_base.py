@@ -23,6 +23,7 @@ PendingResultBuilderT = abc.Callable[
     abc.Awaitable[check_api.Result],
 ]
 MergeMethodT = typing.Literal["merge", "rebase", "squash", "fast-forward"]
+RebaseFallbackT = typing.Literal["merge", "squash", "none", None]
 
 
 class MergeUtilsMixin:
@@ -41,15 +42,18 @@ class MergeUtilsMixin:
         ctxt: context.Context,
         rule: "rules.EvaluatedRule",
         merge_method: MergeMethodT,
-        merge_rebase_fallback: typing.Literal["merge", "rebase"] | None,
+        merge_rebase_fallback: RebaseFallbackT,
         merge_bot_account: github_types.GitHubLogin | None,
         commit_message_template: str | None,
         pending_result_builder: PendingResultBuilderT,
     ) -> check_api.Result:
+        final_merge_method: MergeMethodT
         if merge_method != "rebase" or ctxt.pull["rebaseable"]:
-            pass
-        elif merge_rebase_fallback in ["merge", "squash"]:
-            merge_method = merge_rebase_fallback
+            final_merge_method = merge_method
+        elif merge_rebase_fallback == "merge":
+            final_merge_method = "merge"
+        elif merge_rebase_fallback == "squash":
+            final_merge_method = "squash"
         else:
             if merge_rebase_fallback is None:
                 ctxt.log.info("legacy rebase_fallback=null used")
@@ -72,7 +76,7 @@ class MergeUtilsMixin:
                     f"Please make sure `{merge_bot_account}` has logged in Mergify dashboard.",
                 )
 
-        if merge_method == "fast-forward":
+        if final_merge_method == "fast-forward":
             try:
                 await ctxt.client.put(
                     f"{ctxt.base_url}/git/refs/heads/{ctxt.pull['base']['ref']}",
@@ -131,7 +135,7 @@ class MergeUtilsMixin:
                 data["commit_message"] = message
 
             data["sha"] = ctxt.pull["head"]["sha"]
-            data["merge_method"] = merge_method
+            data["merge_method"] = final_merge_method
 
             try:
                 await ctxt.client.put(

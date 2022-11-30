@@ -42,7 +42,100 @@ def DeprecatedOption(
     return validator
 
 
-class MergeAction(actions.BackwardCompatAction, merge_base.MergeUtilsMixin):
+class MergeExecutorConfig(typing.TypedDict):
+    method: merge_base.MergeMethodT
+    rebase_fallback: merge_base.RebaseFallbackT
+    commit_message_template: str | None
+    merge_bot_account: github_types.GitHubLogin | None
+    priority: int
+
+
+class MergeExecutor(
+    actions.ActionExecutor["MergeAction", "MergeExecutorConfig"],
+    merge_base.MergeUtilsMixin,
+):
+    @property
+    def silenced_conclusion(self) -> tuple[check_api.Conclusion, ...]:
+        return ()
+
+    @classmethod
+    async def create(
+        cls,
+        action: "MergeAction",
+        ctxt: "context.Context",
+        rule: "rules.EvaluatedRule",
+    ) -> "MergeExecutor":
+        try:
+            merge_bot_account = await action_utils.render_bot_account(
+                ctxt,
+                action.config["merge_bot_account"],
+                option_name="merge_bot_account",
+                required_feature=subscription.Features.MERGE_BOT_ACCOUNT,
+                missing_feature_message="Cannot use `merge_bot_account` with merge action",
+                # NOTE(sileht): we don't allow admin, because if branch protection are
+                # enabled, but not enforced on admins, we may bypass them
+                required_permissions=[github_types.GitHubRepositoryPermission.WRITE],
+            )
+        except action_utils.RenderBotAccountFailure as e:
+            raise rules.InvalidPullRequestRule(e.title, e.reason)
+
+        if action.config["method"] == "fast-forward":
+            if action.config["commit_message_template"] is not None:
+                raise rules.InvalidPullRequestRule(
+                    "Commit message can't be changed with fast-forward merge method",
+                    "`commit_message_template` must not be set if `method: fast-forward` is set.",
+                )
+
+        return cls(
+            ctxt,
+            rule,
+            MergeExecutorConfig(
+                {
+                    "method": action.config["method"],
+                    "rebase_fallback": action.config["rebase_fallback"],
+                    "commit_message_template": action.config["commit_message_template"],
+                    "merge_bot_account": merge_bot_account,
+                    "priority": action.config["priority"],
+                }
+            ),
+        )
+
+    async def run(self) -> check_api.Result:
+        report = await self.merge_report(
+            self.ctxt, self.config["method"], self.config["merge_bot_account"]
+        )
+        if report is None:
+            report = await self.common_merge(
+                self.ctxt,
+                self.rule,
+                self.config["method"],
+                self.config["rebase_fallback"],
+                self.config["merge_bot_account"],
+                self.config["commit_message_template"],
+                self.get_pending_merge_status,
+            )
+            if report.conclusion == check_api.Conclusion.SUCCESS:
+                await signals.send(
+                    self.ctxt.repository,
+                    self.ctxt.pull["number"],
+                    "action.merge",
+                    signals.EventNoMetadata({}),
+                    self.rule.get_signal_trigger(),
+                )
+        return report
+
+    async def cancel(self) -> check_api.Result:
+        return actions.CANCELLED_CHECK_REPORT
+
+    async def get_pending_merge_status(
+        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
+    ) -> check_api.Result:
+        return check_api.Result(
+            check_api.Conclusion.PENDING, "The pull request will be merged soon", ""
+        )
+
+
+class MergeAction(actions.Action):
     flags = (
         actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
         | actions.ActionFlag.SUCCESS_IS_FINAL_STATE
@@ -53,14 +146,11 @@ class MergeAction(actions.BackwardCompatAction, merge_base.MergeUtilsMixin):
 
     validator = {
         voluptuous.Required("method", default="merge"): voluptuous.Any(
-            "rebase",
-            "merge",
-            "squash",
-            "fast-forward",
+            *typing.get_args(merge_base.MergeMethodT)
         ),
         # NOTE(sileht): None is supported for legacy reason
         voluptuous.Required("rebase_fallback", default="merge"): voluptuous.Any(
-            "merge", "squash", "none", None
+            *typing.get_args(merge_base.RebaseFallbackT)
         ),
         voluptuous.Required("merge_bot_account", default=None): types.Jinja2WithNone,
         voluptuous.Required(
@@ -70,76 +160,6 @@ class MergeAction(actions.BackwardCompatAction, merge_base.MergeUtilsMixin):
             "priority", default=queue.PriorityAliases.medium.value
         ): queue.PrioritySchema,
     }
-
-    @property
-    def silenced_conclusion(self) -> tuple[check_api.Conclusion, ...]:
-        return ()
-
-    async def run(
-        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
-    ) -> check_api.Result:
-        try:
-            merge_bot_account = await action_utils.render_bot_account(
-                ctxt,
-                self.config["merge_bot_account"],
-                option_name="merge_bot_account",
-                required_feature=subscription.Features.MERGE_BOT_ACCOUNT,
-                missing_feature_message="Cannot use `merge_bot_account` with merge action",
-                # NOTE(sileht): we don't allow admin, because if branch protection are
-                # enabled, but not enforced on admins, we may bypass them
-                required_permissions=[github_types.GitHubRepositoryPermission.WRITE],
-            )
-        except action_utils.RenderBotAccountFailure as e:
-            return check_api.Result(e.status, e.title, e.reason)
-
-        if self.config["method"] == "fast-forward":
-            if self.config["commit_message_template"] is not None:
-                return check_api.Result(
-                    check_api.Conclusion.FAILURE,
-                    "Commit message can't be changed with fast-forward merge method",
-                    "`commit_message_template` must not be set if `method: fast-forward` is set.",
-                )
-
-        report = await self.merge_report(ctxt, self.config["method"], merge_bot_account)
-        if report is None:
-            report = await self.common_merge(
-                ctxt,
-                rule,
-                self.config["method"],
-                self.config["rebase_fallback"],
-                merge_bot_account,
-                self.config["commit_message_template"],
-                self.get_pending_merge_status,
-            )
-            if report.conclusion == check_api.Conclusion.SUCCESS:
-                await self.send_merge_signal(ctxt, rule, None)
-        return report
-
-    async def cancel(
-        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
-    ) -> check_api.Result:
-        return actions.CANCELLED_CHECK_REPORT
-
-    async def get_pending_merge_status(
-        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
-    ) -> check_api.Result:
-        return check_api.Result(
-            check_api.Conclusion.PENDING, "The pull request will be merged soon", ""
-        )
-
-    async def send_merge_signal(
-        self,
-        ctxt: context.Context,
-        rule: "rules.EvaluatedRule",
-        queue: None,
-    ) -> None:
-        await signals.send(
-            ctxt.repository,
-            ctxt.pull["number"],
-            "action.merge",
-            signals.EventNoMetadata({}),
-            rule.get_signal_trigger(),
-        )
 
     async def get_conditions_requirements(
         self, ctxt: context.Context
@@ -159,3 +179,5 @@ class MergeAction(actions.BackwardCompatAction, merge_base.MergeUtilsMixin):
         )
         conditions_requirements.extend(await conditions.get_depends_on_conditions(ctxt))
         return conditions_requirements
+
+    executor_class = MergeExecutor
