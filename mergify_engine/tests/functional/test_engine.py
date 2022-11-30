@@ -262,38 +262,6 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
             conclusion="success", status="completed", name="Rule: merge (merge)"
         )
 
-    async def test_merge_and_closes_issues(self) -> None:
-        rules = {
-            "pull_request_rules": [
-                {
-                    "name": "Merge on main",
-                    "conditions": [
-                        f"base={self.main_branch_name}",
-                        "status-success=continuous-integration/fake-ci",
-                    ],
-                    "actions": {"merge": {"method": "merge"}},
-                }
-            ]
-        }
-
-        await self.setup_repo(yaml.dump(rules))
-
-        i = await self.create_issue(
-            title="Such a bug", body="I can't explain, but don't work"
-        )
-        p = await self.create_pr(message=f"It fixes it\n\nCloses #{i['number']}")
-        await self.create_status(p)
-
-        await self.run_engine()
-
-        p_merged = await self.wait_for_pull_request("closed", pr_number=p["number"])
-        assert p_merged["pull_request"]["merged"]
-
-        issue = await self.client_integration.item(
-            f"{self.url_origin}/issues/{i['number']}"
-        )
-        assert "closed" == issue["state"]
-
     async def test_rebase(self) -> None:
         rules = {
             "pull_request_rules": [
