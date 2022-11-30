@@ -340,46 +340,18 @@ class EventReader:
 
 @pytest.mark.usefixtures("logger_checker", "unittest_asyncio_glue")
 class IsolatedAsyncioTestCaseWithPytestAsyncioGlue(unittest.IsolatedAsyncioTestCase):
-
-    # TODO(sileht): remove this when upgrade of python 3.11 is done
-    @typing.no_type_check
     def _setupAsyncioRunner(self) -> None:
         # NOTE(sileht): py311 unittest internal interface
         # We reuse the event loop created by pytest-asyncio
         self._asyncioRunner = asyncio.Runner(
-            debug=True, loop_factory=lambda: self.pytest_event_loop
+            debug=True,
+            loop_factory=lambda: self.pytest_event_loop,  # type: ignore[attr-defined,no-any-return]
         )
 
     def _tearDownAsyncioRunner(self) -> None:
         # NOTE(sileht): py311 unittest internal interface
         # We don't run the loop.close() of unittest and let pytest doing it
         pass
-
-    def _setupAsyncioLoop(self) -> None:
-        # NOTE(sileht): py310 unittest internal interface
-
-        # We reuse the event loop created by pytest-asyncio
-        loop = self.pytest_event_loop  # type: ignore[attr-defined]
-
-        # Copy as-is of unittest.IsolatedAsyncioTestCase code without loop setup
-        # loop = asyncio.new_event_loop()
-        # asyncio.set_event_loop(loop)
-        loop.set_debug(True)
-        self._asyncioTestLoop = loop
-        fut = loop.create_future()
-        self._asyncioCallsTask = loop.create_task(self._asyncioLoopRunner(fut))  # type: ignore[attr-defined]
-        loop.run_until_complete(fut)
-
-    def _tearDownAsyncioLoop(self) -> None:
-        # NOTE(sileht): py310 unittest internal interface
-
-        # Part of the cleanup must be done by pytest-asyncio
-        loop = self.pytest_event_loop  # type: ignore[attr-defined]
-        loop_close = loop.close
-        loop.close = lambda: True
-        super()._tearDownAsyncioLoop()  # type: ignore[misc]
-        loop.close = loop_close
-        asyncio.set_event_loop(loop)
 
 
 @pytest.mark.usefixtures("logger_checker", "unittest_glue")
