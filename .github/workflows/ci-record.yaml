@@ -50,7 +50,7 @@ jobs:
            # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
            pip install -r requirements-dev.txt
            DOW=$(date +%u)
-           tox -e record -- mergify_engine/tests/functional --splits 5 --group "${DOW}"
+           tox -e record -- --splits 5 --group "${DOW}"
 
       - name: Fetch check run html url
         id: fetch-check-run
