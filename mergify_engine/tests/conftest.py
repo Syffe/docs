@@ -376,3 +376,20 @@ async def fake_github_app_info(monkeypatch: pytest.MonkeyPatch) -> None:
 @pytest.fixture
 async def fake_mergify_bot(fake_github_app_info: None) -> github_types.GitHubAccount:
     return await github.GitHubAppInfo.get_bot()
+
+
+@pytest.fixture
+def logging_reset() -> abc.Generator[None, None, None]:
+    root_logger = logging.getLogger()
+    saved_loggers = root_logger.manager.loggerDict
+    saved_handlers = root_logger.handlers
+    saved_filters = root_logger.filters
+    root_logger.handlers = []
+    root_logger.filters = []
+    root_logger.manager.loggerDict = {}
+    try:
+        yield
+    finally:
+        root_logger.manager.loggerDict = saved_loggers
+        root_logger.filters = saved_filters
+        root_logger.handlers = saved_handlers

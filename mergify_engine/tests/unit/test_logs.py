@@ -39,14 +39,13 @@ def test_datadog_logger(
     config_value: str | None,
     expected_hostname: str | None,
     expected_port: int | None,
+    logging_reset: None,
 ) -> None:
-    root_logger = logging.getLogger()
-    root_logger.handlers = []
-
     monkeypatch.setattr(config, "LOG_DATADOG", config_value)
     monkeypatch.setattr(config, "LOG_STDOUT", False)
     logs.setup_logging(dump_config=False)
 
+    root_logger = logging.getLogger()
     if expected_hostname is None:
         assert root_logger.handlers == []
     else:
