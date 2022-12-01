@@ -615,12 +615,12 @@ class AsyncGithubInstallationClient(AsyncGithubClient):
         ):
             statsd.histogram(
                 "http.client.ratelimit.limit",
-                request_with_ratelimit.response.headers["x-ratelimit-limit"],
+                int(request_with_ratelimit.response.headers["x-ratelimit-limit"]),
                 tags=tags,
             )
             statsd.histogram(
                 "http.client.ratelimit.remaining",
-                request_with_ratelimit.response.headers["x-ratelimit-remaining"],
+                int(request_with_ratelimit.response.headers["x-ratelimit-remaining"]),
                 tags=tags,
             )
 

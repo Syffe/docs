@@ -100,6 +100,7 @@ class ActionExecutor(abc.ABC, typing.Generic[ActionT, ActionExecutorConfigT]):
         )
 
     @classmethod
+    @abc.abstractmethod
     async def create(
         cls,
         # FIXME(sileht): pass just RawConfigT instead of the "Action"
