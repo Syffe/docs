@@ -2282,8 +2282,7 @@ class Train:
 
     async def _remove_duplicate_pulls(self) -> None:
         known_prs = set()
-        i = 0
-        for car in self._cars:
+        for i, car in enumerate(self._cars):
             for embarked_pull in car.still_queued_embarked_pulls:
                 if embarked_pull.user_pull_request_number in known_prs:
                     await self._slice_cars(
@@ -2293,7 +2292,9 @@ class Train:
                     break
                 else:
                     known_prs.add(embarked_pull.user_pull_request_number)
-                i += 1
+            else:
+                continue
+            break
 
         wp_to_keep = []
         for wp in self._waiting_pulls:
@@ -2313,6 +2314,7 @@ class Train:
                     i,
                     reason=queue_utils.QueueRuleMissing(),
                 )
+                return None
 
     async def reset(self, unexpected_change: UnexpectedChange) -> None:
         await self._slice_cars(
