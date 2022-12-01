@@ -19,7 +19,7 @@ RefreshActionSchema = voluptuous.Schema(voluptuous.Any("user", "admin", "interna
 
 @router.post(
     "/{owner_login}/{repo_name}/pull/{pull_request_number}",  # noqa: FS003
-    dependencies=[fastapi.Depends(auth.signature)],
+    dependencies=[fastapi.Depends(auth.github_webhook_signature)],
 )
 async def refresh_pull(
     owner_login: github_types.GitHubLogin,
@@ -53,7 +53,7 @@ async def refresh_pull(
 
 @router.post(
     "/{owner_login}/{repo_name}/branch/{branch}",  # noqa: FS003
-    dependencies=[fastapi.Depends(auth.signature)],
+    dependencies=[fastapi.Depends(auth.github_webhook_signature)],
 )
 async def refresh_branch(
     owner_login: github_types.GitHubLogin,

@@ -27,7 +27,9 @@ EVENT_FORWARD_TIMEOUT = 5
 router = fastapi.APIRouter()
 
 
-@router.post("/marketplace", dependencies=[fastapi.Depends(auth.signature)])
+@router.post(
+    "/marketplace", dependencies=[fastapi.Depends(auth.github_webhook_signature)]
+)
 async def marketplace_handler(
     request: requests.Request,
     redis_links: redis_utils.RedisLinks = fastapi.Depends(  # noqa: B008
@@ -77,7 +79,7 @@ async def marketplace_handler(
     return responses.Response("Event queued", status_code=202)
 
 
-@router.post("/event", dependencies=[fastapi.Depends(auth.signature)])
+@router.post("/event", dependencies=[fastapi.Depends(auth.github_webhook_signature)])
 async def event_handler(
     request: requests.Request,
     redis_links: redis_utils.RedisLinks = fastapi.Depends(  # noqa: B008

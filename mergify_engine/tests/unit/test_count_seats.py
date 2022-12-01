@@ -13,7 +13,6 @@ from mergify_engine import count_seats
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import signals
-from mergify_engine import utils
 from mergify_engine.tests.unit import conftest
 
 
@@ -134,22 +133,17 @@ async def test_get_usage_count_seats(
     redis_links: redis_utils.RedisLinks,
 ) -> None:
     await (count_seats.store_active_users(redis_links.active_users, event_type, event))
-    charset = "utf8"
 
-    data = b"a" * 123
-    headers = {
-        "Authorization": f"Bearer {config.DASHBOARD_TO_ENGINE_API_KEY}",
-        "Content-Type": f"application/json; charset={charset}",
-    }
-    reply = await web_client.request(
-        "GET", "/organization/1234/usage", content=data, headers=headers
-    )
+    reply = await web_client.request("GET", "/organization/1234/usage")
+    assert reply.status_code == 403
+
+    web_client.headers["Authorization"] = f"Bearer {config.DASHBOARD_TO_ENGINE_API_KEY}"
+    web_client.headers["Content-Type"] = "application/json; charset=utf8"
+    reply = await web_client.request("GET", "/organization/1234/usage")
     assert reply.status_code == 200, reply.content
     assert json.loads(reply.content) == {"repositories": [], "last_seen_at": None}
 
-    reply = await web_client.request(
-        "GET", "/organization/21031067/usage", content=data, headers=headers
-    )
+    reply = await web_client.request("GET", "/organization/21031067/usage")
     assert reply.status_code == 200, reply.content
     if event_type == "pull_request":
         assert json.loads(reply.content) == {
@@ -197,14 +191,14 @@ async def test_get_usage_last_seen(
     ctxt = await context_getter(number=1)
 
     signals.register()
-    data = b"a" * 123
-    headers = {
-        "X-Hub-Signature": f"sha1={utils.compute_hmac(data, config.WEBHOOK_SECRET)}",
-        "Content-Type": "application/json; charset=utf8",
-    }
-    reply = await web_client.request(
-        "GET", "/organization/0/usage", content=data, headers=headers
-    )
+
+    reply = await web_client.request("GET", "/organization/0/usage")
+    assert reply.status_code == 403, reply.content
+
+    web_client.headers["Authorization"] = f"Bearer {config.DASHBOARD_TO_ENGINE_API_KEY}"
+    web_client.headers["Content-Type"] = "application/json; charset=utf8"
+
+    reply = await web_client.request("GET", "/organization/0/usage")
     assert reply.status_code == 200, reply.content
     assert json.loads(reply.content) == {"repositories": [], "last_seen_at": None}
 
@@ -216,9 +210,7 @@ async def test_get_usage_last_seen(
         "Rule: testing",
     )
 
-    reply = await web_client.request(
-        "GET", "/organization/0/usage", content=data, headers=headers
-    )
+    reply = await web_client.request("GET", "/organization/0/usage")
     assert reply.status_code == 200, reply.content
     assert json.loads(reply.content) == {
         "repositories": [],

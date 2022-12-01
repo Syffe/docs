@@ -3,7 +3,6 @@ import json
 import httpx
 
 from mergify_engine import config
-from mergify_engine import utils
 from mergify_engine.dashboard import subscription
 
 
@@ -44,16 +43,3 @@ async def test_subscription_cache_update(web_client: httpx.AsyncClient) -> None:
     )
     assert reply.status_code == 200
     assert reply.content == b"Cache updated"
-
-
-async def test_legacy_authentication(web_client: httpx.AsyncClient) -> None:
-    owner_id = 123
-    data = b"azerty"
-    headers = {
-        "X-Hub-Signature": f"sha1={utils.compute_hmac(data, config.WEBHOOK_SECRET)}",
-    }
-    reply = await web_client.request(
-        "DELETE", f"/tokens-cache/{owner_id}", content=data, headers=headers
-    )
-    assert reply.status_code == 200
-    assert reply.content == b"Cache cleaned"

@@ -11,7 +11,7 @@ from mergify_engine import utils
 LOG = daiquiri.getLogger(__name__)
 
 
-async def signature(request: requests.Request) -> None:
+async def github_webhook_signature(request: requests.Request) -> None:
     # Only SHA1 is supported
     header_signature = request.headers.get("X-Hub-Signature")
     if header_signature is None:
@@ -56,5 +56,4 @@ async def dashboard(request: requests.Request) -> None:
             ):
                 return
 
-    # fallback to legacy signature authorization
-    await signature(request)
+    raise fastapi.HTTPException(status_code=403)
