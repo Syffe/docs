@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    Mergify now allows to disable the cascading effect of a queue
+    freeze through a new attribute named ``cascading`` available in
+    ``/api/repos/<owner>/<repo>/queue/<queue_name>/freeze``.

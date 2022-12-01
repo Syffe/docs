@@ -695,10 +695,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         qf = qf_by_name.get(self.config["name"])
         for queue_name, queue_freeze in qf_by_name.items():
-
             if (
                 # NOTE(sileht): queue may have vanish, but freeze still there
-                queue_name in self.queues_priorities
+                queue_freeze.cascading
+                and queue_name in self.queues_priorities
                 and self.queues_priorities[queue_name]
                 > self.queues_priorities[self.config["name"]]
             ):
@@ -813,7 +813,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             else:
                 _ord = utils.to_ordinal_numeric(position + 1)
                 title = f"The pull request is the {_ord} in the queue to be merged"
-            if queue_freeze is not None:
+            if queue_freeze is not None and queue_freeze.cascading:
                 title += (
                     f'\nThe merge is currently blocked by the freeze of the queue "{queue_freeze.name}", '
                     f"for the following reason: {queue_freeze.reason}"

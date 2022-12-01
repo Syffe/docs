@@ -14,6 +14,7 @@ AbortCodeT = typing.Literal[
     "CHECKS_FAILED",
     "QUEUE_RULE_MISSING",
     "UNEXPECTED_QUEUE_CHANGE",
+    "PR_FROZEN_NO_CASCADING",
 ]
 
 
@@ -57,6 +58,14 @@ class PrWithHigherPriorityQueued(BaseAbortReason):
         typing.Literal["PR_WITH_HIGHER_PRIORITY_QUEUED"]
     ] = "PR_WITH_HIGHER_PRIORITY_QUEUED"
     pr_number: int
+
+
+@dataclasses.dataclass
+class PrFrozenNoCascading(BaseAbortReason):
+    message = "The pull request was frozen by a freeze with cascading effect disabled"
+    abort_code: typing.ClassVar[
+        typing.Literal["PR_FROZEN_NO_CASCADING"]
+    ] = "PR_FROZEN_NO_CASCADING"
 
 
 @dataclasses.dataclass

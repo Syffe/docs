@@ -36,6 +36,10 @@ class QueueFreeze:
         default_factory=date.utcnow,
         metadata={"description": "The date and time of the freeze"},
     )
+    cascading: bool = dataclasses.field(
+        default=True,
+        metadata={"description": "The active status of the cascading effect"},
+    )
 
     class Serialized(typing.TypedDict):
         name: str
@@ -43,6 +47,24 @@ class QueueFreeze:
         application_name: str
         application_id: str
         freeze_date: datetime.datetime
+        cascading: bool
+
+    @classmethod
+    def unpack(
+        cls, repository: context.Repository, queue_freeze_raw: typing.Any
+    ) -> "QueueFreeze":
+        # NOTE(Syffe): timestamp parameter means that timestamp variables will be converted to
+        # datetime (value 3=to_datetime()). Other values can be used: 1=to_float(), 2=to_unix_ns()
+        qf = msgpack.unpackb(queue_freeze_raw, timestamp=3)
+        return cls(
+            repository=repository,
+            name=qf["name"],
+            reason=qf["reason"],
+            application_name=qf["application_name"],
+            application_id=qf["application_id"],
+            freeze_date=qf["freeze_date"],
+            cascading=qf.get("cascading", True),  # Backward compat
+        )
 
     @classmethod
     async def get_all(
@@ -53,15 +75,16 @@ class QueueFreeze:
             name=cls._get_redis_hash(repository),
             match=cls._get_redis_key_match(repository),
         ):
-            qf = msgpack.unpackb(qf_raw, timestamp=3)
-            yield cls(
-                repository=repository,
-                name=qf["name"],
-                reason=qf["reason"],
-                application_name=qf["application_name"],
-                application_id=qf["application_id"],
-                freeze_date=qf["freeze_date"],
-            )
+            yield cls.unpack(repository=repository, queue_freeze_raw=qf_raw)
+
+    @classmethod
+    async def get_all_non_cascading(
+        cls, repository: context.Repository
+    ) -> abc.AsyncGenerator["QueueFreeze", None]:
+
+        async for qf in cls.get_all(repository):
+            if not qf.cascading:
+                yield qf
 
     @classmethod
     async def get(
@@ -76,18 +99,7 @@ class QueueFreeze:
         if qf_raw is None:
             return None
 
-        # NOTE(Syffe): timestamp parameter means that timestamp variables will be converted to
-        # datetime (value 3=to_datetime()). Other values can be used: 1=to_float(), 2=to_unix_ns()
-        qf = msgpack.unpackb(qf_raw, timestamp=3)
-
-        return cls(
-            repository=repository,
-            name=qf["name"],
-            reason=qf["reason"],
-            application_name=qf["application_name"],
-            application_id=qf["application_id"],
-            freeze_date=qf["freeze_date"],
-        )
+        return cls.unpack(repository=repository, queue_freeze_raw=qf_raw)
 
     @classmethod
     def _get_redis_hash(cls, repository: context.Repository) -> str:
@@ -113,6 +125,7 @@ class QueueFreeze:
                     "application_name": self.application_name,
                     "application_id": self.application_id,
                     "freeze_date": self.freeze_date,
+                    "cascading": self.cascading,
                 },
                 # NOTE(Syffe): datetime parameter means that datetime variables will be converted to a timestamp
                 # in order to be serialized

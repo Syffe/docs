@@ -238,9 +238,8 @@ def get_cars_content(
 def get_waiting_content(
     train: merge_train.Train,
 ) -> list[github_types.GitHubPullRequestNumber]:
-    return [
-        wp.user_pull_request_number for wp in train._waiting_pulls_ordered_by_priority
-    ]
+    waiting_pulls, ignored_pulls = train._get_waiting_pulls_ordered_by_priority()
+    return [wp.user_pull_request_number for wp in waiting_pulls]
 
 
 def get_config(queue_name: str, priority: int = 100) -> queue.PullQueueConfig:

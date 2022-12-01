@@ -210,6 +210,9 @@ class QueueFreezePayload(pydantic.BaseModel):
     reason: str = pydantic.Field(
         max_length=255, description="The reason of the queue freeze"
     )
+    cascading: bool = pydantic.Field(
+        default=True, description="The active status of the cascading effect"
+    )
 
 
 @pydantic.dataclasses.dataclass
@@ -229,6 +232,10 @@ class QueueFreeze:
     freeze_date: datetime.datetime = dataclasses.field(
         default_factory=date.utcnow,
         metadata={"description": "The date and time of the freeze"},
+    )
+    cascading: bool = dataclasses.field(
+        default=True,
+        metadata={"description": "The active status of the cascading effect"},
     )
 
 
@@ -789,13 +796,16 @@ async def create_queue_freeze(
             application_name=application.name,
             application_id=application.id,
             freeze_date=date.utcnow(),
+            cascading=queue_freeze_payload.cascading,
         )
-        await qf.save()
 
-    elif qf.reason != queue_freeze_payload.reason:
+    if qf.reason != queue_freeze_payload.reason:
         qf.reason = queue_freeze_payload.reason
-        await qf.save()
 
+    if qf.cascading != queue_freeze_payload.cascading:
+        qf.cascading = queue_freeze_payload.cascading
+
+    await qf.save()
     return QueueFreezeResponse(
         queue_freezes=[
             QueueFreeze(
@@ -804,6 +814,7 @@ async def create_queue_freeze(
                 application_name=qf.application_name,
                 application_id=qf.application_id,
                 freeze_date=qf.freeze_date,
+                cascading=qf.cascading,
             )
         ],
     )
@@ -882,6 +893,7 @@ async def get_queue_freeze(
                 application_name=qf.application_name,
                 application_id=qf.application_id,
                 freeze_date=qf.freeze_date,
+                cascading=qf.cascading,
             )
         ],
     )
@@ -911,6 +923,7 @@ async def get_list_queue_freeze(
                 application_name=qf.application_name,
                 application_id=qf.application_id,
                 freeze_date=qf.freeze_date,
+                cascading=qf.cascading,
             )
             async for qf in freeze.QueueFreeze.get_all(repository_ctxt)
         ]

@@ -2381,20 +2381,39 @@ class Train:
             pull.queued_at,
         )
 
-    @property
-    def _waiting_pulls_ordered_by_priority(self) -> list[EmbarkedPull]:
-        return sorted(
-            self._waiting_pulls,
-            key=self._waiting_pulls_sorter,
+    def _get_waiting_pulls_ordered_by_priority(
+        self,
+        ignored_queues: set[str] | frozenset[str] = frozenset(),
+    ) -> tuple[list[EmbarkedPull], list[EmbarkedPull]]:
+
+        ignored_pulls = []
+        waiting_pulls = []
+        for embarked_pull in self._waiting_pulls:
+            if embarked_pull.config["name"] in ignored_queues:
+                ignored_pulls.append(embarked_pull)
+            else:
+                waiting_pulls.append(embarked_pull)
+        return (
+            sorted(
+                waiting_pulls,
+                key=self._waiting_pulls_sorter,
+            ),
+            ignored_pulls,
         )
 
     def _iter_embarked_pulls(
         self,
+        ignored_queues: set[str] | frozenset[str] = frozenset(),
     ) -> abc.Iterator[EmbarkedPullWithCar]:
         for car in self._cars:
             for embarked_pull in car.still_queued_embarked_pulls:
                 yield EmbarkedPullWithCar(embarked_pull, car)
-        for embarked_pull in self._waiting_pulls_ordered_by_priority:
+
+        (
+            waiting_pulls_ordered_by_priority,
+            _,
+        ) = self._get_waiting_pulls_ordered_by_priority(ignored_queues=ignored_queues)
+        for embarked_pull in waiting_pulls_ordered_by_priority:
             # NOTE(sileht): NamedTuple doesn't support multiple inheritance
             # the Protocol can't be inherited
             yield EmbarkedPullWithCar(embarked_pull, None)
@@ -2951,6 +2970,16 @@ class Train:
                 # When this car will be removed the remaining one will be created
                 return
 
+    async def _slice_frozen_cars(self, frozen_queues: set[str]) -> None:
+        for i, car in enumerate(self._cars):
+            for embarked_pull in car.still_queued_embarked_pulls:
+                if embarked_pull.config["name"] in frozen_queues:
+                    await self._slice_cars(
+                        i,
+                        reason=queue_utils.PrFrozenNoCascading(),
+                    )
+                    return
+
     async def _populate_cars(self, queue_rules: "rules.QueueRules") -> None:
         if self._cars and (
             self._cars[-1].train_car_state.checks_type == TrainCarChecksType.FAILED
@@ -2960,13 +2989,29 @@ class Train:
             # We are searching the responsible of a failure don't touch anything
             return
 
+        non_cascading_queue_freeze_filter = {
+            queue_freeze.name
+            async for queue_freeze in freeze.QueueFreeze.get_all_non_cascading(
+                self.repository
+            )
+        }
+
         try:
-            head = next(self._iter_embarked_pulls()).embarked_pull
+            head = next(
+                self._iter_embarked_pulls(
+                    ignored_queues=non_cascading_queue_freeze_filter
+                )
+            ).embarked_pull
         except StopIteration:
             return
 
         if self._current_base_sha is None or not self._cars:
             self._current_base_sha = await self.get_base_sha()
+
+        if non_cascading_queue_freeze_filter and self._cars:
+            await self._slice_frozen_cars(
+                frozen_queues=non_cascading_queue_freeze_filter
+            )
 
         try:
             queue_rule = queue_rules[head.config["name"]]
@@ -3005,11 +3050,21 @@ class Train:
         elif missing_cars > 0 and self._waiting_pulls:
             # Not enough cars
             for _ in range(missing_cars):
+                (
+                    waiting_pulls_ordered_by_priority,
+                    frozen_pulls,
+                ) = self._get_waiting_pulls_ordered_by_priority(
+                    ignored_queues=non_cascading_queue_freeze_filter
+                )
+
                 pulls_to_check, remaining_pulls = self._get_next_batch(
-                    self._waiting_pulls_ordered_by_priority,
+                    waiting_pulls_ordered_by_priority,
                     head.config["name"],
                     queue_rule.config["batch_size"],
                 )
+
+                if frozen_pulls:
+                    remaining_pulls += frozen_pulls
 
                 if not pulls_to_check:
                     return

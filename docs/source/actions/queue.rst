@@ -248,6 +248,15 @@ Meanwhile, you can still merge pull requests pushed to the ``hotfix`` queue.
 
 Once your incident is resolved, you can unfreeze the queue ``default`` and returns to the previous state.
 
+You can also freeze only one queue without the cascading effect on the queues below.
+
+In the scenario with ``hotfix``, ``default`` and ``lowprio`` queues, you can freeze the
+queue ``default`` without the cascading effect.
+
+Every pull request that goes through ``default`` will not be merged in this configuration.
+However, without the cascading effect activated on the freeze, every pull request that
+goes through the queue ``lowprio`` will be tested and still be able to be merged.
+
 🚫 Unqueued Pull Request
 ------------------------
 

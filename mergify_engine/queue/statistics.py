@@ -88,6 +88,7 @@ class FailureByReasonT(typing.TypedDict):
     CHECKS_FAILED: int
     QUEUE_RULE_MISSING: int
     UNEXPECTED_QUEUE_CHANGE: int
+    PR_FROZEN_NO_CASCADING: int
 
 
 @dataclasses.dataclass
@@ -102,6 +103,7 @@ class FailureByReason(BaseQueueStats):
         queue_utils.ChecksFailed.abort_code: 7,
         queue_utils.QueueRuleMissing.abort_code: 8,
         queue_utils.UnexpectedQueueChange.abort_code: 9,
+        queue_utils.PrFrozenNoCascading.abort_code: 10,
     }
     _INT_TO_ABORT_CODE_MAPPING: typing.ClassVar[dict[int, queue_utils.AbortCodeT]] = {
         v: k for k, v in _ABORT_CODE_TO_INT_MAPPING.items()
@@ -432,6 +434,7 @@ BASE_QUEUE_CHECKS_OUTCOME_T_DICT: QueueChecksOutcomeT = QueueChecksOutcomeT(
         "CHECKS_FAILED": 0,
         "QUEUE_RULE_MISSING": 0,
         "UNEXPECTED_QUEUE_CHANGE": 0,
+        "PR_FROZEN_NO_CASCADING": 0,
         "SUCCESS": 0,
     }
 )
