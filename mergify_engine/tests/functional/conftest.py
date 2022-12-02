@@ -1,4 +1,6 @@
 import asyncio
+from collections import abc
+import contextlib
 import datetime
 import json
 import os
@@ -8,15 +10,18 @@ from unittest import mock
 
 import httpx
 import pytest
+import tenacity
 import vcr
 import vcr.request
 import vcr.stubs.urllib3_stubs
 
 from mergify_engine import config
+from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine.clients import github
 from mergify_engine.clients import github_app
+from mergify_engine.clients import http
 from mergify_engine.dashboard import application as application_mod
 from mergify_engine.dashboard import subscription
 from mergify_engine.dashboard import user_tokens as user_tokens_mod
@@ -216,7 +221,15 @@ async def dashboard(
     )
 
 
-def pyvcr_response_filter(response: dict[str, typing.Any]) -> dict[str, typing.Any]:
+def pyvcr_response_filter(
+    response: dict[str, typing.Any]
+) -> dict[str, typing.Any] | None:
+    if (
+        response["status_code"] == 403
+        and response["headers"].get("X-RateLimit-Remaining") is not None
+    ):
+        return None
+
     for h in [
         "CF-Cache-Status",
         "CF-RAY",
@@ -408,3 +421,52 @@ def unittest_glue(
     request.cls.RECORD_CONFIG = recorder.config
     request.cls.cassette_library_dir = recorder.vcr.cassette_library_dir
     request.cls.subscription = dashboard.subscription
+
+
+@tenacity.retry(
+    # The stop is here just to avoid infinite loops.
+    stop=tenacity.stop_after_attempt(5),  # type: ignore[attr-defined]
+    retry=tenacity.retry_if_exception_type(tenacity.TryAgain),  # type: ignore[attr-defined]
+)
+async def _request_with_ratelimit_retry(
+    request_func: abc.Callable[
+        [
+            github.AsyncGithubClient,
+            str,
+            github_types.GitHubApiVersion | None,
+            github_types.GitHubOAuthToken | None,
+            typing.Any,
+        ],
+        abc.Coroutine[typing.Any, typing.Any, httpx.Response],
+    ],
+    *args: typing.Any,
+    **kwargs: typing.Any,
+) -> httpx.Response:
+    try:
+        return await request_func(*args, **kwargs)
+    except (
+        http.HTTPForbidden,
+        http.HTTPTooManyRequests,
+    ) as exc:
+        try:
+            github._check_rate_limit(exc.response)
+        except exceptions.RateLimited as ratelimit_exc:
+            await asyncio.sleep(int(ratelimit_exc.countdown.total_seconds()))
+            raise tenacity.TryAgain
+
+        raise
+
+
+@pytest.fixture(autouse=True, scope="module")
+def mock_asyncclient_request_ratelimit() -> abc.Generator[None, None, None]:
+    real_request = http.AsyncClient.request
+
+    async def mocked_request(*args: typing.Any, **kwargs: typing.Any) -> httpx.Response:
+        return await _request_with_ratelimit_retry(real_request, *args, **kwargs)
+
+    request_mock = mock.patch.object(http.AsyncClient, "request", mocked_request)
+
+    with contextlib.ExitStack() as es:
+        es.enter_context(request_mock)
+
+        yield

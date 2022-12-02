@@ -248,13 +248,12 @@ async def get_installation_from_login(
 def _check_rate_limit(response: httpx.Response) -> None:
     if response.status_code != 403:
         return
-    remaining = response.headers.get("X-RateLimit-Remaining")
 
+    remaining = response.headers.get("X-RateLimit-Remaining")
     if remaining is None:
         return
 
     remaining = int(remaining)
-
     if remaining < RATE_LIMIT_THRESHOLD:
         reset = response.headers.get("X-RateLimit-Reset")
         if reset is None:
