@@ -62,6 +62,10 @@ You might want to enforce some guidelines as how to write pull request title.
 The following rules add such a check, making sure your team follows
 `Conventional Commits <https://www.conventionalcommits.org/>`_.
 
+The check will be posted only on pull requests targeting the main branch. The check
+conclusion will be a success if the title contains a conventional commit type,
+otherwise it will be a failure.
+
 .. code-block:: yaml
 
     pull_request_rules:
