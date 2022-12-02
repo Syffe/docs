@@ -674,7 +674,7 @@ enqueued pull requests.
     queue_rules:
       - name: default
         speculative_checks: 2
-        batch_size: 2
+        batch_size: 3
         conditions: []
 
     pull_request_rules:
