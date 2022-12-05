@@ -1761,7 +1761,7 @@ queue_rules:
     with pytest.raises(rules.InvalidRules) as i:
         await rules.get_mergify_config_from_file(mock.MagicMock(), file)
     assert (
-        "disallow_checks_interruption_from_queues containes an unkown queue: whatever"
+        "disallow_checks_interruption_from_queues contains an unkown queue: whatever"
         in str(i.value)
     )
 

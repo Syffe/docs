@@ -398,7 +398,7 @@ class QueueRules:
             for name in rule.config["disallow_checks_interruption_from_queues"]:
                 if name not in names:
                     raise voluptuous.error.Invalid(
-                        f"disallow_checks_interruption_from_queues containes an unkown queue: {name}"
+                        f"disallow_checks_interruption_from_queues contains an unkown queue: {name}"
                     )
 
 
