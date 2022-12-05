@@ -444,6 +444,9 @@ async def _request_with_ratelimit_retry(
 ) -> httpx.Response:
     try:
         return await request_func(*args, **kwargs)
+    except exceptions.RateLimited as exc:
+        await asyncio.sleep(int(exc.countdown.total_seconds()))
+        raise tenacity.TryAgain
     except (
         http.HTTPForbidden,
         http.HTTPTooManyRequests,
