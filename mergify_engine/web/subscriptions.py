@@ -1,15 +1,18 @@
 import typing
 
 import fastapi
+import sqlalchemy
 from starlette import requests
 from starlette import responses
 
 from mergify_engine import count_seats
 from mergify_engine import github_types
+from mergify_engine import models
 from mergify_engine import redis_utils
 from mergify_engine.dashboard import application
 from mergify_engine.dashboard import subscription
 from mergify_engine.dashboard import user_tokens
+from mergify_engine.models import github_user
 from mergify_engine.usage import last_seen
 from mergify_engine.web import auth
 from mergify_engine.web import redis
@@ -146,3 +149,22 @@ async def application_cache_delete(
     except NotImplementedError:
         return responses.Response("Deleting subscription is disabled", status_code=400)
     return responses.Response("Cache cleaned", status_code=200)
+
+
+@router.get(
+    "/user-oauth-access-token/{github_account_id}",  # noqa: FS003
+    dependencies=[fastapi.Depends(auth.dashboard)],
+)
+async def get_user_oauth_access_token(
+    github_account_id: github_types.GitHubAccountIdType,
+    redis_links: redis_utils.RedisLinks = fastapi.Depends(  # noqa: B008
+        redis.get_redis_links
+    ),
+    session: sqlalchemy.ext.asyncio.AsyncSession = fastapi.Depends(  # noqa: B008
+        models.get_session
+    ),
+) -> responses.Response:
+    user = await github_user.GitHubUser.get_by_id(session, github_account_id)
+    if not user:
+        raise fastapi.HTTPException(404)
+    return responses.JSONResponse({"oauth_access_token": user.oauth_access_token})
