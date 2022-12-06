@@ -27,7 +27,7 @@ class CustomFormatter(daiquiri.formatter.ColorExtrasFormatter):
 
     def format(self, record: logging.LogRecord) -> str:
         if hasattr(record, "_daiquiri_extra_keys"):
-            record._daiquiri_extra_keys = sorted(record._daiquiri_extra_keys)  # type: ignore[attr-defined]
+            record._daiquiri_extra_keys = sorted(record._daiquiri_extra_keys)
         return super().format(record)
 
     def add_extras(self, record: daiquiri.types.ExtrasLogRecord) -> None:

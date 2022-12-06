@@ -128,7 +128,7 @@ class wait_retry_after_header(tenacity.wait.wait_base):
 
 def extract_organization_login(client: httpx.AsyncClient) -> str | None:
     if client.auth and hasattr(client.auth, "_owner_login"):
-        return client.auth._owner_login  # type: ignore[attr-defined,no-any-return]
+        return client.auth._owner_login  # type: ignore[no-any-return]
     return None
 
 

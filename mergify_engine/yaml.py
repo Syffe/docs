@@ -39,7 +39,7 @@ def dump_with_indented_list(data: typing.Any) -> typing.Any:
 
 class LiteralYamlString(yaml.YAMLObject):
     yaml_tag = ""
-    yaml_loader = []  # type: ignore[var-annotated]
+    yaml_loader = []
     yaml_dumper = yaml.CSafeDumper
 
     def __init__(self, data: str) -> None:

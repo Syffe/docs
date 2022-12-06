@@ -519,12 +519,11 @@ class TrainCar:
         parent_pull_request_numbers: list[github_types.GitHubPullRequestNumber]
         initial_current_base_sha: github_types.SHAType
         queue_pull_request_number: github_types.GitHubPullRequestNumber | None
-        # mymy can't parse recursive definition, yet
-        failure_history: list["TrainCar.Serialized"]  # type: ignore[misc]
+        failure_history: list[TrainCar.Serialized]
         head_branch: str | None
         last_checks: list[QueueCheck.Serialized]
         last_evaluated_conditions: str | None
-        last_conditions_evaluation: conditions.QueueConditionEvaluationResult.Serialized | None  # type:ignore[misc]
+        last_conditions_evaluation: conditions.QueueConditionEvaluationResult.Serialized | None
         checks_ended_timestamp: datetime.datetime | None
         queue_branch_name: github_types.GitHubRefType | None
 

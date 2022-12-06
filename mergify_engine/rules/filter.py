@@ -79,10 +79,10 @@ TreeT = typing.TypedDict(
         ">=": TreeBinaryLeafT,
         "!=": TreeBinaryLeafT,
         "~=": TreeBinaryLeafT,
-        "@": "TreeT | CompiledTreeT[GetAttrObject]",  # type: ignore[misc]
-        "or": abc.Iterable["TreeT | CompiledTreeT[GetAttrObject]"],  # type: ignore[misc]
-        "and": abc.Iterable["TreeT | CompiledTreeT[GetAttrObject]"],  # type: ignore[misc]
-        "not": "TreeT | CompiledTreeT[GetAttrObject]",  # type: ignore[misc]
+        "@": "TreeT | CompiledTreeT[GetAttrObject]",  # type: ignore[misc, type-arg]
+        "or": abc.Iterable["TreeT | CompiledTreeT[GetAttrObject]"],  # type: ignore[misc, type-arg]
+        "and": abc.Iterable["TreeT | CompiledTreeT[GetAttrObject]"],  # type: ignore[misc, type-arg]
+        "not": "TreeT | CompiledTreeT[GetAttrObject]",  # type: ignore[misc, type-arg]
     },
     total=False,
 )

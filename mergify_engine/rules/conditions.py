@@ -653,8 +653,7 @@ class ConditionEvaluationResult:
         is_label_user_input: bool
         description: str | None
         evaluation_error: str | None
-        # mypy can't parse recursive definition
-        subconditions: list["ConditionEvaluationResult.Serialized"]  # type: ignore[misc]
+        subconditions: list[ConditionEvaluationResult.Serialized]
 
     @classmethod
     def from_rule_condition_node(
@@ -775,9 +774,8 @@ class QueueConditionEvaluationResult:
         is_label_user_input: bool
         description: str | None
         attribute_name: str | None
-        # mypy can't parse recursive definition
-        subconditions: list["QueueConditionEvaluationResult.Serialized"]  # type: ignore[misc]
-        evaluations: list["QueueConditionEvaluationResult.Evaluation"]
+        subconditions: list[QueueConditionEvaluationResult.Serialized]
+        evaluations: list[QueueConditionEvaluationResult.Evaluation]
 
     @property
     def display_evaluations(self) -> bool:
