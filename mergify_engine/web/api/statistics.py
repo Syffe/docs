@@ -1,8 +1,10 @@
 import collections
+import dataclasses
 import statistics
 import typing
 
 import fastapi
+import pydantic
 
 from mergify_engine import context
 from mergify_engine import date
@@ -231,6 +233,65 @@ async def get_checks_duration_stats_endpoint(
     )
 
 
+@pydantic.dataclasses.dataclass
+class QueueChecksOutcome:
+    PR_AHEAD_DEQUEUED: int = dataclasses.field(
+        metadata={"description": "A pull request ahead in the queue has been dequeued."}
+    )
+
+    PR_AHEAD_FAILED_TO_MERGE: int = dataclasses.field(
+        metadata={
+            "description": "A pull request ahead in the queue failed to get merged."
+        }
+    )
+
+    PR_WITH_HIGHER_PRIORITY_QUEUED: int = dataclasses.field(
+        metadata={
+            "description": "A pull request with a higher priority has been queued."
+        }
+    )
+
+    PR_QUEUED_TWICE: int = dataclasses.field(
+        metadata={"description": "A pull request was queued twice."}
+    )
+
+    SPECULATIVE_CHECK_NUMBER_REDUCED: int = dataclasses.field(
+        metadata={
+            "description": "The number of speculative checks, in the queue rules, has been reduced."
+        }
+    )
+
+    CHECKS_TIMEOUT: int = dataclasses.field(
+        metadata={
+            "description": "The checks for the queued pull request have timed out."
+        }
+    )
+
+    CHECKS_FAILED: int = dataclasses.field(
+        metadata={"description": "The checks for the queued pull request have failed."}
+    )
+
+    QUEUE_RULE_MISSING: int = dataclasses.field(
+        metadata={
+            "description": "The queue rules are missing because of a configuration change."
+        }
+    )
+
+    UNEXPECTED_QUEUE_CHANGE: int = dataclasses.field(
+        metadata={"description": "An unexpected change happened."}
+    )
+
+    PR_FROZEN_NO_CASCADING: int = dataclasses.field(
+        metadata={
+            "description": "A pull request has been freezed because of a queue freeze with cascading effect disabled."
+        }
+    )
+
+    SUCCESS: int = dataclasses.field(
+        metadata={"description": "Successfully merged the pull request."}
+    )
+
+
 async def get_queue_checks_outcome_for_queue(
     repository_ctxt: context.Repository,
     queue_name: rules.QueueName,
@@ -258,7 +319,7 @@ async def get_queue_checks_outcome_for_queue(
     dependencies=[
         fastapi.Depends(security.check_subscription_feature_merge_queue_stats)
     ],
-    response_model=queue_statistics.QueueChecksOutcomeT,
+    response_model=QueueChecksOutcome,
 )
 async def get_queue_checks_outcome_stats_endpoint(
     queue_name: rules.QueueName = fastapi.Path(  # noqa: B008
@@ -283,11 +344,15 @@ async def get_queue_checks_outcome_stats_endpoint(
     repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
         security.get_repository_context
     ),
-) -> queue_statistics.QueueChecksOutcomeT:
-    return await get_queue_checks_outcome_for_queue(
-        repository_ctxt,
-        queue_name=queue_name,
-        branch_name=branch,
-        start_at=start_at,
-        end_at=end_at,
+) -> QueueChecksOutcome:
+    return QueueChecksOutcome(
+        **(
+            await get_queue_checks_outcome_for_queue(
+                repository_ctxt,
+                queue_name=queue_name,
+                branch_name=branch,
+                start_at=start_at,
+                end_at=end_at,
+            )
+        )
     )
