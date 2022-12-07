@@ -26,7 +26,8 @@
         },
         "References": [
           "https://access.redhat.com/security/cve/CVE-2022-3715",
-          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3715"
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3715",
+          "https://lists.gnu.org/archive/html/bug-bash/2022-08/msg00147.html"
         ]
       },
       {
@@ -199,7 +200,7 @@
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
         "Title": "curl: POST following PUT confusion",
-        "Description": "A vulnerability was found in curl. The issue occurs when doing HTTP(S) transfers, where curl might erroneously use the read callback (`CURLOPT_READFUNCTION`) to ask for data to send, even when the `CURLOPT_POSTFIELDS` option has been set if it previously used the same handle to issue a `PUT` request which used that callback. This flaw may surprise the application and cause it to misbehave and either send off the wrong data or use memory after free or similar in the subsequent `POST` request.",
+        "Description": "When doing HTTP(S) transfers, libcurl might erroneously use the read callback (`CURLOPT_READFUNCTION`) to ask for data to send, even when the `CURLOPT_POSTFIELDS` option has been set, if the same handle previously was used to issue a `PUT` request which used that callback. This flaw may surprise the application and cause it to misbehave and either send off the wrong data or use memory after free or similar in the subsequent `POST` request. The problem exists in the logic for a reused handle when it is changed from a PUT to a POST.",
         "Severity": "MEDIUM",
         "CVSS": {
           "redhat": {
@@ -211,9 +212,11 @@
           "https://access.redhat.com/security/cve/CVE-2022-32221",
           "https://curl.se/docs/CVE-2022-32221.html",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-32221",
+          "https://hackerone.com/reports/1704017",
           "https://ubuntu.com/security/notices/USN-5702-1",
           "https://ubuntu.com/security/notices/USN-5702-2"
-        ]
+        ],
+        "PublishedDate": "2022-12-05T22:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-22922",
@@ -339,13 +342,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:8361",
+          "https://access.redhat.com/errata/RHSA-2022:7720",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
+          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -1696,13 +1699,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:8361",
+          "https://access.redhat.com/errata/RHSA-2022:7720",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
+          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -1763,7 +1766,7 @@
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
         "Title": "curl: POST following PUT confusion",
-        "Description": "A vulnerability was found in curl. The issue occurs when doing HTTP(S) transfers, where curl might erroneously use the read callback (`CURLOPT_READFUNCTION`) to ask for data to send, even when the `CURLOPT_POSTFIELDS` option has been set if it previously used the same handle to issue a `PUT` request which used that callback. This flaw may surprise the application and cause it to misbehave and either send off the wrong data or use memory after free or similar in the subsequent `POST` request.",
+        "Description": "When doing HTTP(S) transfers, libcurl might erroneously use the read callback (`CURLOPT_READFUNCTION`) to ask for data to send, even when the `CURLOPT_POSTFIELDS` option has been set, if the same handle previously was used to issue a `PUT` request which used that callback. This flaw may surprise the application and cause it to misbehave and either send off the wrong data or use memory after free or similar in the subsequent `POST` request. The problem exists in the logic for a reused handle when it is changed from a PUT to a POST.",
         "Severity": "MEDIUM",
         "CVSS": {
           "redhat": {
@@ -1775,9 +1778,11 @@
           "https://access.redhat.com/security/cve/CVE-2022-32221",
           "https://curl.se/docs/CVE-2022-32221.html",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-32221",
+          "https://hackerone.com/reports/1704017",
           "https://ubuntu.com/security/notices/USN-5702-1",
           "https://ubuntu.com/security/notices/USN-5702-2"
-        ]
+        ],
+        "PublishedDate": "2022-12-05T22:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-22922",
@@ -1923,7 +1928,7 @@
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
         "Title": "curl: POST following PUT confusion",
-        "Description": "A vulnerability was found in curl. The issue occurs when doing HTTP(S) transfers, where curl might erroneously use the read callback (`CURLOPT_READFUNCTION`) to ask for data to send, even when the `CURLOPT_POSTFIELDS` option has been set if it previously used the same handle to issue a `PUT` request which used that callback. This flaw may surprise the application and cause it to misbehave and either send off the wrong data or use memory after free or similar in the subsequent `POST` request.",
+        "Description": "When doing HTTP(S) transfers, libcurl might erroneously use the read callback (`CURLOPT_READFUNCTION`) to ask for data to send, even when the `CURLOPT_POSTFIELDS` option has been set, if the same handle previously was used to issue a `PUT` request which used that callback. This flaw may surprise the application and cause it to misbehave and either send off the wrong data or use memory after free or similar in the subsequent `POST` request. The problem exists in the logic for a reused handle when it is changed from a PUT to a POST.",
         "Severity": "MEDIUM",
         "CVSS": {
           "redhat": {
@@ -1935,9 +1940,11 @@
           "https://access.redhat.com/security/cve/CVE-2022-32221",
           "https://curl.se/docs/CVE-2022-32221.html",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-32221",
+          "https://hackerone.com/reports/1704017",
           "https://ubuntu.com/security/notices/USN-5702-1",
           "https://ubuntu.com/security/notices/USN-5702-2"
-        ]
+        ],
+        "PublishedDate": "2022-12-05T22:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-22922",
@@ -2178,13 +2185,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:8361",
+          "https://access.redhat.com/errata/RHSA-2022:7720",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
+          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -3124,7 +3131,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "systemd: buffer overrun in format_timespan() function.",
+        "Title": "systemd: buffer overrun in format_timespan() function",
         "Description": "An off-by-one Error issue was discovered in Systemd in format_timespan() function of time-util.c. An attacker could supply specific values for time and accuracy that leads to buffer overrun in format_timespan(), leading to a Denial of Service.",
         "Severity": "MEDIUM",
         "CweIDs": [
@@ -3247,7 +3254,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "systemd: buffer overrun in format_timespan() function.",
+        "Title": "systemd: buffer overrun in format_timespan() function",
         "Description": "An off-by-one Error issue was discovered in Systemd in format_timespan() function of time-util.c. An attacker could supply specific values for time and accuracy that leads to buffer overrun in format_timespan(), leading to a Denial of Service.",
         "Severity": "MEDIUM",
         "CweIDs": [
@@ -4039,13 +4046,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:8361",
+          "https://access.redhat.com/errata/RHSA-2022:7720",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
+          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -4089,18 +4096,16 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:6224",
+          "https://access.redhat.com/errata/RHSA-2022:5818",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1292.json",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-2068.json",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-2097.json",
           "https://access.redhat.com/security/cve/CVE-2022-2097",
           "https://bugzilla.redhat.com/2081494",
-          "https://bugzilla.redhat.com/2087911",
-          "https://bugzilla.redhat.com/2087913",
           "https://bugzilla.redhat.com/2097310",
           "https://bugzilla.redhat.com/2104905",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-2097",
-          "https://errata.almalinux.org/9/ALSA-2022-6224.html",
+          "https://errata.almalinux.org/8/ALSA-2022-5818.html",
           "https://git.openssl.org/gitweb/?p=openssl.git;a=commitdiff;h=919925673d6c9cfed3c1085497f5dfbbed5fc431",
           "https://git.openssl.org/gitweb/?p=openssl.git;a=commitdiff;h=a98f339ddd7e8f487d6e0088d4a9a42324885a93",
           "https://github.com/advisories/GHSA-3wx7-46ch-7rq2",
@@ -4206,7 +4211,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "systemd: buffer overrun in format_timespan() function.",
+        "Title": "systemd: buffer overrun in format_timespan() function",
         "Description": "An off-by-one Error issue was discovered in Systemd in format_timespan() function of time-util.c. An attacker could supply specific values for time and accuracy that leads to buffer overrun in format_timespan(), leading to a Denial of Service.",
         "Severity": "MEDIUM",
         "CweIDs": [
@@ -4464,7 +4469,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "systemd: buffer overrun in format_timespan() function.",
+        "Title": "systemd: buffer overrun in format_timespan() function",
         "Description": "An off-by-one Error issue was discovered in Systemd in format_timespan() function of time-util.c. An attacker could supply specific values for time and accuracy that leads to buffer overrun in format_timespan(), leading to a Denial of Service.",
         "Severity": "MEDIUM",
         "CweIDs": [
@@ -4800,13 +4805,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:8361",
+          "https://access.redhat.com/errata/RHSA-2022:7720",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
+          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -6698,7 +6703,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "systemd: buffer overrun in format_timespan() function.",
+        "Title": "systemd: buffer overrun in format_timespan() function",
         "Description": "An off-by-one Error issue was discovered in Systemd in format_timespan() function of time-util.c. An attacker could supply specific values for time and accuracy that leads to buffer overrun in format_timespan(), leading to a Denial of Service.",
         "Severity": "MEDIUM",
         "CweIDs": [
@@ -6821,7 +6826,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "systemd: buffer overrun in format_timespan() function.",
+        "Title": "systemd: buffer overrun in format_timespan() function",
         "Description": "An off-by-one Error issue was discovered in Systemd in format_timespan() function of time-util.c. An attacker could supply specific values for time and accuracy that leads to buffer overrun in format_timespan(), leading to a Denial of Service.",
         "Severity": "MEDIUM",
         "CweIDs": [
@@ -6944,7 +6949,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "systemd: buffer overrun in format_timespan() function.",
+        "Title": "systemd: buffer overrun in format_timespan() function",
         "Description": "An off-by-one Error issue was discovered in Systemd in format_timespan() function of time-util.c. An attacker could supply specific values for time and accuracy that leads to buffer overrun in format_timespan(), leading to a Denial of Service.",
         "Severity": "MEDIUM",
         "CweIDs": [
