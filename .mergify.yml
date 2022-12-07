@@ -109,6 +109,7 @@ pull_request_rules:
       queue:
         name: lowprio
         commit_message_template: null
+        method: merge
 
   - name: automatic merge from dependabot
     conditions:
