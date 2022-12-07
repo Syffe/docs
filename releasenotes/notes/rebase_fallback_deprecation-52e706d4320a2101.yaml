@@ -1,0 +1,5 @@
+---
+deprecations:
+  - |
+    The `rebase_fallback` configuration option of the queue action is deprecated and
+    planned for removal.

@@ -9,6 +9,7 @@ import ddtrace
 
 from mergify_engine import actions
 from mergify_engine import check_api
+from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
@@ -35,6 +36,23 @@ MSG_RULE_WITH_SAME_NAME_DEPRECATION = """
 > **The configuration has multiple rules with the same name.**
 > This option is deprecated and all rules should have different names.
 > This option will be removed on Monday, 17 October  2022.
+"""
+
+
+REBASE_FALLBACK_MODE_DEPRECATION_GHES = """
+:bangbang: **Action Required** :bangbang:
+> **The configuration uses the deprecated `rebase_fallback` mode of the queue action.**
+> This option will be removed on a future version.
+> For more information: https://docs.mergify.com/actions/queue/
+"""
+
+REBASE_FALLBACK_MODE_DEPRECATION_SAAS = """
+:bangbang: **Action Required** :bangbang:
+> **The configuration uses the deprecated `rebase_fallback` mode of the queue action.**
+> The default value will be changed and forced to `none` on 13th December, 2022.
+> A brownout is planned on February 13th, 2023.
+> This option will be removed on March 13th, 2023.
+> For more information: https://docs.mergify.com/actions/queue/
 """
 
 
@@ -148,6 +166,18 @@ async def gen_summary(
 ) -> tuple[str, str]:
     summary = ""
     summary += await get_already_merged_summary(ctxt, match)
+
+    has_queue_action_rebase_fallback_mode = any(
+        action
+        for rule in match.rules
+        for name, action in rule.actions.items()
+        if name in ("queue", "merge") and "rebase_fallback" in action.raw_config
+    )
+    if has_queue_action_rebase_fallback_mode:
+        if config.SAAS_MODE:
+            summary += REBASE_FALLBACK_MODE_DEPRECATION_SAAS
+        else:
+            summary += REBASE_FALLBACK_MODE_DEPRECATION_GHES
 
     matching_rules_to_display = match.matching_rules[:]
     not_applicable_base_changeable_attributes_rules_to_display = []
