@@ -185,7 +185,7 @@ class TestQueueApi(base.FunctionalTestBase):
                         "draft_bot_account": None,
                         "speculative_checks": 1,
                         "priority": 0,
-                        "queue_branch_prefix": "mergify/merge-queue/",
+                        "queue_branch_prefix": constants.MERGE_QUEUE_BRANCH_PREFIX,
                         "queue_branch_merge_method": None,
                     },
                 }

@@ -4,6 +4,7 @@ import dataclasses
 import datetime
 import functools
 import re
+import time
 import typing
 import zoneinfo
 
@@ -32,6 +33,11 @@ def extract_timezone(
 
 def utcnow() -> datetime.datetime:
     return datetime.datetime.now(tz=datetime.timezone.utc)
+
+
+def utcnow_from_clock_realtime() -> datetime.datetime:
+    # time.clock_gettime is not mocked by freezegun
+    return fromtimestamp(time.clock_gettime(time.CLOCK_REALTIME))
 
 
 def is_datetime_inside_time_range(

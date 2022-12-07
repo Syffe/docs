@@ -54,9 +54,7 @@ class BackportActionTestBase(base.FunctionalTestBase):
         await self.run_engine()
         await self.wait_for("pull_request", {"action": "opened"})
 
-        pulls = await self.get_pulls(
-            params={"state": "all", "base": self.main_branch_name}
-        )
+        pulls = await self.get_pulls(params={"state": "all"})
         assert 1 == len(pulls)
         assert "closed" == pulls[0]["state"]
 
@@ -100,7 +98,9 @@ class BackportActionTestBase(base.FunctionalTestBase):
 
         refs = [
             ref["ref"]
-            async for ref in self.find_git_refs(self.url_origin, ["mergify/bp"])
+            async for ref in self.find_git_refs(
+                self.url_origin, [f"mergify/bp/{stable_branch}/pr-{p['number']}"]
+            )
         ]
         assert [f"refs/heads/mergify/bp/{stable_branch}/pr-{p['number']}"] == refs
         return await self.get_pull(pulls[0]["number"])

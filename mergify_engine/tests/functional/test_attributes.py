@@ -1009,10 +1009,10 @@ class TestAttributesWithSub(base.FunctionalTestBase):
 
         body = f"Awesome body\nDepends-On: #{pr1['number']}\ndepends-on: #{pr2['number']}\ndepends-On: #9999999"
         pr = await self.create_pr(message=body)
-        await self.add_label(pr["number"], "automerge")
+        pr_labeled = await self.add_label(pr["number"], "automerge")
         await self.run_engine()
 
-        ctxt = context.Context(self.repository_ctxt, pr)
+        ctxt = context.Context(self.repository_ctxt, pr_labeled["pull_request"])
         assert ctxt.get_depends_on() == [pr1["number"], pr2["number"], 9999999]
         assert await ctxt._get_consolidated_data("depends-on") == [f"#{pr2['number']}"]
 

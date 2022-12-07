@@ -1,13 +1,16 @@
 import asyncio
 from collections import abc
 import contextlib
+import dataclasses
 import datetime
 import json
 import os
 import shutil
+import tempfile
 import typing
 from unittest import mock
 
+import filelock
 import httpx
 import pytest
 import tenacity
@@ -16,6 +19,7 @@ import vcr.request
 import vcr.stubs.urllib3_stubs
 
 from mergify_engine import config
+from mergify_engine import date
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import redis_utils
@@ -28,8 +32,15 @@ from mergify_engine.dashboard import user_tokens as user_tokens_mod
 
 
 RECORD = bool(os.getenv("MERGIFYENGINE_RECORD", False))
+RECORDING_IN_PARALLEL = bool(os.getenv("RECORD_PARALLEL", False))
 CASSETTE_LIBRARY_DIR_BASE = "zfixtures/cassettes"
 DEFAULT_SUBSCRIPTION_FEATURES = (subscription.Features.PUBLIC_REPOSITORY,)
+
+# Files used for requests synchronization when recording in parallel.
+REQUESTS_SYNC_FILE_PATH = f"{tempfile.gettempdir()}/requests_timestamp"
+REQUESTS_SYNC_LOCK_FILE_PATH = f"{REQUESTS_SYNC_FILE_PATH}.lock"
+
+REQUESTS_SYNC_FILE_LOCK = filelock.FileLock(REQUESTS_SYNC_LOCK_FILE_PATH)
 
 
 class RecordConfigType(typing.TypedDict):
@@ -225,9 +236,10 @@ def pyvcr_response_filter(
     response: dict[str, typing.Any]
 ) -> dict[str, typing.Any] | None:
     if (
-        response["status_code"] == 403
-        and response["headers"].get("X-RateLimit-Remaining") is not None
-    ):
+        response["status_code"] in (403, 429)
+        or response["status_code"] == 422
+        and "abuse" in response["content"]
+    ) and response["headers"].get("X-RateLimit-Remaining") is not None:
         return None
 
     for h in [
@@ -374,9 +386,7 @@ async def recorder(
                             "repository_name": github_types.GitHubRepositoryName(
                                 config.TESTING_REPOSITORY_NAME
                             ),
-                            "branch_prefix": datetime.datetime.utcnow().strftime(
-                                "%Y%m%d%H%M%S"
-                            ),
+                            "branch_prefix": date.utcnow().strftime("%Y%m%d%H%M%S"),
                         }
                     )
                 )
@@ -423,7 +433,32 @@ def unittest_glue(
     request.cls.subscription = dashboard.subscription
 
 
+@dataclasses.dataclass
+class RetrySecondaryRateLimit(tenacity.TryAgain):
+    ratelimit_reset_timestamp: float
+
+
+class wait_secondary_rate_limit(tenacity.wait.wait_base):
+    def __call__(self, retry_state: tenacity.RetryCallState) -> float:
+        if retry_state.outcome is None:
+            return 0
+
+        exc = retry_state.outcome.exception()
+        if exc is None or not isinstance(exc, RetrySecondaryRateLimit):
+            return 0
+
+        if retry_state.attempt_number < 4:
+            return 10 * (retry_state.attempt_number + 1)
+
+        return (
+            date.fromtimestamp(exc.ratelimit_reset_timestamp)
+            + datetime.timedelta(seconds=5)
+            - date.utcnow_from_clock_realtime()
+        ).total_seconds()
+
+
 @tenacity.retry(
+    wait=wait_secondary_rate_limit(),
     # The stop is here just to avoid infinite loops.
     stop=tenacity.stop_after_attempt(5),  # type: ignore[attr-defined]
     retry=tenacity.retry_if_exception_type(tenacity.TryAgain),  # type: ignore[attr-defined]
@@ -448,6 +483,7 @@ async def _request_with_ratelimit_retry(
         await asyncio.sleep(int(exc.countdown.total_seconds()))
         raise tenacity.TryAgain
     except (
+        http.HTTPClientSideError,
         http.HTTPForbidden,
         http.HTTPTooManyRequests,
     ) as exc:
@@ -457,19 +493,128 @@ async def _request_with_ratelimit_retry(
             await asyncio.sleep(int(ratelimit_exc.countdown.total_seconds()))
             raise tenacity.TryAgain
 
-        raise
+        # A secondary rate limit has no specific headers about its own ratelimit
+        # (its ratelimit headers are the one about the normal ratelimit),
+        # so we need to check here if the message says it is a secondary ratelimit.
+        if "a secondary rate limit" not in exc.response.text:
+            raise
+
+        raise RetrySecondaryRateLimit(
+            float(exc.response.headers.get("X-RateLimit-Reset"))
+        )
+
+
+async def _request_with_lock_and_ratelimit_retry(
+    request_func: abc.Callable[
+        [
+            github.AsyncGithubClient,
+            str,
+            github_types.GitHubApiVersion | None,
+            github_types.GitHubOAuthToken | None,
+            typing.Any,
+        ],
+        abc.Coroutine[typing.Any, typing.Any, httpx.Response],
+    ],
+    *args: typing.Any,
+    **kwargs: typing.Any,
+) -> httpx.Response:
+    with REQUESTS_SYNC_FILE_LOCK.acquire(poll_interval=0.01):
+        # Get the last modified date of the file, faster than reading the file
+        # for the date inside.
+        timestamp = float(os.path.getmtime(REQUESTS_SYNC_FILE_PATH))
+        timestamp_date = date.fromtimestamp(timestamp)
+        milliseconds_diff = (
+            date.utcnow_from_clock_realtime() - timestamp_date
+        ) / datetime.timedelta(milliseconds=1)
+
+        if milliseconds_diff < 1000.0:
+            await asyncio.sleep((1000.0 - milliseconds_diff) / 1000)
+
+        response = await _request_with_ratelimit_retry(request_func, *args, **kwargs)
+
+        with open(REQUESTS_SYNC_FILE_PATH, "w") as f:
+            f.write(str(date.utcnow_from_clock_realtime().timestamp()))
+
+    return response
 
 
 @pytest.fixture(autouse=True, scope="module")
-def mock_asyncclient_request_ratelimit() -> abc.Generator[None, None, None]:
-    real_request = http.AsyncClient.request
+def mock_asyncgithubclient_requests() -> abc.Generator[None, None, None]:
+    # When running tests in parallel, we need to mock the requests function
+    # to add a delay between requests creating content to avoid hitting the secondary rate limit.
+    # https://docs.github.com/en/rest/guides/best-practices-for-integrators#dealing-with-secondary-rate-limits
 
-    async def mocked_request(*args: typing.Any, **kwargs: typing.Any) -> httpx.Response:
-        return await _request_with_ratelimit_retry(real_request, *args, **kwargs)
+    mocks = []
 
-    request_mock = mock.patch.object(http.AsyncClient, "request", mocked_request)
+    if RECORDING_IN_PARALLEL:
+        real_post = github.AsyncGithubClient.post
+
+        async def mocked_post(
+            *args: typing.Any, **kwargs: typing.Any
+        ) -> httpx.Response:
+            return await _request_with_lock_and_ratelimit_retry(
+                real_post, *args, **kwargs  # type: ignore[arg-type]
+            )
+
+        mocks.append(mock.patch.object(github.AsyncGithubClient, "post", mocked_post))
+
+        real_put = github.AsyncGithubClient.put
+
+        async def mocked_put(*args: typing.Any, **kwargs: typing.Any) -> httpx.Response:
+            return await _request_with_lock_and_ratelimit_retry(
+                real_put, *args, **kwargs  # type: ignore[arg-type]
+            )
+
+        mocks.append(mock.patch.object(github.AsyncGithubClient, "put", mocked_put))
+
+        real_patch = github.AsyncGithubClient.patch
+
+        async def mocked_patch(
+            *args: typing.Any, **kwargs: typing.Any
+        ) -> httpx.Response:
+            return await _request_with_lock_and_ratelimit_retry(
+                real_patch, *args, **kwargs  # type: ignore[arg-type]
+            )
+
+        mocks.append(mock.patch.object(github.AsyncGithubClient, "patch", mocked_patch))
+
+        real_delete = github.AsyncGithubClient.delete
+
+        async def mocked_delete(
+            *args: typing.Any, **kwargs: typing.Any
+        ) -> httpx.Response:
+            return await _request_with_lock_and_ratelimit_retry(
+                real_delete, *args, **kwargs  # type: ignore[arg-type]
+            )
+
+        mocks.append(
+            mock.patch.object(github.AsyncGithubClient, "delete", mocked_delete)
+        )
+
+    real_get = github.AsyncGithubClient.get
+
+    async def mocked_get(*args: typing.Any, **kwargs: typing.Any) -> httpx.Response:
+        return await _request_with_ratelimit_retry(
+            real_get, *args, **kwargs  # type: ignore[arg-type]
+        )
+
+    mocks.append(mock.patch.object(github.AsyncGithubClient, "get", mocked_get))
 
     with contextlib.ExitStack() as es:
-        es.enter_context(request_mock)
+        for m in mocks:
+            es.enter_context(m)
 
         yield
+
+
+if RECORDING_IN_PARALLEL:
+
+    @pytest.fixture(autouse=True, scope="module")
+    def clean_request_file(worker_id: str) -> None:
+        if worker_id != "master":
+            return
+
+        # Clear the file's content
+        with REQUESTS_SYNC_FILE_LOCK:
+            with open(REQUESTS_SYNC_FILE_PATH, "w"):
+                pass

@@ -643,15 +643,16 @@ async def test_get_mergify_config_location_from_cache(
     client.item.assert_has_calls(
         [
             mock.call(
-                "/repos/Mergifyio/mergify-engine/contents/.mergify.yml", params={}
+                "/repos/Mergifyio/mergify-engine/contents/.mergify.yml",
+                params={"ref": "main"},
             ),
             mock.call(
                 "/repos/Mergifyio/mergify-engine/contents/.mergify/config.yml",
-                params={},
+                params={"ref": "main"},
             ),
             mock.call(
                 "/repos/Mergifyio/mergify-engine/contents/.github/mergify.yml",
-                params={},
+                params={"ref": "main"},
             ),
         ]
     )

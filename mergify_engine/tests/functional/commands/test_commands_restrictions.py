@@ -32,13 +32,12 @@ class TestCommandsRestrictions(base.FunctionalTestBase):
             params={"state": "all", "base": stable_branch}
         )
         assert 1 == len(pulls_stable)
+
         refs = [
             ref["ref"]
             async for ref in self.find_git_refs(self.url_origin, ["mergify/copy"])
         ]
-        assert sorted(refs) == [
-            f"refs/heads/mergify/copy/{stable_branch}/pr-{p_ok['number']}",
-        ]
+        assert f"refs/heads/mergify/copy/{stable_branch}/pr-{p_ok['number']}" in refs
 
         # success comment
         comments = await self.get_issue_comments(p_ok["number"])

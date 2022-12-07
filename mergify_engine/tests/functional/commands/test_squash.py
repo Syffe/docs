@@ -19,34 +19,29 @@ class TestCommandSquash(base.FunctionalTestBase):
         await self.git("push", "--quiet", "fork", branch_name)
 
         # create a PR with several commits to squash
-        pr = (
-            await self.client_fork.post(
-                f"{self.url_origin}/pulls",
-                json={
-                    "base": self.main_branch_name,
-                    "head": f"mergify-test2:{branch_name}",
-                    "title": "squash the PR",
-                    "body": "This is a squash_test",
-                    "draft": False,
-                },
-            )
-        ).json()
+        await self.client_fork.post(
+            f"{self.url_origin}/pulls",
+            json={
+                "base": self.main_branch_name,
+                "head": f"mergify-test2:{branch_name}",
+                "title": "squash the PR",
+                "body": "This is a squash_test",
+                "draft": False,
+            },
+        )
 
-        await self.wait_for("pull_request", {"action": "opened"})
-
-        commits = await self.get_commits(pr["number"])
-        assert len(commits) > 1
+        pr_opened = await self.wait_for_pull_request("opened")
+        assert pr_opened["pull_request"]["commits"] == 3
         await self.run_engine()
 
         # do the squash
-        await self.create_comment_as_admin(pr["number"], "@mergifyio squash")
+        await self.create_comment_as_admin(pr_opened["number"], "@mergifyio squash")
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "synchronize"})
-
-        # get the PR
-        pr = await self.client_fork.item(f"{self.url_origin}/pulls/{pr['number']}")
-        assert pr["commits"] == 1
+        pr_updated = await self.wait_for_pull_request(
+            "synchronize", pr_opened["number"]
+        )
+        assert pr_updated["pull_request"]["commits"] == 1
 
     async def test_squash_several_commits_with_one_merge_commit_and_custom_message(
         self,

@@ -370,7 +370,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             # always be the expected number. The best we can do is make sure
             # it is at least close to what we expect (around 2 hours).
             assert (
-                datetime.timedelta(hours=1, minutes=58).total_seconds()
+                datetime.timedelta(hours=1, minutes=55).total_seconds()
                 < r.json()["mean"]
                 < datetime.timedelta(hours=2, minutes=10).total_seconds()
             )
@@ -550,7 +550,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             previous_result = r.json()["median"]
 
             r = await self.app.get(
-                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge?branch={self.main_branch_name}",
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge",
                 headers={
                     "Authorization": f"bearer {self.api_key_admin}",
                     "Content-type": "application/json",

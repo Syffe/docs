@@ -45,6 +45,7 @@ from mergify_engine.tests.functional import conftest as func_conftest
 
 LOG = daiquiri.getLogger(__name__)
 RECORD = bool(os.getenv("MERGIFYENGINE_RECORD", False))
+RECORDING_IN_PARALLEL = bool(os.getenv("RECORD_PARALLEL", False))
 FAKE_DATA = "whatdataisthat"
 FAKE_HMAC = utils.compute_hmac(FAKE_DATA.encode("utf8"), config.WEBHOOK_SECRET)
 
@@ -169,6 +170,15 @@ class GitterRecorder(gitter.Gitter):
             self.save_records()
 
 
+class MissingEventTimeout(Exception):
+    def __init__(
+        self, event_type: github_types.GitHubEventType, expected_payload: typing.Any
+    ) -> None:
+        return super().__init__(
+            f"Never got event `{event_type}` with payload `{expected_payload}` (timeout)"
+        )
+
+
 class EventReader:
     def __init__(
         self,
@@ -242,9 +252,7 @@ class EventReader:
             ):
                 return event["payload"]
 
-        raise Exception(
-            f"Never got event `{event_type}` with payload `{expected_payload}` (timeout)"
-        )
+        raise MissingEventTimeout(event_type, expected_payload)
 
     def _match(self, data: github_types.GitHubEvent, expected_data: typing.Any) -> bool:
         if isinstance(expected_data, dict):
@@ -379,6 +387,10 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     # delayed-refreshes to be flaky
     WORKER_HAS_WORK_INTERVAL_CHECK = 0.04
 
+    def register_mock(self, mock_obj: typing.Any) -> None:
+        mock_obj.start()
+        self.addCleanup(mock_obj.stop)
+
     async def asyncSetUp(self) -> None:
         super().setUp()
 
@@ -390,33 +402,67 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
         config.API_ENABLE = True
 
-        mock.patch.object(
-            constants,
-            "NORMAL_DELAY_BETWEEN_SAME_PULL_REQUEST",
-            datetime.timedelta(seconds=0),
-        ).start()
-        mock.patch.object(
-            constants,
-            "MIN_DELAY_BETWEEN_SAME_PULL_REQUEST",
-            datetime.timedelta(seconds=0),
-        ).start()
+        self.register_mock(
+            mock.patch.object(
+                constants,
+                "NORMAL_DELAY_BETWEEN_SAME_PULL_REQUEST",
+                datetime.timedelta(seconds=0),
+            )
+        )
+        self.register_mock(
+            mock.patch.object(
+                constants,
+                "MIN_DELAY_BETWEEN_SAME_PULL_REQUEST",
+                datetime.timedelta(seconds=0),
+            )
+        )
 
+        self.created_branches: set[github_types.GitHubRefType] = set()
         self.existing_labels: list[str] = []
         self.pr_counter: int = 0
         self.git_counter: int = 0
 
-        mock.patch.object(branch_updater.gitter, "Gitter", self.get_gitter).start()  # type: ignore[attr-defined]
-        mock.patch.object(duplicate_pull.gitter, "Gitter", self.get_gitter).start()  # type: ignore[attr-defined]
-
-        # Web authentification always pass
-        mock.patch("hmac.compare_digest", return_value=True).start()
-
-        signals.register()
-        self.addCleanup(signals.unregister)
+        self.register_mock(mock.patch.object(branch_updater.gitter, "Gitter", self.get_gitter))  # type: ignore[attr-defined]
+        self.register_mock(mock.patch.object(duplicate_pull.gitter, "Gitter", self.get_gitter))  # type: ignore[attr-defined]
 
         self.main_branch_name = github_types.GitHubRefType(
             self.get_full_branch_name("main")
         )
+        # ########## MOCK MERGE_QUEUE_BRANCH_PREFIX
+        # To easily delete all branches created by any queue-related
+        # stuff.
+
+        self.mock_merge_queue_branch_prefix = mock.patch.object(
+            constants,
+            "MERGE_QUEUE_BRANCH_PREFIX",
+            f"{self._testMethodName[:50]}/mq/",
+        )
+        self.register_mock(self.mock_merge_queue_branch_prefix)
+        # ##############################
+
+        # ########## MOCK EXTRACT DEFAULT BRANCH
+        def mock_extract_default_branch(
+            repository: github_types.GitHubRepository,
+        ) -> github_types.GitHubRefType:
+            if repository["id"] == self.RECORD_CONFIG["repository_id"]:
+                return self.main_branch_name
+
+            return repository["default_branch"]
+
+        self.register_mock(
+            mock.patch.object(
+                utils,
+                "extract_default_branch",
+                mock_extract_default_branch,
+            )
+        )
+        # ##############################
+
+        # Web authentification always pass
+        self.register_mock(mock.patch("hmac.compare_digest", return_value=True))
+
+        signals.register()
+        self.addCleanup(signals.unregister)
 
         self.git = self.get_gitter(LOG)
         await self.git.init()
@@ -428,6 +474,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         installation_json = await github.get_installation_from_account_id(
             config.TESTING_ORGANIZATION_ID
         )
+
         self.client_integration = github.aget_client(installation_json)
         self.client_admin = github.AsyncGithubInstallationClient(
             auth=github.GithubTokenAuth(
@@ -471,10 +518,12 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         def fake_pretty_datetime(dt: datetime.datetime) -> str:
             return "<fake_pretty_datetime()>"
 
-        mock.patch(
-            "mergify_engine.date.pretty_datetime",
-            side_effect=fake_pretty_datetime,
-        ).start()
+        self.register_mock(
+            mock.patch(
+                "mergify_engine.date.pretty_datetime",
+                side_effect=fake_pretty_datetime,
+            )
+        )
 
         self._event_reader = EventReader(
             self.app,
@@ -517,42 +566,43 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         if RECORD:
             await asyncio.sleep(self.WAIT_TIME_BEFORE_TEARDOWN)
 
-            await self.client_admin.patch(
-                self.url_origin, json={"default_branch": "main"}
-            )
-            for branch in await self.get_branches():
-                if (
-                    branch["name"].startswith("20")
-                    or branch["name"].startswith("mergify")
-                    or branch["name"].startswith("mq-")
-                    or branch["name"].startswith(
-                        merge_train.TrainCar.QUEUE_BRANCH_PREFIX
-                    )
-                ):
-                    if branch["protected"]:
-                        await self.branch_protection_unprotect(branch["name"])
+            current_test_branches = [
+                github_types.GitHubRefType(ref["ref"].replace("refs/heads/", ""))
+                async for ref in self.find_git_refs(
+                    self.url_origin, [self.main_branch_name]
+                )
+            ]
+            for branch_name in self.created_branches.union(current_test_branches):
+                try:
+                    branch = await self.get_branch(branch_name)
+                except http.HTTPNotFound:
+                    continue
+
+                if branch["protected"]:
+                    await self.branch_protection_unprotect(branch["name"])
+
+                try:
                     await self.client_integration.delete(
                         f"{self.url_origin}/git/refs/heads/{parse.quote(branch['name'])}"
                     )
-
-            for label in await self.get_labels():
-                await self.client_integration.delete(
-                    f"{self.url_origin}/labels/{parse.quote(label['name'], safe='')}"
-                )
-
-            for pull in await self.get_pulls():
-                await self.edit_pull(pull["number"], state="closed")
+                except http.HTTPNotFound:
+                    continue
 
         await self.app.aclose()
 
         await self._event_reader.aclose()
         await self.redis_links.flushall()
         await self.redis_links.shutdown_all()
-        mock.patch.stopall()
 
     async def wait_for(
         self, *args: typing.Any, **kwargs: typing.Any
     ) -> github_types.GitHubEvent:
+        if RECORDING_IN_PARALLEL:
+            # Since in parallel we might create way more content than
+            # in non-record, some events might be missed if we do not wait
+            # enough time.
+            kwargs.setdefault("timeout", 180)
+
         return await self._event_reader.wait_for(*args, **kwargs)
 
     async def wait_for_pull_request(
@@ -676,7 +726,6 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         files: dict[str, str] | None = None,
         forward_to_engine: bool = False,
     ) -> None:
-
         if self.git.repository is None:
             raise RuntimeError("self.git.init() not called, tmp dir empty")
 
@@ -717,28 +766,23 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         await self.git("branch", "-M", self.main_branch_name)
 
         branches_to_push = [str(self.main_branch_name)]
+        self.created_branches.add(self.main_branch_name)
         for test_branch in test_branches:
             await self.git("branch", test_branch, self.main_branch_name)
             branches_to_push.append(test_branch)
+            self.created_branches.add(github_types.GitHubRefType(test_branch))
 
         await self.git("push", "--quiet", "origin", *branches_to_push)
         for _ in branches_to_push:
             await self.wait_for("push", {}, forward_to_engine=forward_to_engine)
-
-        await self.client_admin.patch(
-            self.url_origin, json={"default_branch": self.main_branch_name}
-        )
-        await self.wait_for(
-            "repository", {"action": "edited"}, forward_to_engine=forward_to_engine
-        )
 
     def get_full_branch_name(self, name: str | None = None) -> str:
         if name is not None:
             return (
                 f"{self.RECORD_CONFIG['branch_prefix']}/{self._testMethodName}/{name}"
             )
-        else:
-            return f"{self.RECORD_CONFIG['branch_prefix']}/{self._testMethodName}"
+
+        return f"{self.RECORD_CONFIG['branch_prefix']}/{self._testMethodName}"
 
     async def create_pr(
         self,
@@ -854,7 +898,11 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         )
         await self.wait_for("pull_request", {"action": "opened"})
 
-        return typing.cast(github_types.GitHubPullRequest, resp.json())
+        self.created_branches.add(github_types.GitHubRefType(branch))
+
+        pr = typing.cast(github_types.GitHubPullRequest, resp.json())
+
+        return pr
 
     async def _git_create_files(self, files: dict[str, str]) -> None:
         if self.git.repository is None:
@@ -1261,7 +1309,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
     async def add_label(
         self, pull_number: github_types.GitHubPullRequestNumber, label: str
-    ) -> None:
+    ) -> github_types.GitHubEventPullRequest:
         if label not in self.existing_labels:
             try:
                 await self.client_integration.post(
@@ -1276,7 +1324,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         await self.client_integration.post(
             f"{self.url_origin}/issues/{pull_number}/labels", json={"labels": [label]}
         )
-        await self.wait_for("pull_request", {"action": "labeled"})
+        return await self.wait_for_pull_request("labeled", pr_number=pull_number)
 
     async def remove_label(
         self, pull_number: github_types.GitHubPullRequestNumber, label: str
@@ -1305,13 +1353,26 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             headers={"Accept": "application/vnd.github.luke-cage-preview+json"},
         )
 
-    async def get_branches(self) -> list[github_types.GitHubBranch]:
+    async def get_branches(
+        self, filter_on_name: bool = True
+    ) -> list[github_types.GitHubBranch]:
+        branch_name_prefix = self.get_full_branch_name()
         return [
-            c
-            async for c in self.client_integration.items(
+            b
+            async for b in self.client_integration.items(
                 f"{self.url_origin}/branches", resource_name="branches", page_limit=10
             )
+            if not filter_on_name or b["name"].startswith(branch_name_prefix)
         ]
+
+    async def get_branch(self, name: str) -> github_types.GitHubBranch:
+        escaped_branch_name = parse.quote(name, safe="")
+        return typing.cast(
+            github_types.GitHubBranch,
+            await self.client_integration.item(
+                f"{self.url_origin}/branches/{escaped_branch_name}"
+            ),
+        )
 
     async def get_commits(
         self, pull_number: github_types.GitHubPullRequestNumber
@@ -1400,15 +1461,18 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         )
 
     async def get_pulls(
-        self,
-        **kwargs: typing.Any,
+        self, **kwargs: typing.Any
     ) -> list[github_types.GitHubPullRequest]:
+        params = kwargs.pop("params", {})
+        params.setdefault("base", self.main_branch_name)
+
         return [
-            i
-            async for i in self.client_integration.items(
+            p
+            async for p in self.client_integration.items(
                 f"{self.url_origin}/pulls",
                 resource_name="pulls",
                 page_limit=5,
+                params=params,
                 **kwargs,
             )
         ]

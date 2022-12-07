@@ -581,7 +581,10 @@ QueueRulesSchema = voluptuous.All(
                 ),
                 voluptuous.Required(
                     "queue_branch_prefix",
-                    default=constants.MERGE_QUEUE_BRANCH_PREFIX,
+                    # NOTE(Greesb): Use a lambda to be able to mock the returned value,
+                    # otherwise when the module is loaded the value is definitive and
+                    # can't be mocked easily.
+                    default=lambda: constants.MERGE_QUEUE_BRANCH_PREFIX,
                 ): str,
                 voluptuous.Required("allow_queue_branch_edit", default=False): bool,
                 # TODO(sileht): options to deprecate

@@ -1777,11 +1777,10 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
 
         await self.wait_for_pull_request("closed", tmp_pull_sliced_1["number"])
-
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
-
         p1_merged = await self.wait_for_pull_request("closed", p1["number"])
         assert p1_merged["pull_request"]["merged"]
+
+        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
 
         tmp_pull_2 = await self.wait_for_pull_request("opened")
 
@@ -4513,27 +4512,22 @@ class TestQueueAction(base.FunctionalTestBase):
             # To force others to be rebased
             p = await self.create_pr()
             await self.merge_pull(p["number"])
-            await self.wait_for("pull_request", {"action": "closed"})
+            await self.wait_for_pull_request("closed", p["number"])
             await self.run_full_engine()
 
             await self.create_status(p1)
             await self.run_full_engine()
 
-            await self.wait_for("pull_request", {"action": "synchronize"})
-            await self.run_full_engine()
-
-            # p1 has been rebased
-            p1 = await self.get_pull(p1["number"])
-
-            check = first(
-                await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-                key=lambda c: c["name"] == "Rule: queue (queue)",
+            check_run = await self.wait_for_check_run(
+                name="Rule: queue (queue)", action="created", status="in_progress"
             )
-            assert check is not None
             assert (
-                check["output"]["title"]
+                check_run["check_run"]["output"]["title"]
                 == "The pull request is the 1st in the queue to be merged"
             )
+            await self.wait_for_pull_request("synchronize", p1["number"])
+            await self.run_full_engine()
+
             pulls_to_refresh: list[
                 tuple[str, float]
             ] = await self.redis_links.cache.zrangebyscore(
@@ -4544,21 +4538,48 @@ class TestQueueAction(base.FunctionalTestBase):
         with freeze_time("2021-05-30T10:12:00", tick=True):
 
             await self.run_full_engine()
-            check = first(
-                await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-                key=lambda c: c["name"] == "Rule: queue (queue)",
-            )
-            assert check is not None
-            assert (
-                check["output"]["title"]
-                == "The pull request has been removed from the queue"
-            )
-            check = first(
-                await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-                key=lambda c: c["name"] == "Queue: Embarked in merge train",
-            )
-            assert check is not None
-            assert "checks have timed out" in check["output"]["summary"]
+
+            # Check-runs arrive in random order, so we need to retrieve all of them and check
+            # if the event we retrieved are the ones we expected.
+            # There are 3 check_run events that should arrive:
+            # - Summary
+            # - Rule: queue (queue)
+            # - Queue: Embarked in merge train
+            check_runs = [
+                await self.wait_for_check_run(status="completed", action="completed"),
+                await self.wait_for_check_run(status="completed", action="completed"),
+                await self.wait_for_check_run(status="completed", action="completed"),
+            ]
+
+            found_queue_rule = False
+            found_embarked_train = False
+            for check_run in check_runs:
+                match check_run["check_run"]["name"]:
+                    case "Rule: queue (queue)":
+                        found_queue_rule = True
+                        assert (
+                            check_run["check_run"]["output"]["title"]
+                            == "The pull request has been removed from the queue"
+                        )
+                        assert check_run["check_run"]["conclusion"] == "cancelled"
+                    case "Queue: Embarked in merge train":
+                        found_embarked_train = True
+                        assert (
+                            "checks have timed out"
+                            in check_run["check_run"]["output"]["summary"]
+                        )
+                        assert check_run["check_run"]["conclusion"] == "failure"
+                    case _:
+                        continue
+
+            if not found_queue_rule:
+                raise AssertionError(
+                    "Did not find check_run event for 'Rule: queue (queue)'"
+                )
+            if not found_embarked_train:
+                raise AssertionError(
+                    "Did not find check_run event for 'Queue: Embarked in merge train'"
+                )
 
     async def test_queue_ci_timeout_inplace_with_only_pull_request_rules(self) -> None:
         config = {
@@ -4589,26 +4610,19 @@ class TestQueueAction(base.FunctionalTestBase):
             p = await self.create_pr()
             await self.merge_pull(p["number"])
             await self.wait_for("pull_request", {"action": "closed"})
-            await self.run_full_engine()
-
             await self.create_status(p1)
             await self.run_full_engine()
 
-            await self.wait_for("pull_request", {"action": "synchronize"})
-            await self.run_full_engine()
-
-            # p1 has been rebased
-            p1 = await self.get_pull(p1["number"])
-
-            check = first(
-                await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-                key=lambda c: c["name"] == "Rule: queue (queue)",
+            check_run = await self.wait_for_check_run(
+                name="Rule: queue (queue)", action="created", status="in_progress"
             )
-            assert check is not None
             assert (
-                check["output"]["title"]
+                check_run["check_run"]["output"]["title"]
                 == "The pull request is the 1st in the queue to be merged"
             )
+            await self.wait_for_pull_request("synchronize", p1["number"])
+            await self.run_full_engine()
+
             pulls_to_refresh: list[
                 tuple[str, float]
             ] = await self.redis_links.cache.zrangebyscore(
@@ -4619,21 +4633,48 @@ class TestQueueAction(base.FunctionalTestBase):
         with freeze_time("2021-05-30T10:12:00", tick=True):
 
             await self.run_full_engine()
-            check = first(
-                await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-                key=lambda c: c["name"] == "Rule: queue (queue)",
-            )
-            assert check is not None
-            assert (
-                check["output"]["title"]
-                == "The pull request has been removed from the queue"
-            )
-            check = first(
-                await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-                key=lambda c: c["name"] == "Queue: Embarked in merge train",
-            )
-            assert check is not None
-            assert "checks have timed out" in check["output"]["summary"]
+
+            # Check-runs arrive in random order, so we need to retrieve all of them and check
+            # if the event we retrieved are the ones we expected.
+            # There are 3 check_run events that should arrive:
+            # - Summary
+            # - Rule: queue (queue)
+            # - Queue: Embarked in merge train
+            check_runs = [
+                await self.wait_for_check_run(status="completed", action="completed"),
+                await self.wait_for_check_run(status="completed", action="completed"),
+                await self.wait_for_check_run(status="completed", action="completed"),
+            ]
+
+            found_queue_rule = False
+            found_embarked_train = False
+            for check_run in check_runs:
+                match check_run["check_run"]["name"]:
+                    case "Rule: queue (queue)":
+                        found_queue_rule = True
+                        assert (
+                            check_run["check_run"]["output"]["title"]
+                            == "The pull request has been removed from the queue"
+                        )
+                        assert check_run["check_run"]["conclusion"] == "cancelled"
+                    case "Queue: Embarked in merge train":
+                        found_embarked_train = True
+                        assert (
+                            "checks have timed out"
+                            in check_run["check_run"]["output"]["summary"]
+                        )
+                        assert check_run["check_run"]["conclusion"] == "failure"
+                    case _:
+                        continue
+
+            if not found_queue_rule:
+                raise AssertionError(
+                    "Did not find check_run event for 'Rule: queue (queue)'"
+                )
+            if not found_embarked_train:
+                raise AssertionError(
+                    "Did not find check_run event for 'Queue: Embarked in merge train'"
+                )
 
     async def test_queue_ci_timeout_draft_pr(self) -> None:
         config = {

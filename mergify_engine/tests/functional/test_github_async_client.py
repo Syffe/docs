@@ -30,27 +30,38 @@ class TestGithubClient(base.FunctionalTestBase):
 
         url = f"/repos/mergifyio-testing/{self.RECORD_CONFIG['repository_name']}/pulls"
 
-        pulls = [p async for p in client.items(url, resource_name="pull", page_limit=5)]
-        self.assertEqual(3, len(pulls))
-
         pulls = [
             p
             async for p in client.items(
-                url, params={"per_page": "1"}, resource_name="pull", page_limit=5
+                url,
+                resource_name="pull",
+                page_limit=5,
+                params={"base": self.main_branch_name},
             )
         ]
-        self.assertEqual(3, len(pulls))
+        self.assertEqual(2, len(pulls))
 
         pulls = [
             p
             async for p in client.items(
                 url,
-                params={"per_page": "1", "page": "2"},
+                params={"per_page": "1", "base": self.main_branch_name},
                 resource_name="pull",
                 page_limit=5,
             )
         ]
         self.assertEqual(2, len(pulls))
+
+        pulls = [
+            p
+            async for p in client.items(
+                url,
+                params={"per_page": "1", "page": "2", "base": self.main_branch_name},
+                resource_name="pull",
+                page_limit=5,
+            )
+        ]
+        self.assertEqual(1, len(pulls))
 
         pulls = [
             p
@@ -100,7 +111,10 @@ class TestGithubClient(base.FunctionalTestBase):
         pulls = [
             p
             async for p in self.client_integration.items(
-                url, resource_name="pulls", page_limit=5
+                url,
+                resource_name="pulls",
+                page_limit=5,
+                params={"base": self.main_branch_name},
             )
         ]
         self.assertEqual(1, len(pulls))

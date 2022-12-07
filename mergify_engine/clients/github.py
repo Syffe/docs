@@ -15,6 +15,7 @@ import first
 import httpx
 
 from mergify_engine import config
+from mergify_engine import date
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine.clients import github_app
@@ -246,7 +247,15 @@ async def get_installation_from_login(
 
 
 def _check_rate_limit(response: httpx.Response) -> None:
-    if response.status_code != 403:
+    if response.status_code not in (403, 422, 429) or (
+        response.status_code == 422
+        and (
+            "errors" not in response.json()
+            or len(response.json()["errors"]) != 1
+            or not isinstance(response.json()["errors"][0], dict)
+            or response.json()["errors"][0].get("code", "") != "abuse"
+        )
+    ):
         return
 
     remaining = response.headers.get("X-RateLimit-Remaining")
@@ -260,11 +269,11 @@ def _check_rate_limit(response: httpx.Response) -> None:
             delta = datetime.timedelta(minutes=5)
         else:
             delta = (
-                datetime.datetime.utcfromtimestamp(int(reset))
+                date.fromtimestamp(int(reset))
                 # NOTE(sileht): we add 5 seconds to not be subject to
                 # time jitter and retry too early
                 + datetime.timedelta(seconds=5)
-                - datetime.datetime.utcnow()
+                - date.utcnow_from_clock_realtime()
             )
         if response.url is not None:
             LOG.warning(

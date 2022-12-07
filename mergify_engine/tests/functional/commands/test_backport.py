@@ -50,10 +50,8 @@ class TestCommandBackport(base.FunctionalTestBase):
             ref["ref"]
             async for ref in self.find_git_refs(self.url_origin, ["mergify/bp"])
         ]
-        assert sorted(refs) == [
-            f"refs/heads/mergify/bp/{feature_branch}/pr-{p['number']}",
-            f"refs/heads/mergify/bp/{stable_branch}/pr-{p['number']}",
-        ]
+        assert f"refs/heads/mergify/bp/{feature_branch}/pr-{p['number']}" in refs
+        assert f"refs/heads/mergify/bp/{stable_branch}/pr-{p['number']}" in refs
 
         await self.merge_pull(pulls_feature[0]["number"])
         await self.wait_for("pull_request", {"action": "closed"})
@@ -65,7 +63,8 @@ class TestCommandBackport(base.FunctionalTestBase):
             ref["ref"]
             async for ref in self.find_git_refs(self.url_origin, ["mergify/bp"])
         ]
-        assert refs == []
+        assert f"refs/heads/mergify/bp/{feature_branch}/pr-{p['number']}" not in refs
+        assert f"refs/heads/mergify/bp/{stable_branch}/pr-{p['number']}" not in refs
 
     async def test_command_backport_with_defaults(self) -> None:
         stable_branch = self.get_full_branch_name("stable/#3.1")
@@ -150,10 +149,8 @@ class TestCommandBackport(base.FunctionalTestBase):
             ref["ref"]
             async for ref in self.find_git_refs(self.url_origin, ["mergify/bp"])
         ]
-        assert sorted(refs) == [
-            f"refs/heads/mergify/bp/{feature_branch}/pr-{p['number']}",
-            f"refs/heads/mergify/bp/{stable_branch}/pr-{p['number']}",
-        ]
+        assert f"refs/heads/mergify/bp/{feature_branch}/pr-{p['number']}" in refs
+        assert f"refs/heads/mergify/bp/{stable_branch}/pr-{p['number']}" in refs
 
         await self.merge_pull(pulls_feature[0]["number"])
         await self.wait_for("pull_request", {"action": "closed"})
@@ -165,7 +162,8 @@ class TestCommandBackport(base.FunctionalTestBase):
             ref["ref"]
             async for ref in self.find_git_refs(self.url_origin, ["mergify/bp"])
         ]
-        assert refs == []
+        assert f"refs/heads/mergify/bp/{feature_branch}/pr-{p['number']}" not in refs
+        assert f"refs/heads/mergify/bp/{stable_branch}/pr-{p['number']}" not in refs
 
         # Ensure summary have been posted
         ctxt = await self.repository_ctxt.get_pull_request_context(p["number"], p)

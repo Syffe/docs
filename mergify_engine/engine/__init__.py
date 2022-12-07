@@ -12,6 +12,7 @@ from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import rules
+from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import github_app
 from mergify_engine.clients import http
@@ -33,7 +34,10 @@ async def _check_configuration_changes(
     ctxt: context.Context,
     current_mergify_config_file: context.MergifyConfigFile | None,
 ) -> bool:
-    if ctxt.pull["base"]["repo"]["default_branch"] != ctxt.pull["base"]["ref"]:
+    if (
+        utils.extract_default_branch(ctxt.pull["base"]["repo"])
+        != ctxt.pull["base"]["ref"]
+    ):
         return False
 
     if ctxt.closed:

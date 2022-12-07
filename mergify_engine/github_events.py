@@ -15,6 +15,7 @@ from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import pull_request_finder
 from mergify_engine import redis_utils
+from mergify_engine import utils
 from mergify_engine import worker_pusher
 from mergify_engine.clients import github
 from mergify_engine.engine import commands_runner
@@ -270,7 +271,10 @@ async def push_to_worker(
         elif event["repository"]["archived"]:  # pragma: no cover
             ignore_reason = "repository archived"
 
-        if f"refs/heads/{event['repository']['default_branch']}" == event["ref"]:
+        if (
+            f"refs/heads/{utils.extract_default_branch(event['repository'])}"
+            == event["ref"]
+        ):
 
             # NOTE(sileht): commits contains the list of commits returned by compare API
             # that by default returns only 250 commits

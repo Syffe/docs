@@ -39,6 +39,7 @@ from mergify_engine import exceptions
 from mergify_engine import github_graphql_types
 from mergify_engine import github_types
 from mergify_engine import redis_utils
+from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription as subscription_mod
@@ -342,6 +343,8 @@ class Repository:
         params = {}
         if ref:
             params["ref"] = str(ref)
+        else:
+            params["ref"] = utils.extract_default_branch(self.repo)
 
         filenames = constants.MERGIFY_CONFIG_FILENAMES.copy()
         if preferred_filename:

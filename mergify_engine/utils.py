@@ -8,6 +8,8 @@ import typing
 
 import daiquiri
 
+from mergify_engine import github_types
+
 
 LOG = daiquiri.getLogger()
 
@@ -170,3 +172,10 @@ def strtobool(string: str) -> bool:
 
 def strip_comment_tags(line: str) -> str:
     return line.removeprefix("<!--").removesuffix("-->").strip()
+
+
+def extract_default_branch(
+    repository: github_types.GitHubRepository,
+) -> github_types.GitHubRefType:
+    # Helper to easily mock default branch during tests
+    return repository["default_branch"]

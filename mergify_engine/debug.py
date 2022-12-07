@@ -16,6 +16,7 @@ from mergify_engine import github_types
 from mergify_engine import queue
 from mergify_engine import redis_utils
 from mergify_engine import rules
+from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
@@ -236,7 +237,7 @@ async def report(
             f"* REPOSITORY IS {'PRIVATE' if repository.repo['private'] else 'PUBLIC'}"
         )
 
-        print(f"* DEFAULT BRANCH: {repository.repo['default_branch']}")
+        print(f"* DEFAULT BRANCH: {utils.extract_default_branch(repository.repo)}")
 
         print("* CONFIGURATION:")
         mergify_config = None

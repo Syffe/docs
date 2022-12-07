@@ -11,6 +11,7 @@ from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import rules
 from mergify_engine import signals
+from mergify_engine import utils
 from mergify_engine.dashboard import subscription
 from mergify_engine.queue import utils as queue_utils
 
@@ -289,7 +290,7 @@ async def _get_stats_items(
     redis = repository.installation.redis.stats
 
     if branch_name is None:
-        branch_name = repository.repo["default_branch"]
+        branch_name = utils.extract_default_branch(repository.repo)
 
     redis_repo_key = _get_repository_key(
         repository.installation.owner_id, repository.repo["id"]

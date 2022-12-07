@@ -12,11 +12,22 @@ class TestCommandCopy(base.FunctionalTestBase):
         )
         p = await self.create_pr()
 
-        await self.create_comment_as_admin(
+        comment_id = await self.create_comment_as_admin(
             p["number"], f"@mergifyio copy {stable_branch} {feature_branch}"
         )
         await self.run_engine()
         await self.wait_for("issue_comment", {"action": "created"}, test_id=p["number"])
+        reactions = [
+            r
+            async for r in self.client_integration.items(
+                f"{self.url_origin}/issues/comments/{comment_id}/reactions",
+                api_version="squirrel-girl",
+                resource_name="reactions",
+                page_limit=5,
+            )
+        ]
+        assert len(reactions) == 1
+        assert "+1" == reactions[0]["content"]
         await self.run_engine()
 
         pulls_stable = await self.get_pulls(
@@ -27,28 +38,13 @@ class TestCommandCopy(base.FunctionalTestBase):
             params={"state": "all", "base": feature_branch}
         )
         assert 1 == len(pulls_feature)
-        comments = await self.get_issue_comments(p["number"])
-        assert len(comments) == 2
-        reactions = [
-            r
-            async for r in self.client_integration.items(
-                f"{self.url_origin}/issues/comments/{comments[0]['id']}/reactions",
-                api_version="squirrel-girl",
-                resource_name="reactions",
-                page_limit=5,
-            )
-        ]
-        assert len(reactions) == 1
-        assert "+1" == reactions[0]["content"]
 
         refs = [
             ref["ref"]
             async for ref in self.find_git_refs(self.url_origin, ["mergify/copy"])
         ]
-        assert sorted(refs) == [
-            f"refs/heads/mergify/copy/{feature_branch}/pr-{p['number']}",
-            f"refs/heads/mergify/copy/{stable_branch}/pr-{p['number']}",
-        ]
+        assert f"refs/heads/mergify/copy/{feature_branch}/pr-{p['number']}" in refs
+        assert f"refs/heads/mergify/copy/{stable_branch}/pr-{p['number']}" in refs
 
         await self.merge_pull(pulls_feature[0]["number"])
         await self.wait_for("pull_request", {"action": "closed"})
@@ -60,4 +56,5 @@ class TestCommandCopy(base.FunctionalTestBase):
             ref["ref"]
             async for ref in self.find_git_refs(self.url_origin, ["mergify/copy"])
         ]
-        assert refs == []
+        assert f"refs/heads/mergify/copy/{feature_branch}/pr-{p['number']}" not in refs
+        assert f"refs/heads/mergify/copy/{stable_branch}/pr-{p['number']}" not in refs

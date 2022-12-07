@@ -87,6 +87,7 @@ flake8-new-union-types = "^0.4.1"
 pytest-xdist = "^2.5.0"
 yesqa = "^1.4.0"
 asgi-lifespan = "^1.0.1"
+filelock = "^3.8.0"
 
 [tool.poetry.scripts]
   mergify-database-update = "mergify_engine.models.manage:database_update"
