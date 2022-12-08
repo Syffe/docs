@@ -521,14 +521,18 @@ async def _request_with_lock_and_ratelimit_retry(
     with REQUESTS_SYNC_FILE_LOCK.acquire(poll_interval=0.01):
         # Get the last modified date of the file, faster than reading the file
         # for the date inside.
-        timestamp = float(os.path.getmtime(REQUESTS_SYNC_FILE_PATH))
-        timestamp_date = date.fromtimestamp(timestamp)
-        milliseconds_diff = (
-            date.utcnow_from_clock_realtime() - timestamp_date
-        ) / datetime.timedelta(milliseconds=1)
+        try:
+            timestamp = float(os.path.getmtime(REQUESTS_SYNC_FILE_PATH))
+        except FileNotFoundError:
+            pass
+        else:
+            timestamp_date = date.fromtimestamp(timestamp)
+            milliseconds_diff = (
+                date.utcnow_from_clock_realtime() - timestamp_date
+            ) / datetime.timedelta(milliseconds=1)
 
-        if milliseconds_diff < 1000.0:
-            await asyncio.sleep((1000.0 - milliseconds_diff) / 1000)
+            if milliseconds_diff < 1000.0:
+                await asyncio.sleep((1000.0 - milliseconds_diff) / 1000)
 
         response = await _request_with_ratelimit_retry(request_func, *args, **kwargs)
 
@@ -605,16 +609,3 @@ def mock_asyncgithubclient_requests() -> abc.Generator[None, None, None]:
             es.enter_context(m)
 
         yield
-
-
-if RECORDING_IN_PARALLEL:
-
-    @pytest.fixture(autouse=True, scope="module")
-    def clean_request_file(worker_id: str) -> None:
-        if worker_id != "master":
-            return
-
-        # Clear the file's content
-        with REQUESTS_SYNC_FILE_LOCK:
-            with open(REQUESTS_SYNC_FILE_PATH, "w"):
-                pass
