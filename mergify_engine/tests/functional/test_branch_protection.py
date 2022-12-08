@@ -62,3 +62,32 @@ class TestBranchProtection(base.FunctionalTestBase):
         await self.assert_check_run(
             ctxt, check_name, expected_conclusion, expected_title, expected_summary
         )
+
+    async def test_required_status_checks_strict_compatibility_with_batch_size_and_queue_branch_merge_method(
+        self,
+    ) -> None:
+        await self.setup_repo_with_queue(
+            queue_rules={
+                "allow_inplace_checks": False,
+                "batch_size": 3,
+                "speculative_checks": 5,
+                "batch_max_wait_time": "0 s",
+                "queue_branch_merge_method": "fast-forward",
+            }
+        )
+        await self.protect_main_branch_with_required_status_checks_strict()
+
+        p1 = await self.create_pr()
+        p2 = await self.create_pr()
+        await self.run_engine()
+
+        draft_pr = await self.wait_for_pull_request("opened")
+        await self.create_status(draft_pr["pull_request"])
+        await self.run_engine()
+        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.run_engine()
+
+        for _ in (p1, p2):
+            p_merged = await self.wait_for_pull_request("closed")
+            assert p_merged["pull_request"]["number"] in (p1["number"], p2["number"])
+            assert p_merged["pull_request"]["merged"]

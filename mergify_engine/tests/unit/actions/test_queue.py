@@ -354,6 +354,7 @@ def create_queue_action(queue_rule_config: dict[str, typing.Any]) -> queue.Queue
         "speculative_checks": 1,
         "allow_inplace_checks": True,
         "batch_size": 1,
+        "queue_branch_merge_method": None,
     }
     default_queue_rule_config.update(queue_rule_config)
 
@@ -378,8 +379,17 @@ def create_context_with_branch_protection_required_status_checks_strict() -> moc
     return ctxt
 
 
-async def test_required_status_checks_strict_compatibility_with_default() -> None:
-    action = create_queue_action({})
+@pytest.mark.parametrize(
+    ("queue_rule_config"),
+    (
+        pytest.param({}),
+        pytest.param({"batch_size": 5, "queue_branch_merge_method": "fast-forward"}),
+    ),
+)
+async def test_required_status_checks_strict_compatibility_with_queue_rules(
+    queue_rule_config: dict[str, typing.Any]
+) -> None:
+    action = create_queue_action(queue_rule_config)
     ctxt = create_context_with_branch_protection_required_status_checks_strict()
 
     # Nothing raised

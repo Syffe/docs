@@ -872,6 +872,12 @@ Then, re-embark the pull request into the merge queue by posting the comment
     async def _check_config_compatibility_with_branch_protection(
         self, ctxt: context.Context
     ) -> None:
+        if self.queue_rule.config["queue_branch_merge_method"] == "fast-forward":
+            # Note(charly): `queue_branch_merge_method=fast-forward` make the
+            # use of batches compatible with branch protection
+            # `required_status_checks=strict`
+            return None
+
         protection = await ctxt.repository.get_branch_protection(
             ctxt.pull["base"]["ref"]
         )
