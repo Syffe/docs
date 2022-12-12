@@ -31,14 +31,6 @@ NOT_APPLICABLE_TEMPLATE = """<details>
 </details>"""
 
 
-MSG_RULE_WITH_SAME_NAME_DEPRECATION = """
-⚠️ **Action Required** ⚠️
-> **The configuration has multiple rules with the same name.**
-> This option is deprecated and all rules should have different names.
-> This option will be removed on Monday, 17 October  2022.
-"""
-
-
 REBASE_FALLBACK_MODE_DEPRECATION_GHES = """
 :bangbang: **Action Required** :bangbang:
 > **The configuration uses the deprecated `rebase_fallback` mode of the queue action.**
