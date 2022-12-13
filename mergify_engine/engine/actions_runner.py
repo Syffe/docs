@@ -33,18 +33,17 @@ NOT_APPLICABLE_TEMPLATE = """<details>
 
 REBASE_FALLBACK_MODE_DEPRECATION_GHES = """
 :bangbang: **Action Required** :bangbang:
-> **The configuration uses the deprecated `rebase_fallback` mode of the queue action.**
+> **The configuration uses the deprecated `rebase_fallback` mode of the queue and/or merge action.**
 > This option will be removed on a future version.
-> For more information: https://docs.mergify.com/actions/queue/
+> For more information: https://docs.mergify.com/actions/queue/ or https://docs.mergify.com/actions/merge/
 """
 
 REBASE_FALLBACK_MODE_DEPRECATION_SAAS = """
 :bangbang: **Action Required** :bangbang:
-> **The configuration uses the deprecated `rebase_fallback` mode of the queue action.**
-> The default value will be changed and forced to `none` on 13th December, 2022.
+> **The configuration uses the deprecated `rebase_fallback` mode of the queue and/or merge action.**
 > A brownout is planned on February 13th, 2023.
 > This option will be removed on March 13th, 2023.
-> For more information: https://docs.mergify.com/actions/queue/
+> For more information: https://docs.mergify.com/actions/queue/ or https://docs.mergify.com/actions/merge/
 """
 
 

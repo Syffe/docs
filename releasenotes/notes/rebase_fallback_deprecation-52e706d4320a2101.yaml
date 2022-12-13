@@ -1,5 +1,5 @@
 ---
 deprecations:
   - |
-    The `rebase_fallback` configuration option of the queue action is deprecated and
+    The `rebase_fallback` configuration option of the queue and merge actions is deprecated and
     planned for removal.
