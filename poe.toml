@@ -59,9 +59,13 @@ PYTEST_TIMEOUT = "5400"
 RECORD_PARALLEL = "1"
 
 [tool.poe.tasks.import-checks]
-deps = ["setup"]
 help = "Run python import checks"
-cmd = "./tools/run-tests.sh bash -c 'mergify-import-check && mergify-import-check-worker && mergify-import-check-web && echo $PYTEST_TIMEOUT'"
+default_item_type = "cmd"
+sequence = [
+    # Ensure no dev deps are installed like in production
+    "poetry install --no-dev --sync",
+    "./tools/run-tests.sh bash -c 'mergify-import-check && mergify-import-check-worker && mergify-import-check-web && echo $PYTEST_TIMEOUT'"
+]
 env = { MERGIFYENGINE_SENTRY_URL = "https://12345@localhost/12345" }
 
 [tool.poe.tasks.yesqa]
