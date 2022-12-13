@@ -149,7 +149,8 @@ class MergeAction(actions.Action):
             *typing.get_args(merge_base.MergeMethodT)
         ),
         # NOTE(sileht): None is supported for legacy reason
-        voluptuous.Required("rebase_fallback", default="merge"): voluptuous.Any(
+        # in deprecation process
+        voluptuous.Required("rebase_fallback", default="none"): voluptuous.Any(
             *typing.get_args(merge_base.RebaseFallbackT)
         ),
         voluptuous.Required("merge_bot_account", default=None): types.Jinja2WithNone,

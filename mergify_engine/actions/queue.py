@@ -77,7 +77,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
             "squash",
             "fast-forward",
         ),
-        voluptuous.Required("rebase_fallback", default="merge"): voluptuous.Any(
+        # NOTE(Syffe): In deprecation process
+        voluptuous.Required("rebase_fallback", default="none"): voluptuous.Any(
             "merge", "squash", "none", None
         ),
         voluptuous.Required("merge_bot_account", default=None): types.Jinja2WithNone,

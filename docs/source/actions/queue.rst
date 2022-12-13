@@ -381,7 +381,7 @@ These are the options of the ``queue`` action:
        ``batch_size > 1``, or with ``allow_inplace_checks`` set to ``false``.
    * - ``rebase_fallback``
      - string
-     - ``merge``
+     - ``none``
      - | |deprecated tag|
        | If ``method`` is set to ``rebase``, but the pull request cannot be
        | rebased, the method defined in ``rebase_fallback`` will be used instead.
