@@ -44,6 +44,7 @@ pull_request_rules:
     conditions:
       - base=main
       - check-success=semantic-pull-request
+      - "check-success=Rule: testing requirements (post_check)"
       - or:
           # Author is engineering manager, we allow with one review
           - and:
