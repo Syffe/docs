@@ -269,34 +269,67 @@ def _extract_time_range(times: str) -> dict[str, typing.Any]:
     }
 
 
+def parse_schedule(string: str) -> date.Schedule:
+    string = _unquote(string)
+    days, has_times, times = string.partition(" ")
+    if not has_times or not times:
+        try:
+            # Only days
+            return date.Schedule.from_days_string(days)
+        except date.InvalidDate:
+            # Only hours+minutes
+            try:
+                return date.Schedule.from_times_string(days)
+            except date.InvalidDate as e:
+                raise ConditionParsingError(e.message)
+    else:
+        # Days + Times
+        try:
+            return date.Schedule.from_strings(days, times)
+        except date.InvalidDate as e:
+            raise ConditionParsingError(e.message)
+
+
 def _skip_ws(v: str, lenght: int, position: int) -> int:
     while position < lenght and v[position] == " ":
         position += 1
     return position
 
 
-def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
-    length = len(v)
-    position = _skip_ws(v, length, 0)
+class ParsedCondition(typing.NamedTuple):
+    condition_without_prefix: str
+    operator: str
+    parser: Parser
+    attribute: str
+    negate: bool
+    quantity: bool
+
+
+def parse_raw_condition(
+    cond: str, allow_command_attributes: bool = False
+) -> ParsedCondition:
+
+    length = len(cond)
+    position = _skip_ws(cond, length, 0)
     if position >= length:
         raise ConditionParsingError("Condition empty")
 
     # Search for modifiers
     negate = False
     quantity = False
-    if v[position] in NEGATION_OPERATORS:
+    if cond[position] in NEGATION_OPERATORS:
         negate = True
         position += 1
-    elif v[position] in POSITIVE_OPERATORS:
+    elif cond[position] in POSITIVE_OPERATORS:
         position += 1
 
-    position = _skip_ws(v, length, position)
+    position = _skip_ws(cond, length, position)
     if position >= length:
         raise ConditionParsingError("Incomplete condition")
 
-    if v[position] == "#":
+    if cond[position] == "#":
         quantity = True
-        position = _skip_ws(v, length, position + 1)
+        position = _skip_ws(cond, length, position + 1)
         if position >= length:
             raise ConditionParsingError("Incomplete condition")
 
@@ -310,12 +343,12 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
 
     # Get the attribute
     for attribute in supported_attributes:
-        if v[position:].startswith(attribute):
+        if cond[position:].startswith(attribute):
             break
     else:
         raise ConditionParsingError("Invalid attribute")
 
-    position = _skip_ws(v, length, position + len(attribute))
+    position = _skip_ws(cond, length, position + len(attribute))
 
     if not quantity and attribute in ATTRIBUTES_WITH_ONLY_LENGTH:
         raise ConditionParsingError(
@@ -341,50 +374,51 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
             f"`#` modifier is invalid for attribute: `{attribute}`"
         )
 
-    # Bool doesn't have operators
     if parser == Parser.BOOL:
-        if len(v[position:].strip()) > 0:
+        # Bool doesn't have operators
+        if len(cond[position:].strip()) > 0:
             raise ConditionParsingError(
                 f"Operators are invalid for Boolean attribute: `{attribute}`"
             )
-        return _to_dict(negate, False, attribute, "=", True)
+        return ParsedCondition(
+            condition_without_prefix=attribute,
+            operator="=",
+            parser=parser,
+            attribute=attribute,
+            negate=negate,
+            quantity=quantity,
+        )
 
     # Extract operators
     operators = SUPPORTED_OPERATORS[parser]
     for op in operators:
-        if v[position:].startswith(op):
+        if cond[position:].startswith(op):
             break
     else:
         raise ConditionParsingError("Invalid operator")
 
     position += len(op)
-    value = v[position:].strip()
+    value = cond[position:].strip()
     op = OPERATOR_ALIASES.get(op, op)
+    return ParsedCondition(
+        condition_without_prefix=value,
+        operator=op,
+        parser=parser,
+        attribute=attribute,
+        negate=negate,
+        quantity=quantity,
+    )
 
-    if parser == Parser.SCHEDULE:
-        value = _unquote(value)
 
-        cond: dict[str, typing.Any]
-        days, has_times, times = value.partition(" ")
-        if not has_times or not times:
-            try:
-                # Only days
-                schedule = date.Schedule.from_days_string(days)
-            except date.InvalidDate:
-                # Only hours+minutes
-                try:
-                    schedule = date.Schedule.from_times_string(days)
-                except date.InvalidDate as e:
-                    raise ConditionParsingError(e.message)
-        else:
-            # Days + Times
-            try:
-                schedule = date.Schedule.from_strings(days, times)
-            except date.InvalidDate as e:
-                raise ConditionParsingError(e.message)
+def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
+    value, op, parser, attribute, negate, quantity = parse_raw_condition(
+        v, allow_command_attributes
+    )
 
-        cond = {op: ("current-time", schedule)}
-
+    if parser == Parser.BOOL:
+        return _to_dict(negate, False, attribute, op, True)
+    elif parser == Parser.SCHEDULE:
+        cond: dict[str, typing.Any] = {op: ("current-time", parse_schedule(value))}
         return _to_dict(False, False, attribute, "@", cond)
 
     elif parser == Parser.TIME:
