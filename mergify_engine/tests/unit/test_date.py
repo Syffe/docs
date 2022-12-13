@@ -300,7 +300,7 @@ def test_interval_from_string(
         ),
     ),
 )
-def test_datetime_between_range(
+def test_datetime_inside_time_range(
     time_to_check: datetime.datetime,
     begin_hour: int,
     begin_minute: int,
