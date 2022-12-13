@@ -34,6 +34,7 @@ class BackportAction(copy.CopyAction):
     ]
 
     KIND: duplicate_pull.KindT = "backport"
+    KIND_PLURAL = "backports"
 
     @staticmethod
     def command_to_config(string: str) -> dict[str, typing.Any]:

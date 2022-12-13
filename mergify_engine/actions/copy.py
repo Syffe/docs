@@ -58,6 +58,7 @@ class CopyExecutorConfig(typing.TypedDict):
 
 class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
     KIND: duplicate_pull.KindT = "copy"
+    KIND_PLURAL = "copies"
     HOOK_EVENT_NAME: typing.Literal["action.backport", "action.copy"] = "action.copy"
     BRANCH_PREFIX: str = "copy"
     SUCCESS_MESSAGE: str = "Pull request copies have been created"
@@ -232,7 +233,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
             except duplicate_pull.DuplicateWithMergeFailure:
                 return (
                     check_api.Conclusion.FAILURE,
-                    f"{self.KIND.capitalize()} to branch `{branch_name}` failed\nPull request with merge commit are not supported",
+                    f"{self.KIND.capitalize()} to branch `{branch_name}` failed\nPull request {self.KIND_PLURAL} with merge commits are not supported",
                 )
 
             except duplicate_pull.DuplicateFailed as e:
