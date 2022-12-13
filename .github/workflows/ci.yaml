@@ -43,8 +43,9 @@ jobs:
       - name: Build 🔧 & Test 🔍
         run: |
           # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
-          pip install -r requirements-dev.txt
-          tox -e semgrep
+          pip install -r requirements-poetry.txt
+          poetry install
+          poetry run poe semgrep
   pep8:
     timeout-minutes: 20
     runs-on: ubuntu-20.04
@@ -68,10 +69,9 @@ jobs:
       - name: Build 🔧 & Test 🔍
         run: |
           # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
-          pip install -r requirements-dev.txt
-          tox -e pep8
-          bash -n onpremise/entrypoint.sh
-          bash -n datadog-wrapper.sh
+          pip install -r requirements-poetry.txt
+          poetry install
+          poetry run poe linters
 
   import-checks:
     timeout-minutes: 20
@@ -100,8 +100,9 @@ jobs:
       - name: Build 🔧 & Test 🔍
         run: |
           # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
-          pip install -r requirements-dev.txt
-          tox -e import-checks
+          pip install -r requirements-poetry.txt
+          poetry install
+          poetry run poe import-checks
 
   test:
     timeout-minutes: 20
@@ -133,8 +134,9 @@ jobs:
       - name: Build 🔧 & Test 🔍
         run: |
           # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
-          pip install -r requirements-dev.txt
-          tox -e py311 -- --splits 5 --group ${{ matrix.group }}
+          pip install -r requirements-poetry.txt
+          poetry install
+          poetry run poe test --splits 5 --group ${{ matrix.group }}
 
   docs:
     timeout-minutes: 20
@@ -157,8 +159,9 @@ jobs:
         run: |
           sudo apt-get install graphviz
           # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
-          pip install -r requirements-dev.txt
-          tox -e docs
+          pip install -r requirements-poetry.txt
+          poetry install
+          poetry run poe docs
 
       # NOTE(sileht): workflow run on/pull_request doesn't have access to
       # secrets

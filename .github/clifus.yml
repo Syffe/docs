@@ -21,52 +21,6 @@ targets:
       file: runtime.txt
       forcecreate: true
       content: python-{{ source `python-version` }}
-  tox-basepython:
-    name: "Update tox.ini basepython"
-    kind: file
-    sourceID: python-version
-    spec:
-      file: tox.ini
-      lineMatchPattern: "(basepython = python)(.*)"
-    transformers:
-      - find: "^\\d+\\.\\d+"
-      - replaceRegexGroup: 2
-  tox-python3.X:
-    name: "Update tox.ini python3.X version"
-    kind: file
-    sourceID: python-version
-    spec:
-      file: tox.ini
-      lineMatchPattern: "(.*python)(3.\\d+)(.*)"
-    transformers:
-      - find: "^\\d+\\.\\d+"
-      - replaceRegexGroup: 2
-  tox-py3X:
-    name: "Update tox.ini py3 version"
-    kind: file
-    sourceID: python-version
-    spec:
-      file: tox.ini
-      lineMatchPattern: "(.*py)(3\\d+)(.*)"
-    transformers:
-      - find: "^\\d+\\.\\d+"
-      - replacer:
-          from: "."
-          to: ""
-      - replaceRegexGroup: 2
-  github-workflow-tox-py-version:
-    name: "Update CI file GitHub workflow"
-    kind: file
-    sourceID: python-version
-    spec:
-      file: ".github/workflows/ci.yaml"
-      lineMatchPattern: "(\\s+tox -e py)(3\\d+)(.*)"
-    transformers:
-      - find: "^\\d+\\.\\d+"
-      - replacer:
-          from: "."
-          to: ""
-      - replaceRegexGroup: 2
   github-workflow-python-version:
     name: "Update CI file GitHub workflow"
     kind: file

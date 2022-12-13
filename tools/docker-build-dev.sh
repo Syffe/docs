@@ -1,5 +1,7 @@
-#/bin/bash
+#!/bin/bash
 
+rootdir=$(cd "$(dirname $0)"; pwd)/..
+cd $rootdir
 
 TO_BUILD="${@:-saas-web saas-worker-shared saas-worker-dedicated onpremise}"
 

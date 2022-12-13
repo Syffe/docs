@@ -1,0 +1,106 @@
+[tool.poe.executor]
+type = "poetry"
+
+[tool.poe.env]
+PYTHONASYNCIODEBUG = "1"
+DD_DOGSTATSD_DISABLE = "1"
+DD_TRACE_ENABLED = "0"
+MERGIFYENGINE_TEST_SETTINGS = "fake.env"
+PYTEST_TIMEOUT = "20"
+
+[tool.poe.tasks.linters]
+deps = ["setup"]
+help = "Run linters"
+default_item_type = "cmd"
+sequence = [
+  "flake8",
+  "isort -c .",
+  "mypy",
+  "yamllint .",
+  "reno lint",
+  "mergify-import-check-web",
+  "mergify-import-check-worker",
+  "tools/check-obsolete-fixtures.sh",
+  "bash -n onpremise/entrypoint.sh",
+  "bash -n datadog-wrapper.sh"
+]
+
+[tool.poe.tasks.test]
+deps = ["setup"]
+help = "Run test suite"
+cmd = "./tools/run-tests.sh pytest -v --timeout_method thread"
+
+[tool.poe.tasks.test-parallel]
+deps = ["setup"]
+help = "Run test suite in parallel"
+cmd = "./tools/run-tests.sh pytest -vv --timeout_method thread -n auto"
+
+[tool.poe.tasks.record]
+deps = ["setup"]
+help = "Record test suite fixtures"
+cmd = "./tools/run-tests.sh pytest -v --timeout_method thread mergify_engine/tests/functional"
+[tool.poe.tasks.record.env]
+MERGIFYENGINE_RECORD = "1"
+DD_DOGSTATSD_DISABLE = "1"
+DD_TRACE_ENABLED = "0"
+MERGIFYENGINE_TEST_SETTINGS = "test.env"
+PYTEST_TIMEOUT = "3600"
+
+[tool.poe.tasks.record-parallel]
+deps = ["setup"]
+help = "Record test suite fixtures in parallel"
+cmd = "./tools/run-tests.sh pytest -vv --timeout_method thread -n auto mergify_engine/tests/functional"
+[tool.poe.tasks.record-parallel.env]
+MERGIFYENGINE_RECORD = "1"
+DD_DOGSTATSD_DISABLE = "1"
+DD_TRACE_ENABLED = "0"
+MERGIFYENGINE_TEST_SETTINGS = "test.env"
+PYTEST_TIMEOUT = "5400"
+RECORD_PARALLEL = "1"
+
+[tool.poe.tasks.import-checks]
+deps = ["setup"]
+help = "Run python import checks"
+cmd = "./tools/run-tests.sh bash -c 'mergify-import-check && mergify-import-check-worker && mergify-import-check-web && echo $PYTEST_TIMEOUT'"
+env = { MERGIFYENGINE_SENTRY_URL = "https://12345@localhost/12345" }
+
+[tool.poe.tasks.yesqa]
+deps = ["setup"]
+help = "Run yesqa"
+cmd = 'find mergify_engine -name "*.py" -exec echo yesqa \{\} ;'
+
+[tool.poe.tasks.serve]
+deps = ["setup"]
+help = "Start mergify-engine workers and API"
+cmd = "./tools/run-tests.sh honcho start --port 8802"
+use_exec = true
+[tool.poe.tasks.serve.env]
+PYTHONUNBUFFERED = "1"
+DD_DOGSTATSD_DISABLE = "1"
+DD_TRACE_ENABLED = "0"
+MERGIFYENGINE_API_ENABLE = "1"
+MERGIFYENGINE_TEST_SETTINGS = "test.env"
+MERGIFYENGINE_DASHBOARD_UI_SITE_URLS = "http://localhost:3000"
+MERGIFYENGINE_DASHBOARD_UI_FEATURES = "subscriptions;applications;intercom;statuspage"
+MERGIFYENGINE_DASHBOARD_UI_FRONT_BACKEND_URL = "http://localhost:8802"
+MERGIFYENGINE_SUBCRIPTION_BASE_URL = "http://localhost:5001"
+
+[tool.poe.tasks.docs]
+deps = ["setup"]
+help = "Build docs"
+env = { ENABLE_API = "True" }
+cmd = "./tools/build-docs.sh"
+
+[tool.poe.tasks.docker]
+help = "Build docker images (eg: -t my-testing-image --target saas-web)"
+cmd = "./tools/docker-build-dev.sh"
+
+[tool.poe.tasks.semgrep]
+deps = ["setup"]
+help = "Run SAST tools"
+cmd = "semgrep --config=auto --error"
+
+[tool.poe.tasks.setup]
+help = "Sync poetry virtualenv"
+executor = { type  = "simple" }
+cmd = "poetry install --sync"

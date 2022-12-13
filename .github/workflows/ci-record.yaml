@@ -48,9 +48,10 @@ jobs:
            ${{ secrets[matrix.target.secret_name] }}
            EOF
            # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
-           pip install -r requirements-dev.txt
+           pip install -r requirements-poetry.txt
            DOW=$(date +%u)
-           tox -e record -- --splits 5 --group "${DOW}"
+           poetry install
+           poetry run poe record -- --splits 5 --group "${DOW}"
 
       - name: Fetch check run html url
         id: fetch-check-run

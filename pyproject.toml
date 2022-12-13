@@ -88,6 +88,7 @@ pytest-xdist = "^2.5.0"
 yesqa = "^1.4.0"
 asgi-lifespan = "^1.0.1"
 filelock = "^3.8.0"
+poethepoet = "^0.16.5"
 
 [tool.poetry.scripts]
   mergify-database-update = "mergify_engine.models.manage:database_update"
@@ -160,6 +161,9 @@ filterwarnings = [
     # NOTE(sileht): until https://github.com/kvesteri/sqlalchemy-utils/issues/646 is fixed and released
     "ignore:'crypt' is deprecated and slated for removal:DeprecationWarning"
 ]
+
+[tool.poe]
+include = ["poe.toml"]
 
 [tool.black]
 target-version = ['py311']
