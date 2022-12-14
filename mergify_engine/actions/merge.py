@@ -6,6 +6,7 @@ import voluptuous
 
 from mergify_engine import actions
 from mergify_engine import check_api
+from mergify_engine import config
 from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import queue
@@ -27,6 +28,13 @@ class _UnsetMarker(enum.Enum):
 
 
 UnsetMarker: typing.Final = _UnsetMarker._MARKER
+
+DEPRECATED_MESSAGE_PRIORITY_ATTRIBUTE_MERGE_ACTION = """The configuration uses the deprecated `priority` attribute of the merge action.
+A brownout is planned on December 28th, 2022.
+This option will be removed on January 17th, 2023.
+For more information: https://docs.mergify.com/actions/merge/
+
+`%s` is invalid"""
 
 
 def DeprecatedOption(
@@ -144,23 +152,41 @@ class MergeAction(actions.Action):
         # | actions.ActionFlag.ALWAYS_RUN
     )
 
-    validator = {
-        voluptuous.Required("method", default="merge"): voluptuous.Any(
-            *typing.get_args(merge_base.MergeMethodT)
-        ),
-        # NOTE(sileht): None is supported for legacy reason
-        # in deprecation process
-        voluptuous.Required("rebase_fallback", default="none"): voluptuous.Any(
-            *typing.get_args(merge_base.RebaseFallbackT)
-        ),
-        voluptuous.Required("merge_bot_account", default=None): types.Jinja2WithNone,
-        voluptuous.Required(
-            "commit_message_template", default=None
-        ): types.Jinja2WithNone,
-        voluptuous.Required(
-            "priority", default=queue.PriorityAliases.medium.value
-        ): queue.PrioritySchema,
-    }
+    @property
+    def validator(self) -> dict[typing.Any, typing.Any]:
+
+        validator = {
+            voluptuous.Required("method", default="merge"): voluptuous.Any(
+                *typing.get_args(merge_base.MergeMethodT)
+            ),
+            # NOTE(sileht): None is supported for legacy reason
+            # in deprecation process
+            voluptuous.Required("rebase_fallback", default="none"): voluptuous.Any(
+                *typing.get_args(merge_base.RebaseFallbackT)
+            ),
+            voluptuous.Required(
+                "merge_bot_account", default=None
+            ): types.Jinja2WithNone,
+            voluptuous.Required(
+                "commit_message_template", default=None
+            ): types.Jinja2WithNone,
+        }
+
+        if config.ALLOW_MERGE_PRIORITY_ATTRIBUTE:
+            validator[
+                voluptuous.Required(
+                    "priority", default=queue.PriorityAliases.medium.value
+                )
+            ] = queue.PrioritySchema
+        else:
+            validator[
+                voluptuous.Required("priority", default=UnsetMarker)
+            ] = DeprecatedOption(
+                DEPRECATED_MESSAGE_PRIORITY_ATTRIBUTE_MERGE_ACTION,
+                queue.PriorityAliases.medium.value,
+            )
+
+        return validator
 
     async def get_conditions_requirements(
         self, ctxt: context.Context

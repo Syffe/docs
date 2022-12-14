@@ -1,5 +1,6 @@
 import logging
 import typing
+from unittest import mock
 
 import pytest
 
@@ -16,6 +17,42 @@ LOG = logging.getLogger(__name__)
 
 class TestMergeAction(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
+
+    @mock.patch.object(config, "ALLOW_MERGE_PRIORITY_ATTRIBUTE", False)
+    async def test_priority_brownout(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=high",
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "actions": {"merge": {"priority": "high"}},
+                },
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        p1 = await self.create_pr()
+        await self.run_engine()
+
+        checks = await context.Context(self.repository_ctxt, p1).pull_engine_check_runs
+        assert len(checks) == 1
+        assert "failure" == checks[0]["conclusion"]
+        assert (
+            "The current Mergify configuration is invalid"
+            == checks[0]["output"]["title"]
+        )
+        assert (
+            "`high` is invalid for dictionary value @ pull_request_rules → item 0 → actions → merge → priority"
+            in checks[0]["output"]["summary"]
+        )
+        assert (
+            "The configuration uses the deprecated `priority` attribute"
+            in checks[0]["output"]["summary"]
+        )
 
     async def test_merge_draft(self) -> None:
         rules = {
