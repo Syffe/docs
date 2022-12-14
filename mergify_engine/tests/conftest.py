@@ -301,9 +301,12 @@ class CustomTestClient(httpx.AsyncClient):
             follow_redirects=True,
         )
 
-    def get_front_app(self) -> fastapi.FastAPI:
+    def get_root_app(self) -> fastapi.FastAPI:
         self._transport: httpx.ASGITransport
-        web_app = typing.cast(fastapi.FastAPI, self._transport.app)
+        return typing.cast(fastapi.FastAPI, self._transport.app)
+
+    def get_front_app(self) -> fastapi.FastAPI:
+        web_app = self.get_root_app()
         for route in web_app.routes:
             if isinstance(route, starlette.routing.Mount) and route.path == "/front":
                 return typing.cast(fastapi.FastAPI, route.app)
@@ -329,8 +332,11 @@ class CustomTestClient(httpx.AsyncClient):
 
 
 @pytest.fixture
-async def web_server() -> abc.AsyncGenerator[fastapi.FastAPI, None]:
-    app = web_root.create_app()
+async def web_server(
+    request: pytest.FixtureRequest,
+) -> abc.AsyncGenerator[fastapi.FastAPI, None]:
+    https_only = getattr(request, "param", False)
+    app = web_root.create_app(https_only=https_only)
     async with asgi_lifespan.LifespanManager(app):
         yield app
 

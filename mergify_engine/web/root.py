@@ -1,7 +1,10 @@
 import daiquiri
 import fastapi
+from fastapi.middleware import httpsredirect
+from uvicorn.middleware import proxy_headers
 
 from mergify_engine import config
+from mergify_engine.middlewares import starlette_workaround
 from mergify_engine.web import github_webhook
 from mergify_engine.web import legacy_badges
 from mergify_engine.web import redis
@@ -20,8 +23,16 @@ def saas_root_endpoint() -> fastapi.Response:
     return fastapi.responses.JSONResponse({})
 
 
-def create_app() -> fastapi.FastAPI:
+def create_app(https_only: bool = True) -> fastapi.FastAPI:
     app = fastapi.FastAPI(openapi_url=None, redoc_url=None, docs_url=None)
+    if https_only:
+        app.add_middleware(httpsredirect.HTTPSRedirectMiddleware)
+    app.add_middleware(
+        proxy_headers.ProxyHeadersMiddleware,
+        trusted_hosts="*",
+    )
+    app.add_middleware(starlette_workaround.StarletteWorkaroundMiddleware)
+
     app.include_router(subscriptions.router)
 
     # /event can't be moved without breaking on-premise installation

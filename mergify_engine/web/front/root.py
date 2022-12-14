@@ -5,6 +5,7 @@ import imia
 import starsessions
 
 from mergify_engine import config
+from mergify_engine.middlewares import logging
 from mergify_engine.web import utils
 from mergify_engine.web.front import admin
 from mergify_engine.web.front import auth
@@ -12,7 +13,6 @@ from mergify_engine.web.front import configuration
 from mergify_engine.web.front import proxy
 from mergify_engine.web.front import security
 from mergify_engine.web.front import sessions
-from mergify_engine.web.front.middlewares import logging
 
 
 def create_app() -> fastapi.FastAPI:
