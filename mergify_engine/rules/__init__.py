@@ -469,7 +469,7 @@ def RuleConditionSchema(
                                 allow_command_attributes=allow_command_attributes,
                             )
                         ],
-                        voluptuous.Length(min=2),
+                        voluptuous.Length(min=1),
                     ),
                     "or": voluptuous.All(
                         [
@@ -479,7 +479,7 @@ def RuleConditionSchema(
                                 allow_command_attributes=allow_command_attributes,
                             )
                         ],
-                        voluptuous.Length(min=2),
+                        voluptuous.Length(min=1),
                     ),
                 },
                 voluptuous.Length(min=1, max=1),

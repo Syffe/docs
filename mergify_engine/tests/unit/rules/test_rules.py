@@ -103,7 +103,13 @@ async def test_multiple_pulls_to_match() -> None:
             "conditions": [{"and": ["body:foo", "body:baz"]}],
             "actions": {},
         },
+        {
+            "name": "and 1",
+            "conditions": [{"and": ["body:foo"]}],
+            "actions": {},
+        },
         {"name": "or", "conditions": [{"or": ["body:foo", "body:baz"]}], "actions": {}},
+        {"name": "or 1", "conditions": [{"or": ["body:foo"]}], "actions": {}},
         {
             "name": "and,or",
             "conditions": [{"and": ["label=foo", {"or": ["body:foo", "body:baz"]}]}],
@@ -187,22 +193,6 @@ def test_pull_request_rule(valid: typing.Any) -> None:
                 "actions": {},
             },
             "Maximun number of nested conditions reached",
-        ),
-        (
-            {
-                "name": "not enough items or",
-                "conditions": [{"or": ["label=foo"]}],
-                "actions": {},
-            },
-            "length of value must be at least 2 for dictionary value @ data[0]['conditions'][0]['or']",
-        ),
-        (
-            {
-                "name": "not enough items and",
-                "conditions": [{"and": []}],
-                "actions": {},
-            },
-            "length of value must be at least 2 for dictionary value @ data[0]['conditions'][0]['and']",
         ),
     ),
 )
