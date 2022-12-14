@@ -3915,6 +3915,36 @@
         "PublishedDate": "2022-02-21T19:15:00Z"
       },
       {
+        "VulnerabilityID": "CVE-2022-46908",
+        "PkgID": "libsqlite3-0@3.34.1-3",
+        "PkgName": "libsqlite3-0",
+        "InstalledVersion": "3.34.1-3",
+        "SeveritySource": "nvd",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-46908",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "sqlite: safe mode authorizer callback allows disallowed UDFs",
+        "Description": "SQLite through 3.40.0, when relying on --safe for execution of an untrusted CLI script, does not properly implement the azProhibitedFunctions protection mechanism, and instead allows UDF functions such as WRITEFILE.",
+        "Severity": "CRITICAL",
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+            "V3Score": 9.8
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2022-46908",
+          "https://news.ycombinator.com/item?id=33948588",
+          "https://nvd.nist.gov/vuln/detail/CVE-2022-46908",
+          "https://sqlite.org/forum/forumpost/07beac8056151b2f",
+          "https://sqlite.org/src/info/cefc032473ac5ad2"
+        ],
+        "PublishedDate": "2022-12-12T06:15:00Z"
+      },
+      {
         "VulnerabilityID": "CVE-2021-45346",
         "PkgID": "libsqlite3-0@3.34.1-3",
         "PkgName": "libsqlite3-0",
@@ -5420,6 +5450,7 @@
         },
         "References": [
           "https://access.redhat.com/security/cve/CVE-2019-6110",
+          "https://cert-portal.siemens.com/productcert/pdf/ssa-412672.pdf",
           "https://cvsweb.openbsd.org/src/usr.bin/ssh/progressmeter.c",
           "https://cvsweb.openbsd.org/src/usr.bin/ssh/scp.c",
           "https://security.gentoo.org/glsa/201903-16",
@@ -5815,6 +5846,7 @@
         },
         "References": [
           "https://access.redhat.com/security/cve/CVE-2019-6110",
+          "https://cert-portal.siemens.com/productcert/pdf/ssa-412672.pdf",
           "https://cvsweb.openbsd.org/src/usr.bin/ssh/progressmeter.c",
           "https://cvsweb.openbsd.org/src/usr.bin/ssh/scp.c",
           "https://security.gentoo.org/glsa/201903-16",
@@ -6210,6 +6242,7 @@
         },
         "References": [
           "https://access.redhat.com/security/cve/CVE-2019-6110",
+          "https://cert-portal.siemens.com/productcert/pdf/ssa-412672.pdf",
           "https://cvsweb.openbsd.org/src/usr.bin/ssh/progressmeter.c",
           "https://cvsweb.openbsd.org/src/usr.bin/ssh/scp.c",
           "https://security.gentoo.org/glsa/201903-16",
