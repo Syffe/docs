@@ -435,8 +435,7 @@ These are the options of the ``queue`` action:
    * - ``require_branch_protection``
      - bool
      - true
-     - Whether branch protections are required for queueing pull requests. This
-       option is ignored if the target queue has ``speculative_checks > 1``.
+     - Whether branch protections are required for queueing pull requests.
 
 .. _queue rules:
 

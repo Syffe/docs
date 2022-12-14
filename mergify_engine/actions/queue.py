@@ -858,10 +858,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         self, ctxt: context.Context
     ) -> list[conditions.RuleConditionNode]:
         branch_protection_conditions = []
-        if (
-            self.config["require_branch_protection"]
-            or self.queue_rule.config["speculative_checks"] > 1
-        ):
+        if self.config["require_branch_protection"]:
             branch_protection_conditions = (
                 await conditions.get_branch_protection_conditions(
                     ctxt.repository, ctxt.pull["base"]["ref"], strict=False
