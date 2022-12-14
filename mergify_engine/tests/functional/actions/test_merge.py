@@ -54,6 +54,62 @@ class TestMergeAction(base.FunctionalTestBase):
             in checks[0]["output"]["summary"]
         )
 
+    async def test_rebase_fallback_deprecation_notice(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=high",
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "actions": {"merge": {"rebase_fallback": "merge"}},
+                },
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        p1 = await self.create_pr()
+        await self.run_engine()
+
+        checks = await context.Context(self.repository_ctxt, p1).pull_engine_check_runs
+        assert len(checks) == 1
+        assert "success" == checks[0]["conclusion"]
+        assert (
+            "**The configuration uses the deprecated `rebase_fallback` mode"
+            in checks[0]["output"]["summary"]
+        )
+
+    async def test_rebase_fallback_deprecation_notice_not_present_in_summary(
+        self,
+    ) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=high",
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "actions": {"merge": {}},
+                },
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        p1 = await self.create_pr()
+        await self.run_engine()
+
+        checks = await context.Context(self.repository_ctxt, p1).pull_engine_check_runs
+        assert len(checks) == 1
+        assert "success" == checks[0]["conclusion"]
+        assert (
+            "**The configuration uses the deprecated `rebase_fallback` mode"
+            not in checks[0]["output"]["summary"]
+        )
+
     async def test_merge_draft(self) -> None:
         rules = {
             "pull_request_rules": [
