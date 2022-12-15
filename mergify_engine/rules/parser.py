@@ -22,23 +22,23 @@ class ConditionParsingError(Exception):
 
 
 class Parser(enum.Enum):
-    TEXT = enum.auto()
-    WORD = enum.auto()
-    BRANCH = enum.auto()
-    LOGIN_AND_TEAMS = enum.auto()
-    POSITIVE_NUMBER = enum.auto()
-    NUMBER = enum.auto()
-    TIME = enum.auto()
-    DAY = enum.auto()
-    MONTH = enum.auto()
-    YEAR = enum.auto()
-    DOW = enum.auto()
-    SCHEDULE = enum.auto()
-    TIMESTAMP_OR_TIMEDELTA = enum.auto()
-    TIMESTAMP = enum.auto()
     BOOL = enum.auto()
-    PERMISSION = enum.auto()
+    BRANCH = enum.auto()
+    DAY = enum.auto()
+    DOW = enum.auto()
     ENUM = enum.auto()
+    LOGIN_AND_TEAMS = enum.auto()
+    MONTH = enum.auto()
+    NUMBER = enum.auto()
+    PERMISSION = enum.auto()
+    POSITIVE_NUMBER = enum.auto()
+    SCHEDULE = enum.auto()
+    TEXT = enum.auto()
+    TIME = enum.auto()
+    TIMESTAMP = enum.auto()
+    TIMESTAMP_OR_TIMEDELTA = enum.auto()
+    WORD = enum.auto()
+    YEAR = enum.auto()
 
 
 CONDITION_PARSERS = {
@@ -123,15 +123,15 @@ ATTRIBUTES_WITH_ONLY_LENGTH = ("commits-behind",)
 # Negate, quantity (default: True, True)
 PARSER_MODIFIERS = {
     Parser.BOOL: (True, False),
+    Parser.DAY: (False, False),
+    Parser.DOW: (False, False),
+    Parser.MONTH: (False, False),
+    Parser.NUMBER: (True, False),
+    Parser.POSITIVE_NUMBER: (True, False),
     Parser.SCHEDULE: (False, False),
     Parser.TIME: (False, False),
     Parser.TIMESTAMP: (False, False),
     Parser.TIMESTAMP_OR_TIMEDELTA: (False, False),
-    Parser.DOW: (False, False),
-    Parser.NUMBER: (True, False),
-    Parser.POSITIVE_NUMBER: (True, False),
-    Parser.DAY: (False, False),
-    Parser.MONTH: (False, False),
     Parser.YEAR: (False, False),
 }
 
@@ -152,22 +152,26 @@ ALL_OPERATORS = SIMPLE_OPERATORS + (REGEX_OPERATOR,)
 
 
 SUPPORTED_OPERATORS = {
-    Parser.TEXT: ALL_OPERATORS,
-    Parser.ENUM: EQUALITY_OPERATORS,
-    Parser.WORD: ALL_OPERATORS,
+    # ALL_OPERATORS
     Parser.BRANCH: ALL_OPERATORS,
     Parser.LOGIN_AND_TEAMS: ALL_OPERATORS,
+    Parser.TEXT: ALL_OPERATORS,
+    Parser.WORD: ALL_OPERATORS,
+    # SIMPLE_OPERATORS
+    Parser.DAY: SIMPLE_OPERATORS,
+    Parser.DOW: SIMPLE_OPERATORS,
+    Parser.MONTH: SIMPLE_OPERATORS,
+    Parser.NUMBER: SIMPLE_OPERATORS,
+    Parser.PERMISSION: SIMPLE_OPERATORS,
+    Parser.POSITIVE_NUMBER: SIMPLE_OPERATORS,
+    Parser.YEAR: SIMPLE_OPERATORS,
+    # EQUALITY_OPERATORS
+    Parser.ENUM: EQUALITY_OPERATORS,
     Parser.SCHEDULE: EQUALITY_OPERATORS,
+    # RANGE_OPERATORS
     Parser.TIME: RANGE_OPERATORS,
     Parser.TIMESTAMP: RANGE_OPERATORS,
     Parser.TIMESTAMP_OR_TIMEDELTA: RANGE_OPERATORS,
-    Parser.NUMBER: SIMPLE_OPERATORS,
-    Parser.POSITIVE_NUMBER: SIMPLE_OPERATORS,
-    Parser.DAY: SIMPLE_OPERATORS,
-    Parser.MONTH: SIMPLE_OPERATORS,
-    Parser.YEAR: SIMPLE_OPERATORS,
-    Parser.DOW: SIMPLE_OPERATORS,
-    Parser.PERMISSION: SIMPLE_OPERATORS,
 }
 
 INVALID_BRANCH_CHARS = "~^: []\\"
@@ -290,17 +294,17 @@ def parse_schedule(string: str) -> date.Schedule:
             raise ConditionParsingError(e.message)
 
 
-def _skip_ws(v: str, lenght: int, position: int) -> int:
-    while position < lenght and v[position] == " ":
+def _skip_ws(v: str, length: int, position: int) -> int:
+    while position < length and v[position] == " ":
         position += 1
     return position
 
 
 class ParsedCondition(typing.NamedTuple):
-    condition_without_prefix: str
-    operator: str
-    parser: Parser
     attribute: str
+    operator: str
+    condition_value: str
+    parser: Parser
     negate: bool
     quantity: bool
 
@@ -381,10 +385,10 @@ def parse_raw_condition(
                 f"Operators are invalid for Boolean attribute: `{attribute}`"
             )
         return ParsedCondition(
-            condition_without_prefix=attribute,
-            operator="=",
-            parser=parser,
             attribute=attribute,
+            operator="=",
+            condition_value=attribute,
+            parser=parser,
             negate=negate,
             quantity=quantity,
         )
@@ -401,17 +405,17 @@ def parse_raw_condition(
     value = cond[position:].strip()
     op = OPERATOR_ALIASES.get(op, op)
     return ParsedCondition(
-        condition_without_prefix=value,
-        operator=op,
-        parser=parser,
         attribute=attribute,
+        operator=op,
+        condition_value=value,
+        parser=parser,
         negate=negate,
         quantity=quantity,
     )
 
 
 def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
-    value, op, parser, attribute, negate, quantity = parse_raw_condition(
+    attribute, op, value, parser, negate, quantity = parse_raw_condition(
         v, allow_command_attributes
     )
 
@@ -457,9 +461,9 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
 
     elif parser in (
         Parser.DAY,
+        Parser.DOW,
         Parser.MONTH,
         Parser.YEAR,
-        Parser.DOW,
     ):
         pd: date.PartialDatetime
         if parser == Parser.DOW:
@@ -475,11 +479,11 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
         return _to_dict(negate, False, attribute, op, pd)
 
     elif parser in (
-        Parser.TEXT,
-        Parser.ENUM,
-        Parser.WORD,
         Parser.BRANCH,
         Parser.LOGIN_AND_TEAMS,
+        Parser.ENUM,
+        Parser.TEXT,
+        Parser.WORD,
     ):
         if (
             parser == Parser.LOGIN_AND_TEAMS
