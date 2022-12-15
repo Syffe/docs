@@ -200,6 +200,11 @@ async def run_engine(
                 title="This pull request cannot be evaluated by Mergify",
                 summary=e.reason,
             )
+        finally:
+            # NOTE(sileht): We reset sources so if the pull request is reused
+            # from cache later, we will not have side effect depending on
+            # previous evaluation
+            ctxt.sources = []
 
         if ctxt.github_has_pending_background_jobs:
             # NOTE(sileht): This pull request may change its state soon and we

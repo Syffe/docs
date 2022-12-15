@@ -18,7 +18,9 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "default",
-                    "conditions": [],
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
                     "speculative_checks": 5,
                     "batch_size": 2,
                     "allow_inplace_checks": False,
@@ -60,9 +62,10 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
 
             await self.run_engine()
 
-            await self.wait_for("pull_request", {"action": "opened"})
+            tmp_mq_pr = await self.wait_for_pull_request("opened")
 
         with freeze_time(start_date + datetime.timedelta(hours=2), tick=True):
+            await self.create_status(tmp_mq_pr["pull_request"])
             await self.run_engine()
 
             await self.wait_for("pull_request", {"action": "closed"})
@@ -256,13 +259,13 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
                 },
             )
             assert r.status_code == 200
-            await self.run_full_engine()
+            await self.run_engine()
 
         with freeze_time(start_date + datetime.timedelta(days=1), tick=True):
 
             await self.create_status(tmp_mq_pr["pull_request"])
             # Run the engine for it to update train state
-            await self.run_full_engine()
+            await self.run_engine()
 
         with freeze_time(start_date + datetime.timedelta(days=1, hours=8), tick=True):
             r = await self.app.delete(
@@ -272,7 +275,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
                     "Content-type": "application/json",
                 },
             )
-            await self.run_full_engine()
+            await self.run_engine()
 
             await self.wait_for(
                 "pull_request", {"action": "closed"}, timeout=30 if base.RECORD else 1
@@ -307,6 +310,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
                     "speculative_checks": 1,
                     "conditions": [
                         f"base={self.main_branch_name}",
+                        "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,
                 }
@@ -346,10 +350,11 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             await self.add_label(p1["number"], "queue")
             await self.run_engine()
 
-            await self.wait_for("pull_request", {"action": "opened"})
+            tmp_mq_pr = await self.wait_for_pull_request("opened")
 
         with freeze_time("2022-08-18T12:00:00", tick=True):
-            await self.run_full_engine()
+            await self.create_status(tmp_mq_pr["pull_request"])
+            await self.run_engine()
 
             await self.wait_for("pull_request", {"action": "closed"})
             await self.wait_for("pull_request", {"action": "closed"})
@@ -477,7 +482,9 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "default",
-                    "conditions": [],
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
                     "speculative_checks": 5,
                     "batch_size": 2,
                     "allow_inplace_checks": False,
@@ -519,9 +526,10 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
 
             await self.run_engine()
 
-            await self.wait_for("pull_request", {"action": "opened"})
+            tmp_mq_pr = await self.wait_for_pull_request("opened")
 
         with freeze_time(start_date + datetime.timedelta(hours=2), tick=True):
+            await self.create_status(tmp_mq_pr["pull_request"])
             await self.run_engine()
 
             await self.wait_for("pull_request", {"action": "closed"})

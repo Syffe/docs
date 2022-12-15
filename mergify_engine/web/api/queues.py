@@ -247,6 +247,21 @@ class QueueFreezeResponse:
     )
 
 
+async def get_queue_rules(
+    repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
+        security.get_repository_context
+    ),
+) -> rules.QueueRules:
+    try:
+        mergify_config = await repository_ctxt.get_mergify_config()
+    except rules.InvalidRules:
+        raise fastapi.HTTPException(
+            status_code=422,
+            detail="The configuration file is invalid.",
+        )
+    return mergify_config["queue_rules"]
+
+
 @router.get(
     "/repos/{owner}/{repository}/queues",  # noqa: FS003
     summary="Get merge queues",
@@ -359,17 +374,15 @@ async def repository_queues(
     repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
         security.get_repository_context
     ),
+    queue_rules: rules.QueueRules = fastapi.Depends(get_queue_rules),  # noqa: B008
 ) -> Queues:
+    queues = Queues()
+
     time_to_merge_stats = await statistics_api.get_time_to_merge_stats_for_all_queues(
         repository_ctxt,
     )
-    queues = Queues()
-    async for train in merge_train.Train.iter_trains(repository_ctxt):
-        queue_rules = await train.get_queue_rules()
-        if queue_rules is None:
-            # The train is going the be deleted, so skip it.
-            continue
 
+    async for train in merge_train.Train.iter_trains(repository_ctxt):
         queue = Queue(Branch(train.ref))
         for position, (embarked_pull, car) in enumerate(train._iter_embarked_pulls()):
             try:
@@ -383,6 +396,7 @@ async def repository_queues(
             )
             estimated_time_of_merge = await get_estimated_time_of_merge_from_stats(
                 train,
+                queue_rules,
                 embarked_pull.config["name"],
                 embarked_pull.queued_at,
                 time_to_merge_stats,
@@ -624,13 +638,9 @@ async def repository_queue_pull_request(
     repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
         security.get_repository_context
     ),
+    queue_rules: rules.QueueRules = fastapi.Depends(get_queue_rules),  # noqa: B008
 ) -> EnhancedPullRequestQueued:
     async for train in merge_train.Train.iter_trains(repository_ctxt):
-        queue_rules = await train.get_queue_rules()
-        if queue_rules is None:
-            # The train is going the be deleted, so skip it.
-            continue
-
         try:
             queue_rule = queue_rules[queue_name]
         except KeyError:
@@ -643,7 +653,7 @@ async def repository_queue_pull_request(
 
             mergeability_check = MergeabilityCheck.from_train_car(car)
             estimated_time_of_merge = await get_estimated_time_of_merge(
-                repository_ctxt, train, queue_name, embarked_pull.queued_at
+                repository_ctxt, train, queue_rules, queue_name, embarked_pull.queued_at
             )
 
             return EnhancedPullRequestQueued(
@@ -667,10 +677,11 @@ async def repository_queue_pull_request(
 async def get_estimated_time_of_merge(
     repository_ctxt: context.Repository,
     train: merge_train.Train,
+    queue_rules: rules.QueueRules,
     queue_name: rules.QueueName,
     queued_at: datetime.datetime,
 ) -> datetime.datetime | None:
-    if await train.is_queue_frozen(queue_name):
+    if await train.is_queue_frozen(queue_rules, queue_name):
         return None
     else:
         queue_time_to_merge_stats = (
@@ -685,11 +696,12 @@ async def get_estimated_time_of_merge(
 
 async def get_estimated_time_of_merge_from_stats(
     train: merge_train.Train,
+    queue_rules: rules.QueueRules,
     queue_name: rules.QueueName,
     queued_at: datetime.datetime,
     time_to_merge_stats: dict[rules.QueueName, statistics_api.TimeToMergeResponse],
 ) -> datetime.datetime | None:
-    if await train.is_queue_frozen(queue_name):
+    if await train.is_queue_frozen(queue_rules, queue_name):
         return None
 
     queue_time_to_merge_stats = time_to_merge_stats.get(

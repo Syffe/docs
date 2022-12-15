@@ -5439,12 +5439,16 @@ class TestTrainApiCalls(base.FunctionalTestBase):
         )
         q._cars.append(car)
 
-        queue_rule = rules.QueueRule(
-            name=rules.QueueName("foo"),
-            conditions=conditions.QueueRuleConditions([]),
-            config=queue_config,
+        queue_rules = rules.QueueRules(
+            [
+                rules.QueueRule(
+                    name=rules.QueueName("foo"),
+                    conditions=conditions.QueueRuleConditions([]),
+                    config=queue_config,
+                )
+            ]
         )
-        await car.start_checking_with_draft(queue_rule, None)
+        await car.start_checking_with_draft(queue_rules, None)
         assert car.queue_pull_request_number is not None
         pulls = await self.get_pulls()
         assert len(pulls) == 3
@@ -5569,12 +5573,16 @@ pull_requests:
         )
         q._cars.append(car)
 
-        queue_rule = rules.QueueRule(
-            name=rules.QueueName("foo"),
-            conditions=conditions.QueueRuleConditions([]),
-            config=queue_config,
+        queue_rules = rules.QueueRules(
+            [
+                rules.QueueRule(
+                    name=rules.QueueName("foo"),
+                    conditions=conditions.QueueRuleConditions([]),
+                    config=queue_config,
+                )
+            ]
         )
-        await car.start_checking_with_draft(queue_rule, None)
+        await car.start_checking_with_draft(queue_rules, None)
         assert car.queue_pull_request_number is not None
         pulls = await self.get_pulls()
         assert len(pulls) == 3
@@ -5584,7 +5592,7 @@ pull_requests:
         assert car.queue_branch_name is not None
 
         # Ensure pull request is closed and re-created
-        await car.start_checking_with_draft(queue_rule, None)
+        await car.start_checking_with_draft(queue_rules, None)
         assert car.queue_pull_request_number is not None
         await self.wait_for("pull_request", {"action": "closed"})
         await self.wait_for("pull_request", {"action": "opened"})
@@ -5658,12 +5666,16 @@ pull_requests:
         )
         q._cars.append(car)
 
-        queue_rule = rules.QueueRule(
-            name=rules.QueueName("foo"),
-            conditions=conditions.QueueRuleConditions([]),
-            config=queue_config,
+        queue_rules = rules.QueueRules(
+            [
+                rules.QueueRule(
+                    name=rules.QueueName("foo"),
+                    conditions=conditions.QueueRuleConditions([]),
+                    config=queue_config,
+                )
+            ]
         )
-        await car.start_checking_with_draft(queue_rule, None)
+        await car.start_checking_with_draft(queue_rules, None)
         assert car.queue_pull_request_number is not None
         pulls = await self.get_pulls()
         assert len(pulls) == 2
@@ -5723,15 +5735,19 @@ pull_requests:
             [p1["number"], p2["number"]],
             base_sha,
         )
-        with pytest.raises(merge_train.TrainCarPullRequestCreationFailure) as exc_info:
-            await car.start_checking_with_draft(
+
+        queue_rules = rules.QueueRules(
+            [
                 rules.QueueRule(
                     name=rules.QueueName("foo"),
                     conditions=conditions.QueueRuleConditions([]),
                     config=queue_config,
-                ),
-                None,
-            )
+                )
+            ]
+        )
+
+        with pytest.raises(merge_train.TrainCarPullRequestCreationFailure) as exc_info:
+            await car.start_checking_with_draft(queue_rules, None)
         assert exc_info.value.car == car
         assert car.queue_pull_request_number is None
 

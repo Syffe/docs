@@ -69,7 +69,9 @@ class TestStatisticsRedis(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "default",
-                    "conditions": [],
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
                     "speculative_checks": 5,
                     "batch_size": 2,
                     "allow_inplace_checks": False,
@@ -106,9 +108,10 @@ class TestStatisticsRedis(base.FunctionalTestBase):
 
             await self.run_engine()
 
-            await self.wait_for("pull_request", {"action": "opened"})
+            tmp_mq_pr1 = await self.wait_for_pull_request("opened")
 
         with freeze_time(start_date + datetime.timedelta(hours=2), tick=True):
+            await self.create_status(tmp_mq_pr1["pull_request"])
             await self.run_engine()
 
             await self.wait_for("pull_request", {"action": "closed"})
@@ -138,12 +141,13 @@ class TestStatisticsRedis(base.FunctionalTestBase):
 
             await self.run_engine()
 
-            await self.wait_for("pull_request", {"action": "opened"})
+            tmp_mq_pr2 = await self.wait_for_pull_request("opened")
 
         with freeze_time(
             start_date + datetime.timedelta(hours=3), tick=True
         ), mock.patch("mergify_engine.queue.statistics_accuracy.statsd") as statsd:
             statsd.gauge = mock.Mock()
+            await self.create_status(tmp_mq_pr2["pull_request"])
             await self.run_engine()
 
             await self.wait_for("pull_request", {"action": "closed"})
