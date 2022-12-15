@@ -797,6 +797,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         verified: bool = False,
         commit_headline: str | None = None,
         commit_body: str | None = None,
+        commit_date: datetime.datetime | None = None,
     ) -> github_types.GitHubPullRequest:
         self.pr_counter += 1
 
@@ -834,6 +835,9 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             args_commit += ["-m", commit_body]
 
         tmp_kwargs = {}
+        if commit_date is not None:
+            tmp_kwargs["_env"] = {"GIT_COMMITTER_DATE": commit_date.isoformat()}
+
         if verified:
             temporary_folder = tempfile.mkdtemp()
             tmp_env = {"GNUPGHOME": temporary_folder}
@@ -848,7 +852,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                 "config", "user.email", "engineering+mergify-test@mergify.io"
             )
             args_commit.append("-S")
-            tmp_kwargs = {"_env": tmp_env}
+            tmp_kwargs.setdefault("_env", {})
+            tmp_kwargs["_env"].update(tmp_env)
 
         await self.git(*args_commit, **tmp_kwargs)
 
