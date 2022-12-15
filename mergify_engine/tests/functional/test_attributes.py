@@ -1,3 +1,4 @@
+import datetime
 import logging
 import operator
 from unittest import mock
@@ -619,6 +620,28 @@ class TestAttributes(base.FunctionalTestBase):
         await self.run_engine()
         comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
         assert comment["comment"]["body"] == "list commits not empty"
+
+    async def test_commits_attributes_list_condition(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "test-commits",
+                    "conditions": ["commits[-1].date_committer < 1 day ago"],
+                    "actions": {"comment": {"message": "long time no see"}},
+                }
+            ]
+        }
+        start_date = datetime.datetime(2022, 12, 12, tzinfo=datetime.timezone.utc)
+        with freeze_time(start_date, tick=True):
+            await self.setup_repo(yaml.dump(rules))
+            pr = await self.create_pr(commit_date=start_date)
+            await self.run_full_engine()
+
+        with freeze_time(start_date + datetime.timedelta(days=2), tick=True):
+            await self.run_full_engine()
+
+            comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
+            assert comment["comment"]["body"] == "long time no see"
 
     async def test_one_commit_unverified(self) -> None:
         rules = {

@@ -977,6 +977,8 @@ ContextAttributeType = (
     | github_types.GitHubRepositoryPermission
 )
 
+COMMITS_ARRAY_ATTRIBUTE_RE = re.compile(r"^commits\[(-?\d+)\]\.([\-\w]+)$")
+
 
 @dataclasses.dataclass
 class Context:
@@ -1475,6 +1477,34 @@ class Context:
 
         elif name == "commits":
             return await self.commits
+
+        elif name.startswith("commits["):
+            match = COMMITS_ARRAY_ATTRIBUTE_RE.match(name)
+            if match is None:
+                raise PullRequestAttributeError(name)
+
+            nb_commit = int(match.group(1))
+            try:
+                commit = (await self.commits)[nb_commit]
+            except IndexError:
+                raise PullRequestAttributeError(name)
+
+            commit_attribute = match.group(2)
+            relative_time = False
+            if commit_attribute.endswith("-relative"):
+                relative_time = True
+                commit_attribute = re.sub(r"-relative$", "", commit_attribute)
+
+            commit_attribute = commit_attribute.replace("-", "_")
+
+            value = getattr(commit, commit_attribute)
+            if commit_attribute not in ("date_author", "date_committer"):
+                return value  # type: ignore[no-any-return]
+
+            date_value = date.fromisoformat(value)
+            if relative_time:
+                return date.RelativeDatetime(date_value)
+            return date_value
 
         elif name == "approved-reviews-by":
             _, approvals = await self.consolidated_reviews()

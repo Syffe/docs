@@ -1,0 +1,18 @@
+---
+features:
+  - |
+    It is now possible to use some commits details in the conditions.
+    Each commit can be accessed via its index and needs to be followed by the
+    attribute you want to access, eg: ``commits[0].commit_message`` for the message
+    of the first commit, ``commits[-1].date_committer`` for the last commit's date.
+    The available attributes are:
+      - author
+      - commit_message
+      - commit_verification_verified
+      - committer
+      - date_author
+      - date_committer
+      - email_author
+      - email_committer
+    The operations available on each attribute depends on its type, you can refer
+    to the ``conditions/#attributes`` page on the documentation for more information.

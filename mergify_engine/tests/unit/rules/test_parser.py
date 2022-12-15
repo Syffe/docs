@@ -211,6 +211,24 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
         ("#commits=2", {"=": ("#commits", 2)}),
         ("#commits-behind>2", {">": ("#commits-behind", 2)}),
         (
+            "commits[0].date_committer < 1 day ago",
+            {
+                "<": (
+                    "commits[0].date_committer-relative",
+                    date.RelativeDatetime(now - datetime.timedelta(days=1)),
+                )
+            },
+        ),
+        (
+            "commits[-1].author~=hellothere",
+            {
+                "~=": (
+                    "commits[-1].author",
+                    "hellothere",
+                )
+            },
+        ),
+        (
             f"merged-at<={now.isoformat()}",
             {"<=": ("merged-at", now)},
         ),
@@ -476,6 +494,9 @@ def test_parse_jinja_template(
         ("author=foo/bar", "Invalid GitHub login"),
         ("sender={{ author", "Invalid template"),
         (r"sender={ author }", "Invalid GitHub login"),
+        ("commits[0].test", "`test` is not a valid sub-attribute for `commits`"),
+        ("commits[abc].author", "Invalid operator"),
+        ("commits[0]", "Invalid operator"),
     ),
 )
 def test_parse_invalid(line: str, expected_error: str) -> None:

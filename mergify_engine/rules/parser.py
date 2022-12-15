@@ -41,6 +41,19 @@ class Parser(enum.Enum):
     YEAR = enum.auto()
 
 
+PARSERS_FOR_ARRAY_SUBATTRIBUTES = {
+    "commits": {
+        "author": Parser.LOGIN_AND_TEAMS,
+        "commit_message": Parser.TEXT,
+        "commit_verification_verified": Parser.BOOL,
+        "committer": Parser.LOGIN_AND_TEAMS,
+        "date_author": Parser.TIMESTAMP_OR_TIMEDELTA,
+        "date_committer": Parser.TIMESTAMP_OR_TIMEDELTA,
+        "email_author": Parser.TEXT,
+        "email_committer": Parser.TEXT,
+    }
+}
+
 CONDITION_PARSERS = {
     "number": Parser.POSITIVE_NUMBER,
     "head": Parser.BRANCH,
@@ -366,6 +379,30 @@ def parse_raw_condition(
 
     # Get the type of parser
     parser = CONDITION_PARSERS[attribute]
+
+    # Check if the condition is using an attribute's array
+    if attribute in PARSERS_FOR_ARRAY_SUBATTRIBUTES:
+        attribute_array_match = re.match(
+            rf"{attribute}(\[-?\d+\]\.(\w+))",
+            cond,
+        )
+        if attribute_array_match is not None:
+            array_subattribute = attribute_array_match.group(2)
+            if (
+                array_subattribute
+                not in PARSERS_FOR_ARRAY_SUBATTRIBUTES[attribute].keys()
+            ):
+                raise ConditionParsingError(
+                    f"`{array_subattribute}` is not a valid sub-attribute for `{attribute}`"
+                )
+
+            parser = PARSERS_FOR_ARRAY_SUBATTRIBUTES[attribute][array_subattribute]
+
+            # Skip the "[\d].{subattribute}" part
+            position = len(attribute_array_match.group(0))
+            position = _skip_ws(cond, length, position)
+            # Set the attribute to be `{attribute}[\d].{subattribute}`
+            attribute = attribute_array_match.group(0)
 
     # Check modifiers
     negate_allowed, quantity_allowed = PARSER_MODIFIERS.get(parser, (True, True))
