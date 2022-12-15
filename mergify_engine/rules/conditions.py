@@ -3,6 +3,7 @@ from __future__ import annotations
 import abc as abstract
 from collections import abc
 import dataclasses
+import datetime
 import functools
 import html
 import textwrap
@@ -763,6 +764,17 @@ class QueueConditionEvaluationResult:
         default_factory=list
     )
 
+    def copy(self) -> "QueueConditionEvaluationResult":
+        return QueueConditionEvaluationResult(
+            match=self.match,
+            label=self.label,
+            is_label_user_input=self.is_label_user_input,
+            description=self.description,
+            attribute_name=self.attribute_name,
+            subconditions=[s.copy() for s in self.subconditions],
+            evaluations=self.evaluations.copy(),
+        )
+
     class Evaluation(typing.TypedDict):
         pull_request: github_types.GitHubPullRequestNumber
         match: bool
@@ -909,6 +921,14 @@ class QueueConditionEvaluationResult:
 
         return text
 
+    def get_evaluation_match_from_pr_number(
+        self, pr_number: github_types.GitHubPullRequestNumber
+    ) -> bool | None:
+        for evaluation in self.evaluations:
+            if evaluation["pull_request"] == pr_number:
+                return evaluation["match"]
+        return None
+
 
 @pydantic.dataclasses.dataclass
 class QueueConditionEvaluationJsonSerialized:
@@ -925,3 +945,67 @@ class QueueConditionEvaluationJsonSerialized:
         pull_request: github_types.GitHubPullRequestNumber
         match: bool
         evaluation_error: str | None
+
+
+def re_evaluate_schedule_conditions(
+    conditions: list[QueueConditionEvaluationResult],
+    from_time: datetime.datetime,
+) -> list[QueueConditionEvaluationResult]:
+    for cond in conditions:
+        if cond.attribute_name == "schedule":
+            _, op, condition_value, _, _, _ = parser.parse_raw_condition(cond.label)
+            schedule_obj = parser.parse_schedule(condition_value)
+            schedule_match = schedule_obj == from_time
+            cond.match = (schedule_match and op == "=") or (
+                not schedule_match and op == "!="
+            )
+            for cond_eval in cond.evaluations:
+                cond_eval["match"] = cond.match
+
+        elif cond.subconditions:
+            cond.subconditions = re_evaluate_schedule_conditions(
+                cond.subconditions, from_time
+            )
+            cond.match = all(c.match for c in cond.subconditions)
+
+    return conditions
+
+
+def get_farthest_datetime_from_non_match_schedule_condition(
+    conditions: list[QueueConditionEvaluationResult],
+    pr_number: github_types.GitHubPullRequestNumber,
+    from_time: datetime.datetime,
+) -> datetime.datetime | None:
+    farthest_datetime_from_non_match_conditions = None
+    for cond in conditions:
+        if cond.match or cond.get_evaluation_match_from_pr_number(pr_number):
+            continue
+
+        if cond.attribute_name == "schedule":
+            _, op, condition_value, _, _, _ = parser.parse_raw_condition(cond.label)
+            schedule_obj = parser.parse_schedule(condition_value)
+            schedule_next_datetime = schedule_obj.get_next_datetime(from_time)
+            if (
+                farthest_datetime_from_non_match_conditions is None
+                or schedule_next_datetime > farthest_datetime_from_non_match_conditions
+            ):
+                farthest_datetime_from_non_match_conditions = schedule_next_datetime
+
+        elif cond.subconditions:
+            farthest_datetime_from_subconditions = (
+                get_farthest_datetime_from_non_match_schedule_condition(
+                    cond.subconditions,
+                    pr_number,
+                    from_time,
+                )
+            )
+            if farthest_datetime_from_subconditions is not None and (
+                farthest_datetime_from_non_match_conditions is None
+                or farthest_datetime_from_subconditions
+                > farthest_datetime_from_non_match_conditions
+            ):
+                farthest_datetime_from_non_match_conditions = (
+                    farthest_datetime_from_subconditions
+                )
+
+    return farthest_datetime_from_non_match_conditions

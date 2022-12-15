@@ -17,7 +17,7 @@ from mergify_engine import rules
 from mergify_engine.dashboard import application as application_mod
 from mergify_engine.queue import freeze
 from mergify_engine.queue import merge_train
-from mergify_engine.rules import conditions as condition_mod
+from mergify_engine.rules import conditions as rules_conditions
 from mergify_engine.web import api
 from mergify_engine.web.api import security
 from mergify_engine.web.api import statistics as statistics_api
@@ -394,13 +394,16 @@ async def repository_queues(
             speculative_check_pull_request = SpeculativeCheckPullRequest.from_train_car(
                 car
             )
-            estimated_time_of_merge = await get_estimated_time_of_merge_from_stats(
-                train,
-                queue_rules,
-                embarked_pull.config["name"],
-                embarked_pull.queued_at,
-                time_to_merge_stats,
-            )
+            estimated_time_of_merge = None
+            if car is not None and car.last_conditions_evaluation is not None:
+                estimated_time_of_merge = await get_estimated_time_of_merge_from_stats(
+                    train,
+                    queue_rules,
+                    embarked_pull,
+                    position,
+                    time_to_merge_stats,
+                    car.last_conditions_evaluation,
+                )
 
             queue.pull_requests.append(
                 PullRequestQueued(
@@ -459,7 +462,7 @@ class MergeabilityCheck:
     state: merge_train.CheckStateT = dataclasses.field(
         metadata={"description": "The global state of the checks"}
     )
-    conditions_evaluation: condition_mod.QueueConditionEvaluationJsonSerialized | None = dataclasses.field(
+    conditions_evaluation: rules_conditions.QueueConditionEvaluationJsonSerialized | None = dataclasses.field(
         metadata={"description": "The queue rule conditions evaluation"}
     )
 
@@ -652,9 +655,15 @@ async def repository_queue_pull_request(
                 continue
 
             mergeability_check = MergeabilityCheck.from_train_car(car)
-            estimated_time_of_merge = await get_estimated_time_of_merge(
-                repository_ctxt, train, queue_rules, queue_name, embarked_pull.queued_at
-            )
+            estimated_time_of_merge = None
+            if car is not None and car.last_conditions_evaluation is not None:
+                estimated_time_of_merge = await get_estimated_time_of_merge(
+                    train,
+                    queue_rules,
+                    embarked_pull,
+                    position,
+                    car.last_conditions_evaluation,
+                )
 
             return EnhancedPullRequestQueued(
                 number=embarked_pull.user_pull_request_number,
@@ -675,32 +684,39 @@ async def repository_queue_pull_request(
 
 
 async def get_estimated_time_of_merge(
-    repository_ctxt: context.Repository,
     train: merge_train.Train,
     queue_rules: rules.QueueRules,
-    queue_name: rules.QueueName,
-    queued_at: datetime.datetime,
+    embarked_pull: merge_train.EmbarkedPull,
+    embarked_pull_position: int,
+    queue_condition_evaluation_result: rules_conditions.QueueConditionEvaluationResult,
 ) -> datetime.datetime | None:
+    queue_name = embarked_pull.config["name"]
     if await train.is_queue_frozen(queue_rules, queue_name):
         return None
-    else:
-        queue_time_to_merge_stats = (
-            await statistics_api.get_time_to_merge_stats_for_queue(
-                repository_ctxt, queue_name, branch_name=train.ref
-            )
-        )
-        return compute_estimated_time_of_merge(
-            queued_at, queue_time_to_merge_stats["median"]
-        )
+
+    queue_time_to_merge_stats = await statistics_api.get_time_to_merge_stats_for_queue(
+        train.repository,
+        queue_name,
+        branch_name=train.ref,
+    )
+    return await compute_estimated_time_of_merge(
+        embarked_pull,
+        embarked_pull_position,
+        queue_rules[queue_name].config,
+        queue_time_to_merge_stats["median"],
+        queue_condition_evaluation_result,
+    )
 
 
 async def get_estimated_time_of_merge_from_stats(
     train: merge_train.Train,
     queue_rules: rules.QueueRules,
-    queue_name: rules.QueueName,
-    queued_at: datetime.datetime,
+    embarked_pull: merge_train.EmbarkedPull,
+    embarked_pull_position: int,
     time_to_merge_stats: dict[rules.QueueName, statistics_api.TimeToMergeResponse],
+    queue_condition_evaluation_result: rules_conditions.QueueConditionEvaluationResult,
 ) -> datetime.datetime | None:
+    queue_name = embarked_pull.config["name"]
     if await train.is_queue_frozen(queue_rules, queue_name):
         return None
 
@@ -708,19 +724,72 @@ async def get_estimated_time_of_merge_from_stats(
         queue_name,
         statistics_api.TimeToMergeResponse(mean=None, median=None),
     )
-    return compute_estimated_time_of_merge(
-        queued_at, queue_time_to_merge_stats["median"]
+    return await compute_estimated_time_of_merge(
+        embarked_pull,
+        embarked_pull_position,
+        queue_rules[queue_name].config,
+        queue_time_to_merge_stats["median"],
+        queue_condition_evaluation_result,
     )
 
 
-def compute_estimated_time_of_merge(
-    queued_at: datetime.datetime,
+async def compute_estimated_time_of_merge(
+    embarked_pull: merge_train.EmbarkedPull,
+    embarked_pull_position: int,
+    queue_rule_config: rules.QueueConfig,
     time_to_merge: float | None,
+    queue_condition_evaluation_result: rules_conditions.QueueConditionEvaluationResult,
 ) -> datetime.datetime | None:
     if time_to_merge is None:
         return None
 
-    return queued_at + datetime.timedelta(seconds=time_to_merge)
+    raw_estimated_time_of_merge = embarked_pull.queued_at + datetime.timedelta(
+        seconds=time_to_merge
+    )
+
+    # Evaluate schedule conditions relative to the current time
+    farthest_datetime_conditions = (
+        rules_conditions.get_farthest_datetime_from_non_match_schedule_condition(
+            queue_condition_evaluation_result.subconditions,
+            embarked_pull.user_pull_request_number,
+            date.utcnow(),
+        )
+    )
+
+    if farthest_datetime_conditions is None:
+        # Only re-valuate schedule conditions relative to the raw_estimated_time_of_merge
+        # if the current time conditions do not fail.
+        # If they do that means then we are already out of schedule, so no point in
+        # trying to re-evaluate the schedule conditions relative to the raw_estimated_time_of_merge
+        # since we won't return that time in the end.
+        re_evaluated_conditions = rules_conditions.re_evaluate_schedule_conditions(
+            queue_condition_evaluation_result.copy().subconditions,
+            raw_estimated_time_of_merge,
+        )
+        farthest_datetime_conditions = (
+            rules_conditions.get_farthest_datetime_from_non_match_schedule_condition(
+                re_evaluated_conditions,
+                embarked_pull.user_pull_request_number,
+                raw_estimated_time_of_merge,
+            )
+        )
+
+    if farthest_datetime_conditions is not None:
+        if (
+            queue_rule_config["speculative_checks"] >= 1
+            and embarked_pull_position
+            < queue_rule_config["speculative_checks"] * queue_rule_config["batch_size"]
+        ):
+            # Substract the time_to_merge with the time the queued PR will have spent
+            # waiting for the schedule only if it is part of some running speculative checks.
+            time_to_merge -= (
+                farthest_datetime_conditions - embarked_pull.queued_at
+            ).total_seconds()
+            time_to_merge = max(0, time_to_merge)
+
+        return farthest_datetime_conditions + datetime.timedelta(seconds=time_to_merge)
+
+    return raw_estimated_time_of_merge
 
 
 @router.get(
