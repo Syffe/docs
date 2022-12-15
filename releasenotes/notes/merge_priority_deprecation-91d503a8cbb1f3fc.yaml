@@ -1,0 +1,5 @@
+---
+deprecations:
+  - |
+    The `priority` configuration option of the merge action is deprecated and
+    planned for removal.

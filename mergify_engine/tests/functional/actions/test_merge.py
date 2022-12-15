@@ -18,6 +18,62 @@ LOG = logging.getLogger(__name__)
 class TestMergeAction(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
 
+    async def test_merge_priority_deprecation_notice(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=high",
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "actions": {"merge": {"priority": "high"}},
+                },
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        p1 = await self.create_pr()
+        await self.run_engine()
+
+        checks = await context.Context(self.repository_ctxt, p1).pull_engine_check_runs
+        assert len(checks) == 1
+        assert "success" == checks[0]["conclusion"]
+        assert (
+            "**The configuration uses the deprecated `priority` attribute of the merge action.**"
+            in checks[0]["output"]["summary"]
+        )
+
+    async def test_merge_priority_deprecation_notice_not_present_in_summary(
+        self,
+    ) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=high",
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "actions": {"merge": {}},
+                },
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        p1 = await self.create_pr()
+        await self.run_engine()
+
+        checks = await context.Context(self.repository_ctxt, p1).pull_engine_check_runs
+        assert len(checks) == 1
+        assert "success" == checks[0]["conclusion"]
+        assert (
+            "**The configuration uses the deprecated `priority` attribute of the merge action.**"
+            not in checks[0]["output"]["summary"]
+        )
+
     @mock.patch.object(config, "ALLOW_MERGE_PRIORITY_ATTRIBUTE", False)
     async def test_priority_brownout(self) -> None:
         rules = {
