@@ -268,10 +268,7 @@ async def push_to_worker(
         elif not event["ref"].startswith("refs/heads/"):
             ignore_reason = f"push on {event['ref']}"
 
-        elif event["repository"]["archived"]:  # pragma: no cover
-            ignore_reason = "repository archived"
-
-        if (
+        elif (
             f"refs/heads/{utils.extract_default_branch(event['repository'])}"
             == event["ref"]
         ):
