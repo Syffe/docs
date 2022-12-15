@@ -277,6 +277,9 @@ Schema = voluptuous.Schema(
         voluptuous.Required(
             "ALLOW_MERGE_PRIORITY_ATTRIBUTE", default=True
         ): CoercedBool,
+        voluptuous.Required(
+            "ALLOW_REBASE_FALLBACK_ATTRIBUTE", default=True
+        ): CoercedBool,
         # For test suite only (eg: tox -erecord)
         voluptuous.Required(
             "TESTING_FORWARDER_ENDPOINT",
@@ -375,6 +378,7 @@ ACCOUNT_TOKENS: list[tuple[int, str, str]]
 APPLICATION_APIKEYS: dict[str, ApplicationAPIKey]
 WORKER_SHUTDOWN_TIMEOUT: float
 ALLOW_MERGE_PRIORITY_ATTRIBUTE: bool
+ALLOW_REBASE_FALLBACK_ATTRIBUTE: bool
 REDIS_SSL_VERIFY_MODE_CERT_NONE: bool
 REDIS_STREAM_WEB_MAX_CONNECTIONS: int | None
 REDIS_CACHE_WEB_MAX_CONNECTIONS: int | None

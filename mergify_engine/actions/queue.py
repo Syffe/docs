@@ -7,6 +7,7 @@ import voluptuous
 
 from mergify_engine import actions
 from mergify_engine import check_api
+from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import exceptions
@@ -30,6 +31,14 @@ from mergify_engine.rules import types
 BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT = (
     "Require branches to be up to date before merging"
 )
+
+
+DEPRECATED_MESSAGE_REBASE_FALLBACK_QUEUE_ACTION = """The configuration uses the deprecated `rebase_fallback` attribute of the queue action.
+A brownout is planned on February 13th, 2023.
+This option will be removed on March 13th, 2023.
+For more information: https://docs.mergify.com/actions/queue/
+
+`%s` is invalid"""
 
 
 @dataclasses.dataclass
@@ -66,31 +75,48 @@ Then, re-embark the pull request into the merge queue by posting the comment
     def silenced_conclusion(self) -> tuple[check_api.Conclusion, ...]:
         return ()
 
-    validator = {
-        voluptuous.Required("name", default="default"): str,
-        voluptuous.Required("method", default="merge"): voluptuous.Any(
-            "rebase",
-            "merge",
-            "squash",
-            "fast-forward",
-        ),
+    @property
+    def validator(self) -> dict[typing.Any, typing.Any]:
+        validator = {
+            voluptuous.Required("name", default="default"): str,
+            voluptuous.Required("method", default="merge"): voluptuous.Any(
+                "rebase",
+                "merge",
+                "squash",
+                "fast-forward",
+            ),
+            voluptuous.Required(
+                "merge_bot_account", default=None
+            ): types.Jinja2WithNone,
+            voluptuous.Required(
+                "update_bot_account", default=None
+            ): types.Jinja2WithNone,
+            voluptuous.Required("update_method", default=None): voluptuous.Any(
+                "rebase", "merge", None
+            ),
+            voluptuous.Required(
+                "commit_message_template", default=None
+            ): types.Jinja2WithNone,
+            voluptuous.Required(
+                "priority", default=queue.PriorityAliases.medium.value
+            ): queue.PrioritySchema,
+            voluptuous.Required("require_branch_protection", default=True): bool,
+        }
+
         # NOTE(Syffe): In deprecation process
-        voluptuous.Required("rebase_fallback", default="none"): voluptuous.Any(
-            "merge", "squash", "none", None
-        ),
-        voluptuous.Required("merge_bot_account", default=None): types.Jinja2WithNone,
-        voluptuous.Required("update_bot_account", default=None): types.Jinja2WithNone,
-        voluptuous.Required("update_method", default=None): voluptuous.Any(
-            "rebase", "merge", None
-        ),
-        voluptuous.Required(
-            "commit_message_template", default=None
-        ): types.Jinja2WithNone,
-        voluptuous.Required(
-            "priority", default=queue.PriorityAliases.medium.value
-        ): queue.PrioritySchema,
-        voluptuous.Required("require_branch_protection", default=True): bool,
-    }
+        if config.ALLOW_REBASE_FALLBACK_ATTRIBUTE:
+            validator[
+                voluptuous.Required("rebase_fallback", default="none")
+            ] = voluptuous.Any("merge", "squash", "none", None)
+        else:
+            validator[
+                voluptuous.Required("rebase_fallback", default=utils.UnsetMarker)
+            ] = utils.DeprecatedOption(
+                DEPRECATED_MESSAGE_REBASE_FALLBACK_QUEUE_ACTION,
+                voluptuous.Any("merge", "squash", "none", None),
+            )
+
+        return validator
 
     @staticmethod
     def command_to_config(command_arguments: str) -> dict[str, typing.Any]:

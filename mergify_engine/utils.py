@@ -1,4 +1,5 @@
 from collections import abc
+import enum
 import hashlib
 import hmac
 import json
@@ -7,6 +8,7 @@ import re
 import typing
 
 import daiquiri
+import voluptuous
 
 from mergify_engine import github_types
 
@@ -25,6 +27,30 @@ MERGIFY_COMMENT_PAYLOAD_MATCHER = re.compile(
     MERGIFY_COMMENT_PAYLOAD_REGEX,
     re.MULTILINE,
 )
+
+
+# NOTE(sileht): Sentinel object (eg: `marker = object()`) can't be expressed
+# with typing yet use the proposed workaround instead:
+#   https://github.com/python/typing/issues/689
+#   https://www.python.org/dev/peps/pep-0661/
+class _UnsetMarker(enum.Enum):
+    _MARKER = 0
+
+
+UnsetMarker: typing.Final = _UnsetMarker._MARKER
+
+
+def DeprecatedOption(
+    message: str,
+    default: typing.Any,
+) -> abc.Callable[[typing.Any], typing.Any]:
+    def validator(v: typing.Any) -> typing.Any:
+        if v is UnsetMarker:
+            return default
+        else:
+            raise voluptuous.Invalid(message % v)
+
+    return validator
 
 
 def unicode_truncate(

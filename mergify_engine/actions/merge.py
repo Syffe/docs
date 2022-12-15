@@ -1,5 +1,3 @@
-from collections import abc
-import enum
 import typing
 
 import voluptuous
@@ -12,22 +10,13 @@ from mergify_engine import github_types
 from mergify_engine import queue
 from mergify_engine import rules
 from mergify_engine import signals
+from mergify_engine import utils
 from mergify_engine.actions import merge_base
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.dashboard import subscription
 from mergify_engine.rules import conditions
 from mergify_engine.rules import types
 
-
-# NOTE(sileht): Sentinel object (eg: `marker = object()`) can't be expressed
-# with typing yet use the proposed workaround instead:
-#   https://github.com/python/typing/issues/689
-#   https://www.python.org/dev/peps/pep-0661/
-class _UnsetMarker(enum.Enum):
-    _MARKER = 0
-
-
-UnsetMarker: typing.Final = _UnsetMarker._MARKER
 
 DEPRECATED_MESSAGE_PRIORITY_ATTRIBUTE_MERGE_ACTION = """The configuration uses the deprecated `priority` attribute of the merge action.
 A brownout is planned on December 28th, 2022.
@@ -36,18 +25,12 @@ For more information: https://docs.mergify.com/actions/merge/
 
 `%s` is invalid"""
 
+DEPRECATED_MESSAGE_REBASE_FALLBACK_MERGE_ACTION = """The configuration uses the deprecated `rebase_fallback` attribute of the merge action.
+A brownout is planned on February 13th, 2023.
+This option will be removed on March 13th, 2023.
+For more information: https://docs.mergify.com/actions/merge/
 
-def DeprecatedOption(
-    message: str,
-    default: typing.Any,
-) -> abc.Callable[[typing.Any], typing.Any]:
-    def validator(v: typing.Any) -> typing.Any:
-        if v is UnsetMarker:
-            return default
-        else:
-            raise voluptuous.Invalid(message % v)
-
-    return validator
+`%s` is invalid"""
 
 
 class MergeExecutorConfig(typing.TypedDict):
@@ -157,15 +140,9 @@ class MergeAction(actions.Action):
 
     @property
     def validator(self) -> dict[typing.Any, typing.Any]:
-
         validator = {
             voluptuous.Required("method", default="merge"): voluptuous.Any(
                 *typing.get_args(merge_base.MergeMethodT)
-            ),
-            # NOTE(sileht): None is supported for legacy reason
-            # in deprecation process
-            voluptuous.Required("rebase_fallback", default="none"): voluptuous.Any(
-                *typing.get_args(merge_base.RebaseFallbackT)
             ),
             voluptuous.Required(
                 "merge_bot_account", default=None
@@ -175,6 +152,20 @@ class MergeAction(actions.Action):
             ): types.Jinja2WithNone,
         }
 
+        if config.ALLOW_REBASE_FALLBACK_ATTRIBUTE:
+            # NOTE(sileht): None is supported for legacy reason
+            # in deprecation process
+            validator[
+                voluptuous.Required("rebase_fallback", default="none")
+            ] = voluptuous.Any(*typing.get_args(merge_base.RebaseFallbackT))
+        else:
+            validator[
+                voluptuous.Required("rebase_fallback", default=utils.UnsetMarker)
+            ] = utils.DeprecatedOption(
+                DEPRECATED_MESSAGE_REBASE_FALLBACK_MERGE_ACTION,
+                voluptuous.Any(*typing.get_args(merge_base.RebaseFallbackT)),
+            )
+
         if config.ALLOW_MERGE_PRIORITY_ATTRIBUTE:
             validator[
                 voluptuous.Required(
@@ -183,8 +174,8 @@ class MergeAction(actions.Action):
             ] = queue.PrioritySchema
         else:
             validator[
-                voluptuous.Required("priority", default=UnsetMarker)
-            ] = DeprecatedOption(
+                voluptuous.Required("priority", default=utils.UnsetMarker)
+            ] = utils.DeprecatedOption(
                 DEPRECATED_MESSAGE_PRIORITY_ATTRIBUTE_MERGE_ACTION,
                 queue.PriorityAliases.medium.value,
             )
