@@ -510,7 +510,7 @@ async def push_to_worker(
         slim_event = None
         msg_action = f"ignored: {ignore_reason}"
 
-    LOG.debug(
+    LOG.info(
         "GithubApp event %s",
         msg_action,
         event_type=event_type,
