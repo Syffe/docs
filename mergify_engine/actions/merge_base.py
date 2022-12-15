@@ -157,7 +157,9 @@ class MergeUtilsMixin:
                 await ctxt.update(wait_merged=True)
                 ctxt.log.info("merged")
 
-        result = await self.merge_report(ctxt, merge_method, merge_bot_account)
+        result = await self.merge_report(
+            ctxt, merge_method, merge_rebase_fallback, merge_bot_account
+        )
         if result:
             return result
         else:
@@ -300,6 +302,7 @@ class MergeUtilsMixin:
         self,
         ctxt: context.Context,
         merge_method: MergeMethodT,
+        merge_rebase_fallback: RebaseFallbackT,
         merge_bot_account: github_types.GitHubLogin | None,
     ) -> check_api.Result | None:
         if ctxt.pull["draft"]:
@@ -344,7 +347,16 @@ You can accept them at https://dashboard.mergify.com/\n
 \n
 In the meantime, the pull request must be merged manually."
 """
-
+        elif (
+            not ctxt.pull["rebaseable"]
+            and merge_method == "rebase"
+            and merge_rebase_fallback in (None, "none")
+        ):
+            return check_api.Result(
+                check_api.Conclusion.ACTION_REQUIRED,
+                "Pull request must be rebased manually",
+                "The pull request can't be rebased without conflict and must be rebased manually",
+            )
         # NOTE(sileht): remaining state "behind, clean, unstable, has_hooks
         # are OK for us
         else:

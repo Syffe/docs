@@ -110,7 +110,10 @@ class MergeExecutor(
 
     async def run(self) -> check_api.Result:
         report = await self.merge_report(
-            self.ctxt, self.config["method"], self.config["merge_bot_account"]
+            self.ctxt,
+            self.config["method"],
+            self.config["rebase_fallback"],
+            self.config["merge_bot_account"],
         )
         if report is None:
             report = await self.common_merge(

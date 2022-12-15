@@ -495,7 +495,12 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         self._set_effective_priority(ctxt)
 
-        result = await self.merge_report(ctxt, self.config["method"], merge_bot_account)
+        result = await self.merge_report(
+            ctxt,
+            self.config["method"],
+            self.config["rebase_fallback"],
+            merge_bot_account,
+        )
         if result is None:
             # NOTE(sileht): the pull request gets checked and then changed
             # by user, we should unqueue and requeue it as the conditions still match.
@@ -618,7 +623,12 @@ Then, re-embark the pull request into the merge queue by posting the comment
         car = q.get_car(ctxt)
         await self._update_merge_queue_summary(ctxt, rule, q, car)
 
-        result = await self.merge_report(ctxt, self.config["method"], merge_bot_account)
+        result = await self.merge_report(
+            ctxt,
+            self.config["method"],
+            self.config["rebase_fallback"],
+            merge_bot_account,
+        )
         if result is None:
             # We just rebase the pull request, don't cancel it yet if CIs are
             # running. The pull request will be merged if all rules match again.
