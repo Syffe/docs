@@ -351,13 +351,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:8361",
+          "https://access.redhat.com/errata/RHSA-2022:7720",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
+          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -404,6 +404,7 @@
           "https://git-scm.com/book/en/v2/Appendix-A%3A-Git-in-Other-Environments-Git-in-Bash",
           "https://git-scm.com/docs/git#Documentation/git.txt-codeGITCEILINGDIRECTORIEScode",
           "https://github.com/git-for-windows/git/security/advisories/GHSA-vw2c-22j4-2fh2",
+          "https://lists.debian.org/debian-lts-announce/2022/12/msg00025.html",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/5PTN5NYEHYN2OQSHSAMCNICZNK2U4QH6/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/BENQYTDGUL6TF3UALY6GSIEXIHUIYNWM/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/DDI325LOO2XBDDKLINOAQJEG6MHAURZE/",
@@ -432,7 +433,8 @@
         "Description": "Git is a distributed revision control system. Git prior to versions 2.37.1, 2.36.2, 2.35.4, 2.34.4, 2.33.4, 2.32.3, 2.31.4, and 2.30.5, is vulnerable to privilege escalation in all platforms. An unsuspecting user could still be affected by the issue reported in CVE-2022-24765, for example when navigating as root into a shared tmp directory that is owned by them, but where an attacker could create a git repository. Versions 2.37.1, 2.36.2, 2.35.4, 2.34.4, 2.33.4, 2.32.3, 2.31.4, and 2.30.5 contain a patch for this issue. The simplest way to avoid being affected by the exploit described in the example is to avoid running git as root (or an Administrator in Windows), and if needed to reduce its use to a minimum. While a generic workaround is not possible, a system could be hardened from the exploit described in the example by removing any such repository if it exists already and creating one as root to block any future attacks.",
         "Severity": "HIGH",
         "CweIDs": [
-          "CWE-427"
+          "CWE-427",
+          "CWE-282"
         ],
         "CVSS": {
           "nvd": {
@@ -453,6 +455,7 @@
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-29187",
           "https://github.blog/2022-04-12-git-security-vulnerability-announced",
           "https://github.com/git/git/security/advisories/GHSA-j342-m5hw-rr3v",
+          "https://lists.debian.org/debian-lts-announce/2022/12/msg00025.html",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/DDI325LOO2XBDDKLINOAQJEG6MHAURZE/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/TRZG5CDUQ27OWTPC5MQOR4UASNXHWEZS/",
           "https://lore.kernel.org/git/xmqqv8s2fefi.fsf@gitster.g/T/#u",
@@ -477,7 +480,8 @@
         "Description": "Git is an open source, scalable, distributed revision control system. `git shell` is a restricted login shell that can be used to implement Git's push/pull functionality via SSH. In versions prior to 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4, the function that splits the command arguments into an array improperly uses an `int` to represent the number of entries in the array, allowing a malicious actor to intentionally overflow the return value, leading to arbitrary heap writes. Because the resulting array is then passed to `execv()`, it is possible to leverage this attack to gain remote code execution on a victim machine. Note that a victim must first allow access to `git shell` as a login shell in order to be vulnerable to this attack. This problem is patched in versions 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4 and users are advised to upgrade to the latest version. Disabling `git shell` access via remote logins is a viable short-term workaround.",
         "Severity": "HIGH",
         "CweIDs": [
-          "CWE-787"
+          "CWE-787",
+          "CWE-122"
         ],
         "CVSS": {
           "nvd": {
@@ -494,6 +498,7 @@
           "https://access.redhat.com/security/cve/CVE-2022-39260",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39260",
           "https://github.com/git/git/security/advisories/GHSA-rjr6-wcq6-83p6",
+          "https://lists.debian.org/debian-lts-announce/2022/12/msg00025.html",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/C7B6JPKX5CGGLAHXJVQMIZNNEEB72FHD/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/OHNO2FB55CPX47BAXMBWUBGWHO6N6ZZH/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/UKFHE4KVD7EKS5J3KTDFVBEKU3CLXGVV/",
@@ -537,6 +542,7 @@
           "https://access.redhat.com/security/cve/CVE-2022-39253",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39253",
           "https://github.com/git/git/security/advisories/GHSA-3wp6-j8xr-qw85",
+          "https://lists.debian.org/debian-lts-announce/2022/12/msg00025.html",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/C7B6JPKX5CGGLAHXJVQMIZNNEEB72FHD/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/JMQWGMDLX6KTVWW5JZLVPI7ICAK72TN7/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/OHNO2FB55CPX47BAXMBWUBGWHO6N6ZZH/",
@@ -660,6 +666,7 @@
           "https://git-scm.com/book/en/v2/Appendix-A%3A-Git-in-Other-Environments-Git-in-Bash",
           "https://git-scm.com/docs/git#Documentation/git.txt-codeGITCEILINGDIRECTORIEScode",
           "https://github.com/git-for-windows/git/security/advisories/GHSA-vw2c-22j4-2fh2",
+          "https://lists.debian.org/debian-lts-announce/2022/12/msg00025.html",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/5PTN5NYEHYN2OQSHSAMCNICZNK2U4QH6/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/BENQYTDGUL6TF3UALY6GSIEXIHUIYNWM/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/DDI325LOO2XBDDKLINOAQJEG6MHAURZE/",
@@ -688,7 +695,8 @@
         "Description": "Git is a distributed revision control system. Git prior to versions 2.37.1, 2.36.2, 2.35.4, 2.34.4, 2.33.4, 2.32.3, 2.31.4, and 2.30.5, is vulnerable to privilege escalation in all platforms. An unsuspecting user could still be affected by the issue reported in CVE-2022-24765, for example when navigating as root into a shared tmp directory that is owned by them, but where an attacker could create a git repository. Versions 2.37.1, 2.36.2, 2.35.4, 2.34.4, 2.33.4, 2.32.3, 2.31.4, and 2.30.5 contain a patch for this issue. The simplest way to avoid being affected by the exploit described in the example is to avoid running git as root (or an Administrator in Windows), and if needed to reduce its use to a minimum. While a generic workaround is not possible, a system could be hardened from the exploit described in the example by removing any such repository if it exists already and creating one as root to block any future attacks.",
         "Severity": "HIGH",
         "CweIDs": [
-          "CWE-427"
+          "CWE-427",
+          "CWE-282"
         ],
         "CVSS": {
           "nvd": {
@@ -709,6 +717,7 @@
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-29187",
           "https://github.blog/2022-04-12-git-security-vulnerability-announced",
           "https://github.com/git/git/security/advisories/GHSA-j342-m5hw-rr3v",
+          "https://lists.debian.org/debian-lts-announce/2022/12/msg00025.html",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/DDI325LOO2XBDDKLINOAQJEG6MHAURZE/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/TRZG5CDUQ27OWTPC5MQOR4UASNXHWEZS/",
           "https://lore.kernel.org/git/xmqqv8s2fefi.fsf@gitster.g/T/#u",
@@ -733,7 +742,8 @@
         "Description": "Git is an open source, scalable, distributed revision control system. `git shell` is a restricted login shell that can be used to implement Git's push/pull functionality via SSH. In versions prior to 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4, the function that splits the command arguments into an array improperly uses an `int` to represent the number of entries in the array, allowing a malicious actor to intentionally overflow the return value, leading to arbitrary heap writes. Because the resulting array is then passed to `execv()`, it is possible to leverage this attack to gain remote code execution on a victim machine. Note that a victim must first allow access to `git shell` as a login shell in order to be vulnerable to this attack. This problem is patched in versions 2.30.6, 2.31.5, 2.32.4, 2.33.5, 2.34.5, 2.35.5, 2.36.3, and 2.37.4 and users are advised to upgrade to the latest version. Disabling `git shell` access via remote logins is a viable short-term workaround.",
         "Severity": "HIGH",
         "CweIDs": [
-          "CWE-787"
+          "CWE-787",
+          "CWE-122"
         ],
         "CVSS": {
           "nvd": {
@@ -750,6 +760,7 @@
           "https://access.redhat.com/security/cve/CVE-2022-39260",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39260",
           "https://github.com/git/git/security/advisories/GHSA-rjr6-wcq6-83p6",
+          "https://lists.debian.org/debian-lts-announce/2022/12/msg00025.html",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/C7B6JPKX5CGGLAHXJVQMIZNNEEB72FHD/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/OHNO2FB55CPX47BAXMBWUBGWHO6N6ZZH/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/UKFHE4KVD7EKS5J3KTDFVBEKU3CLXGVV/",
@@ -793,6 +804,7 @@
           "https://access.redhat.com/security/cve/CVE-2022-39253",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-39253",
           "https://github.com/git/git/security/advisories/GHSA-3wp6-j8xr-qw85",
+          "https://lists.debian.org/debian-lts-announce/2022/12/msg00025.html",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/C7B6JPKX5CGGLAHXJVQMIZNNEEB72FHD/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/JMQWGMDLX6KTVWW5JZLVPI7ICAK72TN7/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/OHNO2FB55CPX47BAXMBWUBGWHO6N6ZZH/",
@@ -1706,13 +1718,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:8361",
+          "https://access.redhat.com/errata/RHSA-2022:7720",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
+          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -2210,13 +2222,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:8361",
+          "https://access.redhat.com/errata/RHSA-2022:7720",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
+          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -4101,13 +4113,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:8361",
+          "https://access.redhat.com/errata/RHSA-2022:7720",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
+          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -4151,18 +4163,16 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:6224",
+          "https://access.redhat.com/errata/RHSA-2022:5818",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1292.json",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-2068.json",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-2097.json",
           "https://access.redhat.com/security/cve/CVE-2022-2097",
           "https://bugzilla.redhat.com/2081494",
-          "https://bugzilla.redhat.com/2087911",
-          "https://bugzilla.redhat.com/2087913",
           "https://bugzilla.redhat.com/2097310",
           "https://bugzilla.redhat.com/2104905",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-2097",
-          "https://errata.almalinux.org/9/ALSA-2022-6224.html",
+          "https://errata.almalinux.org/8/ALSA-2022-5818.html",
           "https://git.openssl.org/gitweb/?p=openssl.git;a=commitdiff;h=919925673d6c9cfed3c1085497f5dfbbed5fc431",
           "https://git.openssl.org/gitweb/?p=openssl.git;a=commitdiff;h=a98f339ddd7e8f487d6e0088d4a9a42324885a93",
           "https://github.com/advisories/GHSA-3wx7-46ch-7rq2",
@@ -4862,13 +4872,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:8361",
+          "https://access.redhat.com/errata/RHSA-2022:7720",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
+          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
