@@ -136,7 +136,7 @@ async def _do_rebase(
         await git("push", "--verbose", "origin", head_branch, "--force-with-lease")
 
         expected_sha = (await git("log", "-1", "--format=%H")).strip()
-        # NOTE(sileht): We store this for dismissal action
+        # NOTE(sileht): We store this for Context.has_been_synchronized_by_user()
         await ctxt.redis.cache.setex(
             f"branch-update-{expected_sha}", 60 * 60, expected_sha
         )
