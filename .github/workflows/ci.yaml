@@ -60,12 +60,6 @@ jobs:
         with:
           python-version: 3.11.1
 
-      - name: Cache mypy
-        uses: actions/cache@v3
-        with:
-          path: .mypy_cache
-          key: ${{ runner.os }}-mypy
-
       - name: Build 🔧 & Test 🔍
         run: |
           # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
