@@ -9,7 +9,7 @@ services:
     # only execute 10 parallel tests at a time (since each test as its own databases).
     # If we need more than that, we might need to increment this or
     # make it a parameter in the run-tests.sh somehow.
-    command: --databases 100
+    command: --databases 1000
   postgres:
     image: postgres
     ports:
