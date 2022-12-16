@@ -285,6 +285,7 @@ async def test_condition_summary_simple() -> None:
         "is_label_user_input": False,
         "description": None,
         "evaluation_error": None,
+        "related_checks": [],
         "subconditions": [
             {
                 "match": True,
@@ -292,6 +293,7 @@ async def test_condition_summary_simple() -> None:
                 "is_label_user_input": True,
                 "description": "Description",
                 "evaluation_error": "Error",
+                "related_checks": [],
                 "subconditions": [],
             }
         ],
@@ -299,6 +301,11 @@ async def test_condition_summary_simple() -> None:
 
     assert evaluation_result == conditions_mod.ConditionEvaluationResult.from_dict(
         evaluation_result.as_dict()
+    )
+
+    # Test backward compatibility
+    assert evaluation_result == conditions_mod.ConditionEvaluationResult.from_dict(
+        {k: v for k, v in evaluation_result.as_dict().items() if k != "related_checks"}  # type: ignore [arg-type]
     )
 
 
@@ -347,6 +354,7 @@ async def test_condition_summary_complex() -> None:
         "is_label_user_input": False,
         "description": None,
         "evaluation_error": None,
+        "related_checks": [],
         "subconditions": [
             {
                 "match": False,
@@ -354,6 +362,7 @@ async def test_condition_summary_complex() -> None:
                 "is_label_user_input": False,
                 "description": None,
                 "evaluation_error": None,
+                "related_checks": [],
                 "subconditions": [
                     {
                         "match": False,
@@ -361,6 +370,7 @@ async def test_condition_summary_complex() -> None:
                         "is_label_user_input": True,
                         "description": None,
                         "evaluation_error": None,
+                        "related_checks": [],
                         "subconditions": [],
                     },
                     {
@@ -369,6 +379,7 @@ async def test_condition_summary_complex() -> None:
                         "is_label_user_input": True,
                         "description": None,
                         "evaluation_error": None,
+                        "related_checks": [],
                         "subconditions": [],
                     },
                 ],
@@ -379,6 +390,7 @@ async def test_condition_summary_complex() -> None:
                 "is_label_user_input": False,
                 "description": "GitHub branch protection",
                 "evaluation_error": None,
+                "related_checks": [],
                 "subconditions": [
                     {
                         "match": False,
@@ -386,6 +398,7 @@ async def test_condition_summary_complex() -> None:
                         "is_label_user_input": True,
                         "description": None,
                         "evaluation_error": None,
+                        "related_checks": [],
                         "subconditions": [],
                     },
                     {
@@ -394,6 +407,7 @@ async def test_condition_summary_complex() -> None:
                         "is_label_user_input": True,
                         "description": None,
                         "evaluation_error": None,
+                        "related_checks": [],
                         "subconditions": [],
                     },
                 ],
@@ -404,6 +418,7 @@ async def test_condition_summary_complex() -> None:
                 "is_label_user_input": True,
                 "description": None,
                 "evaluation_error": None,
+                "related_checks": [],
                 "subconditions": [],
             },
         ],
@@ -437,6 +452,7 @@ async def test_rule_condition_negation_summary() -> None:
         "is_label_user_input": False,
         "description": None,
         "evaluation_error": None,
+        "related_checks": [],
         "subconditions": [
             {
                 "match": True,
@@ -444,6 +460,7 @@ async def test_rule_condition_negation_summary() -> None:
                 "is_label_user_input": False,
                 "description": None,
                 "evaluation_error": None,
+                "related_checks": [],
                 "subconditions": [
                     {
                         "match": False,
@@ -451,6 +468,7 @@ async def test_rule_condition_negation_summary() -> None:
                         "is_label_user_input": False,
                         "description": None,
                         "evaluation_error": None,
+                        "related_checks": [],
                         "subconditions": [
                             {
                                 "match": False,
@@ -458,6 +476,7 @@ async def test_rule_condition_negation_summary() -> None:
                                 "is_label_user_input": True,
                                 "description": None,
                                 "evaluation_error": None,
+                                "related_checks": [],
                                 "subconditions": [],
                             },
                             {
@@ -466,6 +485,7 @@ async def test_rule_condition_negation_summary() -> None:
                                 "is_label_user_input": True,
                                 "description": None,
                                 "evaluation_error": None,
+                                "related_checks": [],
                                 "subconditions": [],
                             },
                         ],
@@ -542,6 +562,7 @@ async def test_queue_rules_summary() -> None:
                 "check-success": ["first-ci", "my-awesome-ci"],
                 "check-neutral": None,
                 "check-skipped": None,
+                "check": ["first-ci", "my-awesome-ci"],
                 "status-failure": ["noway"],
                 "approved-reviews-by": ["jd", "sileht"],
             }
@@ -557,6 +578,7 @@ async def test_queue_rules_summary() -> None:
                 "check-success": ["first-ci", "my-awesome-ci"],
                 "check-neutral": None,
                 "check-skipped": None,
+                "check": ["first-ci", "my-awesome-ci"],
                 "status-failure": ["noway"],
                 "approved-reviews-by": ["jd", "sileht"],
             }
@@ -572,6 +594,7 @@ async def test_queue_rules_summary() -> None:
                 "check-success": ["first-ci", "my-awesome-ci"],
                 "check-neutral": None,
                 "check-skipped": None,
+                "check": ["first-ci", "my-awesome-ci"],
                 "status-failure": ["noway"],
                 "approved-reviews-by": ["jd", "sileht"],
             }
@@ -582,6 +605,7 @@ async def test_queue_rules_summary() -> None:
     # Create a fake evaluation error
     last_condition = conditions._evaluated_conditions[1].conditions[-1]  # type:ignore
     last_condition.evaluation_error = "Error"  # type:ignore
+    last_condition.related_checks = ["ci-1"]  # type:ignore
 
     expected_summary = """\
 - `author=me` [Another mechanism to get condtions]
@@ -670,9 +694,24 @@ async def test_queue_rules_summary() -> None:
                 "attribute_name": "author",
                 "subconditions": [],
                 "evaluations": [
-                    {"pull_request": 1, "match": True, "evaluation_error": "Error"},
-                    {"pull_request": 2, "match": True, "evaluation_error": None},
-                    {"pull_request": 3, "match": False, "evaluation_error": None},
+                    {
+                        "pull_request": 1,
+                        "match": True,
+                        "evaluation_error": "Error",
+                        "related_checks": ["ci-1"],
+                    },
+                    {
+                        "pull_request": 2,
+                        "match": True,
+                        "evaluation_error": None,
+                        "related_checks": [],
+                    },
+                    {
+                        "pull_request": 3,
+                        "match": False,
+                        "evaluation_error": None,
+                        "related_checks": [],
+                    },
                 ],
             }
         ),

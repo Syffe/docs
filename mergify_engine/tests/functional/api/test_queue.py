@@ -327,7 +327,18 @@ class TestQueueApi(base.FunctionalTestBase):
         await self.add_label(p4["number"], "queue")
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "opened"})
+        # Create a pending check on the queue PR to see it in condition's
+        # related checks
+        tmp_mq_pr_4 = await self.wait_for_pull_request("opened")
+        await self.create_status(tmp_mq_pr_4["pull_request"], state="pending")
+        await self.run_engine()
+        ctxt = context.Context(self.repository_ctxt, p4, [])
+        queue_ctxt = context.Context(
+            self.repository_ctxt, tmp_mq_pr_4["pull_request"], []
+        )
+        assert "continuous-integration/fake-ci" in (  # type:ignore [operator]
+            await context.QueuePullRequest(ctxt, queue_ctxt).check
+        )
 
         # GET /queues
         repository_name = self.RECORD_CONFIG["repository_name"]
@@ -358,7 +369,7 @@ class TestQueueApi(base.FunctionalTestBase):
                 "number": anys.ANY_INT,
                 "started_at": anys.ANY_DATETIME_STR,
                 "ended_at": None,
-                "checks": [],
+                "checks": anys.ANY_LIST,
                 "evaluated_conditions": anys.ANY_STR,
                 "state": "pending",
             },
@@ -392,7 +403,7 @@ class TestQueueApi(base.FunctionalTestBase):
                 "pull_request_number": anys.ANY_INT,
                 "started_at": anys.ANY_DATETIME_STR,
                 "ended_at": None,
-                "checks": [],
+                "checks": anys.ANY_LIST,
                 "evaluated_conditions": anys.ANY_STR,
                 "conditions_evaluation": {
                     "match": False,
@@ -409,6 +420,9 @@ class TestQueueApi(base.FunctionalTestBase):
                                     "pull_request": p4["number"],
                                     "match": False,
                                     "evaluation_error": None,
+                                    "related_checks": [
+                                        "continuous-integration/fake-ci"
+                                    ],
                                 }
                             ],
                         },
@@ -422,6 +436,7 @@ class TestQueueApi(base.FunctionalTestBase):
                                     "pull_request": p4["number"],
                                     "match": True,
                                     "evaluation_error": None,
+                                    "related_checks": [],
                                 }
                             ],
                         },

@@ -66,6 +66,10 @@ class RuleCondition:
     match: bool = dataclasses.field(init=False, default=False)
     _used: bool = dataclasses.field(init=False, default=False)
     evaluation_error: str | None = dataclasses.field(init=False, default=None)
+    related_checks_filter: filter.Filter[
+        filter.ListValuesFilterResult
+    ] | None = dataclasses.field(init=False, default=None)
+    related_checks: list[str] = dataclasses.field(init=False, default_factory=list)
 
     def __post_init__(self) -> None:
         self.update(self.condition)
@@ -89,7 +93,18 @@ class RuleCondition:
                 error_message=str(e),
             )
 
+        attribute = self.get_attribute_name()
+        if attribute.startswith(("check-", "status-")):
+            new_tree = self._replace_attribute_name("check")
+            self.related_checks_filter = filter.ListValuesFilter(
+                typing.cast(filter.TreeT, new_tree)
+            )
+
     def update_attribute_name(self, new_name: str) -> None:
+        new_tree = self._replace_attribute_name(new_name)
+        self.update(new_tree)
+
+    def _replace_attribute_name(self, new_name: str) -> FakeTreeT:
         tree = typing.cast(filter.TreeT, self.partial_filter.tree)
         negate = "-" in tree
         tree = tree.get("-", tree)
@@ -101,7 +116,7 @@ class RuleCondition:
         new_tree: FakeTreeT = {operator: (new_name, value)}
         if negate:
             new_tree = {"-": new_tree}
-        self.update(new_tree)
+        return new_tree
 
     def __str__(self) -> str:
         if self.label is not None:
@@ -125,6 +140,8 @@ class RuleCondition:
         self._used = True
         try:
             self.match = await self.partial_filter(obj)
+            if self.related_checks_filter is not None:
+                self.related_checks = (await self.related_checks_filter(obj)).values
         except live_resolvers.LiveResolutionFailure as e:
             self.match = False
             self.evaluation_error = e.reason
@@ -644,6 +661,7 @@ class ConditionEvaluationResult:
     is_label_user_input: bool
     description: str | None = None
     evaluation_error: str | None = None
+    related_checks: list[str] = dataclasses.field(default_factory=list)
     subconditions: list[ConditionEvaluationResult] = dataclasses.field(
         default_factory=list
     )
@@ -654,6 +672,7 @@ class ConditionEvaluationResult:
         is_label_user_input: bool
         description: str | None
         evaluation_error: str | None
+        related_checks: list[str]
         subconditions: list[ConditionEvaluationResult.Serialized]
 
     @classmethod
@@ -679,6 +698,7 @@ class ConditionEvaluationResult:
                 is_label_user_input=True,
                 description=rule_condition_node.description,
                 evaluation_error=rule_condition_node.evaluation_error,
+                related_checks=rule_condition_node.related_checks,
             )
         else:
             raise RuntimeError(
@@ -710,6 +730,7 @@ class ConditionEvaluationResult:
             is_label_user_input=data["is_label_user_input"],
             description=data["description"],
             evaluation_error=data["evaluation_error"],
+            related_checks=data.get("related_checks", []),
             subconditions=[cls.from_dict(c) for c in data["subconditions"]],
         )
         return evaluation_result
@@ -721,6 +742,7 @@ class ConditionEvaluationResult:
             is_label_user_input=self.is_label_user_input,
             description=self.description,
             evaluation_error=self.evaluation_error,
+            related_checks=self.related_checks,
             subconditions=[c.as_dict() for c in self.subconditions],
         )
 
@@ -779,6 +801,7 @@ class QueueConditionEvaluationResult:
         pull_request: github_types.GitHubPullRequestNumber
         match: bool
         evaluation_error: str | None
+        related_checks: list[str]
 
     class Serialized(typing.TypedDict):
         match: bool
@@ -828,6 +851,7 @@ class QueueConditionEvaluationResult:
                         pull_request=pull_request,
                         match=condition.match,
                         evaluation_error=condition.evaluation_error,
+                        related_checks=condition.related_checks,
                     )
                     for pull_request, condition in evaluated_condition.items()
                 ],
@@ -884,7 +908,15 @@ class QueueConditionEvaluationResult:
             label=self.label,
             description=self.description,
             subconditions=[c.as_json_dict() for c in self.subconditions],
-            evaluations=self.evaluations.copy(),
+            evaluations=[
+                QueueConditionEvaluationJsonSerialized.Evaluation(
+                    pull_request=evaluation["pull_request"],
+                    match=evaluation["match"],
+                    evaluation_error=evaluation["evaluation_error"],
+                    related_checks=evaluation["related_checks"],
+                )
+                for evaluation in self.evaluations
+            ],
         )
 
     def as_markdown(self) -> str:
@@ -945,6 +977,7 @@ class QueueConditionEvaluationJsonSerialized:
         pull_request: github_types.GitHubPullRequestNumber
         match: bool
         evaluation_error: str | None
+        related_checks: list[str]
 
 
 def re_evaluate_schedule_conditions(
