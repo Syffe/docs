@@ -348,7 +348,7 @@ You can accept them at https://dashboard.mergify.com/\n
 In the meantime, the pull request must be merged manually."
 """
         elif (
-            not ctxt.pull["rebaseable"]
+            ctxt.pull["rebaseable"] is False
             and merge_method == "rebase"
             and merge_rebase_fallback in (None, "none")
         ):

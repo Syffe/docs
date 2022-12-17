@@ -377,7 +377,7 @@ class GitHubPullRequest(GitHubIssueOrPullRequest):
     merged: bool
     merged_by: GitHubAccount | None
     merged_at: ISODateTimeType | None
-    rebaseable: bool
+    rebaseable: bool | None
     draft: bool
     merge_commit_sha: SHAType | None
     mergeable: bool | None
