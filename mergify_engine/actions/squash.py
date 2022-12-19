@@ -99,17 +99,11 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
         else:
             raise RuntimeError("Unsupported commit_message option")
 
-        if self.config["bot_account"] is None:
-            tokens = await self.ctxt.repository.installation.get_user_tokens()
-            users = tokens.users
-        else:
-            users = [self.config["bot_account"]]
-
         try:
             await squash_pull.squash(
                 self.ctxt,
                 message,
-                users,
+                on_behalf=self.config["bot_account"],
             )
         except squash_pull.SquashFailure as e:
             return check_api.Result(

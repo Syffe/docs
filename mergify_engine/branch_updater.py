@@ -3,6 +3,8 @@ import uuid
 
 import tenacity
 
+from mergify_engine import config
+from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import exceptions
 from mergify_engine import gitter
@@ -219,19 +221,21 @@ async def rebase_with_git(
 
     await pre_rebase_check(ctxt)
 
-    if on_behalf is not None:
-        users = [on_behalf]
-    else:
+    if on_behalf is None:
         # TODO(sileht): drop me and make on_behalf mandatory
         tokens = await ctxt.repository.installation.get_user_tokens()
         # Pick author first
         users = sorted(
             tokens.users, key=lambda x: x["login"] != ctxt.pull["user"]["login"]
         )
+        committer = None
+    else:
+        users = [on_behalf]
+        committer = on_behalf
 
     for user in users:
         try:
-            await _do_rebase(ctxt, user, on_behalf, autosquash)
+            await _do_rebase(ctxt, user, committer, autosquash)
         except gitter.GitAuthenticationFailure as e:  # pragma: no cover
             ctxt.log.info(
                 "authentification failure, will retry another token: %s",
@@ -239,13 +243,30 @@ async def rebase_with_git(
                 login=user["login"],
             )
         else:
+            if on_behalf is None:
+                ctxt.log.warning(
+                    "pull request rebased with a random user",
+                    random_pick=user["login"],
+                    author=ctxt.pull["user"]["login"],
+                    random_pick_is_author=user["login"] == ctxt.pull["user"]["login"],
+                )
+                if user["login"] != ctxt.pull["user"]["login"]:
+                    await ctxt.post_comment(
+                        constants.DEPRECATED_RANDOM_USER_PICK.format(verb="rebased")
+                    )
             return
 
     ctxt.log.warning("unable to update branch: no tokens are valid")
 
     if ctxt.pull_from_fork and ctxt.pull["base"]["repo"]["private"]:
-        raise BranchUpdateFailure(
-            "Rebasing a branch for a forked private repository is not supported by GitHub"
-        )
+        message = "Rebasing a branch for a forked private repository is not supported by GitHub."
+    else:
+        if on_behalf is None:
+            # Use author to suggest the future default behavior
+            ping_user = ctxt.pull["user"]["login"]
+        else:
+            ping_user = on_behalf["login"]
 
-    raise BranchUpdateFailure("No oauth valid tokens")
+        message = f"`{ping_user}` token is invalid, make sure `{ping_user}` can still log in on the [Mergify dashboard]({config.DATABASE_URL})."
+
+    raise BranchUpdateFailure(message)

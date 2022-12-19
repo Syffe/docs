@@ -1,5 +1,7 @@
 import dataclasses
 
+from mergify_engine import config
+from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import exceptions
 from mergify_engine import gitter
@@ -111,11 +113,23 @@ async def _do_squash(
 
 
 async def squash(
-    ctxt: context.Context, message: str, users: list[user_tokens.UserTokensUser]
+    ctxt: context.Context,
+    message: str,
+    on_behalf: user_tokens.UserTokensUser | None,
 ) -> None:
 
     if ctxt.pull["commits"] <= 1:
         return
+
+    if on_behalf is None:
+        # TODO(sileht): drop me and make on_behalf mandatory
+        tokens = await ctxt.repository.installation.get_user_tokens()
+        # Pick author first
+        users = sorted(
+            tokens.users, key=lambda x: x["login"] != ctxt.pull["user"]["login"]
+        )
+    else:
+        users = [on_behalf]
 
     for user in users:
         try:
@@ -127,13 +141,28 @@ async def squash(
                 login=user["login"],
             )
         else:
+            if on_behalf is None:
+                ctxt.log.warning(
+                    "pull request squashed with a random user",
+                    random_pick=user["login"],
+                    author=ctxt.pull["user"]["login"],
+                    random_pick_is_author=user["login"] == ctxt.pull["user"]["login"],
+                )
+                if user["login"] != ctxt.pull["user"]["login"]:
+                    await ctxt.post_comment(
+                        constants.DEPRECATED_RANDOM_USER_PICK.format(verb="squashed")
+                    )
             return
 
-    ctxt.log.warning("unable to squash pull request: no tokens are valid")
-
     if ctxt.pull_from_fork and ctxt.pull["base"]["repo"]["private"]:
-        raise SquashFailure(
-            "Squashing a branch for a forked private repository is not supported by GitHub"
-        )
+        message = "Squashing a branch for a forked private repository is not supported by GitHub."
+    else:
+        if on_behalf is None:
+            # Use author to suggest the future default behavior
+            ping_user = ctxt.pull["user"]["login"]
+        else:
+            ping_user = on_behalf["login"]
 
-    raise SquashFailure("No oauth valid tokens")
+        message = f"`{ping_user}` token is invalid, make sure `{ping_user}` can still log in on the [Mergify dashboard]({config.DATABASE_URL})."
+
+    raise SquashFailure(message)

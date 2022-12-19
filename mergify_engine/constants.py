@@ -104,3 +104,11 @@ Those conditions will be removed on February 11th, 2023.
 
 For more informations and examples on how to use the `schedule` condition: https://docs.mergify.com/conditions/#attributes, https://docs.mergify.com/configuration/#time
 """
+
+DEPRECATED_RANDOM_USER_PICK = """⚠️  This pull request got {verb} on behalf of a random user of the organization.
+This behavior will change on the 1st February 2022, Mergify will pick the author of the pull request instead.
+
+To get the future behavior now, you can configure `bot_account` options (e.g.: `bot_account: {{ author }}` or `update_bot_account: {{ author }}`.
+
+Or you can create a dedicated github account for squash and rebase operations, and use it in different `bot_account` options.
+"""
