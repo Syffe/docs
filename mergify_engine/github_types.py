@@ -590,6 +590,7 @@ class GitHubEventPush(GitHubEvent):
     before: SHAType
     after: SHAType
     commits: list[GitHubEventPushCommit]
+    head_commit: GitHubEventPushCommit
 
 
 class GitHubEventStatus(GitHubEvent):

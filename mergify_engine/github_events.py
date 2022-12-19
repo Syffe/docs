@@ -263,16 +263,19 @@ async def push_to_worker(
         ):
 
             # NOTE(sileht): commits contains the list of commits returned by compare API
-            # that by default returns only 250 commits
+            # that by default returns only 20 commits
             # https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#push
             # https://docs.github.com/en/rest/commits/commits#compare-two-commits
-            if event["forced"] or len(event["commits"]) > 250:
+            if event["forced"] or len(event["commits"]) > 20:
                 mergify_configuration_changed = True
             else:
                 mergify_configuration_changed = False
 
                 mergify_config_filenames = set(constants.MERGIFY_CONFIG_FILENAMES)
-                for commit in event["commits"]:
+                commits = event["commits"].copy()
+                if event["head_commit"] is not None:
+                    commits.insert(0, event["head_commit"])
+                for commit in commits:
                     if (
                         set(commit["added"]) & mergify_config_filenames
                         or set(commit["modified"]) & mergify_config_filenames
