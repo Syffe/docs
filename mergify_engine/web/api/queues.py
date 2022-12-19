@@ -63,7 +63,7 @@ class SpeculativeCheckPullRequest:
     checks: list[merge_train.QueueCheck] = dataclasses.field(
         metadata={"description": "The list of pull request checks"}
     )
-    evaluated_conditions: str | None = dataclasses.field(
+    evaluated_conditions: str = dataclasses.field(
         metadata={"description": "The queue rule conditions evaluation report"}
     )
     state: merge_train.CheckStateT = dataclasses.field(
@@ -456,7 +456,7 @@ class MergeabilityCheck:
     checks: list[merge_train.QueueCheck] = dataclasses.field(
         metadata={"description": "The list of pull request checks"}
     )
-    evaluated_conditions: str | None = dataclasses.field(
+    evaluated_conditions: str = dataclasses.field(
         metadata={"description": "The queue rule conditions evaluation report"}
     )
     state: merge_train.CheckStateT = dataclasses.field(

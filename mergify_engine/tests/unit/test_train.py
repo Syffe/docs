@@ -1698,7 +1698,6 @@ def test_train_car_old_serialization(
         "failure_history": [],
         "head_branch": "head_branch",
         "last_checks": [],
-        "last_evaluated_conditions": None,
         "has_timed_out": has_timed_out,
         "checks_ended_timestamp": date.utcnow(),
         "ci_has_passed": ci_has_passed,

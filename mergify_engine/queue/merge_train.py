@@ -509,7 +509,6 @@ class TrainCar:
     )
     head_branch: str | None = None
     last_checks: list[QueueCheck] = dataclasses.field(default_factory=list)
-    last_evaluated_conditions: str | None = None
     last_conditions_evaluation: conditions.QueueConditionEvaluationResult | None = None
     checks_ended_timestamp: datetime.datetime | None = None
     queue_branch_name: github_types.GitHubRefType | None = None
@@ -526,7 +525,6 @@ class TrainCar:
         failure_history: list[TrainCar.Serialized]
         head_branch: str | None
         last_checks: list[QueueCheck.Serialized]
-        last_evaluated_conditions: str | None
         last_conditions_evaluation: conditions.QueueConditionEvaluationResult.Serialized | None
         checks_ended_timestamp: datetime.datetime | None
         queue_branch_name: github_types.GitHubRefType | None
@@ -557,7 +555,6 @@ class TrainCar:
                 )
                 for c in self.last_checks
             ],
-            last_evaluated_conditions=self.last_evaluated_conditions,
             last_conditions_evaluation=last_conditions_evaluation,
             checks_ended_timestamp=self.checks_ended_timestamp,
             queue_branch_name=self.queue_branch_name,
@@ -681,7 +678,6 @@ class TrainCar:
             failure_history=failure_history,
             head_branch=data["head_branch"],
             last_checks=last_checks,
-            last_evaluated_conditions=data.get("last_evaluated_conditions"),
             last_conditions_evaluation=last_conditions_evaluation,
             checks_ended_timestamp=data.get("checks_ended_timestamp"),
             queue_branch_name=data["queue_branch_name"],
@@ -739,6 +735,13 @@ class TrainCar:
             self.has_previous_car_status_succeeded()
             and len(self.initial_embarked_pulls) == 1
         )
+
+    @property
+    def last_evaluated_conditions(self) -> str:
+        if self.last_conditions_evaluation is not None:
+            return self.last_conditions_evaluation.as_markdown()
+        else:
+            return ""
 
     def can_be_interrupted(self) -> bool:
         return self.train_car_state.outcome == TrainCarOutcome.UNKNWON or (
@@ -1343,7 +1346,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
         description += await self.train.generate_merge_queue_summary_footer(
             queue_rule_report=QueueRuleReport(
                 self.still_queued_embarked_pulls[0].config["name"],
-                self.last_evaluated_conditions or "",
+                self.last_evaluated_conditions,
             ),
             pull_rule=pull_rule,
             show_queue=show_queue,
@@ -1827,7 +1830,6 @@ You don't need to do anything. Mergify will close this pull request automaticall
         unexpected_change: UnexpectedChange | None = None,
     ) -> None:
 
-        self.last_evaluated_conditions = evaluated_queue_rule.conditions.get_summary()
         self.last_conditions_evaluation = (
             evaluated_queue_rule.conditions.get_evaluation_result()
         )
@@ -2033,7 +2035,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             )
 
         queue_summary = "\n\nRequired conditions for merge:\n\n"
-        queue_summary += self.last_evaluated_conditions or ""
+        queue_summary += self.last_evaluated_conditions
         timeout_summary = ""
         timeout = queue_rule.config["checks_timeout"]
 
