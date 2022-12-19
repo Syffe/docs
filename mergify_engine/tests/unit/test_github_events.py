@@ -29,6 +29,7 @@ async def test_filter_and_dispatch(
     event_id = "my_event_id"
     try:
         await github_events.filter_and_dispatch(
+            mock.Mock(),
             redis_links,
             event_type,
             event_id,

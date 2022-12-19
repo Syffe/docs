@@ -82,6 +82,7 @@ async def marketplace_handler(
 @router.post("/event", dependencies=[fastapi.Depends(auth.github_webhook_signature)])
 async def event_handler(
     request: requests.Request,
+    background_tasks: fastapi.BackgroundTasks,
     redis_links: redis_utils.RedisLinks = fastapi.Depends(  # noqa: B008
         redis.get_redis_links
     ),
@@ -104,7 +105,9 @@ async def event_handler(
         }
 
     try:
-        await github_events.filter_and_dispatch(redis_links, event_type, event_id, data)
+        await github_events.filter_and_dispatch(
+            background_tasks, redis_links, event_type, event_id, data
+        )
     except github_events.IgnoredEvent as ie:
         status_code = 200
         reason = f"Event ignored: {ie.reason}"

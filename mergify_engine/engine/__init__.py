@@ -9,6 +9,7 @@ from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
+from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import rules
@@ -451,6 +452,7 @@ async def run(
         return await actions_runner.handle(mergify_config["pull_request_rules"], ctxt)
 
 
+@exceptions.log_and_ignore_exception("fail to create initial summary")
 async def create_initial_summary(
     redis: redis_utils.RedisCache, event: github_types.GitHubEventPullRequest
 ) -> None:

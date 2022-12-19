@@ -1,10 +1,17 @@
+from collections import abc
 import dataclasses
 import datetime
+import logging
 import re
+import typing
 
+import daiquiri
 from redis import exceptions as redis_exceptions
 
 from mergify_engine.clients import http
+
+
+LOG = daiquiri.getLogger(__name__)
 
 
 @dataclasses.dataclass
@@ -117,3 +124,24 @@ def need_retry(
         return datetime.timedelta(minutes=1)
 
     return None
+
+
+P = typing.ParamSpec("P")
+decoratedT = abc.Callable[P, None]  # type: ignore[valid-type,misc]
+
+
+def log_and_ignore_exception(msg: str) -> abc.Callable[[decoratedT], decoratedT]:
+    def decorated(func: decoratedT) -> decoratedT:
+        async def wrapped(*args: P.args, **kwargs: P.kwargs) -> None:
+            try:
+                await func(*args, **kwargs)
+            except Exception as exc:
+                if should_be_ignored(exc) or need_retry(exc):
+                    level = logging.WARN
+                else:
+                    level = logging.ERROR
+                LOG.log(level, msg, exc_info=exc)
+
+        return wrapped
+
+    return decorated

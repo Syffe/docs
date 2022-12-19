@@ -3,6 +3,7 @@ import typing
 
 import daiquiri
 from datadog import statsd  # type: ignore[attr-defined]
+import fastapi
 import sentry_sdk
 
 from mergify_engine import check_api
@@ -11,7 +12,6 @@ from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import count_seats
 from mergify_engine import engine
-from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import pull_request_finder
 from mergify_engine import redis_utils
@@ -76,15 +76,8 @@ class IgnoredEvent(Exception):
     reason: str
 
 
-def _log_on_exception(exc: Exception, msg: str) -> None:
-    if exceptions.should_be_ignored(exc) or exceptions.need_retry(exc):
-        log = LOG.debug
-    else:
-        log = LOG.error
-    log(msg, exc_info=exc)
-
-
 async def push_to_worker(
+    background_tasks: fastapi.BackgroundTasks,
     redis_links: redis_utils.RedisLinks,
     event_type: github_types.GitHubEventType,
     event_id: str,
@@ -120,10 +113,9 @@ async def push_to_worker(
             ignore_reason = "repository archived"
 
         elif event["action"] in ("opened", "synchronize"):
-            try:
-                await engine.create_initial_summary(redis_links.cache, event)
-            except Exception as e:
-                _log_on_exception(e, "fail to create initial summary")
+            background_tasks.add_task(
+                engine.create_initial_summary, redis_links.cache, event
+            )
         elif (
             event["action"] == "edited"
             and event["sender"]["id"] == mergify_bot["id"]
@@ -234,10 +226,7 @@ async def push_to_worker(
 
         else:
             # NOTE(sileht): nothing important should happen in this hook as we don't retry it
-            try:
-                await commands_runner.on_each_event(event)
-            except Exception as e:
-                _log_on_exception(e, "commands_runner.on_each_event failed")
+            background_tasks.add_task(commands_runner.on_each_event, event)
 
     elif event_type == "status":
         event = typing.cast(github_types.GitHubEventStatus, event)
@@ -523,6 +512,7 @@ async def push_to_worker(
 
 
 async def filter_and_dispatch(
+    background_tasks: fastapi.BackgroundTasks,
     redis_links: redis_utils.RedisLinks,
     event_type: github_types.GitHubEventType,
     event_id: str,
@@ -531,4 +521,6 @@ async def filter_and_dispatch(
     mergify_bot = await github.GitHubAppInfo.get_bot()
     await meter_event(event_type, event, mergify_bot)
     await count_seats.store_active_users(redis_links.active_users, event_type, event)
-    await push_to_worker(redis_links, event_type, event_id, event, mergify_bot)
+    await push_to_worker(
+        background_tasks, redis_links, event_type, event_id, event, mergify_bot
+    )
