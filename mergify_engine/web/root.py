@@ -23,8 +23,8 @@ def saas_root_endpoint() -> fastapi.Response:
     return fastapi.responses.JSONResponse({})
 
 
-def create_app(https_only: bool = True) -> fastapi.FastAPI:
-    app = fastapi.FastAPI(openapi_url=None, redoc_url=None, docs_url=None)
+def create_app(https_only: bool = True, debug: bool = False) -> fastapi.FastAPI:
+    app = fastapi.FastAPI(openapi_url=None, redoc_url=None, docs_url=None, debug=debug)
     if https_only:
         app.add_middleware(httpsredirect.HTTPSRedirectMiddleware)
     app.add_middleware(
@@ -42,8 +42,8 @@ def create_app(https_only: bool = True) -> fastapi.FastAPI:
     app.include_router(refresher.router, prefix="/refresh")
     app.include_router(legacy_badges.router, prefix="/badges")
 
-    app.mount("/v1", api_root.create_app(cors_enabled=True))
-    app.mount("/front", front_root.create_app())
+    app.mount("/v1", api_root.create_app(cors_enabled=True, debug=debug))
+    app.mount("/front", front_root.create_app(debug=debug))
 
     if config.DASHBOARD_UI_STATIC_FILES_DIRECTORY is None:
         app.get("/")(saas_root_endpoint)

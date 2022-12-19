@@ -30,7 +30,7 @@ def include_api_routes(router: fastapi.APIRouter | fastapi.FastAPI) -> None:
     router.include_router(statistics.router)
 
 
-def create_app(cors_enabled: bool) -> fastapi.FastAPI:
+def create_app(cors_enabled: bool, debug: bool = False) -> fastapi.FastAPI:
     app = fastapi.FastAPI(
         title="Mergify API",
         description="Faster & safer code merge",
@@ -73,6 +73,7 @@ def create_app(cors_enabled: bool) -> fastapi.FastAPI:
         servers=[{"url": "https://api.mergify.com/v1", "description": "default"}],
         dependencies=[fastapi.Depends(api_enabled)],
         reponses=api.default_responses,
+        debug=debug,
     )
     if cors_enabled:
         app.add_middleware(

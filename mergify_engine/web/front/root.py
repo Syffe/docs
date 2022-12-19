@@ -15,7 +15,7 @@ from mergify_engine.web.front import security
 from mergify_engine.web.front import sessions
 
 
-def create_app() -> fastapi.FastAPI:
+def create_app(debug: bool = False) -> fastapi.FastAPI:
     parsed_base_url = urllib.parse.urlparse(config.DASHBOARD_UI_FRONT_BASE_URL)
 
     cookie_https_only = parsed_base_url.scheme == "https"
@@ -24,7 +24,7 @@ def create_app() -> fastapi.FastAPI:
     else:
         cookie_domain = parsed_base_url.hostname
 
-    app = fastapi.FastAPI(openapi_url=None, redoc_url=None, docs_url=None)
+    app = fastapi.FastAPI(openapi_url=None, redoc_url=None, docs_url=None, debug=debug)
 
     user_provider = sessions.ImiaUserProvider()
     app.add_middleware(
