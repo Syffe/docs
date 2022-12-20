@@ -252,6 +252,13 @@ async def redis_stream(
 
 
 @pytest.fixture()
+async def redis_stats(
+    redis_links: redis_utils.RedisLinks,
+) -> redis_utils.RedisStats:
+    return redis_links.stats
+
+
+@pytest.fixture()
 async def github_server(
     monkeypatch: pytest.MonkeyPatch,
 ) -> abc.AsyncGenerator[respx.MockRouter, None]:

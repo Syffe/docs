@@ -322,7 +322,7 @@ async def _get_stats_items_date_range(
     end_at: int | None = None,
 ) -> abc.AsyncGenerator[dict[str, typing.Any], None]:
     redis_query_older_id = get_redis_query_older_id()
-    if start_at is not None and start_at * 1000 < redis_query_older_id:
+    if start_at is not None and start_at * 1000 > redis_query_older_id:
         older_event_id = str(start_at * 1000)
     else:
         older_event_id = str(redis_query_older_id)
