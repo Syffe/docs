@@ -554,7 +554,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             # We just rebase the pull request, don't cancel it yet if CIs are
             # running. The pull request will be merged if all rules match again.
             # if not we will delete it when we received all CIs termination
-            if await self._should_be_cancel(ctxt, rule, q):
+            if await self._should_be_cancel(ctxt, rule, q, car):
                 result = actions.CANCELLED_CHECK_REPORT
             else:
                 if await self._should_be_queued(ctxt, q):
@@ -668,7 +668,11 @@ Then, re-embark the pull request into the merge queue by posting the comment
         return car.train_car_state.outcome == merge_train.TrainCarOutcome.MERGEABLE
 
     async def _should_be_cancel(
-        self, ctxt: context.Context, rule: "rules.EvaluatedRule", q: merge_train.Train
+        self,
+        ctxt: context.Context,
+        rule: "rules.EvaluatedRule",
+        q: merge_train.Train,
+        previous_car: merge_train.TrainCar | None,
     ) -> bool:
         # It's closed, it's not going to change
         if ctxt.closed:
@@ -682,6 +686,16 @@ Then, re-embark the pull request into the merge queue by posting the comment
             return True
 
         car = q.get_car(ctxt)
+        if car is None:
+            # NOTE(sileht): in case the car just got deleted but the PR is
+            # still first in queue This means the train has been resetted for
+            # some reason. If we was waiting for CIs to complete, we must not
+            # cancel the action as the train car will be recreated very soon
+            # (by Train.refresh()).
+            # To keep it queued, we check the state against the previous car
+            # version one last time.
+            car = previous_car
+
         if (
             car
             and car.train_car_state.checks_type

@@ -216,6 +216,81 @@ class TestQueueAction(base.FunctionalTestBase):
         q = await merge_train.Train.from_context(ctxt)
         assert len(await q.get_pulls()) == 0
 
+    async def test_queue_inplace_train_resetted(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "check-success=continuous-integration/fake-ci",
+                    ],
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "check-success=continuous-integration/fake-ci",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+
+        # To force p1 to be rebased
+        p2 = await self.create_pr()
+        await self.merge_pull_as_admin(p2["number"])
+        await self.wait_for("pull_request", {"action": "closed"})
+        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.run_engine()
+        p2 = await self.get_pull(p2["number"])
+
+        await self.create_status(p1)
+        await self.run_engine()
+        await self.wait_for("pull_request", {"action": "synchronize"})
+
+        ctxt = context.Context(self.repository_ctxt, p2)
+        q = await merge_train.Train.from_context(ctxt)
+        # base sha should have been updated
+        assert p2["merge_commit_sha"] is not None
+        await self.assert_merge_queue_contents(
+            q,
+            p2["merge_commit_sha"],
+            [
+                base.MergeQueueCarMatcher(
+                    [p1["number"]],
+                    [],
+                    p2["merge_commit_sha"],
+                    merge_train.TrainCarChecksType.INPLACE,
+                    p1["number"],
+                ),
+            ],
+        )
+
+        new_sha = await self.push_file("whatever", "content")
+        await self.run_engine()
+
+        await q.load()
+        # base sha should have been updated and PR still queued
+        await self.assert_merge_queue_contents(
+            q,
+            new_sha,
+            [
+                base.MergeQueueCarMatcher(
+                    [p1["number"]],
+                    [],
+                    new_sha,
+                    merge_train.TrainCarChecksType.INPLACE,
+                    p1["number"],
+                ),
+            ],
+        )
+
     async def test_queue_inplace_interrupted(self) -> None:
         rules = {
             "queue_rules": [

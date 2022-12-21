@@ -1639,7 +1639,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         filename: str = "random_file.txt",
         content: str = "",
         target_branch: str | None = None,
-    ) -> None:
+    ) -> github_types.SHAType:
         if target_branch is None:
             target_branch = self.main_branch_name
         await self.git("fetch", "origin", target_branch)
@@ -1648,8 +1648,12 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             f.write(content)
         await self.git("add", filename)
         await self.git("commit", "--no-edit", "-m", "random update")
+        head_sha = github_types.SHAType(
+            (await self.git("log", "-1", "--format=%H")).strip()
+        )
         await self.git("push", "--quiet", "origin", f"random:{target_branch}")
         await self.wait_for("push", {"ref": f"refs/heads/{target_branch}"})
+        return head_sha
 
     @staticmethod
     async def assert_check_run(
