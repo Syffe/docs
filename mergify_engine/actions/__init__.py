@@ -14,7 +14,7 @@ from mergify_engine.rules import conditions
 
 CANCELLED_CHECK_REPORT = check_api.Result(
     check_api.Conclusion.CANCELLED,
-    "The rule doesn't match anymore",
+    "The pull request rule doesn't match anymore",
     "This action has been cancelled.",
 )
 

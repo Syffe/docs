@@ -237,7 +237,7 @@ class TestMergeAction(base.FunctionalTestBase):
         assert len(checks) == 2
         check = checks[1]
         assert check["conclusion"] == "cancelled"
-        assert check["output"]["title"] == "The rule doesn't match anymore"
+        assert check["output"]["title"] == "The pull request rule doesn't match anymore"
 
     async def test_merge_with_installation_token(self) -> None:
         rules = {

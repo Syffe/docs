@@ -212,7 +212,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check is not None
         assert check["conclusion"] == "cancelled"
-        assert check["output"]["title"] == "The rule doesn't match anymore"
+        assert check["output"]["title"] == "The pull request rule doesn't match anymore"
         q = await merge_train.Train.from_context(ctxt)
         assert len(await q.get_pulls()) == 0
 
@@ -1387,7 +1387,7 @@ class TestQueueAction(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
         )
         assert check is not None
-        assert check["output"]["title"] == "The rule doesn't match anymore"
+        assert check["output"]["title"] == "The pull request rule doesn't match anymore"
 
         check = first(
             await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
@@ -1427,7 +1427,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
-                        "reason": "The rule doesn't match anymore",
+                        "reason": "The pull request rule doesn't match anymore",
                         "seconds_waiting_for_schedule": 0,
                         "seconds_waiting_for_freeze": 0,
                     },
@@ -2386,7 +2386,7 @@ class TestQueueAction(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
         )
         assert check is not None
-        assert check["output"]["title"] == "The rule doesn't match anymore"
+        assert check["output"]["title"] == "The pull request rule doesn't match anymore"
 
     async def assert_api_checks_end_reason(
         self, pr_number: github_types.GitHubPullRequestNumber, expected_reason: str
