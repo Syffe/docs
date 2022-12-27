@@ -216,6 +216,7 @@
           }
         },
         "References": [
+          "http://www.openwall.com/lists/oss-security/2022/12/21/1",
           "https://access.redhat.com/security/cve/CVE-2022-42916",
           "https://curl.se/docs/CVE-2022-42916.html",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-42916",
@@ -228,6 +229,61 @@
           "https://ubuntu.com/security/notices/USN-5702-1"
         ],
         "PublishedDate": "2022-10-29T02:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2022-43551",
+        "PkgID": "curl@7.74.0-1.3+deb11u3",
+        "PkgName": "curl",
+        "InstalledVersion": "7.74.0-1.3+deb11u3",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-43551",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "curl: HSTS bypass via IDN",
+        "Description": "A vulnerability exists in curl <7.87.0 HSTS check that could be bypassed to trick it to keep using HTTP. Using its HSTS support, curl can be instructed to use HTTPS instead of using an insecure clear-text HTTP step even when HTTP is provided in the URL. However, the HSTS mechanism could be bypassed if the host name in the given URL first uses IDN characters that get replaced to ASCII counterparts as part of the IDN conversion. Like using the character UTF-8 U+3002 (IDEOGRAPHIC FULL STOP) instead of the common ASCII full stop (U+002E) `.`. Then in a subsequent request, it does not detect the HSTS state and makes a clear text transfer. Because it would store the info IDN encoded but look for it IDN decoded.",
+        "Severity": "HIGH",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+            "V3Score": 7.5
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2022-43551",
+          "https://curl.se/docs/CVE-2022-43551.html",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-43551",
+          "https://hackerone.com/reports/1755083",
+          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/TVWZW5CNSJ7UYAF2BGSYAWAEXDJYUBHA/"
+        ],
+        "PublishedDate": "2022-12-23T15:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2022-43552",
+        "PkgID": "curl@7.74.0-1.3+deb11u3",
+        "PkgName": "curl",
+        "InstalledVersion": "7.74.0-1.3+deb11u3",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-43552",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "curl: HTTP Proxy deny use-after-free",
+        "Description": "A vulnerability was found in curl. In this issue, curl can be asked to tunnel all protocols virtually it supports through an HTTP proxy. HTTP proxies can deny these tunnel operations using an appropriate HTTP error response code. When getting denied to tunnel the specific SMB or TELNET protocols, curl can use a heap-allocated struct after it has been freed and shut down the code path in its transfer.",
+        "Severity": "MEDIUM",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 5.9
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2022-43552",
+          "https://curl.se/docs/CVE-2022-43552.html",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-43552"
+        ]
       },
       {
         "VulnerabilityID": "CVE-2021-22922",
@@ -1810,6 +1866,7 @@
           }
         },
         "References": [
+          "http://www.openwall.com/lists/oss-security/2022/12/21/1",
           "https://access.redhat.com/security/cve/CVE-2022-42916",
           "https://curl.se/docs/CVE-2022-42916.html",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-42916",
@@ -1822,6 +1879,61 @@
           "https://ubuntu.com/security/notices/USN-5702-1"
         ],
         "PublishedDate": "2022-10-29T02:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2022-43551",
+        "PkgID": "libcurl3-gnutls@7.74.0-1.3+deb11u3",
+        "PkgName": "libcurl3-gnutls",
+        "InstalledVersion": "7.74.0-1.3+deb11u3",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-43551",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "curl: HSTS bypass via IDN",
+        "Description": "A vulnerability exists in curl <7.87.0 HSTS check that could be bypassed to trick it to keep using HTTP. Using its HSTS support, curl can be instructed to use HTTPS instead of using an insecure clear-text HTTP step even when HTTP is provided in the URL. However, the HSTS mechanism could be bypassed if the host name in the given URL first uses IDN characters that get replaced to ASCII counterparts as part of the IDN conversion. Like using the character UTF-8 U+3002 (IDEOGRAPHIC FULL STOP) instead of the common ASCII full stop (U+002E) `.`. Then in a subsequent request, it does not detect the HSTS state and makes a clear text transfer. Because it would store the info IDN encoded but look for it IDN decoded.",
+        "Severity": "HIGH",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+            "V3Score": 7.5
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2022-43551",
+          "https://curl.se/docs/CVE-2022-43551.html",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-43551",
+          "https://hackerone.com/reports/1755083",
+          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/TVWZW5CNSJ7UYAF2BGSYAWAEXDJYUBHA/"
+        ],
+        "PublishedDate": "2022-12-23T15:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2022-43552",
+        "PkgID": "libcurl3-gnutls@7.74.0-1.3+deb11u3",
+        "PkgName": "libcurl3-gnutls",
+        "InstalledVersion": "7.74.0-1.3+deb11u3",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-43552",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "curl: HTTP Proxy deny use-after-free",
+        "Description": "A vulnerability was found in curl. In this issue, curl can be asked to tunnel all protocols virtually it supports through an HTTP proxy. HTTP proxies can deny these tunnel operations using an appropriate HTTP error response code. When getting denied to tunnel the specific SMB or TELNET protocols, curl can use a heap-allocated struct after it has been freed and shut down the code path in its transfer.",
+        "Severity": "MEDIUM",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 5.9
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2022-43552",
+          "https://curl.se/docs/CVE-2022-43552.html",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-43552"
+        ]
       },
       {
         "VulnerabilityID": "CVE-2021-22922",
@@ -1985,6 +2097,7 @@
           }
         },
         "References": [
+          "http://www.openwall.com/lists/oss-security/2022/12/21/1",
           "https://access.redhat.com/security/cve/CVE-2022-42916",
           "https://curl.se/docs/CVE-2022-42916.html",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-42916",
@@ -1997,6 +2110,61 @@
           "https://ubuntu.com/security/notices/USN-5702-1"
         ],
         "PublishedDate": "2022-10-29T02:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2022-43551",
+        "PkgID": "libcurl4@7.74.0-1.3+deb11u3",
+        "PkgName": "libcurl4",
+        "InstalledVersion": "7.74.0-1.3+deb11u3",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-43551",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "curl: HSTS bypass via IDN",
+        "Description": "A vulnerability exists in curl <7.87.0 HSTS check that could be bypassed to trick it to keep using HTTP. Using its HSTS support, curl can be instructed to use HTTPS instead of using an insecure clear-text HTTP step even when HTTP is provided in the URL. However, the HSTS mechanism could be bypassed if the host name in the given URL first uses IDN characters that get replaced to ASCII counterparts as part of the IDN conversion. Like using the character UTF-8 U+3002 (IDEOGRAPHIC FULL STOP) instead of the common ASCII full stop (U+002E) `.`. Then in a subsequent request, it does not detect the HSTS state and makes a clear text transfer. Because it would store the info IDN encoded but look for it IDN decoded.",
+        "Severity": "HIGH",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+            "V3Score": 7.5
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2022-43551",
+          "https://curl.se/docs/CVE-2022-43551.html",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-43551",
+          "https://hackerone.com/reports/1755083",
+          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/TVWZW5CNSJ7UYAF2BGSYAWAEXDJYUBHA/"
+        ],
+        "PublishedDate": "2022-12-23T15:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2022-43552",
+        "PkgID": "libcurl4@7.74.0-1.3+deb11u3",
+        "PkgName": "libcurl4",
+        "InstalledVersion": "7.74.0-1.3+deb11u3",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-43552",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "curl: HTTP Proxy deny use-after-free",
+        "Description": "A vulnerability was found in curl. In this issue, curl can be asked to tunnel all protocols virtually it supports through an HTTP proxy. HTTP proxies can deny these tunnel operations using an appropriate HTTP error response code. When getting denied to tunnel the specific SMB or TELNET protocols, curl can use a heap-allocated struct after it has been freed and shut down the code path in its transfer.",
+        "Severity": "MEDIUM",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 5.9
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2022-43552",
+          "https://curl.se/docs/CVE-2022-43552.html",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-43552"
+        ]
       },
       {
         "VulnerabilityID": "CVE-2021-22922",
@@ -3214,6 +3382,30 @@
         "PublishedDate": "2022-11-08T22:15:00Z"
       },
       {
+        "VulnerabilityID": "CVE-2022-4415",
+        "PkgID": "libnss-systemd@247.3-7+deb11u1",
+        "PkgName": "libnss-systemd",
+        "InstalledVersion": "247.3-7+deb11u1",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-4415",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "systemd: local information leak due to systemd-coredump not respecting fs.suid_dumpable kernel setting",
+        "Description": "A vulnerability was found in systemd. This security flaw can cause a local information leak due to systemd-coredump not respecting the fs.suid_dumpable kernel setting.",
+        "Severity": "MEDIUM",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N",
+            "V3Score": 5.5
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2022-4415"
+        ]
+      },
+      {
         "VulnerabilityID": "CVE-2013-4392",
         "PkgID": "libnss-systemd@247.3-7+deb11u1",
         "PkgName": "libnss-systemd",
@@ -3295,19 +3487,6 @@
           "https://ubuntu.com/security/notices/USN-5013-2"
         ],
         "PublishedDate": "2021-05-10T16:15:00Z"
-      },
-      {
-        "VulnerabilityID": "CVE-2022-4415",
-        "PkgID": "libnss-systemd@247.3-7+deb11u1",
-        "PkgName": "libnss-systemd",
-        "InstalledVersion": "247.3-7+deb11u1",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-4415",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Severity": "UNKNOWN"
       },
       {
         "VulnerabilityID": "CVE-2022-3821",
@@ -3350,6 +3529,30 @@
         "PublishedDate": "2022-11-08T22:15:00Z"
       },
       {
+        "VulnerabilityID": "CVE-2022-4415",
+        "PkgID": "libpam-systemd@247.3-7+deb11u1",
+        "PkgName": "libpam-systemd",
+        "InstalledVersion": "247.3-7+deb11u1",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-4415",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "systemd: local information leak due to systemd-coredump not respecting fs.suid_dumpable kernel setting",
+        "Description": "A vulnerability was found in systemd. This security flaw can cause a local information leak due to systemd-coredump not respecting the fs.suid_dumpable kernel setting.",
+        "Severity": "MEDIUM",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N",
+            "V3Score": 5.5
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2022-4415"
+        ]
+      },
+      {
         "VulnerabilityID": "CVE-2013-4392",
         "PkgID": "libpam-systemd@247.3-7+deb11u1",
         "PkgName": "libpam-systemd",
@@ -3431,19 +3634,6 @@
           "https://ubuntu.com/security/notices/USN-5013-2"
         ],
         "PublishedDate": "2021-05-10T16:15:00Z"
-      },
-      {
-        "VulnerabilityID": "CVE-2022-4415",
-        "PkgID": "libpam-systemd@247.3-7+deb11u1",
-        "PkgName": "libpam-systemd",
-        "InstalledVersion": "247.3-7+deb11u1",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-4415",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Severity": "UNKNOWN"
       },
       {
         "VulnerabilityID": "CVE-2017-11164",
@@ -4322,6 +4512,30 @@
         "PublishedDate": "2022-11-08T22:15:00Z"
       },
       {
+        "VulnerabilityID": "CVE-2022-4415",
+        "PkgID": "libsystemd0@247.3-7+deb11u1",
+        "PkgName": "libsystemd0",
+        "InstalledVersion": "247.3-7+deb11u1",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-4415",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "systemd: local information leak due to systemd-coredump not respecting fs.suid_dumpable kernel setting",
+        "Description": "A vulnerability was found in systemd. This security flaw can cause a local information leak due to systemd-coredump not respecting the fs.suid_dumpable kernel setting.",
+        "Severity": "MEDIUM",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N",
+            "V3Score": 5.5
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2022-4415"
+        ]
+      },
+      {
         "VulnerabilityID": "CVE-2013-4392",
         "PkgID": "libsystemd0@247.3-7+deb11u1",
         "PkgName": "libsystemd0",
@@ -4403,19 +4617,6 @@
           "https://ubuntu.com/security/notices/USN-5013-2"
         ],
         "PublishedDate": "2021-05-10T16:15:00Z"
-      },
-      {
-        "VulnerabilityID": "CVE-2022-4415",
-        "PkgID": "libsystemd0@247.3-7+deb11u1",
-        "PkgName": "libsystemd0",
-        "InstalledVersion": "247.3-7+deb11u1",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-4415",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Severity": "UNKNOWN"
       },
       {
         "VulnerabilityID": "CVE-2022-29458",
@@ -4550,6 +4751,30 @@
         "PublishedDate": "2022-11-08T22:15:00Z"
       },
       {
+        "VulnerabilityID": "CVE-2022-4415",
+        "PkgID": "libudev1@247.3-7+deb11u1",
+        "PkgName": "libudev1",
+        "InstalledVersion": "247.3-7+deb11u1",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-4415",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "systemd: local information leak due to systemd-coredump not respecting fs.suid_dumpable kernel setting",
+        "Description": "A vulnerability was found in systemd. This security flaw can cause a local information leak due to systemd-coredump not respecting the fs.suid_dumpable kernel setting.",
+        "Severity": "MEDIUM",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N",
+            "V3Score": 5.5
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2022-4415"
+        ]
+      },
+      {
         "VulnerabilityID": "CVE-2013-4392",
         "PkgID": "libudev1@247.3-7+deb11u1",
         "PkgName": "libudev1",
@@ -4631,19 +4856,6 @@
           "https://ubuntu.com/security/notices/USN-5013-2"
         ],
         "PublishedDate": "2021-05-10T16:15:00Z"
-      },
-      {
-        "VulnerabilityID": "CVE-2022-4415",
-        "PkgID": "libudev1@247.3-7+deb11u1",
-        "PkgName": "libudev1",
-        "InstalledVersion": "247.3-7+deb11u1",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-4415",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Severity": "UNKNOWN"
       },
       {
         "VulnerabilityID": "CVE-2022-0563",
@@ -6800,6 +7012,30 @@
         "PublishedDate": "2022-11-08T22:15:00Z"
       },
       {
+        "VulnerabilityID": "CVE-2022-4415",
+        "PkgID": "systemd@247.3-7+deb11u1",
+        "PkgName": "systemd",
+        "InstalledVersion": "247.3-7+deb11u1",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-4415",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "systemd: local information leak due to systemd-coredump not respecting fs.suid_dumpable kernel setting",
+        "Description": "A vulnerability was found in systemd. This security flaw can cause a local information leak due to systemd-coredump not respecting the fs.suid_dumpable kernel setting.",
+        "Severity": "MEDIUM",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N",
+            "V3Score": 5.5
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2022-4415"
+        ]
+      },
+      {
         "VulnerabilityID": "CVE-2013-4392",
         "PkgID": "systemd@247.3-7+deb11u1",
         "PkgName": "systemd",
@@ -6881,19 +7117,6 @@
           "https://ubuntu.com/security/notices/USN-5013-2"
         ],
         "PublishedDate": "2021-05-10T16:15:00Z"
-      },
-      {
-        "VulnerabilityID": "CVE-2022-4415",
-        "PkgID": "systemd@247.3-7+deb11u1",
-        "PkgName": "systemd",
-        "InstalledVersion": "247.3-7+deb11u1",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-4415",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Severity": "UNKNOWN"
       },
       {
         "VulnerabilityID": "CVE-2022-3821",
@@ -6936,6 +7159,30 @@
         "PublishedDate": "2022-11-08T22:15:00Z"
       },
       {
+        "VulnerabilityID": "CVE-2022-4415",
+        "PkgID": "systemd-sysv@247.3-7+deb11u1",
+        "PkgName": "systemd-sysv",
+        "InstalledVersion": "247.3-7+deb11u1",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-4415",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "systemd: local information leak due to systemd-coredump not respecting fs.suid_dumpable kernel setting",
+        "Description": "A vulnerability was found in systemd. This security flaw can cause a local information leak due to systemd-coredump not respecting the fs.suid_dumpable kernel setting.",
+        "Severity": "MEDIUM",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N",
+            "V3Score": 5.5
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2022-4415"
+        ]
+      },
+      {
         "VulnerabilityID": "CVE-2013-4392",
         "PkgID": "systemd-sysv@247.3-7+deb11u1",
         "PkgName": "systemd-sysv",
@@ -7017,19 +7264,6 @@
           "https://ubuntu.com/security/notices/USN-5013-2"
         ],
         "PublishedDate": "2021-05-10T16:15:00Z"
-      },
-      {
-        "VulnerabilityID": "CVE-2022-4415",
-        "PkgID": "systemd-sysv@247.3-7+deb11u1",
-        "PkgName": "systemd-sysv",
-        "InstalledVersion": "247.3-7+deb11u1",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-4415",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Severity": "UNKNOWN"
       },
       {
         "VulnerabilityID": "CVE-2022-3821",
@@ -7072,6 +7306,30 @@
         "PublishedDate": "2022-11-08T22:15:00Z"
       },
       {
+        "VulnerabilityID": "CVE-2022-4415",
+        "PkgID": "systemd-timesyncd@247.3-7+deb11u1",
+        "PkgName": "systemd-timesyncd",
+        "InstalledVersion": "247.3-7+deb11u1",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-4415",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "systemd: local information leak due to systemd-coredump not respecting fs.suid_dumpable kernel setting",
+        "Description": "A vulnerability was found in systemd. This security flaw can cause a local information leak due to systemd-coredump not respecting the fs.suid_dumpable kernel setting.",
+        "Severity": "MEDIUM",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N",
+            "V3Score": 5.5
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2022-4415"
+        ]
+      },
+      {
         "VulnerabilityID": "CVE-2013-4392",
         "PkgID": "systemd-timesyncd@247.3-7+deb11u1",
         "PkgName": "systemd-timesyncd",
@@ -7153,19 +7411,6 @@
           "https://ubuntu.com/security/notices/USN-5013-2"
         ],
         "PublishedDate": "2021-05-10T16:15:00Z"
-      },
-      {
-        "VulnerabilityID": "CVE-2022-4415",
-        "PkgID": "systemd-timesyncd@247.3-7+deb11u1",
-        "PkgName": "systemd-timesyncd",
-        "InstalledVersion": "247.3-7+deb11u1",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-4415",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Severity": "UNKNOWN"
       },
       {
         "VulnerabilityID": "CVE-2005-2541",
