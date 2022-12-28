@@ -255,7 +255,7 @@
           "https://curl.se/docs/CVE-2022-43551.html",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-43551",
           "https://hackerone.com/reports/1755083",
-          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/TVWZW5CNSJ7UYAF2BGSYAWAEXDJYUBHA/"
+          "https://lists.fedoraproject.org/archives/list/package-announce%40lists.fedoraproject.org/message/TVWZW5CNSJ7UYAF2BGSYAWAEXDJYUBHA/"
         ],
         "PublishedDate": "2022-12-23T15:15:00Z"
       },
@@ -1905,7 +1905,7 @@
           "https://curl.se/docs/CVE-2022-43551.html",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-43551",
           "https://hackerone.com/reports/1755083",
-          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/TVWZW5CNSJ7UYAF2BGSYAWAEXDJYUBHA/"
+          "https://lists.fedoraproject.org/archives/list/package-announce%40lists.fedoraproject.org/message/TVWZW5CNSJ7UYAF2BGSYAWAEXDJYUBHA/"
         ],
         "PublishedDate": "2022-12-23T15:15:00Z"
       },
@@ -2136,7 +2136,7 @@
           "https://curl.se/docs/CVE-2022-43551.html",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-43551",
           "https://hackerone.com/reports/1755083",
-          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/TVWZW5CNSJ7UYAF2BGSYAWAEXDJYUBHA/"
+          "https://lists.fedoraproject.org/archives/list/package-announce%40lists.fedoraproject.org/message/TVWZW5CNSJ7UYAF2BGSYAWAEXDJYUBHA/"
         ],
         "PublishedDate": "2022-12-23T15:15:00Z"
       },
@@ -7481,6 +7481,48 @@
           "https://security.netapp.com/advisory/ntap-20220331-0002/"
         ],
         "PublishedDate": "2022-02-21T19:15:00Z"
+      }
+    ]
+  },
+  {
+    "Target": "Python",
+    "Class": "lang-pkgs",
+    "Type": "python-pkg",
+    "Vulnerabilities": [
+      {
+        "VulnerabilityID": "CVE-2022-40897",
+        "PkgName": "setuptools",
+        "PkgPath": "usr/local/lib/python3.11/site-packages/setuptools-65.5.0.dist-info/METADATA",
+        "InstalledVersion": "65.5.0",
+        "FixedVersion": "65.5.1",
+        "SeveritySource": "ghsa",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-40897",
+        "DataSource": {
+          "ID": "ghsa",
+          "Name": "GitHub Security Advisory Pip",
+          "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip"
+        },
+        "Title": "pypa/setuptools vulnerable to Regular Expression Denial of Service (ReDoS)",
+        "Description": "Python Packaging Authority (PyPA) setuptools before 65.5.1 allows remote attackers to cause a denial of service via HTML in a crafted package or custom PackageIndex page. There is a Regular Expression Denial of Service (ReDoS) in package_index.py.",
+        "Severity": "HIGH",
+        "CVSS": {
+          "ghsa": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 7.5
+          }
+        },
+        "References": [
+          "https://github.com/advisories/GHSA-r9hx-vwmv-q579",
+          "https://github.com/pypa/setuptools/blob/fe8a98e696241487ba6ac9f91faa38ade939ec5d/setuptools/package_index.py#L200",
+          "https://github.com/pypa/setuptools/commit/43a9c9bfa6aa626ec2a22540bea28d2ca77964be",
+          "https://github.com/pypa/setuptools/compare/v65.5.0...v65.5.1",
+          "https://github.com/pypa/setuptools/issues/3659",
+          "https://nvd.nist.gov/vuln/detail/CVE-2022-40897",
+          "https://pyup.io/posts/pyup-discovers-redos-vulnerabilities-in-top-python-packages/",
+          "https://pyup.io/vulnerabilities/CVE-2022-40897/52495/",
+          "https://setuptools.pypa.io/en/latest/"
+        ],
+        "PublishedDate": "2022-12-23T00:15:00Z"
       }
     ]
   }
