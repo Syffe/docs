@@ -2585,6 +2585,122 @@ class TestQueueAction(base.FunctionalTestBase):
             == "The pull request is the 1st in the queue to be merged"
         )
 
+    async def test_pr_requeue_after_pr_unexpected_updated_changes(
+        self,
+    ) -> None:
+        rules_config = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": True,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules_config))
+
+        p1 = await self.create_pr()
+
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        ctxt = context.Context(self.repository_ctxt, p1)
+        q = await merge_train.Train.from_context(ctxt)
+        await self.assert_merge_queue_contents(
+            q,
+            p1["base"]["sha"],
+            [
+                base.MergeQueueCarMatcher(
+                    [p1["number"]],
+                    [],
+                    p1["base"]["sha"],
+                    merge_train.TrainCarChecksType.INPLACE,
+                    p1["number"],
+                ),
+            ],
+        )
+
+        # We push changes to the pull request
+        await self.git("fetch", "origin", self.main_branch_name)
+        await self.git("checkout", "-b", "my_pr_branch", f"origin/{p1['head']['ref']}")
+        open(self.git.repository + "/random_file.txt", "wb").close()
+        await self.git("add", "random_file.txt")
+        await self.git("commit", "--no-edit", "-m", "random update")
+        await self.git("push", "--quiet", "origin", f"my_pr_branch:{p1['head']['ref']}")
+        await self.wait_for("push", {"ref": f"refs/heads/{p1['head']['ref']}"})
+        await self.run_engine()
+
+        await self.wait_for("pull_request", {"action": "synchronize"})
+        p1 = await self.get_pull(p1["number"])
+        await self.run_engine()
+
+        r = await self.app.get(
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events",
+            headers={
+                "Authorization": f"bearer {self.api_key_admin}",
+                "Content-type": "application/json",
+            },
+        )
+        assert r.status_code == 200
+        response = r.json()
+        timestamp_checks_end = None
+        timestamp_queue_leave = None
+
+        # Unexpected change detected
+        for event in response["events"]:
+            if event["event"] == "action.queue.checks_end":
+                assert (
+                    f"Unexpected queue change: the updated pull request #{p1['number']} has been manually updated"
+                    in event["metadata"]["abort_reason"]
+                )
+                timestamp_checks_end = event["timestamp"]
+                break
+        else:
+            raise AssertionError("Event action.queue.checks_end not found")
+
+        # Pr is sliced from queue to be updated
+        assert timestamp_checks_end is not None
+        for event in response["events"]:
+            if event["event"] == "action.queue.leave":
+                assert event["timestamp"] > timestamp_checks_end
+                assert event["pull_request"] == p1["number"]
+                timestamp_queue_leave = event["timestamp"]
+                break
+        else:
+            raise AssertionError("Event action.queue.leave not found")
+
+        # Pr is updated and requeued
+        assert timestamp_queue_leave is not None
+        for event in response["events"]:
+            if event["event"] == "action.queue.enter":
+                assert event["timestamp"] > timestamp_queue_leave
+                assert event["pull_request"] == p1["number"]
+                break
+        else:
+            raise AssertionError("Event action.queue.enter not found")
+
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 1st in the queue to be merged"
+        )
+
     async def test_queue_just_rebase(self) -> None:
         rules = {
             "queue_rules": [
