@@ -11,7 +11,10 @@ else
     cleanup () {
         ret="$?"
         set +exo pipefail
+
         docker-compose down --remove-orphans --volumes
+        [ "$ret" == "0" -a "$MERGIFYENGINE_RECORD" == "1" ] && git add zfixtures/
+
         exit "$ret"
     }
     trap cleanup EXIT
