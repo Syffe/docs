@@ -852,6 +852,25 @@ class Repository:
                 else:
                     raise
 
+            if (
+                branch_protection
+                and (
+                    required_pull_request_reviews := branch_protection.get(
+                        "required_pull_request_reviews"
+                    )
+                )
+                and required_pull_request_reviews["require_code_owner_reviews"]
+                and required_pull_request_reviews["required_approving_review_count"]
+                == 0
+            ):
+                self.log.info(
+                    f"Repository {self.repo['full_name']} is using `require_code_owner_reviews=True` and `required_approving_review_count=0` branch protection",
+                    name=self.repo["name"],
+                    full_name=self.repo["full_name"],
+                    owner=self.repo["owner"],
+                    branch=branch_name,
+                )
+
             self._caches.branch_protections.set(branch_name, branch_protection)
         return branch_protection
 
