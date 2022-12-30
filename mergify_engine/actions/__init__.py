@@ -188,7 +188,7 @@ class Action(abc.ABC):
     def validator(self) -> ValidatorT:
         ...
 
-    executor: ActionExecutorProtocol = dataclasses.field(init=False)
+    executor: ActionExecutorProtocol = dataclasses.field(init=False, repr=False)
     # NOTE(sileht): mypy didn't handle thing like typing.Type[ActionExecutorProtocol]
     executor_class: typing.ClassVar[typing.Any] = BackwardCompatActionExecutor
 
