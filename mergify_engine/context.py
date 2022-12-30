@@ -865,9 +865,6 @@ class Repository:
             ):
                 self.log.info(
                     f"Repository {self.repo['full_name']} is using `require_code_owner_reviews=True` and `required_approving_review_count=0` branch protection",
-                    name=self.repo["name"],
-                    full_name=self.repo["full_name"],
-                    owner=self.repo["owner"],
                     branch=branch_name,
                 )
 
