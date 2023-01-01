@@ -4160,46 +4160,6 @@
         "PublishedDate": "2022-02-21T19:15:00Z"
       },
       {
-        "VulnerabilityID": "CVE-2021-45346",
-        "PkgID": "libsqlite3-0@3.34.1-3",
-        "PkgName": "libsqlite3-0",
-        "InstalledVersion": "3.34.1-3",
-        "SeveritySource": "nvd",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-45346",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Title": "sqlite: crafted SQL query allows a malicious user to obtain sensitive information",
-        "Description": "** DISPUTED ** A Memory Leak vulnerability exists in SQLite Project SQLite3 3.35.1 and 3.37.0 via maliciously crafted SQL Queries (made via editing the Database File), it is possible to query a record, and leak subsequent bytes of memory that extend beyond the record, which could let a malicious user obtain sensitive information. NOTE: The developer disputes this as a vulnerability stating that If you give SQLite a corrupted database file and submit a query against the database, it might read parts of the database that you did not intend or expect.",
-        "Severity": "MEDIUM",
-        "CweIDs": [
-          "CWE-401"
-        ],
-        "CVSS": {
-          "nvd": {
-            "V2Vector": "AV:N/AC:L/Au:S/C:P/I:N/A:N",
-            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N",
-            "V2Score": 4,
-            "V3Score": 4.3
-          },
-          "redhat": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N",
-            "V3Score": 4.3
-          }
-        },
-        "References": [
-          "https://access.redhat.com/security/cve/CVE-2021-45346",
-          "https://github.com/guyinatuxedo/sqlite3_record_leaking",
-          "https://security.netapp.com/advisory/ntap-20220303-0001/",
-          "https://sqlite.org/forum/forumpost/056d557c2f8c452ed5",
-          "https://sqlite.org/forum/forumpost/53de8864ba114bf6",
-          "https://www.sqlite.org/cves.html#status_of_recent_sqlite_cves"
-        ],
-        "PublishedDate": "2022-02-14T19:15:00Z"
-      },
-      {
         "VulnerabilityID": "CVE-2021-36690",
         "PkgID": "libsqlite3-0@3.34.1-3",
         "PkgName": "libsqlite3-0",
@@ -4238,6 +4198,46 @@
           "https://www.sqlite.org/forum/forumpost/718c0a8d17"
         ],
         "PublishedDate": "2021-08-24T14:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2021-45346",
+        "PkgID": "libsqlite3-0@3.34.1-3",
+        "PkgName": "libsqlite3-0",
+        "InstalledVersion": "3.34.1-3",
+        "SeveritySource": "debian",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-45346",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "sqlite: crafted SQL query allows a malicious user to obtain sensitive information",
+        "Description": "** DISPUTED ** A Memory Leak vulnerability exists in SQLite Project SQLite3 3.35.1 and 3.37.0 via maliciously crafted SQL Queries (made via editing the Database File), it is possible to query a record, and leak subsequent bytes of memory that extend beyond the record, which could let a malicious user obtain sensitive information. NOTE: The developer disputes this as a vulnerability stating that If you give SQLite a corrupted database file and submit a query against the database, it might read parts of the database that you did not intend or expect.",
+        "Severity": "LOW",
+        "CweIDs": [
+          "CWE-401"
+        ],
+        "CVSS": {
+          "nvd": {
+            "V2Vector": "AV:N/AC:L/Au:S/C:P/I:N/A:N",
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N",
+            "V2Score": 4,
+            "V3Score": 4.3
+          },
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N",
+            "V3Score": 4.3
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2021-45346",
+          "https://github.com/guyinatuxedo/sqlite3_record_leaking",
+          "https://security.netapp.com/advisory/ntap-20220303-0001/",
+          "https://sqlite.org/forum/forumpost/056d557c2f8c452ed5",
+          "https://sqlite.org/forum/forumpost/53de8864ba114bf6",
+          "https://www.sqlite.org/cves.html#status_of_recent_sqlite_cves"
+        ],
+        "PublishedDate": "2022-02-14T19:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-35737",
@@ -5765,6 +5765,7 @@
           "https://github.com/cpandya2909/CVE-2020-15778/",
           "https://news.ycombinator.com/item?id=25005567",
           "https://nvd.nist.gov/vuln/detail/CVE-2020-15778",
+          "https://security.gentoo.org/glsa/202212-06",
           "https://security.netapp.com/advisory/ntap-20200731-0007/",
           "https://www.openssh.com/security.html"
         ],
@@ -6161,6 +6162,7 @@
           "https://github.com/cpandya2909/CVE-2020-15778/",
           "https://news.ycombinator.com/item?id=25005567",
           "https://nvd.nist.gov/vuln/detail/CVE-2020-15778",
+          "https://security.gentoo.org/glsa/202212-06",
           "https://security.netapp.com/advisory/ntap-20200731-0007/",
           "https://www.openssh.com/security.html"
         ],
@@ -6557,6 +6559,7 @@
           "https://github.com/cpandya2909/CVE-2020-15778/",
           "https://news.ycombinator.com/item?id=25005567",
           "https://nvd.nist.gov/vuln/detail/CVE-2020-15778",
+          "https://security.gentoo.org/glsa/202212-06",
           "https://security.netapp.com/advisory/ntap-20200731-0007/",
           "https://www.openssh.com/security.html"
         ],
@@ -7502,11 +7505,15 @@
           "Name": "GitHub Security Advisory Pip",
           "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip"
         },
-        "Title": "pypa/setuptools vulnerable to Regular Expression Denial of Service (ReDoS)",
+        "Title": "CVE-2022-40897 affecting package python-setuptools 40.2.0-6",
         "Description": "Python Packaging Authority (PyPA) setuptools before 65.5.1 allows remote attackers to cause a denial of service via HTML in a crafted package or custom PackageIndex page. There is a Regular Expression Denial of Service (ReDoS) in package_index.py.",
         "Severity": "HIGH",
         "CVSS": {
           "ghsa": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 7.5
+          },
+          "nvd": {
             "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
             "V3Score": 7.5
           }
