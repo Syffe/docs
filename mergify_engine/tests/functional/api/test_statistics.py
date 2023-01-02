@@ -442,7 +442,8 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
         )
 
         assert r.status_code == 200
-        assert r.json()[queue_utils.PrAheadDequeued.abort_code] == 3
+        assert r.json()[queue_utils.PrDequeued.unqueue_code] == 1
+        assert r.json()[queue_utils.PrAheadDequeued.unqueue_code] == 2
 
         r = await self.app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/queue_checks_outcome?end_at={timestamp}",
@@ -671,7 +672,8 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             )
 
             assert r.status_code == 200
-            assert r.json()[queue_utils.PrAheadDequeued.abort_code] == 3
+            assert r.json()[queue_utils.PrDequeued.unqueue_code] == 1
+            assert r.json()[queue_utils.PrAheadDequeued.unqueue_code] == 2
             assert r.json()["SUCCESS"] == 1
 
     async def test_stats_endpoint_timestamp_in_future(self) -> None:

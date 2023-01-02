@@ -80,6 +80,7 @@ class TimeToMerge(BaseQueueStats):
 # Every key is an `abort_code` of a class that inherits from `BaseAbortReason`
 # in mergify_engine/queue/utils.py
 class FailureByReasonT(typing.TypedDict):
+    PR_DEQUEUED: int
     PR_AHEAD_DEQUEUED: int
     PR_AHEAD_FAILED_TO_MERGE: int
     PR_WITH_HIGHER_PRIORITY_QUEUED: int
@@ -90,23 +91,30 @@ class FailureByReasonT(typing.TypedDict):
     QUEUE_RULE_MISSING: int
     UNEXPECTED_QUEUE_CHANGE: int
     PR_FROZEN_NO_CASCADING: int
+    TARGET_BRANCH_CHANGED: int
+    TARGET_BRANCH_MISSING: int
+    PR_UNEXPECTEDLY_FAILED_TO_MERGE: int
 
 
 @dataclasses.dataclass
 class FailureByReason(BaseQueueStats):
     _ABORT_CODE_TO_INT_MAPPING: typing.ClassVar[dict[queue_utils.AbortCodeT, int]] = {
-        queue_utils.PrAheadDequeued.abort_code: 1,
-        queue_utils.PrAheadFailedToMerge.abort_code: 2,
-        queue_utils.PrWithHigherPriorityQueued.abort_code: 3,
-        queue_utils.PrQueuedTwice.abort_code: 4,
-        queue_utils.SpeculativeCheckNumberReduced.abort_code: 5,
-        queue_utils.ChecksTimeout.abort_code: 6,
-        queue_utils.ChecksFailed.abort_code: 7,
-        queue_utils.QueueRuleMissing.abort_code: 8,
-        queue_utils.UnexpectedQueueChange.abort_code: 9,
-        queue_utils.PrFrozenNoCascading.abort_code: 10,
+        queue_utils.PrAheadDequeued.unqueue_code: 1,
+        queue_utils.PrAheadFailedToMerge.unqueue_code: 2,
+        queue_utils.PrWithHigherPriorityQueued.unqueue_code: 3,
+        queue_utils.PrQueuedTwice.unqueue_code: 4,
+        queue_utils.SpeculativeCheckNumberReduced.unqueue_code: 5,
+        queue_utils.ChecksTimeout.unqueue_code: 6,
+        queue_utils.ChecksFailed.unqueue_code: 7,
+        queue_utils.QueueRuleMissing.unqueue_code: 8,
+        queue_utils.UnexpectedQueueChange.unqueue_code: 9,
+        queue_utils.PrFrozenNoCascading.unqueue_code: 11,
+        queue_utils.TargetBranchMissing.unqueue_code: 12,
+        queue_utils.TargetBranchChanged.unqueue_code: 13,
+        queue_utils.PrDequeued.unqueue_code: 14,
+        queue_utils.PrUnexpectedlyFailedToMerge.unqueue_code: 15,
     }
-    _INT_TO_ABORT_CODE_MAPPING: typing.ClassVar[dict[int, queue_utils.AbortCodeT]] = {
+    _INT_TO_UNQUEUE_CODE_MAPPING: typing.ClassVar[dict[int, queue_utils.AbortCodeT]] = {
         v: k for k, v in _ABORT_CODE_TO_INT_MAPPING.items()
     }
 
@@ -116,7 +124,7 @@ class FailureByReason(BaseQueueStats):
     _todict_ignore_vars = ("reason_code_str",)
 
     def __post_init__(self) -> None:
-        self.reason_code_str = self._INT_TO_ABORT_CODE_MAPPING[self.reason_code]
+        self.reason_code_str = self._INT_TO_UNQUEUE_CODE_MAPPING[self.reason_code]
 
     @classmethod
     def from_reason_code_str(
@@ -426,6 +434,7 @@ async def get_checks_duration_stats(
 
 BASE_QUEUE_CHECKS_OUTCOME_T_DICT: QueueChecksOutcomeT = QueueChecksOutcomeT(
     {
+        "PR_DEQUEUED": 0,
         "PR_AHEAD_DEQUEUED": 0,
         "PR_AHEAD_FAILED_TO_MERGE": 0,
         "PR_WITH_HIGHER_PRIORITY_QUEUED": 0,
@@ -437,6 +446,9 @@ BASE_QUEUE_CHECKS_OUTCOME_T_DICT: QueueChecksOutcomeT = QueueChecksOutcomeT(
         "UNEXPECTED_QUEUE_CHANGE": 0,
         "PR_FROZEN_NO_CASCADING": 0,
         "SUCCESS": 0,
+        "TARGET_BRANCH_CHANGED": 0,
+        "TARGET_BRANCH_MISSING": 0,
+        "PR_UNEXPECTEDLY_FAILED_TO_MERGE": 0,
     }
 )
 

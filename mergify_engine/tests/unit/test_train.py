@@ -57,8 +57,10 @@ async def fake_train_car_check_mergeability(
 
 async def fake_train_car_end_checking(
     inner_self: merge_train.TrainCar,
-    reason: queue_utils.BaseAbortReason,
-    not_reembarked_pull_request: None | (github_types.GitHubPullRequestNumber) = None,
+    reason: queue_utils.BaseUnqueueReason,
+    not_reembarked_pull_requests: dict[
+        github_types.GitHubPullRequestNumber, queue_utils.BaseUnqueueReason
+    ],
 ) -> None:
     pass
 
@@ -195,6 +197,8 @@ queue_rules:
 QUEUE_RULES = voluptuous.Schema(rules.QueueRulesSchema)(
     rules.YamlSchema(MERGIFY_CONFIG)["queue_rules"]
 )
+
+UNQUEUE_REASON = queue_utils.PrDequeued(123, "whaever")
 
 
 @pytest.fixture
@@ -343,7 +347,7 @@ async def test_train_add_pull(
     await t.load()
     assert [[1], [1, 2], [1, 2, 3]] == get_cars_content(t)
 
-    await t.remove_pull(await context_getter(2), "", "")
+    await t.remove_pull(await context_getter(2), "", UNQUEUE_REASON)
     await t.refresh()
     assert [[1], [1, 3]] == get_cars_content(t)
 
@@ -366,7 +370,9 @@ async def test_train_remove_middle_merged(
     assert [[1], [1, 2], [1, 2, 3]] == get_cars_content(t)
 
     await t.remove_pull(
-        await context_getter(2, merged=True, merge_commit_sha="new_sha1"), "", ""
+        await context_getter(2, merged=True, merge_commit_sha="new_sha1"),
+        "",
+        UNQUEUE_REASON,
     )
     await t.refresh()
     assert [[1], [1, 3]] == get_cars_content(t)
@@ -385,7 +391,7 @@ async def test_train_remove_middle_not_merged(
     await t.refresh()
     assert [[1], [1, 2], [1, 2, 3]] == get_cars_content(t)
 
-    await t.remove_pull(await context_getter(2), "", "")
+    await t.remove_pull(await context_getter(2), "", UNQUEUE_REASON)
     await t.refresh()
     assert [[1], [1, 3]] == get_cars_content(t)
 
@@ -404,7 +410,7 @@ async def test_train_remove_head_not_merged(
     await t.refresh()
     assert [[1], [1, 2], [1, 2, 3]] == get_cars_content(t)
 
-    await t.remove_pull(await context_getter(1), "", "")
+    await t.remove_pull(await context_getter(1), "", UNQUEUE_REASON)
     await t.refresh()
     assert [[2], [2, 3]] == get_cars_content(t)
 
@@ -424,7 +430,9 @@ async def test_train_remove_head_merged(
     assert [[1], [1, 2], [1, 2, 3]] == get_cars_content(t)
 
     await t.remove_pull(
-        await context_getter(1, merged=True, merge_commit_sha="new_sha1"), "", ""
+        await context_getter(1, merged=True, merge_commit_sha="new_sha1"),
+        "",
+        UNQUEUE_REASON,
     )
     await t.refresh()
     assert [[1, 2], [1, 2, 3]] == get_cars_content(t)
@@ -454,11 +462,11 @@ async def test_train_add_remove_pull_idempotant(
     await t.load()
     assert [[1], [1, 2], [1, 2, 3]] == get_cars_content(t)
 
-    await t.remove_pull(await context_getter(2), "", "")
+    await t.remove_pull(await context_getter(2), "", UNQUEUE_REASON)
     await t.refresh()
     assert [[1], [1, 3]] == get_cars_content(t)
 
-    await t.remove_pull(await context_getter(2), "", "")
+    await t.remove_pull(await context_getter(2), "", UNQUEUE_REASON)
     await t.refresh()
     assert [[1], [1, 3]] == get_cars_content(t)
 
@@ -503,15 +511,15 @@ async def test_train_multiple_queue(
     assert [[1], [1, 2]] == get_cars_content(t)
     assert [5, 3, 4, 6, 7, 8, 9] == get_waiting_content(t)
 
-    await t.remove_pull(await context_getter(2), "", "")
+    await t.remove_pull(await context_getter(2), "", UNQUEUE_REASON)
     await t.refresh()
     assert [[1], [1, 5]] == get_cars_content(
         t
     ), f"{get_cars_content(t)} {get_waiting_content(t)}"
     assert [3, 4, 6, 7, 8, 9] == get_waiting_content(t)
 
-    await t.remove_pull(await context_getter(1), "", "")
-    await t.remove_pull(await context_getter(5), "", "")
+    await t.remove_pull(await context_getter(1), "", UNQUEUE_REASON)
+    await t.remove_pull(await context_getter(5), "", UNQUEUE_REASON)
     await t.refresh()
     assert [[3], [3, 4], [3, 4, 6], [3, 4, 6, 7], [3, 4, 6, 7, 8]] == get_cars_content(
         t
@@ -583,7 +591,7 @@ async def test_train_remove_end_wp(
     assert [[1]] == get_cars_content(t)
     assert [2, 3] == get_waiting_content(t)
 
-    await t.remove_pull(await context_getter(3), "", "")
+    await t.remove_pull(await context_getter(3), "", UNQUEUE_REASON)
     await t.refresh()
     assert [[1]] == get_cars_content(t)
     assert [2] == get_waiting_content(t)
@@ -609,7 +617,7 @@ async def test_train_remove_first_wp(
     assert [[1]] == get_cars_content(t)
     assert [2, 3] == get_waiting_content(t)
 
-    await t.remove_pull(await context_getter(2), "", "")
+    await t.remove_pull(await context_getter(2), "", UNQUEUE_REASON)
     await t.refresh()
     assert [[1]] == get_cars_content(t)
     assert [3] == get_waiting_content(t)
@@ -635,7 +643,7 @@ async def test_train_remove_last_cars(
     assert [[1]] == get_cars_content(t)
     assert [2, 3] == get_waiting_content(t)
 
-    await t.remove_pull(await context_getter(1), "", "")
+    await t.remove_pull(await context_getter(1), "", UNQUEUE_REASON)
     await t.refresh()
     assert [[2]] == get_cars_content(t)
     assert [3] == get_waiting_content(t)
@@ -664,7 +672,9 @@ async def test_train_with_speculative_checks_decreased(
     assert [] == get_waiting_content(t)
 
     await t.remove_pull(
-        await context_getter(1, merged=True, merge_commit_sha="new_sha1"), "", ""
+        await context_getter(1, merged=True, merge_commit_sha="new_sha1"),
+        "",
+        UNQUEUE_REASON,
     )
 
     with mock.patch.object(
@@ -869,7 +879,7 @@ async def test_train_queue_splitted_on_failure_1x2(
     # mark [41] as failed
     t._cars[1].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
     await t.save()
-    await t.remove_pull(await context_getter(41, merged=False), "", "")
+    await t.remove_pull(await context_getter(41, merged=False), "", UNQUEUE_REASON)
 
     # It's 41 fault, we restart the train on 42
     await t.refresh()
@@ -956,11 +966,15 @@ async def test_train_queue_splitted_on_failure_1x5(
     await t.save()
     fake_client.update_base_sha("sha41")
     await t.remove_pull(
-        await context_getter(41, merged=True, merge_commit_sha="sha41"), "", ""
+        await context_getter(41, merged=True, merge_commit_sha="sha41"),
+        "",
+        UNQUEUE_REASON,
     )
     fake_client.update_base_sha("sha42")
     await t.remove_pull(
-        await context_getter(42, merged=True, merge_commit_sha="sha42"), "", ""
+        await context_getter(42, merged=True, merge_commit_sha="sha42"),
+        "",
+        UNQUEUE_REASON,
     )
 
     # [43+44] fail, so it's not 45, but is it 43 or 44?
@@ -980,7 +994,7 @@ async def test_train_queue_splitted_on_failure_1x5(
     # mark [43] as failure
     t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
     await t.save()
-    await t.remove_pull(await context_getter(43, merged=False), "", "")
+    await t.remove_pull(await context_getter(43, merged=False), "", UNQUEUE_REASON)
 
     # Train got cut after 43, and we restart from the begining
     await t.refresh()
@@ -1077,11 +1091,15 @@ async def test_train_queue_splitted_on_failure_2x5(
     await t.save()
     fake_client.update_base_sha("sha41")
     await t.remove_pull(
-        await context_getter(41, merged=True, merge_commit_sha="sha41"), "", ""
+        await context_getter(41, merged=True, merge_commit_sha="sha41"),
+        "",
+        UNQUEUE_REASON,
     )
     fake_client.update_base_sha("sha42")
     await t.remove_pull(
-        await context_getter(42, merged=True, merge_commit_sha="sha42"), "", ""
+        await context_getter(42, merged=True, merge_commit_sha="sha42"),
+        "",
+        UNQUEUE_REASON,
     )
 
     # [43+44] fail, so it's not 45, but is it 43 or 44?
@@ -1103,7 +1121,7 @@ async def test_train_queue_splitted_on_failure_2x5(
     # mark [43] as failure
     t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
     await t.save()
-    await t.remove_pull(await context_getter(43, merged=False), "", "")
+    await t.remove_pull(await context_getter(43, merged=False), "", UNQUEUE_REASON)
 
     # Train got cut after 43, and we restart from the begining
     await t.refresh()
@@ -1177,7 +1195,7 @@ async def test_train_queue_splitted_on_failure_5x3(
     # mark [41] as failed
     t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
     await t.save()
-    await t.remove_pull(await context_getter(41, merged=False), "", "")
+    await t.remove_pull(await context_getter(41, merged=False), "", UNQUEUE_REASON)
 
     # nothing should move yet as we don't known yet if [41+42] is broken or not
     await t.refresh()
@@ -1201,15 +1219,21 @@ async def test_train_queue_splitted_on_failure_5x3(
     await t.save()
     fake_client.update_base_sha("sha42")
     await t.remove_pull(
-        await context_getter(42, merged=True, merge_commit_sha="sha42"), "", ""
+        await context_getter(42, merged=True, merge_commit_sha="sha42"),
+        "",
+        UNQUEUE_REASON,
     )
     fake_client.update_base_sha("sha43")
     await t.remove_pull(
-        await context_getter(43, merged=True, merge_commit_sha="sha43"), "", ""
+        await context_getter(43, merged=True, merge_commit_sha="sha43"),
+        "",
+        UNQUEUE_REASON,
     )
     fake_client.update_base_sha("sha44")
     await t.remove_pull(
-        await context_getter(44, merged=True, merge_commit_sha="sha44"), "", ""
+        await context_getter(44, merged=True, merge_commit_sha="sha44"),
+        "",
+        UNQUEUE_REASON,
     )
 
     await t.refresh()
@@ -1242,11 +1266,15 @@ async def test_train_queue_splitted_on_failure_5x3(
     # Merge 45 and 46
     fake_client.update_base_sha("sha45")
     await t.remove_pull(
-        await context_getter(45, merged=True, merge_commit_sha="sha45"), "", ""
+        await context_getter(45, merged=True, merge_commit_sha="sha45"),
+        "",
+        UNQUEUE_REASON,
     )
     fake_client.update_base_sha("sha46")
     await t.remove_pull(
-        await context_getter(46, merged=True, merge_commit_sha="sha46"), "", ""
+        await context_getter(46, merged=True, merge_commit_sha="sha46"),
+        "",
+        UNQUEUE_REASON,
     )
     await t.refresh()
     assert [
@@ -1256,7 +1284,7 @@ async def test_train_queue_splitted_on_failure_5x3(
     assert len(t._cars[0].failure_history) == 0
 
     # remove the failed 7
-    await t.remove_pull(await context_getter(7, merged=False), "", "")
+    await t.remove_pull(await context_getter(7, merged=False), "", UNQUEUE_REASON)
 
     # Train got cut after 43, and we restart from the begining
     await t.refresh()
@@ -1508,7 +1536,9 @@ async def test_train_queue_pr_with_higher_prio_enters_in_queue_during_merging_1x
     for i in range(41, 44):
         fake_client.update_base_sha(f"sha{i}")
         await t.remove_pull(
-            await context_getter(i, merged=True, merge_commit_sha=f"sha{i}"), "", ""
+            await context_getter(i, merged=True, merge_commit_sha=f"sha{i}"),
+            "",
+            UNQUEUE_REASON,
         )
 
     await t.refresh()
@@ -1556,7 +1586,9 @@ async def test_train_queue_pr_with_higher_prio_enters_in_queue_during_merging_2x
     for i in range(41, 44):
         fake_client.update_base_sha(f"sha{i}")
         await t.remove_pull(
-            await context_getter(i, merged=True, merge_commit_sha=f"sha{i}"), "", ""
+            await context_getter(i, merged=True, merge_commit_sha=f"sha{i}"),
+            "",
+            UNQUEUE_REASON,
         )
 
     await t.refresh()

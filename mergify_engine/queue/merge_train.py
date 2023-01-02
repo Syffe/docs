@@ -1375,9 +1375,10 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
     async def end_checking(
         self,
-        reason: queue_utils.BaseAbortReason | None,
-        not_reembarked_pull_request: None
-        | (github_types.GitHubPullRequestNumber) = None,
+        reason: queue_utils.BaseUnqueueReason | None,
+        not_reembarked_pull_requests: dict[
+            github_types.GitHubPullRequestNumber, queue_utils.BaseUnqueueReason
+        ],
     ) -> None:
         if self.queue_pull_request_number is None:
             return
@@ -1385,30 +1386,8 @@ You don't need to do anything. Mergify will close this pull request automaticall
         remaning_embarked_pulls = [
             ep
             for ep in self.initial_embarked_pulls
-            if not_reembarked_pull_request is None
-            or ep.user_pull_request_number != not_reembarked_pull_request
+            if ep.user_pull_request_number not in not_reembarked_pull_requests
         ]
-
-        abort_reason: None | queue_utils.BaseAbortReason = None
-        if reason is None:
-            if self.train_car_state.outcome == TrainCarOutcome.CHECKS_TIMEOUT:
-                aborted = True
-                abort_reason = queue_utils.ChecksTimeout()
-            elif aborted := (
-                self.train_car_state.outcome is not TrainCarOutcome.MERGEABLE
-            ):
-                # FIXME(sileht): we known the real outcome, so report it!
-                abort_reason = queue_utils.ChecksFailed()
-        else:
-            aborted = True
-            abort_reason = reason
-
-        await self._send_checks_end_signal(
-            self.queue_pull_request_number,
-            remaning_embarked_pulls,
-            aborted,
-            abort_reason,
-        )
 
         if self.train_car_state.checks_type == TrainCarChecksType.INPLACE:
             return
@@ -1420,8 +1399,8 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
     async def _set_final_draft_pr_summary(
         self,
-        reason: queue_utils.BaseAbortReason | None,
-        remaning_embarked_pulls: list[EmbarkedPull],
+        reason: queue_utils.BaseUnqueueReason | None,
+        reembarked_pulls: list[EmbarkedPull],
     ) -> None:
         if (
             self.train_car_state.checks_type != TrainCarChecksType.DRAFT
@@ -1437,8 +1416,8 @@ You don't need to do anything. Mergify will close this pull request automaticall
             or summary["conclusion"] == check_api.Conclusion.PENDING.value
         ):
             headline = f"✨ {reason}."
-            if remaning_embarked_pulls:
-                headline += f" The pull request {self._get_user_refs(embarked_pulls=remaning_embarked_pulls)} has been re-embarked."
+            if reembarked_pulls:
+                headline += f" The pull request {self._get_user_refs(embarked_pulls=reembarked_pulls)} has been re-embarked."
             headline += " ✨"
 
             body = await self.generate_merge_queue_summary(
@@ -1462,53 +1441,64 @@ You don't need to do anything. Mergify will close this pull request automaticall
             )
             tmp_pull_ctxt.log.info("train car deleted", reason=reason)
 
-    async def _send_checks_end_signal(
+    async def send_checks_end_signal(
         self,
-        queue_pull_request_number: github_types.GitHubPullRequestNumber,
-        reembarked_pulls: list[EmbarkedPull],
-        aborted: bool,
-        abort_reason: None | queue_utils.BaseAbortReason,
+        user_pull_request_number: github_types.GitHubPullRequestNumber,
+        unqueue_reason: queue_utils.BaseUnqueueReason,
+        abort_status: typing.Literal["DEFINITIVE", "REEMBARKED"],
     ) -> None:
-        abort_reason_str = str(abort_reason) if abort_reason is not None else ""
-        abort_code = abort_reason.abort_code if abort_reason is not None else None
+        if self.queue_pull_request_number is None:
+            # NOTE(sileht): Maybe add something to eventlog here?
+            return
 
-        for ep in self.initial_embarked_pulls:
-            position, _ = self.train.find_embarked_pull(ep.user_pull_request_number)
-            abort_status: typing.Literal["DEFINITIVE", "REEMBARKED"] = (
-                "REEMBARKED" if ep in reembarked_pulls else "DEFINITIVE"
+        position, ep_with_car = self.train.find_embarked_pull(user_pull_request_number)
+        if ep_with_car is None or position is None:
+            raise RuntimeError("Sending signal for a none embarked pull request")
+
+        ep = ep_with_car.embarked_pull
+        abort_code: queue_utils.AbortCodeT | None
+        if isinstance(unqueue_reason, queue_utils.PrMerged):
+            aborted = False
+            abort_reason_str = ""
+            abort_code = None
+        else:
+            aborted = True
+            abort_reason_str = str(unqueue_reason)
+            abort_code = typing.cast(
+                queue_utils.AbortCodeT, unqueue_reason.unqueue_code
             )
 
-            metadata = signals.EventQueueChecksEndMetadata(
-                {
-                    "aborted": aborted,
-                    "abort_reason": abort_reason_str,
-                    "abort_code": abort_code,
-                    "abort_status": abort_status,
-                    "queue_name": ep.config["name"],
-                    "branch": self.train.ref,
-                    "position": position,
-                    "queued_at": ep.queued_at,
-                    "speculative_check_pull_request": {
-                        "number": queue_pull_request_number,
-                        "in_place": self.train_car_state.checks_type
-                        == TrainCarChecksType.INPLACE,
-                        "checks_conclusion": self.get_queue_check_run_conclusion().value
-                        or "pending",
-                        "checks_timed_out": self.train_car_state.outcome
-                        == TrainCarOutcome.CHECKS_TIMEOUT,
-                        "checks_ended_at": self.checks_ended_timestamp,
-                        "checks_started_at": self.train_car_state.creation_date,
-                    },
-                }
-            )
+        metadata = signals.EventQueueChecksEndMetadata(
+            {
+                "aborted": aborted,
+                "abort_reason": abort_reason_str,
+                "abort_code": abort_code,
+                "abort_status": abort_status,
+                "queue_name": ep.config["name"],
+                "branch": self.train.ref,
+                "position": position,
+                "queued_at": ep.queued_at,
+                "speculative_check_pull_request": {
+                    "number": self.queue_pull_request_number,
+                    "in_place": self.train_car_state.checks_type
+                    == TrainCarChecksType.INPLACE,
+                    "checks_conclusion": self.get_queue_check_run_conclusion().value
+                    or "pending",
+                    "checks_timed_out": self.train_car_state.outcome
+                    == TrainCarOutcome.CHECKS_TIMEOUT,
+                    "checks_ended_at": self.checks_ended_timestamp,
+                    "checks_started_at": self.train_car_state.creation_date,
+                },
+            }
+        )
 
-            await signals.send(
-                self.train.repository,
-                ep.user_pull_request_number,
-                "action.queue.checks_end",
-                metadata,
-                "merge-queue internal",
-            )
+        await signals.send(
+            self.train.repository,
+            ep.user_pull_request_number,
+            "action.queue.checks_end",
+            metadata,
+            "merge-queue internal",
+        )
 
     async def _delete_branch(self) -> None:
         if self.queue_pull_request_number is not None:
@@ -2476,8 +2466,7 @@ class Train:
                 await self._remove_pull(
                     embarked_pull.user_pull_request_number,
                     "merge-queue internal",
-                    f"Target branch `{self.ref}` has vanished",
-                    False,
+                    queue_utils.TargetBranchMissing(self.ref),
                 )
         await self.save()
 
@@ -2527,9 +2516,15 @@ class Train:
     async def _slice_cars(
         self,
         new_queue_size: int,
-        reason: queue_utils.BaseAbortReason,
-        drop_pull_request: github_types.GitHubPullRequestNumber | None = None,
+        reason: queue_utils.BaseUnqueueReason,
+        drop_pull_requests: dict[
+            github_types.GitHubPullRequestNumber, queue_utils.BaseUnqueueReason
+        ]
+        | None = None,
     ) -> None:
+        if drop_pull_requests is None:
+            drop_pull_requests = {}
+
         sliced = False
         new_cars: list[TrainCar] = []
         new_waiting_pulls: list[EmbarkedPull] = []
@@ -2540,8 +2535,19 @@ class Train:
             else:
                 sliced = True
                 new_waiting_pulls.extend(c.still_queued_embarked_pulls)
+                for ep in c.still_queued_embarked_pulls:
+                    signal_reason = drop_pull_requests.get(
+                        ep.user_pull_request_number, reason
+                    )
+                    await c.send_checks_end_signal(
+                        ep.user_pull_request_number,
+                        signal_reason,
+                        "DEFINITIVE"
+                        if ep.user_pull_request_number in drop_pull_requests
+                        else "REEMBARKED",
+                    )
                 await c.end_checking(
-                    reason, not_reembarked_pull_request=drop_pull_request
+                    reason, not_reembarked_pull_requests=drop_pull_requests
                 )
 
         if sliced:
@@ -2555,8 +2561,7 @@ class Train:
         self._waiting_pulls = [
             ep
             for ep in new_waiting_pulls + self._waiting_pulls
-            if drop_pull_request is None
-            or ep.user_pull_request_number != drop_pull_request
+            if ep.user_pull_request_number not in drop_pull_requests
         ]
 
     def find_embarked_pull(
@@ -2681,8 +2686,7 @@ class Train:
                 await self._remove_pull(
                     embarked_pull.user_pull_request_number,
                     signal_trigger,
-                    "configuration has unexpectedly changed",
-                    merged=False,
+                    queue_utils.QueueRuleMissing(),
                 )
 
         new_pull_queue_rule = queue_rules[config["name"]]
@@ -2751,7 +2755,9 @@ class Train:
             # FIXME(sileht): this can be optimised by not dropping spec checks,
             # if the position in the queue does not change
             await self._remove_pull_from_context(
-                ctxt, signal_trigger, "position in queue has changed"
+                ctxt,
+                signal_trigger,
+                queue_utils.PrWithHigherPriorityQueued(ctxt.pull["number"]),
             )
             await self.add_pull(queue_rules, ctxt, config, signal_trigger)
             return
@@ -2807,7 +2813,7 @@ class Train:
         self,
         ctxt: context.Context,
         signal_trigger: str,
-        remove_reason: str,
+        unqueue_reason: queue_utils.BaseUnqueueReason,
         safely_merged_at: github_types.SHAType | None = None,
     ) -> None:
         # NOTE(sileht): Remove the pull request from all trains, just in case
@@ -2816,14 +2822,14 @@ class Train:
             ctxt, signal_trigger, exclude_ref=ctxt.pull["base"]["ref"]
         )
         await self._remove_pull_from_context(
-            ctxt, signal_trigger, remove_reason, safely_merged_at
+            ctxt, signal_trigger, unqueue_reason, safely_merged_at
         )
 
     async def _remove_pull_from_context(
         self,
         ctxt: context.Context,
         signal_trigger: str,
-        remove_reason: str,
+        unqueue_reason: queue_utils.BaseUnqueueReason,
         safely_merged_at: github_types.SHAType | None = None,
     ) -> None:
         if await self._is_head_of_train_merged(ctxt, safely_merged_at):
@@ -2831,18 +2837,11 @@ class Train:
                 ctxt.pull["number"],
                 ctxt.pull["merge_commit_sha"],
                 signal_trigger,
-                remove_reason,
+                unqueue_reason,
                 safely_merged_at,
             )
         else:
-            check = await ctxt.get_engine_check_run(constants.MERGE_QUEUE_SUMMARY_NAME)
-            await self._remove_pull(
-                ctxt.pull["number"],
-                signal_trigger,
-                remove_reason,
-                ctxt.pull["merged"],
-                check,
-            )
+            await self._remove_pull(ctxt.pull["number"], signal_trigger, unqueue_reason)
 
     async def _is_head_of_train_merged(
         self, ctxt: context.Context, safely_merged_at: github_types.SHAType | None
@@ -2882,14 +2881,14 @@ class Train:
         pr_number: github_types.GitHubPullRequestNumber,
         merge_commit_sha: github_types.SHAType | None,
         signal_trigger: str,
-        remove_reason: str,
+        unqueue_reason: queue_utils.BaseUnqueueReason,
         safely_merged_at: github_types.SHAType | None = None,
     ) -> None:
         embarked_pull = self._cars[0].still_queued_embarked_pulls[0]
         # Need to create the event here because the `self._cars[0]` might get deleted in the `if` below
         event_metadata = signals.EventQueueLeaveMetadata(
             {
-                "reason": remove_reason,
+                "reason": str(unqueue_reason),
                 "merged": True,
                 "queue_name": embarked_pull.config["name"],
                 "branch": self.ref,
@@ -2905,10 +2904,15 @@ class Train:
         )
         # Head of the train was merged and the base_sha haven't changed, we can keep
         # other running cars
+        await self._cars[0].send_checks_end_signal(
+            self._cars[0].still_queued_embarked_pulls[0].user_pull_request_number,
+            unqueue_reason,
+            "DEFINITIVE",
+        )
         del self._cars[0].still_queued_embarked_pulls[0]
         if len(self._cars[0].still_queued_embarked_pulls) == 0:
             deleted_car = self._cars[0]
-            await deleted_car.end_checking(reason=None)
+            await deleted_car.end_checking(reason=None, not_reembarked_pull_requests={})
             self._cars = self._cars[1:]
 
         if safely_merged_at is None and merge_commit_sha is None:
@@ -2940,9 +2944,7 @@ class Train:
         self,
         pr_number: github_types.GitHubPullRequestNumber,
         signal_trigger: str,
-        remove_reason: str,
-        merged: bool,
-        check: github_types.CachedGitHubCheckRun | None = None,
+        unqueue_reason: queue_utils.BaseUnqueueReason,
     ) -> None:
         position, embarked_pull_with_car = self.find_embarked_pull(pr_number)
         if position is None or embarked_pull_with_car is None:
@@ -2954,32 +2956,21 @@ class Train:
             )
             return
 
-        train_car_state = TrainCarState.decode_train_car_state_from_summary(check)
-        event_log_reason: queue_utils.BaseAbortReason
-        event_log_reason = queue_utils.PrAheadDequeued(pr_number=pr_number)
-        if (
-            train_car_state is not None
-            and train_car_state.outcome
-            in (
-                TrainCarOutcome.DRAFT_PR_CHANGE,
-                TrainCarOutcome.BASE_BRANCH_CHANGE,
-                TrainCarOutcome.UPDATED_PR_CHANGE,
-            )
-            and train_car_state.outcome_message is not None
-        ):
-            event_log_reason = queue_utils.UnexpectedQueueChange(
-                change=train_car_state.outcome_message
-            )
+        other_prs_reason: queue_utils.BaseUnqueueReason
+        if isinstance(unqueue_reason, queue_utils.UnexpectedQueueChange):
+            other_prs_reason = unqueue_reason
+        else:
+            other_prs_reason = queue_utils.PrAheadDequeued(pr_number=pr_number)
 
         await self._slice_cars(
             position,
-            reason=event_log_reason,
-            drop_pull_request=pr_number,
+            reason=other_prs_reason,
+            drop_pull_requests={pr_number: unqueue_reason},
         )
         event_metadata = signals.EventQueueLeaveMetadata(
             {
-                "reason": remove_reason,
-                "merged": merged,
+                "reason": str(unqueue_reason),
+                "merged": False,
                 "queue_name": embarked_pull_with_car.embarked_pull.config["name"],
                 "branch": self.ref,
                 "position": position,
@@ -3453,7 +3444,9 @@ class Train:
             exclude_ref=exclude_ref,
         ):
             await train._remove_pull_from_context(
-                ctxt, signal_trigger, "pull request target branch changed"
+                ctxt,
+                signal_trigger,
+                queue_utils.TargetBranchChanged(),
             )
 
     async def generate_merge_queue_summary_footer(

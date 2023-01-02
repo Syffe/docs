@@ -35,7 +35,7 @@ async def test_statistics_start_at_boundary(
     pr_ahead_dequeued_stat = queue_stats.FailureByReason.from_reason_code_str(
         queue_name=queue_name,
         branch_name=branch_name,
-        reason_code_str=queue_utils.PrAheadDequeued.abort_code,
+        reason_code_str=queue_utils.PrAheadDequeued.unqueue_code,
     )
     pr_ahead_dequeued_fields = {
         b"version": queue_stats.VERSION,

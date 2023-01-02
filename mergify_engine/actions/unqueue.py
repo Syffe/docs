@@ -7,6 +7,7 @@ from mergify_engine import context
 from mergify_engine import rules
 from mergify_engine import signals
 from mergify_engine.queue import merge_train
+from mergify_engine.queue import utils as queue_utils
 
 
 class UnqueueExecutorConfig(typing.TypedDict):
@@ -59,7 +60,9 @@ class UnqueueExecutor(
         await train.remove_pull(
             self.ctxt,
             self.rule.get_signal_trigger(),
-            "The unqueue command has been ran",
+            queue_utils.PrDequeued(
+                self.ctxt.pull["number"], " by an `unqueue` command."
+            ),
         )
         return check_api.Result(
             check_api.Conclusion.SUCCESS,

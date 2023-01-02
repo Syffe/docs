@@ -1221,11 +1221,8 @@ class TestQueueAction(base.FunctionalTestBase):
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
-                        "reason": "The pull request has been merged "
-                        "automatically\n"
-                        "The pull request has been merged "
-                        "automatically at "
-                        f"*{p1['merge_commit_sha']}*",
+                        "reason": f"Pull request #{p1['number']} has been merged "
+                        f"automatically at *{p1['merge_commit_sha']}*",
                         "seconds_waiting_for_schedule": 0,
                         "seconds_waiting_for_freeze": 0,
                     },
@@ -1239,10 +1236,10 @@ class TestQueueAction(base.FunctionalTestBase):
                     "metadata": {
                         "abort_code": None,
                         "abort_reason": "",
-                        "abort_status": "REEMBARKED",
+                        "abort_status": "DEFINITIVE",
                         "aborted": False,
                         "branch": self.main_branch_name,
-                        "position": None,
+                        "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
                         "speculative_check_pull_request": {
@@ -1427,7 +1424,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
-                        "reason": "The pull request rule doesn't match anymore",
+                        "reason": f"Pull request #{p1['number']} has been dequeued. The pull request rule doesn't match anymore.",
                         "seconds_waiting_for_schedule": 0,
                         "seconds_waiting_for_freeze": 0,
                     },
@@ -1440,9 +1437,14 @@ class TestQueueAction(base.FunctionalTestBase):
                     "event": "action.queue.checks_end",
                     "metadata": {
                         "abort_reason": anys.AnySearch(
-                            str(queue_utils.PrAheadDequeued(pr_number=p1["number"])),
+                            str(
+                                queue_utils.PrDequeued(
+                                    pr_number=p1["number"],
+                                    details=". The pull request rule doesn't match anymore.",
+                                )
+                            ),
                         ),
-                        "abort_code": queue_utils.PrAheadDequeued.abort_code,
+                        "abort_code": queue_utils.PrDequeued.unqueue_code,
                         "abort_status": "DEFINITIVE",
                         "aborted": True,
                         "branch": self.main_branch_name,
@@ -5698,7 +5700,12 @@ pull_requests:
         expected_table = f"| 1 | test_create_pull_basic: pull request n2 from integration ([#{p2['number']}]({pull_url_prefix}/{p2['number']})) | foo/0 | [#{tmp_pull['number']}]({pull_url_prefix}/{tmp_pull['number']}) | <fake_pretty_datetime()>|"
         assert expected_table in await car.generate_merge_queue_summary()
 
-        await car.end_checking(reason=queue_utils.ChecksFailed())
+        await car.send_checks_end_signal(
+            p2["number"], queue_utils.ChecksFailed(), "REEMBARKED"
+        )
+        await car.end_checking(
+            reason=queue_utils.ChecksFailed(), not_reembarked_pull_requests={}
+        )
 
         ctxt = context.Context(self.repository_ctxt, tmp_pull)
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)

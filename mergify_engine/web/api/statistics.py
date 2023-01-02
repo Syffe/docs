@@ -286,9 +286,21 @@ class QueueChecksOutcome:
             "description": "A pull request has been freezed because of a queue freeze with cascading effect disabled."
         }
     )
-
     SUCCESS: int = dataclasses.field(
         metadata={"description": "Successfully merged the pull request."}
+    )
+
+    PR_DEQUEUED: int = dataclasses.field(
+        metadata={"description": "Pull request has been dequeued"}
+    )
+    TARGET_BRANCH_CHANGED: int = dataclasses.field(
+        metadata={"description": "The pull request target branch has changed"}
+    )
+    TARGET_BRANCH_MISSING: int = dataclasses.field(
+        metadata={"description": "The target branch does not exist anymore"}
+    )
+    PR_UNEXPECTEDLY_FAILED_TO_MERGE: int = dataclasses.field(
+        metadata={"description": "Pull request unexpectedly failed to get merged"}
     )
 
 

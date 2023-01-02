@@ -23,6 +23,7 @@ from mergify_engine.dashboard import subscription
 from mergify_engine.dashboard import user_tokens
 from mergify_engine.queue import freeze
 from mergify_engine.queue import merge_train
+from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import checks_status
 from mergify_engine.rules import conditions
 from mergify_engine.rules import types
@@ -163,7 +164,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
             await queue.remove_pull(
                 ctxt,
                 rule.get_signal_trigger(),
-                result.title + "\n" + result.summary,
+                queue_utils.PrMerged(
+                    ctxt.pull["number"], ctxt.pull["merge_commit_sha"]
+                ),
             )
             await self.send_merge_signal(ctxt, rule, embarked_pull)
         return result
@@ -240,7 +243,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             await queue.remove_pull(
                 other_ctxt,
                 rule.get_signal_trigger(),
-                f"The pull request has been merged automatically at *{newsha}*",
+                queue_utils.PrMerged(ctxt.pull["number"], newsha),
                 safely_merged_at=newsha,
             )
 
@@ -435,81 +438,110 @@ Then, re-embark the pull request into the merge queue by posting the comment
             self.config["rebase_fallback"],
             merge_bot_account,
         )
-        if result is None:
-            if car is not None:
-                await car.check_mergeability(
-                    self.queue_rules,
-                    "original_pull_request",
-                    original_pull_request_rule=rule,
+        if result is not None:
+            if result.conclusion is not check_api.Conclusion.PENDING:
+                unqueue_reason = await self.get_unqueue_reason_from_action_result(
+                    ctxt, result
+                )
+                await self._unqueue_pull_request(
+                    ctxt, rule, q, car, unqueue_reason, result
+                )
+            return result
+
+        if car is not None:
+            await car.check_mergeability(
+                self.queue_rules,
+                "original_pull_request",
+                original_pull_request_rule=rule,
+            )
+
+        # NOTE(sileht): the pull request gets checked and then changed
+        # by user, we should unqueue and requeue it as the conditions still match.
+        if await ctxt.has_been_synchronized_by_user():
+            unexpected_change = queue_utils.UnexpectedQueueChange(
+                str(merge_train.UnexpectedUpdatedPullRequestChange(ctxt.pull["number"]))
+            )
+            await q.remove_pull(
+                ctxt,
+                rule.get_signal_trigger(),
+                unexpected_change,
+            )
+            if isinstance(rule, rules.CommandRule):
+                return check_api.Result(
+                    check_api.Conclusion.CANCELLED,
+                    "The pull request has been removed from the queue",
+                    f"{unexpected_change!s}.\n{self.UNQUEUE_DOCUMENTATION}",
                 )
 
-            # NOTE(sileht): the pull request gets checked and then changed
-            # by user, we should unqueue and requeue it as the conditions still match.
-            if await ctxt.has_been_synchronized_by_user():
+        if not await self._should_be_queued(ctxt, q):
+            unqueue_reason = await self.get_unqueue_reason_from_outcome(ctxt, q)
+            result = check_api.Result(
+                check_api.Conclusion.CANCELLED,
+                "The pull request has been removed from the queue",
+                f"{unqueue_reason!s}.\n{self.UNQUEUE_DOCUMENTATION}",
+            )
+            await self._unqueue_pull_request(ctxt, rule, q, car, unqueue_reason, result)
+            return result
+
+        await q.add_pull(
+            self.queue_rules,
+            ctxt,
+            typing.cast(queue.PullQueueConfig, self.config),
+            rule.get_signal_trigger(),
+        )
+
+        try:
+            qf = await self._get_current_queue_freeze(ctxt)
+            if await self._should_be_merged(ctxt, q, qf):
+                result = await self._merge(ctxt, rule, q, qf, car, merge_bot_account)
+            else:
+                result = await self.get_pending_queue_status(ctxt, rule, q, qf)
+        except Exception as e:
+            if not exceptions.need_retry(e):
                 await q.remove_pull(
                     ctxt,
                     rule.get_signal_trigger(),
-                    "The pull request has been removed from the queue\n"
-                    "The pull request code has been updated.",
+                    queue_utils.PrUnexpectedlyFailedToMerge(),
                 )
-                if isinstance(rule, rules.CommandRule):
-                    return check_api.Result(
-                        check_api.Conclusion.CANCELLED,
-                        "The pull request has been removed from the queue",
-                        "The pull request code has been updated.",
-                    )
-
-            if await self._should_be_queued(ctxt, q):
-                await q.add_pull(
-                    self.queue_rules,
-                    ctxt,
-                    typing.cast(queue.PullQueueConfig, self.config),
-                    rule.get_signal_trigger(),
-                )
-                try:
-                    qf = await self._get_current_queue_freeze(ctxt)
-                    if await self._should_be_merged(ctxt, q, qf):
-                        result = await self._merge(
-                            ctxt, rule, q, qf, car, merge_bot_account
-                        )
-                    else:
-                        result = await self.get_pending_queue_status(ctxt, rule, q, qf)
-
-                except Exception as e:
-                    if not exceptions.need_retry(e):
-                        await q.remove_pull(
-                            ctxt,
-                            rule.get_signal_trigger(),
-                            "unexpected merge-queue failure",
-                        )
-                    raise
-            else:
-                result = await self.get_unqueue_status(ctxt, q)
+            raise
 
         if result.conclusion is not check_api.Conclusion.PENDING:
-            # NOTE(sileht): The PR has been checked successfully but the
-            # final merge fail, we must erase the queue summary conclusion,
-            # so the requeue can works.
-            if (
-                car
-                and car.train_car_state.outcome == merge_train.TrainCarOutcome.MERGEABLE
-                and result.conclusion is check_api.Conclusion.CANCELLED
-            ):
-                await check_api.set_check_run(
-                    ctxt,
-                    constants.MERGE_QUEUE_SUMMARY_NAME,
-                    check_api.Result(
-                        check_api.Conclusion.CANCELLED,
-                        f"The pull request {ctxt.pull['number']} cannot be merged and has been disembarked",
-                        result.title + "\n" + result.summary,
-                    ),
-                )
-
-            await q.remove_pull(
-                ctxt, rule.get_signal_trigger(), result.title + "\n" + result.summary
+            unqueue_reason = await self.get_unqueue_reason_from_action_result(
+                ctxt, result
             )
+            await self._unqueue_pull_request(ctxt, rule, q, car, unqueue_reason, result)
 
         return result
+
+    @staticmethod
+    async def _unqueue_pull_request(
+        ctxt: context.Context,
+        rule: "rules.EvaluatedRule",
+        q: merge_train.Train,
+        car: merge_train.TrainCar | None,
+        unqueue_reason: queue_utils.BaseUnqueueReason,
+        result: check_api.Result,
+    ) -> None:
+        # NOTE(sileht): The PR has been checked successfully but the
+        # final merge fail, we must erase the queue summary conclusion,
+        # so the requeue can works.
+        if (
+            car
+            and car.train_car_state.outcome == merge_train.TrainCarOutcome.MERGEABLE
+            and result.conclusion is check_api.Conclusion.CANCELLED
+        ):
+            await check_api.set_check_run(
+                ctxt,
+                constants.MERGE_QUEUE_SUMMARY_NAME,
+                check_api.Result(
+                    # FIXME(sileht): CANCELLED mean unqueue with command, we should have put something else here, FAILURE?
+                    check_api.Conclusion.CANCELLED,
+                    f"The pull request {ctxt.pull['number']} cannot be merged and has been disembarked",
+                    result.title + "\n" + result.summary,
+                ),
+            )
+
+        await q.remove_pull(ctxt, rule.get_signal_trigger(), unqueue_reason)
 
     async def cancel(
         self, ctxt: context.Context, rule: "rules.EvaluatedRule"
@@ -543,29 +575,52 @@ Then, re-embark the pull request into the merge queue by posting the comment
             self.config["rebase_fallback"],
             merge_bot_account,
         )
-        if result is None:
-            if car is not None:
-                await car.check_mergeability(
-                    self.queue_rules,
-                    "original_pull_request",
-                    original_pull_request_rule=rule,
+        if result is not None:
+            if result.conclusion is not check_api.Conclusion.PENDING:
+                unqueue_reason = await self.get_unqueue_reason_from_action_result(
+                    ctxt, result
                 )
+                await self._unqueue_pull_request(
+                    ctxt, rule, q, car, unqueue_reason, result
+                )
+            return result
 
-            # We just rebase the pull request, don't cancel it yet if CIs are
-            # running. The pull request will be merged if all rules match again.
-            # if not we will delete it when we received all CIs termination
-            if await self._should_be_cancel(ctxt, rule, q, car):
-                result = actions.CANCELLED_CHECK_REPORT
-            else:
-                if await self._should_be_queued(ctxt, q):
-                    qf = await self._get_current_queue_freeze(ctxt)
-                    result = await self.get_pending_queue_status(ctxt, rule, q, qf)
-                else:
-                    result = await self.get_unqueue_status(ctxt, q)
+        if car is not None:
+            await car.check_mergeability(
+                self.queue_rules,
+                "original_pull_request",
+                original_pull_request_rule=rule,
+            )
+
+        # We just rebase the pull request, don't cancel it yet if CIs are
+        # running. The pull request will be merged if all rules match again.
+        # if not we will delete it when we received all CIs termination
+        if await self._should_be_cancel(ctxt, rule, q, car):
+            result = actions.CANCELLED_CHECK_REPORT
+            unqueue_reason = await self.get_unqueue_reason_from_action_result(
+                ctxt, result
+            )
+            await self._unqueue_pull_request(ctxt, rule, q, car, unqueue_reason, result)
+            return result
+
+        if not await self._should_be_queued(ctxt, q):
+            unqueue_reason = await self.get_unqueue_reason_from_outcome(ctxt, q)
+            result = check_api.Result(
+                check_api.Conclusion.CANCELLED,
+                "The pull request has been removed from the queue",
+                f"{unqueue_reason!s}.\n{self.UNQUEUE_DOCUMENTATION}",
+            )
+            await self._unqueue_pull_request(ctxt, rule, q, car, unqueue_reason, result)
+            return result
+
+        qf = await self._get_current_queue_freeze(ctxt)
+        result = await self.get_pending_queue_status(ctxt, rule, q, qf)
 
         if result.conclusion is not check_api.Conclusion.PENDING:
-            await q.remove_pull(ctxt, rule.get_signal_trigger(), result.title)
-
+            unqueue_reason = await self.get_unqueue_reason_from_action_result(
+                ctxt, result
+            )
+            await self._unqueue_pull_request(ctxt, rule, q, car, unqueue_reason, result)
         return result
 
     def validate_config(self, mergify_config: "rules.MergifyConfig") -> None:
@@ -614,27 +669,67 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 break
         return qf
 
-    async def get_unqueue_status(
-        self, ctxt: context.Context, q: merge_train.Train
-    ) -> check_api.Result:
-        check = await ctxt.get_engine_check_run(constants.MERGE_QUEUE_SUMMARY_NAME)
-        manually_unqueued = (
-            check
-            and check_api.Conclusion(check["conclusion"])
-            == check_api.Conclusion.CANCELLED
-        )
-        if manually_unqueued:
-            reason = "The pull request has been manually removed from the queue by an `unqueue` command."
-        else:
-            reason = (
-                "The queue conditions cannot be satisfied due to failing checks or checks timeout. "
-                f"{self.UNQUEUE_DOCUMENTATION}"
+    async def get_unqueue_reason_from_action_result(
+        self, ctxt: context.Context, result: check_api.Result
+    ) -> queue_utils.BaseUnqueueReason:
+        if result.conclusion is check_api.Conclusion.PENDING:
+            raise RuntimeError(
+                "get_unqueue_reason_from_action_result() on PENDING result"
             )
-        return check_api.Result(
-            check_api.Conclusion.CANCELLED,
-            "The pull request has been removed from the queue",
-            reason,
+        elif result.conclusion is check_api.Conclusion.SUCCESS:
+            return queue_utils.PrMerged(
+                ctxt.pull["number"], ctxt.pull["merge_commit_sha"]
+            )
+        else:
+            return queue_utils.PrDequeued(
+                ctxt.pull["number"], details=f". {result.title}."
+            )
+
+    async def get_unqueue_reason_from_outcome(
+        self, ctxt: context.Context, q: merge_train.Train
+    ) -> queue_utils.BaseUnqueueReason:
+        check = await ctxt.get_engine_check_run(constants.MERGE_QUEUE_SUMMARY_NAME)
+        if check is None:
+            raise RuntimeError(
+                "get_unqueue_reason_from_outcome() called by check is not there"
+            )
+
+        elif check["conclusion"] == "cancelled":
+            # NOTE(sileht): should not be possible as unqueue command already
+            # remove the pull request from the queue
+            return queue_utils.PrDequeued(
+                ctxt.pull["number"], " by an `unqueue` command."
+            )
+
+        train_car_state = merge_train.TrainCarState.decode_train_car_state_from_summary(
+            check
         )
+        if train_car_state is None:
+            # NOTE(sileht): No details but we can't do much at this point
+            return queue_utils.PrDequeued(
+                ctxt.pull["number"], " due to failing checks or checks timeout."
+            )
+
+        if (
+            train_car_state.outcome
+            in (
+                merge_train.TrainCarOutcome.DRAFT_PR_CHANGE,
+                merge_train.TrainCarOutcome.BASE_BRANCH_CHANGE,
+                merge_train.TrainCarOutcome.UPDATED_PR_CHANGE,
+            )
+            and train_car_state.outcome_message is not None
+        ):
+            return queue_utils.UnexpectedQueueChange(
+                change=train_car_state.outcome_message
+            )
+        elif train_car_state.outcome == merge_train.TrainCarOutcome.CHECKS_FAILED:
+            return queue_utils.ChecksFailed()
+        elif train_car_state.outcome == merge_train.TrainCarOutcome.CHECKS_TIMEOUT:
+            return queue_utils.ChecksTimeout()
+        else:
+            raise RuntimeError(
+                f"TrainCarState.outcome `{train_car_state.outcome.value}` can't be mapped to an AbortReason"
+            )
 
     async def _should_be_queued(
         self, ctxt: context.Context, q: merge_train.Train

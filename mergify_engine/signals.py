@@ -154,6 +154,7 @@ class EventQueueChecksEndMetadata(EventMetadata, total=False):
     abort_reason: str | None
     abort_code: queue_utils.AbortCodeT | None
     abort_status: typing.Literal["DEFINITIVE", "REEMBARKED"]
+    unqueue_code: queue_utils.UnqueueCodeT
     queue_name: str
     branch: str
     position: int | None

@@ -1,10 +1,13 @@
 import dataclasses
+import string
 import typing
 
 from mergify_engine import utils
 
 
+# FIXME(sileht): Rework statistics/signal to handle PR_MERGED and we can drop AbortCodeT
 AbortCodeT = typing.Literal[
+    "PR_DEQUEUED",
     "PR_AHEAD_DEQUEUED",
     "PR_AHEAD_FAILED_TO_MERGE",
     "PR_WITH_HIGHER_PRIORITY_QUEUED",
@@ -15,97 +18,153 @@ AbortCodeT = typing.Literal[
     "QUEUE_RULE_MISSING",
     "UNEXPECTED_QUEUE_CHANGE",
     "PR_FROZEN_NO_CASCADING",
+    "TARGET_BRANCH_MISSING",
+    "TARGET_BRANCH_CHANGED",
+    "PR_UNEXPECTEDLY_FAILED_TO_MERGE",
 ]
 
+UnqueueCodeT = typing.Union[typing.Literal["PR_MERGED"], AbortCodeT]  # noqa: NU003
+
 
 @dataclasses.dataclass
-class BaseAbortReason:
+class BaseUnqueueReason:
     message: typing.ClassVar[str]
-    abort_code: typing.ClassVar[AbortCodeT]
+    unqueue_code: typing.ClassVar[UnqueueCodeT]
 
     def __str__(self) -> str:
-        format_vars = {
-            k: v
-            for k, v in self.__dict__.items()
-            if not k.startswith("_") and k not in ("code", "message", "abort_code")
+        f = string.Formatter()
+        fields = {
+            field_name
+            for _, field_name, _, _ in f.parse(self.message)
+            if field_name is not None
         }
-        return self.message.format(**format_vars)
+        values = {k: getattr(self, k) for k in fields}
+        return self.message.format(**values)
 
 
 @dataclasses.dataclass
-class PrAheadDequeued(BaseAbortReason):
+class PrDequeued(BaseUnqueueReason):
+    message = "Pull request #{pr_number} has been dequeued{details}"  # noqa: FS003
+    unqueue_code: typing.ClassVar[typing.Literal["PR_DEQUEUED"]] = "PR_DEQUEUED"
+    pr_number: int
+    details: str
+
+
+@dataclasses.dataclass
+class PrMerged(BaseUnqueueReason):
+    message = "Pull request #{pr_number} has been merged automatically{sha_for_message}"  # noqa: FS003
+    unqueue_code: typing.ClassVar[typing.Literal["PR_MERGED"]] = "PR_MERGED"
+    pr_number: int
+    sha: str | None
+
+    @property
+    def sha_for_message(self) -> str:
+        if self.sha is None:
+            return ""
+        else:
+            return f" at *{self.sha}*"
+
+
+@dataclasses.dataclass
+class PrAheadDequeued(BaseUnqueueReason):
     message = "Pull request #{pr_number} which was ahead in the queue has been dequeued"  # noqa: FS003
-    abort_code: typing.ClassVar[
+    unqueue_code: typing.ClassVar[
         typing.Literal["PR_AHEAD_DEQUEUED"]
     ] = "PR_AHEAD_DEQUEUED"
     pr_number: int
 
 
 @dataclasses.dataclass
-class PrAheadFailedToMerge(BaseAbortReason):
+class PrAheadFailedToMerge(BaseUnqueueReason):
     message = "Pull request ahead in queue failed to get merged"
-    abort_code: typing.ClassVar[
+    unqueue_code: typing.ClassVar[
         typing.Literal["PR_AHEAD_FAILED_TO_MERGE"]
     ] = "PR_AHEAD_FAILED_TO_MERGE"
 
 
 @dataclasses.dataclass
-class PrWithHigherPriorityQueued(BaseAbortReason):
+class PrUnexpectedlyFailedToMerge(BaseUnqueueReason):
+    message = "Pull request unexpectedly failed to get merged"
+    unqueue_code: typing.ClassVar[
+        typing.Literal["PR_UNEXPECTEDLY_FAILED_TO_MERGE"]
+    ] = "PR_UNEXPECTEDLY_FAILED_TO_MERGE"
+
+
+# FIXME(sileht): should be something like PRQueuePriorityChanged
+@dataclasses.dataclass
+class PrWithHigherPriorityQueued(BaseUnqueueReason):
     message = (
         "Pull request #{pr_number} with higher priority has been queued"  # noqa: FS003
     )
-    abort_code: typing.ClassVar[
+    unqueue_code: typing.ClassVar[
         typing.Literal["PR_WITH_HIGHER_PRIORITY_QUEUED"]
     ] = "PR_WITH_HIGHER_PRIORITY_QUEUED"
     pr_number: int
 
 
 @dataclasses.dataclass
-class PrFrozenNoCascading(BaseAbortReason):
+class PrFrozenNoCascading(BaseUnqueueReason):
     message = "The pull request was frozen by a freeze with cascading effect disabled"
-    abort_code: typing.ClassVar[
+    unqueue_code: typing.ClassVar[
         typing.Literal["PR_FROZEN_NO_CASCADING"]
     ] = "PR_FROZEN_NO_CASCADING"
 
 
 @dataclasses.dataclass
-class PrQueuedTwice(BaseAbortReason):
+class PrQueuedTwice(BaseUnqueueReason):
     message = "The pull request has been queued twice"
-    abort_code: typing.ClassVar[typing.Literal["PR_QUEUED_TWICE"]] = "PR_QUEUED_TWICE"
+    unqueue_code: typing.ClassVar[typing.Literal["PR_QUEUED_TWICE"]] = "PR_QUEUED_TWICE"
 
 
 @dataclasses.dataclass
-class SpeculativeCheckNumberReduced(BaseAbortReason):
+class SpeculativeCheckNumberReduced(BaseUnqueueReason):
     message = "The number of speculative checks has been reduced"
-    abort_code: typing.ClassVar[
+    unqueue_code: typing.ClassVar[
         typing.Literal["SPECULATIVE_CHECK_NUMBER_REDUCED"]
     ] = "SPECULATIVE_CHECK_NUMBER_REDUCED"
 
 
 @dataclasses.dataclass
-class ChecksTimeout(BaseAbortReason):
-    message = "Checks have timed out"
-    abort_code: typing.ClassVar[typing.Literal["CHECKS_TIMEOUT"]] = "CHECKS_TIMEOUT"
+class ChecksTimeout(BaseUnqueueReason):
+    message = "The queue conditions cannot be satisfied due to checks timeout"
+    unqueue_code: typing.ClassVar[typing.Literal["CHECKS_TIMEOUT"]] = "CHECKS_TIMEOUT"
 
 
 @dataclasses.dataclass
-class ChecksFailed(BaseAbortReason):
-    message = "Checks did not succeed"
-    abort_code: typing.ClassVar[typing.Literal["CHECKS_FAILED"]] = "CHECKS_FAILED"
+class ChecksFailed(BaseUnqueueReason):
+    message = "The queue conditions cannot be satisfied due to failing checks"
+    unqueue_code: typing.ClassVar[typing.Literal["CHECKS_FAILED"]] = "CHECKS_FAILED"
 
 
 @dataclasses.dataclass
-class QueueRuleMissing(BaseAbortReason):
+class QueueRuleMissing(BaseUnqueueReason):
     message = "The associated queue rule does not exist anymore"
-    abort_code: typing.ClassVar[
+    unqueue_code: typing.ClassVar[
         typing.Literal["QUEUE_RULE_MISSING"]
     ] = "QUEUE_RULE_MISSING"
 
 
 @dataclasses.dataclass
-class UnexpectedQueueChange(BaseAbortReason):
+class TargetBranchMissing(BaseUnqueueReason):
+    message = "The target branch does not exist anymore `{ref}`"  # noqa: FS003
+    unqueue_code: typing.ClassVar[
+        typing.Literal["TARGET_BRANCH_MISSING"]
+    ] = "TARGET_BRANCH_MISSING"
+    ref: str
+
+
+@dataclasses.dataclass
+class TargetBranchChanged(BaseUnqueueReason):
+    message = "The pull request target branch has changed"
+    unqueue_code: typing.ClassVar[
+        typing.Literal["TARGET_BRANCH_CHANGED"]
+    ] = "TARGET_BRANCH_CHANGED"
+
+
+@dataclasses.dataclass
+class UnexpectedQueueChange(BaseUnqueueReason):
     message = "Unexpected queue change: {change}"  # noqa: FS003
-    abort_code: typing.ClassVar[
+    unqueue_code: typing.ClassVar[
         typing.Literal["UNEXPECTED_QUEUE_CHANGE"]
     ] = "UNEXPECTED_QUEUE_CHANGE"
     change: str
