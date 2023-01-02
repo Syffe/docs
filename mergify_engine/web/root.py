@@ -33,21 +33,21 @@ def create_app(https_only: bool = True, debug: bool = False) -> fastapi.FastAPI:
     )
     app.add_middleware(starlette_workaround.StarletteWorkaroundMiddleware)
 
+    # FIXME(sileht): delete me once dashbaord since use new prefix
     app.include_router(subscriptions.router)
 
-    # /event can't be moved without breaking on-premise installation
-    app.include_router(github_webhook.router)
-
-    app.include_router(subscriptions.router, prefix="/subscriptions")
     app.include_router(refresher.router, prefix="/refresh")
-    app.include_router(legacy_badges.router, prefix="/badges")
 
+    app.mount("/badges", legacy_badges.create_app(debug=debug))
     app.mount("/v1", api_root.create_app(cors_enabled=True, debug=debug))
     app.mount("/front", front_root.create_app(debug=debug))
+    app.mount("/subscriptions", subscriptions.create_app(debug=debug))
 
     if config.DASHBOARD_UI_STATIC_FILES_DIRECTORY is None:
         app.get("/")(saas_root_endpoint)
+        app.mount("/", github_webhook.create_app(debug=debug))
     else:
+        app.include_router(github_webhook.router)
         app.include_router(react.router)
 
     utils.setup_exception_handlers(app)

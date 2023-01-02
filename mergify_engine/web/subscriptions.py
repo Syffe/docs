@@ -16,6 +16,7 @@ from mergify_engine.models import github_user
 from mergify_engine.usage import last_seen
 from mergify_engine.web import auth
 from mergify_engine.web import redis
+from mergify_engine.web import utils
 
 
 router = fastapi.APIRouter()
@@ -168,3 +169,10 @@ async def get_user_oauth_access_token(
     if not user:
         raise fastapi.HTTPException(404)
     return responses.JSONResponse({"oauth_access_token": user.oauth_access_token})
+
+
+def create_app(debug: bool = False) -> fastapi.FastAPI:
+    app = fastapi.FastAPI(openapi_url=None, redoc_url=None, docs_url=None, debug=debug)
+    app.include_router(router)
+    utils.setup_exception_handlers(app)
+    return app

@@ -2,6 +2,7 @@ import fastapi
 from starlette import responses
 
 from mergify_engine import config
+from mergify_engine.web import utils
 
 
 router = fastapi.APIRouter()
@@ -35,3 +36,10 @@ async def badge(owner: str, repo: str) -> responses.RedirectResponse:
     return responses.RedirectResponse(
         url=f"{config.SUBSCRIPTION_BASE_URL}/badges/{owner}/{repo}"
     )
+
+
+def create_app(debug: bool = False) -> fastapi.FastAPI:
+    app = fastapi.FastAPI(openapi_url=None, redoc_url=None, docs_url=None, debug=debug)
+    app.include_router(router)
+    utils.setup_exception_handlers(app)
+    return app

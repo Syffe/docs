@@ -51,6 +51,8 @@ async def test_heroku_proxying(web_client: conftest.CustomTestClient) -> None:
     app = web_client.get_root_app()
     app.add_middleware(FakeHTTPSHerokuProxyMiddleware)
     app.include_router(router)
+    app.router.routes.insert(0, app.router.routes.pop(-1))
+
     r = await web_client.get("/testing-heroku-headers")
     r.raise_for_status()
     assert r.json()["scheme"] == "https"
@@ -63,6 +65,8 @@ async def test_http_redirect_to_https(
 ) -> None:
     app = web_client.get_root_app()
     app.include_router(router)
+    app.router.routes.insert(0, app.router.routes.pop(-1))
+
     r = await web_client.get(
         "http://dashboard.mergify.com/testing-heroku-headers", follow_redirects=False
     )

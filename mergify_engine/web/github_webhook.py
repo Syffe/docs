@@ -14,6 +14,7 @@ from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
 from mergify_engine.web import auth
 from mergify_engine.web import redis
+from mergify_engine.web import utils
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -24,12 +25,12 @@ LOG = daiquiri.getLogger(__name__)
 EVENT_FORWARD_TIMEOUT = 5
 
 
-router = fastapi.APIRouter()
-
-
-@router.post(
-    "/marketplace", dependencies=[fastapi.Depends(auth.github_webhook_signature)]
+router = fastapi.APIRouter(
+    dependencies=[fastapi.Depends(auth.github_webhook_signature)],
 )
+
+
+@router.post("/marketplace")
 async def marketplace_handler(
     request: requests.Request,
     redis_links: redis_utils.RedisLinks = fastapi.Depends(  # noqa: B008
@@ -79,7 +80,7 @@ async def marketplace_handler(
     return responses.Response("Event queued", status_code=202)
 
 
-@router.post("/event", dependencies=[fastapi.Depends(auth.github_webhook_signature)])
+@router.post("/event")
 async def event_handler(
     request: requests.Request,
     background_tasks: fastapi.BackgroundTasks,
@@ -143,3 +144,10 @@ async def event_handler(
             )
 
     return responses.Response(reason, status_code=status_code)
+
+
+def create_app(debug: bool = False) -> fastapi.FastAPI:
+    app = fastapi.FastAPI(openapi_url=None, redoc_url=None, docs_url=None, debug=debug)
+    app.include_router(router)
+    utils.setup_exception_handlers(app)
+    return app
