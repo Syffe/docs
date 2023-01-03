@@ -139,6 +139,7 @@ async def get_average_time_to_merge_stats_endpoint(
 
 class ChecksDurationResponse(typing.TypedDict):
     mean: float | None
+    median: float | None
 
 
 async def get_checks_duration_stats_for_queue(
@@ -157,9 +158,12 @@ async def get_checks_duration_stats_for_queue(
     )
 
     if qstats := stats.get(queue_name, []):
-        return ChecksDurationResponse(mean=statistics.fmean(qstats))
+        return ChecksDurationResponse(
+            mean=statistics.fmean(qstats),
+            median=statistics.median(qstats),
+        )
 
-    return ChecksDurationResponse(mean=None)
+    return ChecksDurationResponse(mean=None, median=None)
 
 
 async def get_checks_duration_stats_for_all_queues(
@@ -182,10 +186,11 @@ async def get_checks_duration_stats_for_all_queues(
     stats_out: dict[rules.QueueName, ChecksDurationResponse] = {}
     for queue_name, stats_list in stats_dict.items():
         if len(stats_list) == 0:
-            stats_out[queue_name] = ChecksDurationResponse(mean=None)
+            stats_out[queue_name] = ChecksDurationResponse(mean=None, median=None)
         else:
             stats_out[queue_name] = ChecksDurationResponse(
-                mean=statistics.fmean(stats_list)
+                mean=statistics.fmean(stats_list),
+                median=statistics.median(stats_list),
             )
 
     return stats_out

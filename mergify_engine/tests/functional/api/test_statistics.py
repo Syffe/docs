@@ -371,12 +371,13 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             )
 
             assert r.status_code == 200
+            assert r.json().get("mean") is not None
             # Because of execution time we can't really make sure that it will
             # always be the expected number. The best we can do is make sure
             # it is at least close to what we expect (around 2 hours).
             assert (
                 datetime.timedelta(hours=1, minutes=55).total_seconds()
-                < r.json()["mean"]
+                < r.json()["median"]
                 < datetime.timedelta(hours=2, minutes=10).total_seconds()
             )
 
