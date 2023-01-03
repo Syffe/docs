@@ -3402,6 +3402,12 @@ class Train:
 
         raise RuntimeError("get_config on unknown pull request")
 
+    def is_queued(self, pull: github_types.GitHubPullRequestNumber) -> bool:
+        return any(
+            item.embarked_pull.user_pull_request_number == pull
+            for item in self._iter_embarked_pulls()
+        )
+
     async def get_pulls(self) -> list[github_types.GitHubPullRequestNumber]:
         return [
             item.embarked_pull.user_pull_request_number

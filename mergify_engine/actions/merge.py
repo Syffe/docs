@@ -14,6 +14,8 @@ from mergify_engine import utils
 from mergify_engine.actions import merge_base
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.dashboard import subscription
+from mergify_engine.queue import merge_train
+from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import conditions
 from mergify_engine.rules import types
 
@@ -109,6 +111,16 @@ class MergeExecutor(
                 self.get_pending_merge_status,
             )
             if report.conclusion == check_api.Conclusion.SUCCESS:
+                queue = await merge_train.Train.from_context(self.ctxt)
+                if queue.is_queued(self.ctxt.pull["number"]):
+                    await queue.remove_pull(
+                        self.ctxt,
+                        self.rule.get_signal_trigger(),
+                        queue_utils.PrDequeued(
+                            self.ctxt.pull["number"],
+                            ". Pull request automatically merged by a `merge` action.",
+                        ),
+                    )
                 await signals.send(
                     self.ctxt.repository,
                     self.ctxt.pull["number"],

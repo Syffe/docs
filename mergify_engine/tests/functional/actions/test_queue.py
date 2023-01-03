@@ -780,6 +780,170 @@ class TestQueueAction(base.FunctionalTestBase):
         assert check is not None
         assert check["conclusion"] == "cancelled"
 
+    async def test_merge_queue_conflict(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=merge",
+                    ],
+                    "actions": {"merge": {}},
+                },
+                {
+                    "name": "Queue",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        tmp_pull_1 = await self.wait_for_pull_request("opened")
+
+        q = merge_train.Train(self.repository_ctxt, self.main_branch_name)
+        base_sha = await q.get_base_sha()
+        await self.assert_merge_queue_contents(
+            q,
+            base_sha,
+            [
+                base.MergeQueueCarMatcher(
+                    [p1["number"]],
+                    [],
+                    base_sha,
+                    merge_train.TrainCarChecksType.DRAFT,
+                    tmp_pull_1["number"],
+                ),
+            ],
+        )
+
+        await self.add_label(p1["number"], "merge")
+        await self.run_engine()
+        await q.load()
+        await self.assert_merge_queue_contents(q, None, [])
+
+        # Check event logs
+        r = await self.app.get(
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events?per_page=5",
+            headers={
+                "Authorization": f"bearer {self.api_key_admin}",
+                "Content-type": "application/json",
+            },
+        )
+        assert r.status_code == 200
+        assert r.json() == {
+            "events": [
+                {
+                    "event": "action.merge",
+                    "metadata": {},
+                    "pull_request": p1["number"],
+                    "repository": self.repository_ctxt.repo["full_name"],
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "trigger": "Rule: Merge",
+                },
+                {
+                    "event": "action.queue.leave",
+                    "metadata": {
+                        "branch": self.main_branch_name,
+                        "merged": True,
+                        "position": 0,
+                        "queue_name": "default",
+                        "queued_at": anys.ANY_AWARE_DATETIME_STR,
+                        "reason": f"Pull request #{p1['number']} has been dequeued. Pull "
+                        "request automatically merged by a `merge` "
+                        "action.",
+                        "seconds_waiting_for_freeze": 0,
+                        "seconds_waiting_for_schedule": 0,
+                    },
+                    "pull_request": p1["number"],
+                    "repository": self.repository_ctxt.repo["full_name"],
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "trigger": "Rule: Merge",
+                },
+                {
+                    "event": "action.queue.checks_end",
+                    "metadata": {
+                        "abort_code": "PR_DEQUEUED",
+                        "abort_reason": f"Pull request #{p1['number']} has been "
+                        "dequeued. Pull request automatically "
+                        "merged by a `merge` action.",
+                        "abort_status": "DEFINITIVE",
+                        "aborted": True,
+                        "branch": self.main_branch_name,
+                        "position": 0,
+                        "queue_name": "default",
+                        "queued_at": anys.ANY_AWARE_DATETIME_STR,
+                        "speculative_check_pull_request": {
+                            "checks_conclusion": "pending",
+                            "checks_ended_at": None,
+                            "checks_started_at": anys.ANY_AWARE_DATETIME_STR,
+                            "checks_timed_out": False,
+                            "in_place": False,
+                            "number": tmp_pull_1["number"],
+                        },
+                    },
+                    "pull_request": p1["number"],
+                    "repository": self.repository_ctxt.repo["full_name"],
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "trigger": "merge-queue internal",
+                },
+                {
+                    "event": "action.queue.checks_start",
+                    "metadata": {
+                        "branch": self.main_branch_name,
+                        "position": 0,
+                        "queue_name": "default",
+                        "queued_at": anys.ANY_AWARE_DATETIME_STR,
+                        "speculative_check_pull_request": {
+                            "checks_conclusion": "pending",
+                            "checks_ended_at": None,
+                            "checks_timed_out": False,
+                            "in_place": False,
+                            "number": tmp_pull_1["number"],
+                        },
+                    },
+                    "pull_request": p1["number"],
+                    "repository": self.repository_ctxt.repo["full_name"],
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "trigger": "merge-queue internal",
+                },
+                {
+                    "event": "action.queue.enter",
+                    "metadata": {
+                        "branch": self.main_branch_name,
+                        "position": 0,
+                        "queue_name": "default",
+                        "queued_at": anys.ANY_AWARE_DATETIME_STR,
+                    },
+                    "pull_request": p1["number"],
+                    "repository": self.repository_ctxt.repo["full_name"],
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "trigger": "Rule: Queue",
+                },
+            ],
+            "per_page": 5,
+            "size": 5,
+            "total": 5,
+        }
+
     async def test_basic_queue(self) -> None:
         rules = {
             "queue_rules": [
