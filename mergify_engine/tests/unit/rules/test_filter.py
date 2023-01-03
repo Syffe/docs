@@ -1188,3 +1188,120 @@ async def test_schedule_neardatetime_filter() -> None:
         assert await f_ne(FakePR({"current-time": date.utcnow()})) == datetime.datetime(
             2022, 11, 11, 8, 0, 1, tzinfo=datetime.timezone.utc
         )
+
+
+@pytest.mark.parametrize(
+    "tree,pull_request,expected_values,expected_filtered_values",
+    [
+        pytest.param(
+            parser.parse("check-success=ci-1"),
+            FakePR({"check-success": "ci-1"}),
+            ["ci-1"],
+            [],
+            id='single value match with "=" operator',
+        ),
+        pytest.param(
+            parser.parse("check-success=ci-1"),
+            FakePR({"check-success": ["ci-1", "ci-2"]}),
+            ["ci-1"],
+            ["ci-2"],
+            id='multiple value match with "=" operator',
+        ),
+        pytest.param(
+            parser.parse("check-success!=ci-1"),
+            FakePR({"check-success": ["ci-1", "ci-2"]}),
+            ["ci-2"],
+            ["ci-1"],
+            id='multiple value match with "!=" operator',
+        ),
+        pytest.param(
+            parser.parse("-check-success=ci-1"),
+            FakePR({"check-success": ["ci-1", "ci-2"]}),
+            ["ci-2"],
+            ["ci-1"],
+            id='multiple value match with "=" and "-" operators',
+        ),
+        pytest.param(
+            {"not": {"=": ("check-success", "ci-1")}},
+            FakePR({"check-success": ["ci-1", "ci-2"]}),
+            ["ci-2"],
+            ["ci-1"],
+            id='multiple value match with "=" and "not" operators',
+        ),
+        pytest.param(
+            parser.parse("check-success~=^ci"),
+            FakePR({"check-success": ["ci-1", "summary"]}),
+            ["ci-1"],
+            ["summary"],
+            id='multiple value match with "~=" operator',
+        ),
+        pytest.param(
+            {"<": ("foo", 5)},
+            FakePR({"foo": 4}),
+            [4],
+            [],
+            id='single value match with "<" operator',
+        ),
+        pytest.param(
+            {"<": ("foo", 5)},
+            FakePR({"foo": 5}),
+            [],
+            [5],
+            id='single value not match with "<" operator',
+        ),
+        pytest.param(
+            {"<=": ("foo", 5)},
+            FakePR({"foo": 5}),
+            [5],
+            [],
+            id='single value match with "<=" operator',
+        ),
+        pytest.param(
+            {"<=": ("foo", 5)},
+            FakePR({"foo": 6}),
+            [],
+            [6],
+            id='single value not match with "<=" operator',
+        ),
+        pytest.param(
+            {">": ("foo", 5)},
+            FakePR({"foo": 6}),
+            [6],
+            [],
+            id='single value match with ">" operator',
+        ),
+        pytest.param(
+            {">": ("foo", 5)},
+            FakePR({"foo": 5}),
+            [],
+            [5],
+            id='single value not match with ">" operator',
+        ),
+        pytest.param(
+            {">=": ("foo", 5)},
+            FakePR({"foo": 5}),
+            [5],
+            [],
+            id='single value match with ">=" operator',
+        ),
+        pytest.param(
+            {">=": ("foo", 5)},
+            FakePR({"foo": 4}),
+            [],
+            [4],
+            id='single value not match with ">=" operator',
+        ),
+    ],
+)
+async def test_list_values_filter(
+    tree: filter.TreeT,
+    pull_request: FakePR,
+    expected_values: list[typing.Any],
+    expected_filtered_values: list[typing.Any],
+) -> None:
+    filter_ = filter.ListValuesFilter(tree)
+
+    result = await filter_(pull_request)
+
+    assert result.values == expected_values
+    assert result.filtered_values == expected_filtered_values

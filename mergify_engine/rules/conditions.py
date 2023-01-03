@@ -66,6 +66,10 @@ class RuleCondition:
     match: bool = dataclasses.field(init=False, default=False)
     _used: bool = dataclasses.field(init=False, default=False)
     evaluation_error: str | None = dataclasses.field(init=False, default=None)
+    related_checks_filter: filter.Filter[
+        filter.ListValuesFilterResult
+    ] | None = dataclasses.field(init=False, default=None)
+    related_checks: list[str] = dataclasses.field(init=False, default_factory=list)
 
     def __post_init__(self) -> None:
         self.update(self.condition)
@@ -89,7 +93,18 @@ class RuleCondition:
                 error_message=str(e),
             )
 
+        attribute = self.get_attribute_name()
+        if attribute.startswith(("check-", "status-")):
+            new_tree = self._replace_attribute_name("check")
+            self.related_checks_filter = filter.ListValuesFilter(
+                typing.cast(filter.TreeT, new_tree)
+            )
+
     def update_attribute_name(self, new_name: str) -> None:
+        new_tree = self._replace_attribute_name(new_name)
+        self.update(new_tree)
+
+    def _replace_attribute_name(self, new_name: str) -> FakeTreeT:
         tree = typing.cast(filter.TreeT, self.partial_filter.tree)
         negate = "-" in tree
         tree = tree.get("-", tree)
@@ -101,7 +116,7 @@ class RuleCondition:
         new_tree: FakeTreeT = {operator: (new_name, value)}
         if negate:
             new_tree = {"-": new_tree}
-        self.update(new_tree)
+        return new_tree
 
     def __str__(self) -> str:
         if self.label is not None:
@@ -125,6 +140,8 @@ class RuleCondition:
         self._used = True
         try:
             self.match = await self.partial_filter(obj)
+            if self.related_checks_filter is not None:
+                self.related_checks = (await self.related_checks_filter(obj)).values
         except live_resolvers.LiveResolutionFailure as e:
             self.match = False
             self.evaluation_error = e.reason
@@ -644,6 +661,7 @@ class ConditionEvaluationResult:
     is_label_user_input: bool
     description: str | None = None
     evaluation_error: str | None = None
+    related_checks: list[str] = dataclasses.field(default_factory=list)
     subconditions: list[ConditionEvaluationResult] = dataclasses.field(
         default_factory=list
     )
@@ -654,6 +672,7 @@ class ConditionEvaluationResult:
         is_label_user_input: bool
         description: str | None
         evaluation_error: str | None
+        related_checks: list[str]
         subconditions: list[ConditionEvaluationResult.Serialized]
 
     @classmethod
@@ -679,6 +698,7 @@ class ConditionEvaluationResult:
                 is_label_user_input=True,
                 description=rule_condition_node.description,
                 evaluation_error=rule_condition_node.evaluation_error,
+                related_checks=rule_condition_node.related_checks,
             )
         else:
             raise RuntimeError(
@@ -710,18 +730,14 @@ class ConditionEvaluationResult:
             is_label_user_input=data["is_label_user_input"],
             description=data["description"],
             evaluation_error=data["evaluation_error"],
+            related_checks=data.get("related_checks", []),
             subconditions=[cls.from_dict(c) for c in data["subconditions"]],
         )
         return evaluation_result
 
     def as_dict(self) -> ConditionEvaluationResult.Serialized:
-        return self.Serialized(
-            match=self.match,
-            label=self.label,
-            is_label_user_input=self.is_label_user_input,
-            description=self.description,
-            evaluation_error=self.evaluation_error,
-            subconditions=[c.as_dict() for c in self.subconditions],
+        return typing.cast(
+            ConditionEvaluationResult.Serialized, dataclasses.asdict(self)
         )
 
     def as_markdown(self) -> str:
@@ -772,13 +788,29 @@ class QueueConditionEvaluationResult:
             description=self.description,
             attribute_name=self.attribute_name,
             subconditions=[s.copy() for s in self.subconditions],
-            evaluations=self.evaluations.copy(),
+            evaluations=[e.copy() for e in self.evaluations],
         )
 
-    class Evaluation(typing.TypedDict):
+    @pydantic.dataclasses.dataclass
+    class Evaluation:
         pull_request: github_types.GitHubPullRequestNumber
         match: bool
-        evaluation_error: str | None
+        evaluation_error: str | None = None
+        related_checks: list[str] = dataclasses.field(default_factory=list)
+
+        class Serialized(typing.TypedDict):
+            pull_request: github_types.GitHubPullRequestNumber
+            match: bool
+            evaluation_error: str | None
+            related_checks: list[str]
+
+        def copy(self) -> QueueConditionEvaluationResult.Evaluation:
+            return QueueConditionEvaluationResult.Evaluation(
+                pull_request=self.pull_request,
+                match=self.match,
+                evaluation_error=self.evaluation_error,
+                related_checks=self.related_checks,
+            )
 
     class Serialized(typing.TypedDict):
         match: bool
@@ -787,7 +819,7 @@ class QueueConditionEvaluationResult:
         description: str | None
         attribute_name: str | None
         subconditions: list[QueueConditionEvaluationResult.Serialized]
-        evaluations: list[QueueConditionEvaluationResult.Evaluation]
+        evaluations: list[QueueConditionEvaluationResult.Evaluation.Serialized]
 
     @property
     def display_evaluations(self) -> bool:
@@ -828,6 +860,7 @@ class QueueConditionEvaluationResult:
                         pull_request=pull_request,
                         match=condition.match,
                         evaluation_error=condition.evaluation_error,
+                        related_checks=condition.related_checks,
                     )
                     for pull_request, condition in evaluated_condition.items()
                 ],
@@ -863,19 +896,16 @@ class QueueConditionEvaluationResult:
             description=data["description"],
             attribute_name=data["attribute_name"],
             subconditions=[cls.from_dict(c) for c in data["subconditions"]],
-            evaluations=data["evaluations"],
+            evaluations=[
+                QueueConditionEvaluationResult.Evaluation(**e)
+                for e in data["evaluations"]
+            ],
             is_label_user_input=data["is_label_user_input"],
         )
 
     def as_dict(self) -> QueueConditionEvaluationResult.Serialized:
-        return self.Serialized(
-            match=self.match,
-            label=self.label,
-            description=self.description,
-            attribute_name=self.attribute_name,
-            subconditions=[c.as_dict() for c in self.subconditions],
-            evaluations=self.evaluations.copy(),
-            is_label_user_input=self.is_label_user_input,
+        return typing.cast(
+            QueueConditionEvaluationResult.Serialized, dataclasses.asdict(self)
         )
 
     def as_json_dict(self) -> QueueConditionEvaluationJsonSerialized:
@@ -884,7 +914,15 @@ class QueueConditionEvaluationResult:
             label=self.label,
             description=self.description,
             subconditions=[c.as_json_dict() for c in self.subconditions],
-            evaluations=self.evaluations.copy(),
+            evaluations=[
+                QueueConditionEvaluationJsonSerialized.Evaluation(
+                    pull_request=evaluation.pull_request,
+                    match=evaluation.match,
+                    evaluation_error=evaluation.evaluation_error,
+                    related_checks=evaluation.related_checks,
+                )
+                for evaluation in self.evaluations
+            ],
         )
 
     def as_markdown(self) -> str:
@@ -914,10 +952,10 @@ class QueueConditionEvaluationResult:
 
         if self.evaluations and self.display_evaluations:
             for evaluation in self.evaluations:
-                check = "X" if evaluation["match"] else " "
-                text += f"\n  - [{check}] #{evaluation['pull_request']}"
-                if evaluation["evaluation_error"]:
-                    text += f" ⚠️ {evaluation['evaluation_error']}"
+                check = "X" if evaluation.match else " "
+                text += f"\n  - [{check}] #{evaluation.pull_request}"
+                if evaluation.evaluation_error:
+                    text += f" ⚠️ {evaluation.evaluation_error}"
 
         return text
 
@@ -925,8 +963,8 @@ class QueueConditionEvaluationResult:
         self, pr_number: github_types.GitHubPullRequestNumber
     ) -> bool | None:
         for evaluation in self.evaluations:
-            if evaluation["pull_request"] == pr_number:
-                return evaluation["match"]
+            if evaluation.pull_request == pr_number:
+                return evaluation.match
         return None
 
 
@@ -945,6 +983,7 @@ class QueueConditionEvaluationJsonSerialized:
         pull_request: github_types.GitHubPullRequestNumber
         match: bool
         evaluation_error: str | None
+        related_checks: list[str]
 
 
 def re_evaluate_schedule_conditions(
@@ -960,7 +999,7 @@ def re_evaluate_schedule_conditions(
                 not schedule_match and op == "!="
             )
             for cond_eval in cond.evaluations:
-                cond_eval["match"] = cond.match
+                cond_eval.match = cond.match
 
         elif cond.subconditions:
             cond.subconditions = re_evaluate_schedule_conditions(

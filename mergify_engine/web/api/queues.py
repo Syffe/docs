@@ -595,6 +595,9 @@ class EnhancedPullRequestQueued:
                                                 "pull_request": 5678,
                                                 "match": False,
                                                 "evaluation_error": None,
+                                                "related_checks": [
+                                                    "continuous-integration/fake-ci"
+                                                ],
                                             }
                                         ],
                                     },
@@ -608,6 +611,7 @@ class EnhancedPullRequestQueued:
                                                 "pull_request": 5678,
                                                 "match": True,
                                                 "evaluation_error": None,
+                                                "related_checks": [],
                                             }
                                         ],
                                     },

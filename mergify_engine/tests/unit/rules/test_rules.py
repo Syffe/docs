@@ -1961,3 +1961,46 @@ Attribute only allowed in commands_restrictions section
 ```
 """.strip()
     )
+
+
+@pytest.mark.parametrize(
+    "condition,pull_request,expected_match,expected_related_checks",
+    [
+        pytest.param(
+            conditions.RuleCondition("check-success=ci-1"),
+            conftest.FakePullRequest(
+                {
+                    "check-success": ["ci-1", "ci-2"],
+                    "check-failure": ["ci-3", "ci-4"],
+                    "check": ["ci-1", "ci-2", "ci-3", "ci-4"],
+                }
+            ),
+            True,
+            ["ci-1"],
+            id="if match is True",
+        ),
+        pytest.param(
+            conditions.RuleCondition("check-success=ci-3"),
+            conftest.FakePullRequest(
+                {
+                    "check-success": ["ci-1", "ci-2"],
+                    "check-failure": ["ci-3", "ci-4"],
+                    "check": ["ci-1", "ci-2", "ci-3", "ci-4"],
+                }
+            ),
+            False,
+            ["ci-3"],
+            id="if match is False",
+        ),
+    ],
+)
+async def test_rule_condition_related_checks(
+    condition: conditions.RuleCondition,
+    pull_request: conftest.FakePullRequest,
+    expected_match: bool,
+    expected_related_checks: list[str],
+) -> None:
+    await condition(pull_request)
+
+    assert condition.match is expected_match
+    assert condition.related_checks == expected_related_checks
