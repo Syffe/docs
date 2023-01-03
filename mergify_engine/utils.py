@@ -57,6 +57,7 @@ def unicode_truncate(
     s: str,
     length: int,
     placeholder: str = "",
+    position: typing.Literal["middle", "end"] = "end",
     encoding: str = "utf-8",
 ) -> str:
     """Truncate a string to length in bytes.
@@ -75,8 +76,23 @@ def unicode_truncate(
             )
 
         cut_at = length - placeholder_length
+        if position == "end":
+            return (b[:cut_at] + placeholder_bytes).decode(encoding, errors="ignore")
+        elif position == "middle":
+            cut_at_middle = cut_at / 2.0
+            cut_at_left = cut_at_right = int(cut_at_middle)
 
-        return (b[:cut_at] + placeholder_bytes).decode(encoding, errors="ignore")
+            if not cut_at_middle.is_integer():
+                cut_at_left += 1
+
+            start = b[:cut_at_left]
+            if cut_at_right > 0:
+                end = b[-cut_at_right:]
+            else:
+                end = b""
+            return (start + placeholder_bytes + end).decode(encoding, errors="ignore")
+        else:
+            raise RuntimeError(f"Invalid position: {position}")
     else:
         return s
 

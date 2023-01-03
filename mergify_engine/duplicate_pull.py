@@ -4,10 +4,12 @@ import typing
 
 import tenacity
 
+from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import gitter
+from mergify_engine import utils
 from mergify_engine.clients import http
 from mergify_engine.dashboard import user_tokens
 
@@ -364,11 +366,25 @@ async def duplicate(
         raise DuplicateFailed(f"Invalid title message: {rmf}")
 
     try:
+        body_without_error = await ctxt.pull_request.render_template(
+            body_template,
+            extra_variables={
+                "destination_branch": branch_name,
+                "cherry_pick_error": "",
+            },
+        )
+        cherry_pick_error_truncated = utils.unicode_truncate(
+            cherry_pick_error,
+            constants.GITHUB_PULL_REQUEST_BODY_MAX_SIZE
+            - len(body_without_error.encode()),
+            "\n(…)\n",
+            position="middle",
+        )
         body = await ctxt.pull_request.render_template(
             body_template,
             extra_variables={
                 "destination_branch": branch_name,
-                "cherry_pick_error": cherry_pick_error,
+                "cherry_pick_error": cherry_pick_error_truncated,
             },
         )
     except context.RenderTemplateFailure as rmf:

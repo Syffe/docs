@@ -3,6 +3,7 @@ import datetime
 from . import github_types
 
 
+GITHUB_PULL_REQUEST_BODY_MAX_SIZE = 65535
 MERGIFY_CONFIG_FILENAMES: list[github_types.GitHubFilePath] = [
     github_types.GitHubFilePath(".mergify.yml"),
     github_types.GitHubFilePath(".mergify/config.yml"),
