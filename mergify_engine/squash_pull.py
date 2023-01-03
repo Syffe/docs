@@ -20,7 +20,7 @@ class SquashNeedRetry(exceptions.EngineNeedRetry):
 
 
 GIT_MESSAGE_TO_EXCEPTION = {
-    "CONFLICT (content): ": SquashFailure,
+    "CONFLICT (": SquashFailure,
 }
 
 
