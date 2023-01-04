@@ -914,7 +914,6 @@ pull_request_rules:
     conditions:
       - author={author}
       - head~=^mergify/(bp|copy)/
-      - closed
     actions:
         delete_head_branch:
 """
