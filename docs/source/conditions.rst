@@ -563,17 +563,22 @@ GitHub Actions
 ++++++++++++++
 
 GitHub Actions works slightly differently. To match a status check when using
-GitHub Action, only the job name is used.
+GitHub Action, only the job name is used (not the workflow name).
 
 .. image:: _static/status-check-gh-example.png
    :alt: Status check GitHub Action example
 
-In the example above, it would be ``A job to say hello``:
+In the example above, to validate the listed jobs:
 
 .. code-block:: yaml
 
      conditions:
-       - check-success=A job to say hello
+       - check-success=changelog_sync
+       - check-success=actionlint
+       - check-success=docker-onpremise
+       - check-success=docker-saas
+       - check-success=docker-label
+       - check-success=add-linear-author-as-reviewer
 
 Validating All Status Checks
 ++++++++++++++++++++++++++++
