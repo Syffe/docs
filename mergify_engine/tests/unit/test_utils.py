@@ -4,6 +4,7 @@ import typing
 from freezegun import freeze_time
 import pytest
 
+from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import utils
 
@@ -251,3 +252,82 @@ def test_strtobool_exc() -> None:
 )
 def test_stip_comment_tags(string: str, expected: str) -> None:
     assert utils.strip_comment_tags(string) == expected
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://github.com/mergifyio",
+        "https://github.com//mergifyio",
+        "https://github.com//mergifyio//",
+    ],
+)
+def test_url_parser_with_owner_ok(url: str) -> None:
+    assert utils.github_url_parser(url) == ("mergifyio", None, None, None)
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://github.com/mergifyio/mergify-engine",
+        "https://github.com//mergifyio//mergify-engine//",
+    ],
+)
+def test_url_parser_with_repo_ok(url: str) -> None:
+    assert utils.github_url_parser(url) == ("mergifyio", "mergify-engine", None, None)
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://github.com/mergifyio/mergify-engine/pull/123",
+        "https://github.com/mergifyio/mergify-engine/pull/123#",
+        "https://github.com/mergifyio/mergify-engine/pull/123#",
+        "https://github.com/mergifyio/mergify-engine/pull/123#42",
+        "https://github.com/mergifyio/mergify-engine/pull/123?foo=345",
+        "https://github.com/mergifyio/mergify-engine/pull/123?foo=456&bar=567c",
+        "https://github.com/mergifyio/mergify-engine/pull/123?foo",
+        "https://github.com//mergifyio/mergify-engine/pull/123",
+        "https://github.com/mergifyio//mergify-engine/pull/123",
+        "https://github.com//mergifyio/mergify-engine//pull/123",
+        "https://github.com//mergifyio/mergify-engine/pull//123",
+    ],
+)
+def test_url_parser_with_pr_ok(url: str) -> None:
+    assert utils.github_url_parser(url) == (
+        github_types.GitHubLogin("mergifyio"),
+        github_types.GitHubRepositoryName("mergify-engine"),
+        github_types.GitHubPullRequestNumber(123),
+        None,
+    )
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://github.com/mergifyio/mergify-engine/branch/main",
+        "https://github.com/mergifyio/mergify-engine/branch/main#",
+        "https://github.com/mergifyio/mergify-engine/branch/main?",
+    ],
+)
+def test_url_parser_with_branch_ok(url: str) -> None:
+    assert utils.github_url_parser(url) == (
+        github_types.GitHubLogin("mergifyio"),
+        github_types.GitHubRepositoryName("mergify-engine"),
+        None,
+        github_types.GitHubRefType("main"),
+    )
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://github.com/",
+        "https://github.com/mergifyio/mergify-engine/123",
+        "https://github.com/mergifyio/mergify-engine/foobar/pull/123",
+        "https://github.com/mergifyio/mergify-engine/foobar/pull/123/foobar/pull/123/",
+    ],
+)
+def test_url_parser_fail(url: str) -> None:
+    with pytest.raises(ValueError):
+        utils.github_url_parser(url)

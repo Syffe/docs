@@ -6,6 +6,7 @@ import json
 import math
 import re
 import typing
+import urllib
 
 import daiquiri
 import voluptuous
@@ -221,3 +222,52 @@ def extract_default_branch(
 ) -> github_types.GitHubRefType:
     # Helper to easily mock default branch during tests
     return repository["default_branch"]
+
+
+def github_url_parser(
+    url: str,
+) -> tuple[
+    github_types.GitHubLogin,
+    github_types.GitHubRepositoryName | None,
+    github_types.GitHubPullRequestNumber | None,
+    github_types.GitHubRefType | None,
+]:
+
+    path = [el for el in urllib.parse.urlparse(url).path.split("/") if el != ""]
+
+    pull_number: str | None
+    branch: str | None
+    repo: str | None
+
+    try:
+        owner, repo, kind, pull_number_or_branch = path
+    except ValueError:
+        pull_number = None
+        branch = None
+        kind = None
+        try:
+            owner, repo = path
+        except ValueError:
+            if len(path) == 1:
+                owner = path[0]
+                repo = None
+            else:
+                raise ValueError
+    else:
+        if kind == "branch":
+            pull_number = None
+            branch = pull_number_or_branch
+        elif kind == "pull":
+            branch = None
+            pull_number = pull_number_or_branch
+        else:
+            raise ValueError
+
+    return (
+        github_types.GitHubLogin(owner),
+        None if repo is None else github_types.GitHubRepositoryName(repo),
+        None
+        if pull_number is None
+        else github_types.GitHubPullRequestNumber(int(pull_number)),
+        None if branch is None else github_types.GitHubRefType(branch),
+    )

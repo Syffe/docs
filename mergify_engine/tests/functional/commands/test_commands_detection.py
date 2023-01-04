@@ -1,5 +1,6 @@
 import asyncio
 
+from mergify_engine import refresher
 from mergify_engine.tests.functional import base
 
 
@@ -34,11 +35,13 @@ class TestCommandsDetection(base.FunctionalTestBase):
         if base.RECORD:
             await asyncio.sleep(15)
 
-        resp = await self.app.post(
-            f"/refresh/{p1['base']['repo']['full_name']}/pull/{p1['number']}",
-            headers={"X-Hub-Signature": "sha1=" + base.FAKE_HMAC},
+        await refresher.send_pull_refresh(
+            self.redis_links.stream,
+            self.repository_ctxt.repo,
+            "user",
+            p1["number"],
+            "test",
         )
-        assert resp.status_code == 202, resp.text
         await self.run_full_engine()
 
         comments = await self.get_issue_comments(p1["number"])
@@ -66,11 +69,13 @@ class TestCommandsDetection(base.FunctionalTestBase):
         if base.RECORD:
             await asyncio.sleep(15)
 
-        resp = await self.app.post(
-            f"/refresh/{p1['base']['repo']['full_name']}/pull/{p1['number']}",
-            headers={"X-Hub-Signature": "sha1=" + base.FAKE_HMAC},
+        await refresher.send_pull_refresh(
+            self.redis_links.stream,
+            self.repository_ctxt.repo,
+            "user",
+            p1["number"],
+            "test",
         )
-        assert resp.status_code == 202, resp.text
         await self.run_engine()
 
         comments = await self.get_issue_comments(p1["number"])

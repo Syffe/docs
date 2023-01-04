@@ -10,6 +10,7 @@ from mergify_engine import check_api
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import github_types
+from mergify_engine import refresher
 from mergify_engine import utils
 from mergify_engine import yaml
 from mergify_engine.clients import github
@@ -447,38 +448,6 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         ).json()
         assert check_suite["status"] == "completed"
 
-    async def test_refresh_api(self) -> None:
-        rules = {
-            "pull_request_rules": [
-                {
-                    "name": "nothing",
-                    "conditions": [f"base!={self.main_branch_name}"],
-                    "actions": {"merge": {}},
-                }
-            ]
-        }
-        await self.setup_repo(yaml.dump(rules))
-        p1 = await self.create_pr()
-        p2 = await self.create_pr()
-
-        resp = await self.app.post(
-            f"/refresh/{p1['base']['repo']['full_name']}/pull/{p1['number']}",
-            headers={"X-Hub-Signature": "sha1=" + base.FAKE_HMAC},
-        )
-        assert resp.status_code == 202, resp.text
-
-        resp = await self.app.post(
-            f"/refresh/{p2['base']['repo']['full_name']}/pull/{p2['number']}",
-            headers={"X-Hub-Signature": "sha1=" + base.FAKE_HMAC},
-        )
-        assert resp.status_code == 202, resp.text
-
-        resp = await self.app.post(
-            f"/refresh/{p1['base']['repo']['full_name']}/branch/main",
-            headers={"X-Hub-Signature": "sha1=" + base.FAKE_HMAC},
-        )
-        assert resp.status_code == 202, resp.text
-
     async def test_command_refresh(self) -> None:
         rules = {
             "pull_request_rules": [
@@ -899,11 +868,13 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
             "issue_comment", {"action": "created"}, test_id=prs[1]["number"]
         )
 
-        resp = await self.app.post(
-            f"/refresh/{prs[1]['base']['repo']['full_name']}/pull/{prs[1]['number']}",
-            headers={"X-Hub-Signature": "sha1=" + base.FAKE_HMAC},
+        await refresher.send_pull_refresh(
+            self.redis_links.stream,
+            self.repository_ctxt.repo,
+            "user",
+            prs[1]["number"],
+            "test",
         )
-        assert resp.status_code == 202, resp.text
         await self.run_engine()
 
         # Ensure the sha collision message it is not posted twice

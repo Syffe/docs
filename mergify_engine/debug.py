@@ -5,7 +5,6 @@ import datetime
 import itertools
 import pprint
 import typing
-import urllib
 
 import daiquiri
 
@@ -126,48 +125,13 @@ async def report_queue(title: str, q: merge_train.Train) -> None:
         print(f"** {formatted_pulls} (priority: {fancy_priority})")
 
 
-def _url_parser(
-    url: str,
-) -> tuple[
-    github_types.GitHubLogin,
-    github_types.GitHubRepositoryName | None,
-    github_types.GitHubPullRequestNumber | None,
-]:
-
-    path = [el for el in urllib.parse.urlparse(url).path.split("/") if el != ""]
-
-    pull_number: str | None
-    repo: str | None
-
-    try:
-        owner, repo, _, pull_number = path
-    except ValueError:
-        pull_number = None
-        try:
-            owner, repo = path
-        except ValueError:
-            if len(path) == 1:
-                owner = path[0]
-                repo = None
-            else:
-                raise ValueError
-
-    return (
-        github_types.GitHubLogin(owner),
-        None if repo is None else github_types.GitHubRepositoryName(repo),
-        None
-        if pull_number is None
-        else github_types.GitHubPullRequestNumber(int(pull_number)),
-    )
-
-
 async def report(
     url: str,
 ) -> context.Context | github.AsyncGithubInstallationClient | None:
     redis_links = redis_utils.RedisLinks(name="debug")
 
     try:
-        owner_login, repo, pull_number = _url_parser(url)
+        owner_login, repo, pull_number, _ = utils.github_url_parser(url)
     except ValueError:
         print(f"{url} is not valid")
         return None

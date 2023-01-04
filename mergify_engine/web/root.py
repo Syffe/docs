@@ -8,7 +8,6 @@ from mergify_engine.middlewares import starlette_workaround
 from mergify_engine.web import github_webhook
 from mergify_engine.web import legacy_badges
 from mergify_engine.web import redis
-from mergify_engine.web import refresher
 from mergify_engine.web import subscriptions
 from mergify_engine.web import utils
 from mergify_engine.web.api import root as api_root
@@ -35,8 +34,6 @@ def create_app(https_only: bool = True, debug: bool = False) -> fastapi.FastAPI:
 
     # FIXME(sileht): delete me once dashbaord since use new prefix
     app.include_router(subscriptions.router)
-
-    app.include_router(refresher.router, prefix="/refresh")
 
     app.mount("/badges", legacy_badges.create_app(debug=debug))
     app.mount("/v1", api_root.create_app(cors_enabled=True, debug=debug))
