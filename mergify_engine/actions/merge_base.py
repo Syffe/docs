@@ -313,14 +313,16 @@ class MergeUtilsMixin:
             mergify_bot = await github.GitHubAppInfo.get_bot()
             if ctxt.pull["merged_by"] is None:
                 mode = "somehow"
+                conclusion = check_api.Conclusion.CANCELLED
             elif (
                 ctxt.pull["merged_by"]["id"] == mergify_bot["id"]
                 or ctxt.pull["merged_by"]["login"] == merge_bot_account
             ):
                 mode = "automatically"
+                conclusion = check_api.Conclusion.SUCCESS
             else:
                 mode = "manually"
-            conclusion = check_api.Conclusion.SUCCESS
+                conclusion = check_api.Conclusion.CANCELLED
             title = f"The pull request has been merged {mode}"
             summary = f"The pull request has been merged {mode} at *{ctxt.pull['merge_commit_sha']}*"
         elif ctxt.closed:
