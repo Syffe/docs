@@ -112,8 +112,8 @@ class MergeUtilsMixin:
             # true. We can't block here just for this.
             return check_api.Result(
                 check_api.Conclusion.SUCCESS,
-                "The pull request has been merged",
-                f"The pull request has been merged at *{ctxt.pull['head']['sha']}*.",
+                "The pull request has been merged automatically",
+                f"The pull request has been merged automatically at *{ctxt.pull['head']['sha']}*",
             )
 
         else:  # Via API

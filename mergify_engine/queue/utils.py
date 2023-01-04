@@ -2,6 +2,7 @@ import dataclasses
 import string
 import typing
 
+from mergify_engine import github_types
 from mergify_engine import utils
 
 
@@ -55,7 +56,7 @@ class PrMerged(BaseUnqueueReason):
     message = "Pull request #{pr_number} has been merged automatically{sha_for_message}"  # noqa: FS003
     unqueue_code: typing.ClassVar[typing.Literal["PR_MERGED"]] = "PR_MERGED"
     pr_number: int
-    sha: str | None
+    sha: github_types.SHAType
 
     @property
     def sha_for_message(self) -> str:

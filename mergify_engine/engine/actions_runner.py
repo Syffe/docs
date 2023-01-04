@@ -502,18 +502,22 @@ async def run_actions(
                 previous_conclusions, check_name, checks
             )
 
+            conclusion_is_final = (
+                actions.ActionFlag.SUCCESS_IS_FINAL_STATE in action_obj.flags
+                and previous_conclusion == check_api.Conclusion.SUCCESS
+            )
+            conclusion_is_the_expected_one = (
+                previous_conclusion in expected_conclusions or conclusion_is_final
+            )
+
             need_to_be_run = (
                 actions.ActionFlag.ALWAYS_RUN in action_obj.flags
-                or (
-                    actions.ActionFlag.SUCCESS_IS_FINAL_STATE in action_obj.flags
-                    and previous_conclusion == check_api.Conclusion.SUCCESS
-                )
                 or admin_refresh_requested
                 or (
                     user_refresh_requested
                     and previous_conclusion == check_api.Conclusion.FAILURE
                 )
-                or previous_conclusion not in expected_conclusions
+                or not conclusion_is_the_expected_one
             )
 
             # TODO(sileht): refactor it to store the whole report in the check summary,

@@ -161,6 +161,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
             _, embarked_pull = queue.find_embarked_pull(ctxt.pull["number"])
             if embarked_pull is None:
                 raise RuntimeError("Queue pull request with no embarked_pull")
+            if ctxt.pull["merge_commit_sha"] is None:
+                raise RuntimeError("pull request merged but merge_commit_sha is null")
             await queue.remove_pull(
                 ctxt,
                 rule.get_signal_trigger(),
@@ -244,7 +246,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 other_ctxt,
                 rule.get_signal_trigger(),
                 queue_utils.PrMerged(ctxt.pull["number"], newsha),
-                safely_merged_at=newsha,
             )
 
         return check_api.Result(
@@ -677,6 +678,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 "get_unqueue_reason_from_action_result() on PENDING result"
             )
         elif result.conclusion is check_api.Conclusion.SUCCESS:
+            if ctxt.pull["merge_commit_sha"] is None:
+                raise RuntimeError("pull request merged but merge_commit_sha is null")
             return queue_utils.PrMerged(
                 ctxt.pull["number"], ctxt.pull["merge_commit_sha"]
             )
