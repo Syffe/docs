@@ -89,7 +89,7 @@ pytest-xdist = "^2.5.0"
 yesqa = "^1.4.0"
 asgi-lifespan = "^1.0.1"
 filelock = "^3.8.0"
-poethepoet = "^0.16.5"
+poethepoet = "^0.17.1"
 
 [tool.poetry.scripts]
   mergify-database-update = "mergify_engine.models.manage:database_update"
