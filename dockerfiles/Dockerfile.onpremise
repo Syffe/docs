@@ -19,8 +19,6 @@ COPY --from=js-installer /installer/Procfile /installer
 COPY --from=js-installer /installer/asgi.py /installer
 COPY --from=js-ui /ui /ui
 ADD onpremise /onpremise
-ENV DD_DOGSTATSD_DISABLE=1
-ENV DD_TRACE_ENABLED=0
 ENV MERGIFYENGINE_DASHBOARD_UI_STATIC_FILES_DIRECTORY=/ui
 USER mergify
 ENTRYPOINT ["/onpremise/entrypoint.sh"]

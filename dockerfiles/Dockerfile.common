@@ -58,6 +58,9 @@ RUN apt purge -y gnupg apt-transport-https gpg-agent ca-certificates libldap-com
 RUN apt autoremove --purge -y && apt clean -y && rm -rf /var/lib/apt/lists/*
 RUN apt purge -y --allow-remove-essential apt gpgv
 
+ENV DD_DOGSTATSD_DISABLE 1
+ENV DD_TRACE_ENABLED 0
+
 ADD datadog-wrapper.sh /
 ADD datadog/conf.d/redisdb.yaml /etc/datadog-agent/conf.d/redisdb.d/conf.yaml
 # Chown to be able to edit all those config files with the datadog-wrapper

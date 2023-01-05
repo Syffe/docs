@@ -20,22 +20,16 @@ export DYNOTYPE=${DYNO%%.*}
 if [ -z "$DD_API_KEY" ]; then
     startup_message
     echo '$DD_API_KEY missing, skipping datadog-agent setup...'
-    export DD_DOGSTATSD_DISABLE=1
-    export DD_TRACE_ENABLED=0
     exec "$@"
 
 elif [ -z "$DYNO" ]; then
     startup_message
     echo '$DYNO missing, skipping datadog-agent setup...'
-    export DD_DOGSTATSD_DISABLE=1
-    export DD_TRACE_ENABLED=0
     exec "$@"
 
 elif [ "$DYNOTYPE" == "run" ] || [ "$DYNOTYPE" == "scheduler" ] || [ "$DYNOTYPE" == "release" ]; then
     startup_message
     echo 'short lived DYNOTYPE: $DYNOHOST, skipping datadog-agent setup...'
-    export DD_DOGSTATSD_DISABLE=1
-    export DD_TRACE_ENABLED=0
     exec "$@"
 fi
 
@@ -79,6 +73,8 @@ if [ -n "$MERGIFYENGINE_DEFAULT_REDIS_URL" ]; then
     fi
 fi
 
+export DD_DOGSTATSD_DISABLE=0
+export DD_TRACE_ENABLED=1
 
 unset DD_CONF_DIR
 echo 'Datadog-agent startup.'
