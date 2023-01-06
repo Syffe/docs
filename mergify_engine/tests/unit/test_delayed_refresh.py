@@ -51,3 +51,77 @@ pull_request_rules:
         ctxt.repository, ctxt.pull["number"]
     )
     assert when == expected_refresh
+
+
+@freeze_time("2021-09-22T08:00:05", tz_offset=0)
+async def test_delay_refresh_only_if_earlier(
+    context_getter: conftest.ContextGetterFixture,
+) -> None:
+    config = await utils.load_mergify_config(
+        """
+pull_request_rules:
+  - name: so rules
+    conditions:
+    - and:
+      - head~=^foo/
+      - current-time>=08:00[Europe/Madrid]
+      - current-time<=17:00[Europe/Madrid]
+    actions:
+      label:
+        add:
+          - conflict
+"""
+    )
+
+    expected_refresh_due_to_rules = datetime.datetime(
+        2021, 9, 22, 15, 0, tzinfo=datetime.timezone.utc
+    )
+
+    ctxt = await context_getter(0)
+    rule = typing.cast(list[rules.EvaluatedRule], config["pull_request_rules"].rules)
+
+    # No delay refresh yet
+    await delayed_refresh.plan_next_refresh(
+        ctxt, rule, ctxt.pull_request, only_if_earlier=True
+    )
+    when = await delayed_refresh._get_current_refresh_datetime(
+        ctxt.repository, ctxt.pull["number"]
+    )
+    assert when == expected_refresh_due_to_rules
+
+    # hardcode a date in the future and ensure it's overriden
+    future = datetime.datetime(2021, 9, 23, 00, 0, tzinfo=datetime.timezone.utc)
+    await delayed_refresh._set_current_refresh_datetime(
+        ctxt.repository, ctxt.pull["number"], future
+    )
+    await delayed_refresh.plan_next_refresh(
+        ctxt, rule, ctxt.pull_request, only_if_earlier=True
+    )
+    when = await delayed_refresh._get_current_refresh_datetime(
+        ctxt.repository, ctxt.pull["number"]
+    )
+    assert when == expected_refresh_due_to_rules
+
+    # hardcode a date in the past and ensure it's not overriden
+    past = datetime.datetime(2021, 9, 22, 00, 0, tzinfo=datetime.timezone.utc)
+    await delayed_refresh._set_current_refresh_datetime(
+        ctxt.repository, ctxt.pull["number"], past
+    )
+    await delayed_refresh.plan_next_refresh(
+        ctxt, rule, ctxt.pull_request, only_if_earlier=True
+    )
+    when = await delayed_refresh._get_current_refresh_datetime(
+        ctxt.repository, ctxt.pull["number"]
+    )
+    assert when == past
+
+    # Don't use only_if_earlier and it's overriden
+    past = datetime.datetime(2021, 9, 22, 00, 0, tzinfo=datetime.timezone.utc)
+    await delayed_refresh._set_current_refresh_datetime(
+        ctxt.repository, ctxt.pull["number"], past
+    )
+    await delayed_refresh.plan_next_refresh(ctxt, rule, ctxt.pull_request)
+    when = await delayed_refresh._get_current_refresh_datetime(
+        ctxt.repository, ctxt.pull["number"]
+    )
+    assert when == expected_refresh_due_to_rules

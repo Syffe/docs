@@ -1744,7 +1744,10 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
         for pull_request in pull_requests:
             await delayed_refresh.plan_next_refresh(
-                checked_ctxt, [evaluated_queue_rule], pull_request
+                checked_ctxt,
+                [evaluated_queue_rule],
+                pull_request,
+                only_if_earlier=True,
             )
 
         status = await checks_status.get_rule_checks_status(

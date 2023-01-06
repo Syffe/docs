@@ -55,6 +55,7 @@ async def plan_next_refresh(
     ctxt: "context.Context",
     _rules: (list["rules.EvaluatedRule"] | list["rules.EvaluatedQueueRule"]),
     pull_request: "context.BasePullRequest",
+    only_if_earlier: bool = False,
 ) -> None:
     best_bet = await _get_current_refresh_datetime(ctxt.repository, ctxt.pull["number"])
     if best_bet is not None and best_bet < date.utcnow():
@@ -90,11 +91,22 @@ async def plan_next_refresh(
             best_bet = bet
 
     if best_bet is None or best_bet >= date.DT_MAX:
+        if only_if_earlier:
+            return
+
         zset_subkey = _redis_key(ctxt.repository, ctxt.pull["number"])
         removed = await ctxt.redis.cache.zrem(DELAYED_REFRESH_KEY, zset_subkey)
         if removed is not None and removed > 0:
             ctxt.log.info("unplan to refresh pull request")
     else:
+
+        if only_if_earlier:
+            current = await _get_current_refresh_datetime(
+                ctxt.repository, ctxt.pull["number"]
+            )
+            if current is not None and best_bet >= current:
+                return
+
         await _set_current_refresh_datetime(
             ctxt.repository, ctxt.pull["number"], best_bet
         )
