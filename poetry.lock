@@ -44,11 +44,11 @@ Deprecated = ">=1.2,<2.0"
 
 [[package]]
 name = "asgi-lifespan"
-version = "1.0.1"
+version = "2.0.0"
 description = "Programmatic startup/shutdown of ASGI apps."
 category = "dev"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 
 [package.dependencies]
 sniffio = "*"
@@ -2137,7 +2137,7 @@ tokenize-rt = ">=2.1"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.11,<4.0"
-content-hash = "0f1bf345aec2ec5f9458fcf3a7252a3322fefdb0eecfa2c72ca4efcbbb107468"
+content-hash = "bd7356c823ae1f824542d97a7edde3f0686376c7e44dc441393037cff63f998f"
 
 [metadata.files]
 aiofiles = [
@@ -2157,8 +2157,8 @@ anys = [
     {file = "anys-0.2.1.tar.gz", hash = "sha256:f32e16ead49b0a96c530fe43aa4e69ffa68df1fd63042866a994618a08ae9725"},
 ]
 asgi-lifespan = [
-    {file = "asgi-lifespan-1.0.1.tar.gz", hash = "sha256:9a33e7da2073c4764bc79bd6136501d6c42f60e3d2168ba71235e84122eadb7f"},
-    {file = "asgi_lifespan-1.0.1-py3-none-any.whl", hash = "sha256:9ea969dc5eb5cf08e52c08dce6f61afcadd28112e72d81c972b1d8eb8691ab53"},
+    {file = "asgi-lifespan-2.0.0.tar.gz", hash = "sha256:d46a31ff681e9edf1f776c9f61cf8fa6274cc66fca8cb4f11e940b1183e18842"},
+    {file = "asgi_lifespan-2.0.0-py3-none-any.whl", hash = "sha256:420582b1786b238d035244415dc11536acdbcb24762cba1c5e9bddc565960277"},
 ]
 async-timeout = [
     {file = "async-timeout-4.0.2.tar.gz", hash = "sha256:2163e1640ddb52b7a8c80d0a67a08587e5d245cc9c553a74a847056bc2976b15"},
