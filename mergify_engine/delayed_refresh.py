@@ -117,7 +117,9 @@ async def plan_refresh_at_least_at(
 
     await _set_current_refresh_datetime(repository, pull_number, at)
     repository.log.info(
-        "override plan to refresh pull request", refresh_planned_at=at.isoformat()
+        "override plan to refresh pull request",
+        refresh_planned_at=at.isoformat(),
+        gh_pull=pull_number,
     )
 
 
