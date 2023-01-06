@@ -914,7 +914,7 @@ class TrainCar:
                     await self._set_creation_failure(
                         f"Unable to update: user `{bot_account}` is unknown.\n\n"
                         f"Please make sure `{bot_account}` has logged in Mergify dashboard.",
-                        operation="update",
+                        operation="updated",
                     )
                     raise TrainCarPullRequestCreationFailure(self)
 
@@ -933,7 +933,7 @@ class TrainCar:
                     await branch_updater.rebase_with_git(ctxt, github_user, False)
             except branch_updater.BranchUpdateFailure as exc:
                 await self._set_creation_failure(
-                    f"{exc.title}\n\n{exc.message}", operation="update"
+                    f"{exc.title}\n\n{exc.message}", operation="updated"
                 )
                 raise TrainCarPullRequestCreationFailure(self) from exc
 
@@ -1511,7 +1511,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
         self,
         details: str,
         *,
-        operation: typing.Literal["created", "update"] = "created",
+        operation: typing.Literal["created", "updated"] = "created",
         pull_requests_to_remove: None
         | (list[github_types.GitHubPullRequestNumber]) = None,
         report_as_error: bool = False,
