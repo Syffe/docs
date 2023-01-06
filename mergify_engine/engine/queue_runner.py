@@ -29,7 +29,7 @@ async def handle(queue_rules: rules.QueueRules, ctxt: context.Context) -> None:
         return
 
     if (
-        car.train_car_state.outcome != merge_train.TrainCarOutcome.UNKNWON
+        car.train_car_state.outcome != merge_train.TrainCarOutcome.UNKNOWN
         and ctxt.closed
     ):
         ctxt.log.info(
@@ -68,7 +68,7 @@ async def handle(queue_rules: rules.QueueRules, ctxt: context.Context) -> None:
         queue_rules, origin="draft_pull_request", original_pull_request_rule=None
     )
 
-    if car.train_car_state.outcome == merge_train.TrainCarOutcome.UNKNWON:
+    if car.train_car_state.outcome == merge_train.TrainCarOutcome.UNKNOWN:
         # NOTE(sileht): we are supposed to be triggered by GitHub events, but in
         # case we miss some of them due to an outage, this is a seatbelt to recover
         # automatically after 3 minutes

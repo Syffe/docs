@@ -277,7 +277,7 @@ class TrainCarOutcome(enum.Enum):
     BASE_BRANCH_CHANGE = "base_branch_change"
     DRAFT_PR_CHANGE = "draft_pr_change"
     UPDATED_PR_CHANGE = "updated_pr_change"
-    UNKNWON = "unknown"
+    UNKNOWN = "unknown"
 
 
 json.register_type(CiState)
@@ -296,7 +296,7 @@ UNEXPECTED_CHANGE_COMPATIBILITY = {
 
 @dataclasses.dataclass
 class TrainCarState:
-    outcome: TrainCarOutcome = TrainCarOutcome.UNKNWON
+    outcome: TrainCarOutcome = TrainCarOutcome.UNKNOWN
     ci_state: CiState = CiState.PENDING
     ci_ended_at: datetime.datetime | None = None
     outcome_message: str | None = None
@@ -693,7 +693,7 @@ class TrainCar:
         if "train_car_state" in data:
             return TrainCarState.deserialize(data["train_car_state"])
         else:
-            outcome = TrainCarOutcome.UNKNWON
+            outcome = TrainCarOutcome.UNKNOWN
             ci_state = CiState.PENDING
             outcome_message = ""
             legacy_queue_conditions_conclusion = check_api.Conclusion.PENDING
@@ -710,14 +710,14 @@ class TrainCar:
                     ci_state = CiState.SUCCESS
                 elif legacy_queue_conditions_conclusion == check_api.Conclusion.FAILURE:
                     ci_state = CiState.FAILED
-                    if outcome == TrainCarOutcome.UNKNWON:
+                    if outcome == TrainCarOutcome.UNKNOWN:
                         outcome = TrainCarOutcome.CHECKS_FAILED
                         outcome_message = CI_FAILED_MESSAGE
 
             if (
                 legacy_queue_conditions_conclusion == check_api.Conclusion.SUCCESS
                 and ci_state == CiState.SUCCESS
-                and outcome == TrainCarOutcome.UNKNWON
+                and outcome == TrainCarOutcome.UNKNOWN
             ):
                 outcome = TrainCarOutcome.MERGEABLE
 
@@ -744,7 +744,7 @@ class TrainCar:
             return ""
 
     def can_be_interrupted(self) -> bool:
-        return self.train_car_state.outcome == TrainCarOutcome.UNKNWON or (
+        return self.train_car_state.outcome == TrainCarOutcome.UNKNOWN or (
             self.train_car_state.outcome == TrainCarOutcome.CHECKS_FAILED
             and not self.is_batch_failure_resolved
         )
@@ -755,7 +755,7 @@ class TrainCar:
         if self.train_car_state.outcome == TrainCarOutcome.MERGEABLE:
             return check_api.Conclusion.SUCCESS
         elif self.train_car_state.outcome in (
-            TrainCarOutcome.UNKNWON,
+            TrainCarOutcome.UNKNOWN,
             TrainCarOutcome.BASE_BRANCH_CHANGE,
             TrainCarOutcome.UPDATED_PR_CHANGE,
         ):
@@ -1908,7 +1908,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 type(unexpected_change)
             ]
             self.train_car_state.outcome_message = str(unexpected_change)
-        elif self.train_car_state.outcome == TrainCarOutcome.UNKNWON:
+        elif self.train_car_state.outcome == TrainCarOutcome.UNKNOWN:
             if (
                 self.train_car_state.ci_state == CiState.PENDING
                 and timeout is not None
@@ -1928,7 +1928,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
         # Calcule next timeout refresh
         if (
-            self.train_car_state.outcome == TrainCarOutcome.UNKNWON
+            self.train_car_state.outcome == TrainCarOutcome.UNKNOWN
             and self.train_car_state.ci_state == CiState.PENDING
             and timeout is not None
             and self.queue_pull_request_number is not None
@@ -1999,7 +1999,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 tmp_pull_title = f"The pull request {refs} is mergeable"
             else:
                 tmp_pull_title = f"The pull requests {refs} are mergeable"
-        elif self.train_car_state.outcome == TrainCarOutcome.UNKNWON:
+        elif self.train_car_state.outcome == TrainCarOutcome.UNKNOWN:
             if len(self.initial_embarked_pulls) == 1:
                 tmp_pull_title = f"The pull request {refs} is embarked for merge"
             else:
@@ -2030,7 +2030,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
         timeout = queue_rule.config["checks_timeout"]
 
         if timeout is not None and self.train_car_state.outcome in [
-            TrainCarOutcome.UNKNWON,
+            TrainCarOutcome.UNKNOWN,
             TrainCarOutcome.CHECKS_TIMEOUT,
         ]:
             expected_finish = (
@@ -2043,7 +2043,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 )
             )
 
-            if self.train_car_state.outcome == TrainCarOutcome.UNKNWON:
+            if self.train_car_state.outcome == TrainCarOutcome.UNKNOWN:
                 timeout_summary = (
                     f"\n\n⏲️  The checks have to pass before {expected_finish} ⏲"
                 )
@@ -2109,7 +2109,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             elif has_unexpected_change:
                 headline = f"✨ Unexpected queue change: {self.train_car_state.outcome_message}. The pull request {self._get_user_refs()} will be re-embarked soon. ✨"
                 show_queue = True
-            elif self.train_car_state.outcome == TrainCarOutcome.UNKNWON:
+            elif self.train_car_state.outcome == TrainCarOutcome.UNKNOWN:
                 headline = None
                 show_queue = True
             else:
@@ -2180,7 +2180,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
         elif self.train_car_state.outcome == TrainCarOutcome.MERGEABLE:
             original_pull_title = f"The pull request embarked with {self._get_embarked_refs(include_my_self=False)} is mergeable"
-        elif self.train_car_state.outcome == TrainCarOutcome.UNKNWON:
+        elif self.train_car_state.outcome == TrainCarOutcome.UNKNOWN:
             original_pull_title = f"The pull request is embarked with {self._get_embarked_refs(include_my_self=False)} for merge"
         elif self.train_car_state.outcome in (
             TrainCarOutcome.CHECKS_FAILED,
@@ -3149,7 +3149,7 @@ class Train:
         if self._cars and (
             self._cars[-1].train_car_state.checks_type == TrainCarChecksType.FAILED
             or self._cars[-1].train_car_state.outcome
-            not in (TrainCarOutcome.MERGEABLE, TrainCarOutcome.UNKNWON)
+            not in (TrainCarOutcome.MERGEABLE, TrainCarOutcome.UNKNOWN)
         ):
             # We are searching the responsible of a failure don't touch anything
             return
