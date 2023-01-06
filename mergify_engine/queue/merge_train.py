@@ -269,7 +269,8 @@ class CiState(enum.Enum):
     FAILED = "failed"
 
 
-@enum.unique
+# FIXME(jd): restore me when the UNKNOWN type is fixed
+# @enum.unique
 class TrainCarOutcome(enum.Enum):
     MERGEABLE = "mergeable"
     CHECKS_TIMEOUT = "checks_timeout"
@@ -278,6 +279,8 @@ class TrainCarOutcome(enum.Enum):
     DRAFT_PR_CHANGE = "draft_pr_change"
     UPDATED_PR_CHANGE = "updated_pr_change"
     UNKNOWN = "unknown"
+    # FIXME(jd): remove me once all serialization are up to date
+    UNKNWON = "unknown"
 
 
 json.register_type(CiState)
