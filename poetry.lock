@@ -572,7 +572,7 @@ pydocstyle = ">=2.1"
 
 [[package]]
 name = "flake8-logging-format"
-version = "0.8.1"
+version = "0.9.0"
 description = ""
 category = "dev"
 optional = false
@@ -2116,7 +2116,7 @@ tokenize-rt = ">=2.1"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.11,<4.0"
-content-hash = "6152841a03eb1aca5d1aeadf107d90f0832e9425100ec40596ec632ad6c9ffb3"
+content-hash = "057fe07b9eaf918639ee07ca42faf89adf712105b48d255727ac3228ae289775"
 
 [metadata.files]
 aiofiles = [
@@ -2611,7 +2611,7 @@ flake8-docstrings = [
     {file = "flake8_docstrings-1.6.0-py2.py3-none-any.whl", hash = "sha256:99cac583d6c7e32dd28bbfbef120a7c0d1b6dde4adb5a9fd441c4227a6534bde"},
 ]
 flake8-logging-format = [
-    {file = "flake8-logging-format-0.8.1.tar.gz", hash = "sha256:fecab361ff1700d4550cedbd3f4475d45eda01fcaa800768c9551d2ced16b780"},
+    {file = "flake8-logging-format-0.9.0.tar.gz", hash = "sha256:e830cc49091e4b8ab9ea3da69a3da074bd631ce9a7db300e5c89fb48ba4a6986"},
 ]
 flake8-new-union-types = [
     {file = "flake8-new-union-types-0.4.1.tar.gz", hash = "sha256:0a9dd421099f2525f8be525977ff6632b13b68719a7b0807cf49028d4287b0aa"},
