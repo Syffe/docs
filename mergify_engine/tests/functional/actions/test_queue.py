@@ -84,6 +84,107 @@ class TestQueueAction(base.FunctionalTestBase):
             in checks[0]["output"]["summary"]
         )
 
+    async def test_queue_priority_rules(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "priority_rules": [
+                        {
+                            "name": "hotfix PR detected",
+                            "conditions": [
+                                "label=hotfix",
+                            ],
+                            "priority": "high",
+                        },
+                        {
+                            "name": "default priority",
+                            "conditions": [
+                                "-label=hotfix",
+                            ],
+                            "priority": "medium",
+                        },
+                    ],
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 1st in the queue to be merged"
+        )
+
+        p2 = await self.create_pr()
+        await self.add_label(p2["number"], "queue")
+        await self.add_label(p2["number"], "hotfix")
+        await self.run_engine()
+
+        check = first(
+            await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 1st in the queue to be merged"
+        )
+
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 2nd in the queue to be merged"
+        )
+
+        await self.remove_label(p2["number"], "hotfix")
+        await self.run_engine()
+
+        check = first(
+            await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 2nd in the queue to be merged"
+        )
+
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 1st in the queue to be merged"
+        )
+
     async def test_rebase_fallback_deprecation_notice(self) -> None:
         rules = {
             "pull_request_rules": [
@@ -5839,6 +5940,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
                     name=rules.QueueName("foo"),
                     conditions=conditions.QueueRuleConditions([]),
                     config=queue_config,
+                    priority_rules=rules.PriorityRules([]),
                 )
             ]
         )
@@ -5978,6 +6080,7 @@ pull_requests:
                     name=rules.QueueName("foo"),
                     conditions=conditions.QueueRuleConditions([]),
                     config=queue_config,
+                    priority_rules=rules.PriorityRules([]),
                 )
             ]
         )
@@ -6071,6 +6174,7 @@ pull_requests:
                     name=rules.QueueName("foo"),
                     conditions=conditions.QueueRuleConditions([]),
                     config=queue_config,
+                    priority_rules=rules.PriorityRules([]),
                 )
             ]
         )
@@ -6141,6 +6245,7 @@ pull_requests:
                     name=rules.QueueName("foo"),
                     conditions=conditions.QueueRuleConditions([]),
                     config=queue_config,
+                    priority_rules=rules.PriorityRules([]),
                 )
             ]
         )

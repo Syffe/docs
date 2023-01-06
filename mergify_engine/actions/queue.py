@@ -429,7 +429,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     ),
                 )
 
-        self._set_effective_priority(ctxt)
+        await self._set_effective_priority(ctxt)
 
         q = await merge_train.Train.from_context(ctxt)
         car = q.get_car(ctxt)
@@ -565,7 +565,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         except action_utils.RenderBotAccountFailure as e:
             return check_api.Result(e.status, e.title, e.reason)
 
-        self._set_effective_priority(ctxt)
+        await self._set_effective_priority(ctxt)
 
         q = await merge_train.Train.from_context(ctxt)
         car = q.get_car(ctxt)
@@ -641,11 +641,19 @@ Then, re-embark the pull request into the merge queue by posting the comment
         except KeyError:
             raise voluptuous.error.Invalid(f"`{self.config['name']}` queue not found")
 
-    def _set_effective_priority(self, ctxt: context.Context) -> None:
+    async def _set_effective_priority(self, ctxt: context.Context) -> None:
+
+        current_priority = self.queue_rule.config["priority"]
+        if self.queue_rule.priority_rules.rules:
+            current_priority = (
+                await self.queue_rule.priority_rules.get_context_priority(
+                    ctxt=ctxt,
+                    current_pull_request_priority=current_priority,
+                )
+            )
         self.config["effective_priority"] = typing.cast(
             int,
-            self.config["priority"]
-            + self.queue_rule.config["priority"] * queue.QUEUE_PRIORITY_OFFSET,
+            self.config["priority"] + current_priority * queue.QUEUE_PRIORITY_OFFSET,
         )
 
     async def _get_current_queue_freeze(

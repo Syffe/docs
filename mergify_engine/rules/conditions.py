@@ -591,8 +591,13 @@ async def get_depends_on_conditions(ctxt: context.Context) -> list[RuleCondition
     return conds
 
 
+BaseRuleConditionsType = typing.TypeVar(
+    "BaseRuleConditionsType", bound="BaseRuleConditions"
+)
+
+
 @dataclasses.dataclass
-class PullRequestRuleConditions:
+class BaseRuleConditions:
     conditions: dataclasses.InitVar[list[RuleConditionNode]]
     condition: RuleConditionCombination = dataclasses.field(init=False)
 
@@ -606,6 +611,22 @@ class PullRequestRuleConditions:
             )
         return await self.condition(objs[0])
 
+    @property
+    def match(self) -> bool:
+        return self.condition.match
+
+    def is_faulty(self) -> bool:
+        return self.condition.is_faulty()
+
+    def walk(self) -> abc.Iterator[RuleCondition]:
+        yield from self.condition.walk()
+
+    def copy(self: BaseRuleConditionsType) -> BaseRuleConditionsType:
+        return self.__class__(self.condition.copy().conditions)
+
+
+@dataclasses.dataclass
+class PullRequestRuleConditions(BaseRuleConditions):
     def extract_raw_filter_tree(self) -> filter.TreeT:
         return self.condition.extract_raw_filter_tree()
 
@@ -640,18 +661,10 @@ class PullRequestRuleConditions:
     def get_evaluation_result(self) -> ConditionEvaluationResult:
         return self.condition.get_evaluation_result()
 
-    @property
-    def match(self) -> bool:
-        return self.condition.match
 
-    def is_faulty(self) -> bool:
-        return self.condition.is_faulty()
-
-    def walk(self) -> abc.Iterator[RuleCondition]:
-        yield from self.condition.walk()
-
-    def copy(self) -> "PullRequestRuleConditions":
-        return PullRequestRuleConditions(self.condition.copy().conditions)
+@dataclasses.dataclass
+class PriorityRuleConditions(BaseRuleConditions):
+    pass
 
 
 @pydantic.dataclasses.dataclass

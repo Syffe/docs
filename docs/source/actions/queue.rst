@@ -223,6 +223,54 @@ your CI time is 10 min, you can merge those 15 pull requests in only 10 minutes.
    ``Require branches to be up to date before merging`` to be disabled. If you
    require a linear history, just set the queue option ``method: rebase``.
 
+
+Priority Rules
+~~~~~~~~~~~~~~
+
+|premium plan tag|
+
+The usage of priority rules is optional but can be used to have thinner control over how your pull requests
+are ordered inside a queue.
+
+A priority rule applies a priority to a pull request according to the matching conditions you defined.
+A priority can be a keyword such as ``low``, ``medium``, ``high`` or a number (see :ref:`Priority <priority>`).
+
+Once a pull request is added to the queue, each priority rule will be evaluated against the
+priority rules conditions to find in which position the pull request will be added.
+If there are several rules matching the pull request, the one with the highest priority value will
+be retained.
+
+The following example defines a queue named ``default`` with priority rules
+controlling the position of the pull requests in the merge queue.
+
+.. code-block:: yaml
+
+    queue_rules:
+      - name: default
+        conditions:
+          - "#approved-reviews-by>=2"
+          - check-success=Travis CI - Pull Request
+        priority_rules:
+          - name: hotfix
+            conditions:
+              - label=hotfix
+            priority: high
+          - name: low priority
+            conditions:
+              - label=refactor
+            priority: low
+
+    pull_request_rules:
+      - name: merge using the merge queue
+        conditions:
+          - base=main
+          - "#approved-reviews-by>=2"
+          - check-success=Travis CI - Pull Request
+        actions:
+          queue:
+            name: default
+
+
 Queue Freeze
 ------------
 
@@ -463,6 +511,13 @@ A ``queue_rules`` takes the following parameter:
        In case of speculative merge pull request, the conditions starting by
        ``check-`` are evaluated against the temporary pull request instead of the
        original one.
+   * - ``priority_rules``
+     - list of :ref:`priority rules`
+     -
+     - |premium plan tag|
+       The list of ``priority_rules`` a pull request can match in order to be
+       prioritized when added to a queue. The set of conditions available for
+       ``priority_rules`` configuration is the same as the usual :ref:`Conditions`.
    * - ``speculative_checks``
      - int
      - 1
@@ -547,6 +602,38 @@ A ``queue_rules`` takes the following parameter:
 
    |premium plan tag|
    Defining multiple queue rules is only available for `Premium subscribers <https://mergify.com/pricing>`_.
+
+.. _priority rules:
+
+Priority Rules
+~~~~~~~~~~~~~~
+|premium plan tag|
+
+
+A priority rule takes the following parameter:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 1 1 1 3
+
+   * - Key Name
+     - Value Type
+     - Default
+     - Value Description
+   * - ``name``
+     - string
+     -
+     - The name of the priority rule.
+   * - ``conditions``
+     - list of :ref:`Conditions`
+     -
+     - The list of ``conditions`` to match to apply the priority to the
+       matching pull request inside the queue.
+
+   * - ``priority``
+     - :ref:`Priority <priority>`
+     - medium
+     - The value of the pull request priority inside the queue.
 
 
 Examples

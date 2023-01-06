@@ -81,6 +81,58 @@ class TestConfiguration(base.FunctionalTestBase):
             "* required key not provided @ pull_request_rules → item 0 → conditions"
         )
 
+    async def test_invalid_priority_rules_config(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "priority_rules": [
+                        {
+                            "name": "hotfix PR detected",
+                            "conditions": [
+                                "label=hotfix",
+                            ],
+                            "priority": "whatever",
+                        },
+                        {
+                            "name": "default priority",
+                            "conditions": [
+                                "-label=hotfix",
+                            ],
+                            "priority": "false text",
+                        },
+                    ],
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        check_run = await self.wait_for_check_run(
+            action="completed", status="completed", conclusion="failure"
+        )
+
+        assert (
+            "The current Mergify configuration is invalid"
+            == check_run["check_run"]["output"]["title"]
+        )
+
     async def test_invalid_yaml_configuration_in_repository(self) -> None:
         await self.setup_repo("- this is totally invalid yaml\\n\n  - *\n*")
         p = await self.create_pr()

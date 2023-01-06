@@ -17,6 +17,7 @@ from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import github_types
+from mergify_engine import queue
 from mergify_engine import yaml
 from mergify_engine.clients import github
 from mergify_engine.clients import http
@@ -112,21 +113,111 @@ EvaluatedQueueRule = typing.NewType("EvaluatedQueueRule", "QueueRule")
 
 QueueName = typing.NewType("QueueName", str)
 
+PriorityRuleName = typing.NewType("PriorityRuleName", str)
+
+
+@dataclasses.dataclass
+class PriorityRule:
+    name: PriorityRuleName
+    conditions: conditions_mod.PriorityRuleConditions
+    priority: queue.PriorityT
+
+    class T_from_dict(typing.TypedDict):
+        name: PriorityRuleName
+        conditions: conditions_mod.PriorityRuleConditions
+        priority: queue.PriorityT
+
+    @classmethod
+    def from_dict(cls, d: T_from_dict) -> "PriorityRule":
+        return cls(**d)
+
+    async def evaluate(
+        self, pulls: list[context.BasePullRequest]
+    ) -> EvaluatedPriorityRule:
+        evaluated_rule = typing.cast(EvaluatedPriorityRule, self)
+        await evaluated_rule.conditions(pulls)
+        return evaluated_rule
+
+    def copy(self) -> PriorityRule:
+        return self.__class__(
+            name=self.name,
+            conditions=conditions_mod.PriorityRuleConditions(
+                self.conditions.condition.copy().conditions
+            ),
+            priority=self.priority,
+        )
+
+
+EvaluatedPriorityRule = typing.NewType("EvaluatedPriorityRule", PriorityRule)
+
+
+@dataclasses.dataclass
+class PriorityRules:
+    rules: list[PriorityRule]
+
+    def __post_init__(self) -> None:
+        names: set[PriorityRuleName] = set()
+        for rule in self.rules:
+            if rule.name in names:
+                raise voluptuous.error.Invalid(
+                    f"priority_rules names must be unique, found `{rule.name}` twice"
+                )
+            names.add(rule.name)
+
+    def __iter__(self) -> abc.Iterator[PriorityRule]:
+        return iter(self.rules)
+
+    async def get_matching_evaluated_priority_rules(
+        self,
+        repository: context.Repository,
+        pulls: list[context.BasePullRequest],
+    ) -> list[EvaluatedPriorityRule]:
+        priority_rules = [rule.copy() for rule in self.rules]
+        priority_rules_evaluator = await PriorityRulesEvaluator.create(
+            priority_rules,
+            repository,
+            pulls,
+            False,
+        )
+        return [
+            rule
+            for rule in priority_rules_evaluator.matching_rules
+            if rule.conditions.match
+        ]
+
+    async def get_context_priority(
+        self, ctxt: context.Context, current_pull_request_priority: int
+    ) -> int:
+        matching_priority_rules = await self.get_matching_evaluated_priority_rules(
+            ctxt.repository, [ctxt.pull_request]
+        )
+        pull_priority = current_pull_request_priority
+        for rule in matching_priority_rules:
+            rule_priority = queue.Priority(rule.priority)
+            if rule_priority > pull_priority:
+                pull_priority = rule_priority
+
+        return pull_priority
+
 
 @dataclasses.dataclass
 class QueueRule:
     name: QueueName
     conditions: conditions_mod.QueueRuleConditions
     config: QueueConfig
+    priority_rules: PriorityRules
 
     class T_from_dict(QueueConfig, total=False):
         name: QueueName
         conditions: conditions_mod.QueueRuleConditions
+        config: QueueConfig
+        priority_rules: PriorityRules
 
     @classmethod
     def from_dict(cls, d: T_from_dict) -> QueueRule:
         name = d.pop("name")
         conditions = d.pop("conditions")
+        priority_rules = d.pop("priority_rules")
 
         # NOTE(sileht): backward compat
         allow_inplace_speculative_checks = d["allow_inplace_speculative_checks"]  # type: ignore[typeddict-item]
@@ -141,7 +232,7 @@ class QueueRule:
         if allow_checks_interruption is False:
             d["disallow_checks_interruption_from_queues"].append(name)
 
-        return cls(name, conditions, d)
+        return cls(name, conditions, d, priority_rules)
 
     async def get_evaluated_queue_rule(
         self,
@@ -154,13 +245,36 @@ class QueueRule:
             repository, ref, strict=False
         )
         if evaluated_pull_request_rule is not None:
-            conditions = evaluated_pull_request_rule.conditions.copy()
-            if conditions.condition.conditions:
+            evaluated_pull_request_rule_conditions = (
+                evaluated_pull_request_rule.conditions.copy()
+            )
+            if evaluated_pull_request_rule_conditions.condition.conditions:
                 extra_conditions.extend(
                     [
                         conditions_mod.RuleConditionCombination(
-                            {"and": conditions.condition.conditions},
+                            {
+                                "and": evaluated_pull_request_rule_conditions.condition.conditions
+                            },
                             description=f"📃 From pull request rule **{html.escape(evaluated_pull_request_rule.name)}**",
+                        )
+                    ]
+                )
+
+        if self.priority_rules.rules:
+            matching_priority_rules = (
+                await self.priority_rules.get_matching_evaluated_priority_rules(
+                    repository, pulls
+                )
+            )
+            for rule in matching_priority_rules:
+                evaluated_priority_rule_conditions = rule.conditions.copy()
+                extra_conditions.extend(
+                    [
+                        conditions_mod.RuleConditionCombination(
+                            {
+                                "and": evaluated_priority_rule_conditions.condition.conditions
+                            },
+                            description=f"📃 From priority rule **{html.escape(rule.name)}**",
                         )
                     ]
                 )
@@ -171,6 +285,7 @@ class QueueRule:
                 extra_conditions + self.conditions.condition.copy().conditions
             ),
             self.config,
+            self.priority_rules,
         )
         queue_rules_evaluator = await QueuesRulesEvaluator.create(
             [queue_rule_with_extra_conditions],
@@ -187,8 +302,10 @@ class QueueRule:
         return typing.cast(EvaluatedQueueRule, self)
 
 
-T_Rule = typing.TypeVar("T_Rule", PullRequestRule, QueueRule)
-T_EvaluatedRule = typing.TypeVar("T_EvaluatedRule", EvaluatedRule, EvaluatedQueueRule)
+T_Rule = typing.TypeVar("T_Rule", PullRequestRule, QueueRule, PriorityRule)
+T_EvaluatedRule = typing.TypeVar(
+    "T_EvaluatedRule", EvaluatedRule, EvaluatedQueueRule, EvaluatedPriorityRule
+)
 
 
 @dataclasses.dataclass
@@ -295,6 +412,7 @@ class GenericRulesEvaluator(typing.Generic[T_Rule, T_EvaluatedRule]):
 
 RulesEvaluator = GenericRulesEvaluator[PullRequestRule, EvaluatedRule]
 QueuesRulesEvaluator = GenericRulesEvaluator[QueueRule, EvaluatedQueueRule]
+PriorityRulesEvaluator = GenericRulesEvaluator[PriorityRule, EvaluatedPriorityRule]
 
 
 @dataclasses.dataclass
@@ -551,6 +669,27 @@ QueueRulesSchema = voluptuous.All(
         voluptuous.All(
             {
                 voluptuous.Required("name"): str,
+                voluptuous.Required("priority_rules", default=[]): voluptuous.All(
+                    [
+                        voluptuous.All(
+                            {
+                                voluptuous.Required("name"): str,
+                                voluptuous.Required("conditions"): voluptuous.All(
+                                    [voluptuous.Coerce(RuleConditionSchema)],
+                                    voluptuous.Coerce(
+                                        conditions_mod.PriorityRuleConditions
+                                    ),
+                                ),
+                                voluptuous.Required(
+                                    "priority",
+                                    default=queue.PriorityAliases.medium.value,
+                                ): queue.PrioritySchema,
+                            },
+                            voluptuous.Coerce(PriorityRule.from_dict),
+                        )
+                    ],
+                    voluptuous.Coerce(PriorityRules),
+                ),
                 voluptuous.Required("conditions"): voluptuous.All(
                     [voluptuous.Coerce(RuleConditionSchema)],
                     voluptuous.Coerce(conditions_mod.QueueRuleConditions),
@@ -660,7 +799,8 @@ def UserConfigurationSchema(
             "pull_request_rules", default=[]
         ): get_pull_request_rules_schema(),
         voluptuous.Required(
-            "queue_rules", default=[{"name": "default", "conditions": []}]
+            "queue_rules",
+            default=[{"name": "default", "conditions": [], "priority_rules": []}],
         ): QueueRulesSchema,
         voluptuous.Required("commands_restrictions", default={}): {
             voluptuous.Required(name, default={}): CommandsRestrictionsSchema(command)
@@ -900,7 +1040,9 @@ async def get_mergify_extended_config(
 def apply_configure_filter(
     repository: "context.Repository",
     conditions: (
-        conditions_mod.PullRequestRuleConditions | conditions_mod.QueueRuleConditions
+        conditions_mod.PullRequestRuleConditions
+        | conditions_mod.QueueRuleConditions
+        | conditions_mod.PriorityRuleConditions
     ),
 ) -> None:
     for condition in conditions.walk():

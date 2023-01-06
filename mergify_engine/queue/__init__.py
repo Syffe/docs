@@ -12,6 +12,8 @@ if typing.TYPE_CHECKING:
 
 LOG = daiquiri.getLogger(__name__)
 
+PriorityT = typing.Literal["high", "medium", "low"]
+
 
 class PriorityAliases(enum.Enum):
     low = 1000

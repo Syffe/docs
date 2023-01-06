@@ -405,6 +405,33 @@ week, or abbreviations or plurals of these units;
    1 day 15 hours 6 minutes 42 seconds
    1 d 15 h 6 m 42 s
 
+.. _priority:
+
+Priority
+~~~~~~~~
+
+Priority values can be expressed by using an integer between 1 and 10000.
+You can also use those aliases:
+* ``low`` (1000)
+* ``medium`` (2000)
+* ``high`` (3000)
+
+.. code-block:: yaml
+
+    priority_rules:
+      - name: my hotfix priority rule
+        conditions:
+          - base=main
+          - label=hotfix
+          - check-success=linters
+        priority: high
+
+      - name: my low priority rule
+        conditions:
+          - base=main
+          - label=low
+          - check-success=linters
+        priority: 550
 
 .. _data type template:
 

@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    Mergify now allows you to define ``priority_rules`` in the ``queue_rules`` configuration.
+    ``priority_rules`` allows you to prioritize pull requests treatment inside a queue based
+    on your own custom conditions.
