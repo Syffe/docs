@@ -4,6 +4,7 @@ import dataclasses
 import datetime
 import functools
 import hashlib
+import types
 import typing
 import uuid
 
@@ -272,6 +273,17 @@ class RedisLinks:
         )
         ddtrace.Pin.override(client, service=f"engine-redis-{name}")
         return client
+
+    async def __aenter__(self) -> RedisLinks:
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: type[Exception] | None,
+        exc_value: Exception | None,
+        traceback: types.TracebackType | None,
+    ) -> None:
+        await self.shutdown_all()
 
     async def shutdown_all(self) -> None:
         for db in (

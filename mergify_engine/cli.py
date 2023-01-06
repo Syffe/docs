@@ -25,13 +25,15 @@ def make_sync_for_entrypoint(
 
 @make_sync_for_entrypoint
 async def clear_token_cache() -> None:
-    redis_links = redis_utils.RedisLinks(name="debug")
-    parser = argparse.ArgumentParser(description="Force refresh of installation token")
-    parser.add_argument("owner_id")
-    args = parser.parse_args()
-    await subscription.Subscription.delete_subscription(
-        redis_links.cache, args.owner_id
-    )
+    async with redis_utils.RedisLinks(name="debug") as redis_links:
+        parser = argparse.ArgumentParser(
+            description="Force refresh of installation token"
+        )
+        parser.add_argument("owner_id")
+        args = parser.parse_args()
+        await subscription.Subscription.delete_subscription(
+            redis_links.cache, args.owner_id
+        )
 
 
 @make_sync_for_entrypoint
@@ -52,46 +54,45 @@ async def refresher_cli() -> None:
     if not args.urls:
         parser.print_help()
 
-    redis_links = redis_utils.RedisLinks(name="debug")
-
-    for url in args.urls:
-        try:
-            (
-                owner_login,
-                repository_name,
-                pull_request_number,
-                branch,
-            ) = utils.github_url_parser(url)
-        except ValueError:
-            print(f"{url} is not valid")
-            continue
-
-        installation_json = await github.get_installation_from_login(owner_login)
-        async with github.aget_client(installation_json) as client:
+    async with redis_utils.RedisLinks(name="debug") as redis_links:
+        for url in args.urls:
             try:
-                repository = await client.item(
-                    f"/repos/{owner_login}/{repository_name}"
-                )
-            except http.HTTPNotFound:
-                print(f"repository {owner_login}/{repository_name} not found")
+                (
+                    owner_login,
+                    repository_name,
+                    pull_request_number,
+                    branch,
+                ) = utils.github_url_parser(url)
+            except ValueError:
+                print(f"{url} is not valid")
                 continue
 
-        if branch is not None:
-            await refresher.send_branch_refresh(
-                redis_links.stream,
-                repository,
-                action=args.action,
-                source="API",
-                ref=github_types.GitHubRefType(f"refs/heads/{branch}"),
-            )
+            installation_json = await github.get_installation_from_login(owner_login)
+            async with github.aget_client(installation_json) as client:
+                try:
+                    repository = await client.item(
+                        f"/repos/{owner_login}/{repository_name}"
+                    )
+                except http.HTTPNotFound:
+                    print(f"repository {owner_login}/{repository_name} not found")
+                    continue
 
-        elif pull_request_number is not None:
-            await refresher.send_pull_refresh(
-                redis_links.stream,
-                repository,
-                action=args.action,
-                pull_request_number=pull_request_number,
-                source="API",
-            )
-        else:
-            print(f"No pull request or branch to refresh found for {url}")
+            if branch is not None:
+                await refresher.send_branch_refresh(
+                    redis_links.stream,
+                    repository,
+                    action=args.action,
+                    source="API",
+                    ref=github_types.GitHubRefType(f"refs/heads/{branch}"),
+                )
+
+            elif pull_request_number is not None:
+                await refresher.send_pull_refresh(
+                    redis_links.stream,
+                    repository,
+                    action=args.action,
+                    pull_request_number=pull_request_number,
+                    source="API",
+                )
+            else:
+                print(f"No pull request or branch to refresh found for {url}")
