@@ -194,95 +194,96 @@ async def report(
 
     await report_worker_status(redis_links, owner_login)
 
-    if repo is not None:
-        repository = await installation.get_repository_by_name(repo)
+    if repo is None:
+        await redis_links.shutdown_all()
+        return client
 
+    repository = await installation.get_repository_by_name(repo)
+
+    print(f"* REPOSITORY IS {'PRIVATE' if repository.repo['private'] else 'PUBLIC'}")
+
+    print(f"* DEFAULT BRANCH: {utils.extract_default_branch(repository.repo)}")
+
+    print("* CONFIGURATION:")
+    mergify_config = None
+    config_file = await repository.get_mergify_config_file()
+    if not config_file:
+        print(".mergify.yml is missing")
+    else:
+        print(f"Config filename: {config_file['path']}")
+        print(config_file["decoded_content"])
+        try:
+            mergify_config = await repository.get_mergify_config()
+        except rules.InvalidRules as e:  # pragma: no cover
+            print(f"configuration is invalid {str(e)}")
+
+    if pull_number is None:
+        async for branch in typing.cast(
+            abc.AsyncGenerator[github_types.GitHubBranch, None],
+            client.items(
+                f"/repos/{owner_login}/{repo}/branches",
+                resource_name="branches",
+                page_limit=100,
+            ),
+        ):
+            q = merge_train.Train(repository, branch["name"])
+            await q.load()
+            await report_queue("TRAIN", q)
+
+        await redis_links.shutdown_all()
+        return client
+
+    repository = await installation.get_repository_by_name(
+        github_types.GitHubRepositoryName(repo)
+    )
+    try:
+        ctxt = await repository.get_pull_request_context(
+            github_types.GitHubPullRequestNumber(int(pull_number))
+        )
+    except http.HTTPNotFound:
+        print(f"Pull request `{url}` does not exist")
+        await redis_links.shutdown_all()
+        return client
+
+    # FIXME queues could also be printed if no pull number given
+    # TODO(sileht): display train if any
+    q = await merge_train.Train.from_context(ctxt)
+    print(f"* TRAIN: {', '.join([f'#{p}' for p in await q.get_pulls()])}")
+    print("* PULL REQUEST:")
+    pr_data = await ctxt.pull_request.items()
+    pprint.pprint(pr_data, width=160)
+
+    is_behind = await ctxt.is_behind
+    print(f"is_behind: {is_behind}")
+
+    print(f"mergeable_state: {ctxt.pull['mergeable_state']}")
+
+    print("* MERGIFY LAST CHECKS:")
+    for c in await ctxt.pull_engine_check_runs:
         print(
-            f"* REPOSITORY IS {'PRIVATE' if repository.repo['private'] else 'PUBLIC'}"
+            f"[{c['name']}]: {c['conclusion']} | {c['output'].get('title')} | {c['html_url']}"
+        )
+        print(
+            "> "
+            + "\n> ".join(
+                ("No Summary",)
+                if c["output"]["summary"] is None
+                else c["output"]["summary"].split("\n")
+            )
         )
 
-        print(f"* DEFAULT BRANCH: {utils.extract_default_branch(repository.repo)}")
-
-        print("* CONFIGURATION:")
-        mergify_config = None
-        config_file = await repository.get_mergify_config_file()
-        if not config_file:
-            print(".mergify.yml is missing")
-        else:
-            print(f"Config filename: {config_file['path']}")
-            print(config_file["decoded_content"])
-            try:
-                mergify_config = await repository.get_mergify_config()
-            except rules.InvalidRules as e:  # pragma: no cover
-                print(f"configuration is invalid {str(e)}")
-
-        if pull_number is None:
-            async for branch in typing.cast(
-                abc.AsyncGenerator[github_types.GitHubBranch, None],
-                client.items(
-                    f"/repos/{owner_login}/{repo}/branches",
-                    resource_name="branches",
-                    page_limit=100,
-                ),
-            ):
-                q = merge_train.Train(repository, branch["name"])
-                await q.load()
-                await report_queue("TRAIN", q)
-
-        else:
-            repository = await installation.get_repository_by_name(
-                github_types.GitHubRepositoryName(repo)
-            )
-            try:
-                ctxt = await repository.get_pull_request_context(
-                    github_types.GitHubPullRequestNumber(int(pull_number))
-                )
-            except http.HTTPNotFound:
-                print(f"Pull request `{url}` does not exist")
-                await redis_links.shutdown_all()
-                return client
-
-            # FIXME queues could also be printed if no pull number given
-            # TODO(sileht): display train if any
-            q = await merge_train.Train.from_context(ctxt)
-            print(f"* TRAIN: {', '.join([f'#{p}' for p in await q.get_pulls()])}")
-            print("* PULL REQUEST:")
-            pr_data = await ctxt.pull_request.items()
-            pprint.pprint(pr_data, width=160)
-
-            is_behind = await ctxt.is_behind
-            print(f"is_behind: {is_behind}")
-
-            print(f"mergeable_state: {ctxt.pull['mergeable_state']}")
-
-            print("* MERGIFY LAST CHECKS:")
-            for c in await ctxt.pull_engine_check_runs:
-                print(
-                    f"[{c['name']}]: {c['conclusion']} | {c['output'].get('title')} | {c['html_url']}"
-                )
-                print(
-                    "> "
-                    + "\n> ".join(
-                        ("No Summary",)
-                        if c["output"]["summary"] is None
-                        else c["output"]["summary"].split("\n")
-                    )
-                )
-
-            if mergify_config is not None:
-                print("* MERGIFY LIVE MATCHES:")
-                pull_request_rules = mergify_config["pull_request_rules"]
-                match = await pull_request_rules.get_pull_request_rule(ctxt)
-                summary_title, summary = await actions_runner.gen_summary(
-                    ctxt, pull_request_rules, match
-                )
-                print(f"[Summary]: success | {summary_title}")
-                print("> " + "\n> ".join(summary.strip().split("\n")))
-            await redis_links.shutdown_all()
-            return ctxt
+    if mergify_config is not None:
+        print("* MERGIFY LIVE MATCHES:")
+        pull_request_rules = mergify_config["pull_request_rules"]
+        match = await pull_request_rules.get_pull_request_rule(ctxt)
+        summary_title, summary = await actions_runner.gen_summary(
+            ctxt, pull_request_rules, match
+        )
+        print(f"[Summary]: success | {summary_title}")
+        print("> " + "\n> ".join(summary.strip().split("\n")))
 
     await redis_links.shutdown_all()
-    return client
+    return ctxt
 
 
 def main() -> None:
