@@ -16,8 +16,11 @@
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
         "Title": "bash: a heap-buffer-overflow in valid_parameter_transform",
-        "Description": "A flaw was found in the bash package, where a heap-buffer overflow can occur in valid_parameter_transform. This issue may lead to memory problems.",
+        "Description": "A flaw was found in the bash package, where a heap-buffer overflow can occur in valid parameter_transform. This issue may lead to memory problems.",
         "Severity": "MEDIUM",
+        "CweIDs": [
+          "CWE-119"
+        ],
         "CVSS": {
           "redhat": {
             "V3Vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:R/S:U/C:L/I:L/A:H",
@@ -26,9 +29,11 @@
         },
         "References": [
           "https://access.redhat.com/security/cve/CVE-2022-3715",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2126720",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3715",
           "https://lists.gnu.org/archive/html/bug-bash/2022-08/msg00147.html"
-        ]
+        ],
+        "PublishedDate": "2023-01-05T15:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-0563",
@@ -235,6 +240,7 @@
         "PkgID": "curl@7.74.0-1.3+deb11u3",
         "PkgName": "curl",
         "InstalledVersion": "7.74.0-1.3+deb11u3",
+        "SeveritySource": "nvd",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-43551",
         "DataSource": {
           "ID": "debian",
@@ -244,7 +250,14 @@
         "Title": "curl: HSTS bypass via IDN",
         "Description": "A vulnerability exists in curl <7.87.0 HSTS check that could be bypassed to trick it to keep using HTTP. Using its HSTS support, curl can be instructed to use HTTPS instead of using an insecure clear-text HTTP step even when HTTP is provided in the URL. However, the HSTS mechanism could be bypassed if the host name in the given URL first uses IDN characters that get replaced to ASCII counterparts as part of the IDN conversion. Like using the character UTF-8 U+3002 (IDEOGRAPHIC FULL STOP) instead of the common ASCII full stop (U+002E) `.`. Then in a subsequent request, it does not detect the HSTS state and makes a clear text transfer. Because it would store the info IDN encoded but look for it IDN decoded.",
         "Severity": "HIGH",
+        "CweIDs": [
+          "CWE-319"
+        ],
         "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+            "V3Score": 7.5
+          },
           "redhat": {
             "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
             "V3Score": 7.5
@@ -1885,6 +1898,7 @@
         "PkgID": "libcurl3-gnutls@7.74.0-1.3+deb11u3",
         "PkgName": "libcurl3-gnutls",
         "InstalledVersion": "7.74.0-1.3+deb11u3",
+        "SeveritySource": "nvd",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-43551",
         "DataSource": {
           "ID": "debian",
@@ -1894,7 +1908,14 @@
         "Title": "curl: HSTS bypass via IDN",
         "Description": "A vulnerability exists in curl <7.87.0 HSTS check that could be bypassed to trick it to keep using HTTP. Using its HSTS support, curl can be instructed to use HTTPS instead of using an insecure clear-text HTTP step even when HTTP is provided in the URL. However, the HSTS mechanism could be bypassed if the host name in the given URL first uses IDN characters that get replaced to ASCII counterparts as part of the IDN conversion. Like using the character UTF-8 U+3002 (IDEOGRAPHIC FULL STOP) instead of the common ASCII full stop (U+002E) `.`. Then in a subsequent request, it does not detect the HSTS state and makes a clear text transfer. Because it would store the info IDN encoded but look for it IDN decoded.",
         "Severity": "HIGH",
+        "CweIDs": [
+          "CWE-319"
+        ],
         "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+            "V3Score": 7.5
+          },
           "redhat": {
             "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
             "V3Score": 7.5
@@ -2116,6 +2137,7 @@
         "PkgID": "libcurl4@7.74.0-1.3+deb11u3",
         "PkgName": "libcurl4",
         "InstalledVersion": "7.74.0-1.3+deb11u3",
+        "SeveritySource": "nvd",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-43551",
         "DataSource": {
           "ID": "debian",
@@ -2125,7 +2147,14 @@
         "Title": "curl: HSTS bypass via IDN",
         "Description": "A vulnerability exists in curl <7.87.0 HSTS check that could be bypassed to trick it to keep using HTTP. Using its HSTS support, curl can be instructed to use HTTPS instead of using an insecure clear-text HTTP step even when HTTP is provided in the URL. However, the HSTS mechanism could be bypassed if the host name in the given URL first uses IDN characters that get replaced to ASCII counterparts as part of the IDN conversion. Like using the character UTF-8 U+3002 (IDEOGRAPHIC FULL STOP) instead of the common ASCII full stop (U+002E) `.`. Then in a subsequent request, it does not detect the HSTS state and makes a clear text transfer. Because it would store the info IDN encoded but look for it IDN decoded.",
         "Severity": "HIGH",
+        "CweIDs": [
+          "CWE-319"
+        ],
         "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+            "V3Score": 7.5
+          },
           "redhat": {
             "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
             "V3Score": 7.5
@@ -7505,7 +7534,7 @@
           "Name": "GitHub Security Advisory Pip",
           "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip"
         },
-        "Title": "CVE-2022-40897 affecting package python-setuptools 40.2.0-6",
+        "Title": "pypa-setuptools: Regular Expression Denial of Service (ReDoS) in package_index.py",
         "Description": "Python Packaging Authority (PyPA) setuptools before 65.5.1 allows remote attackers to cause a denial of service via HTML in a crafted package or custom PackageIndex page. There is a Regular Expression Denial of Service (ReDoS) in package_index.py.",
         "Severity": "HIGH",
         "CVSS": {
@@ -7516,9 +7545,14 @@
           "nvd": {
             "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
             "V3Score": 7.5
+          },
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 5.9
           }
         },
         "References": [
+          "https://access.redhat.com/security/cve/CVE-2022-40897",
           "https://github.com/advisories/GHSA-r9hx-vwmv-q579",
           "https://github.com/pypa/setuptools/blob/fe8a98e696241487ba6ac9f91faa38ade939ec5d/setuptools/package_index.py#L200",
           "https://github.com/pypa/setuptools/commit/43a9c9bfa6aa626ec2a22540bea28d2ca77964be",
