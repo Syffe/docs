@@ -47,7 +47,7 @@ IGNORED_HTTP_ERROR_MESSAGES: dict[int, list[str | re.Pattern[str]]] = {
         ),
     ],
     422: [
-        "Sorry, there was a problem generating this diff. The repository may be missing relevant data."
+        "Sorry, there was a problem generating this diff. The repository may be missing relevant data.",
         "The request could not be processed because too many files changed.",
         "No commit found for SHA:",
     ],
