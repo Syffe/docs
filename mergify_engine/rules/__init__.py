@@ -106,6 +106,7 @@ class QueueConfig(typing.TypedDict):
     queue_branch_prefix: str | None
     queue_branch_merge_method: QueueBranchMergeMethod
     allow_queue_branch_edit: bool
+    batch_max_failure_resolution_attempts: int | None
 
 
 EvaluatedQueueRule = typing.NewType("EvaluatedQueueRule", "QueueRule")
@@ -726,6 +727,9 @@ QueueRulesSchema = voluptuous.All(
                     default=lambda: constants.MERGE_QUEUE_BRANCH_PREFIX,
                 ): str,
                 voluptuous.Required("allow_queue_branch_edit", default=False): bool,
+                voluptuous.Required(
+                    "batch_max_failure_resolution_attempts", default=None
+                ): voluptuous.Any(None, int),
                 # TODO(sileht): options to deprecate
                 voluptuous.Required(
                     "allow_checks_interruption", default=None

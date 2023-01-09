@@ -556,6 +556,16 @@ A ``queue_rules`` takes the following parameter:
      - |premium plan tag| The time to wait before creating the speculative check temporary pull request.
        See :ref:`speculative checks`.
 
+   * - ``batch_max_failure_resolution_attempts``
+     - int
+     -
+     - |premium plan tag| The number of attempts to resolve a batch failure
+       before unqueueing pull requests. By default, Mergify will attempt to
+       resolve a batch failure by splitting the batch multiple times until it
+       finds the root cause of the failure. You can stop this process earlier by
+       limiting the number of resolution attempts. Setting this to 0 will
+       unqueue all the pull requests from a batch when a batch fails.
+
    * - ``checks_timeout``
      - :ref:`Duration <duration>`
      -

@@ -307,6 +307,11 @@ class QueueChecksOutcome:
     PR_UNEXPECTEDLY_FAILED_TO_MERGE: int = dataclasses.field(
         metadata={"description": "Pull request unexpectedly failed to get merged"}
     )
+    BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS: int = dataclasses.field(
+        metadata={
+            "description": "The maximum batch failure resolution attempts has been reached"
+        }
+    )
 
 
 async def get_queue_checks_outcome_for_queue(

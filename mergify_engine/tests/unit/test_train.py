@@ -192,6 +192,35 @@ queue_rules:
       - regular-1x8-noint-from-fastlane-and-regular
       - fastlane-1x8-noint
 
+  - name: 2x8-batch-max-failure-2
+    conditions: []
+    speculative_checks: 2
+    batch_size: 8
+    allow_inplace_checks: False
+    batch_max_wait_time: 0 s
+    batch_max_failure_resolution_attempts: 2
+  - name: 2x8-batch-max-failure-0
+    conditions: []
+    speculative_checks: 2
+    batch_size: 8
+    allow_inplace_checks: False
+    batch_max_wait_time: 0 s
+    batch_max_failure_resolution_attempts: 0
+  - name: 1x8-batch-max-failure-2
+    conditions: []
+    speculative_checks: 1
+    batch_size: 8
+    allow_inplace_checks: False
+    batch_max_wait_time: 0 s
+    batch_max_failure_resolution_attempts: 2
+  - name: 1x8-batch-max-failure-0
+    conditions: []
+    speculative_checks: 1
+    batch_size: 8
+    allow_inplace_checks: False
+    batch_max_wait_time: 0 s
+    batch_max_failure_resolution_attempts: 0
+
 """
 
 QUEUE_RULES = voluptuous.Schema(rules.QueueRulesSchema)(
@@ -1763,3 +1792,51 @@ def test_train_car_old_serialization(
     )
     assert train_car.train_car_state.ci_state == ci_state
     assert train_car.train_car_state.outcome_message == outcome_message
+
+
+@pytest.mark.parametrize(
+    "config_name, failure_count",
+    (
+        ("2x8-batch-max-failure-2", 2),
+        ("2x8-batch-max-failure-0", 0),
+        ("1x8-batch-max-failure-2", 2),
+        ("1x8-batch-max-failure-0", 0),
+    ),
+)
+async def test_train_car_has_reached_batch_max_failure(
+    repository: context.Repository,
+    context_getter: conftest.ContextGetterFixture,
+    config_name: str,
+    failure_count: int,
+) -> None:
+    t = merge_train.Train(repository, github_types.GitHubRefType("main"))
+    await t.load()
+
+    mergify_config = await repository.get_mergify_config()
+    queue_rules = mergify_config["queue_rules"]
+
+    # Populate train
+    for i in range(40, 48):
+        await t.add_pull(
+            QUEUE_RULES, await context_getter(i), get_config(config_name), ""
+        )
+    await t.refresh()
+
+    # E.g. for batch_max_failure_resolution_attempts=2
+    # - First failure, first resolution attempt
+    # - Second failure, second resolution attempt
+    # - Third failure, maximum reached, outcome should not be unknown
+    for _ in range(failure_count):
+        assert t._cars[0].train_car_state.outcome == merge_train.TrainCarOutcome.UNKNOWN
+        assert not t._cars[0]._has_reached_batch_max_failure(queue_rules)
+
+        t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
+
+        await t.save()
+        await t.load()
+        await t.refresh()
+
+    first_car = t._cars[0]
+    first_car.train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
+
+    assert first_car._has_reached_batch_max_failure(queue_rules)

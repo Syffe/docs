@@ -279,6 +279,7 @@ class TrainCarOutcome(enum.Enum):
     DRAFT_PR_CHANGE = "draft_pr_change"
     UPDATED_PR_CHANGE = "updated_pr_change"
     UNKNOWN = "unknown"
+    BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS = "batch_max_failure_resolution_attempts"
     # FIXME(jd): remove me once all serialization are up to date
     UNKNWON = "unknown"
 
@@ -766,6 +767,7 @@ class TrainCar:
         elif self.train_car_state.outcome in (
             TrainCarOutcome.CHECKS_TIMEOUT,
             TrainCarOutcome.DRAFT_PR_CHANGE,
+            TrainCarOutcome.BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS,
         ):
             return check_api.Conclusion.FAILURE
         elif self.train_car_state.outcome == TrainCarOutcome.CHECKS_FAILED:
@@ -1829,7 +1831,6 @@ You don't need to do anything. Mergify will close this pull request automaticall
         self.last_conditions_evaluation = (
             evaluated_queue_rule.conditions.get_evaluation_result()
         )
-        self.last_checks = []
         outside_schedule = False
         has_failed_check_other_than_schedule = False
 
@@ -1931,6 +1932,13 @@ You don't need to do anything. Mergify will close this pull request automaticall
             elif queue_conditions_conclusion == check_api.Conclusion.FAILURE:
                 self.train_car_state.outcome = TrainCarOutcome.CHECKS_FAILED
                 self.train_car_state.outcome_message = CI_FAILED_MESSAGE
+        elif (
+            self.train_car_state.outcome == TrainCarOutcome.CHECKS_FAILED
+            and self._has_reached_batch_max_failure(queue_rules)
+        ):
+            self.train_car_state.outcome = (
+                TrainCarOutcome.BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS
+            )
 
         # Calcule next timeout refresh
         if (
@@ -1951,16 +1959,28 @@ You don't need to do anything. Mergify will close this pull request automaticall
             TrainCarChecksType.INPLACE,
             TrainCarChecksType.DRAFT,
         ):
-            if self.queue_pull_request_number is None:
-                raise RuntimeError(
-                    f"car's spec checks type is {self.train_car_state.checks_type}, but queue_pull_request_number is None"
-                )
+            await self._save_check_runs()
 
-            checked_ctxt = await self.train.repository.get_pull_request_context(
-                self.queue_pull_request_number
+    def _has_reached_batch_max_failure(self, queue_rules: "rules.QueueRules") -> bool:
+        rule = self.get_queue_rule(queue_rules)
+        batch_max_failure = rule.config["batch_max_failure_resolution_attempts"]
+
+        if batch_max_failure is None:
+            return False
+
+        return len(self.failure_history) >= batch_max_failure
+
+    async def _save_check_runs(self) -> None:
+        self.last_checks = []
+
+        if self.queue_pull_request_number is None:
+            raise RuntimeError(
+                f"car's spec checks type is {self.train_car_state.checks_type}, but queue_pull_request_number is None"
             )
-        else:
-            return
+
+        checked_ctxt = await self.train.repository.get_pull_request_context(
+            self.queue_pull_request_number
+        )
 
         for check in await checked_ctxt.pull_check_runs:
             # Don't copy Summary/Rule/Queue/... checks
@@ -2025,6 +2045,14 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 tmp_pull_title = (
                     f"The pull requests {refs} cannot be merged and will be split."
                 )
+        elif (
+            self.train_car_state.outcome
+            == TrainCarOutcome.BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS
+        ):
+            if len(self.initial_embarked_pulls) == 1:
+                tmp_pull_title = f"The pull request {refs} cannot be merged, due to maximum batch failure resolution attempts reached, and has been disembarked."
+            else:
+                tmp_pull_title = f"The pull requests {refs} cannot be merged, due to maximum batch failure resolution attempts reached, and have been disembarked."
         else:
             raise RuntimeError(
                 f"Unhandled TrainCarOutcome: {self.train_car_state.outcome}"
@@ -2115,6 +2143,15 @@ You don't need to do anything. Mergify will close this pull request automaticall
             elif has_unexpected_change:
                 headline = f"✨ Unexpected queue change: {self.train_car_state.outcome_message}. The pull request {self._get_user_refs()} will be re-embarked soon. ✨"
                 show_queue = True
+            elif (
+                self.train_car_state.outcome
+                == TrainCarOutcome.BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS
+            ):
+                headline = (
+                    "🙁 This combination of pull requests has failed checks and the maximum resolution attempts has been reached. "
+                    f"{self._get_user_refs()} will be removed from the queue. 🙁"
+                )
+                show_queue = False
             elif self.train_car_state.outcome == TrainCarOutcome.UNKNOWN:
                 headline = None
                 show_queue = True
@@ -2191,6 +2228,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
         elif self.train_car_state.outcome in (
             TrainCarOutcome.CHECKS_FAILED,
             TrainCarOutcome.CHECKS_TIMEOUT,
+            TrainCarOutcome.BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS,
         ):
             original_pull_title = f"The pull request embarked with {self._get_embarked_refs(include_my_self=False)} cannot be merged and has been disembarked"
         else:

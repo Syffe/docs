@@ -22,6 +22,7 @@ AbortCodeT = typing.Literal[
     "TARGET_BRANCH_MISSING",
     "TARGET_BRANCH_CHANGED",
     "PR_UNEXPECTEDLY_FAILED_TO_MERGE",
+    "BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS",
 ]
 
 UnqueueCodeT = typing.Union[typing.Literal["PR_MERGED"], AbortCodeT]  # noqa: NU003
@@ -169,6 +170,14 @@ class UnexpectedQueueChange(BaseUnqueueReason):
         typing.Literal["UNEXPECTED_QUEUE_CHANGE"]
     ] = "UNEXPECTED_QUEUE_CHANGE"
     change: str
+
+
+@dataclasses.dataclass
+class MaximumBatchFailureResolutionAttemptsReached(BaseUnqueueReason):
+    message = "The maximum batch failure resolution attempts has been reached"
+    unqueue_code: typing.ClassVar[
+        typing.Literal["BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS"]
+    ] = "BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS"
 
 
 def is_pr_body_a_merge_queue_pr(pull_request_body: str | None) -> bool:

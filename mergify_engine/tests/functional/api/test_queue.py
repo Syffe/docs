@@ -188,6 +188,7 @@ class TestQueueApi(base.FunctionalTestBase):
                         "priority": 0,
                         "queue_branch_prefix": constants.MERGE_QUEUE_BRANCH_PREFIX,
                         "queue_branch_merge_method": None,
+                        "batch_max_failure_resolution_attempts": None,
                     },
                 }
             ]
@@ -217,6 +218,7 @@ class TestQueueApi(base.FunctionalTestBase):
                         "queue_branch_merge_method": None,
                         "priority": 2,
                         "speculative_checks": 1,
+                        "batch_max_failure_resolution_attempts": None,
                     },
                 },
                 {
@@ -233,6 +235,7 @@ class TestQueueApi(base.FunctionalTestBase):
                         "queue_branch_merge_method": None,
                         "priority": 1,
                         "speculative_checks": 2,
+                        "batch_max_failure_resolution_attempts": None,
                     },
                 },
                 {
@@ -249,6 +252,7 @@ class TestQueueApi(base.FunctionalTestBase):
                         "queue_branch_merge_method": None,
                         "priority": 0,
                         "speculative_checks": 1,
+                        "batch_max_failure_resolution_attempts": None,
                     },
                 },
             ]

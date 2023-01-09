@@ -4588,6 +4588,7 @@ class TestQueueAction(base.FunctionalTestBase):
                                     "queue_branch_merge_method": None,
                                     "priority": 1,
                                     "speculative_checks": 5,
+                                    "batch_max_failure_resolution_attempts": None,
                                 },
                                 "name": "urgent",
                             },
@@ -4618,6 +4619,7 @@ class TestQueueAction(base.FunctionalTestBase):
                                     "queue_branch_merge_method": None,
                                     "priority": 0,
                                     "speculative_checks": 5,
+                                    "batch_max_failure_resolution_attempts": None,
                                 },
                                 "name": "default",
                             },
@@ -4643,6 +4645,7 @@ class TestQueueAction(base.FunctionalTestBase):
                                     "queue_branch_merge_method": None,
                                     "priority": 0,
                                     "speculative_checks": 5,
+                                    "batch_max_failure_resolution_attempts": None,
                                 },
                                 "name": "default",
                             },
@@ -5905,6 +5908,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
             draft_bot_account=None,
             queue_branch_prefix=constants.MERGE_QUEUE_BRANCH_PREFIX,
             queue_branch_merge_method=None,
+            batch_max_failure_resolution_attempts=None,
         )
         pull_queue_config = queue.PullQueueConfig(
             name=rules.QueueName("foo"),
@@ -6045,6 +6049,7 @@ pull_requests:
             draft_bot_account=None,
             queue_branch_prefix=constants.MERGE_QUEUE_BRANCH_PREFIX,
             queue_branch_merge_method=None,
+            batch_max_failure_resolution_attempts=None,
         )
         queue_pull_config = queue.PullQueueConfig(
             name=rules.QueueName("foo"),
@@ -6144,6 +6149,7 @@ pull_requests:
             draft_bot_account=None,
             queue_branch_prefix=constants.MERGE_QUEUE_BRANCH_PREFIX,
             queue_branch_merge_method=None,
+            batch_max_failure_resolution_attempts=None,
         )
         queue_pull_config = queue.PullQueueConfig(
             name=rules.QueueName("foo"),
@@ -6219,6 +6225,7 @@ pull_requests:
             draft_bot_account=None,
             queue_branch_prefix=constants.MERGE_QUEUE_BRANCH_PREFIX,
             queue_branch_merge_method=None,
+            batch_max_failure_resolution_attempts=None,
         )
         config = queue.PullQueueConfig(
             name=rules.QueueName("foo"),
@@ -6347,3 +6354,53 @@ pull_requests:
             # request with the sliced car will not be opened
             await self.run_engine()
             await self.wait_for_pull_request("opened")
+
+    async def test_batch_max_failure_resolution_attempts(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "speculative_checks": 2,
+                    "batch_size": 3,
+                    "allow_inplace_checks": False,
+                    "batch_max_wait_time": "0 s",
+                    "batch_max_failure_resolution_attempts": 0,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Automatic merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        p2 = await self.create_pr()
+
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        draft_pr = await self.wait_for_pull_request("opened")
+        await self.create_status(draft_pr["pull_request"], state="failure")
+        await self.run_engine()
+
+        check_run = await self.wait_for_check_run(
+            name="Rule: Automatic merge (queue)", conclusion="cancelled"
+        )
+        assert (
+            check_run["check_run"]["output"]["title"]
+            == "The pull request has been removed from the queue"
+        )
+        assert check_run["check_run"]["output"]["summary"].startswith(
+            "The maximum batch failure resolution attempts has been reached."
+        )

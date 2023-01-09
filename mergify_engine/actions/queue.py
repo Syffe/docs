@@ -737,6 +737,11 @@ Then, re-embark the pull request into the merge queue by posting the comment
             return queue_utils.ChecksFailed()
         elif train_car_state.outcome == merge_train.TrainCarOutcome.CHECKS_TIMEOUT:
             return queue_utils.ChecksTimeout()
+        elif (
+            train_car_state.outcome
+            == merge_train.TrainCarOutcome.BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS
+        ):
+            return queue_utils.MaximumBatchFailureResolutionAttemptsReached()
         else:
             raise RuntimeError(
                 f"TrainCarState.outcome `{train_car_state.outcome.value}` can't be mapped to an AbortReason"

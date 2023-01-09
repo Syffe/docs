@@ -2004,3 +2004,38 @@ async def test_rule_condition_related_checks(
 
     assert condition.match is expected_match
     assert condition.related_checks == expected_related_checks
+
+
+async def test_queue_rules_parameters() -> None:
+    config = await utils.load_mergify_config(
+        """
+queue_rules:
+   - name: foo
+     conditions: []
+     speculative_checks: 5
+     batch_size: 6
+     batch_max_wait_time: 60 s
+     allow_inplace_checks: False
+     disallow_checks_interruption_from_queues: [foo]
+     checks_timeout: 60 m
+     draft_bot_account: my-bot
+     queue_branch_merge_method: fast-forward
+     queue_branch_prefix: my-prefix
+     allow_queue_branch_edit: True
+     batch_max_failure_resolution_attempts: 10
+"""
+    )
+
+    queue_rule = config["queue_rules"].rules[0]
+    assert queue_rule.name == "foo"
+    assert queue_rule.config["speculative_checks"] == 5
+    assert queue_rule.config["batch_size"] == 6
+    assert queue_rule.config["batch_max_wait_time"] == rules.PositiveInterval("60 s")
+    assert queue_rule.config["allow_inplace_checks"] is False
+    assert queue_rule.config["disallow_checks_interruption_from_queues"] == ["foo"]
+    assert queue_rule.config["checks_timeout"] == rules.PositiveInterval("60 m")
+    assert queue_rule.config["draft_bot_account"] == "my-bot"
+    assert queue_rule.config["queue_branch_merge_method"] == "fast-forward"
+    assert queue_rule.config["queue_branch_prefix"] == "my-prefix"
+    assert queue_rule.config["allow_queue_branch_edit"] is True
+    assert queue_rule.config["batch_max_failure_resolution_attempts"] == 10

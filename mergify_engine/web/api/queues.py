@@ -295,6 +295,7 @@ async def get_queue_rules(
                                                 "draft_bot_account": "",
                                                 "queue_branch_prefix": constants.MERGE_QUEUE_BRANCH_PREFIX,
                                                 "queue_branch_merge_method": "fast-forward",
+                                                "batch_max_failure_resolution_attempts": 10,
                                             },
                                         },
                                         "speculative_check_pull_request": {
@@ -334,6 +335,7 @@ async def get_queue_rules(
                                                 "draft_bot_account": "",
                                                 "queue_branch_prefix": constants.MERGE_QUEUE_BRANCH_PREFIX,
                                                 "queue_branch_merge_method": "fast-forward",
+                                                "batch_max_failure_resolution_attempts": 10,
                                             },
                                         },
                                         "speculative_check_pull_request": {
@@ -571,6 +573,7 @@ class EnhancedPullRequestQueued:
                                 "draft_bot_account": "",
                                 "queue_branch_prefix": constants.MERGE_QUEUE_BRANCH_PREFIX,
                                 "queue_branch_merge_method": "fast-forward",
+                                "batch_max_failure_resolution_attempts": 10,
                             },
                         },
                         "mergeability_check": {

@@ -1,0 +1,8 @@
+---
+features:
+  - |
+    Queue action has a new option `batch_max_failure_resolution_attempts`
+    corresponding to the number of attempts to resolve a batch failure before
+    unqueueing pull requests. By default, Mergify will attempt to resolve a
+    batch failure by splitting it. You can choose to stop this process after
+    several splits.
