@@ -196,5 +196,5 @@ async def auth_setup(
     elif setup_action == "request":
         return AuthRedirectUrl("/?request=true")
 
-    LOG.error("Unknown setup_action: %s", setup_action)
+    LOG.warning("Unknown setup_action: %s", setup_action)
     return AuthRedirectUrl("/")
