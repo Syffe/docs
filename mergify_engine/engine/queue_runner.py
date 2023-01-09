@@ -1,8 +1,4 @@
-import datetime
-
 from mergify_engine import context
-from mergify_engine import date
-from mergify_engine import delayed_refresh
 from mergify_engine import rules
 from mergify_engine.queue import merge_train
 
@@ -67,12 +63,3 @@ async def handle(queue_rules: rules.QueueRules, ctxt: context.Context) -> None:
     await car.check_mergeability(
         queue_rules, origin="draft_pull_request", original_pull_request_rule=None
     )
-
-    if car.train_car_state.outcome == merge_train.TrainCarOutcome.UNKNOWN:
-        # NOTE(sileht): we are supposed to be triggered by GitHub events, but in
-        # case we miss some of them due to an outage, this is a seatbelt to recover
-        # automatically after 3 minutes
-        refresh_at = date.utcnow() + datetime.timedelta(minutes=3)
-        await delayed_refresh.plan_refresh_at_least_at(
-            ctxt.repository, ctxt.pull["number"], refresh_at
-        )

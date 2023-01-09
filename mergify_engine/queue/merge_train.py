@@ -1744,14 +1744,6 @@ You don't need to do anything. Mergify will close this pull request automaticall
             else None,
         )
 
-        for pull_request in pull_requests:
-            await delayed_refresh.plan_next_refresh(
-                checked_ctxt,
-                [evaluated_queue_rule],
-                pull_request,
-                only_if_earlier=True,
-            )
-
         status = await checks_status.get_rule_checks_status(
             checked_ctxt.log,
             checked_ctxt.repository,
@@ -1766,6 +1758,23 @@ You don't need to do anything. Mergify will close this pull request automaticall
             evaluated_queue_rule,
             unexpected_change=unexpected_changes,
         )
+
+        if self.train_car_state.outcome == TrainCarOutcome.UNKNOWN:
+            for pull_request in pull_requests:
+                await delayed_refresh.plan_next_refresh(
+                    checked_ctxt,
+                    [evaluated_queue_rule],
+                    pull_request,
+                    only_if_earlier=True,
+                )
+
+            # NOTE(sileht): we are supposed to be triggered by GitHub events, but in
+            # case we miss some of them due to an outage, this is a seatbelt to recover
+            # automatically after 3 minutes
+            refresh_at = date.utcnow() + datetime.timedelta(minutes=3)
+            await delayed_refresh.plan_refresh_at_least_at(
+                self.train.repository, self.queue_pull_request_number, refresh_at
+            )
 
         diff_result = deepdiff.DeepDiff(
             saved_last_conditions_evaluation,
