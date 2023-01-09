@@ -268,7 +268,9 @@
           "https://curl.se/docs/CVE-2022-43551.html",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-43551",
           "https://hackerone.com/reports/1755083",
-          "https://lists.fedoraproject.org/archives/list/package-announce%40lists.fedoraproject.org/message/TVWZW5CNSJ7UYAF2BGSYAWAEXDJYUBHA/"
+          "https://lists.fedoraproject.org/archives/list/package-announce%40lists.fedoraproject.org/message/TVWZW5CNSJ7UYAF2BGSYAWAEXDJYUBHA/",
+          "https://nvd.nist.gov/vuln/detail/CVE-2022-43551",
+          "https://ubuntu.com/security/notices/USN-5788-1"
         ],
         "PublishedDate": "2022-12-23T15:15:00Z"
       },
@@ -295,7 +297,8 @@
         "References": [
           "https://access.redhat.com/security/cve/CVE-2022-43552",
           "https://curl.se/docs/CVE-2022-43552.html",
-          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-43552"
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-43552",
+          "https://ubuntu.com/security/notices/USN-5788-1"
         ]
       },
       {
@@ -424,13 +427,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:8361",
+          "https://access.redhat.com/errata/RHSA-2022:7720",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
+          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -1796,13 +1799,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:8361",
+          "https://access.redhat.com/errata/RHSA-2022:7720",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
+          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -1926,7 +1929,9 @@
           "https://curl.se/docs/CVE-2022-43551.html",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-43551",
           "https://hackerone.com/reports/1755083",
-          "https://lists.fedoraproject.org/archives/list/package-announce%40lists.fedoraproject.org/message/TVWZW5CNSJ7UYAF2BGSYAWAEXDJYUBHA/"
+          "https://lists.fedoraproject.org/archives/list/package-announce%40lists.fedoraproject.org/message/TVWZW5CNSJ7UYAF2BGSYAWAEXDJYUBHA/",
+          "https://nvd.nist.gov/vuln/detail/CVE-2022-43551",
+          "https://ubuntu.com/security/notices/USN-5788-1"
         ],
         "PublishedDate": "2022-12-23T15:15:00Z"
       },
@@ -1953,7 +1958,8 @@
         "References": [
           "https://access.redhat.com/security/cve/CVE-2022-43552",
           "https://curl.se/docs/CVE-2022-43552.html",
-          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-43552"
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-43552",
+          "https://ubuntu.com/security/notices/USN-5788-1"
         ]
       },
       {
@@ -2165,7 +2171,9 @@
           "https://curl.se/docs/CVE-2022-43551.html",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-43551",
           "https://hackerone.com/reports/1755083",
-          "https://lists.fedoraproject.org/archives/list/package-announce%40lists.fedoraproject.org/message/TVWZW5CNSJ7UYAF2BGSYAWAEXDJYUBHA/"
+          "https://lists.fedoraproject.org/archives/list/package-announce%40lists.fedoraproject.org/message/TVWZW5CNSJ7UYAF2BGSYAWAEXDJYUBHA/",
+          "https://nvd.nist.gov/vuln/detail/CVE-2022-43551",
+          "https://ubuntu.com/security/notices/USN-5788-1"
         ],
         "PublishedDate": "2022-12-23T15:15:00Z"
       },
@@ -2192,7 +2200,8 @@
         "References": [
           "https://access.redhat.com/security/cve/CVE-2022-43552",
           "https://curl.se/docs/CVE-2022-43552.html",
-          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-43552"
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-43552",
+          "https://ubuntu.com/security/notices/USN-5788-1"
         ]
       },
       {
@@ -2436,13 +2445,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:8361",
+          "https://access.redhat.com/errata/RHSA-2022:7720",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
+          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -4345,13 +4354,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:8361",
+          "https://access.redhat.com/errata/RHSA-2022:7720",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
+          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -4395,18 +4404,16 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:6224",
+          "https://access.redhat.com/errata/RHSA-2022:5818",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1292.json",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-2068.json",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-2097.json",
           "https://access.redhat.com/security/cve/CVE-2022-2097",
           "https://bugzilla.redhat.com/2081494",
-          "https://bugzilla.redhat.com/2087911",
-          "https://bugzilla.redhat.com/2087913",
           "https://bugzilla.redhat.com/2097310",
           "https://bugzilla.redhat.com/2104905",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-2097",
-          "https://errata.almalinux.org/9/ALSA-2022-6224.html",
+          "https://errata.almalinux.org/8/ALSA-2022-5818.html",
           "https://git.openssl.org/gitweb/?p=openssl.git;a=commitdiff;h=919925673d6c9cfed3c1085497f5dfbbed5fc431",
           "https://git.openssl.org/gitweb/?p=openssl.git;a=commitdiff;h=a98f339ddd7e8f487d6e0088d4a9a42324885a93",
           "https://github.com/advisories/GHSA-3wx7-46ch-7rq2",
@@ -5111,13 +5118,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:8361",
+          "https://access.redhat.com/errata/RHSA-2022:7720",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
+          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -7513,57 +7520,6 @@
           "https://security.netapp.com/advisory/ntap-20220331-0002/"
         ],
         "PublishedDate": "2022-02-21T19:15:00Z"
-      }
-    ]
-  },
-  {
-    "Target": "Python",
-    "Class": "lang-pkgs",
-    "Type": "python-pkg",
-    "Vulnerabilities": [
-      {
-        "VulnerabilityID": "CVE-2022-40897",
-        "PkgName": "setuptools",
-        "PkgPath": "usr/local/lib/python3.11/site-packages/setuptools-65.5.0.dist-info/METADATA",
-        "InstalledVersion": "65.5.0",
-        "FixedVersion": "65.5.1",
-        "SeveritySource": "ghsa",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-40897",
-        "DataSource": {
-          "ID": "ghsa",
-          "Name": "GitHub Security Advisory Pip",
-          "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip"
-        },
-        "Title": "pypa-setuptools: Regular Expression Denial of Service (ReDoS) in package_index.py",
-        "Description": "Python Packaging Authority (PyPA) setuptools before 65.5.1 allows remote attackers to cause a denial of service via HTML in a crafted package or custom PackageIndex page. There is a Regular Expression Denial of Service (ReDoS) in package_index.py.",
-        "Severity": "HIGH",
-        "CVSS": {
-          "ghsa": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
-            "V3Score": 7.5
-          },
-          "nvd": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
-            "V3Score": 7.5
-          },
-          "redhat": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H",
-            "V3Score": 5.9
-          }
-        },
-        "References": [
-          "https://access.redhat.com/security/cve/CVE-2022-40897",
-          "https://github.com/advisories/GHSA-r9hx-vwmv-q579",
-          "https://github.com/pypa/setuptools/blob/fe8a98e696241487ba6ac9f91faa38ade939ec5d/setuptools/package_index.py#L200",
-          "https://github.com/pypa/setuptools/commit/43a9c9bfa6aa626ec2a22540bea28d2ca77964be",
-          "https://github.com/pypa/setuptools/compare/v65.5.0...v65.5.1",
-          "https://github.com/pypa/setuptools/issues/3659",
-          "https://nvd.nist.gov/vuln/detail/CVE-2022-40897",
-          "https://pyup.io/posts/pyup-discovers-redos-vulnerabilities-in-top-python-packages/",
-          "https://pyup.io/vulnerabilities/CVE-2022-40897/52495/",
-          "https://setuptools.pypa.io/en/latest/"
-        ],
-        "PublishedDate": "2022-12-23T00:15:00Z"
       }
     ]
   }
