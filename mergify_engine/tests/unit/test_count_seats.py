@@ -134,16 +134,18 @@ async def test_get_usage_count_seats(
 ) -> None:
     await (count_seats.store_active_users(redis_links.active_users, event_type, event))
 
-    reply = await web_client.request("GET", "/organization/1234/usage")
+    reply = await web_client.request("GET", "/subscriptions/organization/1234/usage")
     assert reply.status_code == 403
 
     web_client.headers["Authorization"] = f"Bearer {config.DASHBOARD_TO_ENGINE_API_KEY}"
     web_client.headers["Content-Type"] = "application/json; charset=utf8"
-    reply = await web_client.request("GET", "/organization/1234/usage")
+    reply = await web_client.request("GET", "/subscriptions/organization/1234/usage")
     assert reply.status_code == 200, reply.content
     assert json.loads(reply.content) == {"repositories": [], "last_seen_at": None}
 
-    reply = await web_client.request("GET", "/organization/21031067/usage")
+    reply = await web_client.request(
+        "GET", "/subscriptions/organization/21031067/usage"
+    )
     assert reply.status_code == 200, reply.content
     if event_type == "pull_request":
         assert json.loads(reply.content) == {
@@ -192,13 +194,13 @@ async def test_get_usage_last_seen(
 
     signals.register()
 
-    reply = await web_client.request("GET", "/organization/0/usage")
+    reply = await web_client.request("GET", "/subscriptions/organization/0/usage")
     assert reply.status_code == 403, reply.content
 
     web_client.headers["Authorization"] = f"Bearer {config.DASHBOARD_TO_ENGINE_API_KEY}"
     web_client.headers["Content-Type"] = "application/json; charset=utf8"
 
-    reply = await web_client.request("GET", "/organization/0/usage")
+    reply = await web_client.request("GET", "/subscriptions/organization/0/usage")
     assert reply.status_code == 200, reply.content
     assert json.loads(reply.content) == {"repositories": [], "last_seen_at": None}
 
@@ -210,7 +212,7 @@ async def test_get_usage_last_seen(
         "Rule: testing",
     )
 
-    reply = await web_client.request("GET", "/organization/0/usage")
+    reply = await web_client.request("GET", "/subscriptions/organization/0/usage")
     assert reply.status_code == 200, reply.content
     assert json.loads(reply.content) == {
         "repositories": [],

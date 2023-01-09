@@ -32,9 +32,6 @@ def create_app(https_only: bool = True, debug: bool = False) -> fastapi.FastAPI:
     )
     app.add_middleware(starlette_workaround.StarletteWorkaroundMiddleware)
 
-    # FIXME(sileht): delete me once dashbaord since use new prefix
-    app.include_router(subscriptions.router)
-
     app.mount("/badges", legacy_badges.create_app(debug=debug))
     app.mount("/v1", api_root.create_app(cors_enabled=True, debug=debug))
     app.mount("/front", front_root.create_app(debug=debug))
