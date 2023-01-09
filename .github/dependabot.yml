@@ -12,7 +12,6 @@ updates:
         dependency-type: "all"
     ignore:
       - dependency-name: "setproctitle"
-      - dependency-name: "sentry-sdk"
   - package-ecosystem: npm
     directory: "/docs"
     schedule:
