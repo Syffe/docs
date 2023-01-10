@@ -243,8 +243,9 @@ class EventReader:
                 for event in await self._get_events(test_id=test_id):
                     await self._handled_events.put(event)
                 else:
-                    if RECORD:
-                        await asyncio.sleep(self.EVENTS_POLLING_INTERVAL_SECONDS)
+                    await asyncio.sleep(
+                        self.EVENTS_POLLING_INTERVAL_SECONDS if RECORD else 0
+                    )
                 continue
 
             if event["type"] == event_type and self._match(
