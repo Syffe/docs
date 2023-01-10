@@ -50,7 +50,7 @@ class SpeculativeCheckPullRequest:
             "description": "The number of the pull request used by the speculative check"
         }
     )
-    started_at: datetime.datetime = dataclasses.field(
+    started_at: datetime.datetime | None = dataclasses.field(
         metadata={
             "description": "The timestamp when the checks have started for this pull request"
         }
@@ -94,7 +94,7 @@ class SpeculativeCheckPullRequest:
                 in_place=car.train_car_state.checks_type
                 == merge_train.TrainCarChecksType.INPLACE,
                 number=car.queue_pull_request_number,
-                started_at=car.train_car_state.creation_date,
+                started_at=car.train_car_state.ci_started_at,
                 ended_at=car.checks_ended_timestamp,
                 state=car.get_queue_check_run_conclusion().value or "pending",
                 checks=car.last_checks,
@@ -445,7 +445,7 @@ class MergeabilityCheck:
             "description": "The number of the pull request used by the speculative check"
         }
     )
-    started_at: datetime.datetime = dataclasses.field(
+    started_at: datetime.datetime | None = dataclasses.field(
         metadata={
             "description": "The timestamp when the checks have started for this pull request"
         }
@@ -498,7 +498,7 @@ class MergeabilityCheck:
                     car.train_car_state.checks_type
                 ],
                 pull_request_number=car.queue_pull_request_number,
-                started_at=car.train_car_state.creation_date,
+                started_at=car.train_car_state.ci_started_at,
                 ended_at=car.checks_ended_timestamp,
                 state=car.get_queue_check_run_conclusion().value or "pending",
                 checks=car.last_checks,

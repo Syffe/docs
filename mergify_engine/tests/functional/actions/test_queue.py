@@ -5340,15 +5340,22 @@ class TestQueueAction(base.FunctionalTestBase):
             await self.wait_for("pull_request", {"action": "opened"})
             await self.run_full_engine()
 
-            check = first(
-                await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-                key=lambda c: c["name"] == "Rule: queue (queue)",
-            )
+            ctxt_p1 = context.Context(self.repository_ctxt, p1)
+            check = await ctxt_p1.get_engine_check_run("Rule: queue (queue)")
             assert check is not None
             assert (
                 check["output"]["title"]
                 == "The pull request is the 1st in the queue to be merged"
             )
+
+            check = await ctxt_p1.get_engine_check_run(
+                constants.MERGE_QUEUE_SUMMARY_NAME
+            )
+            assert check is not None
+            assert (
+                "The checks have to pass before 20:10 UTC" in check["output"]["summary"]
+            )
+
             pulls_to_refresh: list[
                 tuple[str, float]
             ] = await self.redis_links.cache.zrangebyscore(
@@ -5359,10 +5366,8 @@ class TestQueueAction(base.FunctionalTestBase):
         with freeze_time("2021-05-30T20:12:00", tick=True):
 
             await self.run_full_engine()
-            check = first(
-                await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-                key=lambda c: c["name"] == "Rule: queue (queue)",
-            )
+            ctxt_p1._caches.pull_check_runs.delete()
+            check = await ctxt_p1.get_engine_check_run("Rule: queue (queue)")
             assert check is not None
             assert (
                 check["output"]["title"]

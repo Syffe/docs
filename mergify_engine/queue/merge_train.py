@@ -302,10 +302,10 @@ UNEXPECTED_CHANGE_COMPATIBILITY = {
 class TrainCarState:
     outcome: TrainCarOutcome = TrainCarOutcome.UNKNOWN
     ci_state: CiState = CiState.PENDING
+    ci_started_at: datetime.datetime | None = None
     ci_ended_at: datetime.datetime | None = None
     outcome_message: str | None = None
     checks_type: TrainCarChecksType | None = None
-    creation_date: datetime.datetime = dataclasses.field(default_factory=date.utcnow)
     waiting_for_freeze_start_dates: list[datetime.datetime] = dataclasses.field(
         default_factory=list
     )
@@ -322,10 +322,10 @@ class TrainCarState:
     class Serialized(typing.TypedDict):
         outcome: TrainCarOutcome
         ci_state: CiState
+        ci_started_at: datetime.datetime | None
         ci_ended_at: datetime.datetime | None
         outcome_message: str | None
         checks_type: TrainCarChecksType | None
-        creation_date: datetime.datetime
         waiting_for_freeze_start_dates: list[datetime.datetime]
         waiting_for_freeze_end_dates: list[datetime.datetime]
         waiting_for_schedule_start_dates: list[datetime.datetime]
@@ -335,10 +335,10 @@ class TrainCarState:
         return self.Serialized(
             outcome=self.outcome,
             ci_state=self.ci_state,
+            ci_started_at=self.ci_started_at,
             ci_ended_at=self.ci_ended_at,
             outcome_message=self.outcome_message,
             checks_type=self.checks_type,
-            creation_date=self.creation_date,
             waiting_for_freeze_start_dates=self.waiting_for_freeze_start_dates,
             waiting_for_freeze_end_dates=self.waiting_for_freeze_end_dates,
             waiting_for_schedule_start_dates=self.waiting_for_schedule_start_dates,
@@ -371,21 +371,25 @@ class TrainCarState:
                 "waiting_for_schedule_end_dates"
             ]
 
+        legacy_creation_date: datetime.datetime | None = data.get("creation_date")  # type: ignore[assignment]
+
         return cls(
             outcome=data["outcome"],
             ci_state=data["ci_state"],
+            ci_started_at=data.get("ci_started_at", legacy_creation_date),
             ci_ended_at=data.get("ci_ended_at"),
             outcome_message=data["outcome_message"],
             checks_type=data["checks_type"],
-            creation_date=data["creation_date"],
             **kwargs,
         )
 
     def ci_has_timed_out(self, timeout: datetime.timedelta) -> bool:
+        if self.ci_started_at is None:
+            return False
         ci_duration = (
             self.ci_ended_at if self.ci_ended_at is not None else date.utcnow()
         )
-        return (ci_duration - self.creation_date) > timeout
+        return (ci_duration - self.ci_started_at) > timeout
 
     @classmethod
     def decode_train_car_state_from_summary(
@@ -648,15 +652,10 @@ class TrainCar:
                 f"{constants.MERGE_QUEUE_BRANCH_PREFIX}{train.ref}/{cls._get_pulls_branch_ref(initial_embarked_pulls)}"
             )
 
-        if "creation_date" in data:
-            creation_date = data["creation_date"]  # type: ignore[typeddict-item]
-        else:
-            creation_date = date.utcnow()
-
         # NOTE(Syffe): Backward compatibility for old TrainCar without TrainCarState attribute
         # (Released in version 6.0)
         train_car_state = cls._deserialize_train_car_state(
-            data=data, checks_type=checks_type, creation_date=creation_date
+            data=data, checks_type=checks_type
         )
 
         if (
@@ -692,7 +691,6 @@ class TrainCar:
         cls,
         data: "TrainCar.Serialized",
         checks_type: TrainCarChecksType | None,
-        creation_date: datetime.datetime,
     ) -> "TrainCarState":
         if "train_car_state" in data:
             return TrainCarState.deserialize(data["train_car_state"])
@@ -725,12 +723,17 @@ class TrainCar:
             ):
                 outcome = TrainCarOutcome.MERGEABLE
 
+            if "creation_date" in data:
+                creation_date = data["creation_date"]  # type: ignore[typeddict-item]
+            else:
+                creation_date = date.utcnow()
+
             return TrainCarState(
                 outcome=outcome,
                 ci_state=ci_state,
                 outcome_message=outcome_message,
                 checks_type=checks_type,
-                creation_date=creation_date,
+                ci_started_at=creation_date,
             )
 
     @property
@@ -1279,6 +1282,7 @@ class TrainCar:
         queue_rules: "rules.QueueRules",
         pull_request_number: github_types.GitHubPullRequestNumber,
     ) -> None:
+        self.train_car_state.ci_started_at = date.utcnow()
         self.train_car_state.checks_type = checks_type
         self.queue_pull_request_number = pull_request_number
 
@@ -1452,7 +1456,10 @@ You don't need to do anything. Mergify will close this pull request automaticall
         unqueue_reason: queue_utils.BaseUnqueueReason,
         abort_status: typing.Literal["DEFINITIVE", "REEMBARKED"],
     ) -> None:
-        if self.queue_pull_request_number is None:
+        if (
+            self.queue_pull_request_number is None
+            or self.train_car_state.ci_started_at is None
+        ):
             # NOTE(sileht): Maybe add something to eventlog here?
             return
 
@@ -1492,7 +1499,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
                     "checks_timed_out": self.train_car_state.outcome
                     == TrainCarOutcome.CHECKS_TIMEOUT,
                     "checks_ended_at": self.checks_ended_timestamp,
-                    "checks_started_at": self.train_car_state.creation_date,
+                    "checks_started_at": self.train_car_state.ci_started_at,
                 },
             }
         )
@@ -1809,6 +1816,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             new_state={
                 "outcome": self.train_car_state.outcome,
                 "ci_state": self.train_car_state.ci_state,
+                "ci_started_at": self.train_car_state.ci_started_at,
                 "ci_ended_at": self.train_car_state.ci_ended_at,
                 "checks_end_at": self.checks_ended_timestamp,
                 "queue_check_conclusion": self.get_queue_check_run_conclusion(),
@@ -1954,13 +1962,14 @@ You don't need to do anything. Mergify will close this pull request automaticall
             self.train_car_state.outcome == TrainCarOutcome.UNKNOWN
             and self.train_car_state.ci_state == CiState.PENDING
             and timeout is not None
-            and self.queue_pull_request_number is not None
+            and self.queue_pull_request_number is not None  # to please mypy
+            and self.train_car_state.ci_started_at is not None  # to please mypy
             and not self.train_car_state.ci_has_timed_out(timeout)
         ):
             await delayed_refresh.plan_refresh_at_least_at(
                 self.train.repository,
                 self.queue_pull_request_number,
-                self.train_car_state.creation_date + timeout,
+                self.train_car_state.ci_started_at + timeout,
             )
 
         # Save the status of all check-runs/statuses for API/UI reporting
@@ -2072,26 +2081,22 @@ You don't need to do anything. Mergify will close this pull request automaticall
         timeout_summary = ""
         timeout = queue_rule.config["checks_timeout"]
 
-        if timeout is not None and self.train_car_state.outcome in [
-            TrainCarOutcome.UNKNOWN,
-            TrainCarOutcome.CHECKS_TIMEOUT,
-        ]:
-            expected_finish = (
-                date.pretty_datetime(
-                    date.RelativeDatetime(self.train_car_state.creation_date).value
-                )
-                if self.train_car_state.creation_date.date() > date.utcnow().date()
-                else date.pretty_time(
-                    date.RelativeDatetime(self.train_car_state.creation_date).value
-                )
+        if self.train_car_state.outcome == TrainCarOutcome.CHECKS_TIMEOUT:
+            timeout_summary = "\n\n❌⏲️️  The checks have timed out ⏲❌"
+        elif (
+            timeout is not None
+            and self.train_car_state.ci_started_at is not None  # to please mypy
+            and self.train_car_state.outcome == TrainCarOutcome.UNKNOWN
+        ):
+            expected_finish_dt = self.train_car_state.ci_started_at + timeout
+            expected_finish_pretty = (
+                date.pretty_datetime(expected_finish_dt)
+                if expected_finish_dt.date() > date.utcnow().date()
+                else date.pretty_time(expected_finish_dt)
             )
-
-            if self.train_car_state.outcome == TrainCarOutcome.UNKNOWN:
-                timeout_summary = (
-                    f"\n\n⏲️  The checks have to pass before {expected_finish} ⏲"
-                )
-            elif self.train_car_state.outcome == TrainCarOutcome.CHECKS_TIMEOUT:
-                timeout_summary = "\n\n❌⏲️️  The checks have timed out ⏲❌"
+            timeout_summary = (
+                f"\n\n⏲️  The checks have to pass before {expected_finish_pretty} ⏲"
+            )
 
         queue_summary += timeout_summary
 
