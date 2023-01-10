@@ -298,7 +298,6 @@ def get_config(queue_name: str, priority: int = 100) -> queue.PullQueueConfig:
     )
     return queue.PullQueueConfig(
         name=rules.QueueName(queue_name),
-        strict_method="merge",
         update_method="merge",
         priority=priority,
         effective_priority=effective_priority,
@@ -1648,7 +1647,6 @@ async def test_train_queue_pr_with_higher_prio_enters_in_queue_during_merging_2x
 def test_embarked_pull_old_serialization() -> None:
     config = queue.PullQueueConfig(
         name=rules.QueueName("foo"),
-        strict_method="merge",
         update_method="merge",
         priority=0,
         effective_priority=0,

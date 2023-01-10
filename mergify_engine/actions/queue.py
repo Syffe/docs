@@ -392,10 +392,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 "and must be unset.",
             )
 
-        # FIXME(sileht): we should use the computed update_bot_account in TrainCar.update_pull(),
-        # not the original one
         try:
-            await action_utils.render_bot_account(
+            update_bot_account = await action_utils.render_bot_account(
                 ctxt,
                 self.config["update_bot_account"],
                 option_name="update_bot_account",
@@ -428,8 +426,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
                         "",
                     ),
                 )
-
-        await self._set_effective_priority(ctxt)
 
         q = await merge_train.Train.from_context(ctxt)
         car = q.get_car(ctxt)
@@ -484,10 +480,20 @@ Then, re-embark the pull request into the merge queue by posting the comment
             await self._unqueue_pull_request(ctxt, rule, q, car, unqueue_reason, result)
             return result
 
+        pull_queue_config = queue.PullQueueConfig(
+            {
+                "update_method": self.config["update_method"],
+                "effective_priority": await self._get_effective_priority(ctxt),
+                "bot_account": merge_bot_account,
+                "update_bot_account": update_bot_account,
+                "priority": self.config["priority"],
+                "name": self.config["name"],
+            }
+        )
         await q.add_pull(
             self.queue_rules,
             ctxt,
-            typing.cast(queue.PullQueueConfig, self.config),
+            pull_queue_config,
             rule.get_signal_trigger(),
         )
 
@@ -547,8 +553,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
     async def cancel(
         self, ctxt: context.Context, rule: "rules.EvaluatedRule"
     ) -> check_api.Result:
-        # FIXME(sileht): we should use the computed update_bot_account in TrainCar.update_pull(),
-        # not the original one
         try:
             await action_utils.render_bot_account(
                 ctxt,
@@ -564,8 +568,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
             merge_bot_account = await self._render_bot_account(ctxt)
         except action_utils.RenderBotAccountFailure as e:
             return check_api.Result(e.status, e.title, e.reason)
-
-        await self._set_effective_priority(ctxt)
 
         q = await merge_train.Train.from_context(ctxt)
         car = q.get_car(ctxt)
@@ -641,8 +643,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         except KeyError:
             raise voluptuous.error.Invalid(f"`{self.config['name']}` queue not found")
 
-    async def _set_effective_priority(self, ctxt: context.Context) -> None:
-
+    async def _get_effective_priority(self, ctxt: context.Context) -> int:
         current_priority = self.queue_rule.config["priority"]
         if self.queue_rule.priority_rules.rules:
             current_priority = (
@@ -651,7 +652,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     current_pull_request_priority=current_priority,
                 )
             )
-        self.config["effective_priority"] = typing.cast(
+        return typing.cast(
             int,
             self.config["priority"] + current_priority * queue.QUEUE_PRIORITY_OFFSET,
         )

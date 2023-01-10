@@ -1169,7 +1169,7 @@ class TestQueueAction(base.FunctionalTestBase):
                             "name": "default",
                             "priority": "high",
                             "update_method": "rebase",
-                            "update_bot_account": "mergify-test4",
+                            "update_bot_account": "{% if 1 -%}mergify-test4{% endif -%}",  # noqa [FS003]
                         }
                     },
                 },
@@ -5917,7 +5917,6 @@ class TestTrainApiCalls(base.FunctionalTestBase):
         )
         pull_queue_config = queue.PullQueueConfig(
             name=rules.QueueName("foo"),
-            strict_method="merge",
             update_method="merge",
             priority=0,
             effective_priority=0,
@@ -6058,7 +6057,6 @@ pull_requests:
         )
         queue_pull_config = queue.PullQueueConfig(
             name=rules.QueueName("foo"),
-            strict_method="merge",
             update_method="merge",
             priority=0,
             effective_priority=0,
@@ -6158,7 +6156,6 @@ pull_requests:
         )
         queue_pull_config = queue.PullQueueConfig(
             name=rules.QueueName("foo"),
-            strict_method="merge",
             update_method="merge",
             priority=0,
             effective_priority=0,
@@ -6234,7 +6231,6 @@ pull_requests:
         )
         config = queue.PullQueueConfig(
             name=rules.QueueName("foo"),
-            strict_method="merge",
             update_method="merge",
             priority=0,
             effective_priority=0,

@@ -41,7 +41,6 @@ PrioritySchema = voluptuous.All(
 
 
 class PullQueueConfig(typing.TypedDict):
-    strict_method: typing.Literal["merge", "rebase"]
     update_method: typing.Literal["merge", "rebase"]
     priority: int
     effective_priority: int
