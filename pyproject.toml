@@ -90,6 +90,7 @@ yesqa = "^1.4.0"
 asgi-lifespan = "^2.0.0"
 filelock = "^3.8.0"
 poethepoet = "^0.17.1"
+pytest-rerunfailures = "^10.3"
 
 [tool.poetry.scripts]
   mergify-database-update = "mergify_engine.models.manage:database_update"

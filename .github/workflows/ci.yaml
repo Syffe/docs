@@ -126,11 +126,13 @@ jobs:
           python-version: 3.11.1
 
       - name: Build 🔧 & Test 🔍
+        # yamllint disable rule:line-length
         run: |
           # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
           pip install -r requirements-poetry.txt
           poetry install
-          poetry run poe test --splits 5 --group ${{ matrix.group }}
+          poetry run poe test --splits 5 --group ${{ matrix.group }} --reruns 3 --only-rerun MissingEventTimeout
+        # yamllint enable rule:line-length
 
   docs:
     timeout-minutes: 20

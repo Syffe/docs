@@ -26,6 +26,7 @@ from mergify_engine import github_types
 from mergify_engine import logs
 from mergify_engine import models
 from mergify_engine import redis_utils
+from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.models import github_user
 from mergify_engine.models import manage
@@ -36,6 +37,9 @@ from mergify_engine.web import root as web_root
 freezegun.configure(  # type:ignore[attr-defined]
     extend_ignore_list=["mergify_engine.clients.github_app"]
 )
+
+RECORD = bool(os.getenv("MERGIFYENGINE_RECORD", False))
+GITHUB_CI = utils.strtobool(os.getenv("CI", "false"))
 
 
 def msgpack_freezegun_fixes(obj: typing.Any) -> typing.Any:
@@ -170,8 +174,22 @@ async def create_database(db_url: str, db_name: str) -> None:
     engine = sqlalchemy.ext.asyncio.create_async_engine(db_url)
     async with engine.connect() as conn:
         await conn.execute(sqlalchemy.text("commit"))
-        # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
-        await conn.execute(sqlalchemy.text(f"CREATE DATABASE {db_name}"))
+        try:
+            # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
+            await conn.execute(sqlalchemy.text(f"CREATE DATABASE {db_name}"))
+        except sqlalchemy.exc.ProgrammingError as exc:
+            # NOTE(Greesb): The database itself is not dropped on cleanup,
+            # so when a test is rerun in the CI, because of a
+            # unexpected MissingEventTimeout exception in replay mode,
+            # creating the databse raises an exception.
+            if (
+                f'database "{db_name}" already exists' in str(exc)
+                and not RECORD
+                and GITHUB_CI
+            ):
+                await conn.rollback()
+            else:
+                raise
 
 
 @pytest.fixture(autouse=True, scope="session")

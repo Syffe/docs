@@ -2484,6 +2484,22 @@ files = [
 Werkzeug = ">=2.0.0"
 
 [[package]]
+name = "pytest-rerunfailures"
+version = "10.3"
+description = "pytest plugin to re-run tests to eliminate flaky failures"
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "pytest-rerunfailures-10.3.tar.gz", hash = "sha256:d8244d799f89a6edb5e57301ddaeb3b6f10d6691638d51e80b371311592e28c6"},
+    {file = "pytest_rerunfailures-10.3-py3-none-any.whl", hash = "sha256:6be6f96510bf94b54198bf15bc5568fe2cdff88e83875912e22d29810acf65ff"},
+]
+
+[package.dependencies]
+packaging = ">=17.1"
+pytest = ">=5.3"
+
+[[package]]
 name = "pytest-split"
 version = "0.8.0"
 description = "Pytest plugin which splits the test suite to equally sized sub suites based on test execution time."
@@ -3938,7 +3954,6 @@ category = "dev"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "yamllint-1.28.0-py2.py3-none-any.whl", hash = "sha256:89bb5b5ac33b1ade059743cf227de73daa34d5e5a474b06a5e17fc16583b0cf2"},
     {file = "yamllint-1.28.0.tar.gz", hash = "sha256:9e3d8ddd16d0583214c5fdffe806c9344086721f107435f68bad990e5a88826b"},
 ]
 
@@ -4054,4 +4069,4 @@ tokenize-rt = ">=2.1"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<4.0"
-content-hash = "057fe07b9eaf918639ee07ca42faf89adf712105b48d255727ac3228ae289775"
+content-hash = "e70d51848a62befd939aad0894f553a784e79891d91b4792bf5d84496cd20c5f"
