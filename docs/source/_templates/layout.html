@@ -18,7 +18,9 @@
   {{ super() }}
   <!-- nosemgrep: html.security.audit.missing-integrity.missing-integrity -->
   <script src="{{ pathto('_bootstrap/bootstrap.min.js', 1) }}"></script>
-  <script src="https://twemoji.maxcdn.com/v/13.1.0/twemoji.min.js" integrity="sha384-gPMUf7aEYa6qc3MgqTrigJqf4gzeO6v11iPCKv+AP2S4iWRWCoWyiR+Z7rWHM/hU" crossorigin="anonymous"></script>
+  <!-- nosemgrep: html.security.audit.missing-integrity.missing-integrity -->
+  <script type="text/javascript" src="{{ pathto('_static/twemoji.min.js', 1) }}"></script>
+  <!-- nosemgrep: html.security.audit.missing-integrity.missing-integrity -->
   <script type="text/javascript" src="{{ pathto('_static/mergify.js', 1) }}"></script>
   <!-- nosemgrep: html.security.audit.missing-integrity.missing-integrity -->
   <script defer data-domain="docs.mergify.com" src="https://plausible.io/js/plausible.js"></script>
