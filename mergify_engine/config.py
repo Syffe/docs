@@ -195,7 +195,7 @@ Schema = voluptuous.Schema(
         voluptuous.Required(
             "DEPRECATE_CURRENT_CONDITIONS",
             default=False,
-        ): bool,
+        ): CoercedBool,
         # Mergify Engine settings
         #
         voluptuous.Required("BASE_URL", default="http://localhost:8802"): str,
