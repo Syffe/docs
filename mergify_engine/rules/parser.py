@@ -1,5 +1,4 @@
 import dataclasses
-import datetime
 import enum
 import re
 import string
@@ -245,45 +244,6 @@ def _extract_time(value: str) -> date.Time:
         return date.Time.from_string(value)
     except date.InvalidDate as e:
         raise ConditionParsingError(e.message)
-
-
-def _extract_dow_range(days: str) -> dict[str, typing.Any]:
-    dow1_str, sep, dow2_str = days.partition("-")
-    if sep != "-":
-        raise ConditionParsingError(
-            f"Invalid schedule: {days} -> {dow1_str} {sep} {dow2_str}"
-        )
-
-    dow1 = _extract_date(date.DayOfWeek, dow1_str)
-    dow2 = _extract_date(date.DayOfWeek, dow2_str)
-
-    return {
-        "and": (
-            {">=": ("current-day-of-week", dow1)},
-            {"<=": ("current-day-of-week", dow2)},
-        )
-    }
-
-
-def _extract_time_range(times: str) -> dict[str, typing.Any]:
-    time1_str, sep, time2_str = times.partition("-")
-    if sep != "-":
-        raise ConditionParsingError("Invalid schedule")
-
-    time1 = _extract_time(time1_str)
-    time2 = _extract_time(time2_str)
-
-    # NOTE(sileht): In case of the format is `10:00-18:00[Europe/Paris]`,
-    # we assume the first time is also [Europe/Paris]
-    if time1.tzinfo == datetime.timezone.utc and time1.tzinfo != time2.tzinfo:
-        time1.tzinfo = time2.tzinfo
-
-    return {
-        "and": (
-            {">=": ("current-time", time1)},
-            {"<=": ("current-time", time2)},
-        )
-    }
 
 
 def parse_schedule(string: str) -> date.Schedule:
