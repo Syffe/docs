@@ -287,24 +287,10 @@ def _extract_time_range(times: str) -> dict[str, typing.Any]:
 
 
 def parse_schedule(string: str) -> date.Schedule:
-    string = _unquote(string)
-    days, has_times, times = string.partition(" ")
-    if not has_times or not times:
-        try:
-            # Only days
-            return date.Schedule.from_days_string(days)
-        except date.InvalidDate:
-            # Only hours+minutes
-            try:
-                return date.Schedule.from_times_string(days)
-            except date.InvalidDate as e:
-                raise ConditionParsingError(e.message)
-    else:
-        # Days + Times
-        try:
-            return date.Schedule.from_strings(days, times)
-        except date.InvalidDate as e:
-            raise ConditionParsingError(e.message)
+    try:
+        return date.Schedule.from_string(_unquote(string))
+    except date.InvalidDate as e:
+        raise ConditionParsingError(e.message)
 
 
 def _skip_ws(v: str, length: int, position: int) -> int:

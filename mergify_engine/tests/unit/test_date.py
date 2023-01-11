@@ -321,126 +321,126 @@ def test_datetime_inside_time_range(
     "schedule,from_time,expected",
     (
         (
-            date.Schedule.from_strings("MON-FRI", "7:00-15:00"),
+            date.Schedule.from_string("MON-FRI 7:00-15:00"),
             # Friday, 15:00 UTC
             datetime.datetime(2022, 11, 11, 15, tzinfo=datetime.timezone.utc),
             # Friday, 15:01 UTC
             datetime.datetime(2022, 11, 11, 15, 1, tzinfo=datetime.timezone.utc),
         ),
         (
-            date.Schedule.from_strings("MON-FRI", "7:00-15:00"),
+            date.Schedule.from_string("MON-FRI 7:00-15:00"),
             # Monday, 16:00 UTC
             datetime.datetime(2022, 11, 7, 16, tzinfo=datetime.timezone.utc),
             # Tuesday, 7:00:01 UTC
             datetime.datetime(2022, 11, 8, 7, 0, 1, tzinfo=datetime.timezone.utc),
         ),
         (
-            date.Schedule.from_strings("FRI-MON", "7:00-15:00"),
+            date.Schedule.from_string("FRI-MON 7:00-15:00"),
             # Friday, 16:00 UTC
             datetime.datetime(2022, 11, 11, 16, tzinfo=datetime.timezone.utc),
             # Saturday, 7:00:01 UTC
             datetime.datetime(2022, 11, 12, 7, 0, 1, tzinfo=datetime.timezone.utc),
         ),
         (
-            date.Schedule.from_strings("FRI-MON", "7:00-15:00"),
+            date.Schedule.from_string("FRI-MON 7:00-15:00"),
             # Monday, 16:00 UTC
             datetime.datetime(2022, 11, 7, 16, tzinfo=datetime.timezone.utc),
             # Friday, 7:00:01 UTC
             datetime.datetime(2022, 11, 11, 7, 0, 1, tzinfo=datetime.timezone.utc),
         ),
         (
-            date.Schedule.from_strings("MON-FRI", "7:00-15:00"),
+            date.Schedule.from_string("MON-FRI 7:00-15:00"),
             # Saturday, 14:00 UTC
             datetime.datetime(2022, 11, 5, 14, tzinfo=datetime.timezone.utc),
             # Monday, 7:00:01 UTC
             datetime.datetime(2022, 11, 7, 7, 0, 1, tzinfo=datetime.timezone.utc),
         ),
         (
-            date.Schedule.from_strings("MON-FRI", "7:00-15:00"),
+            date.Schedule.from_string("MON-FRI 7:00-15:00"),
             # Saturday, 16:00 UTC
             datetime.datetime(2022, 11, 5, 16, tzinfo=datetime.timezone.utc),
             # Monday, 7:00:01 UTC
             datetime.datetime(2022, 11, 7, 7, 0, 1, tzinfo=datetime.timezone.utc),
         ),
         (
-            date.Schedule.from_days_string("MON-FRI"),
+            date.Schedule.from_string("MON-FRI"),
             # Saturday, 16:00 UTC
             datetime.datetime(2022, 11, 5, 16, tzinfo=datetime.timezone.utc),
             # Monday, 00:00 UTC
             datetime.datetime(2022, 11, 7, tzinfo=datetime.timezone.utc),
         ),
         (
-            date.Schedule.from_days_string("TUE-FRI"),
+            date.Schedule.from_string("TUE-FRI"),
             # Monday, 16:00 UTC
             datetime.datetime(2022, 11, 7, 16, tzinfo=datetime.timezone.utc),
             # Tuesday, 00:00 UTC
             datetime.datetime(2022, 11, 8, tzinfo=datetime.timezone.utc),
         ),
         (
-            date.Schedule.from_days_string("MON-FRI"),
+            date.Schedule.from_string("MON-FRI"),
             # Friday, 15:00 UTC
             datetime.datetime(2022, 11, 4, 15, tzinfo=datetime.timezone.utc),
             # Saturday, 00:00 UTC
             datetime.datetime(2022, 11, 5, tzinfo=datetime.timezone.utc),
         ),
         (
-            date.Schedule.from_days_string("MON-FRI"),
+            date.Schedule.from_string("MON-FRI"),
             # Tuesday, 15:00 UTC
             datetime.datetime(2022, 11, 1, 15, tzinfo=datetime.timezone.utc),
             # Saturday, 00:00 UTC
             datetime.datetime(2022, 11, 5, tzinfo=datetime.timezone.utc),
         ),
         (
-            date.Schedule.from_days_string("FRI-MON"),
+            date.Schedule.from_string("FRI-MON"),
             # Saturday, 16:00 UTC
             datetime.datetime(2022, 11, 5, 16, tzinfo=datetime.timezone.utc),
             # Tuesday, 00:00 UTC
             datetime.datetime(2022, 11, 8, tzinfo=datetime.timezone.utc),
         ),
         (
-            date.Schedule.from_days_string("FRI-MON"),
+            date.Schedule.from_string("FRI-MON"),
             # Monday, 15:00 UTC
             datetime.datetime(2022, 11, 7, 15, tzinfo=datetime.timezone.utc),
             # Tuesday, 00:00 UTC
             datetime.datetime(2022, 11, 8, tzinfo=datetime.timezone.utc),
         ),
         (
-            date.Schedule.from_days_string("FRI-TUE"),
+            date.Schedule.from_string("FRI-TUE"),
             # Sunday, 15:00 UTC
             datetime.datetime(2022, 11, 6, 15, tzinfo=datetime.timezone.utc),
             # Wednesday, 00:00 UTC
             datetime.datetime(2022, 11, 9, tzinfo=datetime.timezone.utc),
         ),
         (
-            date.Schedule.from_days_string("FRI-TUE"),
+            date.Schedule.from_string("FRI-TUE"),
             # Monday, 15:00 UTC
             datetime.datetime(2022, 11, 7, 15, tzinfo=datetime.timezone.utc),
             # Wednesday, 00:00 UTC
             datetime.datetime(2022, 11, 9, tzinfo=datetime.timezone.utc),
         ),
         (
-            date.Schedule.from_times_string("08:10-17:30"),
+            date.Schedule.from_string("08:10-17:30"),
             # Monday, 15:00 UTC
             datetime.datetime(2022, 11, 7, 15, tzinfo=datetime.timezone.utc),
             # Monday, 17:31 UTC
             datetime.datetime(2022, 11, 7, 17, 31, tzinfo=datetime.timezone.utc),
         ),
         (
-            date.Schedule.from_times_string("08:10-17:30"),
+            date.Schedule.from_string("08:10-17:30"),
             # Monday, 18:00 UTC
             datetime.datetime(2022, 11, 7, 18, tzinfo=datetime.timezone.utc),
             # Tuesday, 08:10:01 UTC
             datetime.datetime(2022, 11, 8, 8, 10, 1, tzinfo=datetime.timezone.utc),
         ),
         (
-            date.Schedule.from_times_string("08:10-17:30"),
+            date.Schedule.from_string("08:10-17:30"),
             # Sunday, 18:00 UTC
             datetime.datetime(2022, 11, 6, 18, tzinfo=datetime.timezone.utc),
             # Monday, 08:10:01 UTC
             datetime.datetime(2022, 11, 7, 8, 10, 1, tzinfo=datetime.timezone.utc),
         ),
         (
-            date.Schedule.from_times_string("08:10-17:30"),
+            date.Schedule.from_string("08:10-17:30"),
             # Monday, 00:00 UTC
             datetime.datetime(2022, 11, 6, tzinfo=datetime.timezone.utc),
             # Monday, 08:10:01 UTC
@@ -458,67 +458,67 @@ def test_schedule_next_datetime(
     "schedule,date_to_test,expected",
     (
         (
-            date.Schedule.from_strings("MON-FRI", "7:00-15:00"),
+            date.Schedule.from_string("MON-FRI 7:00-15:00"),
             # Friday, 15:00 UTC
             datetime.datetime(2022, 11, 11, 15, tzinfo=datetime.timezone.utc),
             True,
         ),
         (
-            date.Schedule.from_strings("MON-FRI", "7:00-15:00"),
+            date.Schedule.from_string("MON-FRI 7:00-15:00"),
             # Friday, 15:00:01 UTC
             datetime.datetime(2022, 11, 11, 15, 0, 1, tzinfo=datetime.timezone.utc),
             False,
         ),
         (
-            date.Schedule.from_strings("MON-FRI", "7:00-15:00"),
+            date.Schedule.from_string("MON-FRI 7:00-15:00"),
             # Sunday, 14:00 UTC
             datetime.datetime(2022, 11, 12, 14, tzinfo=datetime.timezone.utc),
             False,
         ),
         (
-            date.Schedule.from_strings("MON-FRI", "7:00-15:00"),
+            date.Schedule.from_string("MON-FRI 7:00-15:00"),
             # Sunday, 16:00 UTC
             datetime.datetime(2022, 11, 12, 16, tzinfo=datetime.timezone.utc),
             False,
         ),
         (
-            date.Schedule.from_strings("FRI-MON", "7:00-15:00"),
+            date.Schedule.from_string("FRI-MON 7:00-15:00"),
             # Monday, 8:00 UTC
             datetime.datetime(2022, 11, 14, 8, tzinfo=datetime.timezone.utc),
             True,
         ),
         (
-            date.Schedule.from_strings("FRI-TUE", "7:00-15:00"),
+            date.Schedule.from_string("FRI-TUE 7:00-15:00"),
             # Monday, 8:00 UTC
             datetime.datetime(2022, 11, 14, 8, tzinfo=datetime.timezone.utc),
             True,
         ),
         (
-            date.Schedule.from_strings("FRI-MON", "7:00-15:00"),
+            date.Schedule.from_string("FRI-MON 7:00-15:00"),
             # Tuesday, 8:00 UTC
             datetime.datetime(2022, 11, 15, 8, tzinfo=datetime.timezone.utc),
             True,
         ),
         (
-            date.Schedule.from_strings("FRI-MON", "7:00-15:00"),
+            date.Schedule.from_string("FRI-MON 7:00-15:00"),
             # Friday, 15:00 UTC
             datetime.datetime(2022, 11, 11, 15, tzinfo=datetime.timezone.utc),
             True,
         ),
         (
-            date.Schedule.from_strings("FRI-MON", "7:00-15:00"),
+            date.Schedule.from_string("FRI-MON 7:00-15:00"),
             # Friday, 16:00 UTC
             datetime.datetime(2022, 11, 11, 16, tzinfo=datetime.timezone.utc),
             False,
         ),
         (
-            date.Schedule.from_strings("FRI-MON", "7:00-15:00"),
+            date.Schedule.from_string("FRI-MON 7:00-15:00"),
             # Saturday, 14:00 UTC
             datetime.datetime(2022, 11, 12, 14, tzinfo=datetime.timezone.utc),
             True,
         ),
         (
-            date.Schedule.from_strings("FRI-MON", "7:00-15:00"),
+            date.Schedule.from_string("FRI-MON 7:00-15:00"),
             # Saturday, 16:00 UTC
             datetime.datetime(2022, 11, 12, 16, tzinfo=datetime.timezone.utc),
             False,

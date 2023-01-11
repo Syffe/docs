@@ -349,6 +349,20 @@ class Schedule:
             tzinfo=end_time_obj.tzinfo,
         )
 
+    @classmethod
+    def from_string(cls, string: str) -> Schedule:
+        days, has_times, times = string.partition(" ")
+        if not has_times or not times:
+            try:
+                # Only days
+                return cls.from_days_string(days)
+            except InvalidDate:
+                # Only hours+minutes
+                return cls.from_times_string(days)
+        else:
+            # Days + Times
+            return cls.from_strings(days, times)
+
     def __post_init__(self) -> None:
         if self.start_hour > self.end_hour:
             raise InvalidDate(
