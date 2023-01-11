@@ -1831,9 +1831,8 @@ class TestQueueAction(base.FunctionalTestBase):
             check["output"]["title"]
             == "The pull request has been removed from the queue"
         )
-        assert (
-            check["output"]["summary"]
-            == "The pull request has been manually removed from the queue by an `unqueue` command."
+        assert check["output"]["summary"].startswith(
+            f"Pull request #{p1['number']} has been dequeued by an `unqueue` command."
         )
 
         check = first(
@@ -3851,7 +3850,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check["output"]["summary"] == (
             "The merge-queue pull request can't be created\n"
-            f"Details: `The pull request conflicts with at least one pull request ahead in queue: #{p1['number']}`"
+            f"Details: ```\nThe pull request conflicts with at least one pull request ahead in queue: #{p1['number']}\n ```"
         )
 
         # Merge the train
@@ -3949,7 +3948,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check["output"]["summary"] == (
             "The merge-queue pull request can't be created\n"
-            f"Details: `The pull request conflicts with at least one pull request ahead in queue: #{p1['number']}`"
+            f"Details: ```\nThe pull request conflicts with at least one pull request ahead in queue: #{p1['number']}\n ```"
         )
 
         # Merge the train
