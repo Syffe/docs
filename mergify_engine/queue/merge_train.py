@@ -2314,19 +2314,13 @@ You don't need to do anything. Mergify will close this pull request automaticall
             )
 
     async def send_refresh_to_user_pull_requests(self) -> None:
-        original_ctxts = [
-            await self.train.repository.get_pull_request_context(
-                ep.user_pull_request_number
-            )
-            for ep in self.still_queued_embarked_pulls
-        ]
-        for i, original_ctxt in enumerate(original_ctxts):
+        for i, ep in enumerate(self.still_queued_embarked_pulls):
             # NOTE(sileht): refresh it, so the queue action will merge it and delete the
             # tmp_pull_ctxt branch
             await refresher.send_pull_refresh(
                 self.train.repository.installation.redis.stream,
-                original_ctxt.pull["base"]["repo"],
-                pull_request_number=original_ctxt.pull["number"],
+                self.train.repository.repo,
+                pull_request_number=ep.user_pull_request_number,
                 action="internal",
                 source="draft pull request state change",
                 priority=worker_pusher.Priority.immediate
