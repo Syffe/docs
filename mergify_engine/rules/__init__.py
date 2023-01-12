@@ -70,8 +70,10 @@ class PullRequestRule:
     def get_signal_trigger(self) -> str:
         return f"Rule: {self.name}"
 
-    async def evaluate(self, pulls: list[context.BasePullRequest]) -> EvaluatedRule:
-        evaluated_rule = typing.cast(EvaluatedRule, self)
+    async def evaluate(
+        self, pulls: list[context.BasePullRequest]
+    ) -> EvaluatedPullRequestRule:
+        evaluated_rule = typing.cast(EvaluatedPullRequestRule, self)
         await evaluated_rule.conditions(pulls)
         for action in self.actions.values():
             await action.load_context(
@@ -86,7 +88,7 @@ class CommandRule(PullRequestRule):
         return f"Command: {self.name}"
 
 
-EvaluatedRule = typing.NewType("EvaluatedRule", PullRequestRule)
+EvaluatedPullRequestRule = typing.NewType("EvaluatedPullRequestRule", PullRequestRule)
 
 
 # FIXME(sileht): intropection with __args__ doesn't work if the type looks
@@ -240,7 +242,7 @@ class QueueRule:
         repository: context.Repository,
         ref: github_types.GitHubRefType,
         pulls: list[context.BasePullRequest],
-        evaluated_pull_request_rule: EvaluatedRule | None = None,
+        evaluated_pull_request_rule: EvaluatedPullRequestRule | None = None,
     ) -> EvaluatedQueueRule:
         extra_conditions = await conditions_mod.get_branch_protection_conditions(
             repository, ref, strict=False
@@ -304,13 +306,16 @@ class QueueRule:
 
 
 T_Rule = typing.TypeVar("T_Rule", PullRequestRule, QueueRule, PriorityRule)
-T_EvaluatedRule = typing.TypeVar(
-    "T_EvaluatedRule", EvaluatedRule, EvaluatedQueueRule, EvaluatedPriorityRule
+T_EvaluatedPullRequestRule = typing.TypeVar(
+    "T_EvaluatedPullRequestRule",
+    EvaluatedPullRequestRule,
+    EvaluatedQueueRule,
+    EvaluatedPriorityRule,
 )
 
 
 @dataclasses.dataclass
-class GenericRulesEvaluator(typing.Generic[T_Rule, T_EvaluatedRule]):
+class GenericRulesEvaluator(typing.Generic[T_Rule, T_EvaluatedPullRequestRule]):
     """A rules that matches a pull request."""
 
     # Fixed base attributes that are not considered when looking for the
@@ -332,23 +337,23 @@ class GenericRulesEvaluator(typing.Generic[T_Rule, T_EvaluatedRule]):
     rules: list[T_Rule]
 
     # The rules matching the pull request.
-    matching_rules: list[T_EvaluatedRule] = dataclasses.field(
+    matching_rules: list[T_EvaluatedPullRequestRule] = dataclasses.field(
         init=False, default_factory=list
     )
 
     # The rules that can't be computed due to runtime error (eg: team resolution failure)
-    faulty_rules: list[T_EvaluatedRule] = dataclasses.field(
+    faulty_rules: list[T_EvaluatedPullRequestRule] = dataclasses.field(
         init=False, default_factory=list
     )
 
     # The rules not matching the pull request.
-    ignored_rules: list[T_EvaluatedRule] = dataclasses.field(
+    ignored_rules: list[T_EvaluatedPullRequestRule] = dataclasses.field(
         init=False, default_factory=list
     )
 
     # The rules not matching the base changeable attributes
     not_applicable_base_changeable_attributes_rules: list[
-        T_EvaluatedRule
+        T_EvaluatedPullRequestRule
     ] = dataclasses.field(init=False, default_factory=list)
 
     @classmethod
@@ -358,12 +363,12 @@ class GenericRulesEvaluator(typing.Generic[T_Rule, T_EvaluatedRule]):
         repository: context.Repository,
         pulls: list[context.BasePullRequest],
         rule_hidden_from_merge_queue: bool,
-    ) -> "GenericRulesEvaluator[T_Rule, T_EvaluatedRule]":
+    ) -> "GenericRulesEvaluator[T_Rule, T_EvaluatedPullRequestRule]":
         self = cls(rules)
 
         for rule in self.rules:
             apply_configure_filter(repository, rule.conditions)
-            evaluated_rule = typing.cast(T_EvaluatedRule, await rule.evaluate(pulls))  # type: ignore[redundant-cast]
+            evaluated_rule = typing.cast(T_EvaluatedPullRequestRule, await rule.evaluate(pulls))  # type: ignore[redundant-cast]
             del rule
 
             # NOTE(sileht):
@@ -411,7 +416,9 @@ class GenericRulesEvaluator(typing.Generic[T_Rule, T_EvaluatedRule]):
         return self
 
 
-RulesEvaluator = GenericRulesEvaluator[PullRequestRule, EvaluatedRule]
+PullRequestRulesEvaluator = GenericRulesEvaluator[
+    PullRequestRule, EvaluatedPullRequestRule
+]
 QueuesRulesEvaluator = GenericRulesEvaluator[QueueRule, EvaluatedQueueRule]
 PriorityRulesEvaluator = GenericRulesEvaluator[PriorityRule, EvaluatedPriorityRule]
 
@@ -451,7 +458,9 @@ class PullRequestRules:
             hidden=rule.hidden,
         )
 
-    async def get_pull_request_rule(self, ctxt: context.Context) -> RulesEvaluator:
+    async def get_pull_request_rule(
+        self, ctxt: context.Context
+    ) -> PullRequestRulesEvaluator:
         runtime_rules = []
         for rule in self.rules:
             if not rule.actions:
@@ -473,7 +482,7 @@ class PullRequestRules:
                     self._gen_rule_from(rule, actions_without_special_rules, [])
                 )
 
-        return await RulesEvaluator.create(
+        return await PullRequestRulesEvaluator.create(
             runtime_rules,
             ctxt.repository,
             [ctxt.pull_request],

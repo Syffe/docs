@@ -19,7 +19,7 @@ FORBIDDEN_SQUASH_MERGE_MSG = "Squash merges are not allowed on this repository."
 FORBIDDEN_REBASE_MERGE_MSG = "Rebase merges are not allowed on this repository."
 
 PendingResultBuilderT = abc.Callable[
-    [context.Context, "rules.EvaluatedRule"],
+    [context.Context, "rules.EvaluatedPullRequestRule"],
     abc.Awaitable[check_api.Result],
 ]
 MergeMethodT = typing.Literal["merge", "rebase", "squash", "fast-forward"]
@@ -40,7 +40,7 @@ class MergeUtilsMixin:
     async def common_merge(
         self,
         ctxt: context.Context,
-        rule: "rules.EvaluatedRule",
+        rule: "rules.EvaluatedPullRequestRule",
         merge_method: MergeMethodT,
         merge_rebase_fallback: RebaseFallbackT,
         merge_bot_account: github_types.GitHubLogin | None,
@@ -173,7 +173,7 @@ class MergeUtilsMixin:
         self,
         e: http.HTTPClientSideError,
         ctxt: context.Context,
-        rule: "rules.EvaluatedRule",
+        rule: "rules.EvaluatedPullRequestRule",
         pending_result_builder: PendingResultBuilderT,
     ) -> check_api.Result:
         if "Head branch was modified" in e.message:

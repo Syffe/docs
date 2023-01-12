@@ -22,7 +22,7 @@ class UnqueueExecutor(
         cls,
         action: "UnqueueCommand",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedRule",
+        rule: "rules.EvaluatedPullRequestRule",
     ) -> "UnqueueExecutor":
         return cls(
             ctxt,

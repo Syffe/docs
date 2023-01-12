@@ -47,7 +47,7 @@ class DismissReviewsExecutor(
         cls,
         action: DismissReviewsAction,
         ctxt: context.Context,
-        rule: rules.EvaluatedRule,
+        rule: rules.EvaluatedPullRequestRule,
     ) -> DismissReviewsExecutor:
         if action.config["message"] is None:
             message_raw = DEFAULT_MESSAGE[action.config["when"]]

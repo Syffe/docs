@@ -62,7 +62,7 @@ MERGE_ACTION_PRIORITY_ATTRIBUTE_DEPRECATION_SAAS = """
 
 
 async def get_already_merged_summary(
-    ctxt: context.Context, match: rules.RulesEvaluator
+    ctxt: context.Context, match: rules.PullRequestRulesEvaluator
 ) -> str:
     if not ctxt.pull["merged"]:
         return ""
@@ -123,7 +123,7 @@ def _sanitize_action_config(config_key: str, config_value: typing.Any) -> typing
 
 async def gen_summary_rules(
     ctxt: context.Context,
-    _rules: list[rules.EvaluatedRule],
+    _rules: list[rules.EvaluatedPullRequestRule],
     display_action_configs: bool,
 ) -> str:
     summary = ""
@@ -166,7 +166,7 @@ async def gen_summary_rules(
 async def gen_summary(
     ctxt: context.Context,
     pull_request_rules: rules.PullRequestRules,
-    match: rules.RulesEvaluator,
+    match: rules.PullRequestRulesEvaluator,
     display_action_configs: bool = False,
 ) -> tuple[str, str]:
     summary = ""
@@ -286,7 +286,7 @@ async def gen_summary(
 async def get_summary_check_result(
     ctxt: context.Context,
     pull_request_rules: rules.PullRequestRules,
-    match: rules.RulesEvaluator,
+    match: rules.PullRequestRulesEvaluator,
     summary_check: github_types.CachedGitHubCheckRun | None,
     conclusions: dict[str, check_api.Conclusion],
     previous_conclusions: dict[str, check_api.Conclusion],
@@ -437,7 +437,7 @@ def get_previous_conclusion(
 
 async def run_actions(
     ctxt: context.Context,
-    match: rules.RulesEvaluator,
+    match: rules.PullRequestRulesEvaluator,
     checks: dict[str, github_types.CachedGitHubCheckRun],
     previous_conclusions: dict[str, check_api.Conclusion],
 ) -> dict[str, check_api.Conclusion]:

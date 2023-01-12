@@ -23,7 +23,7 @@ class AssignExecutor(actions.ActionExecutor["AssignAction", AssignExecutorConfig
         cls,
         action: "AssignAction",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedRule",
+        rule: "rules.EvaluatedPullRequestRule",
     ) -> "AssignExecutor":
         # NOTE: "users" is deprecated, but kept as legacy code for old config
         add_users = action.config["users"] + action.config["add_users"]

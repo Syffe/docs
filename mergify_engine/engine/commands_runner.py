@@ -235,7 +235,7 @@ async def run_command(
         try:
             await command.action.load_context(
                 ctxt,
-                rules.EvaluatedRule(
+                rules.EvaluatedPullRequestRule(
                     rules.CommandRule(
                         rules.PullRequestRuleName(str(command)), None, conds, {}, False
                     )

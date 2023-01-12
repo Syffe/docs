@@ -43,7 +43,7 @@ class PostCheckExecutor(
         cls,
         action: "PostCheckAction",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedRule",
+        rule: "rules.EvaluatedPullRequestRule",
     ) -> "PostCheckExecutor":
         if not ctxt.subscription.has_feature(subscription.Features.CUSTOM_CHECKS):
             raise rules.InvalidPullRequestRule(

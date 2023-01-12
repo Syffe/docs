@@ -50,7 +50,7 @@ async def fake_train_car_check_mergeability(
     origin: typing.Literal[
         "original_pull_request", "draft_pull_request", "batch_split"
     ],
-    original_pull_request_rule: rules.EvaluatedRule | None,
+    original_pull_request_rule: rules.EvaluatedPullRequestRule | None,
 ) -> None:
     pass
 

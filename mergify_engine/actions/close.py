@@ -24,7 +24,7 @@ class CloseExecutor(actions.ActionExecutor["CloseAction", CloseExecutorConfig]):
         cls,
         action: "CloseAction",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedRule",
+        rule: "rules.EvaluatedPullRequestRule",
     ) -> "CloseExecutor":
         try:
             message = await ctxt.pull_request.render_template(action.config["message"])

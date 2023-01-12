@@ -73,7 +73,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
         cls,
         action: "CopyAction",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedRule",
+        rule: "rules.EvaluatedPullRequestRule",
     ) -> "CopyExecutor":
         try:
             bot_account = await action_utils.render_bot_account(

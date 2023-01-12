@@ -26,7 +26,7 @@ class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig
         cls,
         action: "RebaseAction",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedRule",
+        rule: "rules.EvaluatedPullRequestRule",
     ) -> "RebaseExecutor":
         try:
             bot_account = await action_utils.render_bot_account(

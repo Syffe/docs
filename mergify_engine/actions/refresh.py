@@ -18,7 +18,7 @@ class RefreshExecutor(actions.ActionExecutor["RefreshCommand", RefreshExecutorCo
         cls,
         action: "RefreshCommand",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedRule",
+        rule: "rules.EvaluatedPullRequestRule",
     ) -> "RefreshExecutor":
         return cls(ctxt, rule, RefreshExecutorConfig())
 

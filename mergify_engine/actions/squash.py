@@ -25,7 +25,7 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
         cls,
         action: "SquashAction",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedRule",
+        rule: "rules.EvaluatedPullRequestRule",
     ) -> "SquashExecutor":
         try:
             bot_account = await action_utils.render_bot_account(

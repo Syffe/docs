@@ -46,7 +46,7 @@ class RequestReviewsExecutor(
         cls,
         action: RequestReviewsAction,
         ctxt: context.Context,
-        rule: rules.EvaluatedRule,
+        rule: rules.EvaluatedPullRequestRule,
     ) -> RequestReviewsExecutor:
         try:
             bot_account = await action_utils.render_bot_account(

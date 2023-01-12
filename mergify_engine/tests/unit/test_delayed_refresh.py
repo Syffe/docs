@@ -44,7 +44,9 @@ pull_request_rules:
 """
     )
     ctxt = await context_getter(0, **pull)
-    rule = typing.cast(list[rules.EvaluatedRule], config["pull_request_rules"].rules)
+    rule = typing.cast(
+        list[rules.EvaluatedPullRequestRule], config["pull_request_rules"].rules
+    )
     await delayed_refresh.plan_next_refresh(ctxt, rule, ctxt.pull_request)
 
     when = await delayed_refresh._get_current_refresh_datetime(
@@ -78,7 +80,9 @@ pull_request_rules:
     )
 
     ctxt = await context_getter(0)
-    rule = typing.cast(list[rules.EvaluatedRule], config["pull_request_rules"].rules)
+    rule = typing.cast(
+        list[rules.EvaluatedPullRequestRule], config["pull_request_rules"].rules
+    )
 
     # No delay refresh yet
     await delayed_refresh.plan_next_refresh(

@@ -35,7 +35,7 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
         cls,
         action: "ReviewAction",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedRule",
+        rule: "rules.EvaluatedPullRequestRule",
     ) -> "ReviewExecutor":
         try:
             bot_account = await action_utils.render_bot_account(

@@ -23,7 +23,10 @@ class LabelExecutorConfig(typing.TypedDict):
 class LabelExecutor(actions.ActionExecutor["LabelAction", LabelExecutorConfig]):
     @classmethod
     async def create(
-        cls, action: LabelAction, ctxt: context.Context, rule: rules.EvaluatedRule
+        cls,
+        action: LabelAction,
+        ctxt: context.Context,
+        rule: rules.EvaluatedPullRequestRule,
     ) -> LabelExecutor:
         return cls(
             ctxt,

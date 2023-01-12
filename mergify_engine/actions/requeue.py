@@ -21,7 +21,7 @@ class RequeueExecutor(
         cls,
         action: "RequeueCommand",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedRule",
+        rule: "rules.EvaluatedPullRequestRule",
     ) -> "RequeueExecutor":
         return cls(ctxt, rule, RequeueExecutorConfig())
 

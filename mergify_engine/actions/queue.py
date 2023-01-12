@@ -138,7 +138,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
     async def _queue_branch_merge_pull_request(
         self,
         ctxt: context.Context,
-        rule: "rules.EvaluatedRule",
+        rule: "rules.EvaluatedPullRequestRule",
         queue: merge_train.Train,
         queue_freeze: freeze.QueueFreeze | None,
         car: merge_train.TrainCar | None,
@@ -176,7 +176,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
     async def _queue_branch_merge_fastforward(
         self,
         ctxt: context.Context,
-        rule: "rules.EvaluatedRule",
+        rule: "rules.EvaluatedPullRequestRule",
         queue: merge_train.Train,
         queue_freeze: freeze.QueueFreeze | None,
         car: merge_train.TrainCar | None,
@@ -260,7 +260,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
     ) -> abc.Callable[
         [
             context.Context,
-            "rules.EvaluatedRule",
+            "rules.EvaluatedPullRequestRule",
             merge_train.Train,
             freeze.QueueFreeze | None,
             merge_train.TrainCar | None,
@@ -343,7 +343,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         )
 
     async def run(
-        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
+        self, ctxt: context.Context, rule: "rules.EvaluatedPullRequestRule"
     ) -> check_api.Result:
         subscription_status = await self._subscription_status(ctxt)
         if subscription_status:
@@ -523,7 +523,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
     @staticmethod
     async def _unqueue_pull_request(
         ctxt: context.Context,
-        rule: "rules.EvaluatedRule",
+        rule: "rules.EvaluatedPullRequestRule",
         q: merge_train.Train,
         car: merge_train.TrainCar | None,
         unqueue_reason: queue_utils.BaseUnqueueReason,
@@ -551,7 +551,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         await q.remove_pull(ctxt, rule.get_signal_trigger(), unqueue_reason)
 
     async def cancel(
-        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
+        self, ctxt: context.Context, rule: "rules.EvaluatedPullRequestRule"
     ) -> check_api.Result:
         try:
             await action_utils.render_bot_account(
@@ -782,7 +782,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
     async def _should_be_cancel(
         self,
         ctxt: context.Context,
-        rule: "rules.EvaluatedRule",
+        rule: "rules.EvaluatedPullRequestRule",
         q: merge_train.Train,
         previous_car: merge_train.TrainCar | None,
     ) -> bool:
@@ -833,7 +833,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
     async def get_pending_queue_status(
         self,
         ctxt: context.Context,
-        rule: "rules.EvaluatedRule",
+        rule: "rules.EvaluatedPullRequestRule",
         queue: merge_train.Train,
         queue_freeze: freeze.QueueFreeze | None,
     ) -> check_api.Result:
@@ -860,7 +860,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
     async def send_merge_signal(
         self,
         ctxt: context.Context,
-        rule: "rules.EvaluatedRule",
+        rule: "rules.EvaluatedPullRequestRule",
         embarked_pull: merge_train.EmbarkedPullWithCar,
     ) -> None:
         await signals.send(

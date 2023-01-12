@@ -11,7 +11,7 @@ from mergify_engine.rules import live_resolvers
 
 
 def get_conditions_with_ignored_attributes(
-    rule: rules.EvaluatedRule | rules.EvaluatedQueueRule,
+    rule: rules.EvaluatedPullRequestRule | rules.EvaluatedQueueRule,
     attribute_prefixes: tuple[str, ...],
 ) -> rules_conditions.PullRequestRuleConditions | rules_conditions.QueueRuleConditions:
     conditions = rule.conditions.copy()
@@ -25,7 +25,7 @@ def get_conditions_with_ignored_attributes(
 async def conditions_without_some_attributes_match_p(
     log: "logging.LoggerAdapter[logging.Logger]",
     pulls: list[context.BasePullRequest],
-    rule: "rules.EvaluatedRule | rules.EvaluatedQueueRule",
+    rule: "rules.EvaluatedPullRequestRule | rules.EvaluatedQueueRule",
     attribute_prefixes: tuple[str, ...],
 ) -> bool:
     conditions = get_conditions_with_ignored_attributes(rule, attribute_prefixes)
@@ -77,7 +77,7 @@ async def get_rule_checks_status(
     log: "logging.LoggerAdapter[logging.Logger]",
     repository: context.Repository,
     pulls: list[context.BasePullRequest],
-    rule: rules.EvaluatedRule | rules.EvaluatedQueueRule,
+    rule: rules.EvaluatedPullRequestRule | rules.EvaluatedQueueRule,
     *,
     wait_for_schedule_to_match: bool = False,
 ) -> check_api.Conclusion:

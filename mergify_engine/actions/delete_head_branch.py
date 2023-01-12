@@ -23,7 +23,7 @@ class DeleteHeadBranchExecutor(
         cls,
         action: "DeleteHeadBranchAction",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedRule",
+        rule: "rules.EvaluatedPullRequestRule",
     ) -> "DeleteHeadBranchExecutor":
         return cls(
             ctxt, rule, DeleteHeadBranchExecutorConfig(force=action.config["force"])

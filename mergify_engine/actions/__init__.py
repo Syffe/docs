@@ -77,7 +77,7 @@ ActionExecutorConfigT = typing.TypeVar("ActionExecutorConfigT")
 @dataclasses.dataclass
 class ActionExecutor(abc.ABC, typing.Generic[ActionT, ActionExecutorConfigT]):
     ctxt: "context.Context"
-    rule: "rules.EvaluatedRule"
+    rule: "rules.EvaluatedPullRequestRule"
     config: ActionExecutorConfigT
 
     @abc.abstractmethod
@@ -106,7 +106,7 @@ class ActionExecutor(abc.ABC, typing.Generic[ActionT, ActionExecutorConfigT]):
         # FIXME(sileht): pass just RawConfigT instead of the "Action"
         action: "ActionT",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedRule",
+        rule: "rules.EvaluatedPullRequestRule",
     ) -> "ActionExecutor[ActionT, ActionExecutorConfigT]":
         ...
 
@@ -130,14 +130,14 @@ class BackwardCompatActionExecutor(ActionExecutor["BackwardCompatAction", RawCon
         cls,
         action: "BackwardCompatAction",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedRule",
+        rule: "rules.EvaluatedPullRequestRule",
     ) -> "ActionExecutor[BackwardCompatAction, RawConfigT]":
         return cls(ctxt, rule, action.config, action)
 
 
 class ActionExecutorProtocol(typing.Protocol):
     ctxt: "context.Context"
-    rule: "rules.EvaluatedRule"
+    rule: "rules.EvaluatedPullRequestRule"
     config: dict[str, typing.Any]
 
     @abc.abstractmethod
@@ -165,7 +165,7 @@ class ActionExecutorProtocol(typing.Protocol):
         # FIXME(sileht): pass just RawConfigT instead of the "Action"
         action: "Action",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedRule",
+        rule: "rules.EvaluatedPullRequestRule",
     ) -> "ActionExecutorProtocol":
         ...
 
@@ -202,7 +202,7 @@ class Action(abc.ABC):
         self.config = voluptuous.Schema(self.validator)(self.raw_config)
 
     async def load_context(
-        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
+        self, ctxt: context.Context, rule: "rules.EvaluatedPullRequestRule"
     ) -> None:
         self.executor = await self.executor_class.create(self, ctxt, rule)
 
@@ -236,12 +236,12 @@ class BackwardCompatAction(Action):
 
     @abc.abstractmethod
     async def run(
-        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
+        self, ctxt: context.Context, rule: "rules.EvaluatedPullRequestRule"
     ) -> check_api.Result:  # pragma: no cover
         ...
 
     @abc.abstractmethod
     async def cancel(
-        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
+        self, ctxt: context.Context, rule: "rules.EvaluatedPullRequestRule"
     ) -> check_api.Result:  # pragma: no cover
         ...

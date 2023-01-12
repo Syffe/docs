@@ -25,7 +25,7 @@ class EditExecutor(actions.ActionExecutor["EditAction", EditExecutorConfig]):
         cls,
         action: "EditAction",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedRule",
+        rule: "rules.EvaluatedPullRequestRule",
     ) -> "EditExecutor":
         try:
             bot_account = await action_utils.render_bot_account(

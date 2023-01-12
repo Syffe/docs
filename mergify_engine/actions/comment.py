@@ -25,7 +25,7 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorCo
         cls,
         action: "CommentAction",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedRule",
+        rule: "rules.EvaluatedPullRequestRule",
     ) -> "CommentExecutor":
         try:
             bot_account = await action_utils.render_bot_account(

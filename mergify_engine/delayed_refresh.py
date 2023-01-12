@@ -53,7 +53,7 @@ async def _set_current_refresh_datetime(
 
 async def plan_next_refresh(
     ctxt: "context.Context",
-    _rules: (list["rules.EvaluatedRule"] | list["rules.EvaluatedQueueRule"]),
+    _rules: (list["rules.EvaluatedPullRequestRule"] | list["rules.EvaluatedQueueRule"]),
     pull_request: "context.BasePullRequest",
     only_if_earlier: bool = False,
 ) -> None:

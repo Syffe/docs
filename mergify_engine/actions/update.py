@@ -25,7 +25,7 @@ class UpdateExecutor(actions.ActionExecutor["UpdateAction", "UpdateExecutorConfi
         cls,
         action: "UpdateAction",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedRule",
+        rule: "rules.EvaluatedPullRequestRule",
     ) -> "UpdateExecutor":
         try:
             bot_account = await action_utils.render_bot_account(

@@ -1335,7 +1335,7 @@ class TrainCar:
         for_queue_pull_request: bool = False,
         show_queue: bool = True,
         headline: str | None = None,
-        pull_rule: "rules.EvaluatedRule" | None = None,
+        pull_rule: "rules.EvaluatedPullRequestRule" | None = None,
     ) -> str:
         description = ""
         if headline:
@@ -1692,7 +1692,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
         origin: typing.Literal[
             "original_pull_request", "draft_pull_request", "batch_split"
         ],
-        original_pull_request_rule: rules.EvaluatedRule | None,
+        original_pull_request_rule: rules.EvaluatedPullRequestRule | None,
     ) -> None:
         if self.queue_pull_request_number is None:
             # Nothing to do the car has not been started yet
@@ -3487,7 +3487,7 @@ class Train:
         self,
         queue_rule_report: QueueRuleReport,
         *,
-        pull_rule: "rules.EvaluatedRule" | None = None,
+        pull_rule: "rules.EvaluatedPullRequestRule" | None = None,
         show_queue: bool = True,
         for_queue_pull_request: bool = False,
     ) -> str:
@@ -3561,7 +3561,7 @@ class Train:
         self,
         ctxt: context.Context,
         queue_rule: "rules.QueueRule",
-        pull_rule: "rules.EvaluatedRule" | None = None,
+        pull_rule: "rules.EvaluatedPullRequestRule" | None = None,
     ) -> str:
         # NOTE(sileht): beware before using this method, car.update_state() must have been called earlier
         # to have up2date informations

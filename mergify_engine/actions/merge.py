@@ -56,7 +56,7 @@ class MergeExecutor(
         cls,
         action: "MergeAction",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedRule",
+        rule: "rules.EvaluatedPullRequestRule",
     ) -> "MergeExecutor":
         try:
             merge_bot_account = await action_utils.render_bot_account(
@@ -134,7 +134,7 @@ class MergeExecutor(
         return actions.CANCELLED_CHECK_REPORT
 
     async def get_pending_merge_status(
-        self, ctxt: context.Context, rule: "rules.EvaluatedRule"
+        self, ctxt: context.Context, rule: "rules.EvaluatedPullRequestRule"
     ) -> check_api.Result:
         return check_api.Result(
             check_api.Conclusion.PENDING, "The pull request will be merged soon", ""
