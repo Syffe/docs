@@ -45,7 +45,7 @@ class QueueFreeze:
         name: str
         reason: str
         application_name: str
-        application_id: str
+        application_id: int
         freeze_date: datetime.datetime
         cascading: bool
 
