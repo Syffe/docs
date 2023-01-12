@@ -186,7 +186,6 @@
           "https://curl.se/docs/CVE-2022-32221.html",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-32221",
           "https://hackerone.com/reports/1704017",
-          "https://nvd.nist.gov/vuln/detail/CVE-2022-32221",
           "https://security.gentoo.org/glsa/202212-01",
           "https://security.netapp.com/advisory/ntap-20230110-0006/",
           "https://ubuntu.com/security/notices/USN-5702-1",
@@ -429,13 +428,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:8361",
+          "https://access.redhat.com/errata/RHSA-2022:7720",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
+          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -1803,13 +1802,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:8361",
+          "https://access.redhat.com/errata/RHSA-2022:7720",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
+          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -1851,7 +1850,6 @@
           "https://curl.se/docs/CVE-2022-32221.html",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-32221",
           "https://hackerone.com/reports/1704017",
-          "https://nvd.nist.gov/vuln/detail/CVE-2022-32221",
           "https://security.gentoo.org/glsa/202212-01",
           "https://security.netapp.com/advisory/ntap-20230110-0006/",
           "https://ubuntu.com/security/notices/USN-5702-1",
@@ -2095,7 +2093,6 @@
           "https://curl.se/docs/CVE-2022-32221.html",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-32221",
           "https://hackerone.com/reports/1704017",
-          "https://nvd.nist.gov/vuln/detail/CVE-2022-32221",
           "https://security.gentoo.org/glsa/202212-01",
           "https://security.netapp.com/advisory/ntap-20230110-0006/",
           "https://ubuntu.com/security/notices/USN-5702-1",
@@ -2454,13 +2451,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:8361",
+          "https://access.redhat.com/errata/RHSA-2022:7720",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
+          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -3442,6 +3439,9 @@
         "Title": "systemd: local information leak due to systemd-coredump not respecting fs.suid_dumpable kernel setting",
         "Description": "A vulnerability was found in systemd. This security flaw can cause a local information leak due to systemd-coredump not respecting the fs.suid_dumpable kernel setting.",
         "Severity": "MEDIUM",
+        "CweIDs": [
+          "CWE-200"
+        ],
         "CVSS": {
           "redhat": {
             "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N",
@@ -3449,8 +3449,11 @@
           }
         },
         "References": [
-          "https://access.redhat.com/security/cve/CVE-2022-4415"
-        ]
+          "https://access.redhat.com/security/cve/CVE-2022-4415",
+          "https://github.com/systemd/systemd/commit/b7641425659243c09473cd8fb3aef2c0d4a3eb9c",
+          "https://www.openwall.com/lists/oss-security/2022/12/21/3"
+        ],
+        "PublishedDate": "2023-01-11T15:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2013-4392",
@@ -3589,6 +3592,9 @@
         "Title": "systemd: local information leak due to systemd-coredump not respecting fs.suid_dumpable kernel setting",
         "Description": "A vulnerability was found in systemd. This security flaw can cause a local information leak due to systemd-coredump not respecting the fs.suid_dumpable kernel setting.",
         "Severity": "MEDIUM",
+        "CweIDs": [
+          "CWE-200"
+        ],
         "CVSS": {
           "redhat": {
             "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N",
@@ -3596,8 +3602,11 @@
           }
         },
         "References": [
-          "https://access.redhat.com/security/cve/CVE-2022-4415"
-        ]
+          "https://access.redhat.com/security/cve/CVE-2022-4415",
+          "https://github.com/systemd/systemd/commit/b7641425659243c09473cd8fb3aef2c0d4a3eb9c",
+          "https://www.openwall.com/lists/oss-security/2022/12/21/3"
+        ],
+        "PublishedDate": "2023-01-11T15:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2013-4392",
@@ -4363,13 +4372,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:8361",
+          "https://access.redhat.com/errata/RHSA-2022:7720",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
+          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -4413,19 +4422,17 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:6224",
+          "https://access.redhat.com/errata/RHSA-2022:5818",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1292.json",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-2068.json",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-2097.json",
           "https://access.redhat.com/security/cve/CVE-2022-2097",
           "https://bugzilla.redhat.com/2081494",
-          "https://bugzilla.redhat.com/2087911",
-          "https://bugzilla.redhat.com/2087913",
           "https://bugzilla.redhat.com/2097310",
           "https://bugzilla.redhat.com/2104905",
           "https://cert-portal.siemens.com/productcert/pdf/ssa-332410.pdf",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-2097",
-          "https://errata.almalinux.org/9/ALSA-2022-6224.html",
+          "https://errata.almalinux.org/8/ALSA-2022-5818.html",
           "https://git.openssl.org/gitweb/?p=openssl.git;a=commitdiff;h=919925673d6c9cfed3c1085497f5dfbbed5fc431",
           "https://git.openssl.org/gitweb/?p=openssl.git;a=commitdiff;h=a98f339ddd7e8f487d6e0088d4a9a42324885a93",
           "https://github.com/advisories/GHSA-3wx7-46ch-7rq2",
@@ -4573,6 +4580,9 @@
         "Title": "systemd: local information leak due to systemd-coredump not respecting fs.suid_dumpable kernel setting",
         "Description": "A vulnerability was found in systemd. This security flaw can cause a local information leak due to systemd-coredump not respecting the fs.suid_dumpable kernel setting.",
         "Severity": "MEDIUM",
+        "CweIDs": [
+          "CWE-200"
+        ],
         "CVSS": {
           "redhat": {
             "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N",
@@ -4580,8 +4590,11 @@
           }
         },
         "References": [
-          "https://access.redhat.com/security/cve/CVE-2022-4415"
-        ]
+          "https://access.redhat.com/security/cve/CVE-2022-4415",
+          "https://github.com/systemd/systemd/commit/b7641425659243c09473cd8fb3aef2c0d4a3eb9c",
+          "https://www.openwall.com/lists/oss-security/2022/12/21/3"
+        ],
+        "PublishedDate": "2023-01-11T15:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2013-4392",
@@ -4812,6 +4825,9 @@
         "Title": "systemd: local information leak due to systemd-coredump not respecting fs.suid_dumpable kernel setting",
         "Description": "A vulnerability was found in systemd. This security flaw can cause a local information leak due to systemd-coredump not respecting the fs.suid_dumpable kernel setting.",
         "Severity": "MEDIUM",
+        "CweIDs": [
+          "CWE-200"
+        ],
         "CVSS": {
           "redhat": {
             "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N",
@@ -4819,8 +4835,11 @@
           }
         },
         "References": [
-          "https://access.redhat.com/security/cve/CVE-2022-4415"
-        ]
+          "https://access.redhat.com/security/cve/CVE-2022-4415",
+          "https://github.com/systemd/systemd/commit/b7641425659243c09473cd8fb3aef2c0d4a3eb9c",
+          "https://www.openwall.com/lists/oss-security/2022/12/21/3"
+        ],
+        "PublishedDate": "2023-01-11T15:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2013-4392",
@@ -5130,13 +5149,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:8361",
+          "https://access.redhat.com/errata/RHSA-2022:7720",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
+          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -7076,6 +7095,9 @@
         "Title": "systemd: local information leak due to systemd-coredump not respecting fs.suid_dumpable kernel setting",
         "Description": "A vulnerability was found in systemd. This security flaw can cause a local information leak due to systemd-coredump not respecting the fs.suid_dumpable kernel setting.",
         "Severity": "MEDIUM",
+        "CweIDs": [
+          "CWE-200"
+        ],
         "CVSS": {
           "redhat": {
             "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N",
@@ -7083,8 +7105,11 @@
           }
         },
         "References": [
-          "https://access.redhat.com/security/cve/CVE-2022-4415"
-        ]
+          "https://access.redhat.com/security/cve/CVE-2022-4415",
+          "https://github.com/systemd/systemd/commit/b7641425659243c09473cd8fb3aef2c0d4a3eb9c",
+          "https://www.openwall.com/lists/oss-security/2022/12/21/3"
+        ],
+        "PublishedDate": "2023-01-11T15:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2013-4392",
@@ -7223,6 +7248,9 @@
         "Title": "systemd: local information leak due to systemd-coredump not respecting fs.suid_dumpable kernel setting",
         "Description": "A vulnerability was found in systemd. This security flaw can cause a local information leak due to systemd-coredump not respecting the fs.suid_dumpable kernel setting.",
         "Severity": "MEDIUM",
+        "CweIDs": [
+          "CWE-200"
+        ],
         "CVSS": {
           "redhat": {
             "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N",
@@ -7230,8 +7258,11 @@
           }
         },
         "References": [
-          "https://access.redhat.com/security/cve/CVE-2022-4415"
-        ]
+          "https://access.redhat.com/security/cve/CVE-2022-4415",
+          "https://github.com/systemd/systemd/commit/b7641425659243c09473cd8fb3aef2c0d4a3eb9c",
+          "https://www.openwall.com/lists/oss-security/2022/12/21/3"
+        ],
+        "PublishedDate": "2023-01-11T15:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2013-4392",
@@ -7370,6 +7401,9 @@
         "Title": "systemd: local information leak due to systemd-coredump not respecting fs.suid_dumpable kernel setting",
         "Description": "A vulnerability was found in systemd. This security flaw can cause a local information leak due to systemd-coredump not respecting the fs.suid_dumpable kernel setting.",
         "Severity": "MEDIUM",
+        "CweIDs": [
+          "CWE-200"
+        ],
         "CVSS": {
           "redhat": {
             "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N",
@@ -7377,8 +7411,11 @@
           }
         },
         "References": [
-          "https://access.redhat.com/security/cve/CVE-2022-4415"
-        ]
+          "https://access.redhat.com/security/cve/CVE-2022-4415",
+          "https://github.com/systemd/systemd/commit/b7641425659243c09473cd8fb3aef2c0d4a3eb9c",
+          "https://www.openwall.com/lists/oss-security/2022/12/21/3"
+        ],
+        "PublishedDate": "2023-01-11T15:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2013-4392",
