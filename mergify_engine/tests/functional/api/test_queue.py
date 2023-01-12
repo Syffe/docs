@@ -319,15 +319,6 @@ class TestQueueApi(base.FunctionalTestBase):
         await self.wait_for("pull_request", {"action": "closed"})
         await self.wait_for("pull_request", {"action": "closed"})
 
-        time_to_merge_key = self.get_statistic_redis_key("time_to_merge")
-        assert await self.redis_links.stats.xlen(time_to_merge_key) == 3
-
-        items = await self.redis_links.stats.xrange(time_to_merge_key, "-", "+")
-        stats = [
-            msgpack.unpackb(v[b"data"], timestamp=3)["time_seconds"] for _, v in items
-        ]
-        median_ttm = statistics.median(stats)
-
         await self.add_label(p4["number"], "queue")
         await self.run_engine()
 
@@ -354,12 +345,7 @@ class TestQueueApi(base.FunctionalTestBase):
         assert len(r.json()["queues"]) == 1
         assert len(r.json()["queues"][0]["pull_requests"]) == 1
         queue_pr_data = r.json()["queues"][0]["pull_requests"][0]
-        queued_at = datetime.datetime.fromisoformat(queue_pr_data["queued_at"])
-        expected_time_of_merge = queued_at + datetime.timedelta(seconds=median_ttm)
-        assert (
-            queue_pr_data["estimated_time_of_merge"]
-            == expected_time_of_merge.isoformat()
-        )
+
         assert queue_pr_data == {
             "number": p4["number"],
             "position": anys.ANY_INT,
@@ -385,7 +371,7 @@ class TestQueueApi(base.FunctionalTestBase):
                 "state": "pending",
             },
             "queued_at": anys.ANY_DATETIME_STR,
-            "estimated_time_of_merge": expected_time_of_merge.isoformat(),
+            "estimated_time_of_merge": anys.ANY_DATETIME_STR,
         }
 
         # GET /queue/{queue_name}/pull/{pr_number}
@@ -450,7 +436,7 @@ class TestQueueApi(base.FunctionalTestBase):
                 "state": "pending",
             },
             "queued_at": anys.ANY_DATETIME_STR,
-            "estimated_time_of_merge": expected_time_of_merge.isoformat(),
+            "estimated_time_of_merge": anys.ANY_DATETIME_STR,
         }
 
         r = await self.app.get(
@@ -466,6 +452,543 @@ class TestQueueApi(base.FunctionalTestBase):
         )
         assert r.status_code == 404
         assert r.json()["detail"] == "Pull request not found."
+
+    async def test_estimated_time_of_merge_normal(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "foo",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "check-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "queue",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "foo"}},
+                },
+            ],
+        }
+        start_date = datetime.datetime(2022, 1, 5, tzinfo=datetime.timezone.utc)
+        with freeze_time(start_date, tick=True):
+            await self.setup_repo(yaml.dump(rules))
+
+            p1 = await self.create_pr()
+            p2 = await self.create_pr()
+            p3 = await self.create_pr()
+            p4 = await self.create_pr()
+            await self.create_pr()
+
+            await self.add_label(p1["number"], "queue")
+            await self.run_engine()
+
+            tmp_mq_pr_1 = await self.wait_for_pull_request("opened")
+
+        with freeze_time(start_date + datetime.timedelta(hours=1), tick=True):
+            await self.create_status(tmp_mq_pr_1["pull_request"])
+            await self.run_engine()
+            await self.wait_for("pull_request", {"action": "closed"})
+            await self.wait_for("pull_request", {"action": "closed"})
+
+            await self.add_label(p2["number"], "queue")
+            await self.run_engine()
+
+            tmp_mq_pr_2 = await self.wait_for_pull_request("opened")
+
+        with freeze_time(start_date + datetime.timedelta(hours=2), tick=True):
+            await self.create_status(tmp_mq_pr_2["pull_request"])
+            await self.run_engine()
+            await self.wait_for("pull_request", {"action": "closed"})
+            await self.wait_for("pull_request", {"action": "closed"})
+
+            await self.add_label(p3["number"], "queue")
+            await self.run_engine()
+
+            tmp_mq_pr_3 = await self.wait_for_pull_request("opened")
+
+        with freeze_time(start_date + datetime.timedelta(hours=3), tick=True):
+            await self.create_status(tmp_mq_pr_3["pull_request"])
+            await self.run_engine()
+            await self.wait_for("pull_request", {"action": "closed"})
+            await self.wait_for("pull_request", {"action": "closed"})
+
+            checks_duration_key = self.get_statistic_redis_key("checks_duration")
+            assert await self.redis_links.stats.xlen(checks_duration_key) == 3
+            items = await self.redis_links.stats.xrange(checks_duration_key, "-", "+")
+            stats = [
+                msgpack.unpackb(v[b"data"], timestamp=3)["duration_seconds"]
+                for _, v in items
+            ]
+            assert len(stats) > 0
+            median_checks_duration = statistics.median(stats)
+            assert median_checks_duration > 0
+
+            await self.add_label(p4["number"], "queue")
+            await self.run_engine()
+
+            await self.wait_for_pull_request("opened")
+
+            # GET /queues
+            repository_name = self.RECORD_CONFIG["repository_name"]
+            r = await self.app.get(
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queues",
+                headers=self.get_headers(content_type="application/json"),
+            )
+
+            assert len(r.json()["queues"]) == 1
+            assert len(r.json()["queues"][0]["pull_requests"]) == 1
+            queue_pr_data = r.json()["queues"][0]["pull_requests"][0]
+            checks_start = datetime.datetime.fromisoformat(
+                queue_pr_data["mergeability_check"]["started_at"]
+            )
+            expected_time_of_merge = checks_start + datetime.timedelta(
+                seconds=median_checks_duration
+            )
+            assert (
+                queue_pr_data["estimated_time_of_merge"]
+                == expected_time_of_merge.isoformat()
+            )
+
+    async def test_estimated_time_of_merge_multiple_pr_waiting(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "foo",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "check-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "queue",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "foo"}},
+                },
+            ],
+        }
+        start_date = datetime.datetime(2022, 1, 5, tzinfo=datetime.timezone.utc)
+        with freeze_time(start_date, tick=True):
+            await self.setup_repo(yaml.dump(rules))
+
+            p1 = await self.create_pr()
+            p2 = await self.create_pr()
+            p3 = await self.create_pr()
+            p4 = await self.create_pr()
+            p5 = await self.create_pr()
+            p6 = await self.create_pr()
+
+            await self.add_label(p1["number"], "queue")
+            await self.run_engine()
+
+            tmp_mq_pr_1 = await self.wait_for_pull_request("opened")
+
+        with freeze_time(start_date + datetime.timedelta(hours=1), tick=True):
+            await self.create_status(tmp_mq_pr_1["pull_request"])
+            await self.run_engine()
+            await self.wait_for("pull_request", {"action": "closed"})
+            await self.wait_for("pull_request", {"action": "closed"})
+
+            await self.add_label(p2["number"], "queue")
+            await self.run_engine()
+
+            tmp_mq_pr_2 = await self.wait_for_pull_request("opened")
+
+        with freeze_time(start_date + datetime.timedelta(hours=2), tick=True):
+            await self.create_status(tmp_mq_pr_2["pull_request"])
+            await self.run_engine()
+            await self.wait_for("pull_request", {"action": "closed"})
+            await self.wait_for("pull_request", {"action": "closed"})
+
+            await self.add_label(p3["number"], "queue")
+            await self.run_engine()
+
+            tmp_mq_pr_3 = await self.wait_for_pull_request("opened")
+
+        with freeze_time(start_date + datetime.timedelta(hours=3), tick=True):
+            await self.create_status(tmp_mq_pr_3["pull_request"])
+            await self.run_engine()
+            await self.wait_for("pull_request", {"action": "closed"})
+            await self.wait_for("pull_request", {"action": "closed"})
+
+            checks_duration_key = self.get_statistic_redis_key("checks_duration")
+            assert await self.redis_links.stats.xlen(checks_duration_key) == 3
+            items = await self.redis_links.stats.xrange(checks_duration_key, "-", "+")
+            stats = [
+                msgpack.unpackb(v[b"data"], timestamp=3)["duration_seconds"]
+                for _, v in items
+            ]
+            assert len(stats) > 0
+            median_checks_duration = statistics.median(stats)
+            assert median_checks_duration > 0
+
+            await self.add_label(p4["number"], "queue")
+            await self.run_engine()
+            await self.wait_for_pull_request("opened")
+
+            # No wait for PR opened for those 2 since they are waiting at
+            # the end of the queue and that speculative_checks = 1 in conf.
+            await self.add_label(p5["number"], "queue")
+            await self.run_engine()
+
+            await self.add_label(p6["number"], "queue")
+            await self.run_engine()
+
+            # GET /queues
+            repository_name = self.RECORD_CONFIG["repository_name"]
+            r = await self.app.get(
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queues",
+                headers=self.get_headers(content_type="application/json"),
+            )
+
+            assert len(r.json()["queues"]) == 1
+            assert len(r.json()["queues"][0]["pull_requests"]) == 3
+            first_queued_pr_data = r.json()["queues"][0]["pull_requests"][0]
+            first_queued_pr_checks_start = datetime.datetime.fromisoformat(
+                first_queued_pr_data["mergeability_check"]["started_at"]
+            )
+            first_queued_pr_started_at = datetime.datetime.fromisoformat(
+                first_queued_pr_data["mergeability_check"]["started_at"]
+            )
+
+            assert datetime.datetime.fromisoformat(
+                first_queued_pr_data["estimated_time_of_merge"]
+            ) == first_queued_pr_checks_start + datetime.timedelta(
+                seconds=median_checks_duration
+            )
+
+            assert datetime.datetime.fromisoformat(
+                r.json()["queues"][0]["pull_requests"][1]["estimated_time_of_merge"]
+            ) == first_queued_pr_started_at + datetime.timedelta(
+                seconds=2 * median_checks_duration
+            )
+            assert datetime.datetime.fromisoformat(
+                r.json()["queues"][0]["pull_requests"][2]["estimated_time_of_merge"]
+            ) == first_queued_pr_started_at + datetime.timedelta(
+                seconds=3 * median_checks_duration
+            )
+
+    async def test_estimated_time_of_merge_multiple_pr_waiting_batch(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "foo",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "check-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                    "batch_size": 2,
+                    "batch_max_wait_time": "0 s",
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "queue",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "foo"}},
+                },
+            ],
+        }
+        start_date = datetime.datetime(2022, 1, 5, tzinfo=datetime.timezone.utc)
+        with freeze_time(start_date, tick=True):
+            await self.setup_repo(yaml.dump(rules))
+
+            p1 = await self.create_pr()
+            p2 = await self.create_pr()
+            p3 = await self.create_pr()
+            p4 = await self.create_pr()
+            p5 = await self.create_pr()
+            p6 = await self.create_pr()
+
+            await self.add_label(p1["number"], "queue")
+            await self.run_engine()
+
+            tmp_mq_pr_1 = await self.wait_for_pull_request("opened")
+
+        with freeze_time(start_date + datetime.timedelta(hours=1), tick=True):
+            await self.create_status(tmp_mq_pr_1["pull_request"])
+            await self.run_engine()
+            await self.wait_for("pull_request", {"action": "closed"})
+            await self.wait_for("pull_request", {"action": "closed"})
+
+            await self.add_label(p2["number"], "queue")
+            await self.run_engine()
+
+            tmp_mq_pr_2 = await self.wait_for_pull_request("opened")
+
+        with freeze_time(start_date + datetime.timedelta(hours=2), tick=True):
+            await self.create_status(tmp_mq_pr_2["pull_request"])
+            await self.run_engine()
+            await self.wait_for("pull_request", {"action": "closed"})
+            await self.wait_for("pull_request", {"action": "closed"})
+
+            await self.add_label(p3["number"], "queue")
+            await self.run_engine()
+
+            tmp_mq_pr_3 = await self.wait_for_pull_request("opened")
+
+        with freeze_time(start_date + datetime.timedelta(hours=3), tick=True):
+            await self.create_status(tmp_mq_pr_3["pull_request"])
+            await self.run_engine()
+            await self.wait_for("pull_request", {"action": "closed"})
+            await self.wait_for("pull_request", {"action": "closed"})
+
+            checks_duration_key = self.get_statistic_redis_key("checks_duration")
+            assert await self.redis_links.stats.xlen(checks_duration_key) == 3
+            items = await self.redis_links.stats.xrange(checks_duration_key, "-", "+")
+            stats = [
+                msgpack.unpackb(v[b"data"], timestamp=3)["duration_seconds"]
+                for _, v in items
+            ]
+            assert len(stats) > 0
+            median_checks_duration = statistics.median(stats)
+            assert median_checks_duration > 0
+
+            await self.add_label(p4["number"], "queue")
+            await self.add_label(p5["number"], "queue")
+            await self.run_engine()
+            await self.wait_for_pull_request("opened")
+
+            # No PR opened for this one since batch_size=2 and speculative_checks=1
+            await self.add_label(p6["number"], "queue")
+            await self.run_engine()
+
+            # GET /queues
+            repository_name = self.RECORD_CONFIG["repository_name"]
+            r = await self.app.get(
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queues",
+                headers=self.get_headers(content_type="application/json"),
+            )
+
+            assert len(r.json()["queues"]) == 1
+            pull_requests_data = r.json()["queues"][0]["pull_requests"]
+            assert len(pull_requests_data) == 3
+
+            first_batch_prs_expected_eta = datetime.datetime.fromisoformat(
+                pull_requests_data[0]["mergeability_check"]["started_at"]
+            ) + datetime.timedelta(seconds=median_checks_duration)
+
+            # Both PR are in the same batch so they should have the same ETA
+            assert (
+                datetime.datetime.fromisoformat(
+                    pull_requests_data[0]["estimated_time_of_merge"]
+                )
+                == first_batch_prs_expected_eta
+            )
+
+            assert (
+                datetime.datetime.fromisoformat(
+                    pull_requests_data[1]["estimated_time_of_merge"]
+                )
+                == first_batch_prs_expected_eta
+            )
+
+            # GET /queue/{queue_name}/pull/{pr_number}
+            r = await self.app.get(
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/foo/pull/{p6['number']}",
+                headers=self.get_headers(content_type="application/json"),
+            )
+            # The PR alone cannot have an ETA because it doesn't have a car,
+            # with evaluated rules (last_conditions_evaluation), and it doesn't
+            # have previous car as a reference either.
+            assert r.json()["estimated_time_of_merge"] is None
+
+            # GET /queue/{queue_name}/pull/{pr_number}
+            r = await self.app.get(
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/foo/pull/{p4['number']}",
+                headers=self.get_headers(content_type="application/json"),
+            )
+            assert (
+                datetime.datetime.fromisoformat(r.json()["estimated_time_of_merge"])
+                == first_batch_prs_expected_eta
+            )
+
+    async def test_estimated_time_of_merge_multiple_pr_waiting_multiple_batch(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "foo",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "check-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                    "speculative_checks": 2,
+                    "batch_size": 2,
+                    "batch_max_wait_time": "0 s",
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "queue",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "foo"}},
+                },
+            ],
+        }
+        start_date = datetime.datetime(2022, 1, 5, tzinfo=datetime.timezone.utc)
+        with freeze_time(start_date, tick=True):
+            await self.setup_repo(yaml.dump(rules))
+
+            p1 = await self.create_pr()
+            p2 = await self.create_pr()
+            p3 = await self.create_pr()
+            p4 = await self.create_pr()
+            p5 = await self.create_pr()
+            p6 = await self.create_pr()
+            p7 = await self.create_pr()
+            p8 = await self.create_pr()
+            await self.create_pr()
+
+            await self.add_label(p1["number"], "queue")
+            await self.run_engine()
+
+            tmp_mq_pr_1 = await self.wait_for_pull_request("opened")
+
+        with freeze_time(start_date + datetime.timedelta(hours=1), tick=True):
+            await self.create_status(tmp_mq_pr_1["pull_request"])
+            await self.run_engine()
+            await self.wait_for("pull_request", {"action": "closed"})
+            await self.wait_for("pull_request", {"action": "closed"})
+
+            await self.add_label(p2["number"], "queue")
+            await self.run_engine()
+
+            tmp_mq_pr_2 = await self.wait_for_pull_request("opened")
+
+        with freeze_time(start_date + datetime.timedelta(hours=2), tick=True):
+            await self.create_status(tmp_mq_pr_2["pull_request"])
+            await self.run_engine()
+            await self.wait_for("pull_request", {"action": "closed"})
+            await self.wait_for("pull_request", {"action": "closed"})
+
+            await self.add_label(p3["number"], "queue")
+            await self.run_engine()
+
+            tmp_mq_pr_3 = await self.wait_for_pull_request("opened")
+
+        with freeze_time(start_date + datetime.timedelta(hours=3), tick=True):
+            await self.create_status(tmp_mq_pr_3["pull_request"])
+            await self.run_engine()
+            await self.wait_for("pull_request", {"action": "closed"})
+            await self.wait_for("pull_request", {"action": "closed"})
+
+            checks_duration_key = self.get_statistic_redis_key("checks_duration")
+            assert await self.redis_links.stats.xlen(checks_duration_key) == 3
+            items = await self.redis_links.stats.xrange(checks_duration_key, "-", "+")
+            stats = [
+                msgpack.unpackb(v[b"data"], timestamp=3)["duration_seconds"]
+                for _, v in items
+            ]
+            assert len(stats) > 0
+            median_checks_duration = statistics.median(stats)
+            assert median_checks_duration > 0
+
+            await self.add_label(p4["number"], "queue")
+            await self.add_label(p5["number"], "queue")
+            await self.run_engine()
+            await self.wait_for_pull_request("opened")
+
+            await self.add_label(p6["number"], "queue")
+            await self.add_label(p7["number"], "queue")
+            await self.run_engine()
+            await self.wait_for_pull_request("opened")
+
+            # No PR opened for this one since batch_size=2 and speculative_checks=2
+            await self.add_label(p8["number"], "queue")
+            await self.run_engine()
+
+            # GET /queues
+            repository_name = self.RECORD_CONFIG["repository_name"]
+            r = await self.app.get(
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queues",
+                headers=self.get_headers(content_type="application/json"),
+            )
+
+            assert len(r.json()["queues"]) == 1
+
+            pull_requests_data = r.json()["queues"][0]["pull_requests"]
+            assert len(pull_requests_data) == 5
+
+            first_queued_pr_checks_start = datetime.datetime.fromisoformat(
+                pull_requests_data[0]["mergeability_check"]["started_at"]
+            )
+
+            # Spec check 1, pr #1 in batch
+            assert datetime.datetime.fromisoformat(
+                pull_requests_data[0]["estimated_time_of_merge"]
+            ) == first_queued_pr_checks_start + datetime.timedelta(
+                seconds=median_checks_duration
+            )
+            # Spec check 1, pr #2 in batch
+            assert datetime.datetime.fromisoformat(
+                pull_requests_data[1]["estimated_time_of_merge"]
+            ) == first_queued_pr_checks_start + datetime.timedelta(
+                seconds=median_checks_duration
+            )
+
+            second_queued_pr_checks_start = datetime.datetime.fromisoformat(
+                pull_requests_data[2]["mergeability_check"]["started_at"]
+            )
+            # Spec check 2, pr #1 in batch
+            assert datetime.datetime.fromisoformat(
+                pull_requests_data[2]["estimated_time_of_merge"]
+            ) == second_queued_pr_checks_start + datetime.timedelta(
+                seconds=median_checks_duration
+            )
+            # Spec check 2, pr #2 in batch
+            assert datetime.datetime.fromisoformat(
+                pull_requests_data[3]["estimated_time_of_merge"]
+            ) == second_queued_pr_checks_start + datetime.timedelta(
+                seconds=median_checks_duration
+            )
+            assert datetime.datetime.fromisoformat(
+                pull_requests_data[4]["estimated_time_of_merge"]
+            ) == second_queued_pr_checks_start + datetime.timedelta(
+                seconds=2 * median_checks_duration
+            )
+
+            # GET /queue/{queue_name}/pull/{pr_number}
+            r = await self.app.get(
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/foo/pull/{p8['number']}",
+                headers=self.get_headers(content_type="application/json"),
+            )
+            # The PR alone cannot have an ETA because it doesn't have a car,
+            # with evaluated rules (last_conditions_evaluation), and it doesn't
+            # have previous car as a reference either.
+            assert r.json()["estimated_time_of_merge"] is None
+
+            # GET /queue/{queue_name}/pull/{pr_number}
+            r = await self.app.get(
+                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/foo/pull/{p4['number']}",
+                headers=self.get_headers(content_type="application/json"),
+            )
+            assert datetime.datetime.fromisoformat(
+                r.json()["estimated_time_of_merge"]
+            ) == first_queued_pr_checks_start + datetime.timedelta(
+                seconds=median_checks_duration
+            )
 
     async def test_estimated_time_of_merge_when_queue_freezed(self) -> None:
         rules = {
