@@ -225,8 +225,12 @@ async def push_to_worker(
             ignore_reason = "comment has been hidden"
 
         else:
-            # NOTE(sileht): nothing important should happen in this hook as we don't retry it
-            background_tasks.add_task(commands_runner.on_each_event, event)
+            match = commands_runner.COMMAND_MATCHER.search(event["comment"]["body"])
+            if match:
+                # NOTE(sileht): nothing important should happen in this hook as we don't retry it
+                background_tasks.add_task(commands_runner.on_each_event, event)
+            else:
+                ignore_reason = "comment is not a command"
 
     elif event_type == "status":
         event = typing.cast(github_types.GitHubEventStatus, event)
