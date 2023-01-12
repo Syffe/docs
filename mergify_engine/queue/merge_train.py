@@ -1693,6 +1693,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             "original_pull_request", "draft_pull_request", "batch_split"
         ],
         original_pull_request_rule: rules.EvaluatedPullRequestRule | None,
+        original_pull_request_number: github_types.GitHubPullRequestNumber | None,
     ) -> None:
         if self.queue_pull_request_number is None:
             # Nothing to do the car has not been started yet
@@ -1799,8 +1800,9 @@ You don't need to do anything. Mergify will close this pull request automaticall
         )
         if require_summaries_update:
             await self.update_summaries(queue_rules)
-            if origin in ("batch_split", "draft_pull_request"):
-                await self.send_refresh_to_user_pull_requests()
+            await self._refresh_next_pull_request_to_merge(
+                origin, original_pull_request_number
+            )
 
         await self.train.save()
 
@@ -1828,6 +1830,47 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 "ci_state": saved_ci_state,
                 "queue_check_conclusion": saved_queue_check_run_conclusion,
             },
+        )
+
+    async def _refresh_next_pull_request_to_merge(
+        self,
+        origin: typing.Literal[
+            "original_pull_request", "draft_pull_request", "batch_split"
+        ],
+        original_pull_request_number: github_types.GitHubPullRequestNumber | None,
+    ) -> None:
+        if self.train_car_state.checks_type != TrainCarChecksType.DRAFT:
+            # NOTE(sileht): No need to refresh INPLACE checks as merge() is always
+            # called after check_mergeability()
+            return
+
+        if not self.train._cars or self.train._cars[0] is not self:
+            # NOTE(sileht): No need to refresh as this train car is not the first one in queue
+            return
+
+        first_pull_request_in_car = self.still_queued_embarked_pulls[
+            0
+        ].user_pull_request_number
+
+        if (
+            origin == "original_pull_request"
+            and first_pull_request_in_car == original_pull_request_number
+        ):
+            # NOTE(sileht): No need to refresh as check_mergeability() is called
+            # by the action queue and merge() will be run just after
+            return
+
+        if self.get_queue_check_run_conclusion() is check_api.Conclusion.PENDING:
+            # NOTE(sileht): No need to refresh as the Draft PR state is not final
+            return
+
+        await refresher.send_pull_refresh(
+            self.train.repository.installation.redis.stream,
+            self.train.repository.repo,
+            pull_request_number=first_pull_request_in_car,
+            action="internal",
+            source="draft pull request state change",
+            priority=worker_pusher.Priority.immediate,
         )
 
     def get_queue_rule(self, queue_rules: "rules.QueueRules") -> "rules.QueueRule":
@@ -3139,6 +3182,7 @@ class Train:
                 # in case of inplace checks, but since the outcome is
                 # TrainCarOutcome.CHECKS_FAILED, it's not a bug deal.
                 original_pull_request_rule=None,
+                original_pull_request_number=None,
             )
             return
 

@@ -61,5 +61,8 @@ async def handle(queue_rules: rules.QueueRules, ctxt: context.Context) -> None:
         return
 
     await car.check_mergeability(
-        queue_rules, origin="draft_pull_request", original_pull_request_rule=None
+        queue_rules,
+        origin="draft_pull_request",
+        original_pull_request_rule=None,
+        original_pull_request_number=None,
     )

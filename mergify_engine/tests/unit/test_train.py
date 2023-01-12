@@ -51,6 +51,7 @@ async def fake_train_car_check_mergeability(
         "original_pull_request", "draft_pull_request", "batch_split"
     ],
     original_pull_request_rule: rules.EvaluatedPullRequestRule | None,
+    original_pull_request_number: github_types.GitHubPullRequestNumber | None,
 ) -> None:
     pass
 

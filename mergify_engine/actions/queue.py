@@ -450,6 +450,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 self.queue_rules,
                 "original_pull_request",
                 original_pull_request_rule=rule,
+                original_pull_request_number=ctxt.pull["number"],
             )
 
         # NOTE(sileht): the pull request gets checked and then changed
@@ -593,6 +594,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 self.queue_rules,
                 "original_pull_request",
                 original_pull_request_rule=rule,
+                original_pull_request_number=ctxt.pull["number"],
             )
 
         # We just rebase the pull request, don't cancel it yet if CIs are
