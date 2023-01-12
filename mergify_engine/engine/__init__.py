@@ -420,7 +420,11 @@ async def run(
         await commands_runner.run_pending_commands_tasks(ctxt, mergify_config)
 
         if issue_comment_sources:
-            ctxt.log.debug("engine handle commands")
+            ctxt.log.info(
+                "command runner",
+                sources=issue_comment_sources,
+                configuration_changed=ctxt.configuration_changed,
+            )
             for ic_source in issue_comment_sources:
                 await commands_runner.handle(
                     ctxt,
