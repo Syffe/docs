@@ -299,7 +299,7 @@ class Schedule:
 
     @classmethod
     def from_days_string(cls, days: str) -> "Schedule":
-        start_weekday, end_weekday = Schedule.get_weekdays_from_string(days)
+        start_weekday, end_weekday = cls.get_weekdays_from_string(days)
         return cls(
             start_weekday=start_weekday,
             end_weekday=end_weekday,
@@ -314,9 +314,7 @@ class Schedule:
 
     @classmethod
     def from_times_string(cls, times: str) -> "Schedule":
-        start_time_obj, end_time_obj = Schedule.get_start_and_end_time_obj_from_string(
-            times
-        )
+        start_time_obj, end_time_obj = cls.get_start_and_end_time_obj_from_string(times)
         return cls(
             start_weekday=1,
             end_weekday=7,
@@ -334,10 +332,8 @@ class Schedule:
         days: str,
         times: str,
     ) -> "Schedule":
-        start_weekday, end_weekday = Schedule.get_weekdays_from_string(days)
-        start_time_obj, end_time_obj = Schedule.get_start_and_end_time_obj_from_string(
-            times
-        )
+        start_weekday, end_weekday = cls.get_weekdays_from_string(days)
+        start_time_obj, end_time_obj = cls.get_start_and_end_time_obj_from_string(times)
 
         return cls(
             start_weekday=start_weekday,
