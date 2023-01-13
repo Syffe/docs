@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import collections
 from collections import abc
 import dataclasses
 import datetime
@@ -306,6 +307,9 @@ class TrainCarState:
     ci_ended_at: datetime.datetime | None = None
     outcome_message: str | None = None
     checks_type: TrainCarChecksType | None = None
+    # NOTE(Syffe): The freeze attribute (frozen_by) is stored solely for reporting reasons
+    # It should not be used for other purposes
+    frozen_by: freeze.QueueFreeze | None = None
     waiting_for_freeze_start_dates: list[datetime.datetime] = dataclasses.field(
         default_factory=list
     )
@@ -326,12 +330,17 @@ class TrainCarState:
         ci_ended_at: datetime.datetime | None
         outcome_message: str | None
         checks_type: TrainCarChecksType | None
+        frozen_by: freeze.QueueFreeze.Serialized | None
         waiting_for_freeze_start_dates: list[datetime.datetime]
         waiting_for_freeze_end_dates: list[datetime.datetime]
         waiting_for_schedule_start_dates: list[datetime.datetime]
         waiting_for_schedule_end_dates: list[datetime.datetime]
 
     def serialized(self) -> "TrainCarState.Serialized":
+        frozen_by = None
+        if self.frozen_by is not None:
+            frozen_by = self.frozen_by.serialized()
+
         return self.Serialized(
             outcome=self.outcome,
             ci_state=self.ci_state,
@@ -339,6 +348,7 @@ class TrainCarState:
             ci_ended_at=self.ci_ended_at,
             outcome_message=self.outcome_message,
             checks_type=self.checks_type,
+            frozen_by=frozen_by,
             waiting_for_freeze_start_dates=self.waiting_for_freeze_start_dates,
             waiting_for_freeze_end_dates=self.waiting_for_freeze_end_dates,
             waiting_for_schedule_start_dates=self.waiting_for_schedule_start_dates,
@@ -348,6 +358,7 @@ class TrainCarState:
     @classmethod
     def deserialize(
         cls,
+        repository: context.Repository,
         data: "TrainCarState.Serialized",
     ) -> "TrainCarState":
         kwargs = {}
@@ -373,6 +384,11 @@ class TrainCarState:
 
         legacy_creation_date: datetime.datetime | None = data.get("creation_date")  # type: ignore[assignment]
 
+        # backward compatibility following the implementation of "frozen_by" attribute
+        frozen_by = None
+        if (frozen_by_raw := data.get("frozen_by")) is not None:
+            frozen_by = freeze.QueueFreeze.deserialize(repository, frozen_by_raw)
+
         return cls(
             outcome=data["outcome"],
             ci_state=data["ci_state"],
@@ -380,6 +396,7 @@ class TrainCarState:
             ci_ended_at=data.get("ci_ended_at"),
             outcome_message=data["outcome_message"],
             checks_type=data["checks_type"],
+            frozen_by=frozen_by,
             **kwargs,
         )
 
@@ -394,6 +411,7 @@ class TrainCarState:
     @classmethod
     def decode_train_car_state_from_summary(
         cls,
+        repository: context.Repository,
         summary_check: github_types.CachedGitHubCheckRun | None,
     ) -> "TrainCarState" | None:
         line = extract_encoded_train_car_state_data_from_summary(summary_check)
@@ -404,7 +422,7 @@ class TrainCarState:
                     base64.b64decode(utils.strip_comment_tags(line).encode()).decode()
                 ),
             )
-            return cls.deserialize(train_car_state_serialized)
+            return cls.deserialize(repository, train_car_state_serialized)
         return None
 
     def to_base_64_json(
@@ -655,7 +673,7 @@ class TrainCar:
         # NOTE(Syffe): Backward compatibility for old TrainCar without TrainCarState attribute
         # (Released in version 6.0)
         train_car_state = cls._deserialize_train_car_state(
-            data=data, checks_type=checks_type
+            train.repository, data, checks_type
         )
 
         if (
@@ -689,11 +707,12 @@ class TrainCar:
     @classmethod
     def _deserialize_train_car_state(
         cls,
+        repository: context.Repository,
         data: "TrainCar.Serialized",
         checks_type: TrainCarChecksType | None,
     ) -> "TrainCarState":
         if "train_car_state" in data:
-            return TrainCarState.deserialize(data["train_car_state"])
+            return TrainCarState.deserialize(repository, data["train_car_state"])
         else:
             outcome = TrainCarOutcome.UNKNOWN
             ci_state = CiState.PENDING
@@ -1732,6 +1751,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             constants.MERGE_QUEUE_SUMMARY_NAME
         )
         saved_queue_check_run_conclusion = check["conclusion"] if check else None
+        saved_freeze_data = self.train_car_state.frozen_by
 
         if (
             origin == "original_pull_request"
@@ -1795,6 +1815,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             len(diff_result.affected_paths) > 0
             or saved_outcome != self.train_car_state.outcome
             or saved_ci_state != self.train_car_state.ci_state
+            or saved_freeze_data != self.train_car_state.frozen_by
             or saved_queue_check_run_conclusion
             != self.get_queue_check_run_conclusion().value
         )
@@ -2016,6 +2037,10 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 self.queue_pull_request_number,
                 self.train_car_state.ci_started_at + timeout,
             )
+
+        self.train_car_state.frozen_by = await self.train.get_current_queue_freeze(
+            queue_rules, self.still_queued_embarked_pulls[0].config["name"]
+        )
 
         # Save the status of all check-runs/statuses for API/UI reporting
         if self.train_car_state.checks_type in (
@@ -2314,10 +2339,15 @@ You don't need to do anything. Mergify will close this pull request automaticall
             ],
         )
 
+        queue_freeze_summary = ""
+        if self.train_car_state.frozen_by is not None:
+            queue_freeze_summary = self.train_car_state.frozen_by.get_freeze_message()
+
         train_car_state_summary = self.train_car_state.to_base_64_json()
         original_pull_summary = (
             train_car_state_summary
             + unexpected_change_summary
+            + queue_freeze_summary
             + queue_summary
             + checks_copy_summary
             + batch_failure_summary
@@ -2386,6 +2416,19 @@ You don't need to do anything. Mergify will close this pull request automaticall
             c.train_car_state.outcome == TrainCarOutcome.MERGEABLE
             for c in self.train._cars[:position]
         )
+
+
+def get_queues_priorities(queue_rules: "rules.QueueRules") -> dict[str, int]:
+    # NOTE(Syffe): The priorities contained here are not yet multiplied by any coefficient nor offset
+    return {
+        str(queue_rule.name): queue_rule.config["priority"]
+        for queue_rule in queue_rules
+    }
+
+
+class QueueFreezeWithPriority(typing.TypedDict):
+    queue_freeze: freeze.QueueFreeze
+    priority: int
 
 
 @dataclasses.dataclass
@@ -2725,6 +2768,38 @@ class Train:
         self, queue_rules: "rules.QueueRules", queue_name: "rules.QueueName"
     ) -> bool:
         return queue_name in await self.get_frozen_queues_names(queue_rules)
+
+    async def get_current_queue_freeze(
+        self, queue_rules: "rules.QueueRules", current_queue_name: "rules.QueueName"
+    ) -> freeze.QueueFreeze | None:
+
+        queue_priorities = get_queues_priorities(queue_rules)
+        qf_by_name = {
+            queue_freeze.name: QueueFreezeWithPriority(
+                queue_freeze=queue_freeze, priority=queue_priorities[queue_freeze.name]
+            )
+            async for queue_freeze in freeze.QueueFreeze.get_all(self.repository)
+        }
+        current_qf = qf_by_name.get(current_queue_name)
+        if current_qf is None:
+            # NOTE(Syffe): we sort queue freeze dict according to queue priority
+            # in order to always hit the nearest (not the highest) impacting queue freeze when running
+            # the for loop under.
+            # Also, it ensures the same way of ordering each time the function is called
+            # so there is no randomness that could break our reporting or processing.
+            sorted_qf_by_priority = collections.OrderedDict(
+                sorted(qf_by_name.items(), key=lambda item: item[1]["priority"])
+            )
+            for queue_name, queue_freeze in sorted_qf_by_priority.items():
+                if (
+                    # NOTE(sileht): queue may have vanish, but freeze still there
+                    queue_freeze["queue_freeze"].cascading
+                    and queue_name in queue_priorities
+                    and queue_freeze["priority"] > queue_priorities[current_queue_name]
+                ):
+                    current_qf = queue_freeze
+                    break
+        return current_qf["queue_freeze"] if current_qf is not None else None
 
     async def get_frozen_queues_names(
         self, queue_rules: "rules.QueueRules"

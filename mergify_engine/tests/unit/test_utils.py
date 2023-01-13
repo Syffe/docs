@@ -250,7 +250,7 @@ def test_strtobool_exc() -> None:
         ("<!--        test 3 -->", "test 3"),
     ),
 )
-def test_stip_comment_tags(string: str, expected: str) -> None:
+def test_strip_comment_tags(string: str, expected: str) -> None:
     assert utils.strip_comment_tags(string) == expected
 
 
