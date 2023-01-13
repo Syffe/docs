@@ -153,7 +153,9 @@ jobs:
 
       - name: Build 🔧
         run: |
-          sudo apt-get install graphviz
+          sudo sed -i 's/azure\.//' /etc/apt/sources.list
+          sudo apt update -y
+          sudo apt install graphviz
           # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
           pip install -r requirements-poetry.txt
           poetry install
