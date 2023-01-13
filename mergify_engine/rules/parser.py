@@ -188,7 +188,7 @@ SUPPORTED_OPERATORS = {
 
 INVALID_BRANCH_CHARS = "~^: []\\"
 
-GITHUB_LOGIN_CHARS = string.ascii_letters + string.digits + "-[]"
+GITHUB_LOGIN_CHARS = string.ascii_letters + string.digits + "-[]_"
 GITHUB_LOGIN_AND_TEAM_CHARS = GITHUB_LOGIN_CHARS + "@/"
 
 JINJA_ENV = jinja2.sandbox.SandboxedEnvironment(

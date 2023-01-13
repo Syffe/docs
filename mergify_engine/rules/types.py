@@ -220,7 +220,7 @@ def _check_GitHubLogin_format(
         value[0] == "-"
         or value[-1] == "-"
         or not value.isascii()
-        or not value.replace("-", "").isalnum()
+        or not value.replace("-", "").replace("_", "").isalnum()
     ):
         raise voluptuous.Invalid(f"GitHub {_type} contains invalid characters")
     return github_types.GitHubLogin(value)

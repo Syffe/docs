@@ -73,7 +73,7 @@ def test_jinja2_custom_attr() -> None:
 
 @pytest.mark.parametrize(
     "login",
-    ("foobar", "foobaz", "foo-baz", "f123", "123foo"),
+    ("foobar", "foobaz", "foo-baz", "f123", "123foo", "foouser_barorgname"),
 )
 def test_github_login_ok(login: str) -> None:
     assert voluptuous.Schema(types.GitHubLogin)(login) == login
@@ -86,7 +86,6 @@ def test_github_login_ok(login: str) -> None:
         ("foobaz-", "GitHub login contains invalid characters"),
         ("foo-béaz", "GitHub login contains invalid characters"),
         ("🤣", "GitHub login contains invalid characters"),
-        ("O_o", "GitHub login contains invalid characters"),
         ("", "A GitHub login cannot be an empty string"),
     ),
 )

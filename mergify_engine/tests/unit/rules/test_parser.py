@@ -333,6 +333,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
         ("#assignee>1", {">": ("#assignee", 1)}),
         (" # assignee > 1", {">": ("#assignee", 1)}),
         ("author=jd", {"=": ("author", "jd")}),
+        ("author=jd_", {"=": ("author", "jd_")}),
         ("author=mergify[bot]", {"=": ("author", "mergify[bot]")}),
         ("author=foo-bar", {"=": ("author", "foo-bar")}),
         ("#assignee>=2", {">=": ("#assignee", 2)}),
