@@ -3,13 +3,14 @@ ARG PYTHON_VERSION
 ARG BUILD_DATE
 
 ### BASE ###
-FROM python:${PYTHON_VERSION}-slim as python-base
+FROM python:${PYTHON_VERSION}-slim-bullseye as python-base
 ARG BUILD_DATE
 RUN test -n "$BUILD_DATE"
 RUN useradd -m mergify
 ENV DEBIAN_FRONTEND=noninteractive
 RUN printf 'APT::Get::Install-Recommends "false";\nAPT::Get::Install-Suggests "false";\n' > /etc/apt/apt.conf.d/99local
-RUN apt update -y && apt upgrade -y && apt install -y git && apt autoremove --purge -y
+RUN printf 'deb http://deb.debian.org/debian bullseye-backports main contrib non-free\n' > /etc/apt/sources.list.d/backports.list
+RUN apt update -y && apt upgrade -y && apt install -y git/bullseye-backports git-man/bullseye-backports && apt autoremove --purge -y
 
 ### BUILDER PYTHON ###
 FROM python-base as python-builder
