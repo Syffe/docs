@@ -259,25 +259,14 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         await self.run_engine()
 
-        ctxt = context.Context(self.repository_ctxt, p1)
-        check_run_p1 = first(
-            await ctxt.pull_engine_check_runs,
+        check_p1 = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge default (queue)",
         )
-        assert check_run_p1
+        assert check_p1
         assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            in check_run_p1["output"]["title"]
-        )
-
-        check_run_p1 = first(
-            await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
-        )
-        assert check_run_p1
-        assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            in check_run_p1["output"]["summary"]
+            check_p1["output"]["title"]
+            == 'The queue "default" is currently frozen, for the following reason: test freeze reason'
         )
 
         p2 = await self.create_pr()
@@ -303,8 +292,10 @@ class TestQueueFreeze(base.FunctionalTestBase):
         )
         assert check_run_p3["check_run"]["pull_requests"][0]["number"] == p3["number"]
         assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            in check_run_p3["check_run"]["output"]["title"]
+            check_run_p3["check_run"]["output"]["title"]
+            == "The pull request is the 3rd in the queue to be merged\n"
+            'The merge is currently blocked by the freeze of the queue "default", '
+            "for the following reason: test freeze reason"
         )
 
         # merge p2
@@ -327,35 +318,26 @@ class TestQueueFreeze(base.FunctionalTestBase):
             == "The pull request has been merged automatically"
         )
 
-        ctxt = context.Context(self.repository_ctxt, p1)
-        check_run_p1 = first(
-            await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Rule: Merge default (queue)",
-        )
-        assert check_run_p1
-        assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            in check_run_p1["output"]["title"]
-        )
-
-        check_run_p1 = first(
-            await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
-        )
-        assert check_run_p1
-        assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            in check_run_p1["output"]["summary"]
-        )
-
         check = first(
-            await context.Context(self.repository_ctxt, p3).pull_engine_check_runs,
-            key=lambda c: c["name"] == "Rule: Merge low (queue)",
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Merge default (queue)",
         )
         assert check
         assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            in check["output"]["title"]
+            check["output"]["title"]
+            == 'The queue "default" is currently frozen, for the following reason: test freeze reason'
+        )
+
+        check_p3 = first(
+            await context.Context(self.repository_ctxt, p3).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Merge low (queue)",
+        )
+        assert check_p3
+        assert (
+            check_p3["output"]["title"]
+            == "The pull request is the 2nd in the queue to be merged\n"
+            'The merge is currently blocked by the freeze of the queue "default", '
+            "for the following reason: test freeze reason"
         )
 
     async def test_update_queue_freeze(self) -> None:
@@ -643,18 +625,8 @@ class TestQueueFreeze(base.FunctionalTestBase):
         )
         assert check_run_p1["check_run"]["pull_requests"][0]["number"] == p1["number"]
         assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            in check_run_p1["check_run"]["output"]["title"]
-        )
-
-        check_run_p1 = await self.wait_for_check_run(
-            name="Queue: Embarked in merge train",
-            status="in_progress",
-        )
-        assert check_run_p1["check_run"]["pull_requests"][0]["number"] == p1["number"]
-        assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            in check_run_p1["check_run"]["output"]["summary"]
+            check_run_p1["check_run"]["output"]["title"]
+            == 'The queue "default" is currently frozen, for the following reason: test freeze reason'
         )
 
         r = await self._delete_queue_freeze(
@@ -668,26 +640,12 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         await self.run_engine()
 
-        ctxt = context.Context(self.repository_ctxt, p1)
-        check = first(
-            await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Rule: Merge default (queue)",
+        check_run_p1 = await self.wait_for_check_run(
+            name="Queue: Embarked in merge train",
+            action="created",
+            status="in_progress",
         )
-        assert check
-        assert (
-            "The pull request is the 1st in the queue to be merged"
-            in check["output"]["title"]
-        )
-
-        check = first(
-            await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
-        )
-        assert check
-        assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            not in check["output"]["summary"]
-        )
+        assert check_run_p1["check_run"]["pull_requests"][0]["number"] == p1["number"]
 
     async def test_request_error_get_queue_freeze(self) -> None:
         rules = {
@@ -1012,18 +970,8 @@ class TestQueueFreeze(base.FunctionalTestBase):
         )
         assert check_run_p1["check_run"]["pull_requests"][0]["number"] == p1["number"]
         assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            in check_run_p1["check_run"]["output"]["title"]
-        )
-
-        check_run_p1 = await self.wait_for_check_run(
-            name="Queue: Embarked in merge train",
-            status="in_progress",
-        )
-        assert check_run_p1["check_run"]["pull_requests"][0]["number"] == p1["number"]
-        assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            in check_run_p1["check_run"]["output"]["summary"]
+            check_run_p1["check_run"]["output"]["title"]
+            == 'The queue "default" is currently frozen, for the following reason: test freeze reason'
         )
 
         # ensure p2 got queued before p1 and merged
@@ -1103,18 +1051,10 @@ class TestQueueFreeze(base.FunctionalTestBase):
         )
         assert check_run_p1["check_run"]["pull_requests"][0]["number"] == p1["number"]
         assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            in check_run_p1["check_run"]["output"]["title"]
-        )
-
-        check_run_p1 = await self.wait_for_check_run(
-            name="Queue: Embarked in merge train",
-            status="in_progress",
-        )
-        assert check_run_p1["check_run"]["pull_requests"][0]["number"] == p1["number"]
-        assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            in check_run_p1["check_run"]["output"]["summary"]
+            check_run_p1["check_run"]["output"]["title"]
+            == "The pull request is the 1st in the queue to be merged"
+            '\nThe merge is currently blocked by the freeze of the queue "default", '
+            "for the following reason: test freeze reason"
         )
 
         # ensure p2 got queued before p1 and merged
@@ -1209,25 +1149,14 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         await self.run_engine()
 
-        ctxt = context.Context(self.repository_ctxt, p1)
-        check_run_p1 = first(
-            await ctxt.pull_engine_check_runs,
+        check_p1 = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge default (queue)",
         )
-        assert check_run_p1
+        assert check_p1
         assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            in check_run_p1["output"]["title"]
-        )
-
-        check_run_p1 = first(
-            await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
-        )
-        assert check_run_p1
-        assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            in check_run_p1["output"]["summary"]
+            check_p1["output"]["title"]
+            == 'The queue "default" is currently frozen, for the following reason: test freeze reason'
         )
 
         p2 = await self.create_pr()
@@ -1274,25 +1203,14 @@ class TestQueueFreeze(base.FunctionalTestBase):
             == "The pull request has been merged automatically"
         )
 
-        ctxt = context.Context(self.repository_ctxt, p1)
-        check_run_p1 = first(
-            await ctxt.pull_engine_check_runs,
+        check_p1 = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge default (queue)",
         )
-        assert check_run_p1
+        assert check_p1
         assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            in check_run_p1["output"]["title"]
-        )
-
-        check_run_p1 = first(
-            await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
-        )
-        assert check_run_p1
-        assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            in check_run_p1["output"]["summary"]
+            check_p1["output"]["title"]
+            == 'The queue "default" is currently frozen, for the following reason: test freeze reason'
         )
 
         check_p3 = first(
@@ -1332,25 +1250,14 @@ class TestQueueFreeze(base.FunctionalTestBase):
             == "The pull request has been merged automatically"
         )
 
-        ctxt = context.Context(self.repository_ctxt, p1)
-        check_run_p1 = first(
-            await ctxt.pull_engine_check_runs,
+        check_p1 = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge default (queue)",
         )
-        assert check_run_p1
+        assert check_p1
         assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            in check_run_p1["output"]["title"]
-        )
-
-        check_run_p1 = first(
-            await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
-        )
-        assert check_run_p1
-        assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            in check_run_p1["output"]["summary"]
+            check_p1["output"]["title"]
+            == 'The queue "default" is currently frozen, for the following reason: test freeze reason'
         )
 
     async def test_update_freeze_cascading_effect(self) -> None:
@@ -1569,43 +1476,30 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         await self.run_engine()
 
-        ctxt = context.Context(self.repository_ctxt, p1)
-        check_run_p1 = first(
-            await ctxt.pull_engine_check_runs,
+        check_p1 = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge default (queue)",
         )
-        assert check_run_p1
+        assert check_p1
         assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            in check_run_p1["output"]["title"]
+            check_p1["output"]["title"]
+            == "The pull request is the 1st in the queue to be merged\n"
+            'The merge is currently blocked by the freeze of the queue "urgent", '
+            "for the following reason: urgent test freeze reason"
         )
 
-        check_run_p1 = first(
-            await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
-        )
-        assert check_run_p1
-        assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            in check_run_p1["output"]["summary"]
-        )
-
-        ctxt = context.Context(self.repository_ctxt, p2)
-        check_run_p2 = first(
-            await ctxt.pull_engine_check_runs,
+        check_p2 = first(
+            await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge low (queue)",
         )
-        assert check_run_p2
-        assert (
-            'The merge is currently blocked by the freeze of the queue "urgent", for the following reason: urgent test freeze reason'
-            in check_run_p2["output"]["title"]
-        )
 
-        check_run_p2 = first(
-            await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
+        assert check_p2
+        assert (
+            check_p2["output"]["title"]
+            == "The pull request is the 2nd in the queue to be merged\n"
+            'The merge is currently blocked by the freeze of the queue "urgent", '
+            "for the following reason: urgent test freeze reason"
         )
-        assert check_run_p2 is None
 
         await self._delete_queue_freeze(queue_name="urgent", expected_status_code=204)
 
@@ -1616,46 +1510,25 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         await self.run_engine()
 
-        ctxt = context.Context(self.repository_ctxt, p1)
-        check_run_p1 = first(
-            await ctxt.pull_engine_check_runs,
+        check_p1 = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge default (queue)",
         )
-        assert check_run_p1
+        assert check_p1
         assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            in check_run_p1["output"]["title"]
+            check_p1["output"]["title"]
+            == 'The queue "default" is currently frozen, for the following reason: test freeze reason'
         )
 
-        check_run_p1 = first(
-            await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
-        )
-        assert check_run_p1
-        assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            in check_run_p1["output"]["summary"]
-        )
-
-        ctxt = context.Context(self.repository_ctxt, p2)
-        check_run_p2 = first(
-            await ctxt.pull_engine_check_runs,
+        check_p2 = first(
+            await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge low (queue)",
         )
-        assert check_run_p2
-        assert (
-            "The pull request is the 1st in the queue to be merged"
-            in check_run_p2["output"]["title"]
-        )
 
-        check_run_p2 = first(
-            await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
-        )
-        assert check_run_p2
+        assert check_p2
         assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            not in check_run_p2["output"]["summary"]
+            check_p2["output"]["title"]
+            == "The pull request is the 1st in the queue to be merged"
         )
 
         # merge p2
@@ -1665,195 +1538,22 @@ class TestQueueFreeze(base.FunctionalTestBase):
         p2_closed = await self.wait_for_pull_request("closed", pr_number=p2["number"])
         assert p2_closed["pull_request"]["merged"]
 
-        check = await self.wait_for_check_run(
+        check_run_p2 = await self.wait_for_check_run(
             name="Rule: Merge low (queue)",
             status="completed",
             conclusion="success",
         )
         assert (
-            check["check_run"]["output"]["title"]
+            check_run_p2["check_run"]["output"]["title"]
             == "The pull request has been merged automatically"
         )
 
-        ctxt = context.Context(self.repository_ctxt, p1)
-        check_run_p1 = first(
-            await ctxt.pull_engine_check_runs,
+        check_p1 = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge default (queue)",
         )
-        assert check_run_p1
+        assert check_p1
         assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            in check_run_p1["output"]["title"]
-        )
-
-        check_run_p1 = first(
-            await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
-        )
-        assert check_run_p1
-        assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            in check_run_p1["output"]["summary"]
-        )
-
-    async def test_cascading_freeze_queue_summary_update(self) -> None:
-
-        rules = {
-            "queue_rules": [
-                {
-                    "name": "urgent",
-                    "conditions": [
-                        "status-success=continuous-integration/fast-ci",
-                    ],
-                },
-                {
-                    "name": "default",
-                    "conditions": [
-                        "status-success=continuous-integration/slow-ci",
-                    ],
-                },
-                {
-                    "name": "low-priority",
-                    "conditions": [
-                        "status-success=continuous-integration/slow-ci",
-                    ],
-                },
-            ],
-            "pull_request_rules": [
-                {
-                    "name": "Merge priority high",
-                    "conditions": [
-                        f"base={self.main_branch_name}",
-                        "label=queue-urgent",
-                    ],
-                    "actions": {"queue": {"name": "urgent"}},
-                },
-                {
-                    "name": "Merge default",
-                    "conditions": [
-                        f"base={self.main_branch_name}",
-                        "label=queue",
-                    ],
-                    "actions": {"queue": {"name": "default"}},
-                },
-                {
-                    "name": "Merge low",
-                    "conditions": [
-                        f"base={self.main_branch_name}",
-                        "label=queue-low",
-                    ],
-                    "actions": {"queue": {"name": "low-priority"}},
-                },
-            ],
-        }
-
-        await self.setup_repo(yaml.dump(rules))
-        p1 = await self.create_pr()
-
-        await self.add_label(p1["number"], "queue-low")
-        await self.run_engine()
-
-        r = await self._create_queue_freeze(
-            queue_name="default",
-            freeze_payload={
-                "reason": "test freeze reason",
-            },
-        )
-        assert r.json() == {
-            "queue_freezes": [
-                {
-                    "freeze_date": mock.ANY,
-                    "name": "default",
-                    "reason": "test freeze reason",
-                    "application_name": "testing application",
-                    "application_id": 123,
-                    "cascading": True,
-                }
-            ],
-        }
-
-        queue_freeze_data_default = await freeze.QueueFreeze.get(
-            self.repository_ctxt, "default"
-        )
-        assert queue_freeze_data_default is not None
-        assert queue_freeze_data_default.reason == "test freeze reason"
-        assert queue_freeze_data_default.cascading
-
-        r = await self._create_queue_freeze(
-            queue_name="urgent",
-            freeze_payload={
-                "reason": "urgent test freeze reason",
-            },
-        )
-        assert r.json() == {
-            "queue_freezes": [
-                {
-                    "freeze_date": mock.ANY,
-                    "name": "urgent",
-                    "reason": "urgent test freeze reason",
-                    "application_name": "testing application",
-                    "application_id": 123,
-                    "cascading": True,
-                }
-            ],
-        }
-
-        queue_freeze_data_urgent = await freeze.QueueFreeze.get(
-            self.repository_ctxt, "urgent"
-        )
-        assert queue_freeze_data_urgent is not None
-        assert queue_freeze_data_urgent.reason == "urgent test freeze reason"
-        assert queue_freeze_data_urgent.cascading
-
-        await self.run_engine()
-
-        ctxt = context.Context(self.repository_ctxt, p1)
-        check_run_p1 = first(
-            await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Rule: Merge low (queue)",
-        )
-        assert check_run_p1
-        assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            in check_run_p1["output"]["title"]
-        )
-
-        check_run_p1 = first(
-            await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
-        )
-        assert check_run_p1
-        assert (
-            'The merge is currently blocked by the freeze of the queue "default", for the following reason: test freeze reason'
-            in check_run_p1["output"]["summary"]
-        )
-
-        await self._delete_queue_freeze(queue_name="default", expected_status_code=204)
-
-        queue_freeze_data_urgent = await freeze.QueueFreeze.get(
-            self.repository_ctxt, "default"
-        )
-        assert queue_freeze_data_urgent is None
-
-        await self.run_engine()
-
-        ctxt = context.Context(self.repository_ctxt, p1)
-        check_run_p1 = first(
-            await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Rule: Merge low (queue)",
-        )
-        assert check_run_p1
-        assert (
-            'The merge is currently blocked by the freeze of the queue "urgent", for the following reason: urgent test freeze reason'
-            in check_run_p1["output"]["title"]
-        )
-
-        check_run_p1 = first(
-            await ctxt.pull_engine_check_runs,
-            key=lambda c: c["name"] == "Queue: Embarked in merge train",
-        )
-        assert check_run_p1
-        assert (
-            'The merge is currently blocked by the freeze of the queue "urgent", for the following reason: urgent test freeze reason'
-            in check_run_p1["output"]["summary"]
+            check_p1["output"]["title"]
+            == 'The queue "default" is currently frozen, for the following reason: test freeze reason'
         )
