@@ -5867,6 +5867,82 @@ pull_request_rules:
         queues = [q async for q in merge_train.Train.iter_trains(self.repository_ctxt)]
         assert len(queues) == 0
 
+    async def test_queue_with_two_pull_request_rules_that_match_then_unmatch(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=high",
+                    ],
+                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                },
+                {
+                    "name": "Merge priority low",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=low",
+                    ],
+                    "actions": {"queue": {"name": "default", "priority": "low"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+
+        await self.add_label(p1["number"], "high")
+        await self.add_label(p1["number"], "low")
+        await self.run_engine()
+
+        tmp_pull_1 = await self.wait_for_pull_request("opened")
+
+        q = await self.get_train()
+        await self.assert_merge_queue_contents(
+            q,
+            p1["base"]["sha"],
+            [
+                base.MergeQueueCarMatcher(
+                    [p1["number"]],
+                    [],
+                    p1["base"]["sha"],
+                    merge_train.TrainCarChecksType.DRAFT,
+                    tmp_pull_1["number"],
+                ),
+            ],
+        )
+        await self.remove_label(p1["number"], "high")
+        await self.run_engine()
+
+        tmp_pull_2 = await self.wait_for_pull_request("opened")
+
+        q = await self.get_train()
+        await self.assert_merge_queue_contents(
+            q,
+            p1["base"]["sha"],
+            [
+                base.MergeQueueCarMatcher(
+                    [p1["number"]],
+                    [],
+                    p1["base"]["sha"],
+                    merge_train.TrainCarChecksType.DRAFT,
+                    tmp_pull_2["number"],
+                ),
+            ],
+        )
+
 
 class TestTrainApiCalls(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True

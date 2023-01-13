@@ -531,9 +531,9 @@ async def run_actions(
 
             elif done_by_another_action:
                 # NOTE(sileht) We can't run two action merge for example,
-                # This assumes the action produce a report
+                # This assumes the other action produce a report
                 report = check_api.Result(
-                    check_api.Conclusion.SUCCESS,
+                    check_api.Conclusion.NEUTRAL,
                     f"Another {action} action already ran",
                     "",
                 )
