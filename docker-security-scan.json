@@ -9,6 +9,7 @@
         "PkgID": "bash@5.1-2+deb11u1",
         "PkgName": "bash",
         "InstalledVersion": "5.1-2+deb11u1",
+        "SeveritySource": "nvd",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3715",
         "DataSource": {
           "ID": "debian",
@@ -17,11 +18,15 @@
         },
         "Title": "bash: a heap-buffer-overflow in valid_parameter_transform",
         "Description": "A flaw was found in the bash package, where a heap-buffer overflow can occur in valid parameter_transform. This issue may lead to memory problems.",
-        "Severity": "MEDIUM",
+        "Severity": "HIGH",
         "CweIDs": [
-          "CWE-119"
+          "CWE-787"
         ],
         "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+            "V3Score": 7.8
+          },
           "redhat": {
             "V3Vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:R/S:U/C:L/I:L/A:H",
             "V3Score": 5.5
@@ -31,7 +36,8 @@
           "https://access.redhat.com/security/cve/CVE-2022-3715",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2126720",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3715",
-          "https://lists.gnu.org/archive/html/bug-bash/2022-08/msg00147.html"
+          "https://lists.gnu.org/archive/html/bug-bash/2022-08/msg00147.html",
+          "https://nvd.nist.gov/vuln/detail/CVE-2022-3715"
         ],
         "PublishedDate": "2023-01-05T15:15:00Z"
       },
@@ -428,13 +434,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:7720",
+          "https://access.redhat.com/errata/RHSA-2022:8361",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
+          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -445,9 +451,9 @@
       },
       {
         "VulnerabilityID": "CVE-2022-24765",
-        "PkgID": "git@1:2.30.2-1",
+        "PkgID": "git@1:2.34.1-1~bpo11+1",
         "PkgName": "git",
-        "InstalledVersion": "1:2.30.2-1",
+        "InstalledVersion": "1:2.34.1-1~bpo11+1",
         "SeveritySource": "nvd",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-24765",
         "DataSource": {
@@ -496,9 +502,9 @@
       },
       {
         "VulnerabilityID": "CVE-2022-29187",
-        "PkgID": "git@1:2.30.2-1",
+        "PkgID": "git@1:2.34.1-1~bpo11+1",
         "PkgName": "git",
-        "InstalledVersion": "1:2.30.2-1",
+        "InstalledVersion": "1:2.34.1-1~bpo11+1",
         "SeveritySource": "nvd",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-29187",
         "DataSource": {
@@ -543,9 +549,9 @@
       },
       {
         "VulnerabilityID": "CVE-2022-39260",
-        "PkgID": "git@1:2.30.2-1",
+        "PkgID": "git@1:2.34.1-1~bpo11+1",
         "PkgName": "git",
-        "InstalledVersion": "1:2.30.2-1",
+        "InstalledVersion": "1:2.34.1-1~bpo11+1",
         "SeveritySource": "nvd",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-39260",
         "DataSource": {
@@ -588,9 +594,9 @@
       },
       {
         "VulnerabilityID": "CVE-2022-39253",
-        "PkgID": "git@1:2.30.2-1",
+        "PkgID": "git@1:2.34.1-1~bpo11+1",
         "PkgName": "git",
-        "InstalledVersion": "1:2.30.2-1",
+        "InstalledVersion": "1:2.34.1-1~bpo11+1",
         "SeveritySource": "nvd",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-39253",
         "DataSource": {
@@ -633,9 +639,9 @@
       },
       {
         "VulnerabilityID": "CVE-2018-1000021",
-        "PkgID": "git@1:2.30.2-1",
+        "PkgID": "git@1:2.34.1-1~bpo11+1",
         "PkgName": "git",
-        "InstalledVersion": "1:2.30.2-1",
+        "InstalledVersion": "1:2.34.1-1~bpo11+1",
         "SeveritySource": "debian",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-1000021",
         "DataSource": {
@@ -670,9 +676,9 @@
       },
       {
         "VulnerabilityID": "CVE-2022-24975",
-        "PkgID": "git@1:2.30.2-1",
+        "PkgID": "git@1:2.34.1-1~bpo11+1",
         "PkgName": "git",
-        "InstalledVersion": "1:2.30.2-1",
+        "InstalledVersion": "1:2.34.1-1~bpo11+1",
         "SeveritySource": "debian",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-24975",
         "DataSource": {
@@ -707,9 +713,9 @@
       },
       {
         "VulnerabilityID": "CVE-2022-24765",
-        "PkgID": "git-man@1:2.30.2-1",
+        "PkgID": "git-man@1:2.34.1-1~bpo11+1",
         "PkgName": "git-man",
-        "InstalledVersion": "1:2.30.2-1",
+        "InstalledVersion": "1:2.34.1-1~bpo11+1",
         "SeveritySource": "nvd",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-24765",
         "DataSource": {
@@ -758,9 +764,9 @@
       },
       {
         "VulnerabilityID": "CVE-2022-29187",
-        "PkgID": "git-man@1:2.30.2-1",
+        "PkgID": "git-man@1:2.34.1-1~bpo11+1",
         "PkgName": "git-man",
-        "InstalledVersion": "1:2.30.2-1",
+        "InstalledVersion": "1:2.34.1-1~bpo11+1",
         "SeveritySource": "nvd",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-29187",
         "DataSource": {
@@ -805,9 +811,9 @@
       },
       {
         "VulnerabilityID": "CVE-2022-39260",
-        "PkgID": "git-man@1:2.30.2-1",
+        "PkgID": "git-man@1:2.34.1-1~bpo11+1",
         "PkgName": "git-man",
-        "InstalledVersion": "1:2.30.2-1",
+        "InstalledVersion": "1:2.34.1-1~bpo11+1",
         "SeveritySource": "nvd",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-39260",
         "DataSource": {
@@ -850,9 +856,9 @@
       },
       {
         "VulnerabilityID": "CVE-2022-39253",
-        "PkgID": "git-man@1:2.30.2-1",
+        "PkgID": "git-man@1:2.34.1-1~bpo11+1",
         "PkgName": "git-man",
-        "InstalledVersion": "1:2.30.2-1",
+        "InstalledVersion": "1:2.34.1-1~bpo11+1",
         "SeveritySource": "nvd",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-39253",
         "DataSource": {
@@ -895,9 +901,9 @@
       },
       {
         "VulnerabilityID": "CVE-2018-1000021",
-        "PkgID": "git-man@1:2.30.2-1",
+        "PkgID": "git-man@1:2.34.1-1~bpo11+1",
         "PkgName": "git-man",
-        "InstalledVersion": "1:2.30.2-1",
+        "InstalledVersion": "1:2.34.1-1~bpo11+1",
         "SeveritySource": "debian",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-1000021",
         "DataSource": {
@@ -932,9 +938,9 @@
       },
       {
         "VulnerabilityID": "CVE-2022-24975",
-        "PkgID": "git-man@1:2.30.2-1",
+        "PkgID": "git-man@1:2.34.1-1~bpo11+1",
         "PkgName": "git-man",
-        "InstalledVersion": "1:2.30.2-1",
+        "InstalledVersion": "1:2.34.1-1~bpo11+1",
         "SeveritySource": "debian",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-24975",
         "DataSource": {
@@ -1334,7 +1340,6 @@
         },
         "References": [
           "https://access.redhat.com/security/cve/CVE-2019-1010022",
-          "https://nvd.nist.gov/vuln/detail/CVE-2019-1010022",
           "https://security-tracker.debian.org/tracker/CVE-2019-1010022",
           "https://sourceware.org/bugzilla/show_bug.cgi?id=22850",
           "https://sourceware.org/bugzilla/show_bug.cgi?id=22850#c3",
@@ -1606,7 +1611,6 @@
         },
         "References": [
           "https://access.redhat.com/security/cve/CVE-2019-1010022",
-          "https://nvd.nist.gov/vuln/detail/CVE-2019-1010022",
           "https://security-tracker.debian.org/tracker/CVE-2019-1010022",
           "https://sourceware.org/bugzilla/show_bug.cgi?id=22850",
           "https://sourceware.org/bugzilla/show_bug.cgi?id=22850#c3",
@@ -1802,13 +1806,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:7720",
+          "https://access.redhat.com/errata/RHSA-2022:8361",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
+          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -1819,9 +1823,9 @@
       },
       {
         "VulnerabilityID": "CVE-2022-32221",
-        "PkgID": "libcurl3-gnutls@7.74.0-1.3+deb11u3",
+        "PkgID": "libcurl3-gnutls@7.87.0-1~bpo11+1",
         "PkgName": "libcurl3-gnutls",
-        "InstalledVersion": "7.74.0-1.3+deb11u3",
+        "InstalledVersion": "7.87.0-1~bpo11+1",
         "SeveritySource": "nvd",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-32221",
         "DataSource": {
@@ -1859,9 +1863,9 @@
       },
       {
         "VulnerabilityID": "CVE-2022-42916",
-        "PkgID": "libcurl3-gnutls@7.74.0-1.3+deb11u3",
+        "PkgID": "libcurl3-gnutls@7.87.0-1~bpo11+1",
         "PkgName": "libcurl3-gnutls",
-        "InstalledVersion": "7.74.0-1.3+deb11u3",
+        "InstalledVersion": "7.87.0-1~bpo11+1",
         "SeveritySource": "nvd",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-42916",
         "DataSource": {
@@ -1902,9 +1906,9 @@
       },
       {
         "VulnerabilityID": "CVE-2022-43551",
-        "PkgID": "libcurl3-gnutls@7.74.0-1.3+deb11u3",
+        "PkgID": "libcurl3-gnutls@7.87.0-1~bpo11+1",
         "PkgName": "libcurl3-gnutls",
-        "InstalledVersion": "7.74.0-1.3+deb11u3",
+        "InstalledVersion": "7.87.0-1~bpo11+1",
         "SeveritySource": "nvd",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-43551",
         "DataSource": {
@@ -1941,9 +1945,9 @@
       },
       {
         "VulnerabilityID": "CVE-2022-43552",
-        "PkgID": "libcurl3-gnutls@7.74.0-1.3+deb11u3",
+        "PkgID": "libcurl3-gnutls@7.87.0-1~bpo11+1",
         "PkgName": "libcurl3-gnutls",
-        "InstalledVersion": "7.74.0-1.3+deb11u3",
+        "InstalledVersion": "7.87.0-1~bpo11+1",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-43552",
         "DataSource": {
           "ID": "debian",
@@ -1968,9 +1972,9 @@
       },
       {
         "VulnerabilityID": "CVE-2021-22922",
-        "PkgID": "libcurl3-gnutls@7.74.0-1.3+deb11u3",
+        "PkgID": "libcurl3-gnutls@7.87.0-1~bpo11+1",
         "PkgName": "libcurl3-gnutls",
-        "InstalledVersion": "7.74.0-1.3+deb11u3",
+        "InstalledVersion": "7.87.0-1~bpo11+1",
         "SeveritySource": "debian",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-22922",
         "DataSource": {
@@ -2017,9 +2021,9 @@
       },
       {
         "VulnerabilityID": "CVE-2021-22923",
-        "PkgID": "libcurl3-gnutls@7.74.0-1.3+deb11u3",
+        "PkgID": "libcurl3-gnutls@7.87.0-1~bpo11+1",
         "PkgName": "libcurl3-gnutls",
-        "InstalledVersion": "7.74.0-1.3+deb11u3",
+        "InstalledVersion": "7.87.0-1~bpo11+1",
         "SeveritySource": "debian",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-22923",
         "DataSource": {
@@ -2342,7 +2346,6 @@
           "https://linux.oracle.com/errata/ELSA-2020-1810.html",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/OPKYSWCOM3CL66RI76TYVIG6TJ263RXH/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/SJPFGA45DI4F5MCF2OAACGH3HQOF4G3M/",
-          "https://nvd.nist.gov/vuln/detail/CVE-2019-8457",
           "https://security.netapp.com/advisory/ntap-20190606-0002/",
           "https://ubuntu.com/security/notices/USN-4004-1",
           "https://ubuntu.com/security/notices/USN-4004-2",
@@ -2451,13 +2454,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:7720",
+          "https://access.redhat.com/errata/RHSA-2022:8361",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
+          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -3006,9 +3009,9 @@
       },
       {
         "VulnerabilityID": "CVE-2015-3276",
-        "PkgID": "libldap-2.4-2@2.4.57+dfsg-3+deb11u1",
+        "PkgID": "libldap-2.4-2@2.4.59+dfsg-1~bpo11+1",
         "PkgName": "libldap-2.4-2",
-        "InstalledVersion": "2.4.57+dfsg-3+deb11u1",
+        "InstalledVersion": "2.4.59+dfsg-1~bpo11+1",
         "SeveritySource": "debian",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2015-3276",
         "DataSource": {
@@ -3046,9 +3049,9 @@
       },
       {
         "VulnerabilityID": "CVE-2017-14159",
-        "PkgID": "libldap-2.4-2@2.4.57+dfsg-3+deb11u1",
+        "PkgID": "libldap-2.4-2@2.4.59+dfsg-1~bpo11+1",
         "PkgName": "libldap-2.4-2",
-        "InstalledVersion": "2.4.57+dfsg-3+deb11u1",
+        "InstalledVersion": "2.4.59+dfsg-1~bpo11+1",
         "SeveritySource": "debian",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2017-14159",
         "DataSource": {
@@ -3083,9 +3086,9 @@
       },
       {
         "VulnerabilityID": "CVE-2017-17740",
-        "PkgID": "libldap-2.4-2@2.4.57+dfsg-3+deb11u1",
+        "PkgID": "libldap-2.4-2@2.4.59+dfsg-1~bpo11+1",
         "PkgName": "libldap-2.4-2",
-        "InstalledVersion": "2.4.57+dfsg-3+deb11u1",
+        "InstalledVersion": "2.4.59+dfsg-1~bpo11+1",
         "SeveritySource": "debian",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2017-17740",
         "DataSource": {
@@ -3123,9 +3126,9 @@
       },
       {
         "VulnerabilityID": "CVE-2020-15719",
-        "PkgID": "libldap-2.4-2@2.4.57+dfsg-3+deb11u1",
+        "PkgID": "libldap-2.4-2@2.4.59+dfsg-1~bpo11+1",
         "PkgName": "libldap-2.4-2",
-        "InstalledVersion": "2.4.57+dfsg-3+deb11u1",
+        "InstalledVersion": "2.4.59+dfsg-1~bpo11+1",
         "SeveritySource": "debian",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-15719",
         "DataSource": {
@@ -3414,12 +3417,17 @@
           }
         },
         "References": [
+          "https://access.redhat.com/errata/RHSA-2023:0100",
           "https://access.redhat.com/security/cve/CVE-2022-3821",
+          "https://bugzilla.redhat.com/2139327",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
+          "https://errata.almalinux.org/8/ALSA-2023-0100.html",
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
           "https://github.com/systemd/systemd/pull/23933",
+          "https://linux.oracle.com/cve/CVE-2022-3821.html",
+          "https://linux.oracle.com/errata/ELSA-2023-0100.html",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/RVBQC2VLSDVQAPJTEMTREXDL4HYLXG2P/",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-3821"
         ],
@@ -3567,12 +3575,17 @@
           }
         },
         "References": [
+          "https://access.redhat.com/errata/RHSA-2023:0100",
           "https://access.redhat.com/security/cve/CVE-2022-3821",
+          "https://bugzilla.redhat.com/2139327",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
+          "https://errata.almalinux.org/8/ALSA-2023-0100.html",
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
           "https://github.com/systemd/systemd/pull/23933",
+          "https://linux.oracle.com/cve/CVE-2022-3821.html",
+          "https://linux.oracle.com/errata/ELSA-2023-0100.html",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/RVBQC2VLSDVQAPJTEMTREXDL4HYLXG2P/",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-3821"
         ],
@@ -3889,7 +3902,6 @@
           "https://access.redhat.com/security/cve/CVE-2019-20838",
           "https://bugs.gentoo.org/717920",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-20838",
-          "https://errata.almalinux.org/8/ALSA-2021-4373.html",
           "https://linux.oracle.com/cve/CVE-2019-20838.html",
           "https://linux.oracle.com/errata/ELSA-2021-4373.html",
           "https://lists.apache.org/thread.html/rf9fa47ab66495c78bb4120b0754dd9531ca2ff0430f6685ac9b07772@%3Cdev.mina.apache.org%3E",
@@ -4022,7 +4034,6 @@
           "https://access.redhat.com/security/cve/CVE-2021-36084",
           "https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=31065",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-36084",
-          "https://errata.almalinux.org/8/ALSA-2021-4513.html",
           "https://github.com/SELinuxProject/selinux/commit/f34d3d30c8325e4847a6b696fe7a3936a8a361f3",
           "https://github.com/google/oss-fuzz-vulns/blob/main/vulns/selinux/OSV-2021-417.yaml",
           "https://linux.oracle.com/cve/CVE-2021-36084.html",
@@ -4070,7 +4081,6 @@
           "https://access.redhat.com/security/cve/CVE-2021-36085",
           "https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=31124",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-36085",
-          "https://errata.almalinux.org/8/ALSA-2021-4513.html",
           "https://github.com/SELinuxProject/selinux/commit/2d35fcc7e9e976a2346b1de20e54f8663e8a6cba",
           "https://github.com/google/oss-fuzz-vulns/blob/main/vulns/selinux/OSV-2021-421.yaml",
           "https://linux.oracle.com/cve/CVE-2021-36085.html",
@@ -4118,7 +4128,6 @@
           "https://access.redhat.com/security/cve/CVE-2021-36086",
           "https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=32177",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-36086",
-          "https://errata.almalinux.org/8/ALSA-2021-4513.html",
           "https://github.com/SELinuxProject/selinux/commit/c49a8ea09501ad66e799ea41b8154b6770fec2c8",
           "https://github.com/google/oss-fuzz-vulns/blob/main/vulns/selinux/OSV-2021-536.yaml",
           "https://linux.oracle.com/cve/CVE-2021-36086.html",
@@ -4166,7 +4175,6 @@
           "https://access.redhat.com/security/cve/CVE-2021-36087",
           "https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=32675",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-36087",
-          "https://errata.almalinux.org/8/ALSA-2021-4513.html",
           "https://github.com/SELinuxProject/selinux/commit/340f0eb7f3673e8aacaf0a96cbfcd4d12a405521",
           "https://github.com/google/oss-fuzz-vulns/blob/main/vulns/selinux/OSV-2021-585.yaml",
           "https://linux.oracle.com/cve/CVE-2021-36087.html",
@@ -4324,10 +4332,15 @@
           }
         },
         "References": [
+          "https://access.redhat.com/errata/RHSA-2023:0110",
           "https://access.redhat.com/security/cve/CVE-2022-35737",
           "https://blog.trailofbits.com/2022/10/25/sqlite-vulnerability-july-2022-library-api/",
+          "https://bugzilla.redhat.com/2110291",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-35737",
+          "https://errata.almalinux.org/8/ALSA-2023-0110.html",
           "https://kb.cert.org/vuls/id/720344",
+          "https://linux.oracle.com/cve/CVE-2022-35737.html",
+          "https://linux.oracle.com/errata/ELSA-2023-0110.html",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-35737",
           "https://security.gentoo.org/glsa/202210-40",
           "https://security.netapp.com/advisory/ntap-20220915-0009/",
@@ -4372,13 +4385,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:7720",
+          "https://access.redhat.com/errata/RHSA-2022:8361",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
+          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -4422,17 +4435,19 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:5818",
+          "https://access.redhat.com/errata/RHSA-2022:6224",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1292.json",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-2068.json",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-2097.json",
           "https://access.redhat.com/security/cve/CVE-2022-2097",
           "https://bugzilla.redhat.com/2081494",
+          "https://bugzilla.redhat.com/2087911",
+          "https://bugzilla.redhat.com/2087913",
           "https://bugzilla.redhat.com/2097310",
           "https://bugzilla.redhat.com/2104905",
           "https://cert-portal.siemens.com/productcert/pdf/ssa-332410.pdf",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-2097",
-          "https://errata.almalinux.org/8/ALSA-2022-5818.html",
+          "https://errata.almalinux.org/9/ALSA-2022-6224.html",
           "https://git.openssl.org/gitweb/?p=openssl.git;a=commitdiff;h=919925673d6c9cfed3c1085497f5dfbbed5fc431",
           "https://git.openssl.org/gitweb/?p=openssl.git;a=commitdiff;h=a98f339ddd7e8f487d6e0088d4a9a42324885a93",
           "https://github.com/advisories/GHSA-3wx7-46ch-7rq2",
@@ -4555,12 +4570,17 @@
           }
         },
         "References": [
+          "https://access.redhat.com/errata/RHSA-2023:0100",
           "https://access.redhat.com/security/cve/CVE-2022-3821",
+          "https://bugzilla.redhat.com/2139327",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
+          "https://errata.almalinux.org/8/ALSA-2023-0100.html",
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
           "https://github.com/systemd/systemd/pull/23933",
+          "https://linux.oracle.com/cve/CVE-2022-3821.html",
+          "https://linux.oracle.com/errata/ELSA-2023-0100.html",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/RVBQC2VLSDVQAPJTEMTREXDL4HYLXG2P/",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-3821"
         ],
@@ -4800,12 +4820,17 @@
           }
         },
         "References": [
+          "https://access.redhat.com/errata/RHSA-2023:0100",
           "https://access.redhat.com/security/cve/CVE-2022-3821",
+          "https://bugzilla.redhat.com/2139327",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
+          "https://errata.almalinux.org/8/ALSA-2023-0100.html",
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
           "https://github.com/systemd/systemd/pull/23933",
+          "https://linux.oracle.com/cve/CVE-2022-3821.html",
+          "https://linux.oracle.com/errata/ELSA-2023-0100.html",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/RVBQC2VLSDVQAPJTEMTREXDL4HYLXG2P/",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-3821"
         ],
@@ -5149,13 +5174,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:7720",
+          "https://access.redhat.com/errata/RHSA-2022:8361",
           "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
+          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -7070,12 +7095,17 @@
           }
         },
         "References": [
+          "https://access.redhat.com/errata/RHSA-2023:0100",
           "https://access.redhat.com/security/cve/CVE-2022-3821",
+          "https://bugzilla.redhat.com/2139327",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
+          "https://errata.almalinux.org/8/ALSA-2023-0100.html",
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
           "https://github.com/systemd/systemd/pull/23933",
+          "https://linux.oracle.com/cve/CVE-2022-3821.html",
+          "https://linux.oracle.com/errata/ELSA-2023-0100.html",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/RVBQC2VLSDVQAPJTEMTREXDL4HYLXG2P/",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-3821"
         ],
@@ -7223,12 +7253,17 @@
           }
         },
         "References": [
+          "https://access.redhat.com/errata/RHSA-2023:0100",
           "https://access.redhat.com/security/cve/CVE-2022-3821",
+          "https://bugzilla.redhat.com/2139327",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
+          "https://errata.almalinux.org/8/ALSA-2023-0100.html",
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
           "https://github.com/systemd/systemd/pull/23933",
+          "https://linux.oracle.com/cve/CVE-2022-3821.html",
+          "https://linux.oracle.com/errata/ELSA-2023-0100.html",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/RVBQC2VLSDVQAPJTEMTREXDL4HYLXG2P/",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-3821"
         ],
@@ -7376,12 +7411,17 @@
           }
         },
         "References": [
+          "https://access.redhat.com/errata/RHSA-2023:0100",
           "https://access.redhat.com/security/cve/CVE-2022-3821",
+          "https://bugzilla.redhat.com/2139327",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
+          "https://errata.almalinux.org/8/ALSA-2023-0100.html",
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
           "https://github.com/systemd/systemd/pull/23933",
+          "https://linux.oracle.com/cve/CVE-2022-3821.html",
+          "https://linux.oracle.com/errata/ELSA-2023-0100.html",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/RVBQC2VLSDVQAPJTEMTREXDL4HYLXG2P/",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-3821"
         ],
