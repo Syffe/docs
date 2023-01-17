@@ -68,3 +68,8 @@ class StatisticsAccuracyMeasurement(signals.SignalBase):
             real_stat,
             tags=tags,
         )
+        statsd.gauge(
+            "statistics.time_to_merge.accuracy.seconds_waiting_for_queue_freeze",
+            metadata["seconds_waiting_for_freeze"],
+            tags=tags,
+        )
