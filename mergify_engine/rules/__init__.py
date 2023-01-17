@@ -306,8 +306,8 @@ class QueueRule:
 
 
 T_Rule = typing.TypeVar("T_Rule", PullRequestRule, QueueRule, PriorityRule)
-T_EvaluatedPullRequestRule = typing.TypeVar(
-    "T_EvaluatedPullRequestRule",
+T_EvaluatedRule = typing.TypeVar(
+    "T_EvaluatedRule",
     EvaluatedPullRequestRule,
     EvaluatedQueueRule,
     EvaluatedPriorityRule,
@@ -315,7 +315,7 @@ T_EvaluatedPullRequestRule = typing.TypeVar(
 
 
 @dataclasses.dataclass
-class GenericRulesEvaluator(typing.Generic[T_Rule, T_EvaluatedPullRequestRule]):
+class GenericRulesEvaluator(typing.Generic[T_Rule, T_EvaluatedRule]):
     """A rules that matches a pull request."""
 
     # Fixed base attributes that are not considered when looking for the
@@ -337,23 +337,23 @@ class GenericRulesEvaluator(typing.Generic[T_Rule, T_EvaluatedPullRequestRule]):
     rules: list[T_Rule]
 
     # The rules matching the pull request.
-    matching_rules: list[T_EvaluatedPullRequestRule] = dataclasses.field(
+    matching_rules: list[T_EvaluatedRule] = dataclasses.field(
         init=False, default_factory=list
     )
 
     # The rules that can't be computed due to runtime error (eg: team resolution failure)
-    faulty_rules: list[T_EvaluatedPullRequestRule] = dataclasses.field(
+    faulty_rules: list[T_EvaluatedRule] = dataclasses.field(
         init=False, default_factory=list
     )
 
     # The rules not matching the pull request.
-    ignored_rules: list[T_EvaluatedPullRequestRule] = dataclasses.field(
+    ignored_rules: list[T_EvaluatedRule] = dataclasses.field(
         init=False, default_factory=list
     )
 
     # The rules not matching the base changeable attributes
     not_applicable_base_changeable_attributes_rules: list[
-        T_EvaluatedPullRequestRule
+        T_EvaluatedRule
     ] = dataclasses.field(init=False, default_factory=list)
 
     @classmethod
@@ -363,12 +363,12 @@ class GenericRulesEvaluator(typing.Generic[T_Rule, T_EvaluatedPullRequestRule]):
         repository: context.Repository,
         pulls: list[context.BasePullRequest],
         rule_hidden_from_merge_queue: bool,
-    ) -> "GenericRulesEvaluator[T_Rule, T_EvaluatedPullRequestRule]":
+    ) -> "GenericRulesEvaluator[T_Rule, T_EvaluatedRule]":
         self = cls(rules)
 
         for rule in self.rules:
             apply_configure_filter(repository, rule.conditions)
-            evaluated_rule = typing.cast(T_EvaluatedPullRequestRule, await rule.evaluate(pulls))  # type: ignore[redundant-cast]
+            evaluated_rule = typing.cast(T_EvaluatedRule, await rule.evaluate(pulls))  # type: ignore[redundant-cast]
             del rule
 
             # NOTE(sileht):
