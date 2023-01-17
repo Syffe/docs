@@ -94,7 +94,7 @@ class MergeExecutor(
         )
 
     async def run(self) -> check_api.Result:
-        report = await self.merge_report(
+        report = await self.pre_merge_checks(
             self.ctxt,
             self.config["method"],
             self.config["rebase_fallback"],

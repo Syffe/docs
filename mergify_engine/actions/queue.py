@@ -429,7 +429,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         q = await merge_train.Train.from_context(ctxt)
         car = q.get_car(ctxt)
-        result = await self.merge_report(
+        result = await self.pre_merge_checks(
             ctxt,
             self.config["method"],
             self.config["rebase_fallback"],
@@ -573,7 +573,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         q = await merge_train.Train.from_context(ctxt)
         car = q.get_car(ctxt)
 
-        result = await self.merge_report(
+        result = await self.pre_merge_checks(
             ctxt,
             self.config["method"],
             self.config["rebase_fallback"],

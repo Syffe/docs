@@ -157,7 +157,7 @@ class MergeUtilsMixin:
                 await ctxt.update(wait_merged=True)
                 ctxt.log.info("merged")
 
-        result = await self.merge_report(
+        result = await self.pre_merge_checks(
             ctxt, merge_method, merge_rebase_fallback, merge_bot_account
         )
         if result:
@@ -298,18 +298,14 @@ class MergeUtilsMixin:
                 f"GitHub error message: `{e.message}`",
             )
 
-    async def merge_report(
+    async def pre_merge_checks(
         self,
         ctxt: context.Context,
         merge_method: MergeMethodT,
         merge_rebase_fallback: RebaseFallbackT,
         merge_bot_account: github_types.GitHubLogin | None,
     ) -> check_api.Result | None:
-        if ctxt.pull["draft"]:
-            conclusion = check_api.Conclusion.PENDING
-            title = "Draft flag needs to be removed"
-            summary = ""
-        elif ctxt.pull["merged"]:
+        if ctxt.pull["merged"]:
             mergify_bot = await github.GitHubAppInfo.get_bot()
             if ctxt.pull["merged_by"] is None:
                 mode = "somehow"
@@ -328,6 +324,10 @@ class MergeUtilsMixin:
         elif ctxt.closed:
             conclusion = check_api.Conclusion.CANCELLED
             title = "The pull request has been closed manually"
+            summary = ""
+        elif ctxt.pull["draft"]:
+            conclusion = check_api.Conclusion.PENDING
+            title = "Draft flag needs to be removed"
             summary = ""
 
         elif (
