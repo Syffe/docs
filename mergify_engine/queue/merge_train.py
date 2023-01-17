@@ -1537,9 +1537,12 @@ You don't need to do anything. Mergify will close this pull request automaticall
         else:
             summary = f"The merge-queue pull request (#{self.queue_pull_request_number}) can't be prepared"
 
-        summary += f"""\nDetails: ```
-{details}
- ```"""
+        # Append a `>` after a double newlines because otherwise
+        # the quote breaks.
+        details_as_markdown = details.replace("\n\n", "\n\n>")
+        summary += f"""\nDetails:
+> {details_as_markdown}
+"""
 
         if pull_requests_to_remove is None:
             embarked_pulls_to_remove = self.still_queued_embarked_pulls

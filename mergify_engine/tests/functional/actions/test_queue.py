@@ -3850,7 +3850,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check["output"]["summary"] == (
             "The merge-queue pull request can't be created\n"
-            f"Details: ```\nThe pull request conflicts with at least one pull request ahead in queue: #{p1['number']}\n ```"
+            f"Details:\n> The pull request conflicts with at least one pull request ahead in queue: #{p1['number']}\n"
         )
 
         # Merge the train
@@ -3948,7 +3948,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check["output"]["summary"] == (
             "The merge-queue pull request can't be created\n"
-            f"Details: ```\nThe pull request conflicts with at least one pull request ahead in queue: #{p1['number']}\n ```"
+            f"Details:\n> The pull request conflicts with at least one pull request ahead in queue: #{p1['number']}\n"
         )
 
         # Merge the train
@@ -6350,8 +6350,7 @@ pull_requests:
         )
         assert check["output"]["summary"] == (
             "The merge-queue pull request can't be created\n"
-            "Details: ```\nThe pull request conflicts with at least one pull request ahead in queue: "
-            f"#{p1['number']}, #{p2['number']}\n ```"
+            f"Details:\n> The pull request conflicts with at least one pull request ahead in queue: #{p1['number']}, #{p2['number']}\n"
         )
 
     async def test_train_car_state_waiting_for_schedule_after_pr_ahead_dequeued(
