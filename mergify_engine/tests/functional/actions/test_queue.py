@@ -1832,7 +1832,7 @@ class TestQueueAction(base.FunctionalTestBase):
             == "The pull request has been removed from the queue"
         )
         assert check["output"]["summary"].startswith(
-            f"Pull request #{p1['number']} has been dequeued by an `unqueue` command."
+            f"Pull request #{p1['number']} has been dequeued by an `unqueue` command.\n"
         )
 
         check = first(

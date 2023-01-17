@@ -712,7 +712,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             # NOTE(sileht): should not be possible as unqueue command already
             # remove the pull request from the queue
             return queue_utils.PrDequeued(
-                ctxt.pull["number"], " by an `unqueue` command."
+                ctxt.pull["number"], " by an `unqueue` command"
             )
 
         train_car_state = merge_train.TrainCarState.decode_train_car_state_from_summary(
@@ -721,7 +721,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         if train_car_state is None:
             # NOTE(sileht): No details but we can't do much at this point
             return queue_utils.PrDequeued(
-                ctxt.pull["number"], " due to failing checks or checks timeout."
+                ctxt.pull["number"], " due to failing checks or checks timeout"
             )
 
         if (
