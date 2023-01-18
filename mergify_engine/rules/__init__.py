@@ -175,6 +175,9 @@ class PriorityRules:
         repository: context.Repository,
         pulls: list[context.BasePullRequest],
     ) -> list[EvaluatedPriorityRule]:
+        if not self.rules:
+            return []
+
         priority_rules = [rule.copy() for rule in self.rules]
         priority_rules_evaluator = await PriorityRulesEvaluator.create(
             priority_rules,
@@ -188,19 +191,17 @@ class PriorityRules:
             if rule.conditions.match
         ]
 
-    async def get_context_priority(
-        self, ctxt: context.Context, current_pull_request_priority: int
-    ) -> int:
+    async def get_context_priority(self, ctxt: context.Context) -> int | None:
         matching_priority_rules = await self.get_matching_evaluated_priority_rules(
             ctxt.repository, [ctxt.pull_request]
         )
-        pull_priority = current_pull_request_priority
+        final_priority = None
         for rule in matching_priority_rules:
             rule_priority = queue.Priority(rule.priority)
-            if rule_priority > pull_priority:
-                pull_priority = rule_priority
+            if final_priority is None or rule_priority > final_priority:
+                final_priority = rule_priority
 
-        return pull_priority
+        return final_priority
 
 
 @dataclasses.dataclass
@@ -318,6 +319,15 @@ class QueueRule:
     ) -> EvaluatedQueueRule:
         await self.merge_conditions(pulls)
         return typing.cast(EvaluatedQueueRule, self)
+
+    async def get_effective_priority(
+        self, ctxt: context.Context, fallback_priority: int
+    ) -> int:
+        priority = await self.priority_rules.get_context_priority(ctxt)
+        if priority is None:
+            priority = fallback_priority
+
+        return priority + self.config["priority"] * queue.QUEUE_PRIORITY_OFFSET
 
 
 T_Rule = typing.TypeVar("T_Rule", PullRequestRule, QueueRule, PriorityRule)

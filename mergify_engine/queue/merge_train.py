@@ -2789,17 +2789,6 @@ class Train:
                     queue_utils.QueueRuleMissing(),
                 )
         new_pull_queue_rule = queue_rules[config["name"]]
-        new_pull_priority = new_pull_queue_rule.config["priority"]
-
-        if new_pull_queue_rule.priority_rules.rules:
-            new_pull_priority = (
-                await new_pull_queue_rule.priority_rules.get_context_priority(
-                    ctxt=ctxt,
-                    current_pull_request_priority=new_pull_queue_rule.config[
-                        "priority"
-                    ],
-                )
-            )
 
         best_position = -1
         need_to_be_readded = False
@@ -2822,7 +2811,8 @@ class Train:
                         and embarked_pull.config["name"] in frozen_queues
                     )
                 )
-                and new_pull_priority >= embarked_pull_queue_rule.config["priority"]
+                and new_pull_queue_rule.config["priority"]
+                >= embarked_pull_queue_rule.config["priority"]
                 and config["name"]
                 not in embarked_pull_queue_rule.config[
                     "disallow_checks_interruption_from_queues"

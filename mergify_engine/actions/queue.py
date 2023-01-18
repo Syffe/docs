@@ -484,7 +484,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
         pull_queue_config = queue.PullQueueConfig(
             {
                 "update_method": self.config["update_method"],
-                "effective_priority": await self._get_effective_priority(ctxt),
+                "effective_priority": await self.queue_rule.get_effective_priority(
+                    ctxt, self.config["priority"]
+                ),
                 "bot_account": merge_bot_account,
                 "update_bot_account": update_bot_account,
                 "priority": self.config["priority"],
@@ -644,20 +646,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
             }
         except KeyError:
             raise voluptuous.error.Invalid(f"`{self.config['name']}` queue not found")
-
-    async def _get_effective_priority(self, ctxt: context.Context) -> int:
-        current_priority = self.queue_rule.config["priority"]
-        if self.queue_rule.priority_rules.rules:
-            current_priority = (
-                await self.queue_rule.priority_rules.get_context_priority(
-                    ctxt=ctxt,
-                    current_pull_request_priority=current_priority,
-                )
-            )
-        return typing.cast(
-            int,
-            self.config["priority"] + current_priority * queue.QUEUE_PRIORITY_OFFSET,
-        )
 
     async def _get_current_queue_freeze(
         self, ctxt: context.Context
