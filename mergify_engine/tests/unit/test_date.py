@@ -530,3 +530,119 @@ def test_schedule_eq_with_datetime(
 ) -> None:
     assert expected == (date_to_test == schedule)
     assert not expected == (date_to_test != schedule)
+
+
+FULL_DAY: date.DayJSON = {
+    "times": [
+        {
+            "start_at": {"hour": 0, "minute": 0},
+            "end_at": {"hour": 23, "minute": 59},
+        },
+    ]
+}
+
+EMPTY_DAY: date.DayJSON = {"times": []}
+
+
+def test_schedule_as_json_dict_only_days() -> None:
+    schedule = date.Schedule.from_string("MON-FRI")
+    assert schedule.as_json_dict() == {
+        "timezone": "UTC",
+        "days": {
+            "monday": FULL_DAY,
+            "tuesday": FULL_DAY,
+            "wednesday": FULL_DAY,
+            "thursday": FULL_DAY,
+            "friday": FULL_DAY,
+            "saturday": EMPTY_DAY,
+            "sunday": EMPTY_DAY,
+        },
+    }
+
+
+def test_schedule_as_json_dict_only_days_reversed() -> None:
+    schedule = date.Schedule.from_string("FRI-MON")
+    assert schedule.as_json_dict() == {
+        "timezone": "UTC",
+        "days": {
+            "monday": FULL_DAY,
+            "tuesday": EMPTY_DAY,
+            "wednesday": EMPTY_DAY,
+            "thursday": EMPTY_DAY,
+            "friday": FULL_DAY,
+            "saturday": FULL_DAY,
+            "sunday": FULL_DAY,
+        },
+    }
+
+
+def test_schedule_as_json_dict_days_and_times() -> None:
+    schedule = date.Schedule.from_string("MON-FRI 11:00-15:30")
+    expected_day: date.DayJSON = {
+        "times": [
+            {
+                "start_at": {"hour": 11, "minute": 0},
+                "end_at": {"hour": 15, "minute": 30},
+            },
+        ]
+    }
+    assert schedule.as_json_dict() == {
+        "timezone": "UTC",
+        "days": {
+            "monday": expected_day,
+            "tuesday": expected_day,
+            "wednesday": expected_day,
+            "thursday": expected_day,
+            "friday": expected_day,
+            "saturday": EMPTY_DAY,
+            "sunday": EMPTY_DAY,
+        },
+    }
+
+
+def test_schedule_as_json_dict_only_times() -> None:
+    schedule = date.Schedule.from_string("9:00-16:32")
+    expected_day: date.DayJSON = {
+        "times": [
+            {
+                "start_at": {"hour": 9, "minute": 0},
+                "end_at": {"hour": 16, "minute": 32},
+            },
+        ]
+    }
+    assert schedule.as_json_dict() == {
+        "timezone": "UTC",
+        "days": {
+            "monday": expected_day,
+            "tuesday": expected_day,
+            "wednesday": expected_day,
+            "thursday": expected_day,
+            "friday": expected_day,
+            "saturday": expected_day,
+            "sunday": expected_day,
+        },
+    }
+
+
+def test_schedule_as_json_dict_only_times_with_timezone() -> None:
+    schedule = date.Schedule.from_string("10:02-22:35[Europe/Paris]")
+    expected_day: date.DayJSON = {
+        "times": [
+            {
+                "start_at": {"hour": 10, "minute": 2},
+                "end_at": {"hour": 22, "minute": 35},
+            },
+        ]
+    }
+    assert schedule.as_json_dict() == {
+        "timezone": "Europe/Paris",
+        "days": {
+            "monday": expected_day,
+            "tuesday": expected_day,
+            "wednesday": expected_day,
+            "thursday": expected_day,
+            "friday": expected_day,
+            "saturday": expected_day,
+            "sunday": expected_day,
+        },
+    }

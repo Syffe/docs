@@ -262,6 +262,25 @@ class DayOfWeek(PartialDatetime):
         return _SHORT_WEEKDAY[self.value - 1].capitalize()
 
 
+class TimeJSON(typing.TypedDict):
+    hour: int
+    minute: int
+
+
+class TimeRangeJSON(typing.TypedDict):
+    start_at: TimeJSON
+    end_at: TimeJSON
+
+
+class DayJSON(typing.TypedDict):
+    times: list[TimeRangeJSON]
+
+
+class ScheduleJSON(typing.TypedDict):
+    timezone: str
+    days: dict[str, DayJSON]
+
+
 @dataclasses.dataclass
 class Schedule:
     start_weekday: int
@@ -558,6 +577,39 @@ class Schedule:
                 hour=self.start_hour, minute=self.start_minute, second=1, microsecond=0
             )
         )
+
+    def as_json_dict(self) -> ScheduleJSON:
+        return {
+            "timezone": str(self.tzinfo),
+            "days": {
+                day: self._day_as_json_dict(DayOfWeek.from_string(day))
+                for day in _LONG_WEEKDAY
+            },
+        }
+
+    def _day_as_json_dict(self, day: DayOfWeek) -> DayJSON:
+        if not self._is_day_in_schedule(day):
+            return {"times": []}
+
+        return {
+            "times": [
+                {
+                    "start_at": self._time_as_json_dict(
+                        self.start_hour, self.start_minute
+                    ),
+                    "end_at": self._time_as_json_dict(self.end_hour, self.end_minute),
+                }
+            ]
+        }
+
+    def _is_day_in_schedule(self, day: DayOfWeek) -> bool:
+        if self.start_weekday <= self.end_weekday:
+            return self.start_weekday <= day.value <= self.end_weekday
+        else:
+            return day.value <= self.end_weekday or day.value >= self.start_weekday
+
+    def _time_as_json_dict(self, hour: int, minute: int) -> TimeJSON:
+        return {"hour": hour, "minute": minute}
 
 
 def fromisoformat(s: str) -> datetime.datetime:
