@@ -107,8 +107,4 @@ cmd = "semgrep --config=auto --error"
 [tool.poe.tasks.setup]
 help = "Sync poetry virtualenv"
 executor = { type  = "simple" }
-default_item_type = "cmd"
-sequence = [
-    "./tools/poetry-workaround.sh",
-    "poetry install --sync",
-]
+cmd = "./tools/poetry-ci-install.sh"
