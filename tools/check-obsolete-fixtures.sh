@@ -2,7 +2,8 @@
 
 TESTS="$(pytest --collect-only | sed -n -e '/\(TestCaseFunction\|Function\)/s/.* \([^ >]*\)>.*/\1/gp')"
 ret=0
-for f in $(find zfixtures -name config.json | sed -n -e 's/.*\/\([^/]*\)\/config.json/\1/gp'); do
+for f in $(find zfixtures -name config.json -o -name 'git-*.json' -o -name 'http.yaml' | xargs dirname | uniq); do
+    f=$(basename $f)
     used=$(echo -e "$TESTS" | grep "^$f\$")
     if [ ! "$used" ]; then
         if [ "$ret" -eq 0 ] ; then
