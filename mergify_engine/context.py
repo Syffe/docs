@@ -1505,7 +1505,7 @@ class Context:
             try:
                 commit = (await self.commits)[nb_commit]
             except IndexError:
-                raise PullRequestAttributeError(name)
+                return None
 
             commit_attribute = match.group(2)
             relative_time = False
