@@ -82,10 +82,10 @@ def test_github_login_ok(login: str) -> None:
 @pytest.mark.parametrize(
     "login,error",
     (
-        ("-foobar", "GitHub login contains invalid characters"),
-        ("foobaz-", "GitHub login contains invalid characters"),
-        ("foo-béaz", "GitHub login contains invalid characters"),
-        ("🤣", "GitHub login contains invalid characters"),
+        ("-foobar", "GitHub login contains invalid characters: -foobar"),
+        ("foobaz-", "GitHub login contains invalid characters: foobaz-"),
+        ("foo-béaz", "GitHub login contains invalid characters: foo-béaz"),
+        ("🤣", "GitHub login contains invalid characters: 🤣"),
         ("", "A GitHub login cannot be an empty string"),
     ),
 )

@@ -1147,6 +1147,70 @@ class TestQueueAction(base.FunctionalTestBase):
 
         await self.assert_merge_queue_contents(q, None, [])
 
+    async def test_queue_with_rebase_on_githubapp_pr(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {
+                        "queue": {
+                            "name": "default",
+                            "priority": "high",
+                            "update_method": "rebase",
+                            "update_bot_account": '{% if not author or author.endswith("[bot]") -%}\nmergify-test4\n{% else -%}\n{{ author }}\n{% endif -%}',  # noqa [FS003]
+                        }
+                    },
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+
+        # To force others to be rebased
+        p = await self.create_pr()
+        await self.merge_pull(p["number"])
+        p = (await self.wait_for_pull_request("closed"))["pull_request"]
+        assert p["merge_commit_sha"] is not None
+        await self.run_engine()
+
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        q = await self.get_train()
+        await self.assert_merge_queue_contents(
+            q,
+            p["merge_commit_sha"],
+            [
+                base.MergeQueueCarMatcher(
+                    [p1["number"]],
+                    [],
+                    p["merge_commit_sha"],
+                    merge_train.TrainCarChecksType.INPLACE,
+                    p1["number"],
+                ),
+            ],
+        )
+
+        head_sha = p1["head"]["sha"]
+        p1 = (await self.wait_for_pull_request("synchronize"))["pull_request"]
+        assert p1["head"]["sha"] != head_sha  # ensure it has been rebased
+        commits = await self.get_commits(p1["number"])
+        assert len(commits) == 1
+        assert commits[0]["commit"]["committer"]["name"] == "mergify-test4"
+
     async def test_queue_with_rebase_update_method(self) -> None:
         rules = {
             "queue_rules": [

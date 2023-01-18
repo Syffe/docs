@@ -60,6 +60,11 @@ async def render_bot_account(
             str(rmf),
         )
 
+    if bot_account:
+        # NOTE(sileht): we strip in case of the template have an unperfect yaml
+        # multiline ending or jinja2 eol layout
+        bot_account = bot_account.strip()
+
     try:
         bot_account = typing.cast(
             github_types.GitHubLogin, GitHubLoginSchema(bot_account)
