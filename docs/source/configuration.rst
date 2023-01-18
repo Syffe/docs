@@ -196,10 +196,10 @@ Examples
 
     queue_rules:
       - name: hotfix
-        conditions: *common_checks
+        merge_conditions: *common_checks
 
       - name: default
-        conditions:
+        merge_conditions:
         - check-success=slow-ci
         - and: *common_checks
 
@@ -512,7 +512,7 @@ integration checks:
 
     queue_rules:
       - name: hotfix
-        conditions:
+        merge_conditions:
           - and: &CheckRuns
             - check-success=linters
             - check-success=unit
@@ -521,7 +521,7 @@ integration checks:
             - check-success=docker
 
       - name: default
-        conditions:
+        merge_conditions:
           - and: *CheckRuns
           - schedule=Mon-Fri 09:00-17:30[Europe/Paris]
 

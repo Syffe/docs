@@ -6085,7 +6085,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
             [
                 rules.QueueRule(
                     name=rules.QueueName("foo"),
-                    conditions=conditions.QueueRuleConditions([]),
+                    merge_conditions=conditions.QueueRuleMergeConditions([]),
                     config=queue_config,
                     priority_rules=rules.PriorityRules([]),
                 )
@@ -6225,7 +6225,7 @@ pull_requests:
             [
                 rules.QueueRule(
                     name=rules.QueueName("foo"),
-                    conditions=conditions.QueueRuleConditions([]),
+                    merge_conditions=conditions.QueueRuleMergeConditions([]),
                     config=queue_config,
                     priority_rules=rules.PriorityRules([]),
                 )
@@ -6319,7 +6319,7 @@ pull_requests:
             [
                 rules.QueueRule(
                     name=rules.QueueName("foo"),
-                    conditions=conditions.QueueRuleConditions([]),
+                    merge_conditions=conditions.QueueRuleMergeConditions([]),
                     config=queue_config,
                     priority_rules=rules.PriorityRules([]),
                 )
@@ -6390,7 +6390,7 @@ pull_requests:
             [
                 rules.QueueRule(
                     name=rules.QueueName("foo"),
-                    conditions=conditions.QueueRuleConditions([]),
+                    merge_conditions=conditions.QueueRuleMergeConditions([]),
                     config=queue_config,
                     priority_rules=rules.PriorityRules([]),
                 )

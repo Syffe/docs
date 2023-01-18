@@ -378,7 +378,7 @@ class RuleConditionNegation(RuleConditionGroup):
 
 
 @dataclasses.dataclass
-class QueueRuleConditions:
+class QueueRuleMergeConditions:
     conditions: dataclasses.InitVar[list[RuleConditionNode]]
     condition: RuleConditionCombination = dataclasses.field(init=False)
     _evaluated_conditions: dict[
@@ -390,8 +390,8 @@ class QueueRuleConditions:
     def __post_init__(self, conditions: list[RuleConditionNode]) -> None:
         self.condition = RuleConditionCombination({"and": conditions})
 
-    def copy(self) -> "QueueRuleConditions":
-        return QueueRuleConditions(self.condition.copy().conditions)
+    def copy(self) -> "QueueRuleMergeConditions":
+        return QueueRuleMergeConditions(self.condition.copy().conditions)
 
     def extract_raw_filter_tree(self) -> filter.TreeT:
         return self.condition.extract_raw_filter_tree()
@@ -450,7 +450,7 @@ class QueueRuleConditions:
         cond_cpy = conditions.copy()
         cond_cpy.sort(
             key=functools.partial(
-                QueueRuleConditions._conditions_sort_key, should_match=should_match
+                QueueRuleMergeConditions._conditions_sort_key, should_match=should_match
             )
         )
         return cond_cpy
@@ -894,7 +894,7 @@ class QueueConditionEvaluationResult:
             {p: c.conditions[i] for p, c in evaluated_condition_group.items()}
             for i, _ in enumerate(first_evaluated_condition.conditions)
         ]
-        sorted_subconditions = QueueRuleConditions._get_conditions_ordered(
+        sorted_subconditions = QueueRuleMergeConditions._get_conditions_ordered(
             evaluated_subconditions, global_match
         )
         return [cls.from_evaluated_condition_node(c) for c in sorted_subconditions]

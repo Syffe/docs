@@ -51,7 +51,7 @@ def test_invalid_condition_re() -> None:
 
 
 async def test_multiple_pulls_to_match() -> None:
-    c = conditions.QueueRuleConditions(
+    c = conditions.QueueRuleMergeConditions(
         [
             conditions.RuleConditionCombination(
                 {
@@ -812,6 +812,61 @@ found undefined alias
     assert (
         str(ir)
         == "expected str @ pull_request_rules → item 0 → actions → label → add → item 0"
+    )
+
+    with pytest.raises(voluptuous.Invalid) as i:
+        rules.UserConfigurationSchema(
+            rules.YamlSchema(
+                """
+                queue_rules:
+                  - name: foo
+                """
+            )
+        )
+
+    assert str(i.value).startswith("Missing key `merge_conditions`")
+
+    # Just to make sure both version works
+    rules.UserConfigurationSchema(
+        rules.YamlSchema(
+            """
+            queue_rules:
+              - name: foo
+                merge_conditions:
+                  - "#approved-reviews-by>=2"
+                  - check-success=Travis CI - Pull Request
+            """
+        )
+    )
+    rules.UserConfigurationSchema(
+        rules.YamlSchema(
+            """
+            queue_rules:
+              - name: foo
+                conditions:
+                  - "#approved-reviews-by>=2"
+                  - check-success=Travis CI - Pull Request
+            """
+        )
+    )
+
+    with pytest.raises(voluptuous.error.MultipleInvalid) as exc:
+        rules.UserConfigurationSchema(
+            rules.YamlSchema(
+                """
+                queue_rules:
+                  - name: foo
+                    merge_conditions:
+                      - base=test
+                    conditions:
+                      - "#approved-reviews-by>=2"
+                      - check-success=Travis CI - Pull Request
+                """
+            )
+        )
+
+    assert str(exc.value).startswith(
+        "Cannot have both `conditions` and `merge_conditions`, only use `merge_conditions (`conditions` is deprecated)"
     )
 
 

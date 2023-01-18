@@ -79,7 +79,7 @@ removing it from the merge queue altogether.
 When multiple pull requests are mergeable, they are scheduled to be merged
 sequentially, and are updated on top of each other. The pull request branch
 update is only done when the pull request is ready to be merged by the engine,
-e.g., when all the `conditions` are validated.
+e.g., when all the `merge_conditions` are validated.
 
 That means that when a first pull request has been merged, and the second one
 is outdated like this:
@@ -108,8 +108,8 @@ enter the queue when all conditions match.
 If the ``queue`` action conditions do not match anymore, the pull request is
 removed from the merge queue.
 
-When a pull request is at the top of the queue, Mergify looks at the second set
-of conditions defined this time in ``queue_rules`` and wait that they all match
+When a pull request is at the top of the queue, Mergify looks at the set of
+merge conditions defined in ``queue_rules`` and wait until they all match
 to merge the pull request.
 
 When multiple queues are defined, they are processed one after the other in the
@@ -168,11 +168,11 @@ requests, Mergify is able to schedule in advance the testing of the combined
 results of every pull request in the queue.
 
 Those temporary pull requests check if the resulting branch can be merged
-according to the ``queue_rules`` conditions. If any of the merge car fails to
-match the ``queue_rules`` conditions, the culprit pull request is removed from
+according to the ``queue_rules`` merge conditions. If any of the merge car fails to
+match the ``queue_rules`` merge conditions, the culprit pull request is removed from
 the queue.
 
-When the pull request ``PR #1 + PR #2`` matches the ``queue_rules`` conditions,
+When the pull request ``PR #1 + PR #2`` matches the ``queue_rules`` merge conditions,
 the pull requests ``PR #1`` and ``PR #2`` are merged and the temporary pull
 request ``PR #1 + PR #2`` is deleted. The same goes for the pull request ``PR
 #1 + PR #2 + PR #3`` and ``PR #3``.
@@ -247,7 +247,7 @@ controlling the position of the pull requests in the merge queue.
 
     queue_rules:
       - name: default
-        conditions:
+        merge_conditions:
           - "#approved-reviews-by>=2"
           - check-success=Travis CI - Pull Request
         priority_rules:
@@ -505,11 +505,11 @@ A ``queue_rules`` takes the following parameter:
      - string
      -
      - The name of the merge queue.
-   * - ``conditions``
+   * - ``merge_conditions``
      - list of :ref:`Conditions`
      -
      - The list of ``conditions`` to match to get the queued pull request merged,
-       In case of speculative merge pull request, the conditions starting by
+       In case of speculative merge pull request, the merge conditions starting by
        ``check-`` are evaluated against the temporary pull request instead of the
        original one.
    * - ``priority_rules``
@@ -665,7 +665,7 @@ in the queue, it will be updated with the latest commit of its base branch.
 
     queue_rules:
       - name: default
-        conditions:
+        merge_conditions:
           - "#approved-reviews-by>=2"
           - check-success=Travis CI - Pull Request
 
@@ -693,12 +693,12 @@ higher priority queue.
 
     queue_rules:
       - name: urgent
-        conditions:
+        merge_conditions:
           - "#approved-reviews-by>=2"
           - check-success=Travis CI - Pull Request
 
       - name: default
-        conditions:
+        merge_conditions:
           - "#approved-reviews-by>=2"
           - check-success=Travis CI - Pull Request
 
@@ -748,7 +748,7 @@ three enqueued pull requests are mergeable.
     queue_rules:
       - name: default
         speculative_checks: 2
-        conditions: []
+        merge_conditions: []
 
     pull_request_rules:
       - name: merge using the merge queue and speculative checks
@@ -774,7 +774,7 @@ enqueued pull requests.
       - name: default
         speculative_checks: 2
         batch_size: 3
-        conditions: []
+        merge_conditions: []
 
     pull_request_rules:
       - name: merge using the merge queue and speculative checks

@@ -12,7 +12,8 @@ Conditions are used in pull request rules and queue rules to check if a pull
 request matches a certain rule. If a pull request matches all of the listed
 conditions in a rule, the subsequent actions listed in that rule will be
 applied. Conditions must be listed under the ``conditions`` section of the
-``pull_request_rules`` or ``queue_rules`` entries — see :ref:`configuration file format`.
+``pull_request_rules`` entry or the ``merge_conditions`` section of the ``queue_rules``
+entry — see :ref:`configuration file format`.
 
 Grammar
 ~~~~~~~

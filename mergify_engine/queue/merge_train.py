@@ -1611,8 +1611,8 @@ You don't need to do anything. Mergify will close this pull request automaticall
     def _get_conditions_without_checks(
         cls,
         evaluated_queue_rule: "rules.EvaluatedQueueRule",
-    ) -> "conditions.QueueRuleConditions":
-        conditions_with_only_checks = evaluated_queue_rule.conditions.copy()
+    ) -> "conditions.QueueRuleMergeConditions":
+        conditions_with_only_checks = evaluated_queue_rule.merge_conditions.copy()
         for condition_with_only_checks in conditions_with_only_checks.walk():
             attr = condition_with_only_checks.get_attribute_name()
             if not attr.startswith(("check-", "status-")):
@@ -1894,7 +1894,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
     ) -> None:
 
         self.last_conditions_evaluation = (
-            evaluated_queue_rule.conditions.get_evaluation_result()
+            evaluated_queue_rule.merge_conditions.get_evaluation_result()
         )
         outside_schedule = False
         has_failed_check_other_than_schedule = False
@@ -1945,7 +1945,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             #   - label=foobar
             #   - schedule=XXXXX
             # if this label is set we should ignore this schedule attribute
-            for condition in evaluated_queue_rule.conditions.walk():
+            for condition in evaluated_queue_rule.merge_conditions.walk():
                 attr = condition.get_attribute_name()
                 if not condition.match:
                     if attr == "schedule":
@@ -3620,7 +3620,7 @@ class Train:
             description += await self.generate_merge_queue_summary_footer(
                 queue_rule_report=QueueRuleReport(
                     name=ep.embarked_pull.config["name"],
-                    summary=queue_rule.conditions.get_summary(),
+                    summary=queue_rule.merge_conditions.get_summary(),
                 ),
                 pull_rule=pull_rule,
             )

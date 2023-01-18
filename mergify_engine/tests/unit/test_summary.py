@@ -11,7 +11,7 @@ from mergify_engine.tests.unit import conftest
 SCHEMA = voluptuous.Schema(
     voluptuous.All(
         [voluptuous.Coerce(rules.RuleConditionSchema)],
-        voluptuous.Coerce(conditions_mod.QueueRuleConditions),
+        voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
     )
 )
 
@@ -35,7 +35,7 @@ async def test_queue_rules_order_0_depth() -> None:
     ]
 
     async def gen_summary() -> str:
-        c: conditions_mod.QueueRuleConditions = SCHEMA(
+        c: conditions_mod.QueueRuleMergeConditions = SCHEMA(
             [
                 "base=fail",
                 "base=main",
@@ -96,7 +96,7 @@ async def test_queue_rules_order_operator_and() -> None:
     ]
 
     async def gen_summary() -> str:
-        c: conditions_mod.QueueRuleConditions = SCHEMA(
+        c: conditions_mod.QueueRuleMergeConditions = SCHEMA(
             [
                 "author=somebody",
                 "base=main",
@@ -190,7 +190,7 @@ async def test_queue_rules_order_operator_or() -> None:
     ]
 
     async def gen_summary() -> str:
-        c: conditions_mod.QueueRuleConditions = SCHEMA(
+        c: conditions_mod.QueueRuleMergeConditions = SCHEMA(
             [
                 "author=somebody",
                 "base=main",
@@ -335,14 +335,14 @@ async def test_rule_condition_negation_summary() -> None:
 
 def create_queue_rule_conditions(
     pull_requests: list[str | conditions_mod.FakeTreeT],
-) -> conditions_mod.QueueRuleConditions:
+) -> conditions_mod.QueueRuleMergeConditions:
     schema = voluptuous.Schema(
         voluptuous.All(
             [voluptuous.Coerce(rules.RuleConditionSchema)],
-            voluptuous.Coerce(conditions_mod.QueueRuleConditions),
+            voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
         )
     )
-    conditions: conditions_mod.QueueRuleConditions = schema(pull_requests)
+    conditions: conditions_mod.QueueRuleMergeConditions = schema(pull_requests)
     return conditions
 
 

@@ -206,20 +206,30 @@ class PriorityRules:
 @dataclasses.dataclass
 class QueueRule:
     name: QueueName
-    conditions: conditions_mod.QueueRuleConditions
     config: QueueConfig
+    merge_conditions: conditions_mod.QueueRuleMergeConditions
     priority_rules: PriorityRules
 
     class T_from_dict(QueueConfig, total=False):
         name: QueueName
-        conditions: conditions_mod.QueueRuleConditions
+        conditions: conditions_mod.QueueRuleMergeConditions
+        merge_conditions: conditions_mod.QueueRuleMergeConditions
         config: QueueConfig
         priority_rules: PriorityRules
+
+    @property
+    def conditions(self) -> conditions_mod.QueueRuleMergeConditions:
+        # NOTE(Greesb): This is needed by function using rules with
+        # the typing "T_Rule"
+        return self.merge_conditions
 
     @classmethod
     def from_dict(cls, d: T_from_dict) -> QueueRule:
         name = d.pop("name")
-        conditions = d.pop("conditions")
+        merge_conditions = d.pop("merge_conditions", None)
+        if merge_conditions is None:
+            merge_conditions = d.pop("conditions")
+
         priority_rules = d.pop("priority_rules")
 
         # NOTE(sileht): backward compat
@@ -235,7 +245,12 @@ class QueueRule:
         if allow_checks_interruption is False:
             d["disallow_checks_interruption_from_queues"].append(name)
 
-        return cls(name, conditions, d, priority_rules)
+        return cls(
+            name=name,
+            config=d,
+            merge_conditions=merge_conditions,
+            priority_rules=priority_rules,
+        )
 
     async def get_evaluated_queue_rule(
         self,
@@ -283,12 +298,12 @@ class QueueRule:
                 )
 
         queue_rule_with_extra_conditions = QueueRule(
-            self.name,
-            conditions_mod.QueueRuleConditions(
-                extra_conditions + self.conditions.condition.copy().conditions
+            name=self.name,
+            merge_conditions=conditions_mod.QueueRuleMergeConditions(
+                extra_conditions + self.merge_conditions.condition.copy().conditions
             ),
-            self.config,
-            self.priority_rules,
+            config=self.config,
+            priority_rules=self.priority_rules,
         )
         queue_rules_evaluator = await QueuesRulesEvaluator.create(
             [queue_rule_with_extra_conditions],
@@ -301,7 +316,7 @@ class QueueRule:
     async def evaluate(
         self, pulls: list[context.BasePullRequest]
     ) -> EvaluatedQueueRule:
-        await self.conditions(pulls)
+        await self.merge_conditions(pulls)
         return typing.cast(EvaluatedQueueRule, self)
 
 
@@ -674,9 +689,32 @@ def ChecksTimeout(v: str) -> datetime.timedelta:
     return td
 
 
+def _has_at_least_one_of(
+    keys: list[str], missing_key_to_display: str | None = None
+) -> abc.Callable[[dict[str, typing.Any]], dict[str, typing.Any]]:
+    def func(obj: dict[str, typing.Any]) -> dict[str, typing.Any]:
+        if any(k in obj.keys() for k in keys):
+            return obj
+
+        if missing_key_to_display is not None:
+            raise voluptuous.Invalid(f"Missing key `{missing_key_to_display}`")
+
+        raise voluptuous.Invalid(f"Must contain one of {','.join(keys)}")
+
+    return func
+
+
+merge_conditions_exclusive_msg = "Cannot have both `conditions` and `merge_conditions`, only use `merge_conditions (`conditions` is deprecated)"
+
 QueueRulesSchema = voluptuous.All(
     [
         voluptuous.All(
+            # NOTE(Greesb): `voluptuous.Exclusive` checks that both are not present at the same
+            # time, but there is nothing yet to check that only one of some keys is present.
+            # https://github.com/alecthomas/voluptuous/issues/115
+            _has_at_least_one_of(
+                ["conditions", "merge_conditions"], "merge_conditions"
+            ),
             {
                 voluptuous.Required("name"): str,
                 voluptuous.Required("priority_rules", default=[]): voluptuous.All(
@@ -700,9 +738,21 @@ QueueRulesSchema = voluptuous.All(
                     ],
                     voluptuous.Coerce(PriorityRules),
                 ),
-                voluptuous.Required("conditions"): voluptuous.All(
+                voluptuous.Exclusive(
+                    "conditions",
+                    "merge_conditions",
+                    msg=merge_conditions_exclusive_msg,
+                ): voluptuous.All(
                     [voluptuous.Coerce(RuleConditionSchema)],
-                    voluptuous.Coerce(conditions_mod.QueueRuleConditions),
+                    voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
+                ),
+                voluptuous.Exclusive(
+                    "merge_conditions",
+                    "merge_conditions",
+                    msg=merge_conditions_exclusive_msg,
+                ): voluptuous.All(
+                    [voluptuous.Coerce(RuleConditionSchema)],
+                    voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
                 ),
                 voluptuous.Required("speculative_checks", default=1): voluptuous.All(
                     int, voluptuous.Range(min=1, max=20)
@@ -813,7 +863,13 @@ def UserConfigurationSchema(
         ): get_pull_request_rules_schema(),
         voluptuous.Required(
             "queue_rules",
-            default=[{"name": "default", "conditions": [], "priority_rules": []}],
+            default=[
+                {
+                    "name": "default",
+                    "priority_rules": [],
+                    "merge_conditions": [],
+                }
+            ],
         ): QueueRulesSchema,
         voluptuous.Required("commands_restrictions", default={}): {
             voluptuous.Required(name, default={}): CommandsRestrictionsSchema(command)
@@ -1054,7 +1110,7 @@ def apply_configure_filter(
     repository: "context.Repository",
     conditions: (
         conditions_mod.PullRequestRuleConditions
-        | conditions_mod.QueueRuleConditions
+        | conditions_mod.QueueRuleMergeConditions
         | conditions_mod.PriorityRuleConditions
     ),
 ) -> None:

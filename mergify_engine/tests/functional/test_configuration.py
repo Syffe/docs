@@ -573,7 +573,7 @@ did not find expected alphabetic or numeric character
 
         rule = config["queue_rules"][
             rules.QueueName("new_rule")
-        ].conditions.condition.conditions[0]
+        ].merge_conditions.condition.conditions[0]
         assert isinstance(rule, rules.conditions.RuleCondition)
         assert rule.condition == "schedule: MON-FRI 08:00-17:00"
 
