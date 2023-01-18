@@ -177,3 +177,19 @@ pull_request_rules:
           {% else %}
           Testing requirements are missing.
           {% endif %}
+
+  - name: Label Docker changes
+    conditions:
+      - base=main
+      - or:
+          - files~=^dockerfiles/
+          - files~=^datadog/
+          - files~=^datadog-wrapper.sh$
+          - files~=^installer/
+          - files~=^onpremise/
+          - files~=^fake.env$
+          - files~=^.github/workflows/docker-.*\.yaml
+    actions:
+      label:
+        toggle:
+          - docker
