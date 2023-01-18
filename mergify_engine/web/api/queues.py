@@ -606,6 +606,22 @@ class EnhancedPullRequestQueued:
                                                 "related_checks": [
                                                     "continuous-integration/fake-ci"
                                                 ],
+                                                "next_evaluation_at": None,
+                                            }
+                                        ],
+                                    },
+                                    {
+                                        "match": True,
+                                        "label": "schedule=MON-FRI 12:00-15:00",
+                                        "description": None,
+                                        "subconditions": [],
+                                        "evaluations": [
+                                            {
+                                                "pull_request": 5678,
+                                                "match": True,
+                                                "evaluation_error": None,
+                                                "related_checks": [],
+                                                "next_evaluation_at": "2023-01-10T15:01:00+00:00",
                                             }
                                         ],
                                     },
@@ -620,6 +636,7 @@ class EnhancedPullRequestQueued:
                                                 "match": True,
                                                 "evaluation_error": None,
                                                 "related_checks": [],
+                                                "next_evaluation_at": None,
                                             }
                                         ],
                                     },

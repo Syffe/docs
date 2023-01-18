@@ -1,6 +1,7 @@
 from base64 import encodebytes
 from collections import abc
 import copy
+import datetime
 import re
 import typing
 from unittest import mock
@@ -9,6 +10,7 @@ import pytest
 import voluptuous
 
 from mergify_engine import context
+from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import rules
 from mergify_engine.clients import http
@@ -2094,3 +2096,47 @@ queue_rules:
     assert queue_rule.config["queue_branch_prefix"] == "my-prefix"
     assert queue_rule.config["allow_queue_branch_edit"] is True
     assert queue_rule.config["batch_max_failure_resolution_attempts"] == 10
+
+
+def _dt(at: str) -> datetime.datetime:
+    return datetime.datetime.fromisoformat(at).replace(tzinfo=datetime.timezone.utc)
+
+
+@pytest.mark.parametrize(
+    "condition,pull_request,expected_match,expected_next_evaluation_at",
+    [
+        pytest.param(
+            conditions.RuleCondition("schedule=Mon-Fri 09:00-17:30[Europe/Paris]"),
+            conftest.FakePullRequest({"current-time": _dt("2022-01-10T12:00:00")}),
+            True,
+            _dt("2022-01-10T16:31:00"),
+            id="in schedule",
+        ),
+        pytest.param(
+            conditions.RuleCondition("schedule=Mon-Fri 09:00-17:30[Europe/Paris]"),
+            conftest.FakePullRequest({"current-time": _dt("2022-01-10T00:00:00")}),
+            False,
+            _dt("2022-01-10T08:00:01"),
+            id="out schedule",
+        ),
+        pytest.param(
+            conditions.RuleCondition("base=main"),
+            conftest.FakePullRequest(
+                {"current-time": _dt("2022-01-10T00:00:00"), "base": "main"}
+            ),
+            True,
+            date.DT_MAX,
+            id="not a schedule",
+        ),
+    ],
+)
+async def test_rule_condition_next_evaluation_at(
+    condition: conditions.RuleCondition,
+    pull_request: conftest.FakePullRequest,
+    expected_match: bool,
+    expected_next_evaluation_at: datetime.datetime,
+) -> None:
+    await condition(pull_request)
+
+    assert condition.match is expected_match
+    assert condition.next_evaluation_at == expected_next_evaluation_at

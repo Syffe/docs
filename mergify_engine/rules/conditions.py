@@ -16,6 +16,7 @@ import voluptuous
 
 from mergify_engine import constants
 from mergify_engine import context
+from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine.clients import http
 from mergify_engine.rules import filter
@@ -70,6 +71,12 @@ class RuleCondition:
         filter.ListValuesFilterResult
     ] | None = dataclasses.field(init=False, default=None)
     related_checks: list[str] = dataclasses.field(init=False, default_factory=list)
+    next_evaluation_filter: filter.Filter[datetime.datetime] = dataclasses.field(
+        init=False
+    )
+    next_evaluation_at: datetime.datetime = dataclasses.field(
+        init=False, default=date.DT_MAX
+    )
 
     def __post_init__(self) -> None:
         self.update(self.condition)
@@ -99,6 +106,10 @@ class RuleCondition:
             self.related_checks_filter = filter.ListValuesFilter(
                 typing.cast(filter.TreeT, new_tree)
             )
+
+        self.next_evaluation_filter = filter.NearDatetimeFilter(
+            typing.cast(filter.TreeT, condition)
+        )
 
     def update_attribute_name(self, new_name: str) -> None:
         new_tree = self._replace_attribute_name(new_name)
@@ -142,6 +153,7 @@ class RuleCondition:
             self.match = await self.partial_filter(obj)
             if self.related_checks_filter is not None:
                 self.related_checks = (await self.related_checks_filter(obj)).values
+            self.next_evaluation_at = await self.next_evaluation_filter(obj)
         except live_resolvers.LiveResolutionFailure as e:
             self.match = False
             self.evaluation_error = e.reason
@@ -675,6 +687,7 @@ class ConditionEvaluationResult:
     description: str | None = None
     evaluation_error: str | None = None
     related_checks: list[str] = dataclasses.field(default_factory=list)
+    next_evaluation_at: datetime.datetime | None = None
     subconditions: list[ConditionEvaluationResult] = dataclasses.field(
         default_factory=list
     )
@@ -686,6 +699,7 @@ class ConditionEvaluationResult:
         description: str | None
         evaluation_error: str | None
         related_checks: list[str]
+        next_evaluation_at: datetime.datetime | None
         subconditions: list[ConditionEvaluationResult.Serialized]
 
     @classmethod
@@ -712,6 +726,7 @@ class ConditionEvaluationResult:
                 description=rule_condition_node.description,
                 evaluation_error=rule_condition_node.evaluation_error,
                 related_checks=rule_condition_node.related_checks,
+                next_evaluation_at=rule_condition_node.next_evaluation_at,
             )
         else:
             raise RuntimeError(
@@ -744,6 +759,7 @@ class ConditionEvaluationResult:
             description=data["description"],
             evaluation_error=data["evaluation_error"],
             related_checks=data.get("related_checks", []),
+            next_evaluation_at=data.get("next_evaluation_at"),
             subconditions=[cls.from_dict(c) for c in data["subconditions"]],
         )
         return evaluation_result
@@ -810,12 +826,14 @@ class QueueConditionEvaluationResult:
         match: bool
         evaluation_error: str | None = None
         related_checks: list[str] = dataclasses.field(default_factory=list)
+        next_evaluation_at: datetime.datetime | None = None
 
         class Serialized(typing.TypedDict):
             pull_request: github_types.GitHubPullRequestNumber
             match: bool
             evaluation_error: str | None
             related_checks: list[str]
+            next_evaluation_at: datetime.datetime | None
 
         def copy(self) -> QueueConditionEvaluationResult.Evaluation:
             return QueueConditionEvaluationResult.Evaluation(
@@ -823,6 +841,27 @@ class QueueConditionEvaluationResult:
                 match=self.match,
                 evaluation_error=self.evaluation_error,
                 related_checks=self.related_checks,
+                next_evaluation_at=self.next_evaluation_at,
+            )
+
+        @classmethod
+        def from_evaluated_condition(
+            cls,
+            pull_number: github_types.GitHubPullRequestNumber,
+            condition: RuleCondition,
+        ) -> QueueConditionEvaluationResult.Evaluation:
+            next_evaluation_at = (
+                condition.next_evaluation_at
+                if condition.next_evaluation_at != date.DT_MAX
+                else None
+            )
+
+            return cls(
+                pull_request=pull_number,
+                match=condition.match,
+                evaluation_error=condition.evaluation_error,
+                related_checks=condition.related_checks,
+                next_evaluation_at=next_evaluation_at,
             )
 
     class Serialized(typing.TypedDict):
@@ -869,12 +908,7 @@ class QueueConditionEvaluationResult:
                 label=str(first_evaluated_condition),
                 description=first_evaluated_condition.description,
                 evaluations=[
-                    cls.Evaluation(
-                        pull_request=pull_request,
-                        match=condition.match,
-                        evaluation_error=condition.evaluation_error,
-                        related_checks=condition.related_checks,
-                    )
+                    cls.Evaluation.from_evaluated_condition(pull_request, condition)
                     for pull_request, condition in evaluated_condition.items()
                 ],
                 attribute_name=first_evaluated_condition.get_attribute_name(),
@@ -933,6 +967,7 @@ class QueueConditionEvaluationResult:
                     match=evaluation.match,
                     evaluation_error=evaluation.evaluation_error,
                     related_checks=evaluation.related_checks,
+                    next_evaluation_at=evaluation.next_evaluation_at,
                 )
                 for evaluation in self.evaluations
             ],
@@ -997,6 +1032,7 @@ class QueueConditionEvaluationJsonSerialized:
         match: bool
         evaluation_error: str | None
         related_checks: list[str]
+        next_evaluation_at: datetime.datetime | None
 
 
 def re_evaluate_schedule_conditions(

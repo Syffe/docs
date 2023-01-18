@@ -322,19 +322,6 @@ class TestQueueApi(base.FunctionalTestBase):
         await self.add_label(p4["number"], "queue")
         await self.run_engine()
 
-        # Create a pending check on the queue PR to see it in condition's
-        # related checks
-        tmp_mq_pr_4 = await self.wait_for_pull_request("opened")
-        await self.create_status(tmp_mq_pr_4["pull_request"], state="pending")
-        await self.run_engine()
-        ctxt = context.Context(self.repository_ctxt, p4, [])
-        queue_ctxt = context.Context(
-            self.repository_ctxt, tmp_mq_pr_4["pull_request"], []
-        )
-        assert "continuous-integration/fake-ci" in (  # type:ignore [operator]
-            await context.QueuePullRequest(ctxt, queue_ctxt).check
-        )
-
         # GET /queues
         repository_name = self.RECORD_CONFIG["repository_name"]
         r = await self.app.get(
@@ -374,14 +361,60 @@ class TestQueueApi(base.FunctionalTestBase):
             "estimated_time_of_merge": anys.ANY_DATETIME_STR,
         }
 
-        # GET /queue/{queue_name}/pull/{pr_number}
+    async def test_get_queue_pull(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "foo",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "check-success=continuous-integration/fake-ci",
+                        "schedule=MON-FRI 12:00-15:00",
+                    ],
+                    "allow_inplace_checks": False,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "queue",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "foo"}},
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        # Tuesday
+        with freeze_time("2023-01-10T14:00:00", tick=True):
+            p = await self.create_pr()
+            await self.add_label(p["number"], "queue")
+            await self.run_engine()
+
+            # Create a pending check on the queue PR to see it in condition's
+            # related checks
+            tmp_mq_pr = await self.wait_for_pull_request("opened")
+            await self.create_status(tmp_mq_pr["pull_request"], state="pending")
+            await self.run_engine()
+            ctxt = context.Context(self.repository_ctxt, p, [])
+            queue_ctxt = context.Context(
+                self.repository_ctxt, tmp_mq_pr["pull_request"], []
+            )
+            assert "continuous-integration/fake-ci" in (  # type:ignore [operator]
+                await context.QueuePullRequest(ctxt, queue_ctxt).check
+            )
+
+        repository_name = self.RECORD_CONFIG["repository_name"]
         r = await self.app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/foo/pull/{p4['number']}",
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/foo/pull/{p['number']}",
             headers=self.get_headers(content_type="application/json"),
         )
         assert r.status_code == 200
         assert r.json() == {
-            "number": p4["number"],
+            "number": p["number"],
             "position": anys.ANY_INT,
             "priority": anys.ANY_INT,
             "queue_rule": {
@@ -407,12 +440,13 @@ class TestQueueApi(base.FunctionalTestBase):
                             "subconditions": [],
                             "evaluations": [
                                 {
-                                    "pull_request": p4["number"],
+                                    "pull_request": p["number"],
                                     "match": False,
                                     "evaluation_error": None,
                                     "related_checks": [
                                         "continuous-integration/fake-ci"
                                     ],
+                                    "next_evaluation_at": None,
                                 }
                             ],
                         },
@@ -423,10 +457,28 @@ class TestQueueApi(base.FunctionalTestBase):
                             "subconditions": [],
                             "evaluations": [
                                 {
-                                    "pull_request": p4["number"],
+                                    "pull_request": p["number"],
                                     "match": True,
                                     "evaluation_error": None,
                                     "related_checks": [],
+                                    "next_evaluation_at": None,
+                                }
+                            ],
+                        },
+                        {
+                            "match": True,
+                            "label": "schedule=MON-FRI 12:00-15:00",
+                            "description": None,
+                            "subconditions": [],
+                            "evaluations": [
+                                {
+                                    "pull_request": p["number"],
+                                    "match": True,
+                                    "evaluation_error": None,
+                                    "related_checks": [],
+                                    "next_evaluation_at": anys.AnyContains(
+                                        "2023-01-10T15:01:00"
+                                    ),
                                 }
                             ],
                         },
@@ -436,11 +488,11 @@ class TestQueueApi(base.FunctionalTestBase):
                 "state": "pending",
             },
             "queued_at": anys.ANY_DATETIME_STR,
-            "estimated_time_of_merge": anys.ANY_DATETIME_STR,
+            "estimated_time_of_merge": None,
         }
 
         r = await self.app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/unknown_queue/pull/{p4['number']}",
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/unknown_queue/pull/{p['number']}",
             headers=self.get_headers(content_type="application/json"),
         )
         assert r.status_code == 404

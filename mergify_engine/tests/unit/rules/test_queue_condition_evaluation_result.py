@@ -1,3 +1,4 @@
+import datetime
 import typing
 
 import pytest
@@ -153,6 +154,7 @@ async def test_condition_dict_serialization() -> None:
                         match=False,
                         evaluation_error="Some error",
                         related_checks=["ci"],
+                        next_evaluation_at=datetime.datetime(2023, 1, 10, 14, 30),
                     )
                 ],
             )
@@ -179,6 +181,7 @@ async def test_condition_dict_serialization() -> None:
                         "match": False,
                         "evaluation_error": "Some error",
                         "related_checks": ["ci"],
+                        "next_evaluation_at": datetime.datetime(2023, 1, 10, 14, 30),
                     }
                 ],
             }
@@ -191,7 +194,7 @@ async def test_condition_dict_serialization() -> None:
     )
 
 
-async def test_condition_dict_serialization_missing_related_checks() -> None:
+async def test_condition_dict_serialization_with_default_values() -> None:
     condition = rule_conditions.QueueConditionEvaluationResult(
         match=True,
         label="all of",
@@ -246,6 +249,8 @@ async def test_condition_dict_serialization_missing_related_checks() -> None:
         rule_conditions.QueueConditionEvaluationResult.from_dict(condition_dict)
         == condition
     )
+    assert condition.subconditions[0].evaluations[0].related_checks == []
+    assert condition.subconditions[0].evaluations[0].next_evaluation_at is None
 
 
 async def test_condition_copy() -> None:
@@ -300,6 +305,7 @@ async def test_condition_json_serialization() -> None:
                         match=False,
                         evaluation_error="Some error",
                         related_checks=["ci"],
+                        next_evaluation_at=datetime.datetime(2023, 1, 10, 14, 30),
                     )
                 ],
             )
@@ -322,6 +328,7 @@ async def test_condition_json_serialization() -> None:
                         match=False,
                         evaluation_error="Some error",
                         related_checks=["ci"],
+                        next_evaluation_at=datetime.datetime(2023, 1, 10, 14, 30),
                     )
                 ],
             )

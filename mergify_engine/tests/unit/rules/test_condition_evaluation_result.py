@@ -1,3 +1,4 @@
+import datetime
 import typing
 
 import pytest
@@ -114,6 +115,7 @@ async def test_condition_dict_serialization() -> None:
                 description="Some description",
                 evaluation_error="Some error",
                 related_checks=["ci"],
+                next_evaluation_at=datetime.datetime(2022, 1, 10, 14, 30),
             )
         ],
     )
@@ -125,6 +127,7 @@ async def test_condition_dict_serialization() -> None:
         "description": None,
         "evaluation_error": None,
         "related_checks": [],
+        "next_evaluation_at": None,
         "subconditions": [
             {
                 "match": True,
@@ -133,6 +136,7 @@ async def test_condition_dict_serialization() -> None:
                 "description": "Some description",
                 "evaluation_error": "Some error",
                 "related_checks": ["ci"],
+                "next_evaluation_at": datetime.datetime(2022, 1, 10, 14, 30),
                 "subconditions": [],
             }
         ],
@@ -143,7 +147,7 @@ async def test_condition_dict_serialization() -> None:
     )
 
 
-async def test_condition_dict_serialization_missing_related_checks() -> None:
+async def test_condition_dict_serialization_with_default_values() -> None:
     condition = rule_conditions.ConditionEvaluationResult(
         match=True,
         label="all of",
@@ -182,3 +186,5 @@ async def test_condition_dict_serialization_missing_related_checks() -> None:
     assert (
         rule_conditions.ConditionEvaluationResult.from_dict(condition_dict) == condition
     )
+    assert condition.related_checks == []
+    assert condition.next_evaluation_at is None
