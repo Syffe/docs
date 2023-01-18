@@ -992,7 +992,7 @@ class TrainCar:
     ) -> github_types.GitHubPullRequest:
 
         try:
-            title = f"merge-queue: embarking {self._get_embarked_refs()} together"
+            title = f"merge queue: embarking {self._get_embarked_refs()} together"
             body = await self.generate_merge_queue_summary(for_queue_pull_request=True)
             response = await self.train.repository.installation.client.post(
                 f"/repos/{self.train.repository.installation.owner_login}/{self.train.repository.repo['name']}/pulls",
@@ -1012,7 +1012,7 @@ class TrainCar:
                 # head must be organization:ref-name, if the left or the right side of the : is empty
                 # all pull requests are returned. So it's better to double checks
                 if not (self.train.repository.installation.owner_login and branch_name):
-                    raise RuntimeError("Invalid merge-queue head branch")
+                    raise RuntimeError("Invalid merge queue head branch")
 
                 head = f"{self.train.repository.installation.owner_login}:{branch_name}"
                 closed_pulls = set()
@@ -1029,7 +1029,7 @@ class TrainCar:
                     await self.train._close_pull_request(pull["number"])
 
                 self.train.log.info(
-                    "fail to create a merge-queue pull request, because the pull request already exists.",
+                    "fail to create a merge queue pull request, because the pull request already exists.",
                     head=branch_name,
                     title=title,
                     github_user=github_user["login"] if github_user else None,
@@ -1045,7 +1045,7 @@ class TrainCar:
 
             if "Draft pull requests are not supported" not in e.message:
                 self.train.log.error(
-                    "fail to create a merge-queue pull request",
+                    "fail to create a merge queue pull request",
                     head=branch_name,
                     title=title,
                     github_user=github_user["login"] if github_user else None,
@@ -1326,7 +1326,7 @@ class TrainCar:
                         },
                     }
                 ),
-                "merge-queue internal",
+                "merge queue internal",
             )
 
     async def generate_merge_queue_summary(
@@ -1509,7 +1509,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             ep.user_pull_request_number,
             "action.queue.checks_end",
             metadata,
-            "merge-queue internal",
+            "merge queue internal",
         )
 
     async def _delete_branch(self) -> None:
@@ -1533,9 +1533,9 @@ You don't need to do anything. Mergify will close this pull request automaticall
         title = "This pull request cannot be embarked for merge"
 
         if self.queue_pull_request_number is None:
-            summary = f"The merge-queue pull request can't be {operation}"
+            summary = f"The merge queue pull request can't be {operation}"
         else:
-            summary = f"The merge-queue pull request (#{self.queue_pull_request_number}) can't be prepared"
+            summary = f"The merge queue pull request (#{self.queue_pull_request_number}) can't be prepared"
 
         # Append a `>` after a double newlines because otherwise
         # the quote breaks.
@@ -2433,7 +2433,7 @@ class Train:
                 repository = await installation.get_repository_by_id(repo_id)
             except http.HTTPNotFound:
                 LOG.warning(
-                    "repository with active merge-queue is unaccessible, deleting merge-queue",
+                    "repository with active merge queue is unaccessible, deleting merge queue",
                     gh_owner=installation.owner_login,
                     gh_repo_id=repo_id,
                 )
@@ -2565,7 +2565,7 @@ class Train:
             for (embarked_pull, _) in list(self._iter_embarked_pulls()):
                 await self._remove_pull(
                     embarked_pull.user_pull_request_number,
-                    "merge-queue internal",
+                    "merge queue internal",
                     queue_utils.TargetBranchMissing(self.ref),
                 )
         await self.save()
@@ -3230,7 +3230,7 @@ class Train:
             except TrainCarPullRequestCreationPostponed:
                 return
             except TrainCarPullRequestCreationFailure:
-                # NOTE(sileht): We posted failure merge-queue check-run on
+                # NOTE(sileht): We posted failure merge queue check-run on
                 # car.user_pull_request_number and refreshed it, so it will be removed
                 # from the train soon. We don't need to create remaining cars now.
                 # When this car will be removed the remaining one will be created
@@ -3383,7 +3383,7 @@ class Train:
                 except TrainCarPullRequestCreationPostponed:
                     return
                 except TrainCarPullRequestCreationFailure:
-                    # NOTE(sileht): We posted failure merge-queue check-run on
+                    # NOTE(sileht): We posted failure merge queue check-run on
                     # car.user_pull_request_number and refreshed it, so it will be removed
                     # from the train soon. We don't need to create remaining cars now.
                     # When this car will be removed the remaining one will be created
@@ -3638,7 +3638,7 @@ class Train:
             )
         except http.HTTPNotFound:
             self.log.warning(
-                "fail to close merge-queue pull request",
+                "fail to close merge queue pull request",
                 pull_request_number=pull_request_number,
                 exc_info=True,
             )

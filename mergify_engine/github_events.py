@@ -130,7 +130,7 @@ async def push_to_worker(
                 )
             )
         ):
-            ignore_reason = "mergify merge-queue description update"
+            ignore_reason = "mergify merge queue description update"
 
     elif event_type == "repository":
         event = typing.cast(github_types.GitHubEventRepository, event)

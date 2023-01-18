@@ -17,7 +17,7 @@ async def handle(queue_rules: rules.QueueRules, ctxt: context.Context) -> None:
         else:
             # NOTE(sileht): no need to close the PR, GitHub will do it for us.
             ctxt.log.info(
-                "train car not found, deleting the merge-queue branch",
+                "train car not found, deleting the merge queue branch",
                 sources=ctxt.sources,
                 branch=ctxt.pull["head"]["ref"],
             )

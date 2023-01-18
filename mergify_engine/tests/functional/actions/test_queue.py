@@ -1004,7 +1004,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "pull_request": p1["number"],
                     "repository": self.repository_ctxt.repo["full_name"],
                     "timestamp": anys.ANY_AWARE_DATETIME_STR,
-                    "trigger": "merge-queue internal",
+                    "trigger": "merge queue internal",
                 },
                 {
                     "event": "action.queue.checks_start",
@@ -1024,7 +1024,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "pull_request": p1["number"],
                     "repository": self.repository_ctxt.repo["full_name"],
                     "timestamp": anys.ANY_AWARE_DATETIME_STR,
-                    "trigger": "merge-queue internal",
+                    "trigger": "merge queue internal",
                 },
                 {
                     "event": "action.queue.enter",
@@ -1519,7 +1519,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "pull_request": p1["number"],
                     "repository": self.repository_ctxt.repo["full_name"],
                     "timestamp": anys.ANY_AWARE_DATETIME_STR,
-                    "trigger": "merge-queue internal",
+                    "trigger": "merge queue internal",
                 },
                 {
                     "event": "action.queue.checks_start",
@@ -1539,7 +1539,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "pull_request": p1["number"],
                     "repository": self.repository_ctxt.repo["full_name"],
                     "timestamp": anys.ANY_AWARE_DATETIME_STR,
-                    "trigger": "merge-queue internal",
+                    "trigger": "merge queue internal",
                 },
                 {
                     "event": "action.queue.enter",
@@ -1728,7 +1728,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "repository": p1["base"]["repo"]["full_name"],
                     "pull_request": p1["number"],
                     "timestamp": anys.ANY_AWARE_DATETIME_STR,
-                    "trigger": "merge-queue internal",
+                    "trigger": "merge queue internal",
                 },
             ],
             "per_page": 2,
@@ -3742,7 +3742,7 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
         )
 
-        # tmp merge-queue pull p2 fail
+        # tmp merge queue pull p2 fail
         await self.create_status(tmp_mq_p2, state="failure")
         await self.run_engine()
 
@@ -3751,7 +3751,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         # TODO(sileht): Add some assertion on check-runs content
 
-        # tmp merge-queue pull p2 have been closed and p2 updated/rebased
+        # tmp merge queue pull p2 have been closed and p2 updated/rebased
         pulls = await self.get_pulls()
         assert len(pulls) == 3
         tmp_mq_p2_bis = pulls[0]
@@ -3849,7 +3849,7 @@ class TestQueueAction(base.FunctionalTestBase):
             check["output"]["title"] == "This pull request cannot be embarked for merge"
         )
         assert check["output"]["summary"] == (
-            "The merge-queue pull request can't be created\n"
+            "The merge queue pull request can't be created\n"
             f"Details:\n> The pull request conflicts with at least one pull request ahead in queue: #{p1['number']}\n"
         )
 
@@ -3947,7 +3947,7 @@ class TestQueueAction(base.FunctionalTestBase):
             check["output"]["title"] == "This pull request cannot be embarked for merge"
         )
         assert check["output"]["summary"] == (
-            "The merge-queue pull request can't be created\n"
+            "The merge queue pull request can't be created\n"
             f"Details:\n> The pull request conflicts with at least one pull request ahead in queue: #{p1['number']}\n"
         )
 
@@ -4065,7 +4065,7 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
         )
 
-        # tmp merge-queue pr p2, CI fails
+        # tmp merge queue pr p2, CI fails
         await self.create_status(tmp_mq_p2["pull_request"], state="failure")
         await self.run_engine()
 
@@ -4325,7 +4325,7 @@ class TestQueueAction(base.FunctionalTestBase):
         ctxt_p_merged = context.Context(self.repository_ctxt, p_merged)
         q = await merge_train.Train.from_context(ctxt_p_merged)
 
-        # my 3 PRs + 2 merge-queue PR
+        # my 3 PRs + 2 merge queue PR
         pulls = await self.get_pulls()
         assert len(pulls) == 5
 
@@ -4371,7 +4371,7 @@ class TestQueueAction(base.FunctionalTestBase):
         ctxt_p_new_config = context.Context(self.repository_ctxt, p_new_config)
         q = await merge_train.Train.from_context(ctxt_p_new_config)
 
-        # my 3 PRs + 2 merge-queue PR
+        # my 3 PRs + 2 merge queue PR
         pulls = await self.get_pulls()
         assert len(pulls) == 5
 
@@ -4499,7 +4499,7 @@ class TestQueueAction(base.FunctionalTestBase):
         ctxt_p_merged = context.Context(self.repository_ctxt, p_merged)
         q = await merge_train.Train.from_context(ctxt_p_merged)
 
-        # my 3 PRs + 2 merge-queue PR
+        # my 3 PRs + 2 merge queue PR
         pulls = await self.get_pulls()
         assert len(pulls) == 5
 
@@ -6267,7 +6267,7 @@ pull_requests:
         assert len(pulls) == 2
 
         # NOTE(sileht): We don't save the merge train in Redis on purpose, so next
-        # engine run should delete merge-queue branch of draft PR not tied to a
+        # engine run should delete merge queue branch of draft PR not tied to a
         # TrainCar
         draft_pr = await self.wait_for_pull_request("opened")
         await self.run_engine()

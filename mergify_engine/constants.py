@@ -14,7 +14,7 @@ SUMMARY_NAME = "Summary"
 
 MERGE_QUEUE_BRANCH_PREFIX = "mergify/merge-queue/"
 # Payload to put in the body of the main comment of a pull request
-# for us to be able to know that this pull request is a merge-queue pull request
+# for us to be able to know that this pull request is a merge queue pull request
 MERGE_QUEUE_BODY_INFO = {
     "merge-queue-pr": True,
 }

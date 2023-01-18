@@ -1973,7 +1973,11 @@ class Context:
         return is_behind
 
     def is_merge_queue_pr(self) -> bool:
-        return self.pull["title"].startswith("merge-queue:") and (
+        return (
+            self.pull["title"].startswith("merge queue:")
+            # FIXME(jd): drop me in version >= 9.0.0
+            or self.pull["title"].startswith("merge-queue:")
+        ) and (
             # NOTE(greesb): For retrocompatibility, to remove once there are
             # no more PR using this.
             self.pull["head"]["ref"].startswith(constants.MERGE_QUEUE_BRANCH_PREFIX)

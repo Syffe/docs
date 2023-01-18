@@ -376,11 +376,12 @@ drawbacks:
   Mergify.
 
 
-Merge-Queue PR
----------------
+Merge Queue Pull Requests
+-------------------------
 
-The body of draft merge-queue PRs contains, at the end of the body, a YAML document
-containing various data relative to the PR and what it is testing.
+The body of draft merge queue pull requests contains, at the end of the body, a
+YAML document containing various data relative to the PR and what it is
+testing.
 
 The schema of this YAML document is the following:
 

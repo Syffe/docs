@@ -157,7 +157,7 @@ class TestStatisticsRedis(base.FunctionalTestBase):
             assert await self.redis_links.stats.xlen(time_to_merge_key) == 4
 
             # Called once per PR that get out of the queue, so
-            # 6 times since we have 2 PR in merge-queue.
+            # 6 times since we have 2 PR in merge queue.
             assert statsd.gauge.call_count == 6
             assert statsd.gauge.call_args_list[0].args == (
                 "statistics.time_to_merge.accuracy.estimated_value",
