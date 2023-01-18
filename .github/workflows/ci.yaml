@@ -44,6 +44,7 @@ jobs:
         run: |
           # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
           pip install -r requirements-poetry.txt
+          tools/poetry-workaround.sh
           poetry install
           poetry run poe semgrep
   pep8:
@@ -64,6 +65,7 @@ jobs:
         run: |
           # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
           pip install -r requirements-poetry.txt
+          tools/poetry-workaround.sh
           poetry install
           poetry run poe linters
 
@@ -95,6 +97,7 @@ jobs:
         run: |
           # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
           pip install -r requirements-poetry.txt
+          tools/poetry-workaround.sh
           poetry install
           poetry run poe import-checks
 
@@ -130,6 +133,7 @@ jobs:
         run: |
           # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
           pip install -r requirements-poetry.txt
+          tools/poetry-workaround.sh
           poetry install
           poetry run poe test --splits 5 --group ${{ matrix.group }} --reruns 3 --only-rerun MissingEventTimeout
         # yamllint enable rule:line-length
@@ -158,6 +162,7 @@ jobs:
           sudo apt install graphviz
           # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
           pip install -r requirements-poetry.txt
+          tools/poetry-workaround.sh
           poetry install
           poetry run poe docs
 
