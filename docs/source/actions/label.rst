@@ -24,11 +24,11 @@ Options
      - Default
      - Value Description
    * - ``add``
-     - list of string
+     - list of :ref:`data type template`
      - ``[]``
      - The list of labels to add.
    * - ``remove``
-     - list of string
+     - list of :ref:`data type template`
      - ``[]``
      - The list of labels to remove.
    * - ``remove_all``
@@ -36,7 +36,7 @@ Options
      - ``false``
      - Remove all labels from the pull request.
    * - ``toggle``
-     - list of string
+     - list of :ref:`data type template`
      - ``[]``
      - Toggle labels in the list based on the conditions. If all the conditions are a success, all the labels in the list will be added, otherwise, they will all be removed.
 
@@ -89,3 +89,17 @@ Toggle a label based on CI status
           label:
             toggle:
               - "CI:fail"
+
+
+Add a label based on the name of the branch
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: yaml
+
+    pull_request_rules:
+      - name: add a label with the name of the branch
+        conditions: []
+        actions:
+          label:
+            add:
+              - "branch:{{base}}"

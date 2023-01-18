@@ -1,0 +1,4 @@
+---
+features:
+  - |
+    The labels in the ``label`` action now supports having template variables.

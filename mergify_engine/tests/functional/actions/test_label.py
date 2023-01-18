@@ -3,6 +3,7 @@ from unittest import mock
 import pytest
 
 from mergify_engine import config
+from mergify_engine import github_types
 from mergify_engine import yaml
 from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
@@ -260,3 +261,80 @@ class TestLabelAction(base.FunctionalTestBase):
             "size": 2,
             "total": 2,
         }
+
+    async def test_label_template(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "add branch label",
+                    "conditions": [],
+                    "actions": {
+                        "label": {
+                            "add": ["branch:{{base}}"],
+                        }
+                    },
+                }
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        await self.create_pr()
+        await self.run_engine()
+
+        p_updated = await self.wait_for_pull_request("labeled")
+        self.assertEqual(
+            [f"branch:{self.main_branch_name}"],
+            [label["name"] for label in p_updated["pull_request"]["labels"]],
+        )
+
+    async def _test_label_invalid_template(
+        self, label: str
+    ) -> github_types.GitHubCheckRun:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "add branch label",
+                    "conditions": [f"base={self.main_branch_name}"],
+                    "actions": {
+                        "label": {
+                            "add": [label],
+                        }
+                    },
+                }
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        await self.create_pr()
+        await self.run_engine()
+
+        check_run = await self.wait_for_check_run(
+            action="completed", status="completed", conclusion="action_required"
+        )
+        assert (
+            "The current Mergify configuration is invalid"
+            == check_run["check_run"]["output"]["title"]
+        )
+        return check_run["check_run"]
+
+    async def test_label_invalid_template_syntax_error(self) -> None:
+        check_run = await self._test_label_invalid_template("branch:{{")
+
+        assert (
+            """### Invalid template in label 'branch:{{'
+
+unexpected 'end of template'"""
+            == check_run["output"]["summary"]
+        )
+
+    async def test_label_invalid_template_attribute_error(self) -> None:
+        check_run = await self._test_label_invalid_template("branch:{{test}}")
+
+        assert (
+            """### Invalid template in label 'branch:{{test}}'
+
+Unknown pull request attribute: test"""
+            == check_run["output"]["summary"]
+        )

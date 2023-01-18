@@ -22,21 +22,41 @@ class LabelExecutorConfig(typing.TypedDict):
 
 class LabelExecutor(actions.ActionExecutor["LabelAction", LabelExecutorConfig]):
     @classmethod
+    async def _render_label(cls, ctxt: context.Context, label: str) -> str:
+        try:
+            return await ctxt.pull_request.render_template(label)
+        except context.RenderTemplateFailure as rtf:
+            raise rules.InvalidPullRequestRule(
+                f"Invalid template in label '{label}'",
+                str(rtf),
+            )
+
+    @classmethod
     async def create(
         cls,
         action: LabelAction,
         ctxt: context.Context,
         rule: rules.EvaluatedPullRequestRule,
     ) -> LabelExecutor:
+        add_labels = [
+            await cls._render_label(ctxt, label) for label in action.config["add"]
+        ]
+        remove_labels = [
+            await cls._render_label(ctxt, label) for label in action.config["remove"]
+        ]
+        toggle_labels = [
+            await cls._render_label(ctxt, label) for label in action.config["toggle"]
+        ]
+
         return cls(
             ctxt,
             rule,
             LabelExecutorConfig(
                 {
-                    "add": action.config["add"],
-                    "remove": action.config["remove"],
+                    "add": add_labels,
+                    "remove": remove_labels,
                     "remove_all": action.config["remove_all"],
-                    "toggle": action.config["toggle"],
+                    "toggle": toggle_labels,
                 }
             ),
         )
