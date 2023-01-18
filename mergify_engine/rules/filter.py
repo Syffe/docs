@@ -209,7 +209,6 @@ class Filter(typing.Generic[FilterResultT]):
         obj: GetAttrObjectT,
         attribute_name: str,
     ) -> list[typing.Any]:
-        op: abc.Callable[[typing.Any], typing.Any]
         if attribute_name.startswith(self.LENGTH_OPERATOR):
             try:
                 return await self._get_attribute_values(
