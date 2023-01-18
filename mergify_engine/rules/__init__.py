@@ -1139,15 +1139,9 @@ pull_request_rules:
         delete_head_branch:
 """
 
-global _MERGIFY_BUILTIN_CONFIG
-_MERGIFY_BUILTIN_CONFIG: voluptuous.Schema | None = None
-
 
 async def get_mergify_builtin_config() -> voluptuous.Schema:
-    global _MERGIFY_BUILTIN_CONFIG
-    if _MERGIFY_BUILTIN_CONFIG is None:
-        mergify_bot = await github.GitHubAppInfo.get_bot()
-        _MERGIFY_BUILTIN_CONFIG = UserConfigurationSchema(
-            YamlSchema(MERGIFY_BUILTIN_CONFIG_YAML.format(author=mergify_bot["login"]))
-        )
-    return _MERGIFY_BUILTIN_CONFIG
+    mergify_bot = await github.GitHubAppInfo.get_bot()
+    return UserConfigurationSchema(
+        YamlSchema(MERGIFY_BUILTIN_CONFIG_YAML.format(author=mergify_bot["login"]))
+    )
