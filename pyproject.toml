@@ -47,7 +47,7 @@ greenlet = "^2.0.1"
 deepdiff = "^6.2.3"
 
 [tool.poetry.dev-dependencies]
-sqlalchemy2-stubs = {version = "^0.0.2a28"}
+sqlalchemy2-stubs = {version = "^0.0.2a32"}
 sphinx = "^5.3.0"
 sphinxcontrib-spelling = "^7.6.2"
 respx = "^0.20.0"
