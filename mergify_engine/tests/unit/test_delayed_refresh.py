@@ -14,7 +14,7 @@ from mergify_engine.tests.unit import conftest
 @pytest.mark.parametrize(
     "pull, expected_refresh",
     (
-        ({}, datetime.datetime(2021, 9, 22, 15, 0, tzinfo=datetime.timezone.utc)),
+        ({}, datetime.datetime(2021, 9, 22, 15, 1, tzinfo=datetime.timezone.utc)),
         ({"closed_at": "2021-09-10T08:00:05Z"}, None),
         (
             {"updated_at": "2021-09-22T08:02:05Z"},
@@ -34,8 +34,7 @@ pull_request_rules:
     conditions:
     - and:
       - head~=^foo/
-      - current-time>=08:00[Europe/Madrid]
-      - current-time<=17:00[Europe/Madrid]
+      - schedule=08:00-17:00[Europe/Madrid]
       - updated-at<01:00 ago
     actions:
       label:
@@ -66,8 +65,7 @@ pull_request_rules:
     conditions:
     - and:
       - head~=^foo/
-      - current-time>=08:00[Europe/Madrid]
-      - current-time<=17:00[Europe/Madrid]
+      - schedule=08:00-17:00[Europe/Madrid]
     actions:
       label:
         add:
@@ -76,7 +74,7 @@ pull_request_rules:
     )
 
     expected_refresh_due_to_rules = datetime.datetime(
-        2021, 9, 22, 15, 0, tzinfo=datetime.timezone.utc
+        2021, 9, 22, 15, 1, tzinfo=datetime.timezone.utc
     )
 
     ctxt = await context_getter(0)
