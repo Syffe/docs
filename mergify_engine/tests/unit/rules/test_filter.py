@@ -14,9 +14,6 @@ from mergify_engine.rules import filter
 from mergify_engine.rules import parser
 
 
-UTC = datetime.timezone.utc
-
-
 class FakePR(dict):  # type: ignore[type-arg]
     def __getattr__(self, k: typing.Any) -> typing.Any:
         try:
@@ -262,13 +259,13 @@ async def test_datetime_binary() -> None:
 @freeze_time("2012-01-14")
 async def test_time_binary() -> None:
     assert "foo>=00:00" == str(
-        filter.BinaryFilter({">=": ("foo", date.Time(0, 0, UTC))})
+        filter.BinaryFilter({">=": ("foo", date.Time(0, 0, date.UTC))})
     )
     assert "foo<=23:59" == str(
-        filter.BinaryFilter({"<=": ("foo", date.Time(23, 59, UTC))})
+        filter.BinaryFilter({"<=": ("foo", date.Time(23, 59, date.UTC))})
     )
     assert "foo<=03:09" == str(
-        filter.BinaryFilter({"<=": ("foo", date.Time(3, 9, UTC))})
+        filter.BinaryFilter({"<=": ("foo", date.Time(3, 9, date.UTC))})
     )
     assert "foo<=03:09[Europe/Paris]" == str(
         filter.BinaryFilter(
@@ -278,14 +275,14 @@ async def test_time_binary() -> None:
 
     now = date.utcnow()
 
-    f = filter.BinaryFilter({"<=": ("foo", date.Time(5, 8, UTC))})
+    f = filter.BinaryFilter({"<=": ("foo", date.Time(5, 8, date.UTC))})
     assert await f(FakePR({"foo": now.replace(hour=5, minute=8)}))
     assert await f(FakePR({"foo": now.replace(hour=2, minute=1)}))
     assert await f(FakePR({"foo": now.replace(hour=5, minute=1)}))
     assert not await f(FakePR({"foo": now.replace(hour=6, minute=2)}))
     assert not await f(FakePR({"foo": now.replace(hour=8, minute=9)}))
 
-    f = filter.BinaryFilter({">=": ("foo", date.Time(5, 8, UTC))})
+    f = filter.BinaryFilter({">=": ("foo", date.Time(5, 8, date.UTC))})
     assert await f(FakePR({"foo": now.replace(hour=5, minute=8)}))
     assert not await f(FakePR({"foo": now.replace(hour=2, minute=1)}))
     assert not await f(FakePR({"foo": now.replace(hour=5, minute=1)}))
@@ -362,7 +359,7 @@ async def test_partial_datetime_binary(
 async def test_day_near_datetime() -> None:
     with freeze_time("2012-01-06T12:15:00", tz_offset=0) as frozen_time:
         today = frozen_time().replace(
-            hour=0, minute=0, second=0, microsecond=0, tzinfo=UTC
+            hour=0, minute=0, second=0, microsecond=0, tzinfo=date.UTC
         )
         nextday = today.replace(day=today.day + 1)
         nextmonth = today.replace(month=today.month + 1, day=1)
@@ -427,7 +424,7 @@ async def test_day_of_the_week_near_datetime() -> None:
     # 2012-01-06 is a Friday (5)
     with freeze_time("2012-01-06T12:15:00", tz_offset=0) as frozen_time:
         today = frozen_time().replace(
-            hour=0, minute=0, second=0, microsecond=0, tzinfo=UTC
+            hour=0, minute=0, second=0, microsecond=0, tzinfo=date.UTC
         )
         on_monday = today.replace(day=2)
         on_saturday = today.replace(day=7)
@@ -496,7 +493,7 @@ async def test_day_of_the_week_near_datetime() -> None:
 async def test_month_near_datetime() -> None:
     with freeze_time("2012-06-06T12:15:00", tz_offset=0) as frozen_time:
         today = frozen_time().replace(
-            hour=0, minute=0, second=0, microsecond=0, tzinfo=UTC
+            hour=0, minute=0, second=0, microsecond=0, tzinfo=date.UTC
         )
         in_june = today.replace(month=today.month, day=1)
         in_july = today.replace(month=today.month + 1, day=1)
@@ -560,9 +557,9 @@ async def test_month_near_datetime() -> None:
 
 async def test_year_near_datetime() -> None:
     with freeze_time("2012-01-14T12:15:00", tz_offset=0) as frozen_time:
-        today = frozen_time().replace(tzinfo=UTC)
-        in_2016 = datetime.datetime(2016, 1, 1, 0, 0, 0, 0, tzinfo=UTC)
-        in_2017 = datetime.datetime(2017, 1, 1, 0, 0, 0, 0, tzinfo=UTC)
+        today = frozen_time().replace(tzinfo=date.UTC)
+        in_2016 = datetime.datetime(2016, 1, 1, 0, 0, 0, 0, tzinfo=date.UTC)
+        in_2017 = datetime.datetime(2017, 1, 1, 0, 0, 0, 0, tzinfo=date.UTC)
 
         f = filter.NearDatetimeFilter({"<=": ("foo", date.Year(2016))})
         frozen_time.move_to(today.replace(year=2016))
@@ -621,7 +618,7 @@ async def test_year_near_datetime() -> None:
 
 async def test_time_near_datetime() -> None:
     with freeze_time("2012-01-06T05:08:00", tz_offset=0) as frozen_time:
-        tzinfo = UTC
+        tzinfo = date.UTC
         now = frozen_time().replace(tzinfo=tzinfo)
         time_now = date.Time(now.hour, now.minute, tzinfo)
         atmidnight = now.replace(
@@ -636,80 +633,118 @@ async def test_time_near_datetime() -> None:
 
         f = filter.NearDatetimeFilter({"<=": ("foo", time_now)})
         frozen_time.move_to(now)
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == soon
+        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)})) == soon
         frozen_time.move_to(now.replace(hour=2, minute=1))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == now
+        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)})) == now
         frozen_time.move_to(now.replace(hour=5, minute=1))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == now
+        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)})) == now
         frozen_time.move_to(now.replace(hour=6, minute=2))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == atmidnight
+        assert (
+            await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)}))
+            == atmidnight
+        )
         frozen_time.move_to(now.replace(hour=8, minute=9))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == atmidnight
+        assert (
+            await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)}))
+            == atmidnight
+        )
         assert await f(FakePR({"foo": None})) == date.DT_MAX
 
         f = filter.NearDatetimeFilter({"<": ("foo", time_now)})
         frozen_time.move_to(now)
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == atmidnight
+        assert (
+            await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)}))
+            == atmidnight
+        )
         frozen_time.move_to(now.replace(hour=2, minute=1))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == now
+        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)})) == now
         frozen_time.move_to(now.replace(hour=5, minute=1))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == now
+        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)})) == now
         frozen_time.move_to(now.replace(hour=6, minute=2))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == atmidnight
+        assert (
+            await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)}))
+            == atmidnight
+        )
         frozen_time.move_to(now.replace(hour=8, minute=9))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == atmidnight
+        assert (
+            await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)}))
+            == atmidnight
+        )
         assert await f(FakePR({"foo": None})) == date.DT_MAX
 
         f = filter.NearDatetimeFilter({">=": ("foo", time_now)})
         frozen_time.move_to(now)
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == soon
+        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)})) == soon
         frozen_time.move_to(now.replace(hour=2, minute=1))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == now
+        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)})) == now
         frozen_time.move_to(now.replace(hour=5, minute=1))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == now
+        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)})) == now
         frozen_time.move_to(now.replace(hour=6, minute=2))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == atmidnight
+        assert (
+            await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)}))
+            == atmidnight
+        )
         frozen_time.move_to(now.replace(hour=8, minute=9))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == atmidnight
+        assert (
+            await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)}))
+            == atmidnight
+        )
         assert await f(FakePR({"foo": None})) == date.DT_MAX
 
         f = filter.NearDatetimeFilter({">": ("foo", time_now)})
         frozen_time.move_to(now)
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == atmidnight
+        assert (
+            await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)}))
+            == atmidnight
+        )
         frozen_time.move_to(now.replace(hour=2, minute=1))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == now
+        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)})) == now
         frozen_time.move_to(now.replace(hour=5, minute=1))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == now
+        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)})) == now
         frozen_time.move_to(now.replace(hour=6, minute=2))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == atmidnight
+        assert (
+            await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)}))
+            == atmidnight
+        )
         frozen_time.move_to(now.replace(hour=8, minute=9))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == atmidnight
+        assert (
+            await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)}))
+            == atmidnight
+        )
         assert await f(FakePR({"foo": None})) == date.DT_MAX
 
         f = filter.NearDatetimeFilter({"=": ("foo", time_now)})
         frozen_time.move_to(now)
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == soon
+        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)})) == soon
         frozen_time.move_to(now.replace(hour=2, minute=1))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == now
+        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)})) == now
         frozen_time.move_to(now.replace(hour=5, minute=1))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == now
+        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)})) == now
         frozen_time.move_to(now.replace(hour=6, minute=2))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == nextday
+        assert (
+            await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)})) == nextday
+        )
         frozen_time.move_to(now.replace(hour=8, minute=9))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == nextday
+        assert (
+            await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)})) == nextday
+        )
         assert await f(FakePR({"foo": None})) == date.DT_MAX
 
         f = filter.NearDatetimeFilter({"!=": ("foo", time_now)})
         frozen_time.move_to(now)
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == soon
+        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)})) == soon
         frozen_time.move_to(now.replace(hour=2, minute=1))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == now
+        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)})) == now
         frozen_time.move_to(now.replace(hour=5, minute=1))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == now
+        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)})) == now
         frozen_time.move_to(now.replace(hour=6, minute=2))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == nextday
+        assert (
+            await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)})) == nextday
+        )
         frozen_time.move_to(now.replace(hour=8, minute=9))
-        assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == nextday
+        assert (
+            await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)})) == nextday
+        )
         assert await f(FakePR({"foo": None})) == date.DT_MAX
 
 
@@ -799,7 +834,7 @@ async def test_relative_datetime_binary() -> None:
 
 async def test_relative_datetime_neardatetime_filter() -> None:
     with freeze_time("2012-01-10T05:08:00", tz_offset=0) as frozen_time:
-        tzinfo = UTC
+        tzinfo = date.UTC
         day10 = frozen_time().replace(tzinfo=tzinfo)
         day14 = day10 + datetime.timedelta(days=4)
         day18 = day14 + datetime.timedelta(days=4)
@@ -868,7 +903,7 @@ async def test_relative_datetime_neardatetime_filter() -> None:
 
 async def test_multiple_near_datetime() -> None:
     with freeze_time("2012-01-14T05:08:00", tz_offset=0) as frozen_time:
-        tzinfo = UTC
+        tzinfo = date.UTC
         now = frozen_time().replace(tzinfo=tzinfo)
         now_time = date.Time(now.hour, now.minute, tzinfo)
         atmidnight = now.replace(
@@ -880,9 +915,7 @@ async def test_multiple_near_datetime() -> None:
         )
         in_two_hours = now + datetime.timedelta(hours=2)
         assert tzinfo == in_two_hours.tzinfo
-        in_two_hours_time = date.Time(
-            in_two_hours.hour, in_two_hours.minute, in_two_hours.tzinfo
-        )
+        in_two_hours_time = date.Time(in_two_hours.hour, in_two_hours.minute, tzinfo)
         soon = now + datetime.timedelta(minutes=1)
 
         trees = (
@@ -926,22 +959,26 @@ async def test_multiple_near_datetime() -> None:
             f = filter.NearDatetimeFilter(typing.cast(filter.TreeT, tree))
 
             frozen_time.move_to(now)
-            assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == soon
+            assert (
+                await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)})) == soon
+            )
             frozen_time.move_to(now.replace(hour=2, minute=1))
-            assert await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)})) == now
+            assert (
+                await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)})) == now
+            )
             frozen_time.move_to(now.replace(hour=6, minute=8))
             assert (
-                await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)}))
+                await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)}))
                 == in_two_hours
             )
             frozen_time.move_to(now.replace(hour=8, minute=9))
             assert (
-                await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)}))
+                await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)}))
                 == atmidnight
             )
             frozen_time.move_to(now.replace(hour=18, minute=9))
             assert (
-                await f(FakePR({"foo": frozen_time().replace(tzinfo=UTC)}))
+                await f(FakePR({"foo": frozen_time().replace(tzinfo=date.UTC)}))
                 == atmidnight
             )
 
@@ -1029,7 +1066,7 @@ async def test_schedule_with_timezone() -> None:
         tree = parser.parse("schedule=Mon-Fri 09:00-17:30[Europe/Paris]")
         f = filter.NearDatetimeFilter(tree)
 
-        today = frozen_time().replace(tzinfo=UTC)
+        today = frozen_time().replace(tzinfo=date.UTC)
 
         next_refreshes = [
             "2021-10-20T07:00:01",
@@ -1038,28 +1075,28 @@ async def test_schedule_with_timezone() -> None:
         ]
         for next_refresh in next_refreshes:
             next_refresh_dt = datetime.datetime.fromisoformat(next_refresh).replace(
-                tzinfo=datetime.timezone.utc
+                tzinfo=date.UTC
             )
             assert await f(get_scheduled_pr()) == next_refresh_dt
             frozen_time.move_to(next_refresh_dt)
 
         frozen_time.move_to(today.replace(day=23))
         assert await f(get_scheduled_pr()) == datetime.datetime(
-            2021, 10, 25, 7, 0, 1, tzinfo=datetime.timezone.utc
+            2021, 10, 25, 7, 0, 1, tzinfo=date.UTC
         )
 
     with freeze_time("2022-09-16T10:38:18.019100", tz_offset=0) as frozen_time:
         tree = parser.parse("schedule=Mon-Fri 06:00-17:00[America/Los_Angeles]")
         f = filter.NearDatetimeFilter(tree)
 
-        today = frozen_time().replace(tzinfo=UTC)
+        today = frozen_time().replace(tzinfo=date.UTC)
 
         next_refreshes = [
             "2022-09-16T13:00:01",
         ]
         for next_refresh in next_refreshes:
             next_refresh_dt = datetime.datetime.fromisoformat(next_refresh).replace(
-                tzinfo=datetime.timezone.utc
+                tzinfo=date.UTC
             )
             assert await f(get_scheduled_pr()) == next_refresh_dt
             frozen_time.move_to(next_refresh_dt)
@@ -1094,99 +1131,85 @@ async def test_schedule_neardatetime_filter() -> None:
         f_ne = filter.NearDatetimeFilter(tree_ne)
         # Correct datetime should be next Monday, 08:00:01 UTC
         assert await f_eq(FakePR({"current-time": date.utcnow()})) == datetime.datetime(
-            2022, 11, 14, 8, 0, 1, tzinfo=datetime.timezone.utc
+            2022, 11, 14, 8, 0, 1, tzinfo=date.UTC
         )
 
         assert await f_ne(FakePR({"current-time": date.utcnow()})) == datetime.datetime(
-            2022, 11, 14, 8, 0, 1, tzinfo=datetime.timezone.utc
+            2022, 11, 14, 8, 0, 1, tzinfo=date.UTC
         )
         # Friday
-        frozen_time.move_to(
-            datetime.datetime(2022, 11, 11, tzinfo=datetime.timezone.utc)
-        )
+        frozen_time.move_to(datetime.datetime(2022, 11, 11, tzinfo=date.UTC))
         # Correct datetime should be current day, at start_hour and start_minute of the schedule + 1s
         assert await f_eq(FakePR({"current-time": date.utcnow()})) == datetime.datetime(
-            2022, 11, 11, 8, 0, 1, tzinfo=datetime.timezone.utc
+            2022, 11, 11, 8, 0, 1, tzinfo=date.UTC
         )
         assert await f_ne(FakePR({"current-time": date.utcnow()})) == datetime.datetime(
-            2022, 11, 11, 8, 0, 1, tzinfo=datetime.timezone.utc
+            2022, 11, 11, 8, 0, 1, tzinfo=date.UTC
         )
 
         # Friday, 15:00 UTC
-        frozen_time.move_to(
-            datetime.datetime(2022, 11, 11, 15, tzinfo=datetime.timezone.utc)
-        )
+        frozen_time.move_to(datetime.datetime(2022, 11, 11, 15, tzinfo=date.UTC))
         # Correct datetime should be current day, at end_hour and end_minute of the schedule
         assert await f_eq(FakePR({"current-time": date.utcnow()})) == datetime.datetime(
-            2022, 11, 11, 17, 1, tzinfo=datetime.timezone.utc
+            2022, 11, 11, 17, 1, tzinfo=date.UTC
         )
         assert await f_ne(FakePR({"current-time": date.utcnow()})) == datetime.datetime(
-            2022, 11, 11, 17, 1, tzinfo=datetime.timezone.utc
+            2022, 11, 11, 17, 1, tzinfo=date.UTC
         )
 
         # Friday, 17:00 UTC
-        frozen_time.move_to(
-            datetime.datetime(2022, 11, 11, 17, tzinfo=datetime.timezone.utc)
-        )
+        frozen_time.move_to(datetime.datetime(2022, 11, 11, 17, tzinfo=date.UTC))
         # Correct datetime should be current day, 1 minute after the end of the schedule
         assert await f_eq(FakePR({"current-time": date.utcnow()})) == datetime.datetime(
-            2022, 11, 11, 17, 1, tzinfo=datetime.timezone.utc
+            2022, 11, 11, 17, 1, tzinfo=date.UTC
         )
         assert await f_ne(FakePR({"current-time": date.utcnow()})) == datetime.datetime(
-            2022, 11, 11, 17, 1, tzinfo=datetime.timezone.utc
+            2022, 11, 11, 17, 1, tzinfo=date.UTC
         )
 
         # Saturday
-        frozen_time.move_to(
-            datetime.datetime(2022, 11, 12, tzinfo=datetime.timezone.utc)
-        )
+        frozen_time.move_to(datetime.datetime(2022, 11, 12, tzinfo=date.UTC))
         tree_eq = parser.parse("schedule=FRI-TUE 08:00-17:00")
         tree_ne = parser.parse("schedule!=FRI-TUE 08:00-17:00")
         f_eq = filter.NearDatetimeFilter(tree_eq)
         f_ne = filter.NearDatetimeFilter(tree_ne)
         # Correct datetime should be current day, 08:00:01 UTC
         assert await f_eq(FakePR({"current-time": date.utcnow()})) == datetime.datetime(
-            2022, 11, 12, 8, 0, 1, tzinfo=datetime.timezone.utc
+            2022, 11, 12, 8, 0, 1, tzinfo=date.UTC
         )
         assert await f_ne(FakePR({"current-time": date.utcnow()})) == datetime.datetime(
-            2022, 11, 12, 8, 0, 1, tzinfo=datetime.timezone.utc
+            2022, 11, 12, 8, 0, 1, tzinfo=date.UTC
         )
 
         # Thursday
-        frozen_time.move_to(
-            datetime.datetime(2022, 11, 9, tzinfo=datetime.timezone.utc)
-        )
+        frozen_time.move_to(datetime.datetime(2022, 11, 9, tzinfo=date.UTC))
         # Correct datetime should be Friday of the same week, 08:00:01 UTC
         assert await f_eq(FakePR({"current-time": date.utcnow()})) == datetime.datetime(
-            2022, 11, 11, 8, 0, 1, tzinfo=datetime.timezone.utc
+            2022, 11, 11, 8, 0, 1, tzinfo=date.UTC
         )
         assert await f_ne(FakePR({"current-time": date.utcnow()})) == datetime.datetime(
-            2022, 11, 11, 8, 0, 1, tzinfo=datetime.timezone.utc
+            2022, 11, 11, 8, 0, 1, tzinfo=date.UTC
         )
 
         # Monday
-        frozen_time.move_to(
-            datetime.datetime(2022, 11, 7, tzinfo=datetime.timezone.utc)
-        )
+        frozen_time.move_to(datetime.datetime(2022, 11, 7, tzinfo=date.UTC))
         # Correct datetime should be current day, at start_hour and start_minute of the schedule + 1s
         assert await f_eq(FakePR({"current-time": date.utcnow()})) == datetime.datetime(
-            2022, 11, 7, 8, 0, 1, tzinfo=datetime.timezone.utc
+            2022, 11, 7, 8, 0, 1, tzinfo=date.UTC
         )
         assert await f_ne(FakePR({"current-time": date.utcnow()})) == datetime.datetime(
-            2022, 11, 7, 8, 0, 1, tzinfo=datetime.timezone.utc
+            2022, 11, 7, 8, 0, 1, tzinfo=date.UTC
         )
 
         # Tuesday, 18:00 UTC
-        frozen_time.move_to(
-            datetime.datetime(2022, 11, 8, 18, tzinfo=datetime.timezone.utc)
-        )
+        frozen_time.move_to(datetime.datetime(2022, 11, 8, 18, tzinfo=date.UTC))
         # Correct datetime should be Friday of the current week,
         # at start_hour and start_minute of the schedule
         assert await f_eq(FakePR({"current-time": date.utcnow()})) == datetime.datetime(
-            2022, 11, 11, 8, 0, 1, tzinfo=datetime.timezone.utc
+            2022, 11, 11, 8, 0, 1, tzinfo=date.UTC
         )
         assert await f_ne(FakePR({"current-time": date.utcnow()})) == datetime.datetime(
-            2022, 11, 11, 8, 0, 1, tzinfo=datetime.timezone.utc
+            2022, 11, 11, 8, 0, 1, tzinfo=date.UTC
         )
 
 

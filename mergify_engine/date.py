@@ -9,7 +9,8 @@ import typing
 import zoneinfo
 
 
-DT_MAX = datetime.datetime.max.replace(tzinfo=datetime.timezone.utc)
+UTC = zoneinfo.ZoneInfo("UTC")
+DT_MAX = datetime.datetime.max.replace(tzinfo=UTC)
 
 
 @dataclasses.dataclass
@@ -22,17 +23,17 @@ TIMEZONES = {f"[{tz}]" for tz in zoneinfo.available_timezones()}
 
 def extract_timezone(
     value: str,
-) -> tuple[str, datetime.timezone | zoneinfo.ZoneInfo]:
+) -> tuple[str, zoneinfo.ZoneInfo]:
     if value[-1] == "]":
         for timezone in TIMEZONES:
             if value.endswith(timezone):
                 return value[: -len(timezone)], zoneinfo.ZoneInfo(timezone[1:-1])
         raise InvalidDate("Invalid timezone")
-    return value, datetime.timezone.utc
+    return value, UTC
 
 
 def utcnow() -> datetime.datetime:
-    return datetime.datetime.now(tz=datetime.timezone.utc)
+    return datetime.datetime.now(tz=UTC)
 
 
 def utcnow_from_clock_realtime() -> datetime.datetime:
@@ -158,7 +159,7 @@ class Day(PartialDatetime):
 class Time:
     hour: int
     minute: int
-    tzinfo: datetime.tzinfo
+    tzinfo: zoneinfo.ZoneInfo
 
     @classmethod
     def from_string(cls, string: str) -> "Time":
@@ -185,7 +186,7 @@ class Time:
 
     def __str__(self) -> str:
         value = f"{self.hour:02d}:{self.minute:02d}"
-        if isinstance(self.tzinfo, zoneinfo.ZoneInfo):
+        if isinstance(self.tzinfo, zoneinfo.ZoneInfo) and self.tzinfo != UTC:
             value += f"[{self.tzinfo.key}]"
         return value
 
@@ -289,9 +290,9 @@ class Schedule:
     end_hour: int
     start_minute: int
     end_minute: int
-    tzinfo: datetime.tzinfo
-    is_only_days: bool = dataclasses.field(default=False)
-    is_only_times: bool = dataclasses.field(default=False)
+    tzinfo: zoneinfo.ZoneInfo
+    is_only_days: bool = dataclasses.field(default=False, repr=False)
+    is_only_times: bool = dataclasses.field(default=False, repr=False)
 
     @staticmethod
     def get_weekdays_from_string(days: str) -> tuple[int, int]:
@@ -327,7 +328,7 @@ class Schedule:
             start_minute=0,
             end_minute=59,
             # TODO(Greesb): Allow timezone with only day of weeks
-            tzinfo=datetime.timezone.utc,
+            tzinfo=UTC,
             is_only_days=True,
         )
 
@@ -422,6 +423,7 @@ class Schedule:
                 and self.start_minute == other.start_minute
                 and self.end_hour == other.end_hour
                 and self.end_minute == other.end_minute
+                and self.tzinfo.key == other.tzinfo.key
             )
 
         # Allow to check if a datetime is in a schedule
@@ -618,9 +620,9 @@ def fromisoformat(s: str) -> datetime.datetime:
         s = s[:-1]
     dt = datetime.datetime.fromisoformat(s)
     if dt.tzinfo is None:
-        return dt.replace(tzinfo=datetime.timezone.utc)
+        return dt.replace(tzinfo=UTC)
     else:
-        return dt.astimezone(datetime.timezone.utc)
+        return dt.astimezone(UTC)
 
 
 def fromisoformat_with_zoneinfo(string: str) -> datetime.datetime:
@@ -635,7 +637,7 @@ def fromisoformat_with_zoneinfo(string: str) -> datetime.datetime:
 
 def fromtimestamp(timestamp: float) -> datetime.datetime:
     """always returns an aware datetime object with UTC timezone"""
-    return datetime.datetime.fromtimestamp(timestamp, datetime.timezone.utc)
+    return datetime.datetime.fromtimestamp(timestamp, UTC)
 
 
 def pretty_datetime(dt: datetime.datetime) -> str:

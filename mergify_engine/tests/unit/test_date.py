@@ -12,35 +12,35 @@ from mergify_engine import date
     (
         (
             "2021-06-01",
-            datetime.datetime(2021, 6, 1, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2021, 6, 1, tzinfo=date.UTC),
         ),
         (
             "2021-06-01 18:41:39Z",
-            datetime.datetime(2021, 6, 1, 18, 41, 39, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2021, 6, 1, 18, 41, 39, tzinfo=date.UTC),
         ),
         (
             "2021-06-01H18:41:39Z",
-            datetime.datetime(2021, 6, 1, 18, 41, 39, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2021, 6, 1, 18, 41, 39, tzinfo=date.UTC),
         ),
         (
             "2021-06-01T18:41:39",
-            datetime.datetime(2021, 6, 1, 18, 41, 39, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2021, 6, 1, 18, 41, 39, tzinfo=date.UTC),
         ),
         (
             "2021-06-01T18:41:39+00:00",
-            datetime.datetime(2021, 6, 1, 18, 41, 39, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2021, 6, 1, 18, 41, 39, tzinfo=date.UTC),
         ),
         (
             "2022-01-01T01:01:01+00:00",
-            datetime.datetime(2022, 1, 1, 1, 1, 1, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 1, 1, 1, 1, 1, tzinfo=date.UTC),
         ),
         (
             "2022-01-01T01:01:01-02:00",
-            datetime.datetime(2022, 1, 1, 3, 1, 1, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 1, 1, 3, 1, 1, tzinfo=date.UTC),
         ),
         (
             "2022-01-01T01:01:01+02:00",
-            datetime.datetime(2021, 12, 31, 23, 1, 1, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2021, 12, 31, 23, 1, 1, tzinfo=date.UTC),
         ),
     ),
 )
@@ -52,23 +52,19 @@ def test_fromisoformat(value: str, expected: datetime.datetime) -> None:
     "dt,expected_string",
     [
         (
-            datetime.datetime(2021, 6, 1, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2021, 6, 1, tzinfo=date.UTC),
             "2021-06-01 00:00 UTC",
         ),
         (
-            datetime.datetime(2021, 12, 31, 23, 1, 1, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2021, 12, 31, 23, 1, 1, tzinfo=date.UTC),
             "2021-12-31 23:01 UTC",
         ),
         (
-            datetime.datetime(
-                2021, 12, 31, 23, 1, 0, 999, tzinfo=datetime.timezone.utc
-            ),
+            datetime.datetime(2021, 12, 31, 23, 1, 0, 999, tzinfo=date.UTC),
             "2021-12-31 23:01 UTC",
         ),
         (
-            datetime.datetime(
-                2021, 12, 31, 23, 0, 0, 999, tzinfo=datetime.timezone.utc
-            ),
+            datetime.datetime(2021, 12, 31, 23, 0, 0, 999, tzinfo=date.UTC),
             "2021-12-31 23:00 UTC",
         ),
     ],
@@ -78,7 +74,7 @@ def test_pretty_datetime(dt: datetime.datetime, expected_string: str) -> None:
 
 
 def test_time_compare() -> None:
-    utc = datetime.timezone.utc
+    utc = date.UTC
     with freeze_time("2021-09-22T08:00:05", tz_offset=0):
         assert datetime.datetime(2021, 9, 22, 8, 0, 5, tzinfo=utc) >= date.Time(
             8, 0, utc
@@ -165,7 +161,7 @@ def test_relative_datetime_without_timezone() -> None:
 @pytest.mark.parametrize(
     "time,expected_hour,expected_minute,expected_tzinfo",
     [
-        ("10:00", 10, 0, datetime.timezone.utc),
+        ("10:00", 10, 0, date.UTC),
         ("11:22[Europe/Paris]", 11, 22, zoneinfo.ZoneInfo("Europe/Paris")),
     ],
 )
@@ -323,128 +319,128 @@ def test_datetime_inside_time_range(
         (
             date.Schedule.from_string("MON-FRI 7:00-15:00"),
             # Friday, 15:00 UTC
-            datetime.datetime(2022, 11, 11, 15, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 11, 15, tzinfo=date.UTC),
             # Friday, 15:01 UTC
-            datetime.datetime(2022, 11, 11, 15, 1, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 11, 15, 1, tzinfo=date.UTC),
         ),
         (
             date.Schedule.from_string("MON-FRI 7:00-15:00"),
             # Monday, 16:00 UTC
-            datetime.datetime(2022, 11, 7, 16, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 7, 16, tzinfo=date.UTC),
             # Tuesday, 7:00:01 UTC
-            datetime.datetime(2022, 11, 8, 7, 0, 1, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 8, 7, 0, 1, tzinfo=date.UTC),
         ),
         (
             date.Schedule.from_string("FRI-MON 7:00-15:00"),
             # Friday, 16:00 UTC
-            datetime.datetime(2022, 11, 11, 16, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 11, 16, tzinfo=date.UTC),
             # Saturday, 7:00:01 UTC
-            datetime.datetime(2022, 11, 12, 7, 0, 1, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 12, 7, 0, 1, tzinfo=date.UTC),
         ),
         (
             date.Schedule.from_string("FRI-MON 7:00-15:00"),
             # Monday, 16:00 UTC
-            datetime.datetime(2022, 11, 7, 16, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 7, 16, tzinfo=date.UTC),
             # Friday, 7:00:01 UTC
-            datetime.datetime(2022, 11, 11, 7, 0, 1, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 11, 7, 0, 1, tzinfo=date.UTC),
         ),
         (
             date.Schedule.from_string("MON-FRI 7:00-15:00"),
             # Saturday, 14:00 UTC
-            datetime.datetime(2022, 11, 5, 14, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 5, 14, tzinfo=date.UTC),
             # Monday, 7:00:01 UTC
-            datetime.datetime(2022, 11, 7, 7, 0, 1, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 7, 7, 0, 1, tzinfo=date.UTC),
         ),
         (
             date.Schedule.from_string("MON-FRI 7:00-15:00"),
             # Saturday, 16:00 UTC
-            datetime.datetime(2022, 11, 5, 16, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 5, 16, tzinfo=date.UTC),
             # Monday, 7:00:01 UTC
-            datetime.datetime(2022, 11, 7, 7, 0, 1, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 7, 7, 0, 1, tzinfo=date.UTC),
         ),
         (
             date.Schedule.from_string("MON-FRI"),
             # Saturday, 16:00 UTC
-            datetime.datetime(2022, 11, 5, 16, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 5, 16, tzinfo=date.UTC),
             # Monday, 00:00 UTC
-            datetime.datetime(2022, 11, 7, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 7, tzinfo=date.UTC),
         ),
         (
             date.Schedule.from_string("TUE-FRI"),
             # Monday, 16:00 UTC
-            datetime.datetime(2022, 11, 7, 16, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 7, 16, tzinfo=date.UTC),
             # Tuesday, 00:00 UTC
-            datetime.datetime(2022, 11, 8, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 8, tzinfo=date.UTC),
         ),
         (
             date.Schedule.from_string("MON-FRI"),
             # Friday, 15:00 UTC
-            datetime.datetime(2022, 11, 4, 15, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 4, 15, tzinfo=date.UTC),
             # Saturday, 00:00 UTC
-            datetime.datetime(2022, 11, 5, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 5, tzinfo=date.UTC),
         ),
         (
             date.Schedule.from_string("MON-FRI"),
             # Tuesday, 15:00 UTC
-            datetime.datetime(2022, 11, 1, 15, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 1, 15, tzinfo=date.UTC),
             # Saturday, 00:00 UTC
-            datetime.datetime(2022, 11, 5, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 5, tzinfo=date.UTC),
         ),
         (
             date.Schedule.from_string("FRI-MON"),
             # Saturday, 16:00 UTC
-            datetime.datetime(2022, 11, 5, 16, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 5, 16, tzinfo=date.UTC),
             # Tuesday, 00:00 UTC
-            datetime.datetime(2022, 11, 8, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 8, tzinfo=date.UTC),
         ),
         (
             date.Schedule.from_string("FRI-MON"),
             # Monday, 15:00 UTC
-            datetime.datetime(2022, 11, 7, 15, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 7, 15, tzinfo=date.UTC),
             # Tuesday, 00:00 UTC
-            datetime.datetime(2022, 11, 8, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 8, tzinfo=date.UTC),
         ),
         (
             date.Schedule.from_string("FRI-TUE"),
             # Sunday, 15:00 UTC
-            datetime.datetime(2022, 11, 6, 15, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 6, 15, tzinfo=date.UTC),
             # Wednesday, 00:00 UTC
-            datetime.datetime(2022, 11, 9, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 9, tzinfo=date.UTC),
         ),
         (
             date.Schedule.from_string("FRI-TUE"),
             # Monday, 15:00 UTC
-            datetime.datetime(2022, 11, 7, 15, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 7, 15, tzinfo=date.UTC),
             # Wednesday, 00:00 UTC
-            datetime.datetime(2022, 11, 9, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 9, tzinfo=date.UTC),
         ),
         (
             date.Schedule.from_string("08:10-17:30"),
             # Monday, 15:00 UTC
-            datetime.datetime(2022, 11, 7, 15, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 7, 15, tzinfo=date.UTC),
             # Monday, 17:31 UTC
-            datetime.datetime(2022, 11, 7, 17, 31, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 7, 17, 31, tzinfo=date.UTC),
         ),
         (
             date.Schedule.from_string("08:10-17:30"),
             # Monday, 18:00 UTC
-            datetime.datetime(2022, 11, 7, 18, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 7, 18, tzinfo=date.UTC),
             # Tuesday, 08:10:01 UTC
-            datetime.datetime(2022, 11, 8, 8, 10, 1, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 8, 8, 10, 1, tzinfo=date.UTC),
         ),
         (
             date.Schedule.from_string("08:10-17:30"),
             # Sunday, 18:00 UTC
-            datetime.datetime(2022, 11, 6, 18, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 6, 18, tzinfo=date.UTC),
             # Monday, 08:10:01 UTC
-            datetime.datetime(2022, 11, 7, 8, 10, 1, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 7, 8, 10, 1, tzinfo=date.UTC),
         ),
         (
             date.Schedule.from_string("08:10-17:30"),
             # Monday, 00:00 UTC
-            datetime.datetime(2022, 11, 6, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 6, tzinfo=date.UTC),
             # Monday, 08:10:01 UTC
-            datetime.datetime(2022, 11, 6, 8, 10, 1, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 6, 8, 10, 1, tzinfo=date.UTC),
         ),
     ),
 )
@@ -455,72 +451,146 @@ def test_schedule_next_datetime(
 
 
 @pytest.mark.parametrize(
+    "schedule1,schedule2",
+    (
+        (
+            date.Schedule.from_string("MON-FRI 7:00-15:00"),
+            date.Schedule.from_string("MON-FRI 7:00-15:00"),
+        ),
+        (
+            date.Schedule.from_string("MON-FRI 7:00-15:00"),
+            date.Schedule.from_string("monday-friday 7:00-15:00"),
+        ),
+        (
+            date.Schedule.from_string("MON-FRI 7:00-15:00"),
+            date.Schedule.from_string("MON-FRI 7:00-15:00[UTC]"),
+        ),
+        # We don't support timezone alias equality yet, but here is the tests
+        # (
+        #     date.Schedule.from_string("MON-FRI 7:00-15:00[Etc/Universal]"),
+        #     date.Schedule.from_string("MON-FRI 7:00-15:00[UTC]"),
+        # ),
+        # (
+        #     date.Schedule.from_string("MON-FRI 7:00-15:00[Europe/Rome]"),
+        #     date.Schedule.from_string("MON-FRI 7:00-15:00[Europe/Vatican]"),
+        # ),
+    ),
+)
+def test_schedule_equality(schedule1: date.Schedule, schedule2: date.Schedule) -> None:
+    # In winter
+    with freeze_time("2023-01-01T00:00:00", tz_offset=0):
+        assert schedule1 == schedule2
+    # In summer
+    with freeze_time("2023-07-01T00:00:00", tz_offset=0):
+        assert schedule1 == schedule2
+
+
+@pytest.mark.parametrize(
+    "schedule1,schedule2",
+    (
+        (
+            date.Schedule.from_string("MON-FRI"),
+            date.Schedule.from_string("MON-SAT"),
+        ),
+        (
+            date.Schedule.from_string("11:00-12:00"),
+            date.Schedule.from_string("11:00-12:01"),
+        ),
+        (
+            date.Schedule.from_string("MON-FRI 7:00-15:00[Europe/London]"),
+            date.Schedule.from_string("MON-FRI 7:00-15:00[UTC]"),
+        ),
+        (
+            date.Schedule.from_string("MON-FRI 7:00-15:00[Europe/London]"),
+            date.Schedule.from_string("MON-FRI 7:00-15:00[Africa/Abidjan]"),
+        ),
+    ),
+)
+def test_schedule_inequality(
+    schedule1: date.Schedule, schedule2: date.Schedule
+) -> None:
+    # In winter
+    with freeze_time("2023-01-01T00:00:00", tz_offset=0):
+        assert schedule1 != schedule2
+    # In summer
+    with freeze_time("2023-07-01T00:00:00", tz_offset=0):
+        assert schedule1 != schedule2
+
+
+def test_schedule_equality_after_clear_cache() -> None:
+    schedule1 = date.Schedule.from_string("MON-FRI 7:00-15:00[UTC]")
+    zoneinfo.ZoneInfo.clear_cache()
+    schedule2 = date.Schedule.from_string("MON-FRI 7:00-15:00[UTC]")
+    assert schedule1 == schedule2
+
+
+@pytest.mark.parametrize(
     "schedule,date_to_test,expected",
     (
         (
             date.Schedule.from_string("MON-FRI 7:00-15:00"),
             # Friday, 15:00 UTC
-            datetime.datetime(2022, 11, 11, 15, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 11, 15, tzinfo=date.UTC),
             True,
         ),
         (
             date.Schedule.from_string("MON-FRI 7:00-15:00"),
             # Friday, 15:00:01 UTC
-            datetime.datetime(2022, 11, 11, 15, 0, 1, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 11, 15, 0, 1, tzinfo=date.UTC),
             False,
         ),
         (
             date.Schedule.from_string("MON-FRI 7:00-15:00"),
             # Sunday, 14:00 UTC
-            datetime.datetime(2022, 11, 12, 14, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 12, 14, tzinfo=date.UTC),
             False,
         ),
         (
             date.Schedule.from_string("MON-FRI 7:00-15:00"),
             # Sunday, 16:00 UTC
-            datetime.datetime(2022, 11, 12, 16, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 12, 16, tzinfo=date.UTC),
             False,
         ),
         (
             date.Schedule.from_string("FRI-MON 7:00-15:00"),
             # Monday, 8:00 UTC
-            datetime.datetime(2022, 11, 14, 8, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 14, 8, tzinfo=date.UTC),
             True,
         ),
         (
             date.Schedule.from_string("FRI-TUE 7:00-15:00"),
             # Monday, 8:00 UTC
-            datetime.datetime(2022, 11, 14, 8, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 14, 8, tzinfo=date.UTC),
             True,
         ),
         (
             date.Schedule.from_string("FRI-MON 7:00-15:00"),
             # Tuesday, 8:00 UTC
-            datetime.datetime(2022, 11, 15, 8, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 15, 8, tzinfo=date.UTC),
             True,
         ),
         (
             date.Schedule.from_string("FRI-MON 7:00-15:00"),
             # Friday, 15:00 UTC
-            datetime.datetime(2022, 11, 11, 15, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 11, 15, tzinfo=date.UTC),
             True,
         ),
         (
             date.Schedule.from_string("FRI-MON 7:00-15:00"),
             # Friday, 16:00 UTC
-            datetime.datetime(2022, 11, 11, 16, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 11, 16, tzinfo=date.UTC),
             False,
         ),
         (
             date.Schedule.from_string("FRI-MON 7:00-15:00"),
             # Saturday, 14:00 UTC
-            datetime.datetime(2022, 11, 12, 14, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 12, 14, tzinfo=date.UTC),
             True,
         ),
         (
             date.Schedule.from_string("FRI-MON 7:00-15:00"),
             # Saturday, 16:00 UTC
-            datetime.datetime(2022, 11, 12, 16, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2022, 11, 12, 16, tzinfo=date.UTC),
             False,
         ),
     ),

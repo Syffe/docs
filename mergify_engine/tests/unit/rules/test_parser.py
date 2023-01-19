@@ -55,7 +55,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                                 end_hour=23,
                                 start_minute=0,
                                 end_minute=59,
-                                tzinfo=datetime.timezone.utc,
+                                tzinfo=date.UTC,
                             ),
                         )
                     },
@@ -83,7 +83,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
             {
                 ">=": (
                     "current-time",
-                    date.Time(10, 0, tzinfo=datetime.timezone.utc),
+                    date.Time(10, 0, tzinfo=date.UTC),
                 )
             },
         ),
@@ -112,7 +112,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                                 end_hour=17,
                                 start_minute=0,
                                 end_minute=0,
-                                tzinfo=datetime.timezone.utc,
+                                tzinfo=date.UTC,
                             ),
                         )
                     },
@@ -134,7 +134,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                                 end_hour=22,
                                 start_minute=2,
                                 end_minute=35,
-                                tzinfo=datetime.timezone.utc,
+                                tzinfo=date.UTC,
                             ),
                         )
                     },
@@ -156,7 +156,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                                 end_hour=23,
                                 start_minute=0,
                                 end_minute=59,
-                                tzinfo=datetime.timezone.utc,
+                                tzinfo=date.UTC,
                             ),
                         )
                     },
@@ -178,7 +178,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                                 end_hour=22,
                                 start_minute=2,
                                 end_minute=35,
-                                tzinfo=datetime.timezone.utc,
+                                tzinfo=date.UTC,
                             ),
                         )
                     },
@@ -186,7 +186,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
             },
         ),
         (
-            "schedule=10:02[PST8PDT]-22:35[Europe/Paris]",
+            "schedule=10:02-22:35[Europe/Paris]",
             {
                 "@": (
                     "schedule",
@@ -200,7 +200,7 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                                 end_hour=22,
                                 start_minute=2,
                                 end_minute=35,
-                                tzinfo=zoneinfo.ZoneInfo("PST8PDT"),
+                                tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
                             ),
                         )
                     },
