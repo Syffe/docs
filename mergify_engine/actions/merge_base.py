@@ -157,17 +157,11 @@ class MergeUtilsMixin:
                 await ctxt.update(wait_merged=True)
                 ctxt.log.info("merged")
 
-        result = await self.pre_merge_checks(
-            ctxt, merge_method, merge_rebase_fallback, merge_bot_account
+        return check_api.Result(
+            check_api.Conclusion.SUCCESS,
+            "The pull request has been merged automatically",
+            f"The pull request has been merged automatically at *{ctxt.pull['merge_commit_sha']}*",
         )
-        if result:
-            return result
-        else:
-            return check_api.Result(
-                check_api.Conclusion.FAILURE,
-                "Unexpected after merge pull request state",
-                "The pull request has been merged while GitHub API still reports it as opened.",
-            )
 
     async def _handle_merge_error(
         self,
