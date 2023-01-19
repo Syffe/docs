@@ -19,7 +19,9 @@ LOG = daiquiri.getLogger(__name__)
 @dataclasses.dataclass
 class QueueFreeze:
 
-    repository: context.Repository
+    repository: context.Repository = dataclasses.field(
+        compare=False,
+    )
 
     # Stored in redis
     name: str = dataclasses.field(metadata={"description": "Queue name"})
@@ -48,6 +50,32 @@ class QueueFreeze:
         application_id: int
         freeze_date: datetime.datetime
         cascading: bool
+
+    def serialized(self) -> "QueueFreeze.Serialized":
+        return self.Serialized(
+            name=self.name,
+            reason=self.reason,
+            application_name=self.application_name,
+            application_id=self.application_id,
+            freeze_date=self.freeze_date,
+            cascading=self.cascading,
+        )
+
+    @classmethod
+    def deserialize(
+        cls,
+        repository: context.Repository,
+        data: "QueueFreeze.Serialized",
+    ) -> "QueueFreeze":
+        return cls(
+            repository=repository,
+            name=data["name"],
+            reason=data["reason"],
+            application_name=data["application_name"],
+            application_id=data["application_id"],
+            freeze_date=data["freeze_date"],
+            cascading=data["cascading"],
+        )
 
     @classmethod
     def unpack(
@@ -151,3 +179,9 @@ class QueueFreeze:
     async def _refresh_pulls(self, source: str) -> None:
         async for train in merge_train.Train.iter_trains(self.repository):
             await train.refresh_pulls(source=source)
+
+    def get_freeze_message(self) -> str:
+        return (
+            f"\n❄️ The merge is currently blocked by the freeze of the queue `{self.name}`, "
+            f"for the following reason: `{self.reason}` ❄️"
+        )
