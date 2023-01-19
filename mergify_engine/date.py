@@ -18,18 +18,27 @@ class InvalidDate(Exception):
     message: str
 
 
+@dataclasses.dataclass
+class TimezoneNotAllowed(Exception):
+    message: str
+
+
 TIMEZONES = {f"[{tz}]" for tz in zoneinfo.available_timezones()}
 
 
 def extract_timezone(
     value: str,
 ) -> tuple[str, zoneinfo.ZoneInfo]:
-    if value[-1] == "]":
+    if has_timezone(value):
         for timezone in TIMEZONES:
             if value.endswith(timezone):
                 return value[: -len(timezone)], zoneinfo.ZoneInfo(timezone[1:-1])
         raise InvalidDate("Invalid timezone")
     return value, UTC
+
+
+def has_timezone(value: str) -> bool:
+    return value[-1] == "]"
 
 
 def utcnow() -> datetime.datetime:
@@ -162,7 +171,10 @@ class Time:
     tzinfo: zoneinfo.ZoneInfo
 
     @classmethod
-    def from_string(cls, string: str) -> "Time":
+    def from_string(cls, string: str, timezone_allowed: bool = True) -> "Time":
+        if not timezone_allowed and has_timezone(string):
+            raise TimezoneNotAllowed("Timezone is not allowed")
+
         value, tzinfo = extract_timezone(string)
         hour_str, sep, minute_str = value.partition(":")
         if sep != ":":
@@ -312,10 +324,17 @@ class Schedule:
             start_hourminute, end_hourminute = times.split("-")
         except ValueError:
             raise InvalidDate(f"Invalid schedule: missing separator in '{times}'")
-        return (
-            Time.from_string(start_hourminute),
-            Time.from_string(end_hourminute),
-        )
+
+        try:
+            start_time = Time.from_string(start_hourminute, timezone_allowed=False)
+        except TimezoneNotAllowed:
+            raise InvalidDate(
+                "Invalid schedule: schedule takes 1 timezone but 2 were given"
+            )
+
+        end_time = Time.from_string(end_hourminute)
+
+        return (start_time, end_time)
 
     @classmethod
     def from_days_string(cls, days: str) -> "Schedule":

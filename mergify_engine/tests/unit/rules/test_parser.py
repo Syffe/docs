@@ -478,6 +478,7 @@ def test_parse_jinja_template(
         ('schedule="Mon 12:00-17:00"', "Invalid schedule"),
         ('schedule="Mon-Fri 12:00"', "Invalid schedule"),
         ("#schedule=bar", "`#` modifier is invalid for attribute: `schedule`"),
+        ("schedule=10:02[PST8PDT]-22:35[Europe/Paris]", "Invalid schedule"),
         ("#title=bar", "bar is not a number"),
         ('body="b', "Unbalanced quotes"),
         ('body=b"', "Unbalanced quotes"),
