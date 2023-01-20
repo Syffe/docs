@@ -6413,7 +6413,7 @@ pull_requests:
             check["output"]["title"] == "This pull request cannot be embarked for merge"
         )
         assert check["output"]["summary"] == (
-            "The merge-queue pull request can't be created\n"
+            "The merge queue pull request can't be created\n"
             f"Details:\n> The pull request conflicts with at least one pull request ahead in queue: #{p1['number']}, #{p2['number']}\n"
         )
 
