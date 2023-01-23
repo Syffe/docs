@@ -212,3 +212,66 @@ Unknown pull request attribute: hello
         )
         comment = await self.wait_for_issue_comment(str(p["number"]), "created")
         assert comment["comment"]["body"] == "Hello World!"
+
+    async def test_comment_none_with_default(self) -> None:
+        rules = {
+            "defaults": {
+                "actions": {
+                    "comment": {"message": "Hello World!"},
+                }
+            },
+            "pull_request_rules": [
+                {
+                    "name": "comment without default message",
+                    "conditions": [f"base={self.main_branch_name}"],
+                    "actions": {
+                        "comment": None,
+                    },
+                }
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        p = await self.create_pr()
+        await self.run_engine()
+
+        await self.wait_for_check_run(
+            action="completed", status="completed", conclusion="success"
+        )
+        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
+        assert comment["comment"]["body"] == "Hello World!"
+
+    async def test_comment_none_without_default(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "comment without default message",
+                    "conditions": [f"base={self.main_branch_name}"],
+                    "actions": {
+                        "comment": None,
+                    },
+                }
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        p = await self.create_pr()
+        await self.run_engine()
+
+        check_run = await self.wait_for_check_run(
+            action="completed", status="completed", conclusion="action_required"
+        )
+
+        # Make sure no message have been posted
+        comments = await self.get_issue_comments(p["number"])
+        assert len(comments) == 0
+
+        assert (
+            check_run["check_run"]["output"]["title"]
+            == "The current Mergify configuration is invalid"
+        )
+        assert check_run["check_run"]["output"]["summary"].startswith(
+            "### Cannot have `comment` action with no `message"
+        )

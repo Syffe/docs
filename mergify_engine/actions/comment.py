@@ -27,6 +27,14 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorCo
         ctxt: "context.Context",
         rule: "rules.EvaluatedPullRequestRule",
     ) -> "CommentExecutor":
+        if action.config["message"] is None:
+            # Happens when the config for a comment action is just `None` and
+            # there is no "defaults" for the comment action.
+            raise rules.InvalidPullRequestRule(
+                "Cannot have `comment` action with no `message`",
+                str(action.config),
+            )
+
         try:
             bot_account = await action_utils.render_bot_account(
                 ctxt,
