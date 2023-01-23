@@ -8,14 +8,13 @@ from mergify_engine.queue import freeze
 
 
 @pytest.mark.parametrize(
-    "name,reason,application_name,application_id,freeze_date,cascading",
+    "name,reason,application_name,application_id,cascading",
     (
         (
             "default",
             "test default freeze",
             "application toto",
             123,
-            str(datetime.datetime.utcnow()),
             True,
         ),
         (
@@ -23,7 +22,6 @@ from mergify_engine.queue import freeze
             "test urgent freeze",
             "application tata",
             666,
-            str(datetime.datetime.utcnow()),
             False,
         ),
         (
@@ -31,7 +29,6 @@ from mergify_engine.queue import freeze
             "test low freeze",
             "application tutu",
             777,
-            str(datetime.datetime.utcnow()),
             True,
         ),
     ),
@@ -41,10 +38,10 @@ def test_queue_freeze_deserialize(
     reason: str,
     application_name: str,
     application_id: int,
-    freeze_date: datetime.datetime,
     cascading: bool,
 ) -> None:
 
+    freeze_date = datetime.datetime(2022, 1, 23, tzinfo=datetime.timezone.utc)
     serialized_payload = {
         "name": name,
         "reason": reason,
@@ -69,14 +66,13 @@ def test_queue_freeze_deserialize(
 
 
 @pytest.mark.parametrize(
-    "name,reason,application_name,application_id,freeze_date,cascading",
+    "name,reason,application_name,application_id,cascading",
     (
         (
             "default",
             "test default freeze",
             "application toto",
             123,
-            str(datetime.datetime.utcnow()),
             True,
         ),
         (
@@ -84,7 +80,6 @@ def test_queue_freeze_deserialize(
             "test urgent freeze",
             "application tata",
             666,
-            str(datetime.datetime.utcnow()),
             False,
         ),
         (
@@ -92,7 +87,6 @@ def test_queue_freeze_deserialize(
             "test low freeze",
             "application tutu",
             777,
-            str(datetime.datetime.utcnow()),
             True,
         ),
     ),
@@ -102,10 +96,10 @@ def test_queue_freeze_serialized(
     reason: str,
     application_name: str,
     application_id: int,
-    freeze_date: datetime.datetime,
     cascading: bool,
 ) -> None:
 
+    freeze_date = datetime.datetime(2022, 1, 23, tzinfo=datetime.timezone.utc)
     serialized_payload = {
         "name": name,
         "reason": reason,
