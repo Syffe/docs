@@ -49,8 +49,8 @@ jobs:
            EOF
            # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
            pip install -r requirements-poetry.txt
+           tools/poetry-ci-install.sh
            DOW=$(date +%u)
-           poetry install
            poetry run poe record -- --splits 5 --group "${DOW}"
 
       - name: Fetch check run html url
