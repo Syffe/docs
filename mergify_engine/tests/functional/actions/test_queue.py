@@ -954,7 +954,7 @@ class TestQueueAction(base.FunctionalTestBase):
             "events": [
                 {
                     "event": "action.merge",
-                    "metadata": {},
+                    "metadata": {"branch": self.main_branch_name},
                     "pull_request": p1["number"],
                     "repository": self.repository_ctxt.repo["full_name"],
                     "timestamp": anys.ANY_AWARE_DATETIME_STR,

@@ -55,7 +55,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "pull_request": p1["number"],
                 "timestamp": mock.ANY,
                 "event": "action.merge",
-                "metadata": {},
+                "metadata": {"branch": self.main_branch_name},
                 "trigger": "Rule: mergeit",
             },
             {
@@ -95,7 +95,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "pull_request": p2["number"],
                 "timestamp": mock.ANY,
                 "event": "action.merge",
-                "metadata": {},
+                "metadata": {"branch": self.main_branch_name},
                 "trigger": "Rule: mergeit",
             },
             {

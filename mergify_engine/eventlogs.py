@@ -82,8 +82,9 @@ class EventLabel(EventBase):
     metadata: signals.EventLabelMetadata
 
 
-class EventMerge(EventBaseNoMetadata):
+class EventMerge(EventBase):
     event: typing.Literal["action.merge"]
+    metadata: signals.EventMergeMetadata
 
 
 class EventPostCheck(EventBase):

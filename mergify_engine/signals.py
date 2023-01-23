@@ -143,6 +143,10 @@ class SpeculativeCheckPullRequest(typing.TypedDict, total=False):
     checks_ended_at: datetime.datetime | None
 
 
+class EventMergeMetadata(EventMetadata):
+    branch: str
+
+
 class EventQueueMergedMetadata(EventMetadata, total=False):
     queue_name: str
     branch: str

@@ -125,7 +125,9 @@ class MergeExecutor(
                     self.ctxt.repository,
                     self.ctxt.pull["number"],
                     "action.merge",
-                    signals.EventNoMetadata({}),
+                    signals.EventMergeMetadata(
+                        {"branch": self.ctxt.pull["base"]["ref"]}
+                    ),
                     self.rule.get_signal_trigger(),
                 )
         return report
