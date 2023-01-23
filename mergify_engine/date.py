@@ -294,6 +294,18 @@ class ScheduleJSON(typing.TypedDict):
     days: dict[str, DayJSON]
 
 
+FULL_DAY: DayJSON = {
+    "times": [
+        {
+            "start_at": {"hour": 0, "minute": 0},
+            "end_at": {"hour": 23, "minute": 59},
+        },
+    ]
+}
+
+EMPTY_DAY: DayJSON = {"times": []}
+
+
 @dataclasses.dataclass
 class Schedule:
     start_weekday: int
@@ -599,35 +611,61 @@ class Schedule:
             )
         )
 
-    def as_json_dict(self) -> ScheduleJSON:
+    def as_json_dict(self, reverse: bool = False) -> ScheduleJSON:
         return {
             "timezone": str(self.tzinfo),
             "days": {
-                day: self._day_as_json_dict(DayOfWeek.from_string(day))
+                day: self._day_as_json_dict(DayOfWeek.from_string(day), reverse=reverse)
                 for day in _LONG_WEEKDAY
             },
         }
 
-    def _day_as_json_dict(self, day: DayOfWeek) -> DayJSON:
-        if not self._is_day_in_schedule(day):
-            return {"times": []}
+    def _day_as_json_dict(self, day: DayOfWeek, reverse: bool) -> DayJSON:
+        if self._is_day_in_schedule(day):
+            if self.is_only_days:
+                return EMPTY_DAY if reverse else FULL_DAY
 
-        return {
-            "times": [
-                {
-                    "start_at": self._time_as_json_dict(
-                        self.start_hour, self.start_minute
-                    ),
-                    "end_at": self._time_as_json_dict(self.end_hour, self.end_minute),
-                }
-            ]
-        }
+            if reverse:
+                return {"times": self._timeranges_as_json_reversed()}
+            else:
+                return {"times": self._timeranges_as_json()}
+
+        else:
+            return FULL_DAY if reverse else EMPTY_DAY
 
     def _is_day_in_schedule(self, day: DayOfWeek) -> bool:
         if self.start_weekday <= self.end_weekday:
             return self.start_weekday <= day.value <= self.end_weekday
         else:
             return day.value <= self.end_weekday or day.value >= self.start_weekday
+
+    def _timeranges_as_json(self) -> list[TimeRangeJSON]:
+        return [
+            {
+                "start_at": self._time_as_json_dict(self.start_hour, self.start_minute),
+                "end_at": self._time_as_json_dict(self.end_hour, self.end_minute),
+            }
+        ]
+
+    def _timeranges_as_json_reversed(self) -> list[TimeRangeJSON]:
+        result: list[TimeRangeJSON] = []
+        if (self.start_hour, self.start_minute) != (0, 0):
+            result.append(
+                {
+                    "start_at": self._time_as_json_dict(0, 0),
+                    "end_at": self._time_as_json_dict(
+                        self.start_hour, self.start_minute
+                    ),
+                }
+            )
+        if (self.end_hour, self.end_minute) != (23, 59):
+            result.append(
+                {
+                    "start_at": self._time_as_json_dict(self.end_hour, self.end_minute),
+                    "end_at": self._time_as_json_dict(23, 59),
+                }
+            )
+        return result
 
     def _time_as_json_dict(self, hour: int, minute: int) -> TimeJSON:
         return {"hour": hour, "minute": minute}

@@ -602,30 +602,30 @@ def test_schedule_eq_with_datetime(
     assert not expected == (date_to_test != schedule)
 
 
-FULL_DAY: date.DayJSON = {
-    "times": [
-        {
-            "start_at": {"hour": 0, "minute": 0},
-            "end_at": {"hour": 23, "minute": 59},
-        },
-    ]
-}
-
-EMPTY_DAY: date.DayJSON = {"times": []}
-
-
 def test_schedule_as_json_dict_only_days() -> None:
     schedule = date.Schedule.from_string("MON-FRI")
     assert schedule.as_json_dict() == {
         "timezone": "UTC",
         "days": {
-            "monday": FULL_DAY,
-            "tuesday": FULL_DAY,
-            "wednesday": FULL_DAY,
-            "thursday": FULL_DAY,
-            "friday": FULL_DAY,
-            "saturday": EMPTY_DAY,
-            "sunday": EMPTY_DAY,
+            "monday": date.FULL_DAY,
+            "tuesday": date.FULL_DAY,
+            "wednesday": date.FULL_DAY,
+            "thursday": date.FULL_DAY,
+            "friday": date.FULL_DAY,
+            "saturday": date.EMPTY_DAY,
+            "sunday": date.EMPTY_DAY,
+        },
+    }
+    assert schedule.as_json_dict(reverse=True) == {
+        "timezone": "UTC",
+        "days": {
+            "monday": date.EMPTY_DAY,
+            "tuesday": date.EMPTY_DAY,
+            "wednesday": date.EMPTY_DAY,
+            "thursday": date.EMPTY_DAY,
+            "friday": date.EMPTY_DAY,
+            "saturday": date.FULL_DAY,
+            "sunday": date.FULL_DAY,
         },
     }
 
@@ -635,13 +635,25 @@ def test_schedule_as_json_dict_only_days_reversed() -> None:
     assert schedule.as_json_dict() == {
         "timezone": "UTC",
         "days": {
-            "monday": FULL_DAY,
-            "tuesday": EMPTY_DAY,
-            "wednesday": EMPTY_DAY,
-            "thursday": EMPTY_DAY,
-            "friday": FULL_DAY,
-            "saturday": FULL_DAY,
-            "sunday": FULL_DAY,
+            "monday": date.FULL_DAY,
+            "tuesday": date.EMPTY_DAY,
+            "wednesday": date.EMPTY_DAY,
+            "thursday": date.EMPTY_DAY,
+            "friday": date.FULL_DAY,
+            "saturday": date.FULL_DAY,
+            "sunday": date.FULL_DAY,
+        },
+    }
+    assert schedule.as_json_dict(reverse=True) == {
+        "timezone": "UTC",
+        "days": {
+            "monday": date.EMPTY_DAY,
+            "tuesday": date.FULL_DAY,
+            "wednesday": date.FULL_DAY,
+            "thursday": date.FULL_DAY,
+            "friday": date.EMPTY_DAY,
+            "saturday": date.EMPTY_DAY,
+            "sunday": date.EMPTY_DAY,
         },
     }
 
@@ -664,8 +676,33 @@ def test_schedule_as_json_dict_days_and_times() -> None:
             "wednesday": expected_day,
             "thursday": expected_day,
             "friday": expected_day,
-            "saturday": EMPTY_DAY,
-            "sunday": EMPTY_DAY,
+            "saturday": date.EMPTY_DAY,
+            "sunday": date.EMPTY_DAY,
+        },
+    }
+
+    expected_reversed_day: date.DayJSON = {
+        "times": [
+            {
+                "start_at": {"hour": 0, "minute": 0},
+                "end_at": {"hour": 11, "minute": 0},
+            },
+            {
+                "start_at": {"hour": 15, "minute": 30},
+                "end_at": {"hour": 23, "minute": 59},
+            },
+        ]
+    }
+    assert schedule.as_json_dict(reverse=True) == {
+        "timezone": "UTC",
+        "days": {
+            "monday": expected_reversed_day,
+            "tuesday": expected_reversed_day,
+            "wednesday": expected_reversed_day,
+            "thursday": expected_reversed_day,
+            "friday": expected_reversed_day,
+            "saturday": date.FULL_DAY,
+            "sunday": date.FULL_DAY,
         },
     }
 
@@ -693,6 +730,31 @@ def test_schedule_as_json_dict_only_times() -> None:
         },
     }
 
+    expected_reversed_day: date.DayJSON = {
+        "times": [
+            {
+                "start_at": {"hour": 0, "minute": 0},
+                "end_at": {"hour": 9, "minute": 0},
+            },
+            {
+                "start_at": {"hour": 16, "minute": 32},
+                "end_at": {"hour": 23, "minute": 59},
+            },
+        ]
+    }
+    assert schedule.as_json_dict(reverse=True) == {
+        "timezone": "UTC",
+        "days": {
+            "monday": expected_reversed_day,
+            "tuesday": expected_reversed_day,
+            "wednesday": expected_reversed_day,
+            "thursday": expected_reversed_day,
+            "friday": expected_reversed_day,
+            "saturday": expected_reversed_day,
+            "sunday": expected_reversed_day,
+        },
+    }
+
 
 def test_schedule_as_json_dict_only_times_with_timezone() -> None:
     schedule = date.Schedule.from_string("10:02-22:35[Europe/Paris]")
@@ -714,5 +776,90 @@ def test_schedule_as_json_dict_only_times_with_timezone() -> None:
             "friday": expected_day,
             "saturday": expected_day,
             "sunday": expected_day,
+        },
+    }
+
+    expected_reversed_day: date.DayJSON = {
+        "times": [
+            {
+                "start_at": {"hour": 0, "minute": 0},
+                "end_at": {"hour": 10, "minute": 2},
+            },
+            {
+                "start_at": {"hour": 22, "minute": 35},
+                "end_at": {"hour": 23, "minute": 59},
+            },
+        ]
+    }
+    assert schedule.as_json_dict(reverse=True) == {
+        "timezone": "Europe/Paris",
+        "days": {
+            "monday": expected_reversed_day,
+            "tuesday": expected_reversed_day,
+            "wednesday": expected_reversed_day,
+            "thursday": expected_reversed_day,
+            "friday": expected_reversed_day,
+            "saturday": expected_reversed_day,
+            "sunday": expected_reversed_day,
+        },
+    }
+
+
+def test_schedule_as_json_reversed_edge_cases() -> None:
+    schedule = date.Schedule.from_string("00:00-12:00")
+    expected_reversed_day: date.DayJSON = {
+        "times": [
+            {
+                "start_at": {"hour": 12, "minute": 0},
+                "end_at": {"hour": 23, "minute": 59},
+            },
+        ]
+    }
+    assert schedule.as_json_dict(reverse=True) == {
+        "timezone": "UTC",
+        "days": {
+            "monday": expected_reversed_day,
+            "tuesday": expected_reversed_day,
+            "wednesday": expected_reversed_day,
+            "thursday": expected_reversed_day,
+            "friday": expected_reversed_day,
+            "saturday": expected_reversed_day,
+            "sunday": expected_reversed_day,
+        },
+    }
+
+    schedule = date.Schedule.from_string("12:00-23:59")
+    expected_reversed_day = {
+        "times": [
+            {
+                "start_at": {"hour": 0, "minute": 0},
+                "end_at": {"hour": 12, "minute": 0},
+            },
+        ]
+    }
+    assert schedule.as_json_dict(reverse=True) == {
+        "timezone": "UTC",
+        "days": {
+            "monday": expected_reversed_day,
+            "tuesday": expected_reversed_day,
+            "wednesday": expected_reversed_day,
+            "thursday": expected_reversed_day,
+            "friday": expected_reversed_day,
+            "saturday": expected_reversed_day,
+            "sunday": expected_reversed_day,
+        },
+    }
+
+    schedule = date.Schedule.from_string("00:00-23:59")
+    assert schedule.as_json_dict(reverse=True) == {
+        "timezone": "UTC",
+        "days": {
+            "monday": date.EMPTY_DAY,
+            "tuesday": date.EMPTY_DAY,
+            "wednesday": date.EMPTY_DAY,
+            "thursday": date.EMPTY_DAY,
+            "friday": date.EMPTY_DAY,
+            "saturday": date.EMPTY_DAY,
+            "sunday": date.EMPTY_DAY,
         },
     }
