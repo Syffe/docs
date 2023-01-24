@@ -104,7 +104,7 @@ async def test_user_tokens_db_unavailable(
     retrieve_from_db_mock.reset_mock()
     retrieve_from_db_mock.side_effect = Exception("WTF")
     await redis_cache.expire(f"user-tokens-cache-owner-{owner_id}", 7200)
-    with pytest.raises(Exception):
+    with pytest.raises(Exception, match="WTF"):
         await user_tokens.UserTokens.get(redis_cache, owner_id)
     retrieve_from_db_mock.assert_called_once()
 
