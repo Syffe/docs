@@ -27,7 +27,7 @@ elif [ -z "$DYNO" ]; then
     echo '$DYNO missing, skipping datadog-agent setup...'
     exec "$@"
 
-elif [ "$DYNOTYPE" == "run" ] || [ "$DYNOTYPE" == "scheduler" ] || [ "$DYNOTYPE" == "release" ]; then
+elif [ "$DYNOTYPE" == "run" ] || [ "$DYNOTYPE" == "scheduler" ] || [ "$DYNOTYPE" == "release" ]; then
     startup_message
     echo 'short lived DYNOTYPE: $DYNOHOST, skipping datadog-agent setup...'
     exec "$@"
