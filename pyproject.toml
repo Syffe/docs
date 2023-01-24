@@ -149,6 +149,10 @@ pytest-rerunfailures = "^11.0"
   unqueue = "mergify_engine.actions.unqueue:UnqueueCommand"
   update = "mergify_engine.actions.update:UpdateAction"
 
+
+[tool.poetry.group.dev.dependencies]
+sphinxcontrib-jquery = "^3.0.0"
+
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "--strict-markers --durations=10"

@@ -3268,6 +3268,21 @@ lint = ["docutils-stubs", "flake8", "mypy"]
 test = ["html5lib", "pytest"]
 
 [[package]]
+name = "sphinxcontrib-jquery"
+version = "3.0.0"
+description = "Extension to include jQuery on newer Sphinx releases"
+category = "dev"
+optional = false
+python-versions = ">=2.7"
+files = [
+    {file = "sphinxcontrib.jquery-3.0.0-py2.py3-none-any.whl", hash = "sha256:f3f8af2f1d344a2525f8a29d7a88ff2ee47ae25192a8de35748348ad3104ffd2"},
+    {file = "sphinxcontrib.jquery-3.0.0.tar.gz", hash = "sha256:72f201e55d8430bc3aaec7718a6c0d82a7b7c63d750428525e3d1c10d20aa437"},
+]
+
+[package.dependencies]
+setuptools = "*"
+
+[[package]]
 name = "sphinxcontrib-jsmath"
 version = "1.0.1"
 description = "A sphinx extension which renders display math in HTML via JavaScript"
@@ -4218,4 +4233,4 @@ tokenize-rt = ">=2.1"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<4.0"
-content-hash = "92fae9f3edf731b5d654c7a0caa0466c0cc286593f4710126530ff980471bd72"
+content-hash = "ca89e255778a3beb9eada6c28b57fe08a7506220f62cd99b80cb6d7c88729abc"

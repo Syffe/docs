@@ -8,6 +8,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 extensions = [
+    "sphinxcontrib.jquery",
     "sphinxcontrib.spelling",
     "sphinx.ext.githubpages",
     "sphinx.ext.graphviz",
@@ -63,6 +64,9 @@ html_sidebars = {
     ]
 }
 html_permalinks_icon = "🔗"
+html_js_files = [
+    "jquery.js",
+]
 
 # Spelling checker configuration
 spelling_warning = True
