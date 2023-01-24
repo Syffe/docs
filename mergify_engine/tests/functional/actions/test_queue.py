@@ -970,7 +970,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
                         "reason": f"Pull request #{p1['number']} has been dequeued. Pull "
                         "request automatically merged by a `merge` "
-                        "action.",
+                        "action",
                         "seconds_waiting_for_freeze": 0,
                         "seconds_waiting_for_schedule": 0,
                     },
@@ -985,7 +985,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "abort_code": "PR_DEQUEUED",
                         "abort_reason": f"Pull request #{p1['number']} has been "
                         "dequeued. Pull request automatically "
-                        "merged by a `merge` action.",
+                        "merged by a `merge` action",
                         "abort_status": "DEFINITIVE",
                         "aborted": True,
                         "branch": self.main_branch_name,
@@ -1753,7 +1753,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
-                        "reason": f"Pull request #{p1['number']} has been dequeued. The pull request rule doesn't match anymore.",
+                        "reason": f"Pull request #{p1['number']} has been dequeued. The pull request rule doesn't match anymore",
                         "seconds_waiting_for_schedule": 0,
                         "seconds_waiting_for_freeze": 0,
                     },
@@ -1769,7 +1769,7 @@ class TestQueueAction(base.FunctionalTestBase):
                             str(
                                 queue_utils.PrDequeued(
                                     pr_number=p1["number"],
-                                    details=". The pull request rule doesn't match anymore.",
+                                    details=". The pull request rule doesn't match anymore",
                                 )
                             ),
                         ),

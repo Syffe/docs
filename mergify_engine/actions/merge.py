@@ -118,7 +118,7 @@ class MergeExecutor(
                         self.rule.get_signal_trigger(),
                         queue_utils.PrDequeued(
                             self.ctxt.pull["number"],
-                            ". Pull request automatically merged by a `merge` action.",
+                            ". Pull request automatically merged by a `merge` action",
                         ),
                     )
                 await signals.send(

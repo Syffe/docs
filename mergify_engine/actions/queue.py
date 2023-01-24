@@ -657,7 +657,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             )
         else:
             return queue_utils.PrDequeued(
-                ctxt.pull["number"], details=f". {result.title}."
+                ctxt.pull["number"], details=f". {result.title}"
             )
 
     async def get_unqueue_reason_from_outcome(
