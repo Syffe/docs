@@ -143,7 +143,7 @@ class SpeculativeCheckPullRequest(typing.TypedDict, total=False):
     checks_ended_at: datetime.datetime | None
 
 
-class EventMergeMetadata(EventMetadata):
+class EventMergeMetadata(EventMetadata, total=False):
     branch: str
 
 
