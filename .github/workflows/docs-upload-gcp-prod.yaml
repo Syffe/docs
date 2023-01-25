@@ -30,7 +30,7 @@ jobs:
           sudo apt-get install -y graphviz
           # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
           pip install -r requirements-poetry.txt
-          poetry install
+          tools/poetry-ci-install.sh
           poetry run poe docs
 
       - name: Setup Google Auth 🔧
