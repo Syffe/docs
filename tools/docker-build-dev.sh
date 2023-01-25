@@ -22,6 +22,7 @@ for img in ${TO_BUILD[@]}; do
         > Dockerfile
     fi
     docker buildx build \
+        --progress=plain \
         --platform linux/amd64 \
         --build-arg PYTHON_VERSION="$(cut -d- -f2 runtime.txt)" \
         --build-arg MERGIFYENGINE_SHA="$(git log -1 --format='%H')" \
