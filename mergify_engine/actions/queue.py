@@ -417,6 +417,12 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 check_api.Conclusion.PENDING,
                 check_api.Conclusion.NEUTRAL,
             ]:
+                ctxt.log.info(
+                    "a refresh marks the pull request as re-embarkable",
+                    check=check,
+                    user_refresh=ctxt.user_refresh_requested(),
+                    admin_refresh=ctxt.admin_refresh_requested(),
+                )
                 await check_api.set_check_run(
                     ctxt,
                     constants.MERGE_QUEUE_SUMMARY_NAME,

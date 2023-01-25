@@ -45,6 +45,10 @@ class RequeueExecutor(
                 summary="",
             )
 
+        self.ctxt.log.info(
+            "requeue command marks the pull request as re-embarkable", check=check
+        )
+
         await check_api.set_check_run(
             self.ctxt,
             constants.MERGE_QUEUE_SUMMARY_NAME,
