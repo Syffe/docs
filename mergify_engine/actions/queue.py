@@ -846,7 +846,15 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 )
             )
         depends_on_conditions = await conditions.get_depends_on_conditions(ctxt)
-        return branch_protection_conditions + depends_on_conditions
+        return (
+            branch_protection_conditions
+            + depends_on_conditions
+            + [
+                conditions.RuleCondition(
+                    "-draft", description=":pushpin: queue requirement"
+                )
+            ]
+        )
 
     async def _check_config_compatibility_with_branch_protection(
         self, ctxt: context.Context

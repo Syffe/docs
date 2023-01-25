@@ -54,14 +54,6 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "repository": p1["base"]["repo"]["full_name"],
                 "pull_request": p1["number"],
                 "timestamp": mock.ANY,
-                "event": "action.merge",
-                "metadata": {"branch": self.main_branch_name},
-                "trigger": "Rule: mergeit",
-            },
-            {
-                "repository": p1["base"]["repo"]["full_name"],
-                "pull_request": p1["number"],
-                "timestamp": mock.ANY,
                 "event": "action.label",
                 "metadata": {
                     "added": ["need-review"],
@@ -84,20 +76,20 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "repository": p1["base"]["repo"]["full_name"],
                 "pull_request": p1["number"],
                 "timestamp": mock.ANY,
+                "event": "action.merge",
+                "metadata": {"branch": self.main_branch_name},
+                "trigger": "Rule: mergeit",
+            },
+            {
+                "repository": p1["base"]["repo"]["full_name"],
+                "pull_request": p1["number"],
+                "timestamp": mock.ANY,
                 "event": "action.comment",
                 "metadata": {"message": "Hello!"},
                 "trigger": "Rule: hello",
             },
         ]
         p2_expected_events = [
-            {
-                "repository": p2["base"]["repo"]["full_name"],
-                "pull_request": p2["number"],
-                "timestamp": mock.ANY,
-                "event": "action.merge",
-                "metadata": {"branch": self.main_branch_name},
-                "trigger": "Rule: mergeit",
-            },
             {
                 "repository": p2["base"]["repo"]["full_name"],
                 "pull_request": p2["number"],
@@ -118,6 +110,14 @@ class TestEventLogsAction(base.FunctionalTestBase):
                     "added": ["mergify-test1"],
                     "removed": [],
                 },
+                "trigger": "Rule: mergeit",
+            },
+            {
+                "repository": p2["base"]["repo"]["full_name"],
+                "pull_request": p2["number"],
+                "timestamp": mock.ANY,
+                "event": "action.merge",
+                "metadata": {"branch": self.main_branch_name},
                 "trigger": "Rule: mergeit",
             },
         ]

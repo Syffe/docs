@@ -319,11 +319,6 @@ class MergeUtilsMixin:
             conclusion = check_api.Conclusion.CANCELLED
             title = "The pull request has been closed manually"
             summary = ""
-        elif ctxt.pull["draft"]:
-            conclusion = check_api.Conclusion.PENDING
-            title = "Draft flag needs to be removed"
-            summary = ""
-
         elif (
             await self._is_branch_protection_linear_history_enabled(ctxt)
             and merge_method == "merge"

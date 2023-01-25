@@ -207,6 +207,12 @@ class MergeAction(actions.Action):
                     description=":pushpin: fast-forward merge requirement",
                 )
             )
+
+        conditions_requirements.append(
+            conditions.RuleCondition(
+                "-draft", description=":pushpin: merge requirement"
+            )
+        )
         conditions_requirements.extend(
             await conditions.get_branch_protection_conditions(
                 ctxt.repository, ctxt.pull["base"]["ref"], strict=True
