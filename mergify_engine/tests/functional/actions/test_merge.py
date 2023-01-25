@@ -596,10 +596,12 @@ superRP!"""
         assert len(checks) == 2
         check = checks[1]
         assert check["conclusion"] == "success"
-        assert check["output"]["title"] == "The pull request has been merged"
+        assert (
+            check["output"]["title"] == "The pull request has been merged automatically"
+        )
         assert (
             check["output"]["summary"]
-            == f"The pull request has been merged at *{p['head']['sha']}*."
+            == f"The pull request has been merged automatically at *{p['head']['sha']}*"
         )
 
     async def test_merge_fastforward_bot_account(self) -> None:
