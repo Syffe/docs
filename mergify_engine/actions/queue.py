@@ -45,20 +45,15 @@ For more information: https://docs.mergify.com/actions/queue/
 
 
 @dataclasses.dataclass
-class IncompatibleBranchProtection(rules.InvalidPullRequestRule):
+class IncompatibleBranchProtection(Exception):
     """Incompatibility between Mergify configuration and branch protection settings"""
 
     configuration: str
     branch_protection_setting: str
 
-    reason: str = dataclasses.field(
-        init=False,
-        default="Configuration not compatible with a branch protection setting",
-    )
-    details: str = dataclasses.field(init=False)
-
-    def __post_init__(self) -> None:
-        self.details = (
+    @property
+    def message(self) -> str:
+        return (
             "The branch protection setting "
             f"`{self.branch_protection_setting}` is not compatible with `{self.configuration}` "
             "and must be unset."
@@ -136,7 +131,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         await cls._check_subscription_status(action, ctxt)
         cls._check_method_fastforward_configuration(action)
-        await cls._check_config_compatibility_with_branch_protection(action, ctxt)
 
         return cls(
             ctxt,
@@ -298,6 +292,17 @@ Then, re-embark the pull request into the merge queue by posting the comment
             )
 
     async def run(self) -> check_api.Result:
+        try:
+            await self._check_config_compatibility_with_branch_protection(
+                self.queue_rule, self.ctxt
+            )
+        except IncompatibleBranchProtection as e:
+            return check_api.Result(
+                check_api.Conclusion.FAILURE,
+                "Configuration not compatible with a branch protection setting",
+                e.message,
+            )
+
         if self.ctxt.user_refresh_requested() or self.ctxt.admin_refresh_requested():
             # NOTE(sileht): user ask a refresh, we just remove the previous state of this
             # check and the method _should_be_queued will become true again :)
@@ -452,6 +457,17 @@ Then, re-embark the pull request into the merge queue by posting the comment
         await q.remove_pull(self.ctxt, self.rule.get_signal_trigger(), unqueue_reason)
 
     async def cancel(self) -> check_api.Result:
+        try:
+            await self._check_config_compatibility_with_branch_protection(
+                self.queue_rule, self.ctxt
+            )
+        except IncompatibleBranchProtection as e:
+            return check_api.Result(
+                check_api.Conclusion.FAILURE,
+                "Configuration not compatible with a branch protection setting",
+                e.message,
+            )
+
         q = await merge_train.Train.from_context(self.ctxt)
         car = q.get_car(self.ctxt)
 
@@ -777,9 +793,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
     @staticmethod
     async def _check_config_compatibility_with_branch_protection(
-        action: QueueAction, ctxt: context.Context
+        queue_rule: rules.QueueRule, ctxt: context.Context
     ) -> None:
-        if action.queue_rule.config["queue_branch_merge_method"] == "fast-forward":
+        if queue_rule.config["queue_branch_merge_method"] == "fast-forward":
             # Note(charly): `queue_branch_merge_method=fast-forward` make the
             # use of batches compatible with branch protection
             # `required_status_checks=strict`
@@ -797,17 +813,17 @@ Then, re-embark the pull request into the merge queue by posting the comment
         )
 
         if _has_required_status_checks_strict:
-            if action.queue_rule.config["batch_size"] > 1:
+            if queue_rule.config["batch_size"] > 1:
                 raise IncompatibleBranchProtection(
                     "batch_size>1",
                     BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT,
                 )
-            elif action.queue_rule.config["speculative_checks"] > 1:
+            elif queue_rule.config["speculative_checks"] > 1:
                 raise IncompatibleBranchProtection(
                     "speculative_checks>1",
                     BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT,
                 )
-            elif action.queue_rule.config["allow_inplace_checks"] is False:
+            elif queue_rule.config["allow_inplace_checks"] is False:
                 raise IncompatibleBranchProtection(
                     "allow_inplace_checks=false",
                     BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT,

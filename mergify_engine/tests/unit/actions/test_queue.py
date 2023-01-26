@@ -394,7 +394,7 @@ async def test_required_status_checks_strict_compatibility_with_queue_rules(
 
     # Nothing raised
     await queue.QueueExecutor._check_config_compatibility_with_branch_protection(
-        action, ctxt
+        action.queue_rule, ctxt
     )
 
 
@@ -414,17 +414,18 @@ async def test_required_status_checks_strict_incompatibility_with_queue_rules(
 
     with pytest.raises(queue.IncompatibleBranchProtection) as e:
         await queue.QueueExecutor._check_config_compatibility_with_branch_protection(
-            action, ctxt
+            action.queue_rule, ctxt
         )
 
-    assert (
-        e.value.reason
-        == "Configuration not compatible with a branch protection setting"
-    )
     assert e.value.configuration == expected_config_error
     assert (
         e.value.branch_protection_setting
         == queue.BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT
+    )
+    assert (
+        e.value.message == "The branch protection setting "
+        f"`{queue.BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT}` is not compatible with `{expected_config_error}` "
+        "and must be unset."
     )
 
 
