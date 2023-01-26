@@ -422,3 +422,31 @@ async def test_required_status_checks_strict_incompatibility_with_queue_rules(
         e.value.branch_protection_setting
         == queue.BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT
     )
+
+
+async def test_action_rules_in_queue_rules() -> None:
+    queue_rules = rules.UserConfigurationSchema(
+        {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "commit_message_template": "test",
+                    "merge_method": "rebase",
+                    "merge_bot_account": "test",
+                    "update_method": "rebase",
+                    "update_bot_account": "test",
+                    "merge_conditions": [],
+                },
+            ],
+        }
+    )
+
+    action = queue.QueueAction({})
+    action.validate_config(queue_rules)
+
+    assert action.config["commit_message_template"] == "test"
+    assert action.config["method"] == "rebase"
+    assert action.config["merge_method"] == "rebase"
+    assert action.config["merge_bot_account"] == "test"
+    assert action.config["update_method"] == "rebase"
+    assert action.config["update_bot_account"] == "test"

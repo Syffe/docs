@@ -1147,34 +1147,9 @@ class TestQueueAction(base.FunctionalTestBase):
 
         await self.assert_merge_queue_contents(q, None, [])
 
-    async def test_queue_with_rebase_on_githubapp_pr(self) -> None:
-        rules = {
-            "queue_rules": [
-                {
-                    "name": "default",
-                    "conditions": [
-                        "status-success=continuous-integration/fake-ci",
-                    ],
-                }
-            ],
-            "pull_request_rules": [
-                {
-                    "name": "Merge priority high",
-                    "conditions": [
-                        f"base={self.main_branch_name}",
-                        "label=queue",
-                    ],
-                    "actions": {
-                        "queue": {
-                            "name": "default",
-                            "priority": "high",
-                            "update_method": "rebase",
-                            "update_bot_account": '{% if not author or author.endswith("[bot]") -%}\nmergify-test4\n{% else -%}\n{{ author }}\n{% endif -%}',  # noqa [FS003]
-                        }
-                    },
-                },
-            ],
-        }
+    async def _test_queue_with_rebase_on_githubapp_pr(
+        self, rules: dict[str, typing.Any]
+    ) -> None:
         await self.setup_repo(yaml.dump(rules))
 
         p1 = await self.create_pr()
@@ -1210,6 +1185,71 @@ class TestQueueAction(base.FunctionalTestBase):
         commits = await self.get_commits(p1["number"])
         assert len(commits) == 1
         assert commits[0]["commit"]["committer"]["name"] == "mergify-test4"
+
+    # The 2 tests below this comment are the same, just the rules are differents.
+    # This makes sures that the behavior is the same with the queue configuration in `queue_rules`
+    # and in the `actions/queue`
+    async def test_queue_with_rebase_on_githubapp_pr(self) -> None:
+        await self._test_queue_with_rebase_on_githubapp_pr(
+            {
+                "queue_rules": [
+                    {
+                        "name": "default",
+                        "conditions": [
+                            "status-success=continuous-integration/fake-ci",
+                        ],
+                    }
+                ],
+                "pull_request_rules": [
+                    {
+                        "name": "Merge priority high",
+                        "conditions": [
+                            f"base={self.main_branch_name}",
+                            "label=queue",
+                        ],
+                        "actions": {
+                            "queue": {
+                                "name": "default",
+                                "priority": "high",
+                                "update_method": "rebase",
+                                "update_bot_account": '{% if not author or author.endswith("[bot]") -%}\nmergify-test4\n{% else -%}\n{{ author }}\n{% endif -%}',  # noqa [FS003]
+                            }
+                        },
+                    },
+                ],
+            }
+        )
+
+    async def test_queue_with_rebase_on_githubapp_pr_conf_in_queue_rules(self) -> None:
+        await self._test_queue_with_rebase_on_githubapp_pr(
+            {
+                "queue_rules": [
+                    {
+                        "name": "default",
+                        "conditions": [
+                            "status-success=continuous-integration/fake-ci",
+                        ],
+                        "update_method": "rebase",
+                        "update_bot_account": '{% if not author or author.endswith("[bot]") -%}\nmergify-test4\n{% else -%}\n{{ author }}\n{% endif -%}',  # noqa [FS003]
+                    }
+                ],
+                "pull_request_rules": [
+                    {
+                        "name": "Merge priority high",
+                        "conditions": [
+                            f"base={self.main_branch_name}",
+                            "label=queue",
+                        ],
+                        "actions": {
+                            "queue": {
+                                "name": "default",
+                                "priority": "high",
+                            }
+                        },
+                    },
+                ],
+            }
+        )
 
     async def test_queue_with_rebase_update_method(self) -> None:
         rules = {
@@ -4652,6 +4692,11 @@ class TestQueueAction(base.FunctionalTestBase):
                                     "priority": 1,
                                     "speculative_checks": 5,
                                     "batch_max_failure_resolution_attempts": None,
+                                    "commit_message_template": None,
+                                    "merge_method": "merge",
+                                    "merge_bot_account": None,
+                                    "update_method": None,
+                                    "update_bot_account": None,
                                 },
                                 "name": "urgent",
                             },
@@ -4683,6 +4728,11 @@ class TestQueueAction(base.FunctionalTestBase):
                                     "priority": 0,
                                     "speculative_checks": 5,
                                     "batch_max_failure_resolution_attempts": None,
+                                    "commit_message_template": None,
+                                    "merge_method": "merge",
+                                    "merge_bot_account": None,
+                                    "update_method": None,
+                                    "update_bot_account": None,
                                 },
                                 "name": "default",
                             },
@@ -4709,6 +4759,11 @@ class TestQueueAction(base.FunctionalTestBase):
                                     "priority": 0,
                                     "speculative_checks": 5,
                                     "batch_max_failure_resolution_attempts": None,
+                                    "commit_message_template": None,
+                                    "merge_method": "merge",
+                                    "merge_bot_account": None,
+                                    "update_method": None,
+                                    "update_bot_account": None,
                                 },
                                 "name": "default",
                             },
@@ -5611,31 +5666,10 @@ class TestQueueAction(base.FunctionalTestBase):
         time_to_merge_key = self.get_statistic_redis_key("time_to_merge")
         assert await self.redis_links.stats.xlen(time_to_merge_key) == 1
 
-    async def test_queue_without_branch_protection_for_queueing(self) -> None:
-        rules = {
-            "queue_rules": [
-                {
-                    "name": "default",
-                    "conditions": [],
-                }
-            ],
-            "pull_request_rules": [
-                {
-                    "name": "Merge priority high",
-                    "conditions": [
-                        f"base={self.main_branch_name}",
-                        "label=queue",
-                    ],
-                    "actions": {
-                        "queue": {
-                            "method": "squash",
-                            "name": "default",
-                            "require_branch_protection": False,
-                        }
-                    },
-                },
-            ],
-        }
+    async def _test_queue_without_branch_protection_for_queueing(
+        self, rules: dict[str, typing.Any]
+    ) -> None:
+
         await self.setup_repo(yaml.dump(rules))
 
         protection = {
@@ -5707,6 +5741,67 @@ class TestQueueAction(base.FunctionalTestBase):
         assert len(pulls) == 0
 
         await self.assert_merge_queue_contents(q, None, [])
+
+    # The 2 tests below this comment are the same, just the rules are differents.
+    # This makes sures that the behavior is the same with the queue configuration in `queue_rules`
+    # and in the `actions/queue`
+    async def test_queue_without_branch_protection_for_queueing(self) -> None:
+        await self._test_queue_without_branch_protection_for_queueing(
+            {
+                "queue_rules": [
+                    {
+                        "name": "default",
+                        "conditions": [],
+                    }
+                ],
+                "pull_request_rules": [
+                    {
+                        "name": "Merge priority high",
+                        "conditions": [
+                            f"base={self.main_branch_name}",
+                            "label=queue",
+                        ],
+                        "actions": {
+                            "queue": {
+                                "method": "squash",
+                                "name": "default",
+                                "require_branch_protection": False,
+                            }
+                        },
+                    },
+                ],
+            }
+        )
+
+    async def test_queue_without_branch_protection_for_queueing_conf_in_queue_rules(
+        self,
+    ) -> None:
+        await self._test_queue_without_branch_protection_for_queueing(
+            {
+                "queue_rules": [
+                    {
+                        "name": "default",
+                        "conditions": [],
+                        "merge_method": "squash",
+                    }
+                ],
+                "pull_request_rules": [
+                    {
+                        "name": "Merge priority high",
+                        "conditions": [
+                            f"base={self.main_branch_name}",
+                            "label=queue",
+                        ],
+                        "actions": {
+                            "queue": {
+                                "name": "default",
+                                "require_branch_protection": False,
+                            }
+                        },
+                    },
+                ],
+            }
+        )
 
     async def test_queue_checks_and_branch(self) -> None:
         rules = f"""
@@ -6053,6 +6148,11 @@ class TestTrainApiCalls(base.FunctionalTestBase):
             queue_branch_prefix=constants.MERGE_QUEUE_BRANCH_PREFIX,
             queue_branch_merge_method=None,
             batch_max_failure_resolution_attempts=None,
+            commit_message_template=None,
+            merge_method="merge",
+            merge_bot_account=None,
+            update_method=None,
+            update_bot_account=None,
         )
         pull_queue_config = queue.PullQueueConfig(
             name=rules.QueueName("foo"),
@@ -6193,6 +6293,11 @@ pull_requests:
             queue_branch_prefix=constants.MERGE_QUEUE_BRANCH_PREFIX,
             queue_branch_merge_method=None,
             batch_max_failure_resolution_attempts=None,
+            commit_message_template=None,
+            merge_method="merge",
+            merge_bot_account=None,
+            update_method=None,
+            update_bot_account=None,
         )
         queue_pull_config = queue.PullQueueConfig(
             name=rules.QueueName("foo"),
@@ -6292,6 +6397,11 @@ pull_requests:
             queue_branch_prefix=constants.MERGE_QUEUE_BRANCH_PREFIX,
             queue_branch_merge_method=None,
             batch_max_failure_resolution_attempts=None,
+            commit_message_template=None,
+            merge_method="merge",
+            merge_bot_account=None,
+            update_method=None,
+            update_bot_account=None,
         )
         queue_pull_config = queue.PullQueueConfig(
             name=rules.QueueName("foo"),
@@ -6367,6 +6477,11 @@ pull_requests:
             queue_branch_prefix=constants.MERGE_QUEUE_BRANCH_PREFIX,
             queue_branch_merge_method=None,
             batch_max_failure_resolution_attempts=None,
+            commit_message_template=None,
+            merge_method="merge",
+            merge_bot_account=None,
+            update_method=None,
+            update_bot_account=None,
         )
         config = queue.PullQueueConfig(
             name=rules.QueueName("foo"),

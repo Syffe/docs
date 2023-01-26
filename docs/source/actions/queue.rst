@@ -424,10 +424,14 @@ These are the options of the ``queue`` action:
    * - ``method``
      - string
      - ``merge``
-     - Merge method to use. Possible values are ``merge``, ``squash``,
-       ``rebase`` or ``fast-forward``.
-       ``fast-forward`` is not supported on queues with ``speculative_checks > 1``,
-       ``batch_size > 1``, or with ``allow_inplace_checks`` set to ``false``.
+     - | |deprecated tag|
+       | Merge method to use. Possible values are ``merge``, ``squash``,
+       | ``rebase`` or ``fast-forward``.
+       | ``fast-forward`` is not supported on queues with ``speculative_checks > 1``,
+       | ``batch_size > 1``, or with ``allow_inplace_checks`` set to ``false``.
+       |
+       | This option has been moved under the :ref:`queue rules` section of the configuration
+       | and will be removed from this section in the future.
    * - ``rebase_fallback``
      - string
      - ``none``
@@ -441,32 +445,43 @@ These are the options of the ``queue`` action:
    * - ``merge_bot_account``
      - :ref:`data type template`
      -
-     - |premium plan tag|
-       Mergify can impersonate a GitHub user to merge pull request.
-       If no ``merge_bot_account`` is set, Mergify will merge the pull request
-       itself. The user account **must** have already been
-       logged in Mergify dashboard once and have **write** or **maintain** permission.
+     - | |premium plan tag| |deprecated tag|
+       | Mergify can impersonate a GitHub user to merge pull request.
+       | If no ``merge_bot_account`` is set, Mergify will merge the pull request
+       | itself. The user account **must** have already been
+       | logged in Mergify dashboard once and have **write** or **maintain** permission.
+       |
+       | This option has been moved under the :ref:`queue rules` section of the configuration
+       | and will be removed from this section in the future.
 
    * - ``update_method``
      - string
      - ``merge`` for all merge methods except ``fast-forward`` where ``rebase`` is used
-     - Method to use to update the pull request with its base branch when the
-       speculative check is done in-place.
-       Possible values:
-
-       * ``merge`` to merge the base branch into the pull request.
-       * ``rebase`` to rebase the pull request against its base branch.
-
-       Note that the ``rebase`` method has some drawbacks, see :ref:`update method rebase`.
+     - | |deprecated tag|
+       | Method to use to update the pull request with its base branch when the
+       | speculative check is done in-place.
+       | Possible values:
+       |
+       | * ``merge`` to merge the base branch into the pull request.
+       | * ``rebase`` to rebase the pull request against its base branch.
+       |
+       | Note that the ``rebase`` method has some drawbacks, see :ref:`update method rebase`.
+       |
+       | This option has been moved under the :ref:`queue rules` section of the configuration
+       | and will be removed from this section in the future.
    * - ``update_bot_account``
      - :ref:`data type template`
      -
-     - |premium plan tag|
-       For certain actions, such as rebasing branches, Mergify has to
-       impersonate a GitHub user. You can specify the account to use with this
-       option. If no ``update_bot_account`` is set, Mergify picks randomly one of the
-       organization users instead. The user account **must** have already been
-       logged in Mergify dashboard once.
+     - | |premium plan tag| |deprecated tag|
+       | For certain actions, such as rebasing branches, Mergify has to
+       | impersonate a GitHub user. You can specify the account to use with this
+       | option. If no ``update_bot_account`` is set, Mergify picks randomly one of the
+       | organization users instead. The user account **must** have already been
+       | logged in Mergify dashboard once.
+       |
+       |
+       | This option has been moved under the :ref:`queue rules` section of the configuration
+       | and will be removed from this section in the future.
 
    * - ``priority``
      - 1 <= integer <= 10000 or ``low`` or ``medium`` or ``high``
@@ -478,8 +493,12 @@ These are the options of the ``queue`` action:
    * - ``commit_message_template``
      - :ref:`data type template`
      -
-     - Template to use as the commit message when using the ``merge`` or ``squash`` merge method.
-       Template can also be defined in the pull request body (see :ref:`commit message`).
+     - | |deprecated tag|
+       | Template to use as the commit message when using the ``merge`` or ``squash`` merge method.
+       | Template can also be defined in the pull request body (see :ref:`commit message`).
+       |
+       | This option has been moved under the :ref:`queue rules` section of the configuration
+       | and will be removed from this section in the future.
 
    * - ``require_branch_protection``
      - bool
@@ -501,10 +520,12 @@ A ``queue_rules`` takes the following parameter:
      - Value Type
      - Default
      - Value Description
+
    * - ``name``
      - string
      -
      - The name of the merge queue.
+
    * - ``merge_conditions``
      - list of :ref:`Conditions`
      -
@@ -512,6 +533,13 @@ A ``queue_rules`` takes the following parameter:
        In case of speculative merge pull request, the merge conditions starting by
        ``check-`` are evaluated against the temporary pull request instead of the
        original one.
+
+   * - ``commit_message_template``
+     - :ref:`data type template`
+     -
+     - Template to use as the commit message when using the ``merge`` or ``squash`` merge method.
+       Template can also be defined in the pull request body (see :ref:`commit message`).
+
    * - ``priority_rules``
      - list of :ref:`priority rules`
      -
@@ -519,23 +547,27 @@ A ``queue_rules`` takes the following parameter:
        The list of ``priority_rules`` a pull request can match in order to be
        prioritized when added to a queue. The set of conditions available for
        ``priority_rules`` configuration is the same as the usual :ref:`Conditions`.
+
    * - ``speculative_checks``
      - int
      - 1
      - |premium plan tag| The maximum number of checks to run in parallel in the queue. Must be
        between 1 and 20.
        See :ref:`speculative checks`.
+
    * - ``allow_inplace_checks``
      - bool
      - True
      - Allow to update/rebase the original pull request to check its
        mergeability when first in the queue and not part of a batch or
        speculative check.
+
    * - ``disallow_checks_interruption_from_queues``
      - list of ``queue`` names
      -
      - |premium plan tag| The list of higher priorities ``queue`` that are not
        allowed to interrupt the ongoing checks of this queue.
+
    * - ``allow_checks_interruption``
      - bool
      - True
@@ -608,6 +640,45 @@ A ``queue_rules`` takes the following parameter:
        ``true``, Mergify will allow such modifications and trust the content of
        the branch. Make sure only Mergify and your external application are
        allowed to edit these branches.
+
+   * - ``merge_bot_account``
+     - :ref:`data type template`
+     -
+     - |premium plan tag|
+       Mergify can impersonate a GitHub user to merge pull request.
+       If no ``merge_bot_account`` is set, Mergify will merge the pull request
+       itself. The user account **must** have already been
+       logged in Mergify dashboard once and have **write** or **maintain** permission.
+
+   * - ``merge_method``
+     - string
+     - ``merge``
+     - Merge method to use. Possible values are ``merge``, ``squash``,
+       ``rebase`` or ``fast-forward``.
+       ``fast-forward`` is not supported on queues with ``speculative_checks > 1``,
+       ``batch_size > 1``, or with ``allow_inplace_checks`` set to ``false``.
+
+   * - ``update_bot_account``
+     - :ref:`data type template`
+     -
+     - |premium plan tag|
+       For certain actions, such as rebasing branches, Mergify has to
+       impersonate a GitHub user. You can specify the account to use with this
+       option. If no ``update_bot_account`` is set, Mergify picks randomly one of the
+       organization users instead. The user account **must** have already been
+       logged in Mergify dashboard once.
+
+   * - ``update_method``
+     - string
+     - ``merge`` for all merge methods except ``fast-forward`` where ``rebase`` is used
+     - Method to use to update the pull request with its base branch when the
+       speculative check is done in-place.
+       Possible values:
+
+       * ``merge`` to merge the base branch into the pull request.
+       * ``rebase`` to rebase the pull request against its base branch.
+
+       Note that the ``rebase`` method has some drawbacks, see :ref:`update method rebase`.
 
 .. note::
 

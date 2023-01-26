@@ -19,6 +19,7 @@ from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import queue
 from mergify_engine import yaml
+from mergify_engine.actions import merge_base
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.rules import conditions as conditions_mod
@@ -109,6 +110,12 @@ class QueueConfig(typing.TypedDict):
     queue_branch_merge_method: QueueBranchMergeMethod
     allow_queue_branch_edit: bool
     batch_max_failure_resolution_attempts: int | None
+    # queue action config
+    commit_message_template: str | None
+    merge_method: merge_base.MergeMethodT
+    merge_bot_account: github_types.GitHubLogin | None
+    update_method: typing.Literal["rebase", "merge"] | None
+    update_bot_account: github_types.GitHubLogin | None
 
 
 EvaluatedQueueRule = typing.NewType("EvaluatedQueueRule", "QueueRule")
@@ -799,6 +806,28 @@ QueueRulesSchema = voluptuous.All(
                 voluptuous.Required(
                     "batch_max_failure_resolution_attempts", default=None
                 ): voluptuous.Any(None, int),
+                # Queue action options
+                # NOTE(greesb): If you change the default values below, you might
+                # need to change the retrocompatibility behavior in
+                # mergify_engine/actions/queue.py::QueueAction.validate_config
+                voluptuous.Required(
+                    "commit_message_template", default=None
+                ): types.Jinja2WithNone,
+                voluptuous.Required("merge_method", default="merge"): voluptuous.Any(
+                    "rebase",
+                    "merge",
+                    "squash",
+                    "fast-forward",
+                ),
+                voluptuous.Required(
+                    "merge_bot_account", default=None
+                ): types.Jinja2WithNone,
+                voluptuous.Required(
+                    "update_bot_account", default=None
+                ): types.Jinja2WithNone,
+                voluptuous.Required("update_method", default=None): voluptuous.Any(
+                    "rebase", "merge", None
+                ),
                 # TODO(sileht): options to deprecate
                 voluptuous.Required(
                     "allow_checks_interruption", default=None

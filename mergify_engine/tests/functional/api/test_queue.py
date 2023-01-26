@@ -190,6 +190,11 @@ class TestQueueApi(base.FunctionalTestBase):
                         "queue_branch_prefix": constants.MERGE_QUEUE_BRANCH_PREFIX,
                         "queue_branch_merge_method": None,
                         "batch_max_failure_resolution_attempts": None,
+                        "commit_message_template": None,
+                        "merge_method": "merge",
+                        "merge_bot_account": None,
+                        "update_method": None,
+                        "update_bot_account": None,
                     },
                 }
             ]
@@ -220,6 +225,11 @@ class TestQueueApi(base.FunctionalTestBase):
                         "priority": 2,
                         "speculative_checks": 1,
                         "batch_max_failure_resolution_attempts": None,
+                        "commit_message_template": None,
+                        "merge_method": "merge",
+                        "merge_bot_account": None,
+                        "update_method": None,
+                        "update_bot_account": None,
                     },
                 },
                 {
@@ -237,6 +247,11 @@ class TestQueueApi(base.FunctionalTestBase):
                         "priority": 1,
                         "speculative_checks": 2,
                         "batch_max_failure_resolution_attempts": None,
+                        "commit_message_template": None,
+                        "merge_method": "merge",
+                        "merge_bot_account": None,
+                        "update_method": None,
+                        "update_bot_account": None,
                     },
                 },
                 {
@@ -254,6 +269,11 @@ class TestQueueApi(base.FunctionalTestBase):
                         "priority": 0,
                         "speculative_checks": 1,
                         "batch_max_failure_resolution_attempts": None,
+                        "commit_message_template": None,
+                        "merge_method": "merge",
+                        "merge_bot_account": None,
+                        "update_method": None,
+                        "update_bot_account": None,
                     },
                 },
             ]

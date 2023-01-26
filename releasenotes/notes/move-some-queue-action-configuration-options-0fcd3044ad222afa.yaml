@@ -1,0 +1,9 @@
+---
+deprecations:
+  - |
+    The following configuration options of the ``queue`` action have been moved
+    under the ``queue_rules`` section of the configuration: ``commit_message_template``,
+    ``method`` (also renamed ``merge_method`` in the process to avoid confusion),
+    ``merge_bot_account``, ``update_method``, ``update_bot_account``.
+    Those options are still supported in the ``queue`` action but will be removed in
+    the future.

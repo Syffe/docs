@@ -648,6 +648,31 @@ Then, re-embark the pull request into the merge queue by posting the comment
         except KeyError:
             raise voluptuous.error.Invalid(f"`{self.config['name']}` queue not found")
 
+        queue_rule_config_attributes_none_default: list[
+            typing.Literal[
+                "commit_message_template",
+                "merge_bot_account",
+                "update_bot_account",
+                "update_method",
+            ]
+        ] = [
+            "commit_message_template",
+            "merge_bot_account",
+            "update_bot_account",
+            "update_method",
+        ]
+
+        for attr in queue_rule_config_attributes_none_default:
+            if self.queue_rule.config[attr] is not None:
+                self.config[attr] = self.queue_rule.config[attr]
+
+        # merge_method default value is `merge`,
+        # so we need to treat it in a different way
+        if self.queue_rule.config["merge_method"] != "merge":
+            self.config["method"] = self.config[
+                "merge_method"
+            ] = self.queue_rule.config["merge_method"]
+
     async def get_unqueue_reason_from_action_result(
         self, ctxt: context.Context, result: check_api.Result
     ) -> queue_utils.BaseUnqueueReason:
