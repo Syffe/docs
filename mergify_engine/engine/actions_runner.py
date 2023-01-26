@@ -142,13 +142,6 @@ async def gen_summary_rules(
         summary += "\n\n"
         if display_action_configs:
             for action_name, action in rule.actions.items():
-                # TODO(sileht): drop me once all actions has been migrated to actions.ActionExecutor base class
-                if (
-                    isinstance(action.executor, actions.BackwardCompatActionExecutor)
-                    or not action.executor.config
-                ):
-                    continue
-
                 summary += f"**{action_name} action configuration:**\n"
                 summary += "```\n"
                 summary += yaml.safe_dump(

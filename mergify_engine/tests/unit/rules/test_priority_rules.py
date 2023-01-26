@@ -5,6 +5,7 @@ import pytest
 
 from mergify_engine import github_types
 from mergify_engine.actions import queue
+from mergify_engine.dashboard import subscription
 from mergify_engine.tests import utils
 from mergify_engine.tests.unit import conftest
 
@@ -24,6 +25,9 @@ from mergify_engine.tests.unit import conftest
         # ensure priority rules is more important that the action priority
         (["queue-bar", "less"], 15),
     ),
+)
+@pytest.mark.subscription(
+    subscription.Features.QUEUE_ACTION,
 )
 async def test_queue_effective_priority(
     context_getter: conftest.ContextGetterFixture,

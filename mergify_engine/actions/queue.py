@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections import abc
 import dataclasses
 import functools
@@ -43,22 +45,50 @@ For more information: https://docs.mergify.com/actions/queue/
 
 
 @dataclasses.dataclass
-class IncompatibleBranchProtection(Exception):
+class IncompatibleBranchProtection(rules.InvalidPullRequestRule):
     """Incompatibility between Mergify configuration and branch protection settings"""
 
     configuration: str
     branch_protection_setting: str
-    message = "Configuration not compatible with a branch protection setting"
 
-
-class QueueAction(actions.BackwardCompatAction, merge_base.MergeUtilsMixin):
-    flags = (
-        actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
-        | actions.ActionFlag.SUCCESS_IS_FINAL_STATE
-        | actions.ActionFlag.ALLOW_AS_PENDING_COMMAND
-        # FIXME(sileht): MRGFY-562
-        # | actions.ActionFlag.ALWAYS_RUN
+    reason: str = dataclasses.field(
+        init=False,
+        default="Configuration not compatible with a branch protection setting",
     )
+    details: str = dataclasses.field(init=False)
+
+    def __post_init__(self) -> None:
+        self.details = (
+            "The branch protection setting "
+            f"`{self.branch_protection_setting}` is not compatible with `{self.configuration}` "
+            "and must be unset."
+        )
+
+
+QueueUpdateT = typing.Literal["merge", "rebase"]
+
+
+class QueueExecutorConfig(typing.TypedDict):
+    name: rules.QueueName
+    method: merge_base.MergeMethodT
+    merge_bot_account: github_types.GitHubLogin | None
+    update_bot_account: github_types.GitHubLogin | None
+    update_method: QueueUpdateT
+    commit_message_template: str | None
+    priority: int
+    require_branch_protection: bool
+
+    # deprecated
+    rebase_fallback: merge_base.RebaseFallbackT
+
+
+@dataclasses.dataclass
+class QueueExecutor(
+    actions.ActionExecutor["QueueAction", "QueueExecutorConfig"],
+    merge_base.MergeUtilsMixin,
+):
+    queue_rule: rules.QueueRule
+    queue_rules: rules.QueueRules
 
     UNQUEUE_DOCUMENTATION = f"""
 You can take a look at `{constants.MERGE_QUEUE_SUMMARY_NAME}` check runs for more details.
@@ -68,119 +98,109 @@ Then, re-embark the pull request into the merge queue by posting the comment
 `@mergifyio refresh` on the pull request.
 """
 
-    default_restrictions: typing.ClassVar[list[typing.Any]] = [
-        "sender-permission>=write"
-    ]
-
     @property
     def silenced_conclusion(self) -> tuple[check_api.Conclusion, ...]:
         return ()
 
-    @property
-    def validator(self) -> dict[typing.Any, typing.Any]:
-        validator = {
-            voluptuous.Required("name", default="default"): str,
-            voluptuous.Required("method", default="merge"): voluptuous.Any(
-                "rebase",
-                "merge",
-                "squash",
-                "fast-forward",
-            ),
-            voluptuous.Required(
-                "merge_bot_account", default=None
-            ): types.Jinja2WithNone,
-            voluptuous.Required(
-                "update_bot_account", default=None
-            ): types.Jinja2WithNone,
-            voluptuous.Required("update_method", default=None): voluptuous.Any(
-                "rebase", "merge", None
-            ),
-            voluptuous.Required(
-                "commit_message_template", default=None
-            ): types.Jinja2WithNone,
-            voluptuous.Required(
-                "priority", default=queue.PriorityAliases.medium.value
-            ): queue.PrioritySchema,
-            voluptuous.Required("require_branch_protection", default=True): bool,
-        }
-
-        # NOTE(Syffe): In deprecation process
-        if config.ALLOW_REBASE_FALLBACK_ATTRIBUTE:
-            validator[
-                voluptuous.Required("rebase_fallback", default="none")
-            ] = voluptuous.Any("merge", "squash", "none", None)
-        else:
-            validator[
-                voluptuous.Required("rebase_fallback", default=utils.UnsetMarker)
-            ] = utils.DeprecatedOption(
-                DEPRECATED_MESSAGE_REBASE_FALLBACK_QUEUE_ACTION,
-                voluptuous.Any("merge", "squash", "none", None),
+    @classmethod
+    async def create(
+        cls,
+        action: "QueueAction",
+        ctxt: "context.Context",
+        rule: "rules.EvaluatedPullRequestRule",
+    ) -> "QueueExecutor":
+        try:
+            update_bot_account = await action_utils.render_bot_account(
+                ctxt,
+                action.config["update_bot_account"],
+                option_name="update_bot_account",
+                required_feature=subscription.Features.MERGE_BOT_ACCOUNT,
+                missing_feature_message="Cannot use `update_bot_account` with queue action",
             )
+        except action_utils.RenderBotAccountFailure as e:
+            raise rules.InvalidPullRequestRule(e.title, e.reason)
 
-        return validator
+        try:
+            merge_bot_account = await action_utils.render_bot_account(
+                ctxt,
+                action.config["merge_bot_account"],
+                option_name="merge_bot_account",
+                required_feature=subscription.Features.MERGE_BOT_ACCOUNT,
+                missing_feature_message="Cannot use `merge_bot_account` with queue action",
+                # NOTE(sileht): we don't allow admin, because if branch protection are
+                # enabled, but not enforced on admins, we may bypass them
+                required_permissions=[github_types.GitHubRepositoryPermission.WRITE],
+            )
+        except action_utils.RenderBotAccountFailure as e:
+            raise rules.InvalidPullRequestRule(e.title, e.reason)
 
-    @staticmethod
-    def command_to_config(command_arguments: str) -> dict[str, typing.Any]:
-        # NOTE(sileht): requiring branch_protection before putting in queue
-        # doesn't play well with command subsystem, and it's not intuitive as
-        # the user tell us to put the PR in queue and by default we don't. So
-        # we disable this for commands.
-        config = {"name": "default", "require_branch_protection": False}
-        args = [
-            arg_stripped
-            for arg in command_arguments.split(" ")
-            if (arg_stripped := arg.strip())
-        ]
-        if args and args[0]:
-            config["name"] = args[0]
-        return config
+        await cls._check_subscription_status(action, ctxt)
+        cls._check_method_fastforward_configuration(action)
+        await cls._check_config_compatibility_with_branch_protection(action, ctxt)
+
+        return cls(
+            ctxt,
+            rule,
+            QueueExecutorConfig(
+                {
+                    "name": action.config["name"],
+                    "method": action.config["method"],
+                    "update_method": action.config["update_method"],
+                    "rebase_fallback": action.config["rebase_fallback"],
+                    "commit_message_template": action.config["commit_message_template"],
+                    "merge_bot_account": merge_bot_account,
+                    "update_bot_account": update_bot_account,
+                    "priority": action.config["priority"],
+                    "require_branch_protection": action.config[
+                        "require_branch_protection"
+                    ],
+                }
+            ),
+            action.queue_rule,
+            action.queue_rules,
+        )
 
     async def _queue_branch_merge_pull_request(
         self,
-        ctxt: context.Context,
-        rule: "rules.EvaluatedPullRequestRule",
         queue: merge_train.Train,
         queue_freeze: freeze.QueueFreeze | None,
         car: merge_train.TrainCar | None,
-        merge_bot_account: github_types.GitHubLogin | None,
     ) -> check_api.Result:
         result = await self.common_merge(
-            ctxt,
-            rule,
+            self.ctxt,
+            self.rule,
             self.config["method"],
             self.config["rebase_fallback"],
-            merge_bot_account,
+            self.config["merge_bot_account"],
             self.config["commit_message_template"],
             functools.partial(
                 self.get_pending_queue_status,
                 queue=queue,
+                queue_rule=self.queue_rule,
                 queue_freeze=queue_freeze,
             ),
         )
         if result.conclusion == check_api.Conclusion.SUCCESS:
-            _, embarked_pull = queue.find_embarked_pull(ctxt.pull["number"])
+            _, embarked_pull = queue.find_embarked_pull(self.ctxt.pull["number"])
             if embarked_pull is None:
                 raise RuntimeError("Queue pull request with no embarked_pull")
-            if ctxt.pull["merge_commit_sha"] is None:
+            if self.ctxt.pull["merge_commit_sha"] is None:
                 raise RuntimeError("pull request merged but merge_commit_sha is null")
             await queue.remove_pull(
-                ctxt,
-                rule.get_signal_trigger(),
+                self.ctxt,
+                self.rule.get_signal_trigger(),
                 queue_utils.PrMerged(
-                    ctxt.pull["number"], ctxt.pull["merge_commit_sha"]
+                    self.ctxt.pull["number"], self.ctxt.pull["merge_commit_sha"]
                 ),
             )
-            await self.send_merge_signal(ctxt, rule, embarked_pull)
+            await self.send_merge_signal(embarked_pull)
         return result
 
     async def _queue_branch_merge_fastforward(
         self,
-        ctxt: context.Context,
-        rule: "rules.EvaluatedPullRequestRule",
         queue: merge_train.Train,
         queue_freeze: freeze.QueueFreeze | None,
         car: merge_train.TrainCar | None,
-        merge_bot_account: github_types.GitHubLogin | None,
     ) -> check_api.Result:
 
         if car is None:
@@ -193,19 +213,20 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 "Only `method=merge` is supported with `queue_branch_merge_method=fast-forward`",
             )
 
+        # FIXME(sileht): move this to create() to report the error early
         github_user: user_tokens.UserTokensUser | None = None
-        if merge_bot_account:
-            tokens = await ctxt.repository.installation.get_user_tokens()
-            github_user = tokens.get_token_for(merge_bot_account)
+        if self.config["merge_bot_account"]:
+            tokens = await self.ctxt.repository.installation.get_user_tokens()
+            github_user = tokens.get_token_for(self.config["merge_bot_account"])
             if not github_user:
                 return check_api.Result(
                     check_api.Conclusion.FAILURE,
-                    f"Unable to rebase: user `{merge_bot_account}` is unknown. ",
-                    f"Please make sure `{merge_bot_account}` has logged in Mergify dashboard.",
+                    f"Unable to rebase: user `{self.config['merge_bot_account']}` is unknown. ",
+                    f"Please make sure `{self.config['merge_bot_account']}` has logged in Mergify dashboard.",
                 )
 
         if car.train_car_state.checks_type == merge_train.TrainCarChecksType.INPLACE:
-            newsha = ctxt.pull["head"]["sha"]
+            newsha = self.ctxt.pull["head"]["sha"]
         elif car.train_car_state.checks_type == merge_train.TrainCarChecksType.DRAFT:
             if car.queue_pull_request_number is None:
                 raise RuntimeError(
@@ -221,19 +242,20 @@ Then, re-embark the pull request into the merge queue by posting the comment
             )
 
         try:
-            await ctxt.client.put(
-                f"{ctxt.base_url}/git/refs/heads/{ctxt.pull['base']['ref']}",
+            await self.ctxt.client.put(
+                f"{self.ctxt.base_url}/git/refs/heads/{self.ctxt.pull['base']['ref']}",
                 oauth_token=github_user["oauth_access_token"] if github_user else None,
                 json={"sha": newsha},
             )
         except http.HTTPClientSideError as e:  # pragma: no cover
             return await self._handle_merge_error(
                 e,
-                ctxt,
-                rule,
+                self.ctxt,
+                self.rule,
                 functools.partial(
                     self.get_pending_queue_status,
                     queue=queue,
+                    queue_rule=self.queue_rule,
                     queue_freeze=queue_freeze,
                 ),
             )
@@ -244,8 +266,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
             )
             await queue.remove_pull(
                 other_ctxt,
-                rule.get_signal_trigger(),
-                queue_utils.PrMerged(ctxt.pull["number"], newsha),
+                self.rule.get_signal_trigger(),
+                queue_utils.PrMerged(self.ctxt.pull["number"], newsha),
             )
 
         return check_api.Result(
@@ -259,12 +281,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
         self,
     ) -> abc.Callable[
         [
-            context.Context,
-            "rules.EvaluatedPullRequestRule",
             merge_train.Train,
             freeze.QueueFreeze | None,
             merge_train.TrainCar | None,
-            github_types.GitHubLogin | None,
         ],
         abc.Coroutine[typing.Any, typing.Any, check_api.Result],
     ]:
@@ -278,153 +297,26 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 f"Unsupported queue_branch_merge_method: {queue_branch_merge_method}"
             )
 
-    async def _subscription_status(
-        self, ctxt: context.Context
-    ) -> check_api.Result | None:
-        if len(self.queue_rules) > 1 and not ctxt.subscription.has_feature(
-            subscription.Features.QUEUE_ACTION
-        ):
-            return check_api.Result(
-                check_api.Conclusion.ACTION_REQUIRED,
-                "Cannot use multiple queues.",
-                ctxt.subscription.missing_feature_reason(
-                    ctxt.pull["base"]["repo"]["owner"]["login"]
-                ),
-            )
-
-        elif self.queue_rule.config[
-            "speculative_checks"
-        ] > 1 and not ctxt.subscription.has_feature(subscription.Features.QUEUE_ACTION):
-            return check_api.Result(
-                check_api.Conclusion.ACTION_REQUIRED,
-                "Cannot use `speculative_checks` with queue action.",
-                ctxt.subscription.missing_feature_reason(
-                    ctxt.pull["base"]["repo"]["owner"]["login"]
-                ),
-            )
-
-        elif self.queue_rule.config[
-            "batch_size"
-        ] > 1 and not ctxt.subscription.has_feature(subscription.Features.QUEUE_ACTION):
-            return check_api.Result(
-                check_api.Conclusion.ACTION_REQUIRED,
-                "Cannot use `batch_size` with queue action.",
-                ctxt.subscription.missing_feature_reason(
-                    ctxt.pull["base"]["repo"]["owner"]["login"]
-                ),
-            )
-        elif self.config[
-            "priority"
-        ] != queue.PriorityAliases.medium.value and not ctxt.subscription.has_feature(
-            subscription.Features.PRIORITY_QUEUES
-        ):
-            return check_api.Result(
-                check_api.Conclusion.ACTION_REQUIRED,
-                "Cannot use `priority` with queue action.",
-                ctxt.subscription.missing_feature_reason(
-                    ctxt.pull["base"]["repo"]["owner"]["login"]
-                ),
-            )
-
-        return None
-
-    async def _render_bot_account(
-        self, ctxt: context.Context
-    ) -> github_types.GitHubLogin | None:
-        return await action_utils.render_bot_account(
-            ctxt,
-            self.config["merge_bot_account"],
-            option_name="merge_bot_account",
-            required_feature=subscription.Features.MERGE_BOT_ACCOUNT,
-            missing_feature_message="Cannot use `merge_bot_account` with queue action",
-            # NOTE(sileht): we don't allow admin, because if branch protection are
-            # enabled, but not enforced on admins, we may bypass them
-            required_permissions=[github_types.GitHubRepositoryPermission.WRITE],
-        )
-
-    async def run(
-        self, ctxt: context.Context, rule: "rules.EvaluatedPullRequestRule"
-    ) -> check_api.Result:
-        subscription_status = await self._subscription_status(ctxt)
-        if subscription_status:
-            return subscription_status
-
-        if self.config["method"] == "fast-forward":
-            if self.config["update_method"] != "rebase":
-                return check_api.Result(
-                    check_api.Conclusion.FAILURE,
-                    f"`update_method: {self.config['update_method']}` is not compatible with fast-forward merge method",
-                    "`update_method` must be set to `rebase`.",
-                )
-            elif self.config["commit_message_template"] is not None:
-                return check_api.Result(
-                    check_api.Conclusion.FAILURE,
-                    "Commit message can't be changed with fast-forward merge method",
-                    "`commit_message_template` must not be set if `method: fast-forward` is set.",
-                )
-            elif self.queue_rule.config["batch_size"] > 1:
-                return check_api.Result(
-                    check_api.Conclusion.FAILURE,
-                    "batch_size > 1 is not compatible with fast-forward merge method",
-                    "The merge `method` or the queue configuration must be updated.",
-                )
-            elif self.queue_rule.config["speculative_checks"] > 1:
-                return check_api.Result(
-                    check_api.Conclusion.FAILURE,
-                    "speculative_checks > 1 is not compatible with fast-forward merge method",
-                    "The merge `method` or the queue configuration must be updated.",
-                )
-            elif not self.queue_rule.config["allow_inplace_checks"]:
-                return check_api.Result(
-                    check_api.Conclusion.FAILURE,
-                    "allow_inplace_checks=False is not compatible with fast-forward merge method",
-                    "The merge `method` or the queue configuration must be updated.",
-                )
-
-        try:
-            await self._check_config_compatibility_with_branch_protection(ctxt)
-        except IncompatibleBranchProtection as e:
-            return check_api.Result(
-                check_api.Conclusion.FAILURE,
-                e.message,
-                "The branch protection setting "
-                f"`{e.branch_protection_setting}` is not compatible with `{e.configuration}` "
-                "and must be unset.",
-            )
-
-        try:
-            update_bot_account = await action_utils.render_bot_account(
-                ctxt,
-                self.config["update_bot_account"],
-                option_name="update_bot_account",
-                required_feature=subscription.Features.MERGE_BOT_ACCOUNT,
-                missing_feature_message="Cannot use `update_bot_account` with queue action",
-            )
-        except action_utils.RenderBotAccountFailure as e:
-            return check_api.Result(e.status, e.title, e.reason)
-
-        try:
-            merge_bot_account = await self._render_bot_account(ctxt)
-        except action_utils.RenderBotAccountFailure as e:
-            return check_api.Result(e.status, e.title, e.reason)
-
-        if ctxt.user_refresh_requested() or ctxt.admin_refresh_requested():
+    async def run(self) -> check_api.Result:
+        if self.ctxt.user_refresh_requested() or self.ctxt.admin_refresh_requested():
             # NOTE(sileht): user ask a refresh, we just remove the previous state of this
             # check and the method _should_be_queued will become true again :)
-            check = await ctxt.get_engine_check_run(constants.MERGE_QUEUE_SUMMARY_NAME)
+            check = await self.ctxt.get_engine_check_run(
+                constants.MERGE_QUEUE_SUMMARY_NAME
+            )
             if check and check_api.Conclusion(check["conclusion"]) not in [
                 check_api.Conclusion.SUCCESS,
                 check_api.Conclusion.PENDING,
                 check_api.Conclusion.NEUTRAL,
             ]:
-                ctxt.log.info(
+                self.ctxt.log.info(
                     "a refresh marks the pull request as re-embarkable",
                     check=check,
-                    user_refresh=ctxt.user_refresh_requested(),
-                    admin_refresh=ctxt.admin_refresh_requested(),
+                    user_refresh=self.ctxt.user_refresh_requested(),
+                    admin_refresh=self.ctxt.admin_refresh_requested(),
                 )
                 await check_api.set_check_run(
-                    ctxt,
+                    self.ctxt,
                     constants.MERGE_QUEUE_SUMMARY_NAME,
                     check_api.Result(
                         check_api.Conclusion.PENDING,
@@ -433,106 +325,106 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     ),
                 )
 
-        q = await merge_train.Train.from_context(ctxt)
-        car = q.get_car(ctxt)
+        q = await merge_train.Train.from_context(self.ctxt)
+        car = q.get_car(self.ctxt)
         result = await self.pre_merge_checks(
-            ctxt,
+            self.ctxt,
             self.config["method"],
             self.config["rebase_fallback"],
-            merge_bot_account,
+            self.config["merge_bot_account"],
         )
         if result is not None:
             if result.conclusion is not check_api.Conclusion.PENDING:
                 unqueue_reason = await self.get_unqueue_reason_from_action_result(
-                    ctxt, result
+                    result
                 )
-                await self._unqueue_pull_request(
-                    ctxt, rule, q, car, unqueue_reason, result
-                )
+                await self._unqueue_pull_request(q, car, unqueue_reason, result)
             return result
 
         if car is not None:
             await car.check_mergeability(
                 self.queue_rules,
                 "original_pull_request",
-                original_pull_request_rule=rule,
-                original_pull_request_number=ctxt.pull["number"],
+                original_pull_request_rule=self.rule,
+                original_pull_request_number=self.ctxt.pull["number"],
             )
 
         # NOTE(sileht): the pull request gets checked and then changed
         # by user, we should unqueue and requeue it as the conditions still match.
-        if await ctxt.has_been_synchronized_by_user():
+        if await self.ctxt.has_been_synchronized_by_user():
             unexpected_change = queue_utils.UnexpectedQueueChange(
-                str(merge_train.UnexpectedUpdatedPullRequestChange(ctxt.pull["number"]))
+                str(
+                    merge_train.UnexpectedUpdatedPullRequestChange(
+                        self.ctxt.pull["number"]
+                    )
+                )
             )
             await q.remove_pull(
-                ctxt,
-                rule.get_signal_trigger(),
+                self.ctxt,
+                self.rule.get_signal_trigger(),
                 unexpected_change,
             )
-            if isinstance(rule, rules.CommandRule):
+            if isinstance(self.rule, rules.CommandRule):
                 return check_api.Result(
                     check_api.Conclusion.CANCELLED,
                     "The pull request has been removed from the queue",
                     f"{unexpected_change!s}.\n{self.UNQUEUE_DOCUMENTATION}",
                 )
 
-        if not await self._should_be_queued(ctxt, q):
-            unqueue_reason = await self.get_unqueue_reason_from_outcome(ctxt, q)
+        if not await self._should_be_queued(self.ctxt, q):
+            unqueue_reason = await self.get_unqueue_reason_from_outcome(self.ctxt, q)
             result = check_api.Result(
                 check_api.Conclusion.CANCELLED,
                 "The pull request has been removed from the queue",
                 f"{unqueue_reason!s}.\n{self.UNQUEUE_DOCUMENTATION}",
             )
-            await self._unqueue_pull_request(ctxt, rule, q, car, unqueue_reason, result)
+            await self._unqueue_pull_request(q, car, unqueue_reason, result)
             return result
 
         pull_queue_config = queue.PullQueueConfig(
             {
                 "update_method": self.config["update_method"],
                 "effective_priority": await self.queue_rule.get_effective_priority(
-                    ctxt, self.config["priority"]
+                    self.ctxt, self.config["priority"]
                 ),
-                "bot_account": merge_bot_account,
-                "update_bot_account": update_bot_account,
+                "bot_account": self.config["merge_bot_account"],
+                "update_bot_account": self.config["update_bot_account"],
                 "priority": self.config["priority"],
                 "name": self.config["name"],
             }
         )
         await q.add_pull(
             self.queue_rules,
-            ctxt,
+            self.ctxt,
             pull_queue_config,
-            rule.get_signal_trigger(),
+            self.rule.get_signal_trigger(),
         )
 
         try:
             qf = await q.get_current_queue_freeze(self.queue_rules, self.config["name"])
-            if await self._should_be_merged(ctxt, q, qf):
-                result = await self._merge(ctxt, rule, q, qf, car, merge_bot_account)
+            if await self._should_be_merged(self.ctxt, q, qf):
+                result = await self._merge(q, qf, car)
             else:
-                result = await self.get_pending_queue_status(ctxt, rule, q, qf)
+                result = await self.get_pending_queue_status(
+                    self.ctxt, self.rule, q, self.queue_rule, qf
+                )
         except Exception as e:
             if not exceptions.need_retry(e):
                 await q.remove_pull(
-                    ctxt,
-                    rule.get_signal_trigger(),
+                    self.ctxt,
+                    self.rule.get_signal_trigger(),
                     queue_utils.PrUnexpectedlyFailedToMerge(),
                 )
             raise
 
         if result.conclusion is not check_api.Conclusion.PENDING:
-            unqueue_reason = await self.get_unqueue_reason_from_action_result(
-                ctxt, result
-            )
-            await self._unqueue_pull_request(ctxt, rule, q, car, unqueue_reason, result)
+            unqueue_reason = await self.get_unqueue_reason_from_action_result(result)
+            await self._unqueue_pull_request(q, car, unqueue_reason, result)
 
         return result
 
-    @staticmethod
     async def _unqueue_pull_request(
-        ctxt: context.Context,
-        rule: "rules.EvaluatedPullRequestRule",
+        self,
         q: merge_train.Train,
         car: merge_train.TrainCar | None,
         unqueue_reason: queue_utils.BaseUnqueueReason,
@@ -547,152 +439,94 @@ Then, re-embark the pull request into the merge queue by posting the comment
             and result.conclusion is check_api.Conclusion.CANCELLED
         ):
             await check_api.set_check_run(
-                ctxt,
+                self.ctxt,
                 constants.MERGE_QUEUE_SUMMARY_NAME,
                 check_api.Result(
                     # FIXME(sileht): CANCELLED mean unqueue with command, we should have put something else here, FAILURE?
                     check_api.Conclusion.CANCELLED,
-                    f"The pull request {ctxt.pull['number']} cannot be merged and has been disembarked",
+                    f"The pull request {self.ctxt.pull['number']} cannot be merged and has been disembarked",
                     result.title + "\n" + result.summary,
                 ),
             )
 
-        await q.remove_pull(ctxt, rule.get_signal_trigger(), unqueue_reason)
+        await q.remove_pull(self.ctxt, self.rule.get_signal_trigger(), unqueue_reason)
 
-    async def cancel(
-        self, ctxt: context.Context, rule: "rules.EvaluatedPullRequestRule"
-    ) -> check_api.Result:
-        try:
-            await action_utils.render_bot_account(
-                ctxt,
-                self.config["update_bot_account"],
-                option_name="update_bot_account",
-                required_feature=subscription.Features.MERGE_BOT_ACCOUNT,
-                missing_feature_message="Cannot use `update_bot_account` with queue action",
-            )
-        except action_utils.RenderBotAccountFailure as e:
-            return check_api.Result(e.status, e.title, e.reason)
-
-        try:
-            merge_bot_account = await self._render_bot_account(ctxt)
-        except action_utils.RenderBotAccountFailure as e:
-            return check_api.Result(e.status, e.title, e.reason)
-
-        q = await merge_train.Train.from_context(ctxt)
-        car = q.get_car(ctxt)
+    async def cancel(self) -> check_api.Result:
+        q = await merge_train.Train.from_context(self.ctxt)
+        car = q.get_car(self.ctxt)
 
         result = await self.pre_merge_checks(
-            ctxt,
+            self.ctxt,
             self.config["method"],
             self.config["rebase_fallback"],
-            merge_bot_account,
+            self.config["merge_bot_account"],
         )
         if result is not None:
             if result.conclusion is not check_api.Conclusion.PENDING:
                 unqueue_reason = await self.get_unqueue_reason_from_action_result(
-                    ctxt, result
+                    result
                 )
-                await self._unqueue_pull_request(
-                    ctxt, rule, q, car, unqueue_reason, result
-                )
+                await self._unqueue_pull_request(q, car, unqueue_reason, result)
             return result
 
         if car is not None:
             await car.check_mergeability(
                 self.queue_rules,
                 "original_pull_request",
-                original_pull_request_rule=rule,
-                original_pull_request_number=ctxt.pull["number"],
+                original_pull_request_rule=self.rule,
+                original_pull_request_number=self.ctxt.pull["number"],
             )
 
         # We just rebase the pull request, don't cancel it yet if CIs are
         # running. The pull request will be merged if all rules match again.
         # if not we will delete it when we received all CIs termination
-        if await self._should_be_cancel(ctxt, rule, q, car):
+        if await self._should_be_cancel(self.ctxt, self.rule, q, car):
             result = actions.CANCELLED_CHECK_REPORT
-            unqueue_reason = await self.get_unqueue_reason_from_action_result(
-                ctxt, result
-            )
-            await self._unqueue_pull_request(ctxt, rule, q, car, unqueue_reason, result)
+            unqueue_reason = await self.get_unqueue_reason_from_action_result(result)
+            await self._unqueue_pull_request(q, car, unqueue_reason, result)
             return result
 
-        if not await self._should_be_queued(ctxt, q):
-            unqueue_reason = await self.get_unqueue_reason_from_outcome(ctxt, q)
+        if not await self._should_be_queued(self.ctxt, q):
+            unqueue_reason = await self.get_unqueue_reason_from_outcome(self.ctxt, q)
             result = check_api.Result(
                 check_api.Conclusion.CANCELLED,
                 "The pull request has been removed from the queue",
                 f"{unqueue_reason!s}.\n{self.UNQUEUE_DOCUMENTATION}",
             )
-            await self._unqueue_pull_request(ctxt, rule, q, car, unqueue_reason, result)
+            await self._unqueue_pull_request(q, car, unqueue_reason, result)
             return result
 
         qf = await q.get_current_queue_freeze(self.queue_rules, self.config["name"])
-        result = await self.get_pending_queue_status(ctxt, rule, q, qf)
+        result = await self.get_pending_queue_status(
+            self.ctxt, self.rule, q, self.queue_rule, qf
+        )
 
         if result.conclusion is not check_api.Conclusion.PENDING:
-            unqueue_reason = await self.get_unqueue_reason_from_action_result(
-                ctxt, result
-            )
-            await self._unqueue_pull_request(ctxt, rule, q, car, unqueue_reason, result)
+            unqueue_reason = await self.get_unqueue_reason_from_action_result(result)
+            await self._unqueue_pull_request(q, car, unqueue_reason, result)
         return result
 
-    def validate_config(self, mergify_config: "rules.MergifyConfig") -> None:
-        if self.config["update_method"] is None:
-            self.config["update_method"] = (
-                "rebase" if self.config["method"] == "fast-forward" else "merge"
-            )
-
-        self.queue_rules = mergify_config["queue_rules"]
-        try:
-            self.queue_rule = mergify_config["queue_rules"][self.config["name"]]
-        except KeyError:
-            raise voluptuous.error.Invalid(f"`{self.config['name']}` queue not found")
-
-        queue_rule_config_attributes_none_default: list[
-            typing.Literal[
-                "commit_message_template",
-                "merge_bot_account",
-                "update_bot_account",
-                "update_method",
-            ]
-        ] = [
-            "commit_message_template",
-            "merge_bot_account",
-            "update_bot_account",
-            "update_method",
-        ]
-
-        for attr in queue_rule_config_attributes_none_default:
-            if self.queue_rule.config[attr] is not None:
-                self.config[attr] = self.queue_rule.config[attr]
-
-        # merge_method default value is `merge`,
-        # so we need to treat it in a different way
-        if self.queue_rule.config["merge_method"] != "merge":
-            self.config["method"] = self.config[
-                "merge_method"
-            ] = self.queue_rule.config["merge_method"]
-
     async def get_unqueue_reason_from_action_result(
-        self, ctxt: context.Context, result: check_api.Result
+        self, result: check_api.Result
     ) -> queue_utils.BaseUnqueueReason:
         if result.conclusion is check_api.Conclusion.PENDING:
             raise RuntimeError(
                 "get_unqueue_reason_from_action_result() on PENDING result"
             )
         elif result.conclusion is check_api.Conclusion.SUCCESS:
-            if ctxt.pull["merge_commit_sha"] is None:
+            if self.ctxt.pull["merge_commit_sha"] is None:
                 raise RuntimeError("pull request merged but merge_commit_sha is null")
             return queue_utils.PrMerged(
-                ctxt.pull["number"], ctxt.pull["merge_commit_sha"]
+                self.ctxt.pull["number"], self.ctxt.pull["merge_commit_sha"]
             )
         else:
             return queue_utils.PrDequeued(
-                ctxt.pull["number"], details=f". {result.title}"
+                self.ctxt.pull["number"], details=f". {result.title}"
             )
 
+    @staticmethod
     async def get_unqueue_reason_from_outcome(
-        self, ctxt: context.Context, q: merge_train.Train
+        ctxt: context.Context, q: merge_train.Train
     ) -> queue_utils.BaseUnqueueReason:
         check = await ctxt.get_engine_check_run(constants.MERGE_QUEUE_SUMMARY_NAME)
         if check is None:
@@ -742,9 +576,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 f"TrainCarState.outcome `{train_car_state.outcome.value}` can't be mapped to an AbortReason"
             )
 
-    async def _should_be_queued(
-        self, ctxt: context.Context, q: merge_train.Train
-    ) -> bool:
+    @staticmethod
+    async def _should_be_queued(ctxt: context.Context, q: merge_train.Train) -> bool:
         # TODO(sileht): load outcome from summary, so we known why it shouldn't
         # be queued
         check = await ctxt.get_engine_check_run(constants.MERGE_QUEUE_SUMMARY_NAME)
@@ -754,8 +587,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
             check_api.Conclusion.NEUTRAL,
         ]
 
+    @staticmethod
     async def _should_be_merged(
-        self,
         ctxt: context.Context,
         queue: merge_train.Train,
         queue_freeze: freeze.QueueFreeze | None,
@@ -773,8 +606,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         return car.train_car_state.outcome == merge_train.TrainCarOutcome.MERGEABLE
 
+    @staticmethod
     async def _should_be_cancel(
-        self,
         ctxt: context.Context,
         rule: "rules.EvaluatedPullRequestRule",
         q: merge_train.Train,
@@ -824,11 +657,12 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         return True
 
+    @staticmethod
     async def get_pending_queue_status(
-        self,
         ctxt: context.Context,
         rule: "rules.EvaluatedPullRequestRule",
         queue: merge_train.Train,
+        queue_rule: rules.QueueRule,
         queue_freeze: freeze.QueueFreeze | None,
     ) -> check_api.Result:
         if queue_freeze is not None:
@@ -842,29 +676,256 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 _ord = utils.to_ordinal_numeric(position + 1)
                 title = f"The pull request is the {_ord} in the queue to be merged"
 
-        summary = await queue.get_pull_summary(ctxt, self.queue_rule, pull_rule=rule)
+        summary = await queue.get_pull_summary(
+            ctxt, queue_rule=queue_rule, pull_rule=rule
+        )
 
         return check_api.Result(check_api.Conclusion.PENDING, title, summary)
 
     async def send_merge_signal(
-        self,
-        ctxt: context.Context,
-        rule: "rules.EvaluatedPullRequestRule",
-        embarked_pull: merge_train.EmbarkedPullWithCar,
+        self, embarked_pull: merge_train.EmbarkedPullWithCar
     ) -> None:
         await signals.send(
-            ctxt.repository,
-            ctxt.pull["number"],
+            self.ctxt.repository,
+            self.ctxt.pull["number"],
             "action.queue.merged",
             signals.EventQueueMergedMetadata(
                 {
                     "queue_name": self.config["name"],
-                    "branch": ctxt.pull["base"]["ref"],
+                    "branch": self.ctxt.pull["base"]["ref"],
                     "queued_at": embarked_pull.embarked_pull.queued_at,
                 }
             ),
-            rule.get_signal_trigger(),
+            self.rule.get_signal_trigger(),
         )
+
+    @staticmethod
+    def _check_method_fastforward_configuration(action: QueueAction) -> None:
+        if action.config["method"] != "fast-forward":
+            return
+
+        if action.config["update_method"] != "rebase":
+            raise rules.InvalidPullRequestRule(
+                f"`update_method: {action.config['update_method']}` is not compatible with fast-forward merge method",
+                "`update_method` must be set to `rebase`.",
+            )
+        elif action.config["commit_message_template"] is not None:
+            raise rules.InvalidPullRequestRule(
+                "Commit message can't be changed with fast-forward merge method",
+                "`commit_message_template` must not be set if `method: fast-forward` is set.",
+            )
+        elif action.queue_rule.config["batch_size"] > 1:
+            raise rules.InvalidPullRequestRule(
+                "batch_size > 1 is not compatible with fast-forward merge method",
+                "The merge `method` or the queue configuration must be updated.",
+            )
+        elif action.queue_rule.config["speculative_checks"] > 1:
+            raise rules.InvalidPullRequestRule(
+                "speculative_checks > 1 is not compatible with fast-forward merge method",
+                "The merge `method` or the queue configuration must be updated.",
+            )
+        elif not action.queue_rule.config["allow_inplace_checks"]:
+            raise rules.InvalidPullRequestRule(
+                "allow_inplace_checks=False is not compatible with fast-forward merge method",
+                "The merge `method` or the queue configuration must be updated.",
+            )
+
+    @staticmethod
+    async def _check_subscription_status(
+        action: QueueAction, ctxt: context.Context
+    ) -> None:
+        if len(action.queue_rules) > 1 and not ctxt.subscription.has_feature(
+            subscription.Features.QUEUE_ACTION
+        ):
+            raise rules.InvalidPullRequestRule(
+                "Cannot use multiple queues.",
+                ctxt.subscription.missing_feature_reason(
+                    ctxt.pull["base"]["repo"]["owner"]["login"]
+                ),
+            )
+
+        elif action.queue_rule.config[
+            "speculative_checks"
+        ] > 1 and not ctxt.subscription.has_feature(subscription.Features.QUEUE_ACTION):
+            raise rules.InvalidPullRequestRule(
+                "Cannot use `speculative_checks` with queue action.",
+                ctxt.subscription.missing_feature_reason(
+                    ctxt.pull["base"]["repo"]["owner"]["login"]
+                ),
+            )
+
+        elif action.queue_rule.config[
+            "batch_size"
+        ] > 1 and not ctxt.subscription.has_feature(subscription.Features.QUEUE_ACTION):
+            raise rules.InvalidPullRequestRule(
+                "Cannot use `batch_size` with queue action.",
+                ctxt.subscription.missing_feature_reason(
+                    ctxt.pull["base"]["repo"]["owner"]["login"]
+                ),
+            )
+        elif action.config[
+            "priority"
+        ] != queue.PriorityAliases.medium.value and not ctxt.subscription.has_feature(
+            subscription.Features.PRIORITY_QUEUES
+        ):
+            raise rules.InvalidPullRequestRule(
+                "Cannot use `priority` with queue action.",
+                ctxt.subscription.missing_feature_reason(
+                    ctxt.pull["base"]["repo"]["owner"]["login"]
+                ),
+            )
+
+    @staticmethod
+    async def _check_config_compatibility_with_branch_protection(
+        action: QueueAction, ctxt: context.Context
+    ) -> None:
+        if action.queue_rule.config["queue_branch_merge_method"] == "fast-forward":
+            # Note(charly): `queue_branch_merge_method=fast-forward` make the
+            # use of batches compatible with branch protection
+            # `required_status_checks=strict`
+            return None
+
+        protection = await ctxt.repository.get_branch_protection(
+            ctxt.pull["base"]["ref"]
+        )
+
+        _has_required_status_checks_strict = (
+            protection is not None
+            and "required_status_checks" in protection
+            and "strict" in protection["required_status_checks"]
+            and protection["required_status_checks"]["strict"]
+        )
+
+        if _has_required_status_checks_strict:
+            if action.queue_rule.config["batch_size"] > 1:
+                raise IncompatibleBranchProtection(
+                    "batch_size>1",
+                    BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT,
+                )
+            elif action.queue_rule.config["speculative_checks"] > 1:
+                raise IncompatibleBranchProtection(
+                    "speculative_checks>1",
+                    BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT,
+                )
+            elif action.queue_rule.config["allow_inplace_checks"] is False:
+                raise IncompatibleBranchProtection(
+                    "allow_inplace_checks=false",
+                    BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT,
+                )
+
+
+class QueueAction(actions.Action):
+    flags = (
+        actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
+        | actions.ActionFlag.SUCCESS_IS_FINAL_STATE
+        | actions.ActionFlag.ALLOW_AS_PENDING_COMMAND
+        # FIXME(sileht): MRGFY-562
+        # | actions.ActionFlag.ALWAYS_RUN
+    )
+
+    default_restrictions: typing.ClassVar[list[typing.Any]] = [
+        "sender-permission>=write"
+    ]
+
+    # NOTE(sileht): set by validate_config()
+    queue_rules: rules.QueueRules = dataclasses.field(init=False, repr=False)
+    queue_rule: rules.QueueRule = dataclasses.field(init=False, repr=False)
+
+    @property
+    def validator(self) -> dict[typing.Any, typing.Any]:
+        validator = {
+            voluptuous.Required("name", default="default"): str,
+            voluptuous.Required("method", default="merge"): voluptuous.Any(
+                "rebase",
+                "merge",
+                "squash",
+                "fast-forward",
+            ),
+            voluptuous.Required(
+                "merge_bot_account", default=None
+            ): types.Jinja2WithNone,
+            voluptuous.Required(
+                "update_bot_account", default=None
+            ): types.Jinja2WithNone,
+            voluptuous.Required("update_method", default=None): voluptuous.Any(
+                "rebase", "merge", None
+            ),
+            voluptuous.Required(
+                "commit_message_template", default=None
+            ): types.Jinja2WithNone,
+            voluptuous.Required(
+                "priority", default=queue.PriorityAliases.medium.value
+            ): queue.PrioritySchema,
+            voluptuous.Required("require_branch_protection", default=True): bool,
+        }
+
+        # NOTE(Syffe): In deprecation process
+        if config.ALLOW_REBASE_FALLBACK_ATTRIBUTE:
+            validator[
+                voluptuous.Required("rebase_fallback", default="none")
+            ] = voluptuous.Any("merge", "squash", "none", None)
+        else:
+            validator[
+                voluptuous.Required("rebase_fallback", default=utils.UnsetMarker)
+            ] = utils.DeprecatedOption(
+                DEPRECATED_MESSAGE_REBASE_FALLBACK_QUEUE_ACTION,
+                voluptuous.Any("merge", "squash", "none", None),
+            )
+
+        return validator
+
+    def validate_config(self, mergify_config: "rules.MergifyConfig") -> None:
+        if self.config["update_method"] is None:
+            self.config["update_method"] = (
+                "rebase" if self.config["method"] == "fast-forward" else "merge"
+            )
+
+        self.queue_rules = mergify_config["queue_rules"]
+        try:
+            self.queue_rule = mergify_config["queue_rules"][self.config["name"]]
+        except KeyError:
+            raise voluptuous.error.Invalid(f"`{self.config['name']}` queue not found")
+
+        queue_rule_config_attributes_none_default: list[
+            typing.Literal[
+                "commit_message_template",
+                "merge_bot_account",
+                "update_bot_account",
+                "update_method",
+            ]
+        ] = [
+            "commit_message_template",
+            "merge_bot_account",
+            "update_bot_account",
+            "update_method",
+        ]
+
+        for attr in queue_rule_config_attributes_none_default:
+            if self.queue_rule.config[attr] is not None:
+                self.config[attr] = self.queue_rule.config[attr]
+
+        # merge_method default value is `merge`,
+        # so we need to treat it in a different way
+        if self.queue_rule.config["merge_method"] != "merge":
+            self.config["method"] = self.config[
+                "merge_method"
+            ] = self.queue_rule.config["merge_method"]
+
+    @staticmethod
+    def command_to_config(command_arguments: str) -> dict[str, typing.Any]:
+        # NOTE(sileht): requiring branch_protection before putting in queue
+        # doesn't play well with command subsystem, and it's not intuitive as
+        # the user tell us to put the PR in queue and by default we don't. So
+        # we disable this for commands.
+        config = {"name": "default", "require_branch_protection": False}
+        args = [
+            arg_stripped
+            for arg in command_arguments.split(" ")
+            if (arg_stripped := arg.strip())
+        ]
+        if args and args[0]:
+            config["name"] = args[0]
+        return config
 
     async def get_conditions_requirements(
         self, ctxt: context.Context
@@ -887,42 +948,4 @@ Then, re-embark the pull request into the merge queue by posting the comment
             ]
         )
 
-    async def _check_config_compatibility_with_branch_protection(
-        self, ctxt: context.Context
-    ) -> None:
-        if self.queue_rule.config["queue_branch_merge_method"] == "fast-forward":
-            # Note(charly): `queue_branch_merge_method=fast-forward` make the
-            # use of batches compatible with branch protection
-            # `required_status_checks=strict`
-            return None
-
-        protection = await ctxt.repository.get_branch_protection(
-            ctxt.pull["base"]["ref"]
-        )
-        if self._has_required_status_checks_strict(protection):
-            if self.queue_rule.config["batch_size"] > 1:
-                raise IncompatibleBranchProtection(
-                    "batch_size>1",
-                    BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT,
-                )
-            elif self.queue_rule.config["speculative_checks"] > 1:
-                raise IncompatibleBranchProtection(
-                    "speculative_checks>1",
-                    BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT,
-                )
-            elif self.queue_rule.config["allow_inplace_checks"] is False:
-                raise IncompatibleBranchProtection(
-                    "allow_inplace_checks=false",
-                    BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT,
-                )
-
-    @staticmethod
-    def _has_required_status_checks_strict(
-        protection: github_types.GitHubBranchProtection | None,
-    ) -> bool:
-        return (
-            protection is not None
-            and "required_status_checks" in protection
-            and "strict" in protection["required_status_checks"]
-            and protection["required_status_checks"]["strict"]
-        )
+    executor_class = QueueExecutor

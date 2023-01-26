@@ -111,30 +111,6 @@ class ActionExecutor(abc.ABC, typing.Generic[ActionT, ActionExecutorConfigT]):
         ...
 
 
-@dataclasses.dataclass
-class BackwardCompatActionExecutor(ActionExecutor["BackwardCompatAction", RawConfigT]):
-    action: "BackwardCompatAction"
-
-    async def run(self) -> check_api.Result:  # pragma: no cover
-        return await self.action.run(self.ctxt, self.rule)
-
-    async def cancel(self) -> check_api.Result:  # pragma: no cover
-        return await self.action.cancel(self.ctxt, self.rule)
-
-    @property
-    def silenced_conclusion(self) -> tuple[check_api.Conclusion, ...]:
-        return self.action.silenced_conclusion
-
-    @classmethod
-    async def create(
-        cls,
-        action: "BackwardCompatAction",
-        ctxt: "context.Context",
-        rule: "rules.EvaluatedPullRequestRule",
-    ) -> "ActionExecutor[BackwardCompatAction, RawConfigT]":
-        return cls(ctxt, rule, action.config, action)
-
-
 class ActionExecutorProtocol(typing.Protocol):
     ctxt: "context.Context"
     rule: "rules.EvaluatedPullRequestRule"
@@ -189,8 +165,8 @@ class Action(abc.ABC):
         ...
 
     executor: ActionExecutorProtocol = dataclasses.field(init=False, repr=False)
-    # NOTE(sileht): mypy didn't handle thing like typing.Type[ActionExecutorProtocol]
-    executor_class: typing.ClassVar[typing.Any] = BackwardCompatActionExecutor
+    # NOTE(sileht): mypy didn't handle inheritance for thing like type[ActionExecutorProtocol]
+    executor_class: typing.ClassVar[typing.Any]
 
     # Default command restrictions
     # If the command does not define a default command restriction (e.g. a
@@ -220,28 +196,3 @@ class Action(abc.ABC):
         self, ctxt: context.Context
     ) -> list[conditions.RuleConditionNode]:
         return []
-
-
-class BackwardCompatAction(Action):
-    @property
-    def silenced_conclusion(self) -> tuple[check_api.Conclusion, ...]:
-        # Be default, we create check-run only on failure, CANCELLED is not a
-        # failure it's part of the expected state when the conditions that
-        # trigger the action didn't match anymore
-        return (
-            check_api.Conclusion.SUCCESS,
-            check_api.Conclusion.CANCELLED,
-            check_api.Conclusion.PENDING,
-        )
-
-    @abc.abstractmethod
-    async def run(
-        self, ctxt: context.Context, rule: "rules.EvaluatedPullRequestRule"
-    ) -> check_api.Result:  # pragma: no cover
-        ...
-
-    @abc.abstractmethod
-    async def cancel(
-        self, ctxt: context.Context, rule: "rules.EvaluatedPullRequestRule"
-    ) -> check_api.Result:  # pragma: no cover
-        ...
