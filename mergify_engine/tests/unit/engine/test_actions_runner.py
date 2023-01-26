@@ -1,3 +1,5 @@
+import re
+import typing
 from unittest import mock
 
 import pytest
@@ -5,7 +7,9 @@ import pytest
 from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import rules
+from mergify_engine import yaml
 from mergify_engine.engine import actions_runner
+from mergify_engine.rules import conditions
 from mergify_engine.tests.unit import conftest
 
 
@@ -104,3 +108,60 @@ async def test_get_already_merged_summary(
     config = await rules.get_mergify_config_from_file(mock.MagicMock(), file)
     match = await config["pull_request_rules"].get_pull_request_rule(ctxt)
     assert result == await actions_runner.get_already_merged_summary(ctxt, match)
+
+
+@pytest.mark.parametrize(
+    "config_key,config_value,expected_value",
+    [
+        (
+            "bot_account",
+            "sileht",
+            "{bot_account: sileht}\n",  # noqa: FS003
+        ),
+        (
+            "bot_account",
+            {"login": "sileht", "oauth_token": "xxxxx"},
+            "{bot_account: sileht}\n",  # noqa: FS003
+        ),
+        ("set", {"foo", "bar"}, ("set: [foo, bar]\n", "set: [bar, foo]\n")),
+        (
+            "re",
+            re.compile("foobar"),
+            "{re: foobar}\n",  # noqa: FS003
+        ),
+        ("str", "str", "{str: str}\n"),  # noqa: FS003
+        (
+            "multiline1",
+            "str\nstr\nstr",
+            "multiline1: |-\n  str\n  str\n  str\n",
+        ),
+        (
+            "multiline2",
+            "str\nstr\nstr\n",
+            "multiline2: |\n  str\n  str\n  str\n",
+        ),
+        (
+            "multiline3",
+            "\nstr\nstr\nstr\n",
+            "multiline3: |2\n\n  str\n  str\n  str\n",
+        ),
+        (
+            "conditions",
+            conditions.PullRequestRuleConditions(
+                [rules.RuleConditionSchema({"not": {"or": ["base=main", "label=foo"]}})]
+            ),
+            "conditions: |-\n  - [ ] not:\n    - [ ] any of:\n      - [ ] `base=main`\n      - [ ] `label=foo`\n",
+        ),
+    ],
+)
+async def test_sanitize_action_config(
+    config_key: str, config_value: typing.Any, expected_value: typing.Any
+) -> None:
+    final_value = yaml.safe_dump(
+        {config_key: actions_runner._sanitize_action_config(config_key, config_value)}
+    )
+
+    if isinstance(expected_value, tuple):
+        assert final_value in expected_value
+    else:
+        assert final_value == expected_value

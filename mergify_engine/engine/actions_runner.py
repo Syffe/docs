@@ -108,7 +108,7 @@ async def get_already_merged_summary(
 
 
 def _sanitize_action_config(config_key: str, config_value: typing.Any) -> typing.Any:
-    if "bot_account" in config_key and config_value is not None:
+    if "bot_account" in config_key and isinstance(config_value, dict):
         return config_value["login"]
     elif isinstance(config_value, conditions.PullRequestRuleConditions):
         return yaml.LiteralYamlString(config_value.get_summary().strip())
