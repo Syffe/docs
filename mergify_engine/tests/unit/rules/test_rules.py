@@ -2144,3 +2144,27 @@ async def test_rule_condition_next_evaluation_at(
 
     assert condition.match is expected_match
     assert condition.next_evaluation_at == expected_next_evaluation_at
+
+
+def test_rule_condition_value() -> None:
+    condition = conditions.RuleCondition("schedule=Mon-Fri 09:00-17:30[Europe/Paris]")
+    expected_value = date.Schedule.from_string("Mon-Fri 09:00-17:30[Europe/Paris]")
+
+    assert isinstance(condition.value, date.Schedule)
+    assert condition.value == expected_value
+
+
+@pytest.mark.parametrize(
+    "condition,expected_operator",
+    (
+        (conditions.RuleCondition("base=main"), "="),
+        (conditions.RuleCondition("base==main"), "="),
+        (conditions.RuleCondition("base:main"), "="),
+        (conditions.RuleCondition("base!=main"), "!="),
+        (conditions.RuleCondition("base≠main"), "!="),
+    ),
+)
+def test_rule_condition_operator(
+    condition: conditions.RuleCondition, expected_operator: str
+) -> None:
+    assert condition.operator == expected_operator

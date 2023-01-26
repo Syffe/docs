@@ -168,6 +168,23 @@ class RuleCondition:
             return str(name[1:])
         return str(name)
 
+    @property
+    def value(self) -> typing.Any:
+        tree = typing.cast(filter.TreeT, self.partial_filter.tree)
+        tree = tree.get("-", tree)
+        _, tree = tree.get("@", ("", tree))  # type: ignore[misc]
+        value = list(tree.values())[0][1]
+        return value
+
+    @property
+    def operator(self) -> str:
+        tree = typing.cast(filter.TreeT, self.partial_filter.tree)
+        tree = tree.get("-", tree)
+        _, tree = tree.get("@", ("", tree))  # type: ignore[misc]
+        tree = typing.cast(filter.TreeT, tree)
+        value = list(tree.keys())[0]
+        return value
+
 
 class RuleConditionGroup(abstract.ABC):
     @abstract.abstractmethod
@@ -749,7 +766,7 @@ class ConditionEvaluationResult:
         ]
 
     @classmethod
-    def from_dict(
+    def deserialize(
         cls, data: ConditionEvaluationResult.Serialized
     ) -> ConditionEvaluationResult:
         evaluation_result = cls(
@@ -760,11 +777,11 @@ class ConditionEvaluationResult:
             evaluation_error=data["evaluation_error"],
             related_checks=data.get("related_checks", []),
             next_evaluation_at=data.get("next_evaluation_at"),
-            subconditions=[cls.from_dict(c) for c in data["subconditions"]],
+            subconditions=[cls.deserialize(c) for c in data["subconditions"]],
         )
         return evaluation_result
 
-    def as_dict(self) -> ConditionEvaluationResult.Serialized:
+    def serialized(self) -> ConditionEvaluationResult.Serialized:
         return typing.cast(
             ConditionEvaluationResult.Serialized, dataclasses.asdict(self)
         )
@@ -802,6 +819,8 @@ class QueueConditionEvaluationResult:
     is_label_user_input: bool
     description: str | None = None
     attribute_name: str | None = None
+    operator: str | None = None
+    schedule: date.Schedule | None = None
     subconditions: list[QueueConditionEvaluationResult] = dataclasses.field(
         default_factory=list
     )
@@ -816,6 +835,8 @@ class QueueConditionEvaluationResult:
             is_label_user_input=self.is_label_user_input,
             description=self.description,
             attribute_name=self.attribute_name,
+            operator=self.operator,
+            schedule=self.schedule,
             subconditions=[s.copy() for s in self.subconditions],
             evaluations=[e.copy() for e in self.evaluations],
         )
@@ -870,6 +891,8 @@ class QueueConditionEvaluationResult:
         is_label_user_input: bool
         description: str | None
         attribute_name: str | None
+        operator: str | None
+        schedule: date.Schedule.Serialized | None
         subconditions: list[QueueConditionEvaluationResult.Serialized]
         evaluations: list[QueueConditionEvaluationResult.Evaluation.Serialized]
 
@@ -902,16 +925,23 @@ class QueueConditionEvaluationResult:
             evaluated_condition = typing.cast(
                 EvaluatedConditionT, evaluated_condition_node
             )
+            schedule = (
+                first_evaluated_condition.value
+                if isinstance(first_evaluated_condition.value, date.Schedule)
+                else None
+            )
 
             return cls(
                 match=first_evaluated_condition.match,
                 label=str(first_evaluated_condition),
                 description=first_evaluated_condition.description,
+                attribute_name=first_evaluated_condition.get_attribute_name(),
+                operator=first_evaluated_condition.operator,
+                schedule=schedule,
                 evaluations=[
                     cls.Evaluation.from_evaluated_condition(pull_request, condition)
                     for pull_request, condition in evaluated_condition.items()
                 ],
-                attribute_name=first_evaluated_condition.get_attribute_name(),
                 is_label_user_input=True,
             )
         else:
@@ -934,15 +964,23 @@ class QueueConditionEvaluationResult:
         return [cls.from_evaluated_condition_node(c) for c in sorted_subconditions]
 
     @classmethod
-    def from_dict(
+    def deserialize(
         cls, data: QueueConditionEvaluationResult.Serialized
     ) -> QueueConditionEvaluationResult:
+        schedule = (
+            date.Schedule.deserialize(schedule_data)
+            if (schedule_data := data.get("schedule")) is not None
+            else None
+        )
+
         return cls(
             match=data["match"],
             label=data["label"],
             description=data["description"],
             attribute_name=data["attribute_name"],
-            subconditions=[cls.from_dict(c) for c in data["subconditions"]],
+            operator=data.get("operator"),
+            schedule=schedule,
+            subconditions=[cls.deserialize(c) for c in data["subconditions"]],
             evaluations=[
                 QueueConditionEvaluationResult.Evaluation(**e)
                 for e in data["evaluations"]
@@ -950,16 +988,37 @@ class QueueConditionEvaluationResult:
             is_label_user_input=data["is_label_user_input"],
         )
 
-    def as_dict(self) -> QueueConditionEvaluationResult.Serialized:
-        return typing.cast(
-            QueueConditionEvaluationResult.Serialized, dataclasses.asdict(self)
+    def serialized(self) -> QueueConditionEvaluationResult.Serialized:
+        return QueueConditionEvaluationResult.Serialized(
+            match=self.match,
+            label=self.label,
+            is_label_user_input=self.is_label_user_input,
+            description=self.description,
+            attribute_name=self.attribute_name,
+            operator=self.operator,
+            schedule=self.schedule.serialized() if self.schedule is not None else None,
+            subconditions=[c.serialized() for c in self.subconditions],
+            evaluations=[
+                typing.cast(
+                    QueueConditionEvaluationResult.Evaluation.Serialized,
+                    dataclasses.asdict(e),
+                )
+                for e in self.evaluations
+            ],
         )
 
     def as_json_dict(self) -> QueueConditionEvaluationJsonSerialized:
+        schedule = (
+            self.schedule.as_json_dict(reverse=self.operator == "!=")
+            if self.schedule is not None
+            else None
+        )
+
         return QueueConditionEvaluationJsonSerialized(
             match=self.match,
             label=self.label,
             description=self.description,
+            schedule=schedule,
             subconditions=[c.as_json_dict() for c in self.subconditions],
             evaluations=[
                 QueueConditionEvaluationJsonSerialized.Evaluation(
@@ -1024,6 +1083,7 @@ class QueueConditionEvaluationJsonSerialized:
     match: bool
     label: str
     description: str | None
+    schedule: date.ScheduleJSON | None
     subconditions: list[QueueConditionEvaluationJsonSerialized]
     evaluations: list["QueueConditionEvaluationJsonSerialized.Evaluation"]
 

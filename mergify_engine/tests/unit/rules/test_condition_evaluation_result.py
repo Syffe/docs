@@ -120,7 +120,7 @@ async def test_condition_dict_serialization() -> None:
         ],
     )
 
-    assert condition.as_dict() == {
+    assert condition.serialized() == {
         "match": True,
         "label": "all of",
         "is_label_user_input": False,
@@ -142,7 +142,7 @@ async def test_condition_dict_serialization() -> None:
         ],
     }
     assert (
-        rule_conditions.ConditionEvaluationResult.from_dict(condition.as_dict())
+        rule_conditions.ConditionEvaluationResult.deserialize(condition.serialized())
         == condition
     )
 
@@ -184,7 +184,8 @@ async def test_condition_dict_serialization_with_default_values() -> None:
     )
 
     assert (
-        rule_conditions.ConditionEvaluationResult.from_dict(condition_dict) == condition
+        rule_conditions.ConditionEvaluationResult.deserialize(condition_dict)
+        == condition
     )
     assert condition.related_checks == []
     assert condition.next_evaluation_at is None

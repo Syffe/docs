@@ -863,3 +863,21 @@ def test_schedule_as_json_reversed_edge_cases() -> None:
             "sunday": date.EMPTY_DAY,
         },
     }
+
+
+def test_schedule_dict_serialization() -> None:
+    schedule = date.Schedule.from_string("MON-FRI 10:02-22:35[Europe/Paris]")
+    expected_dict = {
+        "start_weekday": 1,
+        "end_weekday": 5,
+        "start_hour": 10,
+        "end_hour": 22,
+        "start_minute": 2,
+        "end_minute": 35,
+        "tzinfo": "Europe/Paris",
+        "is_only_days": False,
+        "is_only_times": False,
+    }
+
+    assert schedule.serialized() == expected_dict
+    assert schedule.deserialize(schedule.serialized()) == schedule

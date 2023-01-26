@@ -9,6 +9,7 @@ import msgpack
 from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
+from mergify_engine import date
 from mergify_engine import yaml
 from mergify_engine.tests.functional import base
 
@@ -369,7 +370,7 @@ class TestQueueApi(base.FunctionalTestBase):
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "check-success=continuous-integration/fake-ci",
-                        "schedule=MON-FRI 12:00-15:00",
+                        "schedule!=MON-FRI 12:00-15:00",
                     ],
                     "allow_inplace_checks": False,
                 }
@@ -432,11 +433,13 @@ class TestQueueApi(base.FunctionalTestBase):
                     "match": False,
                     "label": "all of",
                     "description": None,
+                    "schedule": None,
                     "subconditions": [
                         {
                             "match": False,
                             "label": "check-success=continuous-integration/fake-ci",
                             "description": None,
+                            "schedule": None,
                             "subconditions": [],
                             "evaluations": [
                                 {
@@ -451,9 +454,28 @@ class TestQueueApi(base.FunctionalTestBase):
                             ],
                         },
                         {
+                            "match": False,
+                            "label": "schedule!=MON-FRI 12:00-15:00",
+                            "description": None,
+                            "schedule": anys.ANY_MAPPING,
+                            "subconditions": [],
+                            "evaluations": [
+                                {
+                                    "pull_request": p["number"],
+                                    "match": False,
+                                    "evaluation_error": None,
+                                    "related_checks": [],
+                                    "next_evaluation_at": anys.AnyContains(
+                                        "2023-01-10T15:01:00"
+                                    ),
+                                }
+                            ],
+                        },
+                        {
                             "match": True,
                             "label": f"base={self.main_branch_name}",
                             "description": None,
+                            "schedule": None,
                             "subconditions": [],
                             "evaluations": [
                                 {
@@ -465,23 +487,6 @@ class TestQueueApi(base.FunctionalTestBase):
                                 }
                             ],
                         },
-                        {
-                            "match": True,
-                            "label": "schedule=MON-FRI 12:00-15:00",
-                            "description": None,
-                            "subconditions": [],
-                            "evaluations": [
-                                {
-                                    "pull_request": p["number"],
-                                    "match": True,
-                                    "evaluation_error": None,
-                                    "related_checks": [],
-                                    "next_evaluation_at": anys.AnyContains(
-                                        "2023-01-10T15:01:00"
-                                    ),
-                                }
-                            ],
-                        },
                     ],
                     "evaluations": [],
                 },
@@ -489,6 +494,33 @@ class TestQueueApi(base.FunctionalTestBase):
             },
             "queued_at": anys.ANY_DATETIME_STR,
             "estimated_time_of_merge": None,
+        }
+
+        conditions_evaluation = r.json()["mergeability_check"]["conditions_evaluation"]
+        schedule = conditions_evaluation["subconditions"][1]["schedule"]
+        expected_day = {
+            "times": [
+                {
+                    "start_at": {"hour": 0, "minute": 0},
+                    "end_at": {"hour": 12, "minute": 0},
+                },
+                {
+                    "start_at": {"hour": 15, "minute": 0},
+                    "end_at": {"hour": 23, "minute": 59},
+                },
+            ]
+        }
+        assert schedule == {
+            "timezone": "UTC",
+            "days": {
+                "monday": expected_day,
+                "tuesday": expected_day,
+                "wednesday": expected_day,
+                "thursday": expected_day,
+                "friday": expected_day,
+                "saturday": date.FULL_DAY,
+                "sunday": date.FULL_DAY,
+            },
         }
 
         r = await self.app.get(

@@ -557,7 +557,7 @@ class TrainCar:
 
     def serialized(self) -> "TrainCar.Serialized":
         if self.last_conditions_evaluation is not None:
-            last_conditions_evaluation = self.last_conditions_evaluation.as_dict()
+            last_conditions_evaluation = self.last_conditions_evaluation.serialized()
         else:
             last_conditions_evaluation = None
 
@@ -681,7 +681,7 @@ class TrainCar:
             and data["last_conditions_evaluation"] is not None
         ):
             last_conditions_evaluation = (
-                conditions.QueueConditionEvaluationResult.from_dict(
+                conditions.QueueConditionEvaluationResult.deserialize(
                     data["last_conditions_evaluation"]
                 )
             )
@@ -1813,6 +1813,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             saved_last_conditions_evaluation,
             self.last_conditions_evaluation,
             ignore_order=True,
+            exclude_types=[date.Schedule],
         )
         require_summaries_update = (
             len(diff_result.affected_paths) > 0

@@ -8,6 +8,8 @@ import time
 import typing
 import zoneinfo
 
+import pydantic
+
 
 UTC = zoneinfo.ZoneInfo("UTC")
 DT_MAX = datetime.datetime.max.replace(tzinfo=UTC)
@@ -306,7 +308,7 @@ FULL_DAY: DayJSON = {
 EMPTY_DAY: DayJSON = {"times": []}
 
 
-@dataclasses.dataclass
+@pydantic.dataclasses.dataclass(config={"arbitrary_types_allowed": True})
 class Schedule:
     start_weekday: int
     end_weekday: int
@@ -314,9 +316,21 @@ class Schedule:
     end_hour: int
     start_minute: int
     end_minute: int
+    # NOTE(charly): ZoneInfo is an arbitrary type
     tzinfo: zoneinfo.ZoneInfo
     is_only_days: bool = dataclasses.field(default=False, repr=False)
     is_only_times: bool = dataclasses.field(default=False, repr=False)
+
+    class Serialized(typing.TypedDict):
+        start_weekday: int
+        end_weekday: int
+        start_hour: int
+        end_hour: int
+        start_minute: int
+        end_minute: int
+        tzinfo: str
+        is_only_days: bool
+        is_only_times: bool
 
     @staticmethod
     def get_weekdays_from_string(days: str) -> tuple[int, int]:
@@ -609,6 +623,33 @@ class Schedule:
             from_time_as_tz.replace(
                 hour=self.start_hour, minute=self.start_minute, second=1, microsecond=0
             )
+        )
+
+    def serialized(self) -> Schedule.Serialized:
+        return {
+            "start_weekday": self.start_weekday,
+            "end_weekday": self.end_weekday,
+            "start_hour": self.start_hour,
+            "end_hour": self.end_hour,
+            "start_minute": self.start_minute,
+            "end_minute": self.end_minute,
+            "tzinfo": self.tzinfo.key,
+            "is_only_days": self.is_only_days,
+            "is_only_times": self.is_only_times,
+        }
+
+    @classmethod
+    def deserialize(cls, data: Schedule.Serialized) -> Schedule:
+        return cls(
+            start_weekday=data["start_weekday"],
+            end_weekday=data["end_weekday"],
+            start_hour=data["start_hour"],
+            end_hour=data["end_hour"],
+            start_minute=data["start_minute"],
+            end_minute=data["end_minute"],
+            tzinfo=zoneinfo.ZoneInfo(data["tzinfo"]),
+            is_only_days=data["is_only_days"],
+            is_only_times=data["is_only_times"],
         )
 
     def as_json_dict(self, reverse: bool = False) -> ScheduleJSON:

@@ -592,11 +592,13 @@ class EnhancedPullRequestQueued:
                                 "match": False,
                                 "label": "all of",
                                 "description": None,
+                                "schedule": None,
                                 "subconditions": [
                                     {
                                         "match": False,
                                         "label": "check-success=continuous-integration/fake-ci",
                                         "description": None,
+                                        "schedule": None,
                                         "subconditions": [],
                                         "evaluations": [
                                             {
@@ -614,6 +616,9 @@ class EnhancedPullRequestQueued:
                                         "match": True,
                                         "label": "schedule=MON-FRI 12:00-15:00",
                                         "description": None,
+                                        "schedule": date.Schedule.from_string(
+                                            "MON-FRI 12:00-15:00"
+                                        ).as_json_dict(),
                                         "subconditions": [],
                                         "evaluations": [
                                             {
@@ -629,6 +634,7 @@ class EnhancedPullRequestQueued:
                                         "match": True,
                                         "label": "base=main",
                                         "description": None,
+                                        "schedule": None,
                                         "subconditions": [],
                                         "evaluations": [
                                             {
