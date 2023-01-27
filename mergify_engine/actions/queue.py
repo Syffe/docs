@@ -45,15 +45,26 @@ For more information: https://docs.mergify.com/actions/queue/
 
 
 @dataclasses.dataclass
-class IncompatibleBranchProtection(Exception):
+class InvalidQueueConfiguration(Exception):
+    title: str
+    message: str
+
+
+@dataclasses.dataclass
+class IncompatibleBranchProtection(InvalidQueueConfiguration):
     """Incompatibility between Mergify configuration and branch protection settings"""
 
     configuration: str
     branch_protection_setting: str
 
-    @property
-    def message(self) -> str:
-        return (
+    title: str = dataclasses.field(
+        init=False,
+        default="Configuration not compatible with a branch protection setting",
+    )
+    message: str = dataclasses.field(init=False)
+
+    def __post_init__(self) -> None:
+        self.message = (
             "The branch protection setting "
             f"`{self.branch_protection_setting}` is not compatible with `{self.configuration}` "
             "and must be unset."
@@ -292,17 +303,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
             )
 
     async def run(self) -> check_api.Result:
-        try:
-            await self._check_config_compatibility_with_branch_protection(
-                self.queue_rule, self.ctxt
-            )
-        except IncompatibleBranchProtection as e:
-            return check_api.Result(
-                check_api.Conclusion.FAILURE,
-                "Configuration not compatible with a branch protection setting",
-                e.message,
-            )
-
         if self.ctxt.user_refresh_requested() or self.ctxt.admin_refresh_requested():
             # NOTE(sileht): user ask a refresh, we just remove the previous state of this
             # check and the method _should_be_queued will become true again :)
@@ -332,18 +332,17 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         q = await merge_train.Train.from_context(self.ctxt)
         car = q.get_car(self.ctxt)
-        result = await self.pre_merge_checks(
+
+        result = await self.pre_queue_checks(
             self.ctxt,
+            q,
+            car,
             self.config["method"],
             self.config["rebase_fallback"],
             self.config["merge_bot_account"],
         )
+
         if result is not None:
-            if result.conclusion is not check_api.Conclusion.PENDING:
-                unqueue_reason = await self.get_unqueue_reason_from_action_result(
-                    result
-                )
-                await self._unqueue_pull_request(q, car, unqueue_reason, result)
             return result
 
         if car is not None:
@@ -469,32 +468,19 @@ Then, re-embark the pull request into the merge queue by posting the comment
         await q.remove_pull(self.ctxt, self.rule.get_signal_trigger(), unqueue_reason)
 
     async def cancel(self) -> check_api.Result:
-        try:
-            await self._check_config_compatibility_with_branch_protection(
-                self.queue_rule, self.ctxt
-            )
-        except IncompatibleBranchProtection as e:
-            return check_api.Result(
-                check_api.Conclusion.FAILURE,
-                "Configuration not compatible with a branch protection setting",
-                e.message,
-            )
-
         q = await merge_train.Train.from_context(self.ctxt)
         car = q.get_car(self.ctxt)
 
-        result = await self.pre_merge_checks(
+        result = await self.pre_queue_checks(
             self.ctxt,
+            q,
+            car,
             self.config["method"],
             self.config["rebase_fallback"],
             self.config["merge_bot_account"],
         )
+
         if result is not None:
-            if result.conclusion is not check_api.Conclusion.PENDING:
-                unqueue_reason = await self.get_unqueue_reason_from_action_result(
-                    result
-                )
-                await self._unqueue_pull_request(q, car, unqueue_reason, result)
             return result
 
         if car is not None:
@@ -532,6 +518,44 @@ Then, re-embark the pull request into the merge queue by posting the comment
         if result.conclusion is not check_api.Conclusion.PENDING:
             unqueue_reason = await self.get_unqueue_reason_from_action_result(result)
             await self._unqueue_pull_request(q, car, unqueue_reason, result)
+        return result
+
+    async def pre_queue_checks(
+        self,
+        ctxt: context.Context,
+        queue: merge_train.Train,
+        car: merge_train.TrainCar | None,
+        merge_method: merge_base.MergeMethodT,
+        merge_rebase_fallback: merge_base.RebaseFallbackT,
+        merge_bot_account: github_types.GitHubLogin | None,
+    ) -> check_api.Result | None:
+        result = None
+        try:
+            await self._check_config_compatibility_with_branch_protection(
+                self.queue_rule, self.ctxt
+            )
+        except InvalidQueueConfiguration as e:
+            result = check_api.Result(
+                check_api.Conclusion.FAILURE,
+                e.title,
+                e.message,
+            )
+
+        if result is None:
+            result = await self.pre_merge_checks(
+                self.ctxt,
+                self.config["method"],
+                self.config["rebase_fallback"],
+                self.config["merge_bot_account"],
+            )
+
+        if result is not None:
+            if result.conclusion is not check_api.Conclusion.PENDING:
+                unqueue_reason = await self.get_unqueue_reason_from_action_result(
+                    result
+                )
+                await self._unqueue_pull_request(queue, car, unqueue_reason, result)
+
         return result
 
     async def get_unqueue_reason_from_action_result(
