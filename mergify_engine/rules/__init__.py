@@ -18,6 +18,7 @@ from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import queue
+from mergify_engine import redis_utils
 from mergify_engine import yaml
 from mergify_engine.actions import merge_base
 from mergify_engine.clients import github
@@ -1169,8 +1170,10 @@ pull_request_rules:
 """
 
 
-async def get_mergify_builtin_config() -> voluptuous.Schema:
-    mergify_bot = await github.GitHubAppInfo.get_bot()
+async def get_mergify_builtin_config(
+    redis_cache: redis_utils.RedisCacheBytes,
+) -> voluptuous.Schema:
+    mergify_bot = await github.GitHubAppInfo.get_bot(redis_cache)
     return UserConfigurationSchema(
         YamlSchema(MERGIFY_BUILTIN_CONFIG_YAML.format(author=mergify_bot["login"]))
     )

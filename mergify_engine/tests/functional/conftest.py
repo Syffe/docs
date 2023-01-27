@@ -303,6 +303,7 @@ def cleanup_github_app_info() -> None:
 async def recorder(
     request: pytest.FixtureRequest,
     monkeypatch: pytest.MonkeyPatch,
+    redis_links: redis_utils.RedisLinks,
 ) -> RecorderFixture | None:
     is_unittest_class = request.cls is not None
 
@@ -371,7 +372,7 @@ async def recorder(
     record_config_file = os.path.join(cassette_library_dir, "config.json")
 
     if RECORD:
-        mergify_bot = await github.GitHubAppInfo.get_bot()
+        mergify_bot = await github.GitHubAppInfo.get_bot(redis_links.cache_bytes)
         with open(record_config_file, "w") as f:
             f.write(
                 json.dumps(

@@ -253,11 +253,13 @@ async def duplicate(
 
         if on_behalf is None:
             token = await ctxt.client.get_access_token()
-            await git.configure()
+            await git.configure(ctxt.repository.installation.redis.cache_bytes)
             username = "x-access-token"
             password = token
         else:
-            await git.configure(on_behalf)
+            await git.configure(
+                ctxt.repository.installation.redis.cache_bytes, on_behalf
+            )
             username = on_behalf["oauth_access_token"]
             password = ""  # nosec
 

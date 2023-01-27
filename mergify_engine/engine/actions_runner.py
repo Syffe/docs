@@ -67,7 +67,9 @@ async def get_already_merged_summary(
     if not ctxt.pull["merged"]:
         return ""
 
-    mergify_bot = await github.GitHubAppInfo.get_bot()
+    mergify_bot = await github.GitHubAppInfo.get_bot(
+        ctxt.repository.installation.redis.cache_bytes
+    )
     if (
         ctxt.pull["merged_by"] is not None
         and ctxt.pull["merged_by"]["id"] == mergify_bot["id"]

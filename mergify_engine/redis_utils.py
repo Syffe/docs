@@ -20,6 +20,7 @@ LOG = daiquiri.getLogger(__name__)
 
 
 RedisCache = typing.NewType("RedisCache", "redispy.Redis[str]")
+RedisCacheBytes = typing.NewType("RedisCacheBytes", "redispy.Redis[bytes]")
 RedisAuthentication = typing.NewType("RedisAuthentication", "redispy.Redis[bytes]")
 RedisStream = typing.NewType("RedisStream", "redispy.Redis[bytes]")
 RedisQueue = typing.NewType("RedisQueue", "redispy.Redis[bytes]")
@@ -227,6 +228,16 @@ class RedisLinks:
         )
         return RedisCache(client)
 
+    @functools.cached_property
+    def cache_bytes(self) -> RedisCacheBytes:
+        client = self.redis_from_url(
+            "cache",
+            config.LEGACY_CACHE_URL,
+            decode_responses=False,
+            max_connections=self.cache_max_connections,
+        )
+        return RedisCacheBytes(client)
+
     @typing.overload
     def redis_from_url(
         self,  # FIXME(sileht): mypy is lost if the method is static...
@@ -288,6 +299,7 @@ class RedisLinks:
     async def shutdown_all(self) -> None:
         for db in (
             "cache",
+            "cache_bytes",
             "stream",
             "queue",
             "team_members_cache",

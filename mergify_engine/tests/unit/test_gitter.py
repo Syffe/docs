@@ -4,17 +4,19 @@ from unittest import mock
 import pytest
 
 from mergify_engine import gitter
+from mergify_engine import redis_utils
 
 
 async def test_gitter(
     monkeypatch: pytest.MonkeyPatch,
     fake_github_app_info: None,
+    redis_links: redis_utils.RedisLinks,
 ) -> None:
     monkeypatch.setenv("LANG", "C")
     git = gitter.Gitter(mock.Mock())
     try:
         await git.init()
-        await git.configure()
+        await git.configure(redis_links.cache_bytes)
         await git.add_cred("foo", "bar", "https://github.com")
 
         with pytest.raises(gitter.GitError) as exc_info:

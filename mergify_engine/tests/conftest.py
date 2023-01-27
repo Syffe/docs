@@ -405,8 +405,10 @@ async def fake_github_app_info(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.fixture
-async def fake_mergify_bot(fake_github_app_info: None) -> github_types.GitHubAccount:
-    return await github.GitHubAppInfo.get_bot()
+async def fake_mergify_bot(
+    fake_github_app_info: None, redis_links: redis_utils.RedisLinks
+) -> github_types.GitHubAccount:
+    return await github.GitHubAppInfo.get_bot(redis_links.cache_bytes)
 
 
 @pytest.fixture

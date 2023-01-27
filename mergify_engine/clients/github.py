@@ -13,11 +13,13 @@ import daiquiri
 from datadog import statsd  # type: ignore[attr-defined]
 import first
 import httpx
+import msgpack
 
 from mergify_engine import config
 from mergify_engine import date
 from mergify_engine import exceptions
 from mergify_engine import github_types
+from mergify_engine import redis_utils
 from mergify_engine.clients import github_app
 from mergify_engine.clients import http
 
@@ -661,6 +663,11 @@ class GitHubAppInfo:
     _app: typing.ClassVar[github_types.GitHubApp | None] = None
     _bot: typing.ClassVar[github_types.GitHubAccount | None] = None
 
+    _redis_bot_key: typing.ClassVar[str] = "github-info-bot"
+    _redis_app_key: typing.ClassVar[str] = "github-info-app"
+
+    EXPIRATION_CACHE: int = int(datetime.timedelta(days=1).total_seconds())
+
     @staticmethod
     async def _get_random_installation_auth() -> GithubAppInstallationAuth:
         # NOTE(sileht): we can't query the /users endpoint with the
@@ -681,22 +688,70 @@ class GitHubAppInfo:
         )
 
     @classmethod
-    async def _fetch_bot(cls) -> github_types.GitHubAccount:
-        app = await cls.get_app()
+    async def _fetch_bot_from_redis(
+        cls, redis_cache: redis_utils.RedisCacheBytes
+    ) -> github_types.GitHubAccount | None:
+        raw: bytes | None = await redis_cache.get(cls._redis_bot_key)
+        if raw is None:
+            return None
+        return typing.cast(github_types.GitHubAccount, msgpack.unpackb(raw))
+
+    @classmethod
+    async def _fetch_bot_from_github(
+        cls, redis_cache: redis_utils.RedisCacheBytes
+    ) -> github_types.GitHubAccount:
+        app = await cls.get_app(redis_cache)
         auth = await cls._get_random_installation_auth()
         async with AsyncGithubClient(auth=auth) as client_install:
             bot = await client_install.item(f"/users/{app['slug']}[bot]")
-            return typing.cast(github_types.GitHubAccount, bot)
+
+        await redis_cache.setex(
+            cls._redis_bot_key,
+            cls.EXPIRATION_CACHE,
+            msgpack.packb(bot),
+        )
+        return typing.cast(github_types.GitHubAccount, bot)
 
     @classmethod
-    async def get_bot(cls) -> github_types.GitHubAccount:
+    async def get_bot(
+        cls, redis_cache: redis_utils.RedisCacheBytes
+    ) -> github_types.GitHubAccount:
         if cls._bot is None:
-            cls._bot = await cls._fetch_bot()
+            cls._bot = await cls._fetch_bot_from_redis(redis_cache)
+        if cls._bot is None:
+            cls._bot = await cls._fetch_bot_from_github(redis_cache)
         return cls._bot
 
     @classmethod
-    async def get_app(cls) -> github_types.GitHubApp:
+    async def _fetch_app_from_redis(
+        cls, redis_cache: redis_utils.RedisCacheBytes
+    ) -> github_types.GitHubApp | None:
+        raw: bytes | None = await redis_cache.get(cls._redis_app_key)
+        if raw is None:
+            return None
+        return typing.cast(github_types.GitHubApp, msgpack.unpackb(raw))
+
+    @classmethod
+    async def _fetch_app_from_github(
+        cls, redis_cache: redis_utils.RedisCacheBytes
+    ) -> github_types.GitHubApp:
+        app = await cls.get_app(redis_cache)
+        async with AsyncGithubClient(auth=github_app.GithubBearerAuth()) as client:
+            app = await client.item("/app")
+
+        await redis_cache.setex(
+            cls._redis_app_key,
+            cls.EXPIRATION_CACHE,
+            msgpack.packb(app),
+        )
+        return typing.cast(github_types.GitHubApp, app)
+
+    @classmethod
+    async def get_app(
+        cls, redis_cache: redis_utils.RedisCacheBytes
+    ) -> github_types.GitHubApp:
         if cls._app is None:
-            async with AsyncGithubClient(auth=github_app.GithubBearerAuth()) as client:
-                cls._app = await client.item("/app")
+            cls._app = await cls._fetch_app_from_redis(redis_cache)
+        if cls._app is None:
+            cls._app = await cls._fetch_app_from_github(redis_cache)
         return cls._app

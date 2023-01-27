@@ -174,7 +174,9 @@ async def run_pending_commands_tasks(
             ]
 
     for comment in comments:
-        mergify_bot = await github.GitHubAppInfo.get_bot()
+        mergify_bot = await github.GitHubAppInfo.get_bot(
+            ctxt.repository.installation.redis.cache_bytes
+        )
         if comment["user"]["id"] != mergify_bot["id"]:
             continue
 

@@ -525,7 +525,7 @@ async def filter_and_dispatch(
     event_id: str,
     event: github_types.GitHubEvent,
 ) -> None:
-    mergify_bot = await github.GitHubAppInfo.get_bot()
+    mergify_bot = await github.GitHubAppInfo.get_bot(redis_links.cache_bytes)
     await meter_event(event_type, event, mergify_bot)
     await count_seats.store_active_users(redis_links.active_users, event_type, event)
     await push_to_worker(

@@ -3,7 +3,9 @@ import typing
 import fastapi
 
 from mergify_engine import config
+from mergify_engine import redis_utils
 from mergify_engine.clients import github
+from mergify_engine.web import redis
 
 
 class ConfigJSON(typing.TypedDict):
@@ -17,8 +19,12 @@ router = fastapi.APIRouter()
 
 
 @router.get("/configuration", response_model=ConfigJSON)
-async def configuration() -> ConfigJSON:
-    app = await github.GitHubAppInfo.get_app()
+async def configuration(
+    redis_links: redis_utils.RedisLinks = fastapi.Depends(  # noqa: B008
+        redis.get_redis_links
+    ),
+) -> ConfigJSON:
+    app = await github.GitHubAppInfo.get_app(redis_cache=redis_links.cache_bytes)
     return ConfigJSON(
         {
             "dd_client_token": config.DASHBOARD_UI_DATADOG_CLIENT_TOKEN,

@@ -300,7 +300,9 @@ class MergeUtilsMixin:
         merge_bot_account: github_types.GitHubLogin | None,
     ) -> check_api.Result | None:
         if ctxt.pull["merged"]:
-            mergify_bot = await github.GitHubAppInfo.get_bot()
+            mergify_bot = await github.GitHubAppInfo.get_bot(
+                ctxt.repository.installation.redis.cache_bytes
+            )
             if ctxt.pull["merged_by"] is None:
                 mode = "somehow"
                 conclusion = check_api.Conclusion.CANCELLED
