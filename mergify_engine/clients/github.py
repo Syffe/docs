@@ -735,7 +735,6 @@ class GitHubAppInfo:
     async def _fetch_app_from_github(
         cls, redis_cache: redis_utils.RedisCacheBytes
     ) -> github_types.GitHubApp:
-        app = await cls.get_app(redis_cache)
         async with AsyncGithubClient(auth=github_app.GithubBearerAuth()) as client:
             app = await client.item("/app")
 
