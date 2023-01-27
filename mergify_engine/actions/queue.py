@@ -364,6 +364,18 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     )
                 )
             )
+            self.ctxt.log.info(
+                "pull request has unexpected pull request update",
+                synchronize_sources=[
+                    source
+                    for source in self.ctxt.sources
+                    if source["event_type"] == "pull_request"
+                    and typing.cast(
+                        github_types.GitHubEventPullRequest, source["data"]
+                    )["action"]
+                    == "synchronize"
+                ],
+            )
             await q.remove_pull(
                 self.ctxt,
                 self.rule.get_signal_trigger(),

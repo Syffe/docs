@@ -1,4 +1,5 @@
 import dataclasses
+import logging
 import uuid
 
 import tenacity
@@ -138,6 +139,11 @@ async def _do_rebase(
         await git("push", "--verbose", "origin", head_branch, "--force-with-lease")
 
         expected_sha = (await git("log", "-1", "--format=%H")).strip()
+        if expected_sha:
+            level = logging.INFO
+        else:
+            level = logging.ERROR
+        ctxt.log.log(level, "pull request rebased", new_head_sha=expected_sha)
         # NOTE(sileht): We store this for Context.has_been_synchronized_by_user()
         await ctxt.redis.cache.setex(
             f"branch-update-{expected_sha}", 60 * 60, expected_sha
