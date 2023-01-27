@@ -234,7 +234,9 @@ Here's the list of pull request attribute that can be used in conditions:
        permission on the repository.
    * - ``commits``
      - list of :ref:`commits <data type commit>`
-     - The list of commits of the pull request.
+     - The list of commits of the pull request. The index ``0`` is the first
+       commit of the pull request, while ``-1`` is the last commit of the pull
+       request.
    * - ``commits[X].author``
      - string
      - The name of the author of the ``Xth`` commit.
