@@ -28,6 +28,6 @@ async def shutdown() -> None:
     LOG.info("asgi: finished redis shutdown")
 
 
-async def get_redis_links() -> redis_utils.RedisLinks:
+def get_redis_links() -> redis_utils.RedisLinks:
     global _REDIS_LINKS
     return _REDIS_LINKS

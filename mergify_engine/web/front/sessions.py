@@ -18,7 +18,7 @@ class RedisStore(SessionStore):
         return f"fastapi-session/{session_id}/{purpose}"
 
     async def read(self, session_id: str, lifetime: int) -> bytes:
-        redis_links = await redis.get_redis_links()
+        redis_links = redis.get_redis_links()
         pipe = await redis_links.authentication.pipeline()
         await pipe.get(self.get_redis_key(session_id, purpose="data"))
         await pipe.exists(self.get_redis_key(session_id, purpose="invalidation"))
@@ -35,7 +35,7 @@ class RedisStore(SessionStore):
             raise RuntimeError("lifetime must be greater than zero")
 
         ttl = max(1, ttl)
-        redis_links = await redis.get_redis_links()
+        redis_links = redis.get_redis_links()
         await redis_links.authentication.set(
             self.get_redis_key(session_id, "data"), data, ex=ttl
         )
@@ -47,7 +47,7 @@ class RedisStore(SessionStore):
         # so we can't remove the redis key, instead we add a new key to mark this session as invalid
         # so future read will know that even if we have session data attached to this id, we must not use it
         # we also ensure this key always expire after the "data" one
-        redis_links = await redis.get_redis_links()
+        redis_links = redis.get_redis_links()
         await redis_links.authentication.set(
             self.get_redis_key(session_id, "invalidation"),
             b"",
@@ -55,7 +55,7 @@ class RedisStore(SessionStore):
         )
 
     async def exists(self, session_id: str) -> bool:
-        redis_links = await redis.get_redis_links()
+        redis_links = redis.get_redis_links()
         pipe = await redis_links.authentication.pipeline()
         await pipe.exists(self.get_redis_key(session_id, "data"))
         await pipe.exists(self.get_redis_key(session_id, "invalidation"))
