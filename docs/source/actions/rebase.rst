@@ -43,6 +43,12 @@ Options
     - Default
     - Value Description
 
+  * - ``autosquash``
+    - bool
+    - True
+    - When set to ``True``, commits starting with ``fixup!``, ``squash!`` and ``amend!``
+      are squashed during the rebase.
+
   * - ``bot_account``
     - :ref:`data type template`
     -
@@ -52,10 +58,6 @@ Options
       option. If no ``bot_account`` is set, Mergify picks randomly one of the
       organization users instead. The user account **must** have already been
       logged in Mergify dashboard once.
-  * - ``autosquash``
-    - bool
-    - True
-    - When set to ``True``, commits starting with ``fixup!``, ``squash!`` and ``amend!``
-      are squashed during the rebase.
+
 
 .. include:: ../global-substitutions.rst

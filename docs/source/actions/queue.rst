@@ -417,10 +417,29 @@ These are the options of the ``queue`` action:
      - Value Type
      - Default
      - Value Description
-   * - ``name``
-     - string
-     - ``default``
-     - The name of the merge queue where to move the pull request.
+
+   * - ``commit_message_template``
+     - :ref:`data type template`
+     -
+     - | |deprecated tag|
+       | Template to use as the commit message when using the ``merge`` or ``squash`` merge method.
+       | Template can also be defined in the pull request body (see :ref:`commit message`).
+       |
+       | This option has been moved under the :ref:`queue rules` section of the configuration
+       | and will be removed from this section in the future.
+
+   * - ``merge_bot_account``
+     - :ref:`data type template`
+     -
+     - | |premium plan tag| |deprecated tag|
+       | Mergify can impersonate a GitHub user to merge pull request.
+       | If no ``merge_bot_account`` is set, Mergify will merge the pull request
+       | itself. The user account **must** have already been
+       | logged in Mergify dashboard once and have **write** or **maintain** permission.
+       |
+       | This option has been moved under the :ref:`queue rules` section of the configuration
+       | and will be removed from this section in the future.
+
    * - ``method``
      - string
      - ``merge``
@@ -432,6 +451,19 @@ These are the options of the ``queue`` action:
        |
        | This option has been moved under the :ref:`queue rules` section of the configuration
        | and will be removed from this section in the future.
+
+   * - ``name``
+     - string
+     - ``default``
+     - The name of the queue in which the pull request should be added.
+
+   * - ``priority``
+     - 1 <= integer <= 10000 or ``low`` or ``medium`` or ``high``
+     - ``medium``
+     - |premium plan tag| This sets the priority of the pull request in the queue. The pull
+       request with the highest priority is merged first.
+       ``low``, ``medium``, ``high`` are aliases for ``1000``, ``2000``, ``3000``.
+
    * - ``rebase_fallback``
      - string
      - ``none``
@@ -442,14 +474,21 @@ These are the options of the ``queue`` action:
        | ``none`` will report an error if rebase is not possible.
        | This option is deprecated and will be removed on March 13th, 2023.
 
-   * - ``merge_bot_account``
+   * - ``require_branch_protection``
+     - bool
+     - true
+     - Whether branch protections are required for queueing pull requests.
+
+   * - ``update_bot_account``
      - :ref:`data type template`
      -
      - | |premium plan tag| |deprecated tag|
-       | Mergify can impersonate a GitHub user to merge pull request.
-       | If no ``merge_bot_account`` is set, Mergify will merge the pull request
-       | itself. The user account **must** have already been
-       | logged in Mergify dashboard once and have **write** or **maintain** permission.
+       | For certain actions, such as rebasing branches, Mergify has to
+       | impersonate a GitHub user. You can specify the account to use with this
+       | option. If no ``update_bot_account`` is set, Mergify picks randomly one of the
+       | organization users instead. The user account **must** have already been
+       | logged in Mergify dashboard once.
+       |
        |
        | This option has been moved under the :ref:`queue rules` section of the configuration
        | and will be removed from this section in the future.
@@ -469,41 +508,6 @@ These are the options of the ``queue`` action:
        |
        | This option has been moved under the :ref:`queue rules` section of the configuration
        | and will be removed from this section in the future.
-   * - ``update_bot_account``
-     - :ref:`data type template`
-     -
-     - | |premium plan tag| |deprecated tag|
-       | For certain actions, such as rebasing branches, Mergify has to
-       | impersonate a GitHub user. You can specify the account to use with this
-       | option. If no ``update_bot_account`` is set, Mergify picks randomly one of the
-       | organization users instead. The user account **must** have already been
-       | logged in Mergify dashboard once.
-       |
-       |
-       | This option has been moved under the :ref:`queue rules` section of the configuration
-       | and will be removed from this section in the future.
-
-   * - ``priority``
-     - 1 <= integer <= 10000 or ``low`` or ``medium`` or ``high``
-     - ``medium``
-     - |premium plan tag| This sets the priority of the pull request in the queue. The pull
-       request with the highest priority is merged first.
-       ``low``, ``medium``, ``high`` are aliases for ``1000``, ``2000``, ``3000``.
-
-   * - ``commit_message_template``
-     - :ref:`data type template`
-     -
-     - | |deprecated tag|
-       | Template to use as the commit message when using the ``merge`` or ``squash`` merge method.
-       | Template can also be defined in the pull request body (see :ref:`commit message`).
-       |
-       | This option has been moved under the :ref:`queue rules` section of the configuration
-       | and will be removed from this section in the future.
-
-   * - ``require_branch_protection``
-     - bool
-     - true
-     - Whether branch protections are required for queueing pull requests.
 
 .. _queue rules:
 
@@ -521,52 +525,7 @@ A ``queue_rules`` takes the following parameter:
      - Default
      - Value Description
 
-   * - ``name``
-     - string
-     -
-     - The name of the merge queue.
 
-   * - ``merge_conditions``
-     - list of :ref:`Conditions`
-     -
-     - The list of ``conditions`` to match to get the queued pull request merged,
-       In case of speculative merge pull request, the merge conditions starting by
-       ``check-`` are evaluated against the temporary pull request instead of the
-       original one.
-
-   * - ``commit_message_template``
-     - :ref:`data type template`
-     -
-     - Template to use as the commit message when using the ``merge`` or ``squash`` merge method.
-       Template can also be defined in the pull request body (see :ref:`commit message`).
-
-   * - ``priority_rules``
-     - list of :ref:`priority rules`
-     -
-     - |premium plan tag|
-       The list of ``priority_rules`` a pull request can match in order to be
-       prioritized when added to a queue. The set of conditions available for
-       ``priority_rules`` configuration is the same as the usual :ref:`Conditions`.
-
-   * - ``speculative_checks``
-     - int
-     - 1
-     - |premium plan tag| The maximum number of checks to run in parallel in the queue. Must be
-       between 1 and 20.
-       See :ref:`speculative checks`.
-
-   * - ``allow_inplace_checks``
-     - bool
-     - True
-     - Allow to update/rebase the original pull request to check its
-       mergeability when first in the queue and not part of a batch or
-       speculative check.
-
-   * - ``disallow_checks_interruption_from_queues``
-     - list of ``queue`` names
-     -
-     - |premium plan tag| The list of higher priorities ``queue`` that are not
-       allowed to interrupt the ongoing checks of this queue.
 
    * - ``allow_checks_interruption``
      - bool
@@ -576,60 +535,12 @@ A ``queue_rules`` takes the following parameter:
        If ``False``, pull request with higher priority will be inserted just after the pull requests that
        have checks running.
 
-   * - ``batch_size``
-     - int
-     - 1
-     - |premium plan tag| The maximum number of pull requests per speculative check in the queue. Must be
-       between 1 and 20.
-       See :ref:`speculative checks`.
-
-   * - ``batch_max_wait_time``
-     - :ref:`Duration <duration>`
-     - 30 s
-     - |premium plan tag| The time to wait before creating the speculative check temporary pull request.
-       See :ref:`speculative checks`.
-
-   * - ``batch_max_failure_resolution_attempts``
-     - int
-     -
-     - |premium plan tag| The number of attempts to resolve a batch failure
-       before unqueueing pull requests. By default, Mergify will attempt to
-       resolve a batch failure by splitting the batch multiple times until it
-       finds the root cause of the failure. You can stop this process earlier by
-       limiting the number of resolution attempts. Setting this to 0 will
-       unqueue all the pull requests from a batch when a batch fails.
-
-   * - ``checks_timeout``
-     - :ref:`Duration <duration>`
-     -
-     - The amount of time Mergify waits for pending checks to return before unqueueing pull requests.
-       This cannot be less than 60 seconds.
-
-   * - ``draft_bot_account``
-     - string
-     -
-     - |premium plan tag|
-       Mergify can impersonate a GitHub user to create draft pull requests.
-       If no ``draft_bot_account`` is set, Mergify creates the draft pull request
-       itself. The user account **must** have already been
-       logged in Mergify dashboard once and have **admin**, **write** or
-       **maintain** permission.
-
-   * - ``queue_branch_prefix``
-     - string
-     - mergify/merge-queue/
-     - |premium plan tag|
-       When creating a draft pull request for a queue, this prefix will be used to name the branch.
-
-   * - ``queue_branch_merge_method``
-     - string
-     - none
-     - If set to ``fast-forward``, Mergify will merge the draft pull request
-       instead of merging the original pull request that has been checked.
-       (This only works when the queue action ``method`` is set to its default
-       ``merge``).
-       If GitHub branch protections are enabled, checkout
-       :ref:`fastforward-and-branch-protection`.
+   * - ``allow_inplace_checks``
+     - bool
+     - True
+     - Allow to update/rebase the original pull request to check its
+       mergeability when first in the queue and not part of a batch or
+       speculative check.
 
    * - ``allow_queue_branch_edit``
      - bool
@@ -641,6 +552,57 @@ A ``queue_rules`` takes the following parameter:
        the branch. Make sure only Mergify and your external application are
        allowed to edit these branches.
 
+   * - ``batch_max_failure_resolution_attempts``
+     - int
+     -
+     - |premium plan tag| The number of attempts to resolve a batch failure
+       before unqueueing pull requests. By default, Mergify will attempt to
+       resolve a batch failure by splitting the batch multiple times until it
+       finds the root cause of the failure. You can stop this process earlier by
+       limiting the number of resolution attempts. Setting this to 0 will
+       unqueue all the pull requests from a batch when a batch fails.
+
+   * - ``batch_max_wait_time``
+     - :ref:`Duration <duration>`
+     - 30 s
+     - |premium plan tag| The time to wait before creating the speculative check temporary pull request.
+       See :ref:`speculative checks`.
+
+   * - ``batch_size``
+     - int
+     - 1
+     - |premium plan tag| The maximum number of pull requests per speculative check in the queue. Must be
+       between 1 and 20.
+       See :ref:`speculative checks`.
+
+   * - ``checks_timeout``
+     - :ref:`Duration <duration>`
+     -
+     - The amount of time Mergify waits for pending checks to return before unqueueing pull requests.
+       This cannot be less than 60 seconds.
+
+   * - ``commit_message_template``
+     - :ref:`data type template`
+     -
+     - Template to use as the commit message when using the ``merge`` or ``squash`` merge method.
+       Template can also be defined in the pull request body (see :ref:`commit message`).
+
+   * - ``disallow_checks_interruption_from_queues``
+     - list of ``queue`` names
+     -
+     - |premium plan tag| The list of higher priorities ``queue`` that are not
+       allowed to interrupt the ongoing checks of this queue.
+
+   * - ``draft_bot_account``
+     - string
+     -
+     - |premium plan tag|
+       Mergify can impersonate a GitHub user to create draft pull requests.
+       If no ``draft_bot_account`` is set, Mergify creates the draft pull request
+       itself. The user account **must** have already been
+       logged in Mergify dashboard once and have **admin**, **write** or
+       **maintain** permission.
+
    * - ``merge_bot_account``
      - :ref:`data type template`
      -
@@ -650,6 +612,14 @@ A ``queue_rules`` takes the following parameter:
        itself. The user account **must** have already been
        logged in Mergify dashboard once and have **write** or **maintain** permission.
 
+   * - ``merge_conditions``
+     - list of :ref:`Conditions`
+     -
+     - The list of ``conditions`` to match to get the queued pull request merged,
+       In case of speculative merge pull request, the merge conditions starting by
+       ``check-`` are evaluated against the temporary pull request instead of the
+       original one.
+
    * - ``merge_method``
      - string
      - ``merge``
@@ -657,6 +627,42 @@ A ``queue_rules`` takes the following parameter:
        ``rebase`` or ``fast-forward``.
        ``fast-forward`` is not supported on queues with ``speculative_checks > 1``,
        ``batch_size > 1``, or with ``allow_inplace_checks`` set to ``false``.
+
+   * - ``name``
+     - string
+     -
+     - The name of the merge queue.
+
+   * - ``priority_rules``
+     - list of :ref:`priority rules`
+     -
+     - |premium plan tag|
+       The list of ``priority_rules`` a pull request can match in order to be
+       prioritized when added to a queue. The set of conditions available for
+       ``priority_rules`` configuration is the same as the usual :ref:`Conditions`.
+
+   * - ``queue_branch_merge_method``
+     - string
+     - none
+     - If set to ``fast-forward``, Mergify will merge the draft pull request
+       instead of merging the original pull request that has been checked.
+       (This only works when the queue action ``method`` is set to its default
+       ``merge``).
+       If GitHub branch protections are enabled, checkout
+       :ref:`fastforward-and-branch-protection`.
+
+   * - ``queue_branch_prefix``
+     - string
+     - mergify/merge-queue/
+     - |premium plan tag|
+       When creating a draft pull request for a queue, this prefix will be used to name the branch.
+
+   * - ``speculative_checks``
+     - int
+     - 1
+     - |premium plan tag| The maximum number of checks to run in parallel in the queue. Must be
+       between 1 and 20.
+       See :ref:`speculative checks`.
 
    * - ``update_bot_account``
      - :ref:`data type template`
@@ -702,15 +708,17 @@ A priority rule takes the following parameter:
      - Value Type
      - Default
      - Value Description
-   * - ``name``
-     - string
-     -
-     - The name of the priority rule.
+
    * - ``conditions``
      - list of :ref:`Conditions`
      -
      - The list of ``conditions`` to match to apply the priority to the
        matching pull request inside the queue.
+
+   * - ``name``
+     - string
+     -
+     - The name of the priority rule.
 
    * - ``priority``
      - :ref:`Priority <priority>`

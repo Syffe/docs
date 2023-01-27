@@ -27,22 +27,23 @@ Options
     - Default
     - Value Description
 
-  * - ``title``
-    - :ref:`data type template`
-    -
-    - The title of the check.
-
-  * - ``summary``
-    - :ref:`data type template`
-    -
-    - The summary of the check.
-
   * - ``success_conditions``
     - list of conditions
     -
     - List of conditions to match to mark the pull request check as succeeded,
       otherwise, it will be marked as failing.
       If unset, the conditions from the rule that triggers this action are used.
+
+  * - ``summary``
+    - :ref:`data type template`
+    -
+    - The summary of the check.
+
+  * - ``title``
+    - :ref:`data type template`
+    -
+    - The title of the check.
+
 
 As the ``title`` and ``summary`` use on :ref:`data type template`, you can
 benefit from any pull request attributes, e.g. ``{{author}}``, and also these

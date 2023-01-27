@@ -25,42 +25,6 @@ The syntax of the comment is::
 
 The list of available commands is listed below, with their parameters:
 
-.. _rebase command:
-
-rebase
-======
-
-Runs the :ref:`rebase action` action.
-
-.. list-table::
-  :widths: 2 10
-  :align: left
-
-  * - Syntax
-    - ``@Mergifyio rebase``
-  * - Example
-    - ``@Mergifyio rebase``
-  * - Default restrictions
-    - Write access or author of the pull request
-
-.. _update command:
-
-update
-======
-
-Runs the :ref:`update action` action.
-
-.. list-table::
-  :widths: 2 10
-  :align: left
-
-  * - Syntax
-    - ``@Mergifyio update``
-  * - Example
-    - ``@Mergifyio update``
-  * - Default restrictions
-    - Write access or author of the pull request
-
 .. _backport command:
 
 backport
@@ -97,40 +61,6 @@ Runs the :ref:`copy action` action.
   * - Default restrictions
     - Write access
 
-squash
-======
-
-Runs the :ref:`squash action` action.
-
-.. list-table::
-  :widths: 2 10
-  :align: left
-
-  * - Syntax
-    - ``@Mergifyio squash [<commit_message format>]``
-  * - Example
-    - ``@Mergifyio squash first-commit``
-  * - Default restrictions
-    - Write access or author of the pull request
-
-
-.. _refresh command:
-
-refresh
-========
-
-Re-evaluates your Mergify rules on this pull request.
-
-.. list-table::
-  :widths: 2 10
-  :align: left
-
-  * - Syntax
-    - ``@Mergifyio refresh``
-  * - Example
-    - ``@Mergifyio refresh``
-  * - Default restrictions
-    - Write access or author of the pull request
 
 .. _queue command:
 
@@ -151,6 +81,76 @@ Add this pull request to the merge queue.
       ``@Mergifyio queue default``
   * - Default restrictions
     - Write access
+
+.. _rebase command:
+
+rebase
+======
+
+Runs the :ref:`rebase action` action.
+
+.. list-table::
+  :widths: 2 10
+  :align: left
+
+  * - Syntax
+    - ``@Mergifyio rebase``
+  * - Example
+    - ``@Mergifyio rebase``
+  * - Default restrictions
+    - Write access or author of the pull request
+
+.. _refresh command:
+
+refresh
+========
+
+Re-evaluates your Mergify rules on this pull request.
+
+.. list-table::
+  :widths: 2 10
+  :align: left
+
+  * - Syntax
+    - ``@Mergifyio refresh``
+  * - Example
+    - ``@Mergifyio refresh``
+  * - Default restrictions
+    - Write access or author of the pull request
+
+squash
+======
+
+Runs the :ref:`squash action` action.
+
+.. list-table::
+  :widths: 2 10
+  :align: left
+
+  * - Syntax
+    - ``@Mergifyio squash [<commit_message format>]``
+  * - Example
+    - ``@Mergifyio squash first-commit``
+  * - Default restrictions
+    - Write access or author of the pull request
+
+.. _update command:
+
+update
+======
+
+Runs the :ref:`update action` action.
+
+.. list-table::
+  :widths: 2 10
+  :align: left
+
+  * - Syntax
+    - ``@Mergifyio update``
+  * - Example
+    - ``@Mergifyio update``
+  * - Default restrictions
+    - Write access or author of the pull request
 
 
 unqueue

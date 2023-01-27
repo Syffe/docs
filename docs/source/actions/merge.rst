@@ -31,20 +31,14 @@ Options
      - Value Type
      - Default
      - Value Description
-   * - ``method``
-     - string
-     - ``merge``
-     - Merge method to use. Possible values are ``merge``, ``squash``,
-       ``rebase`` or ``fast-forward``.
-   * - ``rebase_fallback``
-     - string
-     - ``none``
-     - | |deprecated tag|
-       | If ``method`` is set to ``rebase``, but the pull request cannot be
-       | rebased, the method defined in ``rebase_fallback`` will be used instead.
-       | Possible values are ``merge``, ``squash``, ``none``.
-       | ``none`` will report an error if rebase is not possible.
-       | This option is deprecated and will be removed on March 13th, 2023.
+
+       .. _commit_message_template:
+   * - ``commit_message_template``
+     - :ref:`data type template`
+     -
+     - Template to use as the commit message when using the ``merge`` or ``squash`` merge method.
+       Template can also be defined in the pull request body (see :ref:`commit message`).
+
    * - ``merge_bot_account``
      - :ref:`data type template`
      -
@@ -54,12 +48,21 @@ Options
        itself. The user account **must** have already been
        logged in Mergify dashboard once and have **write** or **maintain** permission.
 
-       .. _commit_message_template:
-   * - ``commit_message_template``
-     - :ref:`data type template`
-     -
-     - Template to use as the commit message when using the ``merge`` or ``squash`` merge method.
-       Template can also be defined in the pull request body (see :ref:`commit message`).
+   * - ``method``
+     - string
+     - ``merge``
+     - Merge method to use. Possible values are ``merge``, ``squash``,
+       ``rebase`` or ``fast-forward``.
+
+   * - ``rebase_fallback``
+     - string
+     - ``none``
+     - | |deprecated tag|
+       | If ``method`` is set to ``rebase``, but the pull request cannot be
+       | rebased, the method defined in ``rebase_fallback`` will be used instead.
+       | Possible values are ``merge``, ``squash``, ``none``.
+       | ``none`` will report an error if rebase is not possible.
+       | This option is deprecated and will be removed on March 13th, 2023.
 
 .. _queue-depends-on:
 

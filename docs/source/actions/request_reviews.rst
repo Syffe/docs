@@ -27,14 +27,17 @@ Options
     - Value Type
     - Default
     - Value Description
+  * - ``bot_account``
+    - :ref:`data type template`
+    -
+    - |premium plan tag|
+      Mergify can impersonate a GitHub user to request a review on a pull request.
+      If no ``bot_account`` is set, Mergify will request the review itself.
   * - ``users``
     - list of string or dictionary of login and weight
     -
     - The username to request reviews from.
-  * - ``teams``
-    - list of string or dictionary of login and weight
-    -
-    - The team name to request reviews from.
+
   * - ``users_from_teams``
     - list of string or dictionary of login and weight
     -
@@ -47,12 +50,10 @@ Options
       ``random_count`` is specified, ``users`` and ``teams`` can be a
       dictionary where the key is the login and the value is the weight to use.
       Weight must be between 1 and 65535 included.
-  * - ``bot_account``
-    - :ref:`data type template`
+  * - ``teams``
+    - list of string or dictionary of login and weight
     -
-    - |premium plan tag|
-      Mergify can impersonate a GitHub user to request a review on a pull request.
-      If no ``bot_account`` is set, Mergify will request the review itself.
+    - The team name to request reviews from.
 
 
 Examples

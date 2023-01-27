@@ -23,20 +23,21 @@ Options
      - Value Type
      - Default
      - Value Description
-   * - ``type``
-     - string
-     - ``APPROVE``
-     - The kind of review, can be ``APPROVE``, ``REQUEST_CHANGES``, ``COMMENT``
-   * - ``message``
-     - :ref:`data type template`
-     -
-     - The message to write as a comment.
    * - ``bot_account``
      - :ref:`data type template`
      -
      - |premium plan tag| Mergify can impersonate a GitHub user to review a pull request.
        If no ``bot_account`` is set, Mergify will review the pull request
        itself.
+   * - ``message``
+     - :ref:`data type template`
+     -
+     - The message to write as a comment.
+   * - ``type``
+     - string
+     - ``APPROVE``
+     - The kind of review, can be ``APPROVE``, ``REQUEST_CHANGES``, ``COMMENT``
+
 
 Examples
 --------

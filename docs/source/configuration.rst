@@ -45,23 +45,24 @@ Each dictionary must have the following keys:
    * - Key Name
      - Value Type
      - Value Description
+   * - ``actions``
+     - dictionary of :ref:`Actions`
+     - A dictionary made of :ref:`Actions` that will be executed on the
+       matching pull requests.
+   * - ``conditions``
+     - list of :ref:`Conditions`
+     - A list of :ref:`Conditions` string that must match against the pull
+       request for the rule to be applied.
+   * - ``disabled``
+     - dictionary with ``reason`` key
+     - This optional key allows to disabled a rule and cancel any ongoing
+       actions. A reason must be set using the ``reason`` key.
    * - ``name``
      - string
      - The name of the rule. This is not used by the engine directly, but is
        used when reporting information about a rule. It's not possible to
        have two rules with the same name.
-   * - ``disabled``
-     - dictionary with ``reason`` key
-     - This optional key allows to disabled a rule and cancel any ongoing
-       actions. A reason must be set using the ``reason`` key.
-   * - ``conditions``
-     - list of :ref:`Conditions`
-     - A list of :ref:`Conditions` string that must match against the pull
-       request for the rule to be applied.
-   * - ``actions``
-     - dictionary of :ref:`Actions`
-     - A dictionary made of :ref:`Actions` that will be executed on the
-       matching pull requests.
+
 
 The rules are evaluated in the order they are defined in ``pull_request_rules``
 and, therefore, the actions are executed in that same order.

@@ -22,10 +22,6 @@ Options
      - Value Type
      - Default
      - Value Description
-   * - ``message``
-     - :ref:`data type template`
-     -
-     - The message to write as a comment.
    * - ``bot_account``
      - :ref:`data type template`
      -
@@ -33,6 +29,10 @@ Options
        Mergify can impersonate a GitHub user to comment a pull request.
        If no ``bot_account`` is set, Mergify will comment the pull request
        itself.
+   * - ``message``
+     - :ref:`data type template`
+     -
+     - The message to write as a comment.
 
 Examples
 --------

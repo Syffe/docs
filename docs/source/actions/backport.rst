@@ -40,20 +40,16 @@ Options
      - Value Type
      - Default
      - Value Description
-   * - ``branches``
-     - list of string
-     - ``[]``
-     - The list of branches the pull request should be copied to.
-   * - ``regexes``
-     - list of string
-     - ``[]``
-     - The list of regexes to find branches the pull request should be copied
-       to.
-   * - ``ignore_conflicts``
-     - Boolean
-     - ``true``
-     - Whether to create the pull requests even if they are conflicts when
-       cherry-picking the commits.
+   * - ``assignees``
+     - list of :ref:`data type template`
+     -
+     - Users to assign the newly created pull request. As the type is
+       :ref:`data type template`, you could use, e.g., ``{{author}}`` to assign
+       the pull request to its original author.
+   * - ``body``
+     - :ref:`data type template`
+     - ``This is an automatic backport of pull request #{{number}} done by [Mergify](https://mergify.com).\n{{cherry_pick_error}}``
+     - The pull request body.
    * - ``bot_account``
      - :ref:`data type template`
      -
@@ -61,6 +57,15 @@ Options
        Mergify can impersonate a GitHub user to backport a pull request.
        If no ``bot_account`` is set, Mergify backports the pull request
        itself.
+   * - ``branches``
+     - list of string
+     - ``[]``
+     - The list of branches the pull request should be copied to.
+   * - ``ignore_conflicts``
+     - Boolean
+     - ``true``
+     - Whether to create the pull requests even if they are conflicts when
+       cherry-picking the commits.
    * - ``labels``
      - list of string
      - ``[]``
@@ -70,21 +75,15 @@ Options
      - ``conflicts``
      - The label to add to the created pull request if it has conflicts and
        ``ignore_conflicts`` is set to ``true``.
-   * - ``assignees``
-     - list of :ref:`data type template`
-     -
-     - Users to assign the newly created pull request. As the type is
-       :ref:`data type template`, you could use, e.g., ``{{author}}`` to assign
-       the pull request to its original author.
+   * - ``regexes``
+     - list of string
+     - ``[]``
+     - The list of regexes to find branches the pull request should be copied
+       to.
    * - ``title``
      - :ref:`data type template`
      - ``{{ title }} (backport #{{ number }})``
      - The pull request title.
-   * - ``body``
-     - :ref:`data type template`
-     - ``This is an automatic backport of pull request #{{number}} done by [Mergify](https://mergify.com).\n{{cherry_pick_error}}``
-     - The pull request body.
-
 
 As the ``title`` and ``body`` are :ref:`templates <data type template>`, you can
 leverage any pull request attributes to use as content, e.g. ``{{author}}``.
@@ -115,7 +114,7 @@ added and the pull request merged:
           backport:
             branches:
               - stable
-            assignees: 
+            assignees:
               - "{{ author }}"
 
 .. include:: ../global-substitutions.rst
