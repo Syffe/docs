@@ -1,4 +1,8 @@
+from urllib import parse
+
+import httpx
 import pytest
+import respx
 import sqlalchemy.orm
 import starlette
 
@@ -84,3 +88,89 @@ async def test_auth_setup(
     assert r.status_code == status_code
     if redirect_url is not None:
         assert r.json()["url"] == redirect_url
+
+
+async def test_auth_lifecycle(
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    web_client: conftest.CustomTestClient,
+    front_login_mock: None,
+    respx_mock: respx.MockRouter,
+) -> None:
+    user = github_user.GitHubUser(
+        id=github_types.GitHubAccountIdType(42),
+        login=github_types.GitHubLogin("user-login"),
+        oauth_access_token=github_types.GitHubOAuthToken("user-token"),
+    )
+    db.add(user)
+    await db.commit()
+
+    respx_mock.post("https://github.com/login/oauth/access_token").respond(
+        200, json={"access_token": "foobar"}
+    )
+    respx_mock.post("http://localhost:5000/engine/user-update").respond(200)
+    respx_mock.get("https://api.github.com/repos/foo/bar/pulls").respond(200, json=[])
+
+    await web_client.log_as(user.id)
+    assert await web_client.logged_as() == "user-login"
+    saved_cookies_logged = httpx.Cookies(web_client.cookies)
+
+    r = await web_client.get("/front/proxy/github/repos/foo/bar/pulls")
+    assert r.status_code == 200
+    assert r.json() == []
+
+    r = await web_client.get("/front/auth/authorize", follow_redirects=False)
+    assert r.status_code == 200
+    assert r.json()["url"].startswith("https://github.com/login/oauth/authorize?")
+    query_string = parse.parse_qs(parse.urlparse(r.json()["url"]).query)
+    saved_cookies_mid_login = httpx.Cookies(web_client.cookies)
+
+    # Ensure session id change
+    assert saved_cookies_logged["session"] != saved_cookies_mid_login["session"]
+
+    # old cookie doesn't work anymore
+    r = await web_client.get(
+        "/front/proxy/github/repos/foo/bar/pulls", cookies=saved_cookies_logged
+    )
+    assert r.status_code == 401
+
+    # new cookie doesn't work yet
+    r = await web_client.get("/front/proxy/github/repos/foo/bar/pulls")
+    assert r.status_code == 401
+
+    r = await web_client.get(
+        f"/front/auth/authorized?code=XXXXX&state={query_string['state'][0]}"
+    )
+    assert r.status_code == 204, r.text
+
+    # Ensure session id change again
+    assert saved_cookies_mid_login["session"] != web_client.cookies["session"]
+    assert saved_cookies_logged["session"] != web_client.cookies["session"]
+
+    # old cookie doesn't work anymore
+    r = await web_client.get(
+        "/front/proxy/github/repos/foo/bar/pulls", cookies=saved_cookies_logged
+    )
+    assert r.status_code == 401
+
+    # mid-session cookie still doesn't work anymore
+    r = await web_client.get(
+        "/front/proxy/github/repos/foo/bar/pulls", cookies=saved_cookies_mid_login
+    )
+    assert r.status_code == 401
+
+    # new cookie works
+    r = await web_client.get("/front/proxy/github/repos/foo/bar/pulls")
+    assert r.status_code == 200
+    assert r.json() == []
+
+    # mid-session cookie doesn't work
+    r = await web_client.get(
+        "/front/proxy/github/repos/foo/bar/pulls", cookies=saved_cookies_mid_login
+    )
+    assert r.status_code == 401
+
+    # old cookie doesn't work
+    r = await web_client.get(
+        "/front/proxy/github/repos/foo/bar/pulls", cookies=saved_cookies_logged
+    )
+    assert r.status_code == 401

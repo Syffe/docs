@@ -39,8 +39,11 @@ oauth.register(
 router = fastapi.APIRouter()
 
 
-async def clear_authentication_data(request: fastapi.Request) -> None:
+async def clear_session_and_auth(request: fastapi.Request) -> None:
     request.session.clear()
+    session_handler = starsessions.session.get_session_handler(request)
+    await session_handler.destroy()
+    session_handler.regenerate_id()
     request.scope["auth"] = imia.UserToken(
         user=imia.AnonymousUser(), state=imia.LoginState.ANONYMOUS
     )
@@ -53,7 +56,7 @@ class OAuth2RedirectUrl:
 
 @router.get("/logout")
 async def logout(request: fastapi.Request) -> fastapi.Response:
-    await clear_authentication_data(request)
+    await clear_session_and_auth(request)
     return fastapi.Response(status_code=204)
 
 
@@ -72,8 +75,9 @@ async def login_via_github(
         # NOT a whitelisted domain, we just redirect to the default one.
         site_url = config.DASHBOARD_UI_SITE_URLS[0]
 
-    starsessions.session.regenerate_session_id(request)
-    await clear_authentication_data(request)
+    # NOTE(sileht): logout first to start with a new session and session id
+    await clear_session_and_auth(request)
+
     rv = await oauth.github.create_authorization_url(f"{site_url}/auth/callback")
     await oauth.github.save_authorize_data(request, **rv)
     return AuthRedirectUrl(url=rv["url"])
@@ -92,7 +96,7 @@ async def create_or_update_user(
                 github_types.GitHubAccount, await client.item("/user")
             )
         except http.HTTPUnauthorized:
-            await clear_authentication_data(request)
+            await clear_session_and_auth(request)
             raise fastapi.HTTPException(401)
 
     user = await github_user.GitHubUser.create_or_update(
@@ -123,7 +127,7 @@ async def auth_via_github(
     try:
         token = await oauth.github.authorize_access_token(request)
     except starlette_client.OAuthError as e:
-        await clear_authentication_data(request)
+        await clear_session_and_auth(request)
         if "access_denied" == e.error:
             raise fastapi.HTTPException(403)
         if e.error in (
@@ -143,17 +147,12 @@ async def auth_via_github(
         )
         raise fastapi.HTTPException(401)
 
+    # NOTE(sileht): clear the session to avoid any oauth state leakage and
+    # session id reuse
+    await clear_session_and_auth(request)
+
     user = await create_or_update_user(request, session, token["access_token"])
     await imia.login_user(request, user, "whatever")
-
-    try:
-        del request.session["sudo"]
-    except KeyError:
-        pass
-    try:
-        del request.session["sudoGrantedTo"]
-    except KeyError:
-        pass
 
     return fastapi.responses.Response(status_code=204)
 
