@@ -1264,6 +1264,8 @@ class Worker:
         await ping_redis(self._redis_links.stream, "Stream")
         await ping_redis(self._redis_links.cache, "Cache")
 
+        await github.GitHubAppInfo.warm_cache(self._redis_links.cache_bytes)
+
         self._dedicated_workers_syncer_task = TaskRetriedForever(
             "dedicated workers cache syncer",
             self._sync_dedicated_workers_cache,

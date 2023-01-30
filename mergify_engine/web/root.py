@@ -4,6 +4,7 @@ from fastapi.middleware import httpsredirect
 from uvicorn.middleware import proxy_headers
 
 from mergify_engine import config
+from mergify_engine.clients import github
 from mergify_engine.middlewares import starlette_workaround
 from mergify_engine.web import github_webhook
 from mergify_engine.web import legacy_badges
@@ -49,6 +50,9 @@ def create_app(https_only: bool = True, debug: bool = False) -> fastapi.FastAPI:
     @app.on_event("startup")
     async def startup() -> None:
         await redis.startup()
+        # NOTE(sileht): Warm GitHubAppInfo cache
+        redis_links = redis.get_redis_links()
+        await github.GitHubAppInfo.warm_cache(redis_links.cache_bytes)
 
     @app.on_event("shutdown")
     async def shutdown() -> None:

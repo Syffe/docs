@@ -754,3 +754,10 @@ class GitHubAppInfo:
         if cls._app is None:
             cls._app = await cls._fetch_app_from_github(redis_cache)
         return cls._app
+
+    @classmethod
+    async def warm_cache(cls, redis_cache: redis_utils.RedisCacheBytes) -> None:
+        try:
+            await cls.get_bot(redis_cache)
+        except Exception:
+            LOG.warning("fail to warm GitHubAppInfo cache")
