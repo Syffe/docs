@@ -5,6 +5,7 @@ import contextlib
 import dataclasses
 import datetime
 import json
+import random
 import types
 import typing
 from urllib import parse
@@ -457,12 +458,19 @@ class AsyncGithubClient(http.AsyncClient):
         oauth_token: github_types.GitHubOAuthToken | None = None,
         list_items: str | None = None,
         params: dict[str, str] | None = None,
+        batch_size: int | None = None,
     ) -> typing.Any:
 
         # NOTE(sileht): can't be on the same line...
         # https://github.com/python/mypy/issues/10743
         final_params: dict[str, str] | None
-        final_params = {"per_page": "100"}
+
+        if batch_size is None:
+            final_params = {"per_page": "100"}
+        elif batch_size > 100:
+            raise RuntimeError("items(batch_size=) must be < 100")
+        else:
+            final_params = {"per_page": str(batch_size)}
 
         if params is not None:
             final_params.update(params)
@@ -493,8 +501,11 @@ class AsyncGithubClient(http.AsyncClient):
             items = response.json()
             if list_items:
                 items = items[list_items]
-            for item in items:
-                yield item
+            if batch_size is None:
+                for item in items:
+                    yield item
+            else:
+                yield items
             if "next" in response.links:
                 url = response.links["next"]["url"]
                 final_params = None
@@ -669,20 +680,27 @@ class GitHubAppInfo:
     EXPIRATION_CACHE: int = int(datetime.timedelta(days=1).total_seconds())
 
     @staticmethod
-    async def _get_random_installation_auth() -> GithubAppInstallationAuth:
+    async def _get_random_installation_auths() -> abc.AsyncGenerator[
+        GithubAppInstallationAuth, None
+    ]:
         # NOTE(sileht): we can't query the /users endpoint with the
         # JWT, so just pick a random installation.
         async with AsyncGithubClient(auth=github_app.GithubBearerAuth()) as client:
-            async for installation in typing.cast(
-                abc.AsyncGenerator[github_types.GitHubInstallation, None],
+            async for installations in typing.cast(
+                abc.AsyncGenerator[list[github_types.GitHubInstallation], None],
                 client.items(
-                    "/app/installations", page_limit=None, resource_name="installation"
+                    "/app/installations",
+                    page_limit=None,
+                    resource_name="installation",
+                    batch_size=100,
                 ),
             ):
-                if installation["suspended_at"]:
-                    continue
+                random.shuffle(installations)
+                for installation in installations:
+                    if installation["suspended_at"]:
+                        continue
+                    yield GithubAppInstallationAuth(installation)
 
-                return GithubAppInstallationAuth(installation)
         raise RuntimeError(
             "Can't find an installation that can retrieve the GitHubApp bot account"
         )
@@ -701,16 +719,23 @@ class GitHubAppInfo:
         cls, redis_cache: redis_utils.RedisCacheBytes
     ) -> github_types.GitHubAccount:
         app = await cls.get_app(redis_cache)
-        auth = await cls._get_random_installation_auth()
-        async with AsyncGithubClient(auth=auth) as client_install:
-            bot = await client_install.item(f"/users/{app['slug']}[bot]")
+        async for auth in cls._get_random_installation_auths():
+            async with AsyncGithubClient(auth=auth) as client_install:
+                try:
+                    bot = await client_install.item(f"/users/{app['slug']}[bot]")
+                except (http.HTTPForbidden, http.HTTPUnauthorized):
+                    continue
+                else:
+                    await redis_cache.setex(
+                        cls._redis_bot_key,
+                        cls.EXPIRATION_CACHE,
+                        msgpack.packb(bot),
+                    )
+                    return typing.cast(github_types.GitHubAccount, bot)
 
-        await redis_cache.setex(
-            cls._redis_bot_key,
-            cls.EXPIRATION_CACHE,
-            msgpack.packb(bot),
+        raise RuntimeError(
+            "Can't find an installation that can retrieve the GitHubApp bot account"
         )
-        return typing.cast(github_types.GitHubAccount, bot)
 
     @classmethod
     async def get_bot(
