@@ -37,20 +37,31 @@ CONFIGURATION_CHANGE_MESSAGE = (
 
 
 @dataclasses.dataclass
-class Command:
+class CommandMixin:
     name: rules.PullRequestRuleName
-    args: str
-    action: actions.Action
+    command_args: str
 
-    def __str__(self) -> str:
-        if self.args:
-            return f"{self.name} {self.args}"
+    def get_command(self) -> str:
+        if self.command_args:
+            return f"{self.name} {self.command_args}"
         else:
             return self.name
 
 
 @dataclasses.dataclass
-class CommandInvalid(Exception):
+class Command(CommandMixin):
+    name: rules.PullRequestRuleName
+    command_args: str
+    action: actions.Action
+
+    def __str__(self) -> str:
+        return self.get_command()
+
+
+@dataclasses.dataclass
+class CommandInvalid(Exception, CommandMixin):
+    name: rules.PullRequestRuleName
+    command_args: str
     message: str
 
 
@@ -64,13 +75,13 @@ class CommandPayload(typing.TypedDict):
     conclusion: str
 
 
-def prepare_message(command: Command, result: check_api.Result) -> str:
+def prepare_message(command: Command | CommandInvalid, result: check_api.Result) -> str:
     # NOTE: Do not serialize this with Mergify JSON encoder:
     # we don't want to allow loading/unloading weird value/classes
     # this could be modified by a user, so we keep it really straightforward
     payload = CommandPayload(
         {
-            "command": str(command),
+            "command": command.get_command(),
             "conclusion": result.conclusion.value,
         }
     )
@@ -78,7 +89,7 @@ def prepare_message(command: Command, result: check_api.Result) -> str:
     if result.summary:
         details = f"<details>\n\n{result.summary}\n\n</details>\n"
 
-    message = f"""> {command}
+    message = f"""> {command.get_command()}
 
 #### {result.conclusion.emoji} {result.title}
 
@@ -103,10 +114,11 @@ def load_command(
             "Comment contains '@Mergify/io' tag but is not aimed to be executed as a command"
         )
 
-    if match[1] in action_classes:
-        action_name = rules.PullRequestRuleName(match[1])
+    action_name = rules.PullRequestRuleName(match[1])
+    command_args = match[2].strip()
+
+    if action_name in action_classes:
         action_class = action_classes[action_name]
-        command_args = match[2].strip()
 
         action_config = {}
         if defaults_actions := mergify_config["defaults"].get("actions"):
@@ -119,11 +131,13 @@ def load_command(
             action.validate_config(mergify_config)
         except voluptuous.Invalid:
             raise CommandInvalid(
-                INVALID_COMMAND_ARGS_MESSAGE.format(command=action_name)
+                action_name,
+                command_args,
+                INVALID_COMMAND_ARGS_MESSAGE.format(command=action_name),
             )
         return Command(action_name, command_args, action)
 
-    raise CommandInvalid(UNKNOWN_COMMAND_MESSAGE)
+    raise CommandInvalid(action_name, command_args, UNKNOWN_COMMAND_MESSAGE)
 
 
 @exceptions.log_and_ignore_exception("commands_runner.on_each_event failed")
@@ -328,8 +342,12 @@ async def handle(
     try:
         command = load_command(mergify_config, comment_command)
     except CommandInvalid as e:
-        log(e.message)
-        await ctxt.post_comment(e.message)
+        message = prepare_message(
+            e,
+            check_api.Result(check_api.Conclusion.FAILURE, e.message, ""),
+        )
+        log(message)
+        await ctxt.post_comment(message)
         return
     except NotACommand:
         return
@@ -339,14 +357,25 @@ async def handle(
         and actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
         not in command.action.flags
     ):
-        message = CONFIGURATION_CHANGE_MESSAGE
+        message = prepare_message(
+            command,
+            check_api.Result(
+                check_api.Conclusion.FAILURE, CONFIGURATION_CHANGE_MESSAGE, ""
+            ),
+        )
         log(message)
         await ctxt.post_comment(message)
         return
 
     if command.name != "refresh" and ctxt.is_merge_queue_pr():
-        log(MERGE_QUEUE_COMMAND_MESSAGE)
-        await ctxt.post_comment(MERGE_QUEUE_COMMAND_MESSAGE)
+        message = prepare_message(
+            command,
+            check_api.Result(
+                check_api.Conclusion.FAILURE, MERGE_QUEUE_COMMAND_MESSAGE, ""
+            ),
+        )
+        log(message)
+        await ctxt.post_comment(message)
         return
 
     try:

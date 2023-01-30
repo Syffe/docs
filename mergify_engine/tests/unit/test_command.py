@@ -80,7 +80,7 @@ async def test_command_loader() -> None:
         await get_empty_config(), "@mergifyio backport branch-3.1 branch-3.2\nfoobar\n"
     )
     assert command.name == "backport"
-    assert command.args == "branch-3.1 branch-3.2"
+    assert command.command_args == "branch-3.1 branch-3.2"
     assert isinstance(command.action, BackportAction)
     assert command.action.config == {
         "branches": ["branch-3.1", "branch-3.2"],
@@ -117,7 +117,7 @@ defaults:
     config = await rules.get_mergify_config_from_file(mock.MagicMock(), file)
     command = commands_runner.load_command(config, "@mergifyio backport")
     assert command.name == "backport"
-    assert command.args == ""
+    assert command.command_args == ""
     assert isinstance(command.action, BackportAction)
     assert command.action.config == {
         "assignees": [],
@@ -268,8 +268,20 @@ async def test_run_command_with_wrong_arg(
     )
 
     assert len(client.post.call_args_list) == 1
-    assert client.post.call_args_list[0][1]["json"]["body"].startswith(
-        "Sorry but I didn't understand the arguments of the command `squash`"
+    assert (
+        client.post.call_args_list[0][1]["json"]["body"]
+        == """> squash invalid-arg
+
+#### ❌ Sorry but I didn't understand the arguments of the command `squash`. Please consult [the commands documentation](https://docs.mergify.com/commands/) 📚.
+
+
+
+<!---
+DO NOT EDIT
+-*- Mergify Payload -*-
+{"command": "squash invalid-arg", "conclusion": "failure"}
+-*- Mergify Payload End -*-
+-->"""
     )
 
 
