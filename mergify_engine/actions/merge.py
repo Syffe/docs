@@ -7,7 +7,6 @@ from mergify_engine import check_api
 from mergify_engine import config
 from mergify_engine import context
 from mergify_engine import github_types
-from mergify_engine import queue
 from mergify_engine import rules
 from mergify_engine import signals
 from mergify_engine import utils
@@ -19,13 +18,6 @@ from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import conditions
 from mergify_engine.rules import types
 
-
-DEPRECATED_MESSAGE_PRIORITY_ATTRIBUTE_MERGE_ACTION = """The configuration uses the deprecated `priority` attribute of the merge action.
-A brownout is planned on December 28th, 2022.
-This option will be removed on January 17th, 2023.
-For more information: https://docs.mergify.com/actions/merge/
-
-`%s` is invalid"""
 
 DEPRECATED_MESSAGE_REBASE_FALLBACK_MERGE_ACTION = """The configuration uses the deprecated `rebase_fallback` attribute of the merge action.
 A brownout is planned on February 13th, 2023.
@@ -40,7 +32,6 @@ class MergeExecutorConfig(typing.TypedDict):
     rebase_fallback: merge_base.RebaseFallbackT
     commit_message_template: str | None
     merge_bot_account: github_types.GitHubLogin | None
-    priority: int
 
 
 class MergeExecutor(
@@ -88,7 +79,6 @@ class MergeExecutor(
                     "rebase_fallback": action.config["rebase_fallback"],
                     "commit_message_template": action.config["commit_message_template"],
                     "merge_bot_account": merge_bot_account,
-                    "priority": action.config["priority"],
                 }
             ),
         )
@@ -178,20 +168,6 @@ class MergeAction(actions.Action):
             ] = utils.DeprecatedOption(
                 DEPRECATED_MESSAGE_REBASE_FALLBACK_MERGE_ACTION,
                 voluptuous.Any(*typing.get_args(merge_base.RebaseFallbackT)),
-            )
-
-        if config.ALLOW_MERGE_PRIORITY_ATTRIBUTE:
-            validator[
-                voluptuous.Required(
-                    "priority", default=queue.PriorityAliases.medium.value
-                )
-            ] = queue.PrioritySchema
-        else:
-            validator[
-                voluptuous.Required("priority", default=utils.UnsetMarker)
-            ] = utils.DeprecatedOption(
-                DEPRECATED_MESSAGE_PRIORITY_ATTRIBUTE_MERGE_ACTION,
-                queue.PriorityAliases.medium.value,
             )
 
         return validator

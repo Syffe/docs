@@ -46,20 +46,6 @@ REBASE_FALLBACK_MODE_DEPRECATION_SAAS = """
 > For more information: https://docs.mergify.com/actions/queue/ or https://docs.mergify.com/actions/merge/
 """
 
-MERGE_ACTION_PRIORITY_ATTRIBUTE_DEPRECATION_GHES = """
-:bangbang: **Action Required** :bangbang:
-> **The configuration uses the deprecated `priority` attribute of the merge action.**
-> This option will be removed on a future version.
-> For more information: https://docs.mergify.com/actions/merge/
-"""
-
-MERGE_ACTION_PRIORITY_ATTRIBUTE_DEPRECATION_SAAS = """
-:bangbang: **Action Required** :bangbang:
-> **The configuration uses the deprecated `priority` attribute of the merge action.**
-> This option will be removed on January 17th, 2023.
-> For more information: https://docs.mergify.com/actions/merge/
-"""
-
 
 async def get_already_merged_summary(
     ctxt: context.Context, match: rules.PullRequestRulesEvaluator
@@ -178,18 +164,6 @@ async def gen_summary(
             summary += REBASE_FALLBACK_MODE_DEPRECATION_SAAS
         else:
             summary += REBASE_FALLBACK_MODE_DEPRECATION_GHES
-
-    has_merge_action_priority = any(
-        action
-        for rule in match.rules
-        for name, action in rule.actions.items()
-        if name == "merge" and "priority" in action.raw_config
-    )
-    if has_merge_action_priority:
-        if config.SAAS_MODE:
-            summary += MERGE_ACTION_PRIORITY_ATTRIBUTE_DEPRECATION_SAAS
-        else:
-            summary += MERGE_ACTION_PRIORITY_ATTRIBUTE_DEPRECATION_GHES
 
     matching_rules_to_display = match.matching_rules[:]
     not_applicable_base_changeable_attributes_rules_to_display = []
