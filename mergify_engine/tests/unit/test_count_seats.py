@@ -1,12 +1,11 @@
 import datetime
 import json
 import os
-from unittest import mock
 
 from freezegun import freeze_time
 import httpx
 import pytest
-from pytest_httpserver import httpserver
+import respx
 
 from mergify_engine import config
 from mergify_engine import count_seats
@@ -60,21 +59,15 @@ def test_seats_renamed_account_repo() -> None:
     assert repos == {repo1, repo2}
 
 
-async def test_send_seats(httpserver: httpserver.HTTPServer) -> None:
-    httpserver.expect_request(
-        "/on-premise/report",
-        method="POST",
+async def test_send_seats(respx_mock: respx.MockRouter) -> None:
+    route = respx_mock.post(
+        f"{config.SUBSCRIPTION_BASE_URL}/on-premise/report",
         json={"active_users": 2, "engine_version": "dev"},
-    ).respond_with_data("Accepted", status=201)
-    with mock.patch(
-        "mergify_engine.config.SUBSCRIPTION_BASE_URL",
-        httpserver.url_for("/")[:-1],
-    ):
-        await count_seats.send_seats(count_seats.SeatsCountResultT(2))
+    ).respond(201, content="Accepted")
 
-    assert len(httpserver.log) == 1
+    await count_seats.send_seats(count_seats.SeatsCountResultT(2))
 
-    httpserver.check_assertions()  # type: ignore [no-untyped-call]
+    assert route.call_count == 1
 
 
 GITHUB_SAMPLE_EVENTS = {}

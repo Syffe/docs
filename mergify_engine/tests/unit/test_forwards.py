@@ -3,7 +3,7 @@ from unittest import mock
 import uuid
 
 import httpx
-from pytest_httpserver import httpserver
+import respx
 
 from mergify_engine import config
 from mergify_engine import utils
@@ -21,7 +21,7 @@ async def test_app_event_forward(
     _: mock.Mock,
     __: mock.PropertyMock,
     web_client: httpx.AsyncClient,
-    httpserver: httpserver.HTTPServer,
+    respx_mock: respx.MockRouter,
 ) -> None:
 
     with open(os.path.join(os.path.dirname(__file__), "events", "push.json")) as f:
@@ -34,17 +34,11 @@ async def test_app_event_forward(
         "User-Agent": "GitHub-Hookshot/044aadd",
         "Content-Type": "application/json",
     }
-    httpserver.expect_request(
-        "/", method="POST", data=data, headers=headers
-    ).respond_with_data("")
+    respx_mock.post(
+        config.WEBHOOK_APP_FORWARD_URL, headers=headers, content=data
+    ).respond(200, content="")
 
-    with mock.patch(
-        "mergify_engine.config.WEBHOOK_APP_FORWARD_URL",
-        httpserver.url_for("/"),
-    ):
-        await web_client.post("/event", content=data, headers=headers)
-
-    httpserver.check_assertions()  # type: ignore[no-untyped-call]
+    await web_client.post("/event", content=data, headers=headers)
 
 
 @mock.patch(
@@ -53,7 +47,7 @@ async def test_app_event_forward(
 )
 async def test_market_event_forward(
     _: mock.PropertyMock,
-    httpserver: httpserver.HTTPServer,
+    respx_mock: respx.MockRouter,
     web_client: httpx.AsyncClient,
 ) -> None:
 
@@ -69,14 +63,8 @@ async def test_market_event_forward(
         "User-Agent": "GitHub-Hookshot/044aadd",
         "Content-Type": "application/json",
     }
-    httpserver.expect_request(
-        "/", method="POST", data=data, headers=headers
-    ).respond_with_data("")
+    respx_mock.post(
+        config.WEBHOOK_MARKETPLACE_FORWARD_URL, headers=headers, content=data
+    ).respond(200, content="")
 
-    with mock.patch(
-        "mergify_engine.config.WEBHOOK_MARKETPLACE_FORWARD_URL",
-        httpserver.url_for("/"),
-    ):
-        await web_client.post("/marketplace", content=data, headers=headers)
-
-    httpserver.check_assertions()  # type: ignore[no-untyped-call]
+    await web_client.post("/marketplace", content=data, headers=headers)

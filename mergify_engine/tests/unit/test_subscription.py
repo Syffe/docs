@@ -1,8 +1,9 @@
 from unittest import mock
 
 import pytest
-from pytest_httpserver import httpserver
+import respx
 
+from mergify_engine import config
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import redis_utils
@@ -172,11 +173,14 @@ async def test_active_feature(redis_cache: redis_utils.RedisCache) -> None:
 
 async def test_subscription_on_premise_valid(
     redis_cache: redis_utils.RedisCache,
-    httpserver: httpserver.HTTPServer,
+    respx_mock: respx.MockRouter,
 ) -> None:
 
-    httpserver.expect_request("/on-premise/subscription/1234").respond_with_json(
-        {
+    route = respx_mock.get(
+        f"{config.SUBSCRIPTION_BASE_URL}/on-premise/subscription/1234"
+    ).respond(
+        200,
+        json={
             "subscription_reason": "azertyuio",
             "features": [
                 "private_repository",
@@ -188,60 +192,45 @@ async def test_subscription_on_premise_valid(
                 "queue_action",
                 "show_sponsor",
             ],
-        }
+        },
     )
 
-    with mock.patch(
-        "mergify_engine.config.SUBSCRIPTION_BASE_URL",
-        httpserver.url_for("/")[:-1],
-    ):
+    await subscription.SubscriptionDashboardOnPremise.get_subscription(
+        redis_cache, github_types.GitHubAccountIdType(1234)
+    )
+
+    assert route.call_count == 1
+
+
+async def test_subscription_on_premise_wrong_token(
+    redis_cache: redis_utils.RedisCache, respx_mock: respx.MockRouter
+) -> None:
+
+    route = respx_mock.get(
+        f"{config.SUBSCRIPTION_BASE_URL}/on-premise/subscription/1234"
+    ).respond(401, json={"message": "error"})
+
+    with pytest.raises(exceptions.MergifyNotInstalled):
         await subscription.SubscriptionDashboardOnPremise.get_subscription(
             redis_cache, github_types.GitHubAccountIdType(1234)
         )
 
-    assert len(httpserver.log) == 1
-    httpserver.check_assertions()  # type: ignore [no-untyped-call]
-
-
-async def test_subscription_on_premise_wrong_token(
-    redis_cache: redis_utils.RedisCache,
-    httpserver: httpserver.HTTPServer,
-) -> None:
-
-    httpserver.expect_request("/on-premise/subscription/1234").respond_with_json(
-        {"message": "error"}, status=401
-    )
-
-    with mock.patch(
-        "mergify_engine.config.SUBSCRIPTION_BASE_URL",
-        httpserver.url_for("/")[:-1],
-    ):
-        with pytest.raises(exceptions.MergifyNotInstalled):
-            await subscription.SubscriptionDashboardOnPremise.get_subscription(
-                redis_cache, github_types.GitHubAccountIdType(1234)
-            )
-
-    assert len(httpserver.log) == 1
-    httpserver.check_assertions()  # type: ignore [no-untyped-call]
+    assert route.call_count == 1
 
 
 async def test_subscription_on_premise_invalid_sub(
-    redis_cache: redis_utils.RedisCache,
-    httpserver: httpserver.HTTPServer,
+    redis_cache: redis_utils.RedisCache, respx_mock: respx.MockRouter
 ) -> None:
 
-    httpserver.expect_request("/on-premise/subscription/1234").respond_with_json(
-        {"message": "error"}, status=403
+    route = respx_mock.get(
+        f"{config.SUBSCRIPTION_BASE_URL}/on-premise/subscription/1234"
+    ).respond(
+        403,
+        json={"message": "error"},
     )
+    with pytest.raises(exceptions.MergifyNotInstalled):
+        await subscription.SubscriptionDashboardOnPremise.get_subscription(
+            redis_cache, github_types.GitHubAccountIdType(1234)
+        )
 
-    with mock.patch(
-        "mergify_engine.config.SUBSCRIPTION_BASE_URL",
-        httpserver.url_for("/")[:-1],
-    ):
-        with pytest.raises(exceptions.MergifyNotInstalled):
-            await subscription.SubscriptionDashboardOnPremise.get_subscription(
-                redis_cache, github_types.GitHubAccountIdType(1234)
-            )
-
-    assert len(httpserver.log) == 1
-    httpserver.check_assertions()  # type: ignore [no-untyped-call]
+    assert route.call_count == 1

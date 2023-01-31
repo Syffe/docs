@@ -2594,21 +2594,6 @@ files = [
 pytest = ">=4.0.0"
 
 [[package]]
-name = "pytest-httpserver"
-version = "1.0.6"
-description = "pytest-httpserver is a httpserver for pytest"
-category = "dev"
-optional = false
-python-versions = ">=3.7,<4.0"
-files = [
-    {file = "pytest_httpserver-1.0.6-py3-none-any.whl", hash = "sha256:ac2379acc91fe8bdbe2911c93af8dd130e33b5899fb9934d15669480739c6d32"},
-    {file = "pytest_httpserver-1.0.6.tar.gz", hash = "sha256:9040d07bf59ac45d8de3db1d4468fd2d1d607975e4da4c872ecc0402cdbf7b3e"},
-]
-
-[package.dependencies]
-Werkzeug = ">=2.0.0"
-
-[[package]]
 name = "pytest-rerunfailures"
 version = "11.0"
 description = "pytest plugin to re-run tests to eliminate flaky failures"
@@ -4006,24 +3991,6 @@ files = [
 ]
 
 [[package]]
-name = "werkzeug"
-version = "2.2.2"
-description = "The comprehensive WSGI web application library."
-category = "dev"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "Werkzeug-2.2.2-py3-none-any.whl", hash = "sha256:f979ab81f58d7318e064e99c4506445d60135ac5cd2e177a2de0089bfd4c9bd5"},
-    {file = "Werkzeug-2.2.2.tar.gz", hash = "sha256:7ea2d48322cc7c0f8b3a215ed73eabd7b5d75d0b50e31ab006286ccff9e00b8f"},
-]
-
-[package.dependencies]
-MarkupSafe = ">=2.1.1"
-
-[package.extras]
-watchdog = ["watchdog"]
-
-[[package]]
 name = "wrapt"
 version = "1.14.1"
 description = "Module for decorators, wrappers and monkey patching."
@@ -4233,4 +4200,4 @@ tokenize-rt = ">=2.1"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<4.0"
-content-hash = "634a030439e358ad2089a7da7b50d550e4820523e5f3a1681d6b212b37ebc636"
+content-hash = "ff487daeca00e0cbba41f46b8efa83410af809c95f673eaefc3141757f0cca70"
