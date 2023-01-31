@@ -138,7 +138,7 @@ async def _do_rebase(
 
         await git("push", "--verbose", "origin", head_branch, "--force-with-lease")
 
-        expected_sha = (await git("log", "-1", "--format=%H")).strip()
+        expected_sha = (await git("rev-parse", head_branch)).strip()
         if expected_sha:
             level = logging.INFO
         else:
