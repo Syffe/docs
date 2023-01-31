@@ -126,7 +126,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: ⚙️ Build & cache all layers
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           # NOTE(sileht): COMMON section must be the same on all build steps
           # GitHub workflow does not support Yaml Anchors, so we have to duplciate it...
@@ -141,7 +141,7 @@ jobs:
           cache-to: type=local,dest=/home/runner/docker-cache
 
       - name: ⚙️  Upload layers cache to GitHub Action Cache
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           # NOTE(sileht): COMMON section must be the same on all build steps
           # GitHub workflow does not support Yaml Anchors, so we have to duplciate it...
@@ -156,7 +156,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: ⚙️ Build saas-web
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           target: saas-web
           tags: web:tmp
@@ -172,7 +172,7 @@ jobs:
           cache-from: type=local,src=/home/runner/docker-cache
 
       - name: ⚙️ Build saas-worker-shared
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           target: saas-worker-shared
           tags: worker-shared:tmp
@@ -188,7 +188,7 @@ jobs:
           cache-from: type=local,src=/home/runner/docker-cache
 
       - name: ⚙️ Build saas-worker-dedicated
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           target: saas-worker-dedicated
           tags: worker-dedicated:tmp
