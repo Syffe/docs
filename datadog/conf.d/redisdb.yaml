@@ -8,6 +8,7 @@ instances:
     ssl: <DEFAULT REDIS SSL>
     ssl_cert_reqs: 0
     slowlog-max-len: 0
+    collect_client_metrics: true
     keys:
       - streams
       - attempts
@@ -21,5 +22,6 @@ instances:
     db: 1
     ssl_cert_reqs: 0
     slowlog-max-len: 0
+    collect_client_metrics: true
     tags:
       - role:eventlogs
