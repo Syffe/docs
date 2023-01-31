@@ -446,20 +446,31 @@ Then, re-embark the pull request into the merge queue by posting the comment
         unqueue_reason: queue_utils.BaseUnqueueReason,
         result: check_api.Result,
     ) -> None:
+        pull_request_rule_has_unmatched = result is actions.CANCELLED_CHECK_REPORT
         # NOTE(sileht): The PR has been checked successfully but the
         # final merge fail, we must erase the queue summary conclusion,
         # so the requeue can works.
-        if (
+        merge_has_been_cancelled = (
             car
             and car.train_car_state.outcome == merge_train.TrainCarOutcome.MERGEABLE
             and result.conclusion is check_api.Conclusion.CANCELLED
-        ):
+        )
+        if pull_request_rule_has_unmatched or merge_has_been_cancelled:
+            if pull_request_rule_has_unmatched:
+                # NOTE(sileht): we allow the action to rerun later
+                conclusion = check_api.Conclusion.NEUTRAL
+            elif merge_has_been_cancelled:
+                # FIXME(sileht): CANCELLED mean unqueue with command, we should have put something else here, FAILURE?
+                # NOTE(sileht): we disallow the action to rerun later without requeue/refresh command
+                conclusion = check_api.Conclusion.CANCELLED
+            else:
+                raise RuntimeError("impossible if branch")
             await check_api.set_check_run(
                 self.ctxt,
                 constants.MERGE_QUEUE_SUMMARY_NAME,
                 check_api.Result(
                     # FIXME(sileht): CANCELLED mean unqueue with command, we should have put something else here, FAILURE?
-                    check_api.Conclusion.CANCELLED,
+                    conclusion,
                     f"The pull request {self.ctxt.pull['number']} cannot be merged and has been disembarked",
                     result.title + "\n" + result.summary,
                 ),

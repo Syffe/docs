@@ -1664,6 +1664,93 @@ class TestQueueAction(base.FunctionalTestBase):
             "total": 5,
         }
 
+    async def test_unqueue_rule_unmatches(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "speculative_checks": 2,
+                    "allow_inplace_checks": True,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        p2 = await self.create_pr()
+
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        tmp_pull_2 = await self.wait_for_pull_request("opened")
+
+        q = await self.get_train()
+        await self.assert_merge_queue_contents(
+            q,
+            p1["base"]["sha"],
+            [
+                base.MergeQueueCarMatcher(
+                    [p1["number"]],
+                    [],
+                    p1["base"]["sha"],
+                    merge_train.TrainCarChecksType.INPLACE,
+                    p1["number"],
+                ),
+                base.MergeQueueCarMatcher(
+                    [p2["number"]],
+                    [p1["number"]],
+                    p1["base"]["sha"],
+                    merge_train.TrainCarChecksType.DRAFT,
+                    tmp_pull_2["number"],
+                ),
+            ],
+        )
+
+        await self.remove_label(p2["number"], "queue")
+        await self.run_engine()
+
+        await q.load()
+        await self.assert_merge_queue_contents(
+            q,
+            p1["base"]["sha"],
+            [
+                base.MergeQueueCarMatcher(
+                    [p1["number"]],
+                    [],
+                    p1["base"]["sha"],
+                    merge_train.TrainCarChecksType.INPLACE,
+                    p1["number"],
+                ),
+            ],
+        )
+
+        ctxt = context.Context(self.repository_ctxt, p2)
+        check = await ctxt.get_engine_check_run("Rule: Merge priority high (queue)")
+        assert check is not None
+        assert check["conclusion"] == "cancelled"
+        assert check["output"]["title"] == "The pull request rule doesn't match anymore"
+        check = await ctxt.get_engine_check_run(constants.MERGE_QUEUE_SUMMARY_NAME)
+        assert check is not None
+        assert check["conclusion"] == "neutral"
+        assert check["output"]["title"].endswith(
+            "cannot be merged and has been disembarked"
+        )
+
     async def test_unqueue_rule_unmatch_with_batch_requeue(self) -> None:
         rules = {
             "queue_rules": [
