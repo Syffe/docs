@@ -1,9 +1,11 @@
 import datetime
 import json
 import os
+from unittest import mock
 
 from freezegun import freeze_time
 import httpx
+import msgpack
 import pytest
 import respx
 
@@ -106,6 +108,15 @@ async def test_store_active_users(
             (b"12345678~AnotherUser", 1320969600.0),
             (b"21031067~Codertocat", 1320969600.0),
         ]
+        assert msgpack.unpackb(
+            await redis_links.active_users.get(
+                "active-users-events~21031067~186853002~12345678",
+            )
+        ) == {
+            "action": "opened",
+            "received_at": mock.ANY,
+            "sender": {"id": 21031067, "login": "Codertocat", "type": "User"},
+        }
     else:
         assert (
             await redis_links.active_users.zrangebyscore(

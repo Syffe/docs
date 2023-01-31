@@ -7,6 +7,7 @@ import time
 import typing
 
 import daiquiri
+import msgpack
 import tenacity
 
 from mergify_engine import config
@@ -15,6 +16,7 @@ from mergify_engine import github_types
 from mergify_engine import json
 from mergify_engine import redis_utils
 from mergify_engine import service
+from mergify_engine import worker_pusher
 from mergify_engine.clients import http
 
 
@@ -22,6 +24,9 @@ LOG = daiquiri.getLogger(__name__)
 
 HOUR = datetime.timedelta(hours=1).total_seconds()
 ACTIVE_USERS_PREFIX = "active-users"
+ACTIVE_USERS_EVENTS_PREFIX = "active-users-events"
+# NOTE(sileht): keep two months to be able answer invoice question on support
+ACTIVE_USERS_EVENTS_EXPIRATION = int(datetime.timedelta(days=62).total_seconds())
 
 
 ActiveUserKeyT = typing.NewType("ActiveUserKeyT", str)
@@ -64,6 +69,15 @@ def _get_active_users_key(
 ) -> ActiveUserKeyT:
     return ActiveUserKeyT(
         f"{ACTIVE_USERS_PREFIX}~{repository['owner']['id']}~{repository['owner']['login']}~{repository['id']}~{repository['name']}"
+    )
+
+
+def _get_active_users_events_key(
+    repository: github_types.GitHubRepository,
+    user_id: github_types.GitHubAccountIdType,
+) -> ActiveUserKeyT:
+    return ActiveUserKeyT(
+        f"{ACTIVE_USERS_EVENTS_PREFIX}~{repository['owner']['id']}~{repository['id']}~{user_id}"
     )
 
 
@@ -162,6 +176,13 @@ async def store_active_users(
     for user_id, user_login in users.items():
         user_key = f"{user_id}~{user_login}"
         await transaction.zadd(repo_key, {user_key: time.time()})
+        event_key = _get_active_users_events_key(typed_event["repository"], user_id)
+
+        await transaction.setex(
+            event_key,
+            ACTIVE_USERS_EVENTS_EXPIRATION,
+            msgpack.packb(worker_pusher.extract_slim_event(event_type, typed_event)),
+        )
 
     await transaction.execute()
 
