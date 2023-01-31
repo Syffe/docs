@@ -19,6 +19,7 @@ async def startup() -> None:
         eventlogs_max_connections=config.REDIS_EVENTLOGS_WEB_MAX_CONNECTIONS,
         stats_max_connections=config.REDIS_STATS_WEB_MAX_CONNECTIONS,
         authentication_max_connections=config.REDIS_AUTHENTICATION_WEB_MAX_CONNECTIONS,
+        active_users_max_connections=config.REDIS_ACTIVE_USERS_WEB_MAX_CONNECTIONS,
     )
 
 

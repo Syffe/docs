@@ -225,6 +225,9 @@ Schema = voluptuous.Schema(
             "REDIS_STATS_WEB_MAX_CONNECTIONS", default=None
         ): voluptuous.Any(None, voluptuous.Coerce(int)),
         voluptuous.Required(
+            "REDIS_ACTIVE_USERS_WEB_MAX_CONNECTIONS", default=None
+        ): voluptuous.Any(None, voluptuous.Coerce(int)),
+        voluptuous.Required(
             "REDIS_AUTHENTICATION_WEB_MAX_CONNECTIONS", default=None
         ): voluptuous.Any(None, voluptuous.Coerce(int)),
         # NOTE(sileht): Unused anymore, but keep to detect legacy onpremise installation
@@ -382,6 +385,7 @@ REDIS_QUEUE_WEB_MAX_CONNECTIONS: int | None
 REDIS_EVENTLOGS_WEB_MAX_CONNECTIONS: int | None
 REDIS_STATS_WEB_MAX_CONNECTIONS: int | None
 REDIS_AUTHENTICATION_WEB_MAX_CONNECTIONS: int | None
+REDIS_ACTIVE_USERS_WEB_MAX_CONNECTIONS: int | None
 TESTING_ORGANIZATION_ID: github_types.GitHubAccountIdType
 TESTING_ORGANIZATION_NAME: github_types.GitHubLogin
 TESTING_REPOSITORY_ID: github_types.GitHubRepositoryIdType

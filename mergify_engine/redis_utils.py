@@ -124,6 +124,7 @@ class RedisLinks:
     eventlogs_max_connections: int | None = None
     stats_max_connections: int | None = None
     authentication_max_connections: int | None = None
+    active_users_max_connections: int | None = None
 
     @functools.cached_property
     def queue(self) -> RedisQueue:
@@ -205,6 +206,7 @@ class RedisLinks:
             "active_users",
             config.ACTIVE_USERS_URL,
             decode_responses=False,
+            max_connections=self.active_users_max_connections,
         )
         return RedisActiveUsers(client)
 
