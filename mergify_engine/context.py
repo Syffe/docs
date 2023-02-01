@@ -1986,7 +1986,7 @@ class Context:
             or queue_utils.is_pr_body_a_merge_queue_pr(self.pull["body"])
         )
 
-    async def has_been_synchronized_by_user(self) -> bool:
+    async def synchronized_by_user_at(self) -> datetime.datetime | None:
         for source in self.sources:
             if source["event_type"] == "pull_request":
                 event = typing.cast(github_types.GitHubEventPullRequest, source["data"])
@@ -2000,8 +2000,8 @@ class Context:
                         f"branch-update-{self.pull['head']['sha']}"
                     )
                     if not is_mergify:
-                        return True
-        return False
+                        return date.fromisoformat(event["received_at"])
+        return None
 
     def has_been_synchronized(self) -> bool:
         for source in self.sources:

@@ -290,3 +290,42 @@ Unknown pull request attribute: Loser
                 for r in await self.get_reviews(p["number"])
             ],
         )
+
+    @pytest.mark.skipif(
+        not base.RECORD,
+        reason="This test cannot be replayed as it exercises code that relies on a timestamp from GitHub API and the event received_at",
+    )
+    async def test_dismiss_reviews_timing_race(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "dismiss reviews",
+                    "conditions": [f"base={self.main_branch_name}"],
+                    "actions": {"dismiss_reviews": {}},
+                }
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        p = await self.create_pr()
+        await self._push_for_synchronize(p["head"]["ref"])
+
+        await self.wait_for("pull_request", {"action": "synchronize"})
+
+        await self.client_admin.post(
+            f"{self.url_origin}/pulls/{p['number']}/reviews",
+            json={"event": "APPROVE", "body": "event: APPROVE"},
+        )
+        await self.wait_for(
+            "pull_request_review", {"action": "submitted"}, forward_to_engine=False
+        )
+
+        await self.run_engine()
+
+        self.assertEqual(
+            [("APPROVED", "mergify-test1")],
+            [
+                (r["state"], r["user"]["login"])
+                for r in await self.get_reviews(p["number"])
+            ],
+        )

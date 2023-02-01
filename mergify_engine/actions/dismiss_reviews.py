@@ -8,6 +8,7 @@ import voluptuous
 from mergify_engine import actions
 from mergify_engine import check_api
 from mergify_engine import context
+from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import rules
 from mergify_engine import signals
@@ -92,13 +93,14 @@ class DismissReviewsExecutor(
         # his access_token instead of the Mergify installation token.
         # As workaround we track in redis merge commit id
         # This is only true for method="rebase"
-        if (
-            self.config["when"] == WHEN_SYNCHRONIZE
-            and not await self.ctxt.has_been_synchronized_by_user()
-        ):
-            return check_api.Result(
-                check_api.Conclusion.SUCCESS, "Updated by Mergify, ignoring", ""
-            )
+        if self.config["when"] == WHEN_SYNCHRONIZE:
+            last_user_sync = await self.ctxt.synchronized_by_user_at()
+            if last_user_sync is None:
+                return check_api.Result(
+                    check_api.Conclusion.SUCCESS, "Updated by Mergify, ignoring", ""
+                )
+        else:
+            last_user_sync = None
 
         requested_reviewers_login = {
             rr["login"] for rr in self.ctxt.pull["requested_reviewers"]
@@ -108,6 +110,13 @@ class DismissReviewsExecutor(
         to_dismiss_users = set()
         to_dismiss_user_from_requested_reviewers = set()
         for review in (await self.ctxt.consolidated_reviews())[1]:
+
+            if self.config["when"] == WHEN_SYNCHRONIZE and last_user_sync is not None:
+                submitted_at = date.fromisoformat(review["submitted_at"])
+                if submitted_at > last_user_sync:
+                    # NOTE(sileht): we ignore review done after the sync
+                    continue
+
             conf = self.config.get(review["state"].lower(), False)
             if conf is True:
                 to_dismiss.add(review["id"])

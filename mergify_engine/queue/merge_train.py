@@ -1695,7 +1695,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             unexpected_changes = UnexpectedBaseBranchChange(current_base_sha)
         elif (
             self.train_car_state.checks_type == TrainCarChecksType.INPLACE
-            and await checked_ctxt.has_been_synchronized_by_user()
+            and await checked_ctxt.synchronized_by_user_at() is not None
         ):
             unexpected_changes = UnexpectedUpdatedPullRequestChange(
                 checked_ctxt.pull["number"]

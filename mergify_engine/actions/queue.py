@@ -355,7 +355,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         # NOTE(sileht): the pull request gets checked and then changed
         # by user, we should unqueue and requeue it as the conditions still match.
-        if await self.ctxt.has_been_synchronized_by_user():
+        if await self.ctxt.synchronized_by_user_at():
             unexpected_change = queue_utils.UnexpectedQueueChange(
                 str(
                     merge_train.UnexpectedUpdatedPullRequestChange(
@@ -680,7 +680,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         if ctxt.closed:
             return True
 
-        if await ctxt.has_been_synchronized_by_user():
+        if await ctxt.synchronized_by_user_at() is not None:
             return True
 
         position, _ = q.find_embarked_pull(ctxt.pull["number"])
