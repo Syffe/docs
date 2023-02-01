@@ -210,26 +210,26 @@ Schema = voluptuous.Schema(
             "REDIS_SSL_VERIFY_MODE_CERT_NONE", default=False
         ): CoercedBool,
         voluptuous.Required(
-            "REDIS_STREAM_WEB_MAX_CONNECTIONS", default=None
-        ): voluptuous.Any(None, voluptuous.Coerce(int)),
+            "REDIS_STREAM_WEB_MAX_CONNECTIONS", default=50
+        ): voluptuous.Coerce(int),
         voluptuous.Required(
-            "REDIS_CACHE_WEB_MAX_CONNECTIONS", default=None
-        ): voluptuous.Any(None, voluptuous.Coerce(int)),
+            "REDIS_CACHE_WEB_MAX_CONNECTIONS", default=50
+        ): voluptuous.Coerce(int),
         voluptuous.Required(
-            "REDIS_QUEUE_WEB_MAX_CONNECTIONS", default=None
-        ): voluptuous.Any(None, voluptuous.Coerce(int)),
+            "REDIS_QUEUE_WEB_MAX_CONNECTIONS", default=50
+        ): voluptuous.Coerce(int),
         voluptuous.Required(
-            "REDIS_EVENTLOGS_WEB_MAX_CONNECTIONS", default=None
-        ): voluptuous.Any(None, voluptuous.Coerce(int)),
+            "REDIS_EVENTLOGS_WEB_MAX_CONNECTIONS", default=50
+        ): voluptuous.Coerce(int),
         voluptuous.Required(
-            "REDIS_STATS_WEB_MAX_CONNECTIONS", default=None
-        ): voluptuous.Any(None, voluptuous.Coerce(int)),
+            "REDIS_STATS_WEB_MAX_CONNECTIONS", default=50
+        ): voluptuous.Coerce(int),
         voluptuous.Required(
-            "REDIS_ACTIVE_USERS_WEB_MAX_CONNECTIONS", default=None
-        ): voluptuous.Any(None, voluptuous.Coerce(int)),
+            "REDIS_ACTIVE_USERS_WEB_MAX_CONNECTIONS", default=50
+        ): voluptuous.Coerce(int),
         voluptuous.Required(
-            "REDIS_AUTHENTICATION_WEB_MAX_CONNECTIONS", default=None
-        ): voluptuous.Any(None, voluptuous.Coerce(int)),
+            "REDIS_AUTHENTICATION_WEB_MAX_CONNECTIONS", default=50
+        ): voluptuous.Coerce(int),
         # NOTE(sileht): Unused anymore, but keep to detect legacy onpremise installation
         voluptuous.Required("STORAGE_URL", default=None): voluptuous.Any(None, str),
         # NOTE(sileht): Not used directly, but used to build other redis urls if not provided

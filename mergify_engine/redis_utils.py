@@ -115,6 +115,12 @@ async def run_script(
 @dataclasses.dataclass
 class RedisLinks:
     name: str
+    connection_pool_cls: type[
+        redispy.connection.ConnectionPool
+    ] = redispy.connection.ConnectionPool
+    connection_pool_kwargs: dict[str, typing.Any] = dataclasses.field(
+        default_factory=dict
+    )
 
     # NOTE(sileht): This is used, only to limit connection on webserver side.
     # The worker open only one connection per asyncio tasks per worker.
@@ -271,18 +277,20 @@ class RedisLinks:
         redis_connect_func: "redispy.connection.ConnectCallbackT" | None = None,
     ) -> "redispy.Redis[bytes]" | "redispy.Redis[str]":
 
-        options: dict[str, typing.Any] = {}
+        options: dict[str, typing.Any] = self.connection_pool_kwargs.copy()
         if config.REDIS_SSL_VERIFY_MODE_CERT_NONE and url.startswith("rediss://"):
             options["ssl_check_hostname"] = False
             options["ssl_cert_reqs"] = None
 
-        client = redispy.Redis.from_url(
-            url,
-            max_connections=max_connections,
-            decode_responses=decode_responses,
-            client_name=f"{service.SERVICE_NAME}/{self.name}/{name}",
-            redis_connect_func=redis_connect_func,
-            **options,
+        client = redispy.Redis(  # type: ignore[var-annotated]
+            connection_pool=self.connection_pool_cls.from_url(
+                url,
+                max_connections=max_connections,
+                decode_responses=decode_responses,
+                client_name=f"{service.SERVICE_NAME}/{self.name}/{name}",
+                redis_connect_func=redis_connect_func,
+                **options,
+            )
         )
         ddtrace.Pin.override(client, service=f"engine-redis-{name}")
         return client
