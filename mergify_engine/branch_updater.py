@@ -141,23 +141,9 @@ async def _do_rebase(
         expected_sha = (await git("rev-parse", head_branch)).strip()
         if expected_sha:
             level = logging.INFO
-            extras = {}
         else:
             level = logging.ERROR
-            extras = {
-                "logs": await git("log", "-100"),
-                "graph": await git(
-                    "log",
-                    "--graph",
-                    "--pretty=tformat:'%h -%d %s (%an %ci)",
-                    "--abbrev-commit",
-                    "-100",
-                ),
-                "status": await git("status"),
-                "branch": await git("branch", "-a"),
-                "remote": await git("remote", "-v"),
-            }
-        ctxt.log.log(level, "pull request rebased", new_head_sha=expected_sha, **extras)  # type: ignore[arg-type]
+        ctxt.log.log(level, "pull request rebased", new_head_sha=expected_sha)
         # NOTE(sileht): We store this for Context.has_been_synchronized_by_user()
         await ctxt.redis.cache.setex(
             f"branch-update-{expected_sha}", 60 * 60, expected_sha
