@@ -147,7 +147,11 @@ async def _do_rebase(
             extras = {
                 "logs": await git("log", "-100"),
                 "graph": await git(
-                    "log", "--graph", "--pretty=cshort", "--abbrev-commit", "-100"
+                    "log",
+                    "--graph",
+                    "--pretty=tformat:'%h -%d %s (%an %ci)",
+                    "--abbrev-commit",
+                    "-100",
                 ),
                 "status": await git("status"),
                 "branch": await git("branch", "-a"),
