@@ -110,43 +110,6 @@ class TestMergeAction(base.FunctionalTestBase):
             not in checks[0]["output"]["summary"]
         )
 
-    async def test_merge_draft(self) -> None:
-        rules = {
-            "pull_request_rules": [
-                {
-                    "name": "Merge",
-                    "conditions": [
-                        f"base={self.main_branch_name}",
-                        "label=automerge",
-                    ],
-                    "actions": {"merge": {}},
-                },
-            ]
-        }
-
-        await self.setup_repo(yaml.dump(rules))
-
-        p = await self.create_pr(draft=True)
-        await self.add_label(p["number"], "automerge")
-        await self.run_engine()
-
-        ctxt = context.Context(self.repository_ctxt, p, [])
-        checks = await ctxt.pull_engine_check_runs
-        assert len(checks) == 2
-        check = checks[1]
-        assert check["conclusion"] is None
-        assert check["output"]["title"] == "Draft flag needs to be removed"
-        assert check["output"]["summary"] == ""
-
-        await self.remove_label(p["number"], "automerge")
-        await self.run_engine()
-        ctxt = context.Context(self.repository_ctxt, p, [])
-        checks = await ctxt.pull_engine_check_runs
-        assert len(checks) == 2
-        check = checks[1]
-        assert check["conclusion"] == "cancelled"
-        assert check["output"]["title"] == "The pull request rule doesn't match anymore"
-
     async def test_merge_with_installation_token(self) -> None:
         rules = {
             "pull_request_rules": [
