@@ -160,7 +160,7 @@ class TestStatisticsRedis(base.FunctionalTestBase):
             # 6 times since we have 2 PR in merge queue.
             assert statsd.gauge.call_count == 6
             assert statsd.gauge.call_args_list[0].args == (
-                "statistics.time_to_merge.accuracy.estimated_value",
+                "statistics.time_to_merge.accuracy.median_value",
                 estimated_value,
             )
 

@@ -45,7 +45,7 @@ class StatisticsAccuracyMeasurement(signals.SignalBase):
             metadata["branch"],
             int(queued_at.timestamp()),
         )
-        measured_stat = stat_raw["mean"]
+        measured_stat = stat_raw["median"]
         if measured_stat is None:
             return
 
@@ -59,7 +59,7 @@ class StatisticsAccuracyMeasurement(signals.SignalBase):
         ]
 
         statsd.gauge(
-            "statistics.time_to_merge.accuracy.estimated_value",
+            "statistics.time_to_merge.accuracy.median_value",
             measured_stat,
             tags=tags,
         )
