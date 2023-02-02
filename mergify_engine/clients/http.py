@@ -154,8 +154,14 @@ def before_log(retry_state: tenacity.RetryCallState) -> None:
 
 def after_log(retry_state: tenacity.RetryCallState) -> None:
     client = retry_state.args[0]
-    method = retry_state.args[1]
-    url = retry_state.args[2]
+    if len(retry_state.args) >= 2:
+        method = retry_state.args[1]
+    else:
+        method = None
+    if len(retry_state.args) >= 3:
+        url = retry_state.args[2]
+    else:
+        url = None
     gh_owner = extract_organization_login(client)
     error_message = None
     response = None
