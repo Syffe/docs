@@ -1048,6 +1048,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
         expected = f"""### Rule: merge (merge)
 - [ ] `depends-on=#{pr1['number']}` [⛓️ **test_depends_on: pull request n1 from integration** ([#{pr1['number']}]({repo_url}/pull/{pr1['number']}))]
 - [ ] `depends-on=#9999999` [⛓️ ⚠️ *pull request not found* (#9999999)]
+- [X] `-draft` [:pushpin: merge requirement]
 - [X] `base={self.main_branch_name}`
 - [X] `depends-on=#{pr2['number']}` [⛓️ **test_depends_on: pull request n2 from integration** ([#{pr2['number']}]({repo_url}/pull/{pr2['number']}))]
 - [X] `label=automerge`

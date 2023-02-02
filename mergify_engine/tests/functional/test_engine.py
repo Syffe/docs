@@ -351,6 +351,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
   - [ ] `check-skipped=skipped-ci`
   - [ ] `check-success=skipped-ci`
 - [X] `#changes-requested-reviews-by=0` [🛡 GitHub branch protection]
+- [X] `-draft` [:pushpin: merge requirement]
 - [X] `base={self.main_branch_name}`
 
 ### Rule: merge (comment)
