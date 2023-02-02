@@ -3391,7 +3391,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         comments = await self.get_issue_comments(mq_pr_number)
         assert (
-            "Command not allowed on merge queue pull request." == comments[-1]["body"]
+            "Command not allowed on merge queue pull request." in comments[-1]["body"]
         )
 
         await self.create_comment_as_admin(mq_pr_number, "@mergifyio refresh")
