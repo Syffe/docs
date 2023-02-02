@@ -1779,13 +1779,22 @@ You don't need to do anything. Mergify will close this pull request automaticall
             else None,
         )
 
-        status = await checks_status.get_rule_checks_status(
-            checked_ctxt.log,
-            checked_ctxt.repository,
-            pull_requests,
-            evaluated_queue_rule,
-            wait_for_schedule_to_match=True,
-        )
+        if (
+            self.train_car_state.checks_type == TrainCarChecksType.INPLACE
+            and await checked_ctxt.is_behind
+        ):
+            # NOTE(sileht): The PR has been updated, but GitHub still return the old head sha
+            # So we should not looks at CIs yet. Reporting may not be awesome as CIs will
+            # look passing for a couple of second.
+            status = check_api.Conclusion.PENDING
+        else:
+            status = await checks_status.get_rule_checks_status(
+                checked_ctxt.log,
+                checked_ctxt.repository,
+                pull_requests,
+                evaluated_queue_rule,
+                wait_for_schedule_to_match=True,
+            )
 
         await self.update_state(
             queue_rules,
