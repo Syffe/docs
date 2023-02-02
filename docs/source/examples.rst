@@ -167,7 +167,7 @@ condition using a `label
             method: merge
 
 As soon as the pull request has been approved by 2 contributors and gets the
-label ``ready-to-be-merged``, the pull request will be merged by Mergify.
+label ``ready-to-merge``, the pull request will be merged by Mergify.
 
 On the other hand, some developers wants an option to disable the automatic
 merge feature with a label. This can be useful to indicate that a pull request
