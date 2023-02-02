@@ -460,16 +460,14 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 # NOTE(sileht): we allow the action to rerun later
                 conclusion = check_api.Conclusion.NEUTRAL
             elif merge_has_been_cancelled:
-                # FIXME(sileht): CANCELLED mean unqueue with command, we should have put something else here, FAILURE?
                 # NOTE(sileht): we disallow the action to rerun later without requeue/refresh command
-                conclusion = check_api.Conclusion.CANCELLED
+                conclusion = check_api.Conclusion.FAILURE
             else:
                 raise RuntimeError("impossible if branch")
             await check_api.set_check_run(
                 self.ctxt,
                 constants.MERGE_QUEUE_SUMMARY_NAME,
                 check_api.Result(
-                    # FIXME(sileht): CANCELLED mean unqueue with command, we should have put something else here, FAILURE?
                     conclusion,
                     f"The pull request {self.ctxt.pull['number']} cannot be merged and has been disembarked",
                     result.title + "\n" + result.summary,
