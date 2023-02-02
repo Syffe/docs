@@ -1,7 +1,10 @@
+from unittest import mock
+
 import fastapi
 import pytest
 import starlette
 
+from mergify_engine.middlewares import logging
 from mergify_engine.tests import conftest
 
 
@@ -75,3 +78,13 @@ async def test_http_redirect_to_https(
     assert (
         r.headers["Location"] == "https://dashboard.mergify.com/testing-heroku-headers"
     )
+
+
+async def test_loggin_middleware_error() -> None:
+    app = mock.Mock()
+    fake_middleware = mock.AsyncMock()
+    fake_middleware.side_effect = Exception("boom")
+    middleware = logging.LoggingMiddleware(app)
+
+    with pytest.raises(Exception, match="boom"):
+        await middleware.dispatch(mock.Mock(), fake_middleware)

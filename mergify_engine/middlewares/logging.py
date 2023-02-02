@@ -14,10 +14,20 @@ class LoggingMiddleware(base.BaseHTTPMiddleware):
         request: starlette.requests.Request,
         call_next: base.RequestResponseEndpoint,
     ) -> starlette.responses.Response:
-        response = None
         try:
             response = await call_next(request)
-        finally:
+        except Exception:
+            LOG.error(
+                "request",
+                request={
+                    "method": request.method,
+                    "url": request.url,
+                    "headers": request.headers,
+                },
+                exc_info=True,
+            )
+            raise
+        else:
             LOG.info(
                 "request",
                 request={
@@ -28,8 +38,6 @@ class LoggingMiddleware(base.BaseHTTPMiddleware):
                 response={
                     "status_code": response.status_code,
                     "headers": response.headers,
-                }
-                if response
-                else None,
+                },
             )
         return response
