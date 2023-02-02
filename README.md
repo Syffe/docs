@@ -3,6 +3,15 @@
 This repository contains Mergify engine code with the infrastructure to build
 Docker images for customers and deploy it on Heroku in production.
 
+## Git hooks
+
+`pre-commit` hooks are used, this require `pre-commit` to be installed:
+
+```
+brew install pre-commit
+pre-commit install -t pre-push
+```
+
 ## Run CI tasks locally
 
 Install poetry and poethepoet
