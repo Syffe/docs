@@ -1105,7 +1105,7 @@ async def test_schedule_with_timezone() -> None:
 async def test_text_jinja_template(
     jinja_environment: jinja2.sandbox.SandboxedEnvironment,
 ) -> None:
-    template = filter.JinjaTemplateWrapper(jinja_environment.from_string("{{author}}"))
+    template = filter.JinjaTemplateWrapper(jinja_environment, r"{{author}}", {"author"})
     f = filter.BinaryFilter({"=": ("sender", template)})
     assert await f(AsyncFakePR({"author": "foo", "sender": "foo"}))
     assert not await f(AsyncFakePR({"author": "foo", "sender": "bar"}))
@@ -1115,7 +1115,7 @@ async def test_regex_jinja_template(
     jinja_environment: jinja2.sandbox.SandboxedEnvironment,
 ) -> None:
     template = filter.JinjaTemplateWrapper(
-        jinja_environment.from_string(r"{{author}} \d{6}")
+        jinja_environment, r"{{author}} \d{6}", {"author"}
     )
     f = filter.BinaryFilter({"~=": ("body", template)})
     assert await f(AsyncFakePR({"author": "foo", "body": "hello foo 123456 !"}))

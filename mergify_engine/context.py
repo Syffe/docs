@@ -2299,12 +2299,6 @@ class PullRequest(BasePullRequest):
             | self.LIST_ATTRIBUTES_WITH_LENGTH_OPTIMIZATION
         )
 
-    async def items(self) -> dict[str, ContextAttributeType]:
-        d = {}
-        for k in sorted(self):
-            d[k] = await getattr(self, k)
-        return d
-
     @staticmethod
     def _markdownify(s: str) -> str:
         with warnings.catch_warnings():

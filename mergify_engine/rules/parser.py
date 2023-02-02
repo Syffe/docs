@@ -485,10 +485,7 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
             return _to_dict(negate, True, attribute, op, number)
 
         if is_jinja_template(value):
-            validate_jinja_template(value)
-            template = filter.JinjaTemplateWrapper(
-                JINJA_ENV.from_string(_unquote(value))
-            )
+            template = get_jinja_template_wrapper(_unquote(value))
             return _to_dict(negate, quantity, attribute, op, template)
 
         if op == REGEX_OPERATOR:
@@ -535,7 +532,7 @@ def is_jinja_template(value: str) -> bool:
     return "{{" in value or "{%" in value or "{#" in value
 
 
-def validate_jinja_template(value: str) -> None:
+def get_jinja_template_wrapper(value: str) -> filter.JinjaTemplateWrapper:
     try:
         template = JINJA_ENV.parse(value)
     except jinja2.exceptions.TemplateError:
@@ -549,6 +546,8 @@ def validate_jinja_template(value: str) -> None:
         raise ConditionParsingError(
             f"Invalid template, unexpected variables {unexpected_variables}"
         )
+
+    return filter.JinjaTemplateWrapper(JINJA_ENV, value, used_variables)
 
 
 def is_github_team_name(value: str) -> bool:

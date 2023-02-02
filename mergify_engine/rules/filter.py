@@ -296,7 +296,7 @@ class Filter(typing.Generic[FilterResultT]):
             )
 
             if isinstance(reference_value, JinjaTemplateWrapper):
-                reference_value = await reference_value.render_async(await obj.items())
+                reference_value = await reference_value.render_async(obj)
 
             ref_values_expanded = reference_value_expander(reference_value)
             if inspect.iscoroutine(ref_values_expanded):
@@ -817,20 +817,21 @@ class IncompleteChecksFilter(Filter[IncompleteChecksResult]):
         return True
 
 
+@dataclasses.dataclass
 class JinjaTemplateWrapper:
-    def __init__(
-        self,
-        template: jinja2.Template,
-        compile_func: ValueCompilerT = _identity,
-    ) -> None:
-        self._template = template
-        self._compile_func = compile_func
+    env: jinja2.Environment
+    template: str
+    used_variables: set[str]
+    compile_func: ValueCompilerT = _identity
 
     def set_compile_func(self, compile_func: ValueCompilerT) -> None:
-        self._compile_func = compile_func
+        self.compile_func = compile_func
 
-    def render(self, data: dict[str, typing.Any]) -> typing.Any:
-        return self._compile_func(self._template.render(data))
+    async def render_async(self, obj: GetAttrObjectT) -> typing.Any:
+        infos = {}
+        for k in sorted(self.used_variables):
+            infos[k] = await getattr(obj, k)
 
-    async def render_async(self, data: dict[str, typing.Any]) -> typing.Any:
-        return self._compile_func(await self._template.render_async(data))
+        return self.compile_func(
+            await self.env.from_string(self.template).render_async(**infos)
+        )

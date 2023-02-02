@@ -1,6 +1,7 @@
 import datetime
 import re
 import typing
+from unittest import mock
 import zoneinfo
 
 from freezegun import freeze_time
@@ -419,6 +420,10 @@ def test_parse(line: str, result: typing.Any) -> None:
     assert result == parser.parse(line, allow_command_attributes=True)
 
 
+async def AsyncProperty(value: str) -> str:
+    return value
+
+
 @pytest.mark.parametrize(
     "condition,expected_attribute,expected_operator,expected_rendering",
     (
@@ -427,7 +432,7 @@ def test_parse(line: str, result: typing.Any) -> None:
         ("body~=hello {{ author }}", "body", "~=", "hello foo"),
     ),
 )
-def test_parse_jinja_template(
+async def test_parse_jinja_template(
     condition: str,
     expected_attribute: str,
     expected_operator: str,
@@ -438,7 +443,8 @@ def test_parse_jinja_template(
     attribute_name, template = result[expected_operator]
     assert attribute_name == expected_attribute
     assert isinstance(template, filter.JinjaTemplateWrapper)
-    assert template.render({"author": "foo"}) == expected_rendering
+    obj = mock.Mock(author=AsyncProperty("foo"))
+    assert await template.render_async(obj) == expected_rendering
 
 
 @pytest.mark.parametrize(
@@ -565,4 +571,4 @@ def test_validate_github_login(value: str) -> None:
 )
 def test_validate_jinja_template(value: str, expected_error: str) -> None:
     with pytest.raises(parser.ConditionParsingError, match=re.escape(expected_error)):
-        parser.validate_jinja_template(value)
+        parser.get_jinja_template_wrapper(value)

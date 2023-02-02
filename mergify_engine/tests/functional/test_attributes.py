@@ -398,7 +398,10 @@ class TestAttributes(base.FunctionalTestBase):
             | context.PullRequest.LIST_ATTRIBUTES_WITH_LENGTH_OPTIMIZATION
         )
         commit = (await ctxt.commits)[0]
-        assert await ctxt.pull_request.items() == {
+        assert {
+            attr: await getattr(ctxt.pull_request, attr)
+            for attr in list(ctxt.pull_request)
+        } == {
             "#commits": 1,
             "#commits-behind": 2,
             "#files": 1,
