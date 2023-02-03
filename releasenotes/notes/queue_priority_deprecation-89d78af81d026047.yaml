@@ -1,0 +1,5 @@
+---
+deprecations:
+  - |
+    The `priority` configuration option of the queue action is deprecated and
+    planned for removal. It is now replaced by `priority_rules`.

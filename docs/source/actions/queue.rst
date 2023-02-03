@@ -223,6 +223,7 @@ your CI time is 10 min, you can merge those 15 pull requests in only 10 minutes.
    ``Require branches to be up to date before merging`` to be disabled. If you
    require a linear history, just set the queue option ``method: rebase``.
 
+.. _priority_rules:
 
 Priority Rules
 ~~~~~~~~~~~~~~
@@ -460,9 +461,12 @@ These are the options of the ``queue`` action:
    * - ``priority``
      - 1 <= integer <= 10000 or ``low`` or ``medium`` or ``high``
      - ``medium``
-     - |premium plan tag| This sets the priority of the pull request in the queue. The pull
-       request with the highest priority is merged first.
-       ``low``, ``medium``, ``high`` are aliases for ``1000``, ``2000``, ``3000``.
+     - | |premium plan tag| |deprecated tag|
+       | To set your priorities, you should now use :ref:`priority_rules`.
+       | This sets the priority of the pull request in the queue. The pull
+       | request with the highest priority is merged first.
+       | ``low``, ``medium``, ``high`` are aliases for ``1000``, ``2000``, ``3000``.
+
 
    * - ``rebase_fallback``
      - string
