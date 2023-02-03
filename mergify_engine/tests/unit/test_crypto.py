@@ -1,5 +1,6 @@
 from collections import abc
 import importlib
+from unittest import mock
 
 import pytest
 
@@ -28,19 +29,19 @@ def cleanup_secrets() -> abc.Generator[None, None, None]:
 
 def test_key_rotation(
     cleanup_secrets: None,
-    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     x = "this is an amazing string, right? 🙄".encode()
 
-    monkeypatch.setattr(config, "CACHE_TOKEN_SECRET", "old password")
-    importlib.reload(crypto)  # regen digest with new secret
-    encryped_old = crypto.encrypt(x)
+    with mock.patch.object(config, "CACHE_TOKEN_SECRET", "old password"):
+        importlib.reload(crypto)  # regen digest with new secret
+        encryped_old = crypto.encrypt(x)
 
-    monkeypatch.setattr(config, "CACHE_TOKEN_SECRET", "new password")
-    monkeypatch.setattr(config, "CACHE_TOKEN_SECRET_OLD", "old password")
-    importlib.reload(crypto)  # regen digest with new secrets
-    encryped_new = crypto.encrypt(x)
-    assert encryped_new != encryped_old
+    with mock.patch.object(
+        config, "CACHE_TOKEN_SECRET", "new password"
+    ), mock.patch.object(config, "CACHE_TOKEN_SECRET_OLD", "old password"):
+        importlib.reload(crypto)  # regen digest with new secrets
+        encryped_new = crypto.encrypt(x)
+        assert encryped_new != encryped_old
 
-    assert x == crypto.decrypt(encryped_new)
-    assert x == crypto.decrypt(encryped_old)
+        assert x == crypto.decrypt(encryped_new)
+        assert x == crypto.decrypt(encryped_old)
