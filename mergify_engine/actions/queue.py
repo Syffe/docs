@@ -43,6 +43,13 @@ For more information: https://docs.mergify.com/actions/queue/
 
 `%s` is invalid"""
 
+DEPRECATED_MESSAGE_PRIORITY_ATTRIBUTE_QUEUE_ACTION = """The configuration uses the deprecated `priority` attribute of the queue action and must be replaced by `priority_rules`.
+A brownout is planned on April 3rd, 2023.
+This option will be removed on May 9th, 2023.
+For more information: https://docs.mergify.com/actions/queue/#priority-rules
+
+`%s` is invalid"""
+
 
 @dataclasses.dataclass
 class InvalidQueueConfiguration(Exception):
@@ -912,9 +919,6 @@ class QueueAction(actions.Action):
             voluptuous.Required(
                 "commit_message_template", default=None
             ): types.Jinja2WithNone,
-            voluptuous.Required(
-                "priority", default=queue.PriorityAliases.medium.value
-            ): queue.PrioritySchema,
             voluptuous.Required("require_branch_protection", default=True): bool,
         }
 
@@ -929,6 +933,20 @@ class QueueAction(actions.Action):
             ] = utils.DeprecatedOption(
                 DEPRECATED_MESSAGE_REBASE_FALLBACK_QUEUE_ACTION,
                 voluptuous.Any("merge", "squash", "none", None),
+            )
+
+        if config.ALLOW_QUEUE_PRIORITY_ATTRIBUTE:
+            validator[
+                voluptuous.Required(
+                    "priority", default=queue.PriorityAliases.medium.value
+                )
+            ] = queue.PrioritySchema
+        else:
+            validator[
+                voluptuous.Required("priority", default=utils.UnsetMarker)
+            ] = utils.DeprecatedOption(
+                DEPRECATED_MESSAGE_PRIORITY_ATTRIBUTE_QUEUE_ACTION,
+                queue.PriorityAliases.medium.value,
             )
 
         return validator
