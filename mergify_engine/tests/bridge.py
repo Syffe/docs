@@ -29,7 +29,6 @@ async def main() -> None:
         base_url="https://test-forwarder.mergify.com",
         headers={"X-Hub-Signature": "sha1=" + payload_hmac},
     ) as session:
-
         url = (
             f"/events/github.com/{config.INTEGRATION_ID}/{config.TESTING_REPOSITORY_ID}"
         )

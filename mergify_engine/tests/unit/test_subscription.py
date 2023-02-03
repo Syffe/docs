@@ -175,7 +175,6 @@ async def test_subscription_on_premise_valid(
     redis_cache: redis_utils.RedisCache,
     respx_mock: respx.MockRouter,
 ) -> None:
-
     route = respx_mock.get(
         f"{config.SUBSCRIPTION_BASE_URL}/on-premise/subscription/1234"
     ).respond(
@@ -205,7 +204,6 @@ async def test_subscription_on_premise_valid(
 async def test_subscription_on_premise_wrong_token(
     redis_cache: redis_utils.RedisCache, respx_mock: respx.MockRouter
 ) -> None:
-
     route = respx_mock.get(
         f"{config.SUBSCRIPTION_BASE_URL}/on-premise/subscription/1234"
     ).respond(401, json={"message": "error"})
@@ -221,7 +219,6 @@ async def test_subscription_on_premise_wrong_token(
 async def test_subscription_on_premise_invalid_sub(
     redis_cache: redis_utils.RedisCache, respx_mock: respx.MockRouter
 ) -> None:
-
     route = respx_mock.get(
         f"{config.SUBSCRIPTION_BASE_URL}/on-premise/subscription/1234"
     ).respond(

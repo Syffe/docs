@@ -13,7 +13,10 @@ from mergify_engine.rules import live_resolvers
 def get_conditions_with_ignored_attributes(
     rule: rules.EvaluatedPullRequestRule | rules.EvaluatedQueueRule,
     attribute_prefixes: tuple[str, ...],
-) -> rules_conditions.PullRequestRuleConditions | rules_conditions.QueueRuleMergeConditions:
+) -> (
+    rules_conditions.PullRequestRuleConditions
+    | rules_conditions.QueueRuleMergeConditions
+):
     conditions = rule.conditions.copy()
     for condition in conditions.walk():
         attr = condition.get_attribute_name()

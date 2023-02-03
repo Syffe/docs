@@ -414,7 +414,6 @@ async def test_client_installation_HTTP_301(respx_mock: respx.MockRouter) -> Non
 @mock.patch.object(github.CachedToken, "STORAGE", {})
 @pytest.mark.respx(base_url=config.GITHUB_REST_API_URL)
 async def test_client_abuse_403_no_header(respx_mock: respx.MockRouter) -> None:
-
     abuse_message = (
         "You have triggered an abuse detection mechanism. "
         "Please wait a few minutes before you try again."

@@ -84,7 +84,6 @@ async def push_to_worker(
     event: github_types.GitHubEvent,
     mergify_bot: github_types.GitHubAccount,
 ) -> None:
-
     pull_number = None
     ignore_reason = None
 
@@ -265,7 +264,6 @@ async def push_to_worker(
             f"refs/heads/{utils.extract_default_branch(event['repository'])}"
             == event["ref"]
         ):
-
             # NOTE(sileht): commits contains the list of commits returned by compare API
             # that by default returns only 20 commits
             # https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#push

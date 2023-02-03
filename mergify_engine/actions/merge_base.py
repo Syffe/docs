@@ -117,7 +117,6 @@ class MergeUtilsMixin:
             )
 
         else:  # Via API
-
             try:
                 commit_title_and_message = await ctxt.pull_request.get_commit_message(
                     commit_message_template,

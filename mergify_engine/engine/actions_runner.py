@@ -581,7 +581,6 @@ async def cleanup_pending_actions_with_no_associated_rules(
     current_conclusions: dict[str, check_api.Conclusion],
     previous_conclusions: dict[str, check_api.Conclusion],
 ) -> None:
-
     check_to_cancel = set()
     is_queued = False
     was_queued = False

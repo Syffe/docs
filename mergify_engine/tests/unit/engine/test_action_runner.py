@@ -11,7 +11,6 @@ from mergify_engine.tests.unit import conftest
 async def test_cleanup_pending_actions_with_no_associated_rules(
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
-
     ctxt = await context_getter(42)
 
     previous_conclusions = {

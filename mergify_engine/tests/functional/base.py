@@ -1270,7 +1270,6 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         self,
         thread_id: str,
     ) -> bool:
-
         mutation = f"""
         mutation {{
             resolveReviewThread(input:{{clientMutationId: "{self.mergify_bot['id']}", threadId: "{thread_id}"}}) {{

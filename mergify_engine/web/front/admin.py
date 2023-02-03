@@ -58,7 +58,6 @@ async def _get_user_by_login(
 async def select_user_from_login(
     session: sqlalchemy.ext.asyncio.AsyncSession, login: str
 ) -> github_user.GitHubUser:
-
     account = await _get_user_by_login(session, login)
 
     if account is not None:

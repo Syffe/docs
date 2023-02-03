@@ -74,7 +74,6 @@ def autoload_redis(redis_cache: redis_utils.RedisCache) -> None:
 
 @pytest.fixture(autouse=True)
 def monkepatched_traincar(monkeypatch: pytest.MonkeyPatch) -> None:
-
     monkeypatch.setattr(
         "mergify_engine.queue.merge_train.TrainCar.start_checking_inplace",
         fake_train_car_start_checking_inplace,
@@ -1751,7 +1750,6 @@ def test_train_car_old_serialization(
     has_timed_out: bool,
     outcome_message: str,
 ) -> None:
-
     ep = {
         "user_pull_request_number": 1,
         "config": {},

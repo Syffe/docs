@@ -882,7 +882,6 @@ async def repository_queues_configuration(
         security.get_repository_context
     ),
 ) -> QueuesConfig:
-
     try:
         config = await repository_ctxt.get_mergify_config()
     except rules.InvalidRules:
@@ -925,7 +924,6 @@ async def create_queue_freeze(
         security.get_repository_context
     ),
 ) -> QueueFreezeResponse:
-
     if queue_freeze_payload.reason == "":
         queue_freeze_payload.reason = "No freeze reason was specified."
 
@@ -998,7 +996,6 @@ async def delete_queue_freeze(
         security.get_repository_context
     ),
 ) -> fastapi.Response:
-
     qf = freeze.QueueFreeze(
         repository=repository_ctxt,
         name=queue_name,
@@ -1033,7 +1030,6 @@ async def get_queue_freeze(
         security.get_repository_context
     ),
 ) -> QueueFreezeResponse:
-
     qf = await freeze.QueueFreeze.get(repository_ctxt, queue_name)
     if qf is None:
         raise fastapi.HTTPException(
@@ -1070,7 +1066,6 @@ async def get_list_queue_freeze(
         security.get_repository_context
     ),
 ) -> QueueFreezeResponse:
-
     return QueueFreezeResponse(
         queue_freezes=[
             QueueFreeze(

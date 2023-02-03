@@ -232,7 +232,6 @@ def github_url_parser(
     github_types.GitHubPullRequestNumber | None,
     github_types.GitHubRefType | None,
 ]:
-
     path = [el for el in urllib.parse.urlparse(url).path.split("/") if el != ""]
 
     pull_number: str | None

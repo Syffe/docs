@@ -27,7 +27,6 @@ GIT_MESSAGE_TO_EXCEPTION = {
 async def _do_squash(
     ctxt: context.Context, user: user_tokens.UserTokensUser, squash_message: str
 ) -> None:
-
     head_branch = ctxt.pull["head"]["ref"]
     base_branch = ctxt.pull["base"]["ref"]
     tmp_branch = "squashed-head-branch"
@@ -117,7 +116,6 @@ async def squash(
     message: str,
     on_behalf: user_tokens.UserTokensUser | None,
 ) -> None:
-
     if ctxt.pull["commits"] <= 1:
         return
 

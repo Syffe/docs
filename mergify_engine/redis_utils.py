@@ -276,7 +276,6 @@ class RedisLinks:
         max_connections: int | None = None,
         redis_connect_func: "redispy.connection.ConnectCallbackT" | None = None,
     ) -> "redispy.Redis[bytes]" | "redispy.Redis[str]":
-
         options: dict[str, typing.Any] = self.connection_pool_kwargs.copy()
         if config.REDIS_SSL_VERIFY_MODE_CERT_NONE and url.startswith("rediss://"):
             options["ssl_check_hostname"] = False

@@ -23,7 +23,6 @@ async def _send_refresh(
     ref: github_types.GitHubRefType | None = None,
     priority: worker_pusher.Priority = worker_pusher.Priority.high,
 ) -> None:
-
     data = github_types.GitHubEventRefresh(
         {
             "received_at": github_types.ISODateTimeType(date.utcnow().isoformat()),

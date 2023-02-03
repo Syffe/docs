@@ -8,7 +8,6 @@ async def test_sentry_tunneling(
     web_client: conftest.CustomTestClient,
     respx_mock: respx.MockRouter,
 ) -> None:
-
     respx_mock.post(
         f"https://{sentry.SENTRY_HOST}/api/{sentry.ALLOWED_PROJECT_IDS[0]}/envelope/",
     ).respond(200)

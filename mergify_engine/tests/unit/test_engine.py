@@ -288,7 +288,7 @@ async def test_configuration_changed(
             "account": GH_OWNER,
         },
     )
-    github_server.get(f"{BASE_URL}/pulls/1",).respond(
+    github_server.get(f"{BASE_URL}/pulls/1").respond(
         200,
         json=typing.cast(dict[typing.Any, typing.Any], GH_PULL),
     )
@@ -412,7 +412,7 @@ async def test_configuration_duplicated(
         },
     )
 
-    github_server.get(f"{BASE_URL}/pulls/1",).respond(
+    github_server.get(f"{BASE_URL}/pulls/1").respond(
         200,
         json=typing.cast(dict[typing.Any, typing.Any], GH_PULL),
     )
@@ -510,7 +510,7 @@ async def test_configuration_not_changed(
             "account": GH_OWNER,
         },
     )
-    github_server.get(f"{BASE_URL}/pulls/1",).respond(
+    github_server.get(f"{BASE_URL}/pulls/1").respond(
         200,
         json=typing.cast(dict[typing.Any, typing.Any], GH_PULL),
     )
@@ -590,7 +590,7 @@ async def test_configuration_initial(
             "account": GH_OWNER,
         },
     )
-    github_server.get(f"{BASE_URL}/pulls/1",).respond(
+    github_server.get(f"{BASE_URL}/pulls/1").respond(
         200,
         json=typing.cast(dict[typing.Any, typing.Any], GH_PULL),
     )
@@ -704,7 +704,7 @@ async def test_configuration_check_not_needed_with_configuration_not_changed(
             "account": GH_OWNER,
         },
     )
-    github_server.get(f"{BASE_URL}/pulls/1",).respond(
+    github_server.get(f"{BASE_URL}/pulls/1").respond(
         200,
         json=typing.cast(dict[typing.Any, typing.Any], GH_PULL),
     )
@@ -845,7 +845,7 @@ async def test_configuration_check_not_needed_with_configuration_deleted(
             "account": GH_OWNER,
         },
     )
-    github_server.get(f"{BASE_URL}/pulls/1",).respond(
+    github_server.get(f"{BASE_URL}/pulls/1").respond(
         200,
         json=typing.cast(dict[typing.Any, typing.Any], GH_PULL),
     )

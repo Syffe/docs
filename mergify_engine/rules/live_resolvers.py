@@ -61,7 +61,6 @@ async def teams(
     repository: "context.Repository",
     values: list[str] | tuple[str] | str | None,
 ) -> list[github_types.GitHubLogin]:
-
     if not values:
         return []
     # FIXME(sileht): This should not belong here, we should accept only a List[str]

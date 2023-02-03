@@ -99,7 +99,6 @@ async def plan_next_refresh(
         if removed is not None and removed > 0:
             ctxt.log.info("unplan to refresh pull request")
     else:
-
         if only_if_earlier:
             current = await _get_current_refresh_datetime(
                 ctxt.repository, ctxt.pull["number"]

@@ -47,7 +47,6 @@ class AssignExecutor(actions.ActionExecutor["AssignAction", AssignExecutorConfig
         )
 
     async def run(self) -> check_api.Result:
-
         assignees_to_add = list(
             self.config["users_to_add"]
             - {a["login"] for a in self.ctxt.pull["assignees"]}

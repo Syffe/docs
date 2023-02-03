@@ -481,7 +481,6 @@ async def test_get_mergify_config(
 async def test_get_mergify_config_with_defaults(
     fake_repository: context.Repository,
 ) -> None:
-
     config = """
 defaults:
   actions:
@@ -958,7 +957,6 @@ async def test_extends_limit(fake_repository: context.Repository) -> None:
             )
         ),
     ):
-
         with pytest.raises(rules.InvalidRules) as i:
             await rules.get_mergify_config_from_dict(
                 repository_ctxt, mergify_config["raw_config"], ""
@@ -1057,7 +1055,6 @@ def test_pull_request_rule_schema_invalid(
 async def test_get_pull_request_rule(
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
-
     client = mock.Mock()
 
     get_reviews = [

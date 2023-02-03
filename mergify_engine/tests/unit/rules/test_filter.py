@@ -340,7 +340,6 @@ async def test_partial_datetime_year_str() -> None:
 async def test_partial_datetime_binary(
     klass: type[date.PartialDatetime],
 ) -> None:
-
     f = filter.BinaryFilter({"<=": ("foo", klass(5))})
     assert await f(FakePR({"foo": klass(2)}))
     assert await f(FakePR({"foo": klass(5)}))

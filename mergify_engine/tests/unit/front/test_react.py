@@ -25,7 +25,6 @@ async def test_react_static_files(
     set_dashboard_ui_static_files_directory: None,
     web_client: conftest.CustomTestClient,
 ) -> None:
-
     # NOTE(sileht): httpx remove the .., we want to keep them for the test
     prepared_request = web_client.build_request(
         # nosemgrep: python.lang.security.audit.insecure-transport.requests.request-with-http.request-with-http

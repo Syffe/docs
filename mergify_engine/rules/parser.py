@@ -271,7 +271,6 @@ class ParsedCondition(typing.NamedTuple):
 def parse_raw_condition(
     cond: str, allow_command_attributes: bool = False
 ) -> ParsedCondition:
-
     length = len(cond)
     position = _skip_ws(cond, length, 0)
     if position >= length:

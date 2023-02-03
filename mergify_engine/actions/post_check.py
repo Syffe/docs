@@ -152,7 +152,6 @@ class PostCheckExecutor(
 
 
 class PostCheckAction(actions.Action):
-
     flags = (
         actions.ActionFlag.ALWAYS_RUN
         | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED

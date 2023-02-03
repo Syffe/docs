@@ -30,7 +30,6 @@ class ApplicationAuth(fastapi.security.http.HTTPBearer):
             redis.get_redis_links
         ),
     ) -> application_mod.Application | None:
-
         credentials = await super().__call__(request)
         if credentials is None:
             if self.auto_error:
@@ -120,7 +119,6 @@ async def get_repository_context(
     application: application_mod.Application
     | None = fastapi.Security(get_optional_application),  # noqa: B008
 ) -> abc.AsyncGenerator[context.Repository, None]:
-
     installation_json, auth = await get_http_auth(request, owner, application)
     async with github.AsyncGithubInstallationClient(
         auth,

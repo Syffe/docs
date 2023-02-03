@@ -7,7 +7,6 @@ from mergify_engine.tests.functional import base
 
 class TestGithubClient(base.FunctionalTestBase):
     async def test_github_async_client(self) -> None:
-
         rules = {
             "pull_request_rules": [
                 {
@@ -94,7 +93,6 @@ class TestGithubClient(base.FunctionalTestBase):
         self.assertEqual(404, ctxt.exception.response.status_code)
 
     async def test_github_async_client_with_owner_id(self) -> None:
-
         rules = {
             "pull_request_rules": [
                 {

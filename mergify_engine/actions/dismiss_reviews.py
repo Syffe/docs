@@ -77,7 +77,6 @@ class DismissReviewsExecutor(
         )
 
     async def run(self) -> check_api.Result:
-
         if (
             self.config["when"] == WHEN_SYNCHRONIZE
             and not self.ctxt.has_been_synchronized()
@@ -110,7 +109,6 @@ class DismissReviewsExecutor(
         to_dismiss_users = set()
         to_dismiss_user_from_requested_reviewers = set()
         for review in (await self.ctxt.consolidated_reviews())[1]:
-
             if self.config["when"] == WHEN_SYNCHRONIZE and last_user_sync is not None:
                 submitted_at = date.fromisoformat(review["submitted_at"])
                 if submitted_at > last_user_sync:

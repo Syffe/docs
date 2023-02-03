@@ -1118,7 +1118,6 @@ async def get_mergify_extended_config(
     extended_path: github_types.GitHubRepositoryName,
     error_path: str,
 ) -> MergifyConfig:
-
     try:
         extended_repository_ctxt = (
             await repository_ctxt.installation.get_repository_by_name(extended_path)

@@ -560,7 +560,6 @@ async def get_branch_protection_conditions(
                 "required_pull_request_reviews"
             )
         ) is not None:
-
             if required_pull_request_reviews["require_code_owner_reviews"]:
                 conditions.append(
                     RuleCondition(

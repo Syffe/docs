@@ -65,7 +65,6 @@ async def test_subscription_user_oauth_token(
     web_client: conftest.CustomTestClient,
     db: sqlalchemy.ext.asyncio.AsyncSession,
 ) -> None:
-
     web_client.headers["Authorization"] = f"Bearer {config.DASHBOARD_TO_ENGINE_API_KEY}"
 
     reply = await web_client.get("/subscriptions/user-oauth-access-token/42")

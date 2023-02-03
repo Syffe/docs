@@ -460,7 +460,6 @@ class AsyncGithubClient(http.AsyncClient):
         params: dict[str, str] | None = None,
         batch_size: int | None = None,
     ) -> typing.Any:
-
         # NOTE(sileht): can't be on the same line...
         # https://github.com/python/mypy/issues/10743
         final_params: dict[str, str] | None

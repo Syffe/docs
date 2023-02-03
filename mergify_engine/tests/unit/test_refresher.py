@@ -8,7 +8,6 @@ from mergify_engine import refresher
 async def test_refresh_with_pull_request_number(
     redis_stream: redis_utils.RedisStream,
 ) -> None:
-
     gh_owner = github_types.GitHubAccount(
         {
             "id": github_types.GitHubAccountIdType(1),

@@ -6,7 +6,6 @@ from mergify_engine.tests.functional import base
 
 
 class TestBranchProtection(base.FunctionalTestBase):
-
     SUBSCRIPTION_ACTIVE = True
 
     async def setup_repo_with_queue(self, queue_rules: dict[str, typing.Any]) -> None:

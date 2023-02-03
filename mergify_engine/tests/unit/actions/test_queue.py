@@ -364,7 +364,9 @@ def create_queue_action(queue_rule_config: dict[str, typing.Any]) -> queue.Queue
     return action
 
 
-def create_context_with_branch_protection_required_status_checks_strict() -> mock.AsyncMock:
+def create_context_with_branch_protection_required_status_checks_strict() -> (
+    mock.AsyncMock
+):
     protection = {
         "required_status_checks": {
             "strict": True,

@@ -1293,7 +1293,6 @@ async def test_stream_processor_priority(
     stream_processor: worker.StreamProcessor,
     logger_checker: None,
 ) -> None:
-
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
     get_subscription.side_effect = fake_get_subscription
 
@@ -1373,7 +1372,6 @@ async def test_stream_processor_date_scheduling(
     stream_processor: worker.StreamProcessor,
     logger_checker: None,
 ) -> None:
-
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
     get_subscription.side_effect = fake_get_subscription
     # Don't process it before 2040

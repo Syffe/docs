@@ -262,7 +262,6 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             await self.run_engine()
 
         with freeze_time(start_date + datetime.timedelta(days=1), tick=True):
-
             await self.create_status(tmp_mq_pr["pull_request"])
             # Run the engine for it to update train state
             await self.run_engine()

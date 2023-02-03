@@ -179,7 +179,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
         assert r.json() == {"detail": 'The queue "false_queue_name" does not exist.'}
 
     async def test_create_queue_freeze(self) -> None:
-
         rules = {
             "queue_rules": [
                 {
@@ -359,7 +358,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
         )
 
     async def test_update_queue_freeze(self) -> None:
-
         rules = {
             "queue_rules": [
                 {
@@ -558,7 +556,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
         }
 
     async def test_delete_queue_freeze(self) -> None:
-
         rules = {
             "queue_rules": [
                 {
@@ -753,7 +750,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
         }
 
     async def test_get_queue_freeze(self) -> None:
-
         rules = {
             "queue_rules": [
                 {
@@ -843,7 +839,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
         }
 
     async def test_get_list_queue_freeze(self) -> None:
-
         rules = {
             "queue_rules": [
                 {
@@ -1034,7 +1029,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
         assert p2_closed["pull_request"]["merged"]
 
     async def test_queue_freeze_priority_with_empty_frozen_default_queue(self) -> None:
-
         rules = {
             "queue_rules": [
                 {
@@ -1125,7 +1119,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
         assert p2_closed["pull_request"]["merged"]
 
     async def test_create_queue_freeze_without_cascading_effect(self) -> None:
-
         rules = {
             "queue_rules": [
                 {
@@ -1354,7 +1347,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
         )
 
     async def test_update_freeze_cascading_effect(self) -> None:
-
         rules = {
             "queue_rules": [
                 {
@@ -1456,7 +1448,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
         }
 
     async def test_create_queue_freeze_all_freeze_types_together(self) -> None:
-
         rules = {
             "queue_rules": [
                 {
@@ -1697,7 +1688,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
         )
 
     async def test_cascading_freeze_queue_summary_update(self) -> None:
-
         rules = {
             "queue_rules": [
                 {

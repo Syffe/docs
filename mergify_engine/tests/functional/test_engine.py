@@ -468,13 +468,11 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
             self.repository_ctxt,
             p,
         )
-        await (
-            ctxt.set_summary_check(
-                check_api.Result(
-                    check_api.Conclusion.SUCCESS,
-                    title="whatever",
-                    summary="erased",
-                )
+        await ctxt.set_summary_check(
+            check_api.Result(
+                check_api.Conclusion.SUCCESS,
+                title="whatever",
+                summary="erased",
             )
         )
 

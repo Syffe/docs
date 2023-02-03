@@ -282,7 +282,6 @@ class StreamProcessor:
                 isinstance(e, http.HTTPServerSideError)
                 and bucket_sources_key is not None
             ):
-
                 if bucket_sources_key is None:
                     raise RuntimeError("bucket_sources_key must be set at this point")
 

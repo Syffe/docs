@@ -1375,7 +1375,6 @@ class Context:
         )
 
     async def _get_consolidated_data(self, name: str) -> ContextAttributeType:
-
         if name == "assignee":
             return [a["login"] for a in self.pull["assignees"]]
 
@@ -1719,7 +1718,6 @@ class Context:
 
         is_conflicting = self._caches.is_conflicting.get()
         if is_conflicting is cache.Unset:
-
             cached_is_conflicting: str | None = await self.redis.cache.get(
                 self._conflict_cache_key
             )
@@ -2387,7 +2385,6 @@ class PullRequest(BasePullRequest):
         self,
         template: str | None = None,
     ) -> tuple[str, str] | None:
-
         if template is None:
             # No template from configuration, looks at template from body
             body = typing.cast(str, await self.body)

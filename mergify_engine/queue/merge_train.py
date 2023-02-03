@@ -929,7 +929,6 @@ class TrainCar:
         )
 
         if await ctxt.is_behind:
-
             bot_account = self.still_queued_embarked_pulls[0].config.get(
                 "update_bot_account"
             )
@@ -1009,7 +1008,6 @@ class TrainCar:
         branch_name: github_types.GitHubRefType,
         github_user: user_tokens.UserTokensUser | None,
     ) -> github_types.GitHubPullRequest:
-
         try:
             title = f"merge queue: embarking {self._get_embarked_refs()} together"
             body = await self.generate_merge_queue_summary(for_queue_pull_request=True)
@@ -1025,7 +1023,6 @@ class TrainCar:
                 oauth_token=github_user["oauth_access_token"] if github_user else None,
             )
         except http.HTTPClientSideError as e:
-
             if "A pull request already exists for" in e.message:
                 # NOTE(sileht): filter pull request on head is dangerous.
                 # head must be organization:ref-name, if the left or the right side of the : is empty
@@ -1093,7 +1090,6 @@ class TrainCar:
         base_sha: github_types.SHAType,
         github_user: user_tokens.UserTokensUser | None,
     ) -> None:
-
         try:
             await self.train.repository.installation.client.post(
                 f"/repos/{self.train.repository.installation.owner_login}/{self.train.repository.repo['name']}/git/refs",
@@ -1192,7 +1188,6 @@ class TrainCar:
         queue_rules: "rules.QueueRules",
         previous_car: "TrainCar | None",
     ) -> None:
-
         queue_rule = self.get_queue_rule(queue_rules)
         self.head_branch = self._get_pulls_branch_ref(
             self.initial_embarked_pulls, self.parent_pull_request_numbers
@@ -1925,7 +1920,6 @@ You don't need to do anything. Mergify will close this pull request automaticall
         evaluated_queue_rule: "rules.EvaluatedQueueRule",
         unexpected_change: UnexpectedChange | None = None,
     ) -> None:
-
         self.last_conditions_evaluation = (
             evaluated_queue_rule.merge_conditions.get_evaluation_result()
         )
@@ -2617,7 +2611,7 @@ class Train:
             await self._populate_cars(queue_rules)
         except BaseBranchVanished:
             self.log.warning("target branch vanished, deleting merge queue.")
-            for (embarked_pull, _) in list(self._iter_embarked_pulls()):
+            for embarked_pull, _ in list(self._iter_embarked_pulls()):
                 await self._remove_pull(
                     embarked_pull.user_pull_request_number,
                     "merge queue internal",
@@ -2746,7 +2740,6 @@ class Train:
         self,
         ignored_queues: set[str] | frozenset[str] = frozenset(),
     ) -> tuple[list[EmbarkedPull], list[EmbarkedPull]]:
-
         ignored_pulls = []
         waiting_pulls = []
         for embarked_pull in self._waiting_pulls:
@@ -2787,7 +2780,6 @@ class Train:
     async def get_current_queue_freeze(
         self, queue_rules: "rules.QueueRules", current_queue_name: "rules.QueueName"
     ) -> freeze.QueueFreeze | None:
-
         queue_priorities = get_queues_priorities(queue_rules)
         qf_by_name = {
             queue_freeze.name: QueueFreezeWithPriority(
@@ -2820,7 +2812,6 @@ class Train:
     async def get_frozen_queues_names(
         self, queue_rules: "rules.QueueRules"
     ) -> set[str]:
-
         # NOTE(Syffe): When checking for where to position a newly added PR in queues,
         # all unfrozen queues with lower priorities than the highest frozen queue have
         # to be considered as non-usable to queue the newly added PR.
@@ -2860,7 +2851,6 @@ class Train:
         config: queue.PullQueueConfig,
         signal_trigger: str,
     ) -> None:
-
         # NOTE(sileht): first, ensure the pull is not in another branch
         await self.force_remove_pull(
             ctxt, signal_trigger, exclude_ref=ctxt.pull["base"]["ref"]
@@ -2913,7 +2903,6 @@ class Train:
                     != embarked_pull.config["effective_priority"]
                     or config["name"] != embarked_pull.config["name"]
                 ) and car_can_be_interrupted:
-
                     ctxt.log.info(
                         "pull request already in train but misplaced",
                         config=config,
@@ -3616,7 +3605,6 @@ class Train:
         show_queue: bool = True,
         for_queue_pull_request: bool = False,
     ) -> str:
-
         description = f"\n\n**Required conditions of queue** `{queue_rule_report.name}` **for merge:**\n\n"
         description += queue_rule_report.summary
 
@@ -3726,7 +3714,6 @@ class Train:
         source: str,
         additional_pull_request: None | (github_types.GitHubPullRequestNumber) = None,
     ) -> None:
-
         pulls = await self.get_pulls()
         if additional_pull_request and additional_pull_request not in pulls:
             pulls.append(additional_pull_request)

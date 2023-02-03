@@ -136,7 +136,7 @@ async def test_get_usage_count_seats(
     event: github_types.GitHubEvent,
     redis_links: redis_utils.RedisLinks,
 ) -> None:
-    await (count_seats.store_active_users(redis_links.active_users, event_type, event))
+    await count_seats.store_active_users(redis_links.active_users, event_type, event)
 
     reply = await web_client.request("GET", "/subscriptions/organization/1234/usage")
     assert reply.status_code == 403

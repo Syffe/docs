@@ -23,7 +23,6 @@ async def test_app_event_forward(
     web_client: httpx.AsyncClient,
     respx_mock: respx.MockRouter,
 ) -> None:
-
     with open(os.path.join(os.path.dirname(__file__), "events", "push.json")) as f:
         data = f.read()
 
@@ -50,7 +49,6 @@ async def test_market_event_forward(
     respx_mock: respx.MockRouter,
     web_client: httpx.AsyncClient,
 ) -> None:
-
     with open(
         os.path.join(os.path.dirname(__file__), "events", "marketplace.json")
     ) as f:

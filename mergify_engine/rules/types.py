@@ -21,7 +21,6 @@ class LineColumnPath:
 
 
 class DummyContext(context.Context):
-
     ALWAYS_STRING_ATTRIBUTES = ("title", "body")
 
     # This is only used to check Jinja2 syntax validity and must be sync

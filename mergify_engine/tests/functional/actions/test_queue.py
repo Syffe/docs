@@ -5295,7 +5295,6 @@ class TestQueueAction(base.FunctionalTestBase):
             assert len(pulls_to_refresh) == 1
 
         with freeze_time("2021-05-30T10:12:00", tick=True):
-
             await self.run_full_engine()
 
             # Check-runs arrive in random order, so we need to retrieve all of them and check
@@ -5390,7 +5389,6 @@ class TestQueueAction(base.FunctionalTestBase):
             assert len(pulls_to_refresh) == 1
 
         with freeze_time("2021-05-30T10:12:00", tick=True):
-
             await self.run_full_engine()
 
             # Check-runs arrive in random order, so we need to retrieve all of them and check
@@ -5486,7 +5484,6 @@ class TestQueueAction(base.FunctionalTestBase):
             assert len(pulls_to_refresh) == 1
 
         with freeze_time("2021-05-30T10:12:00", tick=True):
-
             await self.run_full_engine()
             check = first(
                 await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
@@ -5569,7 +5566,6 @@ class TestQueueAction(base.FunctionalTestBase):
             assert len(pulls_to_refresh) == 1
 
         with freeze_time("2021-05-30T20:12:00", tick=True):
-
             await self.run_full_engine()
             ctxt_p1._caches.pull_check_runs.delete()
             check = await ctxt_p1.get_engine_check_run("Rule: queue (queue)")
@@ -5756,7 +5752,6 @@ class TestQueueAction(base.FunctionalTestBase):
     async def _test_queue_without_branch_protection_for_queueing(
         self, rules: dict[str, typing.Any]
     ) -> None:
-
         await self.setup_repo(yaml.dump(rules))
 
         protection = {

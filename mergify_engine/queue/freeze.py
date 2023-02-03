@@ -18,7 +18,6 @@ LOG = daiquiri.getLogger(__name__)
 
 @dataclasses.dataclass
 class QueueFreeze:
-
     repository: context.Repository = dataclasses.field(
         compare=False,
     )
@@ -98,7 +97,6 @@ class QueueFreeze:
     async def get_all(
         cls, repository: context.Repository
     ) -> abc.AsyncGenerator["QueueFreeze", None]:
-
         async for key, qf_raw in repository.installation.redis.queue.hscan_iter(
             name=cls._get_redis_hash(repository),
             match=cls._get_redis_key_match(repository),
@@ -109,7 +107,6 @@ class QueueFreeze:
     async def get_all_non_cascading(
         cls, repository: context.Repository
     ) -> abc.AsyncGenerator["QueueFreeze", None]:
-
         async for qf in cls.get_all(repository):
             if not qf.cascading:
                 yield qf
@@ -118,7 +115,6 @@ class QueueFreeze:
     async def get(
         cls, repository: context.Repository, queue_name: str
     ) -> "QueueFreeze" | None:
-
         qf_raw = await repository.installation.redis.queue.hget(
             cls._get_redis_hash(repository),
             cls._get_redis_key(repository, queue_name),
@@ -142,7 +138,6 @@ class QueueFreeze:
         return f"{repository.repo['id']}~*"
 
     async def save(self) -> None:
-
         await self.repository.installation.redis.queue.hset(
             self._get_redis_hash(self.repository),
             self._get_redis_key(self.repository, self.name),
@@ -164,7 +159,6 @@ class QueueFreeze:
         await self._refresh_pulls(source="internal/queue_freeze_create")
 
     async def delete(self) -> bool:
-
         result = bool(
             await self.repository.installation.redis.queue.hdel(
                 self._get_redis_hash(self.repository),

@@ -40,7 +40,6 @@ def test_queue_freeze_deserialize(
     application_id: int,
     cascading: bool,
 ) -> None:
-
     freeze_date = datetime.datetime(2022, 1, 23, tzinfo=datetime.timezone.utc)
     serialized_payload = {
         "name": name,
@@ -98,7 +97,6 @@ def test_queue_freeze_serialized(
     application_id: int,
     cascading: bool,
 ) -> None:
-
     freeze_date = datetime.datetime(2022, 1, 23, tzinfo=datetime.timezone.utc)
     serialized_payload = {
         "name": name,

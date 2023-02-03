@@ -8,7 +8,6 @@ def httpx_to_fastapi_headers(
     headers: httpx.Headers,
     rewrite_url: tuple[str, str] | None = None,
 ) -> abc.Iterator[tuple[str, str]]:
-
     for key, values in headers.items():
         if key in ("content-type", "date", "etag", "link"):
             if isinstance(values, tuple):

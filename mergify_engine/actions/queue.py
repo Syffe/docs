@@ -207,7 +207,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
         queue_freeze: freeze.QueueFreeze | None,
         car: merge_train.TrainCar | None,
     ) -> check_api.Result:
-
         if car is None:
             raise RuntimeError("ready to merge PR without car....")
 
@@ -654,7 +653,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
         queue: merge_train.Train,
         queue_freeze: freeze.QueueFreeze | None,
     ) -> bool:
-
         if queue_freeze is not None:
             return False
 
