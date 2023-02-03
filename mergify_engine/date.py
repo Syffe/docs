@@ -473,7 +473,7 @@ class Schedule:
 
         # Allow to check if a datetime is in a schedule
         dother = other.astimezone(self.tzinfo)
-        if self.start_weekday < self.end_weekday:
+        if self.start_weekday <= self.end_weekday:
             return (
                 self.start_weekday <= dother.isoweekday() <= self.end_weekday
                 and self.is_datetime_inside_time_schedule(dother, strict=False)

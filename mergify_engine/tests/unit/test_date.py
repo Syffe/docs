@@ -593,6 +593,18 @@ def test_schedule_equality_after_clear_cache() -> None:
             datetime.datetime(2022, 11, 12, 16, tzinfo=date.UTC),
             False,
         ),
+        (
+            date.Schedule.from_string("FRI-FRI"),
+            # Saturday, 16:00 UTC
+            datetime.datetime(2022, 11, 12, 16, tzinfo=date.UTC),
+            False,
+        ),
+        (
+            date.Schedule.from_string("SAT-SAT"),
+            # Saturday, 16:00 UTC
+            datetime.datetime(2022, 11, 12, 16, tzinfo=date.UTC),
+            True,
+        ),
     ),
 )
 def test_schedule_eq_with_datetime(
