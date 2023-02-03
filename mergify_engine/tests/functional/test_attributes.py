@@ -400,7 +400,7 @@ class TestAttributes(base.FunctionalTestBase):
         commit = (await ctxt.commits)[0]
         assert {
             attr: await getattr(ctxt.pull_request, attr)
-            for attr in list(ctxt.pull_request)
+            for attr in sorted(ctxt.pull_request)
         } == {
             "#commits": 1,
             "#commits-behind": 2,

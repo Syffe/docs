@@ -251,7 +251,8 @@ async def report(
     print(f"* TRAIN: {', '.join([f'#{p}' for p in await q.get_pulls()])}")
     print("* PULL REQUEST:")
     pr_data = {
-        attr: await getattr(ctxt.pull_request, attr) for attr in list(ctxt.pull_request)
+        attr: await getattr(ctxt.pull_request, attr)
+        for attr in sorted(ctxt.pull_request)
     }
     pprint.pprint(pr_data, width=160)
 
