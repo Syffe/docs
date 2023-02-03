@@ -22,7 +22,6 @@ import sqlalchemy
 import starlette
 
 from mergify_engine import config
-from mergify_engine import github_types
 from mergify_engine import logs
 from mergify_engine import models
 from mergify_engine import redis_utils
@@ -380,42 +379,6 @@ async def web_client(
     async with CustomTestClient(app=web_server) as client:
         client.get_front_app().include_router(log_as_router, prefix="/for-testing")
         yield client
-
-
-@pytest.fixture
-async def fake_github_app_info(monkeypatch: pytest.MonkeyPatch) -> None:
-    app = github_types.GitHubApp(
-        {
-            "id": 0,
-            "name": "Mergify-test",
-            "slug": "mergify-test",
-            "owner": {
-                "id": github_types.GitHubAccountIdType(1),
-                "login": github_types.GitHubLogin("Mergifyio"),
-                "type": "Organization",
-                "avatar_url": "",
-            },
-        }
-    )
-
-    bot = github_types.GitHubAccount(
-        {
-            "id": github_types.GitHubAccountIdType(0),
-            "login": github_types.GitHubLogin("Mergify-test[bot]"),
-            "type": "Bot",
-            "avatar_url": "",
-        }
-    )
-
-    monkeypatch.setattr(github.GitHubAppInfo, "_app", app)
-    monkeypatch.setattr(github.GitHubAppInfo, "_bot", bot)
-
-
-@pytest.fixture
-async def fake_mergify_bot(
-    fake_github_app_info: None, redis_links: redis_utils.RedisLinks
-) -> github_types.GitHubAccount:
-    return await github.GitHubAppInfo.get_bot(redis_links.cache_bytes)
 
 
 @pytest.fixture

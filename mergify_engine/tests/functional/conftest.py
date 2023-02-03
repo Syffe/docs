@@ -409,6 +409,24 @@ async def recorder(
                 }
             ),
         )
+        monkeypatch.setattr(
+            github.GitHubAppInfo,
+            "_app",
+            github_types.GitHubApp(
+                {
+                    "id": recorder_config["integration_id"],
+                    "name": recorder_config["app_user_login"][:-5].capitalize(),
+                    "slug": recorder_config["app_user_login"][:-5],
+                    "owner": {
+                        "id": github_types.GitHubAccountIdType(1),
+                        "login": github_types.GitHubLogin("mergifyio-testing"),
+                        "type": "Organization",
+                        "avatar_url": "",
+                    },
+                }
+            ),
+        )
+
         return RecorderFixture(recorder_config, recorder)
 
 

@@ -11,6 +11,7 @@ import pytest
 from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import redis_utils
+from mergify_engine.clients import github
 from mergify_engine.dashboard import subscription
 
 
@@ -220,3 +221,41 @@ class FakePullRequest(context.BasePullRequest):
         self.attrs["status-success"] = self.attrs.get("check-success", [])  # type: ignore
         self.attrs["status-neutral"] = self.attrs.get("check-neutral", [])  # type: ignore
         self.attrs["status-failure"] = self.attrs.get("check-failure", [])  # type: ignore
+
+
+@pytest.fixture(autouse=True)
+def fake_github_app_info() -> abc.Generator[None, None, None]:
+    app = github_types.GitHubApp(
+        {
+            "id": 0,
+            "name": "Mergify-test",
+            "slug": "mergify-test",
+            "owner": {
+                "id": github_types.GitHubAccountIdType(1),
+                "login": github_types.GitHubLogin("Mergifyio"),
+                "type": "Organization",
+                "avatar_url": "",
+            },
+        }
+    )
+
+    bot = github_types.GitHubAccount(
+        {
+            "id": github_types.GitHubAccountIdType(0),
+            "login": github_types.GitHubLogin("Mergify-test[bot]"),
+            "type": "Bot",
+            "avatar_url": "",
+        }
+    )
+
+    with mock.patch.object(github.GitHubAppInfo, "_app", app), mock.patch.object(
+        github.GitHubAppInfo, "_bot", bot
+    ):
+        yield
+
+
+@pytest.fixture
+async def fake_mergify_bot(
+    redis_links: redis_utils.RedisLinks,
+) -> github_types.GitHubAccount:
+    return await github.GitHubAppInfo.get_bot(redis_links.cache_bytes)

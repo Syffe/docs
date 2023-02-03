@@ -9,7 +9,6 @@ from mergify_engine import redis_utils
 
 async def test_gitter(
     monkeypatch: pytest.MonkeyPatch,
-    fake_github_app_info: None,
     redis_links: redis_utils.RedisLinks,
 ) -> None:
     monkeypatch.setenv("LANG", "C")
