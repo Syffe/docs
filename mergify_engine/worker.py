@@ -901,12 +901,13 @@ async def ping_redis(
             wait_before_next_retry(retry_state),
         )
 
-    r = tenacity.retry(
+    async for attempt in tenacity.AsyncRetrying(  # type: ignore[attr-defined]
         wait=tenacity.wait_exponential(multiplier=0.2, max=5),  # type: ignore[attr-defined]
         retry=tenacity.retry_if_exception_type(redis_exceptions.ConnectionError),  # type: ignore[attr-defined]
         before_sleep=retry_log,
-    )
-    await r(redis.ping)()
+    ):
+        with attempt:
+            await redis.ping()
 
 
 TaskRetriedForeverFuncT = abc.Callable[[], abc.Awaitable[None]]
