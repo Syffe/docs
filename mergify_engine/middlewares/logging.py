@@ -22,7 +22,11 @@ class LoggingMiddleware(base.BaseHTTPMiddleware):
                 request={
                     "method": request.method,
                     "url": request.url,
-                    "headers": request.headers,
+                    "headers": sorted(
+                        (key, value)
+                        for key, value in request.headers.items()
+                        if key != "authorization"
+                    ),
                 },
                 exc_info=True,
             )

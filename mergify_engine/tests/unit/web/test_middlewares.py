@@ -86,5 +86,6 @@ async def test_loggin_middleware_error() -> None:
     fake_middleware.side_effect = Exception("boom")
     middleware = logging.LoggingMiddleware(app)
 
+    req = mock.Mock(headers={})
     with pytest.raises(Exception, match="boom"):
-        await middleware.dispatch(mock.Mock(), fake_middleware)
+        await middleware.dispatch(req, fake_middleware)
