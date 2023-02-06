@@ -11,6 +11,7 @@ import msgpack
 import tenacity
 
 from mergify_engine import config
+from mergify_engine import date
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import json
@@ -40,8 +41,9 @@ class SeatAccount:
     login: github_types.GitHubLogin = dataclasses.field(compare=False)
 
 
+@dataclasses.dataclass(unsafe_hash=True, order=True)
 class ActiveUser(SeatAccount):
-    pass
+    seen_at: datetime.datetime = dataclasses.field(compare=False)
 
 
 @dataclasses.dataclass(unsafe_hash=True, order=True)
@@ -92,10 +94,12 @@ async def get_active_users_keys(
         yield ActiveUserKeyT(key.decode())
 
 
-def _parse_user(user: str) -> ActiveUser:
+def _parse_user(user: str, seen_at: datetime.datetime) -> ActiveUser:
     part1, _, part2 = user.partition("~")
     return ActiveUser(
-        github_types.GitHubAccountIdType(int(part1)), github_types.GitHubLogin(part2)
+        github_types.GitHubAccountIdType(int(part1)),
+        github_types.GitHubLogin(part2),
+        seen_at,
     )
 
 
@@ -103,10 +107,19 @@ async def get_active_users(
     redis: redis_utils.RedisActiveUsers, key: ActiveUserKeyT
 ) -> set[ActiveUser]:
     one_month_ago = datetime.datetime.utcnow() - datetime.timedelta(days=30)
+    # NOTE(sileht): if two users has the same id but different names (because to change his login)
+    # we got two ActiveUser with the same id, so the set will only keep the first one
+    # This is why we should add to the set the most recent first.
     return {
-        _parse_user(user.decode())
-        for user in await redis.zrangebyscore(
-            key, min=one_month_ago.timestamp(), max="+inf"
+        _parse_user(user.decode(), score)
+        for user, score in reversed(
+            await redis.zrangebyscore(
+                key,
+                min=one_month_ago.timestamp(),
+                max="+inf",
+                withscores=True,
+                score_cast_func=lambda x: date.fromtimestamp(float(x)),
+            )
         )
     }
 
@@ -190,6 +203,7 @@ async def store_active_users(
 class SeatCollaboratorJsonT(typing.TypedDict):
     id: int
     login: str
+    seen_at: str
 
 
 class SeatCollaboratorsJsonT(typing.TypedDict):
@@ -241,7 +255,11 @@ class Seats:
                             None
                             if _seats["active_users"] is None
                             else [
-                                {"id": seat.id, "login": seat.login}
+                                {
+                                    "id": seat.id,
+                                    "login": seat.login,
+                                    "seen_at": seat.seen_at.isoformat(),
+                                }
                                 for seat in _seats["active_users"]
                             ]
                         ),

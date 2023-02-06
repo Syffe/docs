@@ -3,6 +3,7 @@ import json
 import os
 from unittest import mock
 
+import anys
 from freezegun import freeze_time
 import httpx
 import msgpack
@@ -157,8 +158,16 @@ async def test_get_usage_count_seats(
                 {
                     "collaborators": {
                         "active_users": [
-                            {"id": 21031067, "login": "Codertocat"},
-                            {"id": 12345678, "login": "AnotherUser"},
+                            {
+                                "id": 21031067,
+                                "login": "Codertocat",
+                                "seen_at": anys.ANY_AWARE_DATETIME_STR,
+                            },
+                            {
+                                "id": 12345678,
+                                "login": "AnotherUser",
+                                "seen_at": anys.ANY_AWARE_DATETIME_STR,
+                            },
                         ],
                     },
                     "id": 186853002,
@@ -173,7 +182,11 @@ async def test_get_usage_count_seats(
                 {
                     "collaborators": {
                         "active_users": [
-                            {"id": 21031067, "login": "Codertocat"},
+                            {
+                                "id": 21031067,
+                                "login": "Codertocat",
+                                "seen_at": anys.ANY_AWARE_DATETIME_STR,
+                            },
                         ],
                     },
                     "id": 186853002,

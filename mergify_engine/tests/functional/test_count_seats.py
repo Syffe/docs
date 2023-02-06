@@ -4,10 +4,12 @@ import operator
 import time
 from unittest import mock
 
+import anys
 import pytest
 
 from mergify_engine import config
 from mergify_engine import count_seats
+from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import json
 from mergify_engine import yaml
@@ -40,10 +42,12 @@ class TestCountSeats(base.FunctionalTestBase):
             count_seats.ActiveUser(
                 github_types.GitHubAccountIdType(config.TESTING_MERGIFY_TEST_1_ID),
                 github_types.GitHubLogin("mergify-test1"),
+                date.utcnow(),
             ),
             count_seats.ActiveUser(
                 github_types.GitHubAccountIdType(config.TESTING_MERGIFY_TEST_2_ID),
                 github_types.GitHubLogin("mergify-test2"),
+                date.utcnow(),
             ),
         }
         organization[key_repo] = count_seats.CollaboratorsSetsT(
@@ -112,12 +116,14 @@ class TestCountSeats(base.FunctionalTestBase):
                                 config.TESTING_MERGIFY_TEST_1_ID
                             ),
                             "login": github_types.GitHubLogin("mergify-test1"),
+                            "seen_at": anys.ANY_AWARE_DATETIME_STR,
                         },
                         {
                             "id": github_types.GitHubAccountIdType(
                                 config.TESTING_MERGIFY_TEST_2_ID
                             ),
                             "login": github_types.GitHubLogin("mergify-test2"),
+                            "seen_at": anys.ANY_AWARE_DATETIME_STR,
                         },
                     ],
                     key=operator.itemgetter("id"),
