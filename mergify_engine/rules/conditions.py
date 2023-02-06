@@ -406,118 +406,6 @@ class RuleConditionNegation(RuleConditionGroup):
         )(obj)
 
 
-@dataclasses.dataclass
-class QueueRuleMergeConditions:
-    conditions: dataclasses.InitVar[list[RuleConditionNode]]
-    condition: RuleConditionCombination = dataclasses.field(init=False)
-    _evaluated_conditions: dict[
-        github_types.GitHubPullRequestNumber, RuleConditionCombination
-    ] = dataclasses.field(default_factory=dict, init=False, repr=False)
-    match: bool = dataclasses.field(init=False, default=False)
-    _used: bool = dataclasses.field(init=False, default=False)
-
-    def __post_init__(self, conditions: list[RuleConditionNode]) -> None:
-        self.condition = RuleConditionCombination({"and": conditions})
-
-    def copy(self) -> "QueueRuleMergeConditions":
-        return QueueRuleMergeConditions(self.condition.copy().conditions)
-
-    def extract_raw_filter_tree(self) -> filter.TreeT:
-        return self.condition.extract_raw_filter_tree()
-
-    async def __call__(self, pull_requests: list[context.BasePullRequest]) -> bool:
-        if self._used:
-            raise RuntimeError(f"{self.__class__.__name__} cannot be re-used")
-        self._used = True
-
-        for pull in pull_requests:
-            c = self.condition.copy()
-            await c(pull)
-            self._evaluated_conditions[
-                await pull.number  # type: ignore[attr-defined]
-            ] = c
-
-        self.match = all(c.match for c in self._evaluated_conditions.values())
-        return self.match
-
-    @staticmethod
-    def _conditions_sort_key(
-        condition: EvaluatedConditionNodeT, should_match: bool
-    ) -> tuple[bool, int, typing.Any, typing.Any]:
-        """
-        Group conditions based on (in order):
-        - If `condition.match` != `should_match`
-        - If they are a normal condition (first) or a grouped condition (last)
-        - Their name
-        - Their description
-
-        If `should_match=True`, all matching conditions will appear first,
-        otherwise all non-matching conditions will appear first.
-        """
-
-        first_key = next(iter(condition))
-        if isinstance(condition[first_key], RuleCondition):
-            return (
-                should_match != all(cond.match for cond in condition.values()),
-                0,
-                str(condition[first_key]),
-                condition[first_key].description or "",
-            )
-
-        # RuleConditionGroup
-        return (
-            should_match != all(cond.match for cond in condition.values()),
-            1,
-            condition[first_key].operator_label,  # type: ignore[union-attr]
-            condition[first_key].description or "",
-        )
-
-    @staticmethod
-    def _get_conditions_ordered(
-        conditions: list[EvaluatedConditionNodeT], should_match: bool
-    ) -> list[EvaluatedConditionNodeT]:
-        cond_cpy = conditions.copy()
-        cond_cpy.sort(
-            key=functools.partial(
-                QueueRuleMergeConditions._conditions_sort_key, should_match=should_match
-            )
-        )
-        return cond_cpy
-
-    def get_summary(self) -> str:
-        if self._used:
-            summary = self.get_evaluation_result().as_markdown()
-        else:
-            summary = self.condition.get_summary()
-
-        for cond in self.walk():
-            if (
-                cond.get_attribute_name()
-                in constants.DEPRECATED_CURRENT_CONDITIONS_NAMES
-            ):
-                return summary + "\n" + constants.DEPRECATED_CURRENT_CONDITIONS_MESSAGE
-
-        return summary
-
-    def get_evaluation_result(self) -> QueueConditionEvaluationResult:
-        return QueueConditionEvaluationResult.from_evaluated_condition_node(
-            self._evaluated_conditions
-        )
-
-    def is_faulty(self) -> bool:
-        if self._used:
-            return any(c.is_faulty() for c in self._evaluated_conditions.values())
-        else:
-            return self.condition.is_faulty()
-
-    def walk(self) -> abc.Iterator[RuleCondition]:
-        if self._used:
-            for conditions in self._evaluated_conditions.values():
-                yield from conditions.walk()
-        else:
-            yield from self.condition.walk()
-
-
 BRANCH_PROTECTION_CONDITION_TAG = "🛡 GitHub branch protection"
 
 
@@ -639,6 +527,9 @@ class BaseRuleConditions:
             )
         return await self.condition(objs[0])
 
+    def extract_raw_filter_tree(self) -> filter.TreeT:
+        return self.condition.extract_raw_filter_tree()
+
     @property
     def match(self) -> bool:
         return self.condition.match
@@ -655,9 +546,6 @@ class BaseRuleConditions:
 
 @dataclasses.dataclass
 class PullRequestRuleConditions(BaseRuleConditions):
-    def extract_raw_filter_tree(self) -> filter.TreeT:
-        return self.condition.extract_raw_filter_tree()
-
     def get_summary(self) -> str:
         for cond in self.walk():
             if (
@@ -693,6 +581,111 @@ class PullRequestRuleConditions(BaseRuleConditions):
 @dataclasses.dataclass
 class PriorityRuleConditions(BaseRuleConditions):
     pass
+
+
+@dataclasses.dataclass
+class QueueRuleMergeConditions(BaseRuleConditions):
+    _evaluated_conditions: dict[
+        github_types.GitHubPullRequestNumber, RuleConditionCombination
+    ] = dataclasses.field(default_factory=dict, init=False, repr=False)
+    _match: bool = dataclasses.field(init=False, default=False)
+    _used: bool = dataclasses.field(init=False, default=False)
+
+    @property
+    def match(self) -> bool:
+        return self._match
+
+    async def __call__(self, pull_requests: list[context.BasePullRequest]) -> bool:
+        if self._used:
+            raise RuntimeError(f"{self.__class__.__name__} cannot be re-used")
+        self._used = True
+
+        for pull in pull_requests:
+            c = self.condition.copy()
+            await c(pull)
+            self._evaluated_conditions[
+                await pull.number  # type: ignore[attr-defined]
+            ] = c
+
+        self._match = all(c.match for c in self._evaluated_conditions.values())
+        return self._match
+
+    @staticmethod
+    def _conditions_sort_key(
+        condition: EvaluatedConditionNodeT, should_match: bool
+    ) -> tuple[bool, int, typing.Any, typing.Any]:
+        """
+        Group conditions based on (in order):
+        - If `condition.match` != `should_match`
+        - If they are a normal condition (first) or a grouped condition (last)
+        - Their name
+        - Their description
+
+        If `should_match=True`, all matching conditions will appear first,
+        otherwise all non-matching conditions will appear first.
+        """
+
+        first_key = next(iter(condition))
+        if isinstance(condition[first_key], RuleCondition):
+            return (
+                should_match != all(cond.match for cond in condition.values()),
+                0,
+                str(condition[first_key]),
+                condition[first_key].description or "",
+            )
+
+        # RuleConditionGroup
+        return (
+            should_match != all(cond.match for cond in condition.values()),
+            1,
+            condition[first_key].operator_label,  # type: ignore[union-attr]
+            condition[first_key].description or "",
+        )
+
+    @staticmethod
+    def _get_conditions_ordered(
+        conditions: list[EvaluatedConditionNodeT], should_match: bool
+    ) -> list[EvaluatedConditionNodeT]:
+        cond_cpy = conditions.copy()
+        cond_cpy.sort(
+            key=functools.partial(
+                QueueRuleMergeConditions._conditions_sort_key, should_match=should_match
+            )
+        )
+        return cond_cpy
+
+    def get_summary(self) -> str:
+        if self._used:
+            summary = self.get_evaluation_result().as_markdown()
+        else:
+            summary = self.condition.get_summary()
+
+        for cond in self.walk():
+            if (
+                cond.get_attribute_name()
+                in constants.DEPRECATED_CURRENT_CONDITIONS_NAMES
+            ):
+                return summary + "\n" + constants.DEPRECATED_CURRENT_CONDITIONS_MESSAGE
+
+        return summary
+
+    def get_evaluation_result(self) -> QueueConditionEvaluationResult:
+        return QueueConditionEvaluationResult.from_evaluated_condition_node(
+            self._evaluated_conditions
+        )
+
+    def is_faulty(self) -> bool:
+        if self._used:
+            return any(c.is_faulty() for c in self._evaluated_conditions.values())
+        else:
+            return self.condition.is_faulty()
+
+    def walk(self) -> abc.Iterator[RuleCondition]:
+        if self._used:
+            for conditions in self._evaluated_conditions.values():
+                yield from conditions.walk()
+        else:
+            yield from self.condition.walk()
 
 
 @pydantic.dataclasses.dataclass
