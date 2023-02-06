@@ -178,31 +178,24 @@ class PriorityRules:
     def __iter__(self) -> abc.Iterator[PriorityRule]:
         return iter(self.rules)
 
-    async def get_matching_evaluated_priority_rules(
-        self,
-        repository: context.Repository,
-        pulls: list[context.BasePullRequest],
-    ) -> list[EvaluatedPriorityRule]:
+    async def get_context_priority(self, ctxt: context.Context) -> int | None:
         if not self.rules:
-            return []
+            return None
 
         priority_rules = [rule.copy() for rule in self.rules]
         priority_rules_evaluator = await PriorityRulesEvaluator.create(
             priority_rules,
-            repository,
-            pulls,
+            ctxt.repository,
+            [ctxt.pull_request],
             False,
         )
-        return [
+
+        matching_priority_rules = [
             rule
             for rule in priority_rules_evaluator.matching_rules
             if rule.conditions.match
         ]
 
-    async def get_context_priority(self, ctxt: context.Context) -> int | None:
-        matching_priority_rules = await self.get_matching_evaluated_priority_rules(
-            ctxt.repository, [ctxt.pull_request]
-        )
         final_priority = None
         for rule in matching_priority_rules:
             rule_priority = queue.Priority(rule.priority)
@@ -283,25 +276,6 @@ class QueueRule:
                                 "and": evaluated_pull_request_rule_conditions.condition.conditions
                             },
                             description=f"📃 From pull request rule **{html.escape(evaluated_pull_request_rule.name)}**",
-                        )
-                    ]
-                )
-
-        if self.priority_rules.rules:
-            matching_priority_rules = (
-                await self.priority_rules.get_matching_evaluated_priority_rules(
-                    repository, pulls
-                )
-            )
-            for rule in matching_priority_rules:
-                evaluated_priority_rule_conditions = rule.conditions.copy()
-                extra_conditions.extend(
-                    [
-                        conditions_mod.RuleConditionCombination(
-                            {
-                                "and": evaluated_priority_rule_conditions.condition.conditions
-                            },
-                            description=f"📃 From priority rule **{html.escape(rule.name)}**",
                         )
                     ]
                 )

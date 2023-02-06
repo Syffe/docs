@@ -193,13 +193,22 @@ class TestQueueAction(base.FunctionalTestBase):
                             "name": "default priority",
                             "conditions": [
                                 "-label=hotfix",
+                                "-label=low",
                             ],
                             "priority": "medium",
+                        },
+                        {
+                            "name": "low priority",
+                            "conditions": [
+                                "label=low",
+                            ],
+                            "priority": "low",
                         },
                     ],
                     "conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
+                    "batch_size": 2,
                 }
             ],
             "pull_request_rules": [
@@ -216,26 +225,28 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
 
         p1 = await self.create_pr()
-        await self.add_label(p1["number"], "queue")
-        await self.run_engine()
-
-        check = first(
-            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
-        )
-        assert check is not None
-        assert (
-            check["output"]["title"]
-            == "The pull request is the 1st in the queue to be merged"
-        )
-
         p2 = await self.create_pr()
+        await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")
-        await self.add_label(p2["number"], "hotfix")
         await self.run_engine()
 
         check = first(
-            await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 1st in the queue to be merged"
+        )
+
+        p3 = await self.create_pr()
+        await self.add_label(p3["number"], "queue")
+        await self.add_label(p3["number"], "hotfix")
+        await self.run_engine()
+
+        check = first(
+            await context.Context(self.repository_ctxt, p3).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
         )
         assert check is not None
@@ -254,17 +265,18 @@ class TestQueueAction(base.FunctionalTestBase):
             == "The pull request is the 2nd in the queue to be merged"
         )
 
-        await self.remove_label(p2["number"], "hotfix")
+        await self.remove_label(p3["number"], "hotfix")
+        await self.add_label(p3["number"], "low")
         await self.run_engine()
 
         check = first(
-            await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
+            await context.Context(self.repository_ctxt, p3).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
         )
         assert check is not None
         assert (
             check["output"]["title"]
-            == "The pull request is the 2nd in the queue to be merged"
+            == "The pull request is the 3rd in the queue to be merged"
         )
 
         check = first(
