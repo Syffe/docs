@@ -74,7 +74,7 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
             commit_title_and_message = await self.ctxt.pull_request.get_commit_message()
         except context.RenderTemplateFailure as rmf:
             return check_api.Result(
-                check_api.Conclusion.ACTION_REQUIRED,
+                check_api.Conclusion.FAILURE,
                 "Invalid commit message",
                 str(rmf),
             )

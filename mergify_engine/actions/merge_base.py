@@ -58,7 +58,7 @@ class MergeUtilsMixin:
             if merge_rebase_fallback is None:
                 ctxt.log.info("legacy rebase_fallback=null used")
             return check_api.Result(
-                check_api.Conclusion.ACTION_REQUIRED,
+                check_api.Conclusion.FAILURE,
                 "Automatic rebasing is not possible, manual intervention required",
                 "",
             )
@@ -123,7 +123,7 @@ class MergeUtilsMixin:
                 )
             except context.RenderTemplateFailure as rmf:
                 return check_api.Result(
-                    check_api.Conclusion.ACTION_REQUIRED,
+                    check_api.Conclusion.FAILURE,
                     "Invalid commit message",
                     str(rmf),
                 )
@@ -332,7 +332,7 @@ class MergeUtilsMixin:
             not ctxt.can_change_github_workflow()
             and await ctxt.github_workflow_changed()
         ):
-            conclusion = check_api.Conclusion.ACTION_REQUIRED
+            conclusion = check_api.Conclusion.FAILURE
             title = "Pull request must be merged manually"
             summary = """The new Mergify permissions must be accepted to merge pull request with `.github/workflows` changes.\n
 You can accept them at https://dashboard.mergify.com/\n
@@ -345,7 +345,7 @@ In the meantime, the pull request must be merged manually."
             and merge_rebase_fallback in (None, "none")
         ):
             return check_api.Result(
-                check_api.Conclusion.ACTION_REQUIRED,
+                check_api.Conclusion.FAILURE,
                 "Pull request must be rebased manually",
                 "The pull request can't be rebased without conflict and must be rebased manually",
             )
