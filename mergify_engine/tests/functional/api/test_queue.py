@@ -880,6 +880,7 @@ class TestQueueApi(base.FunctionalTestBase):
                 headers=self.get_headers(content_type="application/json"),
             )
 
+            assert r.status_code == 200, r.text
             assert len(r.json()["queues"]) == 1
             pull_requests_data = r.json()["queues"][0]["pull_requests"]
             assert len(pull_requests_data) == 3

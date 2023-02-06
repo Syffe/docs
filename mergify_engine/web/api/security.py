@@ -9,6 +9,7 @@ from mergify_engine import config
 from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import redis_utils
+from mergify_engine import rules
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.dashboard import application as application_mod
@@ -200,3 +201,18 @@ async def check_subscription_feature_merge_queue_stats(
         status_code=402,
         detail="⚠ The subscription needs to be upgraded to enable the `merge_queue_stats` feature.",
     )
+
+
+async def get_queue_rules(
+    repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
+        get_repository_context
+    ),
+) -> rules.QueueRules:
+    try:
+        mergify_config = await repository_ctxt.get_mergify_config()
+    except rules.InvalidRules:
+        raise fastapi.HTTPException(
+            status_code=422,
+            detail="The configuration file is invalid.",
+        )
+    return mergify_config["queue_rules"]
