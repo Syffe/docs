@@ -20,6 +20,7 @@ from mergify_engine import config
 from mergify_engine import date
 from mergify_engine import exceptions
 from mergify_engine import github_types
+from mergify_engine import logs
 from mergify_engine import redis_utils
 from mergify_engine.clients import github_app
 from mergify_engine.clients import http
@@ -584,9 +585,13 @@ class AsyncGithubInstallationClient(AsyncGithubClient):
                 status_code = "error"
             else:
                 status_code = str(response.status_code)
+            tags = [f"hostname:{self.base_url.host}", f"status_code:{status_code}"]
+            worker_id = logs.WORKER_ID.get(None)
+            if worker_id is not None:
+                tags.append(f"worker_id:{worker_id}")
             statsd.increment(
                 "http.client.requests",
-                tags=[f"hostname:{self.base_url.host}", f"status_code:{status_code}"],
+                tags=tags,
             )
             self._requests.append(RequestHistory(request, response))
 
@@ -616,6 +621,9 @@ class AsyncGithubInstallationClient(AsyncGithubClient):
         tags = [f"hostname:{self.base_url.host}"]
         if self._extra_metrics:
             tags.append(f"gh_owner:{gh_owner}")
+            worker_id = logs.WORKER_ID.get(None)
+            if worker_id is not None:
+                tags.append(f"worker_id:{worker_id}")
 
         statsd.histogram(
             "http.client.session",
