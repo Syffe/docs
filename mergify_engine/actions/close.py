@@ -5,10 +5,10 @@ import voluptuous
 from mergify_engine import actions
 from mergify_engine import check_api
 from mergify_engine import context
-from mergify_engine import rules
 from mergify_engine import signals
 from mergify_engine.clients import http
 from mergify_engine.rules import types
+from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 MSG = "This pull request has been automatically closed by Mergify."
@@ -24,12 +24,12 @@ class CloseExecutor(actions.ActionExecutor["CloseAction", CloseExecutorConfig]):
         cls,
         action: "CloseAction",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedPullRequestRule",
+        rule: "prr_config.EvaluatedPullRequestRule",
     ) -> "CloseExecutor":
         try:
             message = await ctxt.pull_request.render_template(action.config["message"])
         except context.RenderTemplateFailure as rmf:
-            raise rules.InvalidPullRequestRule(
+            raise prr_config.InvalidPullRequestRule(
                 "Invalid close message",
                 str(rmf),
             )

@@ -14,7 +14,6 @@ from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import queue
 from mergify_engine import redis_utils
-from mergify_engine import rules
 from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
@@ -22,6 +21,7 @@ from mergify_engine.dashboard import subscription
 from mergify_engine.dashboard import user_tokens
 from mergify_engine.engine import actions_runner
 from mergify_engine.queue import merge_train
+from mergify_engine.rules.config import mergify as mergify_conf
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -214,7 +214,7 @@ async def report(
         print(config_file["decoded_content"])
         try:
             mergify_config = await repository.get_mergify_config()
-        except rules.InvalidRules as e:  # pragma: no cover
+        except mergify_conf.InvalidRules as e:  # pragma: no cover
             print(f"configuration is invalid {str(e)}")
 
     if pull_number is None:

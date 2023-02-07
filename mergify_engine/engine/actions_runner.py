@@ -16,13 +16,13 @@ from mergify_engine import date
 from mergify_engine import delayed_refresh
 from mergify_engine import exceptions
 from mergify_engine import github_types
-from mergify_engine import rules
 from mergify_engine import utils
 from mergify_engine import yaml
 from mergify_engine.clients import github
 from mergify_engine.dashboard import subscription
 from mergify_engine.queue import merge_train
 from mergify_engine.rules import conditions
+from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 NOT_APPLICABLE_TEMPLATE = """<details>
@@ -63,7 +63,7 @@ QUEUE_ACTION_PRIORITY_ATTRIBUTE_DEPRECATION_SAAS = """
 
 
 async def get_already_merged_summary(
-    ctxt: context.Context, match: rules.PullRequestRulesEvaluator
+    ctxt: context.Context, match: prr_config.PullRequestRulesEvaluator
 ) -> str:
     if not ctxt.pull["merged"]:
         return ""
@@ -126,7 +126,7 @@ def _sanitize_action_config(config_key: str, config_value: typing.Any) -> typing
 
 async def gen_summary_rules(
     ctxt: context.Context,
-    _rules: list[rules.EvaluatedPullRequestRule],
+    _rules: list[prr_config.EvaluatedPullRequestRule],
     display_action_configs: bool,
 ) -> str:
     summary = ""
@@ -161,8 +161,8 @@ async def gen_summary_rules(
 
 async def gen_summary(
     ctxt: context.Context,
-    pull_request_rules: rules.PullRequestRules,
-    match: rules.PullRequestRulesEvaluator,
+    pull_request_rules: prr_config.PullRequestRules,
+    match: prr_config.PullRequestRulesEvaluator,
     display_action_configs: bool = False,
 ) -> tuple[str, str]:
     summary = ""
@@ -281,8 +281,8 @@ async def gen_summary(
 
 async def get_summary_check_result(
     ctxt: context.Context,
-    pull_request_rules: rules.PullRequestRules,
-    match: rules.PullRequestRulesEvaluator,
+    pull_request_rules: prr_config.PullRequestRules,
+    match: prr_config.PullRequestRulesEvaluator,
     summary_check: github_types.CachedGitHubCheckRun | None,
     conclusions: dict[str, check_api.Conclusion],
     previous_conclusions: dict[str, check_api.Conclusion],
@@ -433,7 +433,7 @@ def get_previous_conclusion(
 
 async def run_actions(
     ctxt: context.Context,
-    match: rules.PullRequestRulesEvaluator,
+    match: prr_config.PullRequestRulesEvaluator,
     checks: dict[str, github_types.CachedGitHubCheckRun],
     previous_conclusions: dict[str, check_api.Conclusion],
 ) -> dict[str, check_api.Conclusion]:
@@ -646,11 +646,11 @@ async def cleanup_pending_actions_with_no_associated_rules(
 
 
 async def handle(
-    pull_request_rules: rules.PullRequestRules, ctxt: context.Context
+    pull_request_rules: prr_config.PullRequestRules, ctxt: context.Context
 ) -> check_api.Result | None:
     try:
         match = await pull_request_rules.get_pull_request_rule(ctxt)
-    except rules.InvalidPullRequestRule as e:
+    except prr_config.InvalidPullRequestRule as e:
         return check_api.Result(
             check_api.Conclusion.ACTION_REQUIRED,
             "The current Mergify configuration is invalid",

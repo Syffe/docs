@@ -6,9 +6,9 @@ import msgpack
 from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import redis_utils
-from mergify_engine import rules
 from mergify_engine.queue import statistics as queue_stats
 from mergify_engine.queue import utils as queue_utils
+from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web.api import statistics as api_stats
 
 
@@ -24,7 +24,7 @@ async def test_statistics_start_at_boundary(
     fake_repository: context.Repository,
     redis_stats: redis_utils.RedisStats,
 ) -> None:
-    queue_name = rules.QueueName("default")
+    queue_name = qr_config.QueueName("default")
     branch_name = "main"
 
     failure_by_reason_key = queue_stats.get_statistic_redis_key(

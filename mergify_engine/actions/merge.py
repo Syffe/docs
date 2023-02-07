@@ -7,7 +7,6 @@ from mergify_engine import check_api
 from mergify_engine import config
 from mergify_engine import context
 from mergify_engine import github_types
-from mergify_engine import rules
 from mergify_engine import signals
 from mergify_engine import utils
 from mergify_engine.actions import merge_base
@@ -17,6 +16,7 @@ from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import conditions
 from mergify_engine.rules import types
+from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 DEPRECATED_MESSAGE_REBASE_FALLBACK_MERGE_ACTION = """The configuration uses the deprecated `rebase_fallback` attribute of the merge action.
@@ -47,7 +47,7 @@ class MergeExecutor(
         cls,
         action: "MergeAction",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedPullRequestRule",
+        rule: "prr_config.EvaluatedPullRequestRule",
     ) -> "MergeExecutor":
         try:
             merge_bot_account = await action_utils.render_bot_account(
@@ -61,11 +61,11 @@ class MergeExecutor(
                 required_permissions=[github_types.GitHubRepositoryPermission.WRITE],
             )
         except action_utils.RenderBotAccountFailure as e:
-            raise rules.InvalidPullRequestRule(e.title, e.reason)
+            raise prr_config.InvalidPullRequestRule(e.title, e.reason)
 
         if action.config["method"] == "fast-forward":
             if action.config["commit_message_template"] is not None:
-                raise rules.InvalidPullRequestRule(
+                raise prr_config.InvalidPullRequestRule(
                     "Commit message can't be changed with fast-forward merge method",
                     "`commit_message_template` must not be set if `method: fast-forward` is set.",
                 )
@@ -126,7 +126,7 @@ class MergeExecutor(
         return actions.CANCELLED_CHECK_REPORT
 
     async def get_pending_merge_status(
-        self, ctxt: context.Context, rule: "rules.EvaluatedPullRequestRule"
+        self, ctxt: context.Context, rule: "prr_config.EvaluatedPullRequestRule"
     ) -> check_api.Result:
         return check_api.Result(
             check_api.Conclusion.PENDING, "The pull request will be merged soon", ""

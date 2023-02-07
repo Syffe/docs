@@ -19,6 +19,8 @@ from mergify_engine import redis_utils
 from mergify_engine import rules
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
+from mergify_engine.rules.config import pull_request_rules as prr_config
+from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.tests.unit import conftest
 
 
@@ -29,7 +31,7 @@ def setup_fake_mergify_bot_user(fake_mergify_bot: None) -> None:
 
 async def fake_train_car_start_checking_with_draft(
     inner_self: merge_train.TrainCar,
-    queue_rule: rules.QueueRule,
+    queue_rule: qr_config.QueueRule,
     previous_car: merge_train.TrainCar | None,
 ) -> None:
     inner_self.train_car_state.checks_type = merge_train.TrainCarChecksType.DRAFT
@@ -39,18 +41,18 @@ async def fake_train_car_start_checking_with_draft(
 
 
 async def fake_train_car_start_checking_inplace(
-    inner_self: merge_train.TrainCar, queue_rule: rules.QueueRule
+    inner_self: merge_train.TrainCar, queue_rule: qr_config.QueueRule
 ) -> None:
     inner_self.train_car_state.checks_type = merge_train.TrainCarChecksType.INPLACE
 
 
 async def fake_train_car_check_mergeability(
     inner_self: merge_train.TrainCar,
-    queue_rules: rules.QueueRules,
+    queue_rules: qr_config.QueueRules,
     origin: typing.Literal[
         "original_pull_request", "draft_pull_request", "batch_split"
     ],
-    original_pull_request_rule: rules.EvaluatedPullRequestRule | None,
+    original_pull_request_rule: prr_config.EvaluatedPullRequestRule | None,
     original_pull_request_number: github_types.GitHubPullRequestNumber | None,
 ) -> None:
     pass
@@ -223,7 +225,7 @@ queue_rules:
 
 """
 
-QUEUE_RULES = voluptuous.Schema(rules.QueueRulesSchema)(
+QUEUE_RULES = voluptuous.Schema(qr_config.QueueRulesSchema)(
     rules.YamlSchema(MERGIFY_CONFIG)["queue_rules"]
 )
 
@@ -297,7 +299,7 @@ def get_config(queue_name: str, priority: int = 100) -> queue.PullQueueConfig:
         + QUEUE_RULES[queue_name].config["priority"] * queue.QUEUE_PRIORITY_OFFSET,
     )
     return queue.PullQueueConfig(
-        name=rules.QueueName(queue_name),
+        name=qr_config.QueueName(queue_name),
         update_method="merge",
         priority=priority,
         effective_priority=effective_priority,
@@ -1646,7 +1648,7 @@ async def test_train_queue_pr_with_higher_prio_enters_in_queue_during_merging_2x
 
 def test_embarked_pull_old_serialization() -> None:
     config = queue.PullQueueConfig(
-        name=rules.QueueName("foo"),
+        name=qr_config.QueueName("foo"),
         update_method="merge",
         priority=0,
         effective_priority=0,

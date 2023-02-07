@@ -7,9 +7,13 @@ import typing
 import voluptuous
 
 from mergify_engine import check_api
-from mergify_engine import context
-from mergify_engine import rules
 from mergify_engine.rules import conditions
+from mergify_engine.rules.config import mergify as mergify_conf
+
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
+    from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 CANCELLED_CHECK_REPORT = check_api.Result(
@@ -77,7 +81,7 @@ ActionExecutorConfigT = typing.TypeVar("ActionExecutorConfigT")
 @dataclasses.dataclass
 class ActionExecutor(abc.ABC, typing.Generic[ActionT, ActionExecutorConfigT]):
     ctxt: "context.Context"
-    rule: "rules.EvaluatedPullRequestRule"
+    rule: "prr_config.EvaluatedPullRequestRule"
     config: ActionExecutorConfigT
 
     @abc.abstractmethod
@@ -106,14 +110,14 @@ class ActionExecutor(abc.ABC, typing.Generic[ActionT, ActionExecutorConfigT]):
         # FIXME(sileht): pass just RawConfigT instead of the "Action"
         action: "ActionT",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedPullRequestRule",
+        rule: "prr_config.EvaluatedPullRequestRule",
     ) -> "ActionExecutor[ActionT, ActionExecutorConfigT]":
         ...
 
 
 class ActionExecutorProtocol(typing.Protocol):
     ctxt: "context.Context"
-    rule: "rules.EvaluatedPullRequestRule"
+    rule: "prr_config.EvaluatedPullRequestRule"
     config: dict[str, typing.Any]
 
     @abc.abstractmethod
@@ -141,7 +145,7 @@ class ActionExecutorProtocol(typing.Protocol):
         # FIXME(sileht): pass just RawConfigT instead of the "Action"
         action: "Action",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedPullRequestRule",
+        rule: "prr_config.EvaluatedPullRequestRule",
     ) -> "ActionExecutorProtocol":
         ...
 
@@ -178,12 +182,12 @@ class Action(abc.ABC):
         self.config = voluptuous.Schema(self.validator)(self.raw_config)
 
     async def load_context(
-        self, ctxt: context.Context, rule: "rules.EvaluatedPullRequestRule"
+        self, ctxt: "context.Context", rule: "prr_config.EvaluatedPullRequestRule"
     ) -> None:
         self.executor = await self.executor_class.create(self, ctxt, rule)
 
     def validate_config(  # noqa: B027
-        self, mergify_config: "rules.MergifyConfig"
+        self, mergify_config: "mergify_conf.MergifyConfig"
     ) -> None:  # pragma: no cover
         pass
 
@@ -193,6 +197,6 @@ class Action(abc.ABC):
         return {}
 
     async def get_conditions_requirements(
-        self, ctxt: context.Context
+        self, ctxt: "context.Context"
     ) -> list[conditions.RuleConditionNode]:
         return []

@@ -12,7 +12,6 @@ from mergify_engine import date
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import redis_utils
-from mergify_engine import rules
 from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import github_app
@@ -21,6 +20,7 @@ from mergify_engine.dashboard import subscription
 from mergify_engine.engine import actions_runner
 from mergify_engine.engine import commands_runner
 from mergify_engine.engine import queue_runner
+from mergify_engine.rules.config import mergify as mergify_conf
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -134,10 +134,10 @@ async def _check_configuration_changes(
     )
 
     try:
-        await rules.get_mergify_config_from_file(
+        await mergify_conf.get_mergify_config_from_file(
             ctxt.repository, context.content_file_to_config_file(config_content)
         )
-    except rules.InvalidRules as e:
+    except mergify_conf.InvalidRules as e:
         # Not configured, post status check with the error message
         await check_api.set_check_run(
             ctxt,
@@ -396,7 +396,7 @@ async def run(
     # BRANCH CONFIGURATION CHECKING
     try:
         mergify_config = await ctxt.repository.get_mergify_config()
-    except rules.InvalidRules as e:  # pragma: no cover
+    except mergify_conf.InvalidRules as e:  # pragma: no cover
         ctxt.log.info(
             "The Mergify configuration is invalid",
             summary=str(e),

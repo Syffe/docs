@@ -2,10 +2,6 @@ from __future__ import annotations
 
 from collections import abc
 import dataclasses
-import datetime
-import functools
-import html
-import operator
 import typing
 
 import daiquiri
@@ -13,316 +9,22 @@ from ddtrace import tracer
 import voluptuous
 
 from mergify_engine import actions as actions_mod
-from mergify_engine import constants
-from mergify_engine import context
-from mergify_engine import date
 from mergify_engine import github_types
-from mergify_engine import queue
-from mergify_engine import redis_utils
 from mergify_engine import yaml
-from mergify_engine.actions import merge_base
-from mergify_engine.clients import github
-from mergify_engine.clients import http
 from mergify_engine.rules import conditions as conditions_mod
 from mergify_engine.rules import live_resolvers
 from mergify_engine.rules import types
+from mergify_engine.rules.config import defaults as defaults_config
 
+
+if typing.TYPE_CHECKING:
+    from mergify_engine import context
 
 LOG = daiquiri.getLogger(__name__)
 
 
 @dataclasses.dataclass
-class InvalidPullRequestRule(Exception):
-    reason: str
-    details: str
-
-
-class DisabledDict(typing.TypedDict):
-    reason: str
-
-
-PullRequestRuleName = typing.NewType("PullRequestRuleName", str)
-
-
-@dataclasses.dataclass
-class PullRequestRule:
-    name: PullRequestRuleName
-    disabled: DisabledDict | None
-    conditions: conditions_mod.PullRequestRuleConditions
-    actions: dict[str, actions_mod.Action]
-    hidden: bool = False
-    from_command: bool = False
-
-    class T_from_dict_required(typing.TypedDict):
-        name: PullRequestRuleName
-        disabled: DisabledDict | None
-        conditions: conditions_mod.PullRequestRuleConditions
-        actions: dict[str, actions_mod.Action]
-
-    class T_from_dict(T_from_dict_required, total=False):
-        hidden: bool
-
-    @classmethod
-    def from_dict(cls, d: T_from_dict) -> "PullRequestRule":
-        return cls(**d)
-
-    def get_check_name(self, action: str) -> str:
-        return f"Rule: {self.name} ({action})"
-
-    def get_signal_trigger(self) -> str:
-        return f"Rule: {self.name}"
-
-    async def evaluate(
-        self, pulls: list[context.BasePullRequest]
-    ) -> EvaluatedPullRequestRule:
-        evaluated_rule = typing.cast(EvaluatedPullRequestRule, self)
-        await evaluated_rule.conditions(pulls)
-        for action in self.actions.values():
-            await action.load_context(
-                typing.cast(context.PullRequest, pulls[0]).context, evaluated_rule
-            )
-        return evaluated_rule
-
-
-@dataclasses.dataclass
-class CommandRule(PullRequestRule):
-    def get_signal_trigger(self) -> str:
-        return f"Command: {self.name}"
-
-
-EvaluatedPullRequestRule = typing.NewType("EvaluatedPullRequestRule", PullRequestRule)
-
-
-# FIXME(sileht): intropection with __args__ doesn't work if the type looks
-# like: str | None
-QueueBranchMergeMethod = typing.Optional[typing.Literal["fast-forward"]]  # noqa: NU003
-
-
-class QueueConfig(typing.TypedDict):
-    priority: int
-    speculative_checks: int
-    batch_size: int
-    batch_max_wait_time: datetime.timedelta
-    allow_inplace_checks: bool
-    disallow_checks_interruption_from_queues: list[str]
-    checks_timeout: datetime.timedelta | None
-    draft_bot_account: github_types.GitHubLogin | None
-    queue_branch_prefix: str | None
-    queue_branch_merge_method: QueueBranchMergeMethod
-    allow_queue_branch_edit: bool
-    batch_max_failure_resolution_attempts: int | None
-    # queue action config
-    commit_message_template: str | None
-    merge_method: merge_base.MergeMethodT
-    merge_bot_account: github_types.GitHubLogin | None
-    update_method: typing.Literal["rebase", "merge"] | None
-    update_bot_account: github_types.GitHubLogin | None
-
-
-EvaluatedQueueRule = typing.NewType("EvaluatedQueueRule", "QueueRule")
-
-
-QueueName = typing.NewType("QueueName", str)
-
-PriorityRuleName = typing.NewType("PriorityRuleName", str)
-
-
-@dataclasses.dataclass
-class PriorityRule:
-    name: PriorityRuleName
-    conditions: conditions_mod.PriorityRuleConditions
-    priority: queue.PriorityT
-
-    class T_from_dict(typing.TypedDict):
-        name: PriorityRuleName
-        conditions: conditions_mod.PriorityRuleConditions
-        priority: queue.PriorityT
-
-    @classmethod
-    def from_dict(cls, d: T_from_dict) -> "PriorityRule":
-        return cls(**d)
-
-    async def evaluate(
-        self, pulls: list[context.BasePullRequest]
-    ) -> EvaluatedPriorityRule:
-        evaluated_rule = typing.cast(EvaluatedPriorityRule, self)
-        await evaluated_rule.conditions(pulls)
-        return evaluated_rule
-
-    def copy(self) -> PriorityRule:
-        return self.__class__(
-            name=self.name,
-            conditions=conditions_mod.PriorityRuleConditions(
-                self.conditions.condition.copy().conditions
-            ),
-            priority=self.priority,
-        )
-
-
-EvaluatedPriorityRule = typing.NewType("EvaluatedPriorityRule", PriorityRule)
-
-
-@dataclasses.dataclass
-class PriorityRules:
-    rules: list[PriorityRule]
-
-    def __post_init__(self) -> None:
-        names: set[PriorityRuleName] = set()
-        for rule in self.rules:
-            if rule.name in names:
-                raise voluptuous.error.Invalid(
-                    f"priority_rules names must be unique, found `{rule.name}` twice"
-                )
-            names.add(rule.name)
-
-    def __iter__(self) -> abc.Iterator[PriorityRule]:
-        return iter(self.rules)
-
-    async def get_context_priority(self, ctxt: context.Context) -> int | None:
-        if not self.rules:
-            return None
-
-        priority_rules = [rule.copy() for rule in self.rules]
-        priority_rules_evaluator = await PriorityRulesEvaluator.create(
-            priority_rules,
-            ctxt.repository,
-            [ctxt.pull_request],
-            False,
-        )
-
-        matching_priority_rules = [
-            rule
-            for rule in priority_rules_evaluator.matching_rules
-            if rule.conditions.match
-        ]
-
-        final_priority = None
-        for rule in matching_priority_rules:
-            rule_priority = queue.Priority(rule.priority)
-            if final_priority is None or rule_priority > final_priority:
-                final_priority = rule_priority
-
-        return final_priority
-
-
-@dataclasses.dataclass
-class QueueRule:
-    name: QueueName
-    config: QueueConfig
-    merge_conditions: conditions_mod.QueueRuleMergeConditions
-    priority_rules: PriorityRules
-
-    class T_from_dict(QueueConfig, total=False):
-        name: QueueName
-        conditions: conditions_mod.QueueRuleMergeConditions
-        merge_conditions: conditions_mod.QueueRuleMergeConditions
-        config: QueueConfig
-        priority_rules: PriorityRules
-
-    @property
-    def conditions(self) -> conditions_mod.QueueRuleMergeConditions:
-        # NOTE(Greesb): This is needed by function using rules with
-        # the typing "T_Rule"
-        return self.merge_conditions
-
-    @classmethod
-    def from_dict(cls, d: T_from_dict) -> QueueRule:
-        name = d.pop("name")
-        merge_conditions = d.pop("merge_conditions", None)
-        if merge_conditions is None:
-            merge_conditions = d.pop("conditions")
-
-        priority_rules = d.pop("priority_rules")
-
-        # NOTE(sileht): backward compat
-        allow_inplace_speculative_checks = d["allow_inplace_speculative_checks"]  # type: ignore[typeddict-item]
-        if allow_inplace_speculative_checks is not None:
-            d["allow_inplace_checks"] = allow_inplace_speculative_checks
-
-        allow_checks_interruption = d["allow_checks_interruption"]  # type: ignore[typeddict-item]
-        if allow_checks_interruption is None:
-            allow_checks_interruption = d["allow_speculative_checks_interruption"]  # type: ignore[typeddict-item]
-
-        # TODO(sileht): We should just delete this option at some point and hardcode the false behavior by default
-        if allow_checks_interruption is False:
-            d["disallow_checks_interruption_from_queues"].append(name)
-
-        return cls(
-            name=name,
-            config=d,
-            merge_conditions=merge_conditions,
-            priority_rules=priority_rules,
-        )
-
-    async def get_evaluated_queue_rule(
-        self,
-        repository: context.Repository,
-        ref: github_types.GitHubRefType,
-        pulls: list[context.BasePullRequest],
-        evaluated_pull_request_rule: EvaluatedPullRequestRule | None = None,
-    ) -> EvaluatedQueueRule:
-        extra_conditions = await conditions_mod.get_branch_protection_conditions(
-            repository, ref, strict=False
-        )
-        if evaluated_pull_request_rule is not None:
-            evaluated_pull_request_rule_conditions = (
-                evaluated_pull_request_rule.conditions.copy()
-            )
-            if evaluated_pull_request_rule_conditions.condition.conditions:
-                extra_conditions.extend(
-                    [
-                        conditions_mod.RuleConditionCombination(
-                            {
-                                "and": evaluated_pull_request_rule_conditions.condition.conditions
-                            },
-                            description=f"📃 From pull request rule **{html.escape(evaluated_pull_request_rule.name)}**",
-                        )
-                    ]
-                )
-
-        queue_rule_with_extra_conditions = QueueRule(
-            name=self.name,
-            merge_conditions=conditions_mod.QueueRuleMergeConditions(
-                extra_conditions + self.merge_conditions.condition.copy().conditions
-            ),
-            config=self.config,
-            priority_rules=self.priority_rules,
-        )
-        queue_rules_evaluator = await QueuesRulesEvaluator.create(
-            [queue_rule_with_extra_conditions],
-            repository,
-            pulls,
-            False,
-        )
-        return queue_rules_evaluator.matching_rules[0]
-
-    async def evaluate(
-        self, pulls: list[context.BasePullRequest]
-    ) -> EvaluatedQueueRule:
-        await self.merge_conditions(pulls)
-        return typing.cast(EvaluatedQueueRule, self)
-
-    async def get_effective_priority(
-        self, ctxt: context.Context, fallback_priority: int
-    ) -> int:
-        priority = await self.priority_rules.get_context_priority(ctxt)
-        if priority is None:
-            priority = fallback_priority
-
-        return priority + self.config["priority"] * queue.QUEUE_PRIORITY_OFFSET
-
-
-T_Rule = typing.TypeVar("T_Rule", PullRequestRule, QueueRule, PriorityRule)
-T_EvaluatedRule = typing.TypeVar(
-    "T_EvaluatedRule",
-    EvaluatedPullRequestRule,
-    EvaluatedQueueRule,
-    EvaluatedPriorityRule,
-)
-
-
-@dataclasses.dataclass
-class GenericRulesEvaluator(typing.Generic[T_Rule, T_EvaluatedRule]):
+class GenericRulesEvaluator(typing.Generic[types.T_Rule, types.T_EvaluatedRule]):
     """A rules that matches a pull request."""
 
     # Fixed base attributes that are not considered when looking for the
@@ -341,41 +43,41 @@ class GenericRulesEvaluator(typing.Generic[T_Rule, T_EvaluatedRule]):
     BASE_CHANGEABLE_ATTRIBUTES = ("base",)
 
     # The list of pull request rules to match against.
-    rules: list[T_Rule]
+    rules: list[types.T_Rule]
 
     # The rules matching the pull request.
-    matching_rules: list[T_EvaluatedRule] = dataclasses.field(
+    matching_rules: list[types.T_EvaluatedRule] = dataclasses.field(
         init=False, default_factory=list
     )
 
     # The rules that can't be computed due to runtime error (eg: team resolution failure)
-    faulty_rules: list[T_EvaluatedRule] = dataclasses.field(
+    faulty_rules: list[types.T_EvaluatedRule] = dataclasses.field(
         init=False, default_factory=list
     )
 
     # The rules not matching the pull request.
-    ignored_rules: list[T_EvaluatedRule] = dataclasses.field(
+    ignored_rules: list[types.T_EvaluatedRule] = dataclasses.field(
         init=False, default_factory=list
     )
 
     # The rules not matching the base changeable attributes
     not_applicable_base_changeable_attributes_rules: list[
-        T_EvaluatedRule
+        types.T_EvaluatedRule
     ] = dataclasses.field(init=False, default_factory=list)
 
     @classmethod
     async def create(
         cls,
-        rules: list[T_Rule],
-        repository: context.Repository,
-        pulls: list[context.BasePullRequest],
+        rules: list[types.T_Rule],
+        repository: "context.Repository",
+        pulls: list["context.BasePullRequest"],
         rule_hidden_from_merge_queue: bool,
-    ) -> "GenericRulesEvaluator[T_Rule, T_EvaluatedRule]":
+    ) -> "GenericRulesEvaluator[types.T_Rule, types.T_EvaluatedRule]":
         self = cls(rules)
 
         for rule in self.rules:
             apply_configure_filter(repository, rule.conditions)
-            evaluated_rule = typing.cast(T_EvaluatedRule, await rule.evaluate(pulls))  # type: ignore[redundant-cast]
+            evaluated_rule = typing.cast(types.T_EvaluatedRule, await rule.evaluate(pulls))  # type: ignore[redundant-cast]
             del rule
 
             # NOTE(sileht):
@@ -423,120 +125,6 @@ class GenericRulesEvaluator(typing.Generic[T_Rule, T_EvaluatedRule]):
         return self
 
 
-PullRequestRulesEvaluator = GenericRulesEvaluator[
-    PullRequestRule, EvaluatedPullRequestRule
-]
-QueuesRulesEvaluator = GenericRulesEvaluator[QueueRule, EvaluatedQueueRule]
-PriorityRulesEvaluator = GenericRulesEvaluator[PriorityRule, EvaluatedPriorityRule]
-
-
-@dataclasses.dataclass
-class PullRequestRules:
-    rules: list[PullRequestRule]
-
-    def __post_init__(self) -> None:
-        names: set[PullRequestRuleName] = set()
-        for rule in self.rules:
-            if rule.name in names:
-                raise voluptuous.error.Invalid(
-                    f"pull_request_rules names must be unique, found `{rule.name}` twice"
-                )
-            names.add(rule.name)
-
-    def __iter__(self) -> abc.Iterator[PullRequestRule]:
-        return iter(self.rules)
-
-    def has_user_rules(self) -> bool:
-        return any(rule for rule in self.rules if not rule.hidden)
-
-    @staticmethod
-    def _gen_rule_from(
-        rule: PullRequestRule,
-        new_actions: dict[str, actions_mod.Action],
-        extra_conditions: list[conditions_mod.RuleConditionNode],
-    ) -> PullRequestRule:
-        return PullRequestRule(
-            name=rule.name,
-            disabled=rule.disabled,
-            conditions=conditions_mod.PullRequestRuleConditions(
-                rule.conditions.condition.copy().conditions + extra_conditions
-            ),
-            actions=new_actions,
-            hidden=rule.hidden,
-        )
-
-    async def get_pull_request_rule(
-        self, ctxt: context.Context
-    ) -> PullRequestRulesEvaluator:
-        runtime_rules = []
-        for rule in self.rules:
-            if not rule.actions:
-                runtime_rules.append(self._gen_rule_from(rule, rule.actions, []))
-                continue
-
-            actions_without_special_rules = {}
-            for name, action in rule.actions.items():
-                conditions = await action.get_conditions_requirements(ctxt)
-                if conditions:
-                    runtime_rules.append(
-                        self._gen_rule_from(rule, {name: action}, conditions)
-                    )
-                else:
-                    actions_without_special_rules[name] = action
-
-            if actions_without_special_rules:
-                runtime_rules.append(
-                    self._gen_rule_from(rule, actions_without_special_rules, [])
-                )
-
-        return await PullRequestRulesEvaluator.create(
-            runtime_rules,
-            ctxt.repository,
-            [ctxt.pull_request],
-            True,
-        )
-
-
-@dataclasses.dataclass
-class QueueRules:
-    rules: list[QueueRule]
-
-    def __iter__(self) -> abc.Iterator[QueueRule]:
-        return iter(self.rules)
-
-    def __getitem__(self, key: QueueName) -> QueueRule:
-        for rule in self:
-            if rule.name == key:
-                return rule
-        raise KeyError(f"{key} not found")
-
-    def get(self, key: QueueName) -> QueueRule | None:
-        try:
-            return self[key]
-        except KeyError:
-            return None
-
-    def __len__(self) -> int:
-        return len(self.rules)
-
-    def __post_init__(self) -> None:
-        names: set[QueueName] = set()
-        for i, rule in enumerate(reversed(self.rules)):
-            rule.config["priority"] = i
-            if rule.name in names:
-                raise voluptuous.error.Invalid(
-                    f"queue_rules names must be unique, found `{rule.name}` twice"
-                )
-            names.add(rule.name)
-
-        for rule in self.rules:
-            for name in rule.config["disallow_checks_interruption_from_queues"]:
-                if name not in names:
-                    raise voluptuous.error.Invalid(
-                        f"disallow_checks_interruption_from_queues contains an unkown queue: {name}"
-                    )
-
-
 class YAMLInvalid(voluptuous.Invalid):  # type: ignore[misc]
     def __str__(self) -> str:
         return f"{self.msg} at {self.path}"
@@ -578,292 +166,13 @@ def YAML(v: str) -> typing.Any:
         raise YAMLInvalid(message="Invalid YAML", error_message=error_message)
 
 
-def RuleConditionSchema(
-    v: typing.Any, depth: int = 0, allow_command_attributes: bool = False
-) -> typing.Any:
-    if depth > 8:
-        raise voluptuous.Invalid("Maximun number of nested conditions reached")
-
-    return voluptuous.Schema(
-        voluptuous.Any(
-            voluptuous.All(
-                str,
-                voluptuous.Coerce(
-                    lambda v: conditions_mod.RuleCondition.from_string(
-                        v, allow_command_attributes=allow_command_attributes
-                    )
-                ),
-            ),
-            voluptuous.All(
-                {
-                    "and": voluptuous.All(
-                        [
-                            lambda v: RuleConditionSchema(
-                                v,
-                                depth + 1,
-                                allow_command_attributes=allow_command_attributes,
-                            )
-                        ],
-                        voluptuous.Length(min=1),
-                    ),
-                    "or": voluptuous.All(
-                        [
-                            lambda v: RuleConditionSchema(
-                                v,
-                                depth + 1,
-                                allow_command_attributes=allow_command_attributes,
-                            )
-                        ],
-                        voluptuous.Length(min=1),
-                    ),
-                },
-                voluptuous.Length(min=1, max=1),
-                voluptuous.Coerce(conditions_mod.RuleConditionCombination),
-            ),
-            voluptuous.All(
-                {
-                    "not": voluptuous.All(
-                        voluptuous.Coerce(
-                            lambda v: RuleConditionSchema(
-                                v, depth + 1, allow_command_attributes
-                            )
-                        ),
-                    ),
-                },
-                voluptuous.Length(min=1, max=1),
-                voluptuous.Coerce(conditions_mod.RuleConditionNegation),
-            ),
-        )
-    )(v)
-
-
-def get_pull_request_rules_schema() -> voluptuous.All:
-    return voluptuous.All(
-        [
-            voluptuous.All(
-                {
-                    voluptuous.Required("name"): str,
-                    voluptuous.Required("disabled", default=None): voluptuous.Any(
-                        None, {voluptuous.Required("reason"): str}
-                    ),
-                    voluptuous.Required("hidden", default=False): bool,
-                    voluptuous.Required("conditions"): voluptuous.All(
-                        [voluptuous.Coerce(RuleConditionSchema)],
-                        voluptuous.Coerce(conditions_mod.PullRequestRuleConditions),
-                    ),
-                    voluptuous.Required("actions"): actions_mod.get_action_schemas(),
-                },
-                voluptuous.Coerce(PullRequestRule.from_dict),
-            ),
-        ],
-        voluptuous.Coerce(PullRequestRules),
-    )
-
-
-def PositiveInterval(v: str) -> datetime.timedelta:
-    try:
-        td = date.interval_from_string(v)
-    except date.InvalidDate as e:
-        raise voluptuous.Invalid(e.message)
-
-    if td < datetime.timedelta(seconds=0):
-        raise voluptuous.Invalid("Interval must be positive")
-    return td
-
-
-def ChecksTimeout(v: str) -> datetime.timedelta:
-    try:
-        td = date.interval_from_string(v)
-    except date.InvalidDate as e:
-        raise voluptuous.Invalid(e.message)
-    if td < datetime.timedelta(seconds=60):
-        raise voluptuous.Invalid("Interval must be greater than 60 seconds")
-    return td
-
-
-def _has_at_least_one_of(
-    keys: list[str], missing_key_to_display: str | None = None
-) -> abc.Callable[[dict[str, typing.Any]], dict[str, typing.Any]]:
-    def func(obj: dict[str, typing.Any]) -> dict[str, typing.Any]:
-        if any(k in obj.keys() for k in keys):
-            return obj
-
-        if missing_key_to_display is not None:
-            raise voluptuous.Invalid(f"Missing key `{missing_key_to_display}`")
-
-        raise voluptuous.Invalid(f"Must contain one of {','.join(keys)}")
-
-    return func
-
-
-merge_conditions_exclusive_msg = "Cannot have both `conditions` and `merge_conditions`, only use `merge_conditions (`conditions` is deprecated)"
-
-QueueRulesSchema = voluptuous.All(
-    [
-        voluptuous.All(
-            # NOTE(Greesb): `voluptuous.Exclusive` checks that both are not present at the same
-            # time, but there is nothing yet to check that only one of some keys is present.
-            # https://github.com/alecthomas/voluptuous/issues/115
-            _has_at_least_one_of(
-                ["conditions", "merge_conditions"], "merge_conditions"
-            ),
-            {
-                voluptuous.Required("name"): str,
-                voluptuous.Required("priority_rules", default=[]): voluptuous.All(
-                    [
-                        voluptuous.All(
-                            {
-                                voluptuous.Required("name"): str,
-                                voluptuous.Required("conditions"): voluptuous.All(
-                                    [voluptuous.Coerce(RuleConditionSchema)],
-                                    voluptuous.Coerce(
-                                        conditions_mod.PriorityRuleConditions
-                                    ),
-                                ),
-                                voluptuous.Required(
-                                    "priority",
-                                    default=queue.PriorityAliases.medium.value,
-                                ): queue.PrioritySchema,
-                            },
-                            voluptuous.Coerce(PriorityRule.from_dict),
-                        )
-                    ],
-                    voluptuous.Coerce(PriorityRules),
-                ),
-                voluptuous.Exclusive(
-                    "conditions",
-                    "merge_conditions",
-                    msg=merge_conditions_exclusive_msg,
-                ): voluptuous.All(
-                    [voluptuous.Coerce(RuleConditionSchema)],
-                    voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
-                ),
-                voluptuous.Exclusive(
-                    "merge_conditions",
-                    "merge_conditions",
-                    msg=merge_conditions_exclusive_msg,
-                ): voluptuous.All(
-                    [voluptuous.Coerce(RuleConditionSchema)],
-                    voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
-                ),
-                voluptuous.Required("speculative_checks", default=1): voluptuous.All(
-                    int, voluptuous.Range(min=1, max=20)
-                ),
-                voluptuous.Required("batch_size", default=1): voluptuous.All(
-                    int, voluptuous.Range(min=1, max=20)
-                ),
-                voluptuous.Required(
-                    "batch_max_wait_time", default="30 s"
-                ): voluptuous.All(str, voluptuous.Coerce(PositiveInterval)),
-                voluptuous.Required("allow_inplace_checks", default=True): bool,
-                voluptuous.Required(
-                    "disallow_checks_interruption_from_queues", default=[]
-                ): [str],
-                voluptuous.Required("checks_timeout", default=None): voluptuous.Any(
-                    None, voluptuous.All(str, voluptuous.Coerce(ChecksTimeout))
-                ),
-                voluptuous.Required("draft_bot_account", default=None): voluptuous.Any(
-                    None, str
-                ),
-                voluptuous.Required(
-                    "queue_branch_merge_method", default=None
-                ): voluptuous.Any(
-                    None, *QueueBranchMergeMethod.__args__[0].__args__  # type: ignore[attr-defined]
-                ),
-                voluptuous.Required(
-                    "queue_branch_prefix",
-                    # NOTE(Greesb): Use a lambda to be able to mock the returned value,
-                    # otherwise when the module is loaded the value is definitive and
-                    # can't be mocked easily.
-                    default=lambda: constants.MERGE_QUEUE_BRANCH_PREFIX,
-                ): str,
-                voluptuous.Required("allow_queue_branch_edit", default=False): bool,
-                voluptuous.Required(
-                    "batch_max_failure_resolution_attempts", default=None
-                ): voluptuous.Any(None, int),
-                # Queue action options
-                # NOTE(greesb): If you change the default values below, you might
-                # need to change the retrocompatibility behavior in
-                # mergify_engine/actions/queue.py::QueueAction.validate_config
-                voluptuous.Required(
-                    "commit_message_template", default=None
-                ): types.Jinja2WithNone,
-                voluptuous.Required("merge_method", default="merge"): voluptuous.Any(
-                    "rebase",
-                    "merge",
-                    "squash",
-                    "fast-forward",
-                ),
-                voluptuous.Required(
-                    "merge_bot_account", default=None
-                ): types.Jinja2WithNone,
-                voluptuous.Required(
-                    "update_bot_account", default=None
-                ): types.Jinja2WithNone,
-                voluptuous.Required("update_method", default=None): voluptuous.Any(
-                    "rebase", "merge", None
-                ),
-                # TODO(sileht): options to deprecate
-                voluptuous.Required(
-                    "allow_checks_interruption", default=None
-                ): voluptuous.Any(None, bool),
-                # Deprecated options
-                voluptuous.Required(
-                    "allow_inplace_speculative_checks", default=None
-                ): voluptuous.Any(None, bool),
-                voluptuous.Required(
-                    "allow_speculative_checks_interruption", default=None
-                ): voluptuous.Any(None, bool),
-            },
-            voluptuous.Coerce(QueueRule.from_dict),
-        )
-    ],
-    voluptuous.Coerce(QueueRules),
-)
-
-
-def get_defaults_schema() -> dict[typing.Any, typing.Any]:
-    return {
-        # FIXME(sileht): actions.get_action_schemas() returns only actions Actions
-        # and not command only, since only refresh is command only and it doesn't
-        # have options it's not a big deal.
-        voluptuous.Required("actions", default={}): actions_mod.get_action_schemas(),
-    }
-
-
-def FullifyPullRequestRules(v: "MergifyConfig") -> "MergifyConfig":
-    try:
-        for pr_rule in v["pull_request_rules"]:
-            for action in pr_rule.actions.values():
-                action.validate_config(v)
-    except voluptuous.error.Error:
-        raise
-    except Exception as e:
-        LOG.error("fail to dispatch config", exc_info=True)
-        raise voluptuous.error.Invalid(str(e))
-    return v
-
-
-def CommandsRestrictionsSchema(
-    command: type[actions_mod.Action],
-) -> voluptuous.Schema:
-    return {
-        voluptuous.Required(
-            "conditions", default=command.default_restrictions
-        ): voluptuous.All(
-            [
-                voluptuous.Coerce(
-                    lambda v: RuleConditionSchema(v, allow_command_attributes=True)
-                )
-            ],
-            voluptuous.Coerce(conditions_mod.PullRequestRuleConditions),
-        )
-    }
-
-
 def UserConfigurationSchema(
     config: dict[str, typing.Any], partial_validation: bool = False
 ) -> voluptuous.Schema:
+    # Circular import
+    from mergify_engine.rules.config import pull_request_rules as prr_config
+    from mergify_engine.rules.config import queue_rules as qr_config
+
     schema = {
         voluptuous.Required("extends", default=None): voluptuous.Any(
             None,
@@ -874,7 +183,7 @@ def UserConfigurationSchema(
         ),
         voluptuous.Required(
             "pull_request_rules", default=[]
-        ): get_pull_request_rules_schema(),
+        ): prr_config.get_pull_request_rules_schema(),
         voluptuous.Required(
             "queue_rules",
             default=[
@@ -884,239 +193,28 @@ def UserConfigurationSchema(
                     "merge_conditions": [],
                 }
             ],
-        ): QueueRulesSchema,
+        ): qr_config.QueueRulesSchema,
         voluptuous.Required("commands_restrictions", default={}): {
-            voluptuous.Required(name, default={}): CommandsRestrictionsSchema(command)
+            voluptuous.Required(
+                name, default={}
+            ): prr_config.CommandsRestrictionsSchema(command)
             for name, command in actions_mod.get_commands().items()
         },
-        voluptuous.Required("defaults", default={}): get_defaults_schema(),
+        voluptuous.Required(
+            "defaults", default={}
+        ): defaults_config.get_defaults_schema(),
         voluptuous.Remove("shared"): voluptuous.Any(dict, list, str, int, float, bool),
     }
 
     if not partial_validation:
-        schema = voluptuous.And(schema, voluptuous.Coerce(FullifyPullRequestRules))
+        schema = voluptuous.And(
+            schema, voluptuous.Coerce(prr_config.FullifyPullRequestRules)
+        )
 
     return voluptuous.Schema(schema)(config)
 
 
 YamlSchema: abc.Callable[[str], typing.Any] = voluptuous.Schema(voluptuous.Coerce(YAML))
-
-
-@dataclasses.dataclass
-class InvalidRules(Exception):
-    error: voluptuous.Invalid
-    filename: str
-
-    @staticmethod
-    def _format_path_item(path_item: typing.Any) -> str:
-        if isinstance(path_item, int):
-            return f"item {path_item}"
-        return str(path_item)
-
-    @classmethod
-    def format_error(cls, error: voluptuous.Invalid) -> str:
-        msg = str(error.msg)
-
-        if error.error_type:
-            msg += f" for {error.error_type}"
-
-        if error.path:
-            path = " → ".join(map(cls._format_path_item, error.path))
-            msg += f" @ {path}"
-        # Only include the error message if it has been provided
-        # voluptuous set it to the `message` otherwise
-        if error.error_message != error.msg:
-            msg += f"\n```\n{error.error_message}\n```"
-        return msg
-
-    @classmethod
-    def _walk_error(
-        cls, root_error: voluptuous.Invalid
-    ) -> abc.Generator[voluptuous.Invalid, None, None]:
-        if isinstance(root_error, voluptuous.MultipleInvalid):
-            for error1 in root_error.errors:
-                yield from cls._walk_error(error1)
-        else:
-            yield root_error
-
-    @property
-    def errors(self) -> list[voluptuous.Invalid]:
-        return list(self._walk_error(self.error))
-
-    def __str__(self) -> str:
-        if len(self.errors) >= 2:
-            return "* " + "\n* ".join(sorted(map(self.format_error, self.errors)))
-        return self.format_error(self.errors[0])
-
-    def get_annotations(self, path: str) -> list[github_types.GitHubAnnotation]:
-        return functools.reduce(
-            operator.add,
-            (
-                error.get_annotations(path)
-                for error in self.errors
-                if hasattr(error, "get_annotations")
-            ),
-            [],
-        )
-
-
-class Defaults(typing.TypedDict):
-    actions: dict[str, typing.Any]
-
-
-class CommandsRestrictions(typing.TypedDict):
-    conditions: conditions_mod.PullRequestRuleConditions
-
-
-class MergifyConfig(typing.TypedDict):
-    extends: github_types.GitHubRepositoryName | None
-    pull_request_rules: PullRequestRules
-    queue_rules: QueueRules
-    commands_restrictions: dict[str, CommandsRestrictions]
-    defaults: Defaults
-    raw_config: typing.Any
-
-
-def merge_defaults(extended_defaults: Defaults, dest_defaults: Defaults) -> None:
-    for action_name, action in extended_defaults.get("actions", {}).items():
-        dest_actions = dest_defaults.setdefault("actions", {})
-        dest_action = dest_actions.setdefault(action_name, {})
-        for effect_name, effect_value in action.items():
-            dest_action.setdefault(effect_name, effect_value)
-
-
-def merge_config_with_defaults(
-    config: dict[str, typing.Any], defaults: Defaults
-) -> None:
-    if defaults_actions := defaults.get("actions"):
-        for rule in config.get("pull_request_rules", []):
-            actions = rule["actions"]
-
-            for action_name, action in actions.items():
-                if action_name not in defaults_actions:
-                    continue
-                elif defaults_actions[action_name] is None:
-                    continue
-
-                if action is None:
-                    rule["actions"][action_name] = defaults_actions[action_name]
-                else:
-                    merged_action = defaults_actions[action_name] | action
-                    rule["actions"][action_name].update(merged_action)
-
-
-def merge_raw_configs(
-    extended_config: dict[str, typing.Any],
-    dest_config: dict[str, typing.Any],
-) -> None:
-    for rule_to_merge in ("pull_request_rules", "queue_rules"):
-        dest_rules = dest_config.setdefault(rule_to_merge, [])
-        dest_rule_names = [rule["name"] for rule in dest_rules]
-
-        for source_rule in extended_config.get(rule_to_merge, []):
-            if source_rule["name"] not in dest_rule_names:
-                dest_rules.append(source_rule)
-
-    for commands_restriction in extended_config.get("commands_restrictions", {}):
-        dest_config["commands_restrictions"].setdefault(
-            commands_restriction,
-            extended_config["commands_restrictions"][commands_restriction],
-        )
-
-
-async def get_mergify_config_from_file(
-    repository_ctxt: context.Repository,
-    config_file: context.MergifyConfigFile,
-    allow_extend: bool = True,
-) -> MergifyConfig:
-    try:
-        config = YamlSchema(config_file["decoded_content"])
-    except voluptuous.Invalid as e:
-        raise InvalidRules(e, config_file["path"])
-
-    # Allow an empty file
-    if config is None:
-        config = {}
-
-    # Validate defaults
-    return await get_mergify_config_from_dict(
-        repository_ctxt, config, config_file["path"], allow_extend
-    )
-
-
-async def get_mergify_config_from_dict(
-    repository_ctxt: context.Repository,
-    config: dict[str, typing.Any],
-    error_path: str,
-    allow_extend: bool = True,
-) -> MergifyConfig:
-    try:
-        UserConfigurationSchema(config, partial_validation=True)
-    except voluptuous.Invalid as e:
-        raise InvalidRules(e, error_path)
-
-    defaults = config.pop("defaults", {})
-
-    extended_path = config.get("extends")
-    if extended_path is not None:
-        if not allow_extend:
-            raise InvalidRules(
-                voluptuous.Invalid(
-                    "Maximum number of extended configuration reached. Limit is 1.",
-                    ["extends"],
-                ),
-                error_path,
-            )
-        config_to_extend = await get_mergify_extended_config(
-            repository_ctxt, extended_path, error_path
-        )
-        # NOTE(jules): Anchor and shared elements can't be shared between files
-        # because they are computed by YamlSchema already.
-        merge_defaults(config_to_extend["defaults"], defaults)
-        merge_raw_configs(config_to_extend["raw_config"], config)
-
-    merge_config_with_defaults(config, defaults)
-
-    try:
-        final_config = UserConfigurationSchema(config, partial_validation=False)
-        final_config["defaults"] = defaults
-        final_config["raw_config"] = config
-    except voluptuous.Invalid as e:
-        raise InvalidRules(e, error_path)
-    else:
-        return typing.cast(MergifyConfig, final_config)
-
-
-async def get_mergify_extended_config(
-    repository_ctxt: context.Repository,
-    extended_path: github_types.GitHubRepositoryName,
-    error_path: str,
-) -> MergifyConfig:
-    try:
-        extended_repository_ctxt = (
-            await repository_ctxt.installation.get_repository_by_name(extended_path)
-        )
-    except http.HTTPNotFound as e:
-        exc = InvalidRules(
-            voluptuous.Invalid(
-                f"Extended configuration repository `{extended_path}` was not found. This repository doesn't exist or Mergify is not installed on it.",
-                ["extends"],
-                str(e),
-            ),
-            error_path,
-        )
-        raise exc from e
-
-    if extended_repository_ctxt.repo["id"] == repository_ctxt.repo["id"]:
-        raise InvalidRules(
-            voluptuous.Invalid(
-                "Only configuration from other repositories can be extended.",
-                ["extends"],
-            ),
-            error_path,
-        )
-
-    return await extended_repository_ctxt.get_mergify_config(allow_extend=False)
 
 
 def apply_configure_filter(
@@ -1134,24 +232,3 @@ def apply_configure_filter(
             live_resolvers.configure_filter(
                 repository, condition.filters.related_checks
             )
-
-
-MERGIFY_BUILTIN_CONFIG_YAML = """
-pull_request_rules:
-  - name: delete backport/copy branch (Mergify rule)
-    hidden: true
-    conditions:
-      - author={author}
-      - head~=^mergify/(bp|copy)/
-    actions:
-        delete_head_branch:
-"""
-
-
-async def get_mergify_builtin_config(
-    redis_cache: redis_utils.RedisCacheBytes,
-) -> voluptuous.Schema:
-    mergify_bot = await github.GitHubAppInfo.get_bot(redis_cache)
-    return UserConfigurationSchema(
-        YamlSchema(MERGIFY_BUILTIN_CONFIG_YAML.format(author=mergify_bot["login"]))
-    )

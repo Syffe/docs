@@ -8,8 +8,8 @@ import pydantic
 
 from mergify_engine import context
 from mergify_engine import date
-from mergify_engine import rules
 from mergify_engine.queue import statistics as queue_statistics
+from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web.api import security
 
 
@@ -45,7 +45,7 @@ class TimeToMergeResponse(typing.TypedDict):
 
 async def get_time_to_merge_stats_for_queue(
     repository_ctxt: context.Repository,
-    queue_name: rules.QueueName,
+    queue_name: qr_config.QueueName,
     branch_name: str | None = None,
     at: int | None = None,
 ) -> TimeToMergeResponse:
@@ -67,7 +67,7 @@ async def get_time_to_merge_stats_for_all_queues(
     repository_ctxt: context.Repository,
     branch_name: str | None = None,
     at: int | None = None,
-) -> dict[rules.QueueName, TimeToMergeResponse]:
+) -> dict[qr_config.QueueName, TimeToMergeResponse]:
     """
     Returns a dict containing a TimeToMergeResponse for each queue.
     If a queue is not in the returned dict, that means there are no available data
@@ -78,7 +78,7 @@ async def get_time_to_merge_stats_for_all_queues(
         branch_name=branch_name,
         at=at,
     )
-    stats_out: dict[rules.QueueName, TimeToMergeResponse] = {}
+    stats_out: dict[qr_config.QueueName, TimeToMergeResponse] = {}
     for queue_name, stats_list in stats_dict.items():
         if len(stats_list) == 0:
             stats_out[queue_name] = TimeToMergeResponse(mean=None, median=None)
@@ -101,7 +101,7 @@ async def get_time_to_merge_stats_for_all_queues(
     response_model=TimeToMergeResponse,
 )
 async def get_average_time_to_merge_stats_endpoint(
-    queue_name: rules.QueueName = fastapi.Path(  # noqa: B008
+    queue_name: qr_config.QueueName = fastapi.Path(  # noqa: B008
         ...,
         description="Name of the queue",
     ),
@@ -144,7 +144,7 @@ class ChecksDurationResponse(typing.TypedDict):
 
 async def get_checks_duration_stats_for_queue(
     repository_ctxt: context.Repository,
-    queue_name: rules.QueueName,
+    queue_name: qr_config.QueueName,
     branch_name: str | None = None,
     start_at: int | None = None,
     end_at: int | None = None,
@@ -171,7 +171,7 @@ async def get_checks_duration_stats_for_all_queues(
     branch_name: str | None = None,
     start_at: int | None = None,
     end_at: int | None = None,
-) -> dict[rules.QueueName, ChecksDurationResponse]:
+) -> dict[qr_config.QueueName, ChecksDurationResponse]:
     """
     Returns a dict containing a ChecksDurationResponse for each queue.
     If a queue is not in the returned dict, that means there are no available data
@@ -183,7 +183,7 @@ async def get_checks_duration_stats_for_all_queues(
         start_at=start_at,
         end_at=end_at,
     )
-    stats_out: dict[rules.QueueName, ChecksDurationResponse] = {}
+    stats_out: dict[qr_config.QueueName, ChecksDurationResponse] = {}
     for queue_name, stats_list in stats_dict.items():
         if len(stats_list) == 0:
             stats_out[queue_name] = ChecksDurationResponse(mean=None, median=None)
@@ -206,7 +206,7 @@ async def get_checks_duration_stats_for_all_queues(
     response_model=ChecksDurationResponse,
 )
 async def get_checks_duration_stats_endpoint(
-    queue_name: rules.QueueName = fastapi.Path(  # noqa: B008
+    queue_name: qr_config.QueueName = fastapi.Path(  # noqa: B008
         ...,
         description="Name of the queue",
     ),
@@ -316,7 +316,7 @@ class QueueChecksOutcome:
 
 async def get_queue_checks_outcome_for_queue(
     repository_ctxt: context.Repository,
-    queue_name: rules.QueueName,
+    queue_name: qr_config.QueueName,
     branch_name: str | None = None,
     start_at: int | None = None,
     end_at: int | None = None,
@@ -344,7 +344,7 @@ async def get_queue_checks_outcome_for_queue(
     response_model=QueueChecksOutcome,
 )
 async def get_queue_checks_outcome_stats_endpoint(
-    queue_name: rules.QueueName = fastapi.Path(  # noqa: B008
+    queue_name: qr_config.QueueName = fastapi.Path(  # noqa: B008
         ...,
         description="Name of the queue",
     ),

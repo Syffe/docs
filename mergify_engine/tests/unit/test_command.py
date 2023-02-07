@@ -6,15 +6,15 @@ from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import github_types
-from mergify_engine import rules
 from mergify_engine.actions.backport import BackportAction
 from mergify_engine.actions.rebase import RebaseAction
 from mergify_engine.engine import commands_runner
+from mergify_engine.rules.config import mergify as mergify_conf
 from mergify_engine.tests.unit import conftest
 
 
-async def get_empty_config() -> rules.MergifyConfig:
-    return await rules.get_mergify_config_from_file(
+async def get_empty_config() -> mergify_conf.MergifyConfig:
+    return await mergify_conf.get_mergify_config_from_file(
         mock.MagicMock(),
         context.MergifyConfigFile(
             type="file",
@@ -114,7 +114,7 @@ defaults:
         path=github_types.GitHubFilePath("whatever"),
         decoded_content=raw_config,
     )
-    config = await rules.get_mergify_config_from_file(mock.MagicMock(), file)
+    config = await mergify_conf.get_mergify_config_from_file(mock.MagicMock(), file)
     command = commands_runner.load_command(config, "@mergifyio backport")
     assert command.name == "backport"
     assert command.command_args == ""
@@ -310,7 +310,7 @@ async def test_commands_restrictions_sender_permission(
     is_command_allowed: bool,
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
-    mergify_config = await rules.get_mergify_config_from_file(
+    mergify_config = await mergify_conf.get_mergify_config_from_file(
         mock.MagicMock(),
         context.MergifyConfigFile(
             type="file",
@@ -358,7 +358,7 @@ async def test_default_commands_restrictions(
         decoded_content="",
     )
 
-    mergify_config = await rules.get_mergify_config_from_file(
+    mergify_config = await mergify_conf.get_mergify_config_from_file(
         mock.MagicMock(), mergify_config_file
     )
 

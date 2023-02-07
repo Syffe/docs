@@ -5,13 +5,13 @@ import voluptuous
 from mergify_engine import actions
 from mergify_engine import check_api
 from mergify_engine import context
-from mergify_engine import rules
 from mergify_engine import signals
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
 from mergify_engine.dashboard import user_tokens
 from mergify_engine.rules import types
+from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 class CommentExecutorConfig(typing.TypedDict):
@@ -25,12 +25,12 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorCo
         cls,
         action: "CommentAction",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedPullRequestRule",
+        rule: "prr_config.EvaluatedPullRequestRule",
     ) -> "CommentExecutor":
         if action.config["message"] is None:
             # Happens when the config for a comment action is just `None` and
             # there is no "defaults" for the comment action.
-            raise rules.InvalidPullRequestRule(
+            raise prr_config.InvalidPullRequestRule(
                 "Cannot have `comment` action with no `message`",
                 str(action.config),
             )
@@ -44,12 +44,12 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorCo
                 required_permissions=[],
             )
         except action_utils.RenderBotAccountFailure as e:
-            raise rules.InvalidPullRequestRule(e.title, e.reason)
+            raise prr_config.InvalidPullRequestRule(e.title, e.reason)
 
         try:
             message = await ctxt.pull_request.render_template(action.config["message"])
         except context.RenderTemplateFailure as rmf:
-            raise rules.InvalidPullRequestRule(
+            raise prr_config.InvalidPullRequestRule(
                 "Invalid comment message",
                 str(rmf),
             )
@@ -59,7 +59,7 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorCo
             tokens = await ctxt.repository.installation.get_user_tokens()
             github_user = tokens.get_token_for(bot_account)
             if not github_user:
-                raise rules.InvalidPullRequestRule(
+                raise prr_config.InvalidPullRequestRule(
                     f"Unable to comment: user `{bot_account}` is unknown. ",
                     f"Please make sure `{bot_account}` has logged in Mergify dashboard.",
                 )

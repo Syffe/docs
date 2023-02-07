@@ -6,11 +6,11 @@ from mergify_engine import check_api
 from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import refresher
-from mergify_engine import rules
 from mergify_engine import worker_pusher
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.dashboard import user_tokens
+from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 REQUIRED_STATUS_RE = re.compile(r'Required status check "([^"]*)" is expected.')
@@ -19,7 +19,7 @@ FORBIDDEN_SQUASH_MERGE_MSG = "Squash merges are not allowed on this repository."
 FORBIDDEN_REBASE_MERGE_MSG = "Rebase merges are not allowed on this repository."
 
 PendingResultBuilderT = abc.Callable[
-    [context.Context, "rules.EvaluatedPullRequestRule"],
+    [context.Context, prr_config.EvaluatedPullRequestRule],
     abc.Awaitable[check_api.Result],
 ]
 MergeMethodT = typing.Literal["merge", "rebase", "squash", "fast-forward"]
@@ -40,7 +40,7 @@ class MergeUtilsMixin:
     async def common_merge(
         self,
         ctxt: context.Context,
-        rule: "rules.EvaluatedPullRequestRule",
+        rule: prr_config.EvaluatedPullRequestRule,
         merge_method: MergeMethodT,
         merge_rebase_fallback: RebaseFallbackT,
         merge_bot_account: github_types.GitHubLogin | None,
@@ -166,7 +166,7 @@ class MergeUtilsMixin:
         self,
         e: http.HTTPClientSideError,
         ctxt: context.Context,
-        rule: "rules.EvaluatedPullRequestRule",
+        rule: prr_config.EvaluatedPullRequestRule,
         pending_result_builder: PendingResultBuilderT,
     ) -> check_api.Result:
         if "Head branch was modified" in e.message:

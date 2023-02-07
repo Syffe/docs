@@ -19,6 +19,8 @@ from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.rules import conditions as conditions_mod
+from mergify_engine.rules.config import mergify as mergify_conf
+from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -38,7 +40,7 @@ CONFIGURATION_CHANGE_MESSAGE = (
 
 @dataclasses.dataclass
 class CommandMixin:
-    name: rules.PullRequestRuleName
+    name: prr_config.PullRequestRuleName
     command_args: str
 
     def get_command(self) -> str:
@@ -50,7 +52,7 @@ class CommandMixin:
 
 @dataclasses.dataclass
 class Command(CommandMixin):
-    name: rules.PullRequestRuleName
+    name: prr_config.PullRequestRuleName
     command_args: str
     action: actions.Action
 
@@ -60,7 +62,7 @@ class Command(CommandMixin):
 
 @dataclasses.dataclass
 class CommandInvalid(Exception, CommandMixin):
-    name: rules.PullRequestRuleName
+    name: prr_config.PullRequestRuleName
     command_args: str
     message: str
 
@@ -102,7 +104,7 @@ def prepare_message(command: Command | CommandInvalid, result: check_api.Result)
 
 
 def load_command(
-    mergify_config: rules.MergifyConfig,
+    mergify_config: mergify_conf.MergifyConfig,
     message: str,
 ) -> Command:
     """Load an action from a message."""
@@ -114,7 +116,7 @@ def load_command(
             "Comment contains '@Mergify/io' tag but is not aimed to be executed as a command"
         )
 
-    action_name = rules.PullRequestRuleName(match[1])
+    action_name = prr_config.PullRequestRuleName(match[1])
     command_args = match[2].strip()
 
     if action_name in action_classes:
@@ -164,7 +166,7 @@ class LastUpdatedOrderedDict(collections.OrderedDict[str, github_types.GitHubCom
 
 
 async def run_pending_commands_tasks(
-    ctxt: context.Context, mergify_config: rules.MergifyConfig
+    ctxt: context.Context, mergify_config: mergify_conf.MergifyConfig
 ) -> None:
     if ctxt.is_merge_queue_pr():
         # We don't allow any command yet
@@ -237,7 +239,7 @@ async def run_pending_commands_tasks(
 
 async def run_command(
     ctxt: context.Context,
-    mergify_config: rules.MergifyConfig,
+    mergify_config: mergify_conf.MergifyConfig,
     command: Command,
     comment_result: github_types.GitHubComment | None = None,
 ) -> None:
@@ -251,13 +253,17 @@ async def run_command(
         try:
             await command.action.load_context(
                 ctxt,
-                rules.EvaluatedPullRequestRule(
-                    rules.CommandRule(
-                        rules.PullRequestRuleName(str(command)), None, conds, {}, False
+                prr_config.EvaluatedPullRequestRule(
+                    prr_config.CommandRule(
+                        prr_config.PullRequestRuleName(str(command)),
+                        None,
+                        conds,
+                        {},
+                        False,
                     )
                 ),
             )
-        except rules.InvalidPullRequestRule as e:
+        except prr_config.InvalidPullRequestRule as e:
             result = check_api.Result(
                 check_api.Conclusion.ACTION_REQUIRED,
                 e.reason,
@@ -306,7 +312,7 @@ class CommandNotAllowed(Exception):
 
 async def check_command_restrictions(
     ctxt: context.Context,
-    mergify_config: rules.MergifyConfig,
+    mergify_config: mergify_conf.MergifyConfig,
     command: Command,
     user: github_types.GitHubAccount,
 ) -> None:
@@ -327,7 +333,7 @@ async def check_command_restrictions(
 
 async def handle(
     ctxt: context.Context,
-    mergify_config: rules.MergifyConfig,
+    mergify_config: mergify_conf.MergifyConfig,
     comment_command: str,
     user: github_types.GitHubAccount,
 ) -> None:

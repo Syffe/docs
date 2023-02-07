@@ -3,19 +3,21 @@ from __future__ import annotations
 import datetime
 
 from mergify_engine import date
-from mergify_engine import rules
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import conditions as rules_conditions
+from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web.api import statistics as statistics_api
 
 
 async def get_estimation_from_stats(
     train: merge_train.Train,
-    queue_rules: rules.QueueRules,
+    queue_rules: qr_config.QueueRules,
     embarked_pull: merge_train.EmbarkedPull,
     embarked_pull_position: int,
-    checks_duration_stats: dict[rules.QueueName, statistics_api.ChecksDurationResponse],
+    checks_duration_stats: dict[
+        qr_config.QueueName, statistics_api.ChecksDurationResponse
+    ],
     car: merge_train.TrainCar | None,
     previous_eta: datetime.datetime | None = None,
 ) -> datetime.datetime | None:
@@ -39,7 +41,7 @@ async def get_estimation_from_stats(
 
 async def get_estimation(
     train: merge_train.Train,
-    queue_rules: rules.QueueRules,
+    queue_rules: qr_config.QueueRules,
     embarked_pull: merge_train.EmbarkedPull,
     embarked_pull_position: int,
     car: merge_train.TrainCar | None,
@@ -69,7 +71,7 @@ async def get_estimation(
 async def compute_estimation(
     embarked_pull: merge_train.EmbarkedPull,
     embarked_pull_position: int,
-    queue_rule_config: rules.QueueConfig,
+    queue_rule_config: qr_config.QueueConfig,
     checks_duration: float | None,
     car: merge_train.TrainCar | None,
     # previous_eta must be the eta of the pr in position `embarked_pull_position - 1`

@@ -15,7 +15,6 @@ from mergify_engine import context
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import queue
-from mergify_engine import rules
 from mergify_engine import signals
 from mergify_engine import utils
 from mergify_engine.actions import merge_base
@@ -29,6 +28,9 @@ from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import checks_status
 from mergify_engine.rules import conditions
 from mergify_engine.rules import types
+from mergify_engine.rules.config import mergify as mergify_conf
+from mergify_engine.rules.config import pull_request_rules as prr_config
+from mergify_engine.rules.config import queue_rules as qr_config
 
 
 BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT = (
@@ -82,7 +84,7 @@ QueueUpdateT = typing.Literal["merge", "rebase"]
 
 
 class QueueExecutorConfig(typing.TypedDict):
-    name: rules.QueueName
+    name: qr_config.QueueName
     method: merge_base.MergeMethodT
     merge_bot_account: github_types.GitHubLogin | None
     update_bot_account: github_types.GitHubLogin | None
@@ -100,8 +102,8 @@ class QueueExecutor(
     actions.ActionExecutor["QueueAction", "QueueExecutorConfig"],
     merge_base.MergeUtilsMixin,
 ):
-    queue_rule: rules.QueueRule
-    queue_rules: rules.QueueRules
+    queue_rule: qr_config.QueueRule
+    queue_rules: qr_config.QueueRules
 
     UNQUEUE_DOCUMENTATION = f"""
 You can take a look at `{constants.MERGE_QUEUE_SUMMARY_NAME}` check runs for more details.
@@ -120,7 +122,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         cls,
         action: "QueueAction",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedPullRequestRule",
+        rule: "prr_config.EvaluatedPullRequestRule",
     ) -> "QueueExecutor":
         try:
             update_bot_account = await action_utils.render_bot_account(
@@ -131,7 +133,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 missing_feature_message="Cannot use `update_bot_account` with queue action",
             )
         except action_utils.RenderBotAccountFailure as e:
-            raise rules.InvalidPullRequestRule(e.title, e.reason)
+            raise prr_config.InvalidPullRequestRule(e.title, e.reason)
 
         try:
             merge_bot_account = await action_utils.render_bot_account(
@@ -145,7 +147,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 required_permissions=[github_types.GitHubRepositoryPermission.WRITE],
             )
         except action_utils.RenderBotAccountFailure as e:
-            raise rules.InvalidPullRequestRule(e.title, e.reason)
+            raise prr_config.InvalidPullRequestRule(e.title, e.reason)
 
         await cls._check_subscription_status(action, ctxt)
         cls._check_method_fastforward_configuration(action)
@@ -386,7 +388,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 self.rule.get_signal_trigger(),
                 unexpected_change,
             )
-            if isinstance(self.rule, rules.CommandRule):
+            if isinstance(self.rule, prr_config.CommandRule):
                 return check_api.Result(
                     check_api.Conclusion.CANCELLED,
                     "The pull request has been removed from the queue",
@@ -675,7 +677,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
     @staticmethod
     async def _should_be_cancel(
         ctxt: context.Context,
-        rule: "rules.EvaluatedPullRequestRule",
+        rule: "prr_config.EvaluatedPullRequestRule",
         q: merge_train.Train,
         previous_car: merge_train.TrainCar | None,
     ) -> bool:
@@ -726,9 +728,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
     @staticmethod
     async def get_pending_queue_status(
         ctxt: context.Context,
-        rule: "rules.EvaluatedPullRequestRule",
+        rule: "prr_config.EvaluatedPullRequestRule",
         queue: merge_train.Train,
-        queue_rule: rules.QueueRule,
+        queue_rule: qr_config.QueueRule,
         queue_freeze: freeze.QueueFreeze | None,
     ) -> check_api.Result:
         if queue_freeze is not None:
@@ -771,27 +773,27 @@ Then, re-embark the pull request into the merge queue by posting the comment
             return
 
         if action.config["update_method"] != "rebase":
-            raise rules.InvalidPullRequestRule(
+            raise prr_config.InvalidPullRequestRule(
                 f"`update_method: {action.config['update_method']}` is not compatible with fast-forward merge method",
                 "`update_method` must be set to `rebase`.",
             )
         elif action.config["commit_message_template"] is not None:
-            raise rules.InvalidPullRequestRule(
+            raise prr_config.InvalidPullRequestRule(
                 "Commit message can't be changed with fast-forward merge method",
                 "`commit_message_template` must not be set if `method: fast-forward` is set.",
             )
         elif action.queue_rule.config["batch_size"] > 1:
-            raise rules.InvalidPullRequestRule(
+            raise prr_config.InvalidPullRequestRule(
                 "batch_size > 1 is not compatible with fast-forward merge method",
                 "The merge `method` or the queue configuration must be updated.",
             )
         elif action.queue_rule.config["speculative_checks"] > 1:
-            raise rules.InvalidPullRequestRule(
+            raise prr_config.InvalidPullRequestRule(
                 "speculative_checks > 1 is not compatible with fast-forward merge method",
                 "The merge `method` or the queue configuration must be updated.",
             )
         elif not action.queue_rule.config["allow_inplace_checks"]:
-            raise rules.InvalidPullRequestRule(
+            raise prr_config.InvalidPullRequestRule(
                 "allow_inplace_checks=False is not compatible with fast-forward merge method",
                 "The merge `method` or the queue configuration must be updated.",
             )
@@ -803,7 +805,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         if len(action.queue_rules) > 1 and not ctxt.subscription.has_feature(
             subscription.Features.QUEUE_ACTION
         ):
-            raise rules.InvalidPullRequestRule(
+            raise prr_config.InvalidPullRequestRule(
                 "Cannot use multiple queues.",
                 ctxt.subscription.missing_feature_reason(
                     ctxt.pull["base"]["repo"]["owner"]["login"]
@@ -813,7 +815,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         elif action.queue_rule.config[
             "speculative_checks"
         ] > 1 and not ctxt.subscription.has_feature(subscription.Features.QUEUE_ACTION):
-            raise rules.InvalidPullRequestRule(
+            raise prr_config.InvalidPullRequestRule(
                 "Cannot use `speculative_checks` with queue action.",
                 ctxt.subscription.missing_feature_reason(
                     ctxt.pull["base"]["repo"]["owner"]["login"]
@@ -823,7 +825,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         elif action.queue_rule.config[
             "batch_size"
         ] > 1 and not ctxt.subscription.has_feature(subscription.Features.QUEUE_ACTION):
-            raise rules.InvalidPullRequestRule(
+            raise prr_config.InvalidPullRequestRule(
                 "Cannot use `batch_size` with queue action.",
                 ctxt.subscription.missing_feature_reason(
                     ctxt.pull["base"]["repo"]["owner"]["login"]
@@ -834,7 +836,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         ] != queue.PriorityAliases.medium.value and not ctxt.subscription.has_feature(
             subscription.Features.PRIORITY_QUEUES
         ):
-            raise rules.InvalidPullRequestRule(
+            raise prr_config.InvalidPullRequestRule(
                 "Cannot use `priority` with queue action.",
                 ctxt.subscription.missing_feature_reason(
                     ctxt.pull["base"]["repo"]["owner"]["login"]
@@ -843,7 +845,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
     @staticmethod
     async def _check_config_compatibility_with_branch_protection(
-        queue_rule: rules.QueueRule, ctxt: context.Context
+        queue_rule: qr_config.QueueRule, ctxt: context.Context
     ) -> None:
         if queue_rule.config["queue_branch_merge_method"] == "fast-forward":
             # Note(charly): `queue_branch_merge_method=fast-forward` make the
@@ -894,8 +896,8 @@ class QueueAction(actions.Action):
     ]
 
     # NOTE(sileht): set by validate_config()
-    queue_rules: rules.QueueRules = dataclasses.field(init=False, repr=False)
-    queue_rule: rules.QueueRule = dataclasses.field(init=False, repr=False)
+    queue_rules: qr_config.QueueRules = dataclasses.field(init=False, repr=False)
+    queue_rule: qr_config.QueueRule = dataclasses.field(init=False, repr=False)
 
     @property
     def validator(self) -> dict[typing.Any, typing.Any]:
@@ -951,7 +953,7 @@ class QueueAction(actions.Action):
 
         return validator
 
-    def validate_config(self, mergify_config: "rules.MergifyConfig") -> None:
+    def validate_config(self, mergify_config: "mergify_conf.MergifyConfig") -> None:
         if self.config["update_method"] is None:
             self.config["update_method"] = (
                 "rebase" if self.config["method"] == "fast-forward" else "merge"

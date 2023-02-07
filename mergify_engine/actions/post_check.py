@@ -11,6 +11,8 @@ from mergify_engine import signals
 from mergify_engine.dashboard import subscription
 from mergify_engine.rules import conditions
 from mergify_engine.rules import types
+from mergify_engine.rules.config import conditions as cond_config
+from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 def CheckRunJinja2(v: typing.Any) -> str | None:
@@ -43,10 +45,10 @@ class PostCheckExecutor(
         cls,
         action: "PostCheckAction",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedPullRequestRule",
+        rule: prr_config.EvaluatedPullRequestRule,
     ) -> "PostCheckExecutor":
         if not ctxt.subscription.has_feature(subscription.Features.CUSTOM_CHECKS):
-            raise rules.InvalidPullRequestRule(
+            raise prr_config.InvalidPullRequestRule(
                 "Custom checks are disabled",
                 ctxt.subscription.missing_feature_reason(
                     ctxt.pull["base"]["repo"]["owner"]["login"]
@@ -75,7 +77,7 @@ class PostCheckExecutor(
                 extra_variables,
             )
         except context.RenderTemplateFailure as rmf:
-            raise rules.InvalidPullRequestRule(
+            raise prr_config.InvalidPullRequestRule(
                 "Invalid title template",
                 str(rmf),
             )
@@ -85,7 +87,7 @@ class PostCheckExecutor(
                 action.config["summary"], extra_variables
             )
         except context.RenderTemplateFailure as rmf:
-            raise rules.InvalidPullRequestRule(
+            raise prr_config.InvalidPullRequestRule(
                 "Invalid summary template",
                 str(rmf),
             )
@@ -168,7 +170,7 @@ class PostCheckAction(actions.Action):
         voluptuous.Required("success_conditions", default=None): voluptuous.Any(
             None,
             voluptuous.All(
-                [voluptuous.Coerce(rules.RuleConditionSchema)],
+                [voluptuous.Coerce(cond_config.RuleConditionSchema)],
                 voluptuous.Coerce(conditions.PullRequestRuleConditions),
             ),
         ),

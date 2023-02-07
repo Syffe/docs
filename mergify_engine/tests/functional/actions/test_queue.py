@@ -19,12 +19,13 @@ from mergify_engine import engine
 from mergify_engine import eventlogs
 from mergify_engine import github_types
 from mergify_engine import queue
-from mergify_engine import rules
 from mergify_engine import utils
 from mergify_engine import yaml
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import conditions
+from mergify_engine.rules.config import priority_rules as pr_config
+from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.tests.functional import base
 
 
@@ -6321,7 +6322,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
         q = await merge_train.Train.from_context(ctxt)
         base_sha = await q.get_base_sha()
 
-        queue_config = rules.QueueConfig(
+        queue_config = qr_config.QueueConfig(
             priority=0,
             speculative_checks=5,
             batch_size=1,
@@ -6341,7 +6342,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
             update_bot_account=None,
         )
         pull_queue_config = queue.PullQueueConfig(
-            name=rules.QueueName("foo"),
+            name=qr_config.QueueName("foo"),
             update_method="merge",
             priority=0,
             effective_priority=0,
@@ -6367,13 +6368,13 @@ class TestTrainApiCalls(base.FunctionalTestBase):
         )
         q._cars.append(car)
 
-        queue_rules = rules.QueueRules(
+        queue_rules = qr_config.QueueRules(
             [
-                rules.QueueRule(
-                    name=rules.QueueName("foo"),
+                qr_config.QueueRule(
+                    name=qr_config.QueueName("foo"),
                     merge_conditions=conditions.QueueRuleMergeConditions([]),
                     config=queue_config,
-                    priority_rules=rules.PriorityRules([]),
+                    priority_rules=pr_config.PriorityRules([]),
                 )
             ]
         )
@@ -6466,7 +6467,7 @@ pull_requests:
         q = await merge_train.Train.from_context(ctxt)
         base_sha = await q.get_base_sha()
 
-        queue_config = rules.QueueConfig(
+        queue_config = qr_config.QueueConfig(
             priority=0,
             speculative_checks=5,
             batch_size=1,
@@ -6486,7 +6487,7 @@ pull_requests:
             update_bot_account=None,
         )
         queue_pull_config = queue.PullQueueConfig(
-            name=rules.QueueName("foo"),
+            name=qr_config.QueueName("foo"),
             update_method="merge",
             priority=0,
             effective_priority=0,
@@ -6512,13 +6513,13 @@ pull_requests:
         )
         q._cars.append(car)
 
-        queue_rules = rules.QueueRules(
+        queue_rules = qr_config.QueueRules(
             [
-                rules.QueueRule(
-                    name=rules.QueueName("foo"),
+                qr_config.QueueRule(
+                    name=qr_config.QueueName("foo"),
                     merge_conditions=conditions.QueueRuleMergeConditions([]),
                     config=queue_config,
-                    priority_rules=rules.PriorityRules([]),
+                    priority_rules=pr_config.PriorityRules([]),
                 )
             ]
         )
@@ -6570,7 +6571,7 @@ pull_requests:
         q = await merge_train.Train.from_context(ctxt)
         base_sha = await q.get_base_sha()
 
-        queue_config = rules.QueueConfig(
+        queue_config = qr_config.QueueConfig(
             priority=0,
             speculative_checks=5,
             batch_size=1,
@@ -6590,7 +6591,7 @@ pull_requests:
             update_bot_account=None,
         )
         queue_pull_config = queue.PullQueueConfig(
-            name=rules.QueueName("foo"),
+            name=qr_config.QueueName("foo"),
             update_method="merge",
             priority=0,
             effective_priority=0,
@@ -6611,13 +6612,13 @@ pull_requests:
         )
         q._cars.append(car)
 
-        queue_rules = rules.QueueRules(
+        queue_rules = qr_config.QueueRules(
             [
-                rules.QueueRule(
-                    name=rules.QueueName("foo"),
+                qr_config.QueueRule(
+                    name=qr_config.QueueName("foo"),
                     merge_conditions=conditions.QueueRuleMergeConditions([]),
                     config=queue_config,
-                    priority_rules=rules.PriorityRules([]),
+                    priority_rules=pr_config.PriorityRules([]),
                 )
             ]
         )
@@ -6650,7 +6651,7 @@ pull_requests:
         q = await merge_train.Train.from_context(ctxt)
         base_sha = await q.get_base_sha()
 
-        queue_config = rules.QueueConfig(
+        queue_config = qr_config.QueueConfig(
             priority=0,
             speculative_checks=5,
             batch_size=1,
@@ -6670,7 +6671,7 @@ pull_requests:
             update_bot_account=None,
         )
         config = queue.PullQueueConfig(
-            name=rules.QueueName("foo"),
+            name=qr_config.QueueName("foo"),
             update_method="merge",
             priority=0,
             effective_priority=0,
@@ -6687,13 +6688,13 @@ pull_requests:
             base_sha,
         )
 
-        queue_rules = rules.QueueRules(
+        queue_rules = qr_config.QueueRules(
             [
-                rules.QueueRule(
-                    name=rules.QueueName("foo"),
+                qr_config.QueueRule(
+                    name=qr_config.QueueName("foo"),
                     merge_conditions=conditions.QueueRuleMergeConditions([]),
                     config=queue_config,
-                    priority_rules=rules.PriorityRules([]),
+                    priority_rules=pr_config.PriorityRules([]),
                 )
             ]
         )

@@ -6,10 +6,11 @@ import pytest
 
 from mergify_engine import context
 from mergify_engine import github_types
-from mergify_engine import rules
 from mergify_engine import yaml
 from mergify_engine.engine import actions_runner
 from mergify_engine.rules import conditions
+from mergify_engine.rules.config import conditions as cond_config
+from mergify_engine.rules.config import mergify as mergify_conf
 from mergify_engine.tests.unit import conftest
 
 
@@ -105,7 +106,7 @@ async def test_get_already_merged_summary(
         decoded_content=raw_config,
     )
 
-    config = await rules.get_mergify_config_from_file(mock.MagicMock(), file)
+    config = await mergify_conf.get_mergify_config_from_file(mock.MagicMock(), file)
     match = await config["pull_request_rules"].get_pull_request_rule(ctxt)
     assert result == await actions_runner.get_already_merged_summary(ctxt, match)
 
@@ -148,7 +149,11 @@ async def test_get_already_merged_summary(
         (
             "conditions",
             conditions.PullRequestRuleConditions(
-                [rules.RuleConditionSchema({"not": {"or": ["base=main", "label=foo"]}})]
+                [
+                    cond_config.RuleConditionSchema(
+                        {"not": {"or": ["base=main", "label=foo"]}}
+                    )
+                ]
             ),
             "conditions: |-\n  - [ ] not:\n    - [ ] any of:\n      - [ ] `base=main`\n      - [ ] `label=foo`\n",
         ),

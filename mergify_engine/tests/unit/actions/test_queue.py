@@ -11,13 +11,14 @@ from mergify_engine import rules
 from mergify_engine.actions import queue
 from mergify_engine.clients import http
 from mergify_engine.rules import checks_status
+from mergify_engine.rules.config import pull_request_rules as prr_config
 from mergify_engine.tests.unit import conftest
 
 
-def pull_request_rule_from_list(lst: typing.Any) -> rules.PullRequestRules:
+def pull_request_rule_from_list(lst: typing.Any) -> prr_config.PullRequestRules:
     return typing.cast(
-        rules.PullRequestRules,
-        voluptuous.Schema(rules.get_pull_request_rules_schema())(lst),
+        prr_config.PullRequestRules,
+        voluptuous.Schema(prr_config.get_pull_request_rules_schema())(lst),
     )
 
 

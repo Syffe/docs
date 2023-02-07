@@ -11,13 +11,13 @@ from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import duplicate_pull
 from mergify_engine import github_types
-from mergify_engine import rules
 from mergify_engine import signals
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
 from mergify_engine.dashboard import user_tokens
 from mergify_engine.rules import types
+from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 def Regex(value: str) -> re.Pattern[str]:
@@ -73,7 +73,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
         cls,
         action: "CopyAction",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedPullRequestRule",
+        rule: "prr_config.EvaluatedPullRequestRule",
     ) -> "CopyExecutor":
         try:
             bot_account = await action_utils.render_bot_account(
@@ -84,14 +84,14 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 required_permissions=[],
             )
         except action_utils.RenderBotAccountFailure as e:
-            raise rules.InvalidPullRequestRule(e.title, e.reason)
+            raise prr_config.InvalidPullRequestRule(e.title, e.reason)
 
         github_user: user_tokens.UserTokensUser | None = None
         if bot_account:
             tokens = await ctxt.repository.installation.get_user_tokens()
             github_user = tokens.get_token_for(bot_account)
             if not github_user:
-                raise rules.InvalidPullRequestRule(
+                raise prr_config.InvalidPullRequestRule(
                     f"Unable to {cls.KIND}: user `{bot_account}` is unknown. ",
                     f"Please make sure `{bot_account}` has logged in Mergify dashboard.",
                 )
@@ -102,7 +102,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
             )
         except context.RenderTemplateFailure as rmf:
             # can't occur, template have been checked earlier
-            raise rules.InvalidPullRequestRule(
+            raise prr_config.InvalidPullRequestRule(
                 "Invalid title message",
                 str(rmf),
             )
@@ -113,7 +113,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
             )
         except context.RenderTemplateFailure as rmf:
             # can't occur, template have been checked earlier
-            raise rules.InvalidPullRequestRule(
+            raise prr_config.InvalidPullRequestRule(
                 "Invalid body message",
                 str(rmf),
             )

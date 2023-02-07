@@ -4,8 +4,8 @@ from mergify_engine import actions
 from mergify_engine import check_api
 from mergify_engine import context
 from mergify_engine import refresher
-from mergify_engine import rules
 from mergify_engine import signals
+from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 class RefreshExecutorConfig(typing.TypedDict):
@@ -18,7 +18,7 @@ class RefreshExecutor(actions.ActionExecutor["RefreshCommand", RefreshExecutorCo
         cls,
         action: "RefreshCommand",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedPullRequestRule",
+        rule: "prr_config.EvaluatedPullRequestRule",
     ) -> "RefreshExecutor":
         return cls(ctxt, rule, RefreshExecutorConfig())
 

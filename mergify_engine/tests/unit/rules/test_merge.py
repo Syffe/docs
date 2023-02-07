@@ -4,7 +4,7 @@ from unittest import mock
 
 import pytest
 
-from mergify_engine import rules
+from mergify_engine.rules.config import mergify as mergify_conf
 
 
 source_config = {
@@ -645,13 +645,13 @@ def test_merge_raw_configs() -> None:
         ],
     }
 
-    rules.merge_raw_configs(source_config, dest_config)
+    mergify_conf.merge_raw_configs(source_config, dest_config)
     assert dest_config == expected_result
 
 
 def test_merge_raw_configs_empty() -> None:
     config: dict[str, typing.Any] = {}
-    rules.merge_raw_configs({}, config)
+    mergify_conf.merge_raw_configs({}, config)
     assert config == {
         "pull_request_rules": [],
         "queue_rules": [],
@@ -668,7 +668,7 @@ def test_merge_raw_configs_src_empty() -> None:
             }
         ]
     }
-    rules.merge_raw_configs({}, config)
+    mergify_conf.merge_raw_configs({}, config)
     assert config == {
         "pull_request_rules": [],
         "queue_rules": [
@@ -683,7 +683,7 @@ def test_merge_raw_configs_src_empty() -> None:
 
 def test_merge_raw_configs_dest_empty() -> None:
     config: dict[str, typing.Any] = {}
-    rules.merge_raw_configs(
+    mergify_conf.merge_raw_configs(
         {
             "queue_rules": [
                 {
@@ -722,7 +722,7 @@ def test_merge_raw_override_and_new_rules() -> None:
             },
         ]
     }
-    rules.merge_raw_configs(
+    mergify_conf.merge_raw_configs(
         {
             "queue_rules": [
                 {
@@ -812,11 +812,11 @@ def test_merge_raw_override_and_new_rules() -> None:
     ],
 )
 def test_merge_defaults(
-    extended_defaults: rules.Defaults,
-    dest_defaults: rules.Defaults,
-    expected_result: rules.Defaults,
+    extended_defaults: mergify_conf.Defaults,
+    dest_defaults: mergify_conf.Defaults,
+    expected_result: mergify_conf.Defaults,
 ) -> None:
-    rules.merge_defaults(extended_defaults, dest_defaults)
+    mergify_conf.merge_defaults(extended_defaults, dest_defaults)
     assert dest_defaults == expected_result
 
 
@@ -888,13 +888,13 @@ async def test_merge_rules_and_defaults(
     defaults = config_to_extend.pop("defaults")
     mocked_ctxt = mock.MagicMock()
     with mock.patch(
-        "mergify_engine.rules.get_mergify_extended_config",
+        "mergify_engine.rules.config.mergify.get_mergify_extended_config",
         return_value={
             "defaults": defaults,
             "raw_config": config_to_extend,
         },
     ):
-        merged_config = await rules.get_mergify_config_from_dict(
+        merged_config = await mergify_conf.get_mergify_config_from_dict(
             mocked_ctxt, config, "", allow_extend=True
         )
     assert merged_config["raw_config"] == expected_result

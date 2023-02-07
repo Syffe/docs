@@ -41,10 +41,12 @@ from mergify_engine.dashboard import user_tokens
 from mergify_engine.queue import freeze
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import checks_status
+from mergify_engine.rules.config import mergify as mergify_conf
+from mergify_engine.rules.config import pull_request_rules as prr_config
+from mergify_engine.rules.config import queue_rules as qr_config
 
 
 if typing.TYPE_CHECKING:
-    from mergify_engine import rules
     from mergify_engine.rules import conditions
 
 
@@ -930,7 +932,7 @@ class TrainCar:
         else:
             return None
 
-    def get_queue_name(self) -> "rules.QueueName":
+    def get_queue_name(self) -> "qr_config.QueueName":
         return self.initial_embarked_pulls[0].config["name"]
 
     async def is_behind(self) -> bool:
@@ -940,7 +942,7 @@ class TrainCar:
         return await ctxt.is_behind
 
     @tracer.wrap("TrainCar.start_inplace_checks", span_type="worker")
-    async def start_checking_inplace(self, queue_rules: "rules.QueueRules") -> None:
+    async def start_checking_inplace(self, queue_rules: "qr_config.QueueRules") -> None:
         if len(self.still_queued_embarked_pulls) != 1:
             raise RuntimeError("multiple embarked_pulls but state==updated")
 
@@ -1169,7 +1171,7 @@ class TrainCar:
 
     async def _get_draft_pr_setup(
         self,
-        queue_rule: "rules.QueueRule",
+        queue_rule: "qr_config.QueueRule",
         previous_car: "TrainCar | None",
     ) -> tuple[github_types.SHAType, list[github_types.GitHubPullRequestNumber]]:
         pulls_in_draft = []
@@ -1207,7 +1209,7 @@ class TrainCar:
     @tracer.wrap("TrainCar.start_checking_with_draft", span_type="worker")
     async def start_checking_with_draft(
         self,
-        queue_rules: "rules.QueueRules",
+        queue_rules: "qr_config.QueueRules",
         previous_car: "TrainCar | None",
     ) -> None:
         queue_rule = self.get_queue_rule(queue_rules)
@@ -1315,7 +1317,7 @@ class TrainCar:
         checks_type: typing.Literal[
             TrainCarChecksType.INPLACE, TrainCarChecksType.DRAFT
         ],
-        queue_rules: "rules.QueueRules",
+        queue_rules: "qr_config.QueueRules",
         pull_request_number: github_types.GitHubPullRequestNumber,
     ) -> None:
         self.train_car_state.ci_started_at = date.utcnow()
@@ -1371,7 +1373,7 @@ class TrainCar:
         for_queue_pull_request: bool = False,
         show_queue: bool = True,
         headline: str | None = None,
-        pull_rule: "rules.EvaluatedPullRequestRule" | None = None,
+        pull_rule: "prr_config.EvaluatedPullRequestRule" | None = None,
     ) -> str:
         description = ""
         if headline:
@@ -1646,7 +1648,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
     def _get_conditions_without_checks(
         cls,
-        evaluated_queue_rule: "rules.EvaluatedQueueRule",
+        evaluated_queue_rule: "qr_config.EvaluatedQueueRule",
     ) -> "conditions.QueueRuleMergeConditions":
         conditions_with_only_checks = evaluated_queue_rule.merge_conditions.copy()
         for condition_with_only_checks in conditions_with_only_checks.walk():
@@ -1687,7 +1689,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
     async def get_unexpected_change(
         self,
-        queue_rule: "rules.QueueRule",
+        queue_rule: "qr_config.QueueRule",
     ) -> UnexpectedChange | None:
         if self.queue_pull_request_number is None:
             raise RuntimeError(
@@ -1729,11 +1731,11 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
     async def check_mergeability(
         self,
-        queue_rules: "rules.QueueRules",
+        queue_rules: "qr_config.QueueRules",
         origin: typing.Literal[
             "original_pull_request", "draft_pull_request", "batch_split"
         ],
-        original_pull_request_rule: rules.EvaluatedPullRequestRule | None,
+        original_pull_request_rule: prr_config.EvaluatedPullRequestRule | None,
         original_pull_request_number: github_types.GitHubPullRequestNumber | None,
     ) -> None:
         if self.queue_pull_request_number is None:
@@ -1926,7 +1928,9 @@ You don't need to do anything. Mergify will close this pull request automaticall
             priority=worker_pusher.Priority.immediate,
         )
 
-    def get_queue_rule(self, queue_rules: "rules.QueueRules") -> "rules.QueueRule":
+    def get_queue_rule(
+        self, queue_rules: "qr_config.QueueRules"
+    ) -> "qr_config.QueueRule":
         queue_name = self.initial_embarked_pulls[0].config["name"]
         try:
             return queue_rules[queue_name]
@@ -1937,9 +1941,9 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
     async def update_state(
         self,
-        queue_rules: "rules.QueueRules",
+        queue_rules: "qr_config.QueueRules",
         queue_conditions_conclusion: check_api.Conclusion,
-        evaluated_queue_rule: "rules.EvaluatedQueueRule",
+        evaluated_queue_rule: "qr_config.EvaluatedQueueRule",
         unexpected_change: UnexpectedChange | None = None,
     ) -> None:
         self.last_conditions_evaluation = (
@@ -2080,7 +2084,9 @@ You don't need to do anything. Mergify will close this pull request automaticall
         ):
             await self._save_check_runs()
 
-    def _has_reached_batch_max_failure(self, queue_rules: "rules.QueueRules") -> bool:
+    def _has_reached_batch_max_failure(
+        self, queue_rules: "qr_config.QueueRules"
+    ) -> bool:
         rule = self.get_queue_rule(queue_rules)
         batch_max_failure = rule.config["batch_max_failure_resolution_attempts"]
 
@@ -2131,7 +2137,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 )
             )
 
-    async def update_summaries(self, queue_rules: "rules.QueueRules") -> None:
+    async def update_summaries(self, queue_rules: "qr_config.QueueRules") -> None:
         queue_rule = self.get_queue_rule(queue_rules)
         refs = self._get_user_refs(create_link=False)
         has_unexpected_change = self.train_car_state.outcome in (
@@ -2452,7 +2458,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
         )
 
 
-def get_queues_priorities(queue_rules: "rules.QueueRules") -> dict[str, int]:
+def get_queues_priorities(queue_rules: "qr_config.QueueRules") -> dict[str, int]:
     # NOTE(Syffe): The priorities contained here are not yet multiplied by any coefficient nor offset
     return {
         str(queue_rule.name): queue_rule.config["priority"]
@@ -2612,12 +2618,9 @@ class Train:
         )
 
     async def refresh(self) -> None:
-        # circular import
-        from mergify_engine import rules
-
         try:
             mergify_config = await self.repository.get_mergify_config()
-        except rules.InvalidRules as e:  # pragma: no cover
+        except mergify_conf.InvalidRules as e:  # pragma: no cover
             self.log.warning(
                 "train can't be refreshed, the mergify configuration is invalid",
                 summary=str(e),
@@ -2667,7 +2670,9 @@ class Train:
                 wp_to_keep.append(wp)
         self._waiting_pulls = wp_to_keep
 
-    async def _sync_configuration_change(self, queue_rules: "rules.QueueRules") -> None:
+    async def _sync_configuration_change(
+        self, queue_rules: "qr_config.QueueRules"
+    ) -> None:
         for i, (embarked_pull, _) in enumerate(list(self._iter_embarked_pulls())):
             queue_rule = queue_rules.get(embarked_pull.config["name"])
             if queue_rule is None:
@@ -2798,12 +2803,14 @@ class Train:
             yield EmbarkedPullWithCar(embarked_pull, None)
 
     async def is_queue_frozen(
-        self, queue_rules: "rules.QueueRules", queue_name: "rules.QueueName"
+        self, queue_rules: "qr_config.QueueRules", queue_name: "qr_config.QueueName"
     ) -> bool:
         return queue_name in await self.get_frozen_queues_names(queue_rules)
 
     async def get_current_queue_freeze(
-        self, queue_rules: "rules.QueueRules", current_queue_name: "rules.QueueName"
+        self,
+        queue_rules: "qr_config.QueueRules",
+        current_queue_name: "qr_config.QueueName",
     ) -> freeze.QueueFreeze | None:
         queue_priorities = get_queues_priorities(queue_rules)
         qf_by_name = {
@@ -2835,7 +2842,7 @@ class Train:
         return current_qf["queue_freeze"] if current_qf is not None else None
 
     async def get_frozen_queues_names(
-        self, queue_rules: "rules.QueueRules"
+        self, queue_rules: "qr_config.QueueRules"
     ) -> set[str]:
         # NOTE(Syffe): When checking for where to position a newly added PR in queues,
         # all unfrozen queues with lower priorities than the highest frozen queue have
@@ -2871,7 +2878,7 @@ class Train:
 
     async def add_pull(
         self,
-        queue_rules: "rules.QueueRules",
+        queue_rules: "qr_config.QueueRules",
         ctxt: context.Context,
         config: queue.PullQueueConfig,
         signal_trigger: str,
@@ -3173,7 +3180,7 @@ class Train:
         )
 
     async def _split_failed_train_car(
-        self, queue_rules: "rules.QueueRules", car: TrainCar
+        self, queue_rules: "qr_config.QueueRules", car: TrainCar
     ) -> None:
         current_queue_position = sum(
             len(c.still_queued_embarked_pulls)
@@ -3263,7 +3270,7 @@ class Train:
         # Refresh summary of others
         await self.refresh_pulls(source="batch got split")
 
-    async def _split_failed_batches(self, queue_rules: "rules.QueueRules") -> None:
+    async def _split_failed_batches(self, queue_rules: "qr_config.QueueRules") -> None:
         if (
             len(self._cars) == 1
             and self._cars[0].train_car_state.outcome == TrainCarOutcome.CHECKS_FAILED
@@ -3338,7 +3345,7 @@ class Train:
                     )
                     return
 
-    async def _populate_cars(self, queue_rules: "rules.QueueRules") -> None:
+    async def _populate_cars(self, queue_rules: "qr_config.QueueRules") -> None:
         if self._cars and (
             self._cars[-1].train_car_state.checks_type == TrainCarChecksType.FAILED
             or self._cars[-1].train_car_state.outcome
@@ -3483,7 +3490,7 @@ class Train:
 
     async def _start_checking_car(
         self,
-        queue_rules: "rules.QueueRules",
+        queue_rules: "qr_config.QueueRules",
         car: TrainCar,
         previous_car: "TrainCar | None",
     ) -> None:
@@ -3626,7 +3633,7 @@ class Train:
         self,
         queue_rule_report: QueueRuleReport,
         *,
-        pull_rule: "rules.EvaluatedPullRequestRule" | None = None,
+        pull_rule: "prr_config.EvaluatedPullRequestRule" | None = None,
         show_queue: bool = True,
         for_queue_pull_request: bool = False,
     ) -> str:
@@ -3698,8 +3705,8 @@ class Train:
     async def get_pull_summary(
         self,
         ctxt: context.Context,
-        queue_rule: "rules.QueueRule",
-        pull_rule: "rules.EvaluatedPullRequestRule" | None = None,
+        queue_rule: "qr_config.QueueRule",
+        pull_rule: "prr_config.EvaluatedPullRequestRule" | None = None,
     ) -> str:
         # NOTE(sileht): beware before using this method, car.update_state() must have been called earlier
         # to have up2date informations

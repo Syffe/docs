@@ -5,11 +5,11 @@ import voluptuous
 from mergify_engine import actions
 from mergify_engine import check_api
 from mergify_engine import context
-from mergify_engine import rules
 from mergify_engine import signals
 from mergify_engine.actions import utils as actions_utils
 from mergify_engine.clients import http
 from mergify_engine.rules import types
+from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 class AssignExecutorConfig(typing.TypedDict):
@@ -23,7 +23,7 @@ class AssignExecutor(actions.ActionExecutor["AssignAction", AssignExecutorConfig
         cls,
         action: "AssignAction",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedPullRequestRule",
+        rule: "prr_config.EvaluatedPullRequestRule",
     ) -> "AssignExecutor":
         # NOTE: "users" is deprecated, but kept as legacy code for old config
         add_users = action.config["users"] + action.config["add_users"]

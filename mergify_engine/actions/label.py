@@ -8,9 +8,9 @@ import voluptuous
 from mergify_engine import actions
 from mergify_engine import check_api
 from mergify_engine import context
-from mergify_engine import rules
 from mergify_engine import signals
 from mergify_engine.clients import http
+from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 class LabelExecutorConfig(typing.TypedDict):
@@ -26,7 +26,7 @@ class LabelExecutor(actions.ActionExecutor["LabelAction", LabelExecutorConfig]):
         try:
             return await ctxt.pull_request.render_template(label)
         except context.RenderTemplateFailure as rtf:
-            raise rules.InvalidPullRequestRule(
+            raise prr_config.InvalidPullRequestRule(
                 f"Invalid template in label '{label}'",
                 str(rtf),
             )
@@ -36,7 +36,7 @@ class LabelExecutor(actions.ActionExecutor["LabelAction", LabelExecutorConfig]):
         cls,
         action: LabelAction,
         ctxt: context.Context,
-        rule: rules.EvaluatedPullRequestRule,
+        rule: prr_config.EvaluatedPullRequestRule,
     ) -> LabelExecutor:
         add_labels = [
             await cls._render_label(ctxt, label) for label in action.config["add"]

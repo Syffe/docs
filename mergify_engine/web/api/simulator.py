@@ -6,9 +6,10 @@ import pydantic
 
 from mergify_engine import context
 from mergify_engine import github_types
-from mergify_engine import rules
 from mergify_engine.clients import http
 from mergify_engine.engine import actions_runner
+from mergify_engine.rules.config import mergify as mergify_conf
+from mergify_engine.rules.config import pull_request_rules as prr_config
 from mergify_engine.web import api
 from mergify_engine.web.api import security
 
@@ -29,9 +30,9 @@ class SimulatorPayload(pydantic.BaseModel):
 
     async def get_config(
         self, repository_ctxt: context.Repository
-    ) -> rules.MergifyConfig:
+    ) -> mergify_conf.MergifyConfig:
         try:
-            return await rules.get_mergify_config_from_file(
+            return await mergify_conf.get_mergify_config_from_file(
                 repository_ctxt,
                 context.MergifyConfigFile(
                     {
@@ -43,11 +44,11 @@ class SimulatorPayload(pydantic.BaseModel):
                     }
                 ),
             )
-        except rules.InvalidRules as exc:
+        except mergify_conf.InvalidRules as exc:
             detail = [
                 {
                     "loc": ("body", "mergify_yml"),
-                    "msg": rules.InvalidRules.format_error(e),
+                    "msg": mergify_conf.InvalidRules.format_error(e),
                     "type": "mergify_config_error",
                 }
                 for e in sorted(exc.errors, key=str)
@@ -93,7 +94,7 @@ async def simulator_pull(
     ctxt.sources = [{"event_type": "mergify-simulator", "data": [], "timestamp": ""}]  # type: ignore[typeddict-item]
     try:
         match = await config["pull_request_rules"].get_pull_request_rule(ctxt)
-    except rules.InvalidPullRequestRule as e:
+    except prr_config.InvalidPullRequestRule as e:
         title = "The current Mergify configuration is invalid"
         summary = f"### {e.reason}\n\n{e.details}"
     else:

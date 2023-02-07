@@ -48,7 +48,7 @@ from mergify_engine.queue import utils as queue_utils
 
 
 if typing.TYPE_CHECKING:
-    from mergify_engine import rules
+    from mergify_engine.rules.config import mergify as mergify_conf
 
 SUMMARY_SHA_EXPIRATION = 60 * 60 * 24 * 31 * 1  # 1 Month
 WARNED_ABOUT_SHA_COLLISION_EXPIRATION = 60 * 60 * 24 * 7  # 7 days
@@ -280,7 +280,7 @@ class RepositoryCaches:
         MergifyConfigFile | None
     ] = dataclasses.field(default_factory=cache.SingleCache)
     mergify_config: cache.SingleCache[
-        "rules.MergifyConfig" | Exception
+        "mergify_conf.MergifyConfig" | Exception
     ] = dataclasses.field(default_factory=cache.SingleCache)
     branches: cache.Cache[
         github_types.GitHubRefType, github_types.GitHubBranch
@@ -377,9 +377,9 @@ class Repository:
     @tracer.wrap("get_mergify_config", span_type="worker")
     async def get_mergify_config(
         self, allow_extend: bool = True
-    ) -> "rules.MergifyConfig":
-        # circular import
-        from mergify_engine import rules
+    ) -> "mergify_conf.MergifyConfig":
+        # Circular import
+        from mergify_engine.rules.config import mergify as mergify_conf
 
         mergify_config_or_exception = self._caches.mergify_config.get()
         if mergify_config_or_exception is not cache.Unset:
@@ -394,7 +394,7 @@ class Repository:
 
         # BRANCH CONFIGURATION CHECKING
         try:
-            mergify_config = await rules.get_mergify_config_from_file(
+            mergify_config = await mergify_conf.get_mergify_config_from_file(
                 self, config_file, allow_extend=allow_extend
             )
         except Exception as e:
@@ -402,7 +402,7 @@ class Repository:
             raise
 
         # Add global and mandatory rules
-        builtin_mergify_config = await rules.get_mergify_builtin_config(
+        builtin_mergify_config = await mergify_conf.get_mergify_builtin_config(
             self.installation.redis.cache_bytes
         )
         mergify_config["pull_request_rules"].rules.extend(

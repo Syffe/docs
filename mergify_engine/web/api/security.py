@@ -9,12 +9,13 @@ from mergify_engine import config
 from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import redis_utils
-from mergify_engine import rules
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.dashboard import application as application_mod
 from mergify_engine.dashboard import subscription
 from mergify_engine.models import github_user
+from mergify_engine.rules.config import mergify as mergify_conf
+from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web import redis
 
 
@@ -207,10 +208,10 @@ async def get_queue_rules(
     repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
         get_repository_context
     ),
-) -> rules.QueueRules:
+) -> qr_config.QueueRules:
     try:
         mergify_config = await repository_ctxt.get_mergify_config()
-    except rules.InvalidRules:
+    except mergify_conf.InvalidRules:
         raise fastapi.HTTPException(
             status_code=422,
             detail="The configuration file is invalid.",

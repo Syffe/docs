@@ -10,10 +10,10 @@ from mergify_engine import check_api
 from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import github_types
-from mergify_engine import rules
 from mergify_engine import signals
 from mergify_engine.clients import http
 from mergify_engine.rules import types
+from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 DismissReviewWhenT = typing.Literal["synchronize", "always"]
@@ -48,7 +48,7 @@ class DismissReviewsExecutor(
         cls,
         action: DismissReviewsAction,
         ctxt: context.Context,
-        rule: rules.EvaluatedPullRequestRule,
+        rule: prr_config.EvaluatedPullRequestRule,
     ) -> DismissReviewsExecutor:
         if action.config["message"] is None:
             message_raw = DEFAULT_MESSAGE[action.config["when"]]
@@ -58,7 +58,7 @@ class DismissReviewsExecutor(
         try:
             message = await ctxt.pull_request.render_template(message_raw)
         except context.RenderTemplateFailure as rmf:
-            raise rules.InvalidPullRequestRule(
+            raise prr_config.InvalidPullRequestRule(
                 "Invalid dismiss reviews message",
                 str(rmf),
             )

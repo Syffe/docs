@@ -5,8 +5,8 @@ from mergify_engine import check_api
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import refresher
-from mergify_engine import rules
 from mergify_engine import signals
+from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 class RequeueExecutorConfig(typing.TypedDict):
@@ -21,7 +21,7 @@ class RequeueExecutor(
         cls,
         action: "RequeueCommand",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedPullRequestRule",
+        rule: prr_config.EvaluatedPullRequestRule,
     ) -> "RequeueExecutor":
         return cls(ctxt, rule, RequeueExecutorConfig())
 

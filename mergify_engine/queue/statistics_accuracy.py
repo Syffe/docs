@@ -5,9 +5,9 @@ from datadog import statsd  # type: ignore[attr-defined]
 
 from mergify_engine import date
 from mergify_engine import github_types
-from mergify_engine import rules
 from mergify_engine import signals
 from mergify_engine.dashboard import subscription
+from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web.api import statistics as stats_api
 
 
@@ -41,7 +41,7 @@ class StatisticsAccuracyMeasurement(signals.SignalBase):
         queued_at = metadata["queued_at"].astimezone(datetime.timezone.utc)
         stat_raw = await stats_api.get_time_to_merge_stats_for_queue(
             repository,
-            rules.QueueName(metadata["queue_name"]),
+            qr_config.QueueName(metadata["queue_name"]),
             metadata["branch"],
             int(queued_at.timestamp()),
         )

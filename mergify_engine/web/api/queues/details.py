@@ -11,9 +11,9 @@ from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import github_types
-from mergify_engine import rules
 from mergify_engine.queue import merge_train
 from mergify_engine.rules import conditions as rules_conditions
+from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web import api
 from mergify_engine.web.api import security
 from mergify_engine.web.api.queues import estimated_time_to_merge
@@ -267,7 +267,7 @@ async def repository_queue_pull_request(
     repository: github_types.GitHubRepositoryName = fastapi.Path(  # noqa: B008
         ..., description="The name of the repository"
     ),
-    queue_name: rules.QueueName = fastapi.Path(  # noqa: B008
+    queue_name: qr_config.QueueName = fastapi.Path(  # noqa: B008
         ..., description="The queue name"
     ),
     pr_number: github_types.GitHubPullRequestNumber = fastapi.Path(  # noqa: B008
@@ -276,7 +276,7 @@ async def repository_queue_pull_request(
     repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
         security.get_repository_context
     ),
-    queue_rules: rules.QueueRules = fastapi.Depends(  # noqa: B008
+    queue_rules: qr_config.QueueRules = fastapi.Depends(  # noqa: B008
         security.get_queue_rules
     ),
 ) -> EnhancedPullRequestQueued:

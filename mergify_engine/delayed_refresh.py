@@ -13,7 +13,8 @@ from mergify_engine.rules import live_resolvers
 
 if typing.TYPE_CHECKING:
     from mergify_engine import context
-    from mergify_engine import rules
+    from mergify_engine.rules.config import pull_request_rules as prr_config
+    from mergify_engine.rules.config import queue_rules as qr_config
 
 LOG = daiquiri.getLogger(__name__)
 
@@ -53,7 +54,10 @@ async def _set_current_refresh_datetime(
 
 async def plan_next_refresh(
     ctxt: "context.Context",
-    _rules: (list["rules.EvaluatedPullRequestRule"] | list["rules.EvaluatedQueueRule"]),
+    _rules: (
+        list["prr_config.EvaluatedPullRequestRule"]
+        | list["qr_config.EvaluatedQueueRule"]
+    ),
     pull_request: "context.BasePullRequest",
     only_if_earlier: bool = False,
 ) -> None:

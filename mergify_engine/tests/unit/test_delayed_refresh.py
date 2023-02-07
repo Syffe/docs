@@ -5,7 +5,7 @@ from freezegun import freeze_time
 import pytest
 
 from mergify_engine import delayed_refresh
-from mergify_engine import rules
+from mergify_engine.rules.config import pull_request_rules as prr_config
 from mergify_engine.tests import utils
 from mergify_engine.tests.unit import conftest
 
@@ -44,7 +44,7 @@ pull_request_rules:
     )
     ctxt = await context_getter(0, **pull)
     rule = typing.cast(
-        list[rules.EvaluatedPullRequestRule], config["pull_request_rules"].rules
+        list[prr_config.EvaluatedPullRequestRule], config["pull_request_rules"].rules
     )
     await delayed_refresh.plan_next_refresh(ctxt, rule, ctxt.pull_request)
 
@@ -79,7 +79,7 @@ pull_request_rules:
 
     ctxt = await context_getter(0)
     rule = typing.cast(
-        list[rules.EvaluatedPullRequestRule], config["pull_request_rules"].rules
+        list[prr_config.EvaluatedPullRequestRule], config["pull_request_rules"].rules
     )
 
     # No delay refresh yet

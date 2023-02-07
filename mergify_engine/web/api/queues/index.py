@@ -10,8 +10,8 @@ import pydantic
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import github_types
-from mergify_engine import rules
 from mergify_engine.queue import merge_train
+from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web import api
 from mergify_engine.web.api import security
 from mergify_engine.web.api import statistics as statistics_api
@@ -304,7 +304,7 @@ async def repository_queues(
     repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
         security.get_repository_context
     ),
-    queue_rules: rules.QueueRules = fastapi.Depends(  # noqa: B008
+    queue_rules: qr_config.QueueRules = fastapi.Depends(  # noqa: B008
         security.get_queue_rules
     ),
 ) -> Queues:

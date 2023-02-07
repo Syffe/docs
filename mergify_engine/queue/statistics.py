@@ -9,11 +9,11 @@ import msgpack
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import redis_utils
-from mergify_engine import rules
 from mergify_engine import signals
 from mergify_engine import utils
 from mergify_engine.dashboard import subscription
 from mergify_engine.queue import utils as queue_utils
+from mergify_engine.rules.config import queue_rules as qr_config
 
 
 if typing.TYPE_CHECKING:
@@ -46,7 +46,7 @@ AvailableStatsKeyT = typing.Literal[
 
 @dataclasses.dataclass
 class BaseQueueStats:
-    queue_name: rules.QueueName
+    queue_name: qr_config.QueueName
     branch_name: str
     # List of variables to not include in the return of the `to_dict()`
     # if using an `_` is not enough/appropriate.
@@ -179,7 +179,7 @@ async def get_stats_from_event_metadata(
             return None
 
         return TimeToMerge(
-            queue_name=rules.QueueName(metadata["queue_name"]),
+            queue_name=qr_config.QueueName(metadata["queue_name"]),
             branch_name=metadata["branch"],
             time_seconds=(
                 _get_seconds_since_datetime(metadata["queued_at"])
@@ -195,7 +195,7 @@ async def get_stats_from_event_metadata(
                 return None
 
             return FailureByReason.from_reason_code_str(
-                queue_name=rules.QueueName(metadata["queue_name"]),
+                queue_name=qr_config.QueueName(metadata["queue_name"]),
                 branch_name=metadata["branch"],
                 reason_code_str=metadata["abort_code"],
             )
@@ -217,7 +217,7 @@ async def get_stats_from_event_metadata(
         duration_seconds = int((checks_ended_at - checks_started_at).total_seconds())
 
         return ChecksDuration(
-            queue_name=rules.QueueName(metadata["queue_name"]),
+            queue_name=qr_config.QueueName(metadata["queue_name"]),
             branch_name=metadata["branch"],
             duration_seconds=duration_seconds,
         )
@@ -294,7 +294,7 @@ async def _get_stats_items(
     stats_name_list: list[AvailableStatsKeyT],
     older_event_id: str,
     newer_event_id: str,
-    queue_name: rules.QueueName | None = None,
+    queue_name: qr_config.QueueName | None = None,
     branch_name: str | None = None,
 ) -> abc.AsyncGenerator[dict[str, typing.Any], None]:
     redis = repository.installation.redis.stats
@@ -326,7 +326,7 @@ async def _get_stats_items(
 async def _get_stats_items_date_range(
     repository: "context.Repository",
     stats_name_list: list[AvailableStatsKeyT],
-    queue_name: rules.QueueName | None = None,
+    queue_name: qr_config.QueueName | None = None,
     branch_name: str | None = None,
     start_at: int | None = None,
     end_at: int | None = None,
@@ -356,7 +356,7 @@ async def _get_stats_items_date_range(
 async def _get_stats_items_at_timestamp(
     repository: "context.Repository",
     stats_name_list: list[AvailableStatsKeyT],
-    queue_name: rules.QueueName | None = None,
+    queue_name: qr_config.QueueName | None = None,
     branch_name: str | None = None,
     at: int | None = None,
 ) -> abc.AsyncGenerator[dict[str, typing.Any], None]:
@@ -387,11 +387,11 @@ async def _get_stats_items_at_timestamp(
 
 async def get_time_to_merge_stats(
     repository: "context.Repository",
-    queue_name: rules.QueueName | None = None,
+    queue_name: qr_config.QueueName | None = None,
     branch_name: str | None = None,
     at: int | None = None,
-) -> dict[rules.QueueName, TimeToMergeT]:
-    stats: dict[rules.QueueName, TimeToMergeT] = {}
+) -> dict[qr_config.QueueName, TimeToMergeT]:
+    stats: dict[qr_config.QueueName, TimeToMergeT] = {}
 
     async for stat in _get_stats_items_at_timestamp(
         repository,
@@ -411,12 +411,12 @@ async def get_time_to_merge_stats(
 
 async def get_checks_duration_stats(
     repository: "context.Repository",
-    queue_name: rules.QueueName | None = None,
+    queue_name: qr_config.QueueName | None = None,
     branch_name: str | None = None,
     start_at: int | None = None,
     end_at: int | None = None,
-) -> dict[rules.QueueName, ChecksDurationT]:
-    stats: dict[rules.QueueName, ChecksDurationT] = {}
+) -> dict[qr_config.QueueName, ChecksDurationT]:
+    stats: dict[qr_config.QueueName, ChecksDurationT] = {}
     async for stat in _get_stats_items_date_range(
         repository,
         ["checks_duration"],
@@ -458,12 +458,12 @@ BASE_QUEUE_CHECKS_OUTCOME_T_DICT: QueueChecksOutcomeT = QueueChecksOutcomeT(
 
 async def get_queue_checks_outcome_stats(
     repository: "context.Repository",
-    queue_name: rules.QueueName | None = None,
+    queue_name: qr_config.QueueName | None = None,
     branch_name: str | None = None,
     start_at: int | None = None,
     end_at: int | None = None,
-) -> dict[rules.QueueName, QueueChecksOutcomeT]:
-    stats_dict: dict[rules.QueueName, QueueChecksOutcomeT] = {}
+) -> dict[qr_config.QueueName, QueueChecksOutcomeT]:
+    stats_dict: dict[qr_config.QueueName, QueueChecksOutcomeT] = {}
     # Retrieve all the checks duration on the same period of time, this will tell us
     # the number of success, since if a check wasn't aborted it is added as a `CheckDuration` stat,
     # and if it was aborted it is added as a `FailureByReason` stat.

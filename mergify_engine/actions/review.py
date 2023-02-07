@@ -6,7 +6,6 @@ from mergify_engine import actions
 from mergify_engine import check_api
 from mergify_engine import context
 from mergify_engine import github_types
-from mergify_engine import rules
 from mergify_engine import signals
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import github
@@ -14,6 +13,7 @@ from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
 from mergify_engine.dashboard import user_tokens
 from mergify_engine.rules import types
+from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 EVENT_STATE_MAP = {
@@ -35,7 +35,7 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
         cls,
         action: "ReviewAction",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedPullRequestRule",
+        rule: "prr_config.EvaluatedPullRequestRule",
     ) -> "ReviewExecutor":
         try:
             bot_account = await action_utils.render_bot_account(
@@ -46,7 +46,7 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
                 required_permissions=[],
             )
         except action_utils.RenderBotAccountFailure as e:
-            raise rules.InvalidPullRequestRule(e.title, e.reason)
+            raise prr_config.InvalidPullRequestRule(e.title, e.reason)
 
         if action.config["message"]:
             try:
@@ -54,7 +54,7 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
                     action.config["message"]
                 )
             except context.RenderTemplateFailure as rmf:
-                raise rules.InvalidPullRequestRule(
+                raise prr_config.InvalidPullRequestRule(
                     "Invalid review message",
                     str(rmf),
                 )
@@ -66,7 +66,7 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
             tokens = await ctxt.repository.installation.get_user_tokens()
             github_user = tokens.get_token_for(bot_account)
             if not github_user:
-                raise rules.InvalidPullRequestRule(
+                raise prr_config.InvalidPullRequestRule(
                     f"Unable to comment: user `{bot_account}` is unknown. ",
                     f"Please make sure `{bot_account}` has logged in Mergify dashboard.",
                 )

@@ -8,7 +8,7 @@ from mergify_engine import github_types
 
 
 if typing.TYPE_CHECKING:
-    from mergify_engine import rules
+    from mergify_engine.rules.config import queue_rules as qr_config
 
 LOG = daiquiri.getLogger(__name__)
 
@@ -46,4 +46,4 @@ class PullQueueConfig(typing.TypedDict):
     effective_priority: int
     bot_account: github_types.GitHubLogin | None
     update_bot_account: github_types.GitHubLogin | None
-    name: "rules.QueueName"
+    name: "qr_config.QueueName"

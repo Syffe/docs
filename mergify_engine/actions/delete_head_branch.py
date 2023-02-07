@@ -5,10 +5,10 @@ import voluptuous
 from mergify_engine import actions
 from mergify_engine import check_api
 from mergify_engine import context
-from mergify_engine import rules
 from mergify_engine import signals
 from mergify_engine.clients import http
 from mergify_engine.rules import conditions
+from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 class DeleteHeadBranchExecutorConfig(typing.TypedDict):
@@ -23,7 +23,7 @@ class DeleteHeadBranchExecutor(
         cls,
         action: "DeleteHeadBranchAction",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedPullRequestRule",
+        rule: "prr_config.EvaluatedPullRequestRule",
     ) -> "DeleteHeadBranchExecutor":
         return cls(
             ctxt, rule, DeleteHeadBranchExecutorConfig(force=action.config["force"])

@@ -6,13 +6,13 @@ from mergify_engine import actions
 from mergify_engine import branch_updater
 from mergify_engine import check_api
 from mergify_engine import context
-from mergify_engine import rules
 from mergify_engine import signals
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.dashboard import subscription
 from mergify_engine.dashboard import user_tokens
 from mergify_engine.rules import conditions
 from mergify_engine.rules import types
+from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 class UpdateExecutorConfig(typing.TypedDict):
@@ -25,7 +25,7 @@ class UpdateExecutor(actions.ActionExecutor["UpdateAction", "UpdateExecutorConfi
         cls,
         action: "UpdateAction",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedPullRequestRule",
+        rule: "prr_config.EvaluatedPullRequestRule",
     ) -> "UpdateExecutor":
         try:
             bot_account = await action_utils.render_bot_account(
@@ -36,14 +36,14 @@ class UpdateExecutor(actions.ActionExecutor["UpdateAction", "UpdateExecutorConfi
                 required_permissions=[],
             )
         except action_utils.RenderBotAccountFailure as e:
-            raise rules.InvalidPullRequestRule(e.title, e.reason)
+            raise prr_config.InvalidPullRequestRule(e.title, e.reason)
 
         github_user: user_tokens.UserTokensUser | None = None
         if bot_account:
             tokens = await ctxt.repository.installation.get_user_tokens()
             github_user = tokens.get_token_for(bot_account)
             if not github_user:
-                raise rules.InvalidPullRequestRule(
+                raise prr_config.InvalidPullRequestRule(
                     f"Unable to comment: user `{bot_account}` is unknown. ",
                     f"Please make sure `{bot_account}` has logged in Mergify dashboard.",
                 )

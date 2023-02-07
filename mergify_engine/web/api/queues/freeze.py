@@ -9,9 +9,10 @@ from starlette.status import HTTP_204_NO_CONTENT
 
 from mergify_engine import context
 from mergify_engine import date
-from mergify_engine import rules
 from mergify_engine.dashboard import application as application_mod
 from mergify_engine.queue import freeze
+from mergify_engine.rules.config import mergify as mergify_conf
+from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web import api
 from mergify_engine.web.api import security
 
@@ -83,7 +84,7 @@ async def create_queue_freeze(
     application: application_mod.Application = fastapi.Security(  # noqa: B008
         security.get_application
     ),
-    queue_name: rules.QueueName = fastapi.Path(  # noqa: B008
+    queue_name: qr_config.QueueName = fastapi.Path(  # noqa: B008
         ..., description="The name of the queue"
     ),
     repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
@@ -95,7 +96,7 @@ async def create_queue_freeze(
 
     try:
         config = await repository_ctxt.get_mergify_config()
-    except rules.InvalidRules:
+    except mergify_conf.InvalidRules:
         raise fastapi.HTTPException(
             status_code=422,
             detail="The configuration file is invalid.",
@@ -155,7 +156,7 @@ async def delete_queue_freeze(
     application: application_mod.Application = fastapi.Security(  # noqa: B008
         security.get_application
     ),
-    queue_name: rules.QueueName = fastapi.Path(  # noqa: B008
+    queue_name: qr_config.QueueName = fastapi.Path(  # noqa: B008
         ..., description="The name of the queue"
     ),
     repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
@@ -189,7 +190,7 @@ async def delete_queue_freeze(
     },
 )
 async def get_queue_freeze(
-    queue_name: rules.QueueName = fastapi.Path(  # noqa: B008
+    queue_name: qr_config.QueueName = fastapi.Path(  # noqa: B008
         ..., description="The name of the queue"
     ),
     repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008

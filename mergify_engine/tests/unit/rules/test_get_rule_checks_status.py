@@ -6,11 +6,11 @@ import voluptuous
 from mergify_engine import check_api
 from mergify_engine import context
 from mergify_engine import date
-from mergify_engine import rules
 from mergify_engine.rules import checks_status
 from mergify_engine.rules import conditions
 from mergify_engine.rules import filter
 from mergify_engine.rules import live_resolvers
+from mergify_engine.rules.config import conditions as cond_config
 from mergify_engine.tests.unit import conftest
 
 
@@ -40,7 +40,7 @@ async def test_rules_conditions_update() -> None:
     pulls[0].sync_checks()
     schema = voluptuous.Schema(
         voluptuous.All(
-            [voluptuous.Coerce(rules.RuleConditionSchema)],
+            [voluptuous.Coerce(cond_config.RuleConditionSchema)],
             voluptuous.Coerce(conditions.QueueRuleMergeConditions),
         )
     )
@@ -80,7 +80,7 @@ async def assert_queue_rule_checks_status(
     pull.sync_checks()
     schema = voluptuous.Schema(
         voluptuous.All(
-            [voluptuous.Coerce(rules.RuleConditionSchema)],
+            [voluptuous.Coerce(cond_config.RuleConditionSchema)],
             voluptuous.Coerce(conditions.QueueRuleMergeConditions),
         )
     )

@@ -8,6 +8,7 @@ from mergify_engine import context
 from mergify_engine import rules
 from mergify_engine import yaml
 from mergify_engine.dashboard import subscription
+from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.tests.functional import base
 
 
@@ -572,7 +573,7 @@ did not find expected alphabetic or numeric character
         assert str(rule) == "base=new_rule"
 
         rule = config["queue_rules"][
-            rules.QueueName("new_rule")
+            qr_config.QueueName("new_rule")
         ].merge_conditions.condition.conditions[0]
         assert isinstance(rule, rules.conditions.RuleCondition)
         assert str(rule) == "schedule: MON-FRI 08:00-17:00"

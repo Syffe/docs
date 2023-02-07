@@ -4,10 +4,10 @@ from mergify_engine import actions
 from mergify_engine import check_api
 from mergify_engine import constants
 from mergify_engine import context
-from mergify_engine import rules
 from mergify_engine import signals
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
+from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 class UnqueueExecutorConfig(typing.TypedDict):
@@ -22,7 +22,7 @@ class UnqueueExecutor(
         cls,
         action: "UnqueueCommand",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedPullRequestRule",
+        rule: prr_config.EvaluatedPullRequestRule,
     ) -> "UnqueueExecutor":
         return cls(
             ctxt,

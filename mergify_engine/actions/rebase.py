@@ -6,13 +6,13 @@ from mergify_engine import actions
 from mergify_engine import branch_updater
 from mergify_engine import check_api
 from mergify_engine import context
-from mergify_engine import rules
 from mergify_engine import signals
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.dashboard import subscription
 from mergify_engine.dashboard import user_tokens
 from mergify_engine.rules import conditions
 from mergify_engine.rules import types
+from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 class RebaseExecutorConfig(typing.TypedDict):
@@ -26,7 +26,7 @@ class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig
         cls,
         action: "RebaseAction",
         ctxt: "context.Context",
-        rule: "rules.EvaluatedPullRequestRule",
+        rule: "prr_config.EvaluatedPullRequestRule",
     ) -> "RebaseExecutor":
         try:
             bot_account = await action_utils.render_bot_account(
@@ -37,14 +37,14 @@ class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig
                 required_permissions=[],
             )
         except action_utils.RenderBotAccountFailure as e:
-            raise rules.InvalidPullRequestRule(e.title, e.reason)
+            raise prr_config.InvalidPullRequestRule(e.title, e.reason)
 
         github_user: user_tokens.UserTokensUser | None = None
         tokens = await ctxt.repository.installation.get_user_tokens()
         if bot_account:
             github_user = tokens.get_token_for(bot_account)
             if not github_user:
-                raise rules.InvalidPullRequestRule(
+                raise prr_config.InvalidPullRequestRule(
                     f"Unable to rebase: user `{bot_account}` is unknown. ",
                     f"Please make sure `{bot_account}` has logged in Mergify dashboard.",
                 )
