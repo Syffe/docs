@@ -125,7 +125,10 @@ async def test_auth_lifecycle(
     saved_cookies_mid_login = httpx.Cookies(web_client.cookies)
 
     # Ensure session id change
-    assert saved_cookies_logged["session"] != saved_cookies_mid_login["session"]
+    assert (
+        saved_cookies_logged["mergify-session"]
+        != saved_cookies_mid_login["mergify-session"]
+    )
 
     # old cookie doesn't work anymore
     r = await web_client.get(
@@ -143,8 +146,13 @@ async def test_auth_lifecycle(
     assert r.status_code == 204, r.text
 
     # Ensure session id change again
-    assert saved_cookies_mid_login["session"] != web_client.cookies["session"]
-    assert saved_cookies_logged["session"] != web_client.cookies["session"]
+    assert (
+        saved_cookies_mid_login["mergify-session"]
+        != web_client.cookies["mergify-session"]
+    )
+    assert (
+        saved_cookies_logged["mergify-session"] != web_client.cookies["mergify-session"]
+    )
 
     # old cookie doesn't work anymore
     r = await web_client.get(

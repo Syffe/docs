@@ -40,6 +40,7 @@ def create_app(debug: bool = False) -> fastapi.FastAPI:
     app.add_middleware(
         starsessions.SessionMiddleware,
         rolling=True,
+        cookie_name="mergify-session",
         cookie_https_only=cookie_https_only,
         cookie_domain=cookie_domain,
         lifetime=3600 * config.DASHBOARD_UI_SESSION_EXPIRATION_HOURS,
