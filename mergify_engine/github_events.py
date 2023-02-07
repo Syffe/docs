@@ -86,6 +86,7 @@ async def push_to_worker(
 ) -> None:
     pull_number = None
     ignore_reason = None
+    priority = None
 
     if event_type == "pull_request":
         event = typing.cast(github_types.GitHubEventPullRequest, event)
@@ -226,6 +227,7 @@ async def push_to_worker(
         else:
             match = commands_runner.COMMAND_MATCHER.search(event["comment"]["body"])
             if match:
+                priority = worker_pusher.Priority.immediate
                 # NOTE(sileht): nothing important should happen in this hook as we don't retry it
                 background_tasks.add_task(commands_runner.on_each_event, event)
             else:
@@ -496,6 +498,7 @@ async def push_to_worker(
             pull_number,
             event_type,
             slim_event,
+            priority,
         )
     else:
         slim_event = None
@@ -510,6 +513,7 @@ async def push_to_worker(
         gh_owner=owner_login,
         gh_repo=repo_name,
         event=slim_event,
+        priority=priority,
     )
 
     if ignore_reason:
