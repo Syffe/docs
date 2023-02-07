@@ -120,7 +120,8 @@ class DeleteHeadBranchAction(actions.Action):
         self, ctxt: context.Context
     ) -> list[conditions.RuleConditionNode]:
         return [
-            conditions.RuleCondition(
-                "closed", description=":pushpin: delete_head_branch requirement"
+            conditions.RuleCondition.from_tree(
+                {"=": ("closed", True)},
+                description=":pushpin: delete_head_branch requirement",
             )
         ]

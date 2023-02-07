@@ -1630,7 +1630,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
         for condition_with_only_checks in conditions_with_only_checks.walk():
             attr = condition_with_only_checks.get_attribute_name()
             if not attr.startswith(("check-", "status-")):
-                condition_with_only_checks.update("number>0")
+                condition_with_only_checks.make_always_true()
         return conditions_with_only_checks
 
     async def _have_unexpected_draft_pull_request_changes(

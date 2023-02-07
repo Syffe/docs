@@ -178,15 +178,15 @@ class MergeAction(actions.Action):
         conditions_requirements: list[conditions.RuleConditionNode] = []
         if self.config["method"] == "fast-forward":
             conditions_requirements.append(
-                conditions.RuleCondition(
-                    "#commits-behind=0",
+                conditions.RuleCondition.from_tree(
+                    {"=": ("#commits-behind", 0)},
                     description=":pushpin: fast-forward merge requirement",
                 )
             )
 
         conditions_requirements.append(
-            conditions.RuleCondition(
-                "-draft", description=":pushpin: merge requirement"
+            conditions.RuleCondition.from_tree(
+                {"=": ("draft", False)}, description=":pushpin: merge requirement"
             )
         )
         conditions_requirements.extend(

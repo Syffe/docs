@@ -264,8 +264,8 @@ async def test_queue_rules_order_operator_or() -> None:
 
 
 async def test_condition_summary_simple() -> None:
-    single_condition_checked = conditions_mod.RuleCondition(
-        "base=main", description="Description"
+    single_condition_checked = conditions_mod.RuleCondition.from_tree(
+        {"=": ("base", "main")}, description="Description"
     )
     single_condition_checked.match = True
     single_condition_checked.evaluation_error = "Error"
@@ -362,21 +362,27 @@ async def test_queue_rules_summary() -> None:
     )
     conditions.condition.conditions.extend(
         [
-            conditions_mod.RuleCondition(
+            conditions_mod.RuleCondition.from_string(
                 "#approved-reviews-by>=2",
                 description="🛡 GitHub branch protection",
             ),
             conditions_mod.RuleConditionCombination(
                 {
                     "or": [
-                        conditions_mod.RuleCondition("check-success=my-awesome-ci"),
-                        conditions_mod.RuleCondition("check-neutral=my-awesome-ci"),
-                        conditions_mod.RuleCondition("check-skipped=my-awesome-ci"),
+                        conditions_mod.RuleCondition.from_string(
+                            "check-success=my-awesome-ci"
+                        ),
+                        conditions_mod.RuleCondition.from_string(
+                            "check-neutral=my-awesome-ci"
+                        ),
+                        conditions_mod.RuleCondition.from_string(
+                            "check-skipped=my-awesome-ci"
+                        ),
                     ]
                 },
                 description="🛡 GitHub branch protection",
             ),
-            conditions_mod.RuleCondition(
+            conditions_mod.RuleCondition.from_string(
                 "author=me",
                 description="Another mechanism to get condtions",
             ),

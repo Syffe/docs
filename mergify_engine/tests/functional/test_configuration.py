@@ -569,19 +569,19 @@ did not find expected alphabetic or numeric character
 
         rule = config["pull_request_rules"].rules[0].conditions.condition.conditions[0]
         assert isinstance(rule, rules.conditions.RuleCondition)
-        assert rule.condition == "base=new_rule"
+        assert str(rule) == "base=new_rule"
 
         rule = config["queue_rules"][
             rules.QueueName("new_rule")
         ].merge_conditions.condition.conditions[0]
         assert isinstance(rule, rules.conditions.RuleCondition)
-        assert rule.condition == "schedule: MON-FRI 08:00-17:00"
+        assert str(rule) == "schedule: MON-FRI 08:00-17:00"
 
         rule = config["commands_restrictions"]["copy"][
             "conditions"
         ].condition.conditions[0]
         assert isinstance(rule, rules.conditions.RuleCondition)
-        assert rule.condition == "base=new_rule"
+        assert str(rule) == "base=new_rule"
 
     async def test_extend_config_repo_does_not_exist(self) -> None:
         rules = {"extends": "this_repo_does_not_exist"}

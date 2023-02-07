@@ -60,7 +60,7 @@ class TestApiSimulator(base.FunctionalTestBase):
                 "Authorization": f"bearer {self.api_key_admin}",
             },
         )
-
+        assert r.status_code == 200, r.text
         assert r.json()["title"] == "1 rule matches", r.json()
         assert (
             r.json()["summary"].split("<hr />")[0]

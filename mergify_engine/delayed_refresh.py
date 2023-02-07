@@ -79,7 +79,7 @@ async def plan_next_refresh(
                 # they will become date.DT_MAX when parsed by
                 # filter.NearDatetimeFilter
                 if attr.startswith("current-") or attr.startswith("schedule"):
-                    condition.update("number>0")
+                    condition.make_always_true()
 
         f = filter.NearDatetimeFilter(conditions.extract_raw_filter_tree())
         live_resolvers.configure_filter(ctxt.repository, f)

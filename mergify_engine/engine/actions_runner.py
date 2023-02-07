@@ -83,9 +83,9 @@ async def get_already_merged_summary(
                 for condition in custom_conditions.walk():
                     attr = condition.get_attribute_name()
                     if attr == "merged":
-                        condition.update("merged")
+                        condition.update({"=": ("merged", True)})
                     elif attr == "closed":
-                        condition.update("closed")
+                        condition.update({"=": ("closed", True)})
 
                 await custom_conditions([ctxt.pull_request])
                 if custom_conditions.match:

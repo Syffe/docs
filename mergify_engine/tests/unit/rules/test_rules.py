@@ -28,7 +28,7 @@ def pull_request_rule_from_list(lst: typing.Any) -> rules.PullRequestRules:
 
 
 def test_valid_condition() -> None:
-    c = conditions.RuleCondition("head~=bar")
+    c = conditions.RuleCondition.from_string("head~=bar")
     assert str(c) == "head~=bar"
 
 
@@ -37,8 +37,8 @@ def fake_expander(v: str) -> list[str]:
 
 
 async def test_expanders() -> None:
-    rc = conditions.RuleCondition("author=@team")
-    rc.partial_filter.value_expanders["author"] = fake_expander
+    rc = conditions.RuleCondition.from_string("author=@team")
+    rc.filters.boolean.value_expanders["author"] = fake_expander
     await rc(mock.Mock(author="foo"))
     assert rc.match
 
@@ -49,7 +49,7 @@ async def test_expanders() -> None:
 
 def test_invalid_condition_re() -> None:
     with pytest.raises(voluptuous.Invalid):
-        conditions.RuleCondition("head~=(bar")
+        conditions.RuleCondition.from_string("head~=(bar")
 
 
 async def test_multiple_pulls_to_match() -> None:
@@ -58,8 +58,8 @@ async def test_multiple_pulls_to_match() -> None:
             conditions.RuleConditionCombination(
                 {
                     "or": [
-                        conditions.RuleCondition("base=main"),
-                        conditions.RuleCondition("base=main"),
+                        conditions.RuleCondition.from_string("base=main"),
+                        conditions.RuleCondition.from_string("base=main"),
                     ]
                 }
             )
@@ -1939,20 +1939,15 @@ pull_request_rules:
 
     assert "shared" not in config
 
-    assert (
-        config["queue_rules"]  # type: ignore[union-attr]
-        .rules[0]
-        .conditions.condition.conditions[0]
-        .condition
-        == "status-success=continuous-integration/fake-ci"
+    queue_condition = config["queue_rules"].rules[0].conditions.condition.conditions[0]
+    assert isinstance(queue_condition, conditions.RuleCondition)
+    assert str(queue_condition) == "status-success=continuous-integration/fake-ci"
+
+    pull_request_condition = (
+        config["pull_request_rules"].rules[0].conditions.condition.conditions[0]
     )
-    assert (
-        config["pull_request_rules"]  # type: ignore[union-attr]
-        .rules[0]
-        .conditions.condition.conditions[0]
-        .condition
-        == "base=main"
-    )
+    assert isinstance(pull_request_condition, conditions.RuleCondition)
+    assert str(pull_request_condition) == "base=main"
 
 
 async def test_rule_condition_negation_extract_raw_filter_tree() -> None:
@@ -2025,7 +2020,7 @@ Attribute only allowed in commands_restrictions section
     "condition,pull_request,expected_match,expected_related_checks",
     [
         pytest.param(
-            conditions.RuleCondition("check-success=ci-1"),
+            conditions.RuleCondition.from_string("check-success=ci-1"),
             conftest.FakePullRequest(
                 {
                     "check-success": ["ci-1", "ci-2"],
@@ -2038,7 +2033,7 @@ Attribute only allowed in commands_restrictions section
             id="if match is True",
         ),
         pytest.param(
-            conditions.RuleCondition("check-success=ci-3"),
+            conditions.RuleCondition.from_string("check-success=ci-3"),
             conftest.FakePullRequest(
                 {
                     "check-success": ["ci-1", "ci-2"],
@@ -2107,21 +2102,25 @@ def _dt(at: str) -> datetime.datetime:
     "condition,pull_request,expected_match,expected_next_evaluation_at",
     [
         pytest.param(
-            conditions.RuleCondition("schedule=Mon-Fri 09:00-17:30[Europe/Paris]"),
+            conditions.RuleCondition.from_string(
+                "schedule=Mon-Fri 09:00-17:30[Europe/Paris]"
+            ),
             conftest.FakePullRequest({"current-time": _dt("2022-01-10T12:00:00")}),
             True,
             _dt("2022-01-10T16:31:00"),
             id="in schedule",
         ),
         pytest.param(
-            conditions.RuleCondition("schedule=Mon-Fri 09:00-17:30[Europe/Paris]"),
+            conditions.RuleCondition.from_string(
+                "schedule=Mon-Fri 09:00-17:30[Europe/Paris]"
+            ),
             conftest.FakePullRequest({"current-time": _dt("2022-01-10T00:00:00")}),
             False,
             _dt("2022-01-10T08:00:01"),
             id="out schedule",
         ),
         pytest.param(
-            conditions.RuleCondition("base=main"),
+            conditions.RuleCondition.from_string("base=main"),
             conftest.FakePullRequest(
                 {"current-time": _dt("2022-01-10T00:00:00"), "base": "main"}
             ),
@@ -2144,7 +2143,9 @@ async def test_rule_condition_next_evaluation_at(
 
 
 def test_rule_condition_value() -> None:
-    condition = conditions.RuleCondition("schedule=Mon-Fri 09:00-17:30[Europe/Paris]")
+    condition = conditions.RuleCondition.from_string(
+        "schedule=Mon-Fri 09:00-17:30[Europe/Paris]"
+    )
     expected_value = date.Schedule.from_string("Mon-Fri 09:00-17:30[Europe/Paris]")
 
     assert isinstance(condition.value, date.Schedule)
@@ -2154,11 +2155,11 @@ def test_rule_condition_value() -> None:
 @pytest.mark.parametrize(
     "condition,expected_operator",
     (
-        (conditions.RuleCondition("base=main"), "="),
-        (conditions.RuleCondition("base==main"), "="),
-        (conditions.RuleCondition("base:main"), "="),
-        (conditions.RuleCondition("base!=main"), "!="),
-        (conditions.RuleCondition("base≠main"), "!="),
+        (conditions.RuleCondition.from_string("base=main"), "="),
+        (conditions.RuleCondition.from_string("base==main"), "="),
+        (conditions.RuleCondition.from_string("base:main"), "="),
+        (conditions.RuleCondition.from_string("base!=main"), "!="),
+        (conditions.RuleCondition.from_string("base≠main"), "!="),
     ),
 )
 def test_rule_condition_operator(

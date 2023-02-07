@@ -129,8 +129,8 @@ class RebaseAction(actions.Action):
     ) -> list[conditions.RuleConditionNode]:
         description = ":pushpin: rebase requirement"
         conds: list[conditions.RuleConditionNode] = [
-            conditions.RuleCondition(
-                "-closed",
+            conditions.RuleCondition.from_tree(
+                {"=": ("closed", False)},
                 description=description,
             ),
         ]
@@ -139,12 +139,12 @@ class RebaseAction(actions.Action):
                 conditions.RuleConditionCombination(
                     {
                         "or": [
-                            conditions.RuleCondition(
-                                "#commits-behind>0",
+                            conditions.RuleCondition.from_tree(
+                                {">": ("#commits-behind", 0)},
                                 description=description,
                             ),
-                            conditions.RuleCondition(
-                                "-linear-history",
+                            conditions.RuleCondition.from_tree(
+                                {"=": ("linear-history", False)},
                                 description=description,
                             ),
                         ],

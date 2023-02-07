@@ -21,7 +21,7 @@ def get_conditions_with_ignored_attributes(
     for condition in conditions.walk():
         attr = condition.get_attribute_name()
         if attr.startswith(attribute_prefixes):
-            condition.update("number>0")
+            condition.make_always_true()
     return conditions
 
 

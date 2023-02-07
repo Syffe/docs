@@ -52,71 +52,38 @@ EvaluatedConditionGroupT = abc.Mapping[
 
 
 @dataclasses.dataclass
-class RuleCondition:
-    """This describe a leaf of the `conditions:` tree, eg:
+class RuleConditionFilters:
+    condition: dataclasses.InitVar[filter.TreeT]
 
-    label=foobar
-    -merged
-    """
-
-    condition: str | FakeTreeT
-    label: str | None = None
-    description: str | None = None
-    allow_command_attributes: bool = False
-    partial_filter: filter.Filter[bool] = dataclasses.field(init=False)
-    match: bool = dataclasses.field(init=False, default=False)
-    _used: bool = dataclasses.field(init=False, default=False)
-    evaluation_error: str | None = dataclasses.field(init=False, default=None)
-    related_checks_filter: filter.Filter[
+    boolean: filter.Filter[bool] = dataclasses.field(init=False)
+    next_evaluation: filter.Filter[datetime.datetime] = dataclasses.field(init=False)
+    related_checks: filter.Filter[
         filter.ListValuesFilterResult
-    ] | None = dataclasses.field(init=False, default=None)
-    related_checks: list[str] = dataclasses.field(init=False, default_factory=list)
-    next_evaluation_filter: filter.Filter[datetime.datetime] = dataclasses.field(
-        init=False
-    )
-    next_evaluation_at: datetime.datetime = dataclasses.field(
-        init=False, default=date.DT_MAX
-    )
+    ] | None = dataclasses.field(init=False)
 
-    def __post_init__(self) -> None:
-        self.update(self.condition)
-
-    def update(self, condition_raw: str | FakeTreeT) -> None:
-        self.condition = condition_raw
-
-        try:
-            if isinstance(condition_raw, str):
-                condition = parser.parse(condition_raw, self.allow_command_attributes)
-            else:
-                condition = condition_raw
-            self.partial_filter = filter.BinaryFilter(
-                typing.cast(filter.TreeT, condition)
-            )
-        except (parser.ConditionParsingError, filter.InvalidQuery) as e:
-            # Escape HTML chars that a user can insert in configuration
-            escaped_condition_raw = html.escape(str(condition_raw))
-            raise voluptuous.Invalid(
-                message=f"Invalid condition '{escaped_condition_raw}'. {str(e)}",
-                error_message=str(e),
-            )
+    def __post_init__(self, condition: filter.TreeT) -> None:
+        self.boolean = filter.BinaryFilter(condition)
+        self.next_evaluation = filter.NearDatetimeFilter(condition)
 
         attribute = self.get_attribute_name()
         if attribute.startswith(("check-", "status-")):
-            new_tree = self._replace_attribute_name("check")
-            self.related_checks_filter = filter.ListValuesFilter(
+            new_tree = self._replace_attribute_name(condition, "check")
+            self.related_checks = filter.ListValuesFilter(
                 typing.cast(filter.TreeT, new_tree)
             )
+        else:
+            self.related_checks = None
 
-        self.next_evaluation_filter = filter.NearDatetimeFilter(
-            typing.cast(filter.TreeT, condition)
-        )
+    def get_attribute_name(self) -> str:
+        tree = typing.cast(filter.TreeT, self.boolean.tree)
+        tree = tree.get("-", tree)
+        name = list(tree.values())[0][0]
+        if name.startswith(filter.Filter.LENGTH_OPERATOR):
+            return str(name[1:])
+        return str(name)
 
-    def update_attribute_name(self, new_name: str) -> None:
-        new_tree = self._replace_attribute_name(new_name)
-        self.update(new_tree)
-
-    def _replace_attribute_name(self, new_name: str) -> FakeTreeT:
-        tree = typing.cast(filter.TreeT, self.partial_filter.tree)
+    @staticmethod
+    def _replace_attribute_name(tree: filter.TreeT, new_name: str) -> FakeTreeT:
         negate = "-" in tree
         tree = tree.get("-", tree)
         operator = list(tree.keys())[0]
@@ -129,20 +96,76 @@ class RuleCondition:
             new_tree = {"-": new_tree}
         return new_tree
 
+
+@dataclasses.dataclass
+class RuleCondition:
+    """This describe a leaf of the `conditions:` tree, eg:
+
+    label=foobar
+    -merged
+    """
+
+    filters: RuleConditionFilters
+    label: str | None = None
+    description: str | None = None
+
+    match: bool = dataclasses.field(init=False, default=False)
+    _used: bool = dataclasses.field(init=False, default=False)
+    evaluation_error: str | None = dataclasses.field(init=False, default=None)
+    related_checks: list[str] = dataclasses.field(init=False, default_factory=list)
+    next_evaluation_at: datetime.datetime = dataclasses.field(
+        init=False, default=date.DT_MAX
+    )
+
+    @classmethod
+    def from_tree(
+        cls,
+        condition: FakeTreeT,
+        label: str | None = None,
+        description: str | None = None,
+    ) -> "RuleCondition":
+        return cls(
+            RuleConditionFilters(typing.cast(filter.TreeT, condition)),
+            label,
+            description,
+        )
+
+    @classmethod
+    def from_string(
+        cls,
+        condition: str,
+        description: str | None = None,
+        allow_command_attributes: bool = False,
+    ) -> "RuleCondition":
+        try:
+            return cls.from_tree(
+                parser.parse(condition, allow_command_attributes),
+                condition,
+                description,
+            )
+        except (parser.ConditionParsingError, filter.InvalidQuery) as e:
+            # Escape HTML chars that a user can insert in configuration
+            escaped_condition = html.escape(condition)
+            raise voluptuous.Invalid(
+                message=f"Invalid condition '{escaped_condition}'. {str(e)}",
+                error_message=str(e),
+            )
+
+    def make_always_true(self) -> None:
+        self.update({">": ("number", 0)})
+
+    def update(self, condition: FakeTreeT) -> None:
+        self.filters = RuleConditionFilters(typing.cast(filter.TreeT, condition))
+        self.label = None
+
     def __str__(self) -> str:
         if self.label is not None:
             return self.label
-        elif isinstance(self.condition, str):
-            return self.condition
         else:
-            return str(self.partial_filter)
+            return str(self.filters.boolean)
 
     def copy(self) -> "RuleCondition":
-        rc = RuleCondition(
-            self.condition, self.label, self.description, self.allow_command_attributes
-        )
-        rc.partial_filter.value_expanders = self.partial_filter.value_expanders
-        return rc
+        return RuleCondition(self.filters, self.label, self.description)
 
     async def __call__(self, obj: filter.GetAttrObjectT) -> bool:
         if self._used:
@@ -150,10 +173,10 @@ class RuleCondition:
 
         self._used = True
         try:
-            self.match = await self.partial_filter(obj)
-            if self.related_checks_filter is not None:
-                self.related_checks = (await self.related_checks_filter(obj)).values
-            self.next_evaluation_at = await self.next_evaluation_filter(obj)
+            self.match = await self.filters.boolean(obj)
+            if self.filters.related_checks is not None:
+                self.related_checks = (await self.filters.related_checks(obj)).values
+            self.next_evaluation_at = await self.filters.next_evaluation(obj)
         except live_resolvers.LiveResolutionFailure as e:
             self.match = False
             self.evaluation_error = e.reason
@@ -161,16 +184,11 @@ class RuleCondition:
         return self.match
 
     def get_attribute_name(self) -> str:
-        tree = typing.cast(filter.TreeT, self.partial_filter.tree)
-        tree = tree.get("-", tree)
-        name = list(tree.values())[0][0]
-        if name.startswith(filter.Filter.LENGTH_OPERATOR):
-            return str(name[1:])
-        return str(name)
+        return self.filters.get_attribute_name()
 
     @property
     def value(self) -> typing.Any:
-        tree = typing.cast(filter.TreeT, self.partial_filter.tree)
+        tree = typing.cast(filter.TreeT, self.filters.boolean.tree)
         tree = tree.get("-", tree)
         _, tree = tree.get("@", ("", tree))  # type: ignore[misc]
         value = list(tree.values())[0][1]
@@ -178,7 +196,7 @@ class RuleCondition:
 
     @property
     def operator(self) -> str:
-        tree = typing.cast(filter.TreeT, self.partial_filter.tree)
+        tree = typing.cast(filter.TreeT, self.filters.boolean.tree)
         tree = tree.get("-", tree)
         _, tree = tree.get("@", ("", tree))  # type: ignore[misc]
         tree = typing.cast(filter.TreeT, tree)
@@ -298,7 +316,7 @@ class RuleConditionGroup(abstract.ABC):
 
     def extract_raw_filter_tree(self, condition: RuleConditionNode) -> filter.TreeT:
         if isinstance(condition, RuleCondition):
-            return typing.cast(filter.TreeT, condition.partial_filter.tree)
+            return typing.cast(filter.TreeT, condition.filters.boolean.tree)
         elif isinstance(condition, RuleConditionCombination):
             return typing.cast(
                 filter.TreeT,
@@ -421,9 +439,15 @@ async def get_branch_protection_conditions(
                     RuleConditionCombination(
                         {
                             "or": [
-                                RuleCondition(f"check-success={check}"),
-                                RuleCondition(f"check-neutral={check}"),
-                                RuleCondition(f"check-skipped={check}"),
+                                RuleCondition.from_tree(
+                                    {"=": ("check-success", check)}
+                                ),
+                                RuleCondition.from_tree(
+                                    {"=": ("check-neutral", check)}
+                                ),
+                                RuleCondition.from_tree(
+                                    {"=": ("check-skipped", check)}
+                                ),
                             ]
                         },
                         description=BRANCH_PROTECTION_CONDITION_TAG,
@@ -437,8 +461,8 @@ async def get_branch_protection_conditions(
                 and protection["required_status_checks"]["strict"]
             ):
                 conditions.append(
-                    RuleCondition(
-                        "#commits-behind=0",
+                    RuleCondition.from_tree(
+                        {"=": ("#commits-behind", 0)},
                         description=BRANCH_PROTECTION_CONDITION_TAG,
                     )
                 )
@@ -450,8 +474,8 @@ async def get_branch_protection_conditions(
         ) is not None:
             if required_pull_request_reviews["require_code_owner_reviews"]:
                 conditions.append(
-                    RuleCondition(
-                        "branch-protection-review-decision=APPROVED",
+                    RuleCondition.from_tree(
+                        {"=": ("branch-protection-review-decision", "APPROVED")},
                         description=BRANCH_PROTECTION_CONDITION_TAG,
                     )
                 )
@@ -459,12 +483,19 @@ async def get_branch_protection_conditions(
             if required_pull_request_reviews["required_approving_review_count"] > 0:
                 conditions.extend(
                     [
-                        RuleCondition(
-                            f"#approved-reviews-by>={required_pull_request_reviews['required_approving_review_count']}",
+                        RuleCondition.from_tree(
+                            {
+                                ">=": (
+                                    "#approved-reviews-by",
+                                    required_pull_request_reviews[
+                                        "required_approving_review_count"
+                                    ],
+                                )
+                            },
                             description=BRANCH_PROTECTION_CONDITION_TAG,
                         ),
-                        RuleCondition(
-                            "#changes-requested-reviews-by=0",
+                        RuleCondition.from_tree(
+                            {"=": ("#changes-requested-reviews-by", 0)},
                             description=BRANCH_PROTECTION_CONDITION_TAG,
                         ),
                     ]
@@ -475,8 +506,8 @@ async def get_branch_protection_conditions(
             and protection["required_conversation_resolution"]["enabled"]
         ):
             conditions.append(
-                RuleCondition(
-                    "#review-threads-unresolved=0",
+                RuleCondition.from_tree(
+                    {"=": ("#review-threads-unresolved", 0)},
                     description=BRANCH_PROTECTION_CONDITION_TAG,
                 )
             )
@@ -499,7 +530,7 @@ async def get_depends_on_conditions(ctxt: context.Context) -> list[RuleCondition
             escaped_pr_title = html.escape(dep_ctxt.pull["title"])
             description = f"⛓️ **{escaped_pr_title}** ([#{pull_request_number}]({dep_ctxt.pull['html_url']}))"
         conds.append(
-            RuleCondition(
+            RuleCondition.from_tree(
                 {"=": ("depends-on", f"#{pull_request_number}")},
                 description=description,
             )

@@ -47,7 +47,7 @@ class BackportAction(copy.CopyAction):
         self, ctxt: context.Context
     ) -> list[conditions.RuleConditionNode]:
         return [
-            conditions.RuleCondition(
-                "merged", description=":pushpin: backport requirement"
+            conditions.RuleCondition.from_tree(
+                {"=": ("merged", True)}, description=":pushpin: backport requirement"
             )
         ]

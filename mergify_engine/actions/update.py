@@ -99,12 +99,12 @@ class UpdateAction(actions.Action):
     ) -> list[conditions.RuleConditionNode]:
         description = ":pushpin: update requirement"
         return [
-            conditions.RuleCondition(
-                "-closed",
+            conditions.RuleCondition.from_tree(
+                {"=": ("closed", False)},
                 description=description,
             ),
-            conditions.RuleCondition(
-                "#commits-behind>0",
+            conditions.RuleCondition.from_tree(
+                {">": ("#commits-behind", 0)},
                 description=description,
             ),
         ]

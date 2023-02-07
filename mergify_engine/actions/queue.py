@@ -1019,8 +1019,8 @@ class QueueAction(actions.Action):
             branch_protection_conditions
             + depends_on_conditions
             + [
-                conditions.RuleCondition(
-                    "-draft", description=":pushpin: queue requirement"
+                conditions.RuleCondition.from_tree(
+                    {"=": ("draft", False)}, description=":pushpin: queue requirement"
                 )
             ]
         )

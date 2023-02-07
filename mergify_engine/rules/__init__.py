@@ -393,13 +393,13 @@ class GenericRulesEvaluator(typing.Generic[T_Rule, T_EvaluatedRule]):
                 for condition in base_changeable_conditions.walk():
                     attr = condition.get_attribute_name()
                     if attr not in self.BASE_CHANGEABLE_ATTRIBUTES:
-                        condition.update("number>0")
+                        condition.make_always_true()
 
                 base_conditions = evaluated_rule.conditions.copy()
                 for condition in base_conditions.walk():
                     attr = condition.get_attribute_name()
                     if attr not in self.BASE_ATTRIBUTES:
-                        condition.update("number>0")
+                        condition.make_always_true()
 
                 await base_changeable_conditions(pulls)
                 await base_conditions(pulls)
@@ -589,7 +589,7 @@ def RuleConditionSchema(
             voluptuous.All(
                 str,
                 voluptuous.Coerce(
-                    lambda v: conditions_mod.RuleCondition(
+                    lambda v: conditions_mod.RuleCondition.from_string(
                         v, allow_command_attributes=allow_command_attributes
                     )
                 ),
@@ -1128,7 +1128,12 @@ def apply_configure_filter(
     ),
 ) -> None:
     for condition in conditions.walk():
-        live_resolvers.configure_filter(repository, condition.partial_filter)
+        live_resolvers.configure_filter(repository, condition.filters.boolean)
+        live_resolvers.configure_filter(repository, condition.filters.next_evaluation)
+        if condition.filters.related_checks is not None:
+            live_resolvers.configure_filter(
+                repository, condition.filters.related_checks
+            )
 
 
 MERGIFY_BUILTIN_CONFIG_YAML = """
