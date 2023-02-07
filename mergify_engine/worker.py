@@ -627,36 +627,41 @@ class StreamProcessor:
 
                     # NOTE(sileht): we put push event first to make PullsFinder
                     # more effective.
-                    for message_id, source, score in sorted(
-                        decoded_messages, key=order_messages_without_pull_numbers
-                    ):
-                        converted_messages = await self._convert_event_to_messages(
-                            installation,
-                            pr_finder,
-                            bucket.repo_id,
-                            tracing_repo_name,
-                            source,
-                            score,
-                        )
-                        logger.debug(
-                            "assiociated non pull request event to pull requests",
-                            event_type=source["event_type"],
-                            pull_requests_found=converted_messages,
-                            event=source["data"],
-                        )
-                        statsd.increment(
-                            "engine.buckets.pull_request_associations",
-                            tags=[
-                                f"worker_id:{self.worker_id}",
-                                f"event_type:{source['event_type']}",
-                            ],
-                        )
-                        # NOTE(sileht) can we take the risk to batch the deletion here ?
+                    message_ids_to_delete = set()
+                    try:
+                        for message_id, source, score in sorted(
+                            decoded_messages, key=order_messages_without_pull_numbers
+                        ):
+                            converted_messages = await self._convert_event_to_messages(
+                                installation,
+                                pr_finder,
+                                bucket.repo_id,
+                                tracing_repo_name,
+                                source,
+                                score,
+                            )
+                            message_ids_to_delete.add(
+                                typing.cast(T_MessageID, message_id)
+                            )
+                            logger.debug(
+                                "assiociated non pull request event to pull requests",
+                                event_type=source["event_type"],
+                                pull_requests_found=converted_messages,
+                                event=source["data"],
+                            )
+                            statsd.increment(
+                                "engine.buckets.pull_request_associations",
+                                tags=[
+                                    f"worker_id:{self.worker_id}",
+                                    f"event_type:{source['event_type']}",
+                                ],
+                            )
+                    finally:
                         await worker_lua.remove_pull(
                             self.redis_links.stream,
                             bucket_org_key,
                             bucket.sources_key,
-                            (typing.cast(T_MessageID, message_id),),
+                            tuple(message_ids_to_delete),
                         )
             else:
                 sources = [
