@@ -608,8 +608,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 ctxt.pull["number"], " by an `unqueue` command"
             )
 
-        train_car_state = merge_train.TrainCarState.decode_train_car_state_from_summary(
-            ctxt.repository, check
+        train_car_state = merge_train.TrainCarStateForSummary.deserialize_from_summary(
+            check
         )
         if train_car_state is None:
             # NOTE(sileht): No details but we can't do much at this point

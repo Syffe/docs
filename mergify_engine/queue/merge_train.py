@@ -300,6 +300,54 @@ UNEXPECTED_CHANGE_COMPATIBILITY = {
 
 
 @dataclasses.dataclass
+class TrainCarStateForSummary:
+    outcome: TrainCarOutcome = TrainCarOutcome.UNKNOWN
+    outcome_message: str | None = None
+
+    @classmethod
+    def from_train_car_state(
+        cls, train_car_state: "TrainCarState"
+    ) -> "TrainCarStateForSummary":
+        return cls(train_car_state.outcome, train_car_state.outcome_message)
+
+    class Serialized(typing.TypedDict):
+        outcome: TrainCarOutcome
+        outcome_message: str | None
+
+    def serialized(self) -> str:
+        data = self.Serialized(
+            outcome=self.outcome,
+            outcome_message=self.outcome_message,
+        )
+
+        return "<!-- " + base64.b64encode(json.dumps(data).encode()).decode() + " -->"
+
+    @classmethod
+    def deserialize(
+        cls, data: "TrainCarStateForSummary.Serialized"
+    ) -> "TrainCarStateForSummary":
+        return cls(
+            outcome=data["outcome"],
+            outcome_message=data["outcome_message"],
+        )
+
+    @classmethod
+    def deserialize_from_summary(
+        cls, summary_check: github_types.CachedGitHubCheckRun | None
+    ) -> "TrainCarStateForSummary" | None:
+        line = extract_encoded_train_car_state_data_from_summary(summary_check)
+        if line is not None:
+            serialized = typing.cast(
+                TrainCarStateForSummary.Serialized,
+                json.loads(
+                    base64.b64decode(utils.strip_comment_tags(line).encode()).decode()
+                ),
+            )
+            return cls.deserialize(serialized)
+        return None
+
+
+@dataclasses.dataclass
 class TrainCarState:
     outcome: TrainCarOutcome = TrainCarOutcome.UNKNOWN
     ci_state: CiState = CiState.PENDING
@@ -407,32 +455,6 @@ class TrainCarState:
             self.ci_ended_at if self.ci_ended_at is not None else date.utcnow()
         )
         return (ci_duration - self.ci_started_at) > timeout
-
-    @classmethod
-    def decode_train_car_state_from_summary(
-        cls,
-        repository: context.Repository,
-        summary_check: github_types.CachedGitHubCheckRun | None,
-    ) -> "TrainCarState" | None:
-        line = extract_encoded_train_car_state_data_from_summary(summary_check)
-        if line is not None:
-            train_car_state_serialized = typing.cast(
-                TrainCarState.Serialized,
-                json.loads(
-                    base64.b64decode(utils.strip_comment_tags(line).encode()).decode()
-                ),
-            )
-            return cls.deserialize(repository, train_car_state_serialized)
-        return None
-
-    def to_base_64_json(
-        self,
-    ) -> str:
-        return (
-            "<!-- "
-            + base64.b64encode(json.dumps(self.serialized()).encode()).decode()
-            + " -->"
-        )
 
     def add_waiting_for_schedule_start_date(self) -> None:
         if len(self.waiting_for_schedule_start_dates) == 0 or len(
@@ -2352,7 +2374,10 @@ You don't need to do anything. Mergify will close this pull request automaticall
         if self.train_car_state.frozen_by is not None:
             queue_freeze_summary = self.train_car_state.frozen_by.get_freeze_message()
 
-        train_car_state_summary = self.train_car_state.to_base_64_json()
+        train_car_state_summary = TrainCarStateForSummary.from_train_car_state(
+            self.train_car_state
+        ).serialized()
+
         original_pull_summary = (
             train_car_state_summary
             + unexpected_change_summary
