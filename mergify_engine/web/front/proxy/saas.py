@@ -86,7 +86,7 @@ async def saas_proxy(
                 headers={"Mergify-On-Behalf-Of": str(current_user.id)},
                 params=request.url.query,
                 content=await request.body(),
-                follow_redirects=True,
+                follow_redirects=False,
             )
         except httpx.HTTPStatusError as e:
             resp = e.response
@@ -114,6 +114,10 @@ async def saas_proxy(
             headers=dict(
                 utils.httpx_to_fastapi_headers(
                     resp.headers,
+                    rewrite_url=(
+                        f"{config.SUBSCRIPTION_BASE_URL}/engine/saas",
+                        f"{base_url}/front/proxy/saas",
+                    ),
                 ),
             ),
         )

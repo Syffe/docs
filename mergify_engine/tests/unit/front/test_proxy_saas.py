@@ -235,3 +235,55 @@ async def test_saas_intercom_with_saas_mode_true(
     await web_client.logout()
     resp = await web_client.get(url, headers={"dnt": "1"})
     assert resp.status_code == 401
+
+
+@pytest.mark.parametrize(
+    "url, proxied_url, proxy_location, expected_location",
+    (
+        (
+            "/front/proxy/saas/github-account/42/stripe-customer-portal",
+            f"{config.SUBSCRIPTION_BASE_URL}/engine/saas/github-account/42/stripe-customer-portal",
+            "https://portal.stripe.com/",
+            "https://portal.stripe.com/",
+        ),
+        (
+            "/front/proxy/saas/github-account/42/something-else",
+            f"{config.SUBSCRIPTION_BASE_URL}/engine/saas/github-account/42/something-else",
+            f"{config.SUBSCRIPTION_BASE_URL}/engine/saas/foo/bar",
+            f"{config.BASE_URL}/front/proxy/saas/foo/bar",
+        ),
+    ),
+)
+async def test_saas_proxy_redirect(
+    url: str,
+    proxied_url: str,
+    proxy_location: str,
+    expected_location: str,
+    monkeypatch: pytest.MonkeyPatch,
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    respx_mock: respx.MockRouter,
+    web_client: conftest.CustomTestClient,
+    front_login_mock: None,
+) -> None:
+    monkeypatch.setattr(config, "SAAS_MODE", True)
+
+    user = github_user.GitHubUser(
+        id=github_types.GitHubAccountIdType(42),
+        login=github_types.GitHubLogin("user-login"),
+        oauth_access_token=github_types.GitHubOAuthToken("user-token"),
+    )
+    db.add(user)
+    await db.commit()
+
+    respx_mock.get(
+        proxied_url,
+        headers={
+            "Authorization": f"Bearer {config.ENGINE_TO_DASHBOARD_API_KEY}",
+            "Mergify-On-Behalf-Of": str(user.id),
+        },
+    ).respond(307, headers={"Location": proxy_location})
+
+    await web_client.log_as(user.id)
+    resp = await web_client.get(url, follow_redirects=False)
+    assert resp.status_code == 307, (resp.text, url)
+    assert resp.headers["Location"] == expected_location
