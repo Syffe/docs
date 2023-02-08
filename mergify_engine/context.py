@@ -1374,19 +1374,18 @@ class Context:
             self.log, commits[0].commit_message
         )
 
-    async def _get_consolidated_data(self, name: str) -> ContextAttributeType:
-        if name == "assignee":
-            return [a["login"] for a in self.pull["assignees"]]
+    async def _get_consolidated_queue_data(self, name: str) -> ContextAttributeType:
+        mergify_config = await self.repository.get_mergify_config()
+        queue_rules = mergify_config["queue_rules"]
+        q = await merge_train.Train.from_context(self, queue_rules)
 
-        elif name == "queue-position":
-            q = await merge_train.Train.from_context(self)
+        if name == "queue-position":
             position, _ = q.find_embarked_pull(self.pull["number"])
             if position is None:
                 return -1
             return position
 
         elif name in ("queued-at", "queued-at-relative"):
-            q = await merge_train.Train.from_context(self)
             position, embarked_pull = q.find_embarked_pull(self.pull["number"])
             if embarked_pull is None:
                 return None
@@ -1397,7 +1396,6 @@ class Context:
 
         elif name in ("queue-merge-started-at", "queue-merge-started-at-relative"):
             # Only used with QueuePullRequest
-            q = await merge_train.Train.from_context(self)
             car = q.get_car_by_tmp_pull(self)
             if car is None:
                 car = q.get_car(self)
@@ -1413,6 +1411,15 @@ class Context:
                 return started_at
             else:
                 return date.RelativeDatetime(started_at)
+        else:
+            raise PullRequestAttributeError(name)
+
+    async def _get_consolidated_data(self, name: str) -> ContextAttributeType:
+        if name == "assignee":
+            return [a["login"] for a in self.pull["assignees"]]
+
+        elif name.startswith("queue"):
+            return await self._get_consolidated_queue_data(name)
 
         elif name == "label":
             return [label["name"] for label in self.pull["labels"]]

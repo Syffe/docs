@@ -6,7 +6,7 @@ from mergify_engine.rules.config import queue_rules as qr_config
 async def handle(queue_rules: qr_config.QueueRules, ctxt: context.Context) -> None:
     # FIXME: Maybe create a command to force the retesting to put back the PR in the queue?
 
-    train = await merge_train.Train.from_context(ctxt)
+    train = await merge_train.Train.from_context(ctxt, queue_rules)
 
     car = train.get_car_by_tmp_pull(ctxt)
     if not car:
@@ -61,7 +61,6 @@ async def handle(queue_rules: qr_config.QueueRules, ctxt: context.Context) -> No
         return
 
     await car.check_mergeability(
-        queue_rules,
         origin="draft_pull_request",
         original_pull_request_rule=None,
         original_pull_request_number=None,

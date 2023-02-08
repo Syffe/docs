@@ -11,7 +11,6 @@ from mergify_engine import context
 from mergify_engine import date
 from mergify_engine.dashboard import application as application_mod
 from mergify_engine.queue import freeze
-from mergify_engine.rules.config import mergify as mergify_conf
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web import api
 from mergify_engine.web.api import security
@@ -90,29 +89,26 @@ async def create_queue_freeze(
     repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
         security.get_repository_context
     ),
+    queue_rules: qr_config.QueueRules = fastapi.Depends(  # noqa: B008
+        security.get_queue_rules
+    ),
 ) -> QueueFreezeResponse:
     if queue_freeze_payload.reason == "":
         queue_freeze_payload.reason = "No freeze reason was specified."
 
     try:
-        config = await repository_ctxt.get_mergify_config()
-    except mergify_conf.InvalidRules:
-        raise fastapi.HTTPException(
-            status_code=422,
-            detail="The configuration file is invalid.",
-        )
-
-    queue_rules = config["queue_rules"]
-    if all(queue_name != rule.name for rule in queue_rules):
+        queue_rule = queue_rules[queue_name]
+    except KeyError:
         raise fastapi.HTTPException(
             status_code=404, detail=f'The queue "{queue_name}" does not exist.'
         )
 
-    qf = await freeze.QueueFreeze.get(repository_ctxt, queue_name)
+    qf = await freeze.QueueFreeze.get(repository_ctxt, queue_rule)
     if qf is None:
         qf = freeze.QueueFreeze(
             repository=repository_ctxt,
-            name=queue_name,
+            queue_rule=queue_rule,
+            name=queue_rule.name,
             reason=queue_freeze_payload.reason,
             application_name=application.name,
             application_id=application.id,
@@ -126,7 +122,7 @@ async def create_queue_freeze(
     if qf.cascading != queue_freeze_payload.cascading:
         qf.cascading = queue_freeze_payload.cascading
 
-    await qf.save()
+    await qf.save(queue_rules)
     return QueueFreezeResponse(
         queue_freezes=[
             QueueFreeze(
@@ -162,17 +158,28 @@ async def delete_queue_freeze(
     repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
         security.get_repository_context
     ),
+    queue_rules: qr_config.QueueRules = fastapi.Depends(  # noqa: B008
+        security.get_queue_rules
+    ),
 ) -> fastapi.Response:
+    try:
+        queue_rule = queue_rules[queue_name]
+    except KeyError:
+        raise fastapi.HTTPException(
+            status_code=404, detail=f'The queue "{queue_name}" does not exist.'
+        )
+
     qf = freeze.QueueFreeze(
         repository=repository_ctxt,
+        queue_rule=queue_rule,
         name=queue_name,
         application_name=application.name,
         application_id=application.id,
     )
-    if not await qf.delete():
+    if not await qf.delete(queue_rules):
         raise fastapi.HTTPException(
             status_code=404,
-            detail=f'The queue "{queue_name}" does not exist or is not currently frozen.',
+            detail=f'The queue "{queue_name}" is not currently frozen.',
         )
 
     return fastapi.Response(status_code=HTTP_204_NO_CONTENT)
@@ -196,12 +203,22 @@ async def get_queue_freeze(
     repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
         security.get_repository_context
     ),
+    queue_rules: qr_config.QueueRules = fastapi.Depends(  # noqa: B008
+        security.get_queue_rules
+    ),
 ) -> QueueFreezeResponse:
-    qf = await freeze.QueueFreeze.get(repository_ctxt, queue_name)
+    try:
+        queue_rule = queue_rules[queue_name]
+    except KeyError:
+        raise fastapi.HTTPException(
+            status_code=404, detail=f'The queue "{queue_name}" does not exist.'
+        )
+
+    qf = await freeze.QueueFreeze.get(repository_ctxt, queue_rule)
     if qf is None:
         raise fastapi.HTTPException(
             status_code=404,
-            detail=f'The queue "{queue_name}" does not exist or is not currently frozen.',
+            detail=f'The queue "{queue_name}" is not currently frozen.',
         )
 
     return QueueFreezeResponse(
@@ -232,6 +249,9 @@ async def get_list_queue_freeze(
     repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
         security.get_repository_context
     ),
+    queue_rules: qr_config.QueueRules = fastapi.Depends(  # noqa: B008
+        security.get_queue_rules
+    ),
 ) -> QueueFreezeResponse:
     return QueueFreezeResponse(
         queue_freezes=[
@@ -243,6 +263,6 @@ async def get_list_queue_freeze(
                 freeze_date=qf.freeze_date,
                 cascading=qf.cascading,
             )
-            async for qf in freeze.QueueFreeze.get_all(repository_ctxt)
+            async for qf in freeze.QueueFreeze.get_all(repository_ctxt, queue_rules)
         ]
     )

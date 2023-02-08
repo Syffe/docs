@@ -1,3 +1,4 @@
+import dataclasses
 import typing
 
 import voluptuous
@@ -16,7 +17,9 @@ from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import conditions
 from mergify_engine.rules import types
+from mergify_engine.rules.config import mergify as mergify_conf
 from mergify_engine.rules.config import pull_request_rules as prr_config
+from mergify_engine.rules.config import queue_rules as qr_config
 
 
 DEPRECATED_MESSAGE_REBASE_FALLBACK_MERGE_ACTION = """The configuration uses the deprecated `rebase_fallback` attribute of the merge action.
@@ -34,10 +37,13 @@ class MergeExecutorConfig(typing.TypedDict):
     merge_bot_account: github_types.GitHubLogin | None
 
 
+@dataclasses.dataclass
 class MergeExecutor(
     actions.ActionExecutor["MergeAction", "MergeExecutorConfig"],
     merge_base.MergeUtilsMixin,
 ):
+    queue_rules: qr_config.QueueRules
+
     @property
     def silenced_conclusion(self) -> tuple[check_api.Conclusion, ...]:
         return ()
@@ -81,6 +87,7 @@ class MergeExecutor(
                     "merge_bot_account": merge_bot_account,
                 }
             ),
+            action.queue_rules,
         )
 
     async def run(self) -> check_api.Result:
@@ -101,7 +108,9 @@ class MergeExecutor(
                 self.get_pending_merge_status,
             )
             if report.conclusion == check_api.Conclusion.SUCCESS:
-                queue = await merge_train.Train.from_context(self.ctxt)
+                queue = await merge_train.Train.from_context(
+                    self.ctxt, self.queue_rules
+                )
                 if queue.is_queued(self.ctxt.pull["number"]):
                     await queue.remove_pull(
                         self.ctxt,
@@ -198,3 +207,9 @@ class MergeAction(actions.Action):
         return conditions_requirements
 
     executor_class = MergeExecutor
+
+    # NOTE(sileht): set by validate_config()
+    queue_rules: qr_config.QueueRules = dataclasses.field(init=False, repr=False)
+
+    def validate_config(self, mergify_config: "mergify_conf.MergifyConfig") -> None:
+        self.queue_rules = mergify_config["queue_rules"]

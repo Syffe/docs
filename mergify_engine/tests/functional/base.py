@@ -40,6 +40,7 @@ from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import statistics as queue_statistics
+from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.tests.functional import conftest as func_conftest
 
 
@@ -1571,9 +1572,19 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             )
         ]
 
+    async def get_queue_rule(self, name: str) -> qr_config.QueueRule:
+        config = await self.repository_ctxt.get_mergify_config()
+        return config["queue_rules"][qr_config.QueueName(name)]
+
+    async def get_queue_rules(self) -> qr_config.QueueRules:
+        config = await self.repository_ctxt.get_mergify_config()
+        return config["queue_rules"]
+
     async def get_train(self) -> merge_train.Train:
         q = merge_train.Train(
-            repository=self.repository_ctxt, ref=self.main_branch_name
+            repository=self.repository_ctxt,
+            queue_rules=await self.get_queue_rules(),
+            ref=self.main_branch_name,
         )
         await q.load()
         return q

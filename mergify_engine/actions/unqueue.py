@@ -1,3 +1,4 @@
+import dataclasses
 import typing
 
 from mergify_engine import actions
@@ -7,16 +8,21 @@ from mergify_engine import context
 from mergify_engine import signals
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
+from mergify_engine.rules.config import mergify as mergify_conf
 from mergify_engine.rules.config import pull_request_rules as prr_config
+from mergify_engine.rules.config import queue_rules as qr_config
 
 
 class UnqueueExecutorConfig(typing.TypedDict):
     pass
 
 
+@dataclasses.dataclass
 class UnqueueExecutor(
     actions.ActionExecutor["UnqueueCommand", "UnqueueExecutorConfig"]
 ):
+    queue_rules: qr_config.QueueRules
+
     @classmethod
     async def create(
         cls,
@@ -28,10 +34,11 @@ class UnqueueExecutor(
             ctxt,
             rule,
             UnqueueExecutorConfig(),
+            action.queue_rules,
         )
 
     async def run(self) -> check_api.Result:
-        train = await merge_train.Train.from_context(self.ctxt)
+        train = await merge_train.Train.from_context(self.ctxt, self.queue_rules)
         _, embarked_pull = train.find_embarked_pull(self.ctxt.pull["number"])
         if embarked_pull is None:
             return check_api.Result(
@@ -83,3 +90,8 @@ class UnqueueCommand(actions.Action):
     default_restrictions: typing.ClassVar[list[typing.Any]] = [
         "sender-permission>=write"
     ]
+
+    queue_rules: qr_config.QueueRules = dataclasses.field(init=False, repr=False)
+
+    def validate_config(self, mergify_config: "mergify_conf.MergifyConfig") -> None:
+        self.queue_rules = mergify_config["queue_rules"]

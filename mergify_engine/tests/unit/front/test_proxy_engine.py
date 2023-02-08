@@ -28,6 +28,17 @@ async def test_engine_proxy(
             "avatar_url": "",
         }
     )
+    respx_mock.get(
+        "https://api.github.com/repos/user-login/engine/contents/.mergify.yml?ref=main"
+    ).respond(
+        200,
+        json=github_types.GitHubContentFile(  # type: ignore[arg-type]
+            type="file",
+            content="",
+            sha=github_types.SHAType("azertyuiop"),
+            path=github_types.GitHubFilePath("whatever"),
+        ),
+    )
     respx_mock.get("https://api.github.com/users/Mergifyio/installation").respond(
         200, json={"account": api_user}
     )

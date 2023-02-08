@@ -280,7 +280,7 @@ async def repository_queue_pull_request(
         security.get_queue_rules
     ),
 ) -> EnhancedPullRequestQueued:
-    async for train in merge_train.Train.iter_trains(repository_ctxt):
+    async for train in merge_train.Train.iter_trains(repository_ctxt, queue_rules):
         try:
             queue_rule = queue_rules[queue_name]
         except KeyError:
@@ -294,7 +294,6 @@ async def repository_queue_pull_request(
             mergeability_check = MergeabilityCheck.from_train_car(car)
             estimated_time_of_merge = await estimated_time_to_merge.get_estimation(
                 train,
-                queue_rules,
                 embarked_pull,
                 position,
                 car,

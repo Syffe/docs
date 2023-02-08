@@ -52,8 +52,9 @@ def test_queue_freeze_deserialize(
 
     untyped_serialized_payload = json.loads(json.dumps(serialized_payload))
     repository = mock.Mock()
+    queue_rule = mock.Mock(name=name)
     queue_freeze = freeze.QueueFreeze.deserialize(
-        repository, untyped_serialized_payload
+        repository, queue_rule, untyped_serialized_payload
     )
 
     assert queue_freeze.name == name
@@ -108,8 +109,10 @@ def test_queue_freeze_serialized(
     }
 
     repository = mock.Mock()
+    queue_rule = mock.Mock(name=name)
     queue_freeze = freeze.QueueFreeze(
         repository=repository,
+        queue_rule=queue_rule,
         name=name,
         reason=reason,
         application_name=application_name,

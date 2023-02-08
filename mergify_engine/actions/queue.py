@@ -338,7 +338,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     ),
                 )
 
-        q = await merge_train.Train.from_context(self.ctxt)
+        q = await merge_train.Train.from_context(self.ctxt, self.queue_rules)
         car = q.get_car(self.ctxt)
 
         result = await self.pre_queue_checks(
@@ -355,7 +355,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         if car is not None:
             await car.check_mergeability(
-                self.queue_rules,
                 "original_pull_request",
                 original_pull_request_rule=self.rule,
                 original_pull_request_number=self.ctxt.pull["number"],
@@ -417,15 +416,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 "name": self.config["name"],
             }
         )
-        await q.add_pull(
-            self.queue_rules,
-            self.ctxt,
-            pull_queue_config,
-            self.rule.get_signal_trigger(),
-        )
+        await q.add_pull(self.ctxt, pull_queue_config, self.rule.get_signal_trigger())
 
         try:
-            qf = await q.get_current_queue_freeze(self.queue_rules, self.config["name"])
+            qf = await q.get_current_queue_freeze(self.config["name"])
             if await self._should_be_merged(self.ctxt, q, qf):
                 result = await self._merge(q, qf, car)
             else:
@@ -485,7 +479,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         await q.remove_pull(self.ctxt, self.rule.get_signal_trigger(), unqueue_reason)
 
     async def cancel(self) -> check_api.Result:
-        q = await merge_train.Train.from_context(self.ctxt)
+        q = await merge_train.Train.from_context(self.ctxt, self.queue_rules)
         car = q.get_car(self.ctxt)
 
         result = await self.pre_queue_checks(
@@ -502,7 +496,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         if car is not None:
             await car.check_mergeability(
-                self.queue_rules,
                 "original_pull_request",
                 original_pull_request_rule=self.rule,
                 original_pull_request_number=self.ctxt.pull["number"],
@@ -527,7 +520,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             await self._unqueue_pull_request(q, car, unqueue_reason, result)
             return result
 
-        qf = await q.get_current_queue_freeze(self.queue_rules, self.config["name"])
+        qf = await q.get_current_queue_freeze(self.config["name"])
         result = await self.get_pending_queue_status(
             self.ctxt, self.rule, q, self.queue_rule, qf
         )

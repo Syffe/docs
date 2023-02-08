@@ -218,6 +218,9 @@ async def report(
             print(f"configuration is invalid {str(e)}")
 
     if pull_number is None:
+        if mergify_config is None:
+            return client
+
         async for branch in typing.cast(
             abc.AsyncGenerator[github_types.GitHubBranch, None],
             client.items(
@@ -226,7 +229,9 @@ async def report(
                 page_limit=100,
             ),
         ):
-            q = merge_train.Train(repository, branch["name"])
+            q = merge_train.Train(
+                repository, mergify_config["queue_rules"], branch["name"]
+            )
             await q.load()
             await report_queue("TRAIN", q)
 
@@ -247,8 +252,10 @@ async def report(
 
     # FIXME queues could also be printed if no pull number given
     # TODO(sileht): display train if any
-    q = await merge_train.Train.from_context(ctxt)
-    print(f"* TRAIN: {', '.join([f'#{p}' for p in await q.get_pulls()])}")
+    if mergify_config is not None:
+        q = await merge_train.Train.from_context(ctxt, mergify_config["queue_rules"])
+        print(f"* TRAIN: {', '.join([f'#{p}' for p in await q.get_pulls()])}")
+
     print("* PULL REQUEST:")
     pr_data = {
         attr: await getattr(ctxt.pull_request, attr)

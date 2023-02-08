@@ -33,8 +33,7 @@ class TestUnQueueCommand(base.FunctionalTestBase):
 
         p1 = await self.create_pr()
         await self.run_engine()
-        ctxt = context.Context(self.repository_ctxt, p1)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         base_sha = await q.get_base_sha()
         await self.assert_merge_queue_contents(
             q,

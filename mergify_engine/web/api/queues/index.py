@@ -316,7 +316,7 @@ async def repository_queues(
         )
     )
 
-    async for train in merge_train.Train.iter_trains(repository_ctxt):
+    async for train in merge_train.Train.iter_trains(repository_ctxt, queue_rules):
         queue = Queue(Branch(train.ref))
         previous_eta = None
         for position, (embarked_pull, car) in enumerate(train._iter_embarked_pulls()):
@@ -333,7 +333,6 @@ async def repository_queues(
                 estimated_time_of_merge
             ) = await estimated_time_to_merge.get_estimation_from_stats(
                 train,
-                queue_rules,
                 embarked_pull,
                 position,
                 checks_duration_stats,

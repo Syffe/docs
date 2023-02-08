@@ -11,14 +11,23 @@ import msgpack
 from mergify_engine import context
 from mergify_engine import date
 from mergify_engine.queue import merge_train
+from mergify_engine.rules.config import queue_rules as qr_config
 
 
 LOG = daiquiri.getLogger(__name__)
 
 
 @dataclasses.dataclass
+class QueueFreezeWithNoQueueRule(Exception):
+    name: str
+
+
+@dataclasses.dataclass
 class QueueFreeze:
     repository: context.Repository = dataclasses.field(
+        compare=False,
+    )
+    queue_rule: qr_config.QueueRule = dataclasses.field(
         compare=False,
     )
 
@@ -64,10 +73,12 @@ class QueueFreeze:
     def deserialize(
         cls,
         repository: context.Repository,
+        queue_rule: qr_config.QueueRule,
         data: "QueueFreeze.Serialized",
     ) -> "QueueFreeze":
         return cls(
             repository=repository,
+            queue_rule=queue_rule,
             name=data["name"],
             reason=data["reason"],
             application_name=data["application_name"],
@@ -78,13 +89,17 @@ class QueueFreeze:
 
     @classmethod
     def unpack(
-        cls, repository: context.Repository, queue_freeze_raw: typing.Any
+        cls,
+        repository: context.Repository,
+        queue_rule: qr_config.QueueRule,
+        queue_freeze_raw: typing.Any,
     ) -> "QueueFreeze":
         # NOTE(Syffe): timestamp parameter means that timestamp variables will be converted to
         # datetime (value 3=to_datetime()). Other values can be used: 1=to_float(), 2=to_unix_ns()
         qf = msgpack.unpackb(queue_freeze_raw, timestamp=3)
         return cls(
             repository=repository,
+            queue_rule=queue_rule,
             name=qf["name"],
             reason=qf["reason"],
             application_name=qf["application_name"],
@@ -95,35 +110,50 @@ class QueueFreeze:
 
     @classmethod
     async def get_all(
-        cls, repository: context.Repository
+        cls, repository: context.Repository, queue_rules: qr_config.QueueRules
     ) -> abc.AsyncGenerator["QueueFreeze", None]:
         async for key, qf_raw in repository.installation.redis.queue.hscan_iter(
             name=cls._get_redis_hash(repository),
             match=cls._get_redis_key_match(repository),
         ):
-            yield cls.unpack(repository=repository, queue_freeze_raw=qf_raw)
+            name = cls._get_name_from_redis_key(key)
+            try:
+                queue_rule = queue_rules[name]
+            except KeyError:
+                # TODO(sileht): cleanup Redis in this case
+                continue
+
+            yield cls.unpack(
+                repository=repository,
+                queue_rule=queue_rule,
+                queue_freeze_raw=qf_raw,
+            )
 
     @classmethod
     async def get_all_non_cascading(
-        cls, repository: context.Repository
+        cls, repository: context.Repository, queue_rules: qr_config.QueueRules
     ) -> abc.AsyncGenerator["QueueFreeze", None]:
-        async for qf in cls.get_all(repository):
+        async for qf in cls.get_all(repository, queue_rules):
             if not qf.cascading:
                 yield qf
 
     @classmethod
     async def get(
-        cls, repository: context.Repository, queue_name: str
+        cls,
+        repository: context.Repository,
+        queue_rule: qr_config.QueueRule,
     ) -> "QueueFreeze" | None:
         qf_raw = await repository.installation.redis.queue.hget(
             cls._get_redis_hash(repository),
-            cls._get_redis_key(repository, queue_name),
+            cls._get_redis_key(repository, queue_rule.name),
         )
 
         if qf_raw is None:
             return None
 
-        return cls.unpack(repository=repository, queue_freeze_raw=qf_raw)
+        return cls.unpack(
+            repository=repository, queue_rule=queue_rule, queue_freeze_raw=qf_raw
+        )
 
     @classmethod
     def _get_redis_hash(cls, repository: context.Repository) -> str:
@@ -134,10 +164,14 @@ class QueueFreeze:
         return f"{repository.repo['id']}~{queue_name}"
 
     @classmethod
+    def _get_name_from_redis_key(cls, key: bytes) -> qr_config.QueueName:
+        return qr_config.QueueName(key.split(b"~")[1].decode())
+
+    @classmethod
     def _get_redis_key_match(cls, repository: context.Repository) -> str:
         return f"{repository.repo['id']}~*"
 
-    async def save(self) -> None:
+    async def save(self, queue_rules: qr_config.QueueRules) -> None:
         await self.repository.installation.redis.queue.hset(
             self._get_redis_hash(self.repository),
             self._get_redis_key(self.repository, self.name),
@@ -156,9 +190,9 @@ class QueueFreeze:
             ),
         )
 
-        await self._refresh_pulls(source="internal/queue_freeze_create")
+        await self._refresh_pulls(queue_rules, source="internal/queue_freeze_create")
 
-    async def delete(self) -> bool:
+    async def delete(self, queue_rules: qr_config.QueueRules) -> bool:
         result = bool(
             await self.repository.installation.redis.queue.hdel(
                 self._get_redis_hash(self.repository),
@@ -166,12 +200,14 @@ class QueueFreeze:
             )
         )
 
-        await self._refresh_pulls(source="internal/queue_freeze_delete")
+        await self._refresh_pulls(queue_rules, source="internal/queue_freeze_delete")
 
         return result
 
-    async def _refresh_pulls(self, source: str) -> None:
-        async for train in merge_train.Train.iter_trains(self.repository):
+    async def _refresh_pulls(
+        self, queue_rules: qr_config.QueueRules, source: str
+    ) -> None:
+        async for train in merge_train.Train.iter_trains(self.repository, queue_rules):
             await train.refresh_pulls(source=source)
 
     def get_freeze_message(self) -> str:

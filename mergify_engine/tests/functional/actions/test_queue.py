@@ -371,8 +371,7 @@ class TestQueueAction(base.FunctionalTestBase):
         p = await self.create_pr()
         await self.run_engine()
 
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert len(await q.get_pulls()) == 1
 
         check = first(
@@ -419,7 +418,7 @@ class TestQueueAction(base.FunctionalTestBase):
         assert check is not None
         assert check["conclusion"] == "cancelled"
         assert check["output"]["title"] == "The pull request rule doesn't match anymore"
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert len(await q.get_pulls()) == 0
 
     async def test_queue_inplace_train_resetted(self) -> None:
@@ -460,8 +459,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
         await self.wait_for("pull_request", {"action": "synchronize"})
 
-        ctxt = context.Context(self.repository_ctxt, p2)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         # base sha should have been updated
         assert p2["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
@@ -535,8 +533,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
 
-        ctxt = context.Context(self.repository_ctxt, p1)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         await self.assert_merge_queue_contents(
             q,
             p1["base"]["sha"],
@@ -560,8 +557,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.wait_for("pull_request", {"action": "synchronize"})
         p2 = await self.get_pull(p2["number"])
 
-        ctxt = context.Context(self.repository_ctxt, p2)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         # base sha should have been updated
         assert p2["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
@@ -587,8 +583,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.wait_for("pull_request", {"action": "synchronize"})
         p3 = await self.get_pull(p3["number"])
 
-        ctxt = context.Context(self.repository_ctxt, p3)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         # base sha should have been updated again
         assert p3["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
@@ -653,8 +648,7 @@ class TestQueueAction(base.FunctionalTestBase):
         assert tmp_pull_2["number"] not in [p1["number"], p2["number"]]
         assert tmp_pull_2["pull_request"]["user"]["login"] == "mergify-test4"
 
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert p["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
@@ -808,8 +802,7 @@ class TestQueueAction(base.FunctionalTestBase):
         pulls = await self.get_pulls()
         assert len(pulls) == 2
 
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert p["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
@@ -903,7 +896,6 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
 
         p2_merged = await self.wait_for_pull_request("closed", p2["number"])
-        ctxt = context.Context(self.repository_ctxt, p2_merged["pull_request"], [])
         check = first(
             await context.Context(
                 self.repository_ctxt, p2_merged["pull_request"]
@@ -970,7 +962,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.wait_for("pull_request", {"action": "closed"})
 
         ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         await self.assert_merge_queue_contents(q, None, [])
         check = first(
             await ctxt.pull_engine_check_runs,
@@ -1025,7 +1017,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         tmp_pull_1 = await self.wait_for_pull_request("opened")
 
-        q = merge_train.Train(self.repository_ctxt, self.main_branch_name)
+        q = await self.get_train()
         base_sha = await q.get_base_sha()
         await self.assert_merge_queue_contents(
             q,
@@ -1069,7 +1061,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "event": "action.queue.leave",
                     "metadata": {
                         "branch": self.main_branch_name,
-                        "merged": True,
+                        "merged": False,
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
@@ -1190,8 +1182,7 @@ class TestQueueAction(base.FunctionalTestBase):
         tmp_pull_1 = await self.wait_for_pull_request("opened")
         tmp_pull_2 = await self.wait_for_pull_request("opened")
 
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert p_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
@@ -1405,8 +1396,7 @@ class TestQueueAction(base.FunctionalTestBase):
         pulls = await self.get_pulls()
         assert len(pulls) == 2
 
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert p["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
@@ -1518,8 +1508,7 @@ class TestQueueAction(base.FunctionalTestBase):
         assert tmp_pull["pull_request"]["changed_files"] == 1
 
         # No parent PR, but created instead updated
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert p["merge_commit_sha"]
         await self.assert_merge_queue_contents(
             q,
@@ -1598,8 +1587,7 @@ class TestQueueAction(base.FunctionalTestBase):
         p1 = await self.get_pull(p1["number"])
 
         # Ensure p2 is still in queue
-        ctxt = context.Context(self.repository_ctxt, p2)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert p1["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
@@ -1901,8 +1889,7 @@ class TestQueueAction(base.FunctionalTestBase):
         tmp_pull_1 = await self.wait_for_pull_request("opened")
         await self.run_full_engine()
 
-        ctxt = context.Context(self.repository_ctxt, p_closed["pull_request"])
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert p_closed["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
@@ -1924,8 +1911,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
 
         tmp_pull_2 = await self.wait_for_pull_request("opened")
-        ctxt = context.Context(self.repository_ctxt, p_closed["pull_request"])
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         await self.assert_merge_queue_contents(
             q,
             p_closed["pull_request"]["merge_commit_sha"],
@@ -2077,8 +2063,7 @@ class TestQueueAction(base.FunctionalTestBase):
         tmp_pull_1 = await self.wait_for_pull_request("opened")
         await self.run_engine()
 
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert p_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
@@ -2101,8 +2086,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         await self.run_engine()
         tmp_pull_2 = await self.wait_for_pull_request("opened")
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         await self.assert_merge_queue_contents(
             q,
             p_merged["pull_request"]["merge_commit_sha"],
@@ -2223,7 +2207,7 @@ class TestQueueAction(base.FunctionalTestBase):
         ctxt = await self.repository_ctxt.get_pull_request_context(
             batch_draft_pr["number"], batch_draft_pr["pull_request"]
         )
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         base_sha = await q.get_base_sha()
         await self.assert_merge_queue_contents(
             q,
@@ -2320,8 +2304,7 @@ class TestQueueAction(base.FunctionalTestBase):
         tmp_pull_1 = await self.wait_for_pull_request("opened")
         tmp_pull_2 = await self.wait_for_pull_request("opened")
 
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert p_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
@@ -2447,8 +2430,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         tmp_pull = await self.wait_for_pull_request("opened")
 
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert p_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
@@ -2616,8 +2598,7 @@ class TestQueueAction(base.FunctionalTestBase):
         tmp_pull_1 = await self.wait_for_pull_request("opened")
         tmp_pull_2 = await self.wait_for_pull_request("opened")
 
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert p_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
@@ -2768,8 +2749,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         tmp_pull = await self.wait_for_pull_request("opened")
 
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert p_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
@@ -3003,8 +2983,7 @@ class TestQueueAction(base.FunctionalTestBase):
         draft_pr = await self.wait_for_pull_request("opened")
         assert draft_pr["number"] not in [p1["number"], p2["number"]]
 
-        ctxt = context.Context(self.repository_ctxt, p1)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         await self.assert_merge_queue_contents(
             q,
             p1["base"]["sha"],
@@ -3103,8 +3082,7 @@ class TestQueueAction(base.FunctionalTestBase):
         draft_pr = await self.wait_for_pull_request("opened")
         assert draft_pr["number"] not in [p1["number"], p2["number"]]
 
-        ctxt = context.Context(self.repository_ctxt, p1)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         await self.assert_merge_queue_contents(
             q,
             p1["base"]["sha"],
@@ -3178,8 +3156,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
 
-        ctxt = context.Context(self.repository_ctxt, p1)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         await self.assert_merge_queue_contents(
             q,
             p1["base"]["sha"],
@@ -3297,8 +3274,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
         await self.wait_for("pull_request", {"action": "closed"})
 
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         await self.assert_merge_queue_contents(q, None, [])
 
         pulls = await self.get_pulls()
@@ -3331,8 +3307,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
         await self.wait_for("pull_request", {"action": "closed"})
 
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         await self.assert_merge_queue_contents(q, None, [])
 
         pulls = await self.get_pulls()
@@ -3390,8 +3365,7 @@ class TestQueueAction(base.FunctionalTestBase):
         assert tmp_mq_p1["number"] not in [p1["number"], p2["number"]]
         assert tmp_mq_p2["number"] not in [p1["number"], p2["number"]]
 
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert p["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
@@ -3482,8 +3456,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p2["number"], "queue")
         await self.run_engine()
 
-        ctxt = context.Context(self.repository_ctxt, p1)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         pulls_in_queue = await q.get_pulls()
         assert pulls_in_queue == [p1["number"], p2["number"]]
 
@@ -3704,8 +3677,7 @@ class TestQueueAction(base.FunctionalTestBase):
         assert len(pulls) == 5
         assert tmp_mq_p2["number"] not in [p1["number"], p2["number"], p3["number"]]
 
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert p["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
@@ -3771,7 +3743,7 @@ class TestQueueAction(base.FunctionalTestBase):
             tmp_mq_p2["number"],
         ]
 
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert p1["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
@@ -3842,8 +3814,7 @@ class TestQueueAction(base.FunctionalTestBase):
         tmp_mq_p2 = pulls[0]
         assert tmp_mq_p2["number"] not in [p1["number"], p2["number"]]
 
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert p["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
@@ -4014,8 +3985,7 @@ class TestQueueAction(base.FunctionalTestBase):
         assert tmp_mq_p1["number"] not in [p1["number"], p2["number"]]
         assert tmp_mq_p2["number"] not in [p1["number"], p2["number"]]
 
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert p["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
@@ -4117,8 +4087,7 @@ class TestQueueAction(base.FunctionalTestBase):
         assert tmp_mq_pr["number"] not in [p1["number"], p2["number"], p3["number"]]
 
         # Check only p1 and p3 are in the train
-        ctxt_p1 = context.Context(self.repository_ctxt, p1)
-        q = await merge_train.Train.from_context(ctxt_p1)
+        q = await self.get_train()
         await self.assert_merge_queue_contents(
             q,
             p1["base"]["sha"],
@@ -4208,8 +4177,7 @@ class TestQueueAction(base.FunctionalTestBase):
         assert tmp_mq_pr["number"] not in [p1["number"], p2["number"], p3["number"]]
 
         # Check only p1 and p3 are in the train
-        ctxt_p1 = context.Context(self.repository_ctxt, p1)
-        q = await merge_train.Train.from_context(ctxt_p1)
+        q = await self.get_train()
         await self.assert_merge_queue_contents(
             q,
             p1["base"]["sha"],
@@ -4303,8 +4271,7 @@ class TestQueueAction(base.FunctionalTestBase):
         assert tmp_mq_p3["number"] not in [p1["number"], p2["number"], p3["number"]]
         assert tmp_mq_p2["number"] not in [p1["number"], p2["number"], p3["number"]]
 
-        ctxt_p_merged = context.Context(self.repository_ctxt, p1)
-        q = await merge_train.Train.from_context(ctxt_p_merged)
+        q = await self.get_train()
         await self.assert_merge_queue_contents(
             q,
             p1["base"]["sha"],
@@ -4477,8 +4444,7 @@ class TestQueueAction(base.FunctionalTestBase):
         assert tmp_mq_p2["number"] not in [p1["number"], p2["number"]]
         assert tmp_mq_p1["number"] not in [p1["number"], p2["number"]]
 
-        ctxt_p_merged = context.Context(self.repository_ctxt, p_merged["pull_request"])
-        q = await merge_train.Train.from_context(ctxt_p_merged)
+        q = await self.get_train()
         assert p_merged["pull_request"]["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
@@ -4618,8 +4584,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p2["number"], "low")
         await self.run_engine()
 
-        ctxt_p_merged = context.Context(self.repository_ctxt, p_merged)
-        q = await merge_train.Train.from_context(ctxt_p_merged)
+        q = await self.get_train()
 
         # my 3 PRs + 2 merge queue PR
         pulls = await self.get_pulls()
@@ -4664,8 +4629,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
         p_new_config = await self.get_pull(p_new_config["number"])
 
-        ctxt_p_new_config = context.Context(self.repository_ctxt, p_new_config)
-        q = await merge_train.Train.from_context(ctxt_p_new_config)
+        q = await self.get_train()
 
         # my 3 PRs + 2 merge queue PR
         pulls = await self.get_pulls()
@@ -4792,8 +4756,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p2["number"], "queue")
         await self.run_engine()
 
-        ctxt_p_merged = context.Context(self.repository_ctxt, p_merged)
-        q = await merge_train.Train.from_context(ctxt_p_merged)
+        q = await self.get_train()
 
         # my 3 PRs + 2 merge queue PR
         pulls = await self.get_pulls()
@@ -5038,8 +5001,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
 
-        ctxt_p1 = context.Context(self.repository_ctxt, p1)
-        q = await merge_train.Train.from_context(ctxt_p1)
+        q = await self.get_train()
         pulls_in_queue = await q.get_pulls()
         assert pulls_in_queue == []
 
@@ -5126,8 +5088,7 @@ class TestQueueAction(base.FunctionalTestBase):
         assert tmp_mq_p1["number"] not in [p1["number"], p2["number"]]
         assert tmp_mq_p2["number"] not in [p1["number"], p2["number"]]
 
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert p["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
@@ -5217,8 +5178,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.wait_for("pull_request", {"action": "synchronize"})
         await self.run_engine()
 
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert p["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
@@ -5305,8 +5265,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.wait_for("pull_request", {"action": "synchronize"})
         await self.run_engine()
 
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert p["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
@@ -5812,8 +5771,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.wait_for("pull_request", {"action": "synchronize"})
         await self.run_engine()
 
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert p["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
@@ -5889,8 +5847,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.wait_for("pull_request", {"action": "synchronize"})
         await self.run_engine()
 
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert p["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
@@ -6053,8 +6010,7 @@ pull_request_rules:
         await self.wait_for("pull_request", {"action": "synchronize"})
         await self.run_engine()
 
-        ctxt = context.Context(self.repository_ctxt, p_other)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert p_other["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
@@ -6198,7 +6154,12 @@ pull_request_rules:
         await self.run_engine()
         await self.wait_for("pull_request", {"action": "opened"})
 
-        queues = [q async for q in merge_train.Train.iter_trains(self.repository_ctxt)]
+        queues = [
+            q
+            async for q in merge_train.Train.iter_trains(
+                self.repository_ctxt, await self.get_queue_rules()
+            )
+        ]
         assert len(queues) == 1
         assert len(await queues[0].get_pulls()) == 2
 
@@ -6210,7 +6171,12 @@ pull_request_rules:
         await self.wait_for("pull_request", {"action": "closed"})
         await self.run_engine()
 
-        queues = [q async for q in merge_train.Train.iter_trains(self.repository_ctxt)]
+        queues = [
+            q
+            async for q in merge_train.Train.iter_trains(
+                self.repository_ctxt, await self.get_queue_rules()
+            )
+        ]
         assert len(queues) == 0
 
     async def test_queue_with_two_pull_request_rules_that_match_then_unmatch(
@@ -6319,7 +6285,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
         p2 = await self.create_pr()
 
         ctxt = context.Context(self.repository_ctxt, p1)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         base_sha = await q.get_base_sha()
 
         queue_config = qr_config.QueueConfig(
@@ -6368,7 +6334,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
         )
         q._cars.append(car)
 
-        queue_rules = qr_config.QueueRules(
+        q.queue_rules = qr_config.QueueRules(
             [
                 qr_config.QueueRule(
                     name=qr_config.QueueName("foo"),
@@ -6378,7 +6344,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
                 )
             ]
         )
-        await car.start_checking_with_draft(queue_rules, None)
+        await car.start_checking_with_draft(None)
         assert car.queue_pull_request_number is not None
         pulls = await self.get_pulls()
         assert len(pulls) == 3
@@ -6463,8 +6429,7 @@ pull_requests:
         p1 = await self.create_pr()
         p2 = await self.create_pr()
 
-        ctxt = context.Context(self.repository_ctxt, p1)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         base_sha = await q.get_base_sha()
 
         queue_config = qr_config.QueueConfig(
@@ -6513,7 +6478,7 @@ pull_requests:
         )
         q._cars.append(car)
 
-        queue_rules = qr_config.QueueRules(
+        q.queue_rules = qr_config.QueueRules(
             [
                 qr_config.QueueRule(
                     name=qr_config.QueueName("foo"),
@@ -6523,7 +6488,7 @@ pull_requests:
                 )
             ]
         )
-        await car.start_checking_with_draft(queue_rules, None)
+        await car.start_checking_with_draft(None)
         assert car.queue_pull_request_number is not None
         pulls = await self.get_pulls()
         assert len(pulls) == 3
@@ -6533,7 +6498,7 @@ pull_requests:
         assert car.queue_branch_name is not None
 
         # Ensure pull request is closed and re-created
-        await car.start_checking_with_draft(queue_rules, None)
+        await car.start_checking_with_draft(None)
         assert car.queue_pull_request_number is not None
         await self.wait_for("pull_request", {"action": "closed"})
         await self.wait_for("pull_request", {"action": "opened"})
@@ -6567,8 +6532,7 @@ pull_requests:
 
         p = await self.create_pr()
 
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         base_sha = await q.get_base_sha()
 
         queue_config = qr_config.QueueConfig(
@@ -6612,7 +6576,7 @@ pull_requests:
         )
         q._cars.append(car)
 
-        queue_rules = qr_config.QueueRules(
+        q.queue_rules = qr_config.QueueRules(
             [
                 qr_config.QueueRule(
                     name=qr_config.QueueName("foo"),
@@ -6622,7 +6586,7 @@ pull_requests:
                 )
             ]
         )
-        await car.start_checking_with_draft(queue_rules, None)
+        await car.start_checking_with_draft(None)
         assert car.queue_pull_request_number is not None
         pulls = await self.get_pulls()
         assert len(pulls) == 2
@@ -6647,8 +6611,7 @@ pull_requests:
         await self.merge_pull(p["number"])
         await self.wait_for("pull_request", {"action": "closed"})
 
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         base_sha = await q.get_base_sha()
 
         queue_config = qr_config.QueueConfig(
@@ -6688,7 +6651,7 @@ pull_requests:
             base_sha,
         )
 
-        queue_rules = qr_config.QueueRules(
+        q.queue_rules = qr_config.QueueRules(
             [
                 qr_config.QueueRule(
                     name=qr_config.QueueName("foo"),
@@ -6700,7 +6663,7 @@ pull_requests:
         )
 
         with pytest.raises(merge_train.TrainCarPullRequestCreationFailure) as exc_info:
-            await car.start_checking_with_draft(queue_rules, None)
+            await car.start_checking_with_draft(None)
         assert exc_info.value.car == car
         assert car.queue_pull_request_number is None
 
@@ -6770,8 +6733,7 @@ pull_requests:
             tmp_pull_1 = await self.wait_for_pull_request("opened")
             await self.run_full_engine()
 
-            ctxt = context.Context(self.repository_ctxt, p_closed["pull_request"])
-            q = await merge_train.Train.from_context(ctxt)
+            q = await self.get_train()
             assert p_closed["pull_request"]["merge_commit_sha"] is not None
             await self.assert_merge_queue_contents(
                 q,

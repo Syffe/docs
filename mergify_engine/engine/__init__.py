@@ -453,7 +453,9 @@ async def run(
         await queue_runner.handle(mergify_config["queue_rules"], ctxt)
         return None
     else:
-        return await actions_runner.handle(mergify_config["pull_request_rules"], ctxt)
+        return await actions_runner.handle(
+            mergify_config["pull_request_rules"], mergify_config["queue_rules"], ctxt
+        )
 
 
 @exceptions.log_and_ignore_exception("fail to create initial summary")

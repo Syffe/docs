@@ -1,4 +1,3 @@
-from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import yaml
 from mergify_engine.queue import merge_train
@@ -42,8 +41,7 @@ class TestQueueCommand(base.FunctionalTestBase):
         pulls = await self.get_pulls()
         assert len(pulls) == 4
 
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert p["merge_commit_sha"]
         await self.assert_merge_queue_contents(
             q,
@@ -131,8 +129,7 @@ class TestQueueCommand(base.FunctionalTestBase):
         await self.wait_for("pull_request", {"action": "synchronize"})
         p1 = await self.get_pull(p1["number"])
 
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         assert p["merge_commit_sha"]
         await self.assert_merge_queue_contents(
             q,
@@ -202,8 +199,7 @@ class TestQueueCommand(base.FunctionalTestBase):
         pulls = await self.get_pulls()
         assert len(pulls) == 2
 
-        ctxt = context.Context(self.repository_ctxt, p)
-        q = await merge_train.Train.from_context(ctxt)
+        q = await self.get_train()
         await self.assert_merge_queue_contents(
             q,
             p["base"]["sha"],

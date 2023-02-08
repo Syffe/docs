@@ -12,7 +12,6 @@ from mergify_engine.web.api import statistics as statistics_api
 
 async def get_estimation_from_stats(
     train: merge_train.Train,
-    queue_rules: qr_config.QueueRules,
     embarked_pull: merge_train.EmbarkedPull,
     embarked_pull_position: int,
     checks_duration_stats: dict[
@@ -22,7 +21,7 @@ async def get_estimation_from_stats(
     previous_eta: datetime.datetime | None = None,
 ) -> datetime.datetime | None:
     queue_name = embarked_pull.config["name"]
-    if await train.is_queue_frozen(queue_rules, queue_name):
+    if await train.is_queue_frozen(queue_name):
         return None
 
     queue_checks_duration_stats = checks_duration_stats.get(
@@ -32,7 +31,7 @@ async def get_estimation_from_stats(
     return await compute_estimation(
         embarked_pull,
         embarked_pull_position,
-        queue_rules[queue_name].config,
+        train.queue_rules[queue_name].config,
         queue_checks_duration_stats["median"],
         car,
         previous_eta,
@@ -41,14 +40,13 @@ async def get_estimation_from_stats(
 
 async def get_estimation(
     train: merge_train.Train,
-    queue_rules: qr_config.QueueRules,
     embarked_pull: merge_train.EmbarkedPull,
     embarked_pull_position: int,
     car: merge_train.TrainCar | None,
     previous_eta: datetime.datetime | None = None,
 ) -> datetime.datetime | None:
     queue_name = embarked_pull.config["name"]
-    if await train.is_queue_frozen(queue_rules, queue_name):
+    if await train.is_queue_frozen(queue_name):
         return None
 
     queue_checks_duration_stats = (
@@ -61,7 +59,7 @@ async def get_estimation(
     return await compute_estimation(
         embarked_pull,
         embarked_pull_position,
-        queue_rules[queue_name].config,
+        train.queue_rules[queue_name].config,
         queue_checks_duration_stats["median"],
         car,
         previous_eta,
