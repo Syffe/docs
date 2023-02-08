@@ -237,10 +237,10 @@ async def run_commands_tasks(
     )
 
     pendings = LastUpdatedOrderedDict()
-    async for attempt in tenacity.AsyncRetrying(  # type: ignore[attr-defined]
-        stop=tenacity.stop_after_attempt(2),  # type: ignore[attr-defined]
-        wait=tenacity.wait_exponential(0.2),  # type: ignore[attr-defined]
-        retry=tenacity.retry_if_exception_type(http.HTTPNotFound),  # type: ignore[attr-defined]
+    async for attempt in tenacity.AsyncRetrying(
+        stop=tenacity.stop_after_attempt(2),
+        wait=tenacity.wait_exponential(0.2),
+        retry=tenacity.retry_if_exception_type(http.HTTPNotFound),
         reraise=True,
     ):
         with attempt:

@@ -193,13 +193,13 @@ def after_log(retry_state: tenacity.RetryCallState) -> None:
 
 connectivity_issue_retry = tenacity.retry(
     reraise=True,
-    retry=tenacity.retry_if_exception_type(  # type: ignore[attr-defined]
+    retry=tenacity.retry_if_exception_type(
         (RequestError, HTTPServerSideError, HTTPTooManyRequests)
     ),
-    wait=tenacity.wait_combine(  # type: ignore[attr-defined]
-        wait_retry_after_header(), tenacity.wait_exponential(multiplier=0.2)  # type: ignore[attr-defined]
+    wait=tenacity.wait_combine(
+        wait_retry_after_header(), tenacity.wait_exponential(multiplier=0.2)
     ),
-    stop=tenacity.stop_after_attempt(5),  # type: ignore[attr-defined]
+    stop=tenacity.stop_after_attempt(5),
     before=before_log,
     after=after_log,
 )

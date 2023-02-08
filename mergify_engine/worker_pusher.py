@@ -142,9 +142,9 @@ def extract_slim_event(event_type: str, data: typing.Any) -> typing.Any:
 
 
 @tenacity.retry(
-    wait=tenacity.wait_exponential(multiplier=0.2),  # type: ignore[attr-defined]
-    stop=tenacity.stop_after_attempt(5),  # type: ignore[attr-defined]
-    retry=tenacity.retry_if_exception_type(redis_exceptions.ConnectionError),  # type: ignore[attr-defined]
+    wait=tenacity.wait_exponential(multiplier=0.2),
+    stop=tenacity.stop_after_attempt(5),
+    retry=tenacity.retry_if_exception_type(redis_exceptions.ConnectionError),
     reraise=True,
 )
 async def push(

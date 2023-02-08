@@ -33,7 +33,7 @@ python-multipart = "*"
 pyyaml = "*"
 redis = ">=4.3.5"
 sentry-sdk = {extras = ["fastapi", "starlette"], version = ">=1.9.0,<1.16.0"}
-tenacity = "*"
+tenacity = ">=8.2.1"
 uvicorn = {extras = ["standard"], version = "*"}
 voluptuous = "*"
 setproctitle = {version = "<1.3.0"}

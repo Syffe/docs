@@ -80,9 +80,9 @@ async def pre_rebase_check(ctxt: context.Context) -> None:
 
 
 @tenacity.retry(
-    wait=tenacity.wait_exponential(multiplier=0.2),  # type: ignore[attr-defined]
-    stop=tenacity.stop_after_attempt(5),  # type: ignore[attr-defined]
-    retry=tenacity.retry_if_exception_type(BranchUpdateNeedRetry),  # type: ignore[attr-defined]
+    wait=tenacity.wait_exponential(multiplier=0.2),
+    stop=tenacity.stop_after_attempt(5),
+    retry=tenacity.retry_if_exception_type(BranchUpdateNeedRetry),
     reraise=True,
 )
 async def _do_rebase(
