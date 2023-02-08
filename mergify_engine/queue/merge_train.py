@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import base64
-import collections
 from collections import abc
 import dataclasses
 import datetime
@@ -2451,14 +2450,6 @@ You don't need to do anything. Mergify will close this pull request automaticall
         )
 
 
-def get_queues_priorities(queue_rules: "qr_config.QueueRules") -> dict[str, int]:
-    # NOTE(Syffe): The priorities contained here are not yet multiplied by any coefficient nor offset
-    return {
-        str(queue_rule.name): queue_rule.config["priority"]
-        for queue_rule in queue_rules
-    }
-
-
 class QueueFreezeWithPriority(typing.TypedDict):
     queue_freeze: freeze.QueueFreeze
     priority: int
@@ -2474,6 +2465,9 @@ class Train:
     _cars: list[TrainCar] = dataclasses.field(default_factory=list)
     _waiting_pulls: list[EmbarkedPull] = dataclasses.field(default_factory=list)
     _current_base_sha: github_types.SHAType | None = dataclasses.field(default=None)
+    _queues_with_freeze: dict[
+        qr_config.QueueName, freeze.QueueFreeze | None
+    ] | None = None
 
     class Serialized(typing.TypedDict):
         cars: list[TrainCar.Serialized]
@@ -2578,6 +2572,8 @@ class Train:
             self._cars = []
             self._waiting_pulls = []
             self._current_base_sha = None
+
+        self._queues_with_freeze = None
 
     @property
     def log_queue_extras(self) -> dict[str, typing.Any]:
@@ -2802,72 +2798,46 @@ class Train:
             yield EmbarkedPullWithCar(embarked_pull, None)
 
     async def is_queue_frozen(self, queue_name: qr_config.QueueName) -> bool:
-        return queue_name in await self.get_frozen_queues_names()
+        return queue_name in await self.get_frozen_queue_names()
+
+    async def get_queue_freezes_by_names(
+        self,
+    ) -> dict[qr_config.QueueName, freeze.QueueFreeze | None]:
+        # NOTE(sileht): this does not return the queue freeze associated with the queue, but
+        # queue freeze that block the queue (think cascading effect)
+        if self._queues_with_freeze is None:
+            queue_freezes = {
+                queue_freeze.name: queue_freeze
+                async for queue_freeze in freeze.QueueFreeze.get_all(
+                    self.repository, self.queue_rules
+                )
+            }
+
+            self._queues_with_freeze = {}
+
+            # NOTE(sileht): queue_rules are always ordered by priority
+            ongoing_freeze = None
+            for queue_rule in self.queue_rules:
+                # If the queue is not freeze we pick the nearest queue
+                new_freeze = queue_freezes.get(queue_rule.name, ongoing_freeze)
+                self._queues_with_freeze[queue_rule.name] = new_freeze
+                if new_freeze is not None and new_freeze.cascading:
+                    ongoing_freeze = new_freeze
+
+        return self._queues_with_freeze
 
     async def get_current_queue_freeze(
         self, current_queue_name: qr_config.QueueName
     ) -> freeze.QueueFreeze | None:
-        queue_priorities = get_queues_priorities(self.queue_rules)
-        qf_by_name = {
-            queue_freeze.name: QueueFreezeWithPriority(
-                queue_freeze=queue_freeze, priority=queue_priorities[queue_freeze.name]
-            )
-            async for queue_freeze in freeze.QueueFreeze.get_all(
-                self.repository, self.queue_rules
-            )
-            if queue_freeze.name in queue_priorities
-        }
-        current_qf = qf_by_name.get(current_queue_name)
-        if current_qf is None:
-            # NOTE(Syffe): we sort queue freeze dict according to queue priority
-            # in order to always hit the nearest (not the highest) impacting queue freeze when running
-            # the for loop under.
-            # Also, it ensures the same way of ordering each time the function is called
-            # so there is no randomness that could break our reporting or processing.
-            sorted_qf_by_priority = collections.OrderedDict(
-                sorted(qf_by_name.items(), key=lambda item: item[1]["priority"])
-            )
-            for queue_name, queue_freeze in sorted_qf_by_priority.items():
-                if (
-                    # NOTE(sileht): queue may have vanish, but freeze still there
-                    queue_freeze["queue_freeze"].cascading
-                    and queue_name in queue_priorities
-                    and queue_freeze["priority"] > queue_priorities[current_queue_name]
-                ):
-                    current_qf = queue_freeze
-                    break
-        return current_qf["queue_freeze"] if current_qf is not None else None
+        queues_with_freeze = await self.get_queue_freezes_by_names()
+        return queues_with_freeze.get(current_queue_name)
 
-    async def get_frozen_queues_names(self) -> set[str]:
+    async def get_frozen_queue_names(self) -> set[qr_config.QueueName]:
         # NOTE(Syffe): When checking for where to position a newly added PR in queues,
         # all unfrozen queues with lower priorities than the highest frozen queue have
         # to be considered as non-usable to queue the newly added PR.
-
-        frozen_queues = {
-            queue_freeze.name
-            async for queue_freeze in freeze.QueueFreeze.get_all(
-                self.repository, self.queue_rules
-            )
-        }
-        queues_priorities = {
-            str(queue_rule.name): queue_rule.config["priority"]
-            for queue_rule in self.queue_rules
-        }
-
-        if len(frozen_queues) > 0:
-            highest_frozen_priority = 0
-            for queue_name, priority in queues_priorities.items():
-                if queue_name in frozen_queues and priority > highest_frozen_priority:
-                    highest_frozen_priority = priority
-
-            for queue_name, priority in queues_priorities.items():
-                if (
-                    queue_name not in frozen_queues
-                    and priority < highest_frozen_priority
-                ):
-                    frozen_queues.add(queue_name)
-
-        return frozen_queues
+        queues_with_freeze = await self.get_queue_freezes_by_names()
+        return {name for name, qf in queues_with_freeze.items() if qf is not None}
 
     async def add_pull(
         self,
@@ -2898,7 +2868,7 @@ class Train:
 
         best_position = -1
         need_to_be_readded = False
-        frozen_queues = await self.get_frozen_queues_names()
+        frozen_queues = await self.get_frozen_queue_names()
 
         for position, (embarked_pull, car) in enumerate(self._iter_embarked_pulls()):
             embarked_pull_queue_rule = self.queue_rules[embarked_pull.config["name"]]
