@@ -6,6 +6,7 @@ import starsessions
 
 from mergify_engine import config
 from mergify_engine.middlewares import logging
+from mergify_engine.middlewares import sudo
 from mergify_engine.web import utils
 from mergify_engine.web.front import admin
 from mergify_engine.web.front import auth
@@ -27,6 +28,7 @@ def create_app(debug: bool = False) -> fastapi.FastAPI:
     app = fastapi.FastAPI(openapi_url=None, redoc_url=None, docs_url=None, debug=debug)
 
     user_provider = sessions.ImiaUserProvider()
+    app.add_middleware(sudo.SudoMiddleware)
     app.add_middleware(
         imia.ImpersonationMiddleware,
         user_provider=user_provider,
