@@ -77,6 +77,14 @@ class CommandPayload(typing.TypedDict):
     conclusion: str
 
 
+@dataclasses.dataclass
+class CommandState:
+    command: str
+    conclusion: check_api.Conclusion
+    github_comment_source: github_types.GitHubComment | None
+    github_comment_result: github_types.GitHubComment | None
+
+
 def prepare_message(command: Command | CommandInvalid, result: check_api.Result) -> str:
     # NOTE: Do not serialize this with Mergify JSON encoder:
     # we don't want to allow loading/unloading weird value/classes
@@ -159,18 +167,74 @@ async def on_each_event(event: github_types.GitHubEventIssueComment) -> None:
             )
 
 
-class LastUpdatedOrderedDict(collections.OrderedDict[str, github_types.GitHubComment]):
-    def __setitem__(self, key: str, value: github_types.GitHubComment) -> None:
+class LastUpdatedOrderedDict(collections.OrderedDict[str, CommandState]):
+    def __setitem__(self, key: str, value: CommandState) -> None:
         super().__setitem__(key, value)
         self.move_to_end(key)
 
 
-async def run_pending_commands_tasks(
+class NoCommandStateFound(Exception):
+    pass
+
+
+def extract_command_state(
+    comment: github_types.GitHubComment, mergify_bot: github_types.GitHubAccount
+) -> CommandState:
+    match = COMMAND_MATCHER.search(comment["body"])
+
+    # Looking for potential first command run
+    if match:
+        return CommandState(
+            f"{match[1]} {match[2].strip()}".strip(),
+            conclusion=check_api.Conclusion.PENDING,
+            github_comment_source=comment,
+            github_comment_result=None,
+        )
+
+    # Looking for Mergify command result comment
+    if comment["user"]["id"] != mergify_bot["id"]:
+        raise NoCommandStateFound()
+
+    payload = typing.cast(
+        CommandPayload,
+        utils.get_hidden_payload_from_comment_body(comment["body"]),
+    )
+
+    if not payload:
+        raise NoCommandStateFound()
+
+    if (
+        not isinstance(payload, dict)
+        or "command" not in payload
+        or "conclusion" not in payload
+    ):
+        LOG.warning("got command with invalid payload", payload=payload)
+        raise NoCommandStateFound()
+
+    try:
+        conclusion = check_api.Conclusion(payload["conclusion"])
+    except ValueError:
+        LOG.error("Unable to load conclusions %s", payload["conclusion"])
+        raise NoCommandStateFound()
+
+    return CommandState(
+        payload["command"],
+        conclusion=conclusion,
+        github_comment_source=None,
+        github_comment_result=comment,
+    )
+
+
+async def run_commands_tasks(
     ctxt: context.Context, mergify_config: mergify_conf.MergifyConfig
 ) -> None:
     if ctxt.is_merge_queue_pr():
         # We don't allow any command yet
         return
+
+    mergify_bot = await github.GitHubAppInfo.get_bot(
+        ctxt.repository.installation.redis.cache_bytes
+    )
 
     pendings = LastUpdatedOrderedDict()
     async for attempt in tenacity.AsyncRetrying(  # type: ignore[attr-defined]
@@ -190,60 +254,79 @@ async def run_pending_commands_tasks(
             ]
 
     for comment in comments:
-        mergify_bot = await github.GitHubAppInfo.get_bot(
-            ctxt.repository.installation.redis.cache_bytes
-        )
-        if comment["user"]["id"] != mergify_bot["id"]:
-            continue
-
-        payload = typing.cast(
-            CommandPayload, utils.get_hidden_payload_from_comment_body(comment["body"])
-        )
-
-        if not payload:
-            continue
-
-        if (
-            not isinstance(payload, dict)
-            or "command" not in payload
-            or "conclusion" not in payload
-        ):
-            LOG.warning("got command with invalid payload", payload=payload)
-            continue
-
-        command_str = payload["command"]
-        conclusion_str = payload["conclusion"]
-
         try:
-            conclusion = check_api.Conclusion(conclusion_str)
-        except ValueError:
-            LOG.error("Unable to load conclusions %s", conclusion_str)
+            state = extract_command_state(comment, mergify_bot)
+        except NoCommandStateFound:
             continue
 
-        if conclusion == check_api.Conclusion.PENDING:
-            pendings[command_str] = comment
-        elif command_str in pendings:
-            del pendings[command_str]
+        if state.conclusion == check_api.Conclusion.PENDING:
+            pendings[state.command] = state
+        elif state.command in pendings:
+            del pendings[state.command]
 
-    for pending, comment in pendings.items():
+    for pending, state in pendings.items():
         try:
             command = load_command(mergify_config, f"@Mergifyio {pending}")
-        except (CommandInvalid, NotACommand):
-            ctxt.log.error(
-                "Unexpected command string, it was valid in the past but not anymore",
-                exc_info=True,
-            )
-            continue
-        await run_command(ctxt, mergify_config, command, comment_result=comment)
+        except CommandInvalid as e:
+            if state.github_comment_result is None:
+                result = check_api.Result(check_api.Conclusion.FAILURE, e.message, "")
+                await post_result(ctxt, e, state, result)
+            else:
+                ctxt.log.error(
+                    "Unexpected command string, it was valid in the past but not anymore",
+                    command_state=state,
+                    exc_info=True,
+                )
+
+        except NotACommand:
+            if state.github_comment_result is not None:
+                ctxt.log.error(
+                    "Unexpected command string, it was valid in the past but not anymore",
+                    command_state=state,
+                    exc_info=True,
+                )
+        else:
+            result = await run_command(ctxt, mergify_config, command, state)
+            await post_result(ctxt, command, state, result)
+
+
+async def post_result(
+    ctxt: context.Context,
+    command: Command | CommandInvalid,
+    state: CommandState,
+    result: check_api.Result,
+) -> None:
+    message = prepare_message(command, result)
+    ctxt.log.info(
+        "command %s: %s",
+        command.name,
+        result.conclusion,
+        command_full=str(command),
+        result=result,
+        user_login=state.github_comment_source["user"]["login"]
+        if state.github_comment_source
+        else "<unavailable>",
+        comment_out=message,
+        comment_result=state.github_comment_result,
+    )
+
+    if state.github_comment_result is None:
+        await ctxt.post_comment(message)
+    elif message != state.github_comment_result["body"]:
+        await ctxt.edit_comment(state.github_comment_result["id"], message)
 
 
 async def run_command(
     ctxt: context.Context,
     mergify_config: mergify_conf.MergifyConfig,
     command: Command,
-    comment_result: github_types.GitHubComment | None = None,
-) -> None:
+    state: CommandState,
+) -> check_api.Result:
     statsd.increment("engine.commands.count", tags=[f"name:{command.name}"])
+    try:
+        await check_init_command_run(ctxt, mergify_config, command, state)
+    except CommandNotAllowed as e:
+        return check_api.Result(check_api.Conclusion.FAILURE, e.title, e.message)
 
     conds = conditions_mod.PullRequestRuleConditions(
         await command.action.get_conditions_requirements(ctxt)
@@ -264,50 +347,44 @@ async def run_command(
                 ),
             )
         except prr_config.InvalidPullRequestRule as e:
-            result = check_api.Result(
+            return check_api.Result(
                 check_api.Conclusion.ACTION_REQUIRED,
                 e.reason,
                 e.details,
             )
         else:
-            result = await command.action.executor.run()
+            return await command.action.executor.run()
     elif actions.ActionFlag.ALLOW_AS_PENDING_COMMAND in command.action.flags:
-        result = check_api.Result(
+        return check_api.Result(
             check_api.Conclusion.PENDING,
             "Waiting for conditions to match",
             conds.get_summary(),
         )
     else:
-        result = check_api.Result(
+        return check_api.Result(
             check_api.Conclusion.NEUTRAL,
             "Nothing to do",
             conds.get_summary(),
         )
-    ctxt.log.info(
-        "command %s: %s",
-        command.name,
-        result.conclusion,
-        command_full=str(command),
-        result=result,
-    )
-    message = prepare_message(command, result)
-
-    ctxt.log.info(
-        "command ran",
-        command=str(command),
-        result=result,
-        comment_result=comment_result,
-    )
-
-    if comment_result is None:
-        await ctxt.post_comment(message)
-    elif message != comment_result["body"]:
-        await ctxt.edit_comment(comment_result["id"], message)
 
 
 @dataclasses.dataclass
 class CommandNotAllowed(Exception):
+    title: str
+    message: str
+
+
+@dataclasses.dataclass
+class CommandNotAllowedDueToRestriction(CommandNotAllowed):
+    title: str = dataclasses.field(
+        init=False,
+        default="Command disallowed due to [command restrictions](https://docs.mergify.com/configuration/#commands-restrictions) in the Mergify configuration.",
+    )
+    message: str = dataclasses.field(init=False)
     conditions: conditions_mod.PullRequestRuleConditions
+
+    def __post_init__(self) -> None:
+        self.message = self.conditions.get_summary()
 
 
 async def check_command_restrictions(
@@ -328,73 +405,37 @@ async def check_command_restrictions(
         await restriction_conditions([command_pull_request])
 
         if not restriction_conditions.match:
-            raise CommandNotAllowed(restriction_conditions)
+            raise CommandNotAllowedDueToRestriction(restriction_conditions)
 
 
-async def handle(
+async def check_init_command_run(
     ctxt: context.Context,
     mergify_config: mergify_conf.MergifyConfig,
-    comment_command: str,
-    user: github_types.GitHubAccount,
+    command: Command,
+    state: CommandState,
 ) -> None:
-    def log(comment_out: str) -> None:
-        ctxt.log.info(
-            "handle command",
-            user_login=user["login"],
-            comment_in=comment_command,
-            comment_out=comment_out,
-        )
+    # Not a initial command run
+    if state.github_comment_result is not None:
+        return
 
-    try:
-        command = load_command(mergify_config, comment_command)
-    except CommandInvalid as e:
-        message = prepare_message(
-            e,
-            check_api.Result(check_api.Conclusion.FAILURE, e.message, ""),
+    if state.github_comment_source is None:
+        raise RuntimeError(
+            "state.github_comment_result is None, but state.github_comment_source is not set."
         )
-        log(message)
-        await ctxt.post_comment(message)
-        return
-    except NotACommand:
-        return
 
     if (
         ctxt.configuration_changed
         and actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
         not in command.action.flags
     ):
-        message = prepare_message(
-            command,
-            check_api.Result(
-                check_api.Conclusion.FAILURE, CONFIGURATION_CHANGE_MESSAGE, ""
-            ),
-        )
-        log(message)
-        await ctxt.post_comment(message)
-        return
+        raise CommandNotAllowed(CONFIGURATION_CHANGE_MESSAGE, "")
 
     if command.name != "refresh" and ctxt.is_merge_queue_pr():
-        message = prepare_message(
-            command,
-            check_api.Result(
-                check_api.Conclusion.FAILURE, MERGE_QUEUE_COMMAND_MESSAGE, ""
-            ),
-        )
-        log(message)
-        await ctxt.post_comment(message)
-        return
+        raise CommandNotAllowed(MERGE_QUEUE_COMMAND_MESSAGE, "")
 
-    try:
-        await check_command_restrictions(ctxt, mergify_config, command, user)
-    except CommandNotAllowed as e:
-        result = check_api.Result(
-            check_api.Conclusion.FAILURE,
-            "Command disallowed due to [command restrictions](https://docs.mergify.com/configuration/#commands-restrictions) in the Mergify configuration.",
-            e.conditions.get_summary(),
-        )
-        message = prepare_message(command, result)
-        log(message)
-        await ctxt.post_comment(message)
-        return
-
-    await run_command(ctxt, mergify_config, command)
+    await check_command_restrictions(
+        ctxt,
+        mergify_config,
+        command,
+        state.github_comment_source["user"],
+    )

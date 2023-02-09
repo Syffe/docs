@@ -71,7 +71,9 @@ def fake_repository(
         }
     )
 
-    fake_client = mock.Mock()
+    fake_client = github.AsyncGithubInstallationClient(
+        auth=github.GithubTokenAuth("fake")
+    )
     installation = context.Installation(
         installation_json, fake_subscription, fake_client, redis_links
     )

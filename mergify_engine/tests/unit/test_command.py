@@ -1,6 +1,8 @@
+import json
 from unittest import mock
 
 import pytest
+import respx
 
 from mergify_engine import config
 from mergify_engine import constants
@@ -217,59 +219,99 @@ async def test_run_command_with_user(
     comment: str,
     result: str | None,
     context_getter: conftest.ContextGetterFixture,
+    respx_mock: respx.MockRouter,
     fake_mergify_bot: github_types.GitHubAccount,
 ) -> None:
     if user_id is None:
         user_id = fake_mergify_bot["id"]
     user = create_fake_user(user_id)
-    client = create_fake_installation_client(user, permission)
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
-    ctxt.repository.installation.client = client
-    ctxt._get_consolidated_data = mock.AsyncMock()  # type: ignore[assignment]
 
-    await commands_runner.handle(
-        ctxt=ctxt,
-        mergify_config=await get_empty_config(),
-        comment_command="unrelated",
-        user=user,
+    respx_mock.get(f"{ctxt.base_url}/collaborators/{user['login']}/permission").respond(
+        200,
+        json={
+            "permission": permission,
+            "user": user,
+        },
     )
-    assert len(client.post.call_args_list) == 0
 
-    await commands_runner.handle(
+    respx_mock.get(f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments").respond(
+        200,
+        json=[
+            github_types.GitHubComment(
+                {
+                    "id": github_types.GitHubCommentIdType(1),
+                    "url": "",
+                    "created_at": github_types.ISODateTimeType("2003-02-15T00:00:00Z"),
+                    "updated_at": github_types.ISODateTimeType("2003-02-15T00:00:00Z"),
+                    "user": user,
+                    "body": "unrelated",
+                }
+            ),
+            github_types.GitHubComment(
+                {
+                    "id": github_types.GitHubCommentIdType(1),
+                    "url": "",
+                    "created_at": github_types.ISODateTimeType("2003-02-15T00:00:00Z"),
+                    "updated_at": github_types.ISODateTimeType("2003-02-15T00:00:00Z"),
+                    "user": user,
+                    "body": comment,
+                }
+            ),
+        ],
+    )
+    post_comment_router = respx_mock.post(
+        f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments"
+    ).respond(200, json={})
+
+    await commands_runner.run_commands_tasks(
         ctxt=ctxt,
         mergify_config=await get_empty_config(),
-        comment_command=comment,
-        user=user,
     )
 
     if result is None:
-        assert len(client.post.call_args_list) == 0
+        assert post_comment_router.call_count == 0
     else:
-        assert len(client.post.call_args_list) == 1
-        assert result in client.post.call_args_list[0][1]["json"]["body"]
+        assert post_comment_router.call_count == 1
+        assert result in json.loads(post_comment_router.calls[0][0].content)["body"]
 
 
 async def test_run_command_with_wrong_arg(
     context_getter: conftest.ContextGetterFixture,
+    respx_mock: respx.MockRouter,
+    fake_mergify_bot: None,
 ) -> None:
     user = create_fake_user()
-    client = mock.Mock()
-    client.post = mock.AsyncMock()
-    client.post.return_value = mock.Mock()
 
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
-    ctxt.repository.installation.client = client
-
-    await commands_runner.handle(
-        ctxt=ctxt,
-        mergify_config=await get_empty_config(),
-        comment_command="@mergifyio squash invalid-arg",
-        user=user,
+    respx_mock.get(f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments").respond(
+        200,
+        json=[
+            github_types.GitHubComment(
+                {
+                    "id": github_types.GitHubCommentIdType(1),
+                    "url": "",
+                    "created_at": github_types.ISODateTimeType("2003-02-15T00:00:00Z"),
+                    "updated_at": github_types.ISODateTimeType("2003-02-15T00:00:00Z"),
+                    "user": user,
+                    "body": "@mergifyio squash invalid-arg",
+                }
+            )
+        ],
     )
 
-    assert len(client.post.call_args_list) == 1
+    post_comment_router = respx_mock.post(
+        f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments"
+    ).respond(200, json={})
+
+    await commands_runner.run_commands_tasks(
+        ctxt=ctxt,
+        mergify_config=await get_empty_config(),
+    )
+
+    assert post_comment_router.call_count == 1
     assert (
-        client.post.call_args_list[0][1]["json"]["body"]
+        json.loads(post_comment_router.calls[0][0].content)["body"]
         == """> squash invalid-arg
 
 #### ❌ Sorry but I didn't understand the arguments of the command `squash`. Please consult [the commands documentation](https://docs.mergify.com/commands/) 📚.
@@ -302,14 +344,29 @@ DO NOT EDIT
         ("sender-permission>write", "admin", True),
         ("sender-permission>=write", "write", True),
         ("sender-permission>=write", "admin", True),
+        # Default
+        (None, "read", False),
     ],
 )
 async def test_commands_restrictions_sender_permission(
-    command_restriction: str,
+    command_restriction: str | None,
     user_permission: str,
     is_command_allowed: bool,
     context_getter: conftest.ContextGetterFixture,
+    respx_mock: respx.MockRouter,
+    fake_mergify_bot: None,
 ) -> None:
+    config = (
+        ""
+        if command_restriction is None
+        else f"""
+commands_restrictions:
+  squash:
+    conditions:
+    - {command_restriction}
+"""
+    )
+
     mergify_config = await mergify_conf.get_mergify_config_from_file(
         mock.MagicMock(),
         context.MergifyConfigFile(
@@ -317,65 +374,50 @@ async def test_commands_restrictions_sender_permission(
             content="whatever",
             sha=github_types.SHAType("azertyuiop"),
             path=github_types.GitHubFilePath("whatever"),
-            decoded_content=f"""
-commands_restrictions:
-  squash:
-    conditions:
-    - {command_restriction}
-""",
+            decoded_content=config,
         ),
     )
 
     user = create_fake_user()
-    client = create_fake_installation_client(user, user_permission)
-    ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
-    ctxt.repository.installation.client = client
 
-    await commands_runner.handle(
-        ctxt=ctxt,
-        mergify_config=mergify_config,
-        comment_command="@mergify squash",
-        user=user,
+    ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
+    ctxt.repository._caches.mergify_config.set(mergify_config)
+
+    respx_mock.get(f"{ctxt.base_url}/collaborators/{user['login']}/permission").respond(
+        200,
+        json={
+            "permission": user_permission,
+            "user": user,
+        },
     )
+    respx_mock.get(f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments").respond(
+        200,
+        json=[
+            github_types.GitHubComment(
+                {
+                    "id": github_types.GitHubCommentIdType(1),
+                    "url": "",
+                    "created_at": github_types.ISODateTimeType("2003-02-15T00:00:00Z"),
+                    "updated_at": github_types.ISODateTimeType("2003-02-15T00:00:00Z"),
+                    "user": user,
+                    "body": "@mergifyio squash",
+                }
+            )
+        ],
+    )
+    post_comment_router = respx_mock.post(
+        f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments"
+    ).respond(200, json={})
+
+    await commands_runner.run_commands_tasks(ctxt=ctxt, mergify_config=mergify_config)
 
     if is_command_allowed:
         expected_result_str = "Pull request is already one-commit long"
     else:
         expected_result_str = "Command disallowed due to [command restrictions]"
 
-    client.post.assert_called_once()
-    assert expected_result_str in client.post.call_args_list[0][1]["json"]["body"]
-
-
-async def test_default_commands_restrictions(
-    context_getter: conftest.ContextGetterFixture,
-) -> None:
-    mergify_config_file = context.MergifyConfigFile(
-        type="file",
-        content="whatever",
-        sha=github_types.SHAType("azertyuiop"),
-        path=github_types.GitHubFilePath("whatever"),
-        decoded_content="",
+    assert post_comment_router.call_count == 1
+    assert (
+        expected_result_str
+        in json.loads(post_comment_router.calls[0][0].content)["body"]
     )
-
-    mergify_config = await mergify_conf.get_mergify_config_from_file(
-        mock.MagicMock(), mergify_config_file
-    )
-
-    user = create_fake_user()
-    client = create_fake_installation_client(user, "read")
-    ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
-    ctxt.repository.installation.client = client
-    ctxt._get_consolidated_data = mock.AsyncMock()  # type: ignore[assignment]
-
-    await commands_runner.handle(
-        ctxt=ctxt,
-        mergify_config=mergify_config,
-        comment_command="@mergify squash",
-        user=user,
-    )
-
-    client.post.assert_called_once()
-
-    expected_result_str = "Command disallowed due to [command restrictions]"
-    assert expected_result_str in client.post.call_args_list[0][1]["json"]["body"]

@@ -417,21 +417,7 @@ async def run(
 
     if not ctxt.pull["locked"]:
         ctxt.log.debug("engine run pending commands")
-        await commands_runner.run_pending_commands_tasks(ctxt, mergify_config)
-
-        if issue_comment_sources:
-            ctxt.log.info(
-                "command runner",
-                sources=issue_comment_sources,
-                configuration_changed=ctxt.configuration_changed,
-            )
-            for ic_source in issue_comment_sources:
-                await commands_runner.handle(
-                    ctxt,
-                    mergify_config,
-                    ic_source["data"]["comment"]["body"],
-                    ic_source["data"]["comment"]["user"],
-                )
+        await commands_runner.run_commands_tasks(ctxt, mergify_config)
 
     await _ensure_summary_on_head_sha(ctxt)
 
