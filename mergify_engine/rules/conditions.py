@@ -77,7 +77,8 @@ class RuleConditionFilters:
     def get_attribute_name(self) -> str:
         tree = typing.cast(filter.TreeT, self.boolean.tree)
         tree = tree.get("-", tree)
-        name = list(tree.values())[0][0]
+        values = typing.cast(list[filter.TreeBinaryLeafT], list(tree.values()))
+        name = values[0][0]
         if name.startswith(filter.Filter.LENGTH_OPERATOR):
             return str(name[1:])
         return str(name)
@@ -87,7 +88,8 @@ class RuleConditionFilters:
         negate = "-" in tree
         tree = tree.get("-", tree)
         operator = list(tree.keys())[0]
-        name, value = list(tree.values())[0]
+        values = typing.cast(list[filter.TreeBinaryLeafT], list(tree.values()))
+        name, value = values[0]
         if name.startswith(filter.Filter.LENGTH_OPERATOR):
             new_name = f"{filter.Filter.LENGTH_OPERATOR}{new_name}"
 
@@ -191,15 +193,14 @@ class RuleCondition:
         tree = typing.cast(filter.TreeT, self.filters.boolean.tree)
         tree = tree.get("-", tree)
         _, tree = tree.get("@", ("", tree))  # type: ignore[misc]
-        value = list(tree.values())[0][1]
-        return value
+        values = typing.cast(list[filter.TreeBinaryLeafT], list(tree.values()))
+        return values[0][1]
 
     @property
     def operator(self) -> str:
         tree = typing.cast(filter.TreeT, self.filters.boolean.tree)
         tree = tree.get("-", tree)
         _, tree = tree.get("@", ("", tree))  # type: ignore[misc]
-        tree = typing.cast(filter.TreeT, tree)
         value = list(tree.keys())[0]
         return value
 

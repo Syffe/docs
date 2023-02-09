@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections import abc
 import dataclasses
 import datetime
@@ -70,8 +72,7 @@ TreeBinaryLeafT = tuple[str, typing.Any]
 TreeT = typing.TypedDict(
     "TreeT",
     {
-        # mypy does not support recursive definition yet
-        "-": "TreeT",  # type: ignore[misc]
+        "-": "TreeT",
         "=": TreeBinaryLeafT,
         "<": TreeBinaryLeafT,
         ">": TreeBinaryLeafT,
@@ -79,10 +80,10 @@ TreeT = typing.TypedDict(
         ">=": TreeBinaryLeafT,
         "!=": TreeBinaryLeafT,
         "~=": TreeBinaryLeafT,
-        "@": "TreeT | CompiledTreeT[GetAttrObject]",  # type: ignore[misc, type-arg]
-        "or": abc.Iterable["TreeT | CompiledTreeT[GetAttrObject]"],  # type: ignore[misc, type-arg]
-        "and": abc.Iterable["TreeT | CompiledTreeT[GetAttrObject]"],  # type: ignore[misc, type-arg]
-        "not": "TreeT | CompiledTreeT[GetAttrObject]",  # type: ignore[misc, type-arg]
+        "@": "TreeT",
+        "or": abc.Iterable["TreeT"],
+        "and": abc.Iterable["TreeT"],
+        "not": "TreeT",
     },
     total=False,
 )

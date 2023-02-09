@@ -641,9 +641,9 @@ class TrainCar:
             initial_embarked_pulls = [
                 EmbarkedPull(
                     train,
-                    data["user_pull_request_number"],  # type: ignore
-                    data["config"],  # type: ignore[typeddict-item]
-                    data["queued_at"],  # type: ignore[typeddict-item]
+                    data["user_pull_request_number"],
+                    data["config"],
+                    data["queued_at"],
                 )
             ]
             still_queued_embarked_pulls = initial_embarked_pulls.copy()
@@ -754,14 +754,14 @@ class TrainCar:
             legacy_queue_conditions_conclusion = check_api.Conclusion.PENDING
 
             if "checks_conclusion" in data:
-                legacy_queue_conditions_conclusion = data["checks_conclusion"]  # type: ignore[typeddict-item]
+                legacy_queue_conditions_conclusion = data["checks_conclusion"]
 
-            if "has_timed_out" in data and data["has_timed_out"]:  # type: ignore[typeddict-item]
+            if "has_timed_out" in data and data["has_timed_out"]:
                 outcome = TrainCarOutcome.CHECKS_TIMEOUT
                 outcome_message = CHECKS_TIMEOUT_MESSAGE
 
             if "ci_has_passed" in data:
-                if data["ci_has_passed"]:  # type: ignore[typeddict-item]
+                if data["ci_has_passed"]:
                     ci_state = CiState.SUCCESS
                 elif legacy_queue_conditions_conclusion == check_api.Conclusion.FAILURE:
                     ci_state = CiState.FAILED
@@ -777,7 +777,7 @@ class TrainCar:
                 outcome = TrainCarOutcome.MERGEABLE
 
             if "creation_date" in data:
-                creation_date = data["creation_date"]  # type: ignore[typeddict-item]
+                creation_date = data["creation_date"]
             else:
                 creation_date = date.utcnow()
 

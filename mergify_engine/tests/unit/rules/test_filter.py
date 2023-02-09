@@ -997,12 +997,12 @@ async def test_and() -> None:
     assert not await f(FakePR({"bar": 2, "foo": 1}))
     assert not await f(FakePR({"bar": 1, "foo": 2}))
     with pytest.raises(filter.ParseError):
-        filter.BinaryFilter({"or": {"foo": "whar"}})
+        filter.BinaryFilter({"or": {"foo": "whar"}})  # type: ignore[dict-item]
 
 
 async def test_not_tree() -> None:
-    f1 = {"=": ("foo", 1)}
-    f2 = {"=": ("bar", 1)}
+    f1 = filter.TreeT({"=": ("foo", 1)})
+    f2 = filter.TreeT({"=": ("bar", 1)})
 
     f = filter.BinaryFilter({"not": {"or": (f1, f2)}})
     assert not await f(FakePR({"foo": 1, "bar": 1}))
@@ -1018,8 +1018,8 @@ async def test_not_tree() -> None:
 
 
 async def test_chain() -> None:
-    f1 = {"=": ("bar", 1)}
-    f2 = {"=": ("foo", 1)}
+    f1 = filter.TreeT({"=": ("bar", 1)})
+    f2 = filter.TreeT({"=": ("foo", 1)})
     f = filter.BinaryFilter({"and": (f1, f2)})
     assert await f(FakePR({"bar": 1, "foo": 1}))
     assert not await f(FakePR({"bar": 2, "foo": 2}))

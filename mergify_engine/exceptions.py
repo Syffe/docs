@@ -127,11 +127,13 @@ def need_retry(
 
 
 P = typing.ParamSpec("P")
-decoratedT = abc.Callable[P, None]  # type: ignore[valid-type,misc]
+DecoratedT: typing.TypeAlias = abc.Callable[P, abc.Awaitable[None]]
 
 
-def log_and_ignore_exception(msg: str) -> abc.Callable[[decoratedT], decoratedT]:
-    def decorated(func: decoratedT) -> decoratedT:
+def log_and_ignore_exception(
+    msg: str,
+) -> abc.Callable[[DecoratedT[typing.Any]], DecoratedT[typing.Any]]:
+    def decorated(func: DecoratedT[typing.Any]) -> DecoratedT[typing.Any]:
         async def wrapped(*args: P.args, **kwargs: P.kwargs) -> None:
             try:
                 await func(*args, **kwargs)
