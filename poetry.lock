@@ -2172,18 +2172,6 @@ files = [
 ]
 
 [[package]]
-name = "parsy"
-version = "2.0"
-description = "easy-to-use parser combinators, for parsing in pure Python"
-category = "dev"
-optional = false
-python-versions = ">=3.6"
-files = [
-    {file = "parsy-2.0-py2.py3-none-any.whl", hash = "sha256:214a0b3f2cdaf671e73654e50193c3bdf23b0c93a6a192d3f95bc6c9f67a38f3"},
-    {file = "parsy-2.0.tar.gz", hash = "sha256:7fd36ce0ebb0b80d969d39975038172de95ba212d9f0e1e73d8d51bf284f4524"},
-]
-
-[[package]]
 name = "passlib"
 version = "1.7.4"
 description = "comprehensive password hashing framework supporting over 30 schemes"
@@ -2939,16 +2927,16 @@ jinja2 = ["ruamel.yaml.jinja2 (>=0.2)"]
 
 [[package]]
 name = "semgrep"
-version = "1.9.0"
+version = "1.10.0"
 description = "Lightweight static analysis for many languages. Find bug variants with patterns that look like source code."
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "semgrep-1.9.0-cp37.cp38.cp39.py37.py38.py39-none-any.whl", hash = "sha256:cf1fef19f3751fef8534093912152d3df299590283c953ad049cc331f44fcc50"},
-    {file = "semgrep-1.9.0-cp37.cp38.cp39.py37.py38.py39-none-macosx_10_14_x86_64.whl", hash = "sha256:6a8751905347d9cf0774f5fe782655c1c655309c2bb18cd433eb5957d60746c7"},
-    {file = "semgrep-1.9.0-cp37.cp38.cp39.py37.py38.py39-none-macosx_11_0_arm64.whl", hash = "sha256:d8419719fbbd52f716ffa6e41463bcf88364c05e2e2d52b0f587d35fca4c917c"},
-    {file = "semgrep-1.9.0.tar.gz", hash = "sha256:7435d1919ab30d5106b63b97dc8323fbc64595a2807bee1727ed2f5f74289616"},
+    {file = "semgrep-1.10.0-cp37.cp38.cp39.py37.py38.py39-none-any.whl", hash = "sha256:44cd2853091b5450df896880a24551e4959904e1747422ecee26fa4b9a66dd3f"},
+    {file = "semgrep-1.10.0-cp37.cp38.cp39.py37.py38.py39-none-macosx_10_14_x86_64.whl", hash = "sha256:f6cea4a8874409a3e391d44fc6a9e23f847be0f599225698ab8802488df63d26"},
+    {file = "semgrep-1.10.0-cp37.cp38.cp39.py37.py38.py39-none-macosx_11_0_arm64.whl", hash = "sha256:ebad64facb2a8e9ff30627f462436a4e52e203358ce7e5160ddf948fe5125dd4"},
+    {file = "semgrep-1.10.0.tar.gz", hash = "sha256:0f5161ebf76d58ad82ce1f81a2208e25c1410e0c0189c93dd3170c51ddf6fa73"},
 ]
 
 [package.dependencies]
@@ -2961,10 +2949,10 @@ defusedxml = ">=0.7.1,<0.8.0"
 glom = ">=22.1,<23.0"
 jsonschema = ">=4.6,<5.0"
 packaging = ">=21.0"
-parsy = ">=2.0,<3.0"
 peewee = ">=3.14,<4.0"
 python-lsp-jsonrpc = ">=1.0.0,<1.1.0"
 requests = ">=2.22,<3.0"
+rich = ">=12.6.0"
 "ruamel.yaml" = ">=0.16.0,<0.18"
 tomli = ">=2.0.1,<2.1.0"
 tqdm = ">=4.46,<5.0"
@@ -4197,4 +4185,4 @@ tokenize-rt = ">=2.1"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<4.0"
-content-hash = "111089523d3db07fbe4ada76b0901a0325a28444601048b5a521d0b5eec0ebd4"
+content-hash = "102b018131827b6b98d51ca64f40c588dbf38c03386ad591c16f608b1a8917fe"
