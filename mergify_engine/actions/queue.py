@@ -896,7 +896,8 @@ class QueueAction(actions.Action):
     def validator(self) -> dict[typing.Any, typing.Any]:
         validator = {
             voluptuous.Required("name", default="default"): str,
-            voluptuous.Required("method", default="merge"): voluptuous.Any(
+            voluptuous.Required("method", default=None): voluptuous.Any(
+                None,  # fallback to queue_rule
                 "rebase",
                 "merge",
                 "squash",
@@ -947,11 +948,6 @@ class QueueAction(actions.Action):
         return validator
 
     def validate_config(self, mergify_config: "mergify_conf.MergifyConfig") -> None:
-        if self.config["update_method"] is None:
-            self.config["update_method"] = (
-                "rebase" if self.config["method"] == "fast-forward" else "merge"
-            )
-
         self.queue_rules = mergify_config["queue_rules"]
         try:
             self.queue_rule = mergify_config["queue_rules"][self.config["name"]]
@@ -973,15 +969,18 @@ class QueueAction(actions.Action):
         ]
 
         for attr in queue_rule_config_attributes_none_default:
-            if self.queue_rule.config[attr] is not None:
+            if self.config[attr] is None:
                 self.config[attr] = self.queue_rule.config[attr]
 
-        # merge_method default value is `merge`,
-        # so we need to treat it in a different way
-        if self.queue_rule.config["merge_method"] != "merge":
-            self.config["method"] = self.config[
-                "merge_method"
-            ] = self.queue_rule.config["merge_method"]
+        # name in action and queue_rule are not the same so we need to treat it
+        # in a different way
+        if self.config["method"] is None:
+            self.config["method"] = self.queue_rule.config["merge_method"]
+
+        if self.config["update_method"] is None:
+            self.config["update_method"] = (
+                "rebase" if self.config["method"] == "fast-forward" else "merge"
+            )
 
     @staticmethod
     def command_to_config(command_arguments: str) -> dict[str, typing.Any]:

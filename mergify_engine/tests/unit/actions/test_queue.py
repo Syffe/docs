@@ -454,7 +454,6 @@ async def test_action_rules_in_queue_rules() -> None:
 
     assert action.config["commit_message_template"] == "test"
     assert action.config["method"] == "rebase"
-    assert action.config["merge_method"] == "rebase"
     assert action.config["merge_bot_account"] == "test"
     assert action.config["update_method"] == "rebase"
     assert action.config["update_bot_account"] == "test"

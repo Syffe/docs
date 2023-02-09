@@ -422,8 +422,7 @@ These are the options of the ``queue`` action:
    * - ``commit_message_template``
      - :ref:`data type template`
      -
-     - | |deprecated tag|
-       | Template to use as the commit message when using the ``merge`` or ``squash`` merge method.
+     - | Template to use as the commit message when using the ``merge`` or ``squash`` merge method.
        | Template can also be defined in the pull request body (see :ref:`commit message`).
        |
        | This option has been moved under the :ref:`queue rules` section of the configuration
@@ -432,26 +431,23 @@ These are the options of the ``queue`` action:
    * - ``merge_bot_account``
      - :ref:`data type template`
      -
-     - | |premium plan tag| |deprecated tag|
+     - | |premium plan tag|
        | Mergify can impersonate a GitHub user to merge pull request.
        | If no ``merge_bot_account`` is set, Mergify will merge the pull request
        | itself. The user account **must** have already been
        | logged in Mergify dashboard once and have **write** or **maintain** permission.
        |
-       | This option has been moved under the :ref:`queue rules` section of the configuration
-       | and will be removed from this section in the future.
+       | This option overrides the value defined in the :ref:`queue rules` section of the configuration.
 
    * - ``method``
      - string
-     - ``merge``
-     - | |deprecated tag|
-       | Merge method to use. Possible values are ``merge``, ``squash``,
+     - 
+     - | Merge method to use. Possible values are ``merge``, ``squash``,
        | ``rebase`` or ``fast-forward``.
        | ``fast-forward`` is not supported on queues with ``speculative_checks > 1``,
        | ``batch_size > 1``, or with ``allow_inplace_checks`` set to ``false``.
        |
-       | This option has been moved under the :ref:`queue rules` section of the configuration
-       | and will be removed from this section in the future.
+       | This option overrides the value defined in the :ref:`queue rules` section of the configuration.
 
    * - ``name``
      - string
@@ -486,7 +482,7 @@ These are the options of the ``queue`` action:
    * - ``update_bot_account``
      - :ref:`data type template`
      -
-     - | |premium plan tag| |deprecated tag|
+     - | |premium plan tag|
        | For certain actions, such as rebasing branches, Mergify has to
        | impersonate a GitHub user. You can specify the account to use with this
        | option. If no ``update_bot_account`` is set, Mergify picks randomly one of the
@@ -494,13 +490,12 @@ These are the options of the ``queue`` action:
        | logged in Mergify dashboard once.
        |
        |
-       | This option has been moved under the :ref:`queue rules` section of the configuration
-       | and will be removed from this section in the future.
+       | This option overrides the value defined in the :ref:`queue rules` section of the configuration.
 
    * - ``update_method``
      - string
+     -
      - ``merge`` for all merge methods except ``fast-forward`` where ``rebase`` is used
-     - | |deprecated tag|
        | Method to use to update the pull request with its base branch when the
        | speculative check is done in-place.
        | Possible values:
@@ -510,8 +505,7 @@ These are the options of the ``queue`` action:
        |
        | Note that the ``rebase`` method has some drawbacks, see :ref:`update method rebase`.
        |
-       | This option has been moved under the :ref:`queue rules` section of the configuration
-       | and will be removed from this section in the future.
+       | This option overrides the value defined in the :ref:`queue rules` section of the configuration.
 
 .. _queue rules:
 
