@@ -3,21 +3,14 @@ import typing
 from urllib import parse
 
 from sqlalchemy import orm
-import sqlalchemy.ext
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import config
 
 
-mapper_registry = orm.registry()
-
-
-class Base(metaclass=orm.decl_api.DeclarativeMeta):
-    __abstract__ = True
-
-    registry = mapper_registry
-    metadata = mapper_registry.metadata
-    __init__ = mapper_registry.constructor
+class Base(orm.DeclarativeBase):
+    __allow_unmapped__ = True
+    __mapper_args__ = {"eager_defaults": True}
 
 
 def get_async_database_url() -> str:
@@ -28,7 +21,8 @@ def get_async_database_url() -> str:
 
 
 AsyncSessionMaker = typing.NewType(
-    "AsyncSessionMaker", "orm.sessionmaker[sqlalchemy.ext.asyncio.AsyncSession]"
+    "AsyncSessionMaker",
+    "sqlalchemy.ext.asyncio.async_sessionmaker[sqlalchemy.ext.asyncio.AsyncSession]",
 )
 
 
@@ -56,7 +50,7 @@ def init_sqlalchemy() -> None:
         {
             "engine": async_engine,
             "sessionmaker": AsyncSessionMaker(
-                orm.sessionmaker(
+                sqlalchemy.ext.asyncio.async_sessionmaker(
                     async_engine,
                     expire_on_commit=False,
                     class_=sqlalchemy.ext.asyncio.AsyncSession,
