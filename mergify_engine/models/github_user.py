@@ -3,12 +3,10 @@ from __future__ import annotations
 import typing
 
 import sqlalchemy
-import sqlalchemy.dialects.postgresql
+from sqlalchemy import orm
 import sqlalchemy.event
 import sqlalchemy.ext.asyncio
-import sqlalchemy.orm.attributes
-import sqlalchemy.orm.exc
-import sqlalchemy.orm.session
+from sqlalchemy.orm import Mapped
 import sqlalchemy.sql.expression
 import sqlalchemy_utils
 from sqlalchemy_utils.types.encrypted import encrypted_type
@@ -19,14 +17,17 @@ from mergify_engine import models
 
 
 class OAuthTokenSecretString(str):
+    key: str
+
     def __new__(cls, value: str, key: str) -> OAuthTokenSecretString:
         obj = str.__new__(cls, value)
-        obj.key = key  # type: ignore[attr-defined]
+        obj.key = key
         return obj
 
 
 class OAuthTokenEncryptedType(sqlalchemy_utils.StringEncryptedType):  # type: ignore[misc]
     cache_ok = True
+    key: str
 
     def __init__(self) -> None:
         super().__init__(sqlalchemy.String(512), None, encrypted_type.AesGcmEngine)
@@ -59,17 +60,17 @@ class OAuthTokenEncryptedType(sqlalchemy_utils.StringEncryptedType):  # type: ig
 class GitHubUser(models.Base):
     __tablename__ = "github_user"
 
-    id: sqlalchemy.orm.Mapped[github_types.GitHubAccountIdType] = sqlalchemy.Column(
+    id: Mapped[github_types.GitHubAccountIdType] = orm.mapped_column(
         sqlalchemy.Integer, primary_key=True
     )
 
-    login: sqlalchemy.orm.Mapped[github_types.GitHubLogin] = sqlalchemy.Column(
+    login: Mapped[github_types.GitHubLogin] = orm.mapped_column(
         sqlalchemy.String(255), nullable=False
     )
 
-    oauth_access_token: sqlalchemy.orm.Mapped[
-        github_types.GitHubOAuthToken
-    ] = sqlalchemy.Column(OAuthTokenEncryptedType())
+    oauth_access_token: Mapped[github_types.GitHubOAuthToken] = orm.mapped_column(
+        OAuthTokenEncryptedType()
+    )
 
     def get_id(self) -> int:
         # NOTE(silet): for imia UserLike protocol

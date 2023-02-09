@@ -33,14 +33,13 @@ class AssociatedUsers(typing.TypedDict):
 
 
 async def _get_user(
-    session: sqlalchemy.ext.asyncio.AsyncSession, _filter: sqlalchemy.sql.ClauseElement
+    session: sqlalchemy.ext.asyncio.AsyncSession,
+    _filter: sqlalchemy.sql.ColumnElement[typing.Any],
 ) -> github_user.GitHubUser | None:
     result = await session.execute(
         sqlalchemy.select(github_user.GitHubUser).where(_filter)
     )
-    return typing.cast(
-        github_user.GitHubUser | None, result.unique().scalar_one_or_none()
-    )
+    return result.unique().scalar_one_or_none()
 
 
 async def _get_user_by_id(
