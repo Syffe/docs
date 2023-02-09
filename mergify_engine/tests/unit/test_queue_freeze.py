@@ -8,27 +8,21 @@ from mergify_engine.queue import freeze
 
 
 @pytest.mark.parametrize(
-    "name,reason,application_name,application_id,cascading",
+    "name,reason,cascading",
     (
         (
             "default",
             "test default freeze",
-            "application toto",
-            123,
             True,
         ),
         (
             "urgent",
             "test urgent freeze",
-            "application tata",
-            666,
             False,
         ),
         (
             "low",
             "test low freeze",
-            "application tutu",
-            777,
             True,
         ),
     ),
@@ -36,16 +30,12 @@ from mergify_engine.queue import freeze
 def test_queue_freeze_deserialize(
     name: str,
     reason: str,
-    application_name: str,
-    application_id: int,
     cascading: bool,
 ) -> None:
     freeze_date = datetime.datetime(2022, 1, 23, tzinfo=datetime.timezone.utc)
     serialized_payload = {
         "name": name,
         "reason": reason,
-        "application_name": application_name,
-        "application_id": application_id,
         "freeze_date": freeze_date,
         "cascading": cascading,
     }
@@ -59,34 +49,26 @@ def test_queue_freeze_deserialize(
 
     assert queue_freeze.name == name
     assert queue_freeze.reason == reason
-    assert queue_freeze.application_name == application_name
-    assert queue_freeze.application_id == application_id
     assert queue_freeze.freeze_date == freeze_date
     assert queue_freeze.cascading == cascading
 
 
 @pytest.mark.parametrize(
-    "name,reason,application_name,application_id,cascading",
+    "name,reason,cascading",
     (
         (
             "default",
             "test default freeze",
-            "application toto",
-            123,
             True,
         ),
         (
             "urgent",
             "test urgent freeze",
-            "application tata",
-            666,
             False,
         ),
         (
             "low",
             "test low freeze",
-            "application tutu",
-            777,
             True,
         ),
     ),
@@ -94,16 +76,12 @@ def test_queue_freeze_deserialize(
 def test_queue_freeze_serialized(
     name: str,
     reason: str,
-    application_name: str,
-    application_id: int,
     cascading: bool,
 ) -> None:
     freeze_date = datetime.datetime(2022, 1, 23, tzinfo=datetime.timezone.utc)
     serialized_payload = {
         "name": name,
         "reason": reason,
-        "application_name": application_name,
-        "application_id": application_id,
         "freeze_date": freeze_date,
         "cascading": cascading,
     }
@@ -115,8 +93,6 @@ def test_queue_freeze_serialized(
         queue_rule=queue_rule,
         name=name,
         reason=reason,
-        application_name=application_name,
-        application_id=application_id,
         freeze_date=freeze_date,
         cascading=cascading,
     )

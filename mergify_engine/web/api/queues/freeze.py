@@ -9,7 +9,6 @@ from starlette.status import HTTP_204_NO_CONTENT
 
 from mergify_engine import context
 from mergify_engine import date
-from mergify_engine.dashboard import application as application_mod
 from mergify_engine.queue import freeze
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web import api
@@ -26,12 +25,6 @@ router = fastapi.APIRouter(
 
 @pydantic.dataclasses.dataclass
 class QueueFreeze:
-    application_name: str = dataclasses.field(
-        metadata={"description": "Application name responsible for the freeze"},
-    )
-    application_id: int = dataclasses.field(
-        metadata={"description": "Application ID responsible for the freeze"},
-    )
     name: str = dataclasses.field(
         default_factory=str, metadata={"description": "Queue name"}
     )
@@ -80,9 +73,6 @@ class QueueFreezePayload(pydantic.BaseModel):
 )
 async def create_queue_freeze(
     queue_freeze_payload: QueueFreezePayload,
-    application: application_mod.Application = fastapi.Security(  # noqa: B008
-        security.get_application
-    ),
     queue_name: qr_config.QueueName = fastapi.Path(  # noqa: B008
         ..., description="The name of the queue"
     ),
@@ -110,8 +100,6 @@ async def create_queue_freeze(
             queue_rule=queue_rule,
             name=queue_rule.name,
             reason=queue_freeze_payload.reason,
-            application_name=application.name,
-            application_id=application.id,
             freeze_date=date.utcnow(),
             cascading=queue_freeze_payload.cascading,
         )
@@ -128,8 +116,6 @@ async def create_queue_freeze(
             QueueFreeze(
                 name=qf.name,
                 reason=qf.reason,
-                application_name=qf.application_name,
-                application_id=qf.application_id,
                 freeze_date=qf.freeze_date,
                 cascading=qf.cascading,
             )
@@ -149,9 +135,6 @@ async def create_queue_freeze(
     },
 )
 async def delete_queue_freeze(
-    application: application_mod.Application = fastapi.Security(  # noqa: B008
-        security.get_application
-    ),
     queue_name: qr_config.QueueName = fastapi.Path(  # noqa: B008
         ..., description="The name of the queue"
     ),
@@ -173,8 +156,6 @@ async def delete_queue_freeze(
         repository=repository_ctxt,
         queue_rule=queue_rule,
         name=queue_name,
-        application_name=application.name,
-        application_id=application.id,
     )
     if not await qf.delete(queue_rules):
         raise fastapi.HTTPException(
@@ -226,8 +207,6 @@ async def get_queue_freeze(
             QueueFreeze(
                 name=qf.name,
                 reason=qf.reason,
-                application_name=qf.application_name,
-                application_id=qf.application_id,
                 freeze_date=qf.freeze_date,
                 cascading=qf.cascading,
             )
@@ -258,8 +237,6 @@ async def get_list_queue_freeze(
             QueueFreeze(
                 name=qf.name,
                 reason=qf.reason,
-                application_name=qf.application_name,
-                application_id=qf.application_id,
                 freeze_date=qf.freeze_date,
                 cascading=qf.cascading,
             )

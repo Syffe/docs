@@ -243,8 +243,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "freeze_date": mock.ANY,
                     "name": "default",
                     "reason": "test freeze reason",
-                    "application_name": "testing application",
-                    "application_id": 123,
                     "cascading": True,
                 }
             ],
@@ -421,8 +419,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "freeze_date": mock.ANY,
                     "name": "default",
                     "reason": "test freeze reason",
-                    "application_name": "testing application",
-                    "application_id": 123,
                     "cascading": True,
                 }
             ],
@@ -445,8 +441,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "freeze_date": mock.ANY,
                     "name": "default",
                     "reason": "test freeze reason",
-                    "application_name": "testing application",
-                    "application_id": 123,
                     "cascading": True,
                 }
             ],
@@ -463,8 +457,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "freeze_date": mock.ANY,
                     "name": queue_name,
                     "reason": "new test freeze reason",
-                    "application_name": "testing application",
-                    "application_id": 123,
                     "cascading": True,
                 }
             ],
@@ -480,8 +472,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "freeze_date": mock.ANY,
                     "name": queue_name,
                     "reason": "No freeze reason was specified.",
-                    "application_name": "testing application",
-                    "application_id": 123,
                     "cascading": True,
                 }
             ],
@@ -615,8 +605,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "freeze_date": mock.ANY,
                     "name": "default",
                     "reason": "test freeze reason",
-                    "application_name": "testing application",
-                    "application_id": 123,
                     "cascading": True,
                 }
             ],
@@ -805,8 +793,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "freeze_date": mock.ANY,
                     "name": "default",
                     "reason": "test freeze reason",
-                    "application_name": "testing application",
-                    "application_id": 123,
                     "cascading": True,
                 }
             ],
@@ -825,8 +811,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "freeze_date": mock.ANY,
                     "name": "default",
                     "reason": "test freeze reason",
-                    "application_name": "testing application",
-                    "application_id": 123,
                     "cascading": True,
                 }
             ],
@@ -894,8 +878,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "freeze_date": mock.ANY,
                     "name": "default",
                     "reason": "test freeze reason",
-                    "application_name": "testing application",
-                    "application_id": 123,
                     "cascading": True,
                 }
             ],
@@ -910,8 +892,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "freeze_date": mock.ANY,
                     "name": "low-priority",
                     "reason": "test freeze reason",
-                    "application_name": "testing application",
-                    "application_id": 123,
                     "cascading": True,
                 }
             ],
@@ -931,8 +911,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
                 {
                     "name": "low-priority",
                     "reason": "test freeze reason",
-                    "application_name": "testing application",
-                    "application_id": 123,
                     "freeze_date": mock.ANY,
                     "cascading": True,
                 },
@@ -1180,8 +1158,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "freeze_date": mock.ANY,
                     "name": "default",
                     "reason": "test freeze reason",
-                    "application_name": "testing application",
-                    "application_id": 123,
                     "cascading": False,
                 }
             ],
@@ -1406,8 +1382,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "freeze_date": mock.ANY,
                     "name": "default",
                     "reason": "test freeze reason",
-                    "application_name": "testing application",
-                    "application_id": 123,
                     "cascading": False,
                 }
             ],
@@ -1434,8 +1408,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "freeze_date": mock.ANY,
                     "name": queue_name,
                     "reason": "new test freeze reason",
-                    "application_name": "testing application",
-                    "application_id": 123,
                     "cascading": True,
                 }
             ],
@@ -1512,8 +1484,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "freeze_date": mock.ANY,
                     "name": "default",
                     "reason": "test freeze reason",
-                    "application_name": "testing application",
-                    "application_id": 123,
                     "cascading": False,
                 }
             ],
@@ -1538,8 +1508,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "freeze_date": mock.ANY,
                     "name": "urgent",
                     "reason": "urgent test freeze reason",
-                    "application_name": "testing application",
-                    "application_id": 123,
                     "cascading": True,
                 }
             ],
@@ -1749,8 +1717,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "freeze_date": mock.ANY,
                     "name": "default",
                     "reason": "test freeze reason",
-                    "application_name": "testing application",
-                    "application_id": 123,
                     "cascading": True,
                 }
             ],
@@ -1775,8 +1741,6 @@ class TestQueueFreeze(base.FunctionalTestBase):
                     "freeze_date": mock.ANY,
                     "name": "urgent",
                     "reason": "urgent test freeze reason",
-                    "application_name": "testing application",
-                    "application_id": 123,
                     "cascading": True,
                 }
             ],

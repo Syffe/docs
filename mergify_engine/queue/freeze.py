@@ -33,12 +33,6 @@ class QueueFreeze:
 
     # Stored in redis
     name: str = dataclasses.field(metadata={"description": "Queue name"})
-    application_name: str = dataclasses.field(
-        metadata={"description": "Application name responsible for the freeze"},
-    )
-    application_id: int = dataclasses.field(
-        metadata={"description": "Application ID responsible for the freeze"},
-    )
     reason: str = dataclasses.field(
         default_factory=str, metadata={"description": "Freeze reason"}
     )
@@ -54,8 +48,6 @@ class QueueFreeze:
     class Serialized(typing.TypedDict):
         name: str
         reason: str
-        application_name: str
-        application_id: int
         freeze_date: datetime.datetime
         cascading: bool
 
@@ -63,8 +55,6 @@ class QueueFreeze:
         return self.Serialized(
             name=self.name,
             reason=self.reason,
-            application_name=self.application_name,
-            application_id=self.application_id,
             freeze_date=self.freeze_date,
             cascading=self.cascading,
         )
@@ -81,8 +71,6 @@ class QueueFreeze:
             queue_rule=queue_rule,
             name=data["name"],
             reason=data["reason"],
-            application_name=data["application_name"],
-            application_id=data["application_id"],
             freeze_date=data["freeze_date"],
             cascading=data["cascading"],
         )
@@ -102,8 +90,6 @@ class QueueFreeze:
             queue_rule=queue_rule,
             name=qf["name"],
             reason=qf["reason"],
-            application_name=qf["application_name"],
-            application_id=qf["application_id"],
             freeze_date=qf["freeze_date"],
             cascading=qf.get("cascading", True),  # Backward compat
         )
@@ -179,8 +165,6 @@ class QueueFreeze:
                 {
                     "name": self.name,
                     "reason": self.reason,
-                    "application_name": self.application_name,
-                    "application_id": self.application_id,
                     "freeze_date": self.freeze_date,
                     "cascading": self.cascading,
                 },
