@@ -612,7 +612,7 @@ A ``queue_rules`` takes the following parameter:
 
    * - ``merge_conditions``
      - list of :ref:`Conditions`
-     -
+     - empty list
      - The list of ``conditions`` to match to get the queued pull request merged,
        In case of speculative merge pull request, the merge conditions starting by
        ``check-`` are evaluated against the temporary pull request instead of the

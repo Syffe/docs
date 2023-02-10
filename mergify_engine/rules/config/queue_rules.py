@@ -74,9 +74,10 @@ class QueueRule:
     @classmethod
     def from_dict(cls, d: T_from_dict) -> "QueueRule":
         name = d.pop("name")
-        merge_conditions = d.pop("merge_conditions", None)
+        # NOTE(jd): deprecated name, for backward compat
+        merge_conditions = d.pop("conditions", None)
         if merge_conditions is None:
-            merge_conditions = d.pop("conditions")
+            merge_conditions = d.pop("merge_conditions")
 
         priority_rules = d.pop("priority_rules")
 
@@ -220,17 +221,23 @@ def ChecksTimeout(v: str) -> datetime.timedelta:
     return td
 
 
-def _has_at_least_one_of(
-    keys: list[str], missing_key_to_display: str | None = None
+def _has_only_one_of(
+    *keys: str,
+    msg: str | None = None,
 ) -> abc.Callable[[dict[str, typing.Any]], dict[str, typing.Any]]:
+    keys_set = set(keys)
+
+    if len(keys_set) < 2:
+        raise ValueError("Need at least 2 keys to check for exclusivity")
+
     def func(obj: dict[str, typing.Any]) -> dict[str, typing.Any]:
-        if any(k in obj.keys() for k in keys):
-            return obj
+        nonlocal msg
+        if len(keys_set & obj.keys()) > 1:
+            if msg is None:
+                msg = f"Must contain only one of {','.join(keys)}"
+            raise voluptuous.Invalid(msg)
 
-        if missing_key_to_display is not None:
-            raise voluptuous.Invalid(f"Missing key `{missing_key_to_display}`")
-
-        raise voluptuous.Invalid(f"Must contain one of {','.join(keys)}")
+        return obj
 
     return func
 
@@ -240,11 +247,10 @@ merge_conditions_exclusive_msg = "Cannot have both `conditions` and `merge_condi
 QueueRulesSchema = voluptuous.All(
     [
         voluptuous.All(
-            # NOTE(Greesb): `voluptuous.Exclusive` checks that both are not present at the same
-            # time, but there is nothing yet to check that only one of some keys is present.
-            # https://github.com/alecthomas/voluptuous/issues/115
-            _has_at_least_one_of(
-                ["conditions", "merge_conditions"], "merge_conditions"
+            _has_only_one_of(
+                "conditions",
+                "merge_conditions",
+                msg=merge_conditions_exclusive_msg,
             ),
             {
                 voluptuous.Required("name"): str,
@@ -275,19 +281,11 @@ QueueRulesSchema = voluptuous.All(
                     ],
                     voluptuous.Coerce(priority_rules_config.PriorityRules),
                 ),
-                voluptuous.Exclusive(
-                    "conditions",
-                    "merge_conditions",
-                    msg=merge_conditions_exclusive_msg,
-                ): voluptuous.All(
+                voluptuous.Required("merge_conditions", default=list): voluptuous.All(
                     [voluptuous.Coerce(cond_config.RuleConditionSchema)],
                     voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
                 ),
-                voluptuous.Exclusive(
-                    "merge_conditions",
-                    "merge_conditions",
-                    msg=merge_conditions_exclusive_msg,
-                ): voluptuous.All(
+                "conditions": voluptuous.All(
                     [voluptuous.Coerce(cond_config.RuleConditionSchema)],
                     voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
                 ),

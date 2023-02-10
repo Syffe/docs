@@ -824,18 +824,6 @@ found undefined alias
         == "expected str @ pull_request_rules → item 0 → actions → label → add → item 0"
     )
 
-    with pytest.raises(voluptuous.Invalid) as i:
-        rules.UserConfigurationSchema(
-            rules.YamlSchema(
-                """
-                queue_rules:
-                  - name: foo
-                """
-            )
-        )
-
-    assert str(i.value).startswith("Missing key `merge_conditions`")
-
     # Just to make sure both version works
     rules.UserConfigurationSchema(
         rules.YamlSchema(
