@@ -82,7 +82,9 @@ pull_request_rules:
     ctxt.repository._caches.branch_protections.set(
         github_types.GitHubRefType("main"), None
     )
-    evaluator = await config["pull_request_rules"].get_pull_request_rule(ctxt)
+    evaluator = await config["pull_request_rules"].get_pull_request_rules_evaluator(
+        ctxt
+    )
     rule = first.first(r for r in evaluator.matching_rules if r.conditions.match)
     assert rule is not None
     queue_action = typing.cast(queue.QueueAction, rule.actions["queue"])

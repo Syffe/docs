@@ -338,7 +338,7 @@ async def test_get_rule_checks_status(
             }
         ]
     )
-    match = await rules.get_pull_request_rule(ctxt)
+    match = await rules.get_pull_request_rules_evaluator(ctxt)
     evaluated_rule = match.matching_rules[0]
     assert (
         await checks_status.get_rule_checks_status(

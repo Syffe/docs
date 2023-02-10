@@ -93,7 +93,9 @@ async def simulator_pull(
         raise fastapi.HTTPException(status_code=e.status_code, detail=e.message)
     ctxt.sources = [{"event_type": "mergify-simulator", "data": [], "timestamp": ""}]  # type: ignore[typeddict-item]
     try:
-        match = await config["pull_request_rules"].get_pull_request_rule(ctxt)
+        match = await config["pull_request_rules"].get_pull_request_rules_evaluator(
+            ctxt
+        )
     except prr_config.InvalidPullRequestRule as e:
         title = "The current Mergify configuration is invalid"
         summary = f"### {e.reason}\n\n{e.details}"

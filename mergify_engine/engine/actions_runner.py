@@ -655,7 +655,7 @@ async def handle(
     ctxt: context.Context,
 ) -> check_api.Result | None:
     try:
-        match = await pull_request_rules.get_pull_request_rule(ctxt)
+        match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
     except prr_config.InvalidPullRequestRule as e:
         return check_api.Result(
             check_api.Conclusion.ACTION_REQUIRED,

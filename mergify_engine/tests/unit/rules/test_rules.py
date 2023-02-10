@@ -1061,7 +1061,7 @@ def test_pull_request_rule_schema_invalid(
         pull_request_rule_from_list([invalid])
 
 
-async def test_get_pull_request_rule(
+async def test_get_pull_request_rules_evaluator(
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
     client = mock.Mock()
@@ -1140,7 +1140,7 @@ async def test_get_pull_request_rule(
         ]
     )
 
-    match = await pull_request_rules.get_pull_request_rule(ctxt)
+    match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
     assert [r.name for r in match.rules] == ["default"]
     assert [r.name for r in match.matching_rules] == ["default"]
     for rule in match.rules:
@@ -1150,7 +1150,7 @@ async def test_get_pull_request_rule(
         [{"name": "hello", "conditions": ["base:main"], "actions": {}}]
     )
 
-    match = await pull_request_rules.get_pull_request_rule(ctxt)
+    match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
     assert [r.name for r in match.rules] == ["hello"]
     assert [r.name for r in match.matching_rules] == ["hello"]
     for rule in match.rules:
@@ -1163,7 +1163,7 @@ async def test_get_pull_request_rule(
         ]
     )
 
-    match = await pull_request_rules.get_pull_request_rule(ctxt)
+    match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
     assert [r.name for r in match.rules] == ["hello", "backport"]
     assert [r.name for r in match.matching_rules] == ["hello", "backport"]
     for rule in match.rules:
@@ -1176,7 +1176,7 @@ async def test_get_pull_request_rule(
         ]
     )
 
-    match = await pull_request_rules.get_pull_request_rule(ctxt)
+    match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
     assert [r.name for r in match.rules] == ["hello", "backport"]
     assert [r.name for r in match.matching_rules] == ["backport"]
     for rule in match.rules:
@@ -1189,7 +1189,7 @@ async def test_get_pull_request_rule(
         ]
     )
 
-    match = await pull_request_rules.get_pull_request_rule(ctxt)
+    match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
     assert [r.name for r in match.rules] == ["hello", "backport"]
     assert [r.name for r in match.matching_rules] == ["hello", "backport"]
     for rule in match.rules:
@@ -1210,7 +1210,7 @@ async def test_get_pull_request_rule(
         ]
     )
 
-    match = await pull_request_rules.get_pull_request_rule(ctxt)
+    match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
     assert [r.name for r in match.rules] == ["merge"]
     assert [r.name for r in match.not_applicable_base_changeable_attributes_rules] == [
         "merge"
@@ -1230,7 +1230,7 @@ async def test_get_pull_request_rule(
         ]
     )
 
-    match = await pull_request_rules.get_pull_request_rule(ctxt)
+    match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
     assert [r.name for r in match.rules] == ["merge"]
     assert [r.name for r in match.matching_rules] == ["merge"]
     for rule in match.rules:
@@ -1294,7 +1294,7 @@ async def test_get_pull_request_rule(
             },
         ]
     )
-    match = await pull_request_rules.get_pull_request_rule(ctxt)
+    match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
 
     assert [r.name for r in match.rules] == [
         "merge",
@@ -1353,7 +1353,7 @@ async def test_get_pull_request_rule(
         ]
     )
 
-    match = await pull_request_rules.get_pull_request_rule(ctxt)
+    match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
     assert [r.name for r in match.rules] == ["default"]
     assert [r.name for r in match.matching_rules] == ["default"]
 
@@ -1390,7 +1390,7 @@ async def test_get_pull_request_rule(
         ]
     )
 
-    match = await pull_request_rules.get_pull_request_rule(ctxt)
+    match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
     assert [r.name for r in match.rules] == ["default"]
     assert [r.name for r in match.matching_rules] == ["default"]
 
@@ -1408,7 +1408,7 @@ async def test_get_pull_request_rule(
         ]
     )
 
-    match = await pull_request_rules.get_pull_request_rule(ctxt)
+    match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
     assert [r.name for r in match.rules] == ["default"]
     assert [r.name for r in match.matching_rules] == ["default"]
     assert match.matching_rules[0].name == "default"
@@ -1419,7 +1419,7 @@ async def test_get_pull_request_rule(
         {"id": 0, "color": "#1234", "default": False, "name": "status/wip"}
     ]
 
-    match = await pull_request_rules.get_pull_request_rule(ctxt)
+    match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
     assert [r.name for r in match.rules] == ["default"]
     assert [r.name for r in match.matching_rules] == ["default"]
     assert match.matching_rules[0].name == "default"
@@ -1437,7 +1437,7 @@ async def test_get_pull_request_rule(
         {"id": 0, "color": "#1234", "default": False, "name": "allowed"}
     ]
 
-    match = await pull_request_rules.get_pull_request_rule(ctxt)
+    match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
     assert [r.name for r in match.rules] == ["default"]
     assert [r.name for r in match.matching_rules] == ["default"]
     assert match.matching_rules[0].name == "default"
@@ -1457,7 +1457,7 @@ async def test_get_pull_request_rule(
             }
         ]
     )
-    match = await pull_request_rules.get_pull_request_rule(ctxt)
+    match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
     assert [r.name for r in match.rules] == ["default"]
     assert [r.name for r in match.matching_rules] == ["default"]
     assert match.matching_rules[0].name == "default"
@@ -1488,7 +1488,7 @@ async def test_get_pull_request_rule(
             }
         ]
     )
-    match = await pull_request_rules.get_pull_request_rule(ctxt)
+    match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
 
     assert [r.name for r in match.rules] == ["default", "default"]
     assert list(match.matching_rules[0].actions.keys()) == ["merge"]

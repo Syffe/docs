@@ -107,7 +107,7 @@ async def test_get_already_merged_summary(
     )
 
     config = await mergify_conf.get_mergify_config_from_file(mock.MagicMock(), file)
-    match = await config["pull_request_rules"].get_pull_request_rule(ctxt)
+    match = await config["pull_request_rules"].get_pull_request_rules_evaluator(ctxt)
     assert result == await actions_runner.get_already_merged_summary(ctxt, match)
 
 

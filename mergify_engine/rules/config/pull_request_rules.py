@@ -116,7 +116,7 @@ class PullRequestRules:
             hidden=rule.hidden,
         )
 
-    async def get_pull_request_rule(
+    async def get_pull_request_rules_evaluator(
         self, ctxt: "context.Context"
     ) -> PullRequestRulesEvaluator:
         runtime_rules = []

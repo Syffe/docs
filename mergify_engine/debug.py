@@ -285,7 +285,7 @@ async def report(
     if mergify_config is not None:
         print("* MERGIFY LIVE MATCHES:")
         pull_request_rules = mergify_config["pull_request_rules"]
-        match = await pull_request_rules.get_pull_request_rule(ctxt)
+        match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
         summary_title, summary = await actions_runner.gen_summary(
             ctxt, pull_request_rules, match
         )
