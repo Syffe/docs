@@ -2317,7 +2317,11 @@ class PullRequest(BasePullRequest):
         template: str,
         extra_variables: None | (dict[str, str | bool]) = None,
         allow_get_section: bool = True,
+        mandatory_template_variables: dict[str, str] | None = None,
     ) -> str:
+        if mandatory_template_variables is None:
+            mandatory_template_variables = {}
+
         """Render a template interpolating variables based on pull request attributes."""
         env = jinja2.sandbox.SandboxedEnvironment(
             undefined=jinja2.StrictUndefined, enable_async=True
@@ -2330,6 +2334,12 @@ class PullRequest(BasePullRequest):
 
         with self._template_exceptions_mapping():
             used_variables = jinja2.meta.find_undeclared_variables(env.parse(template))
+
+            for variable, template_to_inject in mandatory_template_variables.items():
+                if variable not in used_variables:
+                    template += template_to_inject
+                    used_variables.add(variable)
+
             infos = {}
             for k in sorted(used_variables):
                 if extra_variables and k in extra_variables:

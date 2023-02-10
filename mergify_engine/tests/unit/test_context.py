@@ -1290,6 +1290,19 @@ async def test_dependabot_attributes_parsing_ko(commit_msg: str) -> None:
     assert res is None
 
 
+async def test_template_with_mandatory_variables(
+    a_pull_request: github_types.GitHubPullRequest,
+) -> None:
+    a_pull_request["body"] = "Such a test."
+    ctxt = context.Context(mock.Mock(), a_pull_request)
+    output = await ctxt.pull_request.render_template(
+        "{{ body }}",
+        extra_variables={"greeting": "Hello"},
+        mandatory_template_variables={"greeting": "\n{{ greeting }} world."},
+    )
+    assert output == "Such a test.\nHello world."
+
+
 async def test_commit_details_from_attributes(
     a_pull_request: github_types.GitHubPullRequest,
 ) -> None:

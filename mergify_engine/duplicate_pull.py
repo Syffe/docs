@@ -374,6 +374,9 @@ async def duplicate(
                 "destination_branch": branch_name,
                 "cherry_pick_error": "",
             },
+            mandatory_template_variables={
+                "cherry_pick_error": "\n{{ cherry_pick_error }}"
+            },
         )
         cherry_pick_error_truncated = utils.unicode_truncate(
             cherry_pick_error,
@@ -387,6 +390,9 @@ async def duplicate(
             extra_variables={
                 "destination_branch": branch_name,
                 "cherry_pick_error": cherry_pick_error_truncated,
+            },
+            mandatory_template_variables={
+                "cherry_pick_error": "\n{{ cherry_pick_error }}"
             },
         )
     except context.RenderTemplateFailure as rmf:
