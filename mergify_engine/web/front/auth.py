@@ -191,6 +191,9 @@ async def auth_setup(
             except http.HTTPNotFound:
                 return AuthRedirectUrl("/github?new=true")
 
+        if len(repos) < 1:
+            return AuthRedirectUrl("/github?new=true")
+
         return AuthRedirectUrl(f"/github/{repos[0]['owner']['login']}?new=true")
     elif setup_action == "request":
         return AuthRedirectUrl("/?request=true")
