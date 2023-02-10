@@ -1910,9 +1910,9 @@ class Context:
         return True
 
     @tenacity.retry(
-        wait=tenacity.wait_exponential(multiplier=0.2),  # type: ignore[attr-defined]
-        stop=tenacity.stop_after_attempt(5),  # type: ignore[attr-defined]
-        retry=tenacity.retry_never,  # type: ignore[attr-defined]
+        wait=tenacity.wait_exponential(multiplier=0.2),
+        stop=tenacity.stop_after_attempt(5),
+        retry=tenacity.retry_never,
         reraise=True,
     )
     async def update(self, wait_merged: bool = False) -> None:

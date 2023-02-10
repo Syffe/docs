@@ -479,8 +479,8 @@ class wait_secondary_rate_limit(tenacity.wait.wait_base):
 @tenacity.retry(
     wait=wait_secondary_rate_limit(),
     # The stop is here just to avoid infinite loops.
-    stop=tenacity.stop_after_attempt(5),  # type: ignore[attr-defined]
-    retry=tenacity.retry_if_exception_type(tenacity.TryAgain),  # type: ignore[attr-defined]
+    stop=tenacity.stop_after_attempt(5),
+    retry=tenacity.retry_if_exception_type(tenacity.TryAgain),
 )
 async def _request_with_ratelimit_retry(
     request_func: abc.Callable[

@@ -1031,10 +1031,10 @@ class TrainCar:
 
     @tracer.wrap("TrainCar._create_draft_pull_request", span_type="worker")
     @tenacity.retry(
-        retry=tenacity.retry_if_exception_type(  # type: ignore[attr-defined]
+        retry=tenacity.retry_if_exception_type(
             DraftPullRequestCreationTemporaryFailure
         ),
-        stop=tenacity.stop_after_attempt(2),  # type: ignore[attr-defined]
+        stop=tenacity.stop_after_attempt(2),
     )
     async def _create_draft_pull_request(
         self,
@@ -1113,8 +1113,8 @@ class TrainCar:
             return typing.cast(github_types.GitHubPullRequest, response.json())
 
     @tenacity.retry(
-        retry=tenacity.retry_if_exception_type(tenacity.TryAgain),  # type: ignore[attr-defined]
-        stop=tenacity.stop_after_attempt(2),  # type: ignore[attr-defined]
+        retry=tenacity.retry_if_exception_type(tenacity.TryAgain),
+        stop=tenacity.stop_after_attempt(2),
         reraise=True,
     )
     async def _prepare_draft_pr_branch(
@@ -1146,8 +1146,8 @@ class TrainCar:
                 raise TrainCarPullRequestCreationFailure(self) from exc
 
     @tenacity.retry(
-        retry=tenacity.retry_if_exception_type(tenacity.TryAgain),  # type: ignore[attr-defined]
-        stop=tenacity.stop_after_attempt(2),  # type: ignore[attr-defined]
+        retry=tenacity.retry_if_exception_type(tenacity.TryAgain),
+        stop=tenacity.stop_after_attempt(2),
         reraise=True,
     )
     async def _rename_branch(

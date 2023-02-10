@@ -906,9 +906,9 @@ async def ping_redis(
             wait_before_next_retry(retry_state),
         )
 
-    async for attempt in tenacity.AsyncRetrying(  # type: ignore[attr-defined]
-        wait=tenacity.wait_exponential(multiplier=0.2, max=5),  # type: ignore[attr-defined]
-        retry=tenacity.retry_if_exception_type(redis_exceptions.ConnectionError),  # type: ignore[attr-defined]
+    async for attempt in tenacity.AsyncRetrying(
+        wait=tenacity.wait_exponential(multiplier=0.2, max=5),
+        retry=tenacity.retry_if_exception_type(redis_exceptions.ConnectionError),
         before_sleep=retry_log,
     ):
         with attempt:
