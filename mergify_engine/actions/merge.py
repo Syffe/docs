@@ -176,7 +176,7 @@ class MergeAction(actions.Action):
                 voluptuous.Required("rebase_fallback", default=utils.UnsetMarker)
             ] = utils.DeprecatedOption(
                 DEPRECATED_MESSAGE_REBASE_FALLBACK_MERGE_ACTION,
-                voluptuous.Any(*typing.get_args(merge_base.RebaseFallbackT)),
+                "none",
             )
 
         return validator
