@@ -927,8 +927,7 @@ class QueueAction(actions.Action):
             validator[
                 voluptuous.Required("rebase_fallback", default=utils.UnsetMarker)
             ] = utils.DeprecatedOption(
-                DEPRECATED_MESSAGE_REBASE_FALLBACK_QUEUE_ACTION,
-                voluptuous.Any("merge", "squash", "none", None),
+                DEPRECATED_MESSAGE_REBASE_FALLBACK_QUEUE_ACTION, "none"
             )
 
         if config.ALLOW_QUEUE_PRIORITY_ATTRIBUTE:
