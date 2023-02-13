@@ -294,21 +294,25 @@ Examples
           merge:
             method: merge
 
-.. _time format:
+.. _schedule format:
 
-Time
-~~~~
+Schedule
+~~~~~~~~
 
-This format represents the time of the day in the 24-hours format.
-It can be used with any of the greater and lesser operators (``>=``, ``>``,
-``<=``, ``<``).
+This format represents a schedule.
+It can contains only days, only times or both and can have a timezone specified
+with the times (for the list of available time zones, see `IANA format <https://www.iana.org/time-zones>`_).
+If no timezone is specified, it will default to UTC.
 
+It can be used with the equality operators ``=`` and ``!=``.
 
 .. code-block::
 
-  current-time>=18:00[Europe/Paris]
-  schedule: Mon-Fri 09:00-19:00[America/Vancouver]
-  schedule: Mon-Fri 09:00[Europe/Paris]-19:00[America/Vancouver]
+  schedule=Mon-Fri
+  schedule=09:00-19:00
+  schedule=09:00-19:00[America/Vancouver]
+  schedule!=Mon-Fri 09:00-19:00[America/Vancouver]
+  schedule!=SAT-SUN
 
 
 Examples
@@ -316,15 +320,9 @@ Examples
 
 .. code-block:: yaml
 
-      - name: comment after 18:00
-        conditions:
-          - current-time>=18:00
-        actions:
-          close:
-            message: It's too late for this!
       - name: merge on working hour
         conditions:
-          - schedule: Mon-Fri 09:00-19:00[America/Vancouver]
+          - schedule=Mon-Fri 09:00-19:00[America/Vancouver]
         actions:
           merge:
 
@@ -354,12 +352,11 @@ Examples
       - name: end of life version 10.0
         conditions:
           - base=stable/10.0
-          - -closed
-          - current-timestamp>=2021-04-05
+          - updated-at<=2021-04-05
         actions:
-          close:
+          comment:
             message: |
-              The pull request base branch has reached end-of-life.
+              The pull request needs to be rebased after end of life of version 10.0
 
 
 .. _relative timestamp:

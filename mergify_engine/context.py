@@ -984,7 +984,6 @@ ContextAttributeType = (
     | str
     | int
     | datetime.time
-    | date.PartialDatetime
     | datetime.datetime
     | datetime.timedelta
     | date.RelativeDatetime
@@ -1629,16 +1628,9 @@ class Context:
                 if ctxt.pull["merged"]:
                     depends_on.append(f"#{pull_request_number}")
             return depends_on
-        elif name in ("current-timestamp", "current-time"):
+
+        elif name == "current-time":
             return date.utcnow()
-        elif name == "current-day":
-            return date.Day(date.utcnow().day)
-        elif name == "current-month":
-            return date.Month(date.utcnow().month)
-        elif name == "current-year":
-            return date.Year(date.utcnow().year)
-        elif name == "current-day-of-week":
-            return date.DayOfWeek(date.utcnow().isoweekday())
 
         elif name == "updated-at-relative":
             return date.RelativeDatetime(date.fromisoformat(self.pull["updated_at"]))
@@ -2459,12 +2451,6 @@ class QueuePullRequest(BasePullRequest):
         "check-timed-out",
         "check-pending",
         "check-stale",
-        "current-time",
-        "current-day",
-        "current-month",
-        "current-year",
-        "current-day-of-week",
-        "current-timestamp",
         "schedule",
         "queue-merge-started-at",
         "queue-merge-started-at-relative",

@@ -14,7 +14,6 @@ from first import first
 import pydantic
 import voluptuous
 
-from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import github_types
@@ -579,31 +578,9 @@ class BaseRuleConditions:
 @dataclasses.dataclass
 class PullRequestRuleConditions(BaseRuleConditions):
     def get_summary(self) -> str:
-        for cond in self.walk():
-            if (
-                cond.get_attribute_name()
-                in constants.DEPRECATED_CURRENT_CONDITIONS_NAMES
-            ):
-                return (
-                    self.condition.get_summary()
-                    + "\n"
-                    + constants.DEPRECATED_CURRENT_CONDITIONS_MESSAGE
-                )
-
         return self.condition.get_summary()
 
     def get_unmatched_summary(self) -> str:
-        for cond in self.walk():
-            if (
-                cond.get_attribute_name()
-                in constants.DEPRECATED_CURRENT_CONDITIONS_NAMES
-            ):
-                return (
-                    self.condition.get_unmatched_summary()
-                    + "\n"
-                    + constants.DEPRECATED_CURRENT_CONDITIONS_MESSAGE
-                )
-
         return self.condition.get_unmatched_summary()
 
     def get_evaluation_result(self) -> ConditionEvaluationResult:
@@ -688,18 +665,9 @@ class QueueRuleMergeConditions(BaseRuleConditions):
 
     def get_summary(self) -> str:
         if self._used:
-            summary = self.get_evaluation_result().as_markdown()
-        else:
-            summary = self.condition.get_summary()
+            return self.get_evaluation_result().as_markdown()
 
-        for cond in self.walk():
-            if (
-                cond.get_attribute_name()
-                in constants.DEPRECATED_CURRENT_CONDITIONS_NAMES
-            ):
-                return summary + "\n" + constants.DEPRECATED_CURRENT_CONDITIONS_MESSAGE
-
-        return summary
+        return self.condition.get_summary()
 
     def get_evaluation_result(self) -> QueueConditionEvaluationResult:
         return QueueConditionEvaluationResult.from_evaluated_condition_node(

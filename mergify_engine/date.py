@@ -84,22 +84,6 @@ def is_datetime_inside_time_range(
         return d_start <= time_to_check <= d_end
 
 
-@dataclasses.dataclass(order=True)
-class PartialDatetime:
-    value: int
-
-    def __str__(self) -> str:
-        return str(self.value)
-
-    @classmethod
-    def from_string(cls, value: str) -> "PartialDatetime":
-        try:
-            number = int(value)
-        except ValueError:
-            raise InvalidDate(f"{value} is not a number")
-        return cls(number)
-
-
 class TimedeltaRegexResultT(typing.TypedDict):
     filled: str | None
     days: str | None
@@ -142,27 +126,6 @@ class RelativeDatetime:
     def __post_init__(self) -> None:
         if self.value.tzinfo is None:
             raise InvalidDate("timezone is missing")
-
-
-@dataclasses.dataclass
-class Year(PartialDatetime):
-    def __post_init__(self) -> None:
-        if self.value < 2000 or self.value > 9999:
-            raise InvalidDate("Year must be between 2000 and 9999")
-
-
-@dataclasses.dataclass
-class Month(PartialDatetime):
-    def __post_init__(self) -> None:
-        if self.value < 1 or self.value > 12:
-            raise InvalidDate("Month must be between 1 and 12")
-
-
-@dataclasses.dataclass
-class Day(PartialDatetime):
-    def __post_init__(self) -> None:
-        if self.value < 1 or self.value > 31:
-            raise InvalidDate("Day must be between 1 and 31")
 
 
 @functools.total_ordering
@@ -251,8 +214,7 @@ _LONG_WEEKDAY = (
 )
 
 
-@dataclasses.dataclass
-class DayOfWeek(PartialDatetime):
+class DayOfWeek(int):
     @classmethod
     def from_string(cls, string: str) -> "DayOfWeek":
         try:
@@ -264,17 +226,9 @@ class DayOfWeek(PartialDatetime):
         except ValueError:
             pass
         try:
-            dow = int(string)
+            return cls(int(string))
         except ValueError:
             raise InvalidDate(f"{string} is not a number or literal day of the week")
-        return cls(dow)
-
-    def __post_init__(self) -> None:
-        if self.value < 1 or self.value > 7:
-            raise InvalidDate("Day of the week must be between 1 and 7")
-
-    def __str__(self) -> str:
-        return _SHORT_WEEKDAY[self.value - 1].capitalize()
 
 
 class TimeJSON(typing.TypedDict):
@@ -340,8 +294,8 @@ class Schedule:
             raise InvalidDate(f"Invalid schedule: missing separator in '{days}'")
 
         return (
-            DayOfWeek.from_string(start_weekday).value,
-            DayOfWeek.from_string(end_weekday).value,
+            DayOfWeek.from_string(start_weekday),
+            DayOfWeek.from_string(end_weekday),
         )
 
     @staticmethod
@@ -676,9 +630,9 @@ class Schedule:
 
     def _is_day_in_schedule(self, day: DayOfWeek) -> bool:
         if self.start_weekday <= self.end_weekday:
-            return self.start_weekday <= day.value <= self.end_weekday
+            return self.start_weekday <= day <= self.end_weekday
         else:
-            return day.value <= self.end_weekday or day.value >= self.start_weekday
+            return day <= self.end_weekday or day >= self.start_weekday
 
     def _timeranges_as_json(self) -> list[TimeRangeJSON]:
         return [

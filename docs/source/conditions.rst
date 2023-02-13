@@ -275,36 +275,6 @@ Here's the list of pull request attribute that can be used in conditions:
    * - ``created-at``
      - :ref:`Timestamp <iso timestamp>` or :ref:`Relative timestamp <relative timestamp>`
      - The time the pull request was created at.
-   * - ``current-day``
-     - integer
-     - | |deprecated tag|
-       | The current day of the month, from 1 to 31.
-       | This option is deprecated in favor of ``schedule`` and will be removed on February 11, 2023.
-   * - ``current-day-of-week``
-     - integer or string
-     - | |deprecated tag|
-       | The current day of the week. From 1 (Monday) to 7 (Sunday), or one of ``Mon``, ``Tue``, ``Wed``, ``Thu``, ``Fri``, ``Sat``, ``Sun``, ``Monday``, ``Tuesday``, ``Wednesday``, ``Thursday``, ``Friday``, ``Saturday``, ``Sunday``. Weeks start on Monday.
-       | This option is deprecated in favor of ``schedule`` and will be removed on February 11, 2023.
-   * - ``current-month``
-     - integer
-     - | |deprecated tag|
-       | The current month, from 1 to 12.
-       | This option is deprecated and will be removed on February 11, 2023.
-   * - ``current-time``
-     - :ref:`Time <time format>`
-     - | |deprecated tag|
-       | The current time in format ``HH:MM``.
-       | This option is deprecated in favor of ``schedule`` and will be removed on February 11 2023.
-   * - ``current-timestamp``
-     - :ref:`Timestamp <iso timestamp>`
-     - | |deprecated tag|
-       | The current date and time.
-       | This option is deprecated in favor of ``schedule`` and will be removed on February 11, 2023.
-   * - ``current-year``
-     - integer
-     - | |deprecated tag|
-       | The current year, from 1900 to 9999.
-       | This option is deprecated and will be removed on February 11, 2023.
    * - ``dependabot-dependency-name``
      - string
      - The dependency-name value included in the Dependabot commit message.
@@ -390,10 +360,8 @@ Here's the list of pull request attribute that can be used in conditions:
      - list of strings
      - The list of bodies associated to review threads that are NOT marked as ``resolved`` by GitHub.
    * - ``schedule``
-     - string
-     - | A schedule, e.g., ``Mon-Fri``, ``12:00-18:00`` or ``Mon-Fri 12:00-18:00``.
-       | You can also add a timezone (`IANA format <https://www.iana.org/time-zones>`_) after the time, e.g., ``08:00-17:00[Europe/Madrid]``.
-       | The default timezone used is UTC.
+     - :ref:`Schedule <schedule format>`
+     - The current time will be compared against this schedule to un/validate this attribute.
    * - ``title``
      - string
      - The title of the pull request.
@@ -430,15 +398,13 @@ Here's the list of pull request attribute only usable in :ref:`Commands Restrict
 
 .. note::
 
-   ``current-timestamp``, ``current-time``, ``created-at``, ``updated-at``,
-   ``closed-at`` and ``merged-at`` do not support the ``~=``, ``=`` and ``!=``
-   operators. ``schedule`` only supports the ``=`` and ``!=`` operators.
+   ``created-at``, ``updated-at``, ``closed-at`` and ``merged-at``
+   do not support the ``~=``, ``=`` and ``!=`` operators.
+   ``schedule`` only supports the ``=`` and ``!=`` operators.
 
 .. note::
 
-   ``current-day``, ``current-day-of-week``, ``current-month``,
-   ``current-time``, ``current-timestamp``, ``current-year`` and ``schedule``
-   works only for open pull requests or pull requests closed in the last 7 days.
+   ``schedule`` works only for open pull requests or pull requests closed in the last 7 days.
 
 .. note::
 

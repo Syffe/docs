@@ -71,34 +71,6 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
         ("¬author~=jd", {"-": {"~=": ("author", "jd")}}),
         ("conflict", {"=": ("conflict", True)}),
         (
-            "current-time>=10:00[PST8PDT]",
-            {
-                ">=": (
-                    "current-time",
-                    date.Time(10, 0, tzinfo=zoneinfo.ZoneInfo("PST8PDT")),
-                )
-            },
-        ),
-        (
-            "current-time>=10:00",
-            {
-                ">=": (
-                    "current-time",
-                    date.Time(10, 0, tzinfo=date.UTC),
-                )
-            },
-        ),
-        ("current-day=4", {"=": ("current-day", date.Day(4))}),
-        ("current-month=5", {"=": ("current-month", date.Month(5))}),
-        ("current-year=2000", {"=": ("current-year", date.Year(2000))}),
-        ("current-day-of-week=4", {"=": ("current-day-of-week", date.DayOfWeek(4))}),
-        ("current-day-of-week=MON", {"=": ("current-day-of-week", date.DayOfWeek(1))}),
-        (
-            "current-day-of-week=WednesDay",
-            {"=": ("current-day-of-week", date.DayOfWeek(3))},
-        ),
-        ("current-day-of-week=sun", {"=": ("current-day-of-week", date.DayOfWeek(7))}),
-        (
             "schedule: MON-FRI 08:00-17:00",
             {
                 "@": (
@@ -317,10 +289,6 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                 )
             },
         ),
-        (
-            f"current-timestamp<={now.isoformat()}",
-            {"<=": ("current-timestamp", now)},
-        ),
         ("-linear-history", {"-": {"=": ("linear-history", True)}}),
         ("-locked", {"-": {"=": ("locked", True)}}),
         ("queue-position>=0", {">=": ("queue-position", 0)}),
@@ -459,21 +427,8 @@ async def test_parse_jinja_template(
         ("#foo=bar", "Invalid attribute"),
         ("number=foo", "foo is not a number"),
         ("author=%foobar", "Invalid GitHub login"),
-        ("current-time<foobar", "Invalid time"),
-        ("current-time=10:00", "Invalid operator"),
-        (
-            "-current-time>=10:00",
-            "`-` modifier is invalid for attribute: `current-time`",
-        ),
-        ("current-day-of-week=100", "Day of the week must be between 1 and 7"),
-        ("current-month=100", "Month must be between 1 and 12"),
-        ("current-year=0", "Year must be between 2000 and 9999"),
-        ("current-day=100", "Day must be between 1 and 31"),
-        ("current-day>100", "Day must be between 1 and 31"),
         ("updated-at=7 days 18:00", "Invalid operator"),
         ("updated-at>=100", "Invalid timestamp"),
-        ("current-timestamp>=100", "Invalid timestamp"),
-        ("current-time>=10:00[InvalidTZ]", "Invalid timezone"),
         ("schedule=MON-friday 10:02-22:35[InvalidTZ]", "Invalid timezone"),
         (
             "-schedule=MON-friday 10:02-22:35",

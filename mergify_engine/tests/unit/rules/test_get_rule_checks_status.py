@@ -1,3 +1,4 @@
+import datetime
 import typing
 from unittest import mock
 
@@ -5,7 +6,6 @@ import voluptuous
 
 from mergify_engine import check_api
 from mergify_engine import context
-from mergify_engine import date
 from mergify_engine.rules import checks_status
 from mergify_engine.rules import conditions
 from mergify_engine.rules import filter
@@ -24,7 +24,6 @@ async def test_rules_conditions_update() -> None:
         conftest.FakePullRequest(
             {
                 "number": 1,
-                "current-year": date.Year(2018),
                 "author": "me",
                 "base": "main",
                 "head": "feature-1",
@@ -102,7 +101,10 @@ async def test_rules_checks_basic(logger_checker: None) -> None:
     pull = conftest.FakePullRequest(
         {
             "number": 1,
-            "current-year": date.Year(2018),
+            # Thursday
+            "current-time": datetime.datetime(
+                2022, 11, 24, tzinfo=datetime.timezone.utc
+            ),
             "author": "me",
             "base": "main",
             "head": "feature-1",
@@ -115,7 +117,7 @@ async def test_rules_checks_basic(logger_checker: None) -> None:
             "check-stale": empty,
         }
     )
-    conds = ["check-success=fake-ci", "label=foobar", "current-year<=2200"]
+    conds = ["check-success=fake-ci", "label=foobar", "schedule=MON-FRI"]
 
     # Label missing and nothing reported
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
@@ -148,21 +150,30 @@ async def test_rules_checks_basic(logger_checker: None) -> None:
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.SUCCESS)
 
     # Pending reported and schedule missing
-    pull.attrs["current-year"] = date.Year(2300)
+    # Saturday
+    pull.attrs["current-time"] = datetime.datetime(
+        2022, 11, 26, tzinfo=datetime.timezone.utc
+    )
     pull.attrs["check-pending"] = ["fake-ci"]
     pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["test-starter"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.PENDING)
 
     # Failure reported and schedule missing
-    pull.attrs["current-year"] = date.Year(2300)
+    # Saturday
+    pull.attrs["current-time"] = datetime.datetime(
+        2022, 11, 26, tzinfo=datetime.timezone.utc
+    )
     pull.attrs["check-pending"] = ["whatever"]
     pull.attrs["check-failure"] = ["foo", "fake-ci"]
     pull.attrs["check-success"] = ["test-starter"]
     await assert_queue_rule_checks_status(conds, pull, check_api.Conclusion.FAILURE)
 
     # Success reported and schedule missing
-    pull.attrs["current-year"] = date.Year(2300)
+    # Saturday
+    pull.attrs["current-time"] = datetime.datetime(
+        2022, 11, 26, tzinfo=datetime.timezone.utc
+    )
     pull.attrs["check-pending"] = ["whatever"]
     pull.attrs["check-failure"] = ["foo"]
     pull.attrs["check-success"] = ["fake-ci", "test-starter"]
@@ -173,7 +184,6 @@ async def test_rules_checks_with_and_or(logger_checker: None) -> None:
     pull = conftest.FakePullRequest(
         {
             "number": 1,
-            "current-year": date.Year(2018),
             "author": "me",
             "base": "main",
             "head": "feature-1",
@@ -248,7 +258,6 @@ async def test_rules_checks_status_with_negative_conditions1(
     pull = conftest.FakePullRequest(
         {
             "number": 1,
-            "current-year": date.Year(2018),
             "author": "me",
             "base": "main",
             "head": "feature-1",
@@ -311,7 +320,6 @@ async def test_rules_checks_status_with_negative_conditions2() -> None:
     pull = conftest.FakePullRequest(
         {
             "number": 1,
-            "current-year": date.Year(2018),
             "author": "me",
             "base": "main",
             "head": "feature-1",
@@ -363,7 +371,6 @@ async def test_rules_checks_status_with_negative_conditions3(
     pull = conftest.FakePullRequest(
         {
             "number": 1,
-            "current-year": date.Year(2018),
             "author": "me",
             "base": "main",
             "head": "feature-1",
@@ -413,7 +420,6 @@ async def test_rules_checks_status_with_or_conditions() -> None:
     pull = conftest.FakePullRequest(
         {
             "number": 1,
-            "current-year": date.Year(2018),
             "author": "me",
             "base": "main",
             "head": "feature-1",
@@ -475,7 +481,6 @@ async def test_rules_checks_status_expected_failure() -> None:
     pull = conftest.FakePullRequest(
         {
             "number": 1,
-            "current-year": date.Year(2018),
             "author": "me",
             "base": "main",
             "head": "feature-1",
@@ -515,7 +520,6 @@ async def test_rules_checks_status_regular() -> None:
     pull = conftest.FakePullRequest(
         {
             "number": 1,
-            "current-year": date.Year(2018),
             "author": "me",
             "base": "main",
             "head": "feature-1",
@@ -567,7 +571,6 @@ async def test_rules_checks_status_regex() -> None:
     pull = conftest.FakePullRequest(
         {
             "number": 1,
-            "current-year": date.Year(2018),
             "author": "me",
             "base": "main",
             "head": "feature-1",
@@ -619,7 +622,6 @@ async def test_rules_checks_status_depop(logger_checker: None) -> None:
     pull = conftest.FakePullRequest(
         {
             "number": 1,
-            "current-year": date.Year(2018),
             "author": "me",
             "base": "main",
             "head": "feature-1",
@@ -724,7 +726,6 @@ async def test_rules_checks_status_ceph(logger_checker: None) -> None:
     pull = conftest.FakePullRequest(
         {
             "number": 1,
-            "current-year": date.Year(2018),
             "author": "me",
             "base": "devel",
             "head": "feature-1",

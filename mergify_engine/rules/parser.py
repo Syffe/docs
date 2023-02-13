@@ -8,8 +8,6 @@ import jinja2
 import jinja2.meta
 import jinja2.sandbox
 
-from mergify_engine import config
-from mergify_engine import constants
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine.rules import filter
@@ -90,11 +88,6 @@ CONDITION_PARSERS = {
     "review-threads-unresolved": Parser.TEXT,
     "repository-name": Parser.TEXT,
     "repository-full-name": Parser.TEXT,
-    "current-time": Parser.TIME,
-    "current-day": Parser.DAY,
-    "current-month": Parser.MONTH,
-    "current-year": Parser.YEAR,
-    "current-day-of-week": Parser.DOW,
     "schedule": Parser.SCHEDULE,
     "created-at": Parser.TIMESTAMP_OR_TIMEDELTA,
     "updated-at": Parser.TIMESTAMP_OR_TIMEDELTA,
@@ -102,7 +95,6 @@ CONDITION_PARSERS = {
     "merged-at": Parser.TIMESTAMP_OR_TIMEDELTA,
     "queued-at": Parser.TIMESTAMP_OR_TIMEDELTA,
     "queue-merge-started-at": Parser.TIMESTAMP_OR_TIMEDELTA,
-    "current-timestamp": Parser.TIMESTAMP,
     "locked": Parser.BOOL,
     "merged": Parser.BOOL,
     "closed": Parser.BOOL,
@@ -135,16 +127,10 @@ ATTRIBUTES_WITH_ONLY_LENGTH = ("commits-behind",)
 # Negate, quantity (default: True, True)
 PARSER_MODIFIERS = {
     Parser.BOOL: (True, False),
-    Parser.DAY: (False, False),
-    Parser.DOW: (False, False),
-    Parser.MONTH: (False, False),
     Parser.NUMBER: (True, False),
     Parser.POSITIVE_NUMBER: (True, False),
     Parser.SCHEDULE: (False, False),
-    Parser.TIME: (False, False),
-    Parser.TIMESTAMP: (False, False),
     Parser.TIMESTAMP_OR_TIMEDELTA: (False, False),
-    Parser.YEAR: (False, False),
 }
 
 NEGATION_OPERATORS = ("-", "¬")
@@ -170,18 +156,13 @@ SUPPORTED_OPERATORS = {
     Parser.TEXT: ALL_OPERATORS,
     Parser.WORD: ALL_OPERATORS,
     # SIMPLE_OPERATORS
-    Parser.DAY: SIMPLE_OPERATORS,
-    Parser.DOW: SIMPLE_OPERATORS,
-    Parser.MONTH: SIMPLE_OPERATORS,
     Parser.NUMBER: SIMPLE_OPERATORS,
     Parser.PERMISSION: SIMPLE_OPERATORS,
     Parser.POSITIVE_NUMBER: SIMPLE_OPERATORS,
-    Parser.YEAR: SIMPLE_OPERATORS,
     # EQUALITY_OPERATORS
     Parser.ENUM: EQUALITY_OPERATORS,
     Parser.SCHEDULE: EQUALITY_OPERATORS,
     # RANGE_OPERATORS
-    Parser.TIME: RANGE_OPERATORS,
     Parser.TIMESTAMP: RANGE_OPERATORS,
     Parser.TIMESTAMP_OR_TIMEDELTA: RANGE_OPERATORS,
 }
@@ -228,22 +209,6 @@ def _unquote(value: str) -> str:
     ):
         value = value[1:-1]
     return value
-
-
-def _extract_date(
-    date_type: type[date.PartialDatetime], value: str
-) -> date.PartialDatetime:
-    try:
-        return date_type.from_string(value)
-    except date.InvalidDate as e:
-        raise ConditionParsingError(e.message)
-
-
-def _extract_time(value: str) -> date.Time:
-    try:
-        return date.Time.from_string(value)
-    except date.InvalidDate as e:
-        raise ConditionParsingError(e.message)
 
 
 def parse_schedule(string: str) -> date.Schedule:
@@ -296,13 +261,6 @@ def parse_raw_condition(
             raise ConditionParsingError("Incomplete condition")
 
     supported_attributes = ATTRIBUTES.copy()
-    if config.DEPRECATE_CURRENT_CONDITIONS:
-        supported_attributes = [
-            name
-            for name in supported_attributes
-            if name not in constants.DEPRECATED_CURRENT_CONDITIONS_NAMES
-        ]
-
     # Get the attribute
     for attribute in supported_attributes:
         if cond[position:].startswith(attribute):
@@ -407,12 +365,7 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
         cond: dict[str, typing.Any] = {op: ("current-time", parse_schedule(value))}
         return _to_dict(False, False, attribute, "@", cond)
 
-    elif parser == Parser.TIME:
-        value = _unquote(value)
-        t = _extract_time(value)
-        return _to_dict(False, False, attribute, op, t)
-
-    elif parser in (Parser.TIMESTAMP, Parser.TIMESTAMP_OR_TIMEDELTA):
+    elif parser == Parser.TIMESTAMP_OR_TIMEDELTA:
         value = _unquote(value)
         if parser == Parser.TIMESTAMP_OR_TIMEDELTA:
             try:
@@ -442,28 +395,9 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
         return _to_dict(negate, False, attribute, op, number)
 
     elif parser in (
-        Parser.DAY,
-        Parser.DOW,
-        Parser.MONTH,
-        Parser.YEAR,
-    ):
-        pd: date.PartialDatetime
-        if parser == Parser.DOW:
-            pd = _extract_date(date.DayOfWeek, value)
-        elif parser == Parser.DAY:
-            pd = _extract_date(date.Day, value)
-        elif parser == Parser.MONTH:
-            pd = _extract_date(date.Month, value)
-        elif parser == Parser.YEAR:
-            pd = _extract_date(date.Year, value)
-        else:
-            raise RuntimeError("unhandled date parser")
-        return _to_dict(negate, False, attribute, op, pd)
-
-    elif parser in (
         Parser.BRANCH,
-        Parser.LOGIN_AND_TEAMS,
         Parser.ENUM,
+        Parser.LOGIN_AND_TEAMS,
         Parser.TEXT,
         Parser.WORD,
     ):

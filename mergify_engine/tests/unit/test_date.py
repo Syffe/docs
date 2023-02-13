@@ -120,23 +120,23 @@ def test_time_compare() -> None:
 
 
 @pytest.mark.parametrize(
-    "dow,expected_string",
+    "dow,expected_int",
     [
-        ("MON", "Mon"),
-        ("wed", "Wed"),
-        ("Sun", "Sun"),
-        ("FRI", "Fri"),
-        ("monday", "Mon"),
-        ("tuesday", "Tue"),
-        ("WEDNESDAY", "Wed"),
-        ("thursday", "Thu"),
-        ("fRiday", "Fri"),
-        ("SATURDAY", "Sat"),
-        ("sunday", "Sun"),
+        ("MON", 1),
+        ("wed", 3),
+        ("Sun", 7),
+        ("FRI", 5),
+        ("monday", 1),
+        ("tuesday", 2),
+        ("WEDNESDAY", 3),
+        ("thursday", 4),
+        ("fRiday", 5),
+        ("SATURDAY", 6),
+        ("sunday", 7),
     ],
 )
-def test_day_of_week_from_string(dow: str, expected_string: str) -> None:
-    assert str(date.DayOfWeek.from_string(dow)) == expected_string
+def test_day_of_week_from_string(dow: str, expected_int: int) -> None:
+    assert date.DayOfWeek.from_string(dow) == expected_int
 
 
 @pytest.mark.parametrize(
@@ -180,14 +180,6 @@ def test_time_from_string(
 @pytest.mark.parametrize(
     "date_type,value,expected_message",
     [
-        (date.Day, "foobar", "foobar is not a number"),
-        (date.Month, "foobar", "foobar is not a number"),
-        (date.Year, "foobar", "foobar is not a number"),
-        (date.DayOfWeek, "foobar", "foobar is not a number or literal day of the week"),
-        (date.Day, "64", "Day must be between 1 and 31"),
-        (date.Month, "34", "Month must be between 1 and 12"),
-        (date.Year, "1500", "Year must be between 2000 and 9999"),
-        (date.DayOfWeek, "9", "Day of the week must be between 1 and 7"),
         (date.Time, "10:20[Invalid]", "Invalid timezone"),
         (date.Time, "36:20", "Hour must be between 0 and 23"),
         (date.Time, "16:120", "Minute must be between 0 and 59"),
@@ -198,7 +190,9 @@ def test_time_from_string(
     ],
 )
 def test_invalid_date_string(
-    date_type: type[date.PartialDatetime], value: str, expected_message: str
+    date_type: type[date.RelativeDatetime | date.Time],
+    value: str,
+    expected_message: str,
 ) -> None:
     with pytest.raises(date.InvalidDate) as exc:
         date_type.from_string(value)

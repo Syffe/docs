@@ -80,61 +80,6 @@ class TestAttributes(base.FunctionalTestBase):
                 },
             )
 
-    async def test_time_attribute(self) -> None:
-        rules = {
-            "pull_request_rules": [
-                {
-                    "name": "no-draft",
-                    "conditions": ["current-time>=12:00"],
-                    "actions": {"comment": {"message": "it's time"}},
-                }
-            ]
-        }
-        with freeze_time("2021-05-30T10:00:00", tick=True):
-            await self.setup_repo(yaml.dump(rules))
-            pr = await self.create_pr()
-            comments = await self.get_issue_comments(pr["number"])
-            assert len(comments) == 0
-            await self.run_full_engine()
-
-            comments = await self.get_issue_comments(pr["number"])
-            assert len(comments) == 0
-
-            assert await self.redis_links.cache.zcard("delayed-refresh") == 1
-
-        with freeze_time("2021-05-30T14:00:00", tick=True):
-            await self.run_full_engine()
-            comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
-            assert comment["comment"]["body"] == "it's time"
-
-        ctxt = context.Context(self.repository_ctxt, pr, [])
-        summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
-        assert summary is not None
-        assert (
-            constants.DEPRECATED_CURRENT_CONDITIONS_MESSAGE
-            in summary["output"]["summary"]
-        )
-
-    async def test_time_attribute_deprecation(self) -> None:
-        rules = {
-            "pull_request_rules": [
-                {
-                    "name": "no-draft",
-                    "conditions": ["current-time>=12:00"],
-                    "actions": {"comment": {"message": "it's time"}},
-                }
-            ]
-        }
-        with mock.patch.object(config, "DEPRECATE_CURRENT_CONDITIONS", True):
-            await self.setup_repo(yaml.dump(rules))
-            pr = await self.create_pr()
-            await self.run_engine()
-
-            ctxt = context.Context(self.repository_ctxt, pr, [])
-            summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
-            assert summary is not None
-            assert "Invalid attribute" in summary["output"]["summary"]
-
     async def test_disabled(self) -> None:
         rules = {
             "pull_request_rules": [

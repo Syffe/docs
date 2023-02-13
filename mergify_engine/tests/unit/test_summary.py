@@ -1,3 +1,5 @@
+import datetime
+
 from freezegun import freeze_time
 import voluptuous
 
@@ -357,7 +359,7 @@ async def test_queue_rules_summary() -> None:
             {"and": ["label=foo", "check-success=first-ci"]},
             {"and": ["label=foo", "check-success!=first-ci"]},
             {"not": {"and": ["label=fizz", "label=buzz"]}},
-            "current-year=2018",
+            "schedule=MON-FRI",
         ]
     )
     conditions.condition.conditions.extend(
@@ -393,7 +395,9 @@ async def test_queue_rules_summary() -> None:
         conftest.FakePullRequest(
             {
                 "number": 1,
-                "current-year": date.Year(2018),
+                "current-time": datetime.datetime(
+                    2022, 11, 24, tzinfo=datetime.timezone.utc
+                ),
                 "author": "me",
                 "base": "main",
                 "head": "feature-1",
@@ -409,7 +413,9 @@ async def test_queue_rules_summary() -> None:
         conftest.FakePullRequest(
             {
                 "number": 2,
-                "current-year": date.Year(2018),
+                "current-time": datetime.datetime(
+                    2022, 11, 24, tzinfo=datetime.timezone.utc
+                ),
                 "author": "me",
                 "base": "main",
                 "head": "feature-2",
@@ -425,7 +431,9 @@ async def test_queue_rules_summary() -> None:
         conftest.FakePullRequest(
             {
                 "number": 3,
-                "current-year": date.Year(2018),
+                "current-time": datetime.datetime(
+                    2022, 11, 24, tzinfo=datetime.timezone.utc
+                ),
                 "author": "not-me",
                 "base": "main",
                 "head": "feature-3",
@@ -468,7 +476,7 @@ async def test_queue_rules_summary() -> None:
   - [X] #2
   - [X] #3
 - [X] `base=main`
-- [X] `current-year=2018`
+- [X] `schedule=MON-FRI`
 - [X] all of:
   - [X] `check-success=first-ci`
   - `label=foo`
@@ -526,12 +534,7 @@ async def test_rules_conditions_schedule() -> None:
                 "number": 1,
                 "author": "me",
                 "base": "main",
-                "current-timestamp": date.utcnow(),
                 "current-time": date.utcnow(),
-                "current-day": date.Day(22),
-                "current-month": date.Month(9),
-                "current-year": date.Year(2021),
-                "current-day-of-week": date.DayOfWeek(3),
             }
         ),
     ]

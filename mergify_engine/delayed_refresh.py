@@ -75,14 +75,14 @@ async def plan_next_refresh(
         if refresh_time_conditions:
             conditions = rule.conditions
         else:
-            # NOTE(sileht): we stop refresh closed PR of only current-XXX conditions change
+            # NOTE(sileht): we stop refresh closed PR of only schedule conditions change
             conditions = rule.conditions.copy()
             for condition in conditions.walk():
                 attr = condition.get_attribute_name()
                 # Replace time conditions with an always true condition, so
                 # they will become date.DT_MAX when parsed by
                 # filter.NearDatetimeFilter
-                if attr.startswith("current-") or attr.startswith("schedule"):
+                if attr == "schedule":
                     condition.make_always_true()
 
         f = filter.NearDatetimeFilter(conditions.extract_raw_filter_tree())

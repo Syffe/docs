@@ -461,31 +461,6 @@ def _as_datetime(value: typing.Any) -> datetime.datetime:
     elif isinstance(value, datetime.timedelta):
         dt = date.utcnow()
         return dt + value
-    elif isinstance(value, date.PartialDatetime):
-        dt = date.utcnow().replace(
-            hour=0,
-            minute=0,
-            second=0,
-            microsecond=0,
-        )
-        if isinstance(value, date.DayOfWeek):
-            return dt + datetime.timedelta(days=value.value - dt.isoweekday())
-        elif isinstance(value, date.Day):
-            return dt.replace(day=value.value)
-        elif isinstance(value, date.Month):
-            return dt.replace(month=value.value, day=1)
-        elif isinstance(value, date.Year):
-            return dt.replace(year=value.value, month=1, day=1)
-        else:
-            return date.DT_MAX
-    elif isinstance(value, date.Time):
-        return date.utcnow().replace(
-            hour=value.hour,
-            minute=value.minute,
-            second=0,
-            microsecond=0,
-            tzinfo=value.tzinfo,
-        )
     else:
         return date.DT_MAX
 
@@ -527,28 +502,7 @@ def _dt_op(
 
             if handle_equality and dt_value == dt_ref:
                 # NOTE(sileht): The condition will change...
-                if isinstance(ref, date.PartialDatetime):
-                    if isinstance(ref, date.DayOfWeek):
-                        # next day
-                        dt_ref = dt_ref + datetime.timedelta(days=1)
-                    elif isinstance(ref, date.Day):
-                        # next day
-                        dt_ref = dt_ref + datetime.timedelta(days=1)
-                    elif isinstance(ref, date.Month):
-                        # first day of next month
-                        dt_ref = dt_ref.replace(day=1)
-                        dt_ref = dt_ref + datetime.timedelta(days=32)
-                        dt_ref = dt_ref.replace(day=1)
-                    elif isinstance(ref, date.Year):
-                        # first day of next year
-                        dt_ref = dt_ref.replace(month=1, day=1)
-                        dt_ref = dt_ref + datetime.timedelta(days=366)
-                        dt_ref = dt_ref.replace(month=1, day=1)
-
-                    return _dt_in_future(
-                        dt_ref.replace(hour=0, minute=0, second=0, microsecond=0)
-                    )
-                elif isinstance(ref, date.RelativeDatetime):
+                if isinstance(ref, date.RelativeDatetime):
                     return date.utcnow() + datetime.timedelta(minutes=1)
 
                 return _dt_in_future(dt_ref + datetime.timedelta(minutes=1))
@@ -557,35 +511,7 @@ def _dt_op(
             elif dt_value < dt_ref:
                 return _dt_in_future(dt_ref)
             else:
-                if isinstance(ref, date.Time):
-                    # Condition will change next day at 00:00:00
-                    dt_ref = dt_ref + datetime.timedelta(days=1)
-                elif isinstance(ref, date.DayOfWeek):
-                    dt_ref = dt_ref + datetime.timedelta(days=7)
-                elif isinstance(ref, date.Day):
-                    # Condition will change, 1st day of next month at 00:00:00
-                    dt_ref = dt_ref.replace(day=1)
-                    dt_ref = dt_ref + datetime.timedelta(days=32)
-                    if op in (operator.eq, operator.ne):
-                        dt_ref = dt_ref.replace(day=ref.value)
-                    else:
-                        dt_ref = dt_ref.replace(day=1)
-                elif isinstance(ref, date.Month):
-                    # Condition will change, 1st January of next year at 00:00:00
-                    dt_ref = dt_ref.replace(month=1, day=1)
-                    dt_ref = dt_ref + datetime.timedelta(days=366)
-                    if op in (operator.eq, operator.ne):
-                        dt_ref = dt_ref.replace(month=ref.value, day=1)
-                    else:
-                        dt_ref = dt_ref.replace(month=1, day=1)
-                else:
-                    return date.DT_MAX
-                if op in (operator.eq, operator.ne):
-                    return _dt_in_future(dt_ref)
-                else:
-                    return _dt_in_future(
-                        dt_ref.replace(hour=0, minute=0, second=0, microsecond=0)
-                    )
+                return date.DT_MAX
         except OverflowError:
             return date.DT_MAX
 

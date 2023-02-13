@@ -105,7 +105,7 @@ async def get_rule_checks_status(
     else:
         if wait_for_schedule_to_match:
             schedule_match = await conditions_without_some_attributes_match_p(
-                log, pulls, rule, ("check-", "status-", "schedule", "current-")
+                log, pulls, rule, ("check-", "status-", "schedule")
             )
             # NOTE(sileht): when something not related to checks does not match
             # we now also remove schedule from the tree, if it match
@@ -116,9 +116,7 @@ async def get_rule_checks_status(
                 result_without_schedule = await _get_checks_result(
                     repository,
                     pulls,
-                    get_conditions_with_ignored_attributes(
-                        rule, ("schedule", "current-")
-                    ),
+                    get_conditions_with_ignored_attributes(rule, ("schedule",)),
                 )
                 if result_without_schedule == check_api.Conclusion.FAILURE:
                     return result_without_schedule
