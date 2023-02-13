@@ -363,11 +363,8 @@ class CustomTestClient(httpx.AsyncClient):
 
 
 @pytest.fixture
-async def web_server(
-    request: pytest.FixtureRequest,
-) -> abc.AsyncGenerator[fastapi.FastAPI, None]:
-    https_only = getattr(request, "param", False)
-    app = web_root.create_app(https_only=https_only, debug=True)
+async def web_server() -> abc.AsyncGenerator[fastapi.FastAPI, None]:
+    app = web_root.create_app(https_only=False, debug=True)
     async with asgi_lifespan.LifespanManager(app):
         yield app
 
