@@ -684,6 +684,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             dedicated_workers_spawner_idle_time=0.01,
             dedicated_workers_syncer_idle_time=0.01,
             retry_handled_exception_forever=False,
+            shutdown_timeout=0,
         )
         await w.start()
 
@@ -705,6 +706,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             shared_stream_processes=1,
             shared_stream_tasks_per_process=1,
             retry_handled_exception_forever=False,
+            shutdown_timeout=0,
         )
         await w.start()
 

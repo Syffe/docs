@@ -11,6 +11,7 @@ import httpx
 import msgpack
 import pytest
 from redis import exceptions as redis_exceptions
+import tenacity._asyncio
 
 from mergify_engine import context
 from mergify_engine import date
@@ -156,6 +157,9 @@ async def run_worker(
 ) -> worker.Worker:
     w = worker.Worker(
         idle_sleep_time=0.01,
+        shutdown_timeout=0,
+        dedicated_workers_shutdown_timeout=0,
+        monitoring_idle_time=0.01,
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
         dedicated_workers_syncer_idle_time=0.01,
@@ -739,36 +743,31 @@ async def test_worker_start_redis_ping(
         fake(),
     ]
 
-    w = worker.Worker(
-        shared_stream_tasks_per_process=3,
-        idle_sleep_time=0.01,
-        delayed_refresh_idle_time=0.01,
-        dedicated_workers_spawner_idle_time=0.01,
-        dedicated_workers_syncer_idle_time=0.01,
-    )
+    w = worker.Worker(enabled_services=set(), shutdown_timeout=0)
 
-    await w.start()
+    with mock.patch.object(tenacity.wait_exponential, "__call__", return_value=0):
+        await w.start()
 
     assert 8 == len(logger.warning.mock_calls)
     assert logger.warning.mock_calls[0].args == (
         "Couldn't connect to Redis %s, retrying in %d seconds...",
         "Stream",
-        0.2,
+        mock.ANY,
     )
     assert logger.warning.mock_calls[1].args == (
         "Couldn't connect to Redis %s, retrying in %d seconds...",
         "Stream",
-        0.4,
+        mock.ANY,
     )
     assert logger.warning.mock_calls[4].args == (
         "Couldn't connect to Redis %s, retrying in %d seconds...",
         "Cache",
-        0.2,
+        mock.ANY,
     )
     assert logger.warning.mock_calls[5].args == (
         "Couldn't connect to Redis %s, retrying in %d seconds...",
         "Cache",
-        0.4,
+        mock.ANY,
     )
 
     async def cleanup() -> None:
@@ -1331,12 +1330,12 @@ async def test_stream_processor_priority(
     assert 0 == len(await redis_links.stream.hgetall("attempts"))
 
     w = worker.Worker(
-        idle_sleep_time=0.01,
-        delayed_refresh_idle_time=0.01,
-        dedicated_workers_spawner_idle_time=0.01,
+        enabled_services={"shared-stream"},
+        process_index=0,
         shared_stream_tasks_per_process=1,
         shared_stream_processes=1,
-        process_index=0,
+        idle_sleep_time=0.01,
+        shutdown_timeout=0,
     )
 
     received = []
@@ -1406,12 +1405,12 @@ async def test_stream_processor_date_scheduling(
     assert 0 == len(await redis_links.stream.hgetall("attempts"))
 
     w = worker.Worker(
-        idle_sleep_time=0.01,
-        delayed_refresh_idle_time=0.01,
-        dedicated_workers_spawner_idle_time=0.01,
+        enabled_services={"shared-stream"},
+        process_index=0,
         shared_stream_tasks_per_process=1,
         shared_stream_processes=1,
-        process_index=0,
+        idle_sleep_time=0.01,
+        shutdown_timeout=0,
     )
 
     received = []
@@ -1673,6 +1672,7 @@ async def test_worker_with_multiple_workers(
     await asyncio.gather(
         *[
             run_worker(
+                enabled_services={"shared-stream"},
                 shared_stream_tasks_per_process=shared_stream_tasks_per_process,
                 shared_stream_processes=shared_stream_processes,
                 process_index=i,
@@ -1771,7 +1771,7 @@ async def test_worker_stuck_shutdown(
         github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
         priority=worker_pusher.Priority.immediate,
     )
-    await run_worker(test_timeout=2, shutdown_timeout=1)
+    await run_worker(test_timeout=2)
 
 
 @mock.patch("mergify_engine.worker.subscription.Subscription.get_subscription")
@@ -1789,11 +1789,13 @@ async def test_dedicated_worker_scaleup_scaledown(
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
 
     w = worker.Worker(
+        enabled_services={"shared-stream", "dedicated-stream"},
         idle_sleep_time=0.01,
         shared_stream_tasks_per_process=3,
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
         dedicated_workers_syncer_idle_time=0.01,
+        shutdown_timeout=0,
     )
     await w.start()
 
@@ -1950,6 +1952,7 @@ async def test_dedicated_worker_process_scaleup_scaledown(
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
         dedicated_workers_syncer_idle_time=0.01,
+        shutdown_timeout=0,
     )
     await w_dedicated.start()
     w_shared = worker.Worker(
@@ -1959,6 +1962,7 @@ async def test_dedicated_worker_process_scaleup_scaledown(
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
         dedicated_workers_syncer_idle_time=0.01,
+        shutdown_timeout=0,
     )
     await w_shared.start()
 
@@ -2134,20 +2138,22 @@ async def test_separate_dedicated_worker(
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
 
     shared_w = worker.Worker(
+        enabled_services={"shared-stream"},
         shared_stream_tasks_per_process=3,
         idle_sleep_time=0.01,
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
-        enabled_services={"shared-stream"},
+        shutdown_timeout=0,
     )
     await shared_w.start()
 
     dedicated_w = worker.Worker(
+        enabled_services={"dedicated-stream"},
         shared_stream_tasks_per_process=3,
         idle_sleep_time=0.01,
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
-        enabled_services={"dedicated-stream"},
+        shutdown_timeout=0,
     )
 
     tracker = []
@@ -2264,7 +2270,8 @@ async def test_separate_dedicated_worker(
     autospec=True,
 )
 @mock.patch(
-    "mergify_engine.worker.TaskRetriedForever.loop_and_sleep_forever", autospec=True
+    "mergify_engine.worker.TaskRetriedForever.loop_and_sleep_forever",
+    autospec=True,
 )
 def test_worker_start_all_tasks(
     loop_and_sleep_forever: mock.Mock,
@@ -2298,7 +2305,8 @@ def test_worker_start_all_tasks(
     autospec=True,
 )
 @mock.patch(
-    "mergify_engine.worker.TaskRetriedForever.loop_and_sleep_forever", autospec=True
+    "mergify_engine.worker.TaskRetriedForever.loop_and_sleep_forever",
+    autospec=True,
 )
 def test_worker_start_just_shared(
     loop_and_sleep_forever: mock.Mock,
@@ -2332,7 +2340,8 @@ def test_worker_start_just_shared(
     autospec=True,
 )
 @mock.patch(
-    "mergify_engine.worker.TaskRetriedForever.loop_and_sleep_forever", autospec=True
+    "mergify_engine.worker.TaskRetriedForever.loop_and_sleep_forever",
+    autospec=True,
 )
 def test_worker_start_except_shared(
     loop_and_sleep_forever: mock.Mock,
@@ -2364,7 +2373,12 @@ async def test_get_shared_worker_ids(
     owner_id = github_types.GitHubAccountIdType(132)
     monkeypatch.setattr(worker, "_DYNO", "worker-shared.1")
     assert worker.get_process_index_from_env() == 0
-    w1 = worker.Worker(shared_stream_processes=2, shared_stream_tasks_per_process=30)
+    w1 = worker.Worker(
+        enabled_services={"shared-stream"},
+        shared_stream_processes=2,
+        shared_stream_tasks_per_process=30,
+        shutdown_timeout=0,
+    )
     assert w1.get_shared_worker_ids() == list(range(0, 30))
     assert w1.global_shared_tasks_count == 60
     s1 = worker.StreamProcessor(redis_links, "shared-8", None, w1._owners_cache)
@@ -2372,7 +2386,12 @@ async def test_get_shared_worker_ids(
 
     monkeypatch.setattr(worker, "_DYNO", "worker-shared.2")
     assert worker.get_process_index_from_env() == 1
-    w2 = worker.Worker(shared_stream_processes=2, shared_stream_tasks_per_process=30)
+    w2 = worker.Worker(
+        enabled_services={"shared-stream"},
+        shared_stream_processes=2,
+        shared_stream_tasks_per_process=30,
+        shutdown_timeout=0,
+    )
     assert w2.get_shared_worker_ids() == list(range(30, 60))
     assert w2.global_shared_tasks_count == 60
     s2 = worker.StreamProcessor(redis_links, "shared-38", None, w2._owners_cache)
@@ -2393,7 +2412,12 @@ async def test_get_my_dedicated_worker_ids(
 
     monkeypatch.setattr(worker, "_DYNO", "worker-dedicated.1")
     assert worker.get_process_index_from_env() == 0
-    w1 = worker.Worker(shared_stream_processes=0, dedicated_stream_processes=2)
+    w1 = worker.Worker(
+        enabled_services={"shared-stream", "dedicated-stream"},
+        shared_stream_processes=0,
+        dedicated_stream_processes=2,
+        shutdown_timeout=0,
+    )
     w1._dedicated_workers_owners_cache = owners_cache
     assert w1.get_my_dedicated_worker_ids_from_cache() == {
         github_types.GitHubAccountIdType(123),
@@ -2403,7 +2427,12 @@ async def test_get_my_dedicated_worker_ids(
 
     monkeypatch.setattr(worker, "_DYNO", "worker-dedicated.2")
     assert worker.get_process_index_from_env() == 1
-    w2 = worker.Worker(shared_stream_processes=0, dedicated_stream_processes=2)
+    w2 = worker.Worker(
+        enabled_services={"shared-stream", "dedicated-stream"},
+        shared_stream_processes=0,
+        dedicated_stream_processes=2,
+        shutdown_timeout=0,
+    )
     w2._dedicated_workers_owners_cache = owners_cache
     assert w2.get_my_dedicated_worker_ids_from_cache() == {
         github_types.GitHubAccountIdType(124),
@@ -2490,6 +2519,7 @@ async def test_dedicated_multiple_processes(
         dedicated_workers_syncer_idle_time=0.01,
         dedicated_stream_processes=0,
         process_index=0,
+        shutdown_timeout=0,
     )
     await w_shared.start()
     w1 = worker.Worker(
@@ -2500,6 +2530,7 @@ async def test_dedicated_multiple_processes(
         dedicated_workers_syncer_idle_time=0.01,
         dedicated_stream_processes=2,
         process_index=0,
+        shutdown_timeout=0,
     )
     await w1.start()
 
@@ -2512,6 +2543,7 @@ async def test_dedicated_multiple_processes(
         dedicated_workers_syncer_idle_time=0.01,
         dedicated_stream_processes=2,
         process_index=1,
+        shutdown_timeout=0,
     )
     await w2.start()
 
@@ -2640,6 +2672,7 @@ async def test_start_stop_cycle(
         dedicated_workers_syncer_idle_time=0.01,
         dedicated_stream_processes=1,
         process_index=0,
+        shutdown_timeout=0,
     )
     assert w._stopped.is_set()
     assert w._stop_task is None
