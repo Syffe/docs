@@ -3,10 +3,10 @@
 
 def import_check_worker() -> int:
     from mergify_engine import config  # noqa isort:skip
-    from mergify_engine import worker  # isort:skip
+    from mergify_engine.worker import manager  # isort:skip
 
-    worker.service.setup("import-check-worker")  # type: ignore[attr-defined]
-    worker.signals.register()  # type: ignore[attr-defined]
+    manager.service.setup("import-check-worker")  # type: ignore[attr-defined]
+    manager.signals.register()  # type: ignore[attr-defined]
 
     return 0
 

@@ -24,18 +24,10 @@
 # Pull key format: f"bucket-sources~{repo_id}~{pull_number or 0}"
 #
 
-import argparse
-import asyncio
-import collections
 from collections import abc
 import contextlib
 import dataclasses
 import datetime
-import functools
-import hashlib
-import itertools
-import os
-import signal
 import time
 import typing
 
@@ -46,38 +38,33 @@ import first
 import msgpack
 from redis import exceptions as redis_exceptions
 import sentry_sdk
-import tenacity
 
 from mergify_engine import check_api
 from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
-from mergify_engine import delayed_refresh
 from mergify_engine import engine
 from mergify_engine import exceptions
 from mergify_engine import github_types
-from mergify_engine import logs
 from mergify_engine import pull_request_finder
 from mergify_engine import redis_utils
 from mergify_engine import refresher
-from mergify_engine import service
-from mergify_engine import signals
-from mergify_engine import worker_lua
 from mergify_engine import worker_pusher
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
 from mergify_engine.queue import merge_train
+from mergify_engine.worker import stream_lua
 
-
-LOG = daiquiri.getLogger(__name__)
 
 # we keep the PR in queue for ~ 7 minutes (a try == WORKER_PROCESSING_DELAY)
 MAX_RETRIES: int = 15
 STREAM_ATTEMPTS_LOGGING_THRESHOLD: int = 20
 DEDICATED_WORKERS_KEY = "dedicated-workers"
 ATTEMPTS_KEY = "attempts"
+
+LOG = daiquiri.getLogger(__name__)
 
 
 class IgnoredException(Exception):
@@ -99,13 +86,13 @@ class MaxPullRetry(PullRetry):
 
 @dataclasses.dataclass
 class OrgBucketRetry(Exception):
-    bucket_org_key: worker_lua.BucketOrgKeyType
+    bucket_org_key: stream_lua.BucketOrgKeyType
     attempts: int
     retry_at: datetime.datetime
 
 
 class OrgBucketUnused(Exception):
-    bucket_org_key: worker_lua.BucketOrgKeyType
+    bucket_org_key: stream_lua.BucketOrgKeyType
 
 
 @dataclasses.dataclass
@@ -120,7 +107,7 @@ T_MessageID = typing.NewType("T_MessageID", str)
 
 @dataclasses.dataclass
 class PullRequestBucket:
-    sources_key: worker_lua.BucketSourcesKeyType
+    sources_key: stream_lua.BucketSourcesKeyType
     score: float
     repo_id: github_types.GitHubRepositoryIdType
     pull_number: github_types.GitHubPullRequestNumber
@@ -253,7 +240,7 @@ class OwnerLoginsCache:
 
 
 @dataclasses.dataclass
-class StreamProcessor:
+class Processor:
     redis_links: redis_utils.RedisLinks
     worker_id: str
     dedicated_owner_id: github_types.GitHubAccountIdType | None
@@ -263,8 +250,8 @@ class StreamProcessor:
     @contextlib.asynccontextmanager
     async def _translate_exception_to_retries(
         self,
-        bucket_org_key: worker_lua.BucketOrgKeyType,
-        bucket_sources_key: worker_lua.BucketSourcesKeyType | None = None,
+        bucket_org_key: stream_lua.BucketOrgKeyType,
+        bucket_sources_key: stream_lua.BucketSourcesKeyType | None = None,
     ) -> abc.AsyncIterator[None]:
         try:
             yield
@@ -330,7 +317,7 @@ class StreamProcessor:
 
     async def consume(
         self,
-        bucket_org_key: worker_lua.BucketOrgKeyType,
+        bucket_org_key: stream_lua.BucketOrgKeyType,
         owner_id: github_types.GitHubAccountIdType,
         owner_login_for_tracing: github_types.GitHubLoginForTracing,
     ) -> None:
@@ -417,7 +404,7 @@ class StreamProcessor:
                 exc_info=True,
             )
             try:
-                await worker_lua.drop_bucket(self.redis_links.stream, bucket_org_key)
+                await stream_lua.drop_bucket(self.redis_links.stream, bucket_org_key)
             except redis_exceptions.ConnectionError:
                 statsd.increment("redis.client.connection.errors")
                 LOG.warning(
@@ -466,7 +453,7 @@ class StreamProcessor:
 
         LOG.debug("cleanup org bucket start", bucket_org_key=bucket_org_key)
         try:
-            await worker_lua.clean_org_bucket(
+            await stream_lua.clean_org_bucket(
                 self.redis_links.stream,
                 bucket_org_key,
                 date.utcnow(),
@@ -486,7 +473,7 @@ class StreamProcessor:
 
     @staticmethod
     def _extract_infos_from_bucket_sources_key(
-        bucket_sources_key: worker_lua.BucketSourcesKeyType,
+        bucket_sources_key: stream_lua.BucketSourcesKeyType,
     ) -> tuple[
         github_types.GitHubRepositoryIdType,
         github_types.GitHubPullRequestNumber,
@@ -504,7 +491,7 @@ class StreamProcessor:
 
     async def select_pull_request_bucket(
         self,
-        bucket_org_key: worker_lua.BucketOrgKeyType,
+        bucket_org_key: stream_lua.BucketOrgKeyType,
     ) -> PullRequestBucket | None:
         bucket_sources_keys: list[
             tuple[bytes, float]
@@ -521,7 +508,7 @@ class StreamProcessor:
             if when >= now:
                 continue
 
-            bucket_sources_key = worker_lua.BucketSourcesKeyType(
+            bucket_sources_key = stream_lua.BucketSourcesKeyType(
                 _bucket_sources_key.decode()
             )
             (
@@ -535,7 +522,7 @@ class StreamProcessor:
 
     async def _consume_buckets(
         self,
-        bucket_org_key: worker_lua.BucketOrgKeyType,
+        bucket_org_key: stream_lua.BucketOrgKeyType,
         installation: context.Installation,
     ) -> int:
         pr_finder = pull_request_finder.PullRequestFinder(installation)
@@ -556,7 +543,7 @@ class StreamProcessor:
 
             pulls_processed += 1
 
-            messages = await worker_lua.get_pull_messages(
+            messages = await stream_lua.get_pull_messages(
                 self.redis_links.stream,
                 bucket_org_key,
                 bucket.sources_key,
@@ -595,7 +582,7 @@ class StreamProcessor:
             logger.debug("read org bucket", sources=len(messages))
             if not messages:
                 # Should not occur but better be safe than sorry
-                await worker_lua.remove_pull(
+                await stream_lua.remove_pull(
                     self.redis_links.stream,
                     bucket_org_key,
                     bucket.sources_key,
@@ -657,7 +644,7 @@ class StreamProcessor:
                                 ],
                             )
                     finally:
-                        await worker_lua.remove_pull(
+                        await stream_lua.remove_pull(
                             self.redis_links.stream,
                             bucket_org_key,
                             bucket.sources_key,
@@ -769,7 +756,7 @@ class StreamProcessor:
 
     async def _consume_pull(
         self,
-        bucket_org_key: worker_lua.BucketOrgKeyType,
+        bucket_org_key: stream_lua.BucketOrgKeyType,
         installation: context.Installation,
         bucket: PullRequestBucket,
         tracing_repo_name: github_types.GitHubRepositoryNameForTracing,
@@ -809,14 +796,14 @@ class StreamProcessor:
                     sources,
                 )
             await self.redis_links.stream.hdel(ATTEMPTS_KEY, bucket.sources_key)
-            await worker_lua.remove_pull(
+            await stream_lua.remove_pull(
                 self.redis_links.stream,
                 bucket_org_key,
                 bucket.sources_key,
                 tuple(message_ids),
             )
         except IgnoredException:
-            await worker_lua.remove_pull(
+            await stream_lua.remove_pull(
                 self.redis_links.stream,
                 bucket_org_key,
                 bucket.sources_key,
@@ -824,7 +811,7 @@ class StreamProcessor:
             )
             logger.debug("failed to process pull request, ignoring", exc_info=True)
         except MaxPullRetry as e:
-            await worker_lua.remove_pull(
+            await stream_lua.remove_pull(
                 self.redis_links.stream,
                 bucket_org_key,
                 bucket.sources_key,
@@ -860,716 +847,14 @@ class StreamProcessor:
             else:
                 raise
 
-    def should_handle_owner(
-        self,
-        owner_id: github_types.GitHubAccountIdType,
-        dedicated_worker_owner_ids: set[github_types.GitHubAccountIdType],
-        global_shared_tasks_count: int,
-    ) -> bool:
-        if self.dedicated_owner_id is None:
-            if owner_id in dedicated_worker_owner_ids:
-                return False
 
-            return (
-                Worker.get_shared_worker_id_for(owner_id, global_shared_tasks_count)
-                == self.worker_id
-            )
-        else:
-            return owner_id == self.dedicated_owner_id
-
-
-# NOTE(sileht): for security reason we empty the os.environ at runtime
-# We can access it only when modules load.
-_DYNO = os.getenv("DYNO")
-
-
-def get_process_index_from_env() -> int:
-    if _DYNO:
-        return int(_DYNO.rsplit(".", 1)[-1]) - 1
-    else:
-        return 0
-
-
-def wait_before_next_retry(retry_state: tenacity.RetryCallState) -> typing.Any:
-    return retry_state.next_action.__dict__["sleep"]
-
-
-async def ping_redis(
-    redis: redis_utils.RedisStream | redis_utils.RedisCache,
-    redis_name: str,
-) -> None:
-    def retry_log(retry_state: tenacity.RetryCallState) -> None:
-        statsd.increment("redis.client.connection.errors")
-        LOG.warning(
-            "Couldn't connect to Redis %s, retrying in %d seconds...",
-            redis_name,
-            wait_before_next_retry(retry_state),
-        )
-
-    async for attempt in tenacity.AsyncRetrying(
-        wait=tenacity.wait_exponential(multiplier=0.2, max=5),
-        retry=tenacity.retry_if_exception_type(redis_exceptions.ConnectionError),
-        before_sleep=retry_log,
-    ):
-        with attempt:
-            await redis.ping()
-
-
-TaskRetriedForeverFuncT = abc.Callable[[], abc.Awaitable[None]]
-
-
-class TaskRetriedForever(asyncio.Task[typing.Any]):
-    def __init__(
-        self, name: str, func: TaskRetriedForeverFuncT, sleep_time: float
-    ) -> None:
-        self._stopping = asyncio.Event()
-        super().__init__(
-            self.with_dedicated_sentry_hub(
-                self.loop_and_sleep_forever(func, sleep_time)
-            ),
-            name=name,
-        )
-
-    def stop(self) -> None:
-        if self._stopping.is_set():
-            raise RuntimeError(f"Worker task `{self.get_name()}` already stopped")
-        self._stopping.set()
-
-    @staticmethod
-    async def with_dedicated_sentry_hub(coro: abc.Awaitable[None]) -> None:
-        with sentry_sdk.Hub(sentry_sdk.Hub.current):
-            await coro
-
-    async def loop_and_sleep_forever(
-        self, func: TaskRetriedForeverFuncT, sleep_time: float
-    ) -> None:
-        while not self._stopping.is_set():
-            try:
-                await func()
-            except asyncio.CancelledError:
-                LOG.info("%s task killed", self.get_name())
-                return
-            except redis_exceptions.ConnectionError:
-                statsd.increment("redis.client.connection.errors")
-                LOG.warning(
-                    "%s task lost Redis connection",
-                    self.get_name(),
-                    exc_info=True,
-                )
-            except Exception:
-                LOG.error("%s task failed", self.get_name(), exc_info=True)
-
-            try:
-                await asyncio.wait_for(self._stopping.wait(), timeout=sleep_time)
-            except asyncio.CancelledError:
-                LOG.info("%s task killed", self.get_name())
-                return
-            except asyncio.TimeoutError:
-                pass
-
-        LOG.debug("%s task exited", self.get_name())
-
-
-WorkerServiceT = typing.Literal[
-    "shared-stream",
-    "dedicated-stream",
-    "stream-monitoring",
-    "delayed-refresh",
-]
-WorkerServicesT = set[WorkerServiceT]
-AVAILABLE_WORKER_SERVICES = set(WorkerServiceT.__dict__["__args__"])
-
-
-def asyncio_event_set_by_default() -> asyncio.Event:
-    evt = asyncio.Event()
-    evt.set()
-    return evt
-
-
-@dataclasses.dataclass
-class Worker:
-    idle_sleep_time: float = 0.42
-    shutdown_timeout: float = config.WORKER_SHUTDOWN_TIMEOUT
-    dedicated_workers_shutdown_timeout: float = 60.0
-    shared_stream_tasks_per_process: int = config.SHARED_STREAM_TASKS_PER_PROCESS
-    shared_stream_processes: int = config.SHARED_STREAM_PROCESSES
-    dedicated_stream_processes: int = config.DEDICATED_STREAM_PROCESSES
-    process_index: int = dataclasses.field(default_factory=get_process_index_from_env)
-    enabled_services: WorkerServicesT = dataclasses.field(
-        default_factory=lambda: AVAILABLE_WORKER_SERVICES.copy()
-    )
-    monitoring_idle_time: float = 60
-    delayed_refresh_idle_time: float = 60
-    dedicated_workers_spawner_idle_time: float = 60
-    dedicated_workers_syncer_idle_time: float = 30
-    retry_handled_exception_forever: bool = True
-
-    _redis_links: redis_utils.RedisLinks = dataclasses.field(
-        init=False, default_factory=lambda: redis_utils.RedisLinks(name="worker")
-    )
-
-    _stopped: asyncio.Event = dataclasses.field(
-        init=False, default_factory=asyncio_event_set_by_default
-    )
-    _stop_task: asyncio.Task[None] | None = dataclasses.field(init=False, default=None)
-
-    _shared_worker_tasks: list[TaskRetriedForever] = dataclasses.field(
-        init=False, default_factory=list
-    )
-    _dedicated_worker_tasks: dict[
-        github_types.GitHubAccountIdType, TaskRetriedForever
-    ] = dataclasses.field(init=False, default_factory=dict)
-
-    _stream_monitoring_task: TaskRetriedForever | None = dataclasses.field(
-        init=False, default=None
-    )
-    _dedicated_workers_spawner_task: TaskRetriedForever | None = dataclasses.field(
-        init=False, default=None
-    )
-
-    _dedicated_workers_syncer_task: TaskRetriedForever | None = dataclasses.field(
-        init=False, default=None
-    )
-
-    _delayed_refresh_task: TaskRetriedForever | None = dataclasses.field(
-        init=False, default=None
-    )
-    _owners_cache: OwnerLoginsCache = dataclasses.field(
-        init=False, default_factory=OwnerLoginsCache
-    )
-    _dedicated_workers_owners_cache: set[
-        github_types.GitHubAccountIdType
-    ] = dataclasses.field(init=False, default_factory=set)
-
-    @property
-    def global_shared_tasks_count(self) -> int:
-        return self.shared_stream_tasks_per_process * self.shared_stream_processes
-
-    @staticmethod
-    def extract_owner(
-        bucket_org_key: worker_lua.BucketOrgKeyType,
-    ) -> github_types.GitHubAccountIdType:
-        return github_types.GitHubAccountIdType(int(bucket_org_key.split("~")[1]))
-
-    async def shared_stream_worker_task(self, shared_worker_id: int) -> None:
-        stream_processor = StreamProcessor(
-            self._redis_links,
-            worker_id=f"shared-{shared_worker_id}",
-            dedicated_owner_id=None,
-            owners_cache=self._owners_cache,
-            retry_unhandled_exception_forever=self.retry_handled_exception_forever,
-        )
-        return await self._stream_worker_task(stream_processor)
-
-    async def dedicated_stream_worker_task(
-        self, owner_id: github_types.GitHubAccountIdType
-    ) -> None:
-        stream_processor = StreamProcessor(
-            self._redis_links,
-            worker_id=f"dedicated-{owner_id}",
-            dedicated_owner_id=owner_id,
-            owners_cache=self._owners_cache,
-            retry_unhandled_exception_forever=self.retry_handled_exception_forever,
-        )
-        return await self._stream_worker_task(stream_processor)
-
-    async def _get_next_bucket_to_proceed(
-        self,
-        stream_processor: StreamProcessor,
-    ) -> worker_lua.BucketOrgKeyType | None:
-        now = time.time()
-        for org_bucket in await self._redis_links.stream.zrangebyscore(
-            "streams", min=0, max=now
-        ):
-            bucket_org_key = worker_lua.BucketOrgKeyType(org_bucket.decode())
-            owner_id = self.extract_owner(bucket_org_key)
-            if not stream_processor.should_handle_owner(
-                owner_id,
-                self._dedicated_workers_owners_cache,
-                self.global_shared_tasks_count,
-            ):
-                continue
-
-            has_pull_requests_to_process = (
-                await stream_processor.select_pull_request_bucket(bucket_org_key)
-            )
-            if not has_pull_requests_to_process:
-                continue
-
-            return bucket_org_key
-
-        return None
-
-    async def _stream_worker_task(self, stream_processor: StreamProcessor) -> None:
-        logs.WORKER_ID.set(stream_processor.worker_id)
-
-        bucket_org_key = await self._get_next_bucket_to_proceed(stream_processor)
-        if bucket_org_key is None:
-            return None
-
-        LOG.debug(
-            "worker %s take org bucket: %s",
-            stream_processor.worker_id,
-            bucket_org_key,
-        )
-
-        statsd.increment(
-            "engine.streams.selected",
-            tags=[f"worker_id:{stream_processor.worker_id}"],
-        )
-
-        owner_id = self.extract_owner(bucket_org_key)
-        owner_login_for_tracing = self._owners_cache.get(owner_id)
-        try:
-            with tracer.trace(
-                "org bucket processing",
-                span_type="worker",
-                resource=owner_login_for_tracing,
-            ) as span:
-                span.set_tag("gh_owner", owner_login_for_tracing)
-                with sentry_sdk.Hub(sentry_sdk.Hub.current) as hub:
-                    with hub.configure_scope() as scope:
-                        scope.set_tag("gh_owner", owner_login_for_tracing)
-                        scope.set_user({"username": owner_login_for_tracing})
-                        await stream_processor.consume(
-                            bucket_org_key, owner_id, owner_login_for_tracing
-                        )
-        finally:
-            LOG.debug(
-                "worker %s release org bucket: %s",
-                stream_processor.worker_id,
-                bucket_org_key,
-            )
-
-    @staticmethod
-    async def get_dedicated_worker_owner_ids_from_redis(
-        redis_stream: redis_utils.RedisStream,
-    ) -> set[github_types.GitHubAccountIdType]:
-        dedicated_workers_data = await redis_stream.smembers(DEDICATED_WORKERS_KEY)
-        if dedicated_workers_data is None:
-            return set()
-        else:
-            return {
-                github_types.GitHubAccountIdType(int(v)) for v in dedicated_workers_data
-            }
-
-    @tracer.wrap("sync_dedicated_workers_cache", span_type="worker")
-    async def _sync_dedicated_workers_cache(self) -> None:
-        self._dedicated_workers_owners_cache = (
-            await self.get_dedicated_worker_owner_ids_from_redis(
-                self._redis_links.stream
-            )
-        )
-
-    @tracer.wrap("monitoring_task", span_type="worker")
-    async def monitoring_task(self) -> None:
-        # TODO(sileht): maybe also graph streams that are before `now`
-        # to see the diff between the backlog and the upcoming work to do
-        now = time.time()
-        org_buckets: list[
-            tuple[bytes, float]
-        ] = await self._redis_links.stream.zrangebyscore(
-            "streams",
-            min=0,
-            max=now,
-            withscores=True,
-        )
-        # NOTE(sileht): The latency may not be exact with the next StreamSelector
-        # based on hash+modulo
-        if len(org_buckets) > self.global_shared_tasks_count:
-            latency = now - org_buckets[self.global_shared_tasks_count][1]
-            statsd.timing("engine.streams.latency", latency)
-        else:
-            statsd.timing("engine.streams.latency", 0)
-
-        statsd.gauge("engine.streams.backlog", len(org_buckets))
-        statsd.gauge("engine.workers.count", self.global_shared_tasks_count)
-        statsd.gauge(
-            "engine.processes.count",
-            self.shared_stream_processes,
-            tags=["type:shared"],
-        )
-        statsd.gauge(
-            "engine.processes.count",
-            self.dedicated_stream_processes,
-            tags=["type:dedicated"],
-        )
-        statsd.gauge(
-            "engine.workers-per-process.count", self.shared_stream_tasks_per_process
-        )
-
-        # TODO(sileht): maybe we can do something with the bucket scores to
-        # build a latency metric
-        bucket_backlogs: dict[
-            worker_pusher.Priority, dict[str, int]
-        ] = collections.defaultdict(lambda: collections.defaultdict(lambda: 0))
-
-        for org_bucket, _ in org_buckets:
-            owner_id = self.extract_owner(
-                worker_lua.BucketOrgKeyType(org_bucket.decode())
-            )
-            if owner_id in self._dedicated_workers_owners_cache:
-                worker_id = f"dedicated-{owner_id}"
-            else:
-                worker_id = self.get_shared_worker_id_for(
-                    owner_id, self.global_shared_tasks_count
-                )
-            bucket_contents: list[
-                tuple[bytes, float]
-            ] = await self._redis_links.stream.zrangebyscore(
-                org_bucket, min=0, max="+inf", withscores=True
-            )
-            for _, score in bucket_contents:
-                prio = worker_pusher.get_priority_level_from_score(score)
-                bucket_backlogs[prio][worker_id] += 1
-
-        for priority, bucket_backlog in bucket_backlogs.items():
-            for worker_id, length in bucket_backlog.items():
-                statsd.gauge(
-                    "engine.buckets.backlog",
-                    length,
-                    tags=[f"priority:{priority.name}", f"worker_id:{worker_id}"],
-                )
-
-    @tracer.wrap("delayed_refresh_task", span_type="worker")
-    async def delayed_refresh_task(self) -> None:
-        await delayed_refresh.send(self._redis_links)
-
-    @staticmethod
-    def get_shared_worker_id_for(
-        owner_id: github_types.GitHubAccountIdType, global_shared_tasks_count: int
-    ) -> str:
-        hashed = hashlib.blake2s(str(owner_id).encode())
-        shared_id = int(hashed.hexdigest(), 16) % global_shared_tasks_count
-        return f"shared-{shared_id}"
-
-    def get_shared_worker_ids(self) -> list[int]:
-        return list(
-            range(
-                self.process_index * self.shared_stream_tasks_per_process,
-                (self.process_index + 1) * self.shared_stream_tasks_per_process,
-            )
-        )
-
-    async def start(self) -> None:
-        if self._stop_task is not None:
-            raise RuntimeError("Worker can't be restarted")
-
-        self._stopped.clear()
-
-        LOG.info(
-            "worker process start",
-            enabled_services=self.enabled_services,
-            process_index=self.process_index,
-            dedicated_stream_processes=self.dedicated_stream_processes,
-            shared_stream_tasks_per_process=self.shared_stream_processes,
-            shared_stream_processes=self.shared_stream_processes,
-        )
-
-        await ping_redis(self._redis_links.stream, "Stream")
-        await ping_redis(self._redis_links.cache, "Cache")
-
-        await github.GitHubAppInfo.warm_cache(self._redis_links.cache_bytes)
-
-        self._dedicated_workers_syncer_task = TaskRetriedForever(
-            "dedicated workers cache syncer",
-            self._sync_dedicated_workers_cache,
-            self.dedicated_workers_syncer_idle_time,
-        )
-
-        if "shared-stream" in self.enabled_services:
-            worker_ids = self.get_shared_worker_ids()
-            LOG.info(
-                "workers starting",
-                count=len(worker_ids),
-                process_index=self.process_index,
-                shared_stream_tasks_per_process=self.shared_stream_tasks_per_process,
-            )
-            for worker_id in worker_ids:
-                self._shared_worker_tasks.append(
-                    TaskRetriedForever(
-                        f"worker {worker_id}",
-                        functools.partial(
-                            self.shared_stream_worker_task,
-                            worker_id,
-                        ),
-                        self.idle_sleep_time,
-                    )
-                )
-            LOG.info(
-                "workers started",
-                count=len(worker_ids),
-                process_index=self.process_index,
-                shared_stream_tasks_per_process=self.shared_stream_tasks_per_process,
-            )
-
-        if "dedicated-stream" in self.enabled_services:
-            LOG.info("dedicated worker spawner starting")
-            self._dedicated_workers_spawner_task = TaskRetriedForever(
-                "dedicated workers spawner",
-                self.dedicated_workers_spawner_task,
-                self.dedicated_workers_spawner_idle_time,
-            )
-            LOG.info("dedicated worker spawner started")
-
-        if "delayed-refresh" in self.enabled_services:
-            LOG.info("delayed refresh starting")
-            self._delayed_refresh_task = TaskRetriedForever(
-                "delayed_refresh",
-                self.delayed_refresh_task,
-                self.delayed_refresh_idle_time,
-            )
-            LOG.info("delayed refresh started")
-
-        if "stream-monitoring" in self.enabled_services:
-            LOG.info("monitoring starting")
-            self._stream_monitoring_task = TaskRetriedForever(
-                "monitoring", self.monitoring_task, self.monitoring_idle_time
-            )
-            LOG.info("monitoring started")
-
-    def get_my_dedicated_worker_ids_from_cache(
-        self,
-    ) -> set[github_types.GitHubAccountIdType]:
-        if self.dedicated_stream_processes:
-            return set(
-                sorted(self._dedicated_workers_owners_cache)[
-                    self.process_index :: self.dedicated_stream_processes
-                ]
-            )
+async def get_dedicated_worker_owner_ids_from_redis(
+    redis_stream: redis_utils.RedisStream,
+) -> set[github_types.GitHubAccountIdType]:
+    dedicated_workers_data = await redis_stream.smembers(DEDICATED_WORKERS_KEY)
+    if dedicated_workers_data is None:
         return set()
-
-    @tracer.wrap("dedicated_workers_spawner_task", span_type="worker")
-    async def dedicated_workers_spawner_task(self) -> None:
-        expected_workers = self.get_my_dedicated_worker_ids_from_cache()
-        current_workers = set(self._dedicated_worker_tasks.keys())
-
-        to_stop = current_workers - expected_workers
-        to_start = expected_workers - current_workers
-
-        if to_stop:
-            LOG.info(
-                "dedicated workers to stop",
-                workers=to_stop,
-                process_index=self.process_index,
-                dedicated_stream_processes=self.dedicated_stream_processes,
-            )
-
-        tasks = [self._dedicated_worker_tasks[owner_id] for owner_id in to_stop]
-        if tasks:
-            await self.stop_wait_and_kill(
-                "old dedicated workers", tasks, self.dedicated_workers_shutdown_timeout
-            )
-
-        for owner_id in to_stop:
-            del self._dedicated_worker_tasks[owner_id]
-
-        if to_start:
-            LOG.info(
-                "dedicated workers to start",
-                workers=to_start,
-                process_index=self.process_index,
-                dedicated_stream_processes=self.dedicated_stream_processes,
-            )
-        for owner_id in to_start:
-            self._dedicated_worker_tasks[owner_id] = TaskRetriedForever(
-                f"dedicated-{owner_id}",
-                functools.partial(self.dedicated_stream_worker_task, owner_id),
-                self.idle_sleep_time,
-            )
-
-        if to_start or to_stop:
-            LOG.info(
-                "new dedicated workers setup",
-                workers=set(self._dedicated_worker_tasks),
-                process_index=self.process_index,
-                dedicated_stream_processes=self.dedicated_stream_processes,
-            )
-
-    async def _shutdown(self) -> None:
-        LOG.info("shutdown start")
-
-        # Stop spawning new workers first
-        if self._dedicated_workers_spawner_task is not None:
-            self._dedicated_workers_spawner_task.stop()
-            await self._dedicated_workers_spawner_task
-
-        # then we can cleanup other tasks
-        tasks = []
-        tasks.extend(self._shared_worker_tasks)
-        tasks.extend(self._dedicated_worker_tasks.values())
-        if self._dedicated_workers_syncer_task is not None:
-            tasks.append(self._dedicated_workers_syncer_task)
-        if self._delayed_refresh_task is not None:
-            tasks.append(self._delayed_refresh_task)
-        if self._stream_monitoring_task is not None:
-            tasks.append(self._stream_monitoring_task)
-
-        await self.stop_wait_and_kill(
-            "workers and monitoring", tasks, self.shutdown_timeout
-        )
-
-        self._shared_worker_tasks = []
-        self._dedicated_worker_tasks = {}
-        self._delayed_refresh_task = None
-        self._stream_monitoring_task = None
-        self._dedicated_workers_spawner_task = None
-        self._dedicated_workers_syncer_task = None
-
-        LOG.info("redis finalizing")
-        await self._redis_links.shutdown_all()
-        LOG.info("redis finalized")
-
-        self._stopped.set()
-        LOG.info("shutdown finished")
-
-    @staticmethod
-    async def stop_wait_and_kill(
-        name: str, tasks: list[TaskRetriedForever], timeout: float
-    ) -> None:
-        LOG.info(f"{name} exiting", count=len(tasks))
-        for task in tasks:
-            task.stop()
-        if tasks:
-            _, pendings = await asyncio.wait(tasks, timeout=timeout)
-            if pendings:
-                LOG.info(f"{name} being killed", count=len(pendings))
-                for pending in pendings:
-                    pending.cancel(msg="shutdown")
-                await asyncio.wait(pendings)
-        LOG.info(f"{name} exited", count=len(tasks))
-
-    def stop(self) -> None:
-        if self._stop_task is not None:
-            raise RuntimeError("Worker is already stopping")
-        self._stop_task = asyncio.create_task(self._shutdown(), name="shutdown")
-
-    async def wait_shutdown_complete(self) -> None:
-        await self._stopped.wait()
-        if self._stop_task:
-            await self._stop_task
-            self._stop_task = None
-
-    def stop_with_signal(self, signame: str) -> None:
-        if self._stop_task is None:
-            LOG.info("got signal %s: cleanly shutdown workers", signame)
-            self.stop()
-        else:
-            LOG.info("got signal %s: ignoring, shutdown already in process", signame)
-
-    def setup_signals(self) -> None:
-        loop = asyncio.get_running_loop()
-        for signame in ("SIGINT", "SIGTERM"):
-            loop.add_signal_handler(
-                getattr(signal, signame),
-                functools.partial(self.stop_with_signal, signame),
-            )
-
-
-async def run_forever(
-    enabled_services: WorkerServicesT = AVAILABLE_WORKER_SERVICES,
-) -> None:
-    worker = Worker(enabled_services=enabled_services)
-    await worker.start()
-    worker.setup_signals()
-    await worker.wait_shutdown_complete()
-    LOG.info("Exiting...")
-
-
-def ServicesSet(v: str) -> WorkerServicesT:
-    values = set(v.strip().split(","))
-    for value in values:
-        if value not in AVAILABLE_WORKER_SERVICES:
-            raise ValueError(f"{v} is not a valid service")
-    return typing.cast(WorkerServicesT, values)
-
-
-def main(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(description="Mergify Engine Worker")
-    parser.add_argument(
-        "--enabled-services",
-        type=ServicesSet,
-        default=",".join(AVAILABLE_WORKER_SERVICES),
-    )
-    args = parser.parse_args(argv)
-
-    service.setup("worker")
-    signals.register()
-    return asyncio.run(run_forever(enabled_services=args.enabled_services))
-
-
-async def async_status() -> None:
-    shared_stream_tasks_per_process: int = config.SHARED_STREAM_TASKS_PER_PROCESS
-    shared_stream_processes: int = config.SHARED_STREAM_PROCESSES
-    global_shared_tasks_count: int = (
-        shared_stream_tasks_per_process * shared_stream_processes
-    )
-
-    redis_links = redis_utils.RedisLinks(name="async_status")
-
-    dedicated_worker_owner_ids = await Worker.get_dedicated_worker_owner_ids_from_redis(
-        redis_links.stream
-    )
-
-    def sorter(item: tuple[bytes, float]) -> str:
-        org_bucket, score = item
-        owner_id = Worker.extract_owner(
-            worker_lua.BucketOrgKeyType(org_bucket.decode())
-        )
-        if owner_id in dedicated_worker_owner_ids:
-            return f"dedicated-{owner_id}"
-        else:
-            return Worker.get_shared_worker_id_for(owner_id, global_shared_tasks_count)
-
-    org_buckets: list[tuple[bytes, float]] = sorted(
-        await redis_links.stream.zrangebyscore(
-            "streams", min=0, max="+inf", withscores=True
-        ),
-        key=sorter,
-    )
-
-    for worker_id, org_buckets_by_worker in itertools.groupby(org_buckets, key=sorter):
-        for org_bucket, score in org_buckets_by_worker:
-            date = datetime.datetime.utcfromtimestamp(score).isoformat(" ", "seconds")
-            owner_id = org_bucket.split(b"~")[1]
-            event_org_buckets = await redis_links.stream.zrange(org_bucket, 0, -1)
-            count = sum([await redis_links.stream.xlen(es) for es in event_org_buckets])
-            items = f"{len(event_org_buckets)} pull requests, {count} events"
-            print(f"{{{worker_id}}} [{date}] {owner_id.decode()}: {items}")
-
-    await redis_links.shutdown_all()
-
-
-def status() -> None:
-    asyncio.run(async_status())
-
-
-async def async_reschedule_now() -> int:
-    parser = argparse.ArgumentParser(description="Rescheduler for Mergify")
-    parser.add_argument("owner_id", help="Organization ID")
-    args = parser.parse_args()
-
-    redis_links = redis_utils.RedisLinks(name="async_reschedule_now")
-    org_buckets = await redis_links.stream.zrangebyscore("streams", min=0, max="+inf")
-    expected_bucket = f"bucket~{args.owner_id}"
-    for org_bucket in org_buckets:
-        if org_bucket.decode().startswith(expected_bucket):
-            scheduled_at = date.utcnow()
-            score = scheduled_at.timestamp()
-            transaction = await redis_links.stream.pipeline()
-            await transaction.hdel(ATTEMPTS_KEY, org_bucket)
-            # TODO(sileht): Should we update bucket scores too ?
-            await transaction.zadd("streams", {org_bucket.decode(): score})
-            # NOTE(sileht): Do we need to cleanup the per PR attempt?
-            # await transaction.hdel(ATTEMPTS_KEY, bucket_sources_key)
-            await transaction.execute()
-            await redis_links.shutdown_all()
-            return 0
     else:
-        print(f"Stream for {expected_bucket} not found")
-        await redis_links.shutdown_all()
-        return 1
-
-
-def reschedule_now() -> int:
-    return asyncio.run(async_reschedule_now())
+        return {
+            github_types.GitHubAccountIdType(int(v)) for v in dedicated_workers_data
+        }

@@ -33,8 +33,6 @@ from mergify_engine import redis_utils
 from mergify_engine import refresher
 from mergify_engine import signals
 from mergify_engine import utils
-from mergify_engine import worker
-from mergify_engine import worker_lua
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
@@ -42,6 +40,11 @@ from mergify_engine.queue import merge_train
 from mergify_engine.queue import statistics as queue_statistics
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.tests.functional import conftest as func_conftest
+from mergify_engine.worker import manager
+from mergify_engine.worker import stream
+from mergify_engine.worker import stream_lua
+from mergify_engine.worker import stream_services
+from mergify_engine.worker import task
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -536,13 +539,13 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         await self._event_reader.drain()
 
         # Track when worker work
-        real_consume_method = worker.StreamProcessor.consume
+        real_consume_method = stream.Processor.consume
 
         self.worker_concurrency_works = 0
 
         async def tracked_consume(
-            inner_self: worker.StreamProcessor,
-            bucket_org_key: worker_lua.BucketOrgKeyType,
+            inner_self: stream.Processor,
+            bucket_org_key: stream_lua.BucketOrgKeyType,
             owner_id: github_types.GitHubAccountIdType,
             owner_login_for_tracing: github_types.GitHubLoginForTracing,
         ) -> None:
@@ -554,10 +557,10 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             finally:
                 self.worker_concurrency_works -= 1
 
-        worker.StreamProcessor.consume = tracked_consume  # type: ignore[assignment]
+        stream.Processor.consume = tracked_consume  # type: ignore[assignment]
 
         def cleanup_consume() -> None:
-            worker.StreamProcessor.consume = real_consume_method  # type: ignore[assignment]
+            stream.Processor.consume = real_consume_method  # type: ignore[assignment]
 
         self.addCleanup(cleanup_consume)
 
@@ -677,7 +680,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
     async def run_full_engine(self) -> None:
         LOG.log(42, "RUNNING FULL ENGINE")
-        w = worker.Worker(
+        w = manager.ServiceManager(
             idle_sleep_time=self.WORKER_IDLE_SLEEP_TIME if RECORD else 0.01,
             enabled_services={"shared-stream", "dedicated-stream", "delayed-refresh"},
             delayed_refresh_idle_time=0.01,
@@ -701,21 +704,40 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
     async def run_engine(self) -> None:
         LOG.log(42, "RUNNING ENGINE")
-        w = worker.Worker(
-            enabled_services=set(),
-            shared_stream_processes=1,
-            shared_stream_tasks_per_process=1,
-            retry_handled_exception_forever=False,
-            shutdown_timeout=0,
+        syncer_service = stream_services.DedicatedWorkersCacheSyncerService(
+            self.redis_links, dedicated_workers_syncer_idle_time=0.01
         )
-        await w.start()
+        shared_service = stream_services.SharedStreamService(
+            self.redis_links,
+            dedicated_workers_cache_syncer=syncer_service,
+            process_index=0,
+            idle_sleep_time=0,
+            shared_stream_processes=1,
+            shared_stream_tasks_per_process=0,
+            retry_handled_exception_forever=False,
+        )
+        dedicated_service = stream_services.DedicatedStreamService(
+            self.redis_links,
+            dedicated_workers_cache_syncer=syncer_service,
+            process_index=0,
+            idle_sleep_time=0,
+            dedicated_workers_shutdown_timeout=0,
+            dedicated_stream_processes=0,
+            dedicated_workers_spawner_idle_time=0,
+            retry_handled_exception_forever=False,
+        )
 
-        while (await w._redis_links.stream.zcard("streams")) > 0:
-            await w.shared_stream_worker_task(0)
-            await w.dedicated_stream_worker_task(config.TESTING_ORGANIZATION_ID)
+        shared_service.shared_stream_tasks_per_process = 1
+        while (await self.redis_links.stream.zcard("streams")) > 0:
+            await shared_service.shared_stream_worker_task(0)
+            await dedicated_service.dedicated_stream_worker_task(
+                config.TESTING_ORGANIZATION_ID
+            )
 
-        w.stop()
-        await w.wait_shutdown_complete()
+        await task.stop_wait_and_kill(
+            syncer_service.tasks + dedicated_service.tasks + shared_service.tasks,
+            timeout=0,
+        )
 
     def get_gitter(
         self, logger: "logging.LoggerAdapter[logging.Logger]"

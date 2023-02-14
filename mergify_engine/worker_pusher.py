@@ -12,7 +12,7 @@ from mergify_engine import constants
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import redis_utils
-from mergify_engine import worker_lua
+from mergify_engine.worker import stream_lua
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -196,11 +196,11 @@ async def push(
                 delay = constants.NORMAL_DELAY_BETWEEN_SAME_PULL_REQUEST
             score = get_priority_score(priority, delay)
 
-        bucket_org_key = worker_lua.BucketOrgKeyType(f"bucket~{owner_id}")
-        bucket_sources_key = worker_lua.BucketSourcesKeyType(
+        bucket_org_key = stream_lua.BucketOrgKeyType(f"bucket~{owner_id}")
+        bucket_sources_key = stream_lua.BucketSourcesKeyType(
             f"bucket-sources~{repo_id}~{pull_number or 0}"
         )
-        await worker_lua.push_pull(
+        await stream_lua.push_pull(
             redis,
             bucket_org_key,
             bucket_sources_key,
