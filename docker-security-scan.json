@@ -113,6 +113,7 @@
           "https://bugzilla.redhat.com/show_bug.cgi?id=2126720",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3715",
           "https://errata.almalinux.org/9/ALSA-2023-0340.html",
+          "https://errata.rockylinux.org/RLSA-2023:0340",
           "https://linux.oracle.com/cve/CVE-2022-3715.html",
           "https://linux.oracle.com/errata/ELSA-2023-0340.html",
           "https://lists.gnu.org/archive/html/bug-bash/2022-08/msg00147.html",
@@ -451,12 +452,12 @@
         },
         "References": [
           "https://access.redhat.com/errata/RHSA-2022:8361",
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
           "https://errata.almalinux.org/9/ALSA-2022-8361.html",
+          "https://errata.rockylinux.org/RLSA-2022:8361",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -1454,12 +1455,12 @@
         },
         "References": [
           "https://access.redhat.com/errata/RHSA-2022:8361",
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
           "https://errata.almalinux.org/9/ALSA-2022-8361.html",
+          "https://errata.rockylinux.org/RLSA-2022:8361",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -1898,7 +1899,7 @@
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
         "Title": "expat: internal entity expansion",
-        "Description": "expat 2.1.0 and earlier does not properly handle entities expansion unless an application developer uses the XML_SetEntityDeclHandler function, which allows remote attackers to cause a denial of service (resource consumption), send HTTP requests to intranet servers, or read arbitrary files via a crafted XML document, aka an XML External Entity (XXE) issue.  NOTE: it could be argued that because expat already provides the ability to disable external entity expansion, the responsibility for resolving this issue lies with application developers; according to this argument, this entry should be REJECTed, and each affected application would need its own CVE.",
+        "Description": "expat 2.1.0 and earlier does not properly handle entities expansion unless an application developer uses the XML_SetEntityDeclHandler function, which allows remote attackers to cause a denial of service (resource consumption), send HTTP requests to intranet servers, or read arbitrary files via a crafted XML document, aka an XML External Entity (XXE) issue. NOTE: it could be argued that because expat already provides the ability to disable external entity expansion, the responsibility for resolving this issue lies with application developers; according to this argument, this entry should be REJECTed, and each affected application would need its own CVE.",
         "Severity": "LOW",
         "CweIDs": [
           "CWE-611"
@@ -1930,8 +1931,8 @@
           "http://www.osvdb.org/90634",
           "http://www.securityfocus.com/bid/58233",
           "https://access.redhat.com/security/cve/CVE-2013-0340",
-          "https://lists.apache.org/thread.html/r41eca5f4f09e74436cbb05dec450fc2bef37b5d3e966aa7cc5fada6d@%3Cannounce.apache.org%3E",
-          "https://lists.apache.org/thread.html/rfb2c193360436e230b85547e85a41bea0916916f96c501f5b6fc4702@%3Cusers.openoffice.apache.org%3E",
+          "https://lists.apache.org/thread.html/r41eca5f4f09e74436cbb05dec450fc2bef37b5d3e966aa7cc5fada6d%40%3Cannounce.apache.org%3E",
+          "https://lists.apache.org/thread.html/rfb2c193360436e230b85547e85a41bea0916916f96c501f5b6fc4702%40%3Cusers.openoffice.apache.org%3E",
           "https://nvd.nist.gov/vuln/detail/CVE-2013-0340",
           "https://security.gentoo.org/glsa/201701-21",
           "https://support.apple.com/kb/HT212804",
@@ -1976,12 +1977,12 @@
         },
         "References": [
           "https://access.redhat.com/errata/RHSA-2022:8361",
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
           "https://errata.almalinux.org/9/ALSA-2022-8361.html",
+          "https://errata.rockylinux.org/RLSA-2022:8361",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -2213,6 +2214,19 @@
         "PublishedDate": "2011-09-06T19:55:00Z"
       },
       {
+        "VulnerabilityID": "CVE-2023-0361",
+        "PkgID": "libgnutls30@3.7.1-5+deb11u2",
+        "PkgName": "libgnutls30",
+        "InstalledVersion": "3.7.1-5+deb11u2",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-0361",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Severity": "UNKNOWN"
+      },
+      {
         "VulnerabilityID": "CVE-2004-0971",
         "PkgID": "libgssapi-krb5-2@1.18.3-6+deb11u3",
         "PkgName": "libgssapi-krb5-2",
@@ -2296,7 +2310,7 @@
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
         "Title": "iptables: --syn flag bypass",
-        "Description": "extensions/libxt_tcp.c in iptables through 1.4.21 does not match TCP SYN+FIN packets in --syn rules, which might allow remote attackers to bypass intended firewall restrictions via crafted packets.  NOTE: the CVE-2012-6638 fix makes this issue less relevant.",
+        "Description": "extensions/libxt_tcp.c in iptables through 1.4.21 does not match TCP SYN+FIN packets in --syn rules, which might allow remote attackers to bypass intended firewall restrictions via crafted packets. NOTE: the CVE-2012-6638 fix makes this issue less relevant.",
         "Severity": "LOW",
         "CVSS": {
           "nvd": {
@@ -3007,6 +3021,7 @@
           "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
           "https://errata.almalinux.org/9/ALSA-2023-0336.html",
+          "https://errata.rockylinux.org/RLSA-2023:0336",
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
           "https://github.com/systemd/systemd/pull/23933",
@@ -3168,6 +3183,7 @@
           "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
           "https://errata.almalinux.org/9/ALSA-2023-0336.html",
+          "https://errata.rockylinux.org/RLSA-2023:0336",
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
           "https://github.com/systemd/systemd/pull/23933",
@@ -3487,12 +3503,14 @@
         "References": [
           "http://seclists.org/fulldisclosure/2020/Dec/32",
           "http://seclists.org/fulldisclosure/2021/Feb/14",
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2019-20838.json",
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2020-14155.json",
           "https://access.redhat.com/security/cve/CVE-2019-20838",
           "https://bugs.gentoo.org/717920",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=1848436",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=1848444",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-20838",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-14155",
           "https://errata.almalinux.org/8/ALSA-2021-4373.html",
+          "https://errata.rockylinux.org/RLSA-2021:4373",
           "https://linux.oracle.com/cve/CVE-2019-20838.html",
           "https://linux.oracle.com/errata/ELSA-2021-4373.html",
           "https://lists.apache.org/thread.html/rf9fa47ab66495c78bb4120b0754dd9531ca2ff0430f6685ac9b07772@%3Cdev.mina.apache.org%3E",
@@ -3618,14 +3636,18 @@
           }
         },
         "References": [
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2021-36084.json",
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2021-36085.json",
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2021-36086.json",
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2021-36087.json",
           "https://access.redhat.com/security/cve/CVE-2021-36084",
           "https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=31065",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=1979662",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=1979664",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=1979666",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=1979668",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-36084",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-36085",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-36086",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-36087",
           "https://errata.almalinux.org/8/ALSA-2021-4513.html",
+          "https://errata.rockylinux.org/RLSA-2021:4513",
           "https://github.com/SELinuxProject/selinux/commit/f34d3d30c8325e4847a6b696fe7a3936a8a361f3",
           "https://github.com/google/oss-fuzz-vulns/blob/main/vulns/selinux/OSV-2021-417.yaml",
           "https://linux.oracle.com/cve/CVE-2021-36084.html",
@@ -3666,14 +3688,18 @@
           }
         },
         "References": [
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2021-36084.json",
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2021-36085.json",
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2021-36086.json",
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2021-36087.json",
           "https://access.redhat.com/security/cve/CVE-2021-36085",
           "https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=31124",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=1979662",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=1979664",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=1979666",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=1979668",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-36084",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-36085",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-36086",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-36087",
           "https://errata.almalinux.org/8/ALSA-2021-4513.html",
+          "https://errata.rockylinux.org/RLSA-2021:4513",
           "https://github.com/SELinuxProject/selinux/commit/2d35fcc7e9e976a2346b1de20e54f8663e8a6cba",
           "https://github.com/google/oss-fuzz-vulns/blob/main/vulns/selinux/OSV-2021-421.yaml",
           "https://linux.oracle.com/cve/CVE-2021-36085.html",
@@ -3714,14 +3740,18 @@
           }
         },
         "References": [
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2021-36084.json",
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2021-36085.json",
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2021-36086.json",
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2021-36087.json",
           "https://access.redhat.com/security/cve/CVE-2021-36086",
           "https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=32177",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=1979662",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=1979664",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=1979666",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=1979668",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-36084",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-36085",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-36086",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-36087",
           "https://errata.almalinux.org/8/ALSA-2021-4513.html",
+          "https://errata.rockylinux.org/RLSA-2021:4513",
           "https://github.com/SELinuxProject/selinux/commit/c49a8ea09501ad66e799ea41b8154b6770fec2c8",
           "https://github.com/google/oss-fuzz-vulns/blob/main/vulns/selinux/OSV-2021-536.yaml",
           "https://linux.oracle.com/cve/CVE-2021-36086.html",
@@ -3762,14 +3792,18 @@
           }
         },
         "References": [
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2021-36084.json",
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2021-36085.json",
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2021-36086.json",
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2021-36087.json",
           "https://access.redhat.com/security/cve/CVE-2021-36087",
           "https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=32675",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=1979662",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=1979664",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=1979666",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=1979668",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-36084",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-36085",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-36086",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-36087",
           "https://errata.almalinux.org/8/ALSA-2021-4513.html",
+          "https://errata.rockylinux.org/RLSA-2021:4513",
           "https://github.com/SELinuxProject/selinux/commit/340f0eb7f3673e8aacaf0a96cbfcd4d12a405521",
           "https://github.com/google/oss-fuzz-vulns/blob/main/vulns/selinux/OSV-2021-585.yaml",
           "https://linux.oracle.com/cve/CVE-2021-36087.html",
@@ -3931,8 +3965,10 @@
           "https://access.redhat.com/security/cve/CVE-2022-35737",
           "https://blog.trailofbits.com/2022/10/25/sqlite-vulnerability-july-2022-library-api/",
           "https://bugzilla.redhat.com/2110291",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2110291",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-35737",
           "https://errata.almalinux.org/9/ALSA-2023-0339.html",
+          "https://errata.rockylinux.org/RLSA-2023:0339",
           "https://kb.cert.org/vuls/id/720344",
           "https://linux.oracle.com/cve/CVE-2022-35737.html",
           "https://linux.oracle.com/errata/ELSA-2023-0339.html",
@@ -3981,12 +4017,12 @@
         },
         "References": [
           "https://access.redhat.com/errata/RHSA-2022:8361",
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
           "https://errata.almalinux.org/9/ALSA-2022-8361.html",
+          "https://errata.rockylinux.org/RLSA-2022:8361",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -3996,75 +4032,10 @@
         "PublishedDate": "2022-04-14T21:15:00Z"
       },
       {
-        "VulnerabilityID": "CVE-2022-2097",
-        "PkgID": "libssl1.1@1.1.1n-0+deb11u3",
-        "PkgName": "libssl1.1",
-        "InstalledVersion": "1.1.1n-0+deb11u3",
-        "SeveritySource": "nvd",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-2097",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Title": "openssl: AES OCB fails to encrypt some bytes",
-        "Description": "AES OCB mode for 32-bit x86 platforms using the AES-NI assembly optimised implementation will not encrypt the entirety of the data under some circumstances. This could reveal sixteen bytes of data that was preexisting in the memory that wasn't written. In the special case of \"in place\" encryption, sixteen bytes of the plaintext would be revealed. Since OpenSSL does not support OCB based cipher suites for TLS and DTLS, they are both unaffected. Fixed in OpenSSL 3.0.5 (Affected 3.0.0-3.0.4). Fixed in OpenSSL 1.1.1q (Affected 1.1.1-1.1.1p).",
-        "Severity": "MEDIUM",
-        "CweIDs": [
-          "CWE-326"
-        ],
-        "CVSS": {
-          "ghsa": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
-            "V3Score": 7.5
-          },
-          "nvd": {
-            "V2Vector": "AV:N/AC:L/Au:N/C:P/I:N/A:N",
-            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
-            "V2Score": 5,
-            "V3Score": 5.3
-          },
-          "redhat": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
-            "V3Score": 5.3
-          }
-        },
-        "References": [
-          "https://access.redhat.com/errata/RHSA-2022:6224",
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1292.json",
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-2068.json",
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-2097.json",
-          "https://access.redhat.com/security/cve/CVE-2022-2097",
-          "https://bugzilla.redhat.com/2081494",
-          "https://bugzilla.redhat.com/2087911",
-          "https://bugzilla.redhat.com/2087913",
-          "https://bugzilla.redhat.com/2097310",
-          "https://bugzilla.redhat.com/2104905",
-          "https://cert-portal.siemens.com/productcert/pdf/ssa-332410.pdf",
-          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-2097",
-          "https://errata.almalinux.org/9/ALSA-2022-6224.html",
-          "https://git.openssl.org/gitweb/?p=openssl.git;a=commitdiff;h=919925673d6c9cfed3c1085497f5dfbbed5fc431",
-          "https://git.openssl.org/gitweb/?p=openssl.git;a=commitdiff;h=a98f339ddd7e8f487d6e0088d4a9a42324885a93",
-          "https://github.com/advisories/GHSA-3wx7-46ch-7rq2",
-          "https://linux.oracle.com/cve/CVE-2022-2097.html",
-          "https://linux.oracle.com/errata/ELSA-2022-9751.html",
-          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/R6CK57NBQFTPUMXAPJURCGXUYT76NQAK/",
-          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/V6567JERRHHJW2GNGJGKDRNHR7SNPZK7/",
-          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/VCMNWKERPBKOEBNL7CLTTX3ZZCZLH7XA/",
-          "https://nvd.nist.gov/vuln/detail/CVE-2022-2097",
-          "https://rustsec.org/advisories/RUSTSEC-2022-0032.html",
-          "https://security.gentoo.org/glsa/202210-02",
-          "https://security.netapp.com/advisory/ntap-20220715-0011/",
-          "https://ubuntu.com/security/notices/USN-5502-1",
-          "https://www.openssl.org/news/secadv/20220705.txt"
-        ],
-        "PublishedDate": "2022-07-05T11:15:00Z"
-      },
-      {
         "VulnerabilityID": "CVE-2007-6755",
-        "PkgID": "libssl1.1@1.1.1n-0+deb11u3",
+        "PkgID": "libssl1.1@1.1.1n-0+deb11u4",
         "PkgName": "libssl1.1",
-        "InstalledVersion": "1.1.1n-0+deb11u3",
+        "InstalledVersion": "1.1.1n-0+deb11u4",
         "SeveritySource": "debian",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-6755",
         "DataSource": {
@@ -4103,9 +4074,9 @@
       },
       {
         "VulnerabilityID": "CVE-2010-0928",
-        "PkgID": "libssl1.1@1.1.1n-0+deb11u3",
+        "PkgID": "libssl1.1@1.1.1n-0+deb11u4",
         "PkgName": "libssl1.1",
-        "InstalledVersion": "1.1.1n-0+deb11u3",
+        "InstalledVersion": "1.1.1n-0+deb11u4",
         "SeveritySource": "debian",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2010-0928",
         "DataSource": {
@@ -4171,6 +4142,7 @@
           "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
           "https://errata.almalinux.org/9/ALSA-2023-0336.html",
+          "https://errata.rockylinux.org/RLSA-2023:0336",
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
           "https://github.com/systemd/systemd/pull/23933",
@@ -4376,6 +4348,7 @@
           "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
           "https://errata.almalinux.org/9/ALSA-2023-0336.html",
+          "https://errata.rockylinux.org/RLSA-2023:0336",
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
           "https://github.com/systemd/systemd/pull/23933",
@@ -4553,7 +4526,7 @@
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
         "Title": "iptables: --syn flag bypass",
-        "Description": "extensions/libxt_tcp.c in iptables through 1.4.21 does not match TCP SYN+FIN packets in --syn rules, which might allow remote attackers to bypass intended firewall restrictions via crafted packets.  NOTE: the CVE-2012-6638 fix makes this issue less relevant.",
+        "Description": "extensions/libxt_tcp.c in iptables through 1.4.21 does not match TCP SYN+FIN packets in --syn rules, which might allow remote attackers to bypass intended firewall restrictions via crafted packets. NOTE: the CVE-2012-6638 fix makes this issue less relevant.",
         "Severity": "LOW",
         "CVSS": {
           "nvd": {
@@ -4646,7 +4619,7 @@
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2013-4235",
           "https://github.com/shadow-maint/shadow/issues/317",
           "https://github.com/shadow-maint/shadow/pull/545",
-          "https://lists.apache.org/thread.html/rf9fa47ab66495c78bb4120b0754dd9531ca2ff0430f6685ac9b07772@%3Cdev.mina.apache.org%3E",
+          "https://lists.apache.org/thread.html/rf9fa47ab66495c78bb4120b0754dd9531ca2ff0430f6685ac9b07772%40%3Cdev.mina.apache.org%3E",
           "https://security-tracker.debian.org/tracker/CVE-2013-4235",
           "https://security.gentoo.org/glsa/202210-26",
           "https://ubuntu.com/security/notices/USN-5745-1",
@@ -4728,12 +4701,12 @@
         },
         "References": [
           "https://access.redhat.com/errata/RHSA-2022:8361",
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1304.json",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
           "https://errata.almalinux.org/9/ALSA-2022-8361.html",
+          "https://errata.rockylinux.org/RLSA-2022:8361",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -6104,75 +6077,10 @@
         "PublishedDate": "2022-03-13T00:15:00Z"
       },
       {
-        "VulnerabilityID": "CVE-2022-2097",
-        "PkgID": "openssl@1.1.1n-0+deb11u3",
-        "PkgName": "openssl",
-        "InstalledVersion": "1.1.1n-0+deb11u3",
-        "SeveritySource": "nvd",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-2097",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Title": "openssl: AES OCB fails to encrypt some bytes",
-        "Description": "AES OCB mode for 32-bit x86 platforms using the AES-NI assembly optimised implementation will not encrypt the entirety of the data under some circumstances. This could reveal sixteen bytes of data that was preexisting in the memory that wasn't written. In the special case of \"in place\" encryption, sixteen bytes of the plaintext would be revealed. Since OpenSSL does not support OCB based cipher suites for TLS and DTLS, they are both unaffected. Fixed in OpenSSL 3.0.5 (Affected 3.0.0-3.0.4). Fixed in OpenSSL 1.1.1q (Affected 1.1.1-1.1.1p).",
-        "Severity": "MEDIUM",
-        "CweIDs": [
-          "CWE-326"
-        ],
-        "CVSS": {
-          "ghsa": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
-            "V3Score": 7.5
-          },
-          "nvd": {
-            "V2Vector": "AV:N/AC:L/Au:N/C:P/I:N/A:N",
-            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
-            "V2Score": 5,
-            "V3Score": 5.3
-          },
-          "redhat": {
-            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
-            "V3Score": 5.3
-          }
-        },
-        "References": [
-          "https://access.redhat.com/errata/RHSA-2022:6224",
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-1292.json",
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-2068.json",
-          "https://access.redhat.com/hydra/rest/securitydata/cve/CVE-2022-2097.json",
-          "https://access.redhat.com/security/cve/CVE-2022-2097",
-          "https://bugzilla.redhat.com/2081494",
-          "https://bugzilla.redhat.com/2087911",
-          "https://bugzilla.redhat.com/2087913",
-          "https://bugzilla.redhat.com/2097310",
-          "https://bugzilla.redhat.com/2104905",
-          "https://cert-portal.siemens.com/productcert/pdf/ssa-332410.pdf",
-          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-2097",
-          "https://errata.almalinux.org/9/ALSA-2022-6224.html",
-          "https://git.openssl.org/gitweb/?p=openssl.git;a=commitdiff;h=919925673d6c9cfed3c1085497f5dfbbed5fc431",
-          "https://git.openssl.org/gitweb/?p=openssl.git;a=commitdiff;h=a98f339ddd7e8f487d6e0088d4a9a42324885a93",
-          "https://github.com/advisories/GHSA-3wx7-46ch-7rq2",
-          "https://linux.oracle.com/cve/CVE-2022-2097.html",
-          "https://linux.oracle.com/errata/ELSA-2022-9751.html",
-          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/R6CK57NBQFTPUMXAPJURCGXUYT76NQAK/",
-          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/V6567JERRHHJW2GNGJGKDRNHR7SNPZK7/",
-          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/VCMNWKERPBKOEBNL7CLTTX3ZZCZLH7XA/",
-          "https://nvd.nist.gov/vuln/detail/CVE-2022-2097",
-          "https://rustsec.org/advisories/RUSTSEC-2022-0032.html",
-          "https://security.gentoo.org/glsa/202210-02",
-          "https://security.netapp.com/advisory/ntap-20220715-0011/",
-          "https://ubuntu.com/security/notices/USN-5502-1",
-          "https://www.openssl.org/news/secadv/20220705.txt"
-        ],
-        "PublishedDate": "2022-07-05T11:15:00Z"
-      },
-      {
         "VulnerabilityID": "CVE-2007-6755",
-        "PkgID": "openssl@1.1.1n-0+deb11u3",
+        "PkgID": "openssl@1.1.1n-0+deb11u4",
         "PkgName": "openssl",
-        "InstalledVersion": "1.1.1n-0+deb11u3",
+        "InstalledVersion": "1.1.1n-0+deb11u4",
         "SeveritySource": "debian",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-6755",
         "DataSource": {
@@ -6211,9 +6119,9 @@
       },
       {
         "VulnerabilityID": "CVE-2010-0928",
-        "PkgID": "openssl@1.1.1n-0+deb11u3",
+        "PkgID": "openssl@1.1.1n-0+deb11u4",
         "PkgName": "openssl",
-        "InstalledVersion": "1.1.1n-0+deb11u3",
+        "InstalledVersion": "1.1.1n-0+deb11u4",
         "SeveritySource": "debian",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2010-0928",
         "DataSource": {
@@ -6318,7 +6226,7 @@
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2013-4235",
           "https://github.com/shadow-maint/shadow/issues/317",
           "https://github.com/shadow-maint/shadow/pull/545",
-          "https://lists.apache.org/thread.html/rf9fa47ab66495c78bb4120b0754dd9531ca2ff0430f6685ac9b07772@%3Cdev.mina.apache.org%3E",
+          "https://lists.apache.org/thread.html/rf9fa47ab66495c78bb4120b0754dd9531ca2ff0430f6685ac9b07772%40%3Cdev.mina.apache.org%3E",
           "https://security-tracker.debian.org/tracker/CVE-2013-4235",
           "https://security.gentoo.org/glsa/202210-26",
           "https://ubuntu.com/security/notices/USN-5745-1",
@@ -6824,6 +6732,7 @@
           "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
           "https://errata.almalinux.org/9/ALSA-2023-0336.html",
+          "https://errata.rockylinux.org/RLSA-2023:0336",
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
           "https://github.com/systemd/systemd/pull/23933",
@@ -6985,6 +6894,7 @@
           "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
           "https://errata.almalinux.org/9/ALSA-2023-0336.html",
+          "https://errata.rockylinux.org/RLSA-2023:0336",
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
           "https://github.com/systemd/systemd/pull/23933",
@@ -7146,6 +7056,7 @@
           "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
           "https://errata.almalinux.org/9/ALSA-2023-0336.html",
+          "https://errata.rockylinux.org/RLSA-2023:0336",
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
           "https://github.com/systemd/systemd/pull/23933",
@@ -7316,10 +7227,24 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "GNU Tar through 1.34 has a one-byte out-of-bounds read that results in ...",
+        "Title": "tar: a heap buffer overflow at from_header() in list.c via specially crafter checksum",
         "Description": "GNU Tar through 1.34 has a one-byte out-of-bounds read that results in use of uninitialized memory for a conditional jump. Exploitation to change the flow of control has not been demonstrated. The issue occurs in from_header in list.c via a V7 archive in which mtime has approximately 11 whitespace characters.",
         "Severity": "LOW",
+        "CweIDs": [
+          "CWE-125"
+        ],
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H",
+            "V3Score": 7.8
+          },
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:L/A:L",
+            "V3Score": 6.3
+          }
+        },
         "References": [
+          "https://access.redhat.com/security/cve/CVE-2022-48303",
           "https://savannah.gnu.org/bugs/?62387",
           "https://savannah.gnu.org/patch/?10307"
         ],
