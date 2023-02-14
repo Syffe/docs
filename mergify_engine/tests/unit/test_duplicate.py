@@ -232,13 +232,13 @@ async def test_get_commits_to_cherry_pick_rebase(
             return rebased_c1
         if url.endswith("/commits/rebased_c2"):
             return rebased_c2
+        if url.endswith(f"/commits/{ctxt.pull['merge_commit_sha']}"):
+            return rebased_c2
         raise RuntimeError(f"Unknown URL {url}")
 
     client.item.side_effect = fake_get_github_commit_from_sha
 
-    assert await duplicate_pull._get_commits_to_cherrypick(
-        ctxt, github_types.to_cached_github_branch_commit(rebased_c2)
-    ) == [
+    assert await duplicate_pull.get_commits_to_cherrypick(ctxt) == [
         github_types.to_cached_github_branch_commit(rebased_c1),
         github_types.to_cached_github_branch_commit(rebased_c2),
     ]
@@ -300,20 +300,32 @@ async def test_get_commits_to_cherry_pick_merge(
         date_author=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
         date_committer=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
     )
-    merge_commit = github_types.CachedGitHubBranchCommit(
+    merge_commit = github_types.GitHubBranchCommit(
         sha=github_types.SHAType("merge_commit"),
-        commit_message="foobar",
-        commit_verification_verified=False,
-        parents=[base_branch.sha, c2.sha],
-        author="someone",
-        committer="someone-else",
-        email_author="",
-        email_committer="",
-        date_author=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
-        date_committer=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
+        commit={
+            "message": "foobar",
+            "verification": {"verified": True},
+            "author": {
+                "name": "",
+                "email": "",
+                "date": github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
+            },
+            "committer": {
+                "name": "",
+                "email": "",
+                "date": github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
+            },
+        },
+        parents=[{"sha": base_branch.sha}, {"sha": c2.sha}],
+        committer={
+            "id": github_types.GitHubAccountIdType(0),
+            "type": "User",
+            "login": github_types.GitHubLogin("someone-else"),
+            "avatar_url": "",
+        },
     )
-
-    assert await duplicate_pull._get_commits_to_cherrypick(ctxt, merge_commit) == [
+    client.item = mock.AsyncMock(return_value=merge_commit)
+    assert await duplicate_pull.get_commits_to_cherrypick(ctxt) == [
         c1,
         c2,
     ]

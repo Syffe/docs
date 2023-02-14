@@ -1,4 +1,5 @@
 from collections import abc
+import datetime
 import re
 import typing
 from urllib import parse
@@ -27,6 +28,8 @@ def Regex(value: str) -> re.Pattern[str]:
         raise voluptuous.Invalid(str(e))
 
 
+COPY_STATE_EXPIRATION = datetime.timedelta(days=7)
+
 DUPLICATE_BODY_EXTRA_VARIABLES: dict[str, str | bool] = {
     "destination_branch": "branch-name-example",
     "cherry_pick_error": "cherry-pick error message example",
@@ -54,6 +57,12 @@ class CopyExecutorConfig(typing.TypedDict):
     label_conflicts: str
     title: str
     body: str
+
+
+class CopyResult(typing.NamedTuple):
+    branch: github_types.GitHubRefType
+    status: check_api.Conclusion
+    details: str
 
 
 class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
@@ -166,7 +175,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
     async def _copy(
         self,
         branch_name: github_types.GitHubRefType,
-    ) -> tuple[check_api.Conclusion, str]:
+    ) -> CopyResult:
         """Copy the PR to a branch.
 
         Returns a tuple of strings (state, reason).
@@ -185,68 +194,59 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
             else:
                 state = check_api.Conclusion.FAILURE
                 detail += e.response.json()["message"]
-            return state, detail
+            return CopyResult(branch_name, state, detail)
 
         # NOTE(sileht) does the duplicate have already been done ?
         new_pull = await self.get_existing_duplicate_pull(branch_name)
 
-        # No, then do it
-        if not new_pull:
-            try:
-                users_to_add = [
-                    user
-                    for user in await action_utils.render_users_template(
-                        self.ctxt, self.config["assignees"]
-                    )
-                    if not user.endswith("[bot]")
-                ]
-                pull_duplicate = await duplicate_pull.duplicate(
-                    self.ctxt,
-                    branch_name,
-                    title_template=self.config["title"],
-                    body_template=self.config["body"],
-                    on_behalf=self.config["bot_account"],
-                    labels=self.config["labels"],
-                    label_conflicts=self.config["label_conflicts"],
-                    ignore_conflicts=self.config["ignore_conflicts"],
-                    assignees=users_to_add,
-                    branch_prefix=self.BRANCH_PREFIX,
-                )
-                if pull_duplicate is not None:
-                    new_pull = pull_duplicate.pull
-                    await signals.send(
-                        self.ctxt.repository,
-                        self.ctxt.pull["number"],
-                        self.HOOK_EVENT_NAME,
-                        signals.EventCopyMetadata(
-                            {
-                                "to": branch_name,
-                                "pull_request_number": new_pull["number"],
-                                "conflicts": pull_duplicate.conflicts,
-                            }
-                        ),
-                        self.rule.get_signal_trigger(),
-                    )
+        if new_pull is not None:
+            return self._get_success_copy_result(branch_name, new_pull)
 
-            except duplicate_pull.DuplicateAlreadyExists:
-                new_pull = await self.get_existing_duplicate_pull(branch_name)
-            except duplicate_pull.DuplicateWithMergeFailure:
-                return (
-                    check_api.Conclusion.FAILURE,
-                    f"{self.KIND.capitalize()} to branch `{branch_name}` failed\nPull request {self.KIND_PLURAL} with merge commits are not supported",
-                )
+        users_to_add = [
+            user
+            for user in await action_utils.render_users_template(
+                self.ctxt, self.config["assignees"]
+            )
+            if not user.endswith("[bot]")
+        ]
+        try:
+            commits = await duplicate_pull.get_commits_to_cherrypick(self.ctxt)
+            duplicate_branch_result = await duplicate_pull.prepare_branch(
+                self.ctxt.repository.installation.redis.cache_bytes,
+                self.ctxt.log,
+                self.ctxt.pull,
+                self.ctxt.client.auth,
+                branch_name=branch_name,
+                branch_prefix=self.BRANCH_PREFIX,
+                commits_to_cherry_pick=commits,
+                ignore_conflicts=self.config["ignore_conflicts"],
+                on_behalf=self.config["bot_account"],
+            )
+            new_pull = await duplicate_pull.create_duplicate_pull(
+                self.ctxt,
+                duplicate_branch_result,
+                title_template=self.config["title"],
+                body_template=self.config["body"],
+                on_behalf=self.config["bot_account"],
+                labels=self.config["labels"],
+                label_conflicts=self.config["label_conflicts"],
+                assignees=users_to_add,
+            )
 
-            except duplicate_pull.DuplicateFailed as e:
-                return (
-                    check_api.Conclusion.FAILURE,
-                    f"{self.KIND.capitalize()} to branch `{branch_name}` failed\n{e.reason}",
-                )
-            except duplicate_pull.DuplicateNotNeeded:
-                return (
-                    check_api.Conclusion.SUCCESS,
-                    f"{self.KIND.capitalize()} to branch `{branch_name}` not needed, change already in branch `{branch_name}`",
-                )
-            except duplicate_pull.DuplicateUnexpectedError as e:
+        except duplicate_pull.DuplicateAlreadyExists:
+            new_pull = await self.get_existing_duplicate_pull(branch_name)
+            if new_pull is None:
+                return self._get_failure_copy_result(branch_name, "")
+            else:
+                return self._get_success_copy_result(branch_name, new_pull)
+        except duplicate_pull.DuplicateNotNeeded:
+            return CopyResult(
+                branch_name,
+                check_api.Conclusion.SUCCESS,
+                f"{self.KIND.capitalize()} to branch `{branch_name}` not needed, change already in branch `{branch_name}`",
+            )
+        except duplicate_pull.DuplicateFailed as e:
+            if isinstance(e, duplicate_pull.DuplicateUnexpectedError):
                 self.ctxt.log.error(
                     "duplicate failed",
                     reason=e.reason,
@@ -254,30 +254,42 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                     kind=self.KIND,
                     exc_info=True,
                 )
-                return (
-                    check_api.Conclusion.FAILURE,
-                    f"{self.KIND.capitalize()} to branch `{branch_name}` failed: {e.reason}",
-                )
+            return self._get_failure_copy_result(branch_name, e.reason)
 
-        if new_pull:
-            return (
-                check_api.Conclusion.SUCCESS,
-                f"[#{new_pull['number']} {new_pull['title']}]({new_pull['html_url']}) "
-                f"has been created for branch `{branch_name}`",
-            )
-
-        # TODO(sileht): Should be safe to replace that by a RuntimeError now.
-        # Just wait a couple of weeks (2020-03-03)
-        self.ctxt.log.error(
-            "unexpected %s to branch `%s` failure, "
-            "duplicate() report pull copy already exists but it doesn't",
-            self.KIND.capitalize(),
-            branch_name,
+        await signals.send(
+            self.ctxt.repository,
+            self.ctxt.pull["number"],
+            self.HOOK_EVENT_NAME,
+            signals.EventCopyMetadata(
+                {
+                    "to": branch_name,
+                    "pull_request_number": new_pull["number"],
+                    "conflicts": bool(duplicate_branch_result.cherry_pick_error),
+                }
+            ),
+            self.rule.get_signal_trigger(),
         )
+        return self._get_success_copy_result(branch_name, new_pull)
 
-        return (
-            check_api.Conclusion.FAILURE,
-            f"{self.KIND.capitalize()} to branch `{branch_name}` failed",
+    @classmethod
+    def _get_failure_copy_result(
+        cls, branch_name: github_types.GitHubRefType, details: str
+    ) -> CopyResult:
+        message = f"{cls.KIND.capitalize()} to branch `{branch_name}` failed"
+        if details:
+            message += f"\n{details}"
+        return CopyResult(branch_name, check_api.Conclusion.FAILURE, message)
+
+    @staticmethod
+    def _get_success_copy_result(
+        branch_name: github_types.GitHubRefType,
+        new_pull: github_types.GitHubPullRequest,
+    ) -> CopyResult:
+        return CopyResult(
+            branch_name,
+            check_api.Conclusion.SUCCESS,
+            f"[#{new_pull['number']} {new_pull['title']}]({new_pull['html_url']}) "
+            f"has been created for branch `{branch_name}`",
         )
 
     async def run(self) -> check_api.Result:
@@ -304,13 +316,13 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
         ]
 
         # Pick the first status as the final_status
-        conclusion = results[0][0]
+        conclusion = results[0].status
         for r in results[1:]:
-            if r[0] == check_api.Conclusion.FAILURE:
+            if r.status == check_api.Conclusion.FAILURE:
                 conclusion = check_api.Conclusion.FAILURE
                 # If we have a failure, everything is set to fail
                 break
-            elif r[0] == check_api.Conclusion.SUCCESS:
+            elif r.status == check_api.Conclusion.SUCCESS:
                 # If it was None, replace with success
                 # Keep checking for a failure just in case
                 conclusion = check_api.Conclusion.SUCCESS
@@ -325,7 +337,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
         return check_api.Result(
             conclusion,
             message,
-            "\n".join(f"* {detail}" for detail in (r[1] for r in results)),
+            "\n".join(f"* {detail}" for detail in (r.details for r in results)),
         )
 
     async def cancel(self) -> check_api.Result:  # pragma: no cover

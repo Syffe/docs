@@ -1,5 +1,6 @@
 import dataclasses
 import functools
+import logging
 import typing
 
 import tenacity
@@ -9,18 +10,15 @@ from mergify_engine import context
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import gitter
+from mergify_engine import redis_utils
 from mergify_engine import utils
+from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.dashboard import user_tokens
 
 
 @dataclasses.dataclass
 class DuplicateAlreadyExists(Exception):
-    reason: str
-
-
-@dataclasses.dataclass
-class DuplicateUnexpectedError(Exception):
     reason: str
 
 
@@ -40,14 +38,20 @@ class DuplicateFailed(Exception):
 
 
 @dataclasses.dataclass
-class DuplicateWithMergeFailure(Exception):
+class DuplicateUnexpectedError(DuplicateFailed):
     reason: str
 
 
 @dataclasses.dataclass
-class DuplicatePull:
-    pull: github_types.GitHubPullRequest
-    conflicts: bool
+class DuplicateWithMergeFailure(DuplicateFailed):
+    reason: str = "merge commits are not supported"
+
+
+@dataclasses.dataclass
+class DuplicateBranchResult:
+    target_branch: github_types.GitHubRefType
+    destination_branch: github_types.GitHubRefType
+    cherry_pick_error: str
 
 
 GIT_MESSAGE_TO_EXCEPTION = {
@@ -117,9 +121,18 @@ async def _get_commits_without_base_branch_merge(
     )
 
 
-async def _get_commits_to_cherrypick(
-    ctxt: context.Context, merge_commit: github_types.CachedGitHubBranchCommit
+async def get_commits_to_cherrypick(
+    ctxt: context.Context,
 ) -> list[github_types.CachedGitHubBranchCommit]:
+    merge_commit = github_types.to_cached_github_branch_commit(
+        typing.cast(
+            github_types.GitHubBranchCommit,
+            await ctxt.client.item(
+                f"{ctxt.base_url}/commits/{ctxt.pull['merge_commit_sha']}"
+            ),
+        )
+    )
+
     if len(merge_commit.parents) == 1:
         # NOTE(sileht): We have a rebase+merge or squash+merge
         # We pick all commits until a sha is not linked with our PR
@@ -201,8 +214,10 @@ def get_destination_branch_name(
     pull_number: github_types.GitHubPullRequestNumber,
     branch_name: github_types.GitHubRefType,
     branch_prefix: str,
-) -> str:
-    return f"mergify/{branch_prefix}/{branch_name}/pr-{pull_number}"
+) -> github_types.GitHubRefType:
+    return github_types.GitHubRefType(
+        f"mergify/{branch_prefix}/{branch_name}/pr-{pull_number}"
+    )
 
 
 @tenacity.retry(
@@ -211,74 +226,64 @@ def get_destination_branch_name(
     retry=tenacity.retry_if_exception_type(DuplicateNeedRetry),
     reraise=True,
 )
-async def duplicate(
-    ctxt: context.Context,
+async def prepare_branch(
+    redis: redis_utils.RedisCacheBytes,
+    logger: "logging.LoggerAdapter[logging.Logger]",
+    pull: github_types.GitHubPullRequest,
+    auth: github.GithubAppInstallationAuth | github.GithubTokenAuth,
     branch_name: github_types.GitHubRefType,
+    branch_prefix: str,
+    commits_to_cherry_pick: list[github_types.CachedGitHubBranchCommit],
     *,
-    title_template: str,
-    body_template: str,
-    on_behalf: user_tokens.UserTokensUser | None = None,
-    labels: list[str] | None = None,
-    label_conflicts: str | None = None,
     ignore_conflicts: bool = False,
-    assignees: list[str] | None = None,
-    branch_prefix: str = "bp",
-) -> DuplicatePull | None:
+    on_behalf: user_tokens.UserTokensUser | None = None,
+) -> DuplicateBranchResult:
     """Duplicate a pull request.
 
+    :param redis: a redis client
+    :param logger: a logger
     :param pull: The pull request.
-    :type pull: py:class:mergify_engine.context.Context
-    :param title_template: The pull request title template.
-    :param body_template: The pull request body template.
+    :param auth: The httpx auth object to get the installation access token
     :param branch: The branch to copy to.
-    :param labels: The list of labels to add to the created PR.
-    :param label_conflicts: The label to add to the created PR when cherry-pick failed.
-    :param ignore_conflicts: Whether to commit the result if the cherry-pick fails.
-    :param assignees: The list of users to be assigned to the created PR.
     :param branch_prefix: the prefix of the temporary created branch
+    :param commits_to_cherry_pick: The list of commits to cherry-pick
+    :param ignore_conflicts: Whether to commit the result if the cherry-pick fails.
+    :param on_behalf: The user to impersonate
     """
-    bp_branch = get_destination_branch_name(
-        ctxt.pull["number"], branch_name, branch_prefix
+    destination_branch = get_destination_branch_name(
+        pull["number"], branch_name, branch_prefix
     )
 
     cherry_pick_error: str = ""
-    has_conflicts = False
 
     # TODO(sileht): This can be done with the Github API only I think:
     # An example:
     # https://github.com/shiqiyang-okta/ghpick/blob/master/ghpick/cherry.py
-    git = gitter.Gitter(ctxt.log)
+    git = gitter.Gitter(logger)
     try:
         await git.init()
 
         if on_behalf is None:
-            token = await ctxt.client.get_access_token()
-            await git.configure(ctxt.repository.installation.redis.cache_bytes)
+            async with github.AsyncGithubInstallationClient(auth) as client:
+                token = await client.get_access_token()
+            await git.configure(redis)
             username = "x-access-token"
             password = token
         else:
-            await git.configure(
-                ctxt.repository.installation.redis.cache_bytes, on_behalf
-            )
+            await git.configure(redis, on_behalf)
             username = on_behalf["oauth_access_token"]
             password = ""  # nosec
 
-        await git.setup_remote("origin", ctxt.pull["base"]["repo"], username, password)
+        await git.setup_remote("origin", pull["base"]["repo"], username, password)
 
-        await git.fetch("origin", f"pull/{ctxt.pull['number']}/head")
-        await git.fetch("origin", ctxt.pull["base"]["ref"])
+        await git.fetch("origin", f"pull/{pull['number']}/head")
+        await git.fetch("origin", pull["base"]["ref"])
         await git.fetch("origin", branch_name)
-        await git("checkout", "--quiet", "-b", bp_branch, f"origin/{branch_name}")
-
-        merge_commit = github_types.to_cached_github_branch_commit(
-            typing.cast(
-                github_types.GitHubBranchCommit,
-                await ctxt.client.item(
-                    f"{ctxt.base_url}/commits/{ctxt.pull['merge_commit_sha']}"
-                ),
-            )
+        await git(
+            "checkout", "--quiet", "-b", destination_branch, f"origin/{branch_name}"
         )
-        for commit in await _get_commits_to_cherrypick(ctxt, merge_commit):
+
+        for commit in commits_to_cherry_pick:
             # FIXME(sileht): Github does not allow to fetch only one commit
             # So we have to fetch the branch since the commit date ...
             # git("fetch", "origin", "%s:refs/remotes/origin/%s-commit" %
@@ -300,7 +305,7 @@ async def duplicate(
                     if message in e.output:
                         raise
 
-                ctxt.log.info("fail to cherry-pick %s: %s", commit.sha, e.output)
+                logger.info("fail to cherry-pick %s: %s", commit.sha, e.output)
                 output = await git("status")
                 cherry_pick_error += (
                     f"Cherry-pick of {commit.sha} has failed:\n```\n{output}```\n\n\n"
@@ -310,7 +315,7 @@ async def duplicate(
                 await git("add", "*", _env={"GIT_NOGLOB_PATHSPECS": "0"})
                 await git("commit", "-a", "--no-edit", "--allow-empty")
 
-        await git("push", "origin", bp_branch)
+        await git("push", "origin", destination_branch)
     except gitter.GitMergifyNamespaceConflict as e:
         raise DuplicateUnexpectedError(
             "`Mergify uses `mergify/...` namespace for creating temporary branches. "
@@ -341,7 +346,7 @@ async def duplicate(
                 raise out_exception(
                     f"Git reported the following error:\n```\n{e.output}\n```\n"
                 )
-        ctxt.log.error(
+        logger.error(
             "duplicate pull failed",
             output=e.output,
             returncode=e.returncode,
@@ -359,10 +364,39 @@ async def duplicate(
             "collaborating-with-pull-requests/reviewing-changes-in-pull-requests/checking-out-pull-requests-locally"
         )
 
+    return DuplicateBranchResult(branch_name, destination_branch, cherry_pick_error)
+
+
+async def create_duplicate_pull(
+    ctxt: context.Context,
+    duplicate_branch_result: DuplicateBranchResult,
+    title_template: str,
+    body_template: str,
+    on_behalf: user_tokens.UserTokensUser | None = None,
+    labels: list[str] | None = None,
+    label_conflicts: str | None = None,
+    assignees: list[str] | None = None,
+) -> github_types.GitHubPullRequest:
+    """Create a pull request.
+
+    :param ctxt: The pull request.
+    :type ctxt: py:class:mergify_engine.context.Context
+
+    :param duplicate_branch_result: The result object of prepare_branch()
+    :param title_template: The pull request title template.
+    :param body_template: The pull request body template.
+    :param on_behalf: The user to impersonate
+    :param labels: The list of labels to add to the created PR.
+    :param label_conflicts: The label to add to the created PR when cherry-pick failed.
+    :param assignees: The list of users to be assigned to the created PR.
+    """
+
     try:
         title = await ctxt.pull_request.render_template(
             title_template,
-            extra_variables={"destination_branch": branch_name},
+            extra_variables={
+                "destination_branch": duplicate_branch_result.target_branch
+            },
         )
     except context.RenderTemplateFailure as rmf:
         raise DuplicateFailed(f"Invalid title message: {rmf}")
@@ -371,7 +405,7 @@ async def duplicate(
         body_without_error = await ctxt.pull_request.render_template(
             body_template,
             extra_variables={
-                "destination_branch": branch_name,
+                "destination_branch": duplicate_branch_result.target_branch,
                 "cherry_pick_error": "",
             },
             mandatory_template_variables={
@@ -379,7 +413,7 @@ async def duplicate(
             },
         )
         cherry_pick_error_truncated = utils.unicode_truncate(
-            cherry_pick_error,
+            duplicate_branch_result.cherry_pick_error,
             constants.GITHUB_PULL_REQUEST_BODY_MAX_SIZE
             - len(body_without_error.encode()),
             "\n(…)\n",
@@ -388,7 +422,7 @@ async def duplicate(
         body = await ctxt.pull_request.render_template(
             body_template,
             extra_variables={
-                "destination_branch": branch_name,
+                "destination_branch": duplicate_branch_result.target_branch,
                 "cherry_pick_error": cherry_pick_error_truncated,
             },
             mandatory_template_variables={
@@ -407,8 +441,8 @@ async def duplicate(
                     json={
                         "title": title,
                         "body": body,
-                        "base": branch_name,
-                        "head": bp_branch,
+                        "base": duplicate_branch_result.target_branch,
+                        "head": duplicate_branch_result.destination_branch,
                     },
                     oauth_token=on_behalf["oauth_access_token"] if on_behalf else None,
                 )
@@ -417,8 +451,8 @@ async def duplicate(
     except http.HTTPClientSideError as e:
         if e.status_code == 422:
             if "No commits between" in e.message:
-                if cherry_pick_error:
-                    raise DuplicateFailed(cherry_pick_error)
+                if duplicate_branch_result.cherry_pick_error:
+                    raise DuplicateFailed(duplicate_branch_result.cherry_pick_error)
                 else:
                     raise DuplicateNotNeeded(e.message)
             elif "A pull request already exists" in e.message:
@@ -430,8 +464,7 @@ async def duplicate(
     if labels is not None:
         effective_labels.extend(labels)
 
-    if cherry_pick_error:
-        has_conflicts = True
+    if duplicate_branch_result.cherry_pick_error:
         if label_conflicts is not None:
             effective_labels.append(label_conflicts)
 
@@ -449,4 +482,4 @@ async def duplicate(
             json={"assignees": assignees},
         )
 
-    return DuplicatePull(duplicate_pr, has_conflicts)
+    return duplicate_pr
