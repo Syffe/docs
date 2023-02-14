@@ -8,7 +8,7 @@ git_ref=${1:-HEAD^}
 
 files=$(git diff --name-only "$git_ref" 'zfixtures/*/http.yaml')
 
-[ -z "$files" ] && echo "No fixtures changed" && exit 1
+[ -z "$files" ] && echo "No fixtures changed" && exit 0
 
 for file in $files; do
     test=${file#zfixtures/cassette/}
