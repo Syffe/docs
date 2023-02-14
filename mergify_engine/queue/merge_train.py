@@ -2430,7 +2430,8 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 source="draft pull request state change",
                 priority=worker_pusher.Priority.immediate
                 if i == 0
-                else worker_pusher.Priority.high,
+                and self.train_car_state.checks_type == TrainCarChecksType.INPLACE
+                else worker_pusher.Priority.medium,
             )
 
     def _get_previous_car(self) -> "TrainCar" | None:
@@ -3077,6 +3078,8 @@ class Train:
         await self.refresh_pulls(
             source=f"merged pull {pr_number} removed from queue",
             additional_pull_request=pr_number,
+            # process quickly the next one,
+            priority_first_pull_request=worker_pusher.Priority.immediate,
         )
         await signals.send(
             self.repository,
@@ -3707,6 +3710,7 @@ class Train:
     async def refresh_pulls(
         self,
         source: str,
+        priority_first_pull_request: worker_pusher.Priority = worker_pusher.Priority.medium,
         additional_pull_request: None | (github_types.GitHubPullRequestNumber) = None,
     ) -> None:
         pulls = await self.get_pulls()
@@ -3721,8 +3725,8 @@ class Train:
                 pull_request_number=pull_number,
                 action="internal",
                 source=source,
-                priority=worker_pusher.Priority.immediate
+                priority=priority_first_pull_request
                 if i == 0
-                else worker_pusher.Priority.high,
+                else worker_pusher.Priority.medium,
             )
         await pipe.execute()
