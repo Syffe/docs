@@ -21,6 +21,6 @@ def front_login_mock(respx_mock: respx.MockRouter) -> None:
     ).respond(204)
     respx_mock.get("/user").respond(200, json=dict(github_api_user))
     respx_mock.get("/user/installations/123/repositories").respond(
-        200, json=[{"owner": github_api_user}]
+        200, json={"repositories": [{"owner": github_api_user}], "total_count": 1}
     )
     respx_mock.get("/user/installations/456/repositories").respond(404)

@@ -85,6 +85,11 @@ class GitHubRepository(typing.TypedDict):
     default_branch: GitHubRefType
 
 
+class GitHubRepositoryList(typing.TypedDict):
+    repositories: list[GitHubRepository]
+    total_count: int
+
+
 @functools.total_ordering
 class GitHubRepositoryPermission(enum.Enum):
     level: int

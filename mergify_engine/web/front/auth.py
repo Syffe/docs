@@ -182,8 +182,8 @@ async def auth_setup(
             github.GithubTokenAuth(current_user.oauth_access_token)
         ) as client:
             try:
-                repos = typing.cast(
-                    list[github_types.GitHubRepository],
+                data = typing.cast(
+                    github_types.GitHubRepositoryList,
                     await client.item(
                         f"/user/installations/{installation_id}/repositories?per_page=1"
                     ),
@@ -191,10 +191,12 @@ async def auth_setup(
             except http.HTTPNotFound:
                 return AuthRedirectUrl("/github?new=true")
 
-        if len(repos) < 1:
+        if len(data["repositories"]) < 1:
             return AuthRedirectUrl("/github?new=true")
 
-        return AuthRedirectUrl(f"/github/{repos[0]['owner']['login']}?new=true")
+        return AuthRedirectUrl(
+            f"/github/{data['repositories'][0]['owner']['login']}?new=true"
+        )
     elif setup_action == "request":
         return AuthRedirectUrl("/?request=true")
 
