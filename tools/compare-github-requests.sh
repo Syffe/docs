@@ -15,5 +15,5 @@ for file in $files; do
     test=${test%/http.yaml}
     before=$(git cat-file blob $git_ref:$file | count_requests)
     after=$(cat $file | count_requests)
-    echo "$test: $(($before-$after)) requests to github"
+    echo "$test: $before -> $after ($(($after-$before))) requests to github"
 done
