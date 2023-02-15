@@ -152,6 +152,7 @@ async def gen_summary_rules(
                     {
                         k: _sanitize_action_config(k, v)
                         for k, v in action.executor.config.items()
+                        if k not in action.executor.config_hidden_from_simulator
                     },
                     default_flow_style=False,
                 ).replace("```", "\\`\\`\\`")

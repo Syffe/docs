@@ -102,6 +102,7 @@ class QueueExecutor(
     actions.ActionExecutor["QueueAction", "QueueExecutorConfig"],
     merge_base.MergeUtilsMixin,
 ):
+    config_hidden_from_simulator = ("priority",)
     queue_rule: qr_config.QueueRule
     queue_rules: qr_config.QueueRules
 

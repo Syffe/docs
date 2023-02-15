@@ -83,6 +83,7 @@ class ActionExecutor(abc.ABC, typing.Generic[ActionT, ActionExecutorConfigT]):
     ctxt: "context.Context"
     rule: "prr_config.EvaluatedPullRequestRule"
     config: ActionExecutorConfigT
+    config_hidden_from_simulator: typing.ClassVar[tuple[str, ...]] = ()
 
     @abc.abstractmethod
     async def run(self) -> check_api.Result:  # pragma: no cover
@@ -119,6 +120,7 @@ class ActionExecutorProtocol(typing.Protocol):
     ctxt: "context.Context"
     rule: "prr_config.EvaluatedPullRequestRule"
     config: dict[str, typing.Any]
+    config_hidden_from_simulator: typing.ClassVar[tuple[str, ...]]
 
     @abc.abstractmethod
     async def run(self) -> check_api.Result:  # pragma: no cover
