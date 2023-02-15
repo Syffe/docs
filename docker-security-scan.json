@@ -4931,7 +4931,8 @@
           "https://www.openwall.com/lists/oss-security/2021/09/26/1",
           "https://www.oracle.com/security-alerts/cpuapr2022.html",
           "https://www.oracle.com/security-alerts/cpujul2022.html",
-          "https://www.starwindsoftware.com/security/sw-20220805-0001/"
+          "https://www.starwindsoftware.com/security/sw-20220805-0001/",
+          "https://www.tenable.com/plugins/nessus/154174"
         ],
         "PublishedDate": "2021-09-26T19:15:00Z"
       },
@@ -5328,7 +5329,8 @@
           "https://www.openwall.com/lists/oss-security/2021/09/26/1",
           "https://www.oracle.com/security-alerts/cpuapr2022.html",
           "https://www.oracle.com/security-alerts/cpujul2022.html",
-          "https://www.starwindsoftware.com/security/sw-20220805-0001/"
+          "https://www.starwindsoftware.com/security/sw-20220805-0001/",
+          "https://www.tenable.com/plugins/nessus/154174"
         ],
         "PublishedDate": "2021-09-26T19:15:00Z"
       },
@@ -5725,7 +5727,8 @@
           "https://www.openwall.com/lists/oss-security/2021/09/26/1",
           "https://www.oracle.com/security-alerts/cpuapr2022.html",
           "https://www.oracle.com/security-alerts/cpujul2022.html",
-          "https://www.starwindsoftware.com/security/sw-20220805-0001/"
+          "https://www.starwindsoftware.com/security/sw-20220805-0001/",
+          "https://www.tenable.com/plugins/nessus/154174"
         ],
         "PublishedDate": "2021-09-26T19:15:00Z"
       },
