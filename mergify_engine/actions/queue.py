@@ -178,6 +178,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
         self,
         queue: merge_train.Train,
         queue_freeze: freeze.QueueFreeze | None,
+        # "car" is not used but needed because this func is used in 'merge' property
+        # with other func that need this attribute.
         car: merge_train.TrainCar | None,
     ) -> check_api.Result:
         result = await self.common_merge(
@@ -341,14 +343,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         q = await merge_train.Train.from_context(self.ctxt, self.queue_rules)
         car = q.get_car(self.ctxt)
 
-        result = await self.pre_queue_checks(
-            self.ctxt,
-            q,
-            car,
-            self.config["method"],
-            self.config["rebase_fallback"],
-            self.config["merge_bot_account"],
-        )
+        result = await self.pre_queue_checks(self.ctxt, q, car)
 
         if result is not None:
             return result
@@ -394,8 +389,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     f"{unexpected_change!s}.\n{self.UNQUEUE_DOCUMENTATION}",
                 )
 
-        if not await self._should_be_queued(self.ctxt, q):
-            unqueue_reason = await self.get_unqueue_reason_from_outcome(self.ctxt, q)
+        if not await self._should_be_queued(self.ctxt):
+            unqueue_reason = await self.get_unqueue_reason_from_outcome(self.ctxt)
             result = check_api.Result(
                 check_api.Conclusion.CANCELLED,
                 "The pull request has been removed from the queue",
@@ -482,14 +477,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         q = await merge_train.Train.from_context(self.ctxt, self.queue_rules)
         car = q.get_car(self.ctxt)
 
-        result = await self.pre_queue_checks(
-            self.ctxt,
-            q,
-            car,
-            self.config["method"],
-            self.config["rebase_fallback"],
-            self.config["merge_bot_account"],
-        )
+        result = await self.pre_queue_checks(self.ctxt, q, car)
 
         if result is not None:
             return result
@@ -510,8 +498,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
             await self._unqueue_pull_request(q, car, unqueue_reason, result)
             return result
 
-        if not await self._should_be_queued(self.ctxt, q):
-            unqueue_reason = await self.get_unqueue_reason_from_outcome(self.ctxt, q)
+        if not await self._should_be_queued(self.ctxt):
+            unqueue_reason = await self.get_unqueue_reason_from_outcome(self.ctxt)
             result = check_api.Result(
                 check_api.Conclusion.CANCELLED,
                 "The pull request has been removed from the queue",
@@ -535,9 +523,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
         ctxt: context.Context,
         queue: merge_train.Train,
         car: merge_train.TrainCar | None,
-        merge_method: merge_base.MergeMethodT,
-        merge_rebase_fallback: merge_base.RebaseFallbackT,
-        merge_bot_account: github_types.GitHubLogin | None,
     ) -> check_api.Result | None:
         result = None
         try:
@@ -588,7 +573,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
     @staticmethod
     async def get_unqueue_reason_from_outcome(
-        ctxt: context.Context, q: merge_train.Train
+        ctxt: context.Context,
     ) -> queue_utils.BaseUnqueueReason:
         check = await ctxt.get_engine_check_run(constants.MERGE_QUEUE_SUMMARY_NAME)
         if check is None:
@@ -639,7 +624,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             )
 
     @staticmethod
-    async def _should_be_queued(ctxt: context.Context, q: merge_train.Train) -> bool:
+    async def _should_be_queued(ctxt: context.Context) -> bool:
         # TODO(sileht): load outcome from summary, so we known why it shouldn't
         # be queued
         check = await ctxt.get_engine_check_run(constants.MERGE_QUEUE_SUMMARY_NAME)
