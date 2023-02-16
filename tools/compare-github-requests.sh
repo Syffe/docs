@@ -4,9 +4,10 @@ count_requests() {
     yq '.interactions[].request.uri | select(. | startswith("https://api.github.com"))' | wc -l
 }
 
-git_ref=${1:-HEAD^}
+backlook=${1:=1}
+git_ref="HEAD~${backlook}"
 
-files=$(git diff --name-only "$git_ref" 'zfixtures/*/http.yaml')
+files=$(git diff --name-only $git_ref..HEAD 'zfixtures/*/http.yaml')
 
 [ -z "$files" ] && echo "No fixtures changed" && exit 0
 

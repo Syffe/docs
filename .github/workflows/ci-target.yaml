@@ -25,15 +25,40 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-20.04
     steps:
+      - name: Get script
+        run: |
+          # NOTE(sileht): for security purpose, we must not use the script we
+          # checkout with git, but pick the one from main branch
+          # eg: https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+          dest="$RUNNER_TEMP/compare-github-requests.sh"
+          gh api -X GET /repos/Mergifyio/engine/contents/tools/compare-github-requests.sh \
+            | jq -r .content \
+            | base64 -d \
+            > "$dest"
+          chmod +x "$dest"
+
+      - name: Computing fetch-depth
+        id: fetch-depth
+        env:
+          COMMITS: ${{ github.event.pull_request.commits }}
+        run: echo "result=$((COMMITS+1))" >> "$GITHUB_OUTPUT"
+
+      # NOTE(sileht): That's ok, because the action didn't run anything from the checkout-ed code
+      # eg: https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+      # yamllint disable-line rule:line-length
+      # nosemgrep: yaml.github-actions.security.pull-request-target-code-checkout.pull-request-target-code-checkout
       - name: Checkout 🛎️
         uses: actions/checkout@v3.3.0
         with:
-          fetch-depth: 10
+          fetch-depth: ${{ steps.fetch-depth.outputs.result }}
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Generates GitHub HTTP requests change report
         id: report
+        env:
+          COMMITS: ${{ github.event.pull_request.commits }}
         run: |
-          OUTPUT="$(tools/compare-github-requests.sh)"
+          OUTPUT=$("$RUNNER_TEMP/compare-github-requests.sh" "$COMMITS")
           OUTPUT="${OUTPUT//'%'/'%25'}"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
