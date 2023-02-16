@@ -228,10 +228,6 @@ def extract_command_state(
 async def run_commands_tasks(
     ctxt: context.Context, mergify_config: mergify_conf.MergifyConfig
 ) -> None:
-    if ctxt.is_merge_queue_pr():
-        # We don't allow any command yet
-        return
-
     mergify_bot = await github.GitHubAppInfo.get_bot(
         ctxt.repository.installation.redis.cache_bytes
     )
