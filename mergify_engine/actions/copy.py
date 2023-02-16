@@ -2,7 +2,6 @@ from collections import abc
 import datetime
 import re
 import typing
-from urllib import parse
 
 import voluptuous
 
@@ -10,8 +9,12 @@ from mergify_engine import actions
 from mergify_engine import check_api
 from mergify_engine import constants
 from mergify_engine import context
+from mergify_engine import date
+from mergify_engine import delayed_refresh
 from mergify_engine import duplicate_pull
 from mergify_engine import github_types
+from mergify_engine import json
+from mergify_engine import refresher
 from mergify_engine import signals
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import http
@@ -19,6 +22,7 @@ from mergify_engine.dashboard import subscription
 from mergify_engine.dashboard import user_tokens
 from mergify_engine.rules import types
 from mergify_engine.rules.config import pull_request_rules as prr_config
+from mergify_engine.worker import gitter_service
 
 
 def Regex(value: str) -> re.Pattern[str]:
@@ -63,6 +67,7 @@ class CopyResult(typing.NamedTuple):
     branch: github_types.GitHubRefType
     status: check_api.Conclusion
     details: str
+    job_id: gitter_service.GitterJobId | None
 
 
 class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
@@ -175,53 +180,42 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
     async def _copy(
         self,
         branch_name: github_types.GitHubRefType,
+        job_id: gitter_service.GitterJobId | None,
     ) -> CopyResult:
         """Copy the PR to a branch.
 
         Returns a tuple of strings (state, reason).
         """
 
-        # NOTE(sileht): Ensure branch exists first
-        escaped_branch_name = parse.quote(branch_name, safe="")
-        try:
-            await self.ctxt.client.item(
-                f"{self.ctxt.base_url}/branches/{escaped_branch_name}"
-            )
-        except http.HTTPStatusError as e:
-            detail = f"{self.KIND.capitalize()} to branch `{branch_name}` failed: "
-            if e.response.status_code >= 500:
-                state = check_api.Conclusion.PENDING
-            else:
-                state = check_api.Conclusion.FAILURE
-                detail += e.response.json()["message"]
-            return CopyResult(branch_name, state, detail)
-
         # NOTE(sileht) does the duplicate have already been done ?
         new_pull = await self.get_existing_duplicate_pull(branch_name)
-
         if new_pull is not None:
             return self._get_success_copy_result(branch_name, new_pull)
 
-        users_to_add = [
-            user
-            for user in await action_utils.render_users_template(
-                self.ctxt, self.config["assignees"]
-            )
-            if not user.endswith("[bot]")
-        ]
+        job = await self._get_job(branch_name, job_id)
+        if job is None:
+            try:
+                # NOTE(sileht): Ensure branch exists first
+                await self.ctxt.repository.get_branch(branch_name)
+            except http.HTTPClientSideError as e:
+                return self._get_failure_copy_result(
+                    branch_name, f"GitHub error: ```{e.response.json()['message']}```"
+                )
+
+            try:
+                commits = await duplicate_pull.get_commits_to_cherrypick(self.ctxt)
+            except duplicate_pull.DuplicateFailed as e:
+                return self._get_failure_copy_result(branch_name, e.reason)
+
+            job = await self._create_job(branch_name, commits)
+
+        # check if job has finished
+        if job.task is None or not job.task.done():
+            return self._get_inprogress_copy_result(branch_name, job.id)
+
+        assignees = await self._get_assignees()
         try:
-            commits = await duplicate_pull.get_commits_to_cherrypick(self.ctxt)
-            duplicate_branch_result = await duplicate_pull.prepare_branch(
-                self.ctxt.repository.installation.redis.cache_bytes,
-                self.ctxt.log,
-                self.ctxt.pull,
-                self.ctxt.client.auth,
-                branch_name=branch_name,
-                branch_prefix=self.BRANCH_PREFIX,
-                commits_to_cherry_pick=commits,
-                ignore_conflicts=self.config["ignore_conflicts"],
-                on_behalf=self.config["bot_account"],
-            )
+            duplicate_branch_result = job.result()
             new_pull = await duplicate_pull.create_duplicate_pull(
                 self.ctxt,
                 duplicate_branch_result,
@@ -230,9 +224,8 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 on_behalf=self.config["bot_account"],
                 labels=self.config["labels"],
                 label_conflicts=self.config["label_conflicts"],
-                assignees=users_to_add,
+                assignees=assignees,
             )
-
         except duplicate_pull.DuplicateAlreadyExists:
             new_pull = await self.get_existing_duplicate_pull(branch_name)
             if new_pull is None:
@@ -244,6 +237,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 branch_name,
                 check_api.Conclusion.SUCCESS,
                 f"{self.KIND.capitalize()} to branch `{branch_name}` not needed, change already in branch `{branch_name}`",
+                None,
             )
         except duplicate_pull.DuplicateFailed as e:
             if isinstance(e, duplicate_pull.DuplicateUnexpectedError):
@@ -272,13 +266,22 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
         return self._get_success_copy_result(branch_name, new_pull)
 
     @classmethod
+    def _get_inprogress_copy_result(
+        cls,
+        branch_name: github_types.GitHubRefType,
+        job_id: gitter_service.GitterJobId | None,
+    ) -> CopyResult:
+        message = f"{cls.KIND.capitalize()} to branch `{branch_name}` in progress"
+        return CopyResult(branch_name, check_api.Conclusion.PENDING, message, job_id)
+
+    @classmethod
     def _get_failure_copy_result(
         cls, branch_name: github_types.GitHubRefType, details: str
     ) -> CopyResult:
         message = f"{cls.KIND.capitalize()} to branch `{branch_name}` failed"
         if details:
-            message += f"\n{details}"
-        return CopyResult(branch_name, check_api.Conclusion.FAILURE, message)
+            message += f"\n\n{details}"
+        return CopyResult(branch_name, check_api.Conclusion.FAILURE, message, None)
 
     @staticmethod
     def _get_success_copy_result(
@@ -290,7 +293,48 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
             check_api.Conclusion.SUCCESS,
             f"[#{new_pull['number']} {new_pull['title']}]({new_pull['html_url']}) "
             f"has been created for branch `{branch_name}`",
+            None,
         )
+
+    async def _get_job(
+        self,
+        branch_name: github_types.GitHubRefType,
+        job_id: gitter_service.GitterJobId | None,
+    ) -> gitter_service.GitterJob[duplicate_pull.DuplicateBranchResult] | None:
+        if job_id is None:
+            return None
+        return typing.cast(
+            gitter_service.GitterJob[duplicate_pull.DuplicateBranchResult] | None,
+            gitter_service.get_job(job_id),
+        )
+
+    async def _create_job(
+        self,
+        branch_name: github_types.GitHubRefType,
+        commits_to_cherry_pick: list[github_types.CachedGitHubBranchCommit],
+    ) -> gitter_service.GitterJob[duplicate_pull.DuplicateBranchResult]:
+        job = gitter_service.GitterJob[duplicate_pull.DuplicateBranchResult](
+            duplicate_pull.prepare_branch(
+                self.ctxt.repository.installation.redis.cache_bytes,
+                self.ctxt.log,
+                self.ctxt.pull,
+                self.ctxt.client.auth,
+                branch_name=branch_name,
+                branch_prefix=self.BRANCH_PREFIX,
+                commits_to_cherry_pick=commits_to_cherry_pick,
+                ignore_conflicts=self.config["ignore_conflicts"],
+                on_behalf=self.config["bot_account"],
+            ),
+            refresher.send_pull_refresh(
+                self.ctxt.repository.installation.redis.stream,
+                self.ctxt.repository.repo,
+                action="internal",
+                pull_request_number=self.ctxt.pull["number"],
+                source=f"internal/{self.KIND}",
+            ),
+        )
+        gitter_service.send_job(job)
+        return job
 
     async def run(self) -> check_api.Result:
         if len(self.config["branches"]) == 0:
@@ -311,9 +355,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 "You can accept them at https://dashboard.mergify.com/",
             )
 
-        results = [
-            await self._copy(branch_name) for branch_name in self.config["branches"]
-        ]
+        results = await self._do_copies()
 
         # Pick the first status as the final_status
         conclusion = results[0].status
@@ -334,11 +376,74 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
         else:
             message = "Pending"
 
+        if conclusion in (check_api.Conclusion.SUCCESS, check_api.Conclusion.FAILURE):
+            await self._clear_state()
+        else:
+            await self._save_state(results)
+
         return check_api.Result(
             conclusion,
             message,
             "\n".join(f"* {detail}" for detail in (r.details for r in results)),
         )
+
+    async def _get_assignees(self) -> list[str]:
+        return [
+            user
+            for user in await action_utils.render_users_template(
+                self.ctxt, self.config["assignees"]
+            )
+            if not user.endswith("[bot]")
+        ]
+
+    async def _do_copies(self) -> list[CopyResult]:
+        previous_results = await self._load_state()
+
+        results: list[CopyResult] = []
+        for branch_name in self.config["branches"]:
+            previous_result = previous_results.get(
+                branch_name,
+                CopyResult(branch_name, check_api.Conclusion.PENDING, "", None),
+            )
+            if previous_result.status == check_api.Conclusion.PENDING:
+                try:
+                    result = await self._copy(branch_name, previous_result.job_id)
+                except http.HTTPServerSideError:
+                    await delayed_refresh.plan_refresh_at_least_at(
+                        self.ctxt.repository,
+                        self.ctxt.pull["number"],
+                        at=date.utcnow() + datetime.timedelta(minutes=30),
+                    )
+                    result = self._get_inprogress_copy_result(
+                        branch_name, previous_result.job_id
+                    )
+            else:
+                result = previous_result
+            results.append(result)
+
+        return results
+
+    @property
+    def _state_redis_key(self) -> str:
+        return f"{self.KIND}-state/{self.ctxt.repository.repo['id']}/{self.ctxt.pull['number']}"
+
+    async def _clear_state(self) -> None:
+        await self.ctxt.repository.installation.redis.cache_bytes.delete(
+            self._state_redis_key,
+        )
+
+    async def _save_state(self, results: list[CopyResult]) -> None:
+        await self.ctxt.repository.installation.redis.cache_bytes.set(
+            self._state_redis_key, json.dumps(results), ex=COPY_STATE_EXPIRATION
+        )
+
+    async def _load_state(self) -> dict[github_types.GitHubRefType, CopyResult]:
+        data = await self.ctxt.repository.installation.redis.cache_bytes.get(
+            self._state_redis_key,
+        )
+        if data is None:
+            return {}
+        return {result[0]: CopyResult(*result) for result in json.loads(data)}
 
     async def cancel(self) -> check_api.Result:  # pragma: no cover
         return actions.CANCELLED_CHECK_REPORT

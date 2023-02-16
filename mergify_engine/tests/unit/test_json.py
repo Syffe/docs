@@ -1,6 +1,7 @@
 import datetime
 import enum
 import json
+import uuid
 
 import pytest
 
@@ -13,6 +14,8 @@ class Color(enum.Enum):
     BLUE = 3
 
 
+uuid_str = "dd0df591c1bb4a43a3c0a333bf41778e"
+
 payload_decoded = {
     "name": "hello",
     "conditions": [],
@@ -23,6 +26,7 @@ payload_decoded = {
         2021, 5, 15, 8, 41, 36, 796485, tzinfo=datetime.timezone.utc
     ),
     "a set": {1, 2, 3},
+    "uuid": uuid.UUID(uuid_str),
 }
 
 payload_encoded = {
@@ -46,6 +50,10 @@ payload_encoded = {
     "a set": {
         "__pytype__": "set",
         "value": [1, 2, 3],
+    },
+    "uuid": {
+        "__pytype__": "uuid.UUID",
+        "value": uuid_str,
     },
 }
 

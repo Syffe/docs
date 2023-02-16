@@ -266,6 +266,9 @@ Schema = voluptuous.Schema(
         voluptuous.Required(
             "BUCKET_PROCESSING_MAX_SECONDS", default=30
         ): voluptuous.Coerce(int),
+        voluptuous.Required(
+            "MAX_GITTER_CONCURRENT_JOBS", default=20
+        ): voluptuous.Coerce(int),
         voluptuous.Required("CACHE_TOKEN_SECRET"): str,
         voluptuous.Required("CACHE_TOKEN_SECRET_OLD", default=None): voluptuous.Any(
             None, str
@@ -358,6 +361,7 @@ STATISTICS_URL: str
 AUTHENTICATION_URL: str
 
 BUCKET_PROCESSING_MAX_SECONDS: int
+MAX_GITTER_CONCURRENT_JOBS: int
 INTEGRATION_ID: int
 DASHBOARD_UI_STATIC_FILES_DIRECTORY: str | None
 DASHBOARD_UI_FRONT_BASE_URL: str

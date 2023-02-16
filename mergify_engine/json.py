@@ -2,6 +2,7 @@ import datetime
 import enum
 import json
 import typing
+import uuid
 
 
 _JSON_TYPES = {}
@@ -38,6 +39,12 @@ class Encoder(json.JSONEncoder):
                 "__pytype__": "set",
                 "value": list(v),
             }
+        elif isinstance(v, uuid.UUID):
+            return {
+                "__pytype__": "uuid.UUID",
+                "value": v.hex,
+            }
+
         else:
             return super().default(v)
 
@@ -61,6 +68,8 @@ def _decode(v: dict[typing.Any, typing.Any]) -> typing.Any:
         return datetime.datetime.fromisoformat(v["value"])
     elif v.get("__pytype__") == "set":
         return set(v["value"])
+    elif v.get("__pytype__") == "uuid.UUID":
+        return uuid.UUID(v["value"])
     return v
 
 

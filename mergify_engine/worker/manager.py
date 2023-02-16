@@ -16,6 +16,7 @@ from mergify_engine import redis_utils
 from mergify_engine import service
 from mergify_engine import signals
 from mergify_engine.clients import github
+from mergify_engine.worker import gitter_service
 from mergify_engine.worker import stream_services
 from mergify_engine.worker import task
 
@@ -72,6 +73,7 @@ ServiceNameT = typing.Literal[
     "dedicated-stream",
     "stream-monitoring",
     "delayed-refresh",
+    "gitter",
 ]
 ServiceNamesT = set[ServiceNameT]
 AVAILABLE_WORKER_SERVICES = set(ServiceNameT.__dict__["__args__"])
@@ -111,7 +113,10 @@ class ServiceManager:
     process_index: int = dataclasses.field(default_factory=get_process_index_from_env)
     retry_handled_exception_forever: bool = True
 
-    # MonitoringStreamService
+    # GitterService
+    gitter_concurrent_jobs: int = config.MAX_GITTER_CONCURRENT_JOBS
+
+    # MonitoringStreamService & GitterService
     monitoring_idle_time: float = 60
 
     _redis_links: redis_utils.RedisLinks = dataclasses.field(
@@ -150,6 +155,13 @@ class ServiceManager:
 
         await github.GitHubAppInfo.warm_cache(self._redis_links.cache_bytes)
 
+        if "gitter" in self.enabled_services:
+            gitter_serv = gitter_service.GitterService(
+                concurrent_jobs=self.gitter_concurrent_jobs,
+                monitoring_idle_time=self.monitoring_idle_time,
+                idle_sleep_time=self.idle_sleep_time,
+            )
+            self._services.append(gitter_serv)
         dedicated_workers_cache_syncer = stream_services.DedicatedWorkersCacheSyncerService(
             self._redis_links,
             dedicated_workers_syncer_idle_time=self.dedicated_workers_syncer_idle_time,

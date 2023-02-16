@@ -40,6 +40,7 @@ from mergify_engine.queue import merge_train
 from mergify_engine.queue import statistics as queue_statistics
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.tests.functional import conftest as func_conftest
+from mergify_engine.worker import gitter_service
 from mergify_engine.worker import manager
 from mergify_engine.worker import stream
 from mergify_engine.worker import stream_lua
@@ -682,21 +683,31 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         LOG.log(42, "RUNNING FULL ENGINE")
         w = manager.ServiceManager(
             idle_sleep_time=self.WORKER_IDLE_SLEEP_TIME if RECORD else 0.01,
-            enabled_services={"shared-stream", "dedicated-stream", "delayed-refresh"},
+            enabled_services={
+                "shared-stream",
+                "dedicated-stream",
+                "delayed-refresh",
+                "gitter",
+            },
             delayed_refresh_idle_time=0.01,
             dedicated_workers_spawner_idle_time=0.01,
             dedicated_workers_syncer_idle_time=0.01,
             retry_handled_exception_forever=False,
+            gitter_concurrent_jobs=1,
             shutdown_timeout=0,
         )
         await w.start()
+        gitter_serv = w.get_service(gitter_service.GitterService)
+        assert gitter_serv is not None
 
         # Ensure delayed_refresh and monitoring task run at least once
         await asyncio.sleep(self.WORKER_HAS_WORK_INTERVAL_CHECK)
 
         while (
-            await w._redis_links.stream.zcard("streams")
-        ) > 0 or self.worker_concurrency_works > 0:
+            (await w._redis_links.stream.zcard("streams")) > 0
+            or self.worker_concurrency_works > 0
+            or len(gitter_serv._jobs) > 0
+        ):
             await asyncio.sleep(self.WORKER_HAS_WORK_INTERVAL_CHECK)
 
         w.stop()
@@ -704,6 +715,12 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
     async def run_engine(self) -> None:
         LOG.log(42, "RUNNING ENGINE")
+
+        gitter_serv = gitter_service.GitterService(
+            concurrent_jobs=0,
+            idle_sleep_time=0.01,
+            monitoring_idle_time=60,
+        )
         syncer_service = stream_services.DedicatedWorkersCacheSyncerService(
             self.redis_links, dedicated_workers_syncer_idle_time=0.01
         )
@@ -728,14 +745,20 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         )
 
         shared_service.shared_stream_tasks_per_process = 1
+
         while (await self.redis_links.stream.zcard("streams")) > 0:
             await shared_service.shared_stream_worker_task(0)
             await dedicated_service.dedicated_stream_worker_task(
                 config.TESTING_ORGANIZATION_ID
             )
+            while not gitter_serv._queue.empty():
+                await gitter_serv._gitter_worker(0)
 
         await task.stop_wait_and_kill(
-            syncer_service.tasks + dedicated_service.tasks + shared_service.tasks,
+            syncer_service.tasks
+            + dedicated_service.tasks
+            + shared_service.tasks
+            + gitter_serv.tasks,
             timeout=0,
         )
 

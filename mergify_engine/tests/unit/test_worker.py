@@ -23,6 +23,7 @@ from mergify_engine import worker_pusher
 from mergify_engine.clients import github_app
 from mergify_engine.clients import http
 from mergify_engine.worker import delayed_refresh_service
+from mergify_engine.worker import gitter_service
 from mergify_engine.worker import manager
 from mergify_engine.worker import stream
 from mergify_engine.worker import stream_cli
@@ -166,6 +167,7 @@ async def run_worker(
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
         dedicated_workers_syncer_idle_time=0.01,
+        gitter_concurrent_jobs=0,
         **kwargs,
     )
     await w.start()
@@ -1826,6 +1828,7 @@ async def test_dedicated_worker_scaleup_scaledown(
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
         dedicated_workers_syncer_idle_time=0.01,
+        gitter_concurrent_jobs=1,
         shutdown_timeout=0,
     )
     await w.start()
@@ -2739,6 +2742,7 @@ async def test_start_stop_cycle(
         dedicated_workers_syncer_idle_time=0.01,
         dedicated_stream_processes=1,
         process_index=0,
+        gitter_concurrent_jobs=2,
         shutdown_timeout=0,
     )
     assert w._stopped.is_set()
@@ -2749,10 +2753,10 @@ async def test_start_stop_cycle(
     # NOTE(sileht): ensure it doesn't crash instantly
     await asyncio.sleep(1)
 
-    assert len(w._services) == 5
+    assert len(w._services) == 6
 
     tasks = [a_task for serv in w._services for a_task in serv.tasks]
-    assert len(tasks) == 7
+    assert len(tasks) == 10
 
     serv_shared = w.get_service(stream_services.SharedStreamService)
     assert serv_shared is not None
@@ -2760,9 +2764,12 @@ async def test_start_stop_cycle(
     assert serv_dedicated is not None
     assert w.get_service(stream_services.MonitoringStreamService) is not None
     assert w.get_service(delayed_refresh_service.DelayedRefreshService) is not None
+    serv_gitter = w.get_service(gitter_service.GitterService)
+    assert serv_gitter is not None
 
     assert len(serv_shared._shared_worker_tasks) == 3
     assert len(serv_dedicated._dedicated_worker_tasks) == 0
+    assert len(serv_gitter._pools) == 2
 
     assert not w._stopped.is_set()
     assert w._stop_task is None

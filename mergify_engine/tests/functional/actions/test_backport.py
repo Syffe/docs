@@ -147,8 +147,8 @@ class TestBackportAction(BackportActionTestBase):
         assert "failure" == checks[0]["conclusion"]
         assert "No backport have been created" == checks[0]["output"]["title"]
         assert (
-            "* Backport to branch `crashme` failed: Branch not found"
-            == checks[0]["output"]["summary"]
+            "* Backport to branch `crashme` failed\n\n"
+            "GitHub error: ```Branch not found```" == checks[0]["output"]["summary"]
         )
 
     async def _do_backport_conflicts(
@@ -225,6 +225,7 @@ class TestBackportAction(BackportActionTestBase):
         assert "No backport have been created" == checks[0]["output"]["title"]
         assert (
             f"""* Backport to branch `{stable_branch}` failed
+
 Cherry-pick of {commit_id} has failed:
 ```
 On branch mergify/bp/{stable_branch}/pr-{p['number']}
