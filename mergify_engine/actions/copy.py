@@ -1,3 +1,4 @@
+import base64
 from collections import abc
 import datetime
 import re
@@ -192,7 +193,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
         if new_pull is not None:
             return self._get_success_copy_result(branch_name, new_pull)
 
-        job = await self._get_job(branch_name, job_id)
+        job = await self._get_job(job_id)
         if job is None:
             try:
                 # NOTE(sileht): Ensure branch exists first
@@ -298,7 +299,6 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
 
     async def _get_job(
         self,
-        branch_name: github_types.GitHubRefType,
         job_id: gitter_service.GitterJobId | None,
     ) -> gitter_service.GitterJob[duplicate_pull.DuplicateBranchResult] | None:
         if job_id is None:
@@ -425,7 +425,10 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
 
     @property
     def _state_redis_key(self) -> str:
-        return f"{self.KIND}-state/{self.ctxt.repository.repo['id']}/{self.ctxt.pull['number']}"
+        # NOTE(sileht): we use base64 to ensure all chars of the rule name is
+        # compatible with Redis allowed chars
+        rule_name_encoded = base64.urlsafe_b64encode(self.rule.name.encode()).decode()
+        return f"{self.KIND}-state/{self.ctxt.repository.repo['id']}/{self.ctxt.pull['number']}/{rule_name_encoded}"
 
     async def _clear_state(self) -> None:
         await self.ctxt.repository.installation.redis.cache_bytes.delete(
