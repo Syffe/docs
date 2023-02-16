@@ -58,6 +58,9 @@ jobs:
         env:
           COMMITS: ${{ github.event.pull_request.commits }}
         run: |
+          # For debugging
+          bash -x "$RUNNER_TEMP/compare-github-requests.sh" "$COMMITS"
+
           OUTPUT=$("$RUNNER_TEMP/compare-github-requests.sh" "$COMMITS")
           OUTPUT="${OUTPUT//'%'/'%25'}"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
