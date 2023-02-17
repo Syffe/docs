@@ -289,9 +289,13 @@ def _check_rate_limit(response: httpx.Response) -> None:
                 headers=response.headers,
                 content=response.content,
             )
+            tags = [f"hostname:{response.url.host}"]
+            worker_id = logs.WORKER_ID.get(None)
+            if worker_id is not None:
+                tags.append(f"worker_id:{worker_id}")
             statsd.increment(
                 "http.client.rate_limited",
-                tags=[f"hostname:{response.url.host}"],
+                tags=tags,
             )
         raise exceptions.RateLimited(delta, remaining)
 
