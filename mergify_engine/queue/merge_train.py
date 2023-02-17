@@ -1842,6 +1842,11 @@ You don't need to do anything. Mergify will close this pull request automaticall
             self.last_conditions_evaluation,
             ignore_order=True,
             exclude_types=[date.Schedule],
+            # No need to refresh summary if related_checks or next_evaluation_at change
+            exclude_regex_paths=(
+                r"\['related_checks'\]\[\d+\]",
+                r"\['next_evaluation_at'\]",
+            ),
         )
         require_summaries_update = (
             len(diff_result.affected_paths) > 0
