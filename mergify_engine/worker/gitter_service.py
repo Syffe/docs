@@ -23,8 +23,8 @@ T = typing.TypeVar("T")
 
 @dataclasses.dataclass
 class GitterJob(typing.Generic[T]):
-    coro: abc.Coroutine[None, None, T]
-    callback: abc.Coroutine[typing.Any, typing.Any, typing.Any] | None = None
+    func: abc.Callable[[], abc.Coroutine[None, None, T]]
+    callback: abc.Callable[[], abc.Coroutine[None, None, None]] | None = None
     id: GitterJobId = dataclasses.field(init=False, default_factory=uuid.uuid4)
     task: asyncio.Task[T] | None = None
 
@@ -109,7 +109,7 @@ class GitterService:
                 job_id=job.id,
             )
             try:
-                job.task = asyncio.create_task(job.coro)
+                job.task = asyncio.create_task(job.func())
                 await job.task
             except asyncio.CancelledError:
                 raise
@@ -126,7 +126,7 @@ class GitterService:
                     job_id=job.id,
                 )
                 try:
-                    await job.callback
+                    await job.callback()
                 except asyncio.CancelledError:
                     raise
                 except Exception:

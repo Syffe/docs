@@ -1,6 +1,7 @@
 import base64
 from collections import abc
 import datetime
+import functools
 import re
 import typing
 
@@ -314,7 +315,8 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
         commits_to_cherry_pick: list[github_types.CachedGitHubBranchCommit],
     ) -> gitter_service.GitterJob[duplicate_pull.DuplicateBranchResult]:
         job = gitter_service.GitterJob[duplicate_pull.DuplicateBranchResult](
-            duplicate_pull.prepare_branch(
+            functools.partial(
+                duplicate_pull.prepare_branch,
                 self.ctxt.repository.installation.redis.cache_bytes,
                 self.ctxt.log,
                 self.ctxt.pull,
@@ -325,7 +327,8 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 ignore_conflicts=self.config["ignore_conflicts"],
                 on_behalf=self.config["bot_account"],
             ),
-            refresher.send_pull_refresh(
+            functools.partial(
+                refresher.send_pull_refresh,
                 self.ctxt.repository.installation.redis.stream,
                 self.ctxt.repository.repo,
                 action="internal",

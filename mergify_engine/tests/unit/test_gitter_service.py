@@ -24,7 +24,7 @@ async def test_gitter_service_lifecycle(
     method = mock.AsyncMock(return_value="result")
     callback = mock.AsyncMock()
 
-    job = gitter_service.GitterJob[str](method(), callback())
+    job = gitter_service.GitterJob[str](method, callback)
 
     assert gitter_service.get_job(job.id) is None
     gitter_service.send_job(job)
@@ -91,10 +91,10 @@ async def test_gitter_service_concurrency(
         q.task_done()
         return res
 
-    job_1 = gitter_service.GitterJob[str](one())
-    job_2 = gitter_service.GitterJob[str](two())
-    job_join = gitter_service.GitterJob[str](join())
-    job_waiter = gitter_service.GitterJob[str](waiter())
+    job_1 = gitter_service.GitterJob[str](one)
+    job_2 = gitter_service.GitterJob[str](two)
+    job_join = gitter_service.GitterJob[str](join)
+    job_waiter = gitter_service.GitterJob[str](waiter)
     gitter_service.send_job(job_1)
     gitter_service.send_job(job_2)
     gitter_service.send_job(job_join)
