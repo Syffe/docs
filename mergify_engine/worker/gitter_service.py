@@ -9,6 +9,7 @@ import uuid
 
 import daiquiri
 from datadog import statsd  # type: ignore[attr-defined]
+from ddtrace import tracer
 
 from mergify_engine.worker import task
 
@@ -93,6 +94,7 @@ class GitterService:
         statsd.gauge("engine.gitter.jobs.running", running)
         statsd.gauge("engine.gitter.jobs.finished", finished)
 
+    @tracer.wrap("gitter_worker", span_type="worker")
     async def _gitter_worker(self, worker_id: int) -> None:
         LOG.debug("gitter worker waiting for job", worker_id=worker_id)
         # NOTE(sileht): asyncio.Queue.get() is uninterrupting even when the
