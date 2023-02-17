@@ -507,7 +507,7 @@ async def _request_with_ratelimit_retry(
         http.HTTPTooManyRequests,
     ) as exc:
         try:
-            github._check_rate_limit(exc.response)
+            github._check_rate_limit(args[0], exc.response)
         except exceptions.RateLimited as ratelimit_exc:
             await asyncio.sleep(int(ratelimit_exc.countdown.total_seconds()))
             raise tenacity.TryAgain

@@ -250,7 +250,7 @@ async def get_installation_from_login(
             raise exceptions.MergifyNotInstalled()
 
 
-def _check_rate_limit(response: httpx.Response) -> None:
+def _check_rate_limit(client: http.AsyncClient, response: httpx.Response) -> None:
     if response.status_code not in (403, 422, 429) or (
         response.status_code == 422
         and (
@@ -288,6 +288,7 @@ def _check_rate_limit(response: httpx.Response) -> None:
                 final_url=response.url,
                 headers=response.headers,
                 content=response.content,
+                gh_owner=http.extract_organization_login(client),
             )
             tags = [f"hostname:{response.url.host}"]
             worker_id = logs.WORKER_ID.get(None)
@@ -583,7 +584,7 @@ class AsyncGithubInstallationClient(AsyncGithubClient):
             response = await super().send(
                 request, auth=auth, follow_redirects=follow_redirects
             )
-            _check_rate_limit(response)
+            _check_rate_limit(self, response)
         finally:
             if response is None:
                 status_code = "error"
