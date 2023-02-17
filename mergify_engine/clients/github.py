@@ -73,6 +73,12 @@ class InstallationInaccessible(Exception):
     message: str
 
 
+class Actor(typing.TypedDict):
+    type: typing.Literal["user", "application"]
+    id: int
+    name: str
+
+
 class GithubTokenAuth(httpx.Auth):
     _token: str
 

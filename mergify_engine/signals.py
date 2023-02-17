@@ -7,6 +7,7 @@ import typing
 import daiquiri
 
 from mergify_engine import github_types
+from mergify_engine.clients import github
 from mergify_engine.queue import utils as queue_utils
 
 
@@ -41,6 +42,9 @@ EventName = typing.Literal[
     "action.squash",
     "action.unqueue",
     "action.update",
+    "queue.freeze.create",
+    "queue.freeze.update",
+    "queue.freeze.delete",
 ]
 
 
@@ -174,6 +178,25 @@ class EventQueueChecksStartMetadata(EventMetadata, total=False):
     speculative_check_pull_request: SpeculativeCheckPullRequest
 
 
+class EventQueueFreezeCreateMetadata(EventMetadata, total=False):
+    queue_name: str
+    reason: str
+    cascading: bool
+    created_by: github.Actor
+
+
+class EventQueueFreezeUpdateMetadata(EventMetadata, total=False):
+    queue_name: str
+    reason: str
+    cascading: bool
+    updated_by: github.Actor
+
+
+class EventQueueFreezeDeleteMetadata(EventMetadata, total=False):
+    queue_name: str
+    deleted_by: github.Actor
+
+
 class EventNoMetadata(EventMetadata):
     pass
 
@@ -181,7 +204,7 @@ class EventNoMetadata(EventMetadata):
 SignalT = collections.abc.Callable[
     [
         "context.Repository",
-        github_types.GitHubPullRequestNumber,
+        github_types.GitHubPullRequestNumber | None,
         EventName,
         EventMetadata | None,
         str,
@@ -195,7 +218,7 @@ class SignalBase(abc.ABC):
     async def __call__(
         self,
         repository: "context.Repository",
-        pull_request: github_types.GitHubPullRequestNumber,
+        pull_request: github_types.GitHubPullRequestNumber | None,
         event: EventName,
         metadata: EventMetadata,
         trigger: str,
@@ -207,7 +230,7 @@ class NoopSignal(SignalBase):
     async def __call__(
         self,
         repository: "context.Repository",
-        pull_request: github_types.GitHubPullRequestNumber,
+        pull_request: github_types.GitHubPullRequestNumber | None,
         event: EventName,
         metadata: EventMetadata,
         trigger: str,
@@ -420,9 +443,42 @@ async def send(
     ...
 
 
+@typing.overload
 async def send(
     repository: "context.Repository",
-    pull_request: github_types.GitHubPullRequestNumber,
+    pull_request: None,
+    event: typing.Literal["queue.freeze.create"],
+    metadata: EventQueueFreezeCreateMetadata,
+    trigger: str,
+) -> None:
+    ...
+
+
+@typing.overload
+async def send(
+    repository: "context.Repository",
+    pull_request: None,
+    event: typing.Literal["queue.freeze.update"],
+    metadata: EventQueueFreezeUpdateMetadata,
+    trigger: str,
+) -> None:
+    ...
+
+
+@typing.overload
+async def send(
+    repository: "context.Repository",
+    pull_request: None,
+    event: typing.Literal["queue.freeze.delete"],
+    metadata: EventQueueFreezeDeleteMetadata,
+    trigger: str,
+) -> None:
+    ...
+
+
+async def send(
+    repository: "context.Repository",
+    pull_request: github_types.GitHubPullRequestNumber | None,
     event: EventName,
     metadata: EventMetadata,
     trigger: str,

@@ -22,7 +22,7 @@ class Signal(signals.SignalBase):
     async def __call__(
         self,
         repository: "context.Repository",
-        pull_request: github_types.GitHubPullRequestNumber,
+        pull_request: github_types.GitHubPullRequestNumber | None,
         event: signals.EventName,
         metadata: signals.EventMetadata,
         trigger: str,

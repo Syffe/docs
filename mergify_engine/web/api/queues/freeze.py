@@ -9,6 +9,7 @@ from starlette.status import HTTP_204_NO_CONTENT
 
 from mergify_engine import context
 from mergify_engine import date
+from mergify_engine import signals
 from mergify_engine.queue import freeze
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web import api
@@ -76,6 +77,7 @@ async def create_queue_freeze(
     queue_name: qr_config.QueueName = fastapi.Path(  # noqa: B008
         ..., description="The name of the queue"
     ),
+    auth: security.HttpAuth = fastapi.Depends(security.get_http_auth),  # noqa: B008
     repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
         security.get_repository_context
     ),
@@ -104,11 +106,45 @@ async def create_queue_freeze(
             cascading=queue_freeze_payload.cascading,
         )
 
+        await signals.send(
+            repository_ctxt,
+            None,
+            "queue.freeze.create",
+            signals.EventQueueFreezeCreateMetadata(
+                {
+                    "queue_name": queue_name,
+                    "reason": qf.reason,
+                    "cascading": qf.cascading,
+                    "created_by": auth.actor,
+                }
+            ),
+            "Create queue freeze",
+        )
+
+    has_been_updated = False
     if qf.reason != queue_freeze_payload.reason:
+        has_been_updated = True
         qf.reason = queue_freeze_payload.reason
 
     if qf.cascading != queue_freeze_payload.cascading:
+        has_been_updated = True
         qf.cascading = queue_freeze_payload.cascading
+
+    if has_been_updated:
+        await signals.send(
+            repository_ctxt,
+            None,
+            "queue.freeze.update",
+            signals.EventQueueFreezeUpdateMetadata(
+                {
+                    "queue_name": queue_name,
+                    "reason": qf.reason,
+                    "cascading": qf.cascading,
+                    "updated_by": auth.actor,
+                }
+            ),
+            "Update queue freeze",
+        )
 
     await qf.save(queue_rules)
     return QueueFreezeResponse(
@@ -138,6 +174,7 @@ async def delete_queue_freeze(
     queue_name: qr_config.QueueName = fastapi.Path(  # noqa: B008
         ..., description="The name of the queue"
     ),
+    auth: security.HttpAuth = fastapi.Depends(security.get_http_auth),  # noqa: B008
     repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
         security.get_repository_context
     ),
@@ -162,6 +199,16 @@ async def delete_queue_freeze(
             status_code=404,
             detail=f'The queue "{queue_name}" is not currently frozen.',
         )
+
+    await signals.send(
+        repository_ctxt,
+        None,
+        "queue.freeze.delete",
+        signals.EventQueueFreezeDeleteMetadata(
+            {"queue_name": queue_name, "deleted_by": auth.actor}
+        ),
+        "Delete queue freeze",
+    )
 
     return fastapi.Response(status_code=HTTP_204_NO_CONTENT)
 

@@ -13,6 +13,7 @@ from mergify_engine.tests.functional import base
 @pytest.mark.subscription(
     subscription.Features.EVENTLOGS_SHORT,
     subscription.Features.EVENTLOGS_LONG,
+    subscription.Features.QUEUE_FREEZE,
 )
 class TestEventLogsAction(base.FunctionalTestBase):
     async def test_eventlogs(self) -> None:
@@ -258,6 +259,346 @@ class TestEventLogsAction(base.FunctionalTestBase):
             "per_page": 2,
             "size": 1,
             "total": 7,
+        }
+
+    async def test_freeze_eventlogs(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "queueit",
+                    "conditions": [f"base={self.main_branch_name}", "label=queue"],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        r = await self.app.put(
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/default/freeze",
+            json={"reason": "test freeze reason"},
+            headers={
+                "Authorization": f"bearer {self.api_key_admin}",
+                "Content-type": "application/json",
+            },
+        )
+        assert r.status_code == 200
+        assert r.json() == {
+            "queue_freezes": [
+                {
+                    "freeze_date": mock.ANY,
+                    "name": "default",
+                    "reason": "test freeze reason",
+                    "cascading": True,
+                }
+            ],
+        }
+
+        await self.create_status(p1, context="continuous-integration/fake-ci")
+        await self.run_engine()
+
+        r = await self.app.put(
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/default/freeze",
+            json={"reason": "test updated freeze reason", "cascading": False},
+            headers={
+                "Authorization": f"bearer {self.api_key_admin}",
+                "Content-type": "application/json",
+            },
+        )
+        assert r.status_code == 200
+        assert r.json() == {
+            "queue_freezes": [
+                {
+                    "freeze_date": mock.ANY,
+                    "name": "default",
+                    "reason": "test updated freeze reason",
+                    "cascading": False,
+                }
+            ],
+        }
+
+        r = await self.app.delete(
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/default/freeze",
+            headers={
+                "Authorization": f"bearer {self.api_key_admin}",
+                "Content-type": "application/json",
+            },
+        )
+        assert r.status_code == 204
+
+        await self.run_engine()
+        await self.wait_for("pull_request", {"action": "closed"})
+        p1 = await self.get_pull(p1["number"])
+
+        p1_expected_events = [
+            {
+                "repository": p1["base"]["repo"]["full_name"],
+                "pull_request": p1["number"],
+                "timestamp": mock.ANY,
+                "event": "action.queue.merged",
+                "metadata": {
+                    "queue_name": "default",
+                    "branch": self.main_branch_name,
+                    "queued_at": mock.ANY,
+                },
+                "trigger": "Rule: queueit",
+            },
+            {
+                "repository": p1["base"]["repo"]["full_name"],
+                "pull_request": p1["number"],
+                "timestamp": mock.ANY,
+                "event": "action.queue.leave",
+                "metadata": {
+                    "reason": f"Pull request #{p1['number']} has been merged automatically at *{p1['merge_commit_sha']}*",
+                    "merged": True,
+                    "queue_name": "default",
+                    "branch": self.main_branch_name,
+                    "position": 0,
+                    "queued_at": mock.ANY,
+                    "seconds_waiting_for_schedule": 0,
+                    "seconds_waiting_for_freeze": mock.ANY,
+                },
+                "trigger": "Rule: queueit",
+            },
+            {
+                "repository": p1["base"]["repo"]["full_name"],
+                "pull_request": p1["number"],
+                "timestamp": mock.ANY,
+                "event": "action.queue.checks_end",
+                "metadata": {
+                    "aborted": False,
+                    "abort_reason": "",
+                    "abort_code": None,
+                    "abort_status": "DEFINITIVE",
+                    "queue_name": "default",
+                    "branch": self.main_branch_name,
+                    "position": 0,
+                    "queued_at": mock.ANY,
+                    "speculative_check_pull_request": {
+                        "number": p1["number"],
+                        "in_place": True,
+                        "checks_timed_out": False,
+                        "checks_conclusion": "success",
+                        "checks_started_at": mock.ANY,
+                        "checks_ended_at": mock.ANY,
+                    },
+                },
+                "trigger": "merge queue internal",
+            },
+            {
+                "repository": p1["base"]["repo"]["full_name"],
+                "pull_request": p1["number"],
+                "timestamp": mock.ANY,
+                "event": "action.queue.checks_start",
+                "metadata": {
+                    "queue_name": "default",
+                    "branch": self.main_branch_name,
+                    "position": 0,
+                    "queued_at": mock.ANY,
+                    "speculative_check_pull_request": {
+                        "number": p1["number"],
+                        "in_place": True,
+                        "checks_timed_out": False,
+                        "checks_conclusion": "pending",
+                        "checks_ended_at": None,
+                    },
+                },
+                "trigger": "merge queue internal",
+            },
+            {
+                "repository": p1["base"]["repo"]["full_name"],
+                "pull_request": p1["number"],
+                "timestamp": mock.ANY,
+                "event": "action.queue.enter",
+                "metadata": {
+                    "queue_name": "default",
+                    "branch": self.main_branch_name,
+                    "position": 0,
+                    "queued_at": mock.ANY,
+                },
+                "trigger": "Rule: queueit",
+            },
+        ]
+
+        repo_expected_events = [
+            {
+                "repository": p1["base"]["repo"]["full_name"],
+                "pull_request": p1["number"],
+                "timestamp": mock.ANY,
+                "event": "action.queue.merged",
+                "metadata": {
+                    "queue_name": "default",
+                    "branch": self.main_branch_name,
+                    "queued_at": mock.ANY,
+                },
+                "trigger": "Rule: queueit",
+            },
+            {
+                "repository": p1["base"]["repo"]["full_name"],
+                "pull_request": p1["number"],
+                "timestamp": mock.ANY,
+                "event": "action.queue.leave",
+                "metadata": {
+                    "reason": f"Pull request #{p1['number']} has been merged automatically at *{p1['merge_commit_sha']}*",
+                    "merged": True,
+                    "queue_name": "default",
+                    "branch": self.main_branch_name,
+                    "position": 0,
+                    "queued_at": mock.ANY,
+                    "seconds_waiting_for_schedule": 0,
+                    "seconds_waiting_for_freeze": mock.ANY,
+                },
+                "trigger": "Rule: queueit",
+            },
+            {
+                "repository": p1["base"]["repo"]["full_name"],
+                "pull_request": p1["number"],
+                "timestamp": mock.ANY,
+                "event": "action.queue.checks_end",
+                "metadata": {
+                    "aborted": False,
+                    "abort_reason": "",
+                    "abort_code": None,
+                    "abort_status": "DEFINITIVE",
+                    "queue_name": "default",
+                    "branch": self.main_branch_name,
+                    "position": 0,
+                    "queued_at": mock.ANY,
+                    "speculative_check_pull_request": {
+                        "number": p1["number"],
+                        "in_place": True,
+                        "checks_timed_out": False,
+                        "checks_conclusion": "success",
+                        "checks_started_at": mock.ANY,
+                        "checks_ended_at": mock.ANY,
+                    },
+                },
+                "trigger": "merge queue internal",
+            },
+            {
+                "repository": p1["base"]["repo"]["full_name"],
+                "pull_request": None,
+                "timestamp": mock.ANY,
+                "event": "queue.freeze.delete",
+                "metadata": {
+                    "queue_name": "default",
+                    "deleted_by": {
+                        "id": 123,
+                        "name": "testing application",
+                        "type": "application",
+                    },
+                },
+                "trigger": "Delete queue freeze",
+            },
+            {
+                "repository": p1["base"]["repo"]["full_name"],
+                "pull_request": None,
+                "timestamp": mock.ANY,
+                "event": "queue.freeze.update",
+                "metadata": {
+                    "queue_name": "default",
+                    "reason": "test updated freeze reason",
+                    "cascading": False,
+                    "updated_by": {
+                        "id": 123,
+                        "name": "testing application",
+                        "type": "application",
+                    },
+                },
+                "trigger": "Update queue freeze",
+            },
+            {
+                "repository": p1["base"]["repo"]["full_name"],
+                "pull_request": None,
+                "timestamp": mock.ANY,
+                "event": "queue.freeze.create",
+                "metadata": {
+                    "queue_name": "default",
+                    "reason": "test freeze reason",
+                    "cascading": True,
+                    "created_by": {
+                        "id": 123,
+                        "name": "testing application",
+                        "type": "application",
+                    },
+                },
+                "trigger": "Create queue freeze",
+            },
+            {
+                "repository": p1["base"]["repo"]["full_name"],
+                "pull_request": p1["number"],
+                "timestamp": mock.ANY,
+                "event": "action.queue.checks_start",
+                "metadata": {
+                    "queue_name": "default",
+                    "branch": self.main_branch_name,
+                    "position": 0,
+                    "queued_at": mock.ANY,
+                    "speculative_check_pull_request": {
+                        "number": p1["number"],
+                        "in_place": True,
+                        "checks_timed_out": False,
+                        "checks_conclusion": "pending",
+                        "checks_ended_at": None,
+                    },
+                },
+                "trigger": "merge queue internal",
+            },
+            {
+                "repository": p1["base"]["repo"]["full_name"],
+                "pull_request": p1["number"],
+                "timestamp": mock.ANY,
+                "event": "action.queue.enter",
+                "metadata": {
+                    "queue_name": "default",
+                    "branch": self.main_branch_name,
+                    "position": 0,
+                    "queued_at": mock.ANY,
+                },
+                "trigger": "Rule: queueit",
+            },
+        ]
+
+        r = await self.app.get(
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events",
+            headers={
+                "Authorization": f"bearer {self.api_key_admin}",
+                "Content-type": "application/json",
+            },
+        )
+        assert r.status_code == 200
+        assert r.json() == {
+            "events": p1_expected_events,
+            "per_page": 10,
+            "size": 5,
+            "total": 5,
+        }
+
+        r = await self.app.get(
+            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/events",
+            headers={
+                "Authorization": f"bearer {self.api_key_admin}",
+                "Content-type": "application/json",
+            },
+        )
+        assert r.status_code == 200
+        assert r.json() == {
+            "events": repo_expected_events,
+            "per_page": 10,
+            "size": 8,
+            "total": 8,
         }
 
     async def test_incomplete_eventlogs_metadata(self) -> None:

@@ -26,7 +26,7 @@ class EventBase(typing.TypedDict):
     timestamp: datetime.datetime
     trigger: str
     repository: str
-    pull_request: int
+    pull_request: int | None
 
 
 class EventMetadata(typing.TypedDict):
@@ -151,6 +151,21 @@ class EventUpdate(EventBaseNoMetadata):
     event: typing.Literal["action.update"]
 
 
+class EventQueueFreezeCreate(EventBase):
+    event: typing.Literal["queue.freeze.create"]
+    metadata: signals.EventQueueFreezeCreateMetadata
+
+
+class EventQueueFreezeUpdate(EventBase):
+    event: typing.Literal["queue.freeze.update"]
+    metadata: signals.EventQueueFreezeUpdateMetadata
+
+
+class EventQueueFreezeDelete(EventBase):
+    event: typing.Literal["queue.freeze.delete"]
+    metadata: signals.EventQueueFreezeDeleteMetadata
+
+
 def _get_repository_key(
     owner_id: github_types.GitHubAccountIdType,
     repo_id: github_types.GitHubRepositoryIdType,
@@ -192,6 +207,9 @@ Event = typing.Union[  # noqa: NU001
     EventSquash,
     EventUnqueue,
     EventUpdate,
+    EventQueueFreezeCreate,
+    EventQueueFreezeUpdate,
+    EventQueueFreezeDelete,
 ]
 
 SUPPORTED_EVENT_NAMES = list(
@@ -215,7 +233,7 @@ class EventLogsSignal(signals.SignalBase):
     async def __call__(
         self,
         repository: "context.Repository",
-        pull_request: github_types.GitHubPullRequestNumber,
+        pull_request: github_types.GitHubPullRequestNumber | None,
         event: signals.EventName,
         metadata: signals.EventMetadata,
         trigger: str,
@@ -238,12 +256,6 @@ class EventLogsSignal(signals.SignalBase):
         else:
             return
 
-        repo_key = _get_repository_key(
-            repository.installation.owner_id, repository.repo["id"]
-        )
-        pull_key = _get_pull_request_key(
-            repository.installation.owner_id, repository.repo["id"], pull_request
-        )
         pipe = await redis.pipeline()
         now = date.utcnow()
         fields = {
@@ -264,10 +276,19 @@ class EventLogsSignal(signals.SignalBase):
         }
         minid = redis_utils.get_expiration_minid(retention)
 
-        await pipe.xadd(pull_key, fields=fields, minid=minid)
+        repo_key = _get_repository_key(
+            repository.installation.owner_id, repository.repo["id"]
+        )
         await pipe.xadd(repo_key, fields=fields, minid=minid)
-        await pipe.expire(pull_key, int(retention.total_seconds()))
         await pipe.expire(repo_key, int(retention.total_seconds()))
+
+        if pull_request is not None:
+            pull_key = _get_pull_request_key(
+                repository.installation.owner_id, repository.repo["id"], pull_request
+            )
+            await pipe.xadd(pull_key, fields=fields, minid=minid)
+            await pipe.expire(pull_key, int(retention.total_seconds()))
+
         await pipe.execute()
 
 
@@ -428,6 +449,15 @@ async def get(
 
         elif event["event"] == "action.edit":
             events.append(typing.cast(EventEdit, event))
+
+        elif event["event"] == "queue.freeze.create":
+            events.append(typing.cast(EventQueueFreezeCreate, event))
+
+        elif event["event"] == "queue.freeze.update":
+            events.append(typing.cast(EventQueueFreezeUpdate, event))
+
+        elif event["event"] == "queue.freeze.delete":
+            events.append(typing.cast(EventQueueFreezeDelete, event))
 
         else:
             LOG.error("unsupported event-type, skipping", event=event)
