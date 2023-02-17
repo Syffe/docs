@@ -16,6 +16,7 @@ async def test_gitter_service_lifecycle(
     service = gitter_service.GitterService(
         concurrent_jobs=1, monitoring_idle_time=0, idle_sleep_time=0.01
     )
+    assert gitter_service.GitterService._instance is not None
     request.addfinalizer(
         lambda: event_loop.run_until_complete(
             task.stop_wait_and_kill(service.tasks, timeout=0)
@@ -39,6 +40,44 @@ async def test_gitter_service_lifecycle(
 
     assert job.result() == "result"
     assert gitter_service.get_job(job.id) is None
+    assert gitter_service.GitterService._instance._jobs == {}
+
+
+async def test_gitter_service_exception(
+    request: pytest.FixtureRequest,
+    event_loop: asyncio.BaseEventLoop,
+) -> None:
+    logs.setup_logging()
+    service = gitter_service.GitterService(
+        concurrent_jobs=1, monitoring_idle_time=0, idle_sleep_time=0.01
+    )
+    assert gitter_service.GitterService._instance is not None
+    request.addfinalizer(
+        lambda: event_loop.run_until_complete(
+            task.stop_wait_and_kill(service.tasks, timeout=0)
+        )
+    )
+    method = mock.AsyncMock(side_effect=Exception("boom"))
+    callback = mock.AsyncMock()
+
+    job = gitter_service.GitterJob[str](method, callback)
+
+    assert gitter_service.get_job(job.id) is None
+    gitter_service.send_job(job)
+    assert gitter_service.get_job(job.id) is job
+
+    while job.task is None or not job.task.done():
+        await asyncio.sleep(0.001)
+
+    method.assert_awaited()
+    callback.assert_awaited()
+    assert gitter_service.get_job(job.id) is job
+
+    with pytest.raises(Exception, match="boom"):
+        job.result()
+
+    assert gitter_service.get_job(job.id) is None
+    assert gitter_service.GitterService._instance._jobs == {}
 
 
 async def test_gitter_service_concurrency(
@@ -111,3 +150,4 @@ async def test_gitter_service_concurrency(
     assert job_2.result() == "foo"
     assert job_join.result() == "bar"
     assert job_waiter.result() == "finished"
+    assert gitter_service.GitterService._instance._jobs == {}
