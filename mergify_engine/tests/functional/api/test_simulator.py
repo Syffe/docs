@@ -37,6 +37,8 @@ class TestApiSimulator(base.FunctionalTestBase):
           - "base={self.main_branch_name}"
       comment:
         message: "Welcome {{{{ author }}}}."
+      edit:
+        draft: True
       assign:
         users:
           - mergify-test1
@@ -64,7 +66,7 @@ class TestApiSimulator(base.FunctionalTestBase):
         assert r.json()["title"] == "1 rule matches", r.json()
         assert (
             r.json()["summary"].split("<hr />")[0]
-            == f"""### Rule: a lot of stuff (post_check, comment, assign)
+            == f"""### Rule: a lot of stuff (post_check, comment, edit, assign)
 - [X] `base={self.main_branch_name}`
 - [X] any of:
   - [X] `schedule=MON-SUN 00:00-23:59`
@@ -85,6 +87,12 @@ title: '''a lot of stuff'' failed'
 ```
 bot_account: null
 message: Welcome {p['user']['login']}.
+```
+
+**edit action configuration:**
+```
+bot_account: mergify-test4
+draft: true
 ```
 
 **assign action configuration:**

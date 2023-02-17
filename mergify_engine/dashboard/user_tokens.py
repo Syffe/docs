@@ -57,7 +57,10 @@ class UserTokensBase:
 
     @classmethod
     async def get(
-        cls: type[UserTokensT], redis: redis_utils.RedisCache, owner_id: int
+        cls: type[UserTokensT],
+        redis: redis_utils.RedisCache,
+        owner_id: int,
+        filter_tokens: bool,
     ) -> UserTokensT:
         raise NotImplementedError
 
@@ -87,19 +90,24 @@ class UserTokensSaas(UserTokensBase):
 
     @classmethod
     async def get(
-        cls: type[UserTokensT], redis: redis_utils.RedisCache, owner_id: int
+        cls: type[UserTokensT],
+        redis: redis_utils.RedisCache,
+        owner_id: int,
+        filter_tokens: bool,
     ) -> UserTokensT:
         return typing.cast(
             UserTokensT,
-            await typing.cast(UserTokensSaas, cls)._get(redis, owner_id),
+            await typing.cast(UserTokensSaas, cls)._get(redis, owner_id, filter_tokens),
         )
 
     @classmethod
-    async def _get(cls, redis: redis_utils.RedisCache, owner_id: int) -> UserTokensSaas:
-        cached_tokens = await cls._retrieve_from_cache(redis, owner_id)
+    async def _get(
+        cls, redis: redis_utils.RedisCache, owner_id: int, filter_tokens: bool
+    ) -> UserTokensSaas:
+        cached_tokens = await cls._retrieve_from_cache(redis, owner_id, filter_tokens)
         if cached_tokens is None or await cached_tokens._has_expired():
             try:
-                db_tokens = await cls._retrieve_from_db(redis, owner_id)
+                db_tokens = await cls._retrieve_from_db(redis, owner_id, filter_tokens)
             except Exception as exc:
                 if cached_tokens is not None and (
                     exceptions.should_be_ignored(exc) or exceptions.need_retry(exc)
@@ -123,7 +131,7 @@ class UserTokensSaas(UserTokensBase):
 
     @classmethod
     async def _retrieve_from_cache(
-        cls, redis: redis_utils.RedisCache, owner_id: int
+        cls, redis: redis_utils.RedisCache, owner_id: int, filter_tokens: bool
     ) -> UserTokensSaas | None:
         async with await redis.pipeline() as pipe:
             await pipe.get(cls._cache_key(owner_id))
@@ -144,13 +152,20 @@ class UserTokensSaas(UserTokensBase):
             ):
                 # Old cache format, just drop it
                 return None
-
-            return cls(redis, owner_id, decrypted_tokens["user_tokens"], ttl)
+            if filter_tokens:
+                for token in decrypted_tokens["user_tokens"]:
+                    token["oauth_access_token"] = ""
+            return cls(
+                redis,
+                owner_id,
+                decrypted_tokens["user_tokens"],
+                ttl,
+            )
         return None
 
     @classmethod
     async def _retrieve_from_db(
-        cls, redis: redis_utils.RedisCache, owner_id: int
+        cls, redis: redis_utils.RedisCache, owner_id: int, filter_tokens: bool
     ) -> UserTokensSaas:
         async with dashboard.AsyncDashboardSaasClient() as client:
             try:
@@ -159,6 +174,9 @@ class UserTokensSaas(UserTokensBase):
                 return cls(redis, owner_id, [])
             else:
                 tokens = resp.json()
+                if filter_tokens:
+                    for token in tokens["user_tokens"]:
+                        token["oauth_access_token"] = ""
                 return cls(redis, owner_id, tokens["user_tokens"])
 
 
@@ -172,7 +190,10 @@ class UserTokensOnPremise(UserTokensBase):
 
     @classmethod
     async def get(
-        cls: type[UserTokensT], redis: redis_utils.RedisCache, owner_id: int
+        cls: type[UserTokensT],
+        redis: redis_utils.RedisCache,
+        owner_id: int,
+        filter_tokens: bool,
     ) -> UserTokensT:
         return cls(
             redis,
@@ -182,7 +203,7 @@ class UserTokensOnPremise(UserTokensBase):
                     "id": github_types.GitHubAccountIdType(_id),
                     "login": github_types.GitHubLogin(login),
                     "oauth_access_token": github_types.GitHubOAuthToken(
-                        oauth_access_token
+                        oauth_access_token if not filter_tokens else "",
                     ),
                     "email": None,
                     "name": None,

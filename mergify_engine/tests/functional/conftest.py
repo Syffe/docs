@@ -166,7 +166,9 @@ async def dashboard(
     request.addfinalizer(patcher.stop)
 
     async def fake_retrieve_user_tokens_from_db(
-        redis_cache: redis_utils.RedisCache, owner_id: github_types.GitHubAccountIdType
+        redis_cache: redis_utils.RedisCache,
+        owner_id: github_types.GitHubAccountIdType,
+        filter_tokens: bool,
     ) -> user_tokens_mod.UserTokens:
         if owner_id == config.TESTING_ORGANIZATION_ID:
             return user_tokens
@@ -175,10 +177,12 @@ async def dashboard(
     real_get_user_tokens = user_tokens_mod.UserTokens.get
 
     async def fake_user_tokens(
-        redis_cache: redis_utils.RedisCache, owner_id: github_types.GitHubAccountIdType
+        redis_cache: redis_utils.RedisCache,
+        owner_id: github_types.GitHubAccountIdType,
+        filter_tokens: bool,
     ) -> user_tokens_mod.UserTokens:
         if owner_id == config.TESTING_ORGANIZATION_ID:
-            return await real_get_user_tokens(redis_cache, owner_id)
+            return await real_get_user_tokens(redis_cache, owner_id, filter_tokens)
         return user_tokens_mod.UserTokens(redis_cache, owner_id, [])
 
     patcher = mock.patch(

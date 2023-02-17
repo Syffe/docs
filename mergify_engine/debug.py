@@ -161,13 +161,13 @@ async def report(
         redis_links.cache, owner_id
     )
 
-    cached_tokens = await user_tokens.UserTokens.get(redis_links.cache, owner_id)
+    cached_tokens = await user_tokens.UserTokens.get(redis_links.cache, owner_id, False)
     if config.SAAS_MODE:
         db_tokens = typing.cast(
             user_tokens.UserTokens,
             (
                 await user_tokens.UserTokensSaas._retrieve_from_db(
-                    redis_links.cache, owner_id
+                    redis_links.cache, owner_id, False
                 )
             ),
         )
