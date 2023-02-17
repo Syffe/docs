@@ -452,6 +452,13 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
         return {result[0]: CopyResult(*result) for result in json.loads(data)}
 
     async def cancel(self) -> check_api.Result:  # pragma: no cover
+        # NOTE(sileht): In case we cancel the action on a half created backport, it's too risky
+        # to cancel it and cleanup created resources. People may have rules that
+        # invalid the condition on purpose after the backport has been created. We
+        # should keep the same behavior as before, keep it.
+        # So here we ensure we finish it in such case.
+        if await self._load_state():
+            return await self.run()
         return actions.CANCELLED_CHECK_REPORT
 
     async def get_existing_duplicate_pull(
