@@ -821,6 +821,7 @@ class GitHubAnnotation(typing.TypedDict):
 
 class GitHubCompareCommits(typing.TypedDict):
     behind_by: int
+    status: typing.Literal["diverged", "ahead", "behind", "identical"]
 
 
 GitHubMembershipRole = typing.Literal["admin", "member"]

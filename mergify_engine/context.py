@@ -934,7 +934,12 @@ class Repository:
                 return None
             raise
         else:
-            return data["behind_by"]
+            if data["status"] in ("ahead", "identical"):
+                return 0
+            elif data["status"] in ("behind", "diverged"):
+                return data["behind_by"]
+            else:
+                return None
 
 
 @dataclasses.dataclass

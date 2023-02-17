@@ -97,7 +97,9 @@ async def test_pull_behind(
         return {"commit": {"sha": "base"}}
 
     async def get_compare(*args: typing.Any, **kwargs: typing.Any) -> typing.Any:
-        return github_types.GitHubCompareCommits({"behind_by": 0 if expected else 100})
+        return github_types.GitHubCompareCommits(
+            {"behind_by": 0 if expected else 100, "status": "behind"}
+        )
 
     client = mock.Mock()
     client.items.return_value = get_commits()
