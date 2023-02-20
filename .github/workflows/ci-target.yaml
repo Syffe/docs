@@ -26,17 +26,19 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Get script
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SCRIPT: ${{ runner.temp }}/compare-github-requests.sh
         run: |
           # NOTE(sileht): for security purpose, we must not use the script we
           # checkout with git, but pick the one from main branch
           # eg: https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
-          dest="$RUNNER_TEMP/compare-github-requests.sh"
           gh api -X GET /repos/Mergifyio/engine/contents/tools/compare-github-requests.sh \
             | jq -r .content \
             | base64 -d \
-            > "$dest"
-          chmod +x "$dest"
-          cat "$dest"
+            > "$SCRIPT"
+          chmod +x "$SCRIPT"
+          cat "$SCRIPT"
 
       - name: Computing fetch-depth
         id: fetch-depth
@@ -58,15 +60,18 @@ jobs:
         id: report
         env:
           COMMITS: ${{ github.event.pull_request.commits }}
+          SCRIPT: ${{ runner.temp }}/compare-github-requests.sh
         run: |
-          cat "$RUNNER_TEMP/compare-github-requests.sh"
-          # For debugging
-          bash -x "$RUNNER_TEMP/compare-github-requests.sh" "$COMMITS"
+          test -s "$SCRIPT"  # not empty
+          test -x "$SCRIPT"  # executable
 
-          OUTPUT=$("$RUNNER_TEMP/compare-github-requests.sh" "$COMMITS")
+          OUTPUT=$("$SCRIPT" "$COMMITS")
           OUTPUT="${OUTPUT//'%'/'%25'}"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
+          echo "========================================================================="
+          echo "$OUTPUT"
+          echo "========================================================================="
           echo "result=$OUTPUT" >> "$GITHUB_OUTPUT"
 
       - uses: marocchino/sticky-pull-request-comment@v2
