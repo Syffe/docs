@@ -70,6 +70,7 @@ GIT_MESSAGE_TO_EXCEPTION: dict[
         ("Could not resolve host", GitErrorRetriable),
         ("Operation timed out", GitErrorRetriable),
         ("Connection timed out", GitErrorRetriable),
+        ("Couldn't connect to server", GitErrorRetriable),
         ("No such device or address", GitErrorRetriable),
         ("Protected branch update failed", GitFatalError),
         ("couldn't find remote ref", GitFatalError),
