@@ -177,6 +177,418 @@ class TestQueueAction(base.FunctionalTestBase):
             in checks[0]["output"]["summary"]
         )
 
+    async def test_queue_routing_conditions_matching_with_pull_request_rules(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "hotfix",
+                    "routing_conditions": [
+                        "label=hotfix",
+                    ],
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                },
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Queue",
+                    "conditions": [
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p1["number"], "hotfix")
+        await self.run_engine()
+
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 1st in the queue to be merged"
+        )
+        assert (
+            "**Required conditions of queue** `hotfix` **for merge:**"
+            in check["output"]["summary"]
+        )
+
+    async def test_queue_routing_conditions_failure_with_pull_request_rules_and_no_fallback(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "hotfix",
+                    "routing_conditions": [
+                        "label=hotfix",
+                    ],
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                },
+                {
+                    "name": "default",
+                    "routing_conditions": [
+                        "label=toto",
+                    ],
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Queue",
+                    "conditions": [
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert check["conclusion"] == "failure"
+        assert (
+            check["output"]["title"] == "There are no queue routing conditions matching"
+        )
+        assert (
+            check["output"]["summary"]
+            == "There are routing conditions defined in the configuration, but none matches; the pull request has not been embarked"
+        )
+
+    async def test_queue_routing_conditions_failure_with_pull_request_rules_and_fallback(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "hotfix",
+                    "routing_conditions": [
+                        "label=hotfix",
+                    ],
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                },
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Queue",
+                    "conditions": [
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 1st in the queue to be merged"
+        )
+        assert (
+            "**Required conditions of queue** `default` **"
+            in check["output"]["summary"]
+        )
+
+    async def test_queue_routing_conditions_success(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "routing_conditions": [
+                        "files~=^test/",
+                    ],
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Queue",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr(files={"test/toto.txt": "toto"})
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 1st in the queue to be merged"
+        )
+        await self.create_status(p1)
+        await self.run_engine()
+
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"] == "The pull request has been merged automatically"
+        )
+
+    async def test_queue_routing_conditions_failure(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "routing_conditions": [
+                        "files~=^dummy/",
+                    ],
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Queue",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr(files={"test/toto.txt": "toto"})
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        q = await self.get_train()
+        await self.assert_merge_queue_contents(q, None, [])
+
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert check["conclusion"] == "failure"
+        assert (
+            check["output"]["title"] == "There are no queue routing conditions matching"
+        )
+        assert (
+            check["output"]["summary"]
+            == "There are routing conditions defined in the configuration, but none matches; the pull request has not been embarked"
+        )
+
+    async def test_queue_routing_conditions_failure_update_after_queued(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "routing_conditions": ["label=routing"],
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Queue",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr(files={"test/toto.txt": "toto"})
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p1["number"], "routing")
+        await self.run_engine()
+
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 1st in the queue to be merged"
+        )
+        await self.create_status(p1)
+        await self.remove_label(p1["number"], "routing")
+        await self.run_engine()
+
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert check["conclusion"] == "failure"
+        assert (
+            check["output"]["title"] == "There are no queue routing conditions matching"
+        )
+        assert (
+            check["output"]["summary"]
+            == "There are routing conditions defined in the configuration, but none matches; the pull request has not been embarked"
+        )
+
+    async def test_queue_routing_conditions_empty(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "routing_conditions": [],
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Queue",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr(files={"test/toto.txt": "toto"})
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 1st in the queue to be merged"
+        )
+        await self.create_status(p1)
+        await self.run_engine()
+
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"] == "The pull request has been merged automatically"
+        )
+
+    async def test_queue_routing_conditions_matching_with_pull_request_rules_and_queue_forced(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "hotfix",
+                    "routing_conditions": [
+                        "label=hotfix",
+                    ],
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                },
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Queue",
+                    "conditions": [
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p1["number"], "hotfix")
+        await self.run_engine()
+
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 1st in the queue to be merged"
+        )
+        assert (
+            "**Required conditions of queue** `default` **for merge:**"
+            in check["output"]["summary"]
+        )
+
     async def test_queue_priority_rules(self) -> None:
         rules = {
             "queue_rules": [
@@ -6339,6 +6751,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
                 qr_config.QueueRule(
                     name=qr_config.QueueName("foo"),
                     merge_conditions=conditions.QueueRuleMergeConditions([]),
+                    routing_conditions=conditions.QueueRuleMergeConditions([]),
                     config=queue_config,
                     priority_rules=pr_config.PriorityRules([]),
                 )
@@ -6483,6 +6896,7 @@ pull_requests:
                 qr_config.QueueRule(
                     name=qr_config.QueueName("foo"),
                     merge_conditions=conditions.QueueRuleMergeConditions([]),
+                    routing_conditions=conditions.QueueRuleMergeConditions([]),
                     config=queue_config,
                     priority_rules=pr_config.PriorityRules([]),
                 )
@@ -6581,6 +6995,7 @@ pull_requests:
                 qr_config.QueueRule(
                     name=qr_config.QueueName("foo"),
                     merge_conditions=conditions.QueueRuleMergeConditions([]),
+                    routing_conditions=conditions.QueueRuleMergeConditions([]),
                     config=queue_config,
                     priority_rules=pr_config.PriorityRules([]),
                 )
@@ -6656,6 +7071,7 @@ pull_requests:
                 qr_config.QueueRule(
                     name=qr_config.QueueName("foo"),
                     merge_conditions=conditions.QueueRuleMergeConditions([]),
+                    routing_conditions=conditions.QueueRuleMergeConditions([]),
                     config=queue_config,
                     priority_rules=pr_config.PriorityRules([]),
                 )

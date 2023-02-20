@@ -73,11 +73,16 @@ class GenericRulesEvaluator(typing.Generic[types.T_Rule, types.T_EvaluatedRule])
         pulls: list["context.BasePullRequest"],
         rule_hidden_from_merge_queue: bool,
     ) -> "GenericRulesEvaluator[types.T_Rule, types.T_EvaluatedRule]":
+        # Circular import
+        from mergify_engine.rules.config import queue_rules as qr_config
+
         self = cls(rules)
 
         for rule in self.rules:
             apply_configure_filter(repository, rule.conditions)
             evaluated_rule = typing.cast(types.T_EvaluatedRule, await rule.evaluate(pulls))  # type: ignore[redundant-cast]
+            if isinstance(rule, qr_config.QueueRule):
+                apply_configure_filter(repository, rule.routing_conditions)
             del rule
 
             # NOTE(sileht):
@@ -88,16 +93,27 @@ class GenericRulesEvaluator(typing.Generic[types.T_Rule, types.T_EvaluatedRule])
             # * rules where only BASE_ATTRIBUTES don't match (mainly to hide rule written for other branches) -> ignored_rules
             # * rules where only BASE_CHANGEABLE ATTRIBUTES don't match (they rarely change but are handled)-> not_applicable_base_changeable_attributes_rules
             categorized = False
-            if rule_hidden_from_merge_queue and not evaluated_rule.conditions.match:
+            evaluated_rule_conditions = evaluated_rule.conditions
+
+            # NOTE(Syffe): routing_conditions status can change even after the PR is queued.
+            # Thus we need to evaluate conditions and routing_conditions together when they are available
+            # since not matching routing_conditions are a motive for PR invalidity
+            if isinstance(evaluated_rule, qr_config.QueueRule):
+                evaluated_rule_conditions = conditions_mod.QueueRuleMergeConditions(
+                    evaluated_rule.conditions.condition.copy().conditions
+                    + evaluated_rule.routing_conditions.condition.copy().conditions
+                )
+
+            if rule_hidden_from_merge_queue and not evaluated_rule_conditions.match:
                 # NOTE(sileht): Replace non-base attribute and non-base changeables attributes
                 # by true, if it still matches it's a potential rule otherwise hide it.
-                base_changeable_conditions = evaluated_rule.conditions.copy()
+                base_changeable_conditions = evaluated_rule_conditions.copy()
                 for condition in base_changeable_conditions.walk():
                     attr = condition.get_attribute_name()
                     if attr not in self.BASE_CHANGEABLE_ATTRIBUTES:
                         condition.make_always_true()
 
-                base_conditions = evaluated_rule.conditions.copy()
+                base_conditions = evaluated_rule_conditions.copy()
                 for condition in base_conditions.walk():
                     attr = condition.get_attribute_name()
                     if attr not in self.BASE_ATTRIBUTES:
@@ -115,7 +131,7 @@ class GenericRulesEvaluator(typing.Generic[types.T_Rule, types.T_EvaluatedRule])
                     self.ignored_rules.append(evaluated_rule)
                     categorized = True
 
-                if not categorized and evaluated_rule.conditions.is_faulty():
+                if not categorized and evaluated_rule_conditions.is_faulty():
                     self.faulty_rules.append(evaluated_rule)
                     categorized = True
 
@@ -191,6 +207,7 @@ def UserConfigurationSchema(
                     "name": "default",
                     "priority_rules": [],
                     "merge_conditions": [],
+                    "routing_conditions": [],
                 }
             ],
         ): qr_config.QueueRulesSchema,

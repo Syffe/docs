@@ -126,34 +126,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
         ctxt: "context.Context",
         rule: "prr_config.EvaluatedPullRequestRule",
     ) -> "QueueExecutor":
-        try:
-            update_bot_account = await action_utils.render_bot_account(
-                ctxt,
-                action.config["update_bot_account"],
-                option_name="update_bot_account",
-                required_feature=subscription.Features.MERGE_BOT_ACCOUNT,
-                missing_feature_message="Cannot use `update_bot_account` with queue action",
-            )
-        except action_utils.RenderBotAccountFailure as e:
-            raise prr_config.InvalidPullRequestRule(e.title, e.reason)
-
-        try:
-            merge_bot_account = await action_utils.render_bot_account(
-                ctxt,
-                action.config["merge_bot_account"],
-                option_name="merge_bot_account",
-                required_feature=subscription.Features.MERGE_BOT_ACCOUNT,
-                missing_feature_message="Cannot use `merge_bot_account` with queue action",
-                # NOTE(sileht): we don't allow admin, because if branch protection are
-                # enabled, but not enforced on admins, we may bypass them
-                required_permissions=[github_types.GitHubRepositoryPermission.WRITE],
-            )
-        except action_utils.RenderBotAccountFailure as e:
-            raise prr_config.InvalidPullRequestRule(e.title, e.reason)
-
-        await cls._check_subscription_status(action, ctxt)
-        cls._check_method_fastforward_configuration(action)
-
         return cls(
             ctxt,
             rule,
@@ -164,8 +136,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     "update_method": action.config["update_method"],
                     "rebase_fallback": action.config["rebase_fallback"],
                     "commit_message_template": action.config["commit_message_template"],
-                    "merge_bot_account": merge_bot_account,
-                    "update_bot_account": update_bot_account,
+                    "merge_bot_account": action.config["merge_bot_account"],
+                    "update_bot_account": action.config["update_bot_account"],
                     "priority": action.config["priority"],
                     "require_branch_protection": action.config[
                         "require_branch_protection"
@@ -317,6 +289,64 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 f"Unsupported queue_branch_merge_method: {queue_branch_merge_method}"
             )
 
+    def _set_action_config_from_queue_rules(self) -> None:
+        queue_rule_config_attributes_none_default: list[
+            typing.Literal[
+                "commit_message_template",
+                "merge_bot_account",
+                "update_bot_account",
+                "update_method",
+            ]
+        ] = [
+            "commit_message_template",
+            "merge_bot_account",
+            "update_bot_account",
+            "update_method",
+        ]
+
+        for attr in queue_rule_config_attributes_none_default:
+            if self.config[attr] is None:
+                self.config[attr] = self.queue_rule.config[attr]
+
+        # name in action and queue_rule are not the same so we need to treat it
+        # in a different way
+        if self.config["method"] is None:
+            self.config["method"] = self.queue_rule.config["merge_method"]
+
+        if self.config["update_method"] is None:
+            self.config["update_method"] = (
+                "rebase" if self.config["method"] == "fast-forward" else "merge"
+            )
+
+    async def _set_action_queue_rule(self) -> None:
+        if (
+            await self.queue_rules.routing_conditions_exists()
+            and not await self.queue_rules.are_routing_conditions_matching(self.ctxt)
+        ):
+            raise InvalidQueueConfiguration(
+                "There are no queue routing conditions matching",
+                "There are routing conditions defined in the configuration, but none matches; the pull request has not been embarked",
+            )
+
+        if (
+            self.config["name"] is None
+            and await self.queue_rules.routing_conditions_exists()
+        ):
+            evaluated_routing_conditions = (
+                await self.queue_rules.get_matching_evaluated_routing_conditions(
+                    self.ctxt
+                )
+            )
+            if evaluated_routing_conditions:
+                self.config["name"] = evaluated_routing_conditions[0].name
+
+        # default queue name
+        if self.config["name"] is None:
+            self.config["name"] = qr_config.QueueName("default")
+
+        self.queue_rule = self.queue_rules[qr_config.QueueName(self.config["name"])]
+        self._set_action_config_from_queue_rules()
+
     async def run(self) -> check_api.Result:
         if self.ctxt.user_refresh_requested() or self.ctxt.admin_refresh_requested():
             # NOTE(sileht): user ask a refresh, we just remove the previous state of this
@@ -348,7 +378,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
         q = await merge_train.Train.from_context(self.ctxt, self.queue_rules)
         car = q.get_car(self.ctxt)
 
-        result = await self.pre_queue_checks(self.ctxt, q, car)
+        result = await self.pre_queue_checks(
+            q,
+            car,
+        )
 
         if result is not None:
             return result
@@ -482,7 +515,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
         q = await merge_train.Train.from_context(self.ctxt, self.queue_rules)
         car = q.get_car(self.ctxt)
 
-        result = await self.pre_queue_checks(self.ctxt, q, car)
+        result = await self.pre_queue_checks(
+            q,
+            car,
+        )
 
         if result is not None:
             return result
@@ -523,23 +559,72 @@ Then, re-embark the pull request into the merge queue by posting the comment
             await self._unqueue_pull_request(q, car, unqueue_reason, result)
         return result
 
-    async def pre_queue_checks(
-        self,
-        ctxt: context.Context,
-        queue: merge_train.Train,
-        car: merge_train.TrainCar | None,
-    ) -> check_api.Result | None:
-        result = None
+    async def _render_bot_account(self) -> None:
         try:
-            await self._check_config_compatibility_with_branch_protection(
-                self.queue_rule, self.ctxt
+            self.config["update_bot_account"] = await action_utils.render_bot_account(
+                self.ctxt,
+                self.config["update_bot_account"],
+                option_name="update_bot_account",
+                required_feature=subscription.Features.MERGE_BOT_ACCOUNT,
+                missing_feature_message="Cannot use `update_bot_account` with queue action",
             )
+        except action_utils.RenderBotAccountFailure as e:
+            raise InvalidQueueConfiguration(e.title, e.reason)
+
+        try:
+            self.config["merge_bot_account"] = await action_utils.render_bot_account(
+                self.ctxt,
+                self.config["merge_bot_account"],
+                option_name="merge_bot_account",
+                required_feature=subscription.Features.MERGE_BOT_ACCOUNT,
+                missing_feature_message="Cannot use `merge_bot_account` with queue action",
+                # NOTE(sileht): we don't allow admin, because if branch protection are
+                # enabled, but not enforced on admins, we may bypass them
+                required_permissions=[github_types.GitHubRepositoryPermission.WRITE],
+            )
+        except action_utils.RenderBotAccountFailure as e:
+            raise InvalidQueueConfiguration(e.title, e.reason)
+
+    async def _check_action_validity(self) -> check_api.Result | None:
+        try:
+            await self._set_action_queue_rule()
+            await self._check_config_compatibility_with_branch_protection(
+                queue_rule=self.queue_rule, ctxt=self.ctxt
+            )
+            self._check_method_fastforward_configuration(
+                config=self.config,
+                queue_rule=self.queue_rule,
+            )
+            await self._render_bot_account()
         except InvalidQueueConfiguration as e:
-            result = check_api.Result(
+            return check_api.Result(
                 check_api.Conclusion.FAILURE,
                 e.title,
                 e.message,
             )
+
+        try:
+            await self._check_subscription_status(
+                config=self.config,
+                queue_rule=self.queue_rule,
+                queue_rules=self.queue_rules,
+                ctxt=self.ctxt,
+            )
+        except InvalidQueueConfiguration as e:
+            return check_api.Result(
+                check_api.Conclusion.ACTION_REQUIRED,
+                e.title,
+                e.message,
+            )
+
+        return None
+
+    async def pre_queue_checks(
+        self,
+        queue: merge_train.Train,
+        car: merge_train.TrainCar | None,
+    ) -> check_api.Result | None:
+        result = await self._check_action_validity()
 
         if result is None:
             result = await self.pre_merge_checks(
@@ -751,75 +836,81 @@ Then, re-embark the pull request into the merge queue by posting the comment
         )
 
     @staticmethod
-    def _check_method_fastforward_configuration(action: QueueAction) -> None:
-        if action.config["method"] != "fast-forward":
+    def _check_method_fastforward_configuration(
+        config: QueueExecutorConfig,
+        queue_rule: qr_config.QueueRule,
+    ) -> None:
+        if config["method"] != "fast-forward":
             return
 
-        if action.config["update_method"] != "rebase":
-            raise prr_config.InvalidPullRequestRule(
-                f"`update_method: {action.config['update_method']}` is not compatible with fast-forward merge method",
+        if config["update_method"] != "rebase":
+            raise InvalidQueueConfiguration(
+                f"`update_method: {config['update_method']}` is not compatible with fast-forward merge method",
                 "`update_method` must be set to `rebase`.",
             )
-        elif action.config["commit_message_template"] is not None:
-            raise prr_config.InvalidPullRequestRule(
+        elif config["commit_message_template"] is not None:
+            raise InvalidQueueConfiguration(
                 "Commit message can't be changed with fast-forward merge method",
                 "`commit_message_template` must not be set if `method: fast-forward` is set.",
             )
-        elif action.queue_rule.config["batch_size"] > 1:
-            raise prr_config.InvalidPullRequestRule(
+        elif queue_rule.config["batch_size"] > 1:
+            raise InvalidQueueConfiguration(
                 "batch_size > 1 is not compatible with fast-forward merge method",
                 "The merge `method` or the queue configuration must be updated.",
             )
-        elif action.queue_rule.config["speculative_checks"] > 1:
-            raise prr_config.InvalidPullRequestRule(
+        elif queue_rule.config["speculative_checks"] > 1:
+            raise InvalidQueueConfiguration(
                 "speculative_checks > 1 is not compatible with fast-forward merge method",
                 "The merge `method` or the queue configuration must be updated.",
             )
-        elif not action.queue_rule.config["allow_inplace_checks"]:
-            raise prr_config.InvalidPullRequestRule(
+        elif not queue_rule.config["allow_inplace_checks"]:
+            raise InvalidQueueConfiguration(
                 "allow_inplace_checks=False is not compatible with fast-forward merge method",
                 "The merge `method` or the queue configuration must be updated.",
             )
 
     @staticmethod
     async def _check_subscription_status(
-        action: QueueAction, ctxt: context.Context
+        config: QueueExecutorConfig,
+        queue_rule: qr_config.QueueRule,
+        queue_rules: qr_config.QueueRules,
+        ctxt: context.Context,
     ) -> None:
-        if len(action.queue_rules) > 1 and not ctxt.subscription.has_feature(
+        if len(queue_rules) > 1 and not ctxt.subscription.has_feature(
             subscription.Features.QUEUE_ACTION
         ):
-            raise prr_config.InvalidPullRequestRule(
+            raise InvalidQueueConfiguration(
                 "Cannot use multiple queues.",
                 ctxt.subscription.missing_feature_reason(
                     ctxt.pull["base"]["repo"]["owner"]["login"]
                 ),
             )
 
-        elif action.queue_rule.config[
+        elif queue_rule.config[
             "speculative_checks"
         ] > 1 and not ctxt.subscription.has_feature(subscription.Features.QUEUE_ACTION):
-            raise prr_config.InvalidPullRequestRule(
+            raise InvalidQueueConfiguration(
                 "Cannot use `speculative_checks` with queue action.",
                 ctxt.subscription.missing_feature_reason(
                     ctxt.pull["base"]["repo"]["owner"]["login"]
                 ),
             )
 
-        elif action.queue_rule.config[
-            "batch_size"
-        ] > 1 and not ctxt.subscription.has_feature(subscription.Features.QUEUE_ACTION):
-            raise prr_config.InvalidPullRequestRule(
+        elif queue_rule.config["batch_size"] > 1 and not ctxt.subscription.has_feature(
+            subscription.Features.QUEUE_ACTION
+        ):
+            raise InvalidQueueConfiguration(
                 "Cannot use `batch_size` with queue action.",
                 ctxt.subscription.missing_feature_reason(
                     ctxt.pull["base"]["repo"]["owner"]["login"]
                 ),
             )
-        elif action.config[
+        elif config[
             "priority"
         ] != queue.PriorityAliases.medium.value and not ctxt.subscription.has_feature(
             subscription.Features.PRIORITY_QUEUES
         ):
-            raise prr_config.InvalidPullRequestRule(
+            raise InvalidQueueConfiguration(
                 "Cannot use `priority` with queue action.",
                 ctxt.subscription.missing_feature_reason(
                     ctxt.pull["base"]["repo"]["owner"]["login"]
@@ -885,7 +976,10 @@ class QueueAction(actions.Action):
     @property
     def validator(self) -> dict[typing.Any, typing.Any]:
         validator = {
-            voluptuous.Required("name", default="default"): str,
+            voluptuous.Required("name", default=None): voluptuous.Any(
+                str,
+                None,
+            ),
             voluptuous.Required("method", default=None): voluptuous.Any(
                 None,  # fallback to queue_rule
                 "rebase",
@@ -941,38 +1035,11 @@ class QueueAction(actions.Action):
 
     def validate_config(self, mergify_config: "mergify_conf.MergifyConfig") -> None:
         self.queue_rules = mergify_config["queue_rules"]
-        try:
-            self.queue_rule = mergify_config["queue_rules"][self.config["name"]]
-        except KeyError:
+        if (
+            self.config["name"] is not None
+            and mergify_config["queue_rules"].get(self.config["name"]) is None
+        ):
             raise voluptuous.error.Invalid(f"`{self.config['name']}` queue not found")
-
-        queue_rule_config_attributes_none_default: list[
-            typing.Literal[
-                "commit_message_template",
-                "merge_bot_account",
-                "update_bot_account",
-                "update_method",
-            ]
-        ] = [
-            "commit_message_template",
-            "merge_bot_account",
-            "update_bot_account",
-            "update_method",
-        ]
-
-        for attr in queue_rule_config_attributes_none_default:
-            if self.config[attr] is None:
-                self.config[attr] = self.queue_rule.config[attr]
-
-        # name in action and queue_rule are not the same so we need to treat it
-        # in a different way
-        if self.config["method"] is None:
-            self.config["method"] = self.queue_rule.config["merge_method"]
-
-        if self.config["update_method"] is None:
-            self.config["update_method"] = (
-                "rebase" if self.config["method"] == "fast-forward" else "merge"
-            )
 
     @staticmethod
     def command_to_config(command_arguments: str) -> dict[str, typing.Any]:
@@ -980,7 +1047,8 @@ class QueueAction(actions.Action):
         # doesn't play well with command subsystem, and it's not intuitive as
         # the user tell us to put the PR in queue and by default we don't. So
         # we disable this for commands.
-        config = {"name": "default", "require_branch_protection": False}
+        name: str | None = None
+        config = {"name": name, "require_branch_protection": False}
         args = [
             arg_stripped
             for arg in command_arguments.split(" ")

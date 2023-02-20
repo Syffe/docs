@@ -89,7 +89,9 @@ pull_request_rules:
     assert rule is not None
     queue_action = typing.cast(queue.QueueAction, rule.actions["queue"])
     await queue_action.load_context(ctxt, rule)
-    priority = await queue_action.queue_rule.get_effective_priority(
+    executor = await queue_action.executor_class.create(queue_action, ctxt, rule)
+    await executor._set_action_queue_rule()
+    priority = await executor.queue_rule.get_effective_priority(
         ctxt, queue_action.config["priority"]
     )
     assert priority == expected_priority

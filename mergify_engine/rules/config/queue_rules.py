@@ -56,13 +56,15 @@ class QueueRule:
     name: QueueName
     config: QueueConfig
     merge_conditions: conditions_mod.QueueRuleMergeConditions
+    routing_conditions: conditions_mod.QueueRuleMergeConditions
     priority_rules: priority_rules_config.PriorityRules
 
     class T_from_dict(QueueConfig, total=False):
         name: QueueName
+        config: QueueConfig
         conditions: conditions_mod.QueueRuleMergeConditions
         merge_conditions: conditions_mod.QueueRuleMergeConditions
-        config: QueueConfig
+        routing_conditions: conditions_mod.QueueRuleMergeConditions
         priority_rules: priority_rules_config.PriorityRules
 
     @property
@@ -78,7 +80,7 @@ class QueueRule:
         merge_conditions = d.pop("conditions", None)
         if merge_conditions is None:
             merge_conditions = d.pop("merge_conditions")
-
+        routing_conditions = d.pop("routing_conditions")
         priority_rules = d.pop("priority_rules")
 
         # NOTE(sileht): backward compat
@@ -98,6 +100,7 @@ class QueueRule:
             name=name,
             config=d,
             merge_conditions=merge_conditions,
+            routing_conditions=routing_conditions,
             priority_rules=priority_rules,
         )
 
@@ -133,6 +136,9 @@ class QueueRule:
             merge_conditions=conditions_mod.QueueRuleMergeConditions(
                 extra_conditions + self.merge_conditions.condition.copy().conditions
             ),
+            routing_conditions=conditions_mod.QueueRuleMergeConditions(
+                self.routing_conditions.condition.copy().conditions
+            ),
             config=self.config,
             priority_rules=self.priority_rules,
         )
@@ -148,6 +154,7 @@ class QueueRule:
         self, pulls: list[context.BasePullRequest]
     ) -> EvaluatedQueueRule:
         await self.merge_conditions(pulls)
+        await self.routing_conditions(pulls)
         return typing.cast(EvaluatedQueueRule, self)
 
     async def get_effective_priority(
@@ -198,6 +205,51 @@ class QueueRules:
                     raise voluptuous.error.Invalid(
                         f"disallow_checks_interruption_from_queues contains an unkown queue: {name}"
                     )
+
+    async def routing_conditions_exists(self) -> bool:
+        for rule in self.rules:
+            if rule.routing_conditions.condition.conditions:
+                return True
+        return False
+
+    async def are_routing_conditions_matching(self, ctxt: context.Context) -> bool:
+        if not await self.routing_conditions_exists():
+            return False
+        evaluated_routing_conditions = (
+            await self.get_matching_evaluated_routing_conditions(ctxt=ctxt)
+        )
+        return bool(evaluated_routing_conditions)
+
+    async def get_matching_evaluated_routing_conditions(
+        self, ctxt: context.Context
+    ) -> list[EvaluatedQueueRule]:
+        # NOTE(Syffe): in order to only evaluate routing_conditions (and not basic conditions) before queuing the PR,
+        # we create a list of temporary QueueRules that only contains routing_conditions for evaluation
+        routing_rules = [
+            QueueRule(
+                name=rule.name,
+                merge_conditions=conditions_mod.QueueRuleMergeConditions([]),
+                routing_conditions=conditions_mod.QueueRuleMergeConditions(
+                    rule.routing_conditions.condition.copy().conditions
+                ),
+                config=rule.config,
+                priority_rules=rule.priority_rules,
+            )
+            for rule in self.rules
+        ]
+
+        routing_rules_evaluator = await QueuesRulesEvaluator.create(
+            routing_rules,
+            ctxt.repository,
+            [ctxt.pull_request],
+            True,
+        )
+
+        return [
+            rule
+            for rule in routing_rules_evaluator.matching_rules
+            if rule.routing_conditions.match
+        ]
 
 
 def PositiveInterval(v: str) -> datetime.timedelta:
@@ -254,7 +306,7 @@ QueueRulesSchema = voluptuous.All(
             ),
             {
                 voluptuous.Required("name"): str,
-                voluptuous.Required("priority_rules", default=[]): voluptuous.All(
+                voluptuous.Required("priority_rules", default=list): voluptuous.All(
                     [
                         voluptuous.All(
                             {
@@ -286,6 +338,10 @@ QueueRulesSchema = voluptuous.All(
                     voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
                 ),
                 "conditions": voluptuous.All(
+                    [voluptuous.Coerce(cond_config.RuleConditionSchema)],
+                    voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
+                ),
+                voluptuous.Required("routing_conditions", default=list): voluptuous.All(
                     [voluptuous.Coerce(cond_config.RuleConditionSchema)],
                     voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
                 ),

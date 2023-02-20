@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    Mergify now allows you to define ``routing_conditions`` in the ``queue_rules`` configuration.
+    ``routing_conditions`` allows you to define and validate the routing of a pull request in a queue
+    before it is queued.

@@ -432,7 +432,9 @@ async def test_required_status_checks_strict_incompatibility_with_queue_rules(
     )
 
 
-async def test_action_rules_in_queue_rules() -> None:
+async def test_action_rules_in_queue_rules(
+    context_getter: conftest.ContextGetterFixture,
+) -> None:
     queue_rules = rules.UserConfigurationSchema(
         {
             "queue_rules": [
@@ -450,10 +452,16 @@ async def test_action_rules_in_queue_rules() -> None:
     )
 
     action = queue.QueueAction({})
-    action.validate_config(queue_rules)
+    action.queue_rule = queue_rules["queue_rules"]["default"]
+    ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
+    evaluated_pull_request_rule = mock.Mock()
+    executor = await action.executor_class.create(
+        action, ctxt, evaluated_pull_request_rule
+    )
+    executor._set_action_config_from_queue_rules()
 
-    assert action.config["commit_message_template"] == "test"
-    assert action.config["method"] == "rebase"
-    assert action.config["merge_bot_account"] == "test"
-    assert action.config["update_method"] == "rebase"
-    assert action.config["update_bot_account"] == "test"
+    assert executor.config["commit_message_template"] == "test"
+    assert executor.config["method"] == "rebase"
+    assert executor.config["merge_bot_account"] == "test"
+    assert executor.config["update_method"] == "rebase"
+    assert executor.config["update_bot_account"] == "test"

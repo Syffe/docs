@@ -7,6 +7,161 @@ from mergify_engine.tests.functional import base
 class TestQueueCommand(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
 
+    async def test_command_queue_with_routing_conditions_not_matching_and_no_fallback(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "hotfix",
+                    "routing_conditions": [
+                        "label=hotfix",
+                    ],
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                },
+                {
+                    "name": "default",
+                    "routing_conditions": [
+                        "label=toto",
+                    ],
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        await self.create_comment_as_admin(p1["number"], "@mergifyio queue")
+        await self.run_engine()
+        comments = await self.get_issue_comments(p1["number"])
+        assert (
+            "There are routing conditions defined in the configuration, but none matches; the pull request has not been embarked"
+            in comments[-1]["body"]
+        )
+
+    async def test_command_queue_with_routing_conditions_not_matching_and_fallback(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "hotfix",
+                    "routing_conditions": [
+                        "label=hotfix",
+                    ],
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                },
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        await self.create_comment_as_admin(p1["number"], "@mergifyio queue")
+        await self.run_engine()
+        comments = await self.get_issue_comments(p1["number"])
+        assert (
+            "The pull request is the 1st in the queue to be merged"
+            in comments[-1]["body"]
+        )
+
+    async def test_command_queue_with_routing_conditions_matching(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "hotfix",
+                    "routing_conditions": [
+                        "label=hotfix",
+                    ],
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                },
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        await self.add_label(p1["number"], "hotfix")
+        await self.create_comment_as_admin(p1["number"], "@mergifyio queue")
+        await self.run_engine()
+
+        async def assert_queued(
+            pull: github_types.GitHubPullRequest, position: str
+        ) -> None:
+            comments = await self.get_issue_comments(pull["number"])
+            assert (
+                f"The pull request is the {position} in the queue to be merged"
+                in comments[-1]["body"]
+            )
+            assert (
+                "**Required conditions of queue** `hotfix` **for merge:**"
+                in comments[-1]["body"]
+            )
+
+        await assert_queued(p1, "1st")
+
+    async def test_command_queue_with_routing_conditions_matching_and_default_queue_forced(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "hotfix",
+                    "routing_conditions": [
+                        "label=hotfix",
+                    ],
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                },
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        await self.add_label(p1["number"], "hotfix")
+        await self.create_comment_as_admin(p1["number"], "@mergifyio queue default")
+        await self.run_engine()
+
+        async def assert_queued(
+            pull: github_types.GitHubPullRequest, position: str
+        ) -> None:
+            comments = await self.get_issue_comments(pull["number"])
+            assert (
+                f"The pull request is the {position} in the queue to be merged"
+                in comments[-1]["body"]
+            )
+            assert (
+                "**Required conditions of queue** `default` **for merge:**"
+                in comments[-1]["body"]
+            )
+
+        await assert_queued(p1, "1st")
+
     async def test_command_queue(self) -> None:
         rules = {
             "queue_rules": [

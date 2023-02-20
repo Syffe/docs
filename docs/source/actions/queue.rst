@@ -135,6 +135,64 @@ The merge queue can be visualized from your `dashboard <https://dashboard.mergif
 .. figure:: ../_static/merge-queue.png
    :alt: The merge queue from the dashboard
 
+
+.. _routing conditions:
+
+Routing Conditions
+~~~~~~~~~~~~~~~~~~
+
+The usage of ``routing_conditions`` is optional but can be used to have thinner control over routing your pull requests
+into queues.
+
+``routing_conditions`` are evaluated just before queuing the pull request.
+Their job is to determine in which queue the pull request must be queued. The pull request will be queued in the first queue matching the routing conditions.
+
+The routing conditions can be expressed using the usual :ref:`Conditions`.
+
+You can use routing conditions both with :ref:`Commands` and ``pull_request_rules``.
+
+Example
+~~~~~~~
+
+The following example defines two queues named ``default`` and ``hotfix``, and a ``pull_request_rule``.
+Only the queue ``hotfix`` has ``routing_conditions``.
+
+In this case, supposing that the ``routing_conditions`` are fulfilled, the command ``@Mergifyio queue``
+is going to queue the pull request in ``hotfix``.
+Also, if the ``pull_request_rule`` matches, supposing that the ``routing_conditions`` are fulfilled,
+the pull request is going to be queued in ``hotfix``.
+
+Empty ``routing_conditions`` are always matching, thus, a pull request will always fallback in a queue with no ``routing_conditions`` defined.
+To avoid a pull request being queued due to the fallback, you need to define ``routing_conditions`` for every one of your queues.
+If no ``routing_conditions`` are matching, the pull request will not be queued.
+
+In this case, supposing that the ``routing_conditions`` are not fulfilled, the pull request is going to be queued in ``default``.
+
+
+.. code-block:: yaml
+
+    queue_rules:
+      - name: hotfix
+        routing_conditions:
+          - label=hotfix
+        merge_conditions:
+          - "#approved-reviews-by>=2"
+          - check-success=Travis CI - Pull Request
+
+      - name: default
+        merge_conditions:
+          - "#approved-reviews-by>=2"
+          - check-success=Travis CI - Pull Request
+
+    pull_request_rules:
+      - name: merge using the merge queue
+        conditions:
+          - base=main
+          - label=queue
+        actions:
+          queue:
+
+
 .. _speculative checks:
 
 Speculative Checks
@@ -451,8 +509,8 @@ These are the options of the ``queue`` action:
 
    * - ``name``
      - string
-     - ``default``
-     - The name of the queue in which the pull request should be added.
+     -
+     - The name of the queue where the pull request should be added. If no name is set, ``routing_conditions`` will be applied instead.
 
    * - ``allow_merging_configuration_change``
      - bool
@@ -659,7 +717,10 @@ A ``queue_rules`` takes the following parameter:
      - mergify/merge-queue/
      - |premium plan tag|
        When creating a draft pull request for a queue, this prefix will be used to name the branch.
-
+   * - ``routing_conditions``
+     - list of :ref:`Conditions`
+     -
+     - The list of ``conditions`` to match to queue the pull request.
    * - ``speculative_checks``
      - int
      - 1
