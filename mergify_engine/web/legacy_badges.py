@@ -2,6 +2,7 @@ import fastapi
 from starlette import responses
 
 from mergify_engine import config
+from mergify_engine.middlewares import starlette_workaround
 from mergify_engine.web import utils
 
 
@@ -41,5 +42,6 @@ async def badge(owner: str, repo: str) -> responses.RedirectResponse:
 def create_app(debug: bool = False) -> fastapi.FastAPI:
     app = fastapi.FastAPI(openapi_url=None, redoc_url=None, docs_url=None, debug=debug)
     app.include_router(router)
+    app.add_middleware(starlette_workaround.StarletteWorkaroundMiddleware)
     utils.setup_exception_handlers(app)
     return app

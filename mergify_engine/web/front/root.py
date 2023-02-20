@@ -6,6 +6,7 @@ import starsessions
 
 from mergify_engine import config
 from mergify_engine.middlewares import logging
+from mergify_engine.middlewares import starlette_workaround
 from mergify_engine.middlewares import sudo
 from mergify_engine.web import utils
 from mergify_engine.web.front import admin
@@ -48,6 +49,7 @@ def create_app(debug: bool = False) -> fastapi.FastAPI:
         lifetime=3600 * config.DASHBOARD_UI_SESSION_EXPIRATION_HOURS,
         store=sessions.RedisStore(),
     )
+    app.add_middleware(starlette_workaround.StarletteWorkaroundMiddleware)
     app.add_middleware(logging.LoggingMiddleware)
     utils.setup_exception_handlers(app)
 
