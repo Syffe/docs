@@ -186,7 +186,7 @@ class Gitter:
 
     @classmethod
     def _create_git_exception(cls, returncode: int, output: str) -> GitError:
-        if output == "":
+        if output == "" or returncode == -15:
             # SIGKILL...
             return GitErrorRetriable(returncode, "Git process got killed")
         elif cls._is_force_push_lease_reject(output):
