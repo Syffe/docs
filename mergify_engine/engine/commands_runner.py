@@ -33,9 +33,6 @@ COMMAND_MATCHER = re.compile(
 MERGE_QUEUE_COMMAND_MESSAGE = "Command not allowed on merge queue pull request."
 UNKNOWN_COMMAND_MESSAGE = "Sorry but I didn't understand the command. Please consult [the commands documentation](https://docs.mergify.com/commands.html) \U0001F4DA."
 INVALID_COMMAND_ARGS_MESSAGE = "Sorry but I didn't understand the arguments of the command `{command}`. Please consult [the commands documentation](https://docs.mergify.com/commands/) \U0001F4DA."  # noqa
-CONFIGURATION_CHANGE_MESSAGE = (
-    "Sorry but this command cannot run when the configuration is updated"
-)
 
 
 @dataclasses.dataclass
@@ -418,13 +415,6 @@ async def check_init_command_run(
         raise RuntimeError(
             "state.github_comment_result is None, but state.github_comment_source is not set."
         )
-
-    if (
-        ctxt.configuration_changed
-        and actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
-        not in command.action.flags
-    ):
-        raise CommandNotAllowed(CONFIGURATION_CHANGE_MESSAGE, "")
 
     if command.name != "refresh" and ctxt.is_merge_queue_pr():
         raise CommandNotAllowed(MERGE_QUEUE_COMMAND_MESSAGE, "")

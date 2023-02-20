@@ -1480,13 +1480,20 @@ async def test_get_pull_request_rules_evaluator(
 
     assert [r.name for r in match.rules] == ["default", "default"]
     assert list(match.matching_rules[0].actions.keys()) == ["merge"]
-    assert len(match.matching_rules[0].conditions.condition.conditions) == 2
+    assert len(match.matching_rules[0].conditions.condition.conditions) == 3
     assert not match.matching_rules[0].conditions.match
-    draft = match.matching_rules[0].conditions.condition.conditions[0]
+    config_change = match.matching_rules[0].conditions.condition.conditions[0]
+    assert isinstance(config_change, rules.conditions.RuleCondition)
+    assert str(config_change) == "-mergify-configuration-changed"
+    assert (
+        config_change.description
+        == ":pushpin: merge -> allow_merging_configuration_change setting requirement"
+    )
+    draft = match.matching_rules[0].conditions.condition.conditions[1]
     assert isinstance(draft, rules.conditions.RuleCondition)
     assert str(draft) == "-draft"
     assert draft.description == ":pushpin: merge requirement"
-    group = match.matching_rules[0].conditions.condition.conditions[1]
+    group = match.matching_rules[0].conditions.condition.conditions[2]
     assert isinstance(group, rules.conditions.RuleConditionCombination)
     assert group.operator == "or"
     assert len(group.conditions) == 3

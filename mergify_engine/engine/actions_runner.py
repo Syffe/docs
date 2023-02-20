@@ -201,8 +201,6 @@ async def gen_summary(
             matching_rules_to_display.remove(rule)
             not_applicable_base_changeable_attributes_rules_to_display.append(rule)
 
-    if ctxt.configuration_changed:
-        summary += "⚠️ The configuration has been changed, *queue* and *merge* actions are ignored. ⚠️\n\n"
     summary += await gen_summary_rules(ctxt, match.faulty_rules, display_action_configs)
     summary += await gen_summary_rules(
         ctxt, matching_rules_to_display, display_action_configs
@@ -275,9 +273,6 @@ async def gen_summary(
         summary_title = ["no rules configured, just listening for commands"]
 
     title = " and ".join(summary_title)
-    if ctxt.configuration_changed:
-        title = f"Configuration changed. This pull request must be merged manually — {title}"
-
     return title, summary
 
 
@@ -474,15 +469,7 @@ async def run_actions(
                 and action in actions_ran
             )
 
-            if (
-                not rule.conditions.match
-                or rule.disabled is not None
-                or (
-                    ctxt.configuration_changed
-                    and actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
-                    not in action_obj.flags
-                )
-            ):
+            if not rule.conditions.match or rule.disabled is not None:
                 method_name = "cancel"
                 expected_conclusions = [
                     check_api.Conclusion.NEUTRAL,

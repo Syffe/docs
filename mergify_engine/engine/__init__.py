@@ -156,7 +156,7 @@ async def _check_configuration_changes(
             check_api.Result(
                 check_api.Conclusion.SUCCESS,
                 title="The new Mergify configuration is valid",
-                summary="This pull request has to be merged manually",
+                summary="This pull request may require to be merged manually.",
             ),
         )
 

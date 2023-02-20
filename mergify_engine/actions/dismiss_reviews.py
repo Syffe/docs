@@ -192,10 +192,7 @@ class DismissReviewsExecutor(
 
 
 class DismissReviewsAction(actions.Action):
-    flags = (
-        actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
-        | actions.ActionFlag.ALWAYS_RUN
-    )
+    flags = actions.ActionFlag.ALWAYS_RUN
 
     validator = {
         voluptuous.Required("approved", default=True): voluptuous.Any(

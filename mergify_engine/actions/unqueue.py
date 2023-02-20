@@ -82,7 +82,7 @@ class UnqueueExecutor(
 
 
 class UnqueueCommand(actions.Action):
-    flags = actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
+    flags = actions.ActionFlag.NONE
 
     validator: typing.ClassVar[dict[typing.Any, typing.Any]] = {}
     executor_class = UnqueueExecutor

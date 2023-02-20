@@ -108,9 +108,7 @@ class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig
 
 class RebaseAction(actions.Action):
     flags = (
-        actions.ActionFlag.ALWAYS_RUN
-        | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
-        | actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
+        actions.ActionFlag.ALWAYS_RUN | actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
     )
     validator = {
         voluptuous.Required("bot_account", default=None): voluptuous.Any(

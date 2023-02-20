@@ -320,12 +320,12 @@ did not find expected alphabetic or numeric character
         )
         assert checks[1]["output"]["summary"] == "expected a dictionary"
 
-    async def test_change_mergify_yml(self) -> None:
+    async def test_disallowed_change_mergify_yml(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
                     "name": "nothing",
-                    "conditions": [f"base!={self.main_branch_name}"],
+                    "conditions": [f"base={self.main_branch_name}"],
                     "actions": {"merge": {}},
                 }
             ]
@@ -339,9 +339,36 @@ did not find expected alphabetic or numeric character
         ctxt = context.Context(self.repository_ctxt, p1, [])
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
+        assert summary["output"]["title"] == "1 potential rule"
+        assert (
+            """### Rule: nothing (merge)
+- [ ] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]
+"""
+            in summary["output"]["summary"]
+        )
+
+    async def test_allowed_change_mergify_yml(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "nothing",
+                    "conditions": [f"base={self.main_branch_name}"],
+                    "actions": {"merge": {"allow_merging_configuration_change": True}},
+                }
+            ]
+        }
+        await self.setup_repo(yaml.dump(rules))
+        rules["pull_request_rules"].append(
+            {"name": "foobar", "conditions": ["label!=wip"], "actions": {"merge": {}}}
+        )
+        p1 = await self.create_pr(files={".mergify.yml": yaml.dump(rules)})
+        await self.run_engine()
+        ctxt = context.Context(self.repository_ctxt, p1, [])
+        summary = await ctxt.get_engine_check_run("Rule: nothing (merge)")
+        assert summary is not None
         assert (
             summary["output"]["title"]
-            == "Configuration changed. This pull request must be merged manually — no rules match, no planned actions"
+            == "The pull request has been merged automatically"
         )
 
     async def test_change_mergify_yml_in_meantime_on_big_pull_request(self) -> None:

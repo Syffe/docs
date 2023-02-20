@@ -92,6 +92,7 @@ class QueueExecutorConfig(typing.TypedDict):
     commit_message_template: str | None
     priority: int
     require_branch_protection: bool
+    allow_merging_configuration_change: bool
 
     # deprecated
     rebase_fallback: merge_base.RebaseFallbackT
@@ -168,6 +169,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     "priority": action.config["priority"],
                     "require_branch_protection": action.config[
                         "require_branch_protection"
+                    ],
+                    "allow_merging_configuration_change": action.config[
+                        "allow_merging_configuration_change"
                     ],
                 }
             ),
@@ -902,6 +906,9 @@ class QueueAction(actions.Action):
                 "commit_message_template", default=None
             ): types.Jinja2WithNone,
             voluptuous.Required("require_branch_protection", default=True): bool,
+            voluptuous.Required(
+                "allow_merging_configuration_change", default=False
+            ): bool,
         }
 
         # NOTE(Syffe): In deprecation process
@@ -986,22 +993,25 @@ class QueueAction(actions.Action):
     async def get_conditions_requirements(
         self, ctxt: context.Context
     ) -> list[conditions.RuleConditionNode]:
-        branch_protection_conditions = []
+        conditions_requirements = []
         if self.config["require_branch_protection"]:
-            branch_protection_conditions = (
+            conditions_requirements.extend(
                 await conditions.get_branch_protection_conditions(
                     ctxt.repository, ctxt.pull["base"]["ref"], strict=False
                 )
             )
-        depends_on_conditions = await conditions.get_depends_on_conditions(ctxt)
-        return (
-            branch_protection_conditions
-            + depends_on_conditions
-            + [
-                conditions.RuleCondition.from_tree(
-                    {"=": ("draft", False)}, description=":pushpin: queue requirement"
-                )
-            ]
+
+        conditions_requirements.append(
+            conditions.get_mergify_configuration_change_conditions(
+                "queue", self.config["allow_merging_configuration_change"]
+            )
         )
+        conditions_requirements.extend(await conditions.get_depends_on_conditions(ctxt))
+        conditions_requirements.append(
+            conditions.RuleCondition.from_tree(
+                {"=": ("draft", False)}, description=":pushpin: queue requirement"
+            )
+        )
+        return conditions_requirements
 
     executor_class = QueueExecutor

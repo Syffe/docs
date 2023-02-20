@@ -140,10 +140,7 @@ class EditExecutor(actions.ActionExecutor["EditAction", EditExecutorConfig]):
 
 
 class EditAction(actions.Action):
-    flags = (
-        actions.ActionFlag.ALWAYS_RUN
-        | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
-    )
+    flags = actions.ActionFlag.ALWAYS_RUN
 
     validator = {
         voluptuous.Required("bot_account", default=None): types.Jinja2WithNone,

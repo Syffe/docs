@@ -41,8 +41,6 @@ class ActionFlag(enum.Flag):
     NONE = 0
     # The action run()/cancel() is executed whatever the previous state was
     ALWAYS_RUN = enum.auto()
-    # The action can be run when the Mergify configuration change
-    ALLOW_ON_CONFIGURATION_CHANGED = enum.auto()
     # Allow to rerun an action if it's part of another rule
     DISALLOW_RERUN_ON_OTHER_RULES = enum.auto()
     # This makes checks created by mergify retriggering Mergify, beware to

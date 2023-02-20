@@ -117,8 +117,5 @@ class AssignAction(actions.Action):
         voluptuous.Required("remove_users", default=list): [types.Jinja2],
     }
 
-    flags = (
-        actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
-        | actions.ActionFlag.ALWAYS_RUN
-    )
+    flags = actions.ActionFlag.ALWAYS_RUN
     executor_class = AssignExecutor

@@ -173,10 +173,7 @@ class LabelExecutor(actions.ActionExecutor["LabelAction", LabelExecutorConfig]):
 
 
 class LabelAction(actions.Action):
-    flags = (
-        actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
-        | actions.ActionFlag.ALWAYS_RUN
-    )
+    flags = actions.ActionFlag.ALWAYS_RUN
 
     validator = {
         voluptuous.Required("add", default=list): [str],

@@ -489,7 +489,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
 
 
 class CopyAction(actions.Action):
-    flags = actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
+    flags = actions.ActionFlag.NONE
     executor_class = CopyExecutor
 
     default_restrictions: typing.ClassVar[list[typing.Any]] = [

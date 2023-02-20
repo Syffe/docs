@@ -14,6 +14,7 @@ from first import first
 import pydantic
 import voluptuous
 
+from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import github_types
@@ -425,6 +426,36 @@ class RuleConditionNegation(RuleConditionGroup):
 
 
 BRANCH_PROTECTION_CONDITION_TAG = "🛡 GitHub branch protection"
+
+
+def get_mergify_configuration_change_conditions(
+    action_name: str, allow_merging_configuration_change: bool
+) -> RuleConditionNode:
+    description = f":pushpin: {action_name} -> allow_merging_configuration_change setting requirement"
+    if allow_merging_configuration_change:
+        return RuleConditionCombination(
+            {
+                "or": [
+                    RuleCondition.from_tree(
+                        {"=": ("mergify-configuration-changed", False)}
+                    ),
+                    RuleCondition.from_tree(
+                        {
+                            "=": (
+                                "check-success",
+                                constants.CONFIGURATION_CHANGED_CHECK_NAME,
+                            )
+                        }
+                    ),
+                ]
+            },
+            description=description,
+        )
+    else:
+        return RuleCondition.from_tree(
+            {"=": ("mergify-configuration-changed", False)},
+            description=description,
+        )
 
 
 async def get_branch_protection_conditions(

@@ -23,10 +23,7 @@ class BackportExecutor(copy.CopyExecutor):
 
 
 class BackportAction(copy.CopyAction):
-    flags = (
-        actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
-        | actions.ActionFlag.ALLOW_AS_PENDING_COMMAND
-    )
+    flags = actions.ActionFlag.ALLOW_AS_PENDING_COMMAND
     executor_class = BackportExecutor
 
     default_restrictions: typing.ClassVar[list[typing.Any]] = [

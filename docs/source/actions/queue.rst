@@ -454,6 +454,11 @@ These are the options of the ``queue`` action:
      - ``default``
      - The name of the queue in which the pull request should be added.
 
+   * - ``allow_merging_configuration_change``
+     - bool
+     - false
+     - Allow merging Mergify configuration change.
+
    * - ``priority``
      - 1 <= integer <= 10000 or ``low`` or ``medium`` or ``high``
      - ``medium``

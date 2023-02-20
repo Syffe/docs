@@ -109,10 +109,7 @@ class DeleteHeadBranchExecutor(
 
 
 class DeleteHeadBranchAction(actions.Action):
-    flags = (
-        actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
-        | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
-    )
+    flags = actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
     validator = {voluptuous.Required("force", default=False): bool}
     executor_class = DeleteHeadBranchExecutor
 

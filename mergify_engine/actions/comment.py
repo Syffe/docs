@@ -105,7 +105,7 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorCo
 
 
 class CommentAction(actions.Action):
-    flags = actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
+    flags = actions.ActionFlag.NONE
     validator = {
         # FIXME(sileht): we shouldn't allow None here, we should raise an error
         # or set a default message.

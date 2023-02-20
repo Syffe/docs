@@ -85,9 +85,6 @@ class CloseExecutor(actions.ActionExecutor["CloseAction", CloseExecutorConfig]):
 
 
 class CloseAction(actions.Action):
-    flags = (
-        actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
-        | actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
-    )
+    flags = actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
     validator = {voluptuous.Required("message", default=MSG): types.Jinja2}
     executor_class = CloseExecutor

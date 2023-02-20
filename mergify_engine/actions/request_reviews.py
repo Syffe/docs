@@ -267,10 +267,7 @@ class RequestReviewsExecutor(
 
 
 class RequestReviewsAction(actions.Action):
-    flags = (
-        actions.ActionFlag.ALWAYS_RUN
-        | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
-    )
+    flags = actions.ActionFlag.ALWAYS_RUN
 
     _random_weight = voluptuous.Required(
         voluptuous.All(int, voluptuous.Range(min=1, max=65535)), default=1

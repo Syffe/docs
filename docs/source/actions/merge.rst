@@ -54,6 +54,11 @@ Options
      - Merge method to use. Possible values are ``merge``, ``squash``,
        ``rebase`` or ``fast-forward``.
 
+   * - ``allow_merging_configuration_change``
+     - bool
+     - false
+     - Allow merging Mergify configuration change.
+
    * - ``rebase_fallback``
      - string
      - ``none``

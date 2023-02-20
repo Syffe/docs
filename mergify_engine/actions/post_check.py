@@ -154,11 +154,7 @@ class PostCheckExecutor(
 
 
 class PostCheckAction(actions.Action):
-    flags = (
-        actions.ActionFlag.ALWAYS_RUN
-        | actions.ActionFlag.ALLOW_ON_CONFIGURATION_CHANGED
-        | actions.ActionFlag.ALLOW_RETRIGGER_MERGIFY
-    )
+    flags = actions.ActionFlag.ALWAYS_RUN | actions.ActionFlag.ALLOW_RETRIGGER_MERGIFY
     validator = {
         voluptuous.Required(
             "title",

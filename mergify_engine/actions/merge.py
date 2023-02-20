@@ -35,6 +35,7 @@ class MergeExecutorConfig(typing.TypedDict):
     rebase_fallback: merge_base.RebaseFallbackT
     commit_message_template: str | None
     merge_bot_account: github_types.GitHubLogin | None
+    allow_merging_configuration_change: bool
 
 
 @dataclasses.dataclass
@@ -85,6 +86,9 @@ class MergeExecutor(
                     "rebase_fallback": action.config["rebase_fallback"],
                     "commit_message_template": action.config["commit_message_template"],
                     "merge_bot_account": merge_bot_account,
+                    "allow_merging_configuration_change": action.config[
+                        "allow_merging_configuration_change"
+                    ],
                 }
             ),
             action.queue_rules,
@@ -163,6 +167,9 @@ class MergeAction(actions.Action):
             voluptuous.Required(
                 "commit_message_template", default=None
             ): types.Jinja2WithNone,
+            voluptuous.Required(
+                "allow_merging_configuration_change", default=False
+            ): bool,
         }
 
         if config.ALLOW_REBASE_FALLBACK_ATTRIBUTE:
@@ -193,6 +200,11 @@ class MergeAction(actions.Action):
                 )
             )
 
+        conditions_requirements.append(
+            conditions.get_mergify_configuration_change_conditions(
+                "merge", self.config["allow_merging_configuration_change"]
+            )
+        )
         conditions_requirements.append(
             conditions.RuleCondition.from_tree(
                 {"=": ("draft", False)}, description=":pushpin: merge requirement"

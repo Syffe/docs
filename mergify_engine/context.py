@@ -1438,6 +1438,10 @@ class Context:
         elif name == "draft":
             return self.pull["draft"]
 
+        elif name == "mergify-configuration-changed":
+            # NOTE(sileht): only internally used
+            return self.configuration_changed
+
         elif name == "author":
             return self.pull["user"]["login"]
 
