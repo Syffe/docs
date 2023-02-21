@@ -3554,14 +3554,14 @@ toml = ">=0.10.2"
 
 [[package]]
 name = "types-first"
-version = "2.0.5"
+version = "2.0.5.1"
 description = "Typing stubs for first"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-first-2.0.5.tar.gz", hash = "sha256:af9e144d9b2039d939237a0486670b22a9907df79d67bdbb3e4cb9f9ead3e5f4"},
-    {file = "types_first-2.0.5-py3-none-any.whl", hash = "sha256:4ef3d7370b9d8459ff78a55faa71f7d1d1694f447d195097006fb236aa973e85"},
+    {file = "types-first-2.0.5.1.tar.gz", hash = "sha256:02b7f74dc9a573872bee37d025003bec84cad1b0b0bdf5199ec712d85d1cfbd2"},
+    {file = "types_first-2.0.5.1-py3-none-any.whl", hash = "sha256:b7dd8a50d556cb79a71506df5e6124b131146973d82fde80e29444a2ebb9c7b3"},
 ]
 
 [[package]]
