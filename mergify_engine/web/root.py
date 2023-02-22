@@ -5,7 +5,6 @@ from uvicorn.middleware import proxy_headers
 
 from mergify_engine import config
 from mergify_engine.clients import github
-from mergify_engine.middlewares import starlette_workaround
 from mergify_engine.web import github_webhook
 from mergify_engine.web import legacy_badges
 from mergify_engine.web import redis
@@ -44,7 +43,6 @@ def create_app(https_only: bool = True, debug: bool = False) -> fastapi.FastAPI:
         app.include_router(github_webhook.router)
         app.include_router(react.router)
 
-    app.add_middleware(starlette_workaround.StarletteWorkaroundMiddleware)
     utils.setup_exception_handlers(app)
 
     @app.on_event("startup")

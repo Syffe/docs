@@ -12,7 +12,6 @@ from mergify_engine import redis_utils
 from mergify_engine.dashboard import application
 from mergify_engine.dashboard import subscription
 from mergify_engine.dashboard import user_tokens
-from mergify_engine.middlewares import starlette_workaround
 from mergify_engine.models import github_user
 from mergify_engine.usage import last_seen
 from mergify_engine.web import auth
@@ -175,6 +174,5 @@ async def get_user_oauth_access_token(
 def create_app(debug: bool = False) -> fastapi.FastAPI:
     app = fastapi.FastAPI(openapi_url=None, redoc_url=None, docs_url=None, debug=debug)
     app.include_router(router)
-    app.add_middleware(starlette_workaround.StarletteWorkaroundMiddleware)
     utils.setup_exception_handlers(app)
     return app

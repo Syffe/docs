@@ -6,7 +6,6 @@ import fastapi
 from starlette.middleware import cors
 
 from mergify_engine import config
-from mergify_engine.middlewares import starlette_workaround
 from mergify_engine.web import api
 from mergify_engine.web import utils as web_utils
 from mergify_engine.web.api import applications
@@ -87,7 +86,6 @@ def create_app(cors_enabled: bool, debug: bool = False) -> fastapi.FastAPI:
 
     include_api_routes(app)
 
-    app.add_middleware(starlette_workaround.StarletteWorkaroundMiddleware)
     web_utils.setup_exception_handlers(app)
     return app
 

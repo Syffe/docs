@@ -1,11 +1,14 @@
-from unittest import mock
+import logging
 
 import asgi_lifespan
 import fastapi
+import fastapi.testclient
 import pytest
 import starlette
+import starlette.middleware.sessions
 
-from mergify_engine.middlewares import logging
+from mergify_engine.middlewares.logging import LoggingMiddleware
+from mergify_engine.middlewares.sudo import SudoMiddleware
 from mergify_engine.tests import conftest
 from mergify_engine.web import root as web_root
 
@@ -88,12 +91,65 @@ async def test_http_redirect_to_https() -> None:
             )
 
 
-async def test_loggin_middleware_error() -> None:
-    app = mock.Mock()
-    fake_middleware = mock.AsyncMock()
-    fake_middleware.side_effect = Exception("boom")
-    middleware = logging.LoggingMiddleware(app)
+@pytest.mark.parametrize(
+    "status_code,log_level",
+    ((0, logging.ERROR), (500, logging.ERROR), (200, logging.INFO)),
+)
+async def test_logging_middleware(
+    status_code: int, log_level: int, caplog: pytest.LogCaptureFixture
+) -> None:
+    caplog.set_level(logging.INFO)
+    app = fastapi.FastAPI(debug=True)
+    app.add_middleware(LoggingMiddleware)
 
-    req = mock.Mock(headers={})
-    with pytest.raises(Exception, match="boom"):
-        await middleware.dispatch(req, fake_middleware)
+    @app.get("/")
+    def root() -> starlette.responses.PlainTextResponse:
+        if status_code == 0:
+            raise Exception("boom")
+        else:
+            return starlette.responses.PlainTextResponse(
+                content="", status_code=status_code, headers={"see": "me"}
+            )
+
+    client = fastapi.testclient.TestClient(app, raise_server_exceptions=False)
+    response = client.get(
+        "/", headers={"authorization": "should-be-hidden", "see": "me"}
+    )
+    if status_code == 0:
+        assert response.status_code == 500
+    else:
+        assert response.status_code == status_code
+        assert response.headers["see"] == "me"
+
+    assert len(caplog.records) == 1
+    record = caplog.records[0]
+    assert record.msg == "request"
+    assert record.levelno == log_level
+    assert "authorization" not in record.request["headers"]  # type: ignore[attr-defined]
+    assert b"authorization" not in record.request["headers"]  # type: ignore[attr-defined]
+    assert record.response["status"] == status_code  # type: ignore[attr-defined]
+    if status_code == 0:
+        assert record.exc_info
+        assert record.exc_info[1]
+        assert record.exc_info[1].args[0] == "boom"
+    else:
+        assert record.exc_info is None
+        assert ("see", "me") in record.response["headers"]  # type: ignore[attr-defined]
+
+
+async def test_sudo_middleware() -> None:
+    app = fastapi.FastAPI(debug=True)
+    app.add_middleware(SudoMiddleware)
+    app.add_middleware(
+        starlette.middleware.sessions.SessionMiddleware, secret_key="foobar"
+    )
+
+    @app.get("/")
+    def root(request: fastapi.Request) -> starlette.responses.PlainTextResponse:
+        request.session["sudoGrantedTo"] = "me"
+        return starlette.responses.PlainTextResponse(content="", status_code=200)
+
+    client = fastapi.testclient.TestClient(app)
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.headers["Mergify-Sudo-Granted-To"] == "me"
