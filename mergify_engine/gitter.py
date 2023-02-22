@@ -52,6 +52,7 @@ GIT_MESSAGE_TO_EXCEPTION: dict[
         ("RPC failed; HTTP 401", GitAuthenticationFailure),
         ("This repository was archived so it is read-only.", GitFatalError),
         ("organization has enabled or enforced SAML SSO.", GitFatalError),
+        ("fatal: bad config", GitFatalError),
         ("Invalid username or password", GitAuthenticationFailure),
         ("Repository not found", GitAuthenticationFailure),
         ("The requested URL returned error: 403", GitAuthenticationFailure),
