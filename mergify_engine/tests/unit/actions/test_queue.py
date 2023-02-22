@@ -7,6 +7,7 @@ import voluptuous
 
 from mergify_engine import check_api
 from mergify_engine import github_types
+from mergify_engine import queue as merge_queue
 from mergify_engine import rules
 from mergify_engine.actions import queue
 from mergify_engine.clients import http
@@ -465,3 +466,199 @@ async def test_action_rules_in_queue_rules(
     assert executor.config["merge_bot_account"] == "test"
     assert executor.config["update_method"] == "rebase"
     assert executor.config["update_bot_account"] == "test"
+
+
+@pytest.mark.parametrize(
+    (
+        "update_method",
+        "commit_message_template",
+        "batch_size",
+        "speculative_checks",
+        "allow_inplace_checks",
+        "expected_title",
+        "expected_message",
+    ),
+    (
+        (
+            "merge",
+            None,
+            1,
+            1,
+            True,
+            "`update_method: merge` is not compatible with fast-forward merge method",
+            "`update_method` must be set to `rebase`.",
+        ),
+        (
+            "rebase",
+            "test",
+            1,
+            1,
+            True,
+            "Commit message can't be changed with fast-forward merge method",
+            "`commit_message_template` must not be set if `method: fast-forward` is set.",
+        ),
+        (
+            "rebase",
+            None,
+            4,
+            1,
+            True,
+            "batch_size > 1 is not compatible with fast-forward merge method",
+            "The merge `method` or the queue configuration must be updated.",
+        ),
+        (
+            "rebase",
+            None,
+            1,
+            4,
+            True,
+            "speculative_checks > 1 is not compatible with fast-forward merge method",
+            "The merge `method` or the queue configuration must be updated.",
+        ),
+        (
+            "rebase",
+            None,
+            1,
+            1,
+            False,
+            "allow_inplace_checks=False is not compatible with fast-forward merge method",
+            "The merge `method` or the queue configuration must be updated.",
+        ),
+    ),
+)
+async def test_check_method_fastforward_configuration(
+    update_method: str,
+    commit_message_template: str | None,
+    batch_size: int,
+    speculative_checks: int,
+    allow_inplace_checks: bool,
+    expected_title: str,
+    expected_message: str,
+    context_getter: conftest.ContextGetterFixture,
+) -> None:
+    queue_rules = rules.UserConfigurationSchema(
+        {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "commit_message_template": commit_message_template,
+                    "update_method": update_method,
+                    "batch_size": batch_size,
+                    "speculative_checks": speculative_checks,
+                    "allow_inplace_checks": allow_inplace_checks,
+                },
+            ],
+        }
+    )
+
+    action = queue.QueueAction({})
+    action.queue_rule = queue_rules["queue_rules"]["default"]
+    action.config["method"] = "fast-forward"
+    ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
+    evaluated_pull_request_rule = mock.Mock()
+    executor = await action.executor_class.create(
+        action, ctxt, evaluated_pull_request_rule
+    )
+    executor._set_action_config_from_queue_rules()
+
+    with pytest.raises(queue.InvalidQueueConfiguration) as e:
+        executor._check_method_fastforward_configuration(
+            config=executor.config, queue_rule=executor.queue_rule
+        )
+
+    assert e.value.title == expected_title
+    assert e.value.message == expected_message
+
+
+@pytest.mark.parametrize(
+    (
+        "queue_rules",
+        "expected_title",
+    ),
+    (
+        (
+            {
+                "queue_rules": [
+                    {
+                        "name": "default",
+                        "batch_size": 2,
+                        "speculative_checks": 2,
+                    },
+                    {
+                        "name": "test",
+                        "batch_size": 2,
+                        "speculative_checks": 2,
+                    },
+                ],
+            },
+            "Cannot use multiple queues.",
+        ),
+        (
+            {
+                "queue_rules": [
+                    {
+                        "name": "default",
+                        "batch_size": 2,
+                        "speculative_checks": 2,
+                    },
+                ],
+            },
+            "Cannot use `speculative_checks` with queue action.",
+        ),
+        (
+            {
+                "queue_rules": [
+                    {
+                        "name": "default",
+                        "batch_size": 2,
+                        "speculative_checks": 1,
+                    },
+                ],
+            },
+            "Cannot use `batch_size` with queue action.",
+        ),
+        (
+            {
+                "queue_rules": [
+                    {
+                        "name": "default",
+                        "batch_size": 1,
+                        "speculative_checks": 1,
+                    },
+                ],
+            },
+            "Cannot use `priority` with queue action.",
+        ),
+    ),
+)
+async def test_check_subscription_status(
+    queue_rules: dict[str, typing.Any],
+    expected_title: str,
+    context_getter: conftest.ContextGetterFixture,
+) -> None:
+    queue_rules = rules.UserConfigurationSchema(queue_rules)
+
+    action = queue.QueueAction({})
+    action.queue_rule = queue_rules["queue_rules"]["default"]
+    action.queue_rules = queue_rules["queue_rules"]
+    action.config["priority"] = merge_queue.PriorityAliases.high.value
+    ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
+    evaluated_pull_request_rule = mock.Mock()
+    executor = await action.executor_class.create(
+        action, ctxt, evaluated_pull_request_rule
+    )
+    executor._set_action_config_from_queue_rules()
+
+    with pytest.raises(queue.InvalidQueueConfiguration) as e:
+        await executor._check_subscription_status(
+            config=executor.config,
+            queue_rule=executor.queue_rule,
+            queue_rules=executor.queue_rules,
+            ctxt=ctxt,
+        )
+
+    assert e.value.title == expected_title
+    assert (
+        e.value.message
+        == "⚠ The [subscription](https://dashboard.mergify.com/github/Mergifyio/subscription) needs to be updated to enable this feature."
+    )
