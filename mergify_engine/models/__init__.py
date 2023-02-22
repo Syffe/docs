@@ -16,7 +16,7 @@ class Base(orm.DeclarativeBase):
 def get_async_database_url() -> str:
     parsed = parse.urlparse(config.DATABASE_URL)
     if parsed.scheme.startswith("postgres"):
-        parsed = parsed._replace(scheme="postgresql+asyncpg")
+        parsed = parsed._replace(scheme="postgresql+psycopg")
     return parse.urlunparse(parsed)
 
 

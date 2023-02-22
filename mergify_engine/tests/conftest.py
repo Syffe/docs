@@ -171,24 +171,15 @@ def mock_redis_db_values(worker_id: str) -> abc.Generator[None, None, None]:
 
 async def create_database(db_url: str, db_name: str) -> None:
     engine = sqlalchemy.ext.asyncio.create_async_engine(db_url)
-    async with engine.connect() as conn:
-        await conn.execute(sqlalchemy.text("commit"))
-        try:
+    try:
+        engine_no_transaction = engine.execution_options(isolation_level="AUTOCOMMIT")
+        async with engine_no_transaction.connect() as conn:
+            # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
+            await conn.execute(sqlalchemy.text(f"DROP DATABASE IF EXISTS {db_name}"))
             # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
             await conn.execute(sqlalchemy.text(f"CREATE DATABASE {db_name}"))
-        except sqlalchemy.exc.ProgrammingError as exc:
-            # NOTE(Greesb): The database itself is not dropped on cleanup,
-            # so when a test is rerun in the CI, because of a
-            # unexpected MissingEventTimeout exception in replay mode,
-            # creating the databse raises an exception.
-            if (
-                f'database "{db_name}" already exists' in str(exc)
-                and not RECORD
-                and GITHUB_CI
-            ):
-                await conn.rollback()
-            else:
-                raise
+    finally:
+        await engine.dispose()
 
 
 @pytest.fixture(autouse=True, scope="session")

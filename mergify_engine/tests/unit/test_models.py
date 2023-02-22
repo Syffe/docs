@@ -11,23 +11,23 @@ from mergify_engine import models
             # nosemgrep: generic.secrets.security.detected-username-and-password-in-uri.detected-username-and-password-in-uri
             "postgres://foo:bar@foobar.com:123/path",
             # nosemgrep: generic.secrets.security.detected-username-and-password-in-uri.detected-username-and-password-in-uri
-            "postgresql+asyncpg://foo:bar@foobar.com:123/path",
+            "postgresql+psycopg://foo:bar@foobar.com:123/path",
         ),
         (
             # nosemgrep: generic.secrets.security.detected-username-and-password-in-uri.detected-username-and-password-in-uri
             "postgresql://foo:bar@foobar.com:123/path",
             # nosemgrep: generic.secrets.security.detected-username-and-password-in-uri.detected-username-and-password-in-uri
-            "postgresql+asyncpg://foo:bar@foobar.com:123/path",
+            "postgresql+psycopg://foo:bar@foobar.com:123/path",
         ),
         (
             # nosemgrep: generic.secrets.security.detected-username-and-password-in-uri.detected-username-and-password-in-uri
             "postgres://foo:bar@foobar.com:123/path?azert=foo",
             # nosemgrep: generic.secrets.security.detected-username-and-password-in-uri.detected-username-and-password-in-uri
-            "postgresql+asyncpg://foo:bar@foobar.com:123/path?azert=foo",
+            "postgresql+psycopg://foo:bar@foobar.com:123/path?azert=foo",
         ),
-        ("postgres://", "postgresql+asyncpg:"),
-        ("postgresql://", "postgresql+asyncpg:"),
-        ("postgresql+asyncpg://", "postgresql+asyncpg:"),
+        ("postgres://", "postgresql+psycopg:"),
+        ("postgresql://", "postgresql+psycopg:"),
+        ("postgresql+psycopg://", "postgresql+psycopg:"),
     ),
 )
 async def test_get_database_url(
