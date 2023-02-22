@@ -36,6 +36,7 @@ def setup(service_name: str, dump_config: bool = True) -> None:
             max_breadcrumbs=10,
             release=VERSION,
             environment=config.SENTRY_ENVIRONMENT,
+            request_bodies="never",
             integrations=[
                 httpx.HttpxIntegration(),
                 starlette.StarletteIntegration(),
