@@ -344,7 +344,14 @@ Then, re-embark the pull request into the merge queue by posting the comment
         if self.config["name"] is None:
             self.config["name"] = qr_config.QueueName("default")
 
-        self.queue_rule = self.queue_rules[qr_config.QueueName(self.config["name"])]
+        try:
+            self.queue_rule = self.queue_rules[qr_config.QueueName(self.config["name"])]
+        except KeyError:
+            raise InvalidQueueConfiguration(
+                "Invalid queue name",
+                f"The queue `{self.config['name']}` does not exist",
+            )
+
         self._set_action_config_from_queue_rules()
 
     async def run(self) -> check_api.Result:
