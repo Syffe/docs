@@ -507,12 +507,12 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:7720",
+          "https://access.redhat.com/errata/RHSA-2022:8361",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
+          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
           "https://errata.rockylinux.org/RLSA-2022:8361",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
@@ -541,6 +541,7 @@
           "https://github.com/git/git/commit/c867e4fa180bec4750e9b54eb10f459030dbebfd",
           "https://github.com/git/git/security/advisories/GHSA-3wp6-j8xr-qw85",
           "https://github.com/git/git/security/advisories/GHSA-gw92-x3fm-3g3q",
+          "https://nvd.nist.gov/vuln/detail/CVE-2023-22490",
           "https://ubuntu.com/security/notices/USN-5871-1"
         ],
         "PublishedDate": "2023-02-14T20:15:00Z"
@@ -661,6 +662,7 @@
           "https://github.com/git/git/commit/c867e4fa180bec4750e9b54eb10f459030dbebfd",
           "https://github.com/git/git/security/advisories/GHSA-3wp6-j8xr-qw85",
           "https://github.com/git/git/security/advisories/GHSA-gw92-x3fm-3g3q",
+          "https://nvd.nist.gov/vuln/detail/CVE-2023-22490",
           "https://ubuntu.com/security/notices/USN-5871-1"
         ],
         "PublishedDate": "2023-02-14T20:15:00Z"
@@ -1599,12 +1601,12 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:7720",
+          "https://access.redhat.com/errata/RHSA-2022:8361",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
+          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
           "https://errata.rockylinux.org/RLSA-2022:8361",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
@@ -2235,12 +2237,12 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:7720",
+          "https://access.redhat.com/errata/RHSA-2022:8361",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
+          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
           "https://errata.rockylinux.org/RLSA-2022:8361",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
@@ -3125,12 +3127,12 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2023:0100",
+          "https://access.redhat.com/errata/RHSA-2023:0336",
           "https://access.redhat.com/security/cve/CVE-2022-3821",
           "https://bugzilla.redhat.com/2139327",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
-          "https://errata.almalinux.org/8/ALSA-2023-0100.html",
+          "https://errata.almalinux.org/9/ALSA-2023-0336.html",
           "https://errata.rockylinux.org/RLSA-2023:0336",
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
@@ -3287,12 +3289,12 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2023:0100",
+          "https://access.redhat.com/errata/RHSA-2023:0336",
           "https://access.redhat.com/security/cve/CVE-2022-3821",
           "https://bugzilla.redhat.com/2139327",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
-          "https://errata.almalinux.org/8/ALSA-2023-0100.html",
+          "https://errata.almalinux.org/9/ALSA-2023-0336.html",
           "https://errata.rockylinux.org/RLSA-2023:0336",
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
@@ -4075,13 +4077,13 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2023:0110",
+          "https://access.redhat.com/errata/RHSA-2023:0339",
           "https://access.redhat.com/security/cve/CVE-2022-35737",
           "https://blog.trailofbits.com/2022/10/25/sqlite-vulnerability-july-2022-library-api/",
           "https://bugzilla.redhat.com/2110291",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2110291",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-35737",
-          "https://errata.almalinux.org/8/ALSA-2023-0110.html",
+          "https://errata.almalinux.org/9/ALSA-2023-0339.html",
           "https://errata.rockylinux.org/RLSA-2023:0339",
           "https://github.com/advisories/GHSA-jw36-hf63-69r9",
           "https://kb.cert.org/vuls/id/720344",
@@ -4132,12 +4134,12 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:7720",
+          "https://access.redhat.com/errata/RHSA-2022:8361",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
+          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
           "https://errata.rockylinux.org/RLSA-2022:8361",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
@@ -4252,12 +4254,12 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2023:0100",
+          "https://access.redhat.com/errata/RHSA-2023:0336",
           "https://access.redhat.com/security/cve/CVE-2022-3821",
           "https://bugzilla.redhat.com/2139327",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
-          "https://errata.almalinux.org/8/ALSA-2023-0100.html",
+          "https://errata.almalinux.org/9/ALSA-2023-0336.html",
           "https://errata.rockylinux.org/RLSA-2023:0336",
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
@@ -4458,12 +4460,12 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2023:0100",
+          "https://access.redhat.com/errata/RHSA-2023:0336",
           "https://access.redhat.com/security/cve/CVE-2022-3821",
           "https://bugzilla.redhat.com/2139327",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
-          "https://errata.almalinux.org/8/ALSA-2023-0100.html",
+          "https://errata.almalinux.org/9/ALSA-2023-0336.html",
           "https://errata.rockylinux.org/RLSA-2023:0336",
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
@@ -4816,12 +4818,12 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2022:7720",
+          "https://access.redhat.com/errata/RHSA-2022:8361",
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
-          "https://errata.almalinux.org/8/ALSA-2022-7720.html",
+          "https://errata.almalinux.org/9/ALSA-2022-8361.html",
           "https://errata.rockylinux.org/RLSA-2022:8361",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
@@ -6842,12 +6844,12 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2023:0100",
+          "https://access.redhat.com/errata/RHSA-2023:0336",
           "https://access.redhat.com/security/cve/CVE-2022-3821",
           "https://bugzilla.redhat.com/2139327",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
-          "https://errata.almalinux.org/8/ALSA-2023-0100.html",
+          "https://errata.almalinux.org/9/ALSA-2023-0336.html",
           "https://errata.rockylinux.org/RLSA-2023:0336",
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
@@ -7004,12 +7006,12 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2023:0100",
+          "https://access.redhat.com/errata/RHSA-2023:0336",
           "https://access.redhat.com/security/cve/CVE-2022-3821",
           "https://bugzilla.redhat.com/2139327",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
-          "https://errata.almalinux.org/8/ALSA-2023-0100.html",
+          "https://errata.almalinux.org/9/ALSA-2023-0336.html",
           "https://errata.rockylinux.org/RLSA-2023:0336",
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
@@ -7166,12 +7168,12 @@
           }
         },
         "References": [
-          "https://access.redhat.com/errata/RHSA-2023:0100",
+          "https://access.redhat.com/errata/RHSA-2023:0336",
           "https://access.redhat.com/security/cve/CVE-2022-3821",
           "https://bugzilla.redhat.com/2139327",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2139327",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-3821",
-          "https://errata.almalinux.org/8/ALSA-2023-0100.html",
+          "https://errata.almalinux.org/9/ALSA-2023-0336.html",
           "https://errata.rockylinux.org/RLSA-2023:0336",
           "https://github.com/systemd/systemd/commit/9102c625a673a3246d7e73d8737f3494446bad4e",
           "https://github.com/systemd/systemd/issues/23928",
