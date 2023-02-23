@@ -255,11 +255,9 @@ class ApplicationSaas(ApplicationBase):
         api_secret_key: str,
     ) -> "ApplicationSaas":
         async with dashboard.AsyncDashboardSaasClient() as client:
-            headers: dict[str, str]
             resp = await client.post(
                 "/engine/applications",
                 json={"token": f"{api_access_key}{api_secret_key}"},
-                headers=headers,
             )
             data = typing.cast(ApplicationDashboardJSON, resp.json())
             return cls(
