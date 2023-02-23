@@ -764,17 +764,27 @@ class Processor:
         sources: list[context.T_PayloadEventSource],
     ) -> None:
         for source in sources:
-            if "timestamp" in source:
-                statsd.histogram(
-                    "engine.buckets.events.latency",
-                    (
-                        date.utcnow() - date.fromisoformat(source["timestamp"])
-                    ).total_seconds(),
-                    tags=[
-                        f"worker_id:{self.worker_id}",
-                        f"priority:{bucket.priority.name}",
-                    ],
+            if "timestamp" not in source:
+                continue
+
+            if "initial_score" in source:
+                priority = worker_pusher.get_priority_level_from_score(
+                    source["initial_score"]
                 )
+            else:
+                # backward compat <= 7.2.1
+                priority = bucket.priority
+
+            statsd.histogram(
+                "engine.buckets.events.latency",
+                (
+                    date.utcnow() - date.fromisoformat(source["timestamp"])
+                ).total_seconds(),
+                tags=[
+                    f"worker_id:{self.worker_id}",
+                    f"priority:{priority.name}",
+                ],
+            )
 
         logger = daiquiri.getLogger(
             __name__,

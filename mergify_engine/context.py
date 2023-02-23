@@ -90,6 +90,7 @@ class T_PayloadEventSource(typing.TypedDict):
     event_type: github_types.GitHubEventType
     data: github_types.GitHubEvent
     timestamp: str
+    initial_score: float
 
 
 @dataclasses.dataclass

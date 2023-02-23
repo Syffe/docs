@@ -304,16 +304,19 @@ async def test_worker_legacy_push(
                     "event_type": "pull_request",
                     "data": {"payload": 0},
                     "timestamp": mock.ANY,
+                    "initial_score": mock.ANY,
                 },
                 {
                     "event_type": "pull_request",
                     "data": {"payload": 1},
                     "timestamp": mock.ANY,
+                    "initial_score": mock.ANY,
                 },
                 {
                     "event_type": "pull_request",
                     "data": {"payload": 2},
                     "timestamp": mock.ANY,
+                    "initial_score": mock.ANY,
                 },
             ],
         )
@@ -390,16 +393,19 @@ async def test_worker_with_waiting_tasks(
                     "event_type": "pull_request",
                     "data": {"payload": 0},
                     "timestamp": mock.ANY,
+                    "initial_score": mock.ANY,
                 },
                 {
                     "event_type": "pull_request",
                     "data": {"payload": 1},
                     "timestamp": mock.ANY,
+                    "initial_score": mock.ANY,
                 },
                 {
                     "event_type": "pull_request",
                     "data": {"payload": 2},
                     "timestamp": mock.ANY,
+                    "initial_score": mock.ANY,
                 },
             ],
         )
@@ -502,16 +508,19 @@ async def test_worker_expanded_events(
                 "event_type": "pull_request",
                 "data": {"payload": "whatever"},
                 "timestamp": mock.ANY,
+                "initial_score": mock.ANY,
             },
             {
                 "event_type": "push",
                 "data": {"payload": "foobar"},
                 "timestamp": mock.ANY,
+                "initial_score": mock.ANY,
             },
             {
                 "event_type": "check_run",
                 "data": {"payload": "foobar"},
                 "timestamp": mock.ANY,
+                "initial_score": mock.ANY,
             },
         ],
     )
@@ -525,11 +534,13 @@ async def test_worker_expanded_events(
                 "event_type": "push",
                 "data": {"payload": "foobar"},
                 "timestamp": mock.ANY,
+                "initial_score": mock.ANY,
             },
             {
                 "event_type": "check_run",
                 "data": {"payload": "foobar"},
                 "timestamp": mock.ANY,
+                "initial_score": mock.ANY,
             },
         ],
     )
@@ -543,6 +554,7 @@ async def test_worker_expanded_events(
                 "event_type": "push",
                 "data": {"payload": "foobar"},
                 "timestamp": mock.ANY,
+                "initial_score": mock.ANY,
             },
         ],
     )
@@ -610,11 +622,13 @@ async def test_worker_with_one_task(
                 "event_type": "pull_request",
                 "data": {"payload": "whatever"},
                 "timestamp": mock.ANY,
+                "initial_score": mock.ANY,
             },
             {
                 "event_type": "issue_comment",
                 "data": {"payload": "foobar"},
                 "timestamp": mock.ANY,
+                "initial_score": mock.ANY,
             },
         ],
     )
@@ -705,11 +719,13 @@ async def test_consume_good_stream(
                 "event_type": "pull_request",
                 "data": {"payload": "whatever"},
                 "timestamp": mock.ANY,
+                "initial_score": mock.ANY,
             },
             {
                 "event_type": "issue_comment",
                 "data": {"payload": "foobar"},
                 "timestamp": mock.ANY,
+                "initial_score": mock.ANY,
             },
         ],
     )
@@ -883,6 +899,7 @@ async def test_stream_processor_retrying_pull(
                     "event_type": "pull_request",
                     "data": {"payload": "whatever"},
                     "timestamp": mock.ANY,
+                    "initial_score": mock.ANY,
                 },
             ],
         ),
@@ -896,6 +913,7 @@ async def test_stream_processor_retrying_pull(
                     "event_type": "issue_comment",
                     "data": {"payload": "foobar"},
                     "timestamp": mock.ANY,
+                    "initial_score": mock.ANY,
                 },
             ],
         ),
@@ -1059,11 +1077,13 @@ async def test_stream_processor_retrying_stream_recovered(
                     "event_type": "pull_request",
                     "data": {"payload": "whatever"},
                     "timestamp": mock.ANY,
+                    "initial_score": mock.ANY,
                 },
                 {
                     "event_type": "issue_comment",
                     "data": {"payload": "foobar"},
                     "timestamp": mock.ANY,
+                    "initial_score": mock.ANY,
                 },
             ],
         )
@@ -1174,11 +1194,13 @@ async def test_stream_processor_retrying_stream_failure(
                     "event_type": "pull_request",
                     "data": {"payload": "whatever"},
                     "timestamp": mock.ANY,
+                    "initial_score": mock.ANY,
                 },
                 {
                     "event_type": "issue_comment",
                     "data": {"payload": "foobar"},
                     "timestamp": mock.ANY,
+                    "initial_score": mock.ANY,
                 },
             ],
         )

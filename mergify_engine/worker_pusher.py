@@ -175,13 +175,7 @@ async def push(
             }
         )
         now = date.utcnow()
-        event = msgpack.packb(
-            {
-                "event_type": event_type,
-                "data": data,
-                "timestamp": now.isoformat(),
-            },
-        )
+
         scheduled_at = now + datetime.timedelta(seconds=WORKER_PROCESSING_DELAY)
 
         # NOTE(sileht): lower timestamps are processed first
@@ -196,6 +190,14 @@ async def push(
                 delay = constants.NORMAL_DELAY_BETWEEN_SAME_PULL_REQUEST
             score = get_priority_score(priority, delay)
 
+        event = msgpack.packb(
+            {
+                "event_type": event_type,
+                "data": data,
+                "timestamp": now.isoformat(),
+                "initial_score": float(score),
+            },
+        )
         bucket_org_key = stream_lua.BucketOrgKeyType(f"bucket~{owner_id}")
         bucket_sources_key = stream_lua.BucketSourcesKeyType(
             f"bucket-sources~{repo_id}~{pull_number or 0}"

@@ -1164,6 +1164,7 @@ async def test_reviews_filtering(
                 "timestamp": github_types.ISODateTimeType(
                     "2022-07-26T14:14:14.000000+00:00"
                 ),
+                "initial_score": 0,
             }
         ),
     ]
