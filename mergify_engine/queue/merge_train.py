@@ -910,7 +910,7 @@ class TrainCar:
                     ),
                     tmp_ctxt,
                 )
-                for ep in self.still_queued_embarked_pulls
+                for ep in self.initial_embarked_pulls
             ]
         elif self.train_car_state.checks_type == TrainCarChecksType.FAILED:
             # Will be splitted or dropped soon
@@ -920,7 +920,7 @@ class TrainCar:
                         ep.user_pull_request_number
                     )
                 ).pull_request
-                for ep in self.still_queued_embarked_pulls
+                for ep in self.initial_embarked_pulls
             ]
         else:
             raise RuntimeError(
@@ -1750,8 +1750,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             checked_ctxt.log.info(
                 "train will be reset",
                 gh_pull_queued=[
-                    ep.user_pull_request_number
-                    for ep in self.still_queued_embarked_pulls
+                    ep.user_pull_request_number for ep in self.initial_embarked_pulls
                 ],
                 unexpected_changes=unexpected_changes,
             )
@@ -2370,6 +2369,9 @@ You don't need to do anything. Mergify will close this pull request automaticall
             checks_copy_summary={check.name: check.state for check in self.last_checks},
             still_embarked_pull_numbers=[
                 ep.user_pull_request_number for ep in self.still_queued_embarked_pulls
+            ],
+            initial_embarked_pull_numbers=[
+                ep.user_pull_request_number for ep in self.initial_embarked_pulls
             ],
         )
 
