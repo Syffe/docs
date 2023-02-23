@@ -14,15 +14,10 @@ LOG = daiquiri.getLogger(__name__)
 class ApplicationResponse:
     id: int
     name: str
-    account_scope: application_mod.ApplicationAccountScope | None
+    account_scope: application_mod.ApplicationAccountScope
 
 
-router = fastapi.APIRouter(
-    tags=["applications"],
-    dependencies=[
-        fastapi.Depends(security.get_application),
-    ],
-)
+router = fastapi.APIRouter(tags=["applications"])
 
 
 @router.get(
@@ -51,7 +46,7 @@ router = fastapi.APIRouter(
 )
 async def application(
     application: application_mod.Application = fastapi.Security(  # noqa: B008
-        security.get_application
+        security.get_application_without_scope_verification
     ),
 ) -> ApplicationResponse:
     return ApplicationResponse(

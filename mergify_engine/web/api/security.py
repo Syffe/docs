@@ -31,6 +31,23 @@ class HttpAuth(typing.NamedTuple):
 
 
 class ApplicationAuth(fastapi.security.http.HTTPBearer):
+    def __init__(
+        self,
+        *,
+        bearerFormat: str | None = None,
+        scheme_name: str | None = None,
+        description: str | None = None,
+        auto_error: bool = True,
+        verify_scope: bool = True,
+    ):
+        self.verify_scope = verify_scope
+        super().__init__(
+            bearerFormat=bearerFormat,
+            scheme_name=scheme_name,
+            description=description,
+            auto_error=auto_error,
+        )
+
     async def __call__(  # type: ignore[override]
         self,
         request: fastapi.Request,
@@ -46,12 +63,11 @@ class ApplicationAuth(fastapi.security.http.HTTPBearer):
             else:
                 return None
 
-        scope: github_types.GitHubLogin | None = request.path_params.get("owner")
         api_access_key = credentials.credentials[: config.API_ACCESS_KEY_LEN]
         api_secret_key = credentials.credentials[config.API_ACCESS_KEY_LEN :]
         try:
             app = await application_mod.Application.get(
-                redis_links.cache, api_access_key, api_secret_key, scope
+                redis_links.cache, api_access_key, api_secret_key
             )
         except application_mod.ApplicationUserNotFound:
             if self.auto_error:
@@ -59,26 +75,24 @@ class ApplicationAuth(fastapi.security.http.HTTPBearer):
             else:
                 return None
 
-        # Seatbelt
-        current_scope = (
-            None if app.account_scope is None else app.account_scope["login"]
-        )
-        if scope is not None and (
-            current_scope is None or current_scope.lower() != scope.lower()
-        ):
-            LOG.error(
-                "got application with wrong scope",
-                expected_scope=scope,
-                current_scope=current_scope,
-            )
-            if self.auto_error:
-                raise fastapi.HTTPException(status_code=403)
-            else:
-                return None
+        if self.verify_scope:
+            scope: github_types.GitHubLogin | None = request.path_params.get("owner")
+            if scope is None:
+                raise RuntimeError(
+                    "verify_scope is true, but url doesn't have owner variable"
+                )
+            # Seatbelt
+            if app.account_scope["login"].lower() != scope.lower():
+                if self.auto_error:
+                    raise fastapi.HTTPException(status_code=403)
+                else:
+                    return None
+
         return app
 
 
 get_application = ApplicationAuth()
+get_application_without_scope_verification = ApplicationAuth(verify_scope=False)
 get_optional_application = ApplicationAuth(auto_error=False)
 
 

@@ -203,7 +203,6 @@ async def dashboard(
         redis_cache: redis_utils.RedisCache,
         api_access_key: str,
         api_secret_key: str,
-        account_scope: str,
     ) -> application_mod.Application:
         if (
             api_access_key == api_key_admin[:32]

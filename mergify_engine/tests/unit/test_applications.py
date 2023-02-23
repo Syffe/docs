@@ -22,15 +22,6 @@ async def test_init(redis_cache: redis_utils.RedisCache) -> None:
         },
     )
 
-    application.Application(
-        redis_cache,
-        0,
-        "app name",
-        "api_access_key",
-        "api_secret_key",
-        None,
-    )
-
 
 async def test_save_apikey_scoped(redis_cache: redis_utils.RedisCache) -> None:
     api_access_key = "a" * 32
@@ -48,32 +39,24 @@ async def test_save_apikey_scoped(redis_cache: redis_utils.RedisCache) -> None:
 
     await app.save_to_cache()
     rapp = await application.Application._retrieve_from_cache(
-        redis_cache, api_access_key, api_secret_key, account_login
+        redis_cache, api_access_key, api_secret_key
     )
     assert app == rapp
-
-    # wrong scope
-    app_saas = await application.Application._retrieve_from_cache(
-        redis_cache,
-        api_access_key,
-        api_secret_key,
-        github_types.GitHubLogin("another login"),
-    )
-    assert app_saas is None
-    app_saas = await application.Application._retrieve_from_cache(
-        redis_cache,
-        api_access_key,
-        api_secret_key,
-        None,
-    )
-    assert app_saas is None
 
 
 async def test_save_apikey_unscoped(redis_cache: redis_utils.RedisCache) -> None:
     api_access_key = "a" * 32
     api_secret_key = "s" * 32
     app = application.Application(
-        redis_cache, 0, "app name", api_access_key, api_secret_key, None
+        redis_cache,
+        0,
+        "app name",
+        api_access_key,
+        api_secret_key,
+        {
+            "id": github_types.GitHubAccountIdType(12345),
+            "login": github_types.GitHubLogin("login"),
+        },
     )
 
     await app.save_to_cache()
@@ -81,18 +64,8 @@ async def test_save_apikey_unscoped(redis_cache: redis_utils.RedisCache) -> None
         redis_cache,
         api_access_key,
         api_secret_key,
-        None,
     )
     assert app == rapp
-
-    # wrong scope
-    app_saas = await application.Application._retrieve_from_cache(
-        redis_cache,
-        api_access_key,
-        api_secret_key,
-        github_types.GitHubLogin("login"),
-    )
-    assert app_saas is None
 
 
 async def test_update_apikey(redis_cache: redis_utils.RedisCache) -> None:
@@ -112,7 +85,7 @@ async def test_update_apikey(redis_cache: redis_utils.RedisCache) -> None:
 
     await app.save_to_cache()
     rapp = await application.Application._retrieve_from_cache(
-        redis_cache, api_access_key, api_secret_key, account_login
+        redis_cache, api_access_key, api_secret_key
     )
     assert app == rapp
 
@@ -133,7 +106,7 @@ async def test_update_apikey(redis_cache: redis_utils.RedisCache) -> None:
         ),
     )
     rapp = await application.Application._retrieve_from_cache(
-        redis_cache, api_access_key, api_secret_key, account_login
+        redis_cache, api_access_key, api_secret_key
     )
     expected_app = application.Application(
         redis_cache,
@@ -174,16 +147,14 @@ async def test_application_db_unavailable(
         "boom!", response=mock.Mock(), request=mock.Mock()
     )
     with pytest.raises(http.HTTPServiceUnavailable):
-        await application.Application.get(
-            redis_cache, api_access_key, api_secret_key, account_login
-        )
+        await application.Application.get(redis_cache, api_access_key, api_secret_key)
         retrieve_from_db_mock.assert_called_once()
 
     # no cache, bapp db -> got db app
     retrieve_from_db_mock.reset_mock()
     retrieve_from_db_mock.side_effect = None
     rapp = await application.Application.get(
-        redis_cache, api_access_key, api_secret_key, account_login
+        redis_cache, api_access_key, api_secret_key
     )
     assert app == rapp
     retrieve_from_db_mock.assert_called_once()
@@ -191,7 +162,7 @@ async def test_application_db_unavailable(
     # cache not expired and not db -> got cached  app
     retrieve_from_db_mock.reset_mock()
     rapp = await application.Application.get(
-        redis_cache, api_access_key, api_secret_key, account_login
+        redis_cache, api_access_key, api_secret_key
     )
     app.ttl = 259200
     assert rapp == app
@@ -202,9 +173,9 @@ async def test_application_db_unavailable(
     retrieve_from_db_mock.side_effect = http.HTTPServiceUnavailable(
         "boom!", response=mock.Mock(), request=mock.Mock()
     )
-    await redis_cache.expire(f"api-key-cache~{api_access_key}~{account_login}", 7200)
+    await redis_cache.expire(f"api-key-cache~{api_access_key}", 7200)
     rapp = await application.Application.get(
-        redis_cache, api_access_key, api_secret_key, account_login
+        redis_cache, api_access_key, api_secret_key
     )
     app.ttl = 7200
     assert rapp == app
@@ -213,17 +184,15 @@ async def test_application_db_unavailable(
     # cache expired and unexpected db issue -> reraise
     retrieve_from_db_mock.reset_mock()
     retrieve_from_db_mock.side_effect = Exception("WTF")
-    await redis_cache.expire(f"api-key-cache~{api_access_key}~{account_login}", 7200)
+    await redis_cache.expire(f"api-key-cache~{api_access_key}", 7200)
     with pytest.raises(Exception, match="WTF"):
-        await application.Application.get(
-            redis_cache, api_access_key, api_secret_key, account_login
-        )
+        await application.Application.get(redis_cache, api_access_key, api_secret_key)
     retrieve_from_db_mock.assert_called_once()
 
 
 async def test_unknown_app(redis_cache: redis_utils.RedisCache) -> None:
     app = await application.Application._retrieve_from_cache(
-        redis_cache, "whatever", "secret", None
+        redis_cache, "whatever", "secret"
     )
     assert app is None
 
@@ -243,12 +212,12 @@ async def test_application_tokens_via_env(
 
     with pytest.raises(application.ApplicationUserNotFound):
         await application.ApplicationOnPremise.get(
-            redis_cache, api_access_key1, api_secret_key1, None
+            redis_cache, api_access_key1, api_secret_key1
         )
 
     with pytest.raises(application.ApplicationUserNotFound):
         await application.ApplicationOnPremise.get(
-            redis_cache, api_access_key2, api_secret_key2, None
+            redis_cache, api_access_key2, api_secret_key2
         )
 
     monkeypatch.setattr(
@@ -260,35 +229,25 @@ async def test_application_tokens_via_env(
     )
 
     app = await application.ApplicationOnPremise.get(
-        redis_cache, api_access_key1, api_secret_key1, account_login1
+        redis_cache, api_access_key1, api_secret_key1
     )
     assert app.account_scope is not None
     assert app.account_scope["id"] == account_id1
 
     app = await application.ApplicationOnPremise.get(
-        redis_cache, api_access_key2, api_secret_key2, account_login2
+        redis_cache, api_access_key2, api_secret_key2
     )
     assert app.account_scope is not None
     assert app.account_scope["id"] == account_id2
 
     app = await application.ApplicationOnPremise.get(
-        redis_cache, api_access_key1, api_secret_key1, None
+        redis_cache, api_access_key1, api_secret_key1
     )
     assert app.account_scope is not None
     assert app.account_scope["id"] == account_id1
 
     app = await application.ApplicationOnPremise.get(
-        redis_cache, api_access_key2, api_secret_key2, None
+        redis_cache, api_access_key2, api_secret_key2
     )
     assert app.account_scope is not None
     assert app.account_scope["id"] == account_id2
-
-    # wrong scope
-    with pytest.raises(application.ApplicationUserNotFound):
-        await application.ApplicationOnPremise.get(
-            redis_cache, api_access_key1, api_secret_key1, account_login2
-        )
-    with pytest.raises(application.ApplicationUserNotFound):
-        await application.ApplicationOnPremise.get(
-            redis_cache, api_access_key2, api_secret_key2, account_login1
-        )
