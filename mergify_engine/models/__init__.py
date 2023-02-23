@@ -41,10 +41,12 @@ def init_sqlalchemy() -> None:
         raise RuntimeError("APP_STATE already initialized")
 
     # NOTE(sileht): Pool need to be adjusted with number of fastapi concurrent requests
-    # TODO(sileht): We may need to be able to configure a different pool size
-    # depending of the service (fastapi vs synack)
+    # the number of dyno and the Heroku postgres plan.
+    # Current setup:
+    # * one dyno
+    # * postgres standard/premium 0 plan that allows 120 connections max
     async_engine = sqlalchemy.ext.asyncio.create_async_engine(
-        get_async_database_url(), pool_size=16
+        get_async_database_url(), pool_size=100
     )
     APP_STATE = SQLAlchemyAppState(
         {
