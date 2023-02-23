@@ -153,6 +153,7 @@
         },
         "References": [
           "https://access.redhat.com/security/cve/CVE-2022-0563",
+          "https://blog.trailofbits.com/2023/02/16/suid-logic-bug-linux-readline/",
           "https://lore.kernel.org/util-linux/20220214110609.msiwlm457ngoic6w@ws.net.home/T/#u",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-0563",
           "https://security.netapp.com/advisory/ntap-20220331-0002/"
@@ -511,9 +512,10 @@
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2083621",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
           "https://errata.almalinux.org/9/ALSA-2022-8361.html",
-          "https://errata.rockylinux.org/RLSA-2022:8361",
+          "https://errata.rockylinux.org/RLSA-2022:7720",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -866,6 +868,7 @@
         },
         "References": [
           "https://access.redhat.com/security/cve/CVE-2022-0563",
+          "https://blog.trailofbits.com/2023/02/16/suid-logic-bug-linux-readline/",
           "https://lore.kernel.org/util-linux/20220214110609.msiwlm457ngoic6w@ws.net.home/T/#u",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-0563",
           "https://security.netapp.com/advisory/ntap-20220331-0002/"
@@ -1605,9 +1608,10 @@
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2083621",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
           "https://errata.almalinux.org/9/ALSA-2022-8361.html",
-          "https://errata.rockylinux.org/RLSA-2022:8361",
+          "https://errata.rockylinux.org/RLSA-2022:7720",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -2241,9 +2245,10 @@
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2083621",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
           "https://errata.almalinux.org/9/ALSA-2022-8361.html",
-          "https://errata.rockylinux.org/RLSA-2022:8361",
+          "https://errata.rockylinux.org/RLSA-2022:7720",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -3004,6 +3009,7 @@
         },
         "References": [
           "https://access.redhat.com/security/cve/CVE-2022-0563",
+          "https://blog.trailofbits.com/2023/02/16/suid-logic-bug-linux-readline/",
           "https://lore.kernel.org/util-linux/20220214110609.msiwlm457ngoic6w@ws.net.home/T/#u",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-0563",
           "https://security.netapp.com/advisory/ntap-20220331-0002/"
@@ -3170,8 +3176,17 @@
           }
         },
         "References": [
+          "https://access.redhat.com/errata/RHSA-2023:0837",
           "https://access.redhat.com/security/cve/CVE-2022-4415",
+          "https://bugzilla.redhat.com/2155515",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2155515",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2164049",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-4415",
+          "https://errata.almalinux.org/8/ALSA-2023-0837.html",
+          "https://errata.rockylinux.org/RLSA-2023:0837",
           "https://github.com/systemd/systemd/commit/b7641425659243c09473cd8fb3aef2c0d4a3eb9c",
+          "https://linux.oracle.com/cve/CVE-2022-4415.html",
+          "https://linux.oracle.com/errata/ELSA-2023-0837.html",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-4415",
           "https://www.openwall.com/lists/oss-security/2022/12/21/3"
         ],
@@ -3332,8 +3347,17 @@
           }
         },
         "References": [
+          "https://access.redhat.com/errata/RHSA-2023:0837",
           "https://access.redhat.com/security/cve/CVE-2022-4415",
+          "https://bugzilla.redhat.com/2155515",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2155515",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2164049",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-4415",
+          "https://errata.almalinux.org/8/ALSA-2023-0837.html",
+          "https://errata.rockylinux.org/RLSA-2023:0837",
           "https://github.com/systemd/systemd/commit/b7641425659243c09473cd8fb3aef2c0d4a3eb9c",
+          "https://linux.oracle.com/cve/CVE-2022-4415.html",
+          "https://linux.oracle.com/errata/ELSA-2023-0837.html",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-4415",
           "https://www.openwall.com/lists/oss-security/2022/12/21/3"
         ],
@@ -3958,6 +3982,7 @@
         },
         "References": [
           "https://access.redhat.com/security/cve/CVE-2022-0563",
+          "https://blog.trailofbits.com/2023/02/16/suid-logic-bug-linux-readline/",
           "https://lore.kernel.org/util-linux/20220214110609.msiwlm457ngoic6w@ws.net.home/T/#u",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-0563",
           "https://security.netapp.com/advisory/ntap-20220331-0002/"
@@ -4084,7 +4109,7 @@
           "https://bugzilla.redhat.com/show_bug.cgi?id=2110291",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-35737",
           "https://errata.almalinux.org/9/ALSA-2023-0339.html",
-          "https://errata.rockylinux.org/RLSA-2023:0339",
+          "https://errata.rockylinux.org/RLSA-2023:0110",
           "https://github.com/advisories/GHSA-jw36-hf63-69r9",
           "https://kb.cert.org/vuls/id/720344",
           "https://linux.oracle.com/cve/CVE-2022-35737.html",
@@ -4138,9 +4163,10 @@
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2083621",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
           "https://errata.almalinux.org/9/ALSA-2022-8361.html",
-          "https://errata.rockylinux.org/RLSA-2022:8361",
+          "https://errata.rockylinux.org/RLSA-2022:7720",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -4297,8 +4323,17 @@
           }
         },
         "References": [
+          "https://access.redhat.com/errata/RHSA-2023:0837",
           "https://access.redhat.com/security/cve/CVE-2022-4415",
+          "https://bugzilla.redhat.com/2155515",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2155515",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2164049",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-4415",
+          "https://errata.almalinux.org/8/ALSA-2023-0837.html",
+          "https://errata.rockylinux.org/RLSA-2023:0837",
           "https://github.com/systemd/systemd/commit/b7641425659243c09473cd8fb3aef2c0d4a3eb9c",
+          "https://linux.oracle.com/cve/CVE-2022-4415.html",
+          "https://linux.oracle.com/errata/ELSA-2023-0837.html",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-4415",
           "https://www.openwall.com/lists/oss-security/2022/12/21/3"
         ],
@@ -4503,8 +4538,17 @@
           }
         },
         "References": [
+          "https://access.redhat.com/errata/RHSA-2023:0837",
           "https://access.redhat.com/security/cve/CVE-2022-4415",
+          "https://bugzilla.redhat.com/2155515",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2155515",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2164049",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-4415",
+          "https://errata.almalinux.org/8/ALSA-2023-0837.html",
+          "https://errata.rockylinux.org/RLSA-2023:0837",
           "https://github.com/systemd/systemd/commit/b7641425659243c09473cd8fb3aef2c0d4a3eb9c",
+          "https://linux.oracle.com/cve/CVE-2022-4415.html",
+          "https://linux.oracle.com/errata/ELSA-2023-0837.html",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-4415",
           "https://www.openwall.com/lists/oss-security/2022/12/21/3"
         ],
@@ -4625,6 +4669,7 @@
         },
         "References": [
           "https://access.redhat.com/security/cve/CVE-2022-0563",
+          "https://blog.trailofbits.com/2023/02/16/suid-logic-bug-linux-readline/",
           "https://lore.kernel.org/util-linux/20220214110609.msiwlm457ngoic6w@ws.net.home/T/#u",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-0563",
           "https://security.netapp.com/advisory/ntap-20220331-0002/"
@@ -4822,9 +4867,10 @@
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2083621",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
           "https://errata.almalinux.org/9/ALSA-2022-8361.html",
-          "https://errata.rockylinux.org/RLSA-2022:8361",
+          "https://errata.rockylinux.org/RLSA-2022:7720",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -4865,6 +4911,7 @@
         },
         "References": [
           "https://access.redhat.com/security/cve/CVE-2022-0563",
+          "https://blog.trailofbits.com/2023/02/16/suid-logic-bug-linux-readline/",
           "https://lore.kernel.org/util-linux/20220214110609.msiwlm457ngoic6w@ws.net.home/T/#u",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-0563",
           "https://security.netapp.com/advisory/ntap-20220331-0002/"
@@ -6887,8 +6934,17 @@
           }
         },
         "References": [
+          "https://access.redhat.com/errata/RHSA-2023:0837",
           "https://access.redhat.com/security/cve/CVE-2022-4415",
+          "https://bugzilla.redhat.com/2155515",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2155515",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2164049",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-4415",
+          "https://errata.almalinux.org/8/ALSA-2023-0837.html",
+          "https://errata.rockylinux.org/RLSA-2023:0837",
           "https://github.com/systemd/systemd/commit/b7641425659243c09473cd8fb3aef2c0d4a3eb9c",
+          "https://linux.oracle.com/cve/CVE-2022-4415.html",
+          "https://linux.oracle.com/errata/ELSA-2023-0837.html",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-4415",
           "https://www.openwall.com/lists/oss-security/2022/12/21/3"
         ],
@@ -7049,8 +7105,17 @@
           }
         },
         "References": [
+          "https://access.redhat.com/errata/RHSA-2023:0837",
           "https://access.redhat.com/security/cve/CVE-2022-4415",
+          "https://bugzilla.redhat.com/2155515",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2155515",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2164049",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-4415",
+          "https://errata.almalinux.org/8/ALSA-2023-0837.html",
+          "https://errata.rockylinux.org/RLSA-2023:0837",
           "https://github.com/systemd/systemd/commit/b7641425659243c09473cd8fb3aef2c0d4a3eb9c",
+          "https://linux.oracle.com/cve/CVE-2022-4415.html",
+          "https://linux.oracle.com/errata/ELSA-2023-0837.html",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-4415",
           "https://www.openwall.com/lists/oss-security/2022/12/21/3"
         ],
@@ -7211,8 +7276,17 @@
           }
         },
         "References": [
+          "https://access.redhat.com/errata/RHSA-2023:0837",
           "https://access.redhat.com/security/cve/CVE-2022-4415",
+          "https://bugzilla.redhat.com/2155515",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2155515",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2164049",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-4415",
+          "https://errata.almalinux.org/8/ALSA-2023-0837.html",
+          "https://errata.rockylinux.org/RLSA-2023:0837",
           "https://github.com/systemd/systemd/commit/b7641425659243c09473cd8fb3aef2c0d4a3eb9c",
+          "https://linux.oracle.com/cve/CVE-2022-4415.html",
+          "https://linux.oracle.com/errata/ELSA-2023-0837.html",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-4415",
           "https://www.openwall.com/lists/oss-security/2022/12/21/3"
         ],
@@ -7362,7 +7436,15 @@
           }
         },
         "References": [
+          "https://access.redhat.com/errata/RHSA-2023:0842",
           "https://access.redhat.com/security/cve/CVE-2022-48303",
+          "https://bugzilla.redhat.com/2149722",
+          "https://bugzilla.redhat.com/show_bug.cgi?id=2149722",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-48303",
+          "https://errata.almalinux.org/8/ALSA-2023-0842.html",
+          "https://errata.rockylinux.org/RLSA-2023:0842",
+          "https://linux.oracle.com/cve/CVE-2022-48303.html",
+          "https://linux.oracle.com/errata/ELSA-2023-0842.html",
           "https://savannah.gnu.org/bugs/?62387",
           "https://savannah.gnu.org/patch/?10307"
         ],
@@ -7400,6 +7482,7 @@
         },
         "References": [
           "https://access.redhat.com/security/cve/CVE-2022-0563",
+          "https://blog.trailofbits.com/2023/02/16/suid-logic-bug-linux-readline/",
           "https://lore.kernel.org/util-linux/20220214110609.msiwlm457ngoic6w@ws.net.home/T/#u",
           "https://nvd.nist.gov/vuln/detail/CVE-2022-0563",
           "https://security.netapp.com/advisory/ntap-20220331-0002/"
