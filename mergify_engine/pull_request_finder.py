@@ -86,10 +86,10 @@ class PullRequestFinder:
         repo_id: github_types.GitHubRepositoryIdType,
         sha: github_types.SHAType,
     ) -> set[github_types.GitHubPullRequestNumber]:
-        if "sha" not in self.sha_to_pull_numbers:
+        if sha not in self.sha_to_pull_numbers:
             await self._fetch_open_pull_requests(repo_id)
 
-        if "sha" not in self.sha_to_pull_numbers:
+        if sha not in self.sha_to_pull_numbers:
             self.sha_to_pull_numbers[sha] = set()
 
         return self.sha_to_pull_numbers[sha]

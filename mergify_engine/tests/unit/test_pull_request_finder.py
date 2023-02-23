@@ -8,10 +8,12 @@ from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import pull_request_finder
 from mergify_engine import redis_utils
+from mergify_engine.tests.unit import conftest
 
 
-async def _do_test_event_to_pull_check_run(
+async def _do_test_event_to_pull(
     redis_links: redis_utils.RedisLinks,
+    event_type: github_types.GitHubEventType,
     filename: str,
     expected_pulls: set[github_types.GitHubPullRequestNumber],
 ) -> None:
@@ -51,7 +53,7 @@ async def _do_test_event_to_pull_check_run(
         github_types.GitHubRepositoryIdType(
             130312164,
         ),
-        "check_run",
+        event_type,
         data,
     )
     assert pulls == expected_pulls
@@ -60,8 +62,9 @@ async def _do_test_event_to_pull_check_run(
 async def test_event_to_pull_check_run_forked_repo(
     redis_links: redis_utils.RedisLinks,
 ) -> None:
-    await _do_test_event_to_pull_check_run(
+    await _do_test_event_to_pull(
         redis_links,
+        "check_run",
         "check_run.event_from_forked_repo.json",
         typing.cast(set[github_types.GitHubPullRequestNumber], set()),
     )
@@ -70,8 +73,32 @@ async def test_event_to_pull_check_run_forked_repo(
 async def test_event_to_pull_check_run_same_repo(
     redis_links: redis_utils.RedisLinks,
 ) -> None:
-    await _do_test_event_to_pull_check_run(
+    await _do_test_event_to_pull(
         redis_links,
+        "check_run",
         "check_run.event_from_same_repo.json",
+        {github_types.GitHubPullRequestNumber(409)},
+    )
+
+
+async def test_event_status(
+    redis_links: redis_utils.RedisLinks, context_getter: conftest.ContextGetterFixture
+) -> None:
+    await _do_test_event_to_pull(redis_links, "status", "status.json", set())
+
+    ctxt = await context_getter(409)
+    ctxt.pull["head"]["sha"] = github_types.SHAType(
+        "dcdb7375b887ab3094eb6c1555f26c7090809c89"
+    )
+
+    ctxt.pull["base"]["repo"]["id"] = github_types.GitHubRepositoryIdType(
+        130312164,
+    )
+    await pull_request_finder.PullRequestFinder.sync(redis_links.cache, ctxt.pull)
+
+    await _do_test_event_to_pull(
+        redis_links,
+        "status",
+        "status.json",
         {github_types.GitHubPullRequestNumber(409)},
     )
