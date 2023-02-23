@@ -159,6 +159,10 @@ class GitterRecorder(gitter.Gitter):
         prepared_args = [
             arg.replace(self.tmp, "/tmp/mergify-gitter<random>") for arg in args
         ]
+        if "user.signingkey" in prepared_args:
+            prepared_args = [
+                arg.replace(config.TESTING_ID_GPGKEY_SECRET, "<SECRET>") for arg in args
+            ]
         return prepared_args
 
     @staticmethod
