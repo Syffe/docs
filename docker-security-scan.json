@@ -512,10 +512,9 @@
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
-          "https://bugzilla.redhat.com/show_bug.cgi?id=2083621",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
           "https://errata.almalinux.org/9/ALSA-2022-8361.html",
-          "https://errata.rockylinux.org/RLSA-2022:7720",
+          "https://errata.rockylinux.org/RLSA-2022:8361",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -523,53 +522,6 @@
           "https://ubuntu.com/security/notices/USN-5464-1"
         ],
         "PublishedDate": "2022-04-14T21:15:00Z"
-      },
-      {
-        "VulnerabilityID": "CVE-2023-22490",
-        "PkgID": "git@1:2.39.1-0.1~bpo11+1",
-        "PkgName": "git",
-        "InstalledVersion": "1:2.39.1-0.1~bpo11+1",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-22490",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Title": "Git is a revision control system. Using a specially-crafted repository ...",
-        "Description": "Git is a revision control system. Using a specially-crafted repository, Git prior to versions 2.39.2, 2.38.4, 2.37.6, 2.36.5, 2.35.7, 2.34.7, 2.33.7, 2.32.6, 2.31.7, and 2.30.8 can be tricked into using its local clone optimization even when using a non-local transport. Though Git will abort local clones whose source `$GIT_DIR/objects` directory contains symbolic links, the `objects` directory itself may still be a symbolic link. These two may be combined to include arbitrary files based on known paths on the victim's filesystem within the malicious repository's working copy, allowing for data exfiltration in a similar manner as CVE-2022-39253. A fix has been prepared and will appear in v2.39.2 v2.38.4 v2.37.6 v2.36.5 v2.35.7 v2.34.7 v2.33.7 v2.32.6, v2.31.7 and v2.30.8. If upgrading is impractical, two short-term workarounds are available. Avoid cloning repositories from untrusted sources with `--recurse-submodules`. Instead, consider cloning repositories without recursively cloning their submodules, and instead run `git submodule update` at each layer. Before doing so, inspect each new `.gitmodules` file to ensure that it does not contain suspicious module URLs.",
-        "Severity": "MEDIUM",
-        "References": [
-          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-22490",
-          "https://github.com/git/git/commit/c867e4fa180bec4750e9b54eb10f459030dbebfd",
-          "https://github.com/git/git/security/advisories/GHSA-3wp6-j8xr-qw85",
-          "https://github.com/git/git/security/advisories/GHSA-gw92-x3fm-3g3q",
-          "https://nvd.nist.gov/vuln/detail/CVE-2023-22490",
-          "https://ubuntu.com/security/notices/USN-5871-1"
-        ],
-        "PublishedDate": "2023-02-14T20:15:00Z"
-      },
-      {
-        "VulnerabilityID": "CVE-2023-23946",
-        "PkgID": "git@1:2.39.1-0.1~bpo11+1",
-        "PkgName": "git",
-        "InstalledVersion": "1:2.39.1-0.1~bpo11+1",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-23946",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Title": "Git, a revision control system, is vulnerable to path traversal prior  ...",
-        "Description": "Git, a revision control system, is vulnerable to path traversal prior to versions 2.39.2, 2.38.4, 2.37.6, 2.36.5, 2.35.7, 2.34.7, 2.33.7, 2.32.6, 2.31.7, and 2.30.8. By feeding a crafted input to `git apply`, a path outside the working tree can be overwritten as the user who is running `git apply`. A fix has been prepared and will appear in v2.39.2, v2.38.4, v2.37.6, v2.36.5, v2.35.7, v2.34.7, v2.33.7, v2.32.6, v2.31.7, and v2.30.8. As a workaround, use `git apply --stat` to inspect a patch before applying; avoid applying one that creates a symbolic link and then creates a file beyond the symbolic link.",
-        "Severity": "MEDIUM",
-        "References": [
-          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-23946",
-          "https://github.com/git/git/commit/c867e4fa180bec4750e9b54eb10f459030dbebfd",
-          "https://github.com/git/git/security/advisories/GHSA-r87m-v37r-cwfh",
-          "https://nvd.nist.gov/vuln/detail/CVE-2023-23946",
-          "https://ubuntu.com/security/notices/USN-5871-1"
-        ],
-        "PublishedDate": "2023-02-14T20:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2018-1000021",
@@ -644,53 +596,6 @@
           "https://wwws.nightwatchcybersecurity.com/2022/02/11/gitbleed/"
         ],
         "PublishedDate": "2022-02-11T20:15:00Z"
-      },
-      {
-        "VulnerabilityID": "CVE-2023-22490",
-        "PkgID": "git-man@1:2.39.1-0.1~bpo11+1",
-        "PkgName": "git-man",
-        "InstalledVersion": "1:2.39.1-0.1~bpo11+1",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-22490",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Title": "Git is a revision control system. Using a specially-crafted repository ...",
-        "Description": "Git is a revision control system. Using a specially-crafted repository, Git prior to versions 2.39.2, 2.38.4, 2.37.6, 2.36.5, 2.35.7, 2.34.7, 2.33.7, 2.32.6, 2.31.7, and 2.30.8 can be tricked into using its local clone optimization even when using a non-local transport. Though Git will abort local clones whose source `$GIT_DIR/objects` directory contains symbolic links, the `objects` directory itself may still be a symbolic link. These two may be combined to include arbitrary files based on known paths on the victim's filesystem within the malicious repository's working copy, allowing for data exfiltration in a similar manner as CVE-2022-39253. A fix has been prepared and will appear in v2.39.2 v2.38.4 v2.37.6 v2.36.5 v2.35.7 v2.34.7 v2.33.7 v2.32.6, v2.31.7 and v2.30.8. If upgrading is impractical, two short-term workarounds are available. Avoid cloning repositories from untrusted sources with `--recurse-submodules`. Instead, consider cloning repositories without recursively cloning their submodules, and instead run `git submodule update` at each layer. Before doing so, inspect each new `.gitmodules` file to ensure that it does not contain suspicious module URLs.",
-        "Severity": "MEDIUM",
-        "References": [
-          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-22490",
-          "https://github.com/git/git/commit/c867e4fa180bec4750e9b54eb10f459030dbebfd",
-          "https://github.com/git/git/security/advisories/GHSA-3wp6-j8xr-qw85",
-          "https://github.com/git/git/security/advisories/GHSA-gw92-x3fm-3g3q",
-          "https://nvd.nist.gov/vuln/detail/CVE-2023-22490",
-          "https://ubuntu.com/security/notices/USN-5871-1"
-        ],
-        "PublishedDate": "2023-02-14T20:15:00Z"
-      },
-      {
-        "VulnerabilityID": "CVE-2023-23946",
-        "PkgID": "git-man@1:2.39.1-0.1~bpo11+1",
-        "PkgName": "git-man",
-        "InstalledVersion": "1:2.39.1-0.1~bpo11+1",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-23946",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Title": "Git, a revision control system, is vulnerable to path traversal prior  ...",
-        "Description": "Git, a revision control system, is vulnerable to path traversal prior to versions 2.39.2, 2.38.4, 2.37.6, 2.36.5, 2.35.7, 2.34.7, 2.33.7, 2.32.6, 2.31.7, and 2.30.8. By feeding a crafted input to `git apply`, a path outside the working tree can be overwritten as the user who is running `git apply`. A fix has been prepared and will appear in v2.39.2, v2.38.4, v2.37.6, v2.36.5, v2.35.7, v2.34.7, v2.33.7, v2.32.6, v2.31.7, and v2.30.8. As a workaround, use `git apply --stat` to inspect a patch before applying; avoid applying one that creates a symbolic link and then creates a file beyond the symbolic link.",
-        "Severity": "MEDIUM",
-        "References": [
-          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-23946",
-          "https://github.com/git/git/commit/c867e4fa180bec4750e9b54eb10f459030dbebfd",
-          "https://github.com/git/git/security/advisories/GHSA-r87m-v37r-cwfh",
-          "https://nvd.nist.gov/vuln/detail/CVE-2023-23946",
-          "https://ubuntu.com/security/notices/USN-5871-1"
-        ],
-        "PublishedDate": "2023-02-14T20:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2018-1000021",
@@ -1608,10 +1513,9 @@
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
-          "https://bugzilla.redhat.com/show_bug.cgi?id=2083621",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
           "https://errata.almalinux.org/9/ALSA-2022-8361.html",
-          "https://errata.rockylinux.org/RLSA-2022:7720",
+          "https://errata.rockylinux.org/RLSA-2022:8361",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -2245,10 +2149,9 @@
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
-          "https://bugzilla.redhat.com/show_bug.cgi?id=2083621",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
           "https://errata.almalinux.org/9/ALSA-2022-8361.html",
-          "https://errata.rockylinux.org/RLSA-2022:7720",
+          "https://errata.rockylinux.org/RLSA-2022:8361",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -4109,7 +4012,7 @@
           "https://bugzilla.redhat.com/show_bug.cgi?id=2110291",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-35737",
           "https://errata.almalinux.org/9/ALSA-2023-0339.html",
-          "https://errata.rockylinux.org/RLSA-2023:0110",
+          "https://errata.rockylinux.org/RLSA-2023:0339",
           "https://github.com/advisories/GHSA-jw36-hf63-69r9",
           "https://kb.cert.org/vuls/id/720344",
           "https://linux.oracle.com/cve/CVE-2022-35737.html",
@@ -4163,10 +4066,9 @@
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
-          "https://bugzilla.redhat.com/show_bug.cgi?id=2083621",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
           "https://errata.almalinux.org/9/ALSA-2022-8361.html",
-          "https://errata.rockylinux.org/RLSA-2022:7720",
+          "https://errata.rockylinux.org/RLSA-2022:8361",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
@@ -4867,10 +4769,9 @@
           "https://access.redhat.com/security/cve/CVE-2022-1304",
           "https://bugzilla.redhat.com/2069726",
           "https://bugzilla.redhat.com/show_bug.cgi?id=2069726",
-          "https://bugzilla.redhat.com/show_bug.cgi?id=2083621",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1304",
           "https://errata.almalinux.org/9/ALSA-2022-8361.html",
-          "https://errata.rockylinux.org/RLSA-2022:7720",
+          "https://errata.rockylinux.org/RLSA-2022:8361",
           "https://linux.oracle.com/cve/CVE-2022-1304.html",
           "https://linux.oracle.com/errata/ELSA-2022-8361.html",
           "https://marc.info/?l=linux-ext4&m=165056234501732&w=2",
