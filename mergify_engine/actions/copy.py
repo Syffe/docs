@@ -214,6 +214,13 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
 
         # check if job has finished
         if job.task is None or not job.task.done():
+            # NOTE(sileht): Program an automatic refresh in case of
+            # copy/backport is interrupted, to automatically restart it.
+            await delayed_refresh.plan_refresh_at_least_at(
+                self.ctxt.repository,
+                self.ctxt.pull["number"],
+                at=date.utcnow() + datetime.timedelta(minutes=3),
+            )
             return self._get_inprogress_copy_result(branch_name, job.id)
 
         assignees = await self._get_assignees()
