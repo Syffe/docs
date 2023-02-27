@@ -32,7 +32,6 @@ from mergify_engine.dashboard import user_tokens as user_tokens_mod
 
 
 RECORD = bool(os.getenv("MERGIFYENGINE_RECORD", False))
-RECORDING_IN_PARALLEL = bool(os.getenv("RECORD_PARALLEL", False))
 CASSETTE_LIBRARY_DIR_BASE = "zfixtures/cassettes"
 DEFAULT_SUBSCRIPTION_FEATURES = (subscription.Features.PUBLIC_REPOSITORY,)
 
@@ -572,7 +571,7 @@ def mock_asyncgithubclient_requests() -> abc.Generator[None, None, None]:
 
     mocks = []
 
-    if RECORDING_IN_PARALLEL:
+    if RECORD:
         real_post = github.AsyncGithubClient.post
 
         async def mocked_post(

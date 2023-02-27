@@ -50,7 +50,9 @@ from mergify_engine.worker import task
 
 LOG = daiquiri.getLogger(__name__)
 RECORD = bool(os.getenv("MERGIFYENGINE_RECORD", False))
-RECORDING_IN_PARALLEL = bool(os.getenv("RECORD_PARALLEL", False))
+RECORD_EVENTS_WAITING_TIME = int(
+    os.getenv("MERGIFYENGINE_RECORD_EVENTS_WAITING_TIME", 30)
+)
 FAKE_DATA = "whatdataisthat"
 FAKE_HMAC = utils.compute_hmac(FAKE_DATA.encode("utf8"), config.WEBHOOK_SECRET)
 
@@ -225,13 +227,13 @@ class EventReader:
         )
         r.raise_for_status()
 
-    EVENTS_POLLING_INTERVAL_SECONDS = 0.20
+    EVENTS_POLLING_INTERVAL_SECONDS = 0.20 if RECORD else 0
+    EVENTS_WAITING_TIME_SECONDS = RECORD_EVENTS_WAITING_TIME if RECORD else 2
 
     async def wait_for(
         self,
         event_type: github_types.GitHubEventType,
         expected_payload: typing.Any,
-        timeout: float = 15 if RECORD else 2,
         forward_to_engine: bool = True,
         test_id: str | None = None,
     ) -> github_types.GitHubEvent:
@@ -244,7 +246,8 @@ class EventReader:
         )
 
         started_at = time.monotonic()
-        while time.monotonic() - started_at < timeout:
+
+        while time.monotonic() - started_at < self.EVENTS_WAITING_TIME_SECONDS:
             try:
                 event = self._handled_events.get_nowait()
                 await self._process_event(event, forward_to_engine)
@@ -252,9 +255,7 @@ class EventReader:
                 for event in await self._get_events(test_id=test_id):
                     await self._handled_events.put(event)
                 else:
-                    await asyncio.sleep(
-                        self.EVENTS_POLLING_INTERVAL_SECONDS if RECORD else 0
-                    )
+                    await asyncio.sleep(self.EVENTS_POLLING_INTERVAL_SECONDS)
                 continue
 
             if event["type"] == event_type and self._match(
@@ -391,7 +392,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     # SUBSCRIPTION_ACTIVE = True
 
     WAIT_TIME_BEFORE_TEARDOWN = 0.20
-    WORKER_IDLE_SLEEP_TIME = 0.20
+    WORKER_IDLE_SLEEP_TIME = 0.20 if RECORD else 0.01
 
     # NOTE(Syffe): If too low (previously 0.02), this value can cause some tests using
     # delayed-refreshes to be flaky
@@ -607,12 +608,6 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     async def wait_for(
         self, *args: typing.Any, **kwargs: typing.Any
     ) -> github_types.GitHubEvent:
-        if RECORDING_IN_PARALLEL:
-            # Since in parallel we might create way more content than
-            # in non-record, some events might be missed if we do not wait
-            # enough time.
-            kwargs.setdefault("timeout", 180)
-
         return await self._event_reader.wait_for(*args, **kwargs)
 
     async def wait_for_pull_request(
@@ -686,7 +681,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     async def run_full_engine(self) -> None:
         LOG.log(42, "RUNNING FULL ENGINE")
         w = manager.ServiceManager(
-            idle_sleep_time=self.WORKER_IDLE_SLEEP_TIME if RECORD else 0.01,
+            idle_sleep_time=self.WORKER_IDLE_SLEEP_TIME,
             enabled_services={
                 "shared-stream",
                 "dedicated-stream",

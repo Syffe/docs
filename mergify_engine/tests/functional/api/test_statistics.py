@@ -174,9 +174,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             # of delayed refresh
             await self.run_full_engine()
 
-            await self.wait_for(
-                "pull_request", {"action": "closed"}, timeout=30 if base.RECORD else 1
-            )
+            await self.wait_for("pull_request", {"action": "closed"})
             await self.wait_for("pull_request", {"action": "closed"})
             await self.wait_for("pull_request", {"action": "closed"})
 
@@ -276,9 +274,7 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             )
             await self.run_engine()
 
-            await self.wait_for(
-                "pull_request", {"action": "closed"}, timeout=30 if base.RECORD else 1
-            )
+            await self.wait_for("pull_request", {"action": "closed"})
             await self.wait_for("pull_request", {"action": "closed"})
             await self.wait_for("pull_request", {"action": "closed"})
 
