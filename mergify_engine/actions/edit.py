@@ -31,6 +31,7 @@ class EditExecutor(actions.ActionExecutor["EditAction", EditExecutorConfig]):
             bot_account = await action_utils.render_bot_account(
                 ctxt,
                 action.config["bot_account"],
+                bot_account_fallback=None,
                 required_feature=subscription.Features.BOT_ACCOUNT,
                 missing_feature_message="Edit with `bot_account` set is disabled",
                 required_permissions=[],

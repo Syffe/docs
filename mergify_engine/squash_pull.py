@@ -1,9 +1,9 @@
 import dataclasses
 
 from mergify_engine import config
-from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import exceptions
+from mergify_engine import github_types
 from mergify_engine import gitter
 from mergify_engine.dashboard import user_tokens
 from mergify_engine.dashboard.subscription import Features
@@ -112,55 +112,26 @@ async def _do_squash(
 
 
 async def squash(
-    ctxt: context.Context,
-    message: str,
-    on_behalf: user_tokens.UserTokensUser | None,
+    ctxt: context.Context, message: str, on_behalf: github_types.GitHubLogin
 ) -> None:
     if ctxt.pull["commits"] <= 1:
         return
 
-    if on_behalf is None:
-        # TODO(sileht): drop me and make on_behalf mandatory
-        tokens = await ctxt.repository.installation.get_user_tokens()
-        # Pick author first
-        users = sorted(
-            tokens.users, key=lambda x: x["login"] != ctxt.pull["user"]["login"]
+    tokens = await ctxt.repository.installation.get_user_tokens()
+    on_behalf_auth_info = tokens.get_token_for(on_behalf)
+    if not on_behalf_auth_info:
+        raise SquashFailure(
+            f"User `{on_behalf}` is unknown, make sure `{on_behalf}` has logged in Mergify [Mergify dashboard]({config.DATABASE_URL})."
         )
-    else:
-        users = [on_behalf]
 
-    for user in users:
-        try:
-            await _do_squash(ctxt, user, message)
-        except gitter.GitAuthenticationFailure as e:
-            ctxt.log.info(
-                "authentification failure, will retry another token: %s",
-                e,
-                login=user["login"],
-            )
+    try:
+        await _do_squash(ctxt, on_behalf_auth_info, message)
+    except gitter.GitAuthenticationFailure:
+        ctxt.log.info("git authentification failure", login=on_behalf, exc_info=True)
+
+        if ctxt.pull_from_fork and ctxt.pull["base"]["repo"]["private"]:
+            message = "Squashing a branch for a forked private repository is not supported by GitHub."
         else:
-            if on_behalf is None:
-                ctxt.log.warning(
-                    "pull request squashed with a random user",
-                    random_pick=user["login"],
-                    author=ctxt.pull["user"]["login"],
-                    random_pick_is_author=user["login"] == ctxt.pull["user"]["login"],
-                )
-                if user["login"] != ctxt.pull["user"]["login"]:
-                    await ctxt.post_comment(
-                        constants.DEPRECATED_RANDOM_USER_PICK.format(verb="squashed")
-                    )
-            return
+            message = f"`{on_behalf}` token is invalid, make sure `{on_behalf}` can still log in on the [Mergify dashboard]({config.DATABASE_URL})."
 
-    if ctxt.pull_from_fork and ctxt.pull["base"]["repo"]["private"]:
-        message = "Squashing a branch for a forked private repository is not supported by GitHub."
-    else:
-        if on_behalf is None:
-            # Use author to suggest the future default behavior
-            ping_user = ctxt.pull["user"]["login"]
-        else:
-            ping_user = on_behalf["login"]
-
-        message = f"`{ping_user}` token is invalid, make sure `{ping_user}` can still log in on the [Mergify dashboard]({config.DATABASE_URL})."
-
-    raise SquashFailure(message)
+        raise SquashFailure(message)

@@ -5,18 +5,18 @@ import voluptuous
 from mergify_engine import actions
 from mergify_engine import check_api
 from mergify_engine import context
+from mergify_engine import github_types
 from mergify_engine import signals
 from mergify_engine import squash_pull
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.dashboard import subscription
-from mergify_engine.dashboard import user_tokens
 from mergify_engine.rules import types
 from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 class SquashExecutorConfig(typing.TypedDict):
     commit_message: typing.Literal["all-commits", "first-commit", "title+body"]
-    bot_account: user_tokens.UserTokensUser | None
+    bot_account: github_types.GitHubLogin
 
 
 class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig]):
@@ -31,6 +31,7 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
             bot_account = await action_utils.render_bot_account(
                 ctxt,
                 action.config["bot_account"],
+                bot_account_fallback=ctxt.pull["user"]["login"],
                 required_feature=subscription.Features.BOT_ACCOUNT,
                 missing_feature_message="Squash with `bot_account` set is disabled",
                 required_permissions=[],
@@ -38,26 +39,13 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
         except action_utils.RenderBotAccountFailure as e:
             raise prr_config.InvalidPullRequestRule(e.title, e.reason)
 
-        github_user: user_tokens.UserTokensUser | None = None
-
-        if bot_account:
-            tokens = await ctxt.repository.installation.get_user_tokens()
-            github_user = tokens.get_token_for(bot_account)
-            if not github_user:
-                raise prr_config.InvalidPullRequestRule(
-                    f"Unable to edit: user `{bot_account}` is unknown. ",
-                    f"Please make sure `{bot_account}` has logged in Mergify dashboard.",
-                )
-        else:
-            github_user = None
-
         return cls(
             ctxt,
             rule,
             SquashExecutorConfig(
                 {
                     "commit_message": action.config["commit_message"],
-                    "bot_account": github_user,
+                    "bot_account": bot_account,
                 }
             ),
         )
@@ -130,9 +118,7 @@ class SquashAction(actions.Action):
         actions.ActionFlag.ALWAYS_RUN | actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
     )
     validator = {
-        voluptuous.Required("bot_account", default=None): voluptuous.Any(
-            None, types.Jinja2
-        ),
+        voluptuous.Required("bot_account", default=None): types.Jinja2WithNone,
         voluptuous.Required("commit_message", default="all-commits"): voluptuous.Any(
             "all-commits", "first-commit", "title+body"
         ),

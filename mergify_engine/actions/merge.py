@@ -60,6 +60,7 @@ class MergeExecutor(
             merge_bot_account = await action_utils.render_bot_account(
                 ctxt,
                 action.config["merge_bot_account"],
+                bot_account_fallback=None,
                 option_name="merge_bot_account",
                 required_feature=subscription.Features.MERGE_BOT_ACCOUNT,
                 missing_feature_message="Cannot use `merge_bot_account` with merge action",

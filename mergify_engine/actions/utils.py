@@ -21,20 +21,48 @@ class RenderBotAccountFailure(Exception):
     reason: str
 
 
+@typing.overload
 async def render_bot_account(
     ctxt: context.Context,
     bot_account_template: str | None,
     *,
+    bot_account_fallback: github_types.GitHubLogin,
+    option_name: str = "bot_account",
+    required_feature: subscription.Features,
+    missing_feature_message: str = "Cannot use `bot_account`",
+    required_permissions: None | (list[github_types.GitHubRepositoryPermission]) = None,
+) -> github_types.GitHubLogin:
+    ...
+
+
+@typing.overload
+async def render_bot_account(
+    ctxt: context.Context,
+    bot_account_template: str | None,
+    *,
+    bot_account_fallback: None,
     option_name: str = "bot_account",
     required_feature: subscription.Features,
     missing_feature_message: str = "Cannot use `bot_account`",
     required_permissions: None | (list[github_types.GitHubRepositoryPermission]) = None,
 ) -> github_types.GitHubLogin | None:
-    if bot_account_template is None:
-        return None
+    ...
 
-    if required_feature is not None and not ctxt.subscription.has_feature(
-        required_feature
+
+async def render_bot_account(
+    ctxt: context.Context,
+    bot_account_template: str | None,
+    *,
+    bot_account_fallback: github_types.GitHubLogin | None,
+    option_name: str = "bot_account",
+    required_feature: subscription.Features,
+    missing_feature_message: str = "Cannot use `bot_account`",
+    required_permissions: None | (list[github_types.GitHubRepositoryPermission]) = None,
+) -> github_types.GitHubLogin | None:
+    if (
+        bot_account_template is not None
+        and required_feature is not None
+        and not ctxt.subscription.has_feature(required_feature)
     ):
         raise RenderBotAccountFailure(
             check_api.Conclusion.ACTION_REQUIRED,
@@ -44,26 +72,35 @@ async def render_bot_account(
             ),
         )
 
-    if required_permissions is None:
-        required_permissions = (
-            github_types.GitHubRepositoryPermission.permissions_above(
-                github_types.GitHubRepositoryPermission.WRITE
-            )
-        )
+    if bot_account_template is None:
+        if bot_account_fallback is None:
+            return None
 
-    try:
-        bot_account = await ctxt.pull_request.render_template(bot_account_template)
-    except context.RenderTemplateFailure as rmf:
-        raise RenderBotAccountFailure(
-            check_api.Conclusion.FAILURE,
-            f"Invalid {option_name} template",
-            str(rmf),
-        )
+        bot_account = str(bot_account_fallback)
+    else:
+        try:
+            bot_account = await ctxt.pull_request.render_template(bot_account_template)
+        except context.RenderTemplateFailure as rmf:
+            raise RenderBotAccountFailure(
+                check_api.Conclusion.FAILURE,
+                f"Invalid {option_name} template",
+                str(rmf),
+            )
 
     if bot_account:
         # NOTE(sileht): we strip in case of the template have an unperfect yaml
         # multiline ending or jinja2 eol layout
         bot_account = bot_account.strip()
+
+    if not bot_account:
+        return None
+
+    if bot_account.endswith("[bot]"):
+        raise RenderBotAccountFailure(
+            check_api.Conclusion.FAILURE,
+            f"Invalid account for {option_name}",
+            f"GitHub App bot `{bot_account}` can't be impersonated. ",
+        )
 
     try:
         bot_account = typing.cast(
@@ -74,6 +111,13 @@ async def render_bot_account(
             check_api.Conclusion.FAILURE,
             f"Invalid {option_name} value",
             str(e),
+        )
+
+    if required_permissions is None:
+        required_permissions = (
+            github_types.GitHubRepositoryPermission.permissions_above(
+                github_types.GitHubRepositoryPermission.WRITE
+            )
         )
 
     if required_permissions:

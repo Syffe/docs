@@ -79,9 +79,9 @@ class TestDebugger(base.FunctionalTestBase):
   - public_repository
   - show_sponsor
 * ENGINE-CACHE SUB DETAIL: You're not nice
-* ENGINE-CACHE SUB NUMBER OF TOKENS: 1 (mergify-test4)
+* ENGINE-CACHE SUB NUMBER OF TOKENS: 2 (mergify-test4, mergify-test2)
 * DASHBOARD SUB DETAIL: You're not nice
-* DASHBOARD SUB NUMBER OF TOKENS: 1 (mergify-test4)
+* DASHBOARD SUB NUMBER OF TOKENS: 2 (mergify-test4, mergify-test2)
 * WORKER: Installation not queued to process
 * REPOSITORY IS PUBLIC
 * DEFAULT BRANCH: {self.main_branch_name}
@@ -228,8 +228,8 @@ mergeable_state: clean
   - public_repository
   - show_sponsor
 * ENGINE-CACHE SUB DETAIL: You're not nice
-* ENGINE-CACHE SUB NUMBER OF TOKENS: 1 (mergify-test4)
+* ENGINE-CACHE SUB NUMBER OF TOKENS: 2 (mergify-test4, mergify-test2)
 * DASHBOARD SUB DETAIL: You're not nice
-* DASHBOARD SUB NUMBER OF TOKENS: 1 (mergify-test4)
+* DASHBOARD SUB NUMBER OF TOKENS: 2 (mergify-test4, mergify-test2)
 * WORKER: Installation not queued to process"""
         )
