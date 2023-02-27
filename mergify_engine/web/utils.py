@@ -2,6 +2,7 @@ import daiquiri
 from datadog import statsd  # type: ignore[attr-defined]
 import fastapi
 from redis import exceptions as redis_exceptions
+import sqlalchemy
 from starlette import requests
 from starlette import responses
 
@@ -13,6 +14,17 @@ LOG = daiquiri.getLogger(__name__)
 
 
 def setup_exception_handlers(app: fastapi.FastAPI) -> None:
+    @app.exception_handler(sqlalchemy.exc.DBAPIError)
+    async def postgres_errors(
+        request: requests.Request,
+        exc: sqlalchemy.exc.DBAPIError,
+    ) -> responses.Response:
+        if exc.connection_invalidated:
+            statsd.increment("postgres.client.connection.errors")
+            LOG.warning("FastAPI lost Postgres connection", exc_info=exc)
+            return responses.Response(status_code=503)
+        raise exc
+
     @app.exception_handler(redis_exceptions.ConnectionError)
     async def redis_errors(
         request: requests.Request, exc: redis_exceptions.ConnectionError

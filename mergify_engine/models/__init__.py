@@ -46,7 +46,10 @@ def init_sqlalchemy() -> None:
     # * one dyno
     # * postgres standard/premium 0 plan that allows 120 connections max
     async_engine = sqlalchemy.ext.asyncio.create_async_engine(
-        get_async_database_url(), pool_size=100
+        get_async_database_url(),
+        pool_size=100,
+        # Ensure old pooled connection still works
+        pool_pre_ping=True,
     )
     APP_STATE = SQLAlchemyAppState(
         {
