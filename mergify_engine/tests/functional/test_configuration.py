@@ -450,7 +450,7 @@ did not find expected alphabetic or numeric character
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
-            "Configuration changed. This pull request must be merged manually"
+            "no rules configured, just listening for commands"
             in summary["output"]["title"]
         )
         additionnal_check = await ctxt.get_engine_check_run(
@@ -469,7 +469,7 @@ did not find expected alphabetic or numeric character
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
         assert summary is not None
         assert (
-            "Configuration changed. This pull request must be merged manually"
+            "no rules configured, just listening for commands"
             in summary["output"]["title"]
         )
         additionnal_check = await ctxt.get_engine_check_run(
