@@ -1023,7 +1023,6 @@ class Context:
         self.pull_request = PullRequest(self)
         self.log = daiquiri.getLogger(
             self.__class__.__qualname__,
-            gh_pull=self.pull["number"],
             gh_owner=self.pull["base"]["user"]["login"]
             if "base" in self.pull
             else "<unknown-yet>",
@@ -1040,12 +1039,7 @@ class Context:
             gh_branch=self.pull["base"]["ref"]
             if "base" in self.pull
             else "<unknown-yet>",
-            gh_pull_head_ref=self.pull["head"]["ref"]
-            if "head" in self.pull
-            else "<unknown-yet>",
-            gh_pull_head_owner=self.pull["head"]["user"]["login"]
-            if "head" in self.pull
-            else "<unknown-yet>",
+            gh_pull=self.pull["number"],
             gh_pull_base_sha=self.pull["base"]["sha"]
             if "base" in self.pull
             else "<unknown-yet>",
