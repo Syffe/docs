@@ -317,7 +317,7 @@ async def prepare_branch(
 
         await git("push", "origin", destination_branch)
     except gitter.GitMergifyNamespaceConflict as e:
-        raise DuplicateUnexpectedError(
+        raise DuplicateFailed(
             "`Mergify uses `mergify/...` namespace for creating temporary branches. "
             "A branch of your repository is conflicting with this namespace\n"
             f"```\n{e.output}\n```\n"
