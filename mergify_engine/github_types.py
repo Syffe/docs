@@ -427,7 +427,10 @@ GitHubEventType = typing.Literal[
 
 
 class GitHubEvent(typing.TypedDict):
+    # FIXME(sileht): not all events have organization keys
     organization: GitHubAccount
+    # FIXME(sileht): not all events have full installation object (sometimes
+    # only the id is present)
     installation: GitHubInstallation
     sender: GitHubAccount
     # NOTE(sileht):  Injected by Mergify webhook receiver

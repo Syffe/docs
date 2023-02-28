@@ -451,7 +451,7 @@ async def event_classifier(
             event,
             await get_pull_request_head_sha_to_number_mapping(
                 redis_links.cache,
-                event["organization"]["id"],
+                event["repository"]["owner"]["id"],
                 event["repository"]["id"],
                 event["sha"],
             ),
@@ -486,7 +486,7 @@ async def event_classifier(
             event,
             await get_pull_request_head_sha_to_number_mapping(
                 redis_links.cache,
-                event["organization"]["id"],
+                event["repository"]["owner"]["id"],
                 event["repository"]["id"],
                 event["check_suite"]["head_sha"],
             ),
@@ -506,7 +506,7 @@ async def event_classifier(
             event,
             await get_pull_request_head_sha_to_number_mapping(
                 redis_links.cache,
-                event["organization"]["id"],
+                event["repository"]["owner"]["id"],
                 event["repository"]["id"],
                 event["check_run"]["head_sha"],
             ),
