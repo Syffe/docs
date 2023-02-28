@@ -25,13 +25,6 @@ from mergify_engine.queue import utils as queue_utils
 LOG = daiquiri.getLogger(__name__)
 
 
-def set_sentry_info(owner_login: str, repo_name: str | None) -> None:
-    sentry_sdk.set_user({"username": owner_login})
-    sentry_sdk.set_tag("gh_owner", owner_login)
-    if repo_name is not None:
-        sentry_sdk.set_tag("gh_repo", repo_name)
-
-
 async def get_pull_request_head_sha_to_number_mapping(
     redis_cache: redis_utils.RedisCache,
     owner_id: github_types.GitHubAccountIdType,
@@ -76,193 +69,101 @@ class IgnoredEvent(Exception):
     reason: str
 
 
-async def push_to_worker(
-    background_tasks: fastapi.BackgroundTasks,
+@dataclasses.dataclass
+class EventBase:
+    event_type: str
+    event_id: str
+    event: github_types.GitHubEventWithRepository | github_types.GitHubEvent
+
+    @property
+    def slim_event(self) -> typing.Any:
+        return worker_pusher.extract_slim_event(self.event_type, self.event)
+
+
+@dataclasses.dataclass
+class EventToProcess(EventBase):
+    event: github_types.GitHubEventWithRepository
+    pull_request_number: github_types.GitHubPullRequestNumber | None
+    priority: worker_pusher.Priority | None = None
+
+    def set_sentry_info(self) -> None:
+        sentry_sdk.set_user({"username": self.event["repository"]["owner"]["login"]})
+        sentry_sdk.set_tag("gh_owner", self.event["repository"]["owner"]["login"])
+        sentry_sdk.set_tag("gh_repo", self.event["repository"]["name"])
+
+    def emit_log(self) -> None:
+        LOG.info(
+            "GithubApp event pushed",
+            event_type=self.event_type,
+            event_id=self.event_id,
+            sender=self.event["sender"]["login"],
+            gh_owner=self.event["repository"]["owner"]["login"],
+            gh_repo=self.event["repository"]["name"],
+            slim_event=self.slim_event,
+            priority=self.priority,
+        )
+
+
+@dataclasses.dataclass
+class EventToIgnore(EventBase):
+    reason: str
+
+    def emit_log(self) -> None:
+        if "repository" in self.event:
+            event = typing.cast(github_types.GitHubEventWithRepository, self.event)
+            gh_owner = event["repository"]["owner"]["login"]
+            gh_repo = event["repository"]["name"]
+        elif "organization" in self.event:
+            gh_owner = self.event["organization"]["login"]
+            gh_repo = None
+        elif "installation" in self.event and "account" in self.event["installation"]:
+            gh_owner = self.event["installation"]["account"]["login"]
+            gh_repo = None
+        else:
+            gh_owner = None
+            gh_repo = None
+
+        LOG.info(
+            "GithubApp event ignored",
+            reason=self.reason,
+            event_type=self.event_type,
+            event_id=self.event_id,
+            sender=self.event["sender"]["login"],
+            gh_owner=gh_owner,
+            gh_repo=gh_repo,
+        )
+
+
+async def clean_and_fill_caches(
     redis_links: redis_utils.RedisLinks,
     event_type: github_types.GitHubEventType,
     event_id: str,
     event: github_types.GitHubEvent,
-    mergify_bot: github_types.GitHubAccount,
 ) -> None:
-    pull_number = None
-    ignore_reason = None
-    priority = None
-
     if event_type == "pull_request":
         event = typing.cast(github_types.GitHubEventPullRequest, event)
-        owner_login = event["repository"]["owner"]["login"]
-        owner_id = event["repository"]["owner"]["id"]
-        repo_id = event["repository"]["id"]
-        repo_name = event["repository"]["name"]
-        pull_number = event["pull_request"]["number"]
-        set_sentry_info(owner_login, repo_name)
-
         if event["action"] in ("opened", "synchronize", "edited", "closed"):
             await pull_request_finder.PullRequestFinder.sync(
                 redis_links.cache, event["pull_request"]
             )
-
         if event["action"] in ("opened", "edited"):
             await context.Repository.cache_pull_request_title(
                 redis_links.cache,
-                repo_id,
-                pull_number,
+                event["repository"]["id"],
+                event["pull_request"]["number"],
                 event["pull_request"]["title"],
             )
-        if event["repository"]["archived"]:
-            ignore_reason = "repository archived"
-
-        elif event["action"] in ("opened", "synchronize"):
-            background_tasks.add_task(
-                engine.create_initial_summary, redis_links.cache, event
-            )
-        elif (
-            event["action"] == "edited"
-            and event["sender"]["id"] == mergify_bot["id"]
-            and (
-                # NOTE(greesb): For retrocompatibility. To remove once there are no more
-                # PR using this.
-                event["pull_request"]["head"]["ref"].startswith(
-                    constants.MERGE_QUEUE_BRANCH_PREFIX
-                )
-                or queue_utils.is_pr_body_a_merge_queue_pr(
-                    event["pull_request"]["body"]
-                )
-            )
-        ):
-            ignore_reason = "mergify merge queue description update"
 
     elif event_type == "repository":
         event = typing.cast(github_types.GitHubEventRepository, event)
-        owner_login = event["repository"]["owner"]["login"]
-        owner_id = event["repository"]["owner"]["id"]
-        repo_id = event["repository"]["id"]
-        repo_name = event["repository"]["name"]
-        set_sentry_info(owner_login, repo_name)
-
         if event["action"] in ("edited", "deleted"):
-            await context.Repository.clear_config_file_cache(redis_links.cache, repo_id)
-        ignore_reason = "unused repository event"
-
-    elif event_type == "refresh":
-        event = typing.cast(github_types.GitHubEventRefresh, event)
-        owner_login = event["repository"]["owner"]["login"]
-        owner_id = event["repository"]["owner"]["id"]
-        repo_id = event["repository"]["id"]
-        repo_name = event["repository"]["name"]
-        set_sentry_info(owner_login, repo_name)
-
-        if event["pull_request_number"] is not None:
-            pull_number = event["pull_request_number"]
-
-    elif event_type == "pull_request_review_comment":
-        event = typing.cast(github_types.GitHubEventPullRequestReviewComment, event)
-        owner_login = event["repository"]["owner"]["login"]
-        owner_id = event["repository"]["owner"]["id"]
-        repo_id = event["repository"]["id"]
-        repo_name = event["repository"]["name"]
-        set_sentry_info(owner_login, repo_name)
-
-        if event["pull_request"] is not None:
-            pull_number = event["pull_request"]["number"]
-
-        if event["repository"]["archived"]:
-            ignore_reason = "repository archived"
-
-    elif event_type == "pull_request_review":
-        event = typing.cast(github_types.GitHubEventPullRequestReview, event)
-        owner_login = event["repository"]["owner"]["login"]
-        owner_id = event["repository"]["owner"]["id"]
-        repo_id = event["repository"]["id"]
-        repo_name = event["repository"]["name"]
-        pull_number = event["pull_request"]["number"]
-        set_sentry_info(owner_login, repo_name)
-
-    elif event_type == "pull_request_review_thread":
-        event = typing.cast(github_types.GitHubEventPullRequestReviewThread, event)
-        owner_login = event["repository"]["owner"]["login"]
-        owner_id = event["repository"]["owner"]["id"]
-        repo_id = event["repository"]["id"]
-        repo_name = event["repository"]["name"]
-        pull_number = event["pull_request"]["number"]
-        set_sentry_info(owner_login, repo_name)
-
-    elif event_type == "issue_comment":
-        event = typing.cast(github_types.GitHubEventIssueComment, event)
-        owner_login = event["repository"]["owner"]["login"]
-        owner_id = event["repository"]["owner"]["id"]
-        repo_id = event["repository"]["id"]
-        repo_name = event["repository"]["name"]
-        pull_number = github_types.GitHubPullRequestNumber(event["issue"]["number"])
-        set_sentry_info(owner_login, repo_name)
-
-        if event["repository"]["archived"]:
-            ignore_reason = "repository archived"
-
-        elif "pull_request" not in event["issue"]:
-            ignore_reason = "comment is not on a pull request"
-
-        elif event["action"] not in ("created", "edited"):
-            ignore_reason = f"comment action is '{event['action']}'"
-
-        elif (
-            # When someone else edit our comment the user id is still us
-            # but the sender id is the one that edited the comment
-            event["comment"]["user"]["id"] == mergify_bot["id"]
-            and event["sender"]["id"] == mergify_bot["id"]
-        ):
-            ignore_reason = "comment by Mergify[bot]"
-
-        elif (
-            # At the moment there is no specific "action" key or event
-            # for when someone hides a comment.
-            # So we need all those checks to identify someone hiding the comment
-            # of a bot to be able to not re-execute it.
-            event["comment"]["user"]["id"] != event["sender"]["id"]
-            and event["action"] == "edited"
-            and event["changes"]["body"]["from"] == event["comment"]["body"]
-        ):
-            ignore_reason = "comment has been hidden"
-
-        else:
-            match = commands_runner.COMMAND_MATCHER.search(event["comment"]["body"])
-            if match:
-                priority = worker_pusher.Priority.immediate
-                # NOTE(sileht): nothing important should happen in this hook as we don't retry it
-                background_tasks.add_task(commands_runner.on_each_event, event)
-            else:
-                ignore_reason = "comment is not a command"
-
-    elif event_type == "status":
-        event = typing.cast(github_types.GitHubEventStatus, event)
-        owner_login = event["repository"]["owner"]["login"]
-        owner_id = event["repository"]["owner"]["id"]
-        repo_id = event["repository"]["id"]
-        repo_name = event["repository"]["name"]
-        set_sentry_info(owner_login, repo_name)
-
-        if event["repository"]["archived"]:
-            ignore_reason = "repository archived"
-
-        pull_number = await get_pull_request_head_sha_to_number_mapping(
-            redis_links.cache, owner_id, repo_id, event["sha"]
-        )
+            await context.Repository.clear_config_file_cache(
+                redis_links.cache, event["repository"]["id"]
+            )
 
     elif event_type == "push":
         event = typing.cast(github_types.GitHubEventPush, event)
-        owner_login = event["repository"]["owner"]["login"]
-        owner_id = event["repository"]["owner"]["id"]
-        repo_id = event["repository"]["id"]
-        repo_name = event["repository"]["name"]
-        set_sentry_info(owner_login, repo_name)
-
-        if event["repository"]["archived"]:
-            ignore_reason = "repository archived"
-
-        elif not event["ref"].startswith("refs/heads/"):
-            ignore_reason = f"push on {event['ref']}"
-
-        elif (
+        if (
             f"refs/heads/{utils.extract_default_branch(event['repository'])}"
             == event["ref"]
         ):
@@ -290,65 +191,11 @@ async def push_to_worker(
 
             if mergify_configuration_changed:
                 await context.Repository.clear_config_file_cache(
-                    redis_links.cache, repo_id
+                    redis_links.cache, event["repository"]["id"]
                 )
-
-    elif event_type == "check_suite":
-        event = typing.cast(github_types.GitHubEventCheckSuite, event)
-        owner_login = event["repository"]["owner"]["login"]
-        owner_id = event["repository"]["owner"]["id"]
-        repo_id = event["repository"]["id"]
-        repo_name = event["repository"]["name"]
-        set_sentry_info(owner_login, repo_name)
-
-        if event["repository"]["archived"]:
-            ignore_reason = "repository archived"
-
-        elif event["action"] != "rerequested":
-            ignore_reason = f"check_suite/{event['action']}"
-
-        elif (
-            event[event_type]["app"]["id"] == config.INTEGRATION_ID
-            and event["action"] != "rerequested"
-            and event[event_type].get("external_id") != check_api.USER_CREATED_CHECKS
-        ):
-            ignore_reason = f"mergify {event_type}"
-
-        pull_number = await get_pull_request_head_sha_to_number_mapping(
-            redis_links.cache, owner_id, repo_id, event["check_suite"]["head_sha"]
-        )
-
-    elif event_type == "check_run":
-        event = typing.cast(github_types.GitHubEventCheckRun, event)
-        owner_login = event["repository"]["owner"]["login"]
-        owner_id = event["repository"]["owner"]["id"]
-        repo_id = event["repository"]["id"]
-        repo_name = event["repository"]["name"]
-        set_sentry_info(owner_login, repo_name)
-
-        if event["repository"]["archived"]:
-            ignore_reason = "repository archived"
-
-        elif (
-            event[event_type]["app"]["id"] == config.INTEGRATION_ID
-            and event["action"] != "rerequested"
-            and event[event_type].get("external_id") != check_api.USER_CREATED_CHECKS
-        ):
-            ignore_reason = f"mergify {event_type}"
-
-        pull_number = await get_pull_request_head_sha_to_number_mapping(
-            redis_links.cache, owner_id, repo_id, event["check_run"]["head_sha"]
-        )
 
     elif event_type == "organization":
         event = typing.cast(github_types.GitHubEventOrganization, event)
-        owner_login = event["organization"]["login"]
-        owner_id = event["organization"]["id"]
-        repo_name = None
-        repo_id = None
-        ignore_reason = "organization event"
-        set_sentry_info(owner_login, repo_name)
-
         if event["action"] == "deleted":
             await context.Installation.clear_team_members_cache_for_org(
                 redis_links.team_members_cache, event["organization"]
@@ -364,13 +211,6 @@ async def push_to_worker(
 
     elif event_type == "member":
         event = typing.cast(github_types.GitHubEventMember, event)
-        owner_login = event["repository"]["owner"]["login"]
-        owner_id = event["repository"]["owner"]["id"]
-        repo_id = event["repository"]["id"]
-        repo_name = event["repository"]["name"]
-        ignore_reason = "member event"
-        set_sentry_info(owner_login, repo_name)
-
         await context.Repository.clear_user_permission_cache_for_user(
             redis_links.user_permissions_cache,
             event["repository"]["owner"],
@@ -380,13 +220,6 @@ async def push_to_worker(
 
     elif event_type == "membership":
         event = typing.cast(github_types.GitHubEventMembership, event)
-        owner_login = event["organization"]["login"]
-        owner_id = event["organization"]["id"]
-        repo_name = None
-        repo_id = None
-        ignore_reason = "membership event"
-        set_sentry_info(owner_login, repo_name)
-
         if "slug" in event["team"]:
             await context.Installation.clear_team_members_cache_for_team(
                 redis_links.team_members_cache,
@@ -414,13 +247,6 @@ async def push_to_worker(
 
     elif event_type == "team":
         event = typing.cast(github_types.GitHubEventTeam, event)
-        owner_login = event["organization"]["login"]
-        owner_id = event["organization"]["id"]
-        repo_id = None
-        repo_name = None
-        ignore_reason = "team event"
-        set_sentry_info(owner_login, repo_name)
-
         if event["action"] in ("edited", "deleted"):
             await context.Installation.clear_team_members_cache_for_team(
                 redis_links.team_members_cache,
@@ -439,7 +265,7 @@ async def push_to_worker(
             "removed_from_repository",
             "deleted",
         ):
-            if "repository" in event:
+            if "repository" in event and event["repository"] is not None:
                 await context.Repository.clear_user_permission_cache_for_repo(
                     redis_links.user_permissions_cache,
                     event["organization"],
@@ -460,13 +286,6 @@ async def push_to_worker(
 
     elif event_type == "team_add":
         event = typing.cast(github_types.GitHubEventTeamAdd, event)
-        owner_login = event["repository"]["owner"]["login"]
-        owner_id = event["repository"]["owner"]["id"]
-        repo_id = event["repository"]["id"]
-        repo_name = event["repository"]["name"]
-        ignore_reason = "team_add event"
-        set_sentry_info(owner_login, repo_name)
-
         await context.Repository.clear_user_permission_cache_for_repo(
             redis_links.user_permissions_cache,
             event["repository"]["owner"],
@@ -478,46 +297,222 @@ async def push_to_worker(
             event["repository"],
         )
 
-    else:
-        owner_login = "<unknown>"
-        owner_id = "<unknown>"
-        repo_name = "<unknown>"
-        repo_id = "<unknown>"
-        ignore_reason = "unexpected event_type"
 
-    if ignore_reason is None:
-        msg_action = "pushed to worker"
-        slim_event = worker_pusher.extract_slim_event(event_type, event)
+async def event_preprocessing(
+    background_tasks: fastapi.BackgroundTasks,
+    redis_links: redis_utils.RedisLinks,
+    event_type: github_types.GitHubEventType,
+    event_id: str,
+    event: github_types.GitHubEvent,
+) -> None:
+    if event_type == "pull_request":
+        event = typing.cast(github_types.GitHubEventPullRequest, event)
+        if event["action"] in ("opened", "synchronize"):
+            background_tasks.add_task(
+                engine.create_initial_summary, redis_links.cache, event
+            )
 
-        await worker_pusher.push(
-            redis_links.stream,
-            owner_id,
-            owner_login,
-            repo_id,
-            repo_name,
-            pull_number,
+    elif event_type == "issue_comment":
+        event = typing.cast(github_types.GitHubEventIssueComment, event)
+        match = commands_runner.COMMAND_MATCHER.search(event["comment"]["body"])
+        if match:
+            # NOTE(sileht): nothing important should happen in this hook as we don't retry it
+            background_tasks.add_task(commands_runner.on_each_event, event)
+
+
+async def event_classifier(
+    redis_links: redis_utils.RedisLinks,
+    event_type: github_types.GitHubEventType,
+    event_id: str,
+    event: github_types.GitHubEvent,
+    mergify_bot: github_types.GitHubAccount,
+) -> EventToIgnore | EventToProcess:
+    # NOTE(sileht): those events are only used by synack or cache cleanup/feed
+    if event_type in (
+        "installation",
+        "installation_repositories",
+        "member",
+        "membership",
+        "organization",
+        "team",
+        "team_add",
+        "repository",
+    ):
+        return EventToIgnore(event_type, event_id, event, f"{event_type} event")
+
+    if "repository" in event:
+        event = typing.cast(github_types.GitHubEventWithRepository, event)
+        if event["repository"]["archived"]:
+            return EventToIgnore(event_type, event_id, event, "repository archived")
+
+    if event_type == "pull_request":
+        event = typing.cast(github_types.GitHubEventPullRequest, event)
+        if (
+            event["action"] == "edited"
+            and event["sender"]["id"] == mergify_bot["id"]
+            and (
+                # NOTE(greesb): For retrocompatibility. To remove once there are no more
+                # PR using this.
+                event["pull_request"]["head"]["ref"].startswith(
+                    constants.MERGE_QUEUE_BRANCH_PREFIX
+                )
+                or queue_utils.is_pr_body_a_merge_queue_pr(
+                    event["pull_request"]["body"]
+                )
+            )
+        ):
+            return EventToIgnore(
+                event_type,
+                event_id,
+                event,
+                "mergify merge queue description update",
+            )
+
+        return EventToProcess(
+            event_type, event_id, event, event["pull_request"]["number"]
+        )
+
+    elif event_type == "refresh":
+        event = typing.cast(github_types.GitHubEventRefresh, event)
+        return EventToProcess(event_type, event_id, event, event["pull_request_number"])
+
+    elif event_type == "pull_request_review_comment":
+        event = typing.cast(github_types.GitHubEventPullRequestReviewComment, event)
+        return EventToProcess(
             event_type,
-            slim_event,
-            priority,
+            event_id,
+            event,
+            event["pull_request"]["number"]
+            if event["pull_request"] is not None
+            else None,
+        )
+
+    elif event_type == "pull_request_review":
+        event = typing.cast(github_types.GitHubEventPullRequestReview, event)
+        return EventToProcess(
+            event_type, event_id, event, event["pull_request"]["number"]
+        )
+
+    elif event_type == "pull_request_review_thread":
+        event = typing.cast(github_types.GitHubEventPullRequestReviewThread, event)
+        return EventToProcess(
+            event_type, event_id, event, event["pull_request"]["number"]
+        )
+
+    elif event_type == "issue_comment":
+        event = typing.cast(github_types.GitHubEventIssueComment, event)
+        if "pull_request" not in event["issue"]:
+            return EventToIgnore(
+                event_type, event_id, event, "comment is not on a pull request"
+            )
+
+        elif event["action"] not in ("created", "edited"):
+            return EventToIgnore(
+                event_type, event_id, event, f"comment action is '{event['action']}'"
+            )
+
+        elif (
+            # When someone else edit our comment the user id is still us
+            # but the sender id is the one that edited the comment
+            event["comment"]["user"]["id"] == mergify_bot["id"]
+            and event["sender"]["id"] == mergify_bot["id"]
+        ):
+            return EventToIgnore(event_type, event_id, event, "comment by Mergify[bot]")
+
+        elif (
+            # At the moment there is no specific "action" key or event
+            # for when someone hides a comment.
+            # So we need all those checks to identify someone hiding the comment
+            # of a bot to be able to not re-execute it.
+            event["comment"]["user"]["id"] != event["sender"]["id"]
+            and event["action"] == "edited"
+            and event["changes"]["body"]["from"] == event["comment"]["body"]
+        ):
+            return EventToIgnore(event_type, event_id, event, "comment has been hidden")
+
+        elif not commands_runner.COMMAND_MATCHER.search(event["comment"]["body"]):
+            return EventToIgnore(
+                event_type, event_id, event, "comment is not a command"
+            )
+
+        return EventToProcess(
+            event_type,
+            event_id,
+            event,
+            github_types.GitHubPullRequestNumber(event["issue"]["number"]),
+            priority=worker_pusher.Priority.immediate,
+        )
+
+    elif event_type == "status":
+        event = typing.cast(github_types.GitHubEventStatus, event)
+        return EventToProcess(
+            event_type,
+            event_id,
+            event,
+            await get_pull_request_head_sha_to_number_mapping(
+                redis_links.cache,
+                event["organization"]["id"],
+                event["repository"]["id"],
+                event["sha"],
+            ),
+        )
+    elif event_type == "push":
+        event = typing.cast(github_types.GitHubEventPush, event)
+        if not event["ref"].startswith("refs/heads/"):
+            return EventToIgnore(event_type, event_id, event, f"push on {event['ref']}")
+        return EventToProcess(
+            event_type,
+            event_id,
+            event,
+            None,
+        )
+    elif event_type == "check_suite":
+        event = typing.cast(github_types.GitHubEventCheckSuite, event)
+        if event["action"] != "rerequested":
+            return EventToIgnore(
+                event_type, event_id, event, f"check_suite/{event['action']}"
+            )
+
+        elif (
+            event["check_suite"]["app"]["id"] == config.INTEGRATION_ID
+            and event["action"] != "rerequested"
+            and event["check_suite"].get("external_id") != check_api.USER_CREATED_CHECKS
+        ):
+            return EventToIgnore(event_type, event_id, event, "mergify check_suite")
+
+        return EventToProcess(
+            event_type,
+            event_id,
+            event,
+            await get_pull_request_head_sha_to_number_mapping(
+                redis_links.cache,
+                event["organization"]["id"],
+                event["repository"]["id"],
+                event["check_suite"]["head_sha"],
+            ),
+        )
+    elif event_type == "check_run":
+        event = typing.cast(github_types.GitHubEventCheckRun, event)
+        if (
+            event[event_type]["app"]["id"] == config.INTEGRATION_ID
+            and event["action"] != "rerequested"
+            and event[event_type].get("external_id") != check_api.USER_CREATED_CHECKS
+        ):
+            return EventToIgnore(event_type, event_id, event, "mergify check_run")
+
+        return EventToProcess(
+            event_type,
+            event_id,
+            event,
+            await get_pull_request_head_sha_to_number_mapping(
+                redis_links.cache,
+                event["organization"]["id"],
+                event["repository"]["id"],
+                event["check_run"]["head_sha"],
+            ),
         )
     else:
-        slim_event = None
-        msg_action = f"ignored: {ignore_reason}"
-
-    LOG.info(
-        "GithubApp event %s",
-        msg_action,
-        event_type=event_type,
-        event_id=event_id,
-        sender=event["sender"]["login"],
-        gh_owner=owner_login,
-        gh_repo=repo_name,
-        event=slim_event,
-        priority=priority,
-    )
-
-    if ignore_reason:
-        raise IgnoredEvent(event_type, event_id, ignore_reason)
+        return EventToIgnore(event_type, event_id, event, "unexpected event_type")
 
 
 async def filter_and_dispatch(
@@ -530,6 +525,31 @@ async def filter_and_dispatch(
     mergify_bot = await github.GitHubAppInfo.get_bot(redis_links.cache_bytes)
     await meter_event(event_type, event, mergify_bot)
     await count_seats.store_active_users(redis_links.active_users, event_type, event)
-    await push_to_worker(
-        background_tasks, redis_links, event_type, event_id, event, mergify_bot
+
+    classified_event = await event_classifier(
+        redis_links, event_type, event_id, event, mergify_bot
     )
+
+    if isinstance(classified_event, EventToProcess):
+        classified_event.set_sentry_info()
+        await clean_and_fill_caches(redis_links, event_type, event_id, event)
+        await event_preprocessing(
+            background_tasks, redis_links, event_type, event_id, event
+        )
+
+        await worker_pusher.push(
+            redis_links.stream,
+            classified_event.event["repository"]["owner"]["id"],
+            classified_event.event["repository"]["owner"]["login"],
+            classified_event.event["repository"]["id"],
+            classified_event.event["repository"]["name"],
+            classified_event.pull_request_number,
+            event_type,
+            classified_event.slim_event,
+            classified_event.priority,
+        )
+
+    classified_event.emit_log()
+
+    if isinstance(classified_event, EventToIgnore):
+        raise IgnoredEvent(event_type, event_id, classified_event.reason)

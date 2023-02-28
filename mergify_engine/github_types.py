@@ -416,6 +416,11 @@ GitHubEventType = typing.Literal[
     "pull_request_review_comment",
     "pull_request_review_thread",
     "repository",
+    "organization",
+    "member",
+    "membership",
+    "team",
+    "team_add",
     # This does not exist in GitHub, it's a Mergify made one
     "refresh",
 ]
@@ -429,6 +434,10 @@ class GitHubEvent(typing.TypedDict):
     received_at: ISODateTimeType
 
 
+class GitHubEventWithRepository(GitHubEvent):
+    repository: GitHubRepository
+
+
 GitHubEventRefreshActionType = typing.Literal[
     "user",
     "internal",
@@ -437,8 +446,7 @@ GitHubEventRefreshActionType = typing.Literal[
 
 
 # This does not exist in GitHub, it's a Mergify made one
-class GitHubEventRefresh(GitHubEvent):
-    repository: GitHubRepository
+class GitHubEventRefresh(GitHubEventWithRepository):
     action: GitHubEventRefreshActionType
     ref: GitHubRefType | None
     pull_request_number: GitHubPullRequestNumber | None
@@ -464,8 +472,7 @@ GitHubEventPullRequestActionType = typing.Literal[
 ]
 
 
-class GitHubEventPullRequest(GitHubEvent):
-    repository: GitHubRepository
+class GitHubEventPullRequest(GitHubEventWithRepository):
     action: GitHubEventPullRequestActionType
     pull_request: GitHubPullRequest
     number: GitHubPullRequestNumber
@@ -487,8 +494,7 @@ GitHubEventRepositoryActionType = typing.Literal[
 ]
 
 
-class GitHubEventRepository(GitHubEvent):
-    repository: GitHubRepository
+class GitHubEventRepository(GitHubEventWithRepository):
     action: GitHubEventRepositoryActionType
     pull_request: GitHubPullRequest
 
@@ -500,8 +506,7 @@ GitHubEventPullRequestReviewCommentActionType = typing.Literal[
 ]
 
 
-class GitHubEventPullRequestReviewComment(GitHubEvent):
-    repository: GitHubRepository
+class GitHubEventPullRequestReviewComment(GitHubEventWithRepository):
     action: GitHubEventPullRequestReviewCommentActionType
     pull_request: GitHubPullRequest | None
     comment: GitHubComment | None
@@ -556,8 +561,7 @@ class GitHubReview(typing.TypedDict):
     submitted_at: ISODateTimeType
 
 
-class GitHubEventPullRequestReview(GitHubEvent):
-    repository: GitHubRepository
+class GitHubEventPullRequestReview(GitHubEventWithRepository):
     action: GitHubEventPullRequestReviewActionType
     pull_request: GitHubPullRequest
     review: GitHubReview
@@ -574,8 +578,7 @@ GitHubEventIssueCommentActionType = typing.Literal[
 ]
 
 
-class GitHubEventIssueComment(GitHubEvent):
-    repository: GitHubRepository
+class GitHubEventIssueComment(GitHubEventWithRepository):
     action: GitHubEventIssueCommentActionType
     issue: GitHubIssue
     comment: GitHubComment
@@ -588,8 +591,7 @@ class GitHubEventPushCommit(typing.TypedDict):
     removed: list[str]
 
 
-class GitHubEventPush(GitHubEvent):
-    repository: GitHubRepository
+class GitHubEventPush(GitHubEventWithRepository):
     ref: GitHubRefType
     forced: bool
     before: SHAType
@@ -598,8 +600,7 @@ class GitHubEventPush(GitHubEvent):
     head_commit: GitHubEventPushCommit
 
 
-class GitHubEventStatus(GitHubEvent):
-    repository: GitHubRepository
+class GitHubEventStatus(GitHubEventWithRepository):
     sha: SHAType
 
 
@@ -707,8 +708,7 @@ GitHubCheckRunActionType = typing.Literal[
 ]
 
 
-class GitHubEventCheckRun(GitHubEvent):
-    repository: GitHubRepository
+class GitHubEventCheckRun(GitHubEventWithRepository):
     action: GitHubCheckRunActionType
     app: GitHubApp
     check_run: GitHubCheckRun
@@ -722,8 +722,7 @@ GitHubCheckSuiteActionType = typing.Literal[
 ]
 
 
-class GitHubEventCheckSuite(GitHubEvent):
-    repository: GitHubRepository
+class GitHubEventCheckSuite(GitHubEventWithRepository):
     action: GitHubCheckSuiteActionType
     app: GitHubApp
     check_suite: GitHubCheckSuite
@@ -748,6 +747,7 @@ GitHubEventMemberActionType = typing.Literal["added", "removed", "edited"]
 class GitHubEventMember(GitHubEvent):
     action: GitHubEventMemberActionType
     repository: GitHubRepository
+    member: GitHubAccount
 
 
 GitHubEventMembershipActionType = typing.Literal["added", "removed"]
