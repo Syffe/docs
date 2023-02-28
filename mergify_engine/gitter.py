@@ -9,8 +9,6 @@ import sys
 import tempfile
 import urllib.parse
 
-from ddtrace import tracer
-
 from mergify_engine import config
 from mergify_engine import github_types
 from mergify_engine import redis_utils
@@ -87,7 +85,6 @@ class Gitter:
     # Worker timeout at 5 minutes, so ensure subprocess return before
     GIT_COMMAND_TIMEOUT: int = dataclasses.field(init=False, default=4 * 60 + 30)
 
-    @tracer.wrap("gitter.init", span_type="worker")
     async def init(self) -> None:
         # TODO(sileht): use aiofiles instead of thread
         self.tmp = await asyncio.to_thread(tempfile.mkdtemp, prefix="mergify-gitter")
@@ -149,35 +146,33 @@ class Gitter:
 
         self.logger.info("calling: %s", " ".join(args))
 
-        with tracer.trace("gitter.call", span_type="worker") as span:
-            span.set_tag("args", " ".join(args))
-            try:
-                # TODO(sileht): Current user provided data in git commands are safe, but we should create an
-                # helper function for each git command to double check the input is
-                # safe, eg: like a second seatbelt. See: MRGFY-930
-                # nosemgrep: python.lang.security.audit.dangerous-asyncio-create-exec.dangerous-asyncio-create-exec
-                process = await asyncio.create_subprocess_exec(
-                    "git",
-                    *args,
-                    cwd=self.repository,
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.STDOUT,
-                    stdin=None if _input is None else asyncio.subprocess.PIPE,
-                    env=self.prepare_safe_env(_env),
-                )
+        try:
+            # TODO(sileht): Current user provided data in git commands are safe, but we should create an
+            # helper function for each git command to double check the input is
+            # safe, eg: like a second seatbelt. See: MRGFY-930
+            # nosemgrep: python.lang.security.audit.dangerous-asyncio-create-exec.dangerous-asyncio-create-exec
+            process = await asyncio.create_subprocess_exec(
+                "git",
+                *args,
+                cwd=self.repository,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.STDOUT,
+                stdin=None if _input is None else asyncio.subprocess.PIPE,
+                env=self.prepare_safe_env(_env),
+            )
 
-                stdout, _ = await asyncio.wait_for(
-                    process.communicate(
-                        input=None if _input is None else _input.encode("utf8")
-                    ),
-                    self.GIT_COMMAND_TIMEOUT,
-                )
-                output = stdout.decode("utf-8")
-                self._check_git_output(process, output)
-            finally:
-                self.logger.debug("finish: %s", " ".join(args))
+            stdout, _ = await asyncio.wait_for(
+                process.communicate(
+                    input=None if _input is None else _input.encode("utf8")
+                ),
+                self.GIT_COMMAND_TIMEOUT,
+            )
+            output = stdout.decode("utf-8")
+            self._check_git_output(process, output)
+        finally:
+            self.logger.debug("finish: %s", " ".join(args))
 
-            return output
+        return output
 
     def _check_git_output(
         self, process: asyncio.subprocess.Process, output: str
@@ -217,7 +212,6 @@ class Gitter:
             and "(stale info)" in message
         )
 
-    @tracer.wrap("gitter.cleanup", span_type="worker")
     async def cleanup(self) -> None:
         if self.tmp is None:
             return
