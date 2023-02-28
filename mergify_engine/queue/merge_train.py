@@ -115,10 +115,6 @@ CHECK_SORTING: dict[CheckStateT | None, int] = {
 }
 
 
-def is_base_branch_not_exists_exception(exc: BaseException) -> bool:
-    return isinstance(exc, http.HTTPNotFound) and "Base does not exist" in exc.message
-
-
 class UnexpectedChange:
     pass
 
@@ -2456,11 +2452,6 @@ You don't need to do anything. Mergify will close this pull request automaticall
             c.train_car_state.outcome == TrainCarOutcome.MERGEABLE
             for c in self.train._cars[:position]
         )
-
-
-class QueueFreezeWithPriority(typing.TypedDict):
-    queue_freeze: freeze.QueueFreeze
-    priority: int
 
 
 @dataclasses.dataclass
