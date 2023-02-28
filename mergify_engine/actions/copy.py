@@ -18,6 +18,7 @@ from mergify_engine import github_types
 from mergify_engine import json
 from mergify_engine import refresher
 from mergify_engine import signals
+from mergify_engine import worker_pusher
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
@@ -342,6 +343,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 action="internal",
                 pull_request_number=self.ctxt.pull["number"],
                 source=f"internal/{self.KIND}",
+                priority=worker_pusher.Priority.immediate,
             ),
         )
         gitter_service.send_job(job)
