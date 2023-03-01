@@ -573,7 +573,7 @@ class Train:
 
     async def remove_pull(
         self,
-        ctxt: context.Context,
+        pull_number: github_types.GitHubPullRequestNumber,
         signal_trigger: str,
         unqueue_reason: queue_utils.BaseUnqueueReason,
     ) -> None:
@@ -582,12 +582,12 @@ class Train:
         await self.force_remove_pull(
             self.repository,
             self.queue_rules,
-            ctxt.pull["number"],
+            pull_number,
             signal_trigger,
-            exclude_ref=ctxt.pull["base"]["ref"],
+            exclude_ref=self.ref,
         )
         await self._remove_pull_from_context(
-            ctxt.pull["number"], signal_trigger, unqueue_reason
+            pull_number, signal_trigger, unqueue_reason
         )
 
     async def _remove_pull_from_context(

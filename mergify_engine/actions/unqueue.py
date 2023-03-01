@@ -65,7 +65,7 @@ class UnqueueExecutor(
             self.rule.get_signal_trigger(),
         )
         await train.remove_pull(
-            self.ctxt,
+            self.ctxt.pull["number"],
             self.rule.get_signal_trigger(),
             queue_utils.PrDequeued(
                 self.ctxt.pull["number"], " by an `unqueue` command."

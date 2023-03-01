@@ -180,7 +180,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             if self.ctxt.pull["merge_commit_sha"] is None:
                 raise RuntimeError("pull request merged but merge_commit_sha is null")
             await queue.remove_pull(
-                self.ctxt,
+                self.ctxt.pull["number"],
                 self.rule.get_signal_trigger(),
                 queue_utils.PrMerged(
                     self.ctxt.pull["number"], self.ctxt.pull["merge_commit_sha"]
@@ -253,13 +253,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
             )
 
         for embarked_pull in car.still_queued_embarked_pulls.copy():
-            other_ctxt = await queue.repository.get_pull_request_context(
-                embarked_pull.user_pull_request_number
-            )
             await queue.remove_pull(
-                other_ctxt,
+                embarked_pull.user_pull_request_number,
                 self.rule.get_signal_trigger(),
-                queue_utils.PrMerged(self.ctxt.pull["number"], newsha),
+                queue_utils.PrMerged(embarked_pull.user_pull_request_number, newsha),
             )
 
         return check_api.Result(
@@ -423,7 +420,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 ],
             )
             await q.remove_pull(
-                self.ctxt,
+                self.ctxt.pull["number"],
                 self.rule.get_signal_trigger(),
                 unexpected_change,
             )
@@ -469,7 +466,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         except Exception as e:
             if not exceptions.need_retry(e):
                 await q.remove_pull(
-                    self.ctxt,
+                    self.ctxt.pull["number"],
                     self.rule.get_signal_trigger(),
                     queue_utils.PrUnexpectedlyFailedToMerge(),
                 )
@@ -516,7 +513,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 ),
             )
 
-        await q.remove_pull(self.ctxt, self.rule.get_signal_trigger(), unqueue_reason)
+        await q.remove_pull(
+            self.ctxt.pull["number"], self.rule.get_signal_trigger(), unqueue_reason
+        )
 
     async def cancel(self) -> check_api.Result:
         q = await merge_train.Train.from_context(self.ctxt, self.queue_rules)

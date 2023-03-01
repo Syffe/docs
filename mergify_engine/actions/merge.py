@@ -118,7 +118,7 @@ class MergeExecutor(
                 )
                 if queue.is_queued(self.ctxt.pull["number"]):
                     await queue.remove_pull(
-                        self.ctxt,
+                        self.ctxt.pull["number"],
                         self.rule.get_signal_trigger(),
                         queue_utils.PrDequeued(
                             self.ctxt.pull["number"],
