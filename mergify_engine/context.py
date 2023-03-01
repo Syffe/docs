@@ -1023,29 +1023,33 @@ class Context:
         self.pull_request = PullRequest(self)
         self.log = daiquiri.getLogger(
             self.__class__.__qualname__,
+            gh_pull=self.pull["number"],
             gh_owner=self.pull["base"]["user"]["login"]
             if "base" in self.pull
-            else "<unknown-yet>",
+            else "<unknown>",
             gh_repo=(
                 self.pull["base"]["repo"]["name"]
                 if "base" in self.pull
-                else "<unknown-yet>"
+                else "<unknown>"
             ),
             gh_private=(
                 self.pull["base"]["repo"]["private"]
                 if "base" in self.pull
-                else "<unknown-yet>"
+                else "<unknown>"
             ),
-            gh_branch=self.pull["base"]["ref"]
-            if "base" in self.pull
-            else "<unknown-yet>",
-            gh_pull=self.pull["number"],
+            gh_branch=self.pull["base"]["ref"] if "base" in self.pull else "<unknown>",
+            gh_pull_head_ref=self.pull["head"]["ref"]
+            if "head" in self.pull
+            else "<unknown>",
+            gh_pull_head_owner=self.pull["head"]["user"]["login"]
+            if "head" in self.pull and self.pull["head"]["user"] is not None
+            else "<unknown>",
             gh_pull_base_sha=self.pull["base"]["sha"]
             if "base" in self.pull
-            else "<unknown-yet>",
+            else "<unknown>",
             gh_pull_head_sha=self.pull["head"]["sha"]
             if "head" in self.pull
-            else "<unknown-yet>",
+            else "<unknown>",
             gh_pull_locked=self.pull["locked"],
             gh_pull_merge_commit_sha=self.pull["merge_commit_sha"],
             gh_pull_url=self.pull.get("html_url", "<unknown-yet>"),
