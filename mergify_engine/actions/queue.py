@@ -1,3 +1,7 @@
+# FIXME(sileht): we need to revist action.config and executor.config a lot of
+# branches are not checked by mypy because it think the code is unreachable
+# MRGFY-1994
+# mypy: disable-error-code=unreachable
 from __future__ import annotations
 
 from collections import abc

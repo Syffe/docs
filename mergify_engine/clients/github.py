@@ -593,7 +593,8 @@ class AsyncGithubInstallationClient(AsyncGithubClient):
             _check_rate_limit(self, response)
         finally:
             if response is None:
-                status_code = "error"
+                # https://github.com/python/mypy/issues/13104
+                status_code = "error"  # type: ignore[unreachable]
             else:
                 status_code = str(response.status_code)
             tags = [f"hostname:{self.base_url.host}", f"status_code:{status_code}"]

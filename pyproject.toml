@@ -177,6 +177,7 @@ target-version = ['py311']
 
 [tool.mypy]
 strict = true
+warn_unreachable = true
 exclude = [".venv"]
 files = ["mergify_engine"]
 show_error_codes = true

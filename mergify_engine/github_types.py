@@ -123,7 +123,7 @@ class GitHubRepositoryPermission(enum.Enum):
         """Return all permissions including the permission and above it"""
         return [p for p in cls.__members__.values() if p >= permission]
 
-    def __lt__(self, other: "GitHubRepositoryPermission") -> bool:
+    def __lt__(self, other: typing.Any) -> bool:
         if isinstance(other, GitHubRepositoryPermission):
             return self.level < other.level
         return NotImplemented
@@ -386,7 +386,7 @@ class GitHubPullRequest(GitHubIssueOrPullRequest):
     draft: bool
     merge_commit_sha: SHAType | None
     mergeable: bool | None
-    mergeable_state: GitHubPullRequestMergeableState
+    mergeable_state: GitHubPullRequestMergeableState | None
     html_url: str
     issue_url: str
     title: str

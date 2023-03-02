@@ -205,7 +205,8 @@ def extract_command_state(
         or "command" not in payload
         or "conclusion" not in payload
     ):
-        LOG.warning("got command with invalid payload", payload=payload)
+        # backward compat <= 7.2.1
+        LOG.warning("got command with invalid payload", payload=payload)  # type: ignore[unreachable]
         raise NoCommandStateFound()
 
     try:

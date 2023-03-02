@@ -235,8 +235,8 @@ class TrainCar:
             ]
 
         else:
-            # old format
-            initial_embarked_pulls = [
+            # old format < 7.0
+            initial_embarked_pulls = [  # type: ignore[unreachable]
                 ep_import.EmbarkedPull(
                     train,
                     data["user_pull_request_number"],
@@ -269,14 +269,16 @@ class TrainCar:
                 TrainCar.deserialize(train, fh) for fh in data["failure_history"]
             ]
         else:
-            failure_history = []
+            # backward compat <= 7.2.1
+            failure_history = []  # type: ignore[unreachable]
 
         if "last_checks" in data:
             last_checks = [
                 merge_train_checks.QueueCheck(**c) for c in data["last_checks"]
             ]
         else:
-            last_checks = []
+            # backward compat <= 7.2.1
+            last_checks = []  # type: ignore[unreachable]
 
         if (
             checks_type == TrainCarChecksType.INPLACE
@@ -287,7 +289,8 @@ class TrainCar:
             ].user_pull_request_number
 
         if "head_branch" not in data:
-            if checks_type == TrainCarChecksType.DRAFT:
+            # backward compat <= 7.2.1
+            if checks_type == TrainCarChecksType.DRAFT:  # type: ignore[unreachable]
                 data["head_branch"] = cls._get_pulls_branch_ref(
                     initial_embarked_pulls,
                     data["parent_pull_request_numbers"],
@@ -295,9 +298,9 @@ class TrainCar:
             else:
                 data["head_branch"] = None
 
-        # Retrocompatibility
+        # backward compat <= 7.2.1
         if "queue_branch_name" not in data:
-            data["queue_branch_name"] = github_types.GitHubRefType(
+            data["queue_branch_name"] = github_types.GitHubRefType(  # type: ignore[unreachable]
                 f"{constants.MERGE_QUEUE_BRANCH_PREFIX}{train.ref}/{cls._get_pulls_branch_ref(initial_embarked_pulls)}"
             )
 
@@ -351,7 +354,8 @@ class TrainCar:
                 repository, queue_rules, data["train_car_state"]
             )
         else:
-            outcome = TrainCarOutcome.UNKNOWN
+            # backward compat < 6.0
+            outcome = TrainCarOutcome.UNKNOWN  # type: ignore[unreachable]
             ci_state = merge_train_types.CiState.PENDING
             outcome_message = ""
             legacy_queue_conditions_conclusion = check_api.Conclusion.PENDING
@@ -1734,7 +1738,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
                     description=status["description"] or "",
                     avatar_url=status["avatar_url"] or "",
                     url=status["target_url"] or "",
-                    state=status["state"] or "pending",
+                    state=status["state"],
                 )
             )
 

@@ -4,6 +4,8 @@ import datetime
 import enum
 import typing
 
+import daiquiri
+
 from mergify_engine import config
 from mergify_engine import date
 from mergify_engine import github_types
@@ -11,6 +13,8 @@ from mergify_engine import json
 from mergify_engine import utils
 from mergify_engine.clients import http
 
+
+LOG = daiquiri.getLogger(__name__)
 
 if typing.TYPE_CHECKING:
     from mergify_engine import context
@@ -189,8 +193,16 @@ def check_need_update(
         typing.cast(dict[str, typing.Any], previous_check),
         ("head_sha", "status", "conclusion", "details_url"),
     ):
-        if previous_check["output"] is None and expected_check["output"] is None:
-            return False
+        # FIXME(sileht): according mypy and GitHub Doc this is impossible, but since
+        # we write I prefer check in production before removing the runtime check
+        if previous_check["output"] is None:
+            LOG.error("GitHub check-run found with output=null", check=previous_check)  # type: ignore[unreachable]
+        if expected_check["output"] is None:
+            LOG.error("Generated check-run with output=null", check=expected_check)  # type: ignore[unreachable]
+
+        if previous_check["output"] is None and expected_check["output"] is None:  # type: ignore[unreachable]
+            return False  # type: ignore[unreachable]
+
         elif previous_check["output"] is not None and compare_dict(
             typing.cast(dict[str, typing.Any], expected_check["output"]),
             typing.cast(dict[str, typing.Any], previous_check["output"]),
@@ -228,6 +240,10 @@ async def set_check_run(
             },
         }
     )
+
+    # please mypy
+    if post_parameters["output"] is None:
+        raise RuntimeError("just set output is empty")
 
     if result.annotations is not None:
         post_parameters["output"]["annotations"] = result.annotations

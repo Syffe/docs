@@ -2777,7 +2777,8 @@ async def test_start_stop_cycle(
     assert not w._stopped.is_set()
     assert w._stop_task is not None
 
-    await w.wait_shutdown_complete()
+    # https://github.com/python/mypy/issues/11969
+    await w.wait_shutdown_complete()  # type: ignore[unreachable]
 
     assert len(w._services) == 0
     assert w._stopped.is_set()

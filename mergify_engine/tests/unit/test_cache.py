@@ -23,7 +23,8 @@ def test_cache_dict_interface() -> None:
     assert c["foo"] is cache.Unset
     c["foo"] = False
     assert not c["foo"]
-    c["foo"] = True
+    # https://github.com/python/mypy/issues/11969
+    c["foo"] = True  # type: ignore[unreachable]
     assert c["foo"]
     del c["foo"]
     assert c.get("foo") is cache.Unset

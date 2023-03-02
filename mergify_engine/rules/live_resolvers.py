@@ -22,8 +22,8 @@ async def _resolve_login(
 ) -> list[github_types.GitHubLogin]:
     if not name:
         return []
-    elif not isinstance(name, str):
-        return [github_types.GitHubLogin(name)]
+    elif not isinstance(name, str):  # runtime seatbelt
+        return [github_types.GitHubLogin(name)]  # type: ignore[unreachable]
     elif name[0] != "@":
         return [github_types.GitHubLogin(name)]
 

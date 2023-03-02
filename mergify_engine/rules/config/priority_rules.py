@@ -85,7 +85,8 @@ class PriorityRules:
         final_priority = None
         for rule in matching_priority_rules:
             rule_priority = queue.Priority(rule.priority)
-            if final_priority is None or rule_priority > final_priority:
+            # https://github.com/python/mypy/issues/13973
+            if final_priority is None or rule_priority > final_priority:  # type: ignore[unreachable]
                 final_priority = rule_priority
 
         return final_priority

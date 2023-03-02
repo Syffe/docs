@@ -13,7 +13,7 @@ async def test_summary_synchronization_cache(
     async def items(
         *args: typing.Any, **kwargs: typing.Any
     ) -> abc.AsyncGenerator[None, None]:
-        if False:
+        for _ in []:
             yield
         return
 

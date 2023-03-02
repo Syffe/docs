@@ -1,3 +1,5 @@
+# FIXME(sileht): https://github.com/Mergifyio/engine/pull/4644
+# mypy: disable-error-code=unreachable
 import dataclasses
 import typing
 

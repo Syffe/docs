@@ -180,11 +180,11 @@ class ApplicationSaas(ApplicationBase):
             )
             if "account_scope" not in decrypted_application:
                 # TODO(sileht): Backward compat, delete me <= 7.2.1
-                return None
+                return  # type: ignore[unreachable]
 
             if data["github_account"] is None:
                 # TODO(sileht): Backward compat, delete me <= 7.2.1
-                return
+                return  # type: ignore[unreachable]
 
             app = cls(
                 redis,
@@ -226,15 +226,15 @@ class ApplicationSaas(ApplicationBase):
 
             if "account_scope" not in decrypted_application:
                 # TODO(sileht): Backward compat, delete me
-                return None
+                return  # type: ignore[unreachable]
 
             if decrypted_application["account_scope"] is None:
                 # TODO(sileht): Backward compat, delete me
-                return None
+                return  # type: ignore[unreachable]
 
             if "id" not in decrypted_application:
                 # TODO(sileht): Backward compat, delete me
-                return None
+                return  # type: ignore[unreachable]
 
             return cls(
                 redis,

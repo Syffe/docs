@@ -1158,7 +1158,8 @@ def get_farthest_datetime_from_non_match_schedule_condition(
             schedule_next_datetime = schedule_obj.get_next_datetime(from_time)
             if (
                 farthest_datetime_from_non_match_conditions is None
-                or schedule_next_datetime > farthest_datetime_from_non_match_conditions
+                # https://github.com/python/mypy/issues/13973
+                or schedule_next_datetime > farthest_datetime_from_non_match_conditions  # type: ignore[unreachable]
             ):
                 farthest_datetime_from_non_match_conditions = schedule_next_datetime
 

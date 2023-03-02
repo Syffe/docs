@@ -216,7 +216,7 @@ def Jinja2(
 
 
 def Jinja2WithNone(
-    value: str, extra_variables: dict[str, typing.Any] | None = None
+    value: str | None, extra_variables: dict[str, typing.Any] | None = None
 ) -> str | None:
     if value is None:
         return None

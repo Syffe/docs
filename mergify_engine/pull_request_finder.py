@@ -137,7 +137,9 @@ class PullRequestFinder:
         result = await self.installation.redis.cache.hgetall(cache_key)
 
         if result is None:
-            cached_pulls = []
+            # FIXME(sileht): something is wrong here, does hgetall return an
+            # empty dict when key is missing ? MRGFY-1993
+            cached_pulls = []  # type: ignore[unreachable]
             pipe = await self.installation.redis.cache.pipeline()
             async for p in self.installation.client.items(
                 f"/repositories/{repo_id}/pulls",

@@ -40,7 +40,7 @@ def test_jinja2_None() -> None:
         types.Jinja2(None)
     assert str(x.value) == "Template cannot be null"
 
-    assert types.Jinja2WithNone(None) is None  # type: ignore[arg-type]
+    assert types.Jinja2WithNone(None) is None
 
 
 def test_jinja2_not_str() -> None:
@@ -48,7 +48,7 @@ def test_jinja2_not_str() -> None:
         types.Jinja2({"title": None})
     assert str(x.value) == "Template must be a string"
 
-    assert types.Jinja2WithNone(None) is None  # type: ignore[arg-type]
+    assert types.Jinja2WithNone(None) is None
 
 
 def test_jinja2_unknown_attr() -> None:

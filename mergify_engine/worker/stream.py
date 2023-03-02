@@ -764,8 +764,9 @@ class Processor:
         sources: list[context.T_PayloadEventSource],
     ) -> None:
         for source in sources:
+            # backward compat <= 7.2.1
             if "timestamp" not in source:
-                continue
+                continue  # type: ignore[unreachable]
 
             if "initial_score" in source:
                 priority = worker_pusher.get_priority_level_from_score(
@@ -773,7 +774,7 @@ class Processor:
                 )
             else:
                 # backward compat <= 7.2.1
-                priority = bucket.priority
+                priority = bucket.priority  # type: ignore[unreachable]
 
             statsd.histogram(
                 "engine.buckets.events.latency",
@@ -862,9 +863,4 @@ async def get_dedicated_worker_owner_ids_from_redis(
     redis_stream: redis_utils.RedisStream,
 ) -> set[github_types.GitHubAccountIdType]:
     dedicated_workers_data = await redis_stream.smembers(DEDICATED_WORKERS_KEY)
-    if dedicated_workers_data is None:
-        return set()
-    else:
-        return {
-            github_types.GitHubAccountIdType(int(v)) for v in dedicated_workers_data
-        }
+    return {github_types.GitHubAccountIdType(int(v)) for v in dedicated_workers_data}

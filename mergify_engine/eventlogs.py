@@ -242,8 +242,6 @@ class EventLogsSignal(signals.SignalBase):
             return
 
         redis = repository.installation.redis.eventlogs
-        if redis is None:
-            return
 
         if repository.installation.subscription.has_feature(
             subscription.Features.EVENTLOGS_LONG
@@ -298,9 +296,6 @@ async def get(
     pull_request: github_types.GitHubPullRequestNumber | None = None,
 ) -> pagination.Page[Event]:
     redis = repository.installation.redis.eventlogs
-    if redis is None:
-        return pagination.Page([], page)
-
     if repository.installation.subscription.has_feature(
         subscription.Features.EVENTLOGS_LONG
     ):
@@ -460,7 +455,7 @@ async def get(
             events.append(typing.cast(EventQueueFreezeDelete, event))
 
         else:
-            LOG.error("unsupported event-type, skipping", event=event)
+            LOG.error("unsupported event-type, skipping", event=event)  # type: ignore[unreachable]
 
     return pagination.Page(
         items=events,

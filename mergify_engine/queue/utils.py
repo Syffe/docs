@@ -55,17 +55,10 @@ class PrDequeued(BaseUnqueueReason):
 
 @dataclasses.dataclass
 class PrMerged(BaseUnqueueReason):
-    message = "Pull request #{pr_number} has been merged automatically{sha_for_message}"  # noqa: FS003
+    message = "Pull request #{pr_number} has been merged automatically at *{sha}*"  # noqa: FS003
     unqueue_code: typing.ClassVar[typing.Literal["PR_MERGED"]] = "PR_MERGED"
     pr_number: int
     sha: github_types.SHAType
-
-    @property
-    def sha_for_message(self) -> str:
-        if self.sha is None:
-            return ""
-        else:
-            return f" at *{self.sha}*"
 
 
 @dataclasses.dataclass
