@@ -273,9 +273,6 @@ Schema = voluptuous.Schema(
         voluptuous.Required("CACHE_TOKEN_SECRET_OLD", default=None): voluptuous.Any(
             None, str
         ),
-        voluptuous.Required("WORKER_SHUTDOWN_TIMEOUT", default=10): voluptuous.Coerce(
-            float
-        ),
         voluptuous.Required(
             "ALLOW_QUEUE_PRIORITY_ATTRIBUTE", default=True
         ): CoercedBool,
@@ -379,7 +376,6 @@ OAUTH_CLIENT_ID: str
 OAUTH_CLIENT_SECRET: str
 ACCOUNT_TOKENS: list[tuple[int, str, str]]
 APPLICATION_APIKEYS: dict[str, ApplicationAPIKey]
-WORKER_SHUTDOWN_TIMEOUT: float
 ALLOW_QUEUE_PRIORITY_ATTRIBUTE: bool
 ALLOW_REBASE_FALLBACK_ATTRIBUTE: bool
 REDIS_SSL_VERIFY_MODE_CERT_NONE: bool

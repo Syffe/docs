@@ -143,11 +143,9 @@ class StreamService(abc.ABC):
 class DedicatedStreamService(StreamService):
     process_index: int
     idle_sleep_time: float
-    dedicated_workers_shutdown_timeout: float
     dedicated_stream_processes: int
     dedicated_workers_spawner_idle_time: float
     dedicated_workers_cache_syncer: DedicatedWorkersCacheSyncerService
-
     _dedicated_workers_spawner_task: task.TaskRetriedForever = dataclasses.field(
         init=False
     )
@@ -207,9 +205,7 @@ class DedicatedStreamService(StreamService):
 
         tasks = [self._dedicated_worker_tasks[owner_id] for owner_id in to_stop]
         if tasks:
-            await task.stop_wait_and_kill(
-                tasks, self.dedicated_workers_shutdown_timeout
-            )
+            await task.stop_and_wait(tasks)
 
         for owner_id in to_stop:
             del self._dedicated_worker_tasks[owner_id]

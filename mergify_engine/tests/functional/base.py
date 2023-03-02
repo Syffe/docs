@@ -693,7 +693,6 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             dedicated_workers_syncer_idle_time=0.01,
             retry_handled_exception_forever=False,
             gitter_concurrent_jobs=1,
-            shutdown_timeout=0,
         )
         await w.start()
         gitter_serv = w.get_service(gitter_service.GitterService)
@@ -737,7 +736,6 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             dedicated_workers_cache_syncer=syncer_service,
             process_index=0,
             idle_sleep_time=0,
-            dedicated_workers_shutdown_timeout=0,
             dedicated_stream_processes=0,
             dedicated_workers_spawner_idle_time=0,
             retry_handled_exception_forever=False,
@@ -753,12 +751,11 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             while not gitter_serv._queue.empty():
                 await gitter_serv._gitter_worker(0)
 
-        await task.stop_wait_and_kill(
+        await task.stop_and_wait(
             syncer_service.tasks
             + dedicated_service.tasks
             + shared_service.tasks
-            + gitter_serv.tasks,
-            timeout=0,
+            + gitter_serv.tasks
         )
 
     def get_gitter(

@@ -91,8 +91,6 @@ class ServiceManager:
         default_factory=lambda: AVAILABLE_WORKER_SERVICES.copy()
     )
 
-    shutdown_timeout: float = config.WORKER_SHUTDOWN_TIMEOUT
-
     # DelayedRefreshService
     delayed_refresh_idle_time: float = 60
 
@@ -101,7 +99,6 @@ class ServiceManager:
 
     # DedicatedStreamService
     dedicated_workers_spawner_idle_time: float = 60
-    dedicated_workers_shutdown_timeout: float = 60.0
     dedicated_stream_processes: int = config.DEDICATED_STREAM_PROCESSES
 
     # SharedStreamService
@@ -188,7 +185,6 @@ class ServiceManager:
                     retry_handled_exception_forever=self.retry_handled_exception_forever,
                     process_index=self.process_index,
                     idle_sleep_time=self.idle_sleep_time,
-                    dedicated_workers_shutdown_timeout=self.dedicated_workers_shutdown_timeout,
                     dedicated_stream_processes=self.dedicated_stream_processes,
                     dedicated_workers_spawner_idle_time=self.dedicated_workers_spawner_idle_time,
                     dedicated_workers_cache_syncer=dedicated_workers_cache_syncer,
@@ -228,8 +224,8 @@ class ServiceManager:
                 else:
                     other_tasks.append(a_task)
 
-        await task.stop_wait_and_kill(tasks_that_must_shutdown_first)
-        await task.stop_wait_and_kill(other_tasks, self.shutdown_timeout)
+        await task.stop_and_wait(tasks_that_must_shutdown_first)
+        await task.stop_and_wait(other_tasks)
 
     async def _shutdown(self) -> None:
         LOG.info("shutdown start")

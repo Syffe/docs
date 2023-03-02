@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import datetime
 import html
@@ -338,6 +339,8 @@ async def exec_action(
         else:
             raise RuntimeError("wrong method_name")
         result = await method()
+    except asyncio.CancelledError:
+        raise
     except Exception as e:  # pragma: no cover
         # Forward those to worker
         if (

@@ -112,11 +112,9 @@ HTTP_500_EXCEPTION = http.HTTPServerSideError(
 
 
 async def just_run_once(
-    self: task.TaskRetriedForever,
-    coro: task.TaskRetriedForeverFuncT,
-    sleep_time: float,
+    name: str, func: task.TaskRetriedForeverFuncT, sleep_time: float
 ) -> None:
-    await coro()
+    await func()
 
 
 @pytest.fixture
@@ -161,8 +159,6 @@ async def run_worker(
 ) -> manager.ServiceManager:
     w = manager.ServiceManager(
         idle_sleep_time=0.01,
-        shutdown_timeout=0,
-        dedicated_workers_shutdown_timeout=0,
         monitoring_idle_time=0.01,
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
@@ -766,10 +762,7 @@ async def test_worker_start_redis_ping(
         fake(),
     ]
 
-    w = manager.ServiceManager(
-        enabled_services=set(),
-        shutdown_timeout=0,
-    )
+    w = manager.ServiceManager(enabled_services=set())
 
     with mock.patch.object(tenacity.wait_exponential, "__call__", return_value=0):
         await w.start()
@@ -1386,9 +1379,7 @@ async def test_stream_processor_priority(
     shared_service.shared_stream_tasks_per_process = 1
     request.addfinalizer(
         lambda: event_loop.run_until_complete(
-            task.stop_wait_and_kill(
-                syncer_service.tasks + shared_service.tasks, timeout=0
-            )
+            task.stop_and_wait(syncer_service.tasks + shared_service.tasks)
         )
     )
 
@@ -1462,9 +1453,7 @@ async def test_stream_processor_date_scheduling(
     shared_service.shared_stream_tasks_per_process = 1
     request.addfinalizer(
         lambda: event_loop.run_until_complete(
-            task.stop_wait_and_kill(
-                syncer_service.tasks + shared_service.tasks, timeout=0
-            )
+            task.stop_and_wait(syncer_service.tasks + shared_service.tasks)
         )
     )
 
@@ -1851,7 +1840,6 @@ async def test_dedicated_worker_scaleup_scaledown(
         dedicated_workers_spawner_idle_time=0.01,
         dedicated_workers_syncer_idle_time=0.01,
         gitter_concurrent_jobs=1,
-        shutdown_timeout=0,
     )
     await w.start()
     request.addfinalizer(lambda: event_loop.run_until_complete(w._shutdown()))
@@ -2005,7 +1993,6 @@ async def test_dedicated_worker_process_scaleup_scaledown(
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
         dedicated_workers_syncer_idle_time=0.01,
-        shutdown_timeout=0,
     )
     await w_dedicated.start()
     w_shared = manager.ServiceManager(
@@ -2015,7 +2002,6 @@ async def test_dedicated_worker_process_scaleup_scaledown(
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
         dedicated_workers_syncer_idle_time=0.01,
-        shutdown_timeout=0,
     )
     await w_shared.start()
 
@@ -2192,7 +2178,6 @@ async def test_separate_dedicated_worker(
         idle_sleep_time=0.01,
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
-        shutdown_timeout=0,
     )
     await shared_w.start()
 
@@ -2202,7 +2187,6 @@ async def test_separate_dedicated_worker(
         idle_sleep_time=0.01,
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
-        shutdown_timeout=0,
     )
 
     tracker = []
@@ -2450,7 +2434,6 @@ async def test_get_shared_worker_ids(
     assert manager.get_process_index_from_env() == 0
     w1 = manager.ServiceManager(
         enabled_services={"shared-stream"},
-        shutdown_timeout=0,
         shared_stream_processes=2,
         shared_stream_tasks_per_process=30,
     )
@@ -2467,7 +2450,6 @@ async def test_get_shared_worker_ids(
     assert manager.get_process_index_from_env() == 1
     w2 = manager.ServiceManager(
         enabled_services={"shared-stream"},
-        shutdown_timeout=0,
         shared_stream_processes=2,
         shared_stream_tasks_per_process=30,
     )
@@ -2499,7 +2481,6 @@ async def test_get_my_dedicated_worker_ids(
     assert manager.get_process_index_from_env() == 0
     w1 = manager.ServiceManager(
         enabled_services={"shared-stream", "dedicated-stream"},
-        shutdown_timeout=0,
         shared_stream_processes=0,
         dedicated_stream_processes=2,
     )
@@ -2518,7 +2499,6 @@ async def test_get_my_dedicated_worker_ids(
     assert manager.get_process_index_from_env() == 1
     w2 = manager.ServiceManager(
         enabled_services={"shared-stream", "dedicated-stream"},
-        shutdown_timeout=0,
         shared_stream_processes=0,
         dedicated_stream_processes=2,
     )
@@ -2612,7 +2592,6 @@ async def test_dedicated_multiple_processes(
         dedicated_workers_syncer_idle_time=0.01,
         dedicated_stream_processes=0,
         process_index=0,
-        shutdown_timeout=0,
     )
     await w_shared.start()
     w1 = manager.ServiceManager(
@@ -2623,7 +2602,6 @@ async def test_dedicated_multiple_processes(
         dedicated_workers_syncer_idle_time=0.01,
         dedicated_stream_processes=2,
         process_index=0,
-        shutdown_timeout=0,
     )
     await w1.start()
 
@@ -2636,7 +2614,6 @@ async def test_dedicated_multiple_processes(
         dedicated_workers_syncer_idle_time=0.01,
         dedicated_stream_processes=2,
         process_index=1,
-        shutdown_timeout=0,
     )
     await w2.start()
 
@@ -2765,7 +2742,6 @@ async def test_start_stop_cycle(
         dedicated_stream_processes=1,
         process_index=0,
         gitter_concurrent_jobs=2,
-        shutdown_timeout=0,
     )
     assert w._stopped.is_set()
     assert w._stop_task is None

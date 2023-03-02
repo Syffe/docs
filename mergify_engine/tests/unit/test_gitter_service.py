@@ -18,9 +18,7 @@ async def test_gitter_service_lifecycle(
     )
     assert gitter_service.GitterService._instance is not None
     request.addfinalizer(
-        lambda: event_loop.run_until_complete(
-            task.stop_wait_and_kill(service.tasks, timeout=0)
-        )
+        lambda: event_loop.run_until_complete(task.stop_and_wait(service.tasks))
     )
     method = mock.AsyncMock(return_value="result")
     callback = mock.AsyncMock()
@@ -53,9 +51,7 @@ async def test_gitter_service_exception(
     )
     assert gitter_service.GitterService._instance is not None
     request.addfinalizer(
-        lambda: event_loop.run_until_complete(
-            task.stop_wait_and_kill(service.tasks, timeout=0)
-        )
+        lambda: event_loop.run_until_complete(task.stop_and_wait(service.tasks))
     )
     method = mock.AsyncMock(side_effect=Exception("boom"))
     callback = mock.AsyncMock()
@@ -89,9 +85,7 @@ async def test_gitter_service_concurrency(
         concurrent_jobs=4, monitoring_idle_time=0, idle_sleep_time=0.01
     )
     request.addfinalizer(
-        lambda: event_loop.run_until_complete(
-            task.stop_wait_and_kill(service.tasks, timeout=0)
-        )
+        lambda: event_loop.run_until_complete(task.stop_and_wait(service.tasks))
     )
     waiter_started = asyncio.Event()
     job_1_start = asyncio.Event()

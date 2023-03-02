@@ -1,6 +1,6 @@
 import asyncio
 from collections import abc
-import typing
+import dataclasses
 
 import daiquiri
 from datadog import statsd  # type: ignore[attr-defined]
@@ -13,79 +13,65 @@ LOG = daiquiri.getLogger(__name__)
 TaskRetriedForeverFuncT = abc.Callable[[], abc.Awaitable[None]]
 
 
-class TaskRetriedForever(asyncio.Task[typing.Any]):
-    def __init__(
-        self,
-        name: str,
-        func: TaskRetriedForeverFuncT,
-        sleep_time: float,
-        must_shutdown_first: bool = True,
-    ) -> None:
-        LOG.info(f"{name} starting")
-        self.must_shutdown_first = must_shutdown_first
-        self._stopping = asyncio.Event()
-        self.name = name
-        super().__init__(
-            self.with_dedicated_sentry_hub(
-                self.loop_and_sleep_forever(func, sleep_time)
-            ),
-            name=name,
-        )
-        LOG.info(f"{name} started")
+@dataclasses.dataclass
+class TaskRetriedForever:
+    name: str
+    func: TaskRetriedForeverFuncT
+    sleep_time: float
+    must_shutdown_first: bool = False
 
-    def stop(self) -> None:
-        if self._stopping.is_set():
-            raise RuntimeError(f"Worker task `{self.get_name()}` already stopped")
-        self._stopping.set()
+    task: asyncio.Task[None] = dataclasses.field(init=False, repr=False)
+
+    def __post_init__(self) -> None:
+        LOG.info(f"{self.name} starting")
+        self.task = asyncio.create_task(
+            self.loop_and_sleep_forever(self.name, self.func, self.sleep_time),
+            name=self.name,
+        )
+        self.task.add_done_callback(self._exited)
+
+    def _exited(self, fut: asyncio.Future[None]) -> None:
+        LOG.info("%s task exited", self.name)
 
     @staticmethod
-    async def with_dedicated_sentry_hub(coro: abc.Awaitable[None]) -> None:
-        with sentry_sdk.Hub(sentry_sdk.Hub.current):
-            await coro
-
     async def loop_and_sleep_forever(
-        self, func: TaskRetriedForeverFuncT, sleep_time: float
+        name: str, func: TaskRetriedForeverFuncT, sleep_time: float
     ) -> None:
-        while not self._stopping.is_set():
-            try:
-                await func()
-            except asyncio.CancelledError:
-                LOG.info("%s task killed", self.get_name())
-                return
-            except redis_exceptions.ConnectionError:
-                statsd.increment("redis.client.connection.errors")
-                LOG.warning(
-                    "%s task lost Redis connection",
-                    self.get_name(),
-                    exc_info=True,
-                )
-            except Exception:
-                LOG.error("%s task failed", self.get_name(), exc_info=True)
+        with sentry_sdk.Hub(sentry_sdk.Hub.current):
+            while True:
+                try:
+                    await func()
+                except redis_exceptions.ConnectionError:
+                    statsd.increment("redis.client.connection.errors")
+                    LOG.warning(
+                        "%s task lost Redis connection",
+                        name,
+                        exc_info=True,
+                    )
+                except Exception:
+                    LOG.error("%s task failed", name, exc_info=True)
 
-            try:
-                await asyncio.wait_for(self._stopping.wait(), timeout=sleep_time)
-            except asyncio.CancelledError:
-                LOG.info("%s task killed", self.get_name())
-                return
-            except asyncio.TimeoutError:
-                pass
-
-        LOG.debug("%s task exited", self.get_name())
+                await asyncio.sleep(sleep_time)
 
 
-async def stop_wait_and_kill(
-    tasks: list[TaskRetriedForever], timeout: float | None = None
-) -> None:
+async def stop_and_wait(tasks: list[TaskRetriedForever]) -> None:
     names = [t.name for t in tasks]
     LOG.info("tasks stopping", tasks=names, count=len(tasks))
-    for a_task in tasks:
-        a_task.stop()
     if tasks:
-        _, pendings = await asyncio.wait(tasks, timeout=timeout)
-        if pendings:
-            pending_names = [t.name for t in pendings]
-            LOG.info("tasks killing", tasks=pending_names, count=len(pendings))
-            for pending in pendings:
-                pending.cancel(msg="shutdown")
-            await asyncio.wait(pendings)
+        pendings = {t.task for t in tasks}
+        while pendings:
+            # NOTE(sileht): sometime tasks didn't get cancelled correctly (eg:
+            # the CancelledError didn't reach the top of the stack), this means
+            # somewhere we have a catch-all except that didn't re-raise
+            # CancelledError. To workaround the issue, we just re-cancel the
+            # task and hope the current frame is not within this buggy
+            # try/except.
+            for a_task in pendings:
+                a_task.cancel(msg="shutdown")
+            _, pendings = await asyncio.wait(pendings, timeout=0)
+            if pendings:
+                LOG.warning(
+                    "some tasks are too slow to exits, retrying",
+                    tasks=[t.get_name() for t in pendings],
+                )
     LOG.info("tasks stopped", tasks=names, count=len(tasks))
