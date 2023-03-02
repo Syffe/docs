@@ -7,7 +7,6 @@ on:
   schedule:
     - cron: "0 14 * * 1-5"
 
-
 jobs:
   record:
     timeout-minutes: 120
@@ -44,14 +43,14 @@ jobs:
 
       - name: Build 🔧 & Test 🔍
         run: |
-           cat > test.env << EOF
-           ${{ secrets[matrix.target.secret_name] }}
-           EOF
-           # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
-           pip install -r requirements-poetry.txt
-           tools/poetry-ci-install.sh
-           DOW=$(date +%u)
-           poetry run poe record -- --splits 5 --group "${DOW}"
+          cat > test.env << EOF
+          ${{ secrets[matrix.target.secret_name] }}
+          EOF
+          # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
+          pip install -r requirements-poetry.txt
+          tools/poetry-ci-install.sh
+          DOW=$(date +%u)
+          poetry run poe record -- --splits 5 --group "${DOW}"
 
       - name: Fetch check run html url
         id: fetch-check-run
@@ -82,42 +81,8 @@ jobs:
 
       - name: Report Status
         if: always()
-        uses: slackapi/slack-github-action@v1.23.0
+        uses: Mergifyio/gha-slack-notification@main
         with:
-          payload: |
-            {
-              "attachments": [
-                {
-                  "color": "#${{ steps.report-status.outputs.color }}",
-                  "blocks": [
-                    {
-                      "type": "header",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "${{ matrix.target.name }}, engine fixture re-generation tests",
-                        "emoji": true
-                      }
-                    },
-                    {
-                      "type": "section",
-                      "text": {
-                        "type": "mrkdwn",
-                        "text": "*Conclusion:* ${{ job.status }}"
-                      },
-                      "accessory": {
-                        "type": "button",
-                        "text": {
-                          "type": "plain_text",
-                          "text": "Job log",
-                          "emoji": true
-                        },
-                        "url": "${{ steps.fetch-check-run.outputs.result }}"
-                      }
-                    }
-                  ]
-                }
-              ]
-            }
-        env:
+          message: "${{ matrix.target.name }}, engine fixture re-generation tests"
+          job_url: "${{ steps.fetch-check-run.outputs.result }}"
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK

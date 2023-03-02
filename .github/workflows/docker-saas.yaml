@@ -59,34 +59,11 @@ jobs:
 
       - name: Deployment start
         if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: slackapi/slack-github-action@v1.23.0
+        uses: Mergifyio/gha-slack-notification@main
         with:
-          # yamllint disable rule:line-length
-          payload: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Starting deployment (${{ steps.fetch-check-run.outputs.job_id }}) of mergify-engine*"
-                  },
-                  "accessory": {
-                    "type": "button",
-                    "text": {
-                      "type": "plain_text",
-                      "text": "Job log",
-                      "emoji": true
-                    },
-                    "url": "${{ steps.fetch-check-run.outputs.job_url }}"
-                  }
-                }
-              ]
-            }
-          # yamllint enable rule:line-length
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+          message: "*Starting deployment (${{ steps.fetch-check-run.outputs.job_id }}) of mergify-engine*"
+          job_url: ${{ steps.fetch-check-run.outputs.job_url }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: ⬇️ Checkout
         uses: actions/checkout@v3.3.0
@@ -260,7 +237,6 @@ jobs:
       - name: Prepare report status
         id: report-status
         if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        # yamllint disable rule:line-length
         run: |
           if [ "${{ job.status }}" == "success" ] ; then
             emoji="🦾"
@@ -282,36 +258,12 @@ jobs:
           # Replace newline with explicit \n
           SLACK_TEXT_MESSAGE=$(echo "$SLACK_TEXT_MESSAGE" | awk '{printf "%s\\n", $0}')
 
-          cat > "${{ runner.temp }}/slack_message_payload_${{ steps.fetch-check-run.outputs.job_id }}.json" <<EOF
-          {
-            "blocks": [
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": "$SLACK_TEXT_MESSAGE"
-                },
-                "accessory": {
-                  "type": "button",
-                  "text": {
-                    "type": "plain_text",
-                    "text": "Job log",
-                    "emoji": true
-                  },
-                  "url": "${{ steps.fetch-check-run.outputs.job_url }}"
-                }
-              }
-            ]
-          }
-          EOF
-        # yamllint enable rule:line-length
+          echo "SLACK_TEXT_MESSAGE=${SLACK_TEXT_MESSAGE}" >> "$GITHUB_OUTPUT"
 
       - name: Report Status
         if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: slackapi/slack-github-action@v1.23.0
+        uses: Mergifyio/gha-slack-notification@main
         with:
-          # yamllint disable-line rule:line-length
-          payload-file-path: "${{ runner.temp }}/slack_message_payload_${{ steps.fetch-check-run.outputs.job_id }}.json"
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+          message: ${{ steps.report-status.outputs.SLACK_TEXT_MESSAGE }}
+          job_url: ${{ steps.fetch-check-run.outputs.job_url }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
