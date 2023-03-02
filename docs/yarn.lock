@@ -271,9 +271,9 @@
     validate-npm-package-name "3.0.0"
 
 "@stoplight/spectral-ruleset-migrator@^1.7.4", "@stoplight/spectral-ruleset-migrator@^1.9.0":
-  version "1.9.0"
-  resolved "https://registry.yarnpkg.com/@stoplight/spectral-ruleset-migrator/-/spectral-ruleset-migrator-1.9.0.tgz#11831eb174ebb6d2f9c9987805d6aad427dd833a"
-  integrity sha512-hPSjgXsTxMQ5UV1hfkVVPknhqRjmjSnCZD5jideM4rRU5NS1fj2Pse1CiXBsRChsuAGi/2s0Ke5uuOmFFsHrxQ==
+  version "1.9.2"
+  resolved "https://registry.yarnpkg.com/@stoplight/spectral-ruleset-migrator/-/spectral-ruleset-migrator-1.9.2.tgz#6865273880cbee6b79f68b452cc0632e0205496b"
+  integrity sha512-FbXsPFt+nikggCF1x+kfaNXpE7Ol/0Um1eR0S1/mNyf/L5R0RBnyqZLvJwC6cU6O49CLAjYy7fCbxgrjNcZvbg==
   dependencies:
     "@stoplight/json" "~3.20.1"
     "@stoplight/ordered-object-literal" "~1.0.4"
