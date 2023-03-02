@@ -1024,6 +1024,9 @@ class Context:
         self.log = daiquiri.getLogger(
             self.__class__.__qualname__,
             gh_pull=self.pull["number"],
+            gh_author=self.pull["user"]["login"]
+            if self.pull["user"] is not None
+            else "<unknown>",
             gh_owner=self.pull["base"]["user"]["login"]
             if "base" in self.pull
             else "<unknown>",
