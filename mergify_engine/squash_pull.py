@@ -16,7 +16,7 @@ class SquashFailure(Exception):
 
 @dataclasses.dataclass
 class SquashNeedRetry(exceptions.EngineNeedRetry):
-    message: str
+    pass
 
 
 GIT_MESSAGE_TO_EXCEPTION = {

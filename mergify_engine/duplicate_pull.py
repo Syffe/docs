@@ -24,7 +24,7 @@ class DuplicateAlreadyExists(Exception):
 
 @dataclasses.dataclass
 class DuplicateNeedRetry(exceptions.EngineNeedRetry):
-    reason: str
+    pass
 
 
 @dataclasses.dataclass

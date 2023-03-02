@@ -27,7 +27,7 @@ class BranchUpdateFailure(Exception):
 
 @dataclasses.dataclass
 class BranchUpdateNeedRetry(exceptions.EngineNeedRetry):
-    message: str
+    pass
 
 
 GIT_MESSAGE_TO_EXCEPTION = {

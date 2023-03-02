@@ -1,10 +1,13 @@
 from collections import abc
+import datetime
 import re
 import typing
 
 from mergify_engine import check_api
 from mergify_engine import context
+from mergify_engine import date
 from mergify_engine import github_types
+from mergify_engine import redis_utils
 from mergify_engine import refresher
 from mergify_engine import worker_pusher
 from mergify_engine.clients import github
@@ -13,6 +16,7 @@ from mergify_engine.dashboard import user_tokens
 from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
+RECENTLY_MERGED_TRACKER_EXPIRATION = datetime.timedelta(hours=1)
 REQUIRED_STATUS_RE = re.compile(r'Required status check "([^"]*)" is expected.')
 FORBIDDEN_MERGE_COMMITS_MSG = "Merge commits are not allowed on this repository."
 FORBIDDEN_SQUASH_MERGE_MSG = "Squash merges are not allowed on this repository."
@@ -35,6 +39,42 @@ class MergeUtilsMixin:
             action="internal",
             source="merge failed and need to be retried",
             priority=worker_pusher.Priority.immediate,
+        )
+
+    @staticmethod
+    def _get_redis_recently_merged_tracker_key(
+        repository_id: github_types.GitHubRepositoryIdType,
+        pull_request_number: github_types.GitHubPullRequestNumber,
+    ) -> str:
+        return f"recently-merged-tracker/{repository_id}/{pull_request_number}"
+
+    @classmethod
+    async def has_been_recently_merged(
+        cls,
+        redis: redis_utils.RedisCacheBytes,
+        repository_id: github_types.GitHubRepositoryIdType,
+        pull_request_number: github_types.GitHubPullRequestNumber,
+    ) -> bool:
+        recently_merged = await redis.get(
+            cls._get_redis_recently_merged_tracker_key(
+                repository_id, pull_request_number
+            )
+        )
+        return recently_merged is not None
+
+    @classmethod
+    async def create_recently_merged_tracker(
+        cls,
+        redis: redis_utils.RedisCacheBytes,
+        repository_id: github_types.GitHubRepositoryIdType,
+        pull_request_number: github_types.GitHubPullRequestNumber,
+    ) -> None:
+        await redis.set(
+            cls._get_redis_recently_merged_tracker_key(
+                repository_id, pull_request_number
+            ),
+            date.utcnow().isoformat(),
+            ex=RECENTLY_MERGED_TRACKER_EXPIRATION,
         )
 
     async def common_merge(
@@ -105,6 +145,11 @@ class MergeUtilsMixin:
             else:
                 ctxt.log.info("merged")
 
+            await self.create_recently_merged_tracker(
+                ctxt.repository.installation.redis.cache_bytes,
+                ctxt.repository.repo["id"],
+                ctxt.pull["number"],
+            )
             # NOTE(sileht): We can't use merge_report() here, because it takes
             # some time for GitHub to detect this pull request has been
             # merged. Just after the fast-forward git push, mergeable_state is
@@ -156,6 +201,11 @@ class MergeUtilsMixin:
                 await ctxt.update(wait_merged=True)
                 ctxt.log.info("merged")
 
+        await self.create_recently_merged_tracker(
+            ctxt.repository.installation.redis.cache_bytes,
+            ctxt.repository.repo["id"],
+            ctxt.pull["number"],
+        )
         return check_api.Result(
             check_api.Conclusion.SUCCESS,
             "The pull request has been merged automatically",

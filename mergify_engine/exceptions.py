@@ -31,7 +31,8 @@ class RateLimited(Exception):
 
 @dataclasses.dataclass
 class EngineNeedRetry(Exception):
-    pass
+    message: str
+    retry_in: datetime.timedelta = datetime.timedelta(minutes=1)
 
 
 RATE_LIMIT_RETRY_MIN = datetime.timedelta(seconds=3)
@@ -97,7 +98,7 @@ def need_retry(
         # github differ a bit, we can have negative delta, so set a minimun for retrying
         return max(exception.countdown, RATE_LIMIT_RETRY_MIN)
     elif isinstance(exception, EngineNeedRetry):
-        return datetime.timedelta(minutes=1)
+        return exception.retry_in
 
     elif isinstance(exception, (http.RequestError, http.HTTPServerSideError)):
         # NOTE(sileht): We already retry locally with urllib3, so if we get there, Github

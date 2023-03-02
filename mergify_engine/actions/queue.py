@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import abc
 import dataclasses
+import datetime
 import functools
 import typing
 
@@ -253,6 +254,11 @@ Then, re-embark the pull request into the merge queue by posting the comment
             )
 
         for embarked_pull in car.still_queued_embarked_pulls.copy():
+            await self.create_recently_merged_tracker(
+                self.ctxt.repository.installation.redis.cache_bytes,
+                self.ctxt.repository.repo["id"],
+                embarked_pull.user_pull_request_number,
+            )
             await queue.remove_pull(
                 embarked_pull.user_pull_request_number,
                 self.rule.get_signal_trigger(),
@@ -382,11 +388,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         q = await merge_train.Train.from_context(self.ctxt, self.queue_rules)
         car = q.get_car(self.ctxt)
 
-        result = await self.pre_queue_checks(
-            q,
-            car,
-        )
-
+        result = await self.pre_queue_checks(q, car)
         if result is not None:
             return result
 
@@ -521,11 +523,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         q = await merge_train.Train.from_context(self.ctxt, self.queue_rules)
         car = q.get_car(self.ctxt)
 
-        result = await self.pre_queue_checks(
-            q,
-            car,
-        )
-
+        result = await self.pre_queue_checks(q, car)
         if result is not None:
             return result
 
@@ -628,9 +626,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         return None
 
     async def pre_queue_checks(
-        self,
-        queue: merge_train.Train,
-        car: merge_train.TrainCar | None,
+        self, queue: merge_train.Train, car: merge_train.TrainCar | None
     ) -> check_api.Result | None:
         result = await self._check_action_validity()
 
@@ -640,6 +636,27 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 self.config["method"],
                 self.config["rebase_fallback"],
                 self.config["merge_bot_account"],
+            )
+
+        # NOTE(sileht): The PR have maybe been merged fast-forward by
+        # Mergify, but GitHub didn't yet update the "mergedXXX" attribute.
+        # So we prefer don't do anything for 30 seconds to wait
+        # pre_merge_checks to mark the pull request as merged as expected
+        if (
+            result is None
+            and (
+                self.queue_rule.config["queue_branch_merge_method"] == "fast-forward"
+                or self.config["method"] == "fast-forward"
+            )
+            and await self.has_been_recently_merged(
+                queue.repository.installation.redis.cache_bytes,
+                self.ctxt.repository.repo["id"],
+                self.ctxt.pull["number"],
+            )
+        ):
+            raise exceptions.EngineNeedRetry(
+                "Merged pull request not yet marked as merged on GitHub side",
+                retry_in=datetime.timedelta(seconds=30),
             )
 
         if result is not None:
