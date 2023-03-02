@@ -64,7 +64,7 @@ jobs:
           # yamllint disable-line rule:line-length
           message: "*Starting release (${{ steps.fetch-check-run.outputs.job_id }}) of Mergify Enterprise ${{ github.ref_name }}*"
           job_url: "${{ steps.fetch-check-run.outputs.job_url }}"
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL }}
 
       - name: ⬇️ Checkout
         uses: actions/checkout@v3.3.0
@@ -172,4 +172,4 @@ jobs:
           # yamllint disable-line rule:line-length
           message: "*Release (${{ steps.fetch-check-run.outputs.job_id }}) of Mergify Enterprise ${{ github.ref_name }} finished ${{ steps.report-status-onpremise.outputs.emoji }}*\\nConclusion: ${{ job.status }}"
           job_url: "${{ steps.fetch-check-run.outputs.job_url }}"
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL }}

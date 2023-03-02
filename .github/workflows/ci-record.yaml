@@ -85,4 +85,4 @@ jobs:
         with:
           message: "${{ matrix.target.name }}, engine fixture re-generation tests"
           job_url: "${{ steps.fetch-check-run.outputs.result }}"
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WORKFLOWS_WEBHOOK_URL }}

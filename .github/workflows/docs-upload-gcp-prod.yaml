@@ -50,7 +50,7 @@ jobs:
           # yamllint disable-line rule:line-length
           message: "*Starting deployment (${{ steps.fetch-check-run.outputs.job_id }}) of documentation (sphinx)*"
           job_url: ${{ steps.fetch-check-run.outputs.job_url }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL }}
 
       - name: Build 🔧
         run: |
@@ -105,4 +105,4 @@ jobs:
         with:
           message: ${{ steps.report-status.outputs.SLACK_TEXT_MESSAGE }}
           job_url: ${{ steps.fetch-check-run.outputs.job_url }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL }}
