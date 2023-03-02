@@ -129,12 +129,7 @@
     lodash "^4.17.21"
     safe-stable-stringify "^1.1"
 
-"@stoplight/ordered-object-literal@^1.0.1", "@stoplight/ordered-object-literal@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@stoplight/ordered-object-literal/-/ordered-object-literal-1.0.2.tgz#2a88a5ebc8b68b54837ac9a9ae7b779cdd862062"
-  integrity sha512-0ZMS/9sNU3kVo/6RF3eAv7MK9DY8WLjiVJB/tVyfF2lhr2R4kqh534jZ0PlrFB9CRXrdndzn1DbX6ihKZXft2w==
-
-"@stoplight/ordered-object-literal@^1.0.3", "@stoplight/ordered-object-literal@~1.0.4":
+"@stoplight/ordered-object-literal@^1.0.1", "@stoplight/ordered-object-literal@^1.0.2", "@stoplight/ordered-object-literal@^1.0.3", "@stoplight/ordered-object-literal@~1.0.4":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@stoplight/ordered-object-literal/-/ordered-object-literal-1.0.4.tgz#c8bb2698ab229f31e31a16dd1852c867c1f2f2ed"
   integrity sha512-OF8uib1jjDs5/cCU+iOVy+GJjU3X7vk/qJIkIJFqwmlJKrrtijFmqwbu8XToXrwTYLQTP+Hebws5gtZEmk9jag==
