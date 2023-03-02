@@ -249,9 +249,9 @@
     tslib "^2.3.1"
 
 "@stoplight/spectral-ruleset-bundler@^1.4.0":
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/@stoplight/spectral-ruleset-bundler/-/spectral-ruleset-bundler-1.4.0.tgz#628b5cc9b1275286489cdfd94967ce444a4a5ebd"
-  integrity sha512-aYDI4a145IXED+6jvRjj9Ha0fnB+s54cr8KbQbPCEyhCHW1cP8UGVeOuwAfk+9C4ZIg40OuYrugN5EhA35oQtA==
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/@stoplight/spectral-ruleset-bundler/-/spectral-ruleset-bundler-1.5.1.tgz#52031f9e2b118a24bd0f0f66c30fe8b1afec7e0b"
+  integrity sha512-gvlBXkyxLBNdslN/5HEYvCqMr0dvKQwJbbJCKbOvvRTZhhPVzmLb7yavWXjOnRhYn6IAhGAs7u4yhxn7cX/FtQ==
   dependencies:
     "@rollup/plugin-commonjs" "~22.0.2"
     "@stoplight/path" "1.3.2"
