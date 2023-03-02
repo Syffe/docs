@@ -2948,16 +2948,16 @@ jinja2 = ["ruamel.yaml.jinja2 (>=0.2)"]
 
 [[package]]
 name = "semgrep"
-version = "1.13.0"
+version = "1.14.0"
 description = "Lightweight static analysis for many languages. Find bug variants with patterns that look like source code."
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "semgrep-1.13.0-cp37.cp38.cp39.py37.py38.py39-none-any.whl", hash = "sha256:72ded8dde0350191c5f5f5440a03e8c97485b2bf7686b791e232168953c41ba0"},
-    {file = "semgrep-1.13.0-cp37.cp38.cp39.py37.py38.py39-none-macosx_10_14_x86_64.whl", hash = "sha256:5014d1249933be3deb3865b11be72eb91c4b592cabe84d729154485d5eb984a0"},
-    {file = "semgrep-1.13.0-cp37.cp38.cp39.py37.py38.py39-none-macosx_11_0_arm64.whl", hash = "sha256:227bf7daf30e3715035b72dfeca74dc4cb50fdf6c4f624d3ea37e423cd36df72"},
-    {file = "semgrep-1.13.0.tar.gz", hash = "sha256:83bbd3e75848827238668018feef9ac6ba3890c213013218fdc96f737f26bccc"},
+    {file = "semgrep-1.14.0-cp37.cp38.cp39.py37.py38.py39-none-any.whl", hash = "sha256:db1214c64644c79bfc84ba41c2d692706ee129be97fa476f99369cbc8fb8f47d"},
+    {file = "semgrep-1.14.0-cp37.cp38.cp39.py37.py38.py39-none-macosx_10_14_x86_64.whl", hash = "sha256:ab917d3c490cbe4345d61325980314df729b1d6b25b2508818b3865e6c56ae81"},
+    {file = "semgrep-1.14.0-cp37.cp38.cp39.py37.py38.py39-none-macosx_11_0_arm64.whl", hash = "sha256:349adfa431f2f4358f786536f43210d974e6563b9d9794c6398f742314f86700"},
+    {file = "semgrep-1.14.0.tar.gz", hash = "sha256:a788b425d893381b7cd78e21d5e7776cc0cc95b25645b9b0721a87e7f2580f8d"},
 ]
 
 [package.dependencies]
@@ -4197,4 +4197,4 @@ tokenize-rt = ">=2.1"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<4.0"
-content-hash = "8934f3c4fb22a33bbcda0ff6c8af928bb3fa6aa1f22bcc6a80cc727eceb375fc"
+content-hash = "2ee68363b082edd3028571710224dc9b225d896804366b2057cdae96d83f045c"
