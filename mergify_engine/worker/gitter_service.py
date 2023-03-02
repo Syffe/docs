@@ -4,13 +4,17 @@ import asyncio
 from collections import abc
 import dataclasses
 import functools
+import logging
 import typing
 import uuid
 
 import daiquiri
 from datadog import statsd  # type: ignore[attr-defined]
 from ddtrace import tracer
+import sentry_sdk
 
+from mergify_engine import github_types
+from mergify_engine import logs
 from mergify_engine.worker import task
 
 
@@ -24,6 +28,8 @@ T = typing.TypeVar("T")
 
 @dataclasses.dataclass
 class GitterJob(typing.Generic[T]):
+    owner_login_for_tracing: github_types.GitHubLogin
+    logger: "logging.LoggerAdapter[logging.Logger]"
     func: abc.Callable[[], abc.Coroutine[None, None, T]]
     callback: abc.Callable[[], abc.Coroutine[None, None, None]] | None = None
     id: GitterJobId = dataclasses.field(init=False, default_factory=uuid.uuid4)
@@ -60,9 +66,10 @@ class GitterService:
     def __post_init__(self) -> None:
         self._queue = asyncio.Queue()
         for i in range(self.concurrent_jobs):
+            worker_id = f"gitter-worker-{i}"
             worker = task.TaskRetriedForever(
-                f"gitter-worker-{i}",
-                functools.partial(self._gitter_worker, i),
+                worker_id,
+                functools.partial(self._gitter_worker, worker_id),
                 self.idle_sleep_time,
             )
             self._pools.append(worker)
@@ -94,9 +101,10 @@ class GitterService:
         statsd.gauge("engine.gitter.jobs.running", running)
         statsd.gauge("engine.gitter.jobs.finished", finished)
 
-    @tracer.wrap("gitter_worker", span_type="worker")
-    async def _gitter_worker(self, worker_id: int) -> None:
-        LOG.debug("gitter worker waiting for job", worker_id=worker_id)
+    async def _gitter_worker(self, gitter_worker_id: str) -> None:
+        logs.WORKER_ID.set(gitter_worker_id)
+
+        LOG.debug("gitter worker waiting for job")
         # NOTE(sileht): asyncio.Queue.get() is uninterrupting even when the
         # asyncio.task is cancelled..., so we have to do polling/sleep...
         try:
@@ -104,39 +112,46 @@ class GitterService:
         except asyncio.QueueEmpty:
             return
 
+        with tracer.trace(
+            "gitter_worker", span_type="worker", resource=job.owner_login_for_tracing
+        ) as span:
+            span.set_tag("gh_owner", job.owner_login_for_tracing)
+            with sentry_sdk.Hub(sentry_sdk.Hub.current) as hub:
+                with hub.configure_scope() as scope:
+                    scope.set_tag("gh_owner", job.owner_login_for_tracing)
+                    scope.set_user({"username": job.owner_login_for_tracing})
+
+                    try:
+                        await self._gitter_worker_run_job(job)
+                    finally:
+                        self._queue.task_done()
+
+    @staticmethod
+    async def _gitter_worker_run_job(job: GitterJob[typing.Any]) -> None:
+        job.logger.debug("gitter worker running job func", job_id=job.id)
         try:
-            LOG.debug(
-                "gitter worker running job coroutine",
-                worker_id=worker_id,
-                job_id=job.id,
+            job.task = asyncio.create_task(job.func())
+            await job.task
+        except Exception:
+            job.logger.debug(
+                "gitter worker job func failed", job_id=job.id, exc_info=True
             )
+            # NOTE(sileht): we ignore exception on purpose, the job caller must
+            # reawait the Coroutine to get the result
+            pass  # noqa: TC202
+        else:
+            job.logger.debug("gitter worker finished job func", job_id=job.id)
+
+        if job.callback is not None:
+            job.logger.debug("gitter worker running job callback", job_id=job.id)
             try:
-                job.task = asyncio.create_task(job.func())
-                await job.task
-            except asyncio.CancelledError:
-                raise
+                await job.callback()
             except Exception:
-                LOG.debug("fail to run GitterJob", exc_info=True)
-                # NOTE(sileht): we ignore exception on purpose, the job caller must
-                # reawait the Coroutine to get the result
-                pass  # noqa: TC202
-
-            if job.callback is not None:
-                LOG.debug(
-                    "gitter worker running job coroutine",
-                    worker_id=worker_id,
-                    job_id=job.id,
+                job.logger.error(
+                    "gitter worker job callback failed", job_id=job.id, exc_info=True
                 )
-                try:
-                    await job.callback()
-                except asyncio.CancelledError:
-                    raise
-                except Exception:
-                    LOG.error("fail to run GitterJob callback", exc_info=True)
-
-        finally:
-            LOG.debug("gitter worker finished job", worker_id=worker_id, job_id=job.id)
-            self._queue.task_done()
+            else:
+                job.logger.debug("gitter worker finished job callback", job_id=job.id)
 
     def _send_job(self, job: GitterJob[typing.Any]) -> None:
         self._jobs[job.id] = job

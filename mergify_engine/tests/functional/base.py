@@ -749,7 +749,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                 config.TESTING_ORGANIZATION_ID
             )
             while not gitter_serv._queue.empty():
-                await gitter_serv._gitter_worker(0)
+                await gitter_serv._gitter_worker("gitter-worker-0")
 
         await task.stop_and_wait(
             syncer_service.tasks

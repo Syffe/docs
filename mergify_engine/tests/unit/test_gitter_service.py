@@ -3,9 +3,13 @@ from unittest import mock
 
 import pytest
 
+from mergify_engine import github_types
 from mergify_engine import logs
 from mergify_engine.worker import gitter_service
 from mergify_engine.worker import task
+
+
+OWNER = github_types.GitHubLogin("owner")
 
 
 async def test_gitter_service_lifecycle(
@@ -23,7 +27,7 @@ async def test_gitter_service_lifecycle(
     method = mock.AsyncMock(return_value="result")
     callback = mock.AsyncMock()
 
-    job = gitter_service.GitterJob[str](method, callback)
+    job = gitter_service.GitterJob[str](OWNER, mock.Mock(), method, callback)
 
     assert gitter_service.get_job(job.id) is None
     gitter_service.send_job(job)
@@ -56,7 +60,7 @@ async def test_gitter_service_exception(
     method = mock.AsyncMock(side_effect=Exception("boom"))
     callback = mock.AsyncMock()
 
-    job = gitter_service.GitterJob[str](method, callback)
+    job = gitter_service.GitterJob[str](OWNER, mock.Mock(), method, callback)
 
     assert gitter_service.get_job(job.id) is None
     gitter_service.send_job(job)
@@ -124,10 +128,10 @@ async def test_gitter_service_concurrency(
         q.task_done()
         return res
 
-    job_1 = gitter_service.GitterJob[str](one)
-    job_2 = gitter_service.GitterJob[str](two)
-    job_join = gitter_service.GitterJob[str](join)
-    job_waiter = gitter_service.GitterJob[str](waiter)
+    job_1 = gitter_service.GitterJob[str](OWNER, mock.Mock(), one)
+    job_2 = gitter_service.GitterJob[str](OWNER, mock.Mock(), two)
+    job_join = gitter_service.GitterJob[str](OWNER, mock.Mock(), join)
+    job_waiter = gitter_service.GitterJob[str](OWNER, mock.Mock(), waiter)
     gitter_service.send_job(job_1)
     gitter_service.send_job(job_2)
     gitter_service.send_job(job_join)

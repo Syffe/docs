@@ -329,6 +329,8 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
         commits_to_cherry_pick: list[github_types.CachedGitHubBranchCommit],
     ) -> gitter_service.GitterJob[duplicate_pull.DuplicateBranchResult]:
         job = gitter_service.GitterJob[duplicate_pull.DuplicateBranchResult](
+            self.ctxt.repository.installation.owner_login,
+            self.ctxt.log,
             functools.partial(
                 duplicate_pull.prepare_branch,
                 self.ctxt.repository.installation.redis.cache_bytes,
