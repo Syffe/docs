@@ -263,8 +263,6 @@ async def send(
     repository: "context.Repository",
     pull_request: github_types.GitHubPullRequestNumber,
     event: typing.Literal[
-        "action.delete_head_branch",
-        "action.merge",
         "action.squash",
         "action.rebase",
         "action.refresh",
@@ -273,6 +271,28 @@ async def send(
         "action.update",
     ],
     metadata: EventNoMetadata,
+    trigger: str,
+) -> None:
+    ...
+
+
+@typing.overload
+async def send(
+    repository: "context.Repository",
+    pull_request: github_types.GitHubPullRequestNumber,
+    event: typing.Literal["action.merge"],
+    metadata: EventMergeMetadata,
+    trigger: str,
+) -> None:
+    ...
+
+
+@typing.overload
+async def send(
+    repository: "context.Repository",
+    pull_request: github_types.GitHubPullRequestNumber,
+    event: typing.Literal["action.delete_head_branch"],
+    metadata: EventDeleteHeadBranchMetadata,
     trigger: str,
 ) -> None:
     ...
