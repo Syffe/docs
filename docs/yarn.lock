@@ -95,17 +95,6 @@
     tslib "^2.3.1"
     urijs "^1.19.11"
 
-"@stoplight/json@3.15.0":
-  version "3.15.0"
-  resolved "https://registry.yarnpkg.com/@stoplight/json/-/json-3.15.0.tgz#e7c2919aaa12dc4dafb43d4da71e29d101106f34"
-  integrity sha512-FxdmBaZyt6FZVN8F/GaGzevLxjkW1gLHC5cPeb4slMM8BIXCxKluIkGLzmb4bnkk2+4gPaYj75V28U6s0WNrbQ==
-  dependencies:
-    "@stoplight/ordered-object-literal" "^1.0.1"
-    "@stoplight/types" "^12.2.0"
-    jsonc-parser "~2.2.1"
-    lodash "^4.17.15"
-    safe-stable-stringify "^1.1"
-
 "@stoplight/json@3.17.0":
   version "3.17.0"
   resolved "https://registry.yarnpkg.com/@stoplight/json/-/json-3.17.0.tgz#9d864b63b9c6398c7cecae1340225b15953cac74"
@@ -179,7 +168,7 @@
     tslib "^2.3.0"
     yargs "17.3.1"
 
-"@stoplight/spectral-core@>=1", "@stoplight/spectral-core@^1.1.0", "@stoplight/spectral-core@^1.15.1", "@stoplight/spectral-core@^1.3.0", "@stoplight/spectral-core@^1.7.0":
+"@stoplight/spectral-core@>=1", "@stoplight/spectral-core@^1.15.1", "@stoplight/spectral-core@^1.3.0", "@stoplight/spectral-core@^1.7.0", "@stoplight/spectral-core@^1.8.0":
   version "1.16.1"
   resolved "https://registry.yarnpkg.com/@stoplight/spectral-core/-/spectral-core-1.16.1.tgz#a4af80c021c0be0c52b92cc7acbdacb97919ea20"
   integrity sha512-zPTM/OpjUySMRLPx6ZYy9Gtw+Rkuwg1/gQTKWta+AaJjVTHrNznYQ05gFLYjWwD/LGJMdjwE2IMi7T+Ntef+kw==
@@ -207,14 +196,14 @@
     tslib "^2.3.0"
 
 "@stoplight/spectral-formats@>=1", "@stoplight/spectral-formats@^1.0.0", "@stoplight/spectral-formats@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@stoplight/spectral-formats/-/spectral-formats-1.0.1.tgz#eb25728464db224fed2d031dcae944ff5e7446de"
-  integrity sha512-l4cZ6imTqdCmNI8eexvWMoSSptx2lmdFRXSiX7P9ZDdKeRjQkJ49U5OttRr69IBaWdiHEP8Gw/cfnZDYOJKD5A==
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/@stoplight/spectral-formats/-/spectral-formats-1.5.0.tgz#222dd1e1302c54ba3219b8223b299d9515fed3e3"
+  integrity sha512-VskkdU3qBSvI1dfJ79ysjvTssfNlbA6wrf/XkXK6iTyjfIVqOAWVtjypTb2U95tN/X8IjIBBhNWtZ4tNVZilrA==
   dependencies:
-    "@stoplight/json" "3.15.0"
-    "@stoplight/spectral-core" "^1.1.0"
-    "@stoplight/types" "12.3.0"
+    "@stoplight/json" "^3.17.0"
+    "@stoplight/spectral-core" "^1.8.0"
     "@types/json-schema" "^7.0.7"
+    tslib "^2.3.1"
 
 "@stoplight/spectral-functions@>=1", "@stoplight/spectral-functions@^1.0.0", "@stoplight/spectral-functions@^1.1.2":
   version "1.7.2"
@@ -328,7 +317,7 @@
     node-fetch "^2.6.7"
     tslib "^2.3.1"
 
-"@stoplight/types@12.3.0", "@stoplight/types@^12.2.0", "@stoplight/types@^12.3.0":
+"@stoplight/types@^12.3.0":
   version "12.3.0"
   resolved "https://registry.yarnpkg.com/@stoplight/types/-/types-12.3.0.tgz#ac71d295319f26abb279e3d89d1c1774857d20b4"
   integrity sha512-hgzUR1z5BlYvIzUeFK5pjs5JXSvEutA9Pww31+dVicBlunsG1iXopDx/cvfBY7rHOrgtZDuvyeK4seqkwAZ6Cg==
@@ -1300,7 +1289,7 @@ lodash.topath@^4.5.2:
   resolved "https://registry.yarnpkg.com/lodash.topath/-/lodash.topath-4.5.2.tgz#3616351f3bba61994a0931989660bd03254fd009"
   integrity sha1-NhY1Hzu6YZlKCTGYlmC9AyVP0Ak=
 
-lodash@^4.17.15, lodash@^4.17.21, lodash@~4.17.21:
+lodash@^4.17.21, lodash@~4.17.21:
   version "4.17.21"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
   integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
