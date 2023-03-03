@@ -161,12 +161,10 @@ class Gitter:
                 env=self.prepare_safe_env(_env),
             )
 
-            stdout, _ = await asyncio.wait_for(
-                process.communicate(
+            async with asyncio.timeout(self.GIT_COMMAND_TIMEOUT):
+                stdout, _ = await process.communicate(
                     input=None if _input is None else _input.encode("utf8")
-                ),
-                self.GIT_COMMAND_TIMEOUT,
-            )
+                )
             output = stdout.decode("utf-8")
             self._check_git_output(process, output)
         finally:
