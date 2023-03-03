@@ -59,10 +59,16 @@ async def stop_and_wait(tasks: list[TaskRetriedForever]) -> None:
     LOG.info("tasks stopping", tasks=names, count=len(tasks))
     if tasks:
         pendings = {t.task for t in tasks}
-        for a_task in pendings:
-            a_task.cancel(msg="shutdown")
         while pendings:
-            _, pendings = await asyncio.wait(pendings, timeout=0.42)
+            # NOTE(sileht): sometime tasks didn't get cancelled correctly (eg:
+            # the CancelledError didn't reach the top of the stack), this means
+            # somewhere we have a catch-all except that didn't re-raise
+            # CancelledError. To workaround the issue, we just re-cancel the
+            # task and hope the current frame is not within this buggy
+            # try/except.
+            for a_task in pendings:
+                a_task.cancel(msg="shutdown")
+            _, pendings = await asyncio.wait(pendings, timeout=0)
             if pendings:
                 LOG.warning(
                     "some tasks are too slow to exits, retrying",
