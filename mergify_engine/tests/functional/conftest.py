@@ -41,6 +41,29 @@ REQUESTS_SYNC_LOCK_FILE_PATH = f"{REQUESTS_SYNC_FILE_PATH}.lock"
 
 REQUESTS_SYNC_FILE_LOCK = filelock.FileLock(REQUESTS_SYNC_LOCK_FILE_PATH)
 
+SHUTUPVCR = bool(os.getenv("SHUTUPVCR", True))
+
+
+class ShutUpVcrCannotOverwriteExistingCassetteException(Exception):
+    def __init__(self, *args, **kwargs):  # type: ignore[no-untyped-def]
+        self.cassette = kwargs["cassette"]
+        self.failed_request = kwargs["failed_request"]
+        message = self._get_message(kwargs["cassette"], kwargs["failed_request"])  # type: ignore[no-untyped-call]
+        super().__init__(message)
+
+    @staticmethod
+    def _get_message(cassette, failed_request):  # type: ignore[no-untyped-def]
+        return (
+            f"Can't overwrite existing cassette ({cassette._path}) "
+            f"in your current record mode ({cassette.record_mode}).\n"
+        )
+
+
+if SHUTUPVCR:
+    vcr.errors.CannotOverwriteExistingCassetteException = (
+        ShutUpVcrCannotOverwriteExistingCassetteException
+    )
+
 
 class RecordConfigType(typing.TypedDict):
     integration_id: int
