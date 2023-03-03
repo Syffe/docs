@@ -1,6 +1,7 @@
 import asyncio
 import collections
 import dataclasses
+import datetime
 import logging
 import os
 import re
@@ -39,6 +40,10 @@ class GitReferenceAlreadyExists(GitError):
 
 
 class GitMergifyNamespaceConflict(GitError):
+    pass
+
+
+class GitTimeout(GitFatalError):
     pass
 
 
@@ -82,8 +87,9 @@ class Gitter:
     logger: "logging.LoggerAdapter[logging.Logger]"
     tmp: str | None = None
 
-    # Worker timeout at 5 minutes, so ensure subprocess return before
-    GIT_COMMAND_TIMEOUT: int = dataclasses.field(init=False, default=4 * 60 + 30)
+    GIT_COMMAND_TIMEOUT: float = dataclasses.field(
+        init=False, default=datetime.timedelta(minutes=10).total_seconds()
+    )
 
     async def init(self) -> None:
         # TODO(sileht): use aiofiles instead of thread
@@ -144,7 +150,8 @@ class Gitter:
         if self.repository is None:
             raise RuntimeError("__call__() called before init()")
 
-        self.logger.info("calling: %s", " ".join(args))
+        command = ("git",) + args
+        self.logger.info("git operation", command=command)
 
         try:
             # TODO(sileht): Current user provided data in git commands are safe, but we should create an
@@ -161,14 +168,19 @@ class Gitter:
                 env=self.prepare_safe_env(_env),
             )
 
-            async with asyncio.timeout(self.GIT_COMMAND_TIMEOUT):
-                stdout, _ = await process.communicate(
-                    input=None if _input is None else _input.encode("utf8")
-                )
+            try:
+                async with asyncio.timeout(self.GIT_COMMAND_TIMEOUT):
+                    stdout, _ = await process.communicate(
+                        input=None if _input is None else _input.encode("utf8")
+                    )
+            except asyncio.TimeoutError:
+                self.logger.error("git operation timed out", command=command)
+                raise GitTimeout(-1, "git operation took too long")
+
             output = stdout.decode("utf-8")
             self._check_git_output(process, output)
         finally:
-            self.logger.debug("finish: %s", " ".join(args))
+            self.logger.debug("git operation finished", command=command)
 
         return output
 
@@ -195,10 +207,7 @@ class Gitter:
             else:
                 match = pattern in output
             if match:
-                return out_exception(
-                    returncode,
-                    output,
-                )
+                return out_exception(returncode, output)
 
         return GitError(returncode, output)
 
