@@ -307,17 +307,17 @@
     tslib "^2.3.1"
 
 "@stoplight/types@^12.3.0":
-  version "12.3.0"
-  resolved "https://registry.yarnpkg.com/@stoplight/types/-/types-12.3.0.tgz#ac71d295319f26abb279e3d89d1c1774857d20b4"
-  integrity sha512-hgzUR1z5BlYvIzUeFK5pjs5JXSvEutA9Pww31+dVicBlunsG1iXopDx/cvfBY7rHOrgtZDuvyeK4seqkwAZ6Cg==
+  version "12.5.0"
+  resolved "https://registry.yarnpkg.com/@stoplight/types/-/types-12.5.0.tgz#ebbeeb8c874de30e4cd9a1a2a6c8d6062c155da0"
+  integrity sha512-dwqYcDrGmEyUv5TWrDam5TGOxU72ufyQ7hnOIIDdmW5ezOwZaBFoR5XQ9AsH49w7wgvOqB2Bmo799pJPWnpCbg==
   dependencies:
     "@types/json-schema" "^7.0.4"
     utility-types "^3.10.0"
 
 "@stoplight/types@^12.3.0 || ^13.0.0", "@stoplight/types@^13.0.0", "@stoplight/types@^13.6.0":
-  version "13.7.0"
-  resolved "https://registry.yarnpkg.com/@stoplight/types/-/types-13.7.0.tgz#717d9e3ef068e8f143d045e9bc89b97da06933c4"
-  integrity sha512-7ePIccfTxjEhruv8VrkDv5whP5qd9ijRzAWEbjYpUYnDfaqPTfq8/wMMjMCAKIecboxsAVD9LZy/3puXddGsDQ==
+  version "13.9.1"
+  resolved "https://registry.yarnpkg.com/@stoplight/types/-/types-13.9.1.tgz#adaa19a3d7f8182cd7de65c592bea170f1a8c22e"
+  integrity sha512-IiInrb/xux6Xf+IQW6I8crbsoxLtNa1mDGQyUDbd6Tyfb9fXAGjIaA1Yb5JXNR3ChLypmd3ROUHEUNAanegGVw==
   dependencies:
     "@types/json-schema" "^7.0.4"
     utility-types "^3.10.0"
