@@ -170,6 +170,8 @@ jobs:
               -e DYNO=testing.1 \
               -e MERGIFYENGINE_STORAGE_URL=redis://redis:6363 \
               -e MERGIFYENGINE_DATABASE_URL=postgresql://postgres:password@postgres:5432/postgres \
+              -e SENTRY_URL=https://fake-sentry.example.com/ \
+              -e SENTRY_ENVIRONMENT=ci \
               --entrypoint /bin/bash \
               $i:tmp \
               -c '/datadog-wrapper.sh mergify-import-check-worker;
