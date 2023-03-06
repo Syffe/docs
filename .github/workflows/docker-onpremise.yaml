@@ -39,31 +39,12 @@ jobs:
         ports:
           - 5432:5432
     steps:
-      - name: Fetch job check run information
-        id: fetch-check-run
-        if: always()
-        uses: actions/github-script@v6
-        with:
-          result-encoding: string
-          script: |
-            const { data } = await github.rest.actions.listJobsForWorkflowRun({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              run_id: context.runId
-            });
-            const job = data.jobs.find(
-              (j) => j.name.includes("${{ github.job }}")
-            )
-            core.setOutput("job_url", job.html_url);
-            core.setOutput("job_id", String(job.id));
-
       - name: Release start
         if: always() && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
         uses: Mergifyio/gha-slack-notification@main
         with:
-          # yamllint disable-line rule:line-length
-          message: "*Starting release (${{ steps.fetch-check-run.outputs.job_id }}) of Mergify Enterprise ${{ github.ref_name }}*"
-          job_url: "${{ steps.fetch-check-run.outputs.job_url }}"
+          type: release-start
+          project: Mergify Enterprise
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL }}
 
       - name: ⬇️ Checkout
@@ -165,11 +146,10 @@ jobs:
             echo "emoji=💥" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Report Status
+      - name: Release finish
         if: always() && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
         uses: Mergifyio/gha-slack-notification@main
         with:
-          # yamllint disable-line rule:line-length
-          message: "*Release (${{ steps.fetch-check-run.outputs.job_id }}) of Mergify Enterprise ${{ github.ref_name }} finished ${{ steps.report-status-onpremise.outputs.emoji }}*\\nConclusion: ${{ job.status }}"
-          job_url: "${{ steps.fetch-check-run.outputs.job_url }}"
+          type: release-finish
+          project: Mergify Enterprise
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL }}

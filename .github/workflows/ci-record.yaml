@@ -52,37 +52,9 @@ jobs:
           DOW=$(date +%u)
           poetry run poe record -- --splits 5 --group "${DOW}"
 
-      - name: Fetch check run html url
-        id: fetch-check-run
-        if: always()
-        uses: actions/github-script@v6
-        with:
-          result-encoding: string
-          script: |
-            const { data } = await github.rest.actions.listJobsForWorkflowRun({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              run_id: context.runId
-            });
-            const job = data.jobs.find(
-              (j) => j.name.includes("${{ matrix.target.name }}")
-            )
-            return job.html_url ;
-
-      - name: Prepare report status
-        id: report-status
-        if: always()
-        run: |
-          if [ "${{ job.status }}" == "success" ] ; then
-            echo "color=2eb886" >> "$GITHUB_OUTPUT"
-          else
-            echo "color=e03e2f" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Report Status
         if: always()
         uses: Mergifyio/gha-slack-notification@main
         with:
           message: "${{ matrix.target.name }}, engine fixture re-generation tests"
-          job_url: "${{ steps.fetch-check-run.outputs.result }}"
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WORKFLOWS_WEBHOOK_URL }}
