@@ -30,7 +30,7 @@ jobs:
         uses: Mergifyio/gha-slack-notification@main
         with:
           type: deploy-start
-          project: "documentation (sphinx)*"
+          project: "documentation (sphinx)"
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL }}
 
       - name: Build 🔧
@@ -58,5 +58,5 @@ jobs:
         uses: Mergifyio/gha-slack-notification@main
         with:
           type: deploy-finish
-          project: "documentation (sphinx)*"
+          project: "documentation (sphinx)"
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL }}
