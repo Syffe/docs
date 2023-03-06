@@ -1,84 +1,14 @@
-import datetime
-import typing
-
 import fastapi
 import httpx
-import msgpack
 
 from mergify_engine import config
-from mergify_engine import github_types
-from mergify_engine import redis_utils
 from mergify_engine.clients import dashboard
 from mergify_engine.models import github_user
-from mergify_engine.web import redis
 from mergify_engine.web.front import security
 from mergify_engine.web.front import utils
 
 
 router = fastapi.APIRouter()
-
-SUBSCRIPTION_DETAILS_EXPIRATION = datetime.timedelta(days=1)
-
-
-class SubscriptionDetailsReponse(typing.TypedDict):
-    status_code: int
-    body: bytes
-    headers: dict[str, str]
-
-
-def get_subscription_details_redis_key(
-    github_account_id: github_types.GitHubAccountIdType,
-    user_id: github_types.GitHubAccountIdType | typing.Literal["*"],
-) -> str:
-    return f"front/subscription-details/{github_account_id}/{user_id}"
-
-
-async def get_subscription_details_cache(
-    redis: redis_utils.RedisCacheBytes,
-    github_account_id: github_types.GitHubAccountIdType,
-    user_id: github_types.GitHubAccountIdType,
-) -> fastapi.Response | None:
-    cache_key = get_subscription_details_redis_key(github_account_id, user_id)
-    raw = await redis.get(cache_key)
-    if raw:
-        deserialized = typing.cast(SubscriptionDetailsReponse, msgpack.unpackb(raw))
-        return fastapi.Response(
-            content=deserialized["body"],
-            status_code=deserialized["status_code"],
-            headers=deserialized["headers"],
-        )
-    return None
-
-
-async def set_subscription_details_cache(
-    redis: redis_utils.RedisCacheBytes,
-    github_account_id: github_types.GitHubAccountIdType,
-    user_id: github_types.GitHubAccountIdType,
-    response: fastapi.Response,
-) -> None:
-    serialized = msgpack.packb(
-        SubscriptionDetailsReponse(
-            {
-                "status_code": response.status_code,
-                "body": response.body,
-                "headers": dict(response.headers),
-            }
-        )
-    )
-    cache_key = get_subscription_details_redis_key(github_account_id, user_id)
-    await redis.set(cache_key, serialized, ex=SUBSCRIPTION_DETAILS_EXPIRATION)
-
-
-async def clear_subscription_details_cache(
-    redis: redis_utils.RedisCacheBytes,
-    github_account_id: github_types.GitHubAccountIdType,
-) -> None:
-    pipeline = await redis.pipeline()
-    async for key in redis.scan_iter(
-        get_subscription_details_redis_key(github_account_id, "*"), count=10000
-    ):
-        await pipeline.delete(key)
-    await pipeline.execute()
 
 
 @router.get(
@@ -86,28 +16,17 @@ async def clear_subscription_details_cache(
 )
 async def saas_subscription(
     request: fastapi.Request,
-    github_account_id: github_types.GitHubAccountIdType,
+    github_account_id: int,
     current_user: github_user.GitHubUser = fastapi.Depends(  # noqa: B008
         security.get_current_user
     ),
-    redis_links: redis_utils.RedisLinks = fastapi.Depends(  # noqa: B008
-        redis.get_redis_links
-    ),
 ) -> fastapi.responses.Response:
     if config.SAAS_MODE:
-        response = await get_subscription_details_cache(
-            redis_links.cache_bytes, github_account_id, current_user.id
+        return await saas_proxy(
+            request,
+            f"github-account/{github_account_id}/subscription-details",
+            current_user,
         )
-        if response is None:
-            response = await saas_proxy(
-                request,
-                f"github-account/{github_account_id}/subscription-details",
-                current_user,
-            )
-            await set_subscription_details_cache(
-                redis_links.cache_bytes, github_account_id, current_user.id, response
-            )
-        return response
 
     return fastapi.responses.JSONResponse(
         {
