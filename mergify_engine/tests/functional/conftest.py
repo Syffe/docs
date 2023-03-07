@@ -57,6 +57,7 @@ class ShutUpVcrCannotOverwriteExistingCassetteException(Exception):
         return (
             f"Can't overwrite existing cassette ({cassette._path}) "
             f"in your current record mode ({cassette.record_mode}).\n"
+            f"Missing request: {failed_request}.\n"
         )
 
 
