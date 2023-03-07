@@ -1,4 +1,3 @@
-from collections import abc
 import datetime
 import email.utils
 import typing
@@ -14,14 +13,8 @@ from mergify_engine import date
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine.clients import github
+from mergify_engine.clients import github_app
 from mergify_engine.clients import http
-
-
-@pytest.fixture(autouse=True)
-def short_timing() -> abc.Generator[None, None, None]:
-    wait_exp = http.AsyncClient.request.retry.wait.wait_funcs[1]  # type: ignore[attr-defined]
-    with mock.patch.object(wait_exp, "multiplier", 0.00001):
-        yield
 
 
 @mock.patch.object(github.CachedToken, "STORAGE", {})
@@ -56,8 +49,9 @@ async def test_client_installation_token_with_owner_id(
         github_types.GitHubAccountIdType(12345)
     )
     async with github.AsyncGithubInstallationClient(
-        github.GithubAppInstallationAuth(installation_json)
+        github.GithubAppInstallationAuth(installation_json),
     ) as client:
+        client.retry_exponential_multiplier = 0
         ret = await client.get("/")
         assert ret.json()["work"]
         assert isinstance(client.auth, github.GithubAppInstallationAuth)
@@ -93,6 +87,7 @@ async def test_client_user_token(respx_mock: respx.MockRouter) -> None:
     async with github.AsyncGithubInstallationClient(
         github.GithubAppInstallationAuth(installation_json)
     ) as client:
+        client.retry_exponential_multiplier = 0
         ret = await client.get(
             "/",
             oauth_token=github_types.GitHubOAuthToken("<user-token>"),
@@ -138,6 +133,7 @@ async def test_client_401_raise_ratelimit(respx_mock: respx.MockRouter) -> None:
 
     installation_json = await github.get_installation_from_account_id(owner_id)
     async with github.aget_client(installation_json) as client:
+        client.retry_exponential_multiplier = 0
         with pytest.raises(exceptions.RateLimited):
             await client.item(f"/repos/{owner_login}/{repo}/pull/1")
 
@@ -148,6 +144,7 @@ async def test_client_HTTP_400(respx_mock: respx.MockRouter) -> None:
     )
 
     async with http.AsyncClient() as client:
+        client.retry_exponential_multiplier = 0
         with pytest.raises(http.HTTPClientSideError) as exc_info:
             await client.get("https://foobar/")
 
@@ -162,6 +159,7 @@ async def test_message_format_client_HTTP_400(respx_mock: respx.MockRouter) -> N
         400, json={"message": "This is a 4XX error", "documentation_url": "fake_url"}
     )
     async with http.AsyncClient() as client:
+        client.retry_exponential_multiplier = 0
         with pytest.raises(http.HTTPClientSideError) as exc_info:
             await client.get("https://foobar/")
 
@@ -176,6 +174,7 @@ async def test_message_format_client_HTTP_400(respx_mock: respx.MockRouter) -> N
         },
     )
     async with http.AsyncClient() as client:
+        client.retry_exponential_multiplier = 0
         with pytest.raises(http.HTTPClientSideError) as exc_info:
             await client.get("https://foobar/")
 
@@ -190,6 +189,7 @@ async def test_message_format_client_HTTP_400(respx_mock: respx.MockRouter) -> N
         },
     )
     async with http.AsyncClient() as client:
+        client.retry_exponential_multiplier = 0
         with pytest.raises(http.HTTPClientSideError) as exc_info:
             await client.get("https://foobar/")
 
@@ -211,6 +211,7 @@ async def test_message_format_client_HTTP_400(respx_mock: respx.MockRouter) -> N
         },
     )
     async with http.AsyncClient() as client:
+        client.retry_exponential_multiplier = 0
         with pytest.raises(http.HTTPClientSideError) as exc_info:
             await client.get("https://foobar/")
 
@@ -224,6 +225,7 @@ async def test_message_format_client_HTTP_400(respx_mock: respx.MockRouter) -> N
         },
     )
     async with http.AsyncClient() as client:
+        client.retry_exponential_multiplier = 0
         with pytest.raises(http.HTTPClientSideError) as exc_info:
             await client.get("https://foobar/")
 
@@ -234,6 +236,7 @@ async def test_client_HTTP_500(respx_mock: respx.MockRouter) -> None:
     respx_mock.get("https://foobar/").respond(500, text="This is a 5XX error")
 
     async with http.AsyncClient() as client:
+        client.retry_exponential_multiplier = 0
         with pytest.raises(http.HTTPServerSideError) as exc_info:
             await client.get("https://foobar/")
 
@@ -255,11 +258,13 @@ async def test_client_temporary_HTTP_500(respx_mock: respx.MockRouter) -> None:
     )
 
     async with http.AsyncClient() as client:
+        client.retry_exponential_multiplier = 0
         await client.get("https://foobar/")
 
 
 async def test_client_connection_error() -> None:
     async with http.AsyncClient() as client:
+        client.retry_exponential_multiplier = 0
         with pytest.raises(http.RequestError):
             await client.get("http://localhost:12345")
 
@@ -285,6 +290,7 @@ async def _do_test_client_retry_429(
     respx_mock.get("/").mock(side_effect=record_date)
 
     async with http.AsyncClient() as client:
+        client.retry_exponential_multiplier = 0
         await client.get("https://foobar/")
 
     return records[1]
@@ -341,6 +347,7 @@ async def test_client_access_token_HTTP_500(respx_mock: respx.MockRouter) -> Non
     async with github.AsyncGithubInstallationClient(
         github.GithubAppInstallationAuth(installation_json)
     ) as client:
+        client.retry_exponential_multiplier = 0
         with pytest.raises(http.HTTPServerSideError) as exc_info:
             await client.get("/")
 
@@ -366,10 +373,24 @@ async def test_client_installation_HTTP_500(respx_mock: respx.MockRouter) -> Non
         ]
     )
 
-    with pytest.raises(http.HTTPServerSideError) as exc_info:
-        await github.get_installation_from_account_id(
-            github_types.GitHubAccountIdType(12345)
-        )
+    real_init = github.AsyncGithubClient.__init__
+
+    def mocked_init(
+        self: github.AsyncGithubClient,
+        auth: (
+            github_app.GithubBearerAuth
+            | github.GithubAppInstallationAuth
+            | github.GithubTokenAuth
+        ),
+    ) -> None:
+        real_init(self, auth)
+        self.retry_exponential_multiplier = 0
+
+    with mock.patch.object(github.AsyncGithubClient, "__init__", mocked_init):
+        with pytest.raises(http.HTTPServerSideError) as exc_info:
+            await github.get_installation_from_account_id(
+                github_types.GitHubAccountIdType(12345)
+            )
 
     assert exc_info.value.message == "This is a 5XX error"
     assert exc_info.value.status_code == 500
@@ -445,6 +466,7 @@ async def test_client_abuse_403_no_header(respx_mock: respx.MockRouter) -> None:
     async with github.AsyncGithubInstallationClient(
         github.GithubAppInstallationAuth(installation_json)
     ) as client:
+        client.retry_exponential_multiplier = 0
         with pytest.raises(http.HTTPClientSideError) as exc_info:
             await client.get("/")
 
@@ -489,6 +511,7 @@ async def test_to_curl(
     async with github.AsyncGithubInstallationClient(
         github.GithubAppInstallationAuth(installation_json)
     ) as client:
+        client.retry_exponential_multiplier = 0
         await client.post("/", headers={"Foo": "Bar"}, json={"ask": "What?"})
         assert await client.last_request.to_curl_request() == (
             "curl -X POST "

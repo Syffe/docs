@@ -132,79 +132,6 @@ def extract_organization_login(client: httpx.AsyncClient) -> str | None:
     return None
 
 
-def before_log(retry_state: tenacity.RetryCallState) -> None:
-    client = retry_state.args[0]
-    if len(retry_state.args) >= 2:
-        method = retry_state.args[1]
-    else:
-        method = None
-    gh_owner = extract_organization_login(client)
-    if len(retry_state.args) >= 3:
-        url = retry_state.args[2]
-    else:
-        url = None
-    LOG.debug(
-        "http request starts",
-        method=method,
-        url=url,
-        gh_owner=gh_owner,
-        attempts=retry_state.attempt_number,
-    )
-
-
-def after_log(retry_state: tenacity.RetryCallState) -> None:
-    client = retry_state.args[0]
-    if len(retry_state.args) >= 2:
-        method = retry_state.args[1]
-    else:
-        method = None
-    if len(retry_state.args) >= 3:
-        url = retry_state.args[2]
-    else:
-        url = None
-    gh_owner = extract_organization_login(client)
-    error_message = None
-    response = None
-    exc_info = None
-    if retry_state.outcome:
-        if retry_state.outcome.failed:
-            exc_info = retry_state.outcome.exception()
-            if isinstance(exc_info, httpx.HTTPStatusError):
-                response = exc_info.response
-                error_message = exc_info.response.text
-        else:
-            response = retry_state.outcome.result()
-    else:
-        response = None
-
-    LOG.debug(
-        "http request ends",
-        method=method,
-        url=url,
-        gh_owner=gh_owner,
-        error_message=error_message,
-        attempts=retry_state.attempt_number,
-        seconds_since_start=retry_state.seconds_since_start,
-        idle_sinde_start=retry_state.idle_for,
-        response=response,
-        exc_info=exc_info,
-    )
-
-
-connectivity_issue_retry = tenacity.retry(
-    reraise=True,
-    retry=tenacity.retry_if_exception_type(
-        (RequestError, HTTPServerSideError, HTTPTooManyRequests)
-    ),
-    wait=tenacity.wait_combine(
-        wait_retry_after_header(), tenacity.wait_exponential(multiplier=0.2)
-    ),
-    stop=tenacity.stop_after_attempt(5),
-    before=before_log,
-    after=after_log,
-)
-
-
 def raise_for_status(resp: httpx.Response) -> None:
     if httpx.codes.is_client_error(resp.status_code):
         error_type = "Client Error"
@@ -228,7 +155,11 @@ class AsyncClient(httpx.AsyncClient):
         timeout: httpx_types.TimeoutTypes = DEFAULT_TIMEOUT,
         base_url: httpx_types.URLTypes = "",
         transport: httpx.AsyncBaseTransport | None = None,
+        retry_stop_after_attempt: int = 5,
+        retry_exponential_multiplier: float = 0.2,
     ) -> None:
+        self.retry_stop_after_attempt = retry_stop_after_attempt
+        self.retry_exponential_multiplier = retry_exponential_multiplier
         final_headers = DEFAULT_HEADERS.copy()
         if headers is not None:
             final_headers.update(headers)
@@ -240,12 +171,23 @@ class AsyncClient(httpx.AsyncClient):
             follow_redirects=True,
         )
 
-    @connectivity_issue_retry
     async def request(self, *args: typing.Any, **kwargs: typing.Any) -> httpx.Response:
-        try:
-            resp = await super().request(*args, **kwargs)
-        except anyio._core._exceptions.ClosedResourceError:
-            # FIXME(sileht): https://github.com/encode/httpx/issues/2337
-            raise httpx.RequestError("Connection unexpectely closed")
-        raise_for_status(resp)
+        async for attempt in tenacity.AsyncRetrying(
+            reraise=True,
+            retry=tenacity.retry_if_exception_type(
+                (RequestError, HTTPServerSideError, HTTPTooManyRequests)
+            ),
+            wait=tenacity.wait_combine(
+                wait_retry_after_header(),
+                tenacity.wait_exponential(multiplier=self.retry_exponential_multiplier),
+            ),
+            stop=tenacity.stop_after_attempt(self.retry_stop_after_attempt),
+        ):
+            with attempt:
+                try:
+                    resp = await super().request(*args, **kwargs)
+                except anyio._core._exceptions.ClosedResourceError:
+                    # FIXME(sileht): https://github.com/encode/httpx/issues/2337
+                    raise httpx.RequestError("Connection unexpectely closed")
+                raise_for_status(resp)
         return resp

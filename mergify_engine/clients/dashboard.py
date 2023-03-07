@@ -7,6 +7,8 @@ class AsyncDashboardSaasClient(http.AsyncClient):
         super().__init__(
             base_url=config.SUBSCRIPTION_BASE_URL,
             headers={"Authorization": f"Bearer {config.ENGINE_TO_DASHBOARD_API_KEY}"},
+            retry_stop_after_attempt=2,
+            retry_exponential_multiplier=0.1,
         )
 
 
