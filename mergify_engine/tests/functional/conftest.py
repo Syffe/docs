@@ -23,6 +23,7 @@ from mergify_engine import date
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import redis_utils
+from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import github_app
 from mergify_engine.clients import http
@@ -41,7 +42,7 @@ REQUESTS_SYNC_LOCK_FILE_PATH = f"{REQUESTS_SYNC_FILE_PATH}.lock"
 
 REQUESTS_SYNC_FILE_LOCK = filelock.FileLock(REQUESTS_SYNC_LOCK_FILE_PATH)
 
-SHUTUPVCR = bool(os.getenv("SHUTUPVCR", True))
+SHUTUPVCR = utils.strtobool(os.getenv("SHUTUPVCR", "true"))
 
 
 class ShutUpVcrCannotOverwriteExistingCassetteException(Exception):
