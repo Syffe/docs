@@ -155,7 +155,7 @@ async def send(
             repository_id_str,
             repository_name_str,
             pull_request_number_str,
-        ) = subkey.split("~")
+        ) = subkey.decode().split("~")
         owner_id = github_types.GitHubAccountIdType(int(owner_id_str))
         repository_id = github_types.GitHubRepositoryIdType(int(repository_id_str))
         pull_request_number = github_types.GitHubPullRequestNumber(

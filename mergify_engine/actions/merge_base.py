@@ -51,7 +51,7 @@ class MergeUtilsMixin:
     @classmethod
     async def has_been_recently_merged(
         cls,
-        redis: redis_utils.RedisCacheBytes,
+        redis: redis_utils.RedisCache,
         repository_id: github_types.GitHubRepositoryIdType,
         pull_request_number: github_types.GitHubPullRequestNumber,
     ) -> bool:
@@ -65,7 +65,7 @@ class MergeUtilsMixin:
     @classmethod
     async def create_recently_merged_tracker(
         cls,
-        redis: redis_utils.RedisCacheBytes,
+        redis: redis_utils.RedisCache,
         repository_id: github_types.GitHubRepositoryIdType,
         pull_request_number: github_types.GitHubPullRequestNumber,
     ) -> None:
@@ -146,7 +146,7 @@ class MergeUtilsMixin:
                 ctxt.log.info("merged")
 
             await self.create_recently_merged_tracker(
-                ctxt.repository.installation.redis.cache_bytes,
+                ctxt.repository.installation.redis.cache,
                 ctxt.repository.repo["id"],
                 ctxt.pull["number"],
             )
@@ -202,7 +202,7 @@ class MergeUtilsMixin:
                 ctxt.log.info("merged")
 
         await self.create_recently_merged_tracker(
-            ctxt.repository.installation.redis.cache_bytes,
+            ctxt.repository.installation.redis.cache,
             ctxt.repository.repo["id"],
             ctxt.pull["number"],
         )
@@ -350,7 +350,7 @@ class MergeUtilsMixin:
     ) -> check_api.Result | None:
         if ctxt.pull["merged"]:
             mergify_bot = await github.GitHubAppInfo.get_bot(
-                ctxt.repository.installation.redis.cache_bytes
+                ctxt.repository.installation.redis.cache
             )
             if ctxt.pull["merged_by"] is None:
                 mode = "somehow"

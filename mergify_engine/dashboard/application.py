@@ -176,7 +176,7 @@ class ApplicationSaas(ApplicationBase):
         if encrypted_application is not None:
             decrypted_application = typing.cast(
                 CachedApplication,
-                json.loads(crypto.decrypt(encrypted_application.encode()).decode()),
+                json.loads(crypto.decrypt(encrypted_application).decode()),
             )
             if "account_scope" not in decrypted_application:
                 # TODO(sileht): Backward compat, delete me <= 7.2.1
@@ -213,12 +213,12 @@ class ApplicationSaas(ApplicationBase):
             await pipe.get(cls._cache_key(api_access_key))
             await pipe.ttl(cls._cache_key(api_access_key))
             encrypted_application, ttl = typing.cast(
-                tuple[str, int], await pipe.execute()
+                tuple[bytes, int], await pipe.execute()
             )
         if encrypted_application:
             decrypted_application = typing.cast(
                 CachedApplication,
-                json.loads(crypto.decrypt(encrypted_application.encode()).decode()),
+                json.loads(crypto.decrypt(encrypted_application).decode()),
             )
             if decrypted_application["api_secret_key"] != api_secret_key:
                 # Don't raise ApplicationUserNotFound yet, check the database first

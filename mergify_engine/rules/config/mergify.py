@@ -31,7 +31,7 @@ pull_request_rules:
 
 
 async def get_mergify_builtin_config(
-    redis_cache: redis_utils.RedisCacheBytes,
+    redis_cache: redis_utils.RedisCache,
 ) -> voluptuous.Schema:
     mergify_bot = await github.GitHubAppInfo.get_bot(redis_cache)
     return rules.UserConfigurationSchema(

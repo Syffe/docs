@@ -259,7 +259,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         for embarked_pull in car.still_queued_embarked_pulls.copy():
             await self.create_recently_merged_tracker(
-                self.ctxt.repository.installation.redis.cache_bytes,
+                self.ctxt.repository.installation.redis.cache,
                 self.ctxt.repository.repo["id"],
                 embarked_pull.user_pull_request_number,
             )
@@ -653,7 +653,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 or self.config["method"] == "fast-forward"
             )
             and await self.has_been_recently_merged(
-                queue.repository.installation.redis.cache_bytes,
+                queue.repository.installation.redis.cache,
                 self.ctxt.repository.repo["id"],
                 self.ctxt.pull["number"],
             )

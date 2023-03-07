@@ -50,7 +50,7 @@ def create_app(https_only: bool = True, debug: bool = False) -> fastapi.FastAPI:
         await redis.startup()
         # NOTE(sileht): Warm GitHubAppInfo cache
         redis_links = redis.get_redis_links()
-        await github.GitHubAppInfo.warm_cache(redis_links.cache_bytes)
+        await github.GitHubAppInfo.warm_cache(redis_links.cache)
 
     @app.on_event("shutdown")
     async def shutdown() -> None:

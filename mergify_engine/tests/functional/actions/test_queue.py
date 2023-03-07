@@ -5765,7 +5765,7 @@ class TestQueueAction(base.FunctionalTestBase):
             await self.run_full_engine()
 
             pulls_to_refresh: list[
-                tuple[str, float]
+                tuple[bytes, float]
             ] = await self.redis_links.cache.zrangebyscore(
                 "delayed-refresh", "-inf", "+inf", withscores=True
             )
@@ -5859,7 +5859,7 @@ class TestQueueAction(base.FunctionalTestBase):
             await self.run_full_engine()
 
             pulls_to_refresh: list[
-                tuple[str, float]
+                tuple[bytes, float]
             ] = await self.redis_links.cache.zrangebyscore(
                 "delayed-refresh", "-inf", "+inf", withscores=True
             )
@@ -5954,7 +5954,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 == "The pull request is the 1st in the queue to be merged"
             )
             pulls_to_refresh: list[
-                tuple[str, float]
+                tuple[bytes, float]
             ] = await self.redis_links.cache.zrangebyscore(
                 "delayed-refresh", "-inf", "+inf", withscores=True
             )
@@ -6036,7 +6036,7 @@ class TestQueueAction(base.FunctionalTestBase):
             )
 
             pulls_to_refresh: list[
-                tuple[str, float]
+                tuple[bytes, float]
             ] = await self.redis_links.cache.zrangebyscore(
                 "delayed-refresh", "-inf", "+inf", withscores=True
             )
@@ -6112,7 +6112,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 == "The pull request is the 1st in the queue to be merged"
             )
             pulls_to_refresh: list[
-                tuple[str, float]
+                tuple[bytes, float]
             ] = await self.redis_links.cache.zrangebyscore(
                 "delayed-refresh", "-inf", "+inf", withscores=True
             )

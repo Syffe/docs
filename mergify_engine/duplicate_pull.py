@@ -227,7 +227,7 @@ def get_destination_branch_name(
     reraise=True,
 )
 async def prepare_branch(
-    redis: redis_utils.RedisCacheBytes,
+    redis: redis_utils.RedisCache,
     logger: "logging.LoggerAdapter[logging.Logger]",
     pull: github_types.GitHubPullRequest,
     auth: github.GithubAppInstallationAuth | github.GithubTokenAuth,

@@ -24,7 +24,7 @@ async def configuration(
         redis.get_redis_links
     ),
 ) -> ConfigJSON:
-    app = await github.GitHubAppInfo.get_app(redis_cache=redis_links.cache_bytes)
+    app = await github.GitHubAppInfo.get_app(redis_cache=redis_links.cache)
     return ConfigJSON(
         {
             "dd_client_token": config.DASHBOARD_UI_DATADOG_CLIENT_TOKEN,

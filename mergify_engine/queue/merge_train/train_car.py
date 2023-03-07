@@ -1278,7 +1278,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             self.queue_pull_request_number
         )
         mergify_bot = await github.GitHubAppInfo.get_bot(
-            self.train.repository.installation.redis.cache_bytes
+            self.train.repository.installation.redis.cache
         )
         unexpected_event = first.first(
             (source for source in checked_ctxt.sources),

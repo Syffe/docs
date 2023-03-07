@@ -40,4 +40,4 @@ async def get(
     if raw is None:
         return None
     else:
-        return date.fromisoformat(raw)
+        return date.fromisoformat(raw.decode())

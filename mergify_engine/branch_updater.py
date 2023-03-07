@@ -112,7 +112,7 @@ async def _do_rebase(
     git = gitter.Gitter(ctxt.log)
     try:
         await git.init()
-        await git.configure(ctxt.repository.installation.redis.cache_bytes, committer)
+        await git.configure(ctxt.repository.installation.redis.cache, committer)
         await git.setup_remote(
             "origin", ctxt.pull["head"]["repo"], user["oauth_access_token"], ""
         )

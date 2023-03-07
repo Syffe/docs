@@ -136,11 +136,9 @@ class UserTokensSaas(UserTokensBase):
         async with await redis.pipeline() as pipe:
             await pipe.get(cls._cache_key(owner_id))
             await pipe.ttl(cls._cache_key(owner_id))
-            encrypted_tokens, ttl = typing.cast(tuple[str, int], await pipe.execute())
+            encrypted_tokens, ttl = typing.cast(tuple[bytes, int], await pipe.execute())
         if encrypted_tokens:
-            decrypted_tokens = json.loads(
-                crypto.decrypt(encrypted_tokens.encode()).decode()
-            )
+            decrypted_tokens = json.loads(crypto.decrypt(encrypted_tokens).decode())
 
             if "tokens" in decrypted_tokens:
                 # Old cache format, just drop it

@@ -95,7 +95,7 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
 
         if self.config["bot_account"] is None:
             mergify_bot = await github.GitHubAppInfo.get_bot(
-                self.ctxt.repository.installation.redis.cache_bytes
+                self.ctxt.repository.installation.redis.cache
             )
             review_user_id = mergify_bot["id"]
         else:

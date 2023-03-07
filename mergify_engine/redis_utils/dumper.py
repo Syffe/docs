@@ -36,7 +36,9 @@ async def dump(argv: list[str]) -> None:
     async for redis_key in redis_links.cache.scan_iter(args.key, count=1000):
         value = await redis_links.cache.get(redis_key)
         if value is not None:
-            with open(f"{args.path}/{redis_key.replace('/', '-')}.txt", "w") as f:
+            with open(
+                f"{args.path}/{redis_key.decode().replace('/', '-')}.txt", "wb"
+            ) as f:
                 f.write(value)
 
     await redis_links.shutdown_all()

@@ -333,7 +333,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
             self.ctxt.log,
             functools.partial(
                 duplicate_pull.prepare_branch,
-                self.ctxt.repository.installation.redis.cache_bytes,
+                self.ctxt.repository.installation.redis.cache,
                 self.ctxt.log,
                 self.ctxt.pull,
                 self.ctxt.client.auth,
@@ -451,17 +451,17 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
         return f"{self.KIND}-state/{self.ctxt.repository.repo['id']}/{self.ctxt.pull['number']}/{rule_name_encoded}"
 
     async def _clear_state(self) -> None:
-        await self.ctxt.repository.installation.redis.cache_bytes.delete(
+        await self.ctxt.repository.installation.redis.cache.delete(
             self._state_redis_key,
         )
 
     async def _save_state(self, results: list[CopyResult]) -> None:
-        await self.ctxt.repository.installation.redis.cache_bytes.set(
+        await self.ctxt.repository.installation.redis.cache.set(
             self._state_redis_key, json.dumps(results), ex=COPY_STATE_EXPIRATION
         )
 
     async def _load_state(self) -> dict[github_types.GitHubRefType, CopyResult]:
-        data = await self.ctxt.repository.installation.redis.cache_bytes.get(
+        data = await self.ctxt.repository.installation.redis.cache.get(
             self._state_redis_key,
         )
         if data is None:

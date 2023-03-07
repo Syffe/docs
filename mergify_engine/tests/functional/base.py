@@ -779,11 +779,9 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         if files is None:
             files = {}
 
-        self.mergify_bot = await github.GitHubAppInfo.get_bot(
-            self.redis_links.cache_bytes
-        )
+        self.mergify_bot = await github.GitHubAppInfo.get_bot(self.redis_links.cache)
 
-        await self.git.configure(self.redis_links.cache_bytes)
+        await self.git.configure(self.redis_links.cache)
         await self.git.add_cred(
             config.ORG_ADMIN_PERSONAL_TOKEN,
             "",

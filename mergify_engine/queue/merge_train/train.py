@@ -80,7 +80,7 @@ class Train:
     ) -> None:
         trains_key = f"merge-trains~{installation.owner_id}"
         for key in await installation.redis.cache.hkeys(trains_key):
-            repo_id_str, ref_str = key.split("~")
+            repo_id_str, ref_str = key.decode().split("~")
             ref = github_types.GitHubRefType(ref_str)
             repo_id = github_types.GitHubRepositoryIdType(int(repo_id_str))
             try:
@@ -130,7 +130,7 @@ class Train:
             f"{repo_filter}~*",
             count=10000,
         ):
-            repo_id_str, ref_str = key.split("~")
+            repo_id_str, ref_str = key.decode().split("~")
             ref = github_types.GitHubRefType(ref_str)
             if exclude_ref is not None and ref == exclude_ref:
                 continue
@@ -139,7 +139,7 @@ class Train:
             await train.load(train_raw)
             yield train
 
-    async def load(self, train_raw: str | None = None) -> None:
+    async def load(self, train_raw: bytes | None = None) -> None:
         if train_raw is None:
             train_raw = await self.repository.installation.redis.cache.hget(
                 self._get_redis_key(), self._get_redis_hash_key()

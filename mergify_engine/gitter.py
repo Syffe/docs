@@ -251,7 +251,7 @@ class Gitter:
 
     async def configure(
         self,
-        redis_cache: redis_utils.RedisCacheBytes,
+        redis_cache: redis_utils.RedisCache,
         user: user_tokens.UserTokensUser | None = None,
     ) -> None:
         if user is None:

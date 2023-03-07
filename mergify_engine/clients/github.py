@@ -726,7 +726,7 @@ class GitHubAppInfo:
 
     @classmethod
     async def _fetch_bot_from_redis(
-        cls, redis_cache: redis_utils.RedisCacheBytes
+        cls, redis_cache: redis_utils.RedisCache
     ) -> github_types.GitHubAccount | None:
         raw: bytes | None = await redis_cache.get(cls._redis_bot_key)
         if raw is None:
@@ -735,7 +735,7 @@ class GitHubAppInfo:
 
     @classmethod
     async def _fetch_bot_from_github(
-        cls, redis_cache: redis_utils.RedisCacheBytes
+        cls, redis_cache: redis_utils.RedisCache
     ) -> github_types.GitHubAccount:
         app = await cls.get_app(redis_cache)
         async for auth in cls._get_random_installation_auths():
@@ -758,7 +758,7 @@ class GitHubAppInfo:
 
     @classmethod
     async def get_bot(
-        cls, redis_cache: redis_utils.RedisCacheBytes
+        cls, redis_cache: redis_utils.RedisCache
     ) -> github_types.GitHubAccount:
         if cls._bot is None:
             cls._bot = await cls._fetch_bot_from_redis(redis_cache)
@@ -768,7 +768,7 @@ class GitHubAppInfo:
 
     @classmethod
     async def _fetch_app_from_redis(
-        cls, redis_cache: redis_utils.RedisCacheBytes
+        cls, redis_cache: redis_utils.RedisCache
     ) -> github_types.GitHubApp | None:
         raw: bytes | None = await redis_cache.get(cls._redis_app_key)
         if raw is None:
@@ -777,7 +777,7 @@ class GitHubAppInfo:
 
     @classmethod
     async def _fetch_app_from_github(
-        cls, redis_cache: redis_utils.RedisCacheBytes
+        cls, redis_cache: redis_utils.RedisCache
     ) -> github_types.GitHubApp:
         async with AsyncGithubClient(auth=github_app.GithubBearerAuth()) as client:
             app = await client.item("/app")
@@ -791,7 +791,7 @@ class GitHubAppInfo:
 
     @classmethod
     async def get_app(
-        cls, redis_cache: redis_utils.RedisCacheBytes
+        cls, redis_cache: redis_utils.RedisCache
     ) -> github_types.GitHubApp:
         if cls._app is None:
             cls._app = await cls._fetch_app_from_redis(redis_cache)
@@ -800,7 +800,7 @@ class GitHubAppInfo:
         return cls._app
 
     @classmethod
-    async def warm_cache(cls, redis_cache: redis_utils.RedisCacheBytes) -> None:
+    async def warm_cache(cls, redis_cache: redis_utils.RedisCache) -> None:
         try:
             await cls.get_bot(redis_cache)
         except Exception:

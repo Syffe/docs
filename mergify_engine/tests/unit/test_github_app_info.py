@@ -6,7 +6,7 @@ from mergify_engine.clients import github
 
 
 async def test_github_app_info_getter(
-    respx_mock: respx.MockRouter, redis_cache_bytes: redis_utils.RedisCacheBytes
+    respx_mock: respx.MockRouter, redis_cache: redis_utils.RedisCache
 ) -> None:
     account = github_types.GitHubAccount(
         {
@@ -54,28 +54,28 @@ async def test_github_app_info_getter(
         json=expected_bot,  # type: ignore[arg-type]
     )
 
-    keys = await redis_cache_bytes.keys()
+    keys = await redis_cache.keys()
     assert keys == []
 
     # From API
     github.GitHubAppInfo._app = None
     github.GitHubAppInfo._bot = None
-    bot = await github.GitHubAppInfo.get_bot(redis_cache_bytes)
+    bot = await github.GitHubAppInfo.get_bot(redis_cache)
     assert bot == expected_bot
-    app = await github.GitHubAppInfo.get_app(redis_cache_bytes)
+    app = await github.GitHubAppInfo.get_app(redis_cache)
     assert app == expected_app
 
     assert route_user.call_count == 1
     assert route_app.call_count == 1
     assert route_installation.call_count == 1
 
-    keys = await redis_cache_bytes.keys()
+    keys = await redis_cache.keys()
     assert sorted(keys) == [b"github-info-app", b"github-info-bot"]
 
     # From globals cache
-    bot = await github.GitHubAppInfo.get_bot(redis_cache_bytes)
+    bot = await github.GitHubAppInfo.get_bot(redis_cache)
     assert bot == expected_bot
-    app = await github.GitHubAppInfo.get_app(redis_cache_bytes)
+    app = await github.GitHubAppInfo.get_app(redis_cache)
     assert app == expected_app
     assert route_user.call_count == 1
     assert route_app.call_count == 1
@@ -84,9 +84,9 @@ async def test_github_app_info_getter(
     # From redis
     github.GitHubAppInfo._app = None
     github.GitHubAppInfo._bot = None
-    bot = await github.GitHubAppInfo.get_bot(redis_cache_bytes)
+    bot = await github.GitHubAppInfo.get_bot(redis_cache)
     assert bot == expected_bot
-    app = await github.GitHubAppInfo.get_app(redis_cache_bytes)
+    app = await github.GitHubAppInfo.get_app(redis_cache)
     assert app == expected_app
 
     assert route_user.call_count == 1
@@ -95,13 +95,13 @@ async def test_github_app_info_getter(
 
     # From globals cache again to ensure we don't fetch it from redis and not
     # api call are done
-    await redis_cache_bytes.flushdb()
-    keys = await redis_cache_bytes.keys()
+    await redis_cache.flushdb()
+    keys = await redis_cache.keys()
     assert keys == []
 
-    bot = await github.GitHubAppInfo.get_bot(redis_cache_bytes)
+    bot = await github.GitHubAppInfo.get_bot(redis_cache)
     assert bot == expected_bot
-    app = await github.GitHubAppInfo.get_app(redis_cache_bytes)
+    app = await github.GitHubAppInfo.get_app(redis_cache)
     assert app == expected_app
     assert route_user.call_count == 1
     assert route_app.call_count == 1

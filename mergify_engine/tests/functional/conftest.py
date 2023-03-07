@@ -413,7 +413,7 @@ async def recorder(
     record_config_file = os.path.join(cassette_library_dir, "config.json")
 
     if RECORD:
-        mergify_bot = await github.GitHubAppInfo.get_bot(redis_links.cache_bytes)
+        mergify_bot = await github.GitHubAppInfo.get_bot(redis_links.cache)
         with open(record_config_file, "w") as f:
             f.write(
                 json.dumps(

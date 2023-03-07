@@ -260,4 +260,4 @@ def fake_github_app_info() -> abc.Generator[None, None, None]:
 async def fake_mergify_bot(
     redis_links: redis_utils.RedisLinks,
 ) -> github_types.GitHubAccount:
-    return await github.GitHubAppInfo.get_bot(redis_links.cache_bytes)
+    return await github.GitHubAppInfo.get_bot(redis_links.cache)

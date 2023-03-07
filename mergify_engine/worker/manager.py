@@ -150,7 +150,7 @@ class ServiceManager:
         await ping_redis(self._redis_links.stream, "Stream")
         await ping_redis(self._redis_links.cache, "Cache")
 
-        await github.GitHubAppInfo.warm_cache(self._redis_links.cache_bytes)
+        await github.GitHubAppInfo.warm_cache(self._redis_links.cache)
 
         if "gitter" in self.enabled_services:
             gitter_serv = gitter_service.GitterService(

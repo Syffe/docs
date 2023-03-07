@@ -402,7 +402,7 @@ class Repository:
 
         # Add global and mandatory rules
         builtin_mergify_config = await mergify_conf.get_mergify_builtin_config(
-            self.installation.redis.cache_bytes
+            self.installation.redis.cache
         )
         mergify_config["pull_request_rules"].rules.extend(
             builtin_mergify_config["pull_request_rules"].rules
@@ -551,15 +551,17 @@ class Repository:
     ) -> str:
         """The returned data has good chance to be obsolete, the only intent is for
         caching the title for later reporting"""
-        title = await self.installation.redis.cache.get(
+        title_raw = await self.installation.redis.cache.get(
             self.get_pull_request_title_cache_key(self.repo["id"], pull_number),
         )
-        if title is None:
+        if title_raw is None:
             ctxt = await self.get_pull_request_context(pull_number)
             title = ctxt.pull["title"]
             await self.cache_pull_request_title(
                 self.installation.redis.cache, self.repo["id"], pull_number, title
             )
+        else:
+            title = title_raw.decode()
         return title
 
     @classmethod
@@ -1259,10 +1261,10 @@ class Context:
         redis_cache: redis_utils.RedisCache,
         pull: github_types.GitHubPullRequest,
     ) -> github_types.SHAType | None:
-        return typing.cast(
-            github_types.SHAType | None,
-            await redis_cache.get(cls.redis_last_summary_head_sha_key(pull)),
-        )
+        raw = await redis_cache.get(cls.redis_last_summary_head_sha_key(pull))
+        if raw is None:
+            return None
+        return github_types.SHAType(raw.decode())
 
     @classmethod
     async def summary_exists(
@@ -1732,7 +1734,7 @@ class Context:
 
         is_conflicting = self._caches.is_conflicting.get()
         if is_conflicting is cache.Unset:
-            cached_is_conflicting: str | None = await self.redis.cache.get(
+            cached_is_conflicting: bytes | None = await self.redis.cache.get(
                 self._conflict_cache_key
             )
             if self.pull["mergeable"] is None:
@@ -2004,7 +2006,7 @@ class Context:
                 event = typing.cast(github_types.GitHubEventPullRequest, source["data"])
                 if event["action"] == "synchronize":
                     mergify_bot = await github.GitHubAppInfo.get_bot(
-                        self.repository.installation.redis.cache_bytes
+                        self.repository.installation.redis.cache
                     )
                     is_mergify = event["sender"]["id"] == mergify_bot[
                         "id"

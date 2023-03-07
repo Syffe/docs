@@ -15,7 +15,7 @@ async def test_gitter(
     git = gitter.Gitter(mock.Mock())
     try:
         await git.init()
-        await git.configure(redis_links.cache_bytes)
+        await git.configure(redis_links.cache)
         await git.add_cred("foo", "bar", "https://github.com")
 
         with pytest.raises(gitter.GitError) as exc_info:

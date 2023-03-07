@@ -71,7 +71,7 @@ async def get_already_merged_summary(
         return ""
 
     mergify_bot = await github.GitHubAppInfo.get_bot(
-        ctxt.repository.installation.redis.cache_bytes
+        ctxt.repository.installation.redis.cache
     )
     if (
         ctxt.pull["merged_by"] is not None

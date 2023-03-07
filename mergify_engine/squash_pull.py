@@ -42,9 +42,9 @@ async def _do_squash(
         await git.init()
 
         if ctxt.subscription.has_feature(Features.BOT_ACCOUNT):
-            await git.configure(ctxt.repository.installation.redis.cache_bytes, user)
+            await git.configure(ctxt.repository.installation.redis.cache, user)
         else:
-            await git.configure(ctxt.repository.installation.redis.cache_bytes)
+            await git.configure(ctxt.repository.installation.redis.cache)
 
         await git.setup_remote(
             "origin", ctxt.pull["head"]["repo"], user["oauth_access_token"], ""
