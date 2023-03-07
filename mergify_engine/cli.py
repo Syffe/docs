@@ -1,8 +1,4 @@
 import argparse
-import asyncio
-from collections import abc
-import functools
-import typing
 
 from mergify_engine import github_types
 from mergify_engine import redis_utils
@@ -13,17 +9,7 @@ from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
 
 
-def make_sync_for_entrypoint(
-    func: abc.Callable[[], abc.Coroutine[typing.Any, typing.Any, None]]
-) -> abc.Callable[[], None]:
-    @functools.wraps(func)
-    def inner_func() -> None:
-        asyncio.run(func())
-
-    return inner_func
-
-
-@make_sync_for_entrypoint
+@utils.make_sync_for_entrypoint
 async def clear_token_cache() -> None:
     async with redis_utils.RedisLinks(name="debug") as redis_links:
         parser = argparse.ArgumentParser(
@@ -36,7 +22,7 @@ async def clear_token_cache() -> None:
         )
 
 
-@make_sync_for_entrypoint
+@utils.make_sync_for_entrypoint
 async def refresher_cli() -> None:
     parser = argparse.ArgumentParser(description="Force refresh of mergify_engine")
     parser.add_argument(

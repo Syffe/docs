@@ -4,12 +4,12 @@ import os
 import shutil
 import tempfile
 
-from mergify_engine import redis_tools
 from mergify_engine import yaml
+from mergify_engine.redis_utils import dumper
 from mergify_engine.tests.functional import base
 
 
-class TestRedisTools(base.FunctionalTestBase):
+class TestRedisUtilsDumper(base.FunctionalTestBase):
     async def test_download_cached_config_files(self) -> None:
         rules = {
             "queue_rules": [
@@ -63,14 +63,12 @@ class TestRedisTools(base.FunctionalTestBase):
         await self.repository_ctxt.get_mergify_config_file()
         temporary_folder = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, temporary_folder)
-        await redis_tools.download_redis_cached_keys(
-            ["--path", temporary_folder, "--key", "non_existent_key"]
-        )
+        await dumper.dump(["--path", temporary_folder, "--key", "non_existent_key"])
         assert not os.path.exists(
             f"{temporary_folder}/config_file-{self.repository_ctxt.repo['id']}.txt"
         )
 
-        await redis_tools.download_redis_cached_keys(["--path", temporary_folder])
+        await dumper.dump(["--path", temporary_folder])
         assert os.path.exists(
             f"{temporary_folder}/config_file-{self.repository_ctxt.repo['id']}.txt"
         )

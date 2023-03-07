@@ -107,7 +107,7 @@ pytest-rerunfailures = "^11.1"
   mergify-admin = "mergify_engine.admin:main"
   # TODO(sileht): compat, drop me
   mergify-import-check = "mergify_engine.import_check:import_check_worker"
-  mergify-get-redis-cached-keys = "mergify_engine.redis_tools:get_redis_cached_keys"
+  mergify-redis-dump = "mergify_engine.redis_tools.dumper:main"
 
 [tool.poetry.plugins]
 
