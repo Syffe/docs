@@ -27,11 +27,16 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
         ctxt: "context.Context",
         rule: "prr_config.EvaluatedPullRequestRule",
     ) -> "SquashExecutor":
+        if isinstance(rule, prr_config.CommandRule):
+            bot_account_fallback = rule.sender["login"]
+        else:
+            bot_account_fallback = ctxt.pull["user"]["login"]
+
         try:
             bot_account = await action_utils.render_bot_account(
                 ctxt,
                 action.config["bot_account"],
-                bot_account_fallback=ctxt.pull["user"]["login"],
+                bot_account_fallback=bot_account_fallback,
                 required_feature=subscription.Features.BOT_ACCOUNT,
                 missing_feature_message="Squash with `bot_account` set is disabled",
                 required_permissions=[],

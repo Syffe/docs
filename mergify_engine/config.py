@@ -401,8 +401,8 @@ ORG_ADMIN_PERSONAL_TOKEN: github_types.GitHubOAuthToken
 ORG_ADMIN_ID: github_types.GitHubAccountIdType
 ORG_USER_ID: github_types.GitHubAccountIdType
 ORG_USER_PERSONAL_TOKEN: github_types.GitHubOAuthToken
-TESTING_MERGIFY_TEST_1_ID: int
-TESTING_MERGIFY_TEST_2_ID: int
+TESTING_MERGIFY_TEST_1_ID: github_types.GitHubAccountIdType
+TESTING_MERGIFY_TEST_2_ID: github_types.GitHubAccountIdType
 TESTING_GPGKEY_SECRET: bytes
 TESTING_ID_GPGKEY_SECRET: str
 TESTING_INSTALLATION_ID: github_types.GitHubAccountIdType

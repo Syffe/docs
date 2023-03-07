@@ -256,13 +256,8 @@ Awesome body
         await self.create_command(pr["number"], "@mergifyio squash", as_="admin")
 
         comments = await self.get_issue_comments(pr["number"])
-        assert len(comments) == 5
+        assert len(comments) == 4
         # Response to the first squash
         assert "Command disallowed due to [command restrictions]" in comments[1]["body"]
         # Response to the second squash
-        assert "Pull request squashed successfully" in comments[4]["body"]
-        # Deprecation warning
-        assert (
-            "This pull request got squashed on behalf of a random user of the organization"
-            in comments[3]["body"]
-        )
+        assert "Pull request squashed successfully" in comments[3]["body"]

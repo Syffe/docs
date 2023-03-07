@@ -78,7 +78,7 @@ class CommandPayload(typing.TypedDict):
 class CommandState:
     command: str
     conclusion: check_api.Conclusion
-    github_comment_source: github_types.GitHubComment | None
+    github_comment_source: github_types.GitHubComment
     github_comment_result: github_types.GitHubComment | None
 
 
@@ -175,7 +175,9 @@ class NoCommandStateFound(Exception):
 
 
 def extract_command_state(
-    comment: github_types.GitHubComment, mergify_bot: github_types.GitHubAccount
+    comment: github_types.GitHubComment,
+    mergify_bot: github_types.GitHubAccount,
+    pendings: dict[str, CommandState],
 ) -> CommandState:
     match = COMMAND_MATCHER.search(comment["body"])
 
@@ -215,10 +217,15 @@ def extract_command_state(
         LOG.error("Unable to load conclusions %s", payload["conclusion"])
         raise NoCommandStateFound()
 
+    previous_state = pendings.get(payload["command"])
+    if previous_state is None:
+        LOG.warning("Unable to find initial command comment")
+        raise NoCommandStateFound()
+
     return CommandState(
         payload["command"],
         conclusion=conclusion,
-        github_comment_source=None,
+        github_comment_source=previous_state.github_comment_source,
         github_comment_result=comment,
     )
 
@@ -249,7 +256,7 @@ async def run_commands_tasks(
 
     for comment in comments:
         try:
-            state = extract_command_state(comment, mergify_bot)
+            state = extract_command_state(comment, mergify_bot, pendings)
         except NoCommandStateFound:
             continue
 
@@ -337,6 +344,7 @@ async def run_command(
                         conds,
                         {},
                         False,
+                        state.github_comment_source["user"],
                     )
                 ),
             )
@@ -411,11 +419,6 @@ async def check_init_command_run(
     # Not a initial command run
     if state.github_comment_result is not None:
         return
-
-    if state.github_comment_source is None:
-        raise RuntimeError(
-            "state.github_comment_result is None, but state.github_comment_source is not set."
-        )
 
     if command.name != "refresh" and ctxt.is_merge_queue_pr():
         raise CommandNotAllowed(MERGE_QUEUE_COMMAND_MESSAGE, "")

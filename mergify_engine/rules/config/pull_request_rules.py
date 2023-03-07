@@ -6,6 +6,7 @@ import daiquiri
 import voluptuous
 
 from mergify_engine import actions as actions_mod
+from mergify_engine import github_types
 from mergify_engine import rules
 from mergify_engine.rules import conditions as conditions_mod
 from mergify_engine.rules.config import conditions as cond_config
@@ -41,8 +42,7 @@ class PullRequestRule:
     disabled: DisabledDict | None
     conditions: conditions_mod.PullRequestRuleConditions
     actions: dict[str, actions_mod.Action]
-    hidden: bool = False
-    from_command: bool = False
+    hidden: bool
 
     class T_from_dict_required(typing.TypedDict):
         name: PullRequestRuleName
@@ -77,6 +77,8 @@ class PullRequestRule:
 
 @dataclasses.dataclass
 class CommandRule(PullRequestRule):
+    sender: github_types.GitHubAccount
+
     def get_signal_trigger(self) -> str:
         return f"Command: {self.name}"
 

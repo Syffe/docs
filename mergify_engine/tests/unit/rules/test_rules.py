@@ -1124,6 +1124,7 @@ async def test_get_pull_request_rules_evaluator(
                 disabled=None,
                 conditions=conditions.PullRequestRuleConditions([]),
                 actions={},
+                hidden=False,
             )
         ]
     )
