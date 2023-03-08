@@ -50,6 +50,20 @@ export DD_LOGS_CONFIG_FRAME_SIZE=30000
 # Copy the empty config file
 cp -f "${DD_CONF_DIR}/datadog.yaml.example" "$DD_CONF_DIR/datadog.yaml"
 
+
+POSTGRES_REGEX='^postgres://([^:]+):([^@]+)@([^:]+):([^/]+)/(.*)$'
+POSTGRES_CONF_FILE="$DD_CONF_DIR/conf.d/postgres.d/conf.yaml"
+
+if [ -n "$MERGIFYENGINE_DATABASE_URL" ]; then
+    if [[ $MERGIFYENGINE_DATABASE_URL =~ $POSTGRES_REGEX ]]; then
+        sed -i "s/<YOUR HOSTNAME>/${BASH_REMATCH[3]}/" "$POSTGRES_CONF_FILE"
+        sed -i "s/<YOUR USERNAME>/${BASH_REMATCH[1]}/" "$POSTGRES_CONF_FILE"
+        sed -i "s/<YOUR PASSWORD>/${BASH_REMATCH[2]}/" "$POSTGRES_CONF_FILE"
+        sed -i "s/<YOUR PORT>/${BASH_REMATCH[4]}/" "$POSTGRES_CONF_FILE"
+        sed -i "s/<YOUR DBNAME>/${BASH_REMATCH[5]}/" "$POSTGRES_CONF_FILE"
+    fi
+fi
+
 REDIS_REGEX='^redis(s?)://([^:]*):([^@]+)@([^:]+):([^/?]+)'
 REDIS_FILE="$DD_CONF_DIR/conf.d/redisdb.d/conf.yaml"
 

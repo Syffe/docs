@@ -1,0 +1,16 @@
+init_config:
+
+instances:
+  - host: <YOUR HOSTNAME>
+    port: <YOUR PORT>
+    username: <YOUR USERNAME>
+    password: <YOUR PASSWORD>
+    dbname: <YOUR DBNAME>
+    dbm: true
+    ssl: True
+    custom_queries:
+      - metric_prefix: engine.db
+        query: "SELECT count(*) FROM \"github_user\""
+        columns:
+          - name: users.count
+            type: gauge
