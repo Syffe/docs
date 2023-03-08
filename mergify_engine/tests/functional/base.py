@@ -1006,7 +1006,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         # if autosquash_commit_body is not None and commit_type in ("fixup=amend", "fixup=reword"):
         #     raise RuntimeError("Git doesn't allow `-m` with `--fixup=amend` and `--fixup=reword`")
 
-        pr = await self.create_pr(commit_body=commit_body)
+        pr = await self.create_pr(commit_body=commit_body, as_="admin")
 
         with open(self.git.repository + f"/testfixup{self.pr_counter}", "w") as f:
             f.write("fixup")

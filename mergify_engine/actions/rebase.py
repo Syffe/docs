@@ -6,10 +6,10 @@ from mergify_engine import actions
 from mergify_engine import branch_updater
 from mergify_engine import check_api
 from mergify_engine import context
+from mergify_engine import github_types
 from mergify_engine import signals
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.dashboard import subscription
-from mergify_engine.dashboard import user_tokens
 from mergify_engine.rules import conditions
 from mergify_engine.rules import types
 from mergify_engine.rules.config import pull_request_rules as prr_config
@@ -17,7 +17,7 @@ from mergify_engine.rules.config import pull_request_rules as prr_config
 
 class RebaseExecutorConfig(typing.TypedDict):
     autosquash: bool
-    bot_account: user_tokens.UserTokensUser | None
+    bot_account: github_types.GitHubLogin
 
 
 class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig]):
@@ -28,11 +28,16 @@ class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig
         ctxt: "context.Context",
         rule: "prr_config.EvaluatedPullRequestRule",
     ) -> "RebaseExecutor":
+        if isinstance(rule, prr_config.CommandRule):
+            bot_account_fallback = rule.sender["login"]
+        else:
+            bot_account_fallback = ctxt.pull["user"]["login"]
+
         try:
             bot_account = await action_utils.render_bot_account(
                 ctxt,
                 action.config["bot_account"],
-                bot_account_fallback=None,
+                bot_account_fallback=bot_account_fallback,
                 required_feature=subscription.Features.BOT_ACCOUNT,
                 missing_feature_message="Comments with `bot_account` set are disabled",
                 required_permissions=[],
@@ -40,36 +45,15 @@ class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig
         except action_utils.RenderBotAccountFailure as e:
             raise prr_config.InvalidPullRequestRule(e.title, e.reason)
 
-        github_user: user_tokens.UserTokensUser | None = None
-        tokens = await ctxt.repository.installation.get_user_tokens()
-        if bot_account:
-            github_user = tokens.get_token_for(bot_account)
-            if not github_user:
-                raise prr_config.InvalidPullRequestRule(
-                    f"Unable to rebase: user `{bot_account}` is unknown. ",
-                    f"Please make sure `{bot_account}` has logged in Mergify dashboard.",
-                )
-
         return cls(
             ctxt,
             rule,
             RebaseExecutorConfig(
-                {"bot_account": github_user, "autosquash": action.config["autosquash"]}
+                {"bot_account": bot_account, "autosquash": action.config["autosquash"]}
             ),
         )
 
     async def run(self) -> check_api.Result:
-        if self.config[
-            "bot_account"
-        ] is not None and self.ctxt.subscription.has_feature(
-            subscription.Features.BOT_ACCOUNT
-        ):
-            on_behalf = self.config["bot_account"]
-        else:
-            # TODO(sileht): deprecated random user pick, instead put {{ author
-            # }} in bot_account default template
-            on_behalf = None
-
         if (
             self.config["autosquash"]
             and await self.ctxt.commits_behind_count == 0
@@ -83,7 +67,7 @@ class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig
         try:
             await branch_updater.rebase_with_git(
                 self.ctxt,
-                on_behalf,
+                self.config["bot_account"],
                 self.config["autosquash"],
             )
         except branch_updater.BranchUpdateFailure as e:

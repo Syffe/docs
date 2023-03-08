@@ -8,6 +8,7 @@ from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import exceptions
+from mergify_engine import github_types
 from mergify_engine import gitter
 from mergify_engine.clients import http
 from mergify_engine.dashboard import user_tokens
@@ -218,7 +219,7 @@ async def update_with_api(
         raise BranchUpdateFailure(e.message)
 
 
-async def rebase_with_git(
+async def rebase_with_git_legacy(
     ctxt: context.Context,
     on_behalf: user_tokens.UserTokensUser | None,
     autosquash: bool = False,
@@ -276,3 +277,32 @@ async def rebase_with_git(
         message = f"`{ping_user}` token is invalid, make sure `{ping_user}` can still log in on the [Mergify dashboard]({config.DATABASE_URL})."
 
     raise BranchUpdateFailure(message)
+
+
+async def rebase_with_git(
+    ctxt: context.Context,
+    on_behalf: github_types.GitHubLogin,
+    autosquash: bool = False,
+) -> None:
+    ctxt.log.info("updating base branch with git")
+
+    await pre_rebase_check(ctxt)
+
+    tokens = await ctxt.repository.installation.get_user_tokens()
+    on_behalf_auth_info = tokens.get_token_for(on_behalf)
+    if not on_behalf_auth_info:
+        raise BranchUpdateFailure(
+            f"User `{on_behalf}` is unknown, make sure `{on_behalf}` has logged in Mergify [Mergify dashboard]({config.DATABASE_URL})."
+        )
+
+    try:
+        await _do_rebase(ctxt, on_behalf_auth_info, on_behalf_auth_info, autosquash)
+    except gitter.GitAuthenticationFailure:
+        ctxt.log.info("git authentification failure", login=on_behalf, exc_info=True)
+
+        if ctxt.pull_from_fork and ctxt.pull["base"]["repo"]["private"]:
+            message = "Rebasing a branch for a forked private repository is not supported by GitHub."
+        else:
+            message = f"`{on_behalf}` token is invalid, make sure `{on_behalf}` can still log in on the [Mergify dashboard]({config.DATABASE_URL})."
+
+        raise BranchUpdateFailure(message)

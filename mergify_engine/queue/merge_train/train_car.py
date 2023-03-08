@@ -599,7 +599,9 @@ class TrainCar:
                     await branch_updater.update_with_api(ctxt)
                 else:
                     # FIXME(sileht): should we enabled autosquash here? MRGFY-279
-                    await branch_updater.rebase_with_git(ctxt, github_user, False)
+                    await branch_updater.rebase_with_git_legacy(
+                        ctxt, github_user, False
+                    )
             except branch_updater.BranchUpdateFailure as exc:
                 await self._set_creation_failure(
                     f"{exc.title}\n\n{exc.message}", operation="updated"

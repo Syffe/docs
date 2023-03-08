@@ -17,7 +17,7 @@ class TestRebaseAction(base.FunctionalTestBase):
 
         await self.setup_repo(yaml.dump(rules))
 
-        p = await self.create_pr()
+        p = await self.create_pr(as_="admin")
         pr_initial_sha = p["head"]["sha"]
 
         await self.git("checkout", self.main_branch_name)
@@ -53,8 +53,8 @@ class TestRebaseAction(base.FunctionalTestBase):
 
         await self.setup_repo(yaml.dump(rules))
 
-        p1 = await self.create_pr()
-        p2 = await self.create_pr()
+        p1 = await self.create_pr(as_="admin")
+        p2 = await self.create_pr(as_="admin")
         commits = await self.get_commits(p2["number"])
         assert len(commits) == 1
         await self.add_label(p1["number"], "merge")
@@ -94,8 +94,8 @@ class TestRebaseAction(base.FunctionalTestBase):
 
         await self.setup_repo(yaml.dump(rules))
 
-        p1 = await self.create_pr()
-        p2 = await self.create_pr()
+        p1 = await self.create_pr(as_="admin")
+        p2 = await self.create_pr(as_="admin")
         await self.add_label(p1["number"], "merge")
         await self.run_engine()
 
@@ -322,7 +322,7 @@ class TestRebaseAction(base.FunctionalTestBase):
     ) -> None:
         await self.setup_repo()
 
-        pr = await self.create_pr(two_commits=True)
+        pr = await self.create_pr(as_="admin", two_commits=True)
         await self.create_comment_as_admin(pr["number"], "@mergifyio rebase")
         await self.run_engine()
 
