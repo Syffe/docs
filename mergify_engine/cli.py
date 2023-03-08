@@ -1,9 +1,18 @@
 import argparse
+import datetime
+import typing
 
+from mergify_engine import config
 from mergify_engine import github_types
+from mergify_engine import json
+from mergify_engine import models
 from mergify_engine import redis_utils
 from mergify_engine import refresher
 from mergify_engine import utils
+from mergify_engine.ci import dump
+from mergify_engine.ci import job_registries
+from mergify_engine.ci import pull_registries
+from mergify_engine.ci import reports
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
@@ -82,3 +91,52 @@ async def refresher_cli() -> None:
                 )
             else:
                 print(f"No pull request or branch to refresh found for {url}")
+
+
+@utils.make_sync_for_entrypoint
+async def dump_handler(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description="Mergify CI dump")
+    parser.add_argument("owner", type=github_types.GitHubLogin)
+    parser.add_argument("repository", type=github_types.GitHubRepositoryName)
+    parser.add_argument("at", type=lambda v: datetime.date.fromisoformat(v))
+    args = parser.parse_args(argv)
+
+    models.init_sqlalchemy()
+
+    auth = github.GithubTokenAuth(
+        token=config.DEV_PERSONAL_TOKEN,
+    )
+
+    await dump.dump(
+        typing.cast(github_types.GitHubLogin, args.owner),
+        typing.cast(github_types.GitHubRepositoryName, args.repository),
+        args.at,
+        auth=auth,
+    )
+
+
+@utils.make_sync_for_entrypoint
+async def global_insight_handler(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description="Mergify CI dump")
+    parser.add_argument("owner", type=github_types.GitHubLogin)
+    parser.add_argument("repository", type=github_types.GitHubRepositoryName)
+    parser.add_argument("start_at", type=lambda v: datetime.date.fromisoformat(v))
+    parser.add_argument("end_at", type=lambda v: datetime.date.fromisoformat(v))
+    args = parser.parse_args(argv)
+
+    models.init_sqlalchemy()
+
+    query = reports.Query(
+        owner=args.owner,
+        repository=None if args.repository == "*" else args.repository,
+        start_at=args.start_at,
+        end_at=args.end_at,
+    )
+
+    action = reports.Report(
+        job_registries.PostgresJobRegistry(),
+        pull_registries.PostgresPullRequestRegistry(),
+        query,
+    )
+    result = await action.run()
+    print(json.dumps(result))

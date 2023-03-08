@@ -5,7 +5,7 @@ type = "poetry"
 PYTHONASYNCIODEBUG = "1"
 DD_DOGSTATSD_DISABLE = "1"
 DD_TRACE_ENABLED = "0"
-MERGIFYENGINE_TEST_SETTINGS = "fake.env"
+MERGIFYENGINE_TEST_SETTINGS.default = "fake.env"
 PYTEST_TIMEOUT = "20"
 
 [tool.poe.tasks.shell]

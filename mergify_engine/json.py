@@ -44,7 +44,6 @@ class Encoder(json.JSONEncoder):
                 "__pytype__": "uuid.UUID",
                 "value": v.hex,
             }
-
         else:
             return super().default(v)
 

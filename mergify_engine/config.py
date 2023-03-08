@@ -317,6 +317,7 @@ Schema = voluptuous.Schema(
         ): voluptuous.Coerce(int),
         "TESTING_GPGKEY_SECRET": str,
         "TESTING_ID_GPGKEY_SECRET": str,
+        voluptuous.Required("DEV_PERSONAL_TOKEN", default="<DEV_PERSONAL_TOKEN>"): str,
     }
 )
 
@@ -407,6 +408,7 @@ TESTING_GPGKEY_SECRET: bytes
 TESTING_ID_GPGKEY_SECRET: str
 TESTING_INSTALLATION_ID: github_types.GitHubAccountIdType
 SAAS_MODE: bool
+DEV_PERSONAL_TOKEN: github_types.GitHubOAuthToken
 
 # config variables built
 GITHUB_DOMAIN: str

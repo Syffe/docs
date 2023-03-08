@@ -425,6 +425,14 @@ GitHubEventType = typing.Literal[
     "refresh",
 ]
 
+# https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows
+GitHubWorkflowTriggerEventType = typing.Literal[
+    "pull_request",
+    "pull_request_target",
+    "push",
+    "schedule",
+]
+
 
 class GitHubEvent(typing.TypedDict):
     # FIXME(sileht): not all events have organization keys
@@ -828,3 +836,40 @@ class GitHubCompareCommits(typing.TypedDict):
 
 
 GitHubMembershipRole = typing.Literal["admin", "member"]
+
+
+class GitHubWorkflowRun(typing.TypedDict):
+    id: int
+    workflow_id: int
+    name: str
+    event: GitHubWorkflowTriggerEventType
+    triggering_actor: GitHubAccount
+    jobs_url: str
+    head_sha: SHAType
+    repository: GitHubRepository
+    run_attempt: int
+    run_started_at: ISODateTimeType
+
+
+class GitHubWorkflowRunList(typing.TypedDict):
+    total_count: int
+    workflow_runs: list[GitHubWorkflowRun]
+
+
+GitHubJobRunConclusionType = typing.Literal[
+    "success", "failure", "skipped", "cancelled"
+]
+
+
+class GitHubJobRun(typing.TypedDict):
+    id: int
+    name: str
+    conclusion: GitHubJobRunConclusionType
+    started_at: ISODateTimeType
+    completed_at: ISODateTimeType
+    workflow_run: GitHubWorkflowRun
+
+
+class GitHubJobRunList(typing.TypedDict):
+    total_count: int
+    jobs: list[GitHubJobRun]
