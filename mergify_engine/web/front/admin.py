@@ -10,26 +10,11 @@ import sqlalchemy.orm.exc
 from mergify_engine import github_types
 from mergify_engine import models
 from mergify_engine.clients import dashboard
-from mergify_engine.clients import http
 from mergify_engine.models import github_user
 from mergify_engine.web.front import security
 
 
 LOG = daiquiri.getLogger(__name__)
-
-
-class AssociatedUsersAccount(typing.TypedDict):
-    id: int
-
-
-class AssociatedUser(typing.TypedDict):
-    id: int
-    membership: github_types.GitHubMembershipRole | None
-
-
-class AssociatedUsers(typing.TypedDict):
-    account: AssociatedUsersAccount
-    associated_users: list[AssociatedUser]
 
 
 async def _get_user(
@@ -55,7 +40,7 @@ async def _get_user_by_login(
 
 
 async def select_user_from_login(
-    session: sqlalchemy.ext.asyncio.AsyncSession, login: str
+    session: sqlalchemy.ext.asyncio.AsyncSession, login: github_types.GitHubLogin
 ) -> github_user.GitHubUser:
     account = await _get_user_by_login(session, login)
 
@@ -65,21 +50,9 @@ async def select_user_from_login(
     # Check if the login is an organization with billing system
     async with dashboard.AsyncDashboardSaasClient() as client:
         try:
-            resp = await client.get(
-                url=f"/engine/associated-users/{login}",
-                follow_redirects=True,
-            )
-        except http.HTTPNotFound:
-            raise fastapi.HTTPException(
-                status_code=404,
-                detail="User or Organization has no Mergify account",
-            )
-        data = typing.cast(AssociatedUsers, resp.json())
-        # Try admin first
-        associated_users = sorted(
-            data["associated_users"],
-            key=lambda x: x["membership"] != "admin",
-        )
+            associated_users = await client.get_associated_users(login)
+        except dashboard.NoAssociatedUsersFound as e:
+            raise fastapi.HTTPException(status_code=404, detail=str(e))
 
         for associated_user in associated_users:
             user = await _get_user_by_id(session, associated_user["id"])
@@ -103,7 +76,7 @@ router = fastapi.APIRouter()
 )
 async def sudo(
     request: fastapi.Request,
-    login: str,
+    login: github_types.GitHubLogin,
     session: sqlalchemy.ext.asyncio.AsyncSession = fastapi.Depends(  # noqa: B008
         models.get_session
     ),
