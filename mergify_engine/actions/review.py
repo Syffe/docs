@@ -11,7 +11,6 @@ from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
-from mergify_engine.dashboard import user_tokens
 from mergify_engine.rules import types
 from mergify_engine.rules.config import pull_request_rules as prr_config
 
@@ -26,7 +25,7 @@ EVENT_STATE_MAP = {
 class ReviewExecutorConfig(typing.TypedDict):
     type: github_types.GitHubReviewStateChangeType
     message: str | None
-    bot_account: user_tokens.UserTokensUser | None
+    bot_account: github_types.GitHubLogin | None
 
 
 class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig]):
@@ -62,15 +61,6 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
         else:
             message = None
 
-        github_user: user_tokens.UserTokensUser | None = None
-        if bot_account:
-            tokens = await ctxt.repository.installation.get_user_tokens()
-            github_user = tokens.get_token_for(bot_account)
-            if not github_user:
-                raise prr_config.InvalidPullRequestRule(
-                    f"Unable to comment: user `{bot_account}` is unknown. ",
-                    f"Please make sure `{bot_account}` has logged in Mergify dashboard.",
-                )
         return cls(
             ctxt,
             rule,
@@ -78,13 +68,20 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
                 {
                     "message": message,
                     "type": action.config["type"],
-                    "bot_account": github_user,
+                    "bot_account": bot_account,
                 }
             ),
         )
 
     async def run(self) -> check_api.Result:
         payload = github_types.GitHubReviewPost({"event": self.config["type"]})
+
+        try:
+            on_behalf = await action_utils.get_github_user_from_bot_account(
+                "review", self.config["bot_account"]
+            )
+        except action_utils.BotAccountNotFound as e:
+            return check_api.Result(e.status, e.title, e.reason)
 
         if self.ctxt.pull["merged"] and self.config["type"] != "COMMENT":
             return check_api.Result(
@@ -93,13 +90,13 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
                 "",
             )
 
-        if self.config["bot_account"] is None:
+        if on_behalf is None:
             mergify_bot = await github.GitHubAppInfo.get_bot(
                 self.ctxt.repository.installation.redis.cache
             )
             review_user_id = mergify_bot["id"]
         else:
-            review_user_id = self.config["bot_account"]["id"]
+            review_user_id = on_behalf.id
 
         reviews = reversed(
             list(
@@ -142,9 +139,7 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
         try:
             response = await self.ctxt.client.post(
                 f"{self.ctxt.base_url}/pulls/{self.ctxt.pull['number']}/reviews",
-                oauth_token=self.config["bot_account"]["oauth_access_token"]
-                if self.config["bot_account"]
-                else None,
+                oauth_token=on_behalf.oauth_access_token if on_behalf else None,
                 json=payload,
             )
         except http.HTTPClientSideError as e:
@@ -155,14 +150,14 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
                     "GitHub returned an unexpected error:\n\n * "
                     + "\n * ".join(f"`{s}`" for s in e.response.json()["errors"]),
                 )
-            elif e.status_code == 404 and self.config["bot_account"] is not None:
+            elif e.status_code == 404 and on_behalf is not None:
                 # NOTE(sileht): If the oauth token is valid but the user is not
                 # allowed access this repository GitHub returns 404 for private
                 # repository instead of 403.
                 return check_api.Result(
                     check_api.Conclusion.FAILURE,
                     "Review failed",
-                    f"GitHub account `{self.config['bot_account']['login']}` is not "
+                    f"GitHub account `{on_behalf.login}` is not "
                     "allowed to review pull requests of this repository",
                 )
             raise

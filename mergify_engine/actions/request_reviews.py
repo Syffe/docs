@@ -13,7 +13,6 @@ from mergify_engine import utils
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
-from mergify_engine.dashboard import user_tokens
 from mergify_engine.rules import types
 from mergify_engine.rules.config import pull_request_rules as prr_config
 
@@ -27,7 +26,7 @@ def _ensure_weight(entities: ReviewEntityT) -> ReviewEntityWithWeightT:
 
 
 class RequestReviewsExecutorConfig(typing.TypedDict):
-    bot_account: user_tokens.UserTokensUser | None
+    bot_account: github_types.GitHubLogin | None
     users: dict[github_types.GitHubLogin, int]
     teams: dict[github_types.GitHubTeamSlug, int]
     random_count: int | None
@@ -59,16 +58,6 @@ class RequestReviewsExecutor(
             )
         except action_utils.RenderBotAccountFailure as e:
             raise prr_config.InvalidPullRequestRule(e.title, e.reason)
-
-        github_user: user_tokens.UserTokensUser | None = None
-        if bot_account:
-            tokens = await ctxt.repository.installation.get_user_tokens()
-            github_user = tokens.get_token_for(bot_account)
-            if not github_user:
-                raise prr_config.InvalidPullRequestRule(
-                    f"Unable to request review: user `{bot_account}` is unknown. ",
-                    f"Please make sure `{bot_account}` has logged in Mergify dashboard.",
-                )
 
         if action.config[
             "random_count"
@@ -116,7 +105,7 @@ class RequestReviewsExecutor(
             rule,
             RequestReviewsExecutorConfig(
                 {
-                    "bot_account": github_user,
+                    "bot_account": bot_account,
                     "users": users,
                     "teams": {
                         team.team: weight
@@ -218,11 +207,16 @@ class RequestReviewsExecutor(
 
             if not already_at_max:
                 try:
+                    on_behalf = await action_utils.get_github_user_from_bot_account(
+                        "request review", self.config["bot_account"]
+                    )
+                except action_utils.BotAccountNotFound as e:
+                    return check_api.Result(e.status, e.title, e.reason)
+
+                try:
                     await self.ctxt.client.post(
                         f"{self.ctxt.base_url}/pulls/{self.ctxt.pull['number']}/requested_reviewers",
-                        oauth_token=self.config["bot_account"]["oauth_access_token"]
-                        if self.config["bot_account"]
-                        else None,
+                        oauth_token=on_behalf.oauth_access_token if on_behalf else None,
                         json={
                             "reviewers": list(user_reviews_to_request),
                             "team_reviewers": list(team_reviews_to_request),
