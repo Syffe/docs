@@ -3,10 +3,9 @@ import dataclasses
 from mergify_engine import config
 from mergify_engine import context
 from mergify_engine import exceptions
-from mergify_engine import github_types
 from mergify_engine import gitter
-from mergify_engine.dashboard import user_tokens
 from mergify_engine.dashboard.subscription import Features
+from mergify_engine.models import github_user
 
 
 @dataclasses.dataclass
@@ -25,7 +24,7 @@ GIT_MESSAGE_TO_EXCEPTION = {
 
 
 async def _do_squash(
-    ctxt: context.Context, user: user_tokens.UserTokensUser, squash_message: str
+    ctxt: context.Context, user: github_user.GitHubUser, squash_message: str
 ) -> None:
     head_branch = ctxt.pull["head"]["ref"]
     base_branch = ctxt.pull["base"]["ref"]
@@ -47,10 +46,10 @@ async def _do_squash(
             await git.configure(ctxt.repository.installation.redis.cache)
 
         await git.setup_remote(
-            "origin", ctxt.pull["head"]["repo"], user["oauth_access_token"], ""
+            "origin", ctxt.pull["head"]["repo"], user.oauth_access_token, ""
         )
         await git.setup_remote(
-            "upstream", ctxt.pull["base"]["repo"], user["oauth_access_token"], ""
+            "upstream", ctxt.pull["base"]["repo"], user.oauth_access_token, ""
         )
 
         await git.fetch("origin", head_branch)
@@ -112,20 +111,13 @@ async def _do_squash(
 
 
 async def squash(
-    ctxt: context.Context, message: str, on_behalf: github_types.GitHubLogin
+    ctxt: context.Context, message: str, on_behalf: github_user.GitHubUser
 ) -> None:
     if ctxt.pull["commits"] <= 1:
         return
 
-    tokens = await ctxt.repository.installation.get_user_tokens()
-    on_behalf_auth_info = tokens.get_token_for(on_behalf)
-    if not on_behalf_auth_info:
-        raise SquashFailure(
-            f"User `{on_behalf}` is unknown, make sure `{on_behalf}` has logged in Mergify [Mergify dashboard]({config.DATABASE_URL})."
-        )
-
     try:
-        await _do_squash(ctxt, on_behalf_auth_info, message)
+        await _do_squash(ctxt, on_behalf, message)
     except gitter.GitAuthenticationFailure:
         ctxt.log.info("git authentification failure", login=on_behalf, exc_info=True)
 

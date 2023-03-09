@@ -6,8 +6,10 @@ import voluptuous
 from mergify_engine import check_api
 from mergify_engine import context
 from mergify_engine import github_types
+from mergify_engine import models
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
+from mergify_engine.models import github_user
 from mergify_engine.rules import types
 
 
@@ -128,7 +130,7 @@ async def render_bot_account(
             raise RenderBotAccountFailure(
                 check_api.Conclusion.ACTION_REQUIRED,
                 f"User `{bot_account}` used as `{option_name}` is unknown",
-                f"Please make sure `{bot_account}` exists and has logged in [Mergify dashboard](https://dashboard.mergify.com).",
+                f"Please make sure `{bot_account}` exists and has logged into the [Mergify dashboard](https://dashboard.mergify.com).",
             )
 
         if permission not in required_permissions:
@@ -166,3 +168,46 @@ async def render_users_template(ctxt: context.Context, users: list[str]) -> set[
             wanted.add(user)
 
     return wanted
+
+
+@dataclasses.dataclass
+class BotAccountNotFound(Exception):
+    status: check_api.Conclusion
+    title: str
+    reason: str
+
+
+@typing.overload
+async def get_github_user_from_bot_account(
+    purpose: str,
+    login: github_types.GitHubLogin,
+) -> github_user.GitHubUser:
+    ...
+
+
+@typing.overload
+async def get_github_user_from_bot_account(
+    purpose: str,
+    login: github_types.GitHubLogin | None,
+) -> github_user.GitHubUser | None:
+    ...
+
+
+async def get_github_user_from_bot_account(
+    purpose: str,
+    login: github_types.GitHubLogin | None,
+) -> github_user.GitHubUser | None:
+    if login is None:
+        return None
+
+    async with models.create_session() as session:
+        on_behalf = await github_user.GitHubUser.get_by_login(session, login)
+
+    if on_behalf is None:
+        raise BotAccountNotFound(
+            check_api.Conclusion.FAILURE,
+            f"Unable to {purpose}: user `{login}` is unknown. ",
+            f"Please make sure `{login}` has logged in Mergify dashboard.",
+        )
+
+    return on_behalf

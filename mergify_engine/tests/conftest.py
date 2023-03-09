@@ -204,15 +204,19 @@ def mock_postgres_db_value(worker_id: str) -> abc.Generator[None, None, None]:
         yield
 
 
+async def reset_database() -> None:
+    await manage.drop_all()
+    if models.APP_STATE is not None:
+        await models.APP_STATE["engine"].dispose()
+        models.APP_STATE = None
+
+
 @pytest.fixture
 async def database_cleanup() -> abc.AsyncGenerator[None, None]:
     try:
         yield
     finally:
-        await manage.drop_all()
-        if models.APP_STATE is not None:
-            await models.APP_STATE["engine"].dispose()
-            models.APP_STATE = None
+        await reset_database()
 
 
 @pytest.fixture

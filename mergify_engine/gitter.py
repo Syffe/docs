@@ -15,6 +15,7 @@ from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine.clients import github
 from mergify_engine.dashboard import user_tokens
+from mergify_engine.models import github_user
 
 
 @dataclasses.dataclass
@@ -252,13 +253,17 @@ class Gitter:
     async def configure(
         self,
         redis_cache: redis_utils.RedisCache,
-        user: user_tokens.UserTokensUser | None = None,
+        user: user_tokens.UserTokensUser | github_user.GitHubUser | None = None,
     ) -> None:
         if user is None:
             name = "Mergify"
             mergify_bot = await github.GitHubAppInfo.get_bot(redis_cache)
             login = mergify_bot["login"]
             account_id = mergify_bot["id"]
+        elif isinstance(user, github_user.GitHubUser):
+            name = user.login
+            login = user.login
+            account_id = user.id
         else:
             name = user["name"] or user["login"]
             login = user["login"]

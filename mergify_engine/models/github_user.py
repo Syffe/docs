@@ -96,6 +96,15 @@ class GitHubUser(models.Base):
         return result.unique().scalar_one_or_none()
 
     @classmethod
+    async def get_by_login(
+        cls,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+        login: github_types.GitHubLogin,
+    ) -> GitHubUser | None:
+        result = await session.execute(sqlalchemy.select(cls).where(cls.login == login))
+        return result.unique().scalar_one_or_none()
+
+    @classmethod
     async def create_or_update(
         cls,
         session: sqlalchemy.ext.asyncio.AsyncSession,

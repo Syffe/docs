@@ -72,6 +72,13 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
                 str(rmf),
             )
 
+        try:
+            on_behalf = await action_utils.get_github_user_from_bot_account(
+                "squash", self.config["bot_account"]
+            )
+        except action_utils.BotAccountNotFound as e:
+            return check_api.Result(e.status, e.title, e.reason)
+
         if commit_title_and_message is not None:
             title, message = commit_title_and_message
             message = f"{title}\n\n{message}"
@@ -93,11 +100,7 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
             raise RuntimeError("Unsupported commit_message option")
 
         try:
-            await squash_pull.squash(
-                self.ctxt,
-                message,
-                on_behalf=self.config["bot_account"],
-            )
+            await squash_pull.squash(self.ctxt, message, on_behalf=on_behalf)
         except squash_pull.SquashFailure as e:
             return check_api.Result(
                 check_api.Conclusion.FAILURE, "Pull request squash failed", e.reason

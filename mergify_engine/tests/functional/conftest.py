@@ -22,6 +22,7 @@ from mergify_engine import config
 from mergify_engine import date
 from mergify_engine import exceptions
 from mergify_engine import github_types
+from mergify_engine import models
 from mergify_engine import redis_utils
 from mergify_engine import utils
 from mergify_engine.clients import github
@@ -30,6 +31,7 @@ from mergify_engine.clients import http
 from mergify_engine.dashboard import application as application_mod
 from mergify_engine.dashboard import subscription
 from mergify_engine.dashboard import user_tokens as user_tokens_mod
+from mergify_engine.models import github_user
 
 
 RECORD = bool(os.getenv("MERGIFYENGINE_RECORD", False))
@@ -113,7 +115,9 @@ def extract_subscription_marker_features(
 
 @pytest.fixture
 async def dashboard(
-    redis_cache: redis_utils.RedisCache, request: pytest.FixtureRequest
+    redis_cache: redis_utils.RedisCache,
+    request: pytest.FixtureRequest,
+    setup_database: None,
 ) -> DashboardFixture:
     is_functionaltest_class = request.cls is not None
     marker = request.node.get_closest_marker("subscription")
@@ -161,6 +165,15 @@ async def dashboard(
         ],
     )
     await typing.cast(user_tokens_mod.UserTokensSaas, user_tokens).save_to_cache()
+
+    async with models.create_session() as session:
+        for user_token in user_tokens.users:
+            await github_user.GitHubUser.create_or_update(
+                session,
+                user_token["id"],
+                user_token["login"],
+                user_token["oauth_access_token"],
+            )
 
     real_get_subscription = subscription.Subscription.get_subscription
 
