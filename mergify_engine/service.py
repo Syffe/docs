@@ -27,7 +27,7 @@ def ddtrace_hook(span: ddtrace.Span) -> None:
         span.set_tag("gh_owner", owner)
 
 
-def setup(service_name: str, dump_config: bool = True) -> None:
+def setup(service_name: str, dump_config: bool = True, pg_pool_size: int = 10) -> None:
     global SERVICE_NAME
     SERVICE_NAME = "engine-" + service_name
 
@@ -56,7 +56,7 @@ def setup(service_name: str, dump_config: bool = True) -> None:
 
     logs.setup_logging(dump_config=dump_config)
 
-    models.init_sqlalchemy()
+    models.init_sqlalchemy(pool_size=pg_pool_size)
 
     # NOTE(sileht): For security reason, we don't expose env after this point
     # env is authorized during modules loading and pre service initializarion
