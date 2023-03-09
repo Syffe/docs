@@ -2809,14 +2809,14 @@ ocsp = ["cryptography (>=36.0.1)", "pyopenssl (==20.0.1)", "requests (>=2.26.0)"
 
 [[package]]
 name = "reno"
-version = "3.5.0"
+version = "4.0.0"
 description = "RElease NOtes manager"
 category = "dev"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "reno-3.5.0-py3-none-any.whl", hash = "sha256:55aae4c84c4849ea9d426c295d281bb5535e6ad54cebdc9f81d8d6511c08786b"},
-    {file = "reno-3.5.0.tar.gz", hash = "sha256:822f433c7b48c5a4bbd248d4af418eae8856043c2dae777d392cb4c974cbb2e2"},
+    {file = "reno-4.0.0-py3-none-any.whl", hash = "sha256:db7038061a5bfcc7bc61bfa3413fbc3202881f51ad011d21a58ae607ed1d5d9f"},
+    {file = "reno-4.0.0.tar.gz", hash = "sha256:0ebcad207133f4dbb7bc176ec3513fcd8e107a5d9e2f04b5621eb61da1147089"},
 ]
 
 [package.dependencies]
@@ -4184,4 +4184,4 @@ tokenize-rt = ">=2.1"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<4.0"
-content-hash = "51cc8a5083f388b2e7a397e2ac272dffc9aad4efcaa478c4610033f8532a962f"
+content-hash = "8eb5a415be64a9abb76293b3f70a5637ab290703046544de80b4a091d46763ca"
