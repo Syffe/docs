@@ -868,6 +868,7 @@ class GitHubJobRun(typing.TypedDict):
     started_at: ISODateTimeType
     completed_at: ISODateTimeType
     workflow_run: GitHubWorkflowRun
+    labels: list[str]
 
 
 class GitHubJobRunList(typing.TypedDict):

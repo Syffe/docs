@@ -1,6 +1,7 @@
 from collections import abc
 import dataclasses
 import datetime
+import re
 import typing
 
 import sqlalchemy
@@ -13,6 +14,11 @@ from mergify_engine.ci import models as ci_models
 from mergify_engine.ci import pull_registries
 from mergify_engine.clients import github
 from mergify_engine.models import github_actions as sql_models
+
+
+class RunnerProperties(typing.NamedTuple):
+    operating_system: ci_models.OperatingSystem
+    cores: int
 
 
 class JobRegistry(typing.Protocol):
@@ -185,6 +191,8 @@ class HTTPJobRegistry:
         run_payload: github_types.GitHubWorkflowRun,
         pull_registry: pull_registries.HTTPPullRequestRegistry,
     ) -> ci_models.JobRun:
+        runner_properties = self._extract_runner_properties(job_payload)
+
         return ci_models.JobRun(
             id=job_payload["id"],
             workflow_run_id=run_payload["id"],
@@ -209,8 +217,46 @@ class HTTPJobRegistry:
                 run_payload["head_sha"],
             ),
             run_attempt=run_payload["run_attempt"],
-            # TODO(charly): We don't know yet how to extract the operating
-            # system and the cores of the runner. Maybe with job labels?
-            operating_system="Linux",
-            cores=2,
+            operating_system=runner_properties.operating_system,
+            cores=runner_properties.cores,
         )
+
+    @staticmethod
+    def _extract_runner_properties(
+        job_payload: github_types.GitHubJobRun,
+    ) -> RunnerProperties:
+        for label in job_payload["labels"]:
+            try:
+                return HTTPJobRegistry._extract_runner_properties_from_label(label)
+            except ValueError:
+                continue
+
+        raise RuntimeError("Unknown runner")
+
+    @staticmethod
+    def _extract_runner_properties_from_label(label: str) -> RunnerProperties:
+        # NOTE(charly): https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
+        match = re.match(r"(ubuntu|windows|macos)-[\w\.]+(-xl)?(-(\d+)-cores)?", label)
+        if not match:
+            raise ValueError(f"Cannot parse label '{label}'")
+
+        raw_os, _, _, raw_cores = match.groups()
+
+        operating_system: ci_models.OperatingSystem
+        if raw_os == "ubuntu":
+            operating_system = "Linux"
+        elif raw_os == "windows":
+            operating_system = "Windows"
+        elif raw_os == "macos":
+            operating_system = "macOS"
+        else:
+            raise ValueError(f"Unknown operating system '{operating_system}'")
+
+        if raw_cores is not None:
+            cores = int(raw_cores)
+        elif operating_system == "macOS":
+            cores = 3
+        else:
+            cores = 2
+
+        return RunnerProperties(operating_system, cores)
