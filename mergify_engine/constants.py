@@ -89,11 +89,3 @@ DEPENDABOT_PULL_REQUEST_AUTHOR_LOGIN = "dependabot[bot]"
 NORMAL_DELAY_BETWEEN_SAME_PULL_REQUEST = datetime.timedelta(seconds=30)
 # minimun delay to wait between two processing of the same PR
 MIN_DELAY_BETWEEN_SAME_PULL_REQUEST = datetime.timedelta(seconds=3)
-
-DEPRECATED_RANDOM_USER_PICK = """⚠️  This pull request got {verb} on behalf of a random user of the organization.
-This behavior will change on the 1st February 2023, Mergify will pick the author of the pull request instead.
-
-To get the future behavior now, you can configure `bot_account` options (e.g.: `bot_account: {{ author }}` or `update_bot_account: {{ author }}`.
-
-Or you can create a dedicated github account for squash and rebase operations, and use it in different `bot_account` options.
-"""

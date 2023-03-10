@@ -575,33 +575,27 @@ class TrainCar:
             bot_account = self.still_queued_embarked_pulls[0].config.get(
                 "update_bot_account"
             )
-            github_user: user_tokens.UserTokensUser | None = None
-            if bot_account:
-                tokens = await ctxt.repository.installation.get_user_tokens()
-                github_user = tokens.get_token_for(bot_account)
-                if not github_user:
-                    await self._set_creation_failure(
-                        f"Unable to update: user `{bot_account}` is unknown.\n\n"
-                        f"Please make sure `{bot_account}` has logged in Mergify dashboard.",
-                        operation="updated",
-                    )
-                    raise TrainCarPullRequestCreationFailure(self)
+
+            if bot_account is None and ctxt.pull["user"]["type"] != "Bot":
+                bot_account = ctxt.pull["user"]["login"]
 
             # TODO(sileht): fallback to "merge" and None until all configs has
             # the new fields
-            method = self.still_queued_embarked_pulls[0].config.get(
+            update_method = self.still_queued_embarked_pulls[0].config.get(
                 "update_method", "merge"
             )
             try:
-                if method == "merge":
+                if update_method == "merge":
                     # FIXME(sileht): we should have passed on_behalf to update_with_api ...
                     # MRGFY-1742
                     await branch_updater.update_with_api(ctxt)
+                elif bot_account is None:
+                    # FIXME(sileht): should we enabled autosquash here? MRGFY-279
+                    await branch_updater.rebase_with_git_for_github_app(ctxt, False)
                 else:
                     # FIXME(sileht): should we enabled autosquash here? MRGFY-279
-                    await branch_updater.rebase_with_git_legacy(
-                        ctxt, github_user, False
-                    )
+                    await branch_updater.rebase_with_git(ctxt, bot_account, False)
+
             except branch_updater.BranchUpdateFailure as exc:
                 await self._set_creation_failure(
                     f"{exc.title}\n\n{exc.message}", operation="updated"

@@ -5,7 +5,6 @@ import uuid
 import tenacity
 
 from mergify_engine import config
-from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import exceptions
 from mergify_engine import github_types
@@ -219,30 +218,22 @@ async def update_with_api(
         raise BranchUpdateFailure(e.message)
 
 
-async def rebase_with_git_legacy(
+async def rebase_with_git_for_github_app(
     ctxt: context.Context,
-    on_behalf: user_tokens.UserTokensUser | None,
     autosquash: bool = False,
 ) -> None:
     ctxt.log.info("updating base branch with git")
 
     await pre_rebase_check(ctxt)
 
-    if on_behalf is None:
-        # TODO(sileht): drop me and make on_behalf mandatory
-        tokens = await ctxt.repository.installation.get_user_tokens()
-        # Pick author first
-        users = sorted(
-            tokens.users, key=lambda x: x["login"] != ctxt.pull["user"]["login"]
-        )
-        committer = None
-    else:
-        users = [on_behalf]
-        committer = on_behalf
+    # TODO(sileht):
+    # * OnPremise: fail and ask customer to set update_bot_account
+    # * SaaS: user synack associated-users API instead of this random user pick
+    tokens = await ctxt.repository.installation.get_user_tokens()
 
-    for user in users:
+    for user in tokens.users:
         try:
-            await _do_rebase(ctxt, user, committer, autosquash)
+            await _do_rebase(ctxt, user, None, autosquash)
         except gitter.GitAuthenticationFailure as e:  # pragma: no cover
             ctxt.log.info(
                 "authentification failure, will retry another token: %s",
@@ -250,17 +241,7 @@ async def rebase_with_git_legacy(
                 login=user["login"],
             )
         else:
-            if on_behalf is None:
-                ctxt.log.warning(
-                    "pull request rebased with a random user",
-                    random_pick=user["login"],
-                    author=ctxt.pull["user"]["login"],
-                    random_pick_is_author=user["login"] == ctxt.pull["user"]["login"],
-                )
-                if user["login"] != ctxt.pull["user"]["login"]:
-                    await ctxt.post_comment(
-                        constants.DEPRECATED_RANDOM_USER_PICK.format(verb="rebased")
-                    )
+            ctxt.log.warning("GitHub App pull request rebased by %s", user["login"])
             return
 
     ctxt.log.warning("unable to update branch: no tokens are valid")
@@ -268,13 +249,7 @@ async def rebase_with_git_legacy(
     if ctxt.pull_from_fork and ctxt.pull["base"]["repo"]["private"]:
         message = "Rebasing a branch for a forked private repository is not supported by GitHub."
     else:
-        if on_behalf is None:
-            # Use author to suggest the future default behavior
-            ping_user = ctxt.pull["user"]["login"]
-        else:
-            ping_user = on_behalf["login"]
-
-        message = f"`{ping_user}` token is invalid, make sure `{ping_user}` can still log in on the [Mergify dashboard]({config.DATABASE_URL})."
+        message = "No account found to rebase a branch of GitHub App, did you set `update_bot_account`?"
 
     raise BranchUpdateFailure(message)
 
