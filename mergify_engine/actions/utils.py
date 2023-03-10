@@ -4,6 +4,7 @@ import typing
 import voluptuous
 
 from mergify_engine import check_api
+from mergify_engine import config
 from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import models
@@ -199,6 +200,19 @@ async def get_github_user_from_bot_account(
 ) -> github_user.GitHubUser | None:
     if login is None:
         return None
+
+    if not config.SAAS_MODE:
+        for (
+            hardcoded_id,
+            hardcoded_login,
+            hardcoded_oauth_access_token,
+        ) in config.ACCOUNT_TOKENS:
+            if hardcoded_login.lower() == login.lower():
+                return github_user.GitHubUser(
+                    id=hardcoded_id,
+                    login=hardcoded_login,
+                    oauth_access_token=hardcoded_oauth_access_token,
+                )
 
     async with models.create_session() as session:
         on_behalf = await github_user.GitHubUser.get_by_login(session, login)
