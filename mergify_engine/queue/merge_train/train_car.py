@@ -70,6 +70,7 @@ CHECK_ASSERTS: dict[merge_train_checks.CheckStateT | None, str] = {
 }
 
 
+@json.register_enum_type
 # FIXME(jd): restore me when the UNKNOWN type is fixed
 # @enum.unique
 class TrainCarOutcome(enum.Enum):
@@ -83,9 +84,6 @@ class TrainCarOutcome(enum.Enum):
     BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS = "batch_max_failure_resolution_attempts"
     # FIXME(jd): remove me once all serialization are up to date
     UNKNWON = "unknown"
-
-
-json.register_type(TrainCarOutcome)
 
 
 class UnexpectedChange:
@@ -126,14 +124,12 @@ UNEXPECTED_CHANGE_COMPATIBILITY = {
 # NOTE(Syffe): type of the TrainCar's checks, can be created by rebasing a PR (inplace)
 # or by creating a separate draft PR (draft)
 # TODO "failed" needs to be refactored in another way since it is not relevant as a type anymore
+@json.register_enum_type
 @enum.unique
 class TrainCarChecksType(enum.Enum):
     INPLACE = "inplace"
     DRAFT = "draft"
     FAILED = "failed"
-
-
-json.register_type(TrainCarChecksType)
 
 
 @dataclasses.dataclass

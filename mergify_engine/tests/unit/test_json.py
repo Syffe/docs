@@ -8,6 +8,7 @@ import pytest
 from mergify_engine import json as mergify_json
 
 
+@mergify_json.register_enum_type
 class Color(enum.Enum):
     RED = 1
     GREEN = 2
@@ -57,12 +58,10 @@ payload_encoded = {
     },
 }
 
-mergify_json.register_type(Color)
-
 
 def test_register_type_fail() -> None:
     with pytest.raises(RuntimeError):
-        mergify_json.register_type(Color)
+        mergify_json.register_enum_type(Color)
 
 
 def test_encode() -> None:

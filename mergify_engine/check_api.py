@@ -51,6 +51,7 @@ class Status(enum.Enum):
     COMPLETED = "completed"
 
 
+@json.register_enum_type
 class Conclusion(enum.Enum):
     PENDING = None
     CANCELLED = "cancelled"
@@ -92,9 +93,6 @@ class Conclusion(enum.Enum):
             prefix = prefix + " "
 
         return prefix + self._normalize(self.name)
-
-
-json.register_type(Conclusion)
 
 
 @dataclasses.dataclass

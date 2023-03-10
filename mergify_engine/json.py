@@ -5,14 +5,18 @@ import typing
 import uuid
 
 
-_JSON_TYPES = {}
+_ENUM_TYPES = {}
 
 
-def register_type(enum_cls: type[enum.Enum]) -> None:
-    if enum_cls.__name__ in _JSON_TYPES:
+_EnumT = typing.TypeVar("_EnumT", bound=type[enum.Enum])
+
+
+def register_enum_type(enum_cls: _EnumT) -> _EnumT:
+    if enum_cls.__name__ in _ENUM_TYPES:
         raise RuntimeError(f"{enum_cls.__name__} already registered")
     else:
-        _JSON_TYPES[enum_cls.__name__] = enum_cls
+        _ENUM_TYPES[enum_cls.__name__] = enum_cls
+    return enum_cls
 
 
 class Encoder(json.JSONEncoder):
@@ -58,7 +62,7 @@ class JSONObjectDict(typing.TypedDict, total=False):
 def _decode(v: dict[typing.Any, typing.Any]) -> typing.Any:
     if v.get("__pytype__") == "enum":
         cls_name = v["class"]
-        enum_cls = _JSON_TYPES[cls_name]
+        enum_cls = _ENUM_TYPES[cls_name]
         enum_name = v["name"]
         return enum_cls[enum_name]
     elif v.get("__pytype__") == "datetime.timedelta":

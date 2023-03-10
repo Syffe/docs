@@ -19,11 +19,9 @@ class EmbarkedPullWithCar(typing.NamedTuple):
     car: "TrainCar | None"
 
 
+@json.register_enum_type
 @enum.unique
 class CiState(enum.Enum):
     PENDING = "pending"
     SUCCESS = "success"
     FAILED = "failed"
-
-
-json.register_type(CiState)
