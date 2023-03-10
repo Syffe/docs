@@ -447,6 +447,7 @@ class TestQueueApi(base.FunctionalTestBase):
                 "pull_request_number": anys.ANY_INT,
                 "started_at": anys.ANY_DATETIME_STR,
                 "ended_at": None,
+                "continuous_integrations_ended_at": None,
                 "checks": anys.ANY_LIST,
                 "evaluated_conditions": anys.ANY_STR,
                 "conditions_evaluation": {

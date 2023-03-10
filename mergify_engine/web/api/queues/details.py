@@ -55,6 +55,11 @@ class MergeabilityCheck:
             "description": "The timestamp when the checks have ended for this pull request"
         }
     )
+    continuous_integrations_ended_at: datetime.datetime | None = dataclasses.field(
+        metadata={
+            "description": "The timestamp when the CIs have ended for this pull request"
+        }
+    )
     checks: list[merge_train.QueueCheck] = dataclasses.field(
         metadata={"description": "The list of pull request checks"}
     )
@@ -99,6 +104,7 @@ class MergeabilityCheck:
                 ],
                 pull_request_number=car.queue_pull_request_number,
                 started_at=car.train_car_state.ci_started_at,
+                continuous_integrations_ended_at=car.train_car_state.ci_ended_at,
                 ended_at=car.checks_ended_timestamp,
                 state=car.get_queue_check_run_conclusion().value or "pending",
                 checks=car.last_checks,
