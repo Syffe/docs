@@ -1,18 +1,20 @@
 ### WEB ###
+# hadolint ignore=DL3006
 FROM runner-tagged as saas-web
 ENV DD_EXTRA_TAGS=service:engine-web
-ADD datadog/conf.d/engine-web-process.yaml /etc/datadog-agent/conf.d/process.d/conf.yaml
-ADD datadog/conf.d/engine-web.yaml /etc/datadog-agent/conf.d/engine-web.d/conf.yaml
+COPY datadog/conf.d/engine-web-process.yaml /etc/datadog-agent/conf.d/process.d/conf.yaml
+COPY datadog/conf.d/engine-web.yaml /etc/datadog-agent/conf.d/engine-web.d/conf.yaml
 ENV PORT=8002
 EXPOSE $PORT
 USER mergify
 CMD ["/datadog-wrapper.sh", "gunicorn", "--worker-class=uvicorn.workers.UvicornH11Worker", "--statsd-host=localhost:8125", "--log-level=warning", "mergify_engine.web.asgi"]
 
 ### BASE WORKER ###
+# hadolint ignore=DL3006
 FROM runner-tagged as base-worker
 ENV DD_EXTRA_TAGS=service:engine-worker
-ADD datadog/conf.d/engine-worker-process.yaml /etc/datadog-agent/conf.d/process.d/conf.yaml
-ADD datadog/conf.d/engine-worker.yaml /etc/datadog-agent/conf.d/engine-worker.d/conf.yaml
+COPY datadog/conf.d/engine-worker-process.yaml /etc/datadog-agent/conf.d/process.d/conf.yaml
+COPY datadog/conf.d/engine-worker.yaml /etc/datadog-agent/conf.d/engine-worker.d/conf.yaml
 
 ### WORKER-SHARED ###
 FROM base-worker as saas-worker-shared

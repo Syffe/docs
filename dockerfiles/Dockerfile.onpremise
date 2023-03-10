@@ -2,14 +2,15 @@ FROM node:16-alpine as js-installer
 ARG BUILD_DATE
 RUN test -n "$BUILD_DATE"
 # Real install that can't be cached
-ADD installer /installer
+COPY installer /installer
 WORKDIR /installer
-RUN npm ci
-RUN npm run build
+RUN npm ci && npm run build
 
+# hadolint ignore=DL3007
 FROM mergifyio/dashboard:latest as js-ui
 
 ### ON PREMISE ###
+# hadolint ignore=DL3006
 FROM runner-tagged as onpremise
 # FIXME(sileht): clearly a semgrep bug...
 # nosemgrep: dockerfile.security.last-user-is-root.last-user-is-root
@@ -18,7 +19,7 @@ COPY --from=js-installer /installer/build /installer/build
 COPY --from=js-installer /installer/Procfile /installer
 COPY --from=js-installer /installer/asgi.py /installer
 COPY --from=js-ui /ui /ui
-ADD onpremise /onpremise
+COPY onpremise /onpremise
 ENV MERGIFYENGINE_DASHBOARD_UI_STATIC_FILES_DIRECTORY=/ui
 USER mergify
 ENTRYPOINT ["/onpremise/entrypoint.sh"]

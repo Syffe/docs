@@ -6,66 +6,63 @@ ARG BUILD_DATE
 FROM python:${PYTHON_VERSION}-slim-bullseye as python-base
 ARG BUILD_DATE
 RUN test -n "$BUILD_DATE"
-RUN useradd -m mergify
 ENV DEBIAN_FRONTEND=noninteractive
-RUN printf 'APT::Get::Install-Recommends "false";\nAPT::Get::Install-Suggests "false";\n' > /etc/apt/apt.conf.d/99local
-RUN printf 'deb http://deb.debian.org/debian bullseye-backports main contrib non-free\n' > /etc/apt/sources.list.d/backports.list
-RUN apt update -y && apt upgrade -y && apt install -y git/bullseye-backports git-man/bullseye-backports && apt autoremove --purge -y
+RUN useradd -m mergify && \
+    printf 'APT::Get::Install-Recommends "false";\nAPT::Get::Install-Suggests "false";\n' > /etc/apt/apt.conf.d/99local && \
+    printf 'deb http://deb.debian.org/debian bullseye-backports main contrib non-free\n' > /etc/apt/sources.list.d/backports.list && \
+    apt-get update -y && apt-get upgrade -y && apt-get install -y git/bullseye-backports git-man/bullseye-backports && apt-get autoremove --purge -y
 
 ### BUILDER PYTHON ###
 FROM python-base as python-builder
 
-# Required because hiredis is lagging a lot are providing prebuild wheel, last
-# version if for py39
-RUN apt install -y gcc
+# gcc is required to build hiredis wheel when hiredis prebuilt wheel is not yet available on pypi just after a python release
+# hadolint ignore=DL3008
+RUN apt-get install -y gcc && mkdir /app
 
-ADD requirements-poetry.txt /
-# nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
-RUN python3 -m pip install -r requirements-poetry.txt
-
-
-# First cache build requirements
-RUN mkdir /app
-ADD pyproject.toml /app
-ADD poetry.lock /app
+COPY requirements-poetry.txt /app
+COPY pyproject.toml /app
+COPY poetry.lock /app
 WORKDIR /app
-RUN poetry config virtualenvs.in-project true
-RUN poetry config virtualenvs.options.no-pip true
-RUN poetry config virtualenvs.options.no-setuptools true
-RUN poetry install --no-dev --sync --no-root
-ADD . /app
-RUN poetry install --no-dev --sync
+
+# nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
+RUN python3 -m pip install --no-cache-dir -r requirements-poetry.txt && \
+    poetry config virtualenvs.in-project true && \
+    poetry config virtualenvs.options.no-pip true && \
+    poetry config virtualenvs.options.no-setuptools true && \
+    poetry install --only main --sync --no-root
+
+COPY . /app
+RUN poetry install --only main --sync
 
 ### BASE RUNNER ###
 FROM python-base as system-base
 ARG DD_AGENT_VERSION=1:7.43.1-1
 LABEL datadog-agent.version="$DD_AGENT_VERSION"
-
-# Add Datadog repository, signing keys and packages
-RUN apt update -y \
- && apt install -y gnupg apt-transport-https gpg-agent curl ca-certificates openssh-server iproute2
-ENV DATADOG_APT_KEYRING="/usr/share/keyrings/datadog-archive-keyring.gpg"
-ENV DATADOG_APT_KEYS_URL="https://keys.datadoghq.com"
-RUN sh -c "echo 'deb [signed-by=${DATADOG_APT_KEYRING}] https://apt.datadoghq.com/ stable 7' > /etc/apt/sources.list.d/datadog.list"
-RUN touch ${DATADOG_APT_KEYRING}
-RUN curl -o /tmp/DATADOG_APT_KEY_CURRENT.public "${DATADOG_APT_KEYS_URL}/DATADOG_APT_KEY_CURRENT.public" && \
-    gpg --ignore-time-conflict --no-default-keyring --keyring ${DATADOG_APT_KEYRING} --import /tmp/DATADOG_APT_KEY_CURRENT.public
-RUN curl -o /tmp/DATADOG_APT_KEY_F14F620E.public "${DATADOG_APT_KEYS_URL}/DATADOG_APT_KEY_F14F620E.public" && \
-    gpg --ignore-time-conflict --no-default-keyring --keyring ${DATADOG_APT_KEYRING} --import /tmp/DATADOG_APT_KEY_F14F620E.public
-RUN curl -o /tmp/DATADOG_APT_KEY_382E94DE.public "${DATADOG_APT_KEYS_URL}/DATADOG_APT_KEY_382E94DE.public" && \
-    gpg --ignore-time-conflict --no-default-keyring --keyring ${DATADOG_APT_KEYRING} --import /tmp/DATADOG_APT_KEY_382E94DE.public
-RUN apt-get update && apt-get -y --force-yes install --reinstall datadog-agent=${DD_AGENT_VERSION}
-RUN apt autoremove --purge -y && apt clean -y && rm -rf /var/lib/apt/lists/*
-
 ENV DD_DOGSTATSD_DISABLE 1
 ENV DD_TRACE_ENABLED 0
 
-ADD datadog-wrapper.sh /
-ADD datadog/conf.d/redisdb.yaml /etc/datadog-agent/conf.d/redisdb.d/conf.yaml
+# Add Datadog repository, signing keys and packages
+ENV DATADOG_APT_KEYRING="/usr/share/keyrings/datadog-archive-keyring.gpg"
+ENV DATADOG_APT_KEYS_URL="https://keys.datadoghq.com"
+# hadolint ignore=DL3008
+RUN apt-get update -y && \
+    apt-get install -y gnupg apt-transport-https gpg-agent curl ca-certificates openssh-server iproute2 && \
+    echo "deb [signed-by=${DATADOG_APT_KEYRING}] https://apt.datadoghq.com/ stable 7" > /etc/apt/sources.list.d/datadog.list && \
+    touch ${DATADOG_APT_KEYRING} && \
+    curl -o /tmp/DATADOG_APT_KEY_CURRENT.public "${DATADOG_APT_KEYS_URL}/DATADOG_APT_KEY_CURRENT.public" && \
+    gpg --ignore-time-conflict --no-default-keyring --keyring ${DATADOG_APT_KEYRING} --import /tmp/DATADOG_APT_KEY_CURRENT.public && \
+    curl -o /tmp/DATADOG_APT_KEY_F14F620E.public "${DATADOG_APT_KEYS_URL}/DATADOG_APT_KEY_F14F620E.public" && \
+    gpg --ignore-time-conflict --no-default-keyring --keyring ${DATADOG_APT_KEYRING} --import /tmp/DATADOG_APT_KEY_F14F620E.public && \
+    curl -o /tmp/DATADOG_APT_KEY_382E94DE.public "${DATADOG_APT_KEYS_URL}/DATADOG_APT_KEY_382E94DE.public" && \
+    gpg --ignore-time-conflict --no-default-keyring --keyring ${DATADOG_APT_KEYRING} --import /tmp/DATADOG_APT_KEY_382E94DE.public && \
+    apt-get update && apt-get -y --force-yes install --reinstall datadog-agent=${DD_AGENT_VERSION} && \
+    apt-get autoremove --purge -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
+
+COPY datadog-wrapper.sh /
+COPY datadog/conf.d/redisdb.yaml /etc/datadog-agent/conf.d/redisdb.d/conf.yaml
 # Chown to be able to edit all those config files with the datadog-wrapper
 # because we don't run the script as root.
-RUN chown -R mergify:mergify /etc/datadog-agent
-RUN chown -R mergify:mergify /var/log/datadog
+RUN chown -R mergify:mergify /etc/datadog-agent && chown -R mergify:mergify /var/log/datadog
 
 
 FROM system-base as runner-base
@@ -74,12 +71,12 @@ ARG MERGIFYENGINE_SHA
 LABEL python.version="$PYTHON_VERSION"
 LABEL mergify-engine.sha="$MERGIFYENGINE_SHA"
 ENV MERGIFYENGINE_SHA=$MERGIFYENGINE_SHA
-RUN test -n "$PYTHON_VERSION"
-RUN test -n "$MERGIFYENGINE_SHA"
+RUN test -n "$PYTHON_VERSION" && test -n "$MERGIFYENGINE_SHA"
+# hadolint ignore=DL4005
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 COPY --from=python-builder /app /app
-ADD ./.profile.d /app/.profile.d
+COPY ./.profile.d /app/.profile.d
 WORKDIR /app
 ENV VIRTUAL_ENV=/app/.venv
 ENV PYTHONUNBUFFERED=1

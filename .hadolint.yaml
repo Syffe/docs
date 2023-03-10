@@ -1,0 +1,5 @@
+ignored:
+  # We use apt.conf instead
+  - DL3015
+  # We do it at the end of the Dockerfile instead of after each apt-get install
+  - DL3009
