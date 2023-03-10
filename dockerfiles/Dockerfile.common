@@ -60,6 +60,7 @@ RUN apt-get update -y && \
 
 COPY datadog-wrapper.sh /
 COPY datadog/conf.d/redisdb.yaml /etc/datadog-agent/conf.d/redisdb.d/conf.yaml
+COPY datadog/conf.d/postgres.yaml /etc/datadog-agent/conf.d/redisdb.d/postgres.yaml
 # Chown to be able to edit all those config files with the datadog-wrapper
 # because we don't run the script as root.
 RUN chown -R mergify:mergify /etc/datadog-agent && chown -R mergify:mergify /var/log/datadog
