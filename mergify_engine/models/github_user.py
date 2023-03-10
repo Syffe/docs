@@ -101,7 +101,11 @@ class GitHubUser(models.Base):
         session: sqlalchemy.ext.asyncio.AsyncSession,
         login: github_types.GitHubLogin,
     ) -> GitHubUser | None:
-        result = await session.execute(sqlalchemy.select(cls).where(cls.login == login))
+        result = await session.execute(
+            sqlalchemy.select(cls).where(
+                sqlalchemy.func.lower(cls.login) == login.lower()
+            )
+        )
         return result.unique().scalar_one_or_none()
 
     @classmethod
