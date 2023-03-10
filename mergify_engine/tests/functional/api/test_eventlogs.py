@@ -123,12 +123,8 @@ class TestEventLogsAction(base.FunctionalTestBase):
             },
         ]
 
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -138,12 +134,8 @@ class TestEventLogsAction(base.FunctionalTestBase):
             "total": 4,
         }
 
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p2['number']}/events",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -153,12 +145,8 @@ class TestEventLogsAction(base.FunctionalTestBase):
             "total": 3,
         }
 
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/events",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -169,12 +157,8 @@ class TestEventLogsAction(base.FunctionalTestBase):
         }
 
         # pagination
-        r_pagination = await self.app.get(
+        r_pagination = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/events?per_page=2",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r_pagination.status_code == 200
         assert r_pagination.json() == {
@@ -185,12 +169,8 @@ class TestEventLogsAction(base.FunctionalTestBase):
         }
 
         # first page
-        r_first = await self.app.get(
+        r_first = await self.admin_app.get(
             r_pagination.links["first"]["url"],
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r_first.status_code == 200
         assert r_first.json() == {
@@ -200,12 +180,8 @@ class TestEventLogsAction(base.FunctionalTestBase):
             "total": 7,
         }
         # next page
-        r_next = await self.app.get(
+        r_next = await self.admin_app.get(
             r_pagination.links["next"]["url"],
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r_next.status_code == 200
         assert r_next.json() == {
@@ -215,12 +191,8 @@ class TestEventLogsAction(base.FunctionalTestBase):
             "total": 7,
         }
         # next next
-        r_next_next = await self.app.get(
+        r_next_next = await self.admin_app.get(
             r_next.links["next"]["url"],
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r_next_next.status_code == 200
         assert r_next_next.json() == {
@@ -230,12 +202,8 @@ class TestEventLogsAction(base.FunctionalTestBase):
             "total": 7,
         }
         # prev
-        r_prev = await self.app.get(
+        r_prev = await self.admin_app.get(
             r_next.links["prev"]["url"],
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r_prev.status_code == 200
         assert r_prev.json() == {
@@ -246,12 +214,8 @@ class TestEventLogsAction(base.FunctionalTestBase):
         }
 
         # last
-        r_last = await self.app.get(
+        r_last = await self.admin_app.get(
             r_pagination.links["last"]["url"],
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r_last.status_code == 200
         assert r_last.json() == {
@@ -286,13 +250,9 @@ class TestEventLogsAction(base.FunctionalTestBase):
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
 
-        r = await self.app.put(
+        r = await self.admin_app.put(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/default/freeze",
             json={"reason": "test freeze reason"},
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -309,13 +269,9 @@ class TestEventLogsAction(base.FunctionalTestBase):
         await self.create_status(p1, context="continuous-integration/fake-ci")
         await self.run_engine()
 
-        r = await self.app.put(
+        r = await self.admin_app.put(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/default/freeze",
             json={"reason": "test updated freeze reason", "cascading": False},
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -329,12 +285,8 @@ class TestEventLogsAction(base.FunctionalTestBase):
             ],
         }
 
-        r = await self.app.delete(
+        r = await self.admin_app.delete(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/default/freeze",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 204
 
@@ -571,12 +523,8 @@ class TestEventLogsAction(base.FunctionalTestBase):
             },
         ]
 
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -586,12 +534,8 @@ class TestEventLogsAction(base.FunctionalTestBase):
             "total": 5,
         }
 
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/events",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -623,12 +567,8 @@ class TestEventLogsAction(base.FunctionalTestBase):
             signals.EventQueueMergedMetadata({}),
             "gogogo",
         )
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/123/events",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 200
         assert r.json() == {

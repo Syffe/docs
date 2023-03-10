@@ -121,12 +121,8 @@ class TestStatisticsRedis(base.FunctionalTestBase):
             time_to_merge_key = self.get_statistic_redis_key("time_to_merge")
             assert await self.redis_links.stats.xlen(time_to_merge_key) == 2
 
-            r = await self.app.get(
+            r = await self.admin_app.get(
                 f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge?branch={self.main_branch_name}",
-                headers={
-                    "Authorization": f"bearer {self.api_key_admin}",
-                    "Content-type": "application/json",
-                },
             )
 
             estimated_value = r.json()["median"]

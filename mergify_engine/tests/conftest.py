@@ -318,6 +318,7 @@ class CustomTestClient(httpx.AsyncClient):
             base_url=config.DASHBOARD_UI_FRONT_BASE_URL,
             app=app,
             follow_redirects=True,
+            headers={"Content-type": "application/json"},
         )
 
     def get_root_app(self) -> fastapi.FastAPI:

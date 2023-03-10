@@ -68,12 +68,8 @@ class TestDeleteHeadBranchAction(base.FunctionalTestBase):
         self.assertEqual(fourth_branch, branches[2]["name"])
 
         # Check event logs
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p2['number']}/events?per_page=5",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert len(r.json()["events"]) == 1
         assert r.json()["events"][0]["metadata"]["branch"] == second_branch

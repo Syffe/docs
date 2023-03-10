@@ -174,12 +174,8 @@ Unknown pull request attribute: hello
         reviews = await self.get_reviews(p["number"])
         self.assertEqual(2, len(reviews))
 
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 200
         assert r.json() == {

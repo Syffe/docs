@@ -377,6 +377,7 @@ class IsolatedAsyncioTestCaseWithPytestAsyncioGlue(unittest.IsolatedAsyncioTestC
 class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     # Compat mypy/pytest fixtures
     app: httpx.AsyncClient
+    admin_app: httpx.AsyncClient
     RECORD_CONFIG: func_conftest.RecordConfigType
     subscription: subscription.Subscription
     cassette_library_dir: str

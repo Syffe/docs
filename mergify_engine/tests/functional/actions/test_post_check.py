@@ -74,12 +74,8 @@ class TestPostCheckAction(base.FunctionalTestBase):
         assert "failure" == unmatch_check["conclusion"]
         assert "'body need sentry ticket' failed" == unmatch_check["output"]["title"]
 
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{match_p['number']}/events",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -109,12 +105,8 @@ class TestPostCheckAction(base.FunctionalTestBase):
             "total": 1,
         }
 
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{unmatch_p['number']}/events",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -156,12 +148,8 @@ class TestPostCheckAction(base.FunctionalTestBase):
         match_check = match_sorted_checks[0]
         assert "failure" == match_check["conclusion"]
 
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{match_p['number']}/events",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -266,12 +254,8 @@ class TestPostCheckAction(base.FunctionalTestBase):
         assert "failure" == unmatch_check["conclusion"]
         assert "'body need sentry ticket' failed" == unmatch_check["output"]["title"]
 
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{unmatch_p['number']}/events",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 200
         assert r.json() == {

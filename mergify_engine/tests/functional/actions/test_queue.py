@@ -1451,12 +1451,8 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.assert_merge_queue_contents(q, None, [])
 
         # Check event logs
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events?per_page=5",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -2065,12 +2061,8 @@ class TestQueueAction(base.FunctionalTestBase):
         )
 
         # Check event logs
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events?per_page=5",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -2365,12 +2357,8 @@ class TestQueueAction(base.FunctionalTestBase):
             == "The pull request is the 2nd in the queue to be merged"
         )
 
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events?per_page=2",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -3346,12 +3334,8 @@ class TestQueueAction(base.FunctionalTestBase):
     async def assert_api_checks_end_reason(
         self, pr_number: github_types.GitHubPullRequestNumber, expected_reason: str
     ) -> None:
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{pr_number}/events",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 200
         response = r.json()
@@ -3598,12 +3582,8 @@ class TestQueueAction(base.FunctionalTestBase):
         p1 = await self.get_pull(p1["number"])
         await self.run_engine()
 
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 200
         response = r.json()
@@ -5228,12 +5208,8 @@ class TestQueueAction(base.FunctionalTestBase):
         )
 
         # Queue API with token
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 200
         assert r.json() == {

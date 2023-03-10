@@ -39,12 +39,8 @@ class TestEditAction(base.FunctionalTestBase):
         p_updated = await self.wait_for_pull_request("converted_to_draft")
         assert p_updated["pull_request"]["draft"] is True
 
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -87,12 +83,8 @@ class TestEditAction(base.FunctionalTestBase):
         p_updated = await self.wait_for_pull_request("ready_for_review")
         assert p_updated["pull_request"]["draft"] is False
 
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -139,12 +131,8 @@ class TestEditAction(base.FunctionalTestBase):
         p = await self.get_pull(p["number"])
         assert p["draft"] is True
 
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -176,12 +164,8 @@ class TestEditAction(base.FunctionalTestBase):
         p = await self.get_pull(p["number"])
         assert p["draft"] is False
 
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -210,12 +194,8 @@ class TestEditAction(base.FunctionalTestBase):
         await self.merge_pull(p["number"])
         await self.run_engine()
 
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 200
         assert r.json() == {

@@ -66,12 +66,8 @@ class TestSubscriptionsApi(base.FunctionalTestBase):
 
         await self.setup_repo(yaml.dump(rules))
 
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/default/freeze",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 402
 
@@ -108,11 +104,7 @@ class TestSubscriptionsApi(base.FunctionalTestBase):
         await self.add_label(p1["number"], "auto-merge")
         await self.run_engine()
 
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == 402

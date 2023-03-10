@@ -44,23 +44,17 @@ class TestApiSimulator(base.FunctionalTestBase):
           - mergify-test1
 """
 
-        r = await self.app.post(
+        r = await self.admin_app.post(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/simulator",
             json={"mergify_yml": mergify_yaml},
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-            },
         )
         assert r.status_code == 200, r.json()
         assert r.json()["title"] == "The configuration is valid"
         assert r.json()["summary"] == ""
 
-        r = await self.app.post(
+        r = await self.admin_app.post(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/simulator",
             json={"mergify_yml": mergify_yaml},
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-            },
         )
         assert r.status_code == 200, r.text
         assert r.json()["title"] == "1 rule matches", r.json()
@@ -115,12 +109,9 @@ users_to_remove: []
           - conflict:
 """
 
-        r = await self.app.post(
+        r = await self.admin_app.post(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/simulator",
             json={"mergify_yml": mergify_yaml},
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-            },
         )
         assert r.status_code == 422, r.json()
         assert r.json() == {
@@ -143,12 +134,9 @@ users_to_remove: []
           - conflict:
 """
 
-        r = await self.app.post(
+        r = await self.admin_app.post(
             f"/v1/repos/{p['base']['repo']['owner']['login']}/{p['base']['repo']['name']}/simulator",
             json={"mergify_yml": mergify_yaml},
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-            },
         )
         assert r.status_code == 422, r.json()
         assert r.json() == {
@@ -187,12 +175,9 @@ users_to_remove: []
         users:
           - mergify-test1
 """
-        resp = await self.app.post(
+        resp = await self.admin_app.post(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/42424242/simulator",
             json={"mergify_yml": mergify_yaml},
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-            },
         )
         assert resp.status_code == 404
 
@@ -209,12 +194,9 @@ users_to_remove: []
         await self.setup_repo(yaml.dump(rules))
         p = await self.create_pr()
 
-        r = await self.app.post(
+        r = await self.admin_app.post(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/simulator",
             json={"mergify_yml": "- no\n* way"},
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-            },
         )
         assert r.status_code == 422
         assert r.json() == {
@@ -233,12 +215,9 @@ did not find expected alphabetic or numeric character
             ],
         }
 
-        r = await self.app.post(
+        r = await self.admin_app.post(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/simulator",
             json={"invalid": "json"},
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-            },
         )
         assert r.status_code == 422
         assert r.json() == {

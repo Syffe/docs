@@ -20,13 +20,9 @@ class TestQueueFreeze(base.FunctionalTestBase):
         freeze_payload: dict[str, typing.Any] | None,
         expected_status_code: int = 200,
     ) -> httpx.Response:
-        r = await self.app.put(
+        r = await self.admin_app.put(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/{queue_name}/freeze",
             json=freeze_payload,
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == expected_status_code
         return r
@@ -36,12 +32,8 @@ class TestQueueFreeze(base.FunctionalTestBase):
         queue_name: str,
         expected_status_code: int = 200,
     ) -> httpx.Response:
-        r = await self.app.delete(
+        r = await self.admin_app.delete(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/{queue_name}/freeze",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == expected_status_code
         return r
@@ -51,12 +43,8 @@ class TestQueueFreeze(base.FunctionalTestBase):
         queue_name: str,
         expected_status_code: int = 200,
     ) -> httpx.Response:
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/{queue_name}/freeze",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == expected_status_code
         return r
@@ -65,12 +53,8 @@ class TestQueueFreeze(base.FunctionalTestBase):
         self,
         expected_status_code: int = 200,
     ) -> httpx.Response:
-        r = await self.app.get(
+        r = await self.admin_app.get(
             f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/freezes",
-            headers={
-                "Authorization": f"bearer {self.api_key_admin}",
-                "Content-type": "application/json",
-            },
         )
         assert r.status_code == expected_status_code
         return r

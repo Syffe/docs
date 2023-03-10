@@ -493,14 +493,24 @@ def unittest_asyncio_glue(
 
 
 @pytest.fixture
+async def web_client_as_admin(
+    web_client: httpx.AsyncClient, dashboard: DashboardFixture
+) -> httpx.AsyncClient:
+    web_client.headers["Authorization"] = f"bearer {dashboard.api_key_admin}"
+    return web_client
+
+
+@pytest.fixture
 def unittest_glue(
     dashboard: DashboardFixture,
     web_client: httpx.AsyncClient,
+    web_client_as_admin: httpx.AsyncClient,
     recorder: RecorderFixture,
     request: pytest.FixtureRequest,
 ) -> None:
     request.cls.api_key_admin = dashboard.api_key_admin
     request.cls.app = web_client
+    request.cls.admin_app = web_client_as_admin
     request.cls.RECORD_CONFIG = recorder.config
     request.cls.cassette_library_dir = recorder.vcr.cassette_library_dir
     request.cls.subscription = dashboard.subscription
