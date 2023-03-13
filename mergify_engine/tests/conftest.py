@@ -223,7 +223,7 @@ async def database_cleanup() -> abc.AsyncGenerator[None, None]:
 async def setup_database(
     database_cleanup: None, mock_postgres_db_value: None
 ) -> abc.AsyncGenerator[None, None]:
-    models.init_sqlalchemy()
+    models.init_sqlalchemy("test")
     await manage.create_all()
     yield
 

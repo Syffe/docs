@@ -7,7 +7,7 @@ from mergify_engine.web import root
 
 __all__ = ["application"]
 
-service.setup("web", pg_pool_size=55)
+service.setup("web")
 
 LOG = daiquiri.getLogger(__name__)
 LOG.warning("create database tables")

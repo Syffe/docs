@@ -128,3 +128,17 @@ def test_redis_all_set(
         conf["USER_PERMISSIONS_CACHE_URL"]
         == "rediss://redis-user-perm.example.com:1234"
     )
+
+
+def test_database_pool_sizes(
+    original_environment_variables: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    conf = config.load()
+    assert conf["DATABASE_POOL_SIZES"] == {"web": 55, "worker": 15}
+
+    monkeypatch.setenv(
+        "MERGIFYENGINE_DATABASE_POOL_SIZES",
+        "web:2,worker:3,foobar:6",
+    )
+    conf = config.load()
+    assert conf["DATABASE_POOL_SIZES"] == {"web": 2, "worker": 3, "foobar": 6}

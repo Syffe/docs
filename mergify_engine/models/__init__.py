@@ -43,11 +43,13 @@ class SQLAlchemyAppState(typing.TypedDict):
 APP_STATE: SQLAlchemyAppState | None = None
 
 
-def init_sqlalchemy(pool_size: int = 20) -> None:
+def init_sqlalchemy(service_name: str) -> None:
     global APP_STATE
 
     if APP_STATE is not None:
         raise RuntimeError("APP_STATE already initialized")
+
+    pool_size = config.DATABASE_POOL_SIZES.get(service_name, 10)
 
     # NOTE(sileht): Pool need to be adjusted with number of fastapi concurrent requests
     # the number of dyno and the Heroku postgres plan.
@@ -57,6 +59,7 @@ def init_sqlalchemy(pool_size: int = 20) -> None:
     async_engine = sqlalchemy.ext.asyncio.create_async_engine(
         get_async_database_url(),
         pool_size=pool_size,
+        max_overflow=-1,
         # Ensure old pooled connection still works
         pool_pre_ping=True,
     )

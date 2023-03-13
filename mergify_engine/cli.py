@@ -101,7 +101,7 @@ async def dump_handler(argv: list[str] | None = None) -> None:
     parser.add_argument("at", type=lambda v: datetime.date.fromisoformat(v))
     args = parser.parse_args(argv)
 
-    models.init_sqlalchemy()
+    models.init_sqlalchemy("dump")
 
     auth = github.GithubTokenAuth(
         token=config.DEV_PERSONAL_TOKEN,
@@ -124,7 +124,7 @@ async def global_insight_handler(argv: list[str] | None = None) -> None:
     parser.add_argument("end_at", type=lambda v: datetime.date.fromisoformat(v))
     args = parser.parse_args(argv)
 
-    models.init_sqlalchemy()
+    models.init_sqlalchemy("ci")
 
     query = reports.Query(
         owner=args.owner,

@@ -293,6 +293,6 @@ def main(argv: list[str] | None = None) -> None:
     )
     args = parser.parse_args(argv)
 
-    service.setup("worker", pg_pool_size=15)
+    service.setup("worker")
     signals.register()
     return asyncio.run(run_forever(enabled_services=args.enabled_services))

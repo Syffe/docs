@@ -60,6 +60,18 @@ def AccountTokens(v: str) -> list[tuple[int, str, str]]:
         raise ValueError("wrong format, expect `id1:login1:token1,id2:login2:token2`")
 
 
+def SQLAlchemyPoolConfig(v: str) -> dict[str, int]:
+    try:
+        return {
+            service_name: int(pool_size_str)
+            for service_name, pool_size_str in typing.cast(
+                list[tuple[str, str]], CommaSeparatedStringTuple(v, split=2)
+            )
+        }
+    except ValueError:
+        raise ValueError("wrong format, expect `service1:pool_size,service2:pool_size`")
+
+
 API_ACCESS_KEY_LEN = 32
 API_SECRET_KEY_LEN = 32
 
@@ -198,6 +210,9 @@ Schema = voluptuous.Schema(
         voluptuous.Required(
             "DATABASE_URL", default="postgres://localhost:5432"
         ): voluptuous.Url(),
+        voluptuous.Required(
+            "DATABASE_POOL_SIZES", default="worker:15,web:55"
+        ): voluptuous.All(str, voluptuous.Coerce(SQLAlchemyPoolConfig)),
         voluptuous.Required("DATABASE_OAUTH_TOKEN_SECRET_CURRENT"): str,
         voluptuous.Required(
             "DATABASE_OAUTH_TOKEN_SECRET_OLD", default=None
@@ -344,6 +359,7 @@ SHARED_STREAM_TASKS_PER_PROCESS: int
 EXTERNAL_USER_PERSONAL_TOKEN: github_types.GitHubOAuthToken
 
 DATABASE_URL: str
+DATABASE_POOL_SIZES: dict[str, int]
 DATABASE_OAUTH_TOKEN_SECRET_CURRENT: str
 DATABASE_OAUTH_TOKEN_SECRET_OLD: str | None
 
