@@ -380,57 +380,76 @@ class ListValuesFilterResult:
         return cls(values=other.filtered_values, filtered_values=other.values)
 
 
-def _list_values_op(
-    op: abc.Callable[[typing.Any, typing.Any], bool],
-) -> abc.Callable[[typing.Any, typing.Any], typing.Any]:
-    def _operator(value: typing.Any, ref: typing.Any) -> tuple[typing.Any, bool]:
-        return value, op(value, ref)
+@dataclasses.dataclass
+class _ListValuesOp:
+    op: abc.Callable[[typing.Any, typing.Any], bool]
 
-    return _operator
+    def __call__(self, value: typing.Any, ref: typing.Any) -> tuple[typing.Any, bool]:
+        return value, self.op(value, ref)
+
+
+@dataclasses.dataclass(repr=False)
+class _ListValuesFilter(Filter[ListValuesFilterResult]):
+    def _eval_binary_op(
+        self,
+        op: BinaryOperatorT[ListValuesFilterResult],
+        attribute_name: str,
+        attribute_values: list[typing.Any],
+        ref_values_expanded: list[typing.Any],
+    ) -> ListValuesFilterResult:
+        obj = super()._eval_binary_op(
+            op, attribute_name, attribute_values, ref_values_expanded
+        )
+        # NOTE(sileht): needed for mypy other it think isinstance will always return False)
+        inner_op = typing.cast(_ListValuesOp, op[0])
+        if isinstance(inner_op, _ListValuesOp) and inner_op.op is operator.eq:
+            if ref_values_expanded[0] not in obj.values:
+                obj.values.append(ref_values_expanded[0])
+        return obj
 
 
 def ListValuesFilter(
     tree: TreeT | CompiledTreeT[GetAttrObject, ListValuesFilterResult],
-) -> "Filter[ListValuesFilterResult]":
-    return Filter[ListValuesFilterResult](
+) -> "_ListValuesFilter":
+    return _ListValuesFilter(
         tree,
         {
             "-": ListValuesFilterResult.negate,
             "not": ListValuesFilterResult.negate,
         },
         {
-            "=": (
-                _list_values_op(operator.eq),
+            "=": (  # type: ignore[dict-item]
+                _ListValuesOp(operator.eq),
                 ListValuesFilterResult.from_iterable,
                 _identity,
             ),
-            "!=": (
-                _list_values_op(operator.ne),
+            "!=": (  # type: ignore[dict-item]
+                _ListValuesOp(operator.ne),
                 ListValuesFilterResult.from_iterable,
                 _identity,
             ),
-            "~=": (
-                _list_values_op(lambda a, b: a is not None and b.search(a)),
+            "~=": (  # type: ignore[dict-item]
+                _ListValuesOp(lambda a, b: a is not None and b.search(a)),
                 ListValuesFilterResult.from_iterable,
                 re.compile,
             ),
-            "<": (
-                _list_values_op(lambda a, b: a is not None and a < b),
+            "<": (  # type: ignore[dict-item]
+                _ListValuesOp(lambda a, b: a is not None and a < b),
                 ListValuesFilterResult.from_iterable,
                 _identity,
             ),
-            ">": (
-                _list_values_op(lambda a, b: a is not None and a > b),
+            ">": (  # type: ignore[dict-item]
+                _ListValuesOp(lambda a, b: a is not None and a > b),
                 ListValuesFilterResult.from_iterable,
                 _identity,
             ),
-            "<=": (
-                _list_values_op(lambda a, b: a == b or (a is not None and a <= b)),
+            "<=": (  # type: ignore[dict-item]
+                _ListValuesOp(lambda a, b: a == b or (a is not None and a <= b)),
                 ListValuesFilterResult.from_iterable,
                 _identity,
             ),
-            ">=": (
-                _list_values_op(lambda a, b: a == b or (a is not None and a >= b)),
+            ">=": (  # type: ignore[dict-item]
+                _ListValuesOp(lambda a, b: a == b or (a is not None and a >= b)),
                 ListValuesFilterResult.from_iterable,
                 _identity,
             ),

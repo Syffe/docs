@@ -2050,6 +2050,19 @@ Attribute only allowed in commands_restrictions section
             ["ci-3"],
             id="if match is False",
         ),
+        pytest.param(
+            conditions.RuleCondition.from_string("check-success=ci-3"),
+            conftest.FakePullRequest(
+                {
+                    "check-success": [],  # type: ignore[dict-item]
+                    "check-failure": [],  # type: ignore[dict-item]
+                    "check": [],  # type: ignore[dict-item]
+                }
+            ),
+            False,
+            ["ci-3"],
+            id="if checks not yet reported",
+        ),
     ],
 )
 async def test_rule_condition_related_checks(
