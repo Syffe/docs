@@ -5,18 +5,18 @@ import voluptuous
 from mergify_engine import actions
 from mergify_engine import check_api
 from mergify_engine import context
+from mergify_engine import github_types
 from mergify_engine import signals
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
-from mergify_engine.dashboard import user_tokens
 from mergify_engine.rules import types
 from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 class CommentExecutorConfig(typing.TypedDict):
     message: str | None
-    bot_account: user_tokens.UserTokensUser | None
+    bot_account: github_types.GitHubLogin | None
 
 
 class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorConfig"]):
@@ -55,19 +55,10 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorCo
                 str(rmf),
             )
 
-        github_user: user_tokens.UserTokensUser | None = None
-        if bot_account:
-            tokens = await ctxt.repository.installation.get_user_tokens()
-            github_user = tokens.get_token_for(bot_account)
-            if not github_user:
-                raise prr_config.InvalidPullRequestRule(
-                    f"Unable to comment: user `{bot_account}` is unknown. ",
-                    f"Please make sure `{bot_account}` has logged in Mergify dashboard.",
-                )
         return cls(
             ctxt,
             rule,
-            CommentExecutorConfig({"message": message, "bot_account": github_user}),
+            CommentExecutorConfig({"message": message, "bot_account": bot_account}),
         )
 
     async def run(self) -> check_api.Result:
@@ -77,11 +68,16 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorCo
             )
 
         try:
+            on_behalf = await action_utils.get_github_user_from_bot_account(
+                "squash", self.config["bot_account"]
+            )
+        except action_utils.BotAccountNotFound as e:
+            return check_api.Result(e.status, e.title, e.reason)
+
+        try:
             await self.ctxt.client.post(
                 f"{self.ctxt.base_url}/issues/{self.ctxt.pull['number']}/comments",
-                oauth_token=self.config["bot_account"]["oauth_access_token"]
-                if self.config["bot_account"]
-                else None,
+                oauth_token=on_behalf.oauth_access_token if on_behalf else None,
                 json={"body": self.config["message"]},
             )
         except http.HTTPClientSideError as e:  # pragma: no cover
