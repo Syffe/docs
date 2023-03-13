@@ -499,7 +499,7 @@ These are the options of the ``queue`` action:
 
    * - ``method``
      - string
-     - 
+     -
      - | Merge method to use. Possible values are ``merge``, ``squash``,
        | ``rebase`` or ``fast-forward``.
        | ``fast-forward`` is not supported on queues with ``speculative_checks > 1``,
@@ -575,7 +575,7 @@ These are the options of the ``queue`` action:
 Queue Rules
 ~~~~~~~~~~~
 
-A ``queue_rules`` takes the following parameter:
+A ``queue_rules`` takes the following parameters:
 
 .. list-table::
    :header-rows: 1
@@ -762,7 +762,7 @@ Priority Rules
 |premium plan tag|
 
 
-A priority rule takes the following parameter:
+A priority rule takes the following parameters:
 
 .. list-table::
    :header-rows: 1
