@@ -11,6 +11,7 @@ from mergify_engine import github_types
 from mergify_engine import gitter
 from mergify_engine.clients import http
 from mergify_engine.dashboard import user_tokens
+from mergify_engine.models import github_user
 
 
 class BranchUpdateFailure(Exception):
@@ -187,15 +188,23 @@ async def _do_rebase(
 
 async def update_with_api(
     ctxt: context.Context,
-    on_behalf: user_tokens.UserTokensUser | None = None,
+    on_behalf: user_tokens.UserTokensUser | github_user.GitHubUser | None = None,
 ) -> None:
     ctxt.log.info("updating base branch with api")
     pre_update_check(ctxt)
+
+    if on_behalf is None:
+        oauth_token = None
+    elif isinstance(on_behalf, github_user.GitHubUser):
+        oauth_token = on_behalf.oauth_access_token
+    else:
+        oauth_token = on_behalf["oauth_access_token"]
+
     try:
         await ctxt.client.put(
             f"{ctxt.base_url}/pulls/{ctxt.pull['number']}/update-branch",
             api_version="lydian",
-            oauth_token=on_behalf["oauth_access_token"] if on_behalf else None,
+            oauth_token=oauth_token,
             json={"expected_head_sha": ctxt.pull["head"]["sha"]},
         )
     except http.HTTPClientSideError as e:

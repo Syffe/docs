@@ -6,17 +6,17 @@ from mergify_engine import actions
 from mergify_engine import branch_updater
 from mergify_engine import check_api
 from mergify_engine import context
+from mergify_engine import github_types
 from mergify_engine import signals
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.dashboard import subscription
-from mergify_engine.dashboard import user_tokens
 from mergify_engine.rules import conditions
 from mergify_engine.rules import types
 from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 class UpdateExecutorConfig(typing.TypedDict):
-    bot_account: user_tokens.UserTokensUser | None
+    bot_account: github_types.GitHubLogin | None
 
 
 class UpdateExecutor(actions.ActionExecutor["UpdateAction", "UpdateExecutorConfig"]):
@@ -39,21 +39,18 @@ class UpdateExecutor(actions.ActionExecutor["UpdateAction", "UpdateExecutorConfi
         except action_utils.RenderBotAccountFailure as e:
             raise prr_config.InvalidPullRequestRule(e.title, e.reason)
 
-        github_user: user_tokens.UserTokensUser | None = None
-        if bot_account:
-            tokens = await ctxt.repository.installation.get_user_tokens()
-            github_user = tokens.get_token_for(bot_account)
-            if not github_user:
-                raise prr_config.InvalidPullRequestRule(
-                    f"Unable to comment: user `{bot_account}` is unknown. ",
-                    f"Please make sure `{bot_account}` has logged in Mergify dashboard.",
-                )
-
-        return cls(ctxt, rule, UpdateExecutorConfig({"bot_account": github_user}))
+        return cls(ctxt, rule, UpdateExecutorConfig({"bot_account": bot_account}))
 
     async def run(self) -> check_api.Result:
         try:
-            await branch_updater.update_with_api(self.ctxt, self.config["bot_account"])
+            on_behalf = await action_utils.get_github_user_from_bot_account(
+                "update", self.config["bot_account"]
+            )
+        except action_utils.BotAccountNotFound as e:
+            return check_api.Result(e.status, e.title, e.reason)
+
+        try:
+            await branch_updater.update_with_api(self.ctxt, on_behalf)
         except branch_updater.BranchUpdateFailure as e:
             return check_api.Result(
                 check_api.Conclusion.FAILURE,
