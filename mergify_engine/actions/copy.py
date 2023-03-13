@@ -22,7 +22,7 @@ from mergify_engine import worker_pusher
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
-from mergify_engine.dashboard import user_tokens
+from mergify_engine.models import github_user
 from mergify_engine.rules import types
 from mergify_engine.rules.config import pull_request_rules as prr_config
 from mergify_engine.worker import gitter_service
@@ -56,7 +56,7 @@ def DuplicateTitleJinja2(v: typing.Any) -> str | None:
 
 
 class CopyExecutorConfig(typing.TypedDict):
-    bot_account: user_tokens.UserTokensUser | None
+    bot_account: github_types.GitHubLogin | None
     branches: list[github_types.GitHubRefType]
     ignore_conflicts: bool
     assignees: list[str]
@@ -103,16 +103,6 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
             )
         except action_utils.RenderBotAccountFailure as e:
             raise prr_config.InvalidPullRequestRule(e.title, e.reason)
-
-        github_user: user_tokens.UserTokensUser | None = None
-        if bot_account:
-            tokens = await ctxt.repository.installation.get_user_tokens()
-            github_user = tokens.get_token_for(bot_account)
-            if not github_user:
-                raise prr_config.InvalidPullRequestRule(
-                    f"Unable to {cls.KIND}: user `{bot_account}` is unknown. ",
-                    f"Please make sure `{bot_account}` has logged in Mergify dashboard.",
-                )
 
         try:
             await ctxt.pull_request.render_template(
@@ -169,7 +159,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
             rule,
             CopyExecutorConfig(
                 {
-                    "bot_account": github_user,
+                    "bot_account": bot_account,
                     "branches": branches,
                     "ignore_conflicts": action.config["ignore_conflicts"],
                     "assignees": assignees,
@@ -196,6 +186,13 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
         if new_pull is not None:
             return self._get_success_copy_result(branch_name, new_pull)
 
+        try:
+            on_behalf = await action_utils.get_github_user_from_bot_account(
+                self.KIND, self.config["bot_account"]
+            )
+        except action_utils.BotAccountNotFound as e:
+            return self._get_failure_copy_result(branch_name, f"{e.title}\n{e.reason}")
+
         job = await self._get_job(job_id)
         if job is None:
             try:
@@ -210,8 +207,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 commits = await duplicate_pull.get_commits_to_cherrypick(self.ctxt)
             except duplicate_pull.DuplicateFailed as e:
                 return self._get_failure_copy_result(branch_name, e.reason)
-
-            job = await self._create_job(branch_name, commits)
+            job = await self._create_job(branch_name, commits, on_behalf)
 
         # check if job has finished
         if job.task is None or not job.task.done():
@@ -232,7 +228,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 duplicate_branch_result,
                 title_template=self.config["title"],
                 body_template=self.config["body"],
-                on_behalf=self.config["bot_account"],
+                on_behalf=on_behalf,
                 labels=self.config["labels"],
                 label_conflicts=self.config["label_conflicts"],
                 assignees=assignees,
@@ -327,6 +323,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
         self,
         branch_name: github_types.GitHubRefType,
         commits_to_cherry_pick: list[github_types.CachedGitHubBranchCommit],
+        on_behalf: github_user.GitHubUser | None,
     ) -> gitter_service.GitterJob[duplicate_pull.DuplicateBranchResult]:
         job = gitter_service.GitterJob[duplicate_pull.DuplicateBranchResult](
             self.ctxt.repository.installation.owner_login,
@@ -341,7 +338,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 branch_prefix=self.BRANCH_PREFIX,
                 commits_to_cherry_pick=commits_to_cherry_pick,
                 ignore_conflicts=self.config["ignore_conflicts"],
-                on_behalf=self.config["bot_account"],
+                on_behalf=on_behalf,
             ),
             functools.partial(
                 refresher.send_pull_refresh,

@@ -14,7 +14,7 @@ from mergify_engine import redis_utils
 from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
-from mergify_engine.dashboard import user_tokens
+from mergify_engine.models import github_user
 
 
 @dataclasses.dataclass
@@ -236,7 +236,7 @@ async def prepare_branch(
     commits_to_cherry_pick: list[github_types.CachedGitHubBranchCommit],
     *,
     ignore_conflicts: bool = False,
-    on_behalf: user_tokens.UserTokensUser | None = None,
+    on_behalf: github_user.GitHubUser | None,
 ) -> DuplicateBranchResult:
     """Duplicate a pull request.
 
@@ -271,7 +271,7 @@ async def prepare_branch(
             password = token
         else:
             await git.configure(redis, on_behalf)
-            username = on_behalf["oauth_access_token"]
+            username = on_behalf.oauth_access_token
             password = ""  # nosec
 
         await git.setup_remote("origin", pull["base"]["repo"], username, password)
@@ -372,7 +372,7 @@ async def create_duplicate_pull(
     duplicate_branch_result: DuplicateBranchResult,
     title_template: str,
     body_template: str,
-    on_behalf: user_tokens.UserTokensUser | None = None,
+    on_behalf: github_user.GitHubUser | None = None,
     labels: list[str] | None = None,
     label_conflicts: str | None = None,
     assignees: list[str] | None = None,
@@ -444,7 +444,7 @@ async def create_duplicate_pull(
                         "base": duplicate_branch_result.target_branch,
                         "head": duplicate_branch_result.destination_branch,
                     },
-                    oauth_token=on_behalf["oauth_access_token"] if on_behalf else None,
+                    oauth_token=on_behalf.oauth_access_token if on_behalf else None,
                 )
             ).json(),
         )
