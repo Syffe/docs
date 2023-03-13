@@ -165,6 +165,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         car: merge_train.TrainCar | None,
     ) -> check_api.Result:
         result = await self.common_merge(
+            "queue",
             self.ctxt,
             self.rule,
             self.config["method"],

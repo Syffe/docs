@@ -104,6 +104,7 @@ class MergeExecutor(
         )
         if report is None:
             report = await self.common_merge(
+                "merge",
                 self.ctxt,
                 self.rule,
                 self.config["method"],

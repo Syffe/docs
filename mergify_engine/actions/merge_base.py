@@ -10,9 +10,10 @@ from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import refresher
 from mergify_engine import worker_pusher
+from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
-from mergify_engine.dashboard import user_tokens
+from mergify_engine.models import github_user
 from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
@@ -79,6 +80,7 @@ class MergeUtilsMixin:
 
     async def common_merge(
         self,
+        kind: str,
         ctxt: context.Context,
         rule: prr_config.EvaluatedPullRequestRule,
         merge_method: MergeMethodT,
@@ -105,24 +107,20 @@ class MergeUtilsMixin:
 
         data = {}
 
-        github_user: user_tokens.UserTokensUser | None = None
+        on_behalf: github_user.GitHubUser | None = None
         if merge_bot_account:
-            tokens = await ctxt.repository.installation.get_user_tokens()
-            github_user = tokens.get_token_for(merge_bot_account)
-            if not github_user:
-                return check_api.Result(
-                    check_api.Conclusion.FAILURE,
-                    f"Unable to rebase: user `{merge_bot_account}` is unknown. ",
-                    f"Please make sure `{merge_bot_account}` has logged in Mergify dashboard.",
+            try:
+                on_behalf = await action_utils.get_github_user_from_bot_account(
+                    kind, merge_bot_account
                 )
+            except action_utils.BotAccountNotFound as e:
+                return check_api.Result(e.status, e.title, e.reason)
 
         if final_merge_method == "fast-forward":
             try:
                 await ctxt.client.put(
                     f"{ctxt.base_url}/git/refs/heads/{ctxt.pull['base']['ref']}",
-                    oauth_token=github_user["oauth_access_token"]
-                    if github_user
-                    else None,
+                    oauth_token=on_behalf.oauth_access_token if on_behalf else None,
                     json={"sha": ctxt.pull["head"]["sha"]},
                 )
             except http.HTTPClientSideError as e:  # pragma: no cover
@@ -184,9 +182,7 @@ class MergeUtilsMixin:
             try:
                 await ctxt.client.put(
                     f"{ctxt.base_url}/pulls/{ctxt.pull['number']}/merge",
-                    oauth_token=github_user["oauth_access_token"]
-                    if github_user
-                    else None,
+                    oauth_token=on_behalf.oauth_access_token if on_behalf else None,
                     json=data,
                 )
             except http.HTTPClientSideError as e:  # pragma: no cover
