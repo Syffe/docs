@@ -47,7 +47,7 @@ class TestLabelAction(base.FunctionalTestBase):
             sorted(label["name"] for label in p_updated["pull_request"]["labels"]),
         )
 
-        # Ensure it's idempotant
+        # Ensure it's idempotent
         await self.remove_label(p["number"], "unstable")
         await self.run_engine()
 

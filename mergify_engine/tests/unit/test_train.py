@@ -470,7 +470,7 @@ async def test_train_remove_head_merged(
     assert [[1, 2], [1, 2, 3]] == get_cars_content(t)
 
 
-async def test_train_add_remove_pull_idempotant(
+async def test_train_add_remove_pull_idempotent(
     repository: context.Repository, context_getter: conftest.ContextGetterFixture
 ) -> None:
     t = merge_train.Train(repository, QUEUE_RULES, github_types.GitHubRefType("main"))
