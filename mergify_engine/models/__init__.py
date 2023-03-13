@@ -2,10 +2,19 @@ from collections import abc
 import typing
 from urllib import parse
 
+import ddtrace
 from sqlalchemy import orm
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import config
+
+
+# FIXME(sileht): This is not enabled by default as it's recommended to use the
+# underlying driver integration, but since they don't support psycopg3 yet, we
+# must enable it.
+# https://ddtrace.readthedocs.io/en/stable/integrations.html#sqlalchemy
+# When psycopg3 is supported -> MRGFY-2024
+ddtrace.patch(sqlalchemy=True)
 
 
 class Base(orm.DeclarativeBase):
@@ -51,6 +60,8 @@ def init_sqlalchemy(pool_size: int = 20) -> None:
         # Ensure old pooled connection still works
         pool_pre_ping=True,
     )
+    ddtrace.Pin.override(async_engine.sync_engine, service="engine-db")
+
     APP_STATE = SQLAlchemyAppState(
         {
             "engine": async_engine,
