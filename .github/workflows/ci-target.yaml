@@ -65,14 +65,13 @@ jobs:
           test -s "$SCRIPT"  # not empty
           test -x "$SCRIPT"  # executable
 
-          OUTPUT=$("$SCRIPT" "$COMMITS")
-          OUTPUT="${OUTPUT//'%'/'%25'}"
-          OUTPUT="${OUTPUT//$'\n'/'%0A'}"
-          OUTPUT="${OUTPUT//$'\r'/'%0D'}"
-          echo "========================================================================="
-          echo "$OUTPUT"
-          echo "========================================================================="
-          echo "result=$OUTPUT" >> "$GITHUB_OUTPUT"
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          {
+            echo "result<<$EOF"
+            $SCRIPT "$COMMITS"
+            echo "$EOF"
+          } >> "$GITHUB_OUTPUT"
+
 
       - uses: marocchino/sticky-pull-request-comment@v2
         with:
