@@ -675,6 +675,19 @@ async def handle(
     await cleanup_pending_actions_with_no_associated_rules(
         ctxt, queue_rules, conclusions, previous_conclusions
     )
+
+    ctxt.log.info(
+        "ignored pull request rules",
+        pull_request_rules=[
+            {
+                "name": rule.name,
+                "rule_summary": rule.conditions.get_summary(),
+                "actions": list(rule.actions),
+            }
+            for rule in match.ignored_rules
+        ],
+    )
+
     return await get_summary_check_result(
         ctxt,
         pull_request_rules,
