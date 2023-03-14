@@ -58,9 +58,8 @@ class DismissReviewsExecutor(
         try:
             message = await ctxt.pull_request.render_template(message_raw)
         except context.RenderTemplateFailure as rmf:
-            raise prr_config.InvalidPullRequestRule(
-                "Invalid dismiss reviews message",
-                str(rmf),
+            raise actions.InvalidDynamicActionConfiguration(
+                rule, action, "Invalid dismiss reviews message", str(rmf)
             )
 
         return cls(

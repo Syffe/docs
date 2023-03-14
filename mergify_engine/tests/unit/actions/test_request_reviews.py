@@ -4,12 +4,12 @@ from unittest import mock
 import pytest
 import voluptuous
 
+from mergify_engine import actions
 from mergify_engine import check_api
 from mergify_engine import github_types
 from mergify_engine.actions import request_reviews
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
-from mergify_engine.rules.config import pull_request_rules as prr_config
 from mergify_engine.tests.unit import conftest
 
 
@@ -192,7 +192,7 @@ async def test_disabled(context_getter: conftest.ContextGetterFixture) -> None:
         },
     )
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
-    with pytest.raises(prr_config.InvalidPullRequestRule) as excinfo:
+    with pytest.raises(actions.InvalidDynamicActionConfiguration) as excinfo:
         await action.load_context(ctxt, mock.Mock())
         assert excinfo.value.reason == "Random request reviews are disabled"
         assert excinfo.value.details == (
@@ -226,7 +226,7 @@ async def test_team_permissions_missing(
     )
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
     ctxt.repository.installation.client = client
-    with pytest.raises(prr_config.InvalidPullRequestRule) as excinfo:
+    with pytest.raises(actions.InvalidDynamicActionConfiguration) as excinfo:
         await action.load_context(ctxt, mock.Mock())
         assert excinfo.value.reason == "Invalid requested teams"
         for error in (

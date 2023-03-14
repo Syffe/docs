@@ -77,6 +77,36 @@ ActionExecutorConfigT = typing.TypeVar("ActionExecutorConfigT")
 
 
 @dataclasses.dataclass
+class InvalidDynamicActionConfiguration(Exception):
+    rule: "prr_config.EvaluatedPullRequestRule"
+    action: "Action"
+    reason: str
+    details: str
+
+    @property
+    def action_name(self) -> str:
+        # Circular dependency
+        from mergify_engine.rules.config import pull_request_rules as prr_config
+
+        group: PluginGroupT
+        if isinstance(self.rule, prr_config.CommandRule):
+            group = "mergify_commands"
+        else:
+            group = "mergify_actions"
+
+        for name, obj in get_classes(group).items():
+            if isinstance(self.action, obj):
+                return name
+        raise RuntimeError(f"Can't find action {self.action!r}")
+
+    def get_summary(self) -> str:
+        return f"""In the rule `{self.rule.name}`, the action `{self.action_name}` configuration is invalid:
+{self.reason}
+{self.details}
+"""
+
+
+@dataclasses.dataclass
 class ActionExecutor(abc.ABC, typing.Generic[ActionT, ActionExecutorConfigT]):
     ctxt: "context.Context"
     rule: "prr_config.EvaluatedPullRequestRule"

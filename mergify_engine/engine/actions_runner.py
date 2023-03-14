@@ -647,11 +647,11 @@ async def handle(
 ) -> check_api.Result | None:
     try:
         match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
-    except prr_config.InvalidPullRequestRule as e:
+    except actions.InvalidDynamicActionConfiguration as e:
         return check_api.Result(
             check_api.Conclusion.ACTION_REQUIRED,
             "The current Mergify configuration is invalid",
-            f"### {e.reason}\n\n{e.details}",
+            e.get_summary(),
         )
     await delayed_refresh.plan_next_refresh(
         ctxt, match.matching_rules, ctxt.pull_request

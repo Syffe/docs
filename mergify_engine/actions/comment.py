@@ -37,14 +37,15 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorCo
                 required_permissions=[],
             )
         except action_utils.RenderBotAccountFailure as e:
-            raise prr_config.InvalidPullRequestRule(e.title, e.reason)
+            raise actions.InvalidDynamicActionConfiguration(
+                rule, action, e.title, e.reason
+            )
 
         try:
             message = await ctxt.pull_request.render_template(action.config["message"])
         except context.RenderTemplateFailure as rmf:
-            raise prr_config.InvalidPullRequestRule(
-                "Invalid comment message",
-                str(rmf),
+            raise actions.InvalidDynamicActionConfiguration(
+                rule, action, "Invalid comment message", str(rmf)
             )
 
         return cls(

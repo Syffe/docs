@@ -69,11 +69,15 @@ class MergeExecutor(
                 required_permissions=[github_types.GitHubRepositoryPermission.WRITE],
             )
         except action_utils.RenderBotAccountFailure as e:
-            raise prr_config.InvalidPullRequestRule(e.title, e.reason)
+            raise actions.InvalidDynamicActionConfiguration(
+                rule, action, e.title, e.reason
+            )
 
         if action.config["method"] == "fast-forward":
             if action.config["commit_message_template"] is not None:
-                raise prr_config.InvalidPullRequestRule(
+                raise actions.InvalidDynamicActionConfiguration(
+                    rule,
+                    action,
                     "Commit message can't be changed with fast-forward merge method",
                     "`commit_message_template` must not be set if `method: fast-forward` is set.",
                 )

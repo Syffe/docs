@@ -348,7 +348,7 @@ async def run_command(
                     )
                 ),
             )
-        except prr_config.InvalidPullRequestRule as e:
+        except actions.InvalidDynamicActionConfiguration as e:
             return check_api.Result(
                 check_api.Conclusion.ACTION_REQUIRED,
                 e.reason,

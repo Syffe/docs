@@ -42,7 +42,9 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
                 required_permissions=[],
             )
         except action_utils.RenderBotAccountFailure as e:
-            raise prr_config.InvalidPullRequestRule(e.title, e.reason)
+            raise actions.InvalidDynamicActionConfiguration(
+                rule, action, e.title, e.reason
+            )
 
         return cls(
             ctxt,

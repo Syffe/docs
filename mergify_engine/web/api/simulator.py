@@ -4,12 +4,12 @@ import daiquiri
 import fastapi
 import pydantic
 
+from mergify_engine import actions
 from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine.clients import http
 from mergify_engine.engine import actions_runner
 from mergify_engine.rules.config import mergify as mergify_conf
-from mergify_engine.rules.config import pull_request_rules as prr_config
 from mergify_engine.web import api
 from mergify_engine.web.api import security
 
@@ -96,7 +96,7 @@ async def simulator_pull(
         match = await config["pull_request_rules"].get_pull_request_rules_evaluator(
             ctxt
         )
-    except prr_config.InvalidPullRequestRule as e:
+    except actions.InvalidDynamicActionConfiguration as e:
         title = "The current Mergify configuration is invalid"
         summary = f"### {e.reason}\n\n{e.details}"
     else:

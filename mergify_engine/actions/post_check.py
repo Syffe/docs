@@ -48,7 +48,9 @@ class PostCheckExecutor(
         rule: prr_config.EvaluatedPullRequestRule,
     ) -> "PostCheckExecutor":
         if not ctxt.subscription.has_feature(subscription.Features.CUSTOM_CHECKS):
-            raise prr_config.InvalidPullRequestRule(
+            raise actions.InvalidDynamicActionConfiguration(
+                rule,
+                action,
                 "Custom checks are disabled",
                 ctxt.subscription.missing_feature_reason(
                     ctxt.pull["base"]["repo"]["owner"]["login"]
@@ -77,9 +79,8 @@ class PostCheckExecutor(
                 extra_variables,
             )
         except context.RenderTemplateFailure as rmf:
-            raise prr_config.InvalidPullRequestRule(
-                "Invalid title template",
-                str(rmf),
+            raise actions.InvalidDynamicActionConfiguration(
+                rule, action, "Invalid title template", str(rmf)
             )
 
         try:
@@ -87,9 +88,8 @@ class PostCheckExecutor(
                 action.config["summary"], extra_variables
             )
         except context.RenderTemplateFailure as rmf:
-            raise prr_config.InvalidPullRequestRule(
-                "Invalid summary template",
-                str(rmf),
+            raise actions.InvalidDynamicActionConfiguration(
+                rule, action, "Invalid summary template", str(rmf)
             )
         return cls(
             ctxt,

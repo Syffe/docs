@@ -26,12 +26,6 @@ PullRequestRulesEvaluator = rules.GenericRulesEvaluator[
 ]
 
 
-@dataclasses.dataclass
-class InvalidPullRequestRule(Exception):
-    reason: str
-    details: str
-
-
 class DisabledDict(typing.TypedDict):
     reason: str
 

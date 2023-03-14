@@ -22,11 +22,19 @@ class LabelExecutorConfig(typing.TypedDict):
 
 class LabelExecutor(actions.ActionExecutor["LabelAction", LabelExecutorConfig]):
     @classmethod
-    async def _render_label(cls, ctxt: context.Context, label: str) -> str:
+    async def _render_label(
+        cls,
+        action: LabelAction,
+        ctxt: context.Context,
+        rule: prr_config.EvaluatedPullRequestRule,
+        label: str,
+    ) -> str:
         try:
             return await ctxt.pull_request.render_template(label)
         except context.RenderTemplateFailure as rtf:
-            raise prr_config.InvalidPullRequestRule(
+            raise actions.InvalidDynamicActionConfiguration(
+                rule,
+                action,
                 f"Invalid template in label '{label}'",
                 str(rtf),
             )
@@ -39,13 +47,16 @@ class LabelExecutor(actions.ActionExecutor["LabelAction", LabelExecutorConfig]):
         rule: prr_config.EvaluatedPullRequestRule,
     ) -> LabelExecutor:
         add_labels = [
-            await cls._render_label(ctxt, label) for label in action.config["add"]
+            await cls._render_label(action, ctxt, rule, label)
+            for label in action.config["add"]
         ]
         remove_labels = [
-            await cls._render_label(ctxt, label) for label in action.config["remove"]
+            await cls._render_label(action, ctxt, rule, label)
+            for label in action.config["remove"]
         ]
         toggle_labels = [
-            await cls._render_label(ctxt, label) for label in action.config["toggle"]
+            await cls._render_label(action, ctxt, rule, label)
+            for label in action.config["toggle"]
         ]
 
         return cls(

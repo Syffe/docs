@@ -29,9 +29,8 @@ class CloseExecutor(actions.ActionExecutor["CloseAction", CloseExecutorConfig]):
         try:
             message = await ctxt.pull_request.render_template(action.config["message"])
         except context.RenderTemplateFailure as rmf:
-            raise prr_config.InvalidPullRequestRule(
-                "Invalid close message",
-                str(rmf),
+            raise actions.InvalidDynamicActionConfiguration(
+                rule, action, "Invalid close message", str(rmf)
             )
         return cls(ctxt, rule, CloseExecutorConfig({"message": message}))
 

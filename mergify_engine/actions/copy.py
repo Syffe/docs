@@ -102,7 +102,9 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 required_permissions=[],
             )
         except action_utils.RenderBotAccountFailure as e:
-            raise prr_config.InvalidPullRequestRule(e.title, e.reason)
+            raise actions.InvalidDynamicActionConfiguration(
+                rule, action, e.title, e.reason
+            )
 
         try:
             await ctxt.pull_request.render_template(
@@ -110,9 +112,8 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
             )
         except context.RenderTemplateFailure as rmf:
             # can't occur, template have been checked earlier
-            raise prr_config.InvalidPullRequestRule(
-                "Invalid title message",
-                str(rmf),
+            raise actions.InvalidDynamicActionConfiguration(
+                rule, action, "Invalid title message", str(rmf)
             )
 
         try:
@@ -121,9 +122,8 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
             )
         except context.RenderTemplateFailure as rmf:
             # can't occur, template have been checked earlier
-            raise prr_config.InvalidPullRequestRule(
-                "Invalid body message",
-                str(rmf),
+            raise actions.InvalidDynamicActionConfiguration(
+                rule, action, "Invalid body message", str(rmf)
             )
 
         branches: list[github_types.GitHubRefType] = action.config["branches"].copy()

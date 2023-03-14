@@ -57,14 +57,18 @@ class RequestReviewsExecutor(
                 required_permissions=[],
             )
         except action_utils.RenderBotAccountFailure as e:
-            raise prr_config.InvalidPullRequestRule(e.title, e.reason)
+            raise actions.InvalidDynamicActionConfiguration(
+                rule, action, e.title, e.reason
+            )
 
         if action.config[
             "random_count"
         ] is not None and not ctxt.subscription.has_feature(
             subscription.Features.RANDOM_REQUEST_REVIEWS
         ):
-            raise prr_config.InvalidPullRequestRule(
+            raise actions.InvalidDynamicActionConfiguration(
+                rule,
+                action,
                 "Random request reviews are disabled",
                 ctxt.subscription.missing_feature_reason(
                     ctxt.pull["base"]["repo"]["owner"]["login"]
@@ -95,9 +99,8 @@ class RequestReviewsExecutor(
                 )
 
         if team_errors:
-            raise prr_config.InvalidPullRequestRule(
-                "Invalid requested teams",
-                "\n".join(team_errors),
+            raise actions.InvalidDynamicActionConfiguration(
+                rule, action, "Invalid requested teams", "\n".join(team_errors)
             )
 
         return cls(

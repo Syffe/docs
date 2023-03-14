@@ -46,7 +46,9 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
                 required_permissions=[],
             )
         except action_utils.RenderBotAccountFailure as e:
-            raise prr_config.InvalidPullRequestRule(e.title, e.reason)
+            raise actions.InvalidDynamicActionConfiguration(
+                rule, action, e.title, e.reason
+            )
 
         if action.config["message"]:
             try:
@@ -54,9 +56,8 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
                     action.config["message"]
                 )
             except context.RenderTemplateFailure as rmf:
-                raise prr_config.InvalidPullRequestRule(
-                    "Invalid review message",
-                    str(rmf),
+                raise actions.InvalidDynamicActionConfiguration(
+                    rule, action, "Invalid review message", str(rmf)
                 )
         else:
             message = None
