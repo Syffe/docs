@@ -1,7 +1,10 @@
 import collections
 import dataclasses
 import datetime
+import decimal
 import typing
+
+import pydantic
 
 from mergify_engine import github_types
 from mergify_engine.ci import cost_calculator
@@ -10,40 +13,60 @@ from mergify_engine.ci import models
 from mergify_engine.ci import pull_registries
 
 
-class DimensionItem(typing.TypedDict):
+@pydantic.dataclasses.dataclass
+class Money:
+    amount: cost_calculator.MoneyAmount
+    currency: typing.Literal["USD"] = "USD"
+
+    @classmethod
+    def from_decimal(cls, v: decimal.Decimal | int | str) -> "Money":
+        return cls(cost_calculator.MoneyAmount(v))
+
+
+@pydantic.dataclasses.dataclass
+class DimensionItem:
     name: str
-    cost: cost_calculator.Money
+    cost: Money
 
 
-class Dimension(typing.TypedDict):
+@pydantic.dataclasses.dataclass
+class Dimension:
     type: typing.Literal["conclusions", "jobs", "actors", "lifecycles"]
     items: list[DimensionItem]
 
 
-class Dimensions(typing.TypedDict):
+@pydantic.dataclasses.dataclass
+class Dimensions:
     conclusions: Dimension
     jobs: Dimension
-    actors: typing.NotRequired[Dimension]
-    lifecycles: typing.NotRequired[Dimension]
+    actors: Dimension | None = None
+    lifecycles: Dimension | None = None
 
 
-class Category(typing.TypedDict):
+@pydantic.dataclasses.dataclass
+class Category:
     type: typing.Literal["deployments", "scheduled_jobs", "pull_requests"]
-    total_cost: cost_calculator.Money
-    difference: typing.NotRequired[cost_calculator.Money]
+    total_cost: Money
     dimensions: Dimensions
+    difference: Money | None = None
 
 
-class Categories(typing.TypedDict):
+@pydantic.dataclasses.dataclass
+class Categories:
     deployments: Category
     scheduled_jobs: Category
     pull_requests: Category
 
 
-class ReportPayload(typing.TypedDict):
-    total_difference: typing.NotRequired[cost_calculator.Money]
-    total_costs: cost_calculator.Money
+@pydantic.dataclasses.dataclass(
+    config=pydantic.ConfigDict(
+        json_encoders={cost_calculator.MoneyAmount: lambda v: float(round(v, 2))}
+    )
+)
+class ReportPayload:
+    total_costs: Money
     categories: Categories
+    total_difference: Money | None = None
 
 
 @dataclasses.dataclass
@@ -77,22 +100,22 @@ class Report:
             previous_end_at,
         )
 
-        current["categories"]["deployments"]["difference"] = cost_calculator.Money(
-            current["categories"]["deployments"]["total_cost"]
-            - previous["categories"]["deployments"]["total_cost"]
+        current.categories.deployments.difference = Money(
+            current.categories.deployments.total_cost.amount
+            - previous.categories.deployments.total_cost.amount
         )
-        current["categories"]["scheduled_jobs"]["difference"] = cost_calculator.Money(
-            current["categories"]["scheduled_jobs"]["total_cost"]
-            - previous["categories"]["scheduled_jobs"]["total_cost"]
+        current.categories.scheduled_jobs.difference = Money(
+            current.categories.scheduled_jobs.total_cost.amount
+            - previous.categories.scheduled_jobs.total_cost.amount
         )
-        current["categories"]["pull_requests"]["difference"] = cost_calculator.Money(
-            current["categories"]["pull_requests"]["total_cost"]
-            - previous["categories"]["pull_requests"]["total_cost"]
+        current.categories.pull_requests.difference = Money(
+            current.categories.pull_requests.total_cost.amount
+            - previous.categories.pull_requests.total_cost.amount
         )
-        current["total_difference"] = cost_calculator.Money(
-            current["categories"]["deployments"]["difference"]
-            + current["categories"]["scheduled_jobs"]["difference"]
-            + current["categories"]["pull_requests"]["difference"]
+        current.total_difference = Money(
+            current.categories.deployments.difference.amount
+            + current.categories.scheduled_jobs.difference.amount
+            + current.categories.pull_requests.difference.amount
         )
         return current
 
@@ -120,29 +143,29 @@ class Report:
         deployments = self._deployments(*job_runs)
         scheduled_jobs = self._scheduled_jobs(*job_runs)
         pull_requests = await self._pull_requests(*job_runs)
-        total_costs = cost_calculator.Money(
-            deployments["total_cost"]
-            + scheduled_jobs["total_cost"]
-            + pull_requests["total_cost"]
+        total_costs = cost_calculator.MoneyAmount(
+            deployments.total_cost.amount
+            + scheduled_jobs.total_cost.amount
+            + pull_requests.total_cost.amount
         )
 
-        return {
-            "total_costs": total_costs,
-            "categories": {
-                "deployments": deployments,
-                "scheduled_jobs": scheduled_jobs,
-                "pull_requests": pull_requests,
-            },
-        }
+        return ReportPayload(
+            total_costs=Money(total_costs),
+            categories=Categories(
+                deployments=deployments,
+                scheduled_jobs=scheduled_jobs,
+                pull_requests=pull_requests,
+            ),
+        )
 
     def _deployments(self, *job_runs: models.JobRun) -> Category:
-        per_conclusion: dict[str, cost_calculator.Money] = collections.defaultdict(
-            cost_calculator.Money.zero
+        per_conclusion: dict[
+            str, cost_calculator.MoneyAmount
+        ] = collections.defaultdict(cost_calculator.MoneyAmount.zero)
+        per_job: dict[str, cost_calculator.MoneyAmount] = collections.defaultdict(
+            cost_calculator.MoneyAmount.zero
         )
-        per_job: dict[str, cost_calculator.Money] = collections.defaultdict(
-            cost_calculator.Money.zero
-        )
-        total_cost = cost_calculator.Money.zero()
+        total_cost = cost_calculator.MoneyAmount.zero()
 
         for job_run in job_runs:
             if job_run.triggering_event == "push":
@@ -150,35 +173,35 @@ class Report:
                 per_job[job_run.name] += job_run.cost
                 total_cost += job_run.cost
 
-        return {
-            "type": "deployments",
-            "total_cost": total_cost,
-            "dimensions": {
-                "conclusions": {
-                    "type": "conclusions",
-                    "items": [
-                        DimensionItem(name=conclusion, cost=cost)
+        return Category(
+            type="deployments",
+            total_cost=Money(total_cost),
+            dimensions=Dimensions(
+                conclusions=Dimension(
+                    type="conclusions",
+                    items=[
+                        DimensionItem(name=conclusion, cost=Money(cost))
                         for conclusion, cost in per_conclusion.items()
                     ],
-                },
-                "jobs": {
-                    "type": "jobs",
-                    "items": [
-                        DimensionItem(name=conclusion, cost=cost)
+                ),
+                jobs=Dimension(
+                    type="jobs",
+                    items=[
+                        DimensionItem(name=conclusion, cost=Money(cost))
                         for conclusion, cost in per_job.items()
                     ],
-                },
-            },
-        }
+                ),
+            ),
+        )
 
     def _scheduled_jobs(self, *job_runs: models.JobRun) -> Category:
-        per_conclusion: dict[str, cost_calculator.Money] = collections.defaultdict(
-            cost_calculator.Money.zero
+        per_conclusion: dict[
+            str, cost_calculator.MoneyAmount
+        ] = collections.defaultdict(cost_calculator.MoneyAmount.zero)
+        per_job: dict[str, cost_calculator.MoneyAmount] = collections.defaultdict(
+            cost_calculator.MoneyAmount.zero
         )
-        per_job: dict[str, cost_calculator.Money] = collections.defaultdict(
-            cost_calculator.Money.zero
-        )
-        total_cost = cost_calculator.Money.zero()
+        total_cost = cost_calculator.MoneyAmount.zero()
 
         for job_run in job_runs:
             if job_run.triggering_event == "schedule":
@@ -186,41 +209,41 @@ class Report:
                 per_job[job_run.name] += job_run.cost
                 total_cost += job_run.cost
 
-        return {
-            "type": "scheduled_jobs",
-            "total_cost": total_cost,
-            "dimensions": {
-                "conclusions": {
-                    "type": "conclusions",
-                    "items": [
-                        DimensionItem(name=conclusion, cost=cost)
+        return Category(
+            type="scheduled_jobs",
+            total_cost=Money(total_cost),
+            dimensions=Dimensions(
+                conclusions=Dimension(
+                    type="conclusions",
+                    items=[
+                        DimensionItem(name=conclusion, cost=Money(cost))
                         for conclusion, cost in per_conclusion.items()
                     ],
-                },
-                "jobs": {
-                    "type": "jobs",
-                    "items": [
-                        DimensionItem(name=conclusion, cost=cost)
+                ),
+                jobs=Dimension(
+                    type="jobs",
+                    items=[
+                        DimensionItem(name=conclusion, cost=Money(cost))
                         for conclusion, cost in per_job.items()
                     ],
-                },
-            },
-        }
+                ),
+            ),
+        )
 
     async def _pull_requests(self, *job_runs: models.JobRun) -> Category:
-        per_actor: dict[str, cost_calculator.Money] = collections.defaultdict(
-            cost_calculator.Money.zero
+        per_actor: dict[str, cost_calculator.MoneyAmount] = collections.defaultdict(
+            cost_calculator.MoneyAmount.zero
         )
-        per_job: dict[str, cost_calculator.Money] = collections.defaultdict(
-            cost_calculator.Money.zero
+        per_job: dict[str, cost_calculator.MoneyAmount] = collections.defaultdict(
+            cost_calculator.MoneyAmount.zero
         )
-        per_lifecycle: dict[str, cost_calculator.Money] = collections.defaultdict(
-            cost_calculator.Money.zero
+        per_lifecycle: dict[str, cost_calculator.MoneyAmount] = collections.defaultdict(
+            cost_calculator.MoneyAmount.zero
         )
-        per_conclusion: dict[str, cost_calculator.Money] = collections.defaultdict(
-            cost_calculator.Money.zero
-        )
-        total_cost = cost_calculator.Money.zero()
+        per_conclusion: dict[
+            str, cost_calculator.MoneyAmount
+        ] = collections.defaultdict(cost_calculator.MoneyAmount.zero)
+        total_cost = cost_calculator.MoneyAmount.zero()
 
         for job_run in job_runs:
             if job_run.triggering_event in ("pull_request", "pull_request_target"):
@@ -234,40 +257,40 @@ class Report:
 
                 total_cost += job_run.cost
 
-        return {
-            "type": "pull_requests",
-            "total_cost": total_cost,
-            "dimensions": {
-                "actors": {
-                    "type": "actors",
-                    "items": [
-                        DimensionItem(name=conclusion, cost=cost)
+        return Category(
+            type="pull_requests",
+            total_cost=Money(total_cost),
+            dimensions=Dimensions(
+                actors=Dimension(
+                    type="actors",
+                    items=[
+                        DimensionItem(name=conclusion, cost=Money(cost))
                         for conclusion, cost in per_actor.items()
                     ],
-                },
-                "jobs": {
-                    "type": "jobs",
-                    "items": [
-                        DimensionItem(name=conclusion, cost=cost)
+                ),
+                jobs=Dimension(
+                    type="jobs",
+                    items=[
+                        DimensionItem(name=conclusion, cost=Money(cost))
                         for conclusion, cost in per_job.items()
                     ],
-                },
-                "lifecycles": {
-                    "type": "lifecycles",
-                    "items": [
-                        DimensionItem(name=conclusion, cost=cost)
+                ),
+                lifecycles=Dimension(
+                    type="lifecycles",
+                    items=[
+                        DimensionItem(name=conclusion, cost=Money(cost))
                         for conclusion, cost in per_lifecycle.items()
                     ],
-                },
-                "conclusions": {
-                    "type": "conclusions",
-                    "items": [
-                        DimensionItem(name=conclusion, cost=cost)
+                ),
+                conclusions=Dimension(
+                    type="conclusions",
+                    items=[
+                        DimensionItem(name=conclusion, cost=Money(cost))
                         for conclusion, cost in per_conclusion.items()
                     ],
-                },
-            },
-        }
+                ),
+            ),
+        )
 
     async def _lifecycle(self, job_run: models.JobRun) -> str | None:
         if job_run.lifecycle is None:

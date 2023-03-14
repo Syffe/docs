@@ -54,7 +54,7 @@ class JobRun:
         return self.completed_at - self.started_at
 
     @property
-    def cost(self) -> cost_calculator.Money:
+    def cost(self) -> cost_calculator.MoneyAmount:
         return cost_calculator.CostCalculator.calculate(
             self.timing, self.operating_system, self.cores
         )

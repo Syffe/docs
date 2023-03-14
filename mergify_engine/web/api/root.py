@@ -10,6 +10,7 @@ from mergify_engine.web import api
 from mergify_engine.web import utils as web_utils
 from mergify_engine.web.api import applications
 from mergify_engine.web.api import badges
+from mergify_engine.web.api import ci
 from mergify_engine.web.api import eventlogs
 from mergify_engine.web.api import queues
 from mergify_engine.web.api import simulator
@@ -28,6 +29,7 @@ def include_api_routes(router: fastapi.APIRouter | fastapi.FastAPI) -> None:
     router.include_router(simulator.router)
     router.include_router(eventlogs.router)
     router.include_router(statistics.router)
+    router.include_router(ci.router)
 
 
 def create_app(cors_enabled: bool, debug: bool = False) -> fastapi.FastAPI:
@@ -52,6 +54,10 @@ def create_app(cors_enabled: bool, debug: bool = False) -> fastapi.FastAPI:
             {
                 "name": "badges",
                 "description": "Operations with badges.",
+            },
+            {
+                "name": "ci",
+                "description": "CI Optimizer.",
             },
             {
                 "name": "eventlogs",

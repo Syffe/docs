@@ -2,7 +2,6 @@ from collections import abc
 import datetime
 
 from mergify_engine import github_types
-from mergify_engine.ci import cost_calculator
 from mergify_engine.ci import models
 from mergify_engine.ci import reports
 from mergify_engine.tests.unit.ci import utils
@@ -87,78 +86,117 @@ async def test_report() -> None:
     )
     result = await report.run()
 
-    assert result["total_costs"] == cost_calculator.Money("6.68")
-    assert result["total_difference"] == cost_calculator.Money("-0.680")
+    assert result.total_costs == reports.Money.from_decimal("6.68")
+    assert result.total_difference == reports.Money.from_decimal("-0.680")
 
-    deployments = result["categories"]["deployments"]
-    assert deployments == {
-        "type": "deployments",
-        "total_cost": cost_calculator.Money("1.336"),
-        "difference": cost_calculator.Money("-0.136"),
-        "dimensions": {
-            "jobs": {
-                "type": "jobs",
-                "items": [{"name": "hello", "cost": cost_calculator.Money("1.336")}],
-            },
-            "conclusions": {
-                "type": "conclusions",
-                "items": [{"name": "success", "cost": cost_calculator.Money("1.336")}],
-            },
-        },
-    }
-    scheduled_jobs = result["categories"]["scheduled_jobs"]
-    assert scheduled_jobs == {
-        "type": "scheduled_jobs",
-        "total_cost": cost_calculator.Money("1.336"),
-        "difference": cost_calculator.Money("-0.136"),
-        "dimensions": {
-            "jobs": {
-                "type": "jobs",
-                "items": [{"name": "hello", "cost": cost_calculator.Money("1.336")}],
-            },
-            "conclusions": {
-                "type": "conclusions",
-                "items": [{"name": "success", "cost": cost_calculator.Money("1.336")}],
-            },
-        },
-    }
-    pull_requests = result["categories"]["pull_requests"]
-    assert pull_requests == {
-        "type": "pull_requests",
-        "total_cost": cost_calculator.Money("4.008"),
-        "difference": cost_calculator.Money("-0.408"),
-        "dimensions": {
-            "actors": {
-                "type": "actors",
-                "items": [
-                    {"name": "someone", "cost": cost_calculator.Money("1.336")},
-                    {"name": "somebody", "cost": cost_calculator.Money("2.672")},
+    deployments = result.categories.deployments
+    assert deployments == reports.Category(
+        type="deployments",
+        total_cost=reports.Money.from_decimal("1.336"),
+        difference=reports.Money.from_decimal("-0.136"),
+        dimensions=reports.Dimensions(
+            jobs=reports.Dimension(
+                type="jobs",
+                items=[
+                    reports.DimensionItem(
+                        name="hello",
+                        cost=reports.Money.from_decimal("1.336"),
+                    )
                 ],
-            },
-            "jobs": {
-                "type": "jobs",
-                "items": [{"name": "hello", "cost": cost_calculator.Money("4.008")}],
-            },
-            "lifecycles": {
-                "type": "lifecycles",
-                "items": [
-                    {
-                        "name": "Initial push",
-                        "cost": cost_calculator.Money("1.336"),
-                    },
-                    {"name": "Update", "cost": cost_calculator.Money("1.336")},
-                    {
-                        "name": "Manual retry",
-                        "cost": cost_calculator.Money("1.336"),
-                    },
+            ),
+            conclusions=reports.Dimension(
+                type="conclusions",
+                items=[
+                    reports.DimensionItem(
+                        name="success",
+                        cost=reports.Money.from_decimal("1.336"),
+                    )
                 ],
-            },
-            "conclusions": {
-                "type": "conclusions",
-                "items": [{"name": "success", "cost": cost_calculator.Money("4.008")}],
-            },
-        },
-    }
+            ),
+        ),
+    )
+    scheduled_jobs = result.categories.scheduled_jobs
+    assert scheduled_jobs == reports.Category(
+        type="scheduled_jobs",
+        total_cost=reports.Money.from_decimal("1.336"),
+        difference=reports.Money.from_decimal("-0.136"),
+        dimensions=reports.Dimensions(
+            jobs=reports.Dimension(
+                type="jobs",
+                items=[
+                    reports.DimensionItem(
+                        name="hello",
+                        cost=reports.Money.from_decimal("1.336"),
+                    )
+                ],
+            ),
+            conclusions=reports.Dimension(
+                type="conclusions",
+                items=[
+                    reports.DimensionItem(
+                        name="success",
+                        cost=reports.Money.from_decimal("1.336"),
+                    )
+                ],
+            ),
+        ),
+    )
+    pull_requests = result.categories.pull_requests
+    assert pull_requests == reports.Category(
+        type="pull_requests",
+        total_cost=reports.Money.from_decimal("4.008"),
+        difference=reports.Money.from_decimal("-0.408"),
+        dimensions=reports.Dimensions(
+            actors=reports.Dimension(
+                type="actors",
+                items=[
+                    reports.DimensionItem(
+                        name="someone",
+                        cost=reports.Money.from_decimal("1.336"),
+                    ),
+                    reports.DimensionItem(
+                        name="somebody",
+                        cost=reports.Money.from_decimal("2.672"),
+                    ),
+                ],
+            ),
+            jobs=reports.Dimension(
+                type="jobs",
+                items=[
+                    reports.DimensionItem(
+                        name="hello",
+                        cost=reports.Money.from_decimal("4.008"),
+                    )
+                ],
+            ),
+            lifecycles=reports.Dimension(
+                type="lifecycles",
+                items=[
+                    reports.DimensionItem(
+                        name="Initial push",
+                        cost=reports.Money.from_decimal("1.336"),
+                    ),
+                    reports.DimensionItem(
+                        name="Update",
+                        cost=reports.Money.from_decimal("1.336"),
+                    ),
+                    reports.DimensionItem(
+                        name="Manual retry",
+                        cost=reports.Money.from_decimal("1.336"),
+                    ),
+                ],
+            ),
+            conclusions=reports.Dimension(
+                type="conclusions",
+                items=[
+                    reports.DimensionItem(
+                        name="success",
+                        cost=reports.Money.from_decimal("4.008"),
+                    )
+                ],
+            ),
+        ),
+    )
 
 
 async def test_report_for_whole_owner() -> None:
@@ -173,78 +211,117 @@ async def test_report_for_whole_owner() -> None:
     )
     result = await report.run()
 
-    assert result["total_costs"] == cost_calculator.Money("6.68")
-    assert result["total_difference"] == cost_calculator.Money("-0.680")
+    assert result.total_costs == reports.Money.from_decimal("6.68")
+    assert result.total_difference == reports.Money.from_decimal("-0.680")
 
-    deployments = result["categories"]["deployments"]
-    assert deployments == {
-        "type": "deployments",
-        "total_cost": cost_calculator.Money("1.336"),
-        "difference": cost_calculator.Money("-0.136"),
-        "dimensions": {
-            "jobs": {
-                "type": "jobs",
-                "items": [{"name": "hello", "cost": cost_calculator.Money("1.336")}],
-            },
-            "conclusions": {
-                "type": "conclusions",
-                "items": [{"name": "success", "cost": cost_calculator.Money("1.336")}],
-            },
-        },
-    }
-    scheduled_jobs = result["categories"]["scheduled_jobs"]
-    assert scheduled_jobs == {
-        "type": "scheduled_jobs",
-        "total_cost": cost_calculator.Money("1.336"),
-        "difference": cost_calculator.Money("-0.136"),
-        "dimensions": {
-            "jobs": {
-                "type": "jobs",
-                "items": [{"name": "hello", "cost": cost_calculator.Money("1.336")}],
-            },
-            "conclusions": {
-                "type": "conclusions",
-                "items": [{"name": "success", "cost": cost_calculator.Money("1.336")}],
-            },
-        },
-    }
-    pull_requests = result["categories"]["pull_requests"]
-    assert pull_requests == {
-        "type": "pull_requests",
-        "total_cost": cost_calculator.Money("4.008"),
-        "difference": cost_calculator.Money("-0.408"),
-        "dimensions": {
-            "actors": {
-                "type": "actors",
-                "items": [
-                    {"name": "someone", "cost": cost_calculator.Money("1.336")},
-                    {"name": "somebody", "cost": cost_calculator.Money("2.672")},
+    deployments = result.categories.deployments
+    assert deployments == reports.Category(
+        type="deployments",
+        total_cost=reports.Money.from_decimal("1.336"),
+        difference=reports.Money.from_decimal("-0.136"),
+        dimensions=reports.Dimensions(
+            jobs=reports.Dimension(
+                type="jobs",
+                items=[
+                    reports.DimensionItem(
+                        name="hello",
+                        cost=reports.Money.from_decimal("1.336"),
+                    )
                 ],
-            },
-            "jobs": {
-                "type": "jobs",
-                "items": [{"name": "hello", "cost": cost_calculator.Money("4.008")}],
-            },
-            "lifecycles": {
-                "type": "lifecycles",
-                "items": [
-                    {
-                        "name": "Initial push",
-                        "cost": cost_calculator.Money("1.336"),
-                    },
-                    {"name": "Update", "cost": cost_calculator.Money("1.336")},
-                    {
-                        "name": "Manual retry",
-                        "cost": cost_calculator.Money("1.336"),
-                    },
+            ),
+            conclusions=reports.Dimension(
+                type="conclusions",
+                items=[
+                    reports.DimensionItem(
+                        name="success",
+                        cost=reports.Money.from_decimal("1.336"),
+                    )
                 ],
-            },
-            "conclusions": {
-                "type": "conclusions",
-                "items": [{"name": "success", "cost": cost_calculator.Money("4.008")}],
-            },
-        },
-    }
+            ),
+        ),
+    )
+    scheduled_jobs = result.categories.scheduled_jobs
+    assert scheduled_jobs == reports.Category(
+        type="scheduled_jobs",
+        total_cost=reports.Money.from_decimal("1.336"),
+        difference=reports.Money.from_decimal("-0.136"),
+        dimensions=reports.Dimensions(
+            jobs=reports.Dimension(
+                type="jobs",
+                items=[
+                    reports.DimensionItem(
+                        name="hello",
+                        cost=reports.Money.from_decimal("1.336"),
+                    )
+                ],
+            ),
+            conclusions=reports.Dimension(
+                type="conclusions",
+                items=[
+                    reports.DimensionItem(
+                        name="success",
+                        cost=reports.Money.from_decimal("1.336"),
+                    )
+                ],
+            ),
+        ),
+    )
+    pull_requests = result.categories.pull_requests
+    assert pull_requests == reports.Category(
+        type="pull_requests",
+        total_cost=reports.Money.from_decimal("4.008"),
+        difference=reports.Money.from_decimal("-0.408"),
+        dimensions=reports.Dimensions(
+            actors=reports.Dimension(
+                type="actors",
+                items=[
+                    reports.DimensionItem(
+                        name="someone",
+                        cost=reports.Money.from_decimal("1.336"),
+                    ),
+                    reports.DimensionItem(
+                        name="somebody",
+                        cost=reports.Money.from_decimal("2.672"),
+                    ),
+                ],
+            ),
+            jobs=reports.Dimension(
+                type="jobs",
+                items=[
+                    reports.DimensionItem(
+                        name="hello",
+                        cost=reports.Money.from_decimal("4.008"),
+                    )
+                ],
+            ),
+            lifecycles=reports.Dimension(
+                type="lifecycles",
+                items=[
+                    reports.DimensionItem(
+                        name="Initial push",
+                        cost=reports.Money.from_decimal("1.336"),
+                    ),
+                    reports.DimensionItem(
+                        name="Update",
+                        cost=reports.Money.from_decimal("1.336"),
+                    ),
+                    reports.DimensionItem(
+                        name="Manual retry",
+                        cost=reports.Money.from_decimal("1.336"),
+                    ),
+                ],
+            ),
+            conclusions=reports.Dimension(
+                type="conclusions",
+                items=[
+                    reports.DimensionItem(
+                        name="success",
+                        cost=reports.Money.from_decimal("4.008"),
+                    )
+                ],
+            ),
+        ),
+    )
 
 
 def test_get_previous_date_range() -> None:
