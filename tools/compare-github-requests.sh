@@ -1,7 +1,7 @@
 #!/bin/bash
 
 count_requests() {
-    yq '.interactions[].request.uri | select(. | startswith("https://api.github.com"))' | wc -l
+    yq '.interactions[].request.uri | select(. | contains("https://api.github.com"))' | wc -l
 }
 
 backlook=${1:=1}
