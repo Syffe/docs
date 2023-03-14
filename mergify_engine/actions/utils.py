@@ -98,13 +98,6 @@ async def render_bot_account(
     if not bot_account:
         return None
 
-    if bot_account.endswith("[bot]"):
-        raise RenderBotAccountFailure(
-            check_api.Conclusion.FAILURE,
-            f"Invalid account for {option_name}",
-            f"GitHub App bot `{bot_account}` can't be impersonated. ",
-        )
-
     try:
         bot_account = typing.cast(
             github_types.GitHubLogin, GitHubLoginSchema(bot_account)
@@ -200,6 +193,13 @@ async def get_github_user_from_bot_account(
 ) -> github_user.GitHubUser | None:
     if login is None:
         return None
+
+    if login.endswith("[bot]"):
+        raise BotAccountNotFound(
+            check_api.Conclusion.FAILURE,
+            f"Unable to {purpose}: GitHub App bot `{login}` can't be impersonated. ",
+            "",
+        )
 
     if not config.SAAS_MODE:
         for (
