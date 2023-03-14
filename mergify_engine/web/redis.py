@@ -17,8 +17,8 @@ async def startup() -> None:
         # Heroku H12 timeout is 30s, so half should be good
         connection_pool_cls=redispy.connection.BlockingConnectionPool,
         connection_pool_kwargs={"timeout": 15},
-        cache_max_connections=config.REDIS_STREAM_WEB_MAX_CONNECTIONS,
-        stream_max_connections=config.REDIS_CACHE_WEB_MAX_CONNECTIONS,
+        cache_max_connections=config.REDIS_CACHE_WEB_MAX_CONNECTIONS,
+        stream_max_connections=config.REDIS_STREAM_WEB_MAX_CONNECTIONS,
         queue_max_connections=config.REDIS_QUEUE_WEB_MAX_CONNECTIONS,
         eventlogs_max_connections=config.REDIS_EVENTLOGS_WEB_MAX_CONNECTIONS,
         stats_max_connections=config.REDIS_STATS_WEB_MAX_CONNECTIONS,
