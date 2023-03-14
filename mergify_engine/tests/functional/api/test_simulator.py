@@ -85,7 +85,7 @@ message: Welcome {p['user']['login']}.
 
 **edit action configuration:**
 ```
-bot_account: mergify-test1
+bot_account: null
 draft: true
 ```
 

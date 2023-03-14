@@ -5,18 +5,18 @@ import voluptuous
 from mergify_engine import actions
 from mergify_engine import check_api
 from mergify_engine import context
+from mergify_engine import github_types
 from mergify_engine import signals
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import github
 from mergify_engine.dashboard import subscription
-from mergify_engine.dashboard import user_tokens
 from mergify_engine.rules import types
 from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 class EditExecutorConfig(typing.TypedDict):
     draft: bool | None
-    bot_account: user_tokens.UserTokensUser | None
+    bot_account: github_types.GitHubLogin | None
 
 
 class EditExecutor(actions.ActionExecutor["EditAction", EditExecutorConfig]):
@@ -39,24 +39,11 @@ class EditExecutor(actions.ActionExecutor["EditAction", EditExecutorConfig]):
         except action_utils.RenderBotAccountFailure as e:
             raise prr_config.InvalidPullRequestRule(e.title, e.reason)
 
-        github_user: user_tokens.UserTokensUser | None = None
-        tokens = await ctxt.repository.installation.get_user_tokens()
-
-        if bot_account:
-            github_user = tokens.get_token_for(bot_account)
-            if not github_user:
-                raise prr_config.InvalidPullRequestRule(
-                    f"Unable to edit: user `{bot_account}` is unknown. ",
-                    f"Please make sure `{bot_account}` has logged in Mergify dashboard.",
-                )
-        else:
-            github_user = tokens.users[0]
-
         return cls(
             ctxt,
             rule,
             EditExecutorConfig(
-                {"draft": action.config["draft"], "bot_account": github_user}
+                {"draft": action.config["draft"], "bot_account": bot_account}
             ),
         )
 
@@ -87,6 +74,13 @@ class EditExecutor(actions.ActionExecutor["EditAction", EditExecutorConfig]):
                 "",
             )
 
+        try:
+            on_behalf = await action_utils.get_github_user_from_bot_account(
+                "edit", self.config["bot_account"]
+            )
+        except action_utils.BotAccountNotFound as e:
+            return check_api.Result(e.status, e.title, e.reason)
+
         mutation = f"""
             mutation {{
                 {mutation}(input:{{pullRequestId: "{self.ctxt.pull['node_id']}"}}) {{
@@ -99,9 +93,7 @@ class EditExecutor(actions.ActionExecutor["EditAction", EditExecutorConfig]):
         try:
             await self.ctxt.client.graphql_post(
                 mutation,
-                oauth_token=self.config["bot_account"]["oauth_access_token"]
-                if self.config["bot_account"]
-                else None,
+                oauth_token=on_behalf.oauth_access_token if on_behalf else None,
             )
         except github.GraphqlError as e:
             if "Field 'convertPullRequestToDraft' doesn't exist" in e.message:
