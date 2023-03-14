@@ -67,9 +67,16 @@ class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig
             )
 
         try:
+            on_behalf = await action_utils.get_github_user_from_bot_account(
+                "rebase", self.config["bot_account"]
+            )
+        except action_utils.BotAccountNotFound as e:
+            return check_api.Result(e.status, e.title, e.reason)
+
+        try:
             await branch_updater.rebase_with_git(
                 self.ctxt,
-                self.config["bot_account"],
+                on_behalf,
                 self.config["autosquash"],
             )
         except branch_updater.BranchUpdateFailure as e:

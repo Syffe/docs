@@ -24,9 +24,11 @@ from mergify_engine import refresher
 from mergify_engine import signals
 from mergify_engine import worker_pusher
 from mergify_engine import yaml
+from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.dashboard import user_tokens
+from mergify_engine.models import github_user
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.queue.merge_train import checks as merge_train_checks
 from mergify_engine.queue.merge_train import embarked_pull as ep_import
@@ -575,6 +577,18 @@ class TrainCar:
             if bot_account is None and ctxt.pull["user"]["type"] != "Bot":
                 bot_account = ctxt.pull["user"]["login"]
 
+            on_behalf: github_user.GitHubUser | None = None
+            if bot_account:
+                try:
+                    on_behalf = await action_utils.get_github_user_from_bot_account(
+                        "update", bot_account
+                    )
+                except action_utils.BotAccountNotFound as exc:
+                    await self._set_creation_failure(
+                        f"{exc.title}\n\n{exc.reason}", operation="updated"
+                    )
+                    raise TrainCarPullRequestCreationFailure(self) from exc
+
             # TODO(sileht): fallback to "merge" and None until all configs has
             # the new fields
             update_method = self.still_queued_embarked_pulls[0].config.get(
@@ -585,12 +599,13 @@ class TrainCar:
                     # FIXME(sileht): we should have passed on_behalf to update_with_api ...
                     # MRGFY-1742
                     await branch_updater.update_with_api(ctxt)
-                elif bot_account is None:
-                    # FIXME(sileht): should we enabled autosquash here? MRGFY-279
+                elif on_behalf is None:
+                    # FIXME(sileht): drop this case when we update_bot_account
+                    # can not be None anymore
                     await branch_updater.rebase_with_git_for_github_app(ctxt, False)
                 else:
                     # FIXME(sileht): should we enabled autosquash here? MRGFY-279
-                    await branch_updater.rebase_with_git(ctxt, bot_account, False)
+                    await branch_updater.rebase_with_git(ctxt, on_behalf, False)
 
             except branch_updater.BranchUpdateFailure as exc:
                 await self._set_creation_failure(
