@@ -26,7 +26,6 @@ from mergify_engine.actions import merge_base
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
-from mergify_engine.dashboard import user_tokens
 from mergify_engine.queue import freeze
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
@@ -211,17 +210,12 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 "Only `method=merge` is supported with `queue_branch_merge_method=fast-forward`",
             )
 
-        # FIXME(sileht): move this to create() to report the error early
-        github_user: user_tokens.UserTokensUser | None = None
-        if self.config["merge_bot_account"]:
-            tokens = await self.ctxt.repository.installation.get_user_tokens()
-            github_user = tokens.get_token_for(self.config["merge_bot_account"])
-            if not github_user:
-                return check_api.Result(
-                    check_api.Conclusion.FAILURE,
-                    f"Unable to rebase: user `{self.config['merge_bot_account']}` is unknown. ",
-                    f"Please make sure `{self.config['merge_bot_account']}` has logged in Mergify dashboard.",
-                )
+        try:
+            on_behalf = await action_utils.get_github_user_from_bot_account(
+                "queue", self.config["merge_bot_account"]
+            )
+        except action_utils.BotAccountNotFound as e:
+            return check_api.Result(e.status, e.title, e.reason)
 
         if car.train_car_state.checks_type == merge_train.TrainCarChecksType.INPLACE:
             newsha = self.ctxt.pull["head"]["sha"]
@@ -242,7 +236,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         try:
             await self.ctxt.client.put(
                 f"{self.ctxt.base_url}/git/refs/heads/{self.ctxt.pull['base']['ref']}",
-                oauth_token=github_user["oauth_access_token"] if github_user else None,
+                oauth_token=on_behalf.oauth_access_token if on_behalf else None,
                 json={"sha": newsha},
             )
         except http.HTTPClientSideError as e:  # pragma: no cover
