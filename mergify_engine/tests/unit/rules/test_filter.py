@@ -122,6 +122,10 @@ async def test_regexp() -> None:
     assert await f(FakePR({"foo": ""}))
     assert not await f(FakePR({"foo": "x"}))
 
+    f = filter.BinaryFilter({"~=": ("foo", "(?i)FoObAr")})
+    assert await f(FakePR({"foo": "foobar"}))
+    assert await f(FakePR({"foo": "FOOBAR"}))
+
 
 async def test_regexp_invalid() -> None:
     with pytest.raises(filter.InvalidArguments):
