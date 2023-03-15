@@ -552,11 +552,18 @@ class TrainCar:
     def get_queue_name(self) -> "qr_config.QueueName":
         return self.initial_embarked_pulls[0].config["name"]
 
-    async def is_behind(self) -> bool:
+    async def can_be_checked_inplace(self) -> bool:
         ctxt = await self.train.repository.get_pull_request_context(
             self.still_queued_embarked_pulls[0].user_pull_request_number
         )
-        return await ctxt.is_behind
+        bot_account = self.still_queued_embarked_pulls[0].config.get(
+            "update_bot_account"
+        )
+        if bot_account is None and ctxt.pull["user"]["type"] == "Bot":
+            return False
+        elif await ctxt.is_behind:
+            return False
+        return True
 
     @tracer.wrap("TrainCar.start_inplace_checks", span_type="worker")
     async def start_checking_inplace(self) -> None:

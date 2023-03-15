@@ -1067,7 +1067,7 @@ class Train:
             ):
                 do_inplace_checks = True
             else:
-                do_inplace_checks = not await car.is_behind()
+                do_inplace_checks = await car.can_be_checked_inplace()
         else:
             do_inplace_checks = False
 

@@ -2186,8 +2186,8 @@ class TestQueueAction(base.FunctionalTestBase):
         }
         await self.setup_repo(yaml.dump(rules))
 
-        p1 = await self.create_pr()
-        p2 = await self.create_pr()
+        p1 = await self.create_pr(as_="admin")
+        p2 = await self.create_pr(as_="admin")
 
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
@@ -4556,9 +4556,9 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
         }
         await self.setup_repo(yaml.dump(rules))
-        p1 = await self.create_pr(files={"conflicts": "well"})
-        p2 = await self.create_pr(files={"conflicts": "boom"})
-        p3 = await self.create_pr()
+        p1 = await self.create_pr(as_="admin", files={"conflicts": "well"})
+        p2 = await self.create_pr(as_="admin", files={"conflicts": "boom"})
+        p3 = await self.create_pr(as_="admin")
 
         await self.add_label(p1["number"], "queue")
         await self.add_label(p2["number"], "queue")
@@ -4648,9 +4648,9 @@ class TestQueueAction(base.FunctionalTestBase):
         }
         await self.setup_repo(yaml.dump(rules))
 
-        p1 = await self.create_pr()
-        p2 = await self.create_pr()
-        p3 = await self.create_pr()
+        p1 = await self.create_pr(as_="admin")
+        p2 = await self.create_pr(as_="admin")
+        p3 = await self.create_pr(as_="admin")
 
         # Queue PRs
         await self.add_label(p1["number"], "queue")
@@ -5385,7 +5385,7 @@ class TestQueueAction(base.FunctionalTestBase):
         }
         await self.setup_repo(yaml.dump(rules))
 
-        p1 = await self.create_pr()
+        p1 = await self.create_pr(as_="admin")
         await self.create_status(p1)
         await self.add_label(p1["number"], "queue")
         await self.run_engine()

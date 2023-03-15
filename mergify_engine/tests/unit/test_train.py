@@ -316,7 +316,11 @@ async def test_train_inplace_with_speculative_checks_out_of_date(
 
     await t.add_pull(await context_getter(12345), config, "")
     await t.add_pull(await context_getter(54321), config, "")
-    with mock.patch.object(merge_train.TrainCar, "is_behind", side_effect=[True]):
+    with mock.patch.object(
+        merge_train.TrainCar,
+        "can_be_checked_inplace",
+        side_effect=mock.AsyncMock(return_value=False),
+    ):
         await t.refresh()
     assert [[12345], [12345, 54321]] == get_cars_content(t)
     assert (
@@ -338,7 +342,11 @@ async def test_train_inplace_with_speculative_checks_up_to_date(
 
     await t.add_pull(await context_getter(12345), config, "")
     await t.add_pull(await context_getter(54321), config, "")
-    with mock.patch.object(merge_train.TrainCar, "is_behind", side_effect=[False]):
+    with mock.patch.object(
+        merge_train.TrainCar,
+        "can_be_checked_inplace",
+        side_effect=mock.AsyncMock(return_value=True),
+    ):
         await t.refresh()
     assert [[12345], [12345, 54321]] == get_cars_content(t)
     assert (
