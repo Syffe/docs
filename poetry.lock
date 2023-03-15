@@ -3258,18 +3258,18 @@ test = ["html5lib", "pytest"]
 
 [[package]]
 name = "sphinxcontrib-jquery"
-version = "3.0.0"
+version = "4.1"
 description = "Extension to include jQuery on newer Sphinx releases"
 category = "dev"
 optional = false
 python-versions = ">=2.7"
 files = [
-    {file = "sphinxcontrib.jquery-3.0.0-py2.py3-none-any.whl", hash = "sha256:f3f8af2f1d344a2525f8a29d7a88ff2ee47ae25192a8de35748348ad3104ffd2"},
-    {file = "sphinxcontrib.jquery-3.0.0.tar.gz", hash = "sha256:72f201e55d8430bc3aaec7718a6c0d82a7b7c63d750428525e3d1c10d20aa437"},
+    {file = "sphinxcontrib-jquery-4.1.tar.gz", hash = "sha256:1620739f04e36a2c779f1a131a2dfd49b2fd07351bf1968ced074365933abc7a"},
+    {file = "sphinxcontrib_jquery-4.1-py2.py3-none-any.whl", hash = "sha256:f936030d7d0147dd026a4f2b5a57343d233f1fc7b363f68b3d4f1cb0993878ae"},
 ]
 
 [package.dependencies]
-setuptools = "*"
+Sphinx = ">=1.8"
 
 [[package]]
 name = "sphinxcontrib-jsmath"
@@ -4195,4 +4195,4 @@ tokenize-rt = ">=2.1"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<4.0"
-content-hash = "13360c2df1474e9228376fd823639996c1adc93402ff0d43b33e5d7d8411bab8"
+content-hash = "8a89f4f8c9459a5d3cbd45411169463437eafe16b12ddac550bfd18eaf82d497"

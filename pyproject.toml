@@ -153,7 +153,7 @@ pytest-rerunfailures = "^11.1"
 
 
 [tool.poetry.group.dev.dependencies]
-sphinxcontrib-jquery = "^3.0.0"
+sphinxcontrib-jquery = "^4.1"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
