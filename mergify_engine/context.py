@@ -1426,6 +1426,15 @@ class Context:
         else:
             raise PullRequestAttributeError(name)
 
+    async def _get_consolidated_checks_data(
+        self, states: tuple[str | None, ...] | None
+    ) -> ContextAttributeType:
+        return [
+            check_name
+            for check_name, state in (await self.checks).items()
+            if states is None or state in states
+        ]
+
     async def _get_consolidated_data(self, name: str) -> ContextAttributeType:
         if name == "assignee":
             return [a["login"] for a in self.pull["assignees"]]
@@ -1565,71 +1574,47 @@ class Context:
             comments, _ = await self.consolidated_reviews()
             return [r["user"]["login"] for r in comments if r["state"] == "COMMENTED"]
 
-        elif name == "check-success-or-neutral-or-pending":
-            return [
-                ctxt
-                for ctxt, state in (await self.checks).items()
-                if state in ("success", "neutral", "pending", None)
-            ]
-
         # NOTE(jd) The Check API set conclusion to None for pending.
+        elif name == "check-success-or-neutral-or-pending":
+            return await self._get_consolidated_checks_data(
+                ("success", "neutral", "pending", None)
+            )
+
         elif name == "check-success-or-neutral":
-            return [
-                ctxt
-                for ctxt, state in (await self.checks).items()
-                if state in ("success", "neutral")
-            ]
+            return await self._get_consolidated_checks_data(("success", "neutral"))
+
         elif name in ("status-success", "check-success"):
-            return [
-                ctxt
-                for ctxt, state in (await self.checks).items()
-                if state == "success"
-            ]
+            return await self._get_consolidated_checks_data(("success",))
+
         elif name in ("status-failure", "check-failure"):
             # hopefully "cancelled" is actually a failure state to github.
             # I think it is, however it could be the same thing as the
             # "skipped" status.
-            return [
-                ctxt
-                for ctxt, state in (await self.checks).items()
-                if state
-                in ["failure", "action_required", "cancelled", "timed_out", "error"]
-            ]
+            return await self._get_consolidated_checks_data(
+                ("failure", "action_required", "cancelled", "timed_out", "error")
+            )
+
         elif name in ("status-neutral", "check-neutral"):
-            return [
-                ctxt
-                for ctxt, state in (await self.checks).items()
-                if state == "neutral"
-            ]
+            return await self._get_consolidated_checks_data(("neutral",))
+
         elif name == "check-timed-out":
-            return [
-                ctxt
-                for ctxt, state in (await self.checks).items()
-                if state == "timed_out"
-            ]
+            return await self._get_consolidated_checks_data(("timed_out",))
+
         elif name == "check-skipped":
             # hopefully this handles the gray "skipped" state that github actions
             # workflows can send when a job that depends on a job and the job it
             # depends on fails, making it get skipped automatically then.
-            return [
-                ctext
-                for ctext, state in (await self.checks).items()
-                if state == "skipped"
-            ]
+            return await self._get_consolidated_checks_data(("skipped",))
+
         elif name == "check":
-            return [ctext for ctext, state in (await self.checks).items()]
+            return await self._get_consolidated_checks_data(None)
+
         elif name == "check-pending":
-            return [
-                ctext
-                for ctext, state in (await self.checks).items()
-                if state in (None, "pending")
-            ]
+            return await self._get_consolidated_checks_data((None, "pending"))
+
         elif name == "check-stale":
-            return [
-                ctext
-                for ctext, state in (await self.checks).items()
-                if state == "stale"
-            ]
+            return await self._get_consolidated_checks_data(("stale",))
+
         elif name == "depends-on":
             # TODO(sileht):  This is the list of merged pull requests that are
             # required by this pull request. An optimisation can be to look at
