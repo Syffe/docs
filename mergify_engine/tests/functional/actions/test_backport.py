@@ -25,7 +25,7 @@ class BackportActionTestBase(base.FunctionalTestBase):
                         f"base={self.main_branch_name}",
                         "label=backport-#3.1",
                     ],
-                    "actions": {"merge": {"method": method, "rebase_fallback": None}},
+                    "actions": {"merge": {"method": method}},
                 },
                 {
                     "name": "Backport to stable/#3.1",
@@ -116,7 +116,7 @@ class TestBackportAction(BackportActionTestBase):
                         f"base={self.main_branch_name}",
                         "label=backport-#3.1",
                     ],
-                    "actions": {"merge": {"method": "merge", "rebase_fallback": None}},
+                    "actions": {"merge": {"method": "merge"}},
                 },
                 {
                     "name": "Backport",

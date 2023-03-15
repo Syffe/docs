@@ -141,42 +141,6 @@ class TestQueueAction(base.FunctionalTestBase):
             not in checks[0]["output"]["summary"]
         )
 
-    @mock.patch.object(config, "ALLOW_REBASE_FALLBACK_ATTRIBUTE", False)
-    async def test_rebase_fallback_brownout(self) -> None:
-        rules = {
-            "pull_request_rules": [
-                {
-                    "name": "Merge priority high",
-                    "conditions": [
-                        f"base={self.main_branch_name}",
-                        "label=high",
-                        "status-success=continuous-integration/fake-ci",
-                    ],
-                    "actions": {"queue": {"rebase_fallback": "merge"}},
-                },
-            ]
-        }
-
-        await self.setup_repo(yaml.dump(rules))
-        p1 = await self.create_pr()
-        await self.run_engine()
-
-        checks = await context.Context(self.repository_ctxt, p1).pull_engine_check_runs
-        assert len(checks) == 1
-        assert "failure" == checks[0]["conclusion"]
-        assert (
-            "The current Mergify configuration is invalid"
-            == checks[0]["output"]["title"]
-        )
-        assert (
-            "`merge` is invalid for dictionary value @ pull_request_rules → item 0 → actions → queue → rebase_fallback"
-            in checks[0]["output"]["summary"]
-        )
-        assert (
-            "The configuration uses the deprecated `rebase_fallback` attribute"
-            in checks[0]["output"]["summary"]
-        )
-
     async def test_queue_routing_conditions_matching_with_pull_request_rules(
         self,
     ) -> None:
@@ -700,62 +664,6 @@ class TestQueueAction(base.FunctionalTestBase):
         assert (
             check["output"]["title"]
             == "The pull request is the 1st in the queue to be merged"
-        )
-
-    async def test_rebase_fallback_deprecation_notice(self) -> None:
-        rules = {
-            "pull_request_rules": [
-                {
-                    "name": "Merge priority high",
-                    "conditions": [
-                        f"base={self.main_branch_name}",
-                        "label=high",
-                        "status-success=continuous-integration/fake-ci",
-                    ],
-                    "actions": {"queue": {"rebase_fallback": "merge"}},
-                },
-            ]
-        }
-
-        await self.setup_repo(yaml.dump(rules))
-        p1 = await self.create_pr()
-        await self.run_engine()
-
-        checks = await context.Context(self.repository_ctxt, p1).pull_engine_check_runs
-        assert len(checks) == 1
-        assert "success" == checks[0]["conclusion"]
-        assert (
-            "**The configuration uses the deprecated `rebase_fallback` mode"
-            in checks[0]["output"]["summary"]
-        )
-
-    async def test_rebase_fallback_deprecation_notice_not_present_in_summary(
-        self,
-    ) -> None:
-        rules = {
-            "pull_request_rules": [
-                {
-                    "name": "Merge priority high",
-                    "conditions": [
-                        f"base={self.main_branch_name}",
-                        "label=high",
-                        "status-success=continuous-integration/fake-ci",
-                    ],
-                    "actions": {"queue": {}},
-                },
-            ]
-        }
-
-        await self.setup_repo(yaml.dump(rules))
-        p1 = await self.create_pr()
-        await self.run_engine()
-
-        checks = await context.Context(self.repository_ctxt, p1).pull_engine_check_runs
-        assert len(checks) == 1
-        assert "success" == checks[0]["conclusion"]
-        assert (
-            "**The configuration uses the deprecated `rebase_fallback` mode"
-            not in checks[0]["output"]["summary"]
         )
 
     async def test_queue_rule_deleted(self) -> None:

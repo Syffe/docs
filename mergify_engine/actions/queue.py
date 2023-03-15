@@ -42,13 +42,6 @@ BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT = (
 )
 
 
-DEPRECATED_MESSAGE_REBASE_FALLBACK_QUEUE_ACTION = """The configuration uses the deprecated `rebase_fallback` attribute of the queue action.
-A brownout is planned on February 13th, 2023.
-This option will be removed on March 13th, 2023.
-For more information: https://docs.mergify.com/actions/queue/
-
-`%s` is invalid"""
-
 DEPRECATED_MESSAGE_PRIORITY_ATTRIBUTE_QUEUE_ACTION = """The configuration uses the deprecated `priority` attribute of the queue action and must be replaced by `priority_rules`.
 A brownout is planned on April 3rd, 2023.
 This option will be removed on May 9th, 2023.
@@ -98,9 +91,6 @@ class QueueExecutorConfig(typing.TypedDict):
     require_branch_protection: bool
     allow_merging_configuration_change: bool
 
-    # deprecated
-    rebase_fallback: merge_base.RebaseFallbackT
-
 
 @dataclasses.dataclass
 class QueueExecutor(
@@ -138,7 +128,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     "name": action.config["name"],
                     "method": action.config["method"],
                     "update_method": action.config["update_method"],
-                    "rebase_fallback": action.config["rebase_fallback"],
                     "commit_message_template": action.config["commit_message_template"],
                     "merge_bot_account": action.config["merge_bot_account"],
                     "update_bot_account": action.config["update_bot_account"],
@@ -168,7 +157,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
             self.ctxt,
             self.rule,
             self.config["method"],
-            self.config["rebase_fallback"],
             self.config["merge_bot_account"],
             self.config["commit_message_template"],
             functools.partial(
@@ -633,7 +621,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
             result = await self.pre_merge_checks(
                 self.ctxt,
                 self.config["method"],
-                self.config["rebase_fallback"],
                 self.config["merge_bot_account"],
             )
 
@@ -1028,18 +1015,6 @@ class QueueAction(actions.Action):
                 "allow_merging_configuration_change", default=False
             ): bool,
         }
-
-        # NOTE(Syffe): In deprecation process
-        if config.ALLOW_REBASE_FALLBACK_ATTRIBUTE:
-            validator[
-                voluptuous.Required("rebase_fallback", default="none")
-            ] = voluptuous.Any("merge", "squash", "none", None)
-        else:
-            validator[
-                voluptuous.Required("rebase_fallback", default=utils.UnsetMarker)
-            ] = utils.DeprecatedOption(
-                DEPRECATED_MESSAGE_REBASE_FALLBACK_QUEUE_ACTION, "none"
-            )
 
         if config.ALLOW_QUEUE_PRIORITY_ATTRIBUTE:
             validator[

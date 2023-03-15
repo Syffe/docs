@@ -291,9 +291,6 @@ Schema = voluptuous.Schema(
         voluptuous.Required(
             "ALLOW_QUEUE_PRIORITY_ATTRIBUTE", default=True
         ): CoercedBool,
-        voluptuous.Required(
-            "ALLOW_REBASE_FALLBACK_ATTRIBUTE", default=True
-        ): CoercedBool,
         # For test suite only (eg: tox -erecord)
         voluptuous.Required(
             "TESTING_FORWARDER_ENDPOINT",

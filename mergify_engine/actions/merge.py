@@ -5,11 +5,9 @@ import voluptuous
 
 from mergify_engine import actions
 from mergify_engine import check_api
-from mergify_engine import config
 from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import signals
-from mergify_engine import utils
 from mergify_engine.actions import merge_base
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.dashboard import subscription
@@ -22,17 +20,8 @@ from mergify_engine.rules.config import pull_request_rules as prr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 
 
-DEPRECATED_MESSAGE_REBASE_FALLBACK_MERGE_ACTION = """The configuration uses the deprecated `rebase_fallback` attribute of the merge action.
-A brownout is planned on February 13th, 2023.
-This option will be removed on March 13th, 2023.
-For more information: https://docs.mergify.com/actions/merge/
-
-`%s` is invalid"""
-
-
 class MergeExecutorConfig(typing.TypedDict):
     method: merge_base.MergeMethodT
-    rebase_fallback: merge_base.RebaseFallbackT
     commit_message_template: str | None
     merge_bot_account: github_types.GitHubLogin | None
     allow_merging_configuration_change: bool
@@ -88,7 +77,6 @@ class MergeExecutor(
             MergeExecutorConfig(
                 {
                     "method": action.config["method"],
-                    "rebase_fallback": action.config["rebase_fallback"],
                     "commit_message_template": action.config["commit_message_template"],
                     "merge_bot_account": merge_bot_account,
                     "allow_merging_configuration_change": action.config[
@@ -103,7 +91,6 @@ class MergeExecutor(
         report = await self.pre_merge_checks(
             self.ctxt,
             self.config["method"],
-            self.config["rebase_fallback"],
             self.config["merge_bot_account"],
         )
         if report is None:
@@ -112,7 +99,6 @@ class MergeExecutor(
                 self.ctxt,
                 self.rule,
                 self.config["method"],
-                self.config["rebase_fallback"],
                 self.config["merge_bot_account"],
                 self.config["commit_message_template"],
                 self.get_pending_merge_status,
@@ -161,38 +147,16 @@ class MergeAction(actions.Action):
         # | actions.ActionFlag.ALWAYS_RUN
     )
 
-    @property
-    def validator(self) -> dict[typing.Any, typing.Any]:
-        validator = {
-            voluptuous.Required("method", default="merge"): voluptuous.Any(
-                *typing.get_args(merge_base.MergeMethodT)
-            ),
-            voluptuous.Required(
-                "merge_bot_account", default=None
-            ): types.Jinja2WithNone,
-            voluptuous.Required(
-                "commit_message_template", default=None
-            ): types.Jinja2WithNone,
-            voluptuous.Required(
-                "allow_merging_configuration_change", default=False
-            ): bool,
-        }
-
-        if config.ALLOW_REBASE_FALLBACK_ATTRIBUTE:
-            # NOTE(sileht): None is supported for legacy reason
-            # in deprecation process
-            validator[
-                voluptuous.Required("rebase_fallback", default="none")
-            ] = voluptuous.Any(*typing.get_args(merge_base.RebaseFallbackT))
-        else:
-            validator[
-                voluptuous.Required("rebase_fallback", default=utils.UnsetMarker)
-            ] = utils.DeprecatedOption(
-                DEPRECATED_MESSAGE_REBASE_FALLBACK_MERGE_ACTION,
-                "none",
-            )
-
-        return validator
+    validator = {
+        voluptuous.Required("method", default="merge"): voluptuous.Any(
+            *typing.get_args(merge_base.MergeMethodT)
+        ),
+        voluptuous.Required("merge_bot_account", default=None): types.Jinja2WithNone,
+        voluptuous.Required(
+            "commit_message_template", default=None
+        ): types.Jinja2WithNone,
+        voluptuous.Required("allow_merging_configuration_change", default=False): bool,
+    }
 
     async def get_conditions_requirements(
         self, ctxt: context.Context

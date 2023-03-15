@@ -33,21 +33,6 @@ NOT_APPLICABLE_TEMPLATE = """<details>
 </details>"""
 
 
-REBASE_FALLBACK_MODE_DEPRECATION_GHES = """
-:bangbang: **Action Required** :bangbang:
-> **The configuration uses the deprecated `rebase_fallback` mode of the queue and/or merge action.**
-> This option will be removed on a future version.
-> For more information: https://docs.mergify.com/actions/queue/ or https://docs.mergify.com/actions/merge/
-"""
-
-REBASE_FALLBACK_MODE_DEPRECATION_SAAS = """
-:bangbang: **Action Required** :bangbang:
-> **The configuration uses the deprecated `rebase_fallback` mode of the queue and/or merge action.**
-> A brownout is planned on February 13th, 2023.
-> This option will be removed on March 13th, 2023.
-> For more information: https://docs.mergify.com/actions/queue/ or https://docs.mergify.com/actions/merge/
-"""
-
 QUEUE_ACTION_PRIORITY_ATTRIBUTE_DEPRECATION_GHES = """
 :bangbang: **Action Required** :bangbang:
 > **The configuration uses the deprecated `priority` attribute of the queue action and must be replaced by `priority_rules`.**
@@ -170,18 +155,6 @@ async def gen_summary(
 ) -> tuple[str, str]:
     summary = ""
     summary += await get_already_merged_summary(ctxt, match)
-
-    has_queue_action_rebase_fallback_mode = any(
-        action
-        for rule in match.rules
-        for name, action in rule.actions.items()
-        if name in ("queue", "merge") and "rebase_fallback" in action.raw_config
-    )
-    if has_queue_action_rebase_fallback_mode:
-        if config.SAAS_MODE:
-            summary += REBASE_FALLBACK_MODE_DEPRECATION_SAAS
-        else:
-            summary += REBASE_FALLBACK_MODE_DEPRECATION_GHES
 
     has_queue_action_priority = any(
         action

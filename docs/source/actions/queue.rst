@@ -527,16 +527,6 @@ These are the options of the ``queue`` action:
        | ``low``, ``medium``, ``high`` are aliases for ``1000``, ``2000``, ``3000``.
 
 
-   * - ``rebase_fallback``
-     - string
-     - ``none``
-     - | |deprecated tag|
-       | If ``method`` is set to ``rebase``, but the pull request cannot be
-       | rebased, the method defined in ``rebase_fallback`` will be used instead.
-       | Possible values are ``merge``, ``squash``, ``none``.
-       | ``none`` will report an error if rebase is not possible.
-       | This option is deprecated and will be removed on March 13th, 2023.
-
    * - ``require_branch_protection``
      - bool
      - true
