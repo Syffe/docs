@@ -3,9 +3,9 @@
 
 
 "@asyncapi/specs@^4.1.0":
-  version "4.1.2"
-  resolved "https://registry.yarnpkg.com/@asyncapi/specs/-/specs-4.1.2.tgz#50df48764cd9e470c5e5855afc82a098697f7a19"
-  integrity sha512-A6iUCI96LB1Uma9DIaFcFKegNiOsGkquk0UUtkx7VbBJO+bOlwKfUhl5n+nwKaVR/UjyszeBtbUEodIC7Q3oBQ==
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/@asyncapi/specs/-/specs-4.2.0.tgz#33003051aa50785e3480c18ac7d9afbc8e68434d"
+  integrity sha512-V9bFzUGNXrpsyennEXNZaPvdoFYYoeUYYAGiQVYsGsUsF/IL/G40NpE9u6nPeXGj8sZgjKlUG6iP39T0DYtSlQ==
   dependencies:
     "@types/json-schema" "^7.0.11"
 
