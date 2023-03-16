@@ -282,6 +282,6 @@ async def rebase_with_git(
         if ctxt.pull_from_fork and ctxt.pull["base"]["repo"]["private"]:
             message = "Rebasing a branch for a forked private repository is not supported by GitHub."
         else:
-            message = f"`{on_behalf.login}` token is invalid, make sure `{on_behalf.login}` can still log in on the [Mergify dashboard]({config.DATABASE_URL})."
+            message = f"`{on_behalf.login}` token is invalid, make sure `{on_behalf.login}` can still log in on the [Mergify dashboard]({config.DASHBOARD_UI_SITE_URLS[0]})."
 
         raise BranchUpdateFailure(message)
