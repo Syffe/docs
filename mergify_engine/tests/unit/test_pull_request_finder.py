@@ -16,6 +16,7 @@ async def _do_test_event_to_pull(
     event_type: github_types.GitHubEventType,
     filename: str,
     expected_pulls: set[github_types.GitHubPullRequestNumber],
+    mocked_pulls: list[github_types.GitHubPullRequest] | None = None,
 ) -> None:
     with open(
         os.path.join(os.path.dirname(__file__), "events", filename),
@@ -44,7 +45,9 @@ async def _do_test_event_to_pull(
         }
     )
     client = mock.Mock()
-    client.item = mock.AsyncMock(return_value=[])
+    items_mock = mock.MagicMock()
+    items_mock.__aiter__.return_value = iter(mocked_pulls or [])
+    client.items.return_value = items_mock
     installation = context.Installation(
         installation_json, mock.Mock(), client, redis_links
     )
@@ -101,4 +104,22 @@ async def test_event_status(
         "status",
         "status.json",
         {github_types.GitHubPullRequestNumber(409)},
+    )
+
+
+async def test_fetch_open_pull_requests_fallback(
+    redis_links: redis_utils.RedisLinks, context_getter: conftest.ContextGetterFixture
+) -> None:
+    await _do_test_event_to_pull(
+        redis_links,
+        "status",
+        "status.json",
+        {github_types.GitHubPullRequestNumber(409)},
+        mocked_pulls=[
+            {  # type: ignore [typeddict-item]
+                "number": 409,
+                "head": {"sha": "dcdb7375b887ab3094eb6c1555f26c7090809c89"},
+                "base": {"ref": "some-ref"},
+            }
+        ],
     )
