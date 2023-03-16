@@ -51,6 +51,15 @@ export DD_LOGS_CONFIG_FRAME_SIZE=30000
 cp -f "${DD_CONF_DIR}/datadog.yaml.example" "$DD_CONF_DIR/datadog.yaml"
 
 
+MERGIFY_CONF_FILE="$DD_CONF_DIR/conf.d/mergify.d/conf.yaml"
+if [ -n "$DD_MERGIFY_API_TOKEN" ]; then
+    echo "Installing datadog-mergify integration"
+    sed -i "s/<YOUR DD_MERGIFY_API_TOKEN>/${DD_MERGIFY_API_TOKEN}/" "$MERGIFY_CONF_FILE"
+    datadog-agent integration install -r -w "/datadog_mergify-${DD_MERGIFY_VERSION}-py3-none-any.whl"
+else
+    rm -f  "$MERGIFY_CONF_FILE"
+fi
+
 POSTGRES_REGEX='^postgres://([^:]+):([^@]+)@([^:]+):([^/]+)/(.*)$'
 POSTGRES_CONF_FILE="$DD_CONF_DIR/conf.d/postgres.d/conf.yaml"
 
