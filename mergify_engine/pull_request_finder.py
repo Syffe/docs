@@ -115,7 +115,8 @@ class PullRequestFinder:
     ) -> None:
         cache_key = cls._cache_key(pull_request["base"]["repo"]["id"])
         if pull_request["state"] == "open":
-            await redis.hset(
+            pipe = await redis.pipeline()
+            await pipe.hset(
                 cache_key,
                 str(pull_request["number"]),
                 json.dumps(
@@ -126,6 +127,8 @@ class PullRequestFinder:
                     )
                 ),
             )
+            await pipe.expire(cache_key, OPENED_PULL_REQUEST_CACHE_EXPIRATION)
+            await pipe.execute()
         else:
             await redis.hdel(cache_key, str(pull_request["number"]))
 
