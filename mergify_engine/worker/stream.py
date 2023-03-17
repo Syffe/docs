@@ -722,11 +722,16 @@ class Processor:
         # handle retry later, add them to message to run engine on them now,
         # and delete the current message_id as we have unpack this incomplete event into
         # multiple complete event
-        pull_numbers = await pr_finder.extract_pull_numbers_from_event(
-            repo_id,
-            source["event_type"],
-            source["data"],
-        )
+        try:
+            pull_numbers = await pr_finder.extract_pull_numbers_from_event(
+                repo_id,
+                source["event_type"],
+                source["data"],
+            )
+        except Exception as e:
+            if exceptions.should_be_ignored(e):
+                return 0
+            raise
 
         # NOTE(sileht): refreshing all opened pull request because something got merged
         # has a lower priority
