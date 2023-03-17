@@ -65,7 +65,7 @@ COPY datadog-wrapper.sh /
 COPY datadog/datadog_mergify-${DD_MERGIFY_VERSION}-py3-none-any.whl /
 COPY datadog/conf.d/mergify.yaml /etc/datadog-agent/conf.d/mergify.d/conf.yaml
 COPY datadog/conf.d/redisdb.yaml /etc/datadog-agent/conf.d/redisdb.d/conf.yaml
-COPY datadog/conf.d/postgres.yaml /etc/datadog-agent/conf.d/postgres.d/postgres.yaml
+COPY datadog/conf.d/postgres.yaml /etc/datadog-agent/conf.d/postgres.d/conf.yaml
 # Chown to be able to edit all those config files with the datadog-wrapper
 # because we don't run the script as root.
 RUN chown -R mergify:mergify /etc/datadog-agent && chown -R mergify:mergify /var/log/datadog
