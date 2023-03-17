@@ -27,7 +27,6 @@ from mergify_engine import yaml
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
-from mergify_engine.dashboard import user_tokens
 from mergify_engine.models import github_user
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.queue.merge_train import checks as merge_train_checks
@@ -662,7 +661,7 @@ class TrainCar:
     async def _create_draft_pull_request(
         self,
         branch_name: github_types.GitHubRefType,
-        github_user: user_tokens.UserTokensUser | None,
+        on_behalf: github_user.GitHubUser | None,
     ) -> github_types.GitHubPullRequest:
         try:
             title = f"merge queue: embarking {self._get_embarked_refs()} together"
@@ -676,7 +675,7 @@ class TrainCar:
                     "head": branch_name,
                     "draft": True,
                 },
-                oauth_token=github_user["oauth_access_token"] if github_user else None,
+                oauth_token=on_behalf.oauth_access_token if on_behalf else None,
             )
         except http.HTTPClientSideError as e:
             if "A pull request already exists for" in e.message:
@@ -704,7 +703,7 @@ class TrainCar:
                     "fail to create a merge queue pull request, because the pull request already exists.",
                     head=branch_name,
                     title=title,
-                    github_user=github_user["login"] if github_user else None,
+                    on_behalf=on_behalf.login if on_behalf else None,
                     parent_pull_request_numbers=self.parent_pull_request_numbers,
                     still_queued_embarked_pull_numbers=[
                         ep.user_pull_request_number
@@ -720,7 +719,7 @@ class TrainCar:
                     "fail to create a merge queue pull request",
                     head=branch_name,
                     title=title,
-                    github_user=github_user["login"] if github_user else None,
+                    on_behalf=on_behalf.login if on_behalf else None,
                     parent_pull_request_numbers=self.parent_pull_request_numbers,
                     still_queued_embarked_pull_numbers=[
                         ep.user_pull_request_number
@@ -744,12 +743,12 @@ class TrainCar:
         self,
         branch_name: github_types.GitHubRefType,
         base_sha: github_types.SHAType,
-        github_user: user_tokens.UserTokensUser | None,
+        on_behalf: github_user.GitHubUser | None,
     ) -> None:
         try:
             await self.train.repository.installation.client.post(
                 f"/repos/{self.train.repository.installation.owner_login}/{self.train.repository.repo['name']}/git/refs",
-                oauth_token=github_user["oauth_access_token"] if github_user else None,
+                oauth_token=on_behalf.oauth_access_token if on_behalf else None,
                 json={
                     "ref": f"refs/heads/{branch_name}",
                     "sha": base_sha,
@@ -777,12 +776,12 @@ class TrainCar:
         self,
         current_branch_name: github_types.GitHubRefType,
         new_branch_name: github_types.GitHubRefType,
-        github_user: user_tokens.UserTokensUser | None,
+        on_behalf: github_user.GitHubUser | None,
     ) -> None:
         try:
             await self.train.repository.installation.client.post(
                 f"/repos/{self.train.repository.installation.owner_login}/{self.train.repository.repo['name']}/branches/{current_branch_name}/rename",
-                oauth_token=github_user["oauth_access_token"] if github_user else None,
+                oauth_token=on_behalf.oauth_access_token if on_behalf else None,
                 json={"new_name": new_branch_name},
             )
         except http.HTTPClientSideError as exc:
@@ -849,16 +848,14 @@ class TrainCar:
                 f"{queue_rule.config['queue_branch_prefix']}{self._generate_draft_pr_branch_suffix()}"
             )
 
-        bot_account = queue_rule.config["draft_bot_account"]
-        github_user: user_tokens.UserTokensUser | None = None
-        if bot_account:
-            tokens = await self.train.repository.installation.get_user_tokens()
-            github_user = tokens.get_token_for(bot_account)
-            if not github_user:
-                await self._set_creation_failure(
-                    f"Unable to create draft pull request: user `{bot_account}` is unknown. "
-                    f"Please make sure `{bot_account}` has logged in Mergify dashboard.",
+        on_behalf: github_user.GitHubUser | None = None
+        if queue_rule.config["draft_bot_account"]:
+            try:
+                on_behalf = await action_utils.get_github_user_from_bot_account(
+                    "prepare draft pull request", queue_rule.config["draft_bot_account"]
                 )
+            except action_utils.BotAccountNotFound as e:
+                await self._set_creation_failure(f"{e.title}. {e.reason}")
                 raise TrainCarPullRequestCreationFailure(self)
 
         base_sha, pulls_in_draft = await self._get_draft_pr_setup(
@@ -868,17 +865,13 @@ class TrainCar:
         self.queue_branch_name = github_types.GitHubRefType(
             f"{self.QUEUE_BRANCH_PREFIX}{self.queue_branch_name}"
         )
-        await self._prepare_draft_pr_branch(
-            self.queue_branch_name, base_sha, github_user
-        )
+        await self._prepare_draft_pr_branch(self.queue_branch_name, base_sha, on_behalf)
 
         for pull_number in pulls_in_draft:
             try:
                 await self.train.repository.installation.client.post(
                     f"/repos/{self.train.repository.installation.owner_login}/{self.train.repository.repo['name']}/merges",
-                    oauth_token=github_user["oauth_access_token"]
-                    if github_user
-                    else None,
+                    oauth_token=on_behalf.oauth_access_token if on_behalf else None,
                     json={
                         "base": self.queue_branch_name,
                         "head": f"refs/pull/{pull_number}/head",
@@ -925,13 +918,12 @@ class TrainCar:
         new_branch_name = github_types.GitHubRefType(
             self.queue_branch_name.replace(self.QUEUE_BRANCH_PREFIX, "", 1)
         )
-        await self._rename_branch(self.queue_branch_name, new_branch_name, github_user)
+        await self._rename_branch(self.queue_branch_name, new_branch_name, on_behalf)
         self.queue_branch_name = new_branch_name
 
         try:
             tmp_pull = await self._create_draft_pull_request(
-                self.queue_branch_name,
-                github_user,
+                self.queue_branch_name, on_behalf
             )
         except DraftPullRequestCreationTemporaryFailure as e:
             await self._delete_branch()
