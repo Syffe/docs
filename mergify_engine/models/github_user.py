@@ -126,3 +126,8 @@ class GitHubUser(models.Base):
         await session.flush()
         await session.commit()
         return user
+
+    def to_github_account(self) -> github_types.GitHubAccount:
+        return github_types.GitHubAccount(
+            {"id": self.id, "login": self.login, "type": "User", "avatar_url": ""}
+        )

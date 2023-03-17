@@ -7,6 +7,7 @@ import tenacity
 from mergify_engine import config
 from mergify_engine import context
 from mergify_engine import exceptions
+from mergify_engine import github_types
 from mergify_engine import gitter
 from mergify_engine.clients import http
 from mergify_engine.dashboard import user_tokens
@@ -279,9 +280,16 @@ async def rebase_with_git(
             "git authentification failure", login=on_behalf.login, exc_info=True
         )
 
-        if ctxt.pull_from_fork and ctxt.pull["base"]["repo"]["private"]:
-            message = "Rebasing a branch for a forked private repository is not supported by GitHub."
-        else:
-            message = f"`{on_behalf.login}` token is invalid, make sure `{on_behalf.login}` can still log in on the [Mergify dashboard]({config.DASHBOARD_UI_SITE_URLS[0]})."
+        message = f"`{on_behalf.login}` token is invalid, make sure `{on_behalf.login}` can still log in on the [Mergify dashboard]({config.DASHBOARD_UI_SITE_URLS[0]})."
+
+        if ctxt.pull_from_fork:
+            if ctxt.pull["base"]["repo"]["private"]:
+                message = "Rebasing a branch for a forked private repository is not supported by GitHub."
+            else:
+                permission = await ctxt.repository.get_user_permission(
+                    on_behalf.to_github_account()
+                )
+                if permission == github_types.GitHubRepositoryPermission.NONE:
+                    message = f"`{on_behalf.login}` does not have write access to this repository."
 
         raise BranchUpdateFailure(message)
