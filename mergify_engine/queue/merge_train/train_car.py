@@ -555,14 +555,65 @@ class TrainCar:
         ctxt = await self.train.repository.get_pull_request_context(
             self.still_queued_embarked_pulls[0].user_pull_request_number
         )
+        update_method = self.still_queued_embarked_pulls[0].config.get("update_method")
         bot_account = self.still_queued_embarked_pulls[0].config.get(
             "update_bot_account"
         )
-        if bot_account is None and ctxt.pull["user"]["type"] == "Bot":
+        if (
+            update_method == "rebase"
+            and bot_account is None
+            and ctxt.pull["user"]["type"] == "Bot"
+        ):
             return False
         elif await ctxt.is_behind:
             return False
         return True
+
+    async def _start_checking_inplace_rebase(self, ctxt: context.Context) -> None:
+        bot_account = self.still_queued_embarked_pulls[0].config.get(
+            "update_bot_account"
+        )
+
+        if bot_account is None and ctxt.pull["user"]["type"] != "Bot":
+            bot_account = ctxt.pull["user"]["login"]
+
+        on_behalf: github_user.GitHubUser | None = None
+        if bot_account:
+            try:
+                on_behalf = await action_utils.get_github_user_from_bot_account(
+                    "update", bot_account
+                )
+            except action_utils.BotAccountNotFound as exc:
+                await self._set_creation_failure(
+                    f"{exc.title}\n\n{exc.reason}", operation="updated"
+                )
+                raise TrainCarPullRequestCreationFailure(self) from exc
+
+        try:
+            if on_behalf is None:
+                # FIXME(sileht): drop this case when we update_bot_account
+                # can not be None anymore
+                await branch_updater.rebase_with_git_for_github_app(ctxt, False)
+            else:
+                # FIXME(sileht): should we enabled autosquash here? MRGFY-279
+                await branch_updater.rebase_with_git(ctxt, on_behalf, False)
+
+        except branch_updater.BranchUpdateFailure as exc:
+            await self._set_creation_failure(
+                f"{exc.title}\n\n{exc.message}", operation="updated"
+            )
+            raise TrainCarPullRequestCreationFailure(self) from exc
+
+    async def _start_checking_inplace_merge(self, ctxt: context.Context) -> None:
+        try:
+            # FIXME(sileht): we should have passed on_behalf to update_with_api ...
+            # MRGFY-1742
+            await branch_updater.update_with_api(ctxt)
+        except branch_updater.BranchUpdateFailure as exc:
+            await self._set_creation_failure(
+                f"{exc.title}\n\n{exc.message}", operation="updated"
+            )
+            raise TrainCarPullRequestCreationFailure(self) from exc
 
     @tracer.wrap("TrainCar.start_inplace_checks", span_type="worker")
     async def start_checking_inplace(self) -> None:
@@ -576,48 +627,17 @@ class TrainCar:
         )
 
         if await ctxt.is_behind:
-            bot_account = self.still_queued_embarked_pulls[0].config.get(
-                "update_bot_account"
-            )
-
-            if bot_account is None and ctxt.pull["user"]["type"] != "Bot":
-                bot_account = ctxt.pull["user"]["login"]
-
-            on_behalf: github_user.GitHubUser | None = None
-            if bot_account:
-                try:
-                    on_behalf = await action_utils.get_github_user_from_bot_account(
-                        "update", bot_account
-                    )
-                except action_utils.BotAccountNotFound as exc:
-                    await self._set_creation_failure(
-                        f"{exc.title}\n\n{exc.reason}", operation="updated"
-                    )
-                    raise TrainCarPullRequestCreationFailure(self) from exc
-
             # TODO(sileht): fallback to "merge" and None until all configs has
             # the new fields
             update_method = self.still_queued_embarked_pulls[0].config.get(
                 "update_method", "merge"
             )
-            try:
-                if update_method == "merge":
-                    # FIXME(sileht): we should have passed on_behalf to update_with_api ...
-                    # MRGFY-1742
-                    await branch_updater.update_with_api(ctxt)
-                elif on_behalf is None:
-                    # FIXME(sileht): drop this case when we update_bot_account
-                    # can not be None anymore
-                    await branch_updater.rebase_with_git_for_github_app(ctxt, False)
-                else:
-                    # FIXME(sileht): should we enabled autosquash here? MRGFY-279
-                    await branch_updater.rebase_with_git(ctxt, on_behalf, False)
-
-            except branch_updater.BranchUpdateFailure as exc:
-                await self._set_creation_failure(
-                    f"{exc.title}\n\n{exc.message}", operation="updated"
-                )
-                raise TrainCarPullRequestCreationFailure(self) from exc
+            if update_method == "merge":
+                await self._start_checking_inplace_merge(ctxt)
+            elif update_method == "rebase":
+                await self._start_checking_inplace_rebase(ctxt)
+            else:
+                raise RuntimeError(f"Unexpected update_method: {update_method}")
 
             # NOTE(sileht): We must update head_sha of the pull request otherwise
             # next temporary pull request may be created on a vanished reference.
