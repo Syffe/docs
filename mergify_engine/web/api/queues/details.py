@@ -290,13 +290,16 @@ async def repository_queue_pull_request(
         security.get_queue_rules
     ),
 ) -> EnhancedPullRequestQueued:
-    async for train in merge_train.Train.iter_trains(repository_ctxt, queue_rules):
-        try:
-            queue_rule = queue_rules[queue_name]
-        except KeyError:
-            # The queue we seek is not in this train
-            continue
+    try:
+        queue_rule = queue_rules[queue_name]
+    except KeyError:
+        # The queue we seek is not defined in the configuration
+        raise fastapi.HTTPException(
+            status_code=404,
+            detail=f"Queue `{queue_name}` does not exist.",
+        )
 
+    async for train in merge_train.Train.iter_trains(repository_ctxt, queue_rules):
         for position, (embarked_pull, car) in enumerate(train._iter_embarked_pulls()):
             if embarked_pull.user_pull_request_number != pr_number:
                 continue
