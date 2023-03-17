@@ -1076,7 +1076,7 @@ class TestQueueApi(base.FunctionalTestBase):
                 seconds=median_checks_duration
             )
 
-    async def test_estimated_time_of_merge_when_queue_freezed(self) -> None:
+    async def test_estimated_time_of_merge_when_queue_is_frozen(self) -> None:
         rules = {
             "queue_rules": [
                 {
