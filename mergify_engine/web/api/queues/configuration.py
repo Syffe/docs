@@ -29,7 +29,7 @@ class QueuesConfig:
 
 
 @router.get(
-    "/queues/configuration",  # noqa: FS003
+    "/queues/configuration",
     summary="Get merge queues configuration",
     description="Get the list of all merge queues configuration sorted by processing order",
     response_model=QueuesConfig,

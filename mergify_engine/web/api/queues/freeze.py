@@ -262,7 +262,7 @@ async def get_queue_freeze(
 
 
 @router.get(
-    "/queues/freezes",  # noqa: FS003
+    "/queues/freezes",
     summary="Get the list of frozen queues",
     description="Get the list of frozen queues inside the requested repository",
     response_model=QueueFreezeResponse,

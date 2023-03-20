@@ -181,7 +181,7 @@ class Queues:
 
 
 @router.get(
-    "/queues",  # noqa: FS003
+    "/queues",
     summary="Get merge queues",
     description="Get the list of pull requests queued in a merge queue of a repository",
     response_model=Queues,
