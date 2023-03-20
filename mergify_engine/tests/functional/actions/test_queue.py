@@ -1103,8 +1103,8 @@ class TestQueueAction(base.FunctionalTestBase):
         }
         await self.setup_repo(yaml.dump(rules))
 
-        p1 = await self.create_pr()
-        p2 = await self.create_pr(two_commits=True)
+        p1 = await self.create_pr(as_="admin")
+        p2 = await self.create_pr(as_="admin", two_commits=True)
 
         # To force others to be rebased
         p = await self.create_pr()
@@ -1889,10 +1889,10 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
 
         # Create 2 PR and put them in a queue
-        p1 = await self.create_pr()
+        p1 = await self.create_pr(as_="admin")
         await self.create_status(p1)
         await self.run_engine()
-        p2 = await self.create_pr()
+        p2 = await self.create_pr(as_="admin")
         await self.create_status(p2)
         await self.run_engine()
 
@@ -6291,7 +6291,7 @@ pull_request_rules:
 
         await self.branch_protection_protect(self.main_branch_name, protection)
 
-        p = await self.create_pr()
+        p = await self.create_pr(as_="fork")
 
         # To force others to be rebased
         p_other = await self.create_pr()

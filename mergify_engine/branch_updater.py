@@ -228,42 +228,6 @@ async def update_with_api(
         raise BranchUpdateFailure(e.message)
 
 
-async def rebase_with_git_for_github_app(
-    ctxt: context.Context,
-    autosquash: bool = False,
-) -> None:
-    ctxt.log.info("updating base branch with git")
-
-    await pre_rebase_check(ctxt)
-
-    # TODO(sileht):
-    # * OnPremise: fail and ask customer to set update_bot_account
-    # * SaaS: user synack associated-users API instead of this random user pick
-    tokens = await ctxt.repository.installation.get_user_tokens()
-
-    for user in tokens.users:
-        try:
-            await _do_rebase(ctxt, user, None, autosquash)
-        except gitter.GitAuthenticationFailure as e:  # pragma: no cover
-            ctxt.log.info(
-                "authentification failure, will retry another token: %s",
-                e,
-                login=user["login"],
-            )
-        else:
-            ctxt.log.warning("GitHub App pull request rebased by %s", user["login"])
-            return
-
-    ctxt.log.warning("unable to update branch: no tokens are valid")
-
-    if ctxt.pull_from_fork and ctxt.pull["base"]["repo"]["private"]:
-        message = "Rebasing a branch for a forked private repository is not supported by GitHub."
-    else:
-        message = "No account found to rebase a branch of GitHub App, did you set `update_bot_account`?"
-
-    raise BranchUpdateFailure(message)
-
-
 async def rebase_with_git(
     ctxt: context.Context,
     on_behalf: github_user.GitHubUser,

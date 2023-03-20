@@ -1053,24 +1053,7 @@ class Train:
         car: train_car.TrainCar,
         previous_car: "train_car.TrainCar | None",
     ) -> None:
-        queue_rule = car.get_queue_rule()
-        can_be_updated = (
-            self._cars[0] == car
-            and len(car.still_queued_embarked_pulls) == 1
-            and len(car.parent_pull_request_numbers) == 0
-        )
-        if can_be_updated and queue_rule.config["allow_inplace_checks"]:
-            # smart mode
-            if (
-                queue_rule.config["speculative_checks"] == 1
-                and queue_rule.config["batch_size"] == 1
-            ):
-                do_inplace_checks = True
-            else:
-                do_inplace_checks = await car.can_be_checked_inplace()
-        else:
-            do_inplace_checks = False
-
+        do_inplace_checks = await car.can_be_checked_inplace()
         try:
             # get_next_batch() ensure all embarked_pulls has same config
             if do_inplace_checks:

@@ -345,7 +345,7 @@ async def test_train_inplace_with_speculative_checks_up_to_date(
     with mock.patch.object(
         merge_train.TrainCar,
         "can_be_checked_inplace",
-        side_effect=mock.AsyncMock(return_value=True),
+        side_effect=mock.AsyncMock(side_effect=[True, False]),
     ):
         await t.refresh()
     assert [[12345], [12345, 54321]] == get_cars_content(t)

@@ -552,52 +552,75 @@ class TrainCar:
         return self.initial_embarked_pulls[0].config["name"]
 
     async def can_be_checked_inplace(self) -> bool:
-        ctxt = await self.train.repository.get_pull_request_context(
-            self.still_queued_embarked_pulls[0].user_pull_request_number
-        )
-        update_method = self.still_queued_embarked_pulls[0].config.get("update_method")
-        bot_account = self.still_queued_embarked_pulls[0].config.get(
-            "update_bot_account"
-        )
+        queue_rule = self.get_queue_rule()
+        if not queue_rule.config["allow_inplace_checks"]:
+            return False
+
+        # NOTE: don't check in-place if car is not the first
+        if self != self.train._cars[0]:
+            return False
+
+        # NOTE: don't check in-place if there were other cars before
+        if len(self.parent_pull_request_numbers) != 0:
+            return False
+
+        # NOTE: don't check in-place if it's a batch
+        if len(self.initial_embarked_pulls) != 1:
+            return False
+
+        embarked_pull = self.initial_embarked_pulls[0]
+        update_method = embarked_pull.config.get("update_method")
+        bot_account = embarked_pull.config.get("update_bot_account")
+
+        if update_method == "rebase" and bot_account is None:
+            ctxt = await self.train.repository.get_pull_request_context(
+                embarked_pull.user_pull_request_number
+            )
+            if not await ctxt.is_behind:
+                # Already up to date, rebase will be a noop
+                return True
+
+            if ctxt.pull["user"]["type"] == "Bot":
+                return False
+
+        # Smart mode
         if (
-            update_method == "rebase"
-            and bot_account is None
-            and ctxt.pull["user"]["type"] == "Bot"
+            queue_rule.config["speculative_checks"] == 1
+            and queue_rule.config["batch_size"] == 1
         ):
-            return False
-        elif await ctxt.is_behind:
-            return False
-        return True
+            return True
+
+        ctxt = await self.train.repository.get_pull_request_context(
+            embarked_pull.user_pull_request_number
+        )
+        # Already up to date, rebase will be a noop
+        return not await ctxt.is_behind
 
     async def _start_checking_inplace_rebase(self, ctxt: context.Context) -> None:
         bot_account = self.still_queued_embarked_pulls[0].config.get(
             "update_bot_account"
         )
 
-        if bot_account is None and ctxt.pull["user"]["type"] != "Bot":
+        if bot_account is None:
+            if ctxt.pull["user"]["type"] == "Bot":
+                raise RuntimeError(
+                    f"_start_checking_inplace_rebase called with a PR from a bot: {ctxt.pull['user']['login']}"
+                )
             bot_account = ctxt.pull["user"]["login"]
 
-        on_behalf: github_user.GitHubUser | None = None
-        if bot_account:
-            try:
-                on_behalf = await action_utils.get_github_user_from_bot_account(
-                    "update", bot_account
-                )
-            except action_utils.BotAccountNotFound as exc:
-                await self._set_creation_failure(
-                    f"{exc.title}\n\n{exc.reason}", operation="updated"
-                )
-                raise TrainCarPullRequestCreationFailure(self) from exc
+        try:
+            on_behalf = await action_utils.get_github_user_from_bot_account(
+                "update", bot_account
+            )
+        except action_utils.BotAccountNotFound as exc:
+            await self._set_creation_failure(
+                f"{exc.title}\n\n{exc.reason}", operation="updated"
+            )
+            raise TrainCarPullRequestCreationFailure(self) from exc
 
         try:
-            if on_behalf is None:
-                # FIXME(sileht): drop this case when we update_bot_account
-                # can not be None anymore
-                await branch_updater.rebase_with_git_for_github_app(ctxt, False)
-            else:
-                # FIXME(sileht): should we enabled autosquash here? MRGFY-279
-                await branch_updater.rebase_with_git(ctxt, on_behalf, False)
-
+            # FIXME(sileht): should we enabled autosquash here? MRGFY-279
+            await branch_updater.rebase_with_git(ctxt, on_behalf, False)
         except branch_updater.BranchUpdateFailure as exc:
             await self._set_creation_failure(
                 f"{exc.title}\n\n{exc.message}", operation="updated"
