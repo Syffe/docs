@@ -69,7 +69,7 @@ def get_action_schemas() -> dict[str, type["Action"]]:
 
 
 def get_commands() -> dict[str, type["Action"]]:
-    return {name: obj for name, obj in get_classes("mergify_commands").items()}
+    return get_classes("mergify_commands")
 
 
 ActionT = typing.TypeVar("ActionT")
