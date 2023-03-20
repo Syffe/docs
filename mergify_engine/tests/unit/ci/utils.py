@@ -40,7 +40,9 @@ def create_job(
         ),
         started_at=started_at,
         completed_at=completed_at,
-        pulls=[models.PullRequest(id=1, number=1234, title="feat: hello")],
+        pulls=[
+            models.PullRequest(id=1, number=1234, title="feat: hello", state="open")
+        ],
         run_attempt=run_attempt,
         operating_system=typing.cast(models.OperatingSystem, operating_system),
         cores=cores,

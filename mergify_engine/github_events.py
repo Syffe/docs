@@ -19,6 +19,8 @@ from mergify_engine import pull_request_finder
 from mergify_engine import redis_utils
 from mergify_engine import utils
 from mergify_engine import worker_pusher
+from mergify_engine.ci import models as ci_models
+from mergify_engine.ci import pull_registries
 from mergify_engine.clients import github
 from mergify_engine.engine import commands_runner
 from mergify_engine.queue import utils as queue_utils
@@ -144,10 +146,29 @@ async def clean_and_fill_caches(
 ) -> None:
     if event_type == "pull_request":
         event = typing.cast(github_types.GitHubEventPullRequest, event)
-        if event["action"] in ("opened", "synchronize", "edited", "closed"):
+        if event["action"] in ("opened", "synchronize", "edited", "closed", "reopened"):
             await pull_request_finder.PullRequestFinder.sync(
                 redis_links.cache, event["pull_request"]
             )
+
+            commit_shas: set[github_types.SHAType] = (
+                {event["before"], event["after"]}
+                if event["action"] == "synchronize"
+                else {event["pull_request"]["head"]["sha"]}
+            )
+            await pull_registries.RedisPullRequestRegistry.register_commits(
+                redis_links.cache,
+                event["pull_request"]["base"]["repo"]["owner"]["login"],
+                event["pull_request"]["base"]["repo"]["name"],
+                commit_shas,
+                ci_models.PullRequest(
+                    id=event["pull_request"]["id"],
+                    number=event["pull_request"]["number"],
+                    title=event["pull_request"]["title"],
+                    state=event["pull_request"]["state"],
+                ),
+            )
+
         if event["action"] in ("opened", "edited"):
             await context.Repository.cache_pull_request_title(
                 redis_links.cache,

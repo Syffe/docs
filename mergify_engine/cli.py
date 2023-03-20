@@ -107,12 +107,14 @@ async def dump_handler(argv: list[str] | None = None) -> None:
         token=config.DEV_PERSONAL_TOKEN,
     )
 
-    await dump.dump(
-        typing.cast(github_types.GitHubLogin, args.owner),
-        typing.cast(github_types.GitHubRepositoryName, args.repository),
-        args.at,
-        auth=auth,
-    )
+    async with redis_utils.RedisLinks(name="ci_dump") as redis_links:
+        await dump.dump(
+            redis_links,
+            typing.cast(github_types.GitHubLogin, args.owner),
+            typing.cast(github_types.GitHubRepositoryName, args.repository),
+            args.at,
+            auth=auth,
+        )
 
 
 @utils.make_sync_for_entrypoint

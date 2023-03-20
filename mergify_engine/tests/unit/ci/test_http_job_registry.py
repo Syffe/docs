@@ -11,10 +11,24 @@ from mergify_engine.ci import models as ci_models
 from mergify_engine.clients import github
 
 
+class FakePullRequestRegistry:
+    async def get_from_commit(
+        self,
+        owner: github_types.GitHubLogin,
+        repository: github_types.GitHubRepositoryName,
+        commit_sha: github_types.SHAType,
+    ) -> list[models.PullRequest]:
+        return [
+            models.PullRequest(
+                id=5, number=6, title="feat: my awesome feature", state="open"
+            )
+        ]
+
+
 @pytest.mark.respx(base_url=config.GITHUB_REST_API_URL)
 async def test_search(respx_mock: respx.MockRouter) -> None:
     client = github.AsyncGithubClient(auth=None)  # type: ignore [arg-type]
-    registry = job_registries.HTTPJobRegistry(client)
+    registry = job_registries.HTTPJobRegistry(client, FakePullRequestRegistry())
     respx_mock.get("/repos/some-owner/some-repo/actions/runs").respond(
         200,
         json={
@@ -60,9 +74,6 @@ async def test_search(respx_mock: respx.MockRouter) -> None:
             ],
         },
     )
-    respx_mock.get("/repos/some-owner/some-repo/commits/some-sha/pulls").respond(
-        200, json=[{"id": 5, "number": 6, "title": "feat: my awesome feature"}]
-    )
 
     jobs = registry.search(
         github_types.GitHubLogin("some-owner"),
@@ -85,7 +96,9 @@ async def test_search(respx_mock: respx.MockRouter) -> None:
             "2023-01-24T17:35:38Z"
         )
         assert job.pulls == [
-            models.PullRequest(id=5, number=6, title="feat: my awesome feature")
+            models.PullRequest(
+                id=5, number=6, title="feat: my awesome feature", state="open"
+            )
         ]
         assert job.run_attempt == 1
         assert job.operating_system == "Linux"

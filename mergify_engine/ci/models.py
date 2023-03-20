@@ -29,6 +29,7 @@ class PullRequest:
     id: int
     number: int
     title: str
+    state: github_types.GitHubPullRequestState
 
 
 @dataclasses.dataclass

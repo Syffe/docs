@@ -1,12 +1,14 @@
 import datetime
 
 from mergify_engine import github_types
+from mergify_engine import redis_utils
 from mergify_engine.ci import job_registries
 from mergify_engine.ci import pull_registries
 from mergify_engine.clients import github
 
 
 async def dump(
+    redis_links: redis_utils.RedisLinks,
     owner: github_types.GitHubLogin,
     repository: github_types.GitHubRepositoryName,
     at: datetime.date,
@@ -18,7 +20,10 @@ async def dump(
         )
 
     client = github.AsyncGithubInstallationClient(auth=auth)
-    http_job_registry = job_registries.HTTPJobRegistry(client)
+    http_pull_registry = pull_registries.RedisPullRequestRegistry(
+        redis_links.cache, pull_registries.HTTPPullRequestRegistry(client)
+    )
+    http_job_registry = job_registries.HTTPJobRegistry(client, http_pull_registry)
 
     pg_job_registry = job_registries.PostgresJobRegistry()
     pg_pull_registry = pull_registries.PostgresPullRequestRegistry()

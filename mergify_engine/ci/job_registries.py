@@ -115,7 +115,7 @@ class PostgresJobRegistry:
                     completed_at=record.completed_at,
                     pulls=[
                         ci_models.PullRequest(
-                            id=pr.id, number=pr.number, title=pr.title
+                            id=pr.id, number=pr.number, title=pr.title, state=pr.state
                         )
                         for pr in record.pull_requests
                     ],
@@ -148,12 +148,11 @@ class PostgresJobRegistry:
 @dataclasses.dataclass
 class HTTPJobRegistry:
     client: github.AsyncGithubClient
+    pull_registry: pull_registries.PullRequestFromCommitRegistry
 
     async def search(
         self, owner: str, repository: str, at: datetime.date
     ) -> abc.AsyncGenerator[ci_models.JobRun, None]:
-        pull_registry = pull_registries.HTTPPullRequestRegistry(self.client)
-
         # https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository
         runs = typing.cast(
             abc.AsyncIterable[github_types.GitHubWorkflowRun],
@@ -183,13 +182,12 @@ class HTTPJobRegistry:
                 if not job["completed_at"]:
                     continue
 
-                yield await self._create_job(job, run, pull_registry)
+                yield await self._create_job(job, run)
 
     async def _create_job(
         self,
         job_payload: github_types.GitHubJobRun,
         run_payload: github_types.GitHubWorkflowRun,
-        pull_registry: pull_registries.HTTPPullRequestRegistry,
     ) -> ci_models.JobRun:
         runner_properties = self._extract_runner_properties(job_payload)
 
@@ -211,7 +209,7 @@ class HTTPJobRegistry:
             ),
             started_at=datetime.datetime.fromisoformat(job_payload["started_at"]),
             completed_at=datetime.datetime.fromisoformat(job_payload["completed_at"]),
-            pulls=await pull_registry.get_from_commit(
+            pulls=await self.pull_registry.get_from_commit(
                 run_payload["repository"]["owner"]["login"],
                 run_payload["repository"]["name"],
                 run_payload["head_sha"],

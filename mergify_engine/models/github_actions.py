@@ -25,7 +25,10 @@ class PullRequest(models.Base):
         sqlalchemy.BigInteger, primary_key=True, autoincrement=False
     )
     number: orm.Mapped[int] = orm.mapped_column(sqlalchemy.BigInteger, unique=True)
-    title: orm.Mapped[str]
+    title: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
+    state: orm.Mapped[github_types.GitHubPullRequestState] = orm.mapped_column(
+        sqlalchemy.Text
+    )
 
     job_runs: orm.Mapped[list["JobRun"]] = orm.relationship(
         secondary="jt_gha_job_run_pull_request",

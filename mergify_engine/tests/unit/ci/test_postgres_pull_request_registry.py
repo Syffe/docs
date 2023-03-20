@@ -10,7 +10,7 @@ from mergify_engine.tests.unit.ci import utils
 
 
 async def test_insert(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
-    pull = models.PullRequest(id=1, number=2, title="some title")
+    pull = models.PullRequest(id=1, number=2, title="some title", state="open")
     registry = pull_registries.PostgresPullRequestRegistry()
 
     await registry.insert(pull)
@@ -40,7 +40,7 @@ async def test_insert(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
 async def test_get_job_run_position(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
     await db.execute(
         sqlalchemy.insert(sql_models.PullRequest).values(
-            id=1, number=2, title="some title"
+            id=1, number=2, title="some title", state="open"
         )
     )
     with freeze_time("2023-02-24 12:00:00"):
