@@ -18,7 +18,6 @@ from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
-from mergify_engine.dashboard import user_tokens
 from mergify_engine.engine import actions_runner
 from mergify_engine.queue import merge_train
 from mergify_engine.rules.config import mergify as mergify_conf
@@ -50,19 +49,6 @@ async def get_repositories_setuped(
                     return repositories
             else:
                 response.raise_for_status()
-
-
-async def report_dashboard_synchro(
-    install_id: int,
-    sub: subscription.Subscription,
-    uts: user_tokens.UserTokens,
-    title: str,
-    slug: str | None = None,
-) -> None:
-    print(f"* {title} SUB DETAIL: {sub.reason}")
-    print(
-        f"* {title} SUB NUMBER OF TOKENS: {len(uts.users)} ({', '.join(u['login'] for u in uts.users)})"
-    )
 
 
 async def report_worker_status(
@@ -148,11 +134,6 @@ async def report(
 
     print(f"* INSTALLATION ID: {installation_json['id']}")
 
-    if repo is None:
-        slug = None
-    else:
-        slug = owner_login + "/" + repo
-
     owner_id = installation_json["account"]["id"]
     cached_sub = await subscription.Subscription.get_subscription(
         redis_links.cache, owner_id
@@ -160,19 +141,6 @@ async def report(
     db_sub = await subscription.Subscription._retrieve_subscription_from_db(
         redis_links.cache, owner_id
     )
-
-    cached_tokens = await user_tokens.UserTokens.get(redis_links.cache, owner_id, False)
-    if config.SAAS_MODE:
-        db_tokens = typing.cast(
-            user_tokens.UserTokens,
-            (
-                await user_tokens.UserTokensSaas._retrieve_from_db(
-                    redis_links.cache, owner_id, False
-                )
-            ),
-        )
-    else:
-        db_tokens = cached_tokens
 
     print("* Features (db):")
     for v in sorted(f.value for f in db_sub.features):
@@ -185,12 +153,8 @@ async def report(
         installation_json, cached_sub, client, redis_links
     )
 
-    await report_dashboard_synchro(
-        installation.installation["id"], cached_sub, cached_tokens, "ENGINE-CACHE", slug
-    )
-    await report_dashboard_synchro(
-        installation.installation["id"], db_sub, db_tokens, "DASHBOARD", slug
-    )
+    print(f"* ENGINE-CACHE SUB DETAIL: {cached_sub.reason}")
+    print(f"* DASHBOARD SUB DETAIL: {db_sub.reason}")
 
     await report_worker_status(redis_links, owner_login)
 

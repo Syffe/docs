@@ -43,7 +43,6 @@ from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription as subscription_mod
-from mergify_engine.dashboard import user_tokens
 from mergify_engine.queue import utils as queue_utils
 
 
@@ -115,9 +114,6 @@ class Installation:
     repositories: "typing.Dict[github_types.GitHubRepositoryName, Repository]" = (
         dataclasses.field(default_factory=dict, repr=False)
     )
-    _user_tokens: user_tokens.UserTokens | None = dataclasses.field(
-        default=None, repr=False
-    )
     _caches: InstallationCaches = dataclasses.field(
         default_factory=InstallationCaches, repr=False
     )
@@ -129,20 +125,6 @@ class Installation:
     @property
     def owner_login(self) -> github_types.GitHubLogin:
         return self.installation["account"]["login"]
-
-    async def get_user_tokens(self) -> user_tokens.UserTokens:
-        # NOTE(sileht): For the simulator all contexts are built with a user
-        # oauth token, even if it have access to the organization. We don't
-        # want to share this. So we return just an empty list and we don't
-        # cache it on purpose to not leak them somehow.
-        filter_tokens = not isinstance(
-            self.client.auth, github.GithubAppInstallationAuth
-        )
-        if self._user_tokens is None:
-            self._user_tokens = await user_tokens.UserTokens.get(
-                self.redis.cache, self.owner_id, filter_tokens=filter_tokens
-            )
-        return self._user_tokens
 
     USER_ID_MAPPING_CACHE_KEY = "user-id-mapping"
 

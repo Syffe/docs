@@ -30,7 +30,6 @@ from mergify_engine.clients import github_app
 from mergify_engine.clients import http
 from mergify_engine.dashboard import application as application_mod
 from mergify_engine.dashboard import subscription
-from mergify_engine.dashboard import user_tokens as user_tokens_mod
 from mergify_engine.models import github_user
 
 
@@ -83,7 +82,6 @@ class RecordConfigType(typing.TypedDict):
 class DashboardFixture(typing.NamedTuple):
     api_key_admin: str
     subscription: subscription.Subscription
-    user_tokens: user_tokens_mod.UserTokens
 
 
 def get_all_subscription_features() -> frozenset[subscription.Features]:
@@ -137,43 +135,26 @@ async def dashboard(
         subscription_features,
     )
     await sub._save_subscription_to_cache()
-    user_tokens = user_tokens_mod.UserTokens(
-        redis_cache,
-        config.TESTING_ORGANIZATION_ID,
-        [
-            {
-                "id": config.ORG_ADMIN_ID,
-                "login": github_types.GitHubLogin("mergify-test1"),
-                "oauth_access_token": config.ORG_ADMIN_PERSONAL_TOKEN,
-                "name": None,
-                "email": None,
-            },
-            {
-                "id": config.ORG_USER_ID,
-                "login": github_types.GitHubLogin("mergify-test4"),
-                "oauth_access_token": config.ORG_USER_PERSONAL_TOKEN,
-                "name": None,
-                "email": None,
-            },
-            {
-                "id": config.TESTING_MERGIFY_TEST_2_ID,
-                "login": github_types.GitHubLogin("mergify-test2"),
-                "oauth_access_token": config.EXTERNAL_USER_PERSONAL_TOKEN,
-                "name": None,
-                "email": None,
-            },
-        ],
-    )
-    await typing.cast(user_tokens_mod.UserTokensSaas, user_tokens).save_to_cache()
 
     async with models.create_session() as session:
-        for user_token in user_tokens.users:
-            await github_user.GitHubUser.create_or_update(
-                session,
-                user_token["id"],
-                user_token["login"],
-                user_token["oauth_access_token"],
-            )
+        await github_user.GitHubUser.create_or_update(
+            session,
+            config.ORG_ADMIN_ID,
+            github_types.GitHubLogin("mergify-test1"),
+            config.ORG_ADMIN_PERSONAL_TOKEN,
+        )
+        await github_user.GitHubUser.create_or_update(
+            session,
+            config.ORG_USER_ID,
+            github_types.GitHubLogin("mergify-test4"),
+            config.ORG_USER_PERSONAL_TOKEN,
+        )
+        await github_user.GitHubUser.create_or_update(
+            session,
+            config.TESTING_MERGIFY_TEST_2_ID,
+            github_types.GitHubLogin("mergify-test2"),
+            config.EXTERNAL_USER_PERSONAL_TOKEN,
+        )
 
     real_get_subscription = subscription.Subscription.get_subscription
 
@@ -216,40 +197,6 @@ async def dashboard(
     patcher.start()
     request.addfinalizer(patcher.stop)
 
-    async def fake_retrieve_user_tokens_from_db(
-        redis_cache: redis_utils.RedisCache,
-        owner_id: github_types.GitHubAccountIdType,
-        filter_tokens: bool,
-    ) -> user_tokens_mod.UserTokens:
-        if owner_id == config.TESTING_ORGANIZATION_ID:
-            return user_tokens
-        return user_tokens_mod.UserTokens(redis_cache, owner_id, [])
-
-    real_get_user_tokens = user_tokens_mod.UserTokens.get
-
-    async def fake_user_tokens(
-        redis_cache: redis_utils.RedisCache,
-        owner_id: github_types.GitHubAccountIdType,
-        filter_tokens: bool,
-    ) -> user_tokens_mod.UserTokens:
-        if owner_id == config.TESTING_ORGANIZATION_ID:
-            return await real_get_user_tokens(redis_cache, owner_id, filter_tokens)
-        return user_tokens_mod.UserTokens(redis_cache, owner_id, [])
-
-    patcher = mock.patch(
-        "mergify_engine.dashboard.user_tokens.UserTokensSaas._retrieve_from_db",
-        side_effect=fake_retrieve_user_tokens_from_db,
-    )
-    patcher.start()
-    request.addfinalizer(patcher.stop)
-
-    patcher = mock.patch(
-        "mergify_engine.dashboard.user_tokens.UserTokensSaas.get",
-        side_effect=fake_user_tokens,
-    )
-    patcher.start()
-    request.addfinalizer(patcher.stop)
-
     async def fake_application_get(
         redis_cache: redis_utils.RedisCache,
         api_access_key: str,
@@ -279,11 +226,7 @@ async def dashboard(
     patcher.start()
     request.addfinalizer(patcher.stop)
 
-    return DashboardFixture(
-        api_key_admin,
-        sub,
-        user_tokens,
-    )
+    return DashboardFixture(api_key_admin, sub)
 
 
 def pyvcr_response_filter(

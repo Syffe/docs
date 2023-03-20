@@ -10,7 +10,6 @@ from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import gitter
 from mergify_engine.clients import http
-from mergify_engine.dashboard import user_tokens
 from mergify_engine.models import github_user
 
 
@@ -88,8 +87,8 @@ async def pre_rebase_check(ctxt: context.Context) -> None:
 )
 async def _do_rebase(
     ctxt: context.Context,
-    user: user_tokens.UserTokensUser | github_user.GitHubUser,
-    committer: user_tokens.UserTokensUser | github_user.GitHubUser | None,
+    user: github_user.GitHubUser,
+    committer: github_user.GitHubUser | None,
     autosquash: bool,
 ) -> None:
     # NOTE(sileht):
@@ -114,13 +113,13 @@ async def _do_rebase(
     try:
         await git.init()
         await git.configure(ctxt.repository.installation.redis.cache, committer)
-        if isinstance(user, github_user.GitHubUser):
-            token = user.oauth_access_token
-        else:
-            token = user["oauth_access_token"]
 
-        await git.setup_remote("origin", ctxt.pull["head"]["repo"], token, "")
-        await git.setup_remote("upstream", ctxt.pull["base"]["repo"], token, "")
+        await git.setup_remote(
+            "origin", ctxt.pull["head"]["repo"], user.oauth_access_token, ""
+        )
+        await git.setup_remote(
+            "upstream", ctxt.pull["base"]["repo"], user.oauth_access_token, ""
+        )
 
         await git.fetch("origin", head_branch)
         await git("checkout", "-q", "-b", head_branch, f"origin/{head_branch}")
@@ -189,17 +188,15 @@ async def _do_rebase(
 
 async def update_with_api(
     ctxt: context.Context,
-    on_behalf: user_tokens.UserTokensUser | github_user.GitHubUser | None = None,
+    on_behalf: github_user.GitHubUser | None = None,
 ) -> None:
     ctxt.log.info("updating base branch with api")
     pre_update_check(ctxt)
 
     if on_behalf is None:
         oauth_token = None
-    elif isinstance(on_behalf, github_user.GitHubUser):
-        oauth_token = on_behalf.oauth_access_token
     else:
-        oauth_token = on_behalf["oauth_access_token"]
+        oauth_token = on_behalf.oauth_access_token
 
     try:
         await ctxt.client.put(

@@ -11,7 +11,6 @@ from mergify_engine import models
 from mergify_engine import redis_utils
 from mergify_engine.dashboard import application
 from mergify_engine.dashboard import subscription
-from mergify_engine.dashboard import user_tokens
 from mergify_engine.models import github_user
 from mergify_engine.usage import last_seen
 from mergify_engine.web import auth
@@ -103,10 +102,7 @@ async def tokens_cache_delete(
         redis.get_redis_links
     ),
 ) -> responses.Response:
-    try:
-        await user_tokens.UserTokens.delete(redis_links.cache, owner_id)
-    except NotImplementedError:
-        return responses.Response("Deleting tokens is disabled", status_code=400)
+    # FIXME(sileht): drop me once dashboard is cleaned
     return responses.Response("Cache cleaned", status_code=200)
 
 
