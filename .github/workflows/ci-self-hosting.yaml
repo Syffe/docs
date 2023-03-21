@@ -1,0 +1,12 @@
+name: self-hosting-testing job
+
+on:
+  workflow_dispatch:
+
+jobs:
+  self-hosting-test-job:
+    timeout-minutes: 120
+    runs-on: self-hosted
+
+    steps:
+      - run: echo "It works."
