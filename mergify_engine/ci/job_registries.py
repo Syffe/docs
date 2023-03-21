@@ -164,9 +164,8 @@ class HTTPJobRegistry:
                 params={"created": at.isoformat()},
             ),
         )
-        run_list = [r async for r in runs]
 
-        for run in run_list:
+        async for run in runs:
             # https://docs.github.com/en/rest/actions/workflow-jobs?apiVersion=2022-11-28#list-jobs-for-a-workflow-run
             jobs = typing.cast(
                 abc.AsyncIterable[github_types.GitHubJobRun],
