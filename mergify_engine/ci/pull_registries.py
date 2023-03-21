@@ -9,8 +9,8 @@ from sqlalchemy.dialects import postgresql
 import sqlalchemy.exc
 import sqlalchemy.ext.asyncio
 
+from mergify_engine import database
 from mergify_engine import github_types
-from mergify_engine import models
 from mergify_engine import redis_utils
 from mergify_engine.ci import models as ci_models
 from mergify_engine.clients import github
@@ -30,7 +30,7 @@ class PullRequestWorkflowRunPositionRegistry(typing.Protocol):
 
 class PostgresPullRequestRegistry:
     async def insert(self, new_pull: ci_models.PullRequest) -> None:
-        async with models.create_session() as session:
+        async with database.create_session() as session:
             sql = (
                 postgresql.insert(sql_models.PullRequest)  # type: ignore [no-untyped-call]
                 .values(
@@ -48,7 +48,7 @@ class PostgresPullRequestRegistry:
             await session.commit()
 
     async def register_job_run(self, pull_id: int, job_run: ci_models.JobRun) -> None:
-        async with models.create_session() as session:
+        async with database.create_session() as session:
             sql = (
                 postgresql.insert(sql_models.PullRequestJobRunAssociation)  # type: ignore [no-untyped-call]
                 .values(pull_request_id=pull_id, job_run_id=job_run.id)
@@ -62,7 +62,7 @@ class PostgresPullRequestRegistry:
     async def get_job_run_position(
         self, pull_id: int, job_run: ci_models.JobRun
     ) -> int:
-        async with models.create_session() as session:
+        async with database.create_session() as session:
             sql = (
                 sqlalchemy.select(
                     sql_models.JobRun.workflow_run_id,

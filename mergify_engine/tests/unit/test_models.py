@@ -1,7 +1,7 @@
 import pytest
 
 from mergify_engine import config
-from mergify_engine import models
+from mergify_engine import database
 
 
 @pytest.mark.parametrize(
@@ -34,4 +34,4 @@ async def test_get_database_url(
     env: str, expected: str, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(config, "DATABASE_URL", env)
-    assert models.get_async_database_url() == expected
+    assert database.get_async_database_url() == expected

@@ -3,7 +3,7 @@ import datetime
 import sqlalchemy
 
 from mergify_engine import config
-from mergify_engine import models
+from mergify_engine import database
 from mergify_engine.models import github_actions as sql_models
 from mergify_engine.tests.functional import base
 
@@ -14,7 +14,7 @@ class TestCIApi(base.FunctionalTestBase):
     async def asyncSetUp(self) -> None:
         await super().asyncSetUp()
 
-        async with models.create_session() as db:
+        async with database.create_session() as db:
             await db.execute(
                 sqlalchemy.insert(sql_models.Account).values(
                     id=1, login=config.TESTING_ORGANIZATION_NAME

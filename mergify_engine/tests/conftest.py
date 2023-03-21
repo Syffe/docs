@@ -22,8 +22,8 @@ import sqlalchemy
 import starlette
 
 from mergify_engine import config
+from mergify_engine import database
 from mergify_engine import logs
-from mergify_engine import models
 from mergify_engine import redis_utils
 from mergify_engine import utils
 from mergify_engine.clients import github
@@ -187,7 +187,7 @@ def mock_postgres_db_value(worker_id: str) -> abc.Generator[None, None, None]:
     worker_id_int = get_worker_id_as_int(worker_id)
 
     db_name = f"postgres{worker_id_int}"
-    db_url = models.get_async_database_url()
+    db_url = database.get_async_database_url()
 
     mocked_url = parse.urlparse(db_url)._replace(path=f"/{db_name}")
     mocked_url_unparsed = parse.urlunparse(mocked_url)
@@ -206,9 +206,9 @@ def mock_postgres_db_value(worker_id: str) -> abc.Generator[None, None, None]:
 
 async def reset_database() -> None:
     await manage.drop_all()
-    if models.APP_STATE is not None:
-        await models.APP_STATE["engine"].dispose()
-        models.APP_STATE = None
+    if database.APP_STATE is not None:
+        await database.APP_STATE["engine"].dispose()
+        database.APP_STATE = None
 
 
 @pytest.fixture
@@ -223,7 +223,7 @@ async def database_cleanup() -> abc.AsyncGenerator[None, None]:
 async def setup_database(
     database_cleanup: None, mock_postgres_db_value: None
 ) -> abc.AsyncGenerator[None, None]:
-    models.init_sqlalchemy("test")
+    database.init_sqlalchemy("test")
     await manage.create_all()
     yield
 
@@ -232,7 +232,7 @@ async def setup_database(
 async def db(
     setup_database: None,
 ) -> abc.AsyncGenerator[sqlalchemy.ext.asyncio.AsyncSession, None]:
-    async with models.create_session() as session:
+    async with database.create_session() as session:
         yield session
 
 
@@ -287,7 +287,7 @@ log_as_router = fastapi.APIRouter()
 
 @log_as_router.post("/log-as/{user_id}")  # noqa: FS003
 async def log_as(request: fastapi.Request, user_id: int) -> fastapi.Response:
-    async with models.create_session() as session:
+    async with database.create_session() as session:
         result = await session.execute(
             sqlalchemy.select(github_user.GitHubUser).where(
                 github_user.GitHubUser.id == int(user_id),

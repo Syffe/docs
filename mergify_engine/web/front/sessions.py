@@ -5,8 +5,8 @@ import starlette
 from starsessions.stores.base import SessionStore
 
 from mergify_engine import config
+from mergify_engine import database
 from mergify_engine import github_types
-from mergify_engine import models
 from mergify_engine.models import github_user
 from mergify_engine.web import redis
 
@@ -67,7 +67,7 @@ class ImiaUserProvider(imia.user_providers.UserProvider):  # type: ignore[misc]
     async def find_by_id(
         self, connection: starlette.requests.HTTPConnection, identifier: typing.Any
     ) -> imia.protocols.UserLike | None:
-        async with models.create_session() as session:
+        async with database.create_session() as session:
             return await github_user.GitHubUser.get_by_id(
                 session, github_types.GitHubAccountIdType(int(identifier))
             )

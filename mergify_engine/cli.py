@@ -3,9 +3,9 @@ import datetime
 import typing
 
 from mergify_engine import config
+from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine import json
-from mergify_engine import models
 from mergify_engine import redis_utils
 from mergify_engine import refresher
 from mergify_engine import utils
@@ -101,7 +101,7 @@ async def dump_handler(argv: list[str] | None = None) -> None:
     parser.add_argument("at", type=lambda v: datetime.date.fromisoformat(v))
     args = parser.parse_args(argv)
 
-    models.init_sqlalchemy("dump")
+    database.init_sqlalchemy("dump")
 
     auth = github.GithubTokenAuth(
         token=config.DEV_PERSONAL_TOKEN,
@@ -126,7 +126,7 @@ async def global_insight_handler(argv: list[str] | None = None) -> None:
     parser.add_argument("end_at", type=lambda v: datetime.date.fromisoformat(v))
     args = parser.parse_args(argv)
 
-    models.init_sqlalchemy("ci")
+    database.init_sqlalchemy("ci")
 
     query = reports.Query(
         owner=args.owner,

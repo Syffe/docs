@@ -5,10 +5,11 @@ import fastapi
 import fastapi.responses
 import imia
 import sqlalchemy
+import sqlalchemy.ext.asyncio
 import sqlalchemy.orm.exc
 
+from mergify_engine import database
 from mergify_engine import github_types
-from mergify_engine import models
 from mergify_engine.clients import dashboard
 from mergify_engine.models import github_user
 from mergify_engine.web.front import security
@@ -78,7 +79,7 @@ async def sudo(
     request: fastapi.Request,
     login: github_types.GitHubLogin,
     session: sqlalchemy.ext.asyncio.AsyncSession = fastapi.Depends(  # noqa: B008
-        models.get_session
+        database.get_session
     ),
 ) -> fastapi.Response:
     from_user = request.auth.user.login

@@ -9,8 +9,8 @@ import sqlalchemy.ext.asyncio
 import starsessions.session
 
 from mergify_engine import config
+from mergify_engine import database
 from mergify_engine import github_types
-from mergify_engine import models
 from mergify_engine.clients import dashboard
 from mergify_engine.clients import github
 from mergify_engine.clients import http
@@ -121,7 +121,7 @@ async def create_or_update_user(
 async def auth_via_github(
     request: fastapi.Request,
     session: sqlalchemy.ext.asyncio.AsyncSession = fastapi.Depends(  # noqa: B008
-        models.get_session
+        database.get_session
     ),
 ) -> fastapi.Response:
     try:
@@ -164,7 +164,7 @@ async def auth_setup(
         security.get_current_user
     ),
     session: sqlalchemy.ext.asyncio.AsyncSession = fastapi.Depends(  # noqa: B008
-        models.get_session
+        database.get_session
     ),
     setup_action: str | None = None,
     installation_id: int | None = None,

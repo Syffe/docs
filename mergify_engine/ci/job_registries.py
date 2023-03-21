@@ -8,8 +8,8 @@ import sqlalchemy
 from sqlalchemy.dialects import postgresql
 import sqlalchemy.ext.asyncio
 
+from mergify_engine import database
 from mergify_engine import github_types
-from mergify_engine import models
 from mergify_engine.ci import models as ci_models
 from mergify_engine.ci import pull_registries
 from mergify_engine.clients import github
@@ -34,7 +34,7 @@ class JobRegistry(typing.Protocol):
 
 class PostgresJobRegistry:
     async def insert(self, job_run: ci_models.JobRun) -> None:
-        async with models.create_session() as session:
+        async with database.create_session() as session:
             await self._insert_account(session, job_run.owner)
             await self._insert_account(session, job_run.triggering_actor)
 
@@ -85,7 +85,7 @@ class PostgresJobRegistry:
         start_at: datetime.date | None,
         end_at: datetime.date | None,
     ) -> abc.AsyncIterator[ci_models.JobRun]:
-        async with models.create_session() as session:
+        async with database.create_session() as session:
             sql = (
                 sqlalchemy.select(sql_models.JobRun)
                 .join(

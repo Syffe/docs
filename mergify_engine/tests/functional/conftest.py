@@ -19,10 +19,10 @@ import vcr.request
 import vcr.stubs.urllib3_stubs
 
 from mergify_engine import config
+from mergify_engine import database
 from mergify_engine import date
 from mergify_engine import exceptions
 from mergify_engine import github_types
-from mergify_engine import models
 from mergify_engine import redis_utils
 from mergify_engine import utils
 from mergify_engine.clients import github
@@ -136,7 +136,7 @@ async def dashboard(
     )
     await sub._save_subscription_to_cache()
 
-    async with models.create_session() as session:
+    async with database.create_session() as session:
         await github_user.GitHubUser.create_or_update(
             session,
             config.ORG_ADMIN_ID,

@@ -9,8 +9,8 @@ from sentry_sdk.integrations import sqlalchemy
 from sentry_sdk.integrations import starlette
 
 from mergify_engine import config
+from mergify_engine import database
 from mergify_engine import logs
-from mergify_engine import models
 
 
 SERVICE_NAME: str = "engine-<unknown>"
@@ -56,7 +56,7 @@ def setup(service_name: str, dump_config: bool = True) -> None:
 
     logs.setup_logging(dump_config=dump_config)
 
-    models.init_sqlalchemy(service_name)
+    database.init_sqlalchemy(service_name)
 
     # NOTE(sileht): For security reason, we don't expose env after this point
     # env is authorized during modules loading and pre service initializarion

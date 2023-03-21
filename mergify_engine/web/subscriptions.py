@@ -6,8 +6,8 @@ from starlette import requests
 from starlette import responses
 
 from mergify_engine import count_seats
+from mergify_engine import database
 from mergify_engine import github_types
-from mergify_engine import models
 from mergify_engine import redis_utils
 from mergify_engine.dashboard import application
 from mergify_engine.dashboard import subscription
@@ -158,7 +158,7 @@ async def get_user_oauth_access_token(
         redis.get_redis_links
     ),
     session: sqlalchemy.ext.asyncio.AsyncSession = fastapi.Depends(  # noqa: B008
-        models.get_session
+        database.get_session
     ),
 ) -> responses.Response:
     user = await github_user.GitHubUser.get_by_id(session, github_account_id)
