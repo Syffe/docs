@@ -18,6 +18,7 @@ jobs:
           - 6363:6379
         env:
           REDIS_EXTRA_FLAGS: "--databases 1000"
+          ALLOW_EMPTY_PASSWORD: yes
       postgres:
         # Pin PostgreSQL to the version that is in ubuntu-latest
         image: postgres:12.5
