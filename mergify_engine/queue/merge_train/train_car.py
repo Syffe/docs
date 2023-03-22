@@ -1454,9 +1454,8 @@ You don't need to do anything. Mergify will close this pull request automaticall
             else None,
         )
 
-        if (
-            self.train_car_state.checks_type == TrainCarChecksType.INPLACE
-            and await checked_ctxt.is_behind
+        if self.train_car_state.checks_type == TrainCarChecksType.INPLACE and (
+            await checked_ctxt.is_behind or await checked_ctxt.is_head_sha_outdated()
         ):
             # NOTE(sileht): The PR has been updated, but GitHub still return the old head sha
             # So we should not looks at CIs yet. Reporting may not be awesome as CIs will

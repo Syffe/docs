@@ -1901,6 +1901,14 @@ class Context:
             raise tenacity.TryAgain
         self._caches.pull_check_runs.delete()
 
+    async def _get_heads_from_commit(self) -> set[github_types.SHAType]:
+        shas: set[github_types.SHAType] = set()
+        parents: set[github_types.SHAType] = set()
+        for commit in await self.commits:
+            shas.add(commit.sha)
+            parents |= set(commit.parents)
+        return {sha for sha in shas if sha not in parents}
+
     async def _get_external_parents(self) -> set[github_types.SHAType]:
         known_commits_sha = [commit.sha for commit in await self.commits]
         external_parents_sha = set()
@@ -1930,6 +1938,10 @@ class Context:
     async def has_linear_history(self) -> bool:
         return all(len(commit.parents) == 1 for commit in await self.commits)
 
+    async def is_head_sha_outdated(self) -> bool:
+        commit_heads = await self._get_heads_from_commit()
+        return self.pull["head"]["sha"] not in commit_heads
+
     @property
     async def is_behind(self) -> bool:
         is_behind = self._caches.is_behind.get()
@@ -1942,6 +1954,10 @@ class Context:
                 branch = await self.repository.get_branch(
                     self.pull["base"]["ref"], bypass_cache=True
                 )
+                commit_heads = await self._get_heads_from_commit()
+                if self.pull["head"]["sha"] not in commit_heads:
+                    self.log.error("is_behind may be wrong", commit_heads=commit_heads)
+
                 external_parents_sha = await self._get_external_parents()
                 is_behind = branch["commit"]["sha"] not in external_parents_sha
                 is_behind_testing = await self.commits_behind_count != 0
