@@ -76,11 +76,7 @@ router = fastapi.APIRouter()
     ],
 )
 async def sudo(
-    request: fastapi.Request,
-    login: github_types.GitHubLogin,
-    session: sqlalchemy.ext.asyncio.AsyncSession = fastapi.Depends(  # noqa: B008
-        database.get_session
-    ),
+    request: fastapi.Request, login: github_types.GitHubLogin, session: database.Session
 ) -> fastapi.Response:
     from_user = request.auth.user.login
     LOG.info("sudo to %s requested for %s", login, from_user, gh_owner=from_user)

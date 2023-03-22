@@ -1,3 +1,5 @@
+import typing
+
 import daiquiri
 import fastapi
 import pydantic
@@ -45,9 +47,10 @@ router = fastapi.APIRouter(tags=["applications"])
     },
 )
 async def application(
-    application: application_mod.Application = fastapi.Security(  # noqa: B008
-        security.get_application_without_scope_verification
-    ),
+    application: typing.Annotated[
+        application_mod.Application,
+        fastapi.Security(security.get_application_without_scope_verification),
+    ],
 ) -> ApplicationResponse:
     return ApplicationResponse(
         id=application.id,

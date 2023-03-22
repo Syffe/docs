@@ -1,3 +1,5 @@
+import typing
+
 import fastapi
 from starlette import responses
 
@@ -38,12 +40,16 @@ def _get_badge_url(
     },
 )
 async def badge_png(
-    owner: github_types.GitHubLogin = fastapi.Path(  # noqa: B008
-        ..., description="The owner of the repository"
-    ),
-    repository: github_types.GitHubRepositoryName = fastapi.Path(  # noqa: B008
-        ..., description="The name of the repository"
-    ),
+    owner: typing.Annotated[
+        github_types.GitHubLogin,
+        fastapi.Path(description="The owner of the repository"),
+    ],
+    repository: typing.Annotated[
+        github_types.GitHubRepositoryName,
+        fastapi.Path(description="The name of the repository"),
+    ],
+    # TODO(charly): we can't use typing.Annotated here, FastAPI 0.95.0 has a bug with APIRouter
+    # https://github.com/tiangolo/fastapi/discussions/9279
     style: str = fastapi.Query(  # noqa: B008
         default="flat",
         description="The style of the button, more details on https://shields.io/.",
@@ -67,12 +73,16 @@ async def badge_png(
     },
 )
 async def badge_svg(
-    owner: github_types.GitHubLogin = fastapi.Path(  # noqa: B008
-        ..., description="The owner of the repository"
-    ),
-    repository: github_types.GitHubRepositoryName = fastapi.Path(  # noqa: B008
-        ..., description="The name of the repository"
-    ),
+    owner: typing.Annotated[
+        github_types.GitHubLogin,
+        fastapi.Path(description="The owner of the repository"),
+    ],
+    repository: typing.Annotated[
+        github_types.GitHubRepositoryName,
+        fastapi.Path(description="The name of the repository"),
+    ],
+    # TODO(charly): we can't use typing.Annotated here, FastAPI 0.95.0 has a bug with APIRouter
+    # https://github.com/tiangolo/fastapi/discussions/9279
     style: str = fastapi.Query(  # noqa: B008
         default="flat",
         description="The style of the button, more details on https://shields.io/.",
@@ -96,12 +106,14 @@ async def badge_svg(
     },
 )
 async def badge(
-    owner: github_types.GitHubLogin = fastapi.Path(  # noqa: B008
-        ..., description="The owner of the repository"
-    ),
-    repository: github_types.GitHubRepositoryName = fastapi.Path(  # noqa: B008
-        ..., description="The name of the repository"
-    ),
+    owner: typing.Annotated[
+        github_types.GitHubLogin,
+        fastapi.Path(description="The owner of the repository"),
+    ],
+    repository: typing.Annotated[
+        github_types.GitHubRepositoryName,
+        fastapi.Path(description="The name of the repository"),
+    ],
 ) -> responses.RedirectResponse:
     return responses.RedirectResponse(
         url=f"{config.SUBSCRIPTION_BASE_URL}/badges/{owner}/{repository}"

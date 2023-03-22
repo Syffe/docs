@@ -3,7 +3,6 @@ import httpx
 
 from mergify_engine import config
 from mergify_engine.clients import dashboard
-from mergify_engine.models import github_user
 from mergify_engine.web.front import security
 from mergify_engine.web.front import utils
 
@@ -17,9 +16,7 @@ router = fastapi.APIRouter()
 async def saas_subscription(
     request: fastapi.Request,
     github_account_id: int,
-    current_user: github_user.GitHubUser = fastapi.Depends(  # noqa: B008
-        security.get_current_user
-    ),
+    current_user: security.CurrentUser,
 ) -> fastapi.responses.Response:
     if config.SAAS_MODE:
         return await saas_proxy(
@@ -67,9 +64,7 @@ async def saas_subscription(
 async def saas_proxy(
     request: fastapi.Request,
     path: str,
-    current_user: github_user.GitHubUser = fastapi.Depends(  # noqa: B008
-        security.get_current_user
-    ),
+    current_user: security.CurrentUser,
 ) -> fastapi.responses.Response:
     if not config.SAAS_MODE:
         raise fastapi.HTTPException(

@@ -16,11 +16,34 @@ class InvalidCursor(Exception):
 
 
 @dataclasses.dataclass
-class CurrentPage:
+class _CurrentPage:
     request: fastapi.Request
     response: fastapi.Response
     cursor: str | None = None
     per_page: int = dataclasses.field(default=DEFAULT_PER_PAGE)
+
+
+def get_current_page(
+    request: fastapi.Request,
+    response: fastapi.Response,
+    # TODO(charly): we can't use typing.Annotated here, FastAPI 0.95.0 has a bug with APIRouter
+    # https://github.com/tiangolo/fastapi/discussions/9279
+    cursor: str
+    | None = fastapi.Query(  # noqa: B008
+        default=None,
+        description="The opaque cursor of the current page. Must be extracted for RFC 5988 pagination links to get first/previous/next/last pages",
+    ),
+    per_page: int = fastapi.Query(  # noqa: B008
+        default=DEFAULT_PER_PAGE,
+        ge=1,
+        le=100,
+        description="The number of items per page",
+    ),
+) -> "CurrentPage":
+    return _CurrentPage(request, response, cursor, per_page)
+
+
+CurrentPage = typing.Annotated[_CurrentPage, fastapi.Depends(get_current_page)]
 
 
 @dataclasses.dataclass
@@ -36,24 +59,6 @@ class Page(typing.Generic[T]):
     @property
     def size(self) -> int:
         return len(self.items)
-
-
-def get_current_page(
-    request: fastapi.Request,
-    response: fastapi.Response,
-    cursor: str
-    | None = fastapi.Query(  # noqa: B008
-        default=None,
-        description="The opaque cursor of the current page. Must be extracted for RFC 5988 pagination links to get first/previous/next/last pages",
-    ),
-    per_page: int = fastapi.Query(  # noqa: B008
-        default=DEFAULT_PER_PAGE,
-        ge=1,
-        le=100,
-        description="The number of items per page",
-    ),
-) -> "CurrentPage":
-    return CurrentPage(request, response, cursor, per_page)
 
 
 LinkHeader = {

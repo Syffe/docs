@@ -8,10 +8,8 @@ import fastapi
 import pydantic
 
 from mergify_engine import constants
-from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine.queue import merge_train
-from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web import api
 from mergify_engine.web.api import security
 from mergify_engine.web.api import statistics as statistics_api
@@ -295,18 +293,16 @@ class Queues:
     },
 )
 async def repository_queues(
-    owner: github_types.GitHubLogin = fastapi.Path(  # noqa: B008
-        ..., description="The owner of the repository"
-    ),
-    repository: github_types.GitHubRepositoryName = fastapi.Path(  # noqa: B008
-        ..., description="The name of the repository"
-    ),
-    repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
-        security.get_repository_context
-    ),
-    queue_rules: qr_config.QueueRules = fastapi.Depends(  # noqa: B008
-        security.get_queue_rules
-    ),
+    owner: typing.Annotated[
+        github_types.GitHubLogin,
+        fastapi.Path(description="The owner of the repository"),
+    ],
+    repository: typing.Annotated[
+        github_types.GitHubRepositoryName,
+        fastapi.Path(description="The name of the repository"),
+    ],
+    repository_ctxt: security.Repository,
+    queue_rules: security.QueueRules,
 ) -> Queues:
     queues = Queues()
 

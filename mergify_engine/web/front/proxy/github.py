@@ -3,7 +3,6 @@ import httpx
 
 from mergify_engine import config
 from mergify_engine.clients import github
-from mergify_engine.models import github_user
 from mergify_engine.web.front import security
 from mergify_engine.web.front import utils
 
@@ -18,9 +17,7 @@ router = fastapi.APIRouter()
 async def github_proxy(
     request: fastapi.Request,
     path: str,
-    current_user: github_user.GitHubUser = fastapi.Depends(  # noqa: B008
-        security.get_current_user
-    ),
+    current_user: security.CurrentUser,
 ) -> fastapi.responses.Response:
     headers = {
         k: v for k, v in request.headers.items() if k.lower().startswith("accept")

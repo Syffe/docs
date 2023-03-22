@@ -8,7 +8,6 @@ import fastapi
 import pydantic
 
 from mergify_engine import constants
-from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine.queue import merge_train
@@ -271,24 +270,23 @@ class EnhancedPullRequestQueued:
     },
 )
 async def repository_queue_pull_request(
-    owner: github_types.GitHubLogin = fastapi.Path(  # noqa: B008
-        ..., description="The owner of the repository"
-    ),
-    repository: github_types.GitHubRepositoryName = fastapi.Path(  # noqa: B008
-        ..., description="The name of the repository"
-    ),
-    queue_name: qr_config.QueueName = fastapi.Path(  # noqa: B008
-        ..., description="The queue name"
-    ),
-    pr_number: github_types.GitHubPullRequestNumber = fastapi.Path(  # noqa: B008
-        ..., description="The queued pull request number"
-    ),
-    repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
-        security.get_repository_context
-    ),
-    queue_rules: qr_config.QueueRules = fastapi.Depends(  # noqa: B008
-        security.get_queue_rules
-    ),
+    owner: typing.Annotated[
+        github_types.GitHubLogin,
+        fastapi.Path(description="The owner of the repository"),
+    ],
+    repository: typing.Annotated[
+        github_types.GitHubRepositoryName,
+        fastapi.Path(description="The name of the repository"),
+    ],
+    queue_name: typing.Annotated[
+        qr_config.QueueName, fastapi.Path(description="The queue name")
+    ],
+    pr_number: typing.Annotated[
+        github_types.GitHubPullRequestNumber,
+        fastapi.Path(description="The queued pull request number"),
+    ],
+    repository_ctxt: security.Repository,
+    queue_rules: security.QueueRules,
 ) -> EnhancedPullRequestQueued:
     try:
         queue_rule = queue_rules[queue_name]

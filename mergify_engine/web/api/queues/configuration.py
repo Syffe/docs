@@ -5,7 +5,6 @@ import dataclasses
 import fastapi
 import pydantic
 
-from mergify_engine import context
 from mergify_engine.rules.config import mergify as mergify_conf
 from mergify_engine.web import api
 from mergify_engine.web.api import security
@@ -39,9 +38,7 @@ class QueuesConfig:
     },
 )
 async def repository_queues_configuration(
-    repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
-        security.get_repository_context
-    ),
+    repository_ctxt: security.Repository,
 ) -> QueuesConfig:
     try:
         config = await repository_ctxt.get_mergify_config()

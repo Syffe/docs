@@ -5,7 +5,6 @@ import daiquiri
 import fastapi
 import pydantic
 
-from mergify_engine import context
 from mergify_engine import eventlogs
 from mergify_engine import github_types
 from mergify_engine import pagination
@@ -55,15 +54,12 @@ class EventLogsResponse(pagination.PageResponse[Event]):
     },
 )
 async def get_pull_request_eventlogs(
-    repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
-        security.get_repository_context
-    ),
-    pull: github_types.GitHubPullRequestNumber = fastapi.Path(  # noqa: B008
-        ..., description="Pull request number"
-    ),
-    current_page: pagination.CurrentPage = fastapi.Depends(  # noqa: B008
-        pagination.get_current_page
-    ),
+    repository_ctxt: security.Repository,
+    pull: typing.Annotated[
+        github_types.GitHubPullRequestNumber,
+        fastapi.Path(description="Pull request number"),
+    ],
+    current_page: pagination.CurrentPage,
 ) -> EventLogsResponse:
     page = await eventlogs.get(repository_ctxt, current_page, pull)
     return EventLogsResponse(page)
@@ -83,12 +79,8 @@ async def get_pull_request_eventlogs(
     },
 )
 async def get_repository_eventlogs(
-    repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
-        security.get_repository_context
-    ),
-    current_page: pagination.CurrentPage = fastapi.Depends(  # noqa: B008
-        pagination.get_current_page
-    ),
+    repository_ctxt: security.Repository,
+    current_page: pagination.CurrentPage,
 ) -> EventLogsResponse:
     page = await eventlogs.get(repository_ctxt, current_page)
     return EventLogsResponse(page)

@@ -9,7 +9,6 @@ from starlette import responses
 from mergify_engine import config
 from mergify_engine import github_events
 from mergify_engine import github_types
-from mergify_engine import redis_utils
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
 from mergify_engine.web import auth
@@ -32,10 +31,7 @@ router = fastapi.APIRouter(
 
 @router.post("/marketplace")
 async def marketplace_handler(
-    request: requests.Request,
-    redis_links: redis_utils.RedisLinks = fastapi.Depends(  # noqa: B008
-        redis.get_redis_links
-    ),
+    request: requests.Request, redis_links: redis.RedisLinks
 ) -> responses.Response:
     event_type = request.headers["X-GitHub-Event"]
     event_id = request.headers["X-GitHub-Delivery"]
@@ -84,9 +80,7 @@ async def marketplace_handler(
 async def event_handler(
     request: requests.Request,
     background_tasks: fastapi.BackgroundTasks,
-    redis_links: redis_utils.RedisLinks = fastapi.Depends(  # noqa: B008
-        redis.get_redis_links
-    ),
+    redis_links: redis.RedisLinks,
 ) -> responses.Response:
     event_type = typing.cast(
         github_types.GitHubEventType, request.headers["X-GitHub-Event"]

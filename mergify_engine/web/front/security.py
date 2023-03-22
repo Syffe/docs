@@ -15,7 +15,10 @@ def get_current_user(request: fastapi.Request) -> github_user.GitHubUser:
     raise fastapi.HTTPException(401)
 
 
-login_required = get_current_user
+CurrentUser = typing.Annotated[
+    github_user.GitHubUser, fastapi.Depends(get_current_user)
+]
+RequiredLogin = CurrentUser
 
 
 def is_mergify_admin(
@@ -28,9 +31,6 @@ def is_mergify_admin(
     )
 
 
-def mergify_admin_login_required(
-    request: fastapi.Request,
-    _: None = fastapi.Depends(login_required),  # noqa: B008
-) -> None:
+def mergify_admin_login_required(request: fastapi.Request, _: RequiredLogin) -> None:
     if not is_mergify_admin(request.auth, request):
         raise fastapi.HTTPException(403)

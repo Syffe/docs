@@ -8,7 +8,6 @@ import sentry_sdk
 from mergify_engine import config
 from mergify_engine import context
 from mergify_engine import github_types
-from mergify_engine import redis_utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.dashboard import application as application_mod
@@ -24,7 +23,7 @@ LOG = daiquiri.getLogger(__name__)
 ScopeT = typing.NewType("ScopeT", str)
 
 
-class HttpAuth(typing.NamedTuple):
+class _HttpAuth(typing.NamedTuple):
     installation: github_types.GitHubInstallation
     auth: github.GithubAppInstallationAuth | github.GithubTokenAuth
     actor: github.Actor
@@ -49,11 +48,7 @@ class ApplicationAuth(fastapi.security.http.HTTPBearer):
         )
 
     async def __call__(  # type: ignore[override]
-        self,
-        request: fastapi.Request,
-        redis_links: redis_utils.RedisLinks = fastapi.Depends(  # noqa: B008
-            redis.get_redis_links
-        ),
+        self, request: fastapi.Request, redis_links: redis.RedisLinks
     ) -> application_mod.Application | None:
         credentials = await super().__call__(request)
         if credentials is None:
@@ -115,12 +110,14 @@ def build_actor(
 
 async def get_http_auth(
     request: fastapi.Request,
-    owner: github_types.GitHubLogin = fastapi.Path(  # noqa: B008
-        ..., description="The owner of the repository"
-    ),
-    application: application_mod.Application
-    | None = fastapi.Security(get_optional_application),  # noqa: B008
-) -> HttpAuth:
+    owner: typing.Annotated[
+        github_types.GitHubLogin,
+        fastapi.Path(description="The owner of the repository"),
+    ],
+    application: typing.Annotated[
+        application_mod.Application | None, fastapi.Security(get_optional_application)
+    ],
+) -> _HttpAuth:
     auth: github.GithubAppInstallationAuth | github.GithubTokenAuth
 
     if application is not None:
@@ -143,26 +140,30 @@ async def get_http_auth(
     else:
         raise fastapi.HTTPException(403)
 
-    return HttpAuth(
+    return _HttpAuth(
         installation=installation_json,
         auth=auth,
         actor=actor,
     )
 
 
+HttpAuth = typing.Annotated[_HttpAuth, fastapi.Depends(get_http_auth)]
+
+
 async def get_repository_context(
     request: fastapi.Request,
-    owner: github_types.GitHubLogin = fastapi.Path(  # noqa: B008
-        ..., description="The owner of the repository"
-    ),
-    repository: github_types.GitHubRepositoryName = fastapi.Path(  # noqa: B008
-        ..., description="The name of the repository"
-    ),
-    redis_links: redis_utils.RedisLinks = fastapi.Depends(  # noqa: B008
-        redis.get_redis_links
-    ),
-    application: application_mod.Application
-    | None = fastapi.Security(get_optional_application),  # noqa: B008
+    owner: typing.Annotated[
+        github_types.GitHubLogin,
+        fastapi.Path(description="The owner of the repository"),
+    ],
+    repository: typing.Annotated[
+        github_types.GitHubRepositoryName,
+        fastapi.Path(description="The name of the repository"),
+    ],
+    redis_links: redis.RedisLinks,
+    application: typing.Annotated[
+        application_mod.Application | None, fastapi.Security(get_optional_application)
+    ],
 ) -> abc.AsyncGenerator[context.Repository, None]:
     installation_json, auth, actor = await get_http_auth(request, owner, application)
     async with github.AsyncGithubInstallationClient(
@@ -198,12 +199,12 @@ async def get_repository_context(
 
 require_authentication = get_repository_context
 
+Repository = typing.Annotated[
+    context.Repository, fastapi.Depends(get_repository_context)
+]
 
-async def check_subscription_feature_queue_freeze(
-    repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
-        get_repository_context
-    ),
-) -> None:
+
+async def check_subscription_feature_queue_freeze(repository_ctxt: Repository) -> None:
     if not repository_ctxt.installation.subscription.has_feature(
         subscription.Features.QUEUE_FREEZE
     ):
@@ -213,11 +214,7 @@ async def check_subscription_feature_queue_freeze(
         )
 
 
-async def check_subscription_feature_eventlogs(
-    repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
-        get_repository_context
-    ),
-) -> None:
+async def check_subscription_feature_eventlogs(repository_ctxt: Repository) -> None:
     if repository_ctxt.installation.subscription.has_feature(
         subscription.Features.EVENTLOGS_LONG
     ) or repository_ctxt.installation.subscription.has_feature(
@@ -232,9 +229,7 @@ async def check_subscription_feature_eventlogs(
 
 
 async def check_subscription_feature_merge_queue_stats(
-    repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
-        get_repository_context
-    ),
+    repository_ctxt: Repository,
 ) -> None:
     if repository_ctxt.installation.subscription.has_feature(
         subscription.Features.MERGE_QUEUE_STATS
@@ -247,11 +242,7 @@ async def check_subscription_feature_merge_queue_stats(
     )
 
 
-async def get_queue_rules(
-    repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
-        get_repository_context
-    ),
-) -> qr_config.QueueRules:
+async def get_queue_rules(repository_ctxt: Repository) -> qr_config.QueueRules:
     try:
         mergify_config = await repository_ctxt.get_mergify_config()
     except mergify_conf.InvalidRules:
@@ -260,3 +251,6 @@ async def get_queue_rules(
             detail="The configuration file is invalid.",
         )
     return mergify_config["queue_rules"]
+
+
+QueueRules = typing.Annotated[qr_config.QueueRules, fastapi.Depends(get_queue_rules)]

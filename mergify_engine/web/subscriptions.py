@@ -1,14 +1,12 @@
 import typing
 
 import fastapi
-import sqlalchemy
 from starlette import requests
 from starlette import responses
 
 from mergify_engine import count_seats
 from mergify_engine import database
 from mergify_engine import github_types
-from mergify_engine import redis_utils
 from mergify_engine.dashboard import application
 from mergify_engine.dashboard import subscription
 from mergify_engine.models import github_user
@@ -26,10 +24,7 @@ router = fastapi.APIRouter()
     dependencies=[fastapi.Depends(auth.dashboard)],
 )
 async def get_stats(
-    owner_id: github_types.GitHubAccountIdType,
-    redis_links: redis_utils.RedisLinks = fastapi.Depends(  # noqa: B008
-        redis.get_redis_links
-    ),
+    owner_id: github_types.GitHubAccountIdType, redis_links: redis.RedisLinks
 ) -> responses.Response:
     last_seen_at = await last_seen.get(redis_links.cache, owner_id)
     seats = await count_seats.Seats.get(redis_links.active_users, owner_id=owner_id)
@@ -58,9 +53,7 @@ async def get_stats(
 async def subscription_cache_update(
     owner_id: github_types.GitHubAccountIdType,
     request: requests.Request,
-    redis_links: redis_utils.RedisLinks = fastapi.Depends(  # noqa: B008
-        redis.get_redis_links
-    ),
+    redis_links: redis.RedisLinks,
 ) -> responses.Response:
     sub = await request.json()
     if sub is None:
@@ -80,10 +73,7 @@ async def subscription_cache_update(
     dependencies=[fastapi.Depends(auth.dashboard)],
 )
 async def subscription_cache_delete(
-    owner_id: github_types.GitHubAccountIdType,
-    redis_links: redis_utils.RedisLinks = fastapi.Depends(  # noqa: B008
-        redis.get_redis_links
-    ),
+    owner_id: github_types.GitHubAccountIdType, redis_links: redis.RedisLinks
 ) -> responses.Response:
     try:
         await subscription.Subscription.delete_subscription(redis_links.cache, owner_id)
@@ -97,10 +87,7 @@ async def subscription_cache_delete(
     dependencies=[fastapi.Depends(auth.dashboard)],
 )
 async def tokens_cache_delete(
-    owner_id: github_types.GitHubAccountIdType,
-    redis_links: redis_utils.RedisLinks = fastapi.Depends(  # noqa: B008
-        redis.get_redis_links
-    ),
+    owner_id: github_types.GitHubAccountIdType, redis_links: redis.RedisLinks
 ) -> responses.Response:
     # FIXME(sileht): drop me once dashboard is cleaned
     return responses.Response("Cache cleaned", status_code=200)
@@ -111,11 +98,7 @@ async def tokens_cache_delete(
     dependencies=[fastapi.Depends(auth.dashboard)],
 )
 async def application_cache_update(
-    api_access_key: str,
-    request: requests.Request,
-    redis_links: redis_utils.RedisLinks = fastapi.Depends(  # noqa: B008
-        redis.get_redis_links
-    ),
+    api_access_key: str, request: requests.Request, redis_links: redis.RedisLinks
 ) -> responses.Response:
     data = typing.cast(
         application.ApplicationDashboardJSON | None, await request.json()
@@ -136,10 +119,7 @@ async def application_cache_update(
     dependencies=[fastapi.Depends(auth.dashboard)],
 )
 async def application_cache_delete(
-    api_access_key: str,
-    redis_links: redis_utils.RedisLinks = fastapi.Depends(  # noqa: B008
-        redis.get_redis_links
-    ),
+    api_access_key: str, redis_links: redis.RedisLinks
 ) -> responses.Response:
     try:
         await application.Application.delete(redis_links.cache, api_access_key)
@@ -154,12 +134,8 @@ async def application_cache_delete(
 )
 async def get_user_oauth_access_token(
     github_account_id: github_types.GitHubAccountIdType,
-    redis_links: redis_utils.RedisLinks = fastapi.Depends(  # noqa: B008
-        redis.get_redis_links
-    ),
-    session: sqlalchemy.ext.asyncio.AsyncSession = fastapi.Depends(  # noqa: B008
-        database.get_session
-    ),
+    redis_links: redis.RedisLinks,
+    session: database.Session,
 ) -> responses.Response:
     user = await github_user.GitHubUser.get_by_id(session, github_account_id)
     if not user:

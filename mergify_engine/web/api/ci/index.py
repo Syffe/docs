@@ -1,4 +1,5 @@
 import datetime
+import typing
 
 import fastapi
 
@@ -112,9 +113,12 @@ router = fastapi.APIRouter(
     },
 )
 async def repository_queues(
-    owner: github_types.GitHubLogin = fastapi.Path(  # noqa: B008
-        ..., description="The owner"
-    ),
+    owner: typing.Annotated[
+        github_types.GitHubLogin,
+        fastapi.Path(description="The owner"),
+    ],
+    # TODO(charly): we can't use typing.Annotated here, FastAPI 0.95.0 has a bug with APIRouter
+    # https://github.com/tiangolo/fastapi/discussions/9279
     repository: github_types.GitHubRepositoryName
     | None = fastapi.Query(  # noqa: B008
         None,

@@ -1,4 +1,7 @@
+import typing
+
 import daiquiri
+import fastapi
 from redis import asyncio as redispy
 
 from mergify_engine import config
@@ -36,3 +39,6 @@ async def shutdown() -> None:
 def get_redis_links() -> redis_utils.RedisLinks:
     global _REDIS_LINKS
     return _REDIS_LINKS
+
+
+RedisLinks = typing.Annotated[redis_utils.RedisLinks, fastapi.Depends(get_redis_links)]

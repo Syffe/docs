@@ -101,10 +101,15 @@ async def get_time_to_merge_stats_for_all_queues(
     response_model=TimeToMergeResponse,
 )
 async def get_average_time_to_merge_stats_endpoint(
-    queue_name: qr_config.QueueName = fastapi.Path(  # noqa: B008
-        ...,
-        description="Name of the queue",
-    ),
+    repository_ctxt: security.Repository,
+    queue_name: typing.Annotated[
+        qr_config.QueueName,
+        fastapi.Path(
+            description="Name of the queue",
+        ),
+    ],
+    # TODO(charly): we can't use typing.Annotated here, FastAPI 0.95.0 has a bug with APIRouter
+    # https://github.com/tiangolo/fastapi/discussions/9279
     at: TimestampNotInFuture
     | None = fastapi.Query(  # noqa: B008
         default=None,
@@ -114,9 +119,6 @@ async def get_average_time_to_merge_stats_endpoint(
     | None = fastapi.Query(  # noqa: B008
         default=None,
         description="The name of the branch on which we want the statistics",
-    ),
-    repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
-        security.get_repository_context
     ),
 ) -> TimeToMergeResponse:
     try:
@@ -206,10 +208,13 @@ async def get_checks_duration_stats_for_all_queues(
     response_model=ChecksDurationResponse,
 )
 async def get_checks_duration_stats_endpoint(
-    queue_name: qr_config.QueueName = fastapi.Path(  # noqa: B008
-        ...,
-        description="Name of the queue",
-    ),
+    repository_ctxt: security.Repository,
+    queue_name: typing.Annotated[
+        qr_config.QueueName,
+        fastapi.Path(description="Name of the queue"),
+    ],
+    # TODO(charly): we can't use typing.Annotated here, FastAPI 0.95.0 has a bug with APIRouter
+    # https://github.com/tiangolo/fastapi/discussions/9279
     start_at: TimestampNotInFuture
     | None = fastapi.Query(  # noqa: B008
         default=None,
@@ -224,9 +229,6 @@ async def get_checks_duration_stats_endpoint(
     | None = fastapi.Query(  # noqa: B008
         default=None,
         description="The name of the branch on which we want the statistics",
-    ),
-    repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
-        security.get_repository_context
     ),
 ) -> ChecksDurationResponse:
     return await get_checks_duration_stats_for_queue(
@@ -344,10 +346,15 @@ async def get_queue_checks_outcome_for_queue(
     response_model=QueueChecksOutcome,
 )
 async def get_queue_checks_outcome_stats_endpoint(
-    queue_name: qr_config.QueueName = fastapi.Path(  # noqa: B008
-        ...,
-        description="Name of the queue",
-    ),
+    repository_ctxt: security.Repository,
+    queue_name: typing.Annotated[
+        qr_config.QueueName,
+        fastapi.Path(
+            description="Name of the queue",
+        ),
+    ],
+    # TODO(charly): we can't use typing.Annotated here, FastAPI 0.95.0 has a bug with APIRouter
+    # https://github.com/tiangolo/fastapi/discussions/9279
     start_at: TimestampNotInFuture
     | None = fastapi.Query(  # noqa: B008
         default=None,
@@ -362,9 +369,6 @@ async def get_queue_checks_outcome_stats_endpoint(
     | None = fastapi.Query(  # noqa: B008
         default=None,
         description="The name of the branch on which we want the statistics",
-    ),
-    repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
-        security.get_repository_context
     ),
 ) -> QueueChecksOutcome:
     return QueueChecksOutcome(

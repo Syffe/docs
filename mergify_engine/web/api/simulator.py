@@ -1,4 +1,5 @@
 import dataclasses
+import typing
 
 import daiquiri
 import fastapi
@@ -77,12 +78,8 @@ class SimulatorResponse:
 )
 async def simulator_pull(
     body: SimulatorPayload,
-    repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
-        security.get_repository_context
-    ),
-    number: int = fastapi.Path(  # noqa: B008
-        ..., description="The pull request number"
-    ),
+    repository_ctxt: security.Repository,
+    number: typing.Annotated[int, fastapi.Path(description="The pull request number")],
 ) -> SimulatorResponse:
     config = await body.get_config(repository_ctxt)
     try:
@@ -121,10 +118,7 @@ async def simulator_pull(
     },
 )
 async def simulator_repo(
-    body: SimulatorPayload,
-    repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
-        security.get_repository_context
-    ),
+    body: SimulatorPayload, repository_ctxt: security.Repository
 ) -> SimulatorResponse:
     await body.get_config(repository_ctxt)
     return SimulatorResponse(

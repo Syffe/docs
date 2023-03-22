@@ -69,6 +69,8 @@ class AuthRedirectUrl:
 @router.get("/authorize")
 async def login_via_github(
     request: fastapi.Request,
+    # TODO(charly): we can't use typing.Annotated here, FastAPI 0.95.0 has a bug with APIRouter
+    # https://github.com/tiangolo/fastapi/discussions/9279
     site_url: str | None = fastapi.Query(default=None),  # noqa: B008
 ) -> AuthRedirectUrl:
     if not site_url or site_url not in config.DASHBOARD_UI_SITE_URLS:
@@ -120,9 +122,7 @@ async def create_or_update_user(
 @router.get("/authorized")
 async def auth_via_github(
     request: fastapi.Request,
-    session: sqlalchemy.ext.asyncio.AsyncSession = fastapi.Depends(  # noqa: B008
-        database.get_session
-    ),
+    session: database.Session,
 ) -> fastapi.Response:
     try:
         token = await oauth.github.authorize_access_token(request)
@@ -160,12 +160,8 @@ async def auth_via_github(
 @router.get("/setup")
 async def auth_setup(
     request: fastapi.Request,
-    current_user: github_user.GitHubUser = fastapi.Depends(  # noqa: B008
-        security.get_current_user
-    ),
-    session: sqlalchemy.ext.asyncio.AsyncSession = fastapi.Depends(  # noqa: B008
-        database.get_session
-    ),
+    current_user: security.CurrentUser,
+    session: database.Session,
     setup_action: str | None = None,
     installation_id: int | None = None,
 ) -> AuthRedirectUrl:

@@ -3,9 +3,11 @@ import typing
 from urllib import parse
 
 import ddtrace
+import fastapi
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import config
+from mergify_engine import database
 
 
 # FIXME(sileht): This is not enabled by default as it's recommended to use the
@@ -89,3 +91,8 @@ async def get_session() -> abc.AsyncGenerator[
 ]:
     async with create_session() as session:
         yield session
+
+
+Session = typing.Annotated[
+    sqlalchemy.ext.asyncio.AsyncSession, fastapi.Depends(database.get_session)
+]

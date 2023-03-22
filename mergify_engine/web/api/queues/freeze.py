@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import dataclasses
 import datetime
+import typing
 
 import fastapi
 import pydantic
 from starlette.status import HTTP_204_NO_CONTENT
 
-from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import signals
 from mergify_engine.queue import freeze
@@ -74,16 +74,12 @@ class QueueFreezePayload(pydantic.BaseModel):
 )
 async def create_queue_freeze(
     queue_freeze_payload: QueueFreezePayload,
-    queue_name: qr_config.QueueName = fastapi.Path(  # noqa: B008
-        ..., description="The name of the queue"
-    ),
-    auth: security.HttpAuth = fastapi.Depends(security.get_http_auth),  # noqa: B008
-    repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
-        security.get_repository_context
-    ),
-    queue_rules: qr_config.QueueRules = fastapi.Depends(  # noqa: B008
-        security.get_queue_rules
-    ),
+    queue_name: typing.Annotated[
+        qr_config.QueueName, fastapi.Path(description="The name of the queue")
+    ],
+    auth: security.HttpAuth,
+    repository_ctxt: security.Repository,
+    queue_rules: security.QueueRules,
 ) -> QueueFreezeResponse:
     if queue_freeze_payload.reason == "":
         queue_freeze_payload.reason = "No freeze reason was specified."
@@ -171,16 +167,12 @@ async def create_queue_freeze(
     },
 )
 async def delete_queue_freeze(
-    queue_name: qr_config.QueueName = fastapi.Path(  # noqa: B008
-        ..., description="The name of the queue"
-    ),
-    auth: security.HttpAuth = fastapi.Depends(security.get_http_auth),  # noqa: B008
-    repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
-        security.get_repository_context
-    ),
-    queue_rules: qr_config.QueueRules = fastapi.Depends(  # noqa: B008
-        security.get_queue_rules
-    ),
+    queue_name: typing.Annotated[
+        qr_config.QueueName, fastapi.Path(description="The name of the queue")
+    ],
+    auth: security.HttpAuth,
+    repository_ctxt: security.Repository,
+    queue_rules: security.QueueRules,
 ) -> fastapi.Response:
     try:
         queue_rule = queue_rules[queue_name]
@@ -225,15 +217,11 @@ async def delete_queue_freeze(
     },
 )
 async def get_queue_freeze(
-    queue_name: qr_config.QueueName = fastapi.Path(  # noqa: B008
-        ..., description="The name of the queue"
-    ),
-    repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
-        security.get_repository_context
-    ),
-    queue_rules: qr_config.QueueRules = fastapi.Depends(  # noqa: B008
-        security.get_queue_rules
-    ),
+    queue_name: typing.Annotated[
+        qr_config.QueueName, fastapi.Path(description="The name of the queue")
+    ],
+    repository_ctxt: security.Repository,
+    queue_rules: security.QueueRules,
 ) -> QueueFreezeResponse:
     try:
         queue_rule = queue_rules[queue_name]
@@ -272,12 +260,7 @@ async def get_queue_freeze(
     },
 )
 async def get_list_queue_freeze(
-    repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
-        security.get_repository_context
-    ),
-    queue_rules: qr_config.QueueRules = fastapi.Depends(  # noqa: B008
-        security.get_queue_rules
-    ),
+    repository_ctxt: security.Repository, queue_rules: security.QueueRules
 ) -> QueueFreezeResponse:
     return QueueFreezeResponse(
         queue_freezes=[
