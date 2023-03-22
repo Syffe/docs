@@ -12,6 +12,7 @@ updates:
         dependency-type: "all"
     ignore:
       - dependency-name: "setproctitle"
+      - dependency-name: "redis"
   - package-ecosystem: npm
     directory: "/docs"
     schedule:
