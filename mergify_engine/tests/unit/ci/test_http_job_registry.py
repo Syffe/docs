@@ -63,6 +63,7 @@ async def test_search(respx_mock: respx.MockRouter) -> None:
                     "completed_at": "2023-01-24T17:35:38Z",
                     "labels": ["ubuntu-latest"],
                 },
+                # Job is not completed, should be ignored
                 {
                     "id": 3,
                     "name": "job name",
@@ -70,6 +71,15 @@ async def test_search(respx_mock: respx.MockRouter) -> None:
                     "started_at": "2023-01-24T17:32:02Z",
                     "completed_at": None,
                     "labels": ["ubuntu-latest"],
+                },
+                # Job was skipped, should be ignored
+                {
+                    "id": 4,
+                    "name": "job name",
+                    "conclusion": "skipped",
+                    "started_at": "2023-01-24T17:32:02Z",
+                    "completed_at": "2023-01-24T17:32:02Z",
+                    "labels": [],
                 },
             ],
         },

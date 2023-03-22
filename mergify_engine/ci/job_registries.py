@@ -178,7 +178,7 @@ class HTTPJobRegistry:
             )
 
             async for job in jobs:
-                if not job["completed_at"]:
+                if not job["completed_at"] or job["conclusion"] == "skipped":
                     continue
 
                 yield await self._create_job(job, run)
