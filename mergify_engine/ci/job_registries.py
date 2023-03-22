@@ -4,6 +4,7 @@ import datetime
 import re
 import typing
 
+import daiquiri
 import sqlalchemy
 from sqlalchemy.dialects import postgresql
 import sqlalchemy.ext.asyncio
@@ -14,6 +15,9 @@ from mergify_engine.ci import models as ci_models
 from mergify_engine.ci import pull_registries
 from mergify_engine.clients import github
 from mergify_engine.models import github_actions as sql_models
+
+
+LOG = daiquiri.getLogger(__name__)
 
 
 class RunnerProperties(typing.NamedTuple):
@@ -178,10 +182,24 @@ class HTTPJobRegistry:
             )
 
             async for job in jobs:
-                if not job["completed_at"] or job["conclusion"] == "skipped":
+                if self._is_ignored(run, job):
+                    LOG.info(f"job {job['id']} ignored", job_payload=job)
                     continue
 
                 yield await self._create_job(job, run)
+
+    def _is_ignored(
+        self, run: github_types.GitHubWorkflowRun, job: github_types.GitHubJobRun
+    ) -> bool:
+        if not job["completed_at"] or job["conclusion"] == "skipped":
+            return True
+
+        try:
+            sql_models.JobRunTriggerEvent(run["event"])
+        except ValueError:
+            return True
+
+        return False
 
     async def _create_job(
         self,

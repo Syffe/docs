@@ -32,7 +32,7 @@ async def test_search(respx_mock: respx.MockRouter) -> None:
     respx_mock.get("/repos/some-owner/some-repo/actions/runs").respond(
         200,
         json={
-            "total_count": 1,
+            "total_count": 2,
             "workflow_runs": [
                 {
                     "id": 1,
@@ -46,14 +46,28 @@ async def test_search(respx_mock: respx.MockRouter) -> None:
                     "head_sha": "some-sha",
                     "run_attempt": 1,
                     "jobs_url": "https://api.github.com/repos/some-owner/some-repo/actions/runs/1/jobs",
-                }
+                },
+                # Unknown event, should be ignored
+                {
+                    "id": 11,
+                    "workflow_id": 4,
+                    "repository": {
+                        "name": "some-repo",
+                        "owner": {"id": 1, "login": "some-owner"},
+                    },
+                    "event": "unknown",
+                    "triggering_actor": {"id": 2, "login": "some-user"},
+                    "head_sha": "some-sha",
+                    "run_attempt": 1,
+                    "jobs_url": "https://api.github.com/repos/some-owner/some-repo/actions/runs/11/jobs",
+                },
             ],
         },
     )
     respx_mock.get("/repos/some-owner/some-repo/actions/runs/1/jobs").respond(
         200,
         json={
-            "total_count": 2,
+            "total_count": 3,
             "jobs": [
                 {
                     "id": 2,
@@ -80,6 +94,23 @@ async def test_search(respx_mock: respx.MockRouter) -> None:
                     "started_at": "2023-01-24T17:32:02Z",
                     "completed_at": "2023-01-24T17:32:02Z",
                     "labels": [],
+                },
+            ],
+        },
+    )
+    respx_mock.get("/repos/some-owner/some-repo/actions/runs/11/jobs").respond(
+        200,
+        json={
+            "total_count": 1,
+            "jobs": [
+                # Unknown event, should be ignored (see above)
+                {
+                    "id": 20,
+                    "name": "job name",
+                    "conclusion": "success",
+                    "started_at": "2023-01-24T17:32:02Z",
+                    "completed_at": "2023-01-24T17:35:38Z",
+                    "labels": ["ubuntu-latest"],
                 },
             ],
         },
