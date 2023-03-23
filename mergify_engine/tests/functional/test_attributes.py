@@ -569,7 +569,7 @@ class TestAttributes(base.FunctionalTestBase):
         comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
         assert comment["comment"]["body"] == "list commits not empty"
 
-    async def test_commits_attributes_list_condition(self) -> None:
+    async def test_commits_attributes_list_condition_str(self) -> None:
         rules = {
             "pull_request_rules": [
                 {
@@ -590,6 +590,34 @@ class TestAttributes(base.FunctionalTestBase):
 
             comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
             assert comment["comment"]["body"] == "long time no see"
+
+    async def test_commits_attributes_list_condition_bool(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "verified",
+                    "conditions": ["commits[-1].commit_verification_verified"],
+                    "actions": {"comment": {"message": "verified is good"}},
+                },
+                {
+                    "name": "not verified",
+                    "conditions": ["-commits[-1].commit_verification_verified"],
+                    "actions": {"comment": {"message": "verified is not good"}},
+                },
+            ]
+        }
+        await self.setup_repo(yaml.dump(rules))
+        pr1 = await self.create_pr(verified=True)
+        await self.run_engine()
+
+        comment = await self.wait_for_issue_comment(str(pr1["number"]), "created")
+        assert comment["comment"]["body"] == "verified is good"
+
+        pr2 = await self.create_pr(verified=False)
+        await self.run_engine()
+
+        comment = await self.wait_for_issue_comment(str(pr2["number"]), "created")
+        assert comment["comment"]["body"] == "verified is not good"
 
     async def test_one_commit_unverified(self) -> None:
         rules = {

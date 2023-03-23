@@ -288,7 +288,7 @@ def parse_raw_condition(
     if attribute in PARSERS_FOR_ARRAY_SUBATTRIBUTES:
         attribute_array_match = re.match(
             rf"{attribute}(\[-?\d+\]\.(\w+))",
-            cond,
+            cond[position - len(attribute) :],
         )
         if attribute_array_match is not None:
             array_subattribute = attribute_array_match.group(2)
@@ -303,8 +303,9 @@ def parse_raw_condition(
             parser = PARSERS_FOR_ARRAY_SUBATTRIBUTES[attribute][array_subattribute]
 
             # Skip the "[\d].{subattribute}" part
-            position = len(attribute_array_match.group(0))
-            position = _skip_ws(cond, length, position)
+            position = _skip_ws(cond, length, len(attribute_array_match.group(0)))
+            if negate:
+                position += 1
             # Set the attribute to be `{attribute}[\d].{subattribute}`
             attribute = attribute_array_match.group(0)
 

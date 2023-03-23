@@ -202,6 +202,26 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
             },
         ),
         (
+            "commits[-1].commit_verification_verified",
+            {
+                "=": (
+                    "commits[-1].commit_verification_verified",
+                    True,
+                )
+            },
+        ),
+        (
+            "-commits[-1].commit_verification_verified",
+            {
+                "-": {
+                    "=": (
+                        "commits[-1].commit_verification_verified",
+                        True,
+                    )
+                },
+            },
+        ),
+        (
             f"merged-at<={now.isoformat()}",
             {"<=": ("merged-at", now)},
         ),
