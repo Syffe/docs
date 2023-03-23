@@ -1,5 +1,7 @@
 import datetime
 
+import ddtrace
+
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine.ci import job_registries
@@ -28,9 +30,14 @@ async def dump(
     pg_job_registry = job_registries.PostgresJobRegistry()
     pg_pull_registry = pull_registries.PostgresPullRequestRegistry()
 
-    async for job in http_job_registry.search(owner, repository, at):
-        await pg_job_registry.insert(job)
+    with ddtrace.tracer.trace(
+        "ci.dump", span_type="worker", resource=f"{owner}/{repository}"
+    ) as span:
+        span.set_tags({"gh_owner": owner, "gh_repo": repository})
 
-        for pull in job.pulls:
-            await pg_pull_registry.insert(pull)
-            await pg_pull_registry.register_job_run(pull.id, job)
+        async for job in http_job_registry.search(owner, repository, at):
+            await pg_job_registry.insert(job)
+
+            for pull in job.pulls:
+                await pg_pull_registry.insert(pull)
+                await pg_pull_registry.register_job_run(pull.id, job)
