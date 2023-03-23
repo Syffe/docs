@@ -7,10 +7,33 @@ import typing
 from urllib import parse
 
 import dotenv
+import pydantic
 import voluptuous
 
 from mergify_engine import github_types
+from mergify_engine import json
 from mergify_engine import utils
+from mergify_engine.config import urls
+
+
+CONFIGURATION_FILE = os.getenv("MERGIFYENGINE_TEST_SETTINGS")
+
+
+class EngineSettings(pydantic.BaseSettings):
+    DATABASE_URL: urls.PostgresDSN = urls.PostgresDSN.parse("postgres://localhost:5432")
+    DATABASE_POOL_SIZES: dict[str, int] = pydantic.Field(
+        default={"worker": 15, "web": 55}
+    )
+
+    class Config:
+        env_prefix = "MERGIFYENGINE_"
+        env_file = CONFIGURATION_FILE
+
+        @classmethod
+        def parse_env_var(cls, field_name: str, raw_val: str) -> typing.Any:
+            if field_name == "DATABASE_POOL_SIZES":
+                return utils.string_to_dict(raw_val, int)
+            return json.loads(raw_val)
 
 
 # NOTE(sileht) we coerce bool and int in case they are loaded from the environment
@@ -36,40 +59,17 @@ def CommaSeparatedIntList(value: str) -> list[int]:
     return [int(v) for v in CommaSeparatedStringList(value)]
 
 
-def CommaSeparatedStringTuple(v: str, split: int = 2) -> list[tuple[str, ...]]:
-    d = []
-    for bot in v.split(","):
-        if bot.strip():
-            values = bot.split(":", maxsplit=split)
-            if len(values) != split:
-                raise ValueError("not enough :")
-            d.append(tuple(v.strip() for v in values))
-    return d
-
-
 def AccountTokens(v: str) -> list[tuple[int, str, str]]:
     try:
         return [
             (int(_id), login, token)
             for _id, login, token in typing.cast(
                 list[tuple[int, str, str]],
-                CommaSeparatedStringTuple(v, split=3),
+                utils.string_to_list_of_tuple(v, split=3),
             )
         ]
     except ValueError:
         raise ValueError("wrong format, expect `id1:login1:token1,id2:login2:token2`")
-
-
-def SQLAlchemyPoolConfig(v: str) -> dict[str, int]:
-    try:
-        return {
-            service_name: int(pool_size_str)
-            for service_name, pool_size_str in typing.cast(
-                list[tuple[str, str]], CommaSeparatedStringTuple(v, split=2)
-            )
-        }
-    except ValueError:
-        raise ValueError("wrong format, expect `service1:pool_size,service2:pool_size`")
 
 
 API_ACCESS_KEY_LEN = 32
@@ -85,7 +85,7 @@ class ApplicationAPIKey(typing.TypedDict):
 
 def ApplicationAPIKeys(v: str) -> dict[str, ApplicationAPIKey]:
     try:
-        applications = CommaSeparatedStringTuple(v, 3)
+        applications = utils.string_to_list_of_tuple(v, split=3)
         _validate_application_api_keys(applications)
     except ValueError:
         raise ValueError(
@@ -207,12 +207,6 @@ Schema = voluptuous.Schema(
         # Mergify Engine settings
         #
         voluptuous.Required("BASE_URL", default="http://localhost:8802"): str,
-        voluptuous.Required(
-            "DATABASE_URL", default="postgres://localhost:5432"
-        ): voluptuous.Url(),
-        voluptuous.Required(
-            "DATABASE_POOL_SIZES", default="worker:15,web:55"
-        ): voluptuous.All(str, voluptuous.Coerce(SQLAlchemyPoolConfig)),
         voluptuous.Required("DATABASE_OAUTH_TOKEN_SECRET_CURRENT"): str,
         voluptuous.Required(
             "DATABASE_OAUTH_TOKEN_SECRET_OLD", default=None
@@ -355,8 +349,6 @@ DEDICATED_STREAM_PROCESSES: int
 SHARED_STREAM_TASKS_PER_PROCESS: int
 EXTERNAL_USER_PERSONAL_TOKEN: github_types.GitHubOAuthToken
 
-DATABASE_URL: str
-DATABASE_POOL_SIZES: dict[str, int]
 DATABASE_OAUTH_TOKEN_SECRET_CURRENT: str
 DATABASE_OAUTH_TOKEN_SECRET_OLD: str | None
 
@@ -428,10 +420,8 @@ GITHUB_DOMAIN: str
 
 
 def load() -> dict[str, typing.Any]:
-    configuration_file = os.getenv("MERGIFYENGINE_TEST_SETTINGS")
-
-    if configuration_file is not None:
-        dotenv.load_dotenv(dotenv_path=configuration_file, override=True)
+    if CONFIGURATION_FILE is not None:
+        dotenv.load_dotenv(dotenv_path=CONFIGURATION_FILE, override=True)
 
     raw_config: dict[str, typing.Any] = {}
     for key, _ in Schema.schema.items():

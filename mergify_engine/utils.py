@@ -215,6 +215,34 @@ def strtobool(string: str) -> bool:
     raise ValueError(f"Could not convert '{string}' to boolean")
 
 
+def string_to_list_of_tuple(
+    v: str, split: int = 2, list_sep: str = ",", tuple_sep: str = ":"
+) -> list[tuple[str, ...]]:
+    d = []
+    for tuple_str in v.split(list_sep):
+        if tuple_str.strip():
+            values = tuple_str.split(tuple_sep, maxsplit=split)
+            if len(values) != split:
+                raise ValueError(f"wrong number of {tuple_sep}")
+            d.append(tuple(v.strip() for v in values))
+    return d
+
+
+StringToDictCastT = typing.TypeVar("StringToDictCastT", int, str)
+
+
+def string_to_dict(
+    v: str, _type: type[StringToDictCastT]
+) -> dict[str, StringToDictCastT]:
+    return {
+        key: _type(value)
+        for key, value in typing.cast(
+            list[tuple[str, str]],
+            string_to_list_of_tuple(v, split=2),
+        )
+    }
+
+
 def strip_comment_tags(line: str) -> str:
     return line.removeprefix("<!--").removesuffix("-->").strip()
 

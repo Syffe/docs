@@ -7,7 +7,6 @@ import os
 import re
 import typing
 from unittest import mock
-from urllib import parse
 
 import asgi_lifespan
 import fastapi
@@ -25,6 +24,7 @@ from mergify_engine import config
 from mergify_engine import database
 from mergify_engine import logs
 from mergify_engine import redis_utils
+from mergify_engine import settings
 from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.models import github_user
@@ -187,20 +187,18 @@ def mock_postgres_db_value(worker_id: str) -> abc.Generator[None, None, None]:
     worker_id_int = get_worker_id_as_int(worker_id)
 
     db_name = f"postgres{worker_id_int}"
-    db_url = database.get_async_database_url()
-
-    mocked_url = parse.urlparse(db_url)._replace(path=f"/{db_name}")
-    mocked_url_unparsed = parse.urlunparse(mocked_url)
-
-    db_url_without_db_name = parse.urlunparse(parse.urlparse(db_url)._replace(path=""))
+    mocked_url = settings.DATABASE_URL._replace(path=f"/{db_name}")
+    mocked_url_without_db_name = settings.DATABASE_URL._replace(path="")
     # We need to manually run the coroutine in an event loop because
     # pytest-asyncio has its own `event_loop` fixture that is function scoped and
     # in autouse (session scope fixture cannot require function scoped fixture)
     loop = asyncio.get_event_loop_policy().new_event_loop()
-    loop.run_until_complete(create_database(db_url_without_db_name, db_name))
+    loop.run_until_complete(
+        create_database(mocked_url_without_db_name.geturl(), db_name)
+    )
     loop.close()
 
-    with mock.patch.object(config, "DATABASE_URL", mocked_url_unparsed):
+    with mock.patch.object(settings, "DATABASE_URL", mocked_url):
         yield
 
 

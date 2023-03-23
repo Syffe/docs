@@ -1,13 +1,12 @@
 from collections import abc
 import typing
-from urllib import parse
 
 import ddtrace
 import fastapi
 import sqlalchemy.ext.asyncio
 
-from mergify_engine import config
 from mergify_engine import database
+from mergify_engine import settings
 
 
 # FIXME(sileht): This is not enabled by default as it's recommended to use the
@@ -16,13 +15,6 @@ from mergify_engine import database
 # https://ddtrace.readthedocs.io/en/stable/integrations.html#sqlalchemy
 # When psycopg3 is supported -> MRGFY-2024
 ddtrace.patch(sqlalchemy=True)
-
-
-def get_async_database_url() -> str:
-    parsed = parse.urlparse(config.DATABASE_URL)
-    if parsed.scheme.startswith("postgres"):
-        parsed = parsed._replace(scheme="postgresql+psycopg")
-    return parse.urlunparse(parsed)
 
 
 AsyncSessionMaker = typing.NewType(
@@ -45,7 +37,7 @@ def init_sqlalchemy(service_name: str) -> None:
     if APP_STATE is not None:
         raise RuntimeError("APP_STATE already initialized")
 
-    pool_size = config.DATABASE_POOL_SIZES.get(service_name, 10)
+    pool_size = settings.DATABASE_POOL_SIZES.get(service_name, 10)
 
     # NOTE(sileht): Pool need to be adjusted with number of fastapi concurrent requests
     # the number of dyno and the Heroku postgres plan.
@@ -53,7 +45,7 @@ def init_sqlalchemy(service_name: str) -> None:
     # * one dyno
     # * postgres standard/premium 0 plan that allows 120 connections max
     async_engine = sqlalchemy.ext.asyncio.create_async_engine(
-        get_async_database_url(),
+        settings.DATABASE_URL.geturl(),
         pool_size=pool_size,
         max_overflow=-1,
         # Ensure old pooled connection still works

@@ -47,6 +47,7 @@ psycopg = { version = ">=3.1", extras = ["binary"] }
 # NOTE(sileht): sqlalchemy does not install it for some architecture like mac/m1...
 greenlet = "^2.0.2"
 deepdiff = "^6.3.0"
+pydantic = {extras = ["dotenv"], version = "^1.10.6"}
 
 [tool.poetry.dev-dependencies]
 sphinx = "^6.1.3"
