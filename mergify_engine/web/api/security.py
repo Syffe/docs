@@ -202,9 +202,13 @@ async def get_repository_context(
         repository_ctxt = installation.get_repository_from_github_data(repo)
 
         if logged_user is not None and not repo["private"]:
-            permission = await repository_ctxt.get_user_permission(
-                logged_user.to_github_account()
-            )
+            try:
+                permission = await repository_ctxt.get_user_permission(
+                    logged_user.to_github_account()
+                )
+            except http.HTTPForbidden:
+                raise fastapi.HTTPException(status_code=403)
+
             if permission == github_types.GitHubRepositoryPermission.NONE:
                 raise fastapi.HTTPException(status_code=403)
 
@@ -233,9 +237,13 @@ async def check_logged_user_has_write_access(
         # Application keys has no scope yet, just allow everything
         return
     elif logged_user is not None:
-        permission = await repository_ctxt.get_user_permission(
-            logged_user.to_github_account()
-        )
+        try:
+            permission = await repository_ctxt.get_user_permission(
+                logged_user.to_github_account()
+            )
+        except http.HTTPForbidden:
+            raise fastapi.HTTPException(status_code=403)
+
         if permission < github_types.GitHubRepositoryPermission.WRITE:
             raise fastapi.HTTPException(status_code=403)
     else:
