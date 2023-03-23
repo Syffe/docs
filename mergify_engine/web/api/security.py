@@ -91,6 +91,10 @@ get_application = ApplicationAuth()
 get_application_without_scope_verification = ApplicationAuth(verify_scope=False)
 get_optional_application = ApplicationAuth(auto_error=False)
 
+LoggedApplication = typing.Annotated[
+    application_mod.Application | None, fastapi.Security(get_optional_application)
+]
+
 
 def build_actor(
     auth_method: application_mod.Application | github_user.GitHubUser,
@@ -109,18 +113,26 @@ def build_actor(
         )
 
 
+async def get_logged_user(request: fastapi.Request) -> github_user.GitHubUser | None:
+    if "auth" in request.scope and request.auth and request.auth.is_authenticated:
+        return typing.cast(github_user.GitHubUser, request.auth.user)
+    return None
+
+
+LoggedUser = typing.Annotated[
+    github_user.GitHubUser | None, fastapi.Security(get_logged_user)
+]
+
+
 async def get_http_auth(
-    request: fastapi.Request,
     owner: typing.Annotated[
         github_types.GitHubLogin,
         fastapi.Path(description="The owner of the repository"),
     ],
-    application: typing.Annotated[
-        application_mod.Application | None, fastapi.Security(get_optional_application)
-    ],
+    application: LoggedApplication,
+    logged_user: LoggedUser,
 ) -> _HttpAuth:
     auth: github.GithubAppInstallationAuth | github.GithubTokenAuth
-
     if application is not None:
         installation_json = await github.get_installation_from_login(owner)
         # Authenticated by token
@@ -132,12 +144,11 @@ async def get_http_auth(
         auth = github.GithubAppInstallationAuth(installation_json)
         actor = build_actor(auth_method=application)
 
-    elif "auth" in request.scope and request.auth and request.auth.is_authenticated:
+    elif logged_user is not None:
         # Authenticated by cookie session
-        user = typing.cast(github_user.GitHubUser, request.auth.user)
         installation_json = await github.get_installation_from_login(owner)
-        auth = github.GithubTokenAuth(user.oauth_access_token)
-        actor = build_actor(auth_method=user)
+        auth = github.GithubTokenAuth(logged_user.oauth_access_token)
+        actor = build_actor(auth_method=logged_user)
     else:
         raise fastapi.HTTPException(403)
 
@@ -152,7 +163,6 @@ HttpAuth = typing.Annotated[_HttpAuth, fastapi.Depends(get_http_auth)]
 
 
 async def get_repository_context(
-    request: fastapi.Request,
     owner: typing.Annotated[
         github_types.GitHubLogin,
         fastapi.Path(description="The owner of the repository"),
@@ -162,11 +172,13 @@ async def get_repository_context(
         fastapi.Path(description="The name of the repository"),
     ],
     redis_links: redis.RedisLinks,
-    application: typing.Annotated[
-        application_mod.Application | None, fastapi.Security(get_optional_application)
-    ],
+    application: LoggedApplication,
+    logged_user: LoggedUser,
 ) -> abc.AsyncGenerator[context.Repository, None]:
-    installation_json, auth, actor = await get_http_auth(request, owner, application)
+    installation_json, auth, actor = await get_http_auth(
+        owner, application, logged_user
+    )
+
     async with github.AsyncGithubInstallationClient(
         auth,
     ) as client:
@@ -189,6 +201,13 @@ async def get_repository_context(
 
         repository_ctxt = installation.get_repository_from_github_data(repo)
 
+        if logged_user is not None and not repo["private"]:
+            permission = await repository_ctxt.get_user_permission(
+                logged_user.to_github_account()
+            )
+            if permission == github_types.GitHubRepositoryPermission.NONE:
+                raise fastapi.HTTPException(status_code=403)
+
         # NOTE(sileht): Since this method is used as fastapi Depends only, it's safe to set this
         # for the ongoing http request
         sentry_sdk.set_user({"username": repository_ctxt.installation.owner_login})
@@ -203,6 +222,24 @@ require_authentication = get_repository_context
 Repository = typing.Annotated[
     context.Repository, fastapi.Depends(get_repository_context)
 ]
+
+
+async def check_logged_user_has_write_access(
+    application: LoggedApplication,
+    logged_user: LoggedUser,
+    repository_ctxt: Repository,
+) -> None:
+    if application is not None:
+        # Application keys has no scope yet, just allow everything
+        return
+    elif logged_user is not None:
+        permission = await repository_ctxt.get_user_permission(
+            logged_user.to_github_account()
+        )
+        if permission < github_types.GitHubRepositoryPermission.WRITE:
+            raise fastapi.HTTPException(status_code=403)
+    else:
+        raise fastapi.HTTPException(status_code=403)
 
 
 async def check_subscription_feature_queue_freeze(repository_ctxt: Repository) -> None:

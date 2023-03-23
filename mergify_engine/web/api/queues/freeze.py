@@ -70,7 +70,10 @@ class QueueFreezePayload(pydantic.BaseModel):
         **api.default_responses,  # type: ignore
         404: {"description": "The queue does not exist"},
     },
-    dependencies=[fastapi.Depends(security.check_subscription_feature_queue_freeze)],
+    dependencies=[
+        fastapi.Depends(security.check_subscription_feature_queue_freeze),
+        fastapi.Depends(security.check_logged_user_has_write_access),
+    ],
 )
 async def create_queue_freeze(
     queue_freeze_payload: QueueFreezePayload,
@@ -160,7 +163,10 @@ async def create_queue_freeze(
     "/queue/{queue_name}/freeze",  # noqa: FS003
     summary="Unfreeze merge queue",
     description="Unfreeze the specified merge queue",
-    dependencies=[fastapi.Depends(security.check_subscription_feature_queue_freeze)],
+    dependencies=[
+        fastapi.Depends(security.check_subscription_feature_queue_freeze),
+        fastapi.Depends(security.check_logged_user_has_write_access),
+    ],
     status_code=204,
     responses={
         **api.default_responses,  # type: ignore
