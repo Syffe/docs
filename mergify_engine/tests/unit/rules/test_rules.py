@@ -17,6 +17,7 @@ from mergify_engine.clients import http
 from mergify_engine.rules import conditions
 from mergify_engine.rules.config import conditions as cond_config
 from mergify_engine.rules.config import mergify as mergify_conf
+from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import pull_request_rules as prr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.tests import utils
@@ -260,6 +261,30 @@ async def test_same_queue_rules_name() -> None:
     )
 
 
+async def test_same_partition_rules_name() -> None:
+    with pytest.raises(mergify_conf.InvalidRules) as x:
+        await mergify_conf.get_mergify_config_from_dict(
+            mock.MagicMock(),
+            {
+                "partition_rules": [
+                    {
+                        "name": "projectA",
+                        "conditions": ["schedule: MON-FRI 08:00-17:00"],
+                    },
+                    {
+                        "name": "projectA",
+                        "conditions": ["schedule: MON-FRI 08:00-17:00"],
+                    },
+                ]
+            },
+            "",
+        )
+    assert (
+        str(x.value)
+        == "partition_rules names must be unique, found `projectA` twice for dictionary value @ partition_rules"
+    )
+
+
 async def test_jinja_with_list_attribute() -> None:
     config = await utils.load_mergify_config(
         """
@@ -481,6 +506,7 @@ async def test_get_mergify_config(
     assert "queue_rules" in schema
     assert "defaults" in schema
     assert "commands_restrictions" in schema
+    assert "partition_rules" in schema
 
 
 async def test_get_mergify_config_with_defaults(
@@ -898,6 +924,7 @@ async def test_extends_infinite_loop() -> None:
             "extends": github_types.GitHubRepositoryName(".github"),
             "pull_request_rules": prr_config.PullRequestRules([]),
             "queue_rules": qr_config.QueueRules([]),
+            "partition_rules": partr_config.PartitionRules([]),
             "defaults": mergify_conf.Defaults({"actions": {}}),
             "commands_restrictions": {},
             "raw_config": {
@@ -929,6 +956,7 @@ async def test_extends_limit(fake_repository: context.Repository) -> None:
             "extends": github_types.GitHubRepositoryName(".github"),
             "pull_request_rules": prr_config.PullRequestRules([]),
             "queue_rules": qr_config.QueueRules([]),
+            "partition_rules": partr_config.PartitionRules([]),
             "defaults": mergify_conf.Defaults({"actions": {}}),
             "commands_restrictions": {},
             "raw_config": {

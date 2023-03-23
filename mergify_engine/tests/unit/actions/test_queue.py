@@ -12,6 +12,7 @@ from mergify_engine import rules
 from mergify_engine.actions import queue
 from mergify_engine.clients import http
 from mergify_engine.rules import checks_status
+from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import pull_request_rules as prr_config
 from mergify_engine.tests.unit import conftest
 
@@ -563,11 +564,51 @@ async def test_check_method_fastforward_configuration(
 
     with pytest.raises(queue.InvalidQueueConfiguration) as e:
         executor._check_method_fastforward_configuration(
-            config=executor.config, queue_rule=executor.queue_rule
+            config=executor.config,
+            queue_rule=executor.queue_rule,
         )
 
     assert e.value.title == expected_title
     assert e.value.message == expected_message
+
+
+async def test_check_queue_branch_merge_method_fastforward_with_partition_rules(
+    context_getter: conftest.ContextGetterFixture,
+) -> None:
+    config = rules.UserConfigurationSchema(
+        {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "allow_inplace_checks": False,
+                    "queue_branch_merge_method": "fast-forward",
+                },
+            ],
+            "partition_rules": [
+                {
+                    "name": "projA",
+                    "conditions": [],
+                }
+            ],
+        }
+    )
+
+    action = queue.QueueAction({})
+    action.partition_rules = config["partition_rules"]
+    action.queue_rules = config["queue_rules"]
+    ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
+    evaluated_pull_request_rule = mock.Mock()
+    executor = await action.executor_class.create(
+        action, ctxt, evaluated_pull_request_rule
+    )
+    with pytest.raises(queue.InvalidQueueConfiguration) as e:
+        await executor._set_action_queue_rule()
+
+    assert e.value.title == "Invalid merge method with partition rules in use"
+    assert (
+        e.value.message
+        == "Cannot use `fast-forward` merge method when using partition rules"
+    )
 
 
 @pytest.mark.parametrize(
@@ -647,6 +688,7 @@ async def test_check_subscription_status(
     executor = await action.executor_class.create(
         action, ctxt, evaluated_pull_request_rule
     )
+    executor.partition_rules = partr_config.PartitionRules([])
     executor._set_action_config_from_queue_rules()
 
     with pytest.raises(queue.InvalidQueueConfiguration) as e:
@@ -654,6 +696,7 @@ async def test_check_subscription_status(
             config=executor.config,
             queue_rule=executor.queue_rule,
             queue_rules=executor.queue_rules,
+            partition_rules=executor.partition_rules,
             ctxt=ctxt,
         )
 

@@ -1,5 +1,6 @@
 from mergify_engine.queue.merge_train.checks import CheckStateT
 from mergify_engine.queue.merge_train.checks import QueueCheck
+from mergify_engine.queue.merge_train.convoy import Convoy
 from mergify_engine.queue.merge_train.embarked_pull import EmbarkedPull
 from mergify_engine.queue.merge_train.train import Train
 from mergify_engine.queue.merge_train.train_car import (
@@ -24,6 +25,7 @@ __all__ = [
     "CI_FAILED_MESSAGE",
     "CiState",
     "CheckStateT",
+    "Convoy",
     "EmbarkedPull",
     "EmbarkedPullWithCar",
     "QueueCheck",

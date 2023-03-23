@@ -16,6 +16,7 @@ from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import conditions
 from mergify_engine.rules import types
 from mergify_engine.rules.config import mergify as mergify_conf
+from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import pull_request_rules as prr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 
@@ -33,6 +34,7 @@ class MergeExecutor(
     merge_base.MergeUtilsMixin,
 ):
     queue_rules: qr_config.QueueRules
+    partition_rules: partr_config.PartitionRules
 
     @property
     def silenced_conclusion(self) -> tuple[check_api.Conclusion, ...]:
@@ -85,6 +87,7 @@ class MergeExecutor(
                 }
             ),
             action.queue_rules,
+            action.partition_rules,
         )
 
     async def run(self) -> check_api.Result:
@@ -104,18 +107,18 @@ class MergeExecutor(
                 self.get_pending_merge_status,
             )
             if report.conclusion == check_api.Conclusion.SUCCESS:
-                queue = await merge_train.Train.from_context(
-                    self.ctxt, self.queue_rules
+                convoy = await merge_train.Convoy.from_context(
+                    self.ctxt, self.queue_rules, self.partition_rules
                 )
-                if queue.is_queued(self.ctxt.pull["number"]):
-                    await queue.remove_pull(
+                await convoy.remove_pull_from_trains_if_queued(
+                    self.ctxt.pull["number"],
+                    self.rule.get_signal_trigger(),
+                    queue_utils.PrDequeued(
                         self.ctxt.pull["number"],
-                        self.rule.get_signal_trigger(),
-                        queue_utils.PrDequeued(
-                            self.ctxt.pull["number"],
-                            ". Pull request automatically merged by a `merge` action",
-                        ),
-                    )
+                        ". Pull request automatically merged by a `merge` action",
+                    ),
+                )
+
                 await signals.send(
                     self.ctxt.repository,
                     self.ctxt.pull["number"],
@@ -192,6 +195,10 @@ class MergeAction(actions.Action):
 
     # NOTE(sileht): set by validate_config()
     queue_rules: qr_config.QueueRules = dataclasses.field(init=False, repr=False)
+    partition_rules: partr_config.PartitionRules = dataclasses.field(
+        init=False, repr=False
+    )
 
     def validate_config(self, mergify_config: "mergify_conf.MergifyConfig") -> None:
         self.queue_rules = mergify_config["queue_rules"]
+        self.partition_rules = mergify_config["partition_rules"]

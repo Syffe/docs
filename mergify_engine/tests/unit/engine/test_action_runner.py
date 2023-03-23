@@ -5,6 +5,7 @@ from mergify_engine import config
 from mergify_engine import github_types
 from mergify_engine.engine import actions_runner
 from mergify_engine.queue import merge_train
+from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.tests.unit import conftest
 
@@ -14,6 +15,7 @@ async def test_cleanup_pending_actions_with_no_associated_rules(
 ) -> None:
     ctxt = await context_getter(42)
     queue_rules = qr_config.QueueRules([])
+    partition_rules = partr_config.PartitionRules([])
     previous_conclusions = {
         "Rule: title contains cleanup (label)": check_api.Conclusion.CANCELLED,
         "Rule: ask to resolve conflict (comment)": check_api.Conclusion.NEUTRAL,
@@ -91,7 +93,11 @@ async def test_cleanup_pending_actions_with_no_associated_rules(
         mock.patch.object(check_api, "set_check_run") as set_check_run,
     ):
         await actions_runner.cleanup_pending_actions_with_no_associated_rules(
-            ctxt, queue_rules, current_conclusions, previous_conclusions
+            ctxt,
+            queue_rules,
+            partition_rules,
+            current_conclusions,
+            previous_conclusions,
         )
         assert set_check_run.called
         assert force_remove_pull.called

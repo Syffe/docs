@@ -21,7 +21,7 @@ async def get_estimation_from_stats(
     previous_eta: datetime.datetime | None = None,
 ) -> datetime.datetime | None:
     queue_name = embarked_pull.config["name"]
-    if await train.is_queue_frozen(queue_name):
+    if await train.convoy.is_queue_frozen(queue_name):
         return None
 
     queue_checks_duration_stats = checks_duration_stats.get(
@@ -31,7 +31,7 @@ async def get_estimation_from_stats(
     return await compute_estimation(
         embarked_pull,
         embarked_pull_position,
-        train.queue_rules[queue_name].config,
+        train.convoy.queue_rules[queue_name].config,
         queue_checks_duration_stats["median"],
         car,
         previous_eta,
@@ -46,20 +46,20 @@ async def get_estimation(
     previous_eta: datetime.datetime | None = None,
 ) -> datetime.datetime | None:
     queue_name = embarked_pull.config["name"]
-    if await train.is_queue_frozen(queue_name):
+    if await train.convoy.is_queue_frozen(queue_name):
         return None
 
     queue_checks_duration_stats = (
         await statistics_api.get_checks_duration_stats_for_queue(
-            train.repository,
+            train.convoy.repository,
             queue_name,
-            branch_name=train.ref,
+            branch_name=train.convoy.ref,
         )
     )
     return await compute_estimation(
         embarked_pull,
         embarked_pull_position,
-        train.queue_rules[queue_name].config,
+        train.convoy.queue_rules[queue_name].config,
         queue_checks_duration_stats["median"],
         car,
         previous_eta,

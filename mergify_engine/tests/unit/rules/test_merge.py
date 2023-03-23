@@ -643,6 +643,7 @@ def test_merge_raw_configs() -> None:
                 "speculative_checks": 3,
             },
         ],
+        "partition_rules": [],
     }
 
     mergify_conf.merge_raw_configs(source_config, dest_config)
@@ -655,6 +656,7 @@ def test_merge_raw_configs_empty() -> None:
     assert config == {
         "pull_request_rules": [],
         "queue_rules": [],
+        "partition_rules": [],
     }
 
 
@@ -670,6 +672,7 @@ def test_merge_raw_configs_src_empty() -> None:
     }
     mergify_conf.merge_raw_configs({}, config)
     assert config == {
+        "partition_rules": [],
         "pull_request_rules": [],
         "queue_rules": [
             {
@@ -696,6 +699,7 @@ def test_merge_raw_configs_dest_empty() -> None:
         config,
     )
     assert config == {
+        "partition_rules": [],
         "pull_request_rules": [],
         "queue_rules": [
             {
@@ -740,6 +744,7 @@ def test_merge_raw_override_and_new_rules() -> None:
         config,
     )
     assert config == {
+        "partition_rules": [],
         "pull_request_rules": [],
         "queue_rules": [
             {
@@ -820,71 +825,62 @@ def test_merge_defaults(
     assert dest_defaults == expected_result
 
 
-@pytest.mark.parametrize(
-    "config, config_to_extend, expected_result",
-    [
-        (
+async def test_merge_rules_and_defaults() -> None:
+    config = {
+        "extends": "extended_configuration.yml",
+        "defaults": {"actions": {"copy": {"bot_account": "my_super_bot"}}},
+        "pull_request_rules": [
             {
-                "extends": "extended_configuration.yml",
-                "defaults": {"actions": {"copy": {"bot_account": "my_super_bot"}}},
-                "pull_request_rules": [
-                    {
-                        "name": "new_rule",
-                        "conditions": ["label=comment"],
-                        "actions": {"copy": {"branches": ["dev"]}},
-                    }
-                ],
-            },
+                "name": "new_rule",
+                "conditions": ["label=comment"],
+                "actions": {"copy": {"branches": ["dev"]}},
+            }
+        ],
+    }
+
+    config_to_extend = {
+        "defaults": {
+            "actions": {"copy": {"labels": ["copied"], "bot_account": "Autobot"}}
+        },
+        "pull_request_rules": [
             {
-                "defaults": {
-                    "actions": {
-                        "copy": {"labels": ["copied"], "bot_account": "Autobot"}
+                "name": "extended_rule",
+                "conditions": ["label=comment"],
+                "actions": {"copy": {"branches": ["dev"]}},
+            }
+        ],
+    }
+
+    expected_result = {
+        "extends": "extended_configuration.yml",
+        "partition_rules": [],
+        "queue_rules": [],
+        "pull_request_rules": [
+            {
+                "name": "new_rule",
+                "conditions": ["label=comment"],
+                "actions": {
+                    "copy": {
+                        "branches": ["dev"],
+                        "labels": ["copied"],
+                        "bot_account": "my_super_bot",
                     }
                 },
-                "pull_request_rules": [
-                    {
-                        "name": "extended_rule",
-                        "conditions": ["label=comment"],
-                        "actions": {"copy": {"branches": ["dev"]}},
-                    }
-                ],
             },
             {
-                "extends": "extended_configuration.yml",
-                "queue_rules": [],
-                "pull_request_rules": [
-                    {
-                        "name": "new_rule",
-                        "conditions": ["label=comment"],
-                        "actions": {
-                            "copy": {
-                                "branches": ["dev"],
-                                "labels": ["copied"],
-                                "bot_account": "my_super_bot",
-                            }
-                        },
-                    },
-                    {
-                        "name": "extended_rule",
-                        "conditions": ["label=comment"],
-                        "actions": {
-                            "copy": {
-                                "branches": ["dev"],
-                                "labels": ["copied"],
-                                "bot_account": "my_super_bot",
-                            }
-                        },
-                    },
-                ],
+                "name": "extended_rule",
+                "conditions": ["label=comment"],
+                "actions": {
+                    "copy": {
+                        "branches": ["dev"],
+                        "labels": ["copied"],
+                        "bot_account": "my_super_bot",
+                    }
+                },
             },
-        ),
-    ],
-)
-async def test_merge_rules_and_defaults(
-    config: dict[str, typing.Any],
-    config_to_extend: dict[str, typing.Any],
-    expected_result: dict[str, typing.Any],
-) -> None:
+        ],
+    }
+
     defaults = config_to_extend.pop("defaults")
     mocked_ctxt = mock.MagicMock()
     with mock.patch(

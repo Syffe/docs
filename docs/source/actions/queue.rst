@@ -780,6 +780,40 @@ A priority rule takes the following parameters:
      - The value of the pull request priority inside the queue.
 
 
+.. _partition rules:
+
+Partition Rules
+~~~~~~~~~~~~~~~
+|premium plan tag|
+
+Partition rules are used to handle monorepos better. Each partition runs in parallel and includes all the queues defined in the ``queue_rules``.
+
+If your partitions have different criteria for merging pull requests, you can replicate the partition rules logic inside the queue rules ``merge_conditions`` and by using the :ref:`attribute <attributes>` ``queue-partition-name``.
+
+A partition rule takes the following parameters:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 1 1 1 3
+
+   * - Key Name
+     - Value Type
+     - Default
+     - Value Description
+
+   * - ``name``
+     - string
+     -
+     - The name of the partition.
+
+   * - ``conditions``
+     - list of :ref:`Conditions`
+     -
+     - List of ``conditions`` to determine the partition(s) in which
+       the pull request will be queued. If no partition matches, the pull request will be
+       added to every partition.
+
+
 Examples
 --------
 
@@ -956,3 +990,88 @@ additional configuration in branch protection settings, you also need to allow
 .. image:: ../_static/mergify-required-pull-request.png
 
 .. include:: ../global-substitutions.rst
+
+
+.. spelling::
+
+   projectA
+   projectB
+
+🚥 Using partition rules to handle different projects in a monorepo
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If a PR contains a modification on any file in the folder ``projectA/`` it will be added in the partition projectA,
+if it contains a modification on any file in the folder ``projectB/`` then it will be added in the partition projectB.
+
+If none of the two partitions rules matches, then the PR will be added in both partitions.
+The ``queue_rules`` will still determine in which queue in the partition(s) the PR will be added in.
+
+Here is a table representing the partition and queues with the code below:
+
+.. list-table::
+        :header-rows: 1
+        :widths: 1 1
+
+        * - projectA
+          - projectB
+
+        * - hotfix
+          - hotfix
+
+        * - default
+          - default
+
+
+.. code-block:: yaml
+
+        shared:
+            priority_rules: &priority_rules
+                - name: hotfix PR detected
+                  conditions:
+                    - label=hotfix
+                  priority: high
+                - name: lowprio PR detected
+                  conditions:
+                    - author=dependabot[bot]
+                  priority: low
+
+        pull_request_rules:
+           - name: queue PR with queue label
+             conditions:
+               - label=queue
+             actions:
+               queue:
+
+        partition_rules:
+          - name: projectA
+            conditions:
+              - files~=^projectA/
+
+          - name: projectB
+            conditions:
+              - files~=^projectB/
+
+        queue_rules:
+          - name: hotfix
+            priority_rules: *priority_rules
+            routing_conditions:
+              - label=hotfix
+            merge_conditions:
+              - or:
+                - and:
+                  - queue-partition-name=projectA
+                  - check-success=ciA
+                - and:
+                  - queue-partition-name=projectB
+                  - check-success=ciB
+
+          - name: default
+            priority_rules: *priority_rules
+            merge_conditions:
+              - or:
+                - and:
+                  - queue-partition-name=projectA
+                  - check-success=ciA
+                - and:
+                  - queue-partition-name=projectB
+                  - check-success=ciB

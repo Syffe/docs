@@ -436,11 +436,18 @@ async def run(
 
     ctxt.log.debug("engine handle actions")
     if ctxt.is_merge_queue_pr():
-        await queue_runner.handle(mergify_config["queue_rules"], ctxt)
+        await queue_runner.handle(
+            ctxt,
+            mergify_config["queue_rules"],
+            mergify_config["partition_rules"],
+        )
         return None
     else:
         return await actions_runner.handle(
-            mergify_config["pull_request_rules"], mergify_config["queue_rules"], ctxt
+            ctxt,
+            mergify_config["pull_request_rules"],
+            mergify_config["queue_rules"],
+            mergify_config["partition_rules"],
         )
 
 

@@ -80,6 +80,7 @@ async def create_queue_freeze(
     auth: security.HttpAuth,
     repository_ctxt: security.Repository,
     queue_rules: security.QueueRules,
+    partition_rules: security.PartitionRules,
 ) -> QueueFreezeResponse:
     if queue_freeze_payload.reason == "":
         queue_freeze_payload.reason = "No freeze reason was specified."
@@ -142,7 +143,7 @@ async def create_queue_freeze(
             "Update queue freeze",
         )
 
-    await qf.save(queue_rules)
+    await qf.save(queue_rules, partition_rules)
     return QueueFreezeResponse(
         queue_freezes=[
             QueueFreeze(
@@ -173,6 +174,7 @@ async def delete_queue_freeze(
     auth: security.HttpAuth,
     repository_ctxt: security.Repository,
     queue_rules: security.QueueRules,
+    partition_rules: security.PartitionRules,
 ) -> fastapi.Response:
     try:
         queue_rule = queue_rules[queue_name]
@@ -186,7 +188,7 @@ async def delete_queue_freeze(
         queue_rule=queue_rule,
         name=queue_name,
     )
-    if not await qf.delete(queue_rules):
+    if not await qf.delete(queue_rules, partition_rules):
         raise fastapi.HTTPException(
             status_code=404,
             detail=f'The queue "{queue_name}" is not currently frozen.',

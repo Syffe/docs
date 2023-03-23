@@ -23,6 +23,7 @@ from mergify_engine.clients import github
 from mergify_engine.dashboard import subscription
 from mergify_engine.queue import merge_train
 from mergify_engine.rules import conditions
+from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import pull_request_rules as prr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 
@@ -571,6 +572,7 @@ async def run_actions(
 async def cleanup_pending_actions_with_no_associated_rules(
     ctxt: context.Context,
     queue_rules: qr_config.QueueRules,
+    partition_rules: partr_config.PartitionRules,
     current_conclusions: dict[str, check_api.Conclusion],
     previous_conclusions: dict[str, check_api.Conclusion],
 ) -> None:
@@ -609,14 +611,19 @@ async def cleanup_pending_actions_with_no_associated_rules(
     if not is_queued and was_queued:
         ctxt.log.info("action removal cleanup, cleanup queue")
         await merge_train.Train.force_remove_pull(
-            ctxt.repository, queue_rules, ctxt.pull["number"], signal_trigger
+            ctxt.repository,
+            queue_rules,
+            partition_rules,
+            ctxt.pull["number"],
+            signal_trigger,
         )
 
 
 async def handle(
+    ctxt: context.Context,
     pull_request_rules: prr_config.PullRequestRules,
     queue_rules: qr_config.QueueRules,
-    ctxt: context.Context,
+    partition_rules: partr_config.PartitionRules,
 ) -> check_api.Result | None:
     try:
         match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
@@ -646,7 +653,7 @@ async def handle(
     checks = {c["name"]: c for c in await ctxt.pull_engine_check_runs}
     conclusions = await run_actions(ctxt, match, checks, previous_conclusions)
     await cleanup_pending_actions_with_no_associated_rules(
-        ctxt, queue_rules, conclusions, previous_conclusions
+        ctxt, queue_rules, partition_rules, conclusions, previous_conclusions
     )
 
     ctxt.log.info(

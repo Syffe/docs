@@ -1,10 +1,8 @@
 import argparse
 import asyncio
-from collections import abc
 import datetime
 import itertools
 import pprint
-import typing
 
 import daiquiri
 
@@ -84,17 +82,17 @@ async def report_worker_status(
     print(f"* WORKER PENDING EVENTS for this installation: {size}")
 
 
-async def report_queue(title: str, q: merge_train.Train) -> None:
-    pulls = await q.get_pulls()
+async def report_queue(title: str, train: merge_train.Train) -> None:
+    pulls = await train.get_pulls()
     if not pulls:
         return
 
-    print(f"* {title} {q.ref}")
+    print(f"* {title} {train.convoy.ref}")
 
     async def _get_config(
         p: github_types.GitHubPullRequestNumber,
     ) -> tuple[github_types.GitHubPullRequestNumber, int]:
-        return p, (await q.get_config(p))["priority"]
+        return p, (await train.get_config(p))["priority"]
 
     pulls_priorities: dict[github_types.GitHubPullRequestNumber, int] = dict(
         await asyncio.gather(*(_get_config(p) for p in pulls))
@@ -185,19 +183,12 @@ async def report(
         if mergify_config is None:
             return client
 
-        async for branch in typing.cast(
-            abc.AsyncGenerator[github_types.GitHubBranch, None],
-            client.items(
-                f"/repos/{owner_login}/{repo}/branches",
-                resource_name="branches",
-                page_limit=100,
-            ),
+        async for train in merge_train.Train.iter_trains(
+            repository,
+            mergify_config["queue_rules"],
+            mergify_config["partition_rules"],
         ):
-            q = merge_train.Train(
-                repository, mergify_config["queue_rules"], branch["name"]
-            )
-            await q.load()
-            await report_queue("TRAIN", q)
+            await report_queue("TRAIN", train)
 
         await redis_links.shutdown_all()
         return client
@@ -217,8 +208,18 @@ async def report(
     # FIXME queues could also be printed if no pull number given
     # TODO(sileht): display train if any
     if mergify_config is not None:
-        q = await merge_train.Train.from_context(ctxt, mergify_config["queue_rules"])
-        print(f"* TRAIN: {', '.join([f'#{p}' for p in await q.get_pulls()])}")
+        convoy = await merge_train.Convoy.from_context(
+            ctxt, mergify_config["queue_rules"], mergify_config["partition_rules"]
+        )
+        for train in convoy.iter_trains():
+            if train.partition_name is not None:
+                print(
+                    f"* TRAIN (partition:{train.partition_name}): {', '.join([f'#{p}' for p in await train.get_pulls()])}"
+                )
+            else:
+                print(
+                    f"* TRAIN: {', '.join([f'#{p}' for p in await train.get_pulls()])}"
+                )
 
     print("* PULL REQUEST:")
     pr_data = {

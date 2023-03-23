@@ -29,10 +29,12 @@ from mergify_engine.dashboard import subscription
 from mergify_engine.queue import freeze
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
+from mergify_engine.queue.merge_train import types as merge_train_types
 from mergify_engine.rules import checks_status
 from mergify_engine.rules import conditions
 from mergify_engine.rules import types
 from mergify_engine.rules.config import mergify as mergify_conf
+from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import pull_request_rules as prr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 
@@ -100,6 +102,7 @@ class QueueExecutor(
     config_hidden_from_simulator = ("priority",)
     queue_rule: qr_config.QueueRule
     queue_rules: qr_config.QueueRules
+    partition_rules: partr_config.PartitionRules
 
     UNQUEUE_DOCUMENTATION = f"""
 You can take a look at `{constants.MERGE_QUEUE_SUMMARY_NAME}` check runs for more details.
@@ -142,15 +145,16 @@ Then, re-embark the pull request into the merge queue by posting the comment
             ),
             action.queue_rule,
             action.queue_rules,
+            action.partition_rules,
         )
 
     async def _queue_branch_merge_pull_request(
         self,
-        queue: merge_train.Train,
+        convoy: merge_train.Convoy,
         queue_freeze: freeze.QueueFreeze | None,
-        # "car" is not used but needed because this func is used in 'merge' property
-        # with other func that need this attribute.
-        car: merge_train.TrainCar | None,
+        # "cars" is not used but needed because this func is used in 'merge' property
+        # with another func that need this attribute.
+        cars: list[merge_train.TrainCar] | None,
     ) -> check_api.Result:
         result = await self.common_merge(
             "queue",
@@ -161,35 +165,50 @@ Then, re-embark the pull request into the merge queue by posting the comment
             self.config["commit_message_template"],
             functools.partial(
                 self.get_pending_queue_status,
-                queue=queue,
+                convoy=convoy,
                 queue_rule=self.queue_rule,
                 queue_freeze=queue_freeze,
             ),
         )
         if result.conclusion == check_api.Conclusion.SUCCESS:
-            _, embarked_pull = queue.find_embarked_pull(self.ctxt.pull["number"])
-            if embarked_pull is None:
-                raise RuntimeError("Queue pull request with no embarked_pull")
+            embarked_pulls = await convoy.find_embarked_pull(self.ctxt.pull["number"])
+            if embarked_pulls is None:
+                raise RuntimeError("Queue pull request with no embarked pulls")
             if self.ctxt.pull["merge_commit_sha"] is None:
                 raise RuntimeError("pull request merged but merge_commit_sha is null")
-            await queue.remove_pull(
+
+            await convoy.remove_pull(
                 self.ctxt.pull["number"],
                 self.rule.get_signal_trigger(),
                 queue_utils.PrMerged(
                     self.ctxt.pull["number"], self.ctxt.pull["merge_commit_sha"]
                 ),
             )
-            await self.send_merge_signal(embarked_pull)
+
+            partition_names = [
+                ep.partition_name
+                for ep in embarked_pulls
+                if ep.partition_name is not None
+            ]
+            await self.send_merge_signal(
+                embarked_pulls[0].embarked_pull.queued_at,
+                partition_names or None,
+            )
+
         return result
 
     async def _queue_branch_merge_fastforward(
         self,
-        queue: merge_train.Train,
+        convoy: merge_train.Convoy,
         queue_freeze: freeze.QueueFreeze | None,
-        car: merge_train.TrainCar | None,
+        cars: list[merge_train.TrainCar] | None,
     ) -> check_api.Result:
-        if car is None:
-            raise RuntimeError("ready to merge PR without car....")
+        if not cars:
+            raise RuntimeError("Ready to merge PR without any car....")
+        elif len(cars) > 1 or cars[0].train.partition_name is not None:
+            raise RuntimeError(
+                "Shouldn't be in queue_branch_merge_fastforward with partition rules in use"
+            )
 
         if self.config["method"] != "merge":
             return check_api.Result(
@@ -205,14 +224,18 @@ Then, re-embark the pull request into the merge queue by posting the comment
         except action_utils.BotAccountNotFound as e:
             return check_api.Result(e.status, e.title, e.reason)
 
+        car = cars[0]
         if car.train_car_state.checks_type == merge_train.TrainCarChecksType.INPLACE:
             newsha = self.ctxt.pull["head"]["sha"]
-        elif car.train_car_state.checks_type == merge_train.TrainCarChecksType.DRAFT:
+        elif car.train_car_state.checks_type in (
+            merge_train.TrainCarChecksType.DRAFT,
+            merge_train.TrainCarChecksType.DRAFT_DELEGATED,
+        ):
             if car.queue_pull_request_number is None:
                 raise RuntimeError(
                     f"car's checks type is {car.train_car_state.checks_type}, but queue_pull_request_number is None"
                 )
-            tmp_ctxt = await queue.repository.get_pull_request_context(
+            tmp_ctxt = await convoy.repository.get_pull_request_context(
                 car.queue_pull_request_number
             )
             newsha = tmp_ctxt.pull["head"]["sha"]
@@ -234,23 +257,26 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 self.rule,
                 functools.partial(
                     self.get_pending_queue_status,
-                    queue=queue,
+                    convoy=convoy,
                     queue_rule=self.queue_rule,
                     queue_freeze=queue_freeze,
                 ),
             )
 
-        for embarked_pull in car.still_queued_embarked_pulls.copy():
-            await self.create_recently_merged_tracker(
-                self.ctxt.repository.installation.redis.cache,
-                self.ctxt.repository.repo["id"],
-                embarked_pull.user_pull_request_number,
-            )
-            await queue.remove_pull(
-                embarked_pull.user_pull_request_number,
-                self.rule.get_signal_trigger(),
-                queue_utils.PrMerged(embarked_pull.user_pull_request_number, newsha),
-            )
+        for car in cars:
+            for embarked_pull in car.still_queued_embarked_pulls.copy():
+                await self.create_recently_merged_tracker(
+                    self.ctxt.repository.installation.redis.cache,
+                    self.ctxt.repository.repo["id"],
+                    embarked_pull.user_pull_request_number,
+                )
+                await convoy.remove_pull(
+                    embarked_pull.user_pull_request_number,
+                    self.rule.get_signal_trigger(),
+                    queue_utils.PrMerged(
+                        embarked_pull.user_pull_request_number, newsha
+                    ),
+                )
 
         return check_api.Result(
             check_api.Conclusion.SUCCESS,
@@ -263,9 +289,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
         self,
     ) -> abc.Callable[
         [
-            merge_train.Train,
+            merge_train.Convoy,
             freeze.QueueFreeze | None,
-            merge_train.TrainCar | None,
+            list[merge_train.TrainCar] | None,
         ],
         abc.Coroutine[typing.Any, typing.Any, check_api.Result],
     ]:
@@ -342,6 +368,15 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 f"The queue `{self.config['name']}` does not exist",
             )
 
+        if (
+            self.queue_rule.config["queue_branch_merge_method"] == "fast-forward"
+            and len(self.partition_rules) > 0
+        ):
+            raise InvalidQueueConfiguration(
+                "Invalid merge method with partition rules in use",
+                "Cannot use `fast-forward` merge method when using partition rules",
+            )
+
         self._set_action_config_from_queue_rules()
 
     async def run(self) -> check_api.Result:
@@ -372,19 +407,32 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     ),
                 )
 
-        q = await merge_train.Train.from_context(self.ctxt, self.queue_rules)
-        car = q.get_car(self.ctxt)
+        convoy = await merge_train.Convoy.from_context(
+            self.ctxt, self.queue_rules, self.partition_rules
+        )
+        partition_names = (
+            await self.partition_rules.get_evaluated_partition_names_from_context(
+                self.ctxt
+            )
+        )
 
-        result = await self.pre_queue_checks(q, car)
+        trains_and_car = convoy.get_trains_and_car_from_context_and_partition_names(
+            self.ctxt, partition_names
+        )
+        cars = [tac.train_car for tac in trains_and_car]
+
+        result = await self.pre_queue_checks(convoy, cars)
+
         if result is not None:
             return result
 
-        if car is not None:
-            await car.check_mergeability(
-                "original_pull_request",
-                original_pull_request_rule=self.rule,
-                original_pull_request_number=self.ctxt.pull["number"],
-            )
+        for car in cars:
+            if car is not None:
+                await car.check_mergeability(
+                    "original_pull_request",
+                    original_pull_request_rule=self.rule,
+                    original_pull_request_number=self.ctxt.pull["number"],
+                )
 
         # NOTE(sileht): the pull request gets checked and then changed
         # by user, we should unqueue and requeue it as the conditions still match.
@@ -408,7 +456,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     == "synchronize"
                 ],
             )
-            await q.remove_pull(
+
+            await convoy.remove_pull(
                 self.ctxt.pull["number"],
                 self.rule.get_signal_trigger(),
                 unexpected_change,
@@ -427,7 +476,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 "The pull request has been removed from the queue",
                 f"{unqueue_reason!s}.\n{self.UNQUEUE_DOCUMENTATION}",
             )
-            await self._unqueue_pull_request(q, car, unqueue_reason, result)
+            await self._unqueue_pull_request(convoy, cars, unqueue_reason, result)
             return result
 
         pull_queue_config = queue.PullQueueConfig(
@@ -442,19 +491,25 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 "name": self.config["name"],
             }
         )
-        await q.add_pull(self.ctxt, pull_queue_config, self.rule.get_signal_trigger())
+
+        await convoy.add_pull(
+            self.ctxt,
+            pull_queue_config,
+            partition_names,
+            self.rule.get_signal_trigger(),
+        )
 
         try:
-            qf = await q.get_current_queue_freeze(self.config["name"])
-            if await self._should_be_merged(self.ctxt, q, qf):
-                result = await self._merge(q, qf, car)
+            qf = await convoy.get_current_queue_freeze(self.config["name"])
+            if await self._should_be_merged(self.ctxt, convoy, qf, partition_names):
+                result = await self._merge(convoy, qf, cars)
             else:
                 result = await self.get_pending_queue_status(
-                    self.ctxt, self.rule, q, self.queue_rule, qf
+                    self.ctxt, convoy, self.rule, self.queue_rule, qf
                 )
         except Exception as e:
             if not exceptions.need_retry(e):
-                await q.remove_pull(
+                await convoy.remove_pull(
                     self.ctxt.pull["number"],
                     self.rule.get_signal_trigger(),
                     queue_utils.PrUnexpectedlyFailedToMerge(),
@@ -463,24 +518,27 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         if result.conclusion is not check_api.Conclusion.PENDING:
             unqueue_reason = await self.get_unqueue_reason_from_action_result(result)
-            await self._unqueue_pull_request(q, car, unqueue_reason, result)
+            await self._unqueue_pull_request(convoy, cars, unqueue_reason, result)
 
         return result
 
     async def _unqueue_pull_request(
         self,
-        q: merge_train.Train,
-        car: merge_train.TrainCar | None,
+        convoy: merge_train.Convoy,
+        cars: list[merge_train.TrainCar],
         unqueue_reason: queue_utils.BaseUnqueueReason,
         result: check_api.Result,
     ) -> None:
         pull_request_rule_has_unmatched = result is actions.CANCELLED_CHECK_REPORT
         # NOTE(sileht): The PR has been checked successfully but the
         # final merge fail, we must erase the queue summary conclusion,
-        # so the requeue can works.
+        # so the requeue can work.
         merge_has_been_cancelled = (
-            car
-            and car.train_car_state.outcome == merge_train.TrainCarOutcome.MERGEABLE
+            cars
+            and all(
+                car.train_car_state.outcome == merge_train.TrainCarOutcome.MERGEABLE
+                for car in cars
+            )
             and result.conclusion is check_api.Conclusion.CANCELLED
         )
         if pull_request_rule_has_unmatched or merge_has_been_cancelled:
@@ -491,7 +549,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 # NOTE(sileht): we disallow the action to rerun later without requeue/refresh command
                 conclusion = check_api.Conclusion.FAILURE
             else:
-                raise RuntimeError("impossible if branch")
+                raise RuntimeError("Impossible if branch")
+
             await check_api.set_check_run(
                 self.ctxt,
                 constants.MERGE_QUEUE_SUMMARY_NAME,
@@ -502,32 +561,46 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 ),
             )
 
-        await q.remove_pull(
+        await convoy.remove_pull(
             self.ctxt.pull["number"], self.rule.get_signal_trigger(), unqueue_reason
         )
 
     async def cancel(self) -> check_api.Result:
-        q = await merge_train.Train.from_context(self.ctxt, self.queue_rules)
-        car = q.get_car(self.ctxt)
+        convoy = await merge_train.Convoy.from_context(
+            self.ctxt, self.queue_rules, self.partition_rules
+        )
 
-        result = await self.pre_queue_checks(q, car)
+        partition_names = (
+            await self.partition_rules.get_evaluated_partition_names_from_context(
+                self.ctxt
+            )
+        )
+
+        trains_and_car = convoy.get_trains_and_car_from_context_and_partition_names(
+            self.ctxt, partition_names
+        )
+        cars = [tac.train_car for tac in trains_and_car]
+
+        result = await self.pre_queue_checks(convoy, cars)
+
         if result is not None:
             return result
 
-        if car is not None:
-            await car.check_mergeability(
-                "original_pull_request",
-                original_pull_request_rule=self.rule,
-                original_pull_request_number=self.ctxt.pull["number"],
-            )
+        for car in cars:
+            if car is not None:
+                await car.check_mergeability(
+                    "original_pull_request",
+                    original_pull_request_rule=self.rule,
+                    original_pull_request_number=self.ctxt.pull["number"],
+                )
 
         # We just rebase the pull request, don't cancel it yet if CIs are
         # running. The pull request will be merged if all rules match again.
         # if not we will delete it when we received all CIs termination
-        if await self._should_be_cancel(self.ctxt, self.rule, q, car):
+        if await self._should_be_cancel(self.ctxt, self.rule, trains_and_car):
             result = actions.CANCELLED_CHECK_REPORT
             unqueue_reason = await self.get_unqueue_reason_from_action_result(result)
-            await self._unqueue_pull_request(q, car, unqueue_reason, result)
+            await self._unqueue_pull_request(convoy, cars, unqueue_reason, result)
             return result
 
         if not await self._should_be_queued(self.ctxt):
@@ -537,17 +610,17 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 "The pull request has been removed from the queue",
                 f"{unqueue_reason!s}.\n{self.UNQUEUE_DOCUMENTATION}",
             )
-            await self._unqueue_pull_request(q, car, unqueue_reason, result)
+            await self._unqueue_pull_request(convoy, cars, unqueue_reason, result)
             return result
 
-        qf = await q.get_current_queue_freeze(self.config["name"])
+        qf = await convoy.get_current_queue_freeze(self.config["name"])
         result = await self.get_pending_queue_status(
-            self.ctxt, self.rule, q, self.queue_rule, qf
+            self.ctxt, convoy, self.rule, self.queue_rule, qf
         )
 
         if result.conclusion is not check_api.Conclusion.PENDING:
             unqueue_reason = await self.get_unqueue_reason_from_action_result(result)
-            await self._unqueue_pull_request(q, car, unqueue_reason, result)
+            await self._unqueue_pull_request(convoy, cars, unqueue_reason, result)
         return result
 
     async def _render_bot_account(self) -> None:
@@ -601,6 +674,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 config=self.config,
                 queue_rule=self.queue_rule,
                 queue_rules=self.queue_rules,
+                partition_rules=self.partition_rules,
                 ctxt=self.ctxt,
             )
         except InvalidQueueConfiguration as e:
@@ -613,7 +687,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
         return None
 
     async def pre_queue_checks(
-        self, queue: merge_train.Train, car: merge_train.TrainCar | None
+        self,
+        convoy: merge_train.Convoy,
+        cars: list[merge_train.TrainCar],
     ) -> check_api.Result | None:
         result = await self._check_action_validity()
 
@@ -635,7 +711,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 or self.config["method"] == "fast-forward"
             )
             and await self.has_been_recently_merged(
-                queue.repository.installation.redis.cache,
+                convoy.repository.installation.redis.cache,
                 self.ctxt.repository.repo["id"],
                 self.ctxt.pull["number"],
             )
@@ -650,7 +726,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 unqueue_reason = await self.get_unqueue_reason_from_action_result(
                     result
                 )
-                await self._unqueue_pull_request(queue, car, unqueue_reason, result)
+                await self._unqueue_pull_request(convoy, cars, unqueue_reason, result)
 
         return result
 
@@ -726,8 +802,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
     @staticmethod
     async def _should_be_queued(ctxt: context.Context) -> bool:
-        # TODO(sileht): load outcome from summary, so we known why it shouldn't
-        # be queued
+        # TODO(sileht): load outcome from summary,
+        # so we know why it shouldn't be queued
         check = await ctxt.get_engine_check_run(constants.MERGE_QUEUE_SUMMARY_NAME)
         return not check or check_api.Conclusion(check["conclusion"]) in [
             check_api.Conclusion.SUCCESS,
@@ -738,27 +814,31 @@ Then, re-embark the pull request into the merge queue by posting the comment
     @staticmethod
     async def _should_be_merged(
         ctxt: context.Context,
-        queue: merge_train.Train,
+        convoy: merge_train.Convoy,
         queue_freeze: freeze.QueueFreeze | None,
+        partition_names: list[partr_config.PartitionRuleName],
     ) -> bool:
         if queue_freeze is not None:
             return False
 
-        if not await queue.is_first_pull(ctxt):
-            return False
+        for train in convoy.iter_trains_from_partition_names(partition_names):
+            if not await train.is_first_pull(ctxt):
+                return False
 
-        car = queue.get_car(ctxt)
-        if car is None:
-            return False
+            car = train.get_car(ctxt)
+            if car is None:
+                return False
 
-        return car.train_car_state.outcome == merge_train.TrainCarOutcome.MERGEABLE
+            if car.train_car_state.outcome != merge_train.TrainCarOutcome.MERGEABLE:
+                return False
+
+        return True
 
     @staticmethod
     async def _should_be_cancel(
         ctxt: context.Context,
         rule: "prr_config.EvaluatedPullRequestRule",
-        q: merge_train.Train,
-        previous_car: merge_train.TrainCar | None,
+        previous_cars: list[merge_train_types.TrainAndTrainCar],
     ) -> bool:
         # It's closed, it's not going to change
         if ctxt.closed:
@@ -767,70 +847,90 @@ Then, re-embark the pull request into the merge queue by posting the comment
         if await ctxt.synchronized_by_user_at() is not None:
             return True
 
-        position, _ = q.find_embarked_pull(ctxt.pull["number"])
-        if position is None:
-            return True
+        for train, prev_car in previous_cars:
+            position, _ = train.find_embarked_pull(ctxt.pull["number"])
+            if position is None:
+                return True
 
-        car = q.get_car(ctxt)
-        if car is None:
-            # NOTE(sileht): in case the car just got deleted but the PR is
-            # still first in queue This means the train has been resetted for
-            # some reason. If we was waiting for CIs to complete, we must not
-            # cancel the action as the train car will be recreated very soon
-            # (by Train.refresh()).
-            # To keep it queued, we check the state against the previous car
-            # version one last time.
-            car = previous_car
+            car = train.get_car(ctxt)
+            if car is None:
+                # NOTE(sileht): in case the car just got deleted but the PR is
+                # still first in queue this means the train has been resetted for
+                # some reason. If we were waiting for CIs to complete, we must not
+                # cancel the action as the train car will be recreated very soon
+                # (by Train.refresh()).
+                # To keep it queued, we check the state against the previous car
+                # version one last time.
+                car = prev_car
 
-        if (
-            car
-            and car.train_car_state.checks_type
-            == merge_train.TrainCarChecksType.INPLACE
-        ):
-            # NOTE(sileht) check first if PR should be removed from the queue
-            pull_rule_checks_status = await checks_status.get_rule_checks_status(
-                ctxt.log, ctxt.repository, [ctxt.pull_request], rule
-            )
-            # NOTE(sileht): if the pull request rules are pending we wait their
-            # match before checking queue rules states, in case of one
-            # condition suddently unqueue the pull request.
-            # TODO(sileht): we may want to make this behavior configurable as
-            # people having slow/long CI running only on pull request rules, we
-            # may want to merge it before it finishes.
-            return pull_rule_checks_status not in (
-                check_api.Conclusion.PENDING,
-                check_api.Conclusion.SUCCESS,
-            )
+            if (
+                car
+                and car.train_car_state.checks_type
+                == merge_train.TrainCarChecksType.INPLACE
+            ):
+                # NOTE(sileht) check first if PR should be removed from the queue
+                pull_rule_checks_status = await checks_status.get_rule_checks_status(
+                    ctxt.log, ctxt.repository, [ctxt.pull_request], rule
+                )
+                # NOTE(sileht): if the pull request rules are pending we wait their
+                # match before checking queue rules states, in case of one
+                # condition suddently unqueue the pull request.
+                # TODO(sileht): we may want to make this behavior configurable as
+                # people having slow/long CI running only on pull request rules, we
+                # may want to merge it before it finishes.
+                return pull_rule_checks_status not in (
+                    check_api.Conclusion.PENDING,
+                    check_api.Conclusion.SUCCESS,
+                )
 
         return True
 
     @staticmethod
     async def get_pending_queue_status(
         ctxt: context.Context,
+        convoy: merge_train.Convoy,
         rule: "prr_config.EvaluatedPullRequestRule",
-        queue: merge_train.Train,
         queue_rule: qr_config.QueueRule,
         queue_freeze: freeze.QueueFreeze | None,
     ) -> check_api.Result:
         if queue_freeze is not None:
             title = queue_freeze.get_freeze_message()
         else:
-            position, _ = queue.find_embarked_pull(ctxt.pull["number"])
-            if position is None:
+            embarked_pulls = await convoy.find_embarked_pull(ctxt.pull["number"])
+            if not embarked_pulls:
                 ctxt.log.error("expected queued pull request not found in queue")
                 title = "The pull request is queued to be merged"
             else:
-                _ord = utils.to_ordinal_numeric(position + 1)
-                title = f"The pull request is the {_ord} in the queue to be merged"
+                if len(embarked_pulls) == 1:
+                    _ord = utils.to_ordinal_numeric(embarked_pulls[0].position + 1)
+                    title = f"The pull request is the {_ord} in the "
 
-        summary = await queue.get_pull_summary(
+                    if embarked_pulls[0].partition_name is None:
+                        title += "queue"
+                    else:
+                        title += f"`{embarked_pulls[0].partition_name}` partition queue"
+
+                    title += " to be merged"
+                else:
+                    positions = [
+                        f"{utils.to_ordinal_numeric(ep.position + 1)} in {ep.partition_name}"
+                        for ep in embarked_pulls
+                    ]
+                    title = (
+                        "The pull request is queued in the following partitions to be merged: "
+                        f"{', '.join(positions)}"
+                    )
+
+        summary = await convoy.get_pull_summary(
             ctxt, queue_rule=queue_rule, pull_rule=rule
         )
 
         return check_api.Result(check_api.Conclusion.PENDING, title, summary)
 
     async def send_merge_signal(
-        self, embarked_pull: merge_train.EmbarkedPullWithCar
+        self,
+        embarked_pull_queued_at: datetime.datetime,
+        partition_names: list[partr_config.PartitionRuleName] | None,
     ) -> None:
         await signals.send(
             self.ctxt.repository,
@@ -838,9 +938,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
             "action.queue.merged",
             signals.EventQueueMergedMetadata(
                 {
-                    "queue_name": self.config["name"],
                     "branch": self.ctxt.pull["base"]["ref"],
-                    "queued_at": embarked_pull.embarked_pull.queued_at,
+                    "partition_names": partition_names,
+                    "queue_name": self.config["name"],
+                    "queued_at": embarked_pull_queued_at,
                 }
             ),
             self.rule.get_signal_trigger(),
@@ -885,6 +986,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         config: QueueExecutorConfig,
         queue_rule: qr_config.QueueRule,
         queue_rules: qr_config.QueueRules,
+        partition_rules: partr_config.PartitionRules,
         ctxt: context.Context,
     ) -> None:
         if len(queue_rules) > 1 and not ctxt.subscription.has_feature(
@@ -923,6 +1025,15 @@ Then, re-embark the pull request into the merge queue by posting the comment
         ):
             raise InvalidQueueConfiguration(
                 "Cannot use `priority` with queue action.",
+                ctxt.subscription.missing_feature_reason(
+                    ctxt.pull["base"]["repo"]["owner"]["login"]
+                ),
+            )
+        elif len(partition_rules) > 0 and not ctxt.subscription.has_feature(
+            subscription.Features.QUEUE_ACTION
+        ):
+            raise InvalidQueueConfiguration(
+                "Cannot use `partition_rules` with queue action.",
                 ctxt.subscription.missing_feature_reason(
                     ctxt.pull["base"]["repo"]["owner"]["login"]
                 ),
@@ -981,6 +1092,9 @@ class QueueAction(actions.Action):
     ]
 
     # NOTE(sileht): set by validate_config()
+    partition_rules: partr_config.PartitionRules = dataclasses.field(
+        init=False, repr=False
+    )
     queue_rules: qr_config.QueueRules = dataclasses.field(init=False, repr=False)
     queue_rule: qr_config.QueueRule = dataclasses.field(init=False, repr=False)
 
@@ -1034,6 +1148,7 @@ class QueueAction(actions.Action):
 
     def validate_config(self, mergify_config: "mergify_conf.MergifyConfig") -> None:
         self.queue_rules = mergify_config["queue_rules"]
+        self.partition_rules = mergify_config["partition_rules"]
         if (
             self.config["name"] is not None
             and mergify_config["queue_rules"].get(self.config["name"]) is None

@@ -328,17 +328,22 @@ Here's the list of pull request attribute that can be used in conditions:
    * - ``number``
      - integer
      - The pull request number.
+   * - ``queue-partition-name``
+     - list of string
+     - The name of the partitions the pull request is queued in.
    * - ``queue-position``
      - integer
-     - The position of the pull request in its queue if queued. The first pull
-       request in the queue has position ``0``. The value is set to ``-1`` if
-       the pull request is not queued.
+     - | The position of the pull request in its queue if queued.
+       | The first pull request in the queue has position ``0``.
+       | The value is set to ``-1`` if the pull request is not queued.
+       | NB: If you are using partitions, this condition returns the maximum position of the pull request from all the partitions it is queued in.
    * - ``queued-at``
      - :ref:`Timestamp <iso timestamp>` or :ref:`Relative timestamp <relative timestamp>`
      - The time the pull request was queued at for merge.
    * - ``queue-merge-started-at``
      - :ref:`Timestamp <iso timestamp>` or :ref:`Relative timestamp <relative timestamp>`
-     - The time the pull request mergeability checks have started at.
+     - | The time the pull request mergeability checks have started at.
+       | NB: This attribute does not work when using :ref:`partition rules`.
    * - ``repository-full-name``
      - string
      - The current repository full name (complete version with the organization name).

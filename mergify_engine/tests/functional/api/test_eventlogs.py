@@ -301,8 +301,9 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "timestamp": mock.ANY,
                 "event": "action.queue.merged",
                 "metadata": {
-                    "queue_name": "default",
                     "branch": self.main_branch_name,
+                    "partition_names": None,
+                    "queue_name": "default",
                     "queued_at": mock.ANY,
                 },
                 "trigger": "Rule: queueit",
@@ -317,6 +318,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                     "merged": True,
                     "queue_name": "default",
                     "branch": self.main_branch_name,
+                    "partition_name": None,
                     "position": 0,
                     "queued_at": mock.ANY,
                     "seconds_waiting_for_schedule": 0,
@@ -336,6 +338,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                     "abort_status": "DEFINITIVE",
                     "queue_name": "default",
                     "branch": self.main_branch_name,
+                    "partition_name": None,
                     "position": 0,
                     "queued_at": mock.ANY,
                     "speculative_check_pull_request": {
@@ -357,6 +360,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "metadata": {
                     "queue_name": "default",
                     "branch": self.main_branch_name,
+                    "partition_name": None,
                     "position": 0,
                     "queued_at": mock.ANY,
                     "speculative_check_pull_request": {
@@ -377,6 +381,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "metadata": {
                     "queue_name": "default",
                     "branch": self.main_branch_name,
+                    "partition_name": None,
                     "position": 0,
                     "queued_at": mock.ANY,
                 },
@@ -391,8 +396,9 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "timestamp": mock.ANY,
                 "event": "action.queue.merged",
                 "metadata": {
-                    "queue_name": "default",
                     "branch": self.main_branch_name,
+                    "partition_names": None,
+                    "queue_name": "default",
                     "queued_at": mock.ANY,
                 },
                 "trigger": "Rule: queueit",
@@ -407,6 +413,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                     "merged": True,
                     "queue_name": "default",
                     "branch": self.main_branch_name,
+                    "partition_name": None,
                     "position": 0,
                     "queued_at": mock.ANY,
                     "seconds_waiting_for_schedule": 0,
@@ -426,6 +433,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                     "abort_status": "DEFINITIVE",
                     "queue_name": "default",
                     "branch": self.main_branch_name,
+                    "partition_name": None,
                     "position": 0,
                     "queued_at": mock.ANY,
                     "speculative_check_pull_request": {
@@ -496,6 +504,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "metadata": {
                     "queue_name": "default",
                     "branch": self.main_branch_name,
+                    "partition_name": None,
                     "position": 0,
                     "queued_at": mock.ANY,
                     "speculative_check_pull_request": {
@@ -514,9 +523,10 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "timestamp": mock.ANY,
                 "event": "action.queue.enter",
                 "metadata": {
-                    "queue_name": "default",
                     "branch": self.main_branch_name,
                     "position": 0,
+                    "partition_name": None,
+                    "queue_name": "default",
                     "queued_at": mock.ANY,
                 },
                 "trigger": "Rule: queueit",

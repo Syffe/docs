@@ -11,6 +11,7 @@ import msgpack
 from mergify_engine import context
 from mergify_engine import date
 from mergify_engine.queue import merge_train
+from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 
 
@@ -157,7 +158,11 @@ class QueueFreeze:
     def _get_redis_key_match(cls, repository: context.Repository) -> str:
         return f"{repository.repo['id']}~*"
 
-    async def save(self, queue_rules: qr_config.QueueRules) -> None:
+    async def save(
+        self,
+        queue_rules: qr_config.QueueRules,
+        partition_rules: partr_config.PartitionRules,
+    ) -> None:
         await self.repository.installation.redis.queue.hset(
             self._get_redis_hash(self.repository),
             self._get_redis_key(self.repository, self.name),
@@ -174,9 +179,15 @@ class QueueFreeze:
             ),
         )
 
-        await self._refresh_pulls(queue_rules, source="internal/queue_freeze_create")
+        await self._refresh_pulls(
+            queue_rules, partition_rules, source="internal/queue_freeze_create"
+        )
 
-    async def delete(self, queue_rules: qr_config.QueueRules) -> bool:
+    async def delete(
+        self,
+        queue_rules: qr_config.QueueRules,
+        partition_rules: partr_config.PartitionRules,
+    ) -> bool:
         result = bool(
             await self.repository.installation.redis.queue.hdel(
                 self._get_redis_hash(self.repository),
@@ -184,14 +195,21 @@ class QueueFreeze:
             )
         )
 
-        await self._refresh_pulls(queue_rules, source="internal/queue_freeze_delete")
+        await self._refresh_pulls(
+            queue_rules, partition_rules, source="internal/queue_freeze_delete"
+        )
 
         return result
 
     async def _refresh_pulls(
-        self, queue_rules: qr_config.QueueRules, source: str
+        self,
+        queue_rules: qr_config.QueueRules,
+        partition_rules: partr_config.PartitionRules,
+        source: str,
     ) -> None:
-        async for train in merge_train.Train.iter_trains(self.repository, queue_rules):
+        async for train in merge_train.Train.iter_trains(
+            self.repository, queue_rules, partition_rules
+        ):
             await train.refresh_pulls(source=source)
 
     def get_freeze_message(self) -> str:

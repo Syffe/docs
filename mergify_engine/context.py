@@ -355,6 +355,9 @@ class Repository:
 
             yield content_file_to_config_file(content)
 
+    def clear_caches(self) -> None:
+        self._caches = RepositoryCaches()
+
     @tracer.wrap("get_mergify_config", span_type="worker")
     async def get_mergify_config(
         self, allow_extend: bool = True
@@ -1369,42 +1372,66 @@ class Context:
         )
 
     async def _get_consolidated_queue_data(self, name: str) -> ContextAttributeType:
+        # Circular import
+        from mergify_engine.queue import merge_train
+
         mergify_config = await self.repository.get_mergify_config()
         queue_rules = mergify_config["queue_rules"]
-        q = await merge_train.Train.from_context(self, queue_rules)
+        partition_rules = mergify_config["partition_rules"]
+        convoy = await merge_train.Convoy.from_context(
+            self, queue_rules, partition_rules
+        )
 
         if name == "queue-position":
-            position, _ = q.find_embarked_pull(self.pull["number"])
-            if position is None:
+            embarked_pulls = await convoy.find_embarked_pull(self.pull["number"])
+            if not embarked_pulls:
                 return -1
-            return position
+            if len(embarked_pulls) == 1:
+                return embarked_pulls[0].position
+
+            return max([ep.position for ep in embarked_pulls])
 
         elif name in ("queued-at", "queued-at-relative"):
-            position, embarked_pull = q.find_embarked_pull(self.pull["number"])
-            if embarked_pull is None:
+            embarked_pulls = await convoy.find_embarked_pull(self.pull["number"])
+            if not embarked_pulls:
                 return None
-            elif name == "queued-at":
-                return embarked_pull.embarked_pull.queued_at
+
+            # NOTE(Greesb): Use the embarked_pulls at index 0 because
+            # the PR should be queued at the same time for every partitions.
+            if name == "queued-at":
+                return embarked_pulls[0].embarked_pull.queued_at
             else:
-                return date.RelativeDatetime(embarked_pull.embarked_pull.queued_at)
+                return date.RelativeDatetime(embarked_pulls[0].embarked_pull.queued_at)
 
         elif name in ("queue-merge-started-at", "queue-merge-started-at-relative"):
             # Only used with QueuePullRequest
-            car = q.get_car_by_tmp_pull(self)
-            if car is None:
-                car = q.get_car(self)
-                if car is None:
+            cars = convoy.get_train_cars_by_tmp_pull(self)
+            if not cars:
+                cars = convoy.get_train_cars_by_pull(self)
+                if not cars:
                     return None
+                elif len(cars) > 1:
+                    # NOTE(Greesb): Attribute not yet handled for multiple cars (monorepo case)
+                    raise PullRequestAttributeError(name)
                 else:
-                    started_at = car.train_car_state.ci_started_at
+                    started_at = cars[0].train_car_state.ci_started_at
+            elif len(cars) > 1:
+                # NOTE(Greesb): Attribute not yet handled for multiple cars (monorepo case)
+                raise PullRequestAttributeError(name)
             else:
-                started_at = car.train_car_state.ci_started_at
+                started_at = cars[0].train_car_state.ci_started_at
+
             if started_at is None:
                 return None
+
             if name == "queue-merge-started-at":
                 return started_at
             else:
                 return date.RelativeDatetime(started_at)
+
+        elif name == "queue-partition-name":
+            return convoy.get_queue_pull_request_partition_names_from_context(self)
+
         else:
             raise PullRequestAttributeError(name)
 
@@ -2455,6 +2482,7 @@ class QueuePullRequest(BasePullRequest):
         "queue-merge-started-at",
         "queue-merge-started-at-relative",
         "files",
+        "queue-partition-name",
     )
 
     async def __getattr__(self, name: str) -> ContextAttributeType:
@@ -2483,7 +2511,3 @@ class CommandPullRequest(PullRequest):
             return self.sender_permission
         else:
             return await super().__getattr__(name)
-
-
-# circular import
-from mergify_engine.queue import merge_train  # noqa

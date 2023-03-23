@@ -9,6 +9,7 @@ from mergify_engine import signals
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules.config import mergify as mergify_conf
+from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import pull_request_rules as prr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 
@@ -22,6 +23,7 @@ class UnqueueExecutor(
     actions.ActionExecutor["UnqueueCommand", "UnqueueExecutorConfig"]
 ):
     queue_rules: qr_config.QueueRules
+    partition_rules: partr_config.PartitionRules
 
     @classmethod
     async def create(
@@ -35,12 +37,14 @@ class UnqueueExecutor(
             rule,
             UnqueueExecutorConfig(),
             action.queue_rules,
+            action.partition_rules,
         )
 
     async def run(self) -> check_api.Result:
-        train = await merge_train.Train.from_context(self.ctxt, self.queue_rules)
-        _, embarked_pull = train.find_embarked_pull(self.ctxt.pull["number"])
-        if embarked_pull is None:
+        convoy = await merge_train.Convoy.from_context(
+            self.ctxt, self.queue_rules, self.partition_rules
+        )
+        if not convoy.is_pull_embarked(self.ctxt.pull["number"]):
             return check_api.Result(
                 check_api.Conclusion.NEUTRAL,
                 title="The pull request is not queued",
@@ -64,7 +68,8 @@ class UnqueueExecutor(
             signals.EventNoMetadata(),
             self.rule.get_signal_trigger(),
         )
-        await train.remove_pull(
+
+        await convoy.remove_pull(
             self.ctxt.pull["number"],
             self.rule.get_signal_trigger(),
             queue_utils.PrDequeued(
@@ -92,6 +97,10 @@ class UnqueueCommand(actions.Action):
     ]
 
     queue_rules: qr_config.QueueRules = dataclasses.field(init=False, repr=False)
+    partition_rules: partr_config.PartitionRules = dataclasses.field(
+        init=False, repr=False
+    )
 
     def validate_config(self, mergify_config: "mergify_conf.MergifyConfig") -> None:
         self.queue_rules = mergify_config["queue_rules"]
+        self.partition_rules = mergify_config["partition_rules"]

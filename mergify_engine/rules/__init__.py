@@ -186,6 +186,7 @@ def UserConfigurationSchema(
     config: dict[str, typing.Any], partial_validation: bool = False
 ) -> voluptuous.Schema:
     # Circular import
+    from mergify_engine.rules.config import partition_rules as partr_config
     from mergify_engine.rules.config import pull_request_rules as prr_config
     from mergify_engine.rules.config import queue_rules as qr_config
 
@@ -211,6 +212,9 @@ def UserConfigurationSchema(
                 }
             ],
         ): qr_config.QueueRulesSchema,
+        voluptuous.Required(
+            "partition_rules", default=[]
+        ): partr_config.PartitionRulesSchema,
         voluptuous.Required("commands_restrictions", default={}): {
             voluptuous.Required(
                 name, default={}
@@ -240,6 +244,7 @@ def apply_configure_filter(
         conditions_mod.PullRequestRuleConditions
         | conditions_mod.QueueRuleMergeConditions
         | conditions_mod.PriorityRuleConditions
+        | conditions_mod.PartitionRuleConditions
     ),
 ) -> None:
     for condition in conditions.walk():

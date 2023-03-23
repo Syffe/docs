@@ -148,3 +148,141 @@ class TestUnQueueCommand(base.FunctionalTestBase):
 
         p1 = await self.get_pull(p1["number"])
         assert p1["merged"]
+
+    async def test_unqueue_pr_in_1_partition(self) -> None:
+        rules = {
+            "partition_rules": [
+                {
+                    "name": "projA",
+                    "conditions": [
+                        "files~=^projA/",
+                    ],
+                },
+                {
+                    "name": "projB",
+                    "conditions": [
+                        "files~=^projB/",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Automatic merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                }
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr(
+            files={
+                "projA/test.txt": "testA",
+            }
+        )
+
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        draft_pr_p1 = await self.wait_for_pull_request("opened")
+        await self.create_comment_as_admin(p1["number"], "@mergifyio unqueue")
+
+        await self.run_engine()
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=p1["number"]
+        )
+
+        await self.wait_for_pull_request("closed", draft_pr_p1["number"])
+        convoy = await self.get_convoy()
+        assert len(convoy._trains) == 2
+        for train in convoy.iter_trains():
+            assert len(train._cars) == 0
+
+    async def test_unqueue_pr_in_2_partitions(self) -> None:
+        rules = {
+            "partition_rules": [
+                {
+                    "name": "projA",
+                    "conditions": [
+                        "files~=^projA/",
+                    ],
+                },
+                {
+                    "name": "projB",
+                    "conditions": [
+                        "files~=^projB/",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Automatic merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                }
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr(
+            files={
+                "projA/test.txt": "testA",
+                "projB/test.txt": "testB",
+            }
+        )
+        p2 = await self.create_pr(
+            files={
+                "projB/test2.txt": "testB2",
+            }
+        )
+
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+        await self.wait_for_pull_request("opened")
+
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        draft_pr_p1_projA = await self.wait_for_pull_request("opened")
+        await self.create_comment_as_admin(p1["number"], "@mergifyio unqueue")
+
+        await self.run_engine()
+        await self.wait_for(
+            "issue_comment", {"action": "created"}, test_id=p1["number"]
+        )
+
+        await self.wait_for_pull_request("closed", draft_pr_p1_projA["number"])
+
+        convoy = await self.get_convoy()
+        assert len(convoy._trains) == 2
+        for train in convoy.iter_trains():
+            if train.partition_name == "projA":
+                assert len(train._cars) == 0
+            else:
+                assert len(train._cars) == 1

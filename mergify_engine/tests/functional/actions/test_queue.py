@@ -1378,6 +1378,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "metadata": {
                         "branch": self.main_branch_name,
                         "merged": False,
+                        "partition_name": None,
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
@@ -1402,6 +1403,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "abort_status": "DEFINITIVE",
                         "aborted": True,
                         "branch": self.main_branch_name,
+                        "partition_name": None,
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
@@ -1423,6 +1425,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "event": "action.queue.checks_start",
                     "metadata": {
                         "branch": self.main_branch_name,
+                        "partition_name": None,
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
@@ -1443,6 +1446,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "event": "action.queue.enter",
                     "metadata": {
                         "branch": self.main_branch_name,
+                        "partition_name": None,
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
@@ -1981,6 +1985,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "branch": self.main_branch_name,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
+                        "partition_names": None,
                     },
                     "pull_request": p1["number"],
                     "repository": self.repository_ctxt.repo["full_name"],
@@ -1992,6 +1997,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "metadata": {
                         "branch": self.main_branch_name,
                         "merged": True,
+                        "partition_name": None,
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
@@ -2013,6 +2019,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "abort_status": "DEFINITIVE",
                         "aborted": False,
                         "branch": self.main_branch_name,
+                        "partition_name": None,
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
@@ -2034,6 +2041,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "event": "action.queue.checks_start",
                     "metadata": {
                         "branch": self.main_branch_name,
+                        "partition_name": None,
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
@@ -2054,6 +2062,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "event": "action.queue.enter",
                     "metadata": {
                         "branch": self.main_branch_name,
+                        "partition_name": None,
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
@@ -2276,6 +2285,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "metadata": {
                         "merged": False,
                         "branch": self.main_branch_name,
+                        "partition_name": None,
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
@@ -2303,6 +2313,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "abort_status": "DEFINITIVE",
                         "aborted": True,
                         "branch": self.main_branch_name,
+                        "partition_name": None,
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
@@ -6454,7 +6465,9 @@ pull_request_rules:
         queues = [
             q
             async for q in merge_train.Train.iter_trains(
-                self.repository_ctxt, await self.get_queue_rules()
+                self.repository_ctxt,
+                await self.get_queue_rules(),
+                await self.get_partition_rules(),
             )
         ]
         assert len(queues) == 1
@@ -6471,7 +6484,9 @@ pull_request_rules:
         queues = [
             q
             async for q in merge_train.Train.iter_trains(
-                self.repository_ctxt, await self.get_queue_rules()
+                self.repository_ctxt,
+                await self.get_queue_rules(),
+                await self.get_partition_rules(),
             )
         ]
         assert len(queues) == 0
@@ -6631,7 +6646,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
         )
         q._cars.append(car)
 
-        q.queue_rules = qr_config.QueueRules(
+        q.convoy.queue_rules = qr_config.QueueRules(
             [
                 qr_config.QueueRule(
                     name=qr_config.QueueName("foo"),
@@ -6776,7 +6791,7 @@ pull_requests:
         )
         q._cars.append(car)
 
-        q.queue_rules = qr_config.QueueRules(
+        q.convoy.queue_rules = qr_config.QueueRules(
             [
                 qr_config.QueueRule(
                     name=qr_config.QueueName("foo"),
@@ -6875,7 +6890,7 @@ pull_requests:
         )
         q._cars.append(car)
 
-        q.queue_rules = qr_config.QueueRules(
+        q.convoy.queue_rules = qr_config.QueueRules(
             [
                 qr_config.QueueRule(
                     name=qr_config.QueueName("foo"),
@@ -6951,7 +6966,7 @@ pull_requests:
             base_sha,
         )
 
-        q.queue_rules = qr_config.QueueRules(
+        q.convoy.queue_rules = qr_config.QueueRules(
             [
                 qr_config.QueueRule(
                     name=qr_config.QueueName("foo"),

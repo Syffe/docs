@@ -27,7 +27,8 @@ Here's what you need to know about the file format:
 - The file format is `YAML <http://yaml.org/>`_.
 
 - The file main type is a dictionary whose keys are named
-  ``pull_request_rules``, ``queue_rules``, ``commands_restrictions``, ``defaults``, ``shared`` and ``extends``.
+  ``pull_request_rules``, ``queue_rules``, ``partition_rules``,
+  ``commands_restrictions``, ``defaults``, ``shared`` and ``extends``.
 
 Pull Request Rules
 ~~~~~~~~~~~~~~~~~~
@@ -77,6 +78,15 @@ Queue Rules
 - Each entry in ``queue_rules`` must be a dictionary.
 
 See :ref:`queue rules` for the complete list and description of options.
+
+Partition Rules
+~~~~~~~~~~~~~~~
+
+- The value type of the ``partition_rules`` is a list.
+
+- Each entry in ``partition_rules`` must be a dictionary.
+
+See :ref:`partition rules` for the complete list and description of options.
 
 .. _commands restrictions:
 

@@ -38,6 +38,7 @@ from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import statistics as queue_statistics
+from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.tests.functional import conftest as func_conftest
 from mergify_engine.worker import gitter_service
@@ -605,6 +606,9 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         await self._event_reader.aclose()
         await self.redis_links.flushall()
         await self.redis_links.shutdown_all()
+
+    def clear_repository_ctxt_caches(self) -> None:
+        self.repository_ctxt.clear_caches()
 
     async def wait_for(
         self, *args: typing.Any, **kwargs: typing.Any
@@ -1622,14 +1626,37 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         config = await self.repository_ctxt.get_mergify_config()
         return config["queue_rules"]
 
-    async def get_train(self) -> merge_train.Train:
-        q = merge_train.Train(
+    async def get_partition_rule(self, name: str) -> partr_config.PartitionRule:
+        config = await self.repository_ctxt.get_mergify_config()
+        return config["partition_rules"][partr_config.PartitionRuleName(name)]
+
+    async def get_partition_rules(self) -> partr_config.PartitionRules:
+        config = await self.repository_ctxt.get_mergify_config()
+        return config["partition_rules"]
+
+    async def get_train(
+        self,
+        partition_name: partr_config.PartitionRuleName | None = None,
+    ) -> merge_train.Train:
+        convoy = merge_train.Convoy(
             repository=self.repository_ctxt,
             queue_rules=await self.get_queue_rules(),
+            partition_rules=await self.get_partition_rules(),
             ref=self.main_branch_name,
         )
-        await q.load()
-        return q
+        train = merge_train.Train(convoy=convoy, partition_name=partition_name)
+        await train.load()
+        return train
+
+    async def get_convoy(self) -> merge_train.Convoy:
+        convoy = merge_train.Convoy(
+            repository=self.repository_ctxt,
+            queue_rules=await self.get_queue_rules(),
+            partition_rules=await self.get_partition_rules(),
+            ref=self.main_branch_name,
+        )
+        await convoy.load()
+        return convoy
 
     @staticmethod
     def _assert_merge_queue_car(

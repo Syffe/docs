@@ -387,7 +387,7 @@ class Processor:
                         bucket_org_key, installation
                     )
 
-                    # NOTE(sileht): wew don't need to refresh trains if nothing changed.
+                    # NOTE(sileht): we don't need to refresh trains if nothing changed
                     if pulls_processed > 0:
                         await merge_train.Train.refresh_trains(installation)
 

@@ -624,6 +624,11 @@ class PriorityRuleConditions(BaseRuleConditions):
 
 
 @dataclasses.dataclass
+class PartitionRuleConditions(BaseRuleConditions):
+    pass
+
+
+@dataclasses.dataclass
 class QueueRuleMergeConditions(BaseRuleConditions):
     _evaluated_conditions: dict[
         github_types.GitHubPullRequestNumber, RuleConditionCombination

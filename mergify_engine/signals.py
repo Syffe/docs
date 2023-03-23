@@ -9,6 +9,7 @@ import daiquiri
 from mergify_engine import github_types
 from mergify_engine.clients import github
 from mergify_engine.queue import utils as queue_utils
+from mergify_engine.rules.config import partition_rules as partr_config
 
 
 if typing.TYPE_CHECKING:
@@ -106,6 +107,7 @@ class EventQueueEnterMetadata(EventMetadata, total=False):
     branch: str
     position: int
     queued_at: datetime.datetime
+    partition_name: partr_config.PartitionRuleName | None
 
 
 class EventQueueLeaveMetadata(EventMetadata, total=False):
@@ -114,6 +116,7 @@ class EventQueueLeaveMetadata(EventMetadata, total=False):
     queue_name: str
     branch: str
     position: int
+    partition_name: partr_config.PartitionRuleName | None
     queued_at: datetime.datetime
     seconds_waiting_for_schedule: int
     seconds_waiting_for_freeze: int
@@ -152,28 +155,31 @@ class EventMergeMetadata(EventMetadata, total=False):
 
 
 class EventQueueMergedMetadata(EventMetadata, total=False):
-    queue_name: str
     branch: str
+    partition_names: list[partr_config.PartitionRuleName] | None
+    queue_name: str
     queued_at: datetime.datetime
 
 
 class EventQueueChecksEndMetadata(EventMetadata, total=False):
     aborted: bool
-    abort_reason: str | None
     abort_code: queue_utils.AbortCodeT | None
+    abort_reason: str | None
     abort_status: typing.Literal["DEFINITIVE", "REEMBARKED"]
-    unqueue_code: queue_utils.UnqueueCodeT
-    queue_name: str
     branch: str
+    partition_name: partr_config.PartitionRuleName | None
     position: int | None
+    queue_name: str
     queued_at: datetime.datetime
     speculative_check_pull_request: SpeculativeCheckPullRequest
+    unqueue_code: queue_utils.UnqueueCodeT
 
 
 class EventQueueChecksStartMetadata(EventMetadata, total=False):
-    queue_name: str
     branch: str
+    partition_name: partr_config.PartitionRuleName | None
     position: int
+    queue_name: str
     queued_at: datetime.datetime
     speculative_check_pull_request: SpeculativeCheckPullRequest
 

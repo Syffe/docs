@@ -107,6 +107,7 @@ CONDITION_PARSERS = {
     "branch-protection-review-decision": Parser.ENUM,
     "sender": Parser.LOGIN_AND_TEAMS,
     "sender-permission": Parser.PERMISSION,
+    "queue-partition-name": Parser.TEXT,
 }
 COMMAND_ONLY_ATTRIBUTES = ("sender", "sender-permission")
 CONDITION_ENUMS = {

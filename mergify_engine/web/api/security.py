@@ -14,6 +14,7 @@ from mergify_engine.dashboard import application as application_mod
 from mergify_engine.dashboard import subscription
 from mergify_engine.models import github_user
 from mergify_engine.rules.config import mergify as mergify_conf
+from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web import redis
 
@@ -254,3 +255,23 @@ async def get_queue_rules(repository_ctxt: Repository) -> qr_config.QueueRules:
 
 
 QueueRules = typing.Annotated[qr_config.QueueRules, fastapi.Depends(get_queue_rules)]
+
+
+async def get_partition_rules(
+    repository_ctxt: context.Repository = fastapi.Depends(  # noqa: B008
+        get_repository_context
+    ),
+) -> partr_config.PartitionRules:
+    try:
+        mergify_config = await repository_ctxt.get_mergify_config()
+    except mergify_conf.InvalidRules:
+        raise fastapi.HTTPException(
+            status_code=422,
+            detail="The configuration file is invalid.",
+        )
+    return mergify_config["partition_rules"]
+
+
+PartitionRules = typing.Annotated[
+    partr_config.PartitionRules, fastapi.Depends(get_partition_rules)
+]

@@ -287,6 +287,7 @@ async def repository_queue_pull_request(
     ],
     repository_ctxt: security.Repository,
     queue_rules: security.QueueRules,
+    partition_rules: security.PartitionRules,
 ) -> EnhancedPullRequestQueued:
     try:
         queue_rule = queue_rules[queue_name]
@@ -297,7 +298,9 @@ async def repository_queue_pull_request(
             detail=f"Queue `{queue_name}` does not exist.",
         )
 
-    async for train in merge_train.Train.iter_trains(repository_ctxt, queue_rules):
+    async for train in merge_train.Train.iter_trains(
+        repository_ctxt, queue_rules, partition_rules
+    ):
         for position, (embarked_pull, car) in enumerate(train._iter_embarked_pulls()):
             if embarked_pull.user_pull_request_number != pr_number:
                 continue

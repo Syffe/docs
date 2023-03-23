@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    Partition rules have been added which allow Mergify to supports monorepos !
+    For more information refer to the ``queue`` action on our documentation website.

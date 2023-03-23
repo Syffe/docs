@@ -1,18 +1,22 @@
 from __future__ import annotations
 
 import logging
+import typing
 
 from mergify_engine import check_api
 from mergify_engine import context
 from mergify_engine.rules import conditions as rules_conditions
 from mergify_engine.rules import filter
 from mergify_engine.rules import live_resolvers
-from mergify_engine.rules.config import pull_request_rules as prr_config
-from mergify_engine.rules.config import queue_rules as qr_config
+
+
+if typing.TYPE_CHECKING:
+    from mergify_engine.rules.config import pull_request_rules as prr_config
+    from mergify_engine.rules.config import queue_rules as qr_config
 
 
 def get_conditions_with_ignored_attributes(
-    rule: prr_config.EvaluatedPullRequestRule | qr_config.EvaluatedQueueRule,
+    rule: "prr_config.EvaluatedPullRequestRule | qr_config.EvaluatedQueueRule",
     attribute_prefixes: tuple[str, ...],
 ) -> (
     rules_conditions.PullRequestRuleConditions
@@ -29,7 +33,7 @@ def get_conditions_with_ignored_attributes(
 async def conditions_without_some_attributes_match_p(
     log: "logging.LoggerAdapter[logging.Logger]",
     pulls: list[context.BasePullRequest],
-    rule: prr_config.EvaluatedPullRequestRule | qr_config.EvaluatedQueueRule,
+    rule: "prr_config.EvaluatedPullRequestRule | qr_config.EvaluatedQueueRule",
     attribute_prefixes: tuple[str, ...],
 ) -> bool:
     conditions = get_conditions_with_ignored_attributes(rule, attribute_prefixes)
@@ -81,7 +85,7 @@ async def get_rule_checks_status(
     log: "logging.LoggerAdapter[logging.Logger]",
     repository: context.Repository,
     pulls: list[context.BasePullRequest],
-    rule: prr_config.EvaluatedPullRequestRule | qr_config.EvaluatedQueueRule,
+    rule: "prr_config.EvaluatedPullRequestRule | qr_config.EvaluatedQueueRule",
     *,
     wait_for_schedule_to_match: bool = False,
 ) -> check_api.Conclusion:

@@ -303,6 +303,7 @@ async def repository_queues(
     ],
     repository_ctxt: security.Repository,
     queue_rules: security.QueueRules,
+    partition_rules: security.PartitionRules,
 ) -> Queues:
     queues = Queues()
 
@@ -312,8 +313,10 @@ async def repository_queues(
         )
     )
 
-    async for train in merge_train.Train.iter_trains(repository_ctxt, queue_rules):
-        queue = Queue(Branch(train.ref))
+    async for train in merge_train.Train.iter_trains(
+        repository_ctxt, queue_rules, partition_rules
+    ):
+        queue = Queue(Branch(train.convoy.ref))
         previous_eta = None
         for position, (embarked_pull, car) in enumerate(train._iter_embarked_pulls()):
             try:

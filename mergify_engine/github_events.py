@@ -105,6 +105,7 @@ class EventToProcess(EventBase):
             gh_repo=self.event["repository"]["name"],
             slim_event=self.slim_event,
             priority=self.priority,
+            gh_pull=self.pull_request_number,
         )
 
 

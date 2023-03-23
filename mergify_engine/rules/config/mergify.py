@@ -15,6 +15,7 @@ from mergify_engine.clients import http
 
 if typing.TYPE_CHECKING:
     from mergify_engine import context
+    from mergify_engine.rules.config import partition_rules as partr_config
     from mergify_engine.rules.config import pull_request_rules as prr_config
     from mergify_engine.rules.config import queue_rules as qr_config
 
@@ -49,6 +50,7 @@ class MergifyConfig(typing.TypedDict):
     extends: github_types.GitHubRepositoryName | None
     pull_request_rules: "prr_config.PullRequestRules"
     queue_rules: "qr_config.QueueRules"
+    partition_rules: "partr_config.PartitionRules"
     commands_restrictions: dict[str, "prr_config.CommandsRestrictions"]
     defaults: Defaults
     raw_config: typing.Any
@@ -58,7 +60,7 @@ def merge_raw_configs(
     extended_config: dict[str, typing.Any],
     dest_config: dict[str, typing.Any],
 ) -> None:
-    for rule_to_merge in ("pull_request_rules", "queue_rules"):
+    for rule_to_merge in ("pull_request_rules", "queue_rules", "partition_rules"):
         dest_rules = dest_config.setdefault(rule_to_merge, [])
         dest_rule_names = [rule["name"] for rule in dest_rules]
 

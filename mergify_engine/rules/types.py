@@ -10,6 +10,7 @@ from mergify_engine import github_types
 
 
 if typing.TYPE_CHECKING:
+    from mergify_engine.rules.config import partition_rules as partr_config
     from mergify_engine.rules.config import priority_rules as pr_config
     from mergify_engine.rules.config import pull_request_rules as prr_config
     from mergify_engine.rules.config import queue_rules as qr_config
@@ -19,12 +20,14 @@ T_Rule = typing.TypeVar(
     "prr_config.PullRequestRule",
     "qr_config.QueueRule",
     "pr_config.PriorityRule",
+    "partr_config.PartitionRule",
 )
 T_EvaluatedRule = typing.TypeVar(
     "T_EvaluatedRule",
     "prr_config.EvaluatedPullRequestRule",
     "qr_config.EvaluatedQueueRule",
     "pr_config.EvaluatedPriorityRule",
+    "partr_config.EvaluatedPartitionRule",
 )
 
 
