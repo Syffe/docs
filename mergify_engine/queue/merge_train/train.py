@@ -185,7 +185,7 @@ class Train:
             self._cars = [
                 train_car.TrainCar.deserialize(self, c) for c in train["cars"]
             ]
-            self.partition_name = train["partition_name"]
+            self.partition_name = train.get("partition_name")
         else:
             self._cars = []
             self._waiting_pulls = []
