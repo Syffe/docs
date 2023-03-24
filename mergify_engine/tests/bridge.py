@@ -17,6 +17,7 @@ LOG = logging.getLogger(__name__)
 async def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--clean", action="store_true")
+    parser.add_argument("--repository-id", default=config.TESTING_REPOSITORY_ID)
     parser.add_argument("--dest", default="http://localhost:8802/event")
 
     args = parser.parse_args()
@@ -32,9 +33,7 @@ async def main() -> None:
         base_url="https://test-forwarder.mergify.com",
         headers={"X-Hub-Signature": "sha1=" + payload_hmac},
     ) as session:
-        url = (
-            f"/events/github.com/{config.INTEGRATION_ID}/{config.TESTING_REPOSITORY_ID}"
-        )
+        url = f"/events/github.com/{config.INTEGRATION_ID}/{args.repository_id}"
         if args.clean:
             r = await session.request("DELETE", url, content=payload_data)
             r.raise_for_status()
