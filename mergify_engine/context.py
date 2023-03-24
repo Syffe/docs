@@ -970,10 +970,13 @@ class ContextCaches:
 
 ContextAttributeType = (
     None
+    | list[bool]
     | bool
     | list[str]
     | str
     | int
+    | list[datetime.datetime]
+    | list[date.RelativeDatetime]
     | datetime.time
     | datetime.datetime
     | datetime.timedelta
@@ -985,7 +988,18 @@ ContextAttributeType = (
     | github_types.GitHubRepositoryPermission
 )
 
-COMMITS_ARRAY_ATTRIBUTE_RE = re.compile(r"^commits\[(-?\d+)\]\.([\-\w]+)$")
+COMMITS_ARRAY_ATTRIBUTE_RE = re.compile(r"^commits\[(-?\d+|\*)\]\.([\-\w]+)$")
+
+CommitListAttributeType = (
+    list[str]
+    | list[bool]
+    | list[date.RelativeDatetime]
+    | list[datetime.datetime]
+    | list[github_types.GitHubLogin]
+)
+CommitAttributeType = (
+    str | bool | date.RelativeDatetime | datetime.datetime | github_types.GitHubLogin
+)
 
 
 @dataclasses.dataclass
@@ -1444,6 +1458,71 @@ class Context:
             if states is None or state in states
         ]
 
+    async def _get_commits_attribute(
+        self, commit_attribute: str, relative_time: bool
+    ) -> CommitListAttributeType:
+        return_values = [
+            self._get_commit_attribute(commit, commit_attribute, relative_time)
+            for commit in await self.commits
+        ]
+
+        # mypy doesn't seem to be able to understand that commit_attribute
+        # always being the same for each values makes it impossible to have
+        # different types in the list.
+        if commit_attribute in ("date_author", "date_committer"):
+            if relative_time:
+                return typing.cast(list[date.RelativeDatetime], return_values)
+            else:
+                return typing.cast(list[datetime.datetime], return_values)
+        elif commit_attribute == "commit_verification_verified":
+            return typing.cast(list[bool], return_values)
+        elif commit_attribute in (
+            "email_author",
+            "email_committer",
+            "commit_message",
+        ):
+            return typing.cast(list[str], return_values)
+        elif commit_attribute in ("author", "committer"):
+            return typing.cast(list[github_types.GitHubLogin], return_values)
+
+        raise RuntimeError(f"Unknown commit attribute `{commit_attribute}`")
+
+    def _get_commit_attribute(
+        self,
+        commit: github_types.CachedGitHubBranchCommit,
+        commit_attribute: str,
+        relative_time: bool,
+    ) -> CommitAttributeType:
+        # Circular import
+        from mergify_engine.rules import parser
+
+        if (
+            commit_attribute
+            not in parser.PARSERS_FOR_ARRAY_SUBATTRIBUTES["commits"].keys()
+        ):
+            raise PullRequestAttributeError(commit_attribute)
+
+        value = getattr(commit, commit_attribute)
+        if commit_attribute not in ("date_author", "date_committer"):
+            if commit_attribute == "commit_verification_verified":
+                return typing.cast(bool, value)
+            elif commit_attribute in (
+                "email_author",
+                "email_committer",
+                "commit_message",
+            ):
+                return typing.cast(str, value)
+            elif commit_attribute in ("author", "committer"):
+                return typing.cast(github_types.GitHubLogin, value)
+            else:
+                raise RuntimeError(f"Unknown commit attribute `{commit_attribute}`")
+
+        date_value = date.fromisoformat(value)
+        if relative_time:
+            return date.RelativeDatetime(date_value)
+
+        return date_value
+
     async def _get_consolidated_data(self, name: str) -> ContextAttributeType:
         if name == "assignee":
             return [a["login"] for a in self.pull["assignees"]]
@@ -1543,13 +1622,8 @@ class Context:
             if match is None:
                 raise PullRequestAttributeError(name)
 
-            nb_commit = int(match.group(1))
-            try:
-                commit = (await self.commits)[nb_commit]
-            except IndexError:
-                return None
-
             commit_attribute = match.group(2)
+
             relative_time = False
             if commit_attribute.endswith("-relative"):
                 relative_time = True
@@ -1557,14 +1631,18 @@ class Context:
 
             commit_attribute = commit_attribute.replace("-", "_")
 
-            value = getattr(commit, commit_attribute)
-            if commit_attribute not in ("date_author", "date_committer"):
-                return value  # type: ignore[no-any-return]
+            nb_commit = match.group(1)
+            if nb_commit == "*":
+                return await self._get_commits_attribute(
+                    commit_attribute, relative_time
+                )
 
-            date_value = date.fromisoformat(value)
-            if relative_time:
-                return date.RelativeDatetime(date_value)
-            return date_value
+            try:
+                commit = (await self.commits)[int(nb_commit)]
+            except IndexError:
+                return None
+
+            return self._get_commit_attribute(commit, commit_attribute, relative_time)
 
         elif name == "approved-reviews-by":
             _, approvals = await self.consolidated_reviews()

@@ -619,6 +619,86 @@ class TestAttributes(base.FunctionalTestBase):
         comment = await self.wait_for_issue_comment(str(pr2["number"]), "created")
         assert comment["comment"]["body"] == "verified is not good"
 
+    async def test_commits_attributes_list_all_condition_str(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "no-wip",
+                    "conditions": ["commits[*].commit_message~=wip"],
+                    "actions": {"comment": {"message": "no wip allowed"}},
+                }
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        # Create two prs with the same commits message reversed
+        # just to be sure that the detection works when the commit is the first
+        # and when it is not.
+        pr1 = await self.create_pr_with_specific_commits(
+            [
+                "wip: test",
+                "feat: really useful feature",
+            ],
+            [
+                {"wip/test.txt": "testwip"},
+                {
+                    "feat/feat.txt": "very feature, much wow",
+                },
+            ],
+        )
+
+        await self.run_engine()
+        comment = await self.wait_for_issue_comment(str(pr1["number"]), "created")
+        assert comment["comment"]["body"] == "no wip allowed"
+
+        pr2 = await self.create_pr_with_specific_commits(
+            [
+                "feat: really useful feature",
+                "wip: test",
+            ],
+            [
+                {
+                    "feat/feat.txt": "very feature, much wow",
+                },
+                {"wip/test.txt": "testwip"},
+            ],
+        )
+        await self.run_engine()
+        comment = await self.wait_for_issue_comment(str(pr2["number"]), "created")
+        assert comment["comment"]["body"] == "no wip allowed"
+
+    async def test_commits_attributes_list_all_condition_bool(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "no non verified",
+                    "conditions": ["-commits[*].commit_verification_verified"],
+                    "actions": {
+                        "comment": {"message": "no non-verified commits allowed"}
+                    },
+                },
+                {
+                    "name": "yes verified",
+                    "conditions": ["commits[*].commit_verification_verified"],
+                    "actions": {"comment": {"message": "verified is life"}},
+                },
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        pr1 = await self.create_pr(two_commits=True, verified=False)
+
+        await self.run_engine()
+        comment = await self.wait_for_issue_comment(str(pr1["number"]), "created")
+        assert comment["comment"]["body"] == "no non-verified commits allowed"
+
+        pr2 = await self.create_pr(two_commits=True, verified=True)
+        await self.run_engine()
+        comment = await self.wait_for_issue_comment(str(pr2["number"]), "created")
+        assert comment["comment"]["body"] == "verified is life"
+
     async def test_one_commit_unverified(self) -> None:
         rules = {
             "pull_request_rules": [

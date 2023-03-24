@@ -261,6 +261,30 @@ Here's the list of pull request attribute that can be used in conditions:
    * - ``commits[X].email_committer``
      - string
      - The ``Xth`` commit's committer's email.
+   * - ``commits[*].author``
+     - list of string
+     - The list of names of the authors of each commits.
+   * - ``commits[*].commit_message``
+     - list of string
+     - The list of commit message of each commits.
+   * - ``commits[*].commit_verification_verified``
+     - list of Boolean
+     - Whether GitHub considers the signature of each commits to be verified.
+   * - ``commits[*].committer``
+     - list of string
+     - The names of the committers of each commits.
+   * - ``commits[*].date_author``
+     - list of :ref:`Timestamp <iso timestamp>` or list of :ref:`Relative timestamp <relative timestamp>`
+     - The list of author dates of each commits.
+   * - ``commits[*].date_committer``
+     - list of :ref:`Timestamp <iso timestamp>` or list of :ref:`Relative timestamp <relative timestamp>`
+     - The list of committer dates of each commits.
+   * - ``commits[*].email_author``
+     - list of string
+     - The authors' emails of each commits.
+   * - ``commits[*].email_committer``
+     - list of string
+     - The list of all commits' committer's email.
    * - ``commits-behind``
      - list of commits
      - The list of commits between the head of the base branch and the base of

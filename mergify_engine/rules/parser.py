@@ -287,7 +287,7 @@ def parse_raw_condition(
     # Check if the condition is using an attribute's array
     if attribute in PARSERS_FOR_ARRAY_SUBATTRIBUTES:
         attribute_array_match = re.match(
-            rf"{attribute}(\[-?\d+\]\.(\w+))",
+            rf"{attribute}(\[(?:-?\d+|\*)\]\.(\w+))",
             cond[position - len(attribute) :],
         )
         if attribute_array_match is not None:

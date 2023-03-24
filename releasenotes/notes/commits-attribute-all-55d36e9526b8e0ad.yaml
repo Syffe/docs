@@ -1,0 +1,9 @@
+---
+features:
+  - |
+    In the conditions, it is now possible to use the list of an attribute of all the commits.
+    This can be done with the condition formatted like this: ``commits[*].<attribute>``,
+    with ``<attribute>`` being one of the available attribute of a commit.
+    For example, ``commits[*].commit_message`` will return the list of the commit message
+    of all the commits.
+    You can refer to the ``conditions/#attributes`` page on the documentation for more information.

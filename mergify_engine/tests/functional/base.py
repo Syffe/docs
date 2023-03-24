@@ -962,6 +962,112 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
         return pr
 
+    async def create_pr_with_specific_commits(
+        self,
+        commits_headline: list[str],
+        files: list[dict[str, str]],
+        base: str | None = None,
+        as_: typing.Literal["integration", "fork", "admin"] = "integration",
+        branch: str | None = None,
+        message: str | None = None,
+        draft: bool = False,
+        verified: bool = False,
+        commits_body: list[str] | None = None,
+    ) -> github_types.GitHubPullRequest:
+        self.pr_counter += 1
+
+        assert len(commits_headline) > 0, "Cannot have empty commits_headline"
+        assert len(files) == len(
+            commits_headline
+        ), "The list of `files` must be the same length as `commits_headline`"
+
+        if commits_body is not None:
+            assert len(commits_body) == len(
+                commits_headline
+            ), "If `commits_body` is specified, it must have the same length as `commits_headline`"
+
+        if self.git.repository is None:
+            raise RuntimeError("self.git.init() not called, tmp dir empty")
+
+        if as_ == "fork":
+            remote = "fork"
+        else:
+            remote = "origin"
+
+        if base is None:
+            base = self.main_branch_name
+
+        if not branch:
+            branch = f"{as_}/pr{self.pr_counter}"
+            branch = self.get_full_branch_name(branch)
+
+        await self.git("checkout", "--quiet", f"origin/{base}", "-b", branch)
+
+        tmp_kwargs: dict[str, typing.Any] = {}
+        if verified:
+            temporary_folder = tempfile.mkdtemp()
+            tmp_env = {"GNUPGHOME": temporary_folder}
+            self.addCleanup(shutil.rmtree, temporary_folder)
+            subprocess.run(
+                ["gpg", "--import"],
+                input=config.TESTING_GPGKEY_SECRET,
+                env=self.git.prepare_safe_env(tmp_env),
+            )
+            await self.git("config", "user.signingkey", config.TESTING_ID_GPGKEY_SECRET)
+            await self.git(
+                "config", "user.email", "engineering+mergify-test@mergify.io"
+            )
+            tmp_kwargs.setdefault("_env", {})
+            tmp_kwargs["_env"].update(tmp_env)
+
+        title = f"{self._testMethodName}: pull request n{self.pr_counter} from {as_}"
+
+        for idx, commit_headline in enumerate(commits_headline):
+            await self._git_create_files(files[idx])
+
+            args_commit = ["commit", "--no-edit", "-m", commit_headline]
+            if commits_body is not None:
+                args_commit += ["-m", commits_body[idx]]
+
+            if verified:
+                args_commit.append("-S")
+
+            await self.git(*args_commit, **tmp_kwargs)
+
+        await self.git("push", "--quiet", remote, branch)
+
+        if as_ != "fork":
+            await self.wait_for(
+                "push",
+                {"ref": f"refs/heads/{branch}"},
+            )
+
+        if as_ == "admin":
+            client = self.client_admin
+            login = github_types.GitHubLogin("mergifyio-testing")
+        elif as_ == "fork":
+            client = self.client_fork
+            login = github_types.GitHubLogin("mergify-test2")
+        else:
+            client = self.client_integration
+            login = github_types.GitHubLogin("mergifyio-testing")
+
+        resp = await client.post(
+            f"{self.url_origin}/pulls",
+            json={
+                "base": base,
+                "head": f"{login}:{branch}",
+                "title": title,
+                "body": title if message is None else message,
+                "draft": draft,
+            },
+        )
+        await self.wait_for("pull_request", {"action": "opened"})
+
+        self.created_branches.add(github_types.GitHubRefType(branch))
+
+        return typing.cast(github_types.GitHubPullRequest, resp.json())
+
     async def _git_create_files(self, files: dict[str, str]) -> None:
         if self.git.repository is None:
             raise RuntimeError("self.git.init() not called, tmp dir empty")
