@@ -22,17 +22,42 @@ class Money:
     def from_decimal(cls, v: decimal.Decimal | int | str) -> "Money":
         return cls(cost_calculator.MoneyAmount(v))
 
+    @classmethod
+    def zero(cls) -> "Money":
+        return cls(cost_calculator.MoneyAmount.zero())
+
 
 @pydantic.dataclasses.dataclass
 class DimensionItem:
     name: str
     cost: Money
+    difference: Money = dataclasses.field(default_factory=Money.zero)
+
+    def difference_with(self, other_items: list["DimensionItem"]) -> Money:
+        for other_item in other_items:
+            if self.name == other_item.name:
+                return Money(self.cost.amount - other_item.cost.amount)
+
+        # NOTE(charly): the other list doesn't contain any similar item, so we
+        # consider it's zero
+        return Money(self.cost.amount)
 
 
 @pydantic.dataclasses.dataclass
 class Dimension:
     type: typing.Literal["conclusions", "jobs", "actors", "lifecycles"]
     items: list[DimensionItem]
+
+    def difference_with(self, other: "Dimension") -> "Dimension":
+        new_items = []
+
+        for item in self.items:
+            new_item = DimensionItem(
+                item.name, item.cost, item.difference_with(other.items)
+            )
+            new_items.append(new_item)
+
+        return self.__class__(type=self.type, items=new_items)
 
 
 @pydantic.dataclasses.dataclass
@@ -48,7 +73,35 @@ class Category:
     type: typing.Literal["deployments", "scheduled_jobs", "pull_requests"]
     total_cost: Money
     dimensions: Dimensions
-    difference: Money | None = None
+    difference: Money = dataclasses.field(default_factory=Money.zero)
+
+    def difference_with(self, other: "Category") -> "Category":
+        conclusions = self.dimensions.conclusions.difference_with(
+            other.dimensions.conclusions
+        )
+        jobs = self.dimensions.jobs.difference_with(other.dimensions.jobs)
+        actors = (
+            self.dimensions.actors.difference_with(other.dimensions.actors)
+            if self.dimensions.actors and other.dimensions.actors
+            else None
+        )
+        lifecycles = (
+            self.dimensions.lifecycles.difference_with(other.dimensions.lifecycles)
+            if self.dimensions.lifecycles and other.dimensions.lifecycles
+            else None
+        )
+
+        return self.__class__(
+            type=self.type,
+            total_cost=self.total_cost,
+            dimensions=Dimensions(
+                conclusions=conclusions,
+                jobs=jobs,
+                actors=actors,
+                lifecycles=lifecycles,
+            ),
+            difference=Money(self.total_cost.amount - other.total_cost.amount),
+        )
 
 
 @pydantic.dataclasses.dataclass
@@ -66,7 +119,33 @@ class Categories:
 class ReportPayload:
     total_costs: Money
     categories: Categories
-    total_difference: Money | None = None
+    total_difference: Money = dataclasses.field(default_factory=Money.zero)
+
+    def difference_with(self, other: "ReportPayload") -> "ReportPayload":
+        deployments = self.categories.deployments.difference_with(
+            other.categories.deployments
+        )
+        scheduled_jobs = self.categories.scheduled_jobs.difference_with(
+            other.categories.scheduled_jobs
+        )
+        pull_requests = self.categories.pull_requests.difference_with(
+            other.categories.pull_requests
+        )
+        total_difference = Money(
+            deployments.difference.amount
+            + scheduled_jobs.difference.amount
+            + pull_requests.difference.amount
+        )
+
+        return self.__class__(
+            total_costs=self.total_costs,
+            total_difference=total_difference,
+            categories=Categories(
+                deployments=deployments,
+                scheduled_jobs=scheduled_jobs,
+                pull_requests=pull_requests,
+            ),
+        )
 
 
 @dataclasses.dataclass
@@ -90,6 +169,7 @@ class Report:
             self.query.start_at,
             self.query.end_at,
         )
+
         previous_start_at, previous_end_at = self._get_previous_date_range(
             self.query.start_at, self.query.end_at
         )
@@ -100,24 +180,7 @@ class Report:
             previous_end_at,
         )
 
-        current.categories.deployments.difference = Money(
-            current.categories.deployments.total_cost.amount
-            - previous.categories.deployments.total_cost.amount
-        )
-        current.categories.scheduled_jobs.difference = Money(
-            current.categories.scheduled_jobs.total_cost.amount
-            - previous.categories.scheduled_jobs.total_cost.amount
-        )
-        current.categories.pull_requests.difference = Money(
-            current.categories.pull_requests.total_cost.amount
-            - previous.categories.pull_requests.total_cost.amount
-        )
-        current.total_difference = Money(
-            current.categories.deployments.difference.amount
-            + current.categories.scheduled_jobs.difference.amount
-            + current.categories.pull_requests.difference.amount
-        )
-        return current
+        return current.difference_with(previous)
 
     @staticmethod
     def _get_previous_date_range(

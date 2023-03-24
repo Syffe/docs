@@ -1,3 +1,4 @@
+from collections import Counter
 from collections import abc
 import datetime
 
@@ -9,16 +10,18 @@ from mergify_engine.tests.unit.ci import utils
 
 class FakePullRegistry:
     def __init__(self) -> None:
-        self._position = -1
+        self._positions: Counter[int] = Counter()
 
     async def get_job_run_position(self, pull_id: int, job_run: models.JobRun) -> int:
-        self._position += 1
-        return self._position
+        position = self._positions[pull_id]
+        self._positions[pull_id] += 1
+        return position
 
 
 class FakeJobRegistry:
     def __init__(self) -> None:
         self._job_run_timing = 10_000
+        self._pull_id = 1
 
     async def search(
         self,
@@ -34,6 +37,7 @@ class FakeJobRegistry:
             timing=self._job_run_timing,
             triggering_event="pull_request",
             triggering_actor="someone",
+            pull_id=self._pull_id,
             run_attempt=1,
         )
         # Pull request, update
@@ -43,6 +47,7 @@ class FakeJobRegistry:
             timing=self._job_run_timing,
             triggering_event="pull_request",
             triggering_actor="somebody",
+            pull_id=self._pull_id,
             run_attempt=1,
         )
         # Pull request, manual retry
@@ -52,6 +57,7 @@ class FakeJobRegistry:
             timing=self._job_run_timing,
             triggering_event="pull_request",
             triggering_actor="somebody",
+            pull_id=self._pull_id,
             run_attempt=2,
         )
         # Deployment
@@ -60,6 +66,7 @@ class FakeJobRegistry:
             repository=repository or "fake_repo",
             timing=self._job_run_timing,
             triggering_event="push",
+            pull_id=self._pull_id,
         )
         # Scheduled job
         yield utils.create_job(
@@ -67,10 +74,13 @@ class FakeJobRegistry:
             repository=repository or "fake_repo",
             timing=self._job_run_timing,
             triggering_event="schedule",
+            pull_id=self._pull_id,
         )
 
         # Increment timing delta to have a difference
         self._job_run_timing += 1000
+        # Change pull request ID, to prevent side effects on the lifecycle
+        self._pull_id += 1
 
 
 async def test_report() -> None:
@@ -101,6 +111,7 @@ async def test_report() -> None:
                     reports.DimensionItem(
                         name="hello",
                         cost=reports.Money.from_decimal("1.336"),
+                        difference=reports.Money.from_decimal("-0.136"),
                     )
                 ],
             ),
@@ -110,6 +121,7 @@ async def test_report() -> None:
                     reports.DimensionItem(
                         name="success",
                         cost=reports.Money.from_decimal("1.336"),
+                        difference=reports.Money.from_decimal("-0.136"),
                     )
                 ],
             ),
@@ -127,6 +139,7 @@ async def test_report() -> None:
                     reports.DimensionItem(
                         name="hello",
                         cost=reports.Money.from_decimal("1.336"),
+                        difference=reports.Money.from_decimal("-0.136"),
                     )
                 ],
             ),
@@ -136,6 +149,7 @@ async def test_report() -> None:
                     reports.DimensionItem(
                         name="success",
                         cost=reports.Money.from_decimal("1.336"),
+                        difference=reports.Money.from_decimal("-0.136"),
                     )
                 ],
             ),
@@ -153,10 +167,12 @@ async def test_report() -> None:
                     reports.DimensionItem(
                         name="someone",
                         cost=reports.Money.from_decimal("1.336"),
+                        difference=reports.Money.from_decimal("-0.136"),
                     ),
                     reports.DimensionItem(
                         name="somebody",
                         cost=reports.Money.from_decimal("2.672"),
+                        difference=reports.Money.from_decimal("-0.272"),
                     ),
                 ],
             ),
@@ -166,6 +182,7 @@ async def test_report() -> None:
                     reports.DimensionItem(
                         name="hello",
                         cost=reports.Money.from_decimal("4.008"),
+                        difference=reports.Money.from_decimal("-0.408"),
                     )
                 ],
             ),
@@ -175,14 +192,17 @@ async def test_report() -> None:
                     reports.DimensionItem(
                         name="Initial push",
                         cost=reports.Money.from_decimal("1.336"),
+                        difference=reports.Money.from_decimal("-0.136"),
                     ),
                     reports.DimensionItem(
                         name="Update",
                         cost=reports.Money.from_decimal("1.336"),
+                        difference=reports.Money.from_decimal("-0.136"),
                     ),
                     reports.DimensionItem(
                         name="Manual retry",
                         cost=reports.Money.from_decimal("1.336"),
+                        difference=reports.Money.from_decimal("-0.136"),
                     ),
                 ],
             ),
@@ -192,6 +212,7 @@ async def test_report() -> None:
                     reports.DimensionItem(
                         name="success",
                         cost=reports.Money.from_decimal("4.008"),
+                        difference=reports.Money.from_decimal("-0.408"),
                     )
                 ],
             ),
@@ -226,6 +247,7 @@ async def test_report_for_whole_owner() -> None:
                     reports.DimensionItem(
                         name="hello",
                         cost=reports.Money.from_decimal("1.336"),
+                        difference=reports.Money.from_decimal("-0.136"),
                     )
                 ],
             ),
@@ -235,6 +257,7 @@ async def test_report_for_whole_owner() -> None:
                     reports.DimensionItem(
                         name="success",
                         cost=reports.Money.from_decimal("1.336"),
+                        difference=reports.Money.from_decimal("-0.136"),
                     )
                 ],
             ),
@@ -252,6 +275,7 @@ async def test_report_for_whole_owner() -> None:
                     reports.DimensionItem(
                         name="hello",
                         cost=reports.Money.from_decimal("1.336"),
+                        difference=reports.Money.from_decimal("-0.136"),
                     )
                 ],
             ),
@@ -261,6 +285,7 @@ async def test_report_for_whole_owner() -> None:
                     reports.DimensionItem(
                         name="success",
                         cost=reports.Money.from_decimal("1.336"),
+                        difference=reports.Money.from_decimal("-0.136"),
                     )
                 ],
             ),
@@ -278,10 +303,12 @@ async def test_report_for_whole_owner() -> None:
                     reports.DimensionItem(
                         name="someone",
                         cost=reports.Money.from_decimal("1.336"),
+                        difference=reports.Money.from_decimal("-0.136"),
                     ),
                     reports.DimensionItem(
                         name="somebody",
                         cost=reports.Money.from_decimal("2.672"),
+                        difference=reports.Money.from_decimal("-0.272"),
                     ),
                 ],
             ),
@@ -291,6 +318,7 @@ async def test_report_for_whole_owner() -> None:
                     reports.DimensionItem(
                         name="hello",
                         cost=reports.Money.from_decimal("4.008"),
+                        difference=reports.Money.from_decimal("-0.408"),
                     )
                 ],
             ),
@@ -300,14 +328,17 @@ async def test_report_for_whole_owner() -> None:
                     reports.DimensionItem(
                         name="Initial push",
                         cost=reports.Money.from_decimal("1.336"),
+                        difference=reports.Money.from_decimal("-0.136"),
                     ),
                     reports.DimensionItem(
                         name="Update",
                         cost=reports.Money.from_decimal("1.336"),
+                        difference=reports.Money.from_decimal("-0.136"),
                     ),
                     reports.DimensionItem(
                         name="Manual retry",
                         cost=reports.Money.from_decimal("1.336"),
+                        difference=reports.Money.from_decimal("-0.136"),
                     ),
                 ],
             ),
@@ -317,6 +348,7 @@ async def test_report_for_whole_owner() -> None:
                     reports.DimensionItem(
                         name="success",
                         cost=reports.Money.from_decimal("4.008"),
+                        difference=reports.Money.from_decimal("-0.408"),
                     )
                 ],
             ),

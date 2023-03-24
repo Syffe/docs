@@ -17,6 +17,7 @@ def create_job(
     timing: int = 10,
     triggering_event: str = "pull_request",
     triggering_actor: str = "dependabot",
+    pull_id: int = 1,
     run_attempt: int = 1,
     operating_system: str = "Linux",
     cores: int = 2,
@@ -41,7 +42,9 @@ def create_job(
         started_at=started_at,
         completed_at=completed_at,
         pulls=[
-            models.PullRequest(id=1, number=1234, title="feat: hello", state="open")
+            models.PullRequest(
+                id=pull_id, number=1234, title="feat: hello", state="open"
+            )
         ],
         run_attempt=run_attempt,
         operating_system=typing.cast(models.OperatingSystem, operating_system),
