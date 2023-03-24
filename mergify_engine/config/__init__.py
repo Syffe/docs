@@ -35,6 +35,17 @@ class EngineSettings(pydantic.BaseSettings):
                 return utils.string_to_dict(raw_val, int)
             return json.loads(raw_val)
 
+    def __init__(self, **kwargs: typing.Any) -> None:
+        try:
+            super().__init__(**kwargs)
+        except pydantic.ValidationError as exc:
+            # Inject env_prefix in error message
+            cfg = exc.model.__config__  # type: ignore[union-attr]
+            for e in exc.raw_errors:
+                e._loc = tuple(str.upper(cfg.env_prefix + x) for x in e.loc_tuple())  # type: ignore[union-attr]
+
+            raise
+
 
 # NOTE(sileht) we coerce bool and int in case they are loaded from the environment
 def CoercedBool(value: typing.Any) -> bool:

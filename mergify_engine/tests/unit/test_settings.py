@@ -1,3 +1,4 @@
+import pydantic
 import pytest
 
 from mergify_engine import config
@@ -79,3 +80,16 @@ async def test_database_url_format(
     monkeypatch.setenv("MERGIFYENGINE_DATABASE_URL", env)
     conf = config.EngineSettings()
     assert conf.DATABASE_URL.geturl() == expected
+
+
+def test_error_message(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("MERGIFYENGINE_DATABASE_URL", "https://localhost")
+    with pytest.raises(pydantic.ValidationError) as exc_info:
+        config.EngineSettings()
+
+    assert (
+        str(exc_info.value)
+        == """1 validation error for EngineSettings
+MERGIFYENGINE_DATABASE_URL
+  scheme `https` is invalid, must be postgres,postgresql,postgresql+psycopg (type=value_error)"""
+    )
