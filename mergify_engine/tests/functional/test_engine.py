@@ -501,33 +501,6 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         )
         assert completed_at != check_run_summary["check_run"]["completed_at"]
 
-    async def test_marketplace_event(self) -> None:
-        with mock.patch(
-            "mergify_engine.dashboard.subscription.Subscription.get_subscription"
-        ) as get_sub:
-            get_sub.return_value = self.subscription
-            r = await self.app.post(
-                "/marketplace",
-                headers={
-                    "X-GitHub-Event": "push",
-                    "X-GitHub-Delivery": "x",
-                    "X-Hub-Signature": "sha1=whatever",
-                    "Content-type": "application/json",
-                },
-                json={
-                    "sender": {"login": "jd"},
-                    "marketplace_purchase": {
-                        "account": {
-                            "id": 12345,
-                            "login": "mergifyio-testing",
-                            "type": "Organization",
-                        }
-                    },
-                },
-            )
-        assert r.content == b"Event queued"
-        assert r.status_code == 202
-
     async def test_refresh_on_conflict(self) -> None:
         rules = {
             "pull_request_rules": [

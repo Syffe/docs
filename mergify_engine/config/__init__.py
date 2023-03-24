@@ -209,9 +209,6 @@ Schema = voluptuous.Schema(
             None, str
         ),
         voluptuous.Required(
-            "WEBHOOK_MARKETPLACE_FORWARD_URL", default=None
-        ): voluptuous.Any(None, str),
-        voluptuous.Required(
             "WEBHOOK_FORWARD_EVENT_TYPES", default=None
         ): voluptuous.Any(None, CommaSeparatedStringList),
         #
@@ -350,7 +347,6 @@ PRIVATE_KEY: bytes
 GITHUB_URL: str
 GITHUB_REST_API_URL: str
 GITHUB_GRAPHQL_API_URL: str
-WEBHOOK_MARKETPLACE_FORWARD_URL: str
 WEBHOOK_APP_FORWARD_URL: str
 WEBHOOK_FORWARD_EVENT_TYPES: str
 WEBHOOK_SECRET: str

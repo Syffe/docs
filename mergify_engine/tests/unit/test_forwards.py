@@ -38,31 +38,3 @@ async def test_app_event_forward(
     ).respond(200, content="")
 
     await web_client.post("/event", content=data, headers=headers)
-
-
-@mock.patch(
-    "mergify_engine.config.WEBHOOK_FORWARD_EVENT_TYPES",
-    new_callable=mock.PropertyMock(return_value=["purchased"]),
-)
-async def test_market_event_forward(
-    _: mock.PropertyMock,
-    respx_mock: respx.MockRouter,
-    web_client: httpx.AsyncClient,
-) -> None:
-    with open(
-        os.path.join(os.path.dirname(__file__), "events", "marketplace.json")
-    ) as f:
-        data = f.read()
-
-    headers = {
-        "X-GitHub-Delivery": str(uuid.uuid4()),
-        "X-GitHub-Event": "purchased",
-        "X-Hub-Signature": f"sha1={utils.compute_hmac(data.encode(), config.WEBHOOK_SECRET)}",
-        "User-Agent": "GitHub-Hookshot/044aadd",
-        "Content-Type": "application/json",
-    }
-    respx_mock.post(
-        config.WEBHOOK_MARKETPLACE_FORWARD_URL, headers=headers, content=data
-    ).respond(200, content="")
-
-    await web_client.post("/marketplace", content=data, headers=headers)

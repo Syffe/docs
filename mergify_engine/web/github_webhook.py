@@ -10,7 +10,6 @@ from mergify_engine import config
 from mergify_engine import github_events
 from mergify_engine import github_types
 from mergify_engine.clients import http
-from mergify_engine.dashboard import subscription
 from mergify_engine.web import auth
 from mergify_engine.web import redis
 from mergify_engine.web import utils
@@ -27,53 +26,6 @@ EVENT_FORWARD_TIMEOUT = 5
 router = fastapi.APIRouter(
     dependencies=[fastapi.Depends(auth.github_webhook_signature)],
 )
-
-
-@router.post("/marketplace")
-async def marketplace_handler(
-    request: requests.Request, redis_links: redis.RedisLinks
-) -> responses.Response:
-    event_type = request.headers["X-GitHub-Event"]
-    event_id = request.headers["X-GitHub-Delivery"]
-    data = await request.json()
-
-    LOG.info(
-        "Marketplace event",
-        event_type=event_type,
-        event_id=event_id,
-        sender=data["sender"]["login"],
-        gh_owner=data["marketplace_purchase"]["account"]["login"],
-    )
-
-    await subscription.Subscription.delete_subscription(
-        redis_links.cache, data["marketplace_purchase"]["account"]["id"]
-    )
-
-    if config.WEBHOOK_MARKETPLACE_FORWARD_URL:
-        raw = await request.body()
-        try:
-            async with http.AsyncClient(timeout=EVENT_FORWARD_TIMEOUT) as client:
-                await client.post(
-                    config.WEBHOOK_MARKETPLACE_FORWARD_URL,
-                    content=raw.decode(),
-                    headers={
-                        "X-GitHub-Event": event_type,
-                        "X-GitHub-Delivery": event_id,
-                        "X-Hub-Signature": request.headers["X-Hub-Signature"],
-                        "User-Agent": request.headers["User-Agent"],
-                        "Content-Type": request.headers["Content-Type"],
-                    },
-                )
-        except httpx.HTTPError:
-            LOG.warning(
-                "Fail to forward Marketplace event",
-                event_type=event_type,
-                event_id=event_id,
-                sender=data["sender"]["login"],
-                gh_owner=data["marketplace_purchase"]["account"]["login"],
-            )
-
-    return responses.Response("Event queued", status_code=202)
 
 
 @router.post("/event")
