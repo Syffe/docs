@@ -49,9 +49,10 @@ greenlet = "^2.0.2"
 deepdiff = "^6.3.0"
 pydantic = {extras = ["dotenv"], version = "^1.10.6"}
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 sphinx = "^6.1.3"
 sphinxcontrib-spelling = "^8.0.0"
+sphinxcontrib-jquery = "^4.1"
 respx = "^0.20.0"
 semgrep = "^1.15.0"
 types-first = "^2.0.5"
@@ -152,9 +153,6 @@ pytest-rerunfailures = "^11.1"
   unqueue = "mergify_engine.actions.unqueue:UnqueueCommand"
   update = "mergify_engine.actions.update:UpdateAction"
 
-
-[tool.poetry.group.dev.dependencies]
-sphinxcontrib-jquery = "^4.1"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
