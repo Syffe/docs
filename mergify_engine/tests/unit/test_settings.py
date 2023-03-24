@@ -30,6 +30,7 @@ def test_defaults(
     assert conf.DATABASE_POOL_SIZES == {"web": 55, "worker": 15}
     assert conf.GITHUB_WEBHOOK_SECRET.get_secret_value() == "secret"
     assert conf.GITHUB_WEBHOOK_SECRET_PRE_ROTATION is None
+    assert conf.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES == []
 
 
 def test_all_sets(
@@ -40,6 +41,7 @@ def test_all_sets(
     monkeypatch.setattr(config.EngineSettings.Config, "env_file", None)
 
     monkeypatch.setenv("MERGIFYENGINE_GITHUB_WEBHOOK_SECRET", "secret2")
+    monkeypatch.setenv("MERGIFYENGINE_GITHUB_WEBHOOK_FORWARD_EVENT_TYPES", "foo,bar,yo")
     monkeypatch.setenv("MERGIFYENGINE_GITHUB_WEBHOOK_SECRET_PRE_ROTATION", "secret3")
     monkeypatch.setenv("MERGIFYENGINE_DATABASE_POOL_SIZES", "web:2,worker:3,foobar:6")
 
@@ -47,6 +49,7 @@ def test_all_sets(
     assert conf.GITHUB_WEBHOOK_SECRET.get_secret_value() == "secret2"
     assert conf.GITHUB_WEBHOOK_SECRET_PRE_ROTATION is not None
     assert conf.GITHUB_WEBHOOK_SECRET_PRE_ROTATION.get_secret_value() == "secret3"
+    assert conf.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES == ["foo", "bar", "yo"]
     assert conf.DATABASE_POOL_SIZES == {"web": 2, "worker": 3, "foobar": 6}
 
 
@@ -57,10 +60,12 @@ def test_legacy_env_sets(
 ) -> None:
     monkeypatch.setenv("MERGIFYENGINE_WEBHOOK_SECRET", "secret4")
     monkeypatch.setenv("MERGIFYENGINE_WEBHOOK_SECRET_PRE_ROTATION", "secret5")
+    monkeypatch.setenv("MERGIFYENGINE_WEBHOOK_FORWARD_EVENT_TYPES", "foo,bar,yo")
     conf = config.EngineSettings()
     assert conf.GITHUB_WEBHOOK_SECRET.get_secret_value() == "secret4"
     assert conf.GITHUB_WEBHOOK_SECRET_PRE_ROTATION is not None
     assert conf.GITHUB_WEBHOOK_SECRET_PRE_ROTATION.get_secret_value() == "secret5"
+    assert conf.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES == ["foo", "bar", "yo"]
 
 
 def test_database_url_replace(

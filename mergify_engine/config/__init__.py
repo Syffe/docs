@@ -47,7 +47,7 @@ class EngineSettings(pydantic.BaseSettings):
             if field_name == "DATABASE_POOL_SIZES":
                 return utils.string_to_dict(raw_val, int)
 
-            if field_name == "WEBHOOK_FORWARD_EVENT_TYPES":
+            if field_name == "GITHUB_WEBHOOK_FORWARD_EVENT_TYPES":
                 return raw_val.split(",")
 
             return super().parse_env_var(field_name, raw_val)
