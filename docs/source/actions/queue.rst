@@ -548,7 +548,7 @@ These are the options of the ``queue`` action:
    * - ``update_method``
      - string
      -
-     - ``merge`` for all merge methods except ``fast-forward`` where ``rebase`` is used
+     - | ``merge`` for all merge methods except ``fast-forward`` where ``rebase`` is used
        | Method to use to update the pull request with its base branch when the
        | speculative check is done in-place.
        | Possible values:
@@ -731,14 +731,14 @@ A ``queue_rules`` takes the following parameters:
    * - ``update_method``
      - string
      - ``merge`` for all merge methods except ``fast-forward`` where ``rebase`` is used
-     - Method to use to update the pull request with its base branch when the
-       speculative check is done in-place.
-       Possible values:
-
-       * ``merge`` to merge the base branch into the pull request.
-       * ``rebase`` to rebase the pull request against its base branch.
-
-       Note that the ``rebase`` method has some drawbacks, see :ref:`update method rebase`.
+     - | Method to use to update the pull request with its base branch when the
+       | speculative check is done in-place.
+       | Possible values:
+       | 
+       | * ``merge`` to merge the base branch into the pull request.
+       | * ``rebase`` to rebase the pull request against its base branch.
+       |
+       | Note that the ``rebase`` method has some drawbacks, see :ref:`update method rebase`.
 
 .. note::
 
