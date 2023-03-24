@@ -25,6 +25,7 @@ class EngineSettings(pydantic.BaseSettings):
     )
 
     class Config(pydantic.BaseSettings.Config):
+        case_sensitive = True
         env_prefix = "MERGIFYENGINE_"
         env_file = CONFIGURATION_FILE
 
