@@ -24,6 +24,19 @@ class EngineSettings(pydantic.BaseSettings):
         default={"worker": 15, "web": 55}
     )
 
+    GITHUB_WEBHOOK_SECRET: pydantic.SecretStr = pydantic.Field(
+        extra_env="WEBHOOK_SECRET"
+    )
+    GITHUB_WEBHOOK_SECRET_PRE_ROTATION: pydantic.SecretStr | None = pydantic.Field(
+        default=None, extra_env="WEBHOOK_SECRET_PRE_ROTATION"
+    )
+    GITHUB_WEBHOOK_FORWARD_URL: str | None = pydantic.Field(
+        default=None, extra_env="WEBHOOK_APP_FORWARD_URL"
+    )
+    GITHUB_WEBHOOK_FORWARD_EVENT_TYPES: list[str] = pydantic.Field(
+        default_factory=list, extra_env="WEBHOOK_FORWARD_EVENT_TYPES"
+    )
+
     class Config(pydantic.BaseSettings.Config):
         case_sensitive = True
         env_prefix = "MERGIFYENGINE_"
@@ -33,7 +46,34 @@ class EngineSettings(pydantic.BaseSettings):
         def parse_env_var(cls, field_name: str, raw_val: str) -> typing.Any:
             if field_name == "DATABASE_POOL_SIZES":
                 return utils.string_to_dict(raw_val, int)
+
+            if field_name == "WEBHOOK_FORWARD_EVENT_TYPES":
+                return raw_val.split(",")
+
             return super().parse_env_var(field_name, raw_val)
+
+        @classmethod
+        def prepare_field(cls, field: pydantic.fields.ModelField) -> None:
+            # NOTE(sileht): pydantic-settings doesn't inject env_prefix on
+            # `env` attribute, so we introduces extra_env to do it.
+            # https://github.com/pydantic/pydantic-settings/issues/14
+
+            extra_env = field.field_info.extra.get("extra_env")
+            if extra_env:
+                env = field.field_info.extra.get("env")
+                if env is None:
+                    env_names = set()
+                elif isinstance(env, str):
+                    env_names = {env}
+                elif isinstance(env, (set, tuple, list)):
+                    env_names = set(env)
+                else:
+                    raise RuntimeError(f"Unsupport env type: {type(env)}")
+
+                env_names |= {cls.env_prefix + field.name, cls.env_prefix + extra_env}
+                field.field_info.extra["env"] = env_names
+
+            super().prepare_field(field)
 
     def __init__(self, **kwargs: typing.Any) -> None:
         try:
@@ -152,10 +192,6 @@ Schema = voluptuous.Schema(
         voluptuous.Required("PRIVATE_KEY"): str,
         voluptuous.Required("OAUTH_CLIENT_ID"): str,
         voluptuous.Required("OAUTH_CLIENT_SECRET"): str,
-        voluptuous.Required("WEBHOOK_SECRET"): str,
-        voluptuous.Required(
-            "WEBHOOK_SECRET_PRE_ROTATION", default=None
-        ): voluptuous.Any(None, str),
         # GitHub optional
         voluptuous.Required("GITHUB_URL", default="https://github.com"): str,
         #
@@ -205,12 +241,6 @@ Schema = voluptuous.Schema(
         voluptuous.Required(
             "DASHBOARD_TO_ENGINE_API_KEY_PRE_ROTATION", default=None
         ): voluptuous.Any(None, str),
-        voluptuous.Required("WEBHOOK_APP_FORWARD_URL", default=None): voluptuous.Any(
-            None, str
-        ),
-        voluptuous.Required(
-            "WEBHOOK_FORWARD_EVENT_TYPES", default=None
-        ): voluptuous.Any(None, CommaSeparatedStringList),
         #
         # Mergify Engine settings
         #
@@ -347,10 +377,6 @@ PRIVATE_KEY: bytes
 GITHUB_URL: str
 GITHUB_REST_API_URL: str
 GITHUB_GRAPHQL_API_URL: str
-WEBHOOK_APP_FORWARD_URL: str
-WEBHOOK_FORWARD_EVENT_TYPES: str
-WEBHOOK_SECRET: str
-WEBHOOK_SECRET_PRE_ROTATION: str | None
 SHARED_STREAM_PROCESSES: int
 DEDICATED_STREAM_PROCESSES: int
 SHARED_STREAM_TASKS_PER_PROCESS: int

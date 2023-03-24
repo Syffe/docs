@@ -6,6 +6,7 @@ import os
 
 from mergify_engine import config
 from mergify_engine import logs
+from mergify_engine import settings
 from mergify_engine import utils
 from mergify_engine.clients import http
 
@@ -23,7 +24,9 @@ async def main() -> None:
     logs.setup_logging()
 
     payload_data = os.urandom(250)
-    payload_hmac = utils.compute_hmac(payload_data, config.WEBHOOK_SECRET)
+    payload_hmac = utils.compute_hmac(
+        payload_data, settings.GITHUB_WEBHOOK_SECRET.get_secret_value()
+    )
 
     async with http.AsyncClient(
         base_url="https://test-forwarder.mergify.com",
@@ -51,7 +54,8 @@ async def main() -> None:
                     )
                     data = json.dumps(event["payload"])
                     hmac = utils.compute_hmac(
-                        data.encode("utf8"), config.WEBHOOK_SECRET
+                        data.encode("utf8"),
+                        settings.GITHUB_WEBHOOK_SECRET.get_secret_value(),
                     )
                     await session.post(
                         args.dest,

@@ -5,6 +5,7 @@ import fastapi
 from starlette import requests
 
 from mergify_engine import config
+from mergify_engine import settings
 from mergify_engine import utils
 
 
@@ -29,12 +30,16 @@ async def github_webhook_signature(request: requests.Request) -> None:
 
     body = await request.body()
 
-    current_hmac = utils.compute_hmac(body, config.WEBHOOK_SECRET)
+    current_hmac = utils.compute_hmac(
+        body, settings.GITHUB_WEBHOOK_SECRET.get_secret_value()
+    )
     if hmac.compare_digest(current_hmac, str(signature)):
         return
 
-    if config.WEBHOOK_SECRET_PRE_ROTATION is not None:
-        future_hmac = utils.compute_hmac(body, config.WEBHOOK_SECRET_PRE_ROTATION)
+    if settings.GITHUB_WEBHOOK_SECRET_PRE_ROTATION is not None:
+        future_hmac = utils.compute_hmac(
+            body, settings.GITHUB_WEBHOOK_SECRET_PRE_ROTATION.get_secret_value()
+        )
         if hmac.compare_digest(future_hmac, str(signature)):
             return
 

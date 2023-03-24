@@ -1,3 +1,5 @@
+import os
+
 import pydantic
 import pytest
 
@@ -5,30 +7,63 @@ from mergify_engine import config
 from mergify_engine.config import urls
 
 
-def test_database_pool_sizes(
-    original_environment_variables: None, monkeypatch: pytest.MonkeyPatch
+@pytest.fixture
+def unset_testing_env(
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    conf = config.EngineSettings()
-    assert conf.DATABASE_POOL_SIZES == {"web": 55, "worker": 15}
-
-    monkeypatch.setenv(
-        "MERGIFYENGINE_DATABASE_POOL_SIZES",
-        "web:2,worker:3,foobar:6",
-    )
-    conf = config.EngineSettings()
-    assert conf.DATABASE_POOL_SIZES == {"web": 2, "worker": 3, "foobar": 6}
+    monkeypatch.setattr(config.EngineSettings.Config, "env_file", None)
+    for env in os.environ:
+        if env.startswith("MERGIFYENGINE"):
+            monkeypatch.delenv(env)
 
 
-def test_database_url_default(
-    original_environment_variables: None, monkeypatch: pytest.MonkeyPatch
+def test_defaults(
+    original_environment_variables: None,
+    unset_testing_env: None,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.delenv("MERGIFYENGINE_DATABASE_URL")
+    # defaults (if not mandatory)
+    monkeypatch.setenv("MERGIFYENGINE_GITHUB_WEBHOOK_SECRET", "secret")
     conf = config.EngineSettings()
     assert str(conf.DATABASE_URL) == "postgresql+psycopg://localhost:5432"
     assert conf.DATABASE_URL.geturl() == "postgresql+psycopg://localhost:5432"
+    assert conf.DATABASE_POOL_SIZES == {"web": 55, "worker": 15}
+    assert conf.GITHUB_WEBHOOK_SECRET.get_secret_value() == "secret"
+    assert conf.GITHUB_WEBHOOK_SECRET_PRE_ROTATION is None
 
 
-def test_database_url_set(
+def test_all_sets(
+    original_environment_variables: None,
+    unset_testing_env: None,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(config.EngineSettings.Config, "env_file", None)
+
+    monkeypatch.setenv("MERGIFYENGINE_GITHUB_WEBHOOK_SECRET", "secret2")
+    monkeypatch.setenv("MERGIFYENGINE_GITHUB_WEBHOOK_SECRET_PRE_ROTATION", "secret3")
+    monkeypatch.setenv("MERGIFYENGINE_DATABASE_POOL_SIZES", "web:2,worker:3,foobar:6")
+
+    conf = config.EngineSettings()
+    assert conf.GITHUB_WEBHOOK_SECRET.get_secret_value() == "secret2"
+    assert conf.GITHUB_WEBHOOK_SECRET_PRE_ROTATION is not None
+    assert conf.GITHUB_WEBHOOK_SECRET_PRE_ROTATION.get_secret_value() == "secret3"
+    assert conf.DATABASE_POOL_SIZES == {"web": 2, "worker": 3, "foobar": 6}
+
+
+def test_legacy_env_sets(
+    original_environment_variables: None,
+    unset_testing_env: None,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("MERGIFYENGINE_WEBHOOK_SECRET", "secret4")
+    monkeypatch.setenv("MERGIFYENGINE_WEBHOOK_SECRET_PRE_ROTATION", "secret5")
+    conf = config.EngineSettings()
+    assert conf.GITHUB_WEBHOOK_SECRET.get_secret_value() == "secret4"
+    assert conf.GITHUB_WEBHOOK_SECRET_PRE_ROTATION is not None
+    assert conf.GITHUB_WEBHOOK_SECRET_PRE_ROTATION.get_secret_value() == "secret5"
+
+
+def test_database_url_replace(
     original_environment_variables: None, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setenv(

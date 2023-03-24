@@ -6,9 +6,9 @@ import httpx
 from starlette import requests
 from starlette import responses
 
-from mergify_engine import config
 from mergify_engine import github_events
 from mergify_engine import github_types
+from mergify_engine import settings
 from mergify_engine.clients import http
 from mergify_engine.web import auth
 from mergify_engine.web import redis
@@ -63,15 +63,15 @@ async def event_handler(
         reason = "Event queued"
 
     if (
-        config.WEBHOOK_APP_FORWARD_URL
-        and config.WEBHOOK_FORWARD_EVENT_TYPES is not None
-        and event_type in config.WEBHOOK_FORWARD_EVENT_TYPES
+        settings.GITHUB_WEBHOOK_FORWARD_URL
+        and settings.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES is not None
+        and event_type in settings.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES
     ):
         raw = await request.body()
         try:
             async with http.AsyncClient(timeout=EVENT_FORWARD_TIMEOUT) as client:
                 await client.post(
-                    config.WEBHOOK_APP_FORWARD_URL,
+                    settings.GITHUB_WEBHOOK_FORWARD_URL,
                     content=raw.decode(),
                     headers={
                         "X-GitHub-Event": event_type,

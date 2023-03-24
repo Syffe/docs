@@ -3,10 +3,11 @@ import os
 from unittest import mock
 
 import httpx
+import pydantic
 import pytest
 
-from mergify_engine import config
 from mergify_engine import github_types
+from mergify_engine import settings
 from mergify_engine import utils
 
 
@@ -46,8 +47,8 @@ with open(os.path.join(os.path.dirname(__file__), "events", "pull_request.json")
     ),
 )
 @mock.patch(
-    "mergify_engine.config.WEBHOOK_SECRET_PRE_ROTATION",
-    new_callable=mock.PropertyMock(return_value="secret!!"),
+    "mergify_engine.settings.GITHUB_WEBHOOK_SECRET_PRE_ROTATION",
+    new_callable=mock.PropertyMock(return_value=pydantic.SecretStr("secret!!")),
 )
 async def test_push_event(
     _: mock.PropertyMock,
@@ -60,7 +61,7 @@ async def test_push_event(
     charset = "utf-8"
     data = json.dumps(event).encode(charset)
     headers = {
-        "X-Hub-Signature": f"sha1={utils.compute_hmac(data, config.WEBHOOK_SECRET)}",
+        "X-Hub-Signature": f"sha1={utils.compute_hmac(data, settings.GITHUB_WEBHOOK_SECRET.get_secret_value())}",
         "X-GitHub-Event": event_type,
         "Content-Type": f"application/json; charset={charset}",
         "X-GitHub-Delivery": "f00bar",
@@ -70,11 +71,11 @@ async def test_push_event(
     assert reply.status_code == status_code
 
     # Same with WEBHOOK_SECRET_PRE_ROTATION for key rotation
-    assert config.WEBHOOK_SECRET_PRE_ROTATION is not None
+    assert settings.GITHUB_WEBHOOK_SECRET_PRE_ROTATION is not None
     charset = "utf-8"
     data = json.dumps(event).encode(charset)
     headers = {
-        "X-Hub-Signature": f"sha1={utils.compute_hmac(data, config.WEBHOOK_SECRET_PRE_ROTATION)}",
+        "X-Hub-Signature": f"sha1={utils.compute_hmac(data, settings.GITHUB_WEBHOOK_SECRET_PRE_ROTATION.get_secret_value())}",
         "X-GitHub-Event": event_type,
         "Content-Type": f"application/json; charset={charset}",
         "X-GitHub-Delivery": "f00bar",
