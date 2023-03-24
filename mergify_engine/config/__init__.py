@@ -11,7 +11,6 @@ import pydantic
 import voluptuous
 
 from mergify_engine import github_types
-from mergify_engine import json
 from mergify_engine import utils
 from mergify_engine.config import urls
 
@@ -25,7 +24,7 @@ class EngineSettings(pydantic.BaseSettings):
         default={"worker": 15, "web": 55}
     )
 
-    class Config:
+    class Config(pydantic.BaseSettings.Config):
         env_prefix = "MERGIFYENGINE_"
         env_file = CONFIGURATION_FILE
 
@@ -33,7 +32,7 @@ class EngineSettings(pydantic.BaseSettings):
         def parse_env_var(cls, field_name: str, raw_val: str) -> typing.Any:
             if field_name == "DATABASE_POOL_SIZES":
                 return utils.string_to_dict(raw_val, int)
-            return json.loads(raw_val)
+            return super().parse_env_var(field_name, raw_val)
 
     def __init__(self, **kwargs: typing.Any) -> None:
         try:
