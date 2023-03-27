@@ -2,8 +2,8 @@ import pytest
 import respx
 import sqlalchemy.orm
 
-from mergify_engine import config
 from mergify_engine import github_types
+from mergify_engine import settings
 from mergify_engine.models import github_user
 from mergify_engine.tests import conftest
 
@@ -14,7 +14,7 @@ async def test_sudo_user(
     monkeypatch: pytest.MonkeyPatch,
     respx_mock: respx.MockRouter,
 ) -> None:
-    monkeypatch.setattr(config, "DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO", [2644])
+    monkeypatch.setattr(settings, "DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO", [2644])
 
     admin_account = github_user.GitHubUser(
         id=github_types.GitHubAccountIdType(2644),
@@ -63,7 +63,7 @@ async def test_sudo_org(
     monkeypatch: pytest.MonkeyPatch,
     respx_mock: respx.MockRouter,
 ) -> None:
-    monkeypatch.setattr(config, "DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO", [2644])
+    monkeypatch.setattr(settings, "DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO", [2644])
     admin_account = github_user.GitHubUser(
         id=github_types.GitHubAccountIdType(2644),
         login=github_types.GitHubLogin("jd"),

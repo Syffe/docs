@@ -4,7 +4,7 @@ import fastapi
 import imia
 import starsessions
 
-from mergify_engine import config
+from mergify_engine import settings
 from mergify_engine.middlewares import logging
 from mergify_engine.middlewares import sudo
 from mergify_engine.web import utils
@@ -17,7 +17,7 @@ from mergify_engine.web.front import sessions
 
 
 def create_app(debug: bool = False) -> fastapi.FastAPI:
-    parsed_base_url = urllib.parse.urlparse(config.DASHBOARD_UI_FRONT_BASE_URL)
+    parsed_base_url = urllib.parse.urlparse(settings.DASHBOARD_UI_FRONT_BASE_URL)
 
     cookie_https_only = parsed_base_url.scheme == "https"
     if parsed_base_url.hostname == "localhost":
@@ -45,7 +45,7 @@ def create_app(debug: bool = False) -> fastapi.FastAPI:
         cookie_name="mergify-session",
         cookie_https_only=cookie_https_only,
         cookie_domain=cookie_domain,
-        lifetime=3600 * config.DASHBOARD_UI_SESSION_EXPIRATION_HOURS,
+        lifetime=3600 * settings.DASHBOARD_UI_SESSION_EXPIRATION_HOURS,
         store=sessions.RedisStore(),
     )
     app.add_middleware(logging.LoggingMiddleware)

@@ -32,14 +32,24 @@ def test_defaults(
     assert conf.GITHUB_WEBHOOK_SECRET_PRE_ROTATION is None
     assert conf.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES == []
     assert conf.GITHUB_WEBHOOK_FORWARD_URL is None
+    assert conf.DASHBOARD_UI_STATIC_FILES_DIRECTORY is None
+    assert conf.DASHBOARD_UI_FRONT_BASE_URL == "http://localhost:8802"
+    assert conf.DASHBOARD_UI_SITE_URLS == ["http://localhost:8802"]
+    assert conf.DASHBOARD_UI_FEATURES == []
+    assert conf.DASHBOARD_UI_SESSION_EXPIRATION_HOURS == 24
+    assert conf.DASHBOARD_UI_DATADOG_CLIENT_TOKEN is None
+    assert conf.DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO == []
 
 
 def test_all_sets(
     original_environment_variables: None,
     unset_testing_env: None,
     monkeypatch: pytest.MonkeyPatch,
+    tmp_path_factory: pytest.TempPathFactory,
 ) -> None:
     monkeypatch.setattr(config.EngineSettings.Config, "env_file", None)
+
+    tmpdir = tmp_path_factory.mktemp("whatever")
 
     monkeypatch.setenv("MERGIFYENGINE_GITHUB_WEBHOOK_SECRET", "secret2")
     monkeypatch.setenv("MERGIFYENGINE_GITHUB_WEBHOOK_FORWARD_EVENT_TYPES", "foo,bar,yo")
@@ -48,6 +58,24 @@ def test_all_sets(
         "MERGIFYENGINE_GITHUB_WEBHOOK_FORWARD_URL", "https://sub.example.com/events"
     )
     monkeypatch.setenv("MERGIFYENGINE_DATABASE_POOL_SIZES", "web:2,worker:3,foobar:6")
+    monkeypatch.setenv(
+        "MERGIFYENGINE_DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO", "1234,5432"
+    )
+    monkeypatch.setenv("MERGIFYENGINE_DASHBOARD_UI_STATIC_FILES_DIRECTORY", str(tmpdir))
+    monkeypatch.setenv("MERGIFYENGINE_DASHBOARD_UI_DATADOG_CLIENT_TOKEN", "no-secret")
+    monkeypatch.setenv("MERGIFYENGINE_DASHBOARD_UI_SESSION_EXPIRATION_HOURS", "100")
+    monkeypatch.setenv(
+        "MERGIFYENGINE_DASHBOARD_UI_FEATURES",
+        "subscriptions,applications,intercom,statuspage",
+    )
+    monkeypatch.setenv(
+        "MERGIFYENGINE_DASHBOARD_UI_FRONT_BASE_URL",
+        "https://dashboard.mergify.com",
+    )
+    monkeypatch.setenv(
+        "MERGIFYENGINE_DASHBOARD_UI_SITE_URLS",
+        "https://dashboard.mergify.com,https://next.dashboard.mergify.com",
+    )
 
     conf = config.EngineSettings()
     assert conf.GITHUB_WEBHOOK_SECRET.get_secret_value() == "secret2"
@@ -56,6 +84,21 @@ def test_all_sets(
     assert conf.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES == ["foo", "bar", "yo"]
     assert conf.GITHUB_WEBHOOK_FORWARD_URL == "https://sub.example.com/events"
     assert conf.DATABASE_POOL_SIZES == {"web": 2, "worker": 3, "foobar": 6}
+    assert conf.DASHBOARD_UI_STATIC_FILES_DIRECTORY == tmpdir
+    assert conf.DASHBOARD_UI_FRONT_BASE_URL == "https://dashboard.mergify.com"
+    assert conf.DASHBOARD_UI_SITE_URLS == [
+        "https://dashboard.mergify.com",
+        "https://next.dashboard.mergify.com",
+    ]
+    assert conf.DASHBOARD_UI_FEATURES == [
+        "subscriptions",
+        "applications",
+        "intercom",
+        "statuspage",
+    ]
+    assert conf.DASHBOARD_UI_SESSION_EXPIRATION_HOURS == 100
+    assert conf.DASHBOARD_UI_DATADOG_CLIENT_TOKEN == "no-secret"
+    assert conf.DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO == [1234, 5432]
 
 
 def test_legacy_env_sets(
@@ -63,6 +106,7 @@ def test_legacy_env_sets(
     unset_testing_env: None,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setenv("MERGIFYENGINE_BASE_URL", "https://dashboard.mergify.com")
     monkeypatch.setenv("MERGIFYENGINE_WEBHOOK_SECRET", "secret4")
     monkeypatch.setenv("MERGIFYENGINE_WEBHOOK_SECRET_PRE_ROTATION", "secret5")
     monkeypatch.setenv("MERGIFYENGINE_WEBHOOK_FORWARD_EVENT_TYPES", "foo,bar,yo")
@@ -75,6 +119,8 @@ def test_legacy_env_sets(
     assert conf.GITHUB_WEBHOOK_SECRET_PRE_ROTATION.get_secret_value() == "secret5"
     assert conf.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES == ["foo", "bar", "yo"]
     assert conf.GITHUB_WEBHOOK_FORWARD_URL == "https://sub.example.com/events"
+    assert conf.DASHBOARD_UI_FRONT_BASE_URL == "https://dashboard.mergify.com"
+    assert conf.DASHBOARD_UI_SITE_URLS == ["https://dashboard.mergify.com"]
 
 
 def test_database_url_replace(

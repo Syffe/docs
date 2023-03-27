@@ -313,7 +313,7 @@ async def logged_as(request: fastapi.Request) -> fastapi.Response:
 class CustomTestClient(httpx.AsyncClient):
     def __init__(self, app: abc.Callable[..., typing.Any]):
         super().__init__(
-            base_url=config.DASHBOARD_UI_FRONT_BASE_URL,
+            base_url=settings.DASHBOARD_UI_FRONT_BASE_URL,
             app=app,
             follow_redirects=True,
             headers={"Content-type": "application/json"},

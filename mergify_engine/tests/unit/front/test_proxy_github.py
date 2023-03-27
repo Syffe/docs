@@ -2,8 +2,8 @@ import pytest
 import respx
 import sqlalchemy
 
-from mergify_engine import config
 from mergify_engine import github_types
+from mergify_engine import settings
 from mergify_engine.models import github_user
 from mergify_engine.tests import conftest
 
@@ -49,7 +49,7 @@ async def test_github_proxy(
     assert resp.json() == {"data": 42}
     assert (
         resp.headers["link"]
-        == f'<{config.DASHBOARD_UI_FRONT_BASE_URL}/front/proxy/github/repos?page=2>; rel="next", <{config.DASHBOARD_UI_FRONT_BASE_URL}/front/proxy/github/repos?page=7>; rel="last"'
+        == f'<{settings.DASHBOARD_UI_FRONT_BASE_URL}/front/proxy/github/repos?page=2>; rel="next", <{settings.DASHBOARD_UI_FRONT_BASE_URL}/front/proxy/github/repos?page=7>; rel="last"'
     )
 
     await web_client.logout()

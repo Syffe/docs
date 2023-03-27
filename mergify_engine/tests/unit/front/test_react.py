@@ -3,7 +3,7 @@ import os
 import httpx
 import pytest
 
-from mergify_engine import config
+from mergify_engine import settings
 from mergify_engine.tests import conftest
 
 
@@ -17,7 +17,7 @@ def set_dashboard_ui_static_files_directory(
 ) -> None:
     # NOTE(sileht): must be done before web_client is created
     monkeypatch.setattr(
-        config, "DASHBOARD_UI_STATIC_FILES_DIRECTORY", FAKE_REACT_BUILD_DIR
+        settings, "DASHBOARD_UI_STATIC_FILES_DIRECTORY", FAKE_REACT_BUILD_DIR
     )
 
 

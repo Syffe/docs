@@ -3,7 +3,7 @@ import fastapi
 from fastapi.middleware import httpsredirect
 from uvicorn.middleware import proxy_headers
 
-from mergify_engine import config
+from mergify_engine import settings
 from mergify_engine.clients import github
 from mergify_engine.web import github_webhook
 from mergify_engine.web import legacy_badges
@@ -36,7 +36,7 @@ def create_app(https_only: bool = True, debug: bool = False) -> fastapi.FastAPI:
     app.mount("/front", front_root.create_app(debug=debug))
     app.mount("/subscriptions", subscriptions.create_app(debug=debug))
 
-    if config.DASHBOARD_UI_STATIC_FILES_DIRECTORY is None:
+    if settings.DASHBOARD_UI_STATIC_FILES_DIRECTORY is None:
         app.get("/")(saas_root_endpoint)
         app.mount("/", github_webhook.create_app(debug=debug))
     else:

@@ -4,6 +4,7 @@ import sqlalchemy
 
 from mergify_engine import config
 from mergify_engine import github_types
+from mergify_engine import settings
 from mergify_engine.models import github_user
 from mergify_engine.tests import conftest
 
@@ -250,7 +251,7 @@ async def test_saas_intercom_with_saas_mode_true(
             "/front/proxy/saas/github-account/42/something-else",
             f"{config.SUBSCRIPTION_BASE_URL}/engine/saas/github-account/42/something-else",
             f"{config.SUBSCRIPTION_BASE_URL}/engine/saas/foo/bar",
-            f"{config.BASE_URL}/front/proxy/saas/foo/bar",
+            f"{settings.DASHBOARD_UI_FRONT_BASE_URL}/front/proxy/saas/foo/bar",
         ),
     ),
 )

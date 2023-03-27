@@ -11,6 +11,7 @@ import starsessions.session
 from mergify_engine import config
 from mergify_engine import database
 from mergify_engine import github_types
+from mergify_engine import settings
 from mergify_engine.clients import dashboard
 from mergify_engine.clients import github
 from mergify_engine.clients import http
@@ -73,9 +74,9 @@ async def login_via_github(
     # https://github.com/tiangolo/fastapi/discussions/9279
     site_url: str | None = fastapi.Query(default=None),  # noqa: B008
 ) -> AuthRedirectUrl:
-    if not site_url or site_url not in config.DASHBOARD_UI_SITE_URLS:
+    if not site_url or site_url not in settings.DASHBOARD_UI_SITE_URLS:
         # NOT a whitelisted domain, we just redirect to the default one.
-        site_url = config.DASHBOARD_UI_SITE_URLS[0]
+        site_url = settings.DASHBOARD_UI_SITE_URLS[0]
 
     # NOTE(sileht): logout first to start with a new session and session id
     await clear_session_and_auth(request)

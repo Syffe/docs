@@ -4,7 +4,7 @@ import fastapi
 import imia
 import starlette
 
-from mergify_engine import config
+from mergify_engine import settings
 from mergify_engine.models import github_user
 
 
@@ -27,7 +27,7 @@ def is_mergify_admin(
     return (
         auth
         and auth.is_authenticated
-        and auth.user.id in config.DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO
+        and auth.user.id in settings.DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO
     )
 
 

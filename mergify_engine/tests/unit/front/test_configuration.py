@@ -1,6 +1,7 @@
 import pytest
 
 from mergify_engine import config
+from mergify_engine import settings
 from mergify_engine.tests import conftest
 
 
@@ -9,10 +10,10 @@ async def test_site_configuration(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(
-        config, "DASHBOARD_UI_DATADOG_CLIENT_TOKEN", "a-not-so-secret-token"
+        settings, "DASHBOARD_UI_DATADOG_CLIENT_TOKEN", "a-not-so-secret-token"
     )
     monkeypatch.setattr(
-        config,
+        settings,
         "DASHBOARD_UI_FEATURES",
         ["applications", "intercom", "subscriptions", "statuspage"],
     )

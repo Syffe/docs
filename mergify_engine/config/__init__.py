@@ -17,6 +17,8 @@ from mergify_engine.config import urls
 
 CONFIGURATION_FILE = os.getenv("MERGIFYENGINE_TEST_SETTINGS")
 
+DASHBOARD_DEFAULT_URL = pydantic.HttpUrl("http://localhost:8802", scheme="http")
+
 
 class EngineSettings(pydantic.BaseSettings):
     DATABASE_URL: urls.PostgresDSN = urls.PostgresDSN.parse("postgres://localhost:5432")
@@ -37,6 +39,20 @@ class EngineSettings(pydantic.BaseSettings):
         default_factory=list, extra_env="WEBHOOK_FORWARD_EVENT_TYPES"
     )
 
+    DASHBOARD_UI_STATIC_FILES_DIRECTORY: pydantic.DirectoryPath | None = None
+    DASHBOARD_UI_FRONT_BASE_URL: pydantic.HttpUrl = pydantic.Field(
+        default=DASHBOARD_DEFAULT_URL, extra_env="BASE_URL"
+    )
+    DASHBOARD_UI_SITE_URLS: list[pydantic.HttpUrl] = pydantic.Field(
+        default=[DASHBOARD_DEFAULT_URL], extra_env="BASE_URL"
+    )
+    DASHBOARD_UI_SESSION_EXPIRATION_HOURS: int = 24
+    DASHBOARD_UI_FEATURES: list[str] = pydantic.Field(default_factory=list)
+    DASHBOARD_UI_DATADOG_CLIENT_TOKEN: str | None = None
+    DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO: list[int] = pydantic.Field(
+        default_factory=list
+    )
+
     class Config(pydantic.BaseSettings.Config):
         case_sensitive = True
         env_prefix = "MERGIFYENGINE_"
@@ -47,7 +63,13 @@ class EngineSettings(pydantic.BaseSettings):
             if field_name == "DATABASE_POOL_SIZES":
                 return utils.string_to_dict(raw_val, int)
 
-            if field_name == "GITHUB_WEBHOOK_FORWARD_EVENT_TYPES":
+            if field_name in (
+                "GITHUB_WEBHOOK_FORWARD_EVENT_TYPES",
+                "WEBHOOK_FORWARD_EVENT_TYPES",
+                "DASHBOARD_UI_FEATURES",
+                "DASHBOARD_UI_SITE_URLS",
+                "DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO",
+            ):
                 return raw_val.split(",")
 
             return super().parse_env_var(field_name, raw_val)
@@ -194,32 +216,10 @@ Schema = voluptuous.Schema(
         voluptuous.Required("OAUTH_CLIENT_SECRET"): str,
         # GitHub optional
         voluptuous.Required("GITHUB_URL", default="https://github.com"): str,
-        #
-        # Dashboard settings
-        #
-        voluptuous.Required(
-            "DASHBOARD_UI_FRONT_BASE_URL", default=None
-        ): voluptuous.Any(None, str),
-        voluptuous.Required(
-            "DASHBOARD_UI_SITE_URLS", default=""
-        ): CommaSeparatedStringList,
-        voluptuous.Required(
-            "DASHBOARD_UI_DATADOG_CLIENT_TOKEN", default=None
-        ): voluptuous.Any(None, str),
-        voluptuous.Required(
-            "DASHBOARD_UI_FEATURES", default=""
-        ): CommaSeparatedStringList,
-        voluptuous.Required("DASHBOARD_UI_SESSION_EXPIRATION_HOURS", default=24): int,
         voluptuous.Required(
             "SUBSCRIPTION_BASE_URL", default="https://subscription.mergify.com"
         ): str,
-        voluptuous.Required(
-            "DASHBOARD_UI_STATIC_FILES_DIRECTORY", default=None
-        ): voluptuous.Any(None, str),
         #
-        voluptuous.Required(
-            "DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO", default=""
-        ): CommaSeparatedIntList,
         # OnPremise special config
         #
         voluptuous.Required("SUBSCRIPTION_TOKEN", default=None): voluptuous.Any(
@@ -244,7 +244,6 @@ Schema = voluptuous.Schema(
         #
         # Mergify Engine settings
         #
-        voluptuous.Required("BASE_URL", default="http://localhost:8802"): str,
         voluptuous.Required("DATABASE_OAUTH_TOKEN_SECRET_CURRENT"): str,
         voluptuous.Required(
             "DATABASE_OAUTH_TOKEN_SECRET_OLD", default=None
@@ -367,7 +366,6 @@ Schema = voluptuous.Schema(
 
 # Config variables available from voluptuous
 VERSION: str
-BASE_URL: str
 API_ENABLE: bool
 SENTRY_URL: str
 SENTRY_ENVIRONMENT: str
@@ -399,13 +397,6 @@ AUTHENTICATION_URL: str
 BUCKET_PROCESSING_MAX_SECONDS: int
 MAX_GITTER_CONCURRENT_JOBS: int
 INTEGRATION_ID: int
-DASHBOARD_UI_STATIC_FILES_DIRECTORY: str | None
-DASHBOARD_UI_FRONT_BASE_URL: str
-DASHBOARD_UI_SITE_URLS: list[str]
-DASHBOARD_UI_SESSION_EXPIRATION_HOURS: int
-DASHBOARD_UI_FEATURES: list[str]
-DASHBOARD_UI_DATADOG_CLIENT_TOKEN: str | None
-DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO: list[int]
 SUBSCRIPTION_BASE_URL: str
 SUBSCRIPTION_TOKEN: str | None
 ENGINE_TO_DASHBOARD_API_KEY: str
@@ -536,12 +527,6 @@ def load() -> dict[str, typing.Any]:
     if not parsed_config["SAAS_MODE"] and not parsed_config["SUBSCRIPTION_TOKEN"]:
         print("SUBSCRIPTION_TOKEN is missing. Mergify can't start.")
         sys.exit(1)
-
-    if not parsed_config["DASHBOARD_UI_FRONT_BASE_URL"]:
-        parsed_config["DASHBOARD_UI_FRONT_BASE_URL"] = parsed_config["BASE_URL"]
-
-    if not parsed_config["DASHBOARD_UI_SITE_URLS"]:
-        parsed_config["DASHBOARD_UI_SITE_URLS"] = [parsed_config["BASE_URL"]]
 
     parsed_config["GITHUB_URL"] = parsed_config["GITHUB_URL"].removesuffix("/")
 

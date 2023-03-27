@@ -4,9 +4,9 @@ import imia
 import starlette
 from starsessions.stores.base import SessionStore
 
-from mergify_engine import config
 from mergify_engine import database
 from mergify_engine import github_types
+from mergify_engine import settings
 from mergify_engine.models import github_user
 from mergify_engine.web import redis
 
@@ -51,7 +51,7 @@ class RedisStore(SessionStore):
         await redis_links.authentication.set(
             self.get_redis_key(session_id, "invalidation"),
             b"",
-            ex=3600 * config.DASHBOARD_UI_SESSION_EXPIRATION_HOURS * 2,
+            ex=3600 * settings.DASHBOARD_UI_SESSION_EXPIRATION_HOURS * 2,
         )
 
     async def exists(self, session_id: str) -> bool:

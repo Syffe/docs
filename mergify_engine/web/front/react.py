@@ -4,8 +4,8 @@ import os
 import fastapi
 import starlette
 
-from mergify_engine import config
 from mergify_engine import date
+from mergify_engine import settings
 
 
 router = fastapi.APIRouter(tags=["react"])
@@ -15,8 +15,8 @@ async def serve_static_file(
     request: fastapi.Request, filepath: str
 ) -> fastapi.Response:
     # NOTE(sileht): Ensure the destination file is located in REACT_BUILD_DIR
-    assert config.DASHBOARD_UI_STATIC_FILES_DIRECTORY is not None
-    base_path = os.path.abspath(config.DASHBOARD_UI_STATIC_FILES_DIRECTORY)
+    assert settings.DASHBOARD_UI_STATIC_FILES_DIRECTORY is not None
+    base_path = os.path.abspath(settings.DASHBOARD_UI_STATIC_FILES_DIRECTORY)
     path = os.path.abspath(f"{base_path}/{filepath}")
 
     if path.startswith(base_path) and os.path.isfile(path):
