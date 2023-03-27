@@ -82,17 +82,18 @@ class EngineSettings(pydantic.BaseSettings):
 
             extra_env = field.field_info.extra.get("extra_env")
             if extra_env:
+                env_names = [cls.env_prefix + field.name]
                 env = field.field_info.extra.get("env")
                 if env is None:
-                    env_names = set()
+                    pass
                 elif isinstance(env, str):
-                    env_names = {env}
+                    env_names.append(env)
                 elif isinstance(env, (set, tuple, list)):
-                    env_names = set(env)
+                    env_names.extend(env)
                 else:
                     raise RuntimeError(f"Unsupport env type: {type(env)}")
 
-                env_names |= {cls.env_prefix + field.name, cls.env_prefix + extra_env}
+                env_names.append(cls.env_prefix + extra_env)
                 field.field_info.extra["env"] = env_names
 
             super().prepare_field(field)

@@ -188,3 +188,13 @@ def test_error_message(monkeypatch: pytest.MonkeyPatch) -> None:
 MERGIFYENGINE_DATABASE_URL
   scheme `https` is invalid, must be postgres,postgresql,postgresql+psycopg (type=value_error)"""
     )
+
+
+def test_dashboard_site_urls_with_one_value(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv(
+        "MERGIFYENGINE_DASHBOARD_UI_SITE_URLS",
+        "https://dashboard.mergify.com",
+    )
+
+    conf = config.EngineSettings()
+    assert conf.DASHBOARD_UI_SITE_URLS == ["https://dashboard.mergify.com"]
