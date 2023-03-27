@@ -106,7 +106,10 @@ class MergeUtilsMixin:
                     json={"sha": ctxt.pull["head"]["sha"]},
                 )
             except http.HTTPClientSideError as e:  # pragma: no cover
-                if "Update is not a fast forward" in e.message:
+                if (
+                    "Update is not a fast forward" in e.message
+                    or "Base branch was modified" in e.message
+                ):
                     ctxt.log.info(
                         "Base branch was modified in the meantime, retrying",
                         status_code=e.status_code,
