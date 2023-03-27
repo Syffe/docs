@@ -1,5 +1,6 @@
 import datetime
 
+import daiquiri
 import ddtrace
 
 from mergify_engine import github_types
@@ -9,6 +10,9 @@ from mergify_engine.ci import pull_registries
 from mergify_engine.clients import github
 
 
+LOG = daiquiri.getLogger(__name__)
+
+
 async def dump(
     redis_links: redis_utils.RedisLinks,
     owner: github_types.GitHubLogin,
@@ -16,6 +20,8 @@ async def dump(
     at: datetime.date,
     auth: github.GithubAppInstallationAuth | github.GithubTokenAuth | None = None,
 ) -> None:
+    LOG.info("dump CI data", gh_owner=owner, gh_repo=repository, at=at)
+
     if auth is None:
         auth = github.GithubAppInstallationAuth(
             await github.get_installation_from_login(owner)

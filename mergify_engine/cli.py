@@ -8,6 +8,7 @@ from mergify_engine import github_types
 from mergify_engine import json
 from mergify_engine import redis_utils
 from mergify_engine import refresher
+from mergify_engine import service
 from mergify_engine import utils
 from mergify_engine.ci import dump
 from mergify_engine.ci import job_registries
@@ -95,13 +96,13 @@ async def refresher_cli() -> None:
 
 @utils.make_sync_for_entrypoint
 async def dump_handler(argv: list[str] | None = None) -> None:
+    service.setup("ci-dump")
+
     parser = argparse.ArgumentParser(description="Mergify CI dump")
     parser.add_argument("owner", type=github_types.GitHubLogin)
     parser.add_argument("repository", type=github_types.GitHubRepositoryName)
     parser.add_argument("at", type=lambda v: datetime.date.fromisoformat(v))
     args = parser.parse_args(argv)
-
-    database.init_sqlalchemy("dump")
 
     auth = github.GithubTokenAuth(
         token=config.DEV_PERSONAL_TOKEN,

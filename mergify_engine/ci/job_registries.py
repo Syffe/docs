@@ -170,6 +170,8 @@ class HTTPJobRegistry:
         )
 
         async for run in runs:
+            LOG.debug(f"workflow run {run['id']}", gh_owner=owner, gh_repo=repository)
+
             # https://docs.github.com/en/rest/actions/workflow-jobs?apiVersion=2022-11-28#list-jobs-for-a-workflow-run
             jobs = typing.cast(
                 abc.AsyncIterable[github_types.GitHubJobRun],
@@ -182,8 +184,15 @@ class HTTPJobRegistry:
             )
 
             async for job in jobs:
+                LOG.debug(f"job run {job['id']}", gh_owner=owner, gh_repo=repository)
+
                 if self._is_ignored(run, job):
-                    LOG.info(f"job {job['id']} ignored", job_payload=job)
+                    LOG.info(
+                        f"job run {job['id']} ignored",
+                        gh_owner=owner,
+                        gh_repo=repository,
+                        job_payload=job,
+                    )
                     continue
 
                 yield await self._create_job(job, run)
