@@ -220,13 +220,17 @@ async def test_invalid_arguments() -> None:
         filter.BinaryFilter({"=": (1, 2, 3)})  # type: ignore[typeddict-item]
 
 
-async def test_str() -> None:
-    assert "foo~=^f" == str(filter.BinaryFilter({"~=": ("foo", "^f")}))
-    assert "-foo=1" == str(filter.BinaryFilter({"-": {"=": ("foo", 1)}}))
-    assert "foo" == str(filter.BinaryFilter({"=": ("foo", True)}))
-    assert "-bar" == str(filter.BinaryFilter({"=": ("bar", False)}))
+@pytest.mark.parametrize(
+    "_filter",
+    (filter.BinaryFilter, filter.NearDatetimeFilter, filter.IncompleteChecksFilter),
+)
+async def test_str(_filter: filter.Filter[typing.Any]) -> None:
+    assert "foo~=^f" == str(_filter({"~=": ("foo", "^f")}))
+    assert "-foo=1" == str(_filter({"-": {"=": ("foo", 1)}}))
+    assert "foo" == str(_filter({"=": ("foo", True)}))
+    assert "-bar" == str(_filter({"=": ("bar", False)}))
     with pytest.raises(filter.InvalidOperator):
-        str(filter.BinaryFilter({">=": ("bar", False)}))
+        str(_filter({">=": ("bar", False)}))
 
 
 def dtime(day: int) -> datetime.datetime:

@@ -148,7 +148,7 @@ class Filter(typing.Generic[FilterResultT]):
 
         if op in self.binary_operators:
             if isinstance(nodes[1], bool):  # type: ignore[index]
-                if self.binary_operators[op][0] != operator.eq:
+                if op != "=":
                     raise InvalidOperator(op)
                 return ("" if nodes[1] else "-") + str(nodes[0])  # type: ignore[index]
             elif isinstance(nodes[1], datetime.datetime):  # type: ignore[index]
