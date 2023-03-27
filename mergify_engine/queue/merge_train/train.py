@@ -123,6 +123,14 @@ class Train:
                     repository, queue_rules, partition_rules, ref
                 )
 
+            LOG.info(
+                "refreshing merge train",
+                gh_owner=installation.owner_login,
+                gh_repo=repository.repo["name"],
+                gh_branch=ref,
+                partition_name=partition_name,
+            )
+
             train = cls(conv, partition_name)
             await train.load()
             await train.refresh()
