@@ -99,6 +99,13 @@ fi
 export DD_DOGSTATSD_DISABLE=0
 export DD_TRACE_ENABLED=1
 
+# FIXME(sileht): This is not enabled by default as it's recommended to use the
+# underlying driver integration, but since they don't support psycopg3 yet, we
+# must enable it.
+# https://ddtrace.readthedocs.io/en/stable/integrations.html#sqlalchemy
+# When psycopg3 is supported -> MRGFY-2024
+export DD_TRACE_SQLALCHEMY_ENABLED=1
+
 unset DD_CONF_DIR
 echo 'Datadog-agent startup.'
 datadog-agent run &

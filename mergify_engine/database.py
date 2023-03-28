@@ -9,14 +9,6 @@ from mergify_engine import database
 from mergify_engine import settings
 
 
-# FIXME(sileht): This is not enabled by default as it's recommended to use the
-# underlying driver integration, but since they don't support psycopg3 yet, we
-# must enable it.
-# https://ddtrace.readthedocs.io/en/stable/integrations.html#sqlalchemy
-# When psycopg3 is supported -> MRGFY-2024
-ddtrace.patch(sqlalchemy=True)
-
-
 AsyncSessionMaker = typing.NewType(
     "AsyncSessionMaker",
     "sqlalchemy.ext.asyncio.async_sessionmaker[sqlalchemy.ext.asyncio.AsyncSession]",
