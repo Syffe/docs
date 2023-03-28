@@ -159,13 +159,13 @@ Then, re-embark the pull request into the merge queue by posting the comment
         result = await self.common_merge(
             "queue",
             self.ctxt,
-            self.rule,
             self.config["method"],
             self.config["merge_bot_account"],
             self.config["commit_message_template"],
             functools.partial(
                 self.get_pending_queue_status,
                 convoy=convoy,
+                rule=self.rule,
                 queue_rule=self.queue_rule,
                 queue_freeze=queue_freeze,
             ),
@@ -254,10 +254,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
             return await self._handle_merge_error(
                 e,
                 self.ctxt,
-                self.rule,
                 functools.partial(
                     self.get_pending_queue_status,
                     convoy=convoy,
+                    rule=self.rule,
                     queue_rule=self.queue_rule,
                     queue_freeze=queue_freeze,
                 ),

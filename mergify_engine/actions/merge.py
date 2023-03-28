@@ -1,4 +1,5 @@
 import dataclasses
+import functools
 import typing
 
 import voluptuous
@@ -100,11 +101,13 @@ class MergeExecutor(
             report = await self.common_merge(
                 "merge",
                 self.ctxt,
-                self.rule,
                 self.config["method"],
                 self.config["merge_bot_account"],
                 self.config["commit_message_template"],
-                self.get_pending_merge_status,
+                functools.partial(
+                    self.get_pending_merge_status,
+                    rule=self.rule,
+                ),
             )
             if report.conclusion == check_api.Conclusion.SUCCESS:
                 convoy = await merge_train.Convoy.from_context(

@@ -14,7 +14,6 @@ from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.models import github_user
-from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 RECENTLY_MERGED_TRACKER_EXPIRATION = datetime.timedelta(hours=1)
@@ -24,7 +23,7 @@ FORBIDDEN_SQUASH_MERGE_MSG = "Squash merges are not allowed on this repository."
 FORBIDDEN_REBASE_MERGE_MSG = "Rebase merges are not allowed on this repository."
 
 PendingResultBuilderT = abc.Callable[
-    [context.Context, prr_config.EvaluatedPullRequestRule],
+    [context.Context],
     abc.Awaitable[check_api.Result],
 ]
 MergeMethodT = typing.Literal["merge", "rebase", "squash", "fast-forward"]
@@ -81,7 +80,6 @@ class MergeUtilsMixin:
         self,
         kind: str,
         ctxt: context.Context,
-        rule: prr_config.EvaluatedPullRequestRule,
         merge_method: MergeMethodT,
         merge_bot_account: github_types.GitHubLogin | None,
         commit_message_template: str | None,
@@ -116,14 +114,14 @@ class MergeUtilsMixin:
                         error_message=e.message,
                     )
                     await self._refresh_for_retry(ctxt)
-                    return await pending_result_builder(ctxt, rule)
+                    return await pending_result_builder(ctxt)
 
                 await ctxt.update()
                 if ctxt.pull["merged"]:
                     ctxt.log.info("merged in the meantime")
                 else:
                     return await self._handle_merge_error(
-                        e, ctxt, rule, pending_result_builder
+                        e, ctxt, pending_result_builder
                     )
             else:
                 ctxt.log.info("merged")
@@ -176,7 +174,7 @@ class MergeUtilsMixin:
                     ctxt.log.info("merged in the meantime")
                 else:
                     return await self._handle_merge_error(
-                        e, ctxt, rule, pending_result_builder
+                        e, ctxt, pending_result_builder
                     )
             else:
                 await ctxt.update(wait_merged=True)
@@ -197,7 +195,6 @@ class MergeUtilsMixin:
         self,
         e: http.HTTPClientSideError,
         ctxt: context.Context,
-        rule: prr_config.EvaluatedPullRequestRule,
         pending_result_builder: PendingResultBuilderT,
     ) -> check_api.Result:
         if "Head branch was modified" in e.message:
@@ -207,7 +204,7 @@ class MergeUtilsMixin:
                 error_message=e.message,
             )
             await self._refresh_for_retry(ctxt)
-            return await pending_result_builder(ctxt, rule)
+            return await pending_result_builder(ctxt)
         elif "Base branch was modified" in e.message:
             # NOTE(sileht): The base branch was modified between pull.is_behind call and
             # here, usually by something not merged by mergify. So we need sync it again
@@ -218,7 +215,7 @@ class MergeUtilsMixin:
                 error_message=e.message,
             )
             await self._refresh_for_retry(ctxt)
-            return await pending_result_builder(ctxt, rule)
+            return await pending_result_builder(ctxt)
 
         elif e.status_code == 405:
             if REQUIRED_STATUS_RE.match(e.message):
@@ -236,7 +233,7 @@ class MergeUtilsMixin:
                         error_message=e.message,
                     )
                     await self._refresh_for_retry(ctxt)
-                    return await pending_result_builder(ctxt, rule)
+                    return await pending_result_builder(ctxt)
 
                 ctxt.log.info(
                     "Waiting for the branch protection required status checks to be validated",

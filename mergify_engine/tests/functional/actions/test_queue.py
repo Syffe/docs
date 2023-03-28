@@ -7,6 +7,7 @@ from urllib import parse
 import anys
 from first import first
 from freezegun import freeze_time
+import httpx
 import msgpack
 import pytest
 
@@ -21,6 +22,8 @@ from mergify_engine import github_types
 from mergify_engine import queue
 from mergify_engine import utils
 from mergify_engine import yaml
+from mergify_engine.clients import github
+from mergify_engine.clients import http
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import conditions
@@ -7123,3 +7126,66 @@ pull_requests:
         assert check_run["check_run"]["output"]["summary"].startswith(
             "The maximum batch failure resolution attempts has been reached."
         )
+
+    async def test_handle_merge_error(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Automatic merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        draft_pr = await self.wait_for_pull_request("opened")
+        await self.create_status(draft_pr["pull_request"])
+
+        real_put = github.AsyncGithubClient.put
+        counter = 0
+
+        async def mock_put(self, *args, **kwargs) -> httpx.Response:  # type: ignore[no-untyped-def]
+            nonlocal counter
+            if counter == 0:
+                counter += 1
+                raise http.HTTPClientSideError(
+                    message="Head branch was modified in the meantime",
+                    request=mock.Mock(),
+                    response=httpx.Response(
+                        status_code=405,
+                        json={"message": "Head branch was modified in the meantime"},
+                    ),
+                )
+
+            return await real_put(self, *args, **kwargs)
+
+        # We just want to trigger the part of the code that calls the
+        # `pending_result_builder` to make sure it is called properly
+        with mock.patch.object(
+            github.AsyncGithubClient,
+            "put",
+            new=mock_put,
+        ):
+            await self.run_engine()
+
+        await self.wait_for_pull_request("closed", draft_pr["number"])
+        p1_closed = await self.wait_for_pull_request("closed", p1["number"])
+        assert p1_closed["pull_request"]["merged"]
