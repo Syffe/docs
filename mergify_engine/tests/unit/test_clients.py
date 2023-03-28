@@ -8,17 +8,17 @@ import httpx
 import pytest
 import respx
 
-from mergify_engine import config
 from mergify_engine import date
 from mergify_engine import exceptions
 from mergify_engine import github_types
+from mergify_engine import settings
 from mergify_engine.clients import github
 from mergify_engine.clients import github_app
 from mergify_engine.clients import http
 
 
 @mock.patch.object(github.CachedToken, "STORAGE", {})
-@pytest.mark.respx(base_url=config.GITHUB_REST_API_URL)
+@pytest.mark.respx(base_url=settings.GITHUB_REST_API_URL)
 async def test_client_installation_token_with_owner_id(
     respx_mock: respx.MockRouter,
 ) -> None:
@@ -61,7 +61,7 @@ async def test_client_installation_token_with_owner_id(
 
 
 @mock.patch.object(github.CachedToken, "STORAGE", {})
-@pytest.mark.respx(base_url=config.GITHUB_REST_API_URL)
+@pytest.mark.respx(base_url=settings.GITHUB_REST_API_URL)
 async def test_client_user_token(respx_mock: respx.MockRouter) -> None:
     respx_mock.get("/user/12345/installation").respond(
         200,
@@ -96,7 +96,7 @@ async def test_client_user_token(respx_mock: respx.MockRouter) -> None:
 
 
 @mock.patch.object(github.CachedToken, "STORAGE", {})
-@pytest.mark.respx(base_url=config.GITHUB_REST_API_URL)
+@pytest.mark.respx(base_url=settings.GITHUB_REST_API_URL)
 async def test_client_401_raise_ratelimit(respx_mock: respx.MockRouter) -> None:
     owner_id = github_types.GitHubAccountIdType(12345)
     owner_login = github_types.GitHubLogin("owner")
@@ -316,7 +316,7 @@ async def test_client_retry_429_retry_after_as_absolute_date(
 
 
 @mock.patch.object(github.CachedToken, "STORAGE", {})
-@pytest.mark.respx(base_url=config.GITHUB_REST_API_URL)
+@pytest.mark.respx(base_url=settings.GITHUB_REST_API_URL)
 async def test_client_access_token_HTTP_500(respx_mock: respx.MockRouter) -> None:
     respx_mock.get("/user/12345/installation").respond(
         200,
@@ -356,12 +356,12 @@ async def test_client_access_token_HTTP_500(respx_mock: respx.MockRouter) -> Non
     assert exc_info.value.response.status_code == 500
     assert (
         str(exc_info.value.request.url)
-        == f"{config.GITHUB_REST_API_URL}/app/installations/12345/access_tokens"
+        == f"{settings.GITHUB_REST_API_URL}/app/installations/12345/access_tokens"
     )
 
 
 @mock.patch.object(github.CachedToken, "STORAGE", {})
-@pytest.mark.respx(base_url=config.GITHUB_REST_API_URL)
+@pytest.mark.respx(base_url=settings.GITHUB_REST_API_URL)
 async def test_client_installation_HTTP_500(respx_mock: respx.MockRouter) -> None:
     respx_mock.get("/user/12345/installation").mock(
         side_effect=[
@@ -397,12 +397,12 @@ async def test_client_installation_HTTP_500(respx_mock: respx.MockRouter) -> Non
     assert exc_info.value.response.status_code == 500
     assert (
         str(exc_info.value.request.url)
-        == f"{config.GITHUB_REST_API_URL}/user/12345/installation"
+        == f"{settings.GITHUB_REST_API_URL}/user/12345/installation"
     )
 
 
 @mock.patch.object(github.CachedToken, "STORAGE", {})
-@pytest.mark.respx(base_url=config.GITHUB_REST_API_URL)
+@pytest.mark.respx(base_url=settings.GITHUB_REST_API_URL)
 async def test_client_installation_HTTP_404(respx_mock: respx.MockRouter) -> None:
     respx_mock.get("/user/12345/installation").respond(
         404, json={"message": "Repository not found"}
@@ -415,9 +415,9 @@ async def test_client_installation_HTTP_404(respx_mock: respx.MockRouter) -> Non
 
 
 @mock.patch.object(github.CachedToken, "STORAGE", {})
-@pytest.mark.respx(base_url=config.GITHUB_REST_API_URL)
+@pytest.mark.respx(base_url=settings.GITHUB_REST_API_URL)
 async def test_client_installation_HTTP_301(respx_mock: respx.MockRouter) -> None:
-    url_prefix = parse.urlparse(config.GITHUB_REST_API_URL).path
+    url_prefix = parse.urlparse(settings.GITHUB_REST_API_URL).path
     respx_mock.get("/user/12345/installation").respond(
         301,
         headers={"Location": f"{url_prefix}/repositories/12345/installation"},
@@ -433,7 +433,7 @@ async def test_client_installation_HTTP_301(respx_mock: respx.MockRouter) -> Non
 
 
 @mock.patch.object(github.CachedToken, "STORAGE", {})
-@pytest.mark.respx(base_url=config.GITHUB_REST_API_URL)
+@pytest.mark.respx(base_url=settings.GITHUB_REST_API_URL)
 async def test_client_abuse_403_no_header(respx_mock: respx.MockRouter) -> None:
     abuse_message = (
         "You have triggered an abuse detection mechanism. "
@@ -473,11 +473,11 @@ async def test_client_abuse_403_no_header(respx_mock: respx.MockRouter) -> None:
     assert exc_info.value.message == abuse_message
     assert exc_info.value.status_code == 403
     assert exc_info.value.response.status_code == 403
-    assert str(exc_info.value.request.url) == f"{config.GITHUB_REST_API_URL}/"
+    assert str(exc_info.value.request.url) == f"{settings.GITHUB_REST_API_URL}/"
 
 
 @mock.patch.object(github.CachedToken, "STORAGE", {})
-@pytest.mark.respx(base_url=config.GITHUB_REST_API_URL)
+@pytest.mark.respx(base_url=settings.GITHUB_REST_API_URL)
 async def test_to_curl(
     respx_mock: respx.MockRouter,
 ) -> None:

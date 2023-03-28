@@ -3,11 +3,11 @@ import os
 import typing
 from unittest import mock
 
-from mergify_engine import config
 from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import pull_request_finder
 from mergify_engine import redis_utils
+from mergify_engine import settings
 from mergify_engine.tests.unit import conftest
 
 
@@ -23,8 +23,8 @@ async def _do_test_event_to_pull(
     ) as f:
         data = json.loads(
             f.read()
-            .replace("https://github.com", config.GITHUB_URL)
-            .replace("https://api.github.com", config.GITHUB_REST_API_URL)
+            .replace("https://github.com", settings.GITHUB_URL)
+            .replace("https://api.github.com", settings.GITHUB_REST_API_URL)
         )
 
     gh_owner = github_types.GitHubAccount(

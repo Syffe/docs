@@ -13,7 +13,6 @@ import tenacity
 
 from mergify_engine import branch_updater
 from mergify_engine import check_api
-from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
@@ -21,6 +20,7 @@ from mergify_engine import delayed_refresh
 from mergify_engine import github_types
 from mergify_engine import json
 from mergify_engine import refresher
+from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine import worker_pusher
 from mergify_engine import yaml
@@ -1890,7 +1890,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
         for check in await checked_ctxt.pull_check_runs:
             # Don't copy Summary/Rule/Queue/... checks
-            if check["app_id"] == config.INTEGRATION_ID:
+            if check["app_id"] == settings.GITHUB_APP_ID:
                 continue
 
             output_title = ""

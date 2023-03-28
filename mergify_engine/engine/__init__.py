@@ -5,13 +5,13 @@ import daiquiri
 import first
 
 from mergify_engine import check_api
-from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import redis_utils
+from mergify_engine import settings
 from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import github_app
@@ -172,7 +172,7 @@ async def _get_summary_from_sha(
             sha,
             check_name=constants.SUMMARY_NAME,
         ),
-        key=lambda c: c["app_id"] == config.INTEGRATION_ID,
+        key=lambda c: c["app_id"] == settings.GITHUB_APP_ID,
     )
 
 

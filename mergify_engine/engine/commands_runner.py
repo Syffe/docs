@@ -10,11 +10,11 @@ import voluptuous
 
 from mergify_engine import actions
 from mergify_engine import check_api
-from mergify_engine import config
 from mergify_engine import context
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import rules
+from mergify_engine import settings
 from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
@@ -26,7 +26,7 @@ from mergify_engine.rules.config import pull_request_rules as prr_config
 LOG = daiquiri.getLogger(__name__)
 
 COMMAND_MATCHER = re.compile(
-    rf"^(?:{config.GITHUB_URL.rstrip('/')}/|@)Mergify(?:|io) (\w*)(.*)",
+    rf"^(?:{settings.GITHUB_URL.rstrip('/')}/|@)Mergify(?:|io) (\w*)(.*)",
     re.IGNORECASE,
 )
 

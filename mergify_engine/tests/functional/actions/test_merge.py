@@ -3,10 +3,10 @@ import typing
 
 import pytest
 
-from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import github_types
+from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.tests.functional import base
 
@@ -75,7 +75,7 @@ class TestMergeAction(base.FunctionalTestBase):
         )
 
     @pytest.mark.skipif(
-        not config.GITHUB_URL.startswith("https://github.com"),
+        not settings.GITHUB_URL.startswith("https://github.com"),
         reason="required_conversation_resolution requires GHES 3.2",
     )
     async def test_merge_branch_protection_conversation_resolution(self) -> None:

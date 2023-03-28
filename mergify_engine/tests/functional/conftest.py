@@ -24,6 +24,7 @@ from mergify_engine import date
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import redis_utils
+from mergify_engine import settings
 from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import github_app
@@ -375,7 +376,7 @@ async def recorder(
                 json.dumps(
                     RecordConfigType(
                         {
-                            "integration_id": config.INTEGRATION_ID,
+                            "integration_id": settings.GITHUB_APP_ID,
                             "app_user_id": mergify_bot["id"],
                             "app_user_login": mergify_bot["login"],
                             "organization_id": config.TESTING_ORGANIZATION_ID,
@@ -393,7 +394,9 @@ async def recorder(
     request.addfinalizer(cleanup_github_app_info)
     with open(record_config_file) as f:
         recorder_config = typing.cast(RecordConfigType, json.loads(f.read()))
-        monkeypatch.setattr(config, "INTEGRATION_ID", recorder_config["integration_id"])
+        monkeypatch.setattr(
+            settings, "GITHUB_APP_ID", recorder_config["integration_id"]
+        )
         monkeypatch.setattr(
             github.GitHubAppInfo,
             "_bot",

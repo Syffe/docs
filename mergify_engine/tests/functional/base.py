@@ -207,7 +207,7 @@ class EventReader:
         self._handled_events: asyncio.Queue[ForwardedEvent] = asyncio.Queue()
         self._counter = 0
 
-        hostname = parse.urlparse(config.GITHUB_URL).hostname
+        hostname = parse.urlparse(settings.GITHUB_URL).hostname
         self.base_event_forwarder_url = f"{config.TESTING_FORWARDER_ENDPOINT}/events/{hostname}/{integration_id}/{repository_id}/"
         self.test_name = test_name.replace("/", "-")
 
@@ -513,10 +513,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             f"/repos/mergifyio-testing/{self.RECORD_CONFIG['repository_name']}"
         )
         self.url_fork = f"/repos/mergify-test2/{self.RECORD_CONFIG['repository_name']}"
-        self.git_origin = f"{config.GITHUB_URL}/mergifyio-testing/{self.RECORD_CONFIG['repository_name']}"
-        self.git_fork = (
-            f"{config.GITHUB_URL}/mergify-test2/{self.RECORD_CONFIG['repository_name']}"
-        )
+        self.git_origin = f"{settings.GITHUB_URL}/mergifyio-testing/{self.RECORD_CONFIG['repository_name']}"
+        self.git_fork = f"{settings.GITHUB_URL}/mergify-test2/{self.RECORD_CONFIG['repository_name']}"
 
         self.installation_ctxt = context.Installation(
             installation_json,

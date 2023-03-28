@@ -9,9 +9,9 @@ import daiquiri
 import httpx
 import jwt
 
-from mergify_engine import config
 from mergify_engine import exceptions
 from mergify_engine import github_types
+from mergify_engine import settings
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -68,10 +68,12 @@ class JwtHandler:
                 payload = {
                     "iat": now,
                     "exp": self.jwt_expiration,
-                    "iss": config.INTEGRATION_ID,
+                    "iss": settings.GITHUB_APP_ID,
                 }
                 self.jwt = jwt.encode(
-                    payload, key=config.PRIVATE_KEY.decode(), algorithm="RS256"
+                    payload,
+                    key=settings.GITHUB_PRIVATE_KEY.get_secret_value(),
+                    algorithm="RS256",
                 )
                 LOG.debug("New JWT created", expire_at=self.jwt_expiration)
         return self.jwt

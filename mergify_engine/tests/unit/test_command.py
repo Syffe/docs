@@ -4,10 +4,10 @@ from unittest import mock
 import pytest
 import respx
 
-from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import github_types
+from mergify_engine import settings
 from mergify_engine.actions.backport import BackportAction
 from mergify_engine.actions.rebase import RebaseAction
 from mergify_engine.engine import commands_runner
@@ -190,7 +190,7 @@ def create_fake_installation_client(
         (
             666,
             "admin",
-            f"{config.GITHUB_URL}/Mergifyio squash",
+            f"{settings.GITHUB_URL}/Mergifyio squash",
             "Pull request is already one-commit long",
         ),
         (

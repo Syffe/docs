@@ -1,8 +1,8 @@
 from unittest import mock
 
 from mergify_engine import check_api
-from mergify_engine import config
 from mergify_engine import github_types
+from mergify_engine import settings
 from mergify_engine.engine import actions_runner
 from mergify_engine.queue import merge_train
 from mergify_engine.rules.config import partition_rules as partr_config
@@ -66,7 +66,7 @@ async def test_cleanup_pending_actions_with_no_associated_rules(
         github_types.CachedGitHubCheckRun(
             name=check,
             id=1,
-            app_id=config.INTEGRATION_ID,
+            app_id=settings.GITHUB_APP_ID,
             app_name="mergify",
             app_avatar_url="",
             external_id="",

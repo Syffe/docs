@@ -16,12 +16,12 @@ import first
 import httpx
 import msgpack
 
-from mergify_engine import config
 from mergify_engine import date
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import logs
 from mergify_engine import redis_utils
+from mergify_engine import settings
 from mergify_engine.clients import github_app
 from mergify_engine.clients import http
 
@@ -170,7 +170,7 @@ class GithubAppInstallationAuth(httpx.Auth):
 
         return self.build_github_app_request(
             "POST",
-            f"{config.GITHUB_REST_API_URL}/app/installations/{self._installation['id']}/access_tokens",
+            f"{settings.GITHUB_REST_API_URL}/app/installations/{self._installation['id']}/access_tokens",
             force=force,
         )
 
@@ -224,7 +224,7 @@ async def get_installation_from_account_id(
             return typing.cast(
                 github_types.GitHubInstallation,
                 await client.item(
-                    f"{config.GITHUB_REST_API_URL}/user/{account_id}/installation"
+                    f"{settings.GITHUB_REST_API_URL}/user/{account_id}/installation"
                 ),
             )
         except http.HTTPNotFound as e:
@@ -244,7 +244,7 @@ async def get_installation_from_login(
             return typing.cast(
                 github_types.GitHubInstallation,
                 await client.item(
-                    f"{config.GITHUB_REST_API_URL}/users/{login}/installation"
+                    f"{settings.GITHUB_REST_API_URL}/users/{login}/installation"
                 ),
             )
         except http.HTTPNotFound as e:
@@ -341,7 +341,7 @@ class AsyncGithubClient(http.AsyncClient):
         ),
     ) -> None:
         super().__init__(
-            base_url=config.GITHUB_REST_API_URL,
+            base_url=settings.GITHUB_REST_API_URL,
             auth=auth,
             headers={"Accept": "application/vnd.github.machine-man-preview+json"},
             transport=DEFAULT_GITHUB_TRANSPORT,
@@ -437,7 +437,7 @@ class AsyncGithubClient(http.AsyncClient):
         oauth_token: github_types.GitHubOAuthToken | None = None,
     ) -> typing.Any:
         response = await self.post(
-            config.GITHUB_GRAPHQL_API_URL,
+            settings.GITHUB_GRAPHQL_API_URL,
             json={"query": query},
             oauth_token=oauth_token,
         )

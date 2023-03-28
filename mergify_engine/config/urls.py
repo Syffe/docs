@@ -2,6 +2,28 @@ from collections import abc
 import typing
 from urllib import parse
 
+import pydantic
+
+
+class NormalizedUrl(pydantic.HttpUrl):
+    @typing.no_type_check
+    def __new__(cls, url: str | None, **kwargs) -> object:
+        # Always rebuild the url from parts
+        return str.__new__(cls, cls.build(**kwargs))
+
+    @classmethod
+    def validate_parts(
+        cls, parts: "pydantic.networks.Parts", validate_port: bool = True
+    ) -> "pydantic.networks.Parts":
+        super().validate_parts(parts, validate_port)
+        if parts["path"] and parts["path"].endswith("/"):
+            parts["path"] = parts["path"][:-1]
+        if not parts["path"]:
+            parts["path"] = None
+        parts["query"] = None
+        parts["fragment"] = None
+        return parts
+
 
 class SecretUrl(parse.SplitResult):
     allowed_schemes: typing.ClassVar[tuple[str, ...] | None] = None

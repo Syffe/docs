@@ -1,13 +1,13 @@
 import pytest
 import respx
 
-from mergify_engine import config
 from mergify_engine import github_types
+from mergify_engine import settings
 from mergify_engine.ci import pull_registries
 from mergify_engine.clients import github
 
 
-@pytest.mark.respx(base_url=config.GITHUB_REST_API_URL)
+@pytest.mark.respx(base_url=settings.GITHUB_REST_API_URL)
 async def test_get_from_commit(respx_mock: respx.MockRouter) -> None:
     client = github.AsyncGithubClient(auth=None)  # type: ignore [arg-type]
     registry = pull_registries.HTTPPullRequestRegistry(client)

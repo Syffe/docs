@@ -3,8 +3,8 @@ import datetime
 import pytest
 import respx
 
-from mergify_engine import config
 from mergify_engine import github_types
+from mergify_engine import settings
 from mergify_engine.ci import job_registries
 from mergify_engine.ci import models
 from mergify_engine.ci import models as ci_models
@@ -25,7 +25,7 @@ class FakePullRequestRegistry:
         ]
 
 
-@pytest.mark.respx(base_url=config.GITHUB_REST_API_URL)
+@pytest.mark.respx(base_url=settings.GITHUB_REST_API_URL)
 async def test_search(respx_mock: respx.MockRouter) -> None:
     client = github.AsyncGithubClient(auth=None)  # type: ignore [arg-type]
     registry = job_registries.HTTPJobRegistry(client, FakePullRequestRegistry())

@@ -6,10 +6,10 @@ import typing
 
 import daiquiri
 
-from mergify_engine import config
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import json
+from mergify_engine import settings
 from mergify_engine import utils
 from mergify_engine.clients import http
 
@@ -109,7 +109,7 @@ class Result:
 def to_check_run_light(
     check: github_types.GitHubCheckRun,
 ) -> github_types.CachedGitHubCheckRun:
-    if check["app"]["id"] != config.INTEGRATION_ID:
+    if check["app"]["id"] != settings.GITHUB_APP_ID:
         # NOTE(sileht): We only need the output for our own checks
         check["output"]["text"] = None
         check["output"]["summary"] = ""
@@ -269,7 +269,7 @@ async def set_check_run(
                 ctxt,
                 ctxt.pull["head"]["sha"],
                 check_name=name,
-                app_id=config.INTEGRATION_ID,
+                app_id=settings.GITHUB_APP_ID,
             ),
             key=lambda c: c["id"],
             reverse=True,
@@ -288,7 +288,7 @@ async def set_check_run(
             skip_cache=skip_cache,
             all_checks=await ctxt.pull_engine_check_runs,
             fresh_checks=await get_checks_for_ref(
-                ctxt, ctxt.pull["head"]["sha"], app_id=config.INTEGRATION_ID
+                ctxt, ctxt.pull["head"]["sha"], app_id=settings.GITHUB_APP_ID
             ),
         )
 

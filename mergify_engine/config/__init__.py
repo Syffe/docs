@@ -21,12 +21,26 @@ CONFIGURATION_FILE = os.getenv("MERGIFYENGINE_TEST_SETTINGS")
 DASHBOARD_DEFAULT_URL = pydantic.HttpUrl("http://localhost:8802", scheme="http")
 
 
+class SecretStrFromBase64(pydantic.SecretStr):
+    def __init__(self, value: str):
+        super().__init__(base64.b64decode(value).decode())
+
+
 class EngineSettings(pydantic.BaseSettings):
     DATABASE_URL: urls.PostgresDSN = urls.PostgresDSN.parse("postgres://localhost:5432")
     DATABASE_POOL_SIZES: dict[str, int] = pydantic.Field(
         default={"worker": 15, "web": 55}
     )
 
+    GITHUB_URL: urls.NormalizedUrl = urls.NormalizedUrl.build(
+        scheme="https", host="github.com"
+    )
+    GITHUB_APP_ID: int = pydantic.Field(extra_env="INTEGRATION_ID")
+    GITHUB_PRIVATE_KEY: SecretStrFromBase64 = pydantic.Field(extra_env="PRIVATE_KEY")
+    GITHUB_OAUTH_CLIENT_ID: str = pydantic.Field(extra_env="OAUTH_CLIENT_ID")
+    GITHUB_OAUTH_CLIENT_SECRET: pydantic.SecretStr = pydantic.Field(
+        extra_env="OAUTH_CLIENT_SECRET"
+    )
     GITHUB_WEBHOOK_SECRET: pydantic.SecretStr = pydantic.Field(
         extra_env="WEBHOOK_SECRET"
     )
@@ -114,6 +128,20 @@ class EngineSettings(pydantic.BaseSettings):
                     )
 
             raise
+
+    @property
+    def GITHUB_REST_API_URL(self) -> str:
+        if self.GITHUB_URL.host == "github.com":
+            return "https://api.github.com"
+        else:
+            return f"{self.GITHUB_URL}/api/v3"
+
+    @property
+    def GITHUB_GRAPHQL_API_URL(self) -> str:
+        if self.GITHUB_URL.host == "github.com":
+            return "https://api.github.com/graphql"
+        else:
+            return f"{self.GITHUB_URL}/api/graphql"
 
 
 # NOTE(sileht) we coerce bool and int in case they are loaded from the environment
@@ -216,13 +244,6 @@ Schema = voluptuous.Schema(
         ),
         voluptuous.Required("SENTRY_URL", default=None): voluptuous.Any(None, str),
         voluptuous.Required("SENTRY_ENVIRONMENT", default="test"): str,
-        # GitHub App mandatory
-        voluptuous.Required("INTEGRATION_ID"): voluptuous.Coerce(int),
-        voluptuous.Required("PRIVATE_KEY"): str,
-        voluptuous.Required("OAUTH_CLIENT_ID"): str,
-        voluptuous.Required("OAUTH_CLIENT_SECRET"): str,
-        # GitHub optional
-        voluptuous.Required("GITHUB_URL", default="https://github.com"): str,
         voluptuous.Required(
             "SUBSCRIPTION_BASE_URL", default="https://subscription.mergify.com"
         ): str,
@@ -378,10 +399,6 @@ SENTRY_URL: str
 SENTRY_ENVIRONMENT: str
 CACHE_TOKEN_SECRET: str
 CACHE_TOKEN_SECRET_OLD: str | None
-PRIVATE_KEY: bytes
-GITHUB_URL: str
-GITHUB_REST_API_URL: str
-GITHUB_GRAPHQL_API_URL: str
 SHARED_STREAM_PROCESSES: int
 DEDICATED_STREAM_PROCESSES: int
 SHARED_STREAM_TASKS_PER_PROCESS: int
@@ -403,14 +420,11 @@ AUTHENTICATION_URL: str
 
 BUCKET_PROCESSING_MAX_SECONDS: int
 MAX_GITTER_CONCURRENT_JOBS: int
-INTEGRATION_ID: int
 SUBSCRIPTION_BASE_URL: str
 SUBSCRIPTION_TOKEN: str | None
 ENGINE_TO_DASHBOARD_API_KEY: str
 DASHBOARD_TO_ENGINE_API_KEY: str
 DASHBOARD_TO_ENGINE_API_KEY_PRE_ROTATION: str
-OAUTH_CLIENT_ID: str
-OAUTH_CLIENT_SECRET: str
 ACCOUNT_TOKENS: list[tuple[int, str, str]]
 APPLICATION_APIKEYS: dict[str, ApplicationAPIKey]
 ALLOW_QUEUE_PRIORITY_ATTRIBUTE: bool
@@ -445,9 +459,6 @@ TESTING_ID_GPGKEY_SECRET: str
 TESTING_INSTALLATION_ID: github_types.GitHubAccountIdType
 SAAS_MODE: bool
 DEV_PERSONAL_TOKEN: github_types.GitHubOAuthToken
-
-# config variables built
-GITHUB_DOMAIN: str
 
 
 def load() -> dict[str, typing.Any]:
@@ -515,15 +526,6 @@ def load() -> dict[str, typing.Any]:
             url = default_redis_url_parsed._replace(query=query).geturl()
             parsed_config[config_key] = url
 
-    parsed_config["GITHUB_DOMAIN"] = parse.urlparse(
-        parsed_config["GITHUB_URL"]
-    ).hostname
-
-    # NOTE(sileht): Docker can't pass multiline in environment, so we allow to pass
-    # it in base64 format
-    if not parsed_config["PRIVATE_KEY"].startswith("----"):
-        parsed_config["PRIVATE_KEY"] = base64.b64decode(parsed_config["PRIVATE_KEY"])
-
     if "TESTING_GPGKEY_SECRET" in parsed_config and not parsed_config[
         "TESTING_GPGKEY_SECRET"
     ].startswith("----"):
@@ -534,17 +536,6 @@ def load() -> dict[str, typing.Any]:
     if not parsed_config["SAAS_MODE"] and not parsed_config["SUBSCRIPTION_TOKEN"]:
         print("SUBSCRIPTION_TOKEN is missing. Mergify can't start.")
         sys.exit(1)
-
-    parsed_config["GITHUB_URL"] = parsed_config["GITHUB_URL"].removesuffix("/")
-
-    if parsed_config["GITHUB_URL"].startswith("https://github.com"):
-        parsed_config["GITHUB_REST_API_URL"] = "https://api.github.com"
-        parsed_config["GITHUB_GRAPHQL_API_URL"] = "https://api.github.com/graphql"
-    else:
-        parsed_config["GITHUB_REST_API_URL"] = f"{parsed_config['GITHUB_URL']}/api/v3"
-        parsed_config[
-            "GITHUB_GRAPHQL_API_URL"
-        ] = f"{parsed_config['GITHUB_URL']}/api/graphql"
 
     return parsed_config  # type: ignore[no-any-return]
 

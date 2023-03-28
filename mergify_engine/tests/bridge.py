@@ -33,7 +33,7 @@ async def main() -> None:
         base_url="https://test-forwarder.mergify.com",
         headers={"X-Hub-Signature": "sha1=" + payload_hmac},
     ) as session:
-        url = f"/events/github.com/{config.INTEGRATION_ID}/{args.repository_id}"
+        url = f"/events/github.com/{settings.GITHUB_APP_ID}/{args.repository_id}"
         if args.clean:
             r = await session.request("DELETE", url, content=payload_data)
             r.raise_for_status()

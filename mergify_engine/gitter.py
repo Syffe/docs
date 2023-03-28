@@ -10,9 +10,9 @@ import sys
 import tempfile
 import urllib.parse
 
-from mergify_engine import config
 from mergify_engine import github_types
 from mergify_engine import redis_utils
+from mergify_engine import settings
 from mergify_engine.clients import github
 from mergify_engine.models import github_user
 
@@ -268,11 +268,11 @@ class Gitter:
         await self(
             "config",
             "user.email",
-            f"{account_id}+{login}@users.noreply.{config.GITHUB_DOMAIN}",
+            f"{account_id}+{login}@users.noreply.{settings.GITHUB_URL.host}",
         )
 
     async def add_cred(self, username: str, password: str, path: str) -> None:
-        parsed = list(urllib.parse.urlparse(config.GITHUB_URL))
+        parsed = list(urllib.parse.urlparse(settings.GITHUB_URL))
         parsed[1] = f"{username}:{password}@{parsed[1]}"
         parsed[2] = path
         url = urllib.parse.urlunparse(parsed)
@@ -294,7 +294,7 @@ class Gitter:
     ) -> None:
         await self.add_cred(username, password, repository["full_name"])
         await self(
-            "remote", "add", name, f"{config.GITHUB_URL}/{repository['full_name']}"
+            "remote", "add", name, f"{settings.GITHUB_URL}/{repository['full_name']}"
         )
         await self("config", f"remote.{name}.promisor", "true")
         await self("config", f"remote.{name}.partialclonefilter", "blob:none")

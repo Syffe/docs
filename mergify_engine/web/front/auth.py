@@ -29,11 +29,11 @@ class TokenDictT(typing.TypedDict):
 oauth = starlette_client.OAuth()
 oauth.register(
     "github",
-    client_id=config.OAUTH_CLIENT_ID,
-    client_secret=config.OAUTH_CLIENT_SECRET,
-    api_base_url=config.GITHUB_REST_API_URL,
-    authorize_url=f"{config.GITHUB_URL}/login/oauth/authorize",
-    access_token_url=f"{config.GITHUB_URL}/login/oauth/access_token",
+    client_id=settings.GITHUB_OAUTH_CLIENT_ID,
+    client_secret=settings.GITHUB_OAUTH_CLIENT_SECRET,
+    api_base_url=settings.GITHUB_REST_API_URL,
+    authorize_url=f"{settings.GITHUB_URL}/login/oauth/authorize",
+    access_token_url=f"{settings.GITHUB_URL}/login/oauth/access_token",
 )
 
 

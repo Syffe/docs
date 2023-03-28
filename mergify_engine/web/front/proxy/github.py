@@ -1,7 +1,7 @@
 import fastapi
 import httpx
 
-from mergify_engine import config
+from mergify_engine import settings
 from mergify_engine.clients import github
 from mergify_engine.web.front import security
 from mergify_engine.web.front import utils
@@ -30,7 +30,7 @@ async def github_proxy(
         try:
             resp = await client.request(
                 method=request.method,
-                url=f"{config.GITHUB_REST_API_URL}/{path}",
+                url=f"{settings.GITHUB_REST_API_URL}/{path}",
                 params=request.url.query,
                 headers=headers,
                 content=await request.body(),

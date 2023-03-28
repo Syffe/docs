@@ -2,7 +2,6 @@ import typing
 
 import fastapi
 
-from mergify_engine import config
 from mergify_engine import settings
 from mergify_engine.clients import github
 from mergify_engine.web import redis
@@ -25,7 +24,7 @@ async def configuration(redis_links: redis.RedisLinks) -> ConfigJSON:
         {
             "dd_client_token": settings.DASHBOARD_UI_DATADOG_CLIENT_TOKEN,
             "github_application_name": app["slug"],
-            "github_server_url": config.GITHUB_URL,
+            "github_server_url": settings.GITHUB_URL,
             "ui_features": sorted(settings.DASHBOARD_UI_FEATURES),
         }
     )
