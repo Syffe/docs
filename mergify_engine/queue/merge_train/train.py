@@ -124,7 +124,7 @@ class Train:
                 partition_name=partition_name,
             )
 
-            # FIXME: This is not optimal for paritioned setup
+            # FIXME: This is not optimal for partitioned setup
             # but this is not a big deal and that will be fixed MRGFY-2087
             conv = convoy.Convoy(repository, queue_rules, partition_rules, ref)
             await conv.load()
