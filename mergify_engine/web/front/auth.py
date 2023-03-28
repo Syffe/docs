@@ -30,7 +30,7 @@ oauth = starlette_client.OAuth()
 oauth.register(
     "github",
     client_id=settings.GITHUB_OAUTH_CLIENT_ID,
-    client_secret=settings.GITHUB_OAUTH_CLIENT_SECRET,
+    client_secret=settings.GITHUB_OAUTH_CLIENT_SECRET.get_secret_value(),
     api_base_url=settings.GITHUB_REST_API_URL,
     authorize_url=f"{settings.GITHUB_URL}/login/oauth/authorize",
     access_token_url=f"{settings.GITHUB_URL}/login/oauth/access_token",
