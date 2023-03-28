@@ -1,4 +1,5 @@
 import base64
+import collections
 import logging
 import os
 import secrets
@@ -103,9 +104,14 @@ class EngineSettings(pydantic.BaseSettings):
             super().__init__(**kwargs)
         except pydantic.ValidationError as exc:
             # Inject env_prefix in error message
-            cfg = exc.model.__config__  # type: ignore[union-attr]
-            for e in exc.raw_errors:
-                e._loc = tuple(str.upper(cfg.env_prefix + x) for x in e.loc_tuple())  # type: ignore[union-attr]
+            env_prefix = exc.model.__config__.env_prefix  # type: ignore[union-attr]
+            for errors in exc.raw_errors:
+                if not isinstance(errors, collections.abc.Sequence):
+                    errors = [errors]
+                for error in errors:
+                    error._loc = tuple(
+                        str.upper(env_prefix + x) for x in error.loc_tuple()
+                    )
 
             raise
 
