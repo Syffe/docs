@@ -199,7 +199,7 @@ async def run_worker(
 
     # NOTE(sileht): we just stop tasks to be able to introspect the services' state
     await w._shutdown()
-    stream.Processor.consume = real_consume_method  # type: ignore[assignment]
+    stream.Processor.consume = real_consume_method  # type: ignore[method-assign]
     return w
 
 

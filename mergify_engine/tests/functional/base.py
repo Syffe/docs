@@ -571,7 +571,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         stream.Processor.consume = tracked_consume  # type: ignore[assignment]
 
         def cleanup_consume() -> None:
-            stream.Processor.consume = real_consume_method  # type: ignore[assignment]
+            stream.Processor.consume = real_consume_method  # type: ignore[method-assign]
 
         self.addCleanup(cleanup_consume)
 
