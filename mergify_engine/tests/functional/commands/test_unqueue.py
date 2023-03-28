@@ -286,3 +286,88 @@ class TestUnQueueCommand(base.FunctionalTestBase):
                 assert len(train._cars) == 0
             else:
                 assert len(train._cars) == 1
+
+    async def test_unqueue_with_partition_rules(self) -> None:
+        rules = {
+            "partition_rules": [
+                {
+                    "name": "projA",
+                    "conditions": [
+                        "files~=projA/",
+                    ],
+                },
+                {
+                    "name": "projB",
+                    "conditions": [
+                        "files~=projB/",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Automatic merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                }
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr(
+            files={
+                "projA/test1.txt": "testA",
+            }
+        )
+        p2 = await self.create_pr(
+            files={
+                "projA/test2.txt": "testA",
+                "projB/test2.txt": "testB",
+            }
+        )
+
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        draft_pr_p1 = await self.wait_for_pull_request("opened")
+
+        # Test unqueue pr in only 1 partition
+        await self.create_comment_as_admin(p1["number"], "@mergifyio unqueue")
+        await self.run_engine()
+
+        await self.wait_for_pull_request("closed", draft_pr_p1["number"])
+        await self.wait_for_issue_comment(str(p1["number"]), "created")
+
+        convoy = await self.get_convoy()
+        assert len(convoy._trains) == 2
+        assert len(convoy._trains[0]._cars) == 0
+        assert len(convoy._trains[1]._cars) == 0
+
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        draft_pr_p2 = await self.wait_for_pull_request("opened")
+
+        # Test unqueue pr in 2 partitions
+        await self.create_comment_as_admin(p2["number"], "@mergifyio unqueue")
+        await self.run_engine()
+
+        await self.wait_for_pull_request("closed", draft_pr_p2["number"])
+        await self.wait_for_issue_comment(str(p2["number"]), "created")
+
+        convoy = await self.get_convoy()
+        assert len(convoy._trains) == 2
+        assert len(convoy._trains[0]._cars) == 0
+        assert len(convoy._trains[1]._cars) == 0
