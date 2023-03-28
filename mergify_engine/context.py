@@ -2261,8 +2261,6 @@ class Context:
             )
             or (
                 source["event_type"] == "check_suite"
-                and "action"
-                in source["data"]  # TODO(sileht): remove in a couple of days
                 and typing.cast(github_types.GitHubEventCheckSuite, source["data"])[
                     "action"
                 ]
@@ -2274,8 +2272,6 @@ class Context:
             )
             or (
                 source["event_type"] == "check_run"
-                and "action"
-                in source["data"]  # TODO(sileht): remove in a couple of days
                 and typing.cast(github_types.GitHubEventCheckRun, source["data"])[
                     "action"
                 ]
