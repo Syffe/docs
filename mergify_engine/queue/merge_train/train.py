@@ -79,7 +79,6 @@ class Train:
         # Circulart import
         from mergify_engine.queue.merge_train import convoy
 
-        convoys_by_ref: dict[github_types.GitHubRefType, convoy.Convoy] = {}
         trains_key = f"merge-trains~{installation.owner_id}"
         for key in await installation.redis.cache.hkeys(trains_key):
             partition_name = None
@@ -117,12 +116,6 @@ class Train:
             queue_rules = mergify_config["queue_rules"]
             partition_rules = mergify_config["partition_rules"]
 
-            conv = convoys_by_ref.get(ref)
-            if conv is None:
-                conv = convoys_by_ref[ref] = convoy.Convoy(
-                    repository, queue_rules, partition_rules, ref
-                )
-
             LOG.info(
                 "refreshing merge train",
                 gh_owner=installation.owner_login,
@@ -131,9 +124,13 @@ class Train:
                 partition_name=partition_name,
             )
 
-            train = cls(conv, partition_name)
-            await train.load()
-            await train.refresh()
+            # FIXME: This is not optimal for paritioned setup
+            # but this is not a big deal and that will be fixed MRGFY-2087
+            conv = convoy.Convoy(repository, queue_rules, partition_rules, ref)
+            await conv.load()
+            for train in conv.iter_trains():
+                if train.partition_name == partition_name:
+                    await train.refresh()
 
     @classmethod
     async def iter_trains(
@@ -151,7 +148,6 @@ class Train:
         if repository is not None:
             repo_filter = repository.repo["id"]
 
-        convoys_by_ref: dict[github_types.GitHubRefType, convoy.Convoy] = {}
         async for key, train_raw in repository.installation.redis.cache.hscan_iter(
             f"merge-trains~{repository.installation.owner_id}",
             f"{repo_filter}~*",
@@ -167,15 +163,13 @@ class Train:
             if exclude_ref is not None and ref == exclude_ref:
                 continue
 
-            conv = convoys_by_ref.get(ref)
-            if conv is None:
-                conv = convoys_by_ref[ref] = convoy.Convoy(
-                    repository, queue_rules, partition_rules, ref
-                )
-
-            train = cls(conv, partition_name)
-            await train.load(train_raw)
-            yield train
+            # FIXME: This is not optimal for paritioned setup
+            # but this is not a big deal and that will be fixed MRGFY-2087
+            conv = convoy.Convoy(repository, queue_rules, partition_rules, ref)
+            await conv.load()
+            for train in conv.iter_trains():
+                if train.partition_name == partition_name:
+                    yield train
 
     async def load(self, train_raw: bytes | None = None) -> None:
         if train_raw is None:
