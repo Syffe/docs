@@ -311,10 +311,7 @@ did not find expected alphabetic or numeric character
         ctxt = context.Context(self.repository_ctxt, p, [])
         checks = await ctxt.pull_engine_check_runs
         assert len(checks) == 2
-        assert (
-            checks[0]["output"]["title"]
-            == "Configuration changed. This pull request must be merged manually — no rules match, no planned actions"
-        )
+        assert checks[0]["output"]["title"] == "no rules match, no planned actions"
         assert (
             checks[1]["output"]["title"] == "The new Mergify configuration is invalid"
         )
@@ -405,7 +402,7 @@ did not find expected alphabetic or numeric character
                     "name": "foobar",
                     "conditions": ["base=main"],
                     "actions": {
-                        "comment": {"unknown": "hello"},
+                        "comment": {"message": "hello", "unknown": "hello"},
                     },
                 },
             ],
