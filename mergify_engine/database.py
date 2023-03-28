@@ -5,7 +5,6 @@ import ddtrace
 import fastapi
 import sqlalchemy.ext.asyncio
 
-from mergify_engine import database
 from mergify_engine import settings
 
 
@@ -78,5 +77,5 @@ async def get_session() -> abc.AsyncGenerator[
 
 
 Session = typing.Annotated[
-    sqlalchemy.ext.asyncio.AsyncSession, fastapi.Depends(database.get_session)
+    sqlalchemy.ext.asyncio.AsyncSession, fastapi.Depends(get_session)
 ]
