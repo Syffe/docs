@@ -163,7 +163,7 @@ class Train:
             if exclude_ref is not None and ref == exclude_ref:
                 continue
 
-            # FIXME: This is not optimal for paritioned setup
+            # FIXME: This is not optimal for partitioned setup
             # but this is not a big deal and that will be fixed MRGFY-2087
             conv = convoy.Convoy(repository, queue_rules, partition_rules, ref)
             await conv.load()
