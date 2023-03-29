@@ -9,6 +9,7 @@ import daiquiri.formatter
 import ddtrace
 
 from mergify_engine import config
+from mergify_engine import settings
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -84,6 +85,9 @@ def strip_url_credentials(url: str) -> str:
 
 def config_log() -> None:
     LOG.info("##################### CONFIGURATION ######################")
+    for key, value in settings.dict().items():
+        LOG.info("* %s: %s", key, value)
+
     for key, value in config.CONFIG.items():
         name = str(key)
         if (
