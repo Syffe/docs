@@ -123,10 +123,9 @@ class EngineSettings(pydantic.BaseSettings):
                 if not isinstance(errors, collections.abc.Sequence):
                     errors = [errors]
                 for error in errors:
-                    error._loc = tuple(
-                        str.upper(env_prefix + x) for x in error.loc_tuple()
-                    )
-
+                    locs = error.loc_tuple()
+                    loc = str.upper(env_prefix + locs[0])
+                    error._loc = (loc,) + locs[1:]
             raise
 
     @property
