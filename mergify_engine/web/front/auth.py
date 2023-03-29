@@ -74,9 +74,14 @@ async def login_via_github(
     # https://github.com/tiangolo/fastapi/discussions/9279
     site_url: str | None = fastapi.Query(default=None),  # noqa: B008
 ) -> AuthRedirectUrl:
-    if not site_url or site_url not in settings.DASHBOARD_UI_SITE_URLS:
+    if not site_url or site_url != settings.DASHBOARD_UI_FRONT_URL:
         # NOT a whitelisted domain, we just redirect to the default one.
-        site_url = settings.DASHBOARD_UI_SITE_URLS[0]
+        if site_url:
+            LOG.warning(
+                "got authorize request with unexpected site_url value",
+                unexpected_url=site_url,
+            )
+        site_url = settings.DASHBOARD_UI_FRONT_URL
 
     # NOTE(sileht): logout first to start with a new session and session id
     await clear_session_and_auth(request)

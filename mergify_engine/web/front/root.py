@@ -17,7 +17,7 @@ from mergify_engine.web.front import sessions
 
 
 def create_app(debug: bool = False) -> fastapi.FastAPI:
-    parsed_base_url = urllib.parse.urlparse(settings.DASHBOARD_UI_FRONT_BASE_URL)
+    parsed_base_url = urllib.parse.urlparse(settings.DASHBOARD_UI_FRONT_URL)
 
     cookie_https_only = parsed_base_url.scheme == "https"
     if parsed_base_url.hostname == "localhost":

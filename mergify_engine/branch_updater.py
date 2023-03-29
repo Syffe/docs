@@ -241,7 +241,7 @@ async def rebase_with_git(
             "git authentification failure", login=on_behalf.login, exc_info=True
         )
 
-        message = f"`{on_behalf.login}` token is invalid, make sure `{on_behalf.login}` can still log in on the [Mergify dashboard]({settings.DASHBOARD_UI_SITE_URLS[0]})."
+        message = f"`{on_behalf.login}` token is invalid, make sure `{on_behalf.login}` can still log in on the [Mergify dashboard]({settings.DASHBOARD_UI_FRONT_URL})."
 
         if ctxt.pull_from_fork:
             if ctxt.pull["base"]["repo"]["private"]:

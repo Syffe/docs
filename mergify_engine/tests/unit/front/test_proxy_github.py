@@ -49,7 +49,7 @@ async def test_github_proxy(
     assert resp.json() == {"data": 42}
     assert (
         resp.headers["link"]
-        == f'<{settings.DASHBOARD_UI_FRONT_BASE_URL}/front/proxy/github/repos?page=2>; rel="next", <{settings.DASHBOARD_UI_FRONT_BASE_URL}/front/proxy/github/repos?page=7>; rel="last"'
+        == f'<{settings.DASHBOARD_UI_FRONT_URL}/front/proxy/github/repos?page=2>; rel="next", <{settings.DASHBOARD_UI_FRONT_URL}/front/proxy/github/repos?page=7>; rel="last"'
     )
 
     await web_client.logout()

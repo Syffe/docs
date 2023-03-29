@@ -55,11 +55,8 @@ class EngineSettings(pydantic.BaseSettings):
     )
 
     DASHBOARD_UI_STATIC_FILES_DIRECTORY: pydantic.DirectoryPath | None = None
-    DASHBOARD_UI_FRONT_BASE_URL: pydantic.HttpUrl = pydantic.Field(
+    DASHBOARD_UI_FRONT_URL: pydantic.HttpUrl = pydantic.Field(
         default=DASHBOARD_DEFAULT_URL, extra_env="BASE_URL"
-    )
-    DASHBOARD_UI_SITE_URLS: list[pydantic.HttpUrl] = pydantic.Field(
-        default=[DASHBOARD_DEFAULT_URL], extra_env="BASE_URL"
     )
     DASHBOARD_UI_SESSION_EXPIRATION_HOURS: int = 24
     DASHBOARD_UI_FEATURES: list[str] = pydantic.Field(default_factory=list)
@@ -82,7 +79,6 @@ class EngineSettings(pydantic.BaseSettings):
                 "GITHUB_WEBHOOK_FORWARD_EVENT_TYPES",
                 "WEBHOOK_FORWARD_EVENT_TYPES",
                 "DASHBOARD_UI_FEATURES",
-                "DASHBOARD_UI_SITE_URLS",
                 "DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO",
             ):
                 return raw_val.split(",")

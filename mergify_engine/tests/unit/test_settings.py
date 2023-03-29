@@ -44,8 +44,7 @@ def test_defaults(
     assert conf.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES == []
     assert conf.GITHUB_WEBHOOK_FORWARD_URL is None
     assert conf.DASHBOARD_UI_STATIC_FILES_DIRECTORY is None
-    assert conf.DASHBOARD_UI_FRONT_BASE_URL == "http://localhost:8802"
-    assert conf.DASHBOARD_UI_SITE_URLS == ["http://localhost:8802"]
+    assert conf.DASHBOARD_UI_FRONT_URL == "http://localhost:8802"
     assert conf.DASHBOARD_UI_FEATURES == []
     assert conf.DASHBOARD_UI_SESSION_EXPIRATION_HOURS == 24
     assert conf.DASHBOARD_UI_DATADOG_CLIENT_TOKEN is None
@@ -85,12 +84,8 @@ def test_all_sets(
         "subscriptions,applications,intercom,statuspage",
     )
     monkeypatch.setenv(
-        "MERGIFYENGINE_DASHBOARD_UI_FRONT_BASE_URL",
+        "MERGIFYENGINE_DASHBOARD_UI_FRONT_URL",
         "https://dashboard.mergify.com",
-    )
-    monkeypatch.setenv(
-        "MERGIFYENGINE_DASHBOARD_UI_SITE_URLS",
-        "https://dashboard.mergify.com,https://next.dashboard.mergify.com",
     )
 
     conf = config.EngineSettings()
@@ -108,11 +103,7 @@ def test_all_sets(
     assert conf.GITHUB_WEBHOOK_FORWARD_URL == "https://sub.example.com/events"
     assert conf.DATABASE_POOL_SIZES == {"web": 2, "worker": 3, "foobar": 6}
     assert conf.DASHBOARD_UI_STATIC_FILES_DIRECTORY == tmpdir
-    assert conf.DASHBOARD_UI_FRONT_BASE_URL == "https://dashboard.mergify.com"
-    assert conf.DASHBOARD_UI_SITE_URLS == [
-        "https://dashboard.mergify.com",
-        "https://next.dashboard.mergify.com",
-    ]
+    assert conf.DASHBOARD_UI_FRONT_URL == "https://dashboard.mergify.com"
     assert conf.DASHBOARD_UI_FEATURES == [
         "subscriptions",
         "applications",
@@ -150,8 +141,7 @@ def test_legacy_env_sets(
     assert conf.GITHUB_PRIVATE_KEY.get_secret_value() == "hello world"
     assert conf.GITHUB_OAUTH_CLIENT_ID == "Iv1.XXXXXX"
     assert conf.GITHUB_OAUTH_CLIENT_SECRET.get_secret_value() == "secret"
-    assert conf.DASHBOARD_UI_FRONT_BASE_URL == "https://dashboard.mergify.com"
-    assert conf.DASHBOARD_UI_SITE_URLS == ["https://dashboard.mergify.com"]
+    assert conf.DASHBOARD_UI_FRONT_URL == "https://dashboard.mergify.com"
 
 
 @pytest.mark.parametrize(
@@ -237,13 +227,3 @@ def test_error_message(monkeypatch: pytest.MonkeyPatch) -> None:
 MERGIFYENGINE_DATABASE_URL
   scheme `https` is invalid, must be postgres,postgresql,postgresql+psycopg (type=value_error)"""
     )
-
-
-def test_dashboard_site_urls_with_one_value(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv(
-        "MERGIFYENGINE_DASHBOARD_UI_SITE_URLS",
-        "https://dashboard.mergify.com",
-    )
-
-    conf = config.EngineSettings()
-    assert conf.DASHBOARD_UI_SITE_URLS == ["https://dashboard.mergify.com"]
