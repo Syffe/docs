@@ -116,14 +116,6 @@ class Train:
             queue_rules = mergify_config["queue_rules"]
             partition_rules = mergify_config["partition_rules"]
 
-            LOG.info(
-                "refreshing merge train",
-                gh_owner=installation.owner_login,
-                gh_repo=repository.repo["name"],
-                gh_branch=ref,
-                partition_name=partition_name,
-            )
-
             # FIXME: This is not optimal for partitioned setup
             # but this is not a big deal and that will be fixed MRGFY-2087
             conv = convoy.Convoy(repository, queue_rules, partition_rules, ref)
@@ -200,8 +192,9 @@ class Train:
                 [ep.user_pull_request_number for ep in c.still_queued_embarked_pulls]
                 for c in self._cars
             ],
-            "train_waiting_pulls": [
-                wp.user_pull_request_number for wp in self._waiting_pulls
+            "train_waiting_pulls_by_priority": [
+                wp.user_pull_request_number
+                for wp in self._get_waiting_pulls_ordered_by_priority()[0]
             ],
         }
 
@@ -212,6 +205,7 @@ class Train:
             gh_owner=self.convoy.repository.installation.owner_login,
             gh_repo=self.convoy.repository.repo["name"],
             gh_branch=self.convoy.ref,
+            partition_name=self.partition_name,
             **self.log_queue_extras,
         )
 
@@ -259,6 +253,7 @@ class Train:
         )
 
     async def refresh(self) -> None:
+        self.log.info("refreshing merge train")
         # NOTE(sileht): workaround for cleaning unwanted PRs queued by this bug:
         # https://github.com/Mergifyio/mergify-engine/pull/2958
         await self._remove_duplicate_pulls()
