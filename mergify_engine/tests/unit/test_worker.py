@@ -1818,6 +1818,9 @@ async def _test_worker_stuck_shutdown(
     await run_worker(test_timeout=2)
 
 
+@pytest.mark.flaky(  # drop me when asyncio_timeout is removed from redispy and python >= 3.11.3
+    reruns=5
+)
 @mock.patch("mergify_engine.worker.stream.subscription.Subscription.get_subscription")
 @mock.patch("mergify_engine.clients.github.get_installation_from_account_id")
 @mock.patch("mergify_engine.worker.stream.run_engine")
@@ -1973,6 +1976,9 @@ async def test_dedicated_worker_scaleup_scaledown(
     assert set(serv._dedicated_worker_tasks.keys()) == set()
 
 
+@pytest.mark.flaky(  # drop me when asyncio_timeout is removed from redispy and python >= 3.11.3
+    reruns=5
+)
 @mock.patch("mergify_engine.worker.stream.subscription.Subscription.get_subscription")
 @mock.patch("mergify_engine.clients.github.get_installation_from_account_id")
 @mock.patch("mergify_engine.worker.stream.run_engine")
@@ -2160,6 +2166,9 @@ async def test_dedicated_worker_process_scaleup_scaledown(
     tracker.clear()
 
 
+@pytest.mark.flaky(  # drop me when asyncio_timeout is removed from redispy and python >= 3.11.3
+    reruns=5
+)
 @mock.patch("mergify_engine.worker.stream.subscription.Subscription.get_subscription")
 @mock.patch("mergify_engine.clients.github.get_installation_from_account_id")
 @mock.patch("mergify_engine.worker.stream.run_engine")
@@ -2570,6 +2579,9 @@ def test_score_priority_helpers(
         )
 
 
+@pytest.mark.flaky(  # drop me when asyncio_timeout is removed from redispy and python >= 3.11.3
+    reruns=5
+)
 @mock.patch("mergify_engine.worker.stream.subscription.Subscription.get_subscription")
 @mock.patch("mergify_engine.clients.github.get_installation_from_account_id")
 @mock.patch("mergify_engine.worker.stream.run_engine")
