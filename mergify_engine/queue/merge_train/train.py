@@ -269,6 +269,7 @@ class Train:
                     "merge queue internal",
                     queue_utils.TargetBranchMissing(self.convoy.ref),
                 )
+
         await self.save()
 
     async def _remove_duplicate_pulls(self) -> None:
@@ -994,6 +995,13 @@ class Train:
                     remaining_pulls += frozen_pulls
 
                 if not pulls_to_check:
+                    self.log.info(
+                        "no pulls to check",
+                        remaining_pulls=[
+                            ep.user_pull_request_number for ep in remaining_pulls
+                        ],
+                        nb_missing_cars=missing_cars,
+                    )
                     return
 
                 enough_to_batch = len(pulls_to_check) == queue_rule.config["batch_size"]
@@ -1042,8 +1050,10 @@ class Train:
                 try:
                     await self._start_checking_car(car, previous_car)
                 except train_car.TrainCarPullRequestCreationPostponed:
+                    self.log.info("train car pull request creation postponed")
                     return
                 except train_car.TrainCarPullRequestCreationFailure:
+                    self.log.info("train car pull request creation failure")
                     # NOTE(sileht): We posted failure merge queue check-run on
                     # car.user_pull_request_number and refreshed it, so it will be removed
                     # from the train soon. We don't need to create remaining cars now.
