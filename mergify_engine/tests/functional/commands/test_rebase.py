@@ -41,3 +41,47 @@ class TestCommandRebase(base.FunctionalTestBase):
         )
         data = base64.b64decode(bytearray(f["content"], "utf-8"))
         assert data == b"p2\n\nfoobar\n\n\np1"
+
+    async def test_rebase_pr_in_queue(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Automatic merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        p = await self.create_pr()
+
+        p2 = await self.create_pr()
+        await self.merge_pull(p2["number"])
+        await self.wait_for_pull_request("closed", p2["number"])
+
+        await self.add_label(p["number"], "queue")
+        await self.run_engine()
+
+        await self.wait_for_pull_request("opened")
+
+        await self.create_comment_as_admin(p["number"], "@mergifyio rebase")
+        await self.run_engine()
+
+        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
+        assert (
+            "It's not possible to rebase this pull request because it is queued for merge"
+            in comment["comment"]["body"]
+        )

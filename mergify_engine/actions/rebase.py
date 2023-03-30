@@ -10,6 +10,7 @@ from mergify_engine import github_types
 from mergify_engine import signals
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.dashboard import subscription
+from mergify_engine.queue import merge_train
 from mergify_engine.rules import conditions
 from mergify_engine.rules import types
 from mergify_engine.rules.config import pull_request_rules as prr_config
@@ -64,6 +65,17 @@ class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig
         ):
             return check_api.Result(
                 check_api.Conclusion.SUCCESS, "Nothing to do for rebase action", ""
+            )
+
+        mergify_config = await self.ctxt.repository.get_mergify_config()
+        convoy = await merge_train.Convoy.from_context(
+            self.ctxt, mergify_config["queue_rules"], mergify_config["partition_rules"]
+        )
+        if convoy.is_pull_embarked(self.ctxt.pull["number"]):
+            return check_api.Result(
+                check_api.Conclusion.CANCELLED,
+                "Unable to rebase the branch because the pull request is queued",
+                "It's not possible to rebase this pull request because it is queued for merge",
             )
 
         try:
