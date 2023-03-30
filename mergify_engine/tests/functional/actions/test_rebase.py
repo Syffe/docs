@@ -134,7 +134,7 @@ class TestRebaseAction(base.FunctionalTestBase):
 
         await self.setup_repo(yaml.dump(rules))
 
-        pr_fixup = await self.create_pr_with_autosquash_commit("fixup")
+        pr_fixup = await self.create_pr_with_autosquash_commit("fixup", as_="admin")
 
         p2 = await self.create_pr()
         await self.merge_pull(p2["number"])
@@ -161,7 +161,7 @@ class TestRebaseAction(base.FunctionalTestBase):
 
         await self.setup_repo(yaml.dump(rules))
 
-        pr_fixup = await self.create_pr_with_autosquash_commit("fixup")
+        pr_fixup = await self.create_pr_with_autosquash_commit("fixup", as_="admin")
 
         p2 = await self.create_pr()
         await self.merge_pull(p2["number"])
@@ -188,7 +188,7 @@ class TestRebaseAction(base.FunctionalTestBase):
 
         await self.setup_repo(yaml.dump(rules))
 
-        pr_fixup = await self.create_pr_with_autosquash_commit("squash")
+        pr_fixup = await self.create_pr_with_autosquash_commit("squash", as_="admin")
 
         p2 = await self.create_pr()
         await self.merge_pull(p2["number"])
@@ -216,7 +216,10 @@ class TestRebaseAction(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
 
         pr_fixup = await self.create_pr_with_autosquash_commit(
-            "squash", commit_body="blablatest", autosquash_commit_body="blabla2test2"
+            "squash",
+            commit_body="blablatest",
+            autosquash_commit_body="blabla2test2",
+            as_="admin",
         )
 
         p2 = await self.create_pr()
@@ -247,7 +250,7 @@ class TestRebaseAction(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
 
         pr_fixup = await self.create_pr_with_autosquash_commit(
-            "fixup=amend", autosquash_commit_body="test123"
+            "fixup=amend", autosquash_commit_body="test123", as_="admin"
         )
 
         p2 = await self.create_pr()
@@ -278,7 +281,7 @@ class TestRebaseAction(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
 
         pr_fixup = await self.create_pr_with_autosquash_commit(
-            "fixup=reword", autosquash_commit_body="test123"
+            "fixup=reword", autosquash_commit_body="test123", as_="admin"
         )
 
         p2 = await self.create_pr()
@@ -308,7 +311,7 @@ class TestRebaseAction(base.FunctionalTestBase):
 
         await self.setup_repo(yaml.dump(rules))
 
-        pr_fixup = await self.create_pr_with_autosquash_commit("fixup")
+        pr_fixup = await self.create_pr_with_autosquash_commit("fixup", as_="admin")
         await self.add_label(pr_fixup["number"], "rebase")
         await self.run_engine()
 

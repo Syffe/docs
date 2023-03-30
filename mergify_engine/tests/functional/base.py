@@ -1114,11 +1114,12 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         commit_type: typing.Literal["fixup", "squash", "fixup=amend", "fixup=reword"],
         commit_body: str | None = None,
         autosquash_commit_body: str | None = None,
+        as_: typing.Literal["integration", "fork", "admin"] = "integration",
     ) -> github_types.GitHubPullRequest:
         # if autosquash_commit_body is not None and commit_type in ("fixup=amend", "fixup=reword"):
         #     raise RuntimeError("Git doesn't allow `-m` with `--fixup=amend` and `--fixup=reword`")
 
-        pr = await self.create_pr(commit_body=commit_body, as_="admin")
+        pr = await self.create_pr(commit_body=commit_body, as_=as_)
 
         with open(self.git.repository + f"/testfixup{self.pr_counter}", "w") as f:
             f.write("fixup")
