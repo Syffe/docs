@@ -145,6 +145,28 @@ def test_legacy_env_sets(
 
 
 @pytest.mark.parametrize(
+    "env_var", ("MERGIFYENGINE_BASE_URL", "MERGIFYENGINE_DASHBOARD_UI_FRONT_BASE_URL")
+)
+def test_legacy_dashboard_urls(
+    original_environment_variables: None,
+    unset_testing_env: None,
+    monkeypatch: pytest.MonkeyPatch,
+    env_var: str,
+) -> None:
+    # Required values
+    monkeypatch.setenv("MERGIFYENGINE_BASE_URL", "https://not-me-for-sure.example.com")
+    monkeypatch.setenv("MERGIFYENGINE_GITHUB_WEBHOOK_SECRET", "secret")
+    monkeypatch.setenv("MERGIFYENGINE_GITHUB_APP_ID", "12345")
+    monkeypatch.setenv("MERGIFYENGINE_GITHUB_PRIVATE_KEY", "aGVsbG8gd29ybGQ=")
+    monkeypatch.setenv("MERGIFYENGINE_GITHUB_OAUTH_CLIENT_ID", "Iv1.XXXXXX")
+    monkeypatch.setenv("MERGIFYENGINE_GITHUB_OAUTH_CLIENT_SECRET", "secret")
+
+    monkeypatch.setenv(env_var, "https://mergify.example.com")
+    conf = config.EngineSettings()
+    assert conf.DASHBOARD_UI_FRONT_URL == "https://mergify.example.com"
+
+
+@pytest.mark.parametrize(
     "path", ("/", "/foobar", "/foobar/", "?foobar=1", "/foobar/?foobar=1")
 )
 def test_github_url_normalization(

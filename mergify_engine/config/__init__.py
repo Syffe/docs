@@ -56,7 +56,8 @@ class EngineSettings(pydantic.BaseSettings):
 
     DASHBOARD_UI_STATIC_FILES_DIRECTORY: pydantic.DirectoryPath | None = None
     DASHBOARD_UI_FRONT_URL: pydantic.HttpUrl = pydantic.Field(
-        default=DASHBOARD_DEFAULT_URL, extra_env="BASE_URL"
+        default=DASHBOARD_DEFAULT_URL,
+        extra_env=("DASHBOARD_UI_FRONT_BASE_URL", "BASE_URL"),
     )
     DASHBOARD_UI_SESSION_EXPIRATION_HOURS: int = 24
     DASHBOARD_UI_FEATURES: list[str] = pydantic.Field(default_factory=list)
@@ -99,12 +100,26 @@ class EngineSettings(pydantic.BaseSettings):
                     pass
                 elif isinstance(env, str):
                     env_names.append(env)
-                elif isinstance(env, (set, tuple, list)):
+                # NOTE(sileht): we support only list as order matter
+                elif isinstance(env, (list, tuple)):
                     env_names.extend(env)
                 else:
                     raise RuntimeError(f"Unsupport env type: {type(env)}")
 
-                env_names.append(cls.env_prefix + extra_env)
+                if isinstance(extra_env, str):
+                    env_names.append(cls.env_prefix + extra_env)
+
+                # NOTE(sileht): we support only list as order matter
+                elif isinstance(extra_env, (list, tuple)):
+                    env_names.extend(
+                        [
+                            cls.env_prefix + extra_env_item
+                            for extra_env_item in extra_env
+                        ]
+                    )
+                else:
+                    raise RuntimeError(f"Unsupport extra_env type: {type(extra_env)}")
+
                 field.field_info.extra["env"] = env_names
 
             super().prepare_field(field)
