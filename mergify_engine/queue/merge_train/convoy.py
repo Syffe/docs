@@ -17,13 +17,13 @@ from mergify_engine.queue.merge_train import train as train_import
 from mergify_engine.queue.merge_train import types as merge_train_types
 from mergify_engine.rules.config import mergify as mergify_conf
 from mergify_engine.rules.config import partition_rules as partr_config
+from mergify_engine.rules.config import queue_rules as qr_config
 
 
 if typing.TYPE_CHECKING:
     from mergify_engine.queue import freeze
     from mergify_engine.queue.merge_train import train_car as tc_import
     from mergify_engine.rules.config import pull_request_rules as prr_config
-    from mergify_engine.rules.config import queue_rules as qr_config
 
 LOG = daiquiri.getLogger(__name__)
 
@@ -486,8 +486,12 @@ class Convoy:
             )
 
     @classmethod
-    @tracer.wrap("Train.refresh_convoys", span_type="worker")
-    async def refresh_convoys(cls, installation: context.Installation) -> None:
+    async def _get_raw_trains_by_convoy(
+        cls, installation: context.Installation
+    ) -> dict[
+        tuple[github_types.GitHubRepositoryIdType, github_types.GitHubRefType],
+        dict[partr_config.PartitionRuleName | None, bytes],
+    ]:
         trains_by_convoy: dict[
             tuple[github_types.GitHubRepositoryIdType, github_types.GitHubRefType],
             dict[partr_config.PartitionRuleName | None, bytes],
@@ -505,7 +509,13 @@ class Convoy:
             ref = github_types.GitHubRefType(ref_str)
             repo_id = github_types.GitHubRepositoryIdType(int(repo_id_str))
             trains_by_convoy[(repo_id, ref)][partition_name] = train_raw
+        return trains_by_convoy
 
+    @classmethod
+    @tracer.wrap("Train.refresh_convoys", span_type="worker")
+    async def refresh_convoys(cls, installation: context.Installation) -> None:
+        trains_key = train_import.get_redis_train_key(installation)
+        trains_by_convoy = await cls._get_raw_trains_by_convoy(installation)
         for (repo_id, ref), convoy_raw in trains_by_convoy.items():
             try:
                 repository = await installation.get_repository_by_id(repo_id)
@@ -542,3 +552,20 @@ class Convoy:
             await conv.load_from_bytes(convoy_raw)
             for train in conv.iter_trains():
                 await train.refresh()
+
+    @classmethod
+    async def iter_convoys(
+        cls,
+        repository: context.Repository,
+        queue_rules: qr_config.QueueRules,
+        partition_rules: partr_config.PartitionRules,
+        ref: github_types.GitHubRefType | None = None,
+    ) -> abc.AsyncIterator["Convoy"]:
+        trains_by_convoy = await cls._get_raw_trains_by_convoy(repository.installation)
+        for (repo_id, convoy_ref), convoy_raw in trains_by_convoy.items():
+            if repo_id != repository.repo["id"]:
+                continue
+            if ref is None or ref == convoy_ref:
+                conv = cls(repository, queue_rules, partition_rules, convoy_ref)
+                await conv.load_from_bytes(convoy_raw)
+                yield conv

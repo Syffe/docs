@@ -298,32 +298,40 @@ async def repository_queue_pull_request(
             detail=f"Queue `{queue_name}` does not exist.",
         )
 
-    async for train in merge_train.Train.iter_trains(
+    async for convoy in merge_train.Convoy.iter_convoys(
         repository_ctxt, queue_rules, partition_rules
     ):
-        for position, (embarked_pull, car) in enumerate(train._iter_embarked_pulls()):
-            if embarked_pull.user_pull_request_number != pr_number:
-                continue
+        # FIXME(sileht): This doesn't work as expected wihen the convoy as multiple partitions
+        # this will be fixed by MRGFY-2007
+        for train in convoy.iter_trains():
+            if train.partition_name is None:
+                for position, (embarked_pull, car) in enumerate(
+                    train._iter_embarked_pulls()
+                ):
+                    if embarked_pull.user_pull_request_number != pr_number:
+                        continue
 
-            mergeability_check = MergeabilityCheck.from_train_car(car)
-            estimated_time_of_merge = await estimated_time_to_merge.get_estimation(
-                train,
-                embarked_pull,
-                position,
-                car,
-            )
+                    mergeability_check = MergeabilityCheck.from_train_car(car)
+                    estimated_time_of_merge = (
+                        await estimated_time_to_merge.get_estimation(
+                            train,
+                            embarked_pull,
+                            position,
+                            car,
+                        )
+                    )
 
-            return EnhancedPullRequestQueued(
-                number=embarked_pull.user_pull_request_number,
-                position=position,
-                priority=embarked_pull.config["priority"],
-                queue_rule=types.QueueRule(
-                    name=embarked_pull.config["name"], config=queue_rule.config
-                ),
-                queued_at=embarked_pull.queued_at,
-                mergeability_check=mergeability_check,
-                estimated_time_of_merge=estimated_time_of_merge,
-            )
+                    return EnhancedPullRequestQueued(
+                        number=embarked_pull.user_pull_request_number,
+                        position=position,
+                        priority=embarked_pull.config["priority"],
+                        queue_rule=types.QueueRule(
+                            name=embarked_pull.config["name"], config=queue_rule.config
+                        ),
+                        queued_at=embarked_pull.queued_at,
+                        mergeability_check=mergeability_check,
+                        estimated_time_of_merge=estimated_time_of_merge,
+                    )
 
     raise fastapi.HTTPException(
         status_code=404,

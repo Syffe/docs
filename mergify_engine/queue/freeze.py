@@ -207,10 +207,11 @@ class QueueFreeze:
         partition_rules: partr_config.PartitionRules,
         source: str,
     ) -> None:
-        async for train in merge_train.Train.iter_trains(
+        async for convoy in merge_train.Convoy.iter_convoys(
             self.repository, queue_rules, partition_rules
         ):
-            await train.refresh_pulls(source=source)
+            for train in convoy.iter_trains():
+                await train.refresh_pulls(source=source)
 
     def get_freeze_message(self) -> str:
         return (

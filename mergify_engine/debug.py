@@ -183,12 +183,11 @@ async def report(
         if mergify_config is None:
             return client
 
-        async for train in merge_train.Train.iter_trains(
-            repository,
-            mergify_config["queue_rules"],
-            mergify_config["partition_rules"],
+        async for convoy in merge_train.Convoy.iter_convoys(
+            repository, mergify_config["queue_rules"], mergify_config["partition_rules"]
         ):
-            await report_queue("TRAIN", train)
+            for train in convoy.iter_trains():
+                await report_queue("TRAIN", train)
 
         await redis_links.shutdown_all()
         return client

@@ -312,47 +312,49 @@ async def repository_queues(
             repository_ctxt,
         )
     )
-
-    async for train in merge_train.Train.iter_trains(
+    async for convoy in merge_train.Convoy.iter_convoys(
         repository_ctxt, queue_rules, partition_rules
     ):
-        queue = Queue(Branch(train.convoy.ref))
-        previous_eta = None
-        for position, (embarked_pull, car) in enumerate(train._iter_embarked_pulls()):
-            try:
-                queue_rule = queue_rules[embarked_pull.config["name"]]
-            except KeyError:
-                # This car is going to be deleted so skip it
-                continue
+        for train in convoy.iter_trains():
+            queue = Queue(Branch(train.convoy.ref))
+            previous_eta = None
+            for position, (embarked_pull, car) in enumerate(
+                train._iter_embarked_pulls()
+            ):
+                try:
+                    queue_rule = queue_rules[embarked_pull.config["name"]]
+                except KeyError:
+                    # This car is going to be deleted so skip it
+                    continue
 
-            speculative_check_pull_request = SpeculativeCheckPullRequest.from_train_car(
-                car
-            )
-            previous_eta = (
-                estimated_time_of_merge
-            ) = await estimated_time_to_merge.get_estimation_from_stats(
-                train,
-                embarked_pull,
-                position,
-                checks_duration_stats,
-                car,
-                previous_eta,
-            )
-
-            queue.pull_requests.append(
-                PullRequestQueued(
-                    number=embarked_pull.user_pull_request_number,
-                    position=position,
-                    priority=embarked_pull.config["priority"],
-                    queue_rule=types.QueueRule(
-                        name=embarked_pull.config["name"], config=queue_rule.config
-                    ),
-                    queued_at=embarked_pull.queued_at,
-                    speculative_check_pull_request=speculative_check_pull_request,
-                    mergeability_check=BriefMergeabilityCheck.from_train_car(car),
-                    estimated_time_of_merge=estimated_time_of_merge,
+                speculative_check_pull_request = (
+                    SpeculativeCheckPullRequest.from_train_car(car)
                 )
-            )
+                previous_eta = (
+                    estimated_time_of_merge
+                ) = await estimated_time_to_merge.get_estimation_from_stats(
+                    train,
+                    embarked_pull,
+                    position,
+                    checks_duration_stats,
+                    car,
+                    previous_eta,
+                )
+
+                queue.pull_requests.append(
+                    PullRequestQueued(
+                        number=embarked_pull.user_pull_request_number,
+                        position=position,
+                        priority=embarked_pull.config["priority"],
+                        queue_rule=types.QueueRule(
+                            name=embarked_pull.config["name"], config=queue_rule.config
+                        ),
+                        queued_at=embarked_pull.queued_at,
+                        speculative_check_pull_request=speculative_check_pull_request,
+                        mergeability_check=BriefMergeabilityCheck.from_train_car(car),
+                        estimated_time_of_merge=estimated_time_of_merge,
+                    )
+                )
 
         queues.queues.append(queue)
 
