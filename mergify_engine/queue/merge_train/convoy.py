@@ -1,23 +1,31 @@
+import collections
 from collections import abc
 import dataclasses
 import typing
+
+import daiquiri
+from ddtrace import tracer
 
 from mergify_engine import check_api
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import queue
+from mergify_engine.clients import http
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.queue.merge_train import train as train_import
 from mergify_engine.queue.merge_train import types as merge_train_types
+from mergify_engine.rules.config import mergify as mergify_conf
+from mergify_engine.rules.config import partition_rules as partr_config
 
 
 if typing.TYPE_CHECKING:
     from mergify_engine.queue import freeze
     from mergify_engine.queue.merge_train import train_car as tc_import
-    from mergify_engine.rules.config import partition_rules as partr_config
     from mergify_engine.rules.config import pull_request_rules as prr_config
     from mergify_engine.rules.config import queue_rules as qr_config
+
+LOG = daiquiri.getLogger(__name__)
 
 
 @dataclasses.dataclass
@@ -45,7 +53,7 @@ class Convoy:
             partition_rules,
             ctxt.pull["base"]["ref"],
         )
-        await convoy.load()
+        await convoy.load_from_redis()
         return convoy
 
     def get_queue_pull_request_partition_names_from_context(
@@ -62,17 +70,43 @@ class Convoy:
 
         return list(partition_names)
 
-    async def load(self) -> None:
+    async def load_from_redis(
+        self,
+    ) -> None:
+        query: collections.OrderedDict[
+            str, "partr_config.PartitionRuleName" | None
+        ] = collections.OrderedDict()
+        if self.partition_rules:
+            for part_rule in self.partition_rules:
+                query[
+                    f"{self.repository.repo['id']}~{self.ref}~{part_rule.name}"
+                ] = part_rule.name
+        else:
+            query[f"{self.repository.repo['id']}~{self.ref}"] = None
+
+        raw_trains = await self.repository.installation.redis.cache.hmget(
+            train_import.get_redis_train_key(self.repository.installation), query.keys()
+        )
+        await self.load_from_bytes(
+            {
+                part_name: raw_trains[idx]
+                for idx, (_, part_name) in enumerate(query.items())
+            }
+        )
+
+    async def load_from_bytes(
+        self,
+        raw_trains: "abc.Mapping[partr_config.PartitionRuleName | None, bytes | None]",
+    ) -> None:
         self._trains = []
+        partition_names: list["partr_config.PartitionRuleName" | None]
         partition_names = [part_rule.name for part_rule in self.partition_rules]
+        if not partition_names:
+            partition_names = [None]
+
         for part_name in partition_names:
             train = train_import.Train(self, part_name)
-            await train.load()
-            self._trains.append(train)
-
-        if not partition_names:
-            train = train_import.Train(self, None)
-            await train.load()
+            await train.load_from_bytes(raw_trains.get(part_name))
             self._trains.append(train)
 
     async def save(self) -> None:
@@ -366,8 +400,9 @@ class Convoy:
         pr_numbers: list[github_types.GitHubPullRequestNumber],
         delegating_partition: "partr_config.PartitionRuleName",
     ) -> github_types.GitHubPullRequestNumber | None:
+        # FIXMEsileht): self._trains is always correctly initialized, we must drop this.
         # Reload trains instances
-        await self.load()
+        await self.load_from_redis()
 
         pr_numbers = sorted(pr_numbers)
         for train in self._trains:
@@ -449,3 +484,61 @@ class Convoy:
                 constants.MERGE_QUEUE_SUMMARY_NAME,
                 report,
             )
+
+    @classmethod
+    @tracer.wrap("Train.refresh_convoys", span_type="worker")
+    async def refresh_convoys(cls, installation: context.Installation) -> None:
+        trains_by_convoy: dict[
+            tuple[github_types.GitHubRepositoryIdType, github_types.GitHubRefType],
+            dict[partr_config.PartitionRuleName | None, bytes],
+        ] = collections.defaultdict(dict)
+
+        trains_key = train_import.get_redis_train_key(installation)
+        trains_raw = await installation.redis.cache.hgetall(trains_key)
+        for key, train_raw in trains_raw.items():
+            partition_name = None
+            repo_id_str, ref_str = key.decode().split("~", 1)
+            if "~" in ref_str:
+                ref_str, part_name_str = ref_str.split("~")
+                partition_name = partr_config.PartitionRuleName(part_name_str)
+
+            ref = github_types.GitHubRefType(ref_str)
+            repo_id = github_types.GitHubRepositoryIdType(int(repo_id_str))
+            trains_by_convoy[(repo_id, ref)][partition_name] = train_raw
+
+        for (repo_id, ref), convoy_raw in trains_by_convoy.items():
+            try:
+                repository = await installation.get_repository_by_id(repo_id)
+            except http.HTTPNotFound:
+                LOG.warning(
+                    "repository with active merge queue is unaccessible, deleting merge queue",
+                    gh_owner=installation.owner_login,
+                    gh_repo_id=repo_id,
+                )
+                if len(convoy_raw) == 1 and None in convoy_raw:
+                    keys = [f"{repo_id}~{ref}"]
+                else:
+                    keys = [f"{repo_id}~{ref}~{part_name}" for part_name in convoy_raw]
+                await installation.redis.cache.hdel(trains_key, *keys)
+                continue
+
+            try:
+                mergify_config = await repository.get_mergify_config()
+            except mergify_conf.InvalidRules as e:  # pragma: no cover
+                LOG.warning(
+                    "convoy can't be refreshed, the mergify configuration is invalid",
+                    gh_owner=repository.installation.owner_login,
+                    gh_repo=repository.repo["name"],
+                    gh_branch=ref,
+                    summary=str(e),
+                    annotations=e.get_annotations(e.filename),
+                )
+                continue
+
+            queue_rules = mergify_config["queue_rules"]
+            partition_rules = mergify_config["partition_rules"]
+
+            conv = cls(repository, queue_rules, partition_rules, ref)
+            await conv.load_from_bytes(convoy_raw)
+            for train in conv.iter_trains():
+                await train.refresh()

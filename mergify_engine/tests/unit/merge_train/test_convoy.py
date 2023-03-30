@@ -15,7 +15,7 @@ async def test_convoy_add_pull_1_partition_rule(
     context_getter: conftest.ContextGetterFixture,
     convoy: merge_train.Convoy,
 ) -> None:
-    await convoy.load()
+    await convoy.load_from_redis()
     config = mt_conftest.get_pull_queue_config("5x1")
 
     await convoy.add_pull(
@@ -52,7 +52,7 @@ async def test_convoy_add_pull_multiple_partition_rules(
     context_getter: conftest.ContextGetterFixture,
     convoy: merge_train.Convoy,
 ) -> None:
-    await convoy.load()
+    await convoy.load_from_redis()
     config = mt_conftest.get_pull_queue_config("5x1")
 
     await convoy.add_pull(
@@ -94,7 +94,7 @@ async def tests_convoy_remove_middle_not_merged_1_partition(
     context_getter: conftest.ContextGetterFixture,
     convoy: merge_train.Convoy,
 ) -> None:
-    await convoy.load()
+    await convoy.load_from_redis()
     config = mt_conftest.get_pull_queue_config("5x1")
 
     partition_rules = [partr_config.PartitionRuleName("projectA")]
@@ -127,7 +127,7 @@ async def tests_convoy_remove_middle_not_merged_multiple_partitions(
     context_getter: conftest.ContextGetterFixture,
     convoy: merge_train.Convoy,
 ) -> None:
-    await convoy.load()
+    await convoy.load_from_redis()
     config = mt_conftest.get_pull_queue_config("5x1")
 
     partition_rules_a = [partr_config.PartitionRuleName("projectA")]
@@ -163,7 +163,7 @@ async def test_convoy_remove_head_merged_1_partition(
     context_getter: conftest.ContextGetterFixture,
     convoy: merge_train.Convoy,
 ) -> None:
-    await convoy.load()
+    await convoy.load_from_redis()
 
     config = mt_conftest.get_pull_queue_config("5x1")
 
@@ -198,7 +198,7 @@ async def test_convoy_remove_head_merged_multiple_partitions(
     context_getter: conftest.ContextGetterFixture,
     convoy: merge_train.Convoy,
 ) -> None:
-    await convoy.load()
+    await convoy.load_from_redis()
 
     config = mt_conftest.get_pull_queue_config("5x1")
 

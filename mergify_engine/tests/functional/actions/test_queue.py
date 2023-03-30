@@ -802,7 +802,7 @@ class TestQueueAction(base.FunctionalTestBase):
         new_sha = await self.push_file("whatever", "content")
         await self.run_engine()
 
-        await q.load()
+        await q.test_helper_load_from_redis()
         # base sha should have been updated and PR still queued
         await self.assert_merge_queue_contents(
             q,
@@ -1358,7 +1358,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         await self.add_label(p1["number"], "merge")
         await self.run_engine()
-        await q.load()
+        await q.test_helper_load_from_redis()
         await self.assert_merge_queue_contents(q, None, [])
 
         # Check event logs
@@ -2141,7 +2141,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.remove_label(p2["number"], "queue")
         await self.run_engine()
 
-        await q.load()
+        await q.test_helper_load_from_redis()
         await self.assert_merge_queue_contents(
             q,
             p1["base"]["sha"],
@@ -3194,7 +3194,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
 
         # Ensure this is not the same car, a new car has to be created
-        await q.load()
+        await q.test_helper_load_from_redis()
         assert car != q._cars[0]
 
     async def test_unqueue_on_synchronise_and_rule_unmatch(self) -> None:

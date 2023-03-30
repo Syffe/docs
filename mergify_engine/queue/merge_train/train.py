@@ -7,7 +7,6 @@ import typing
 from urllib import parse
 
 import daiquiri
-from ddtrace import tracer
 import first
 
 from mergify_engine import constants
@@ -28,7 +27,6 @@ from mergify_engine.queue.merge_train import train_car
 from mergify_engine.queue.merge_train import train_car_state as tcs_import
 from mergify_engine.queue.merge_train import types as merge_train_types
 from mergify_engine.queue.merge_train import utils as train_utils
-from mergify_engine.rules.config import mergify as mergify_conf
 from mergify_engine.rules.config import partition_rules as partr_config
 
 
@@ -39,6 +37,10 @@ if typing.TYPE_CHECKING:
 
 
 LOG = daiquiri.getLogger(__name__)
+
+
+def get_redis_train_key(installation: context.Installation) -> str:
+    return f"merge-trains~{installation.owner_id}"
 
 
 @dataclasses.dataclass
@@ -62,67 +64,13 @@ class Train:
         partition_name: partr_config.PartitionRuleName | None
 
     def _get_redis_key(self) -> str:
-        return f"merge-trains~{self.convoy.repository.installation.owner_id}"
+        return get_redis_train_key(self.convoy.repository.installation)
 
     def _get_redis_hash_key(self) -> str:
         if self.partition_name is None:
             return f"{self.convoy.repository.repo['id']}~{self.convoy.ref}"
 
         return f"{self.convoy.repository.repo['id']}~{self.convoy.ref}~{self.partition_name}"
-
-    @classmethod
-    @tracer.wrap("Train.refresh_trains", span_type="worker")
-    async def refresh_trains(
-        cls,
-        installation: context.Installation,
-    ) -> None:
-        # Circulart import
-        from mergify_engine.queue.merge_train import convoy
-
-        trains_key = f"merge-trains~{installation.owner_id}"
-        for key in await installation.redis.cache.hkeys(trains_key):
-            partition_name = None
-            repo_id_str, ref_str = key.decode().split("~", 1)
-            if "~" in ref_str:
-                ref_str, part_name_str = ref_str.split("~")
-                partition_name = partr_config.PartitionRuleName(part_name_str)
-
-            ref = github_types.GitHubRefType(ref_str)
-            repo_id = github_types.GitHubRepositoryIdType(int(repo_id_str))
-            try:
-                repository = await installation.get_repository_by_id(repo_id)
-            except http.HTTPNotFound:
-                LOG.warning(
-                    "repository with active merge queue is unaccessible, deleting merge queue",
-                    gh_owner=installation.owner_login,
-                    gh_repo_id=repo_id,
-                )
-                await installation.redis.cache.hdel(trains_key, key)
-                continue
-
-            try:
-                mergify_config = await repository.get_mergify_config()
-            except mergify_conf.InvalidRules as e:  # pragma: no cover
-                LOG.warning(
-                    "train can't be refreshed, the mergify configuration is invalid",
-                    gh_owner=repository.installation.owner_login,
-                    gh_repo=repository.repo["name"],
-                    gh_branch=ref,
-                    summary=str(e),
-                    annotations=e.get_annotations(e.filename),
-                )
-                continue
-
-            queue_rules = mergify_config["queue_rules"]
-            partition_rules = mergify_config["partition_rules"]
-
-            # FIXME: This is not optimal for partitioned setup
-            # but this is not a big deal and that will be fixed MRGFY-2087
-            conv = convoy.Convoy(repository, queue_rules, partition_rules, ref)
-            await conv.load()
-            for train in conv.iter_trains():
-                if train.partition_name == partition_name:
-                    await train.refresh()
 
     @classmethod
     async def iter_trains(
@@ -158,17 +106,18 @@ class Train:
             # FIXME: This is not optimal for partitioned setup
             # but this is not a big deal and that will be fixed MRGFY-2087
             conv = convoy.Convoy(repository, queue_rules, partition_rules, ref)
-            await conv.load()
+            await conv.load_from_redis()
             for train in conv.iter_trains():
                 if train.partition_name == partition_name:
                     yield train
 
-    async def load(self, train_raw: bytes | None = None) -> None:
-        if train_raw is None:
-            train_raw = await self.convoy.repository.installation.redis.cache.hget(
-                self._get_redis_key(), self._get_redis_hash_key()
-            )
+    async def test_helper_load_from_redis(self) -> None:
+        train_raw = await self.convoy.repository.installation.redis.cache.hget(
+            self._get_redis_key(), self._get_redis_hash_key()
+        )
+        await self.load_from_bytes(train_raw)
 
+    async def load_from_bytes(self, train_raw: bytes | None = None) -> None:
         if train_raw:
             train = typing.cast(Train.Serialized, json.loads(train_raw))
             self._waiting_pulls = [

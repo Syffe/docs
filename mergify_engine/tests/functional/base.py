@@ -1753,7 +1753,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             ref=self.main_branch_name,
         )
         train = merge_train.Train(convoy=convoy, partition_name=partition_name)
-        await train.load()
+        await train.test_helper_load_from_redis()
         return train
 
     async def get_convoy(self) -> merge_train.Convoy:
@@ -1763,7 +1763,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             partition_rules=await self.get_partition_rules(),
             ref=self.main_branch_name,
         )
-        await convoy.load()
+        await convoy.load_from_redis()
         return convoy
 
     @staticmethod
@@ -1792,7 +1792,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         if expected_waiting_pulls is None:
             expected_waiting_pulls = []
 
-        await q.load()
+        await q.test_helper_load_from_redis()
         self.assertEqual(q._current_base_sha, expected_base_sha)
 
         pulls_in_queue = await q.get_pulls()

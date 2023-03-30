@@ -27,7 +27,7 @@ async def test_train_inplace_with_speculative_checks_out_of_date(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     config = mt_conftest.get_pull_queue_config("inplace")
 
@@ -53,7 +53,7 @@ async def test_train_inplace_with_speculative_checks_up_to_date(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     config = mt_conftest.get_pull_queue_config("inplace")
 
@@ -79,7 +79,7 @@ async def test_train_add_pull(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     config = mt_conftest.get_pull_queue_config("5x1")
 
@@ -96,7 +96,7 @@ async def test_train_add_pull(
     assert [[1], [1, 2], [1, 2, 3]] == mt_conftest.get_train_cars_content(t)
 
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
     assert [[1], [1, 2], [1, 2, 3]] == mt_conftest.get_train_cars_content(t)
 
     await t.remove_pull(
@@ -106,7 +106,7 @@ async def test_train_add_pull(
     assert [[1], [1, 3]] == mt_conftest.get_train_cars_content(t)
 
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
     assert [[1], [1, 3]] == mt_conftest.get_train_cars_content(t)
 
 
@@ -115,7 +115,7 @@ async def test_train_remove_middle_merged(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     config = mt_conftest.get_pull_queue_config("5x1")
     await t.add_pull(await context_getter(1), config, "")
@@ -137,7 +137,7 @@ async def test_train_remove_middle_not_merged(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     await t.add_pull(
         await context_getter(1), mt_conftest.get_pull_queue_config("5x1", 1000), ""
@@ -164,7 +164,7 @@ async def test_train_remove_head_not_merged(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     config = mt_conftest.get_pull_queue_config("5x1")
 
@@ -186,7 +186,7 @@ async def test_train_remove_head_merged(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     config = mt_conftest.get_pull_queue_config("5x1")
 
@@ -210,7 +210,7 @@ async def test_train_add_remove_pull_idempotent(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     config = mt_conftest.get_pull_queue_config("5x1", priority=0)
 
@@ -227,7 +227,7 @@ async def test_train_add_remove_pull_idempotent(
     assert [[1], [1, 2], [1, 2, 3]] == mt_conftest.get_train_cars_content(t)
 
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
     assert [[1], [1, 2], [1, 2, 3]] == mt_conftest.get_train_cars_content(t)
 
     await t.remove_pull(
@@ -243,7 +243,7 @@ async def test_train_add_remove_pull_idempotent(
     assert [[1], [1, 3]] == mt_conftest.get_train_cars_content(t)
 
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
     assert [[1], [1, 3]] == mt_conftest.get_train_cars_content(t)
 
 
@@ -252,7 +252,7 @@ async def test_train_multiple_queue(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     config_two = mt_conftest.get_pull_queue_config("2x1", priority=0)
     config_five = mt_conftest.get_pull_queue_config("5x1", priority=0)
@@ -280,7 +280,7 @@ async def test_train_multiple_queue(
     assert [5, 3, 4, 6, 7, 8, 9] == mt_conftest.get_train_waiting_pulls_content(t)
 
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
     assert [[1], [1, 2]] == mt_conftest.get_train_cars_content(t)
     assert [5, 3, 4, 6, 7, 8, 9] == mt_conftest.get_train_waiting_pulls_content(t)
 
@@ -310,7 +310,7 @@ async def test_train_multiple_queue(
     assert [9] == mt_conftest.get_train_waiting_pulls_content(t)
 
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
     assert [
         [3],
         [3, 4],
@@ -326,7 +326,7 @@ async def test_train_remove_duplicates(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     await t.add_pull(
         await context_getter(1), mt_conftest.get_pull_queue_config("2x1", 1000), ""
@@ -372,7 +372,7 @@ async def test_train_remove_end_wp(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     await t.add_pull(
         await context_getter(1), mt_conftest.get_pull_queue_config("high-1x1", 1000), ""
@@ -401,7 +401,7 @@ async def test_train_remove_first_wp(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     await t.add_pull(
         await context_getter(1), mt_conftest.get_pull_queue_config("high-1x1", 1000), ""
@@ -430,7 +430,7 @@ async def test_train_remove_last_cars(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     await t.add_pull(
         await context_getter(1), mt_conftest.get_pull_queue_config("high-1x1", 1000), ""
@@ -459,7 +459,7 @@ async def test_train_with_speculative_checks_decreased(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     config = mt_conftest.get_pull_queue_config("5x1", 1000)
     await t.add_pull(await context_getter(1), config, "")
@@ -497,7 +497,7 @@ async def test_train_queue_config_change(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     await t.add_pull(
         await context_getter(1), mt_conftest.get_pull_queue_config("2x1", 1000), ""
@@ -535,7 +535,7 @@ async def test_train_queue_config_deleted(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     await t.add_pull(
         await context_getter(1), mt_conftest.get_pull_queue_config("2x1", 1000), ""
@@ -572,7 +572,7 @@ async def test_train_priority_change(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     await t.add_pull(
         await context_getter(1), mt_conftest.get_pull_queue_config("2x1", 1000), ""
@@ -664,7 +664,7 @@ async def test_train_queue_splitted_on_failure_1x2(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     for i in range(41, 43):
         await t.add_pull(
@@ -688,7 +688,7 @@ async def test_train_queue_splitted_on_failure_1x2(
     assert [[41, 42]] == mt_conftest.get_train_cars_content(t)
     assert list(range(6, 20)) == mt_conftest.get_train_waiting_pulls_content(t)
 
-    await t.load()
+    await t.test_helper_load_from_redis()
     await t.refresh()
     assert [
         [41],
@@ -729,7 +729,7 @@ async def test_train_queue_splitted_on_failure_1x5(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     for i in range(41, 46):
         await t.add_pull(
@@ -749,7 +749,7 @@ async def test_train_queue_splitted_on_failure_1x5(
     assert [[41, 42, 43, 44, 45]] == mt_conftest.get_train_cars_content(t)
     assert list(range(6, 20)) == mt_conftest.get_train_waiting_pulls_content(t)
 
-    await t.load()
+    await t.test_helper_load_from_redis()
     await t.refresh()
     assert [
         [41, 42],
@@ -846,7 +846,7 @@ async def test_train_queue_splitted_on_failure_2x5(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     for i in range(41, 46):
         await t.add_pull(
@@ -872,7 +872,7 @@ async def test_train_queue_splitted_on_failure_2x5(
     ] == mt_conftest.get_train_cars_content(t)
     assert list(range(11, 20)) == mt_conftest.get_train_waiting_pulls_content(t)
 
-    await t.load()
+    await t.test_helper_load_from_redis()
     await t.refresh()
     assert [
         [41, 42],
@@ -982,7 +982,7 @@ async def test_train_queue_splitted_on_failure_5x3(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     for i in range(41, 47):
         await t.add_pull(
@@ -1014,7 +1014,7 @@ async def test_train_queue_splitted_on_failure_5x3(
     ] == mt_conftest.get_train_cars_content(t)
     assert list(range(16, 22)) == mt_conftest.get_train_waiting_pulls_content(t)
 
-    await t.load()
+    await t.test_helper_load_from_redis()
     await t.refresh()
     assert [
         [41],
@@ -1143,7 +1143,7 @@ async def test_train_no_interrupt_add_pull(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     config = mt_conftest.get_pull_queue_config("high-2x5-noint")
 
@@ -1179,7 +1179,7 @@ async def test_train_always_interrupt_across_queue(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     config = mt_conftest.get_pull_queue_config("low-2x5-noint")
 
@@ -1213,7 +1213,7 @@ async def test_train_interrupt_mixed_across_queue(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     config = mt_conftest.get_pull_queue_config("low-1x5-noint")
 
@@ -1246,7 +1246,7 @@ async def test_train_disallow_checks_interruption_scenario_1(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     urgent = mt_conftest.get_pull_queue_config("urgent-1x4")
     fastlane = mt_conftest.get_pull_queue_config("fastlane-1x8-noint")
@@ -1285,7 +1285,7 @@ async def test_train_disallow_checks_interruption_scenario_2(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     urgent = mt_conftest.get_pull_queue_config("urgent-1x4")
     fastlane = mt_conftest.get_pull_queue_config("fastlane-1x8-noint")
@@ -1326,7 +1326,7 @@ async def test_train_batch_max_wait_time(
 ) -> None:
     with freeze_time("2021-09-22T08:00:00") as freezed_time:
         t = merge_train.Train(convoy)
-        await t.load()
+        await t.test_helper_load_from_redis()
 
         config = mt_conftest.get_pull_queue_config("batch-wait-time")
 
@@ -1368,7 +1368,7 @@ async def test_train_queue_pr_with_higher_prio_enters_in_queue_during_merging_1x
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     for i in range(41, 46):
         await t.add_pull(
@@ -1414,7 +1414,7 @@ async def test_train_queue_pr_with_higher_prio_enters_in_queue_during_merging_2x
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     for i in range(41, 52):
         await t.add_pull(
@@ -1628,7 +1628,7 @@ async def test_train_car_has_reached_batch_max_failure(
     convoy: merge_train.Convoy,
 ) -> None:
     t = merge_train.Train(convoy)
-    await t.load()
+    await t.test_helper_load_from_redis()
 
     # Populate train
     for i in range(40, 48):
@@ -1648,7 +1648,7 @@ async def test_train_car_has_reached_batch_max_failure(
         t._cars[0].train_car_state.outcome = merge_train.TrainCarOutcome.CHECKS_FAILED
 
         await t.save()
-        await t.load()
+        await t.test_helper_load_from_redis()
         await t.refresh()
 
     first_car = t._cars[0]

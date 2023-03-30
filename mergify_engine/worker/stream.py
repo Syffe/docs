@@ -387,9 +387,9 @@ class Processor:
                         bucket_org_key, installation
                     )
 
-                    # NOTE(sileht): we don't need to refresh trains if nothing changed
+                    # NOTE(sileht): we don't need to refresh convoys if nothing changed
                     if pulls_processed > 0:
-                        await merge_train.Train.refresh_trains(installation)
+                        await merge_train.Convoy.refresh_convoys(installation)
 
         except redis_exceptions.ConnectionError:
             statsd.increment("redis.client.connection.errors")
