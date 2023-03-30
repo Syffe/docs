@@ -3,8 +3,8 @@ import typing
 
 import pytest
 
-from mergify_engine import config
 from mergify_engine import logs
+from mergify_engine import settings
 
 
 @pytest.mark.parametrize(
@@ -41,8 +41,8 @@ def test_datadog_logger(
     expected_port: int | None,
     logging_reset: None,
 ) -> None:
-    monkeypatch.setattr(config, "LOG_DATADOG", config_value)
-    monkeypatch.setattr(config, "LOG_STDOUT", False)
+    monkeypatch.setattr(settings, "LOG_DATADOG", config_value)
+    monkeypatch.setattr(settings, "LOG_STDOUT", False)
     logs.setup_logging(dump_config=False)
 
     root_logger = logging.getLogger()

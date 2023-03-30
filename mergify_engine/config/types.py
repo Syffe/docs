@@ -1,4 +1,5 @@
 from collections import abc
+import logging
 import typing
 from urllib import parse
 
@@ -76,3 +77,27 @@ class SecretUrl(parse.SplitResult):
 class PostgresDSN(SecretUrl):
     allowed_schemes = ("postgres", "postgresql", "postgresql+psycopg")
     override_scheme = "postgresql+psycopg"
+
+
+class LogLevel(pydantic.PositiveInt):
+    @typing.no_type_check
+    def __new__(cls, value):
+        value = cls.parse_loglevel_aliases(value)
+        return super().__new__(cls, value)
+
+    @classmethod
+    def __get_validators__(cls) -> typing.Any:
+        yield cls.parse_loglevel_aliases
+        yield from super().__get_validators__()  # type: ignore[misc]
+
+    @classmethod
+    def parse_loglevel_aliases(cls, value: str | int) -> str | int:
+        if isinstance(value, str) and value.upper() in (
+            "CRITICAL",
+            "ERROR",
+            "WARNING",
+            "INFO",
+            "DEBUG",
+        ):
+            value = int(getattr(logging, value.upper()))
+        return value

@@ -1,6 +1,5 @@
 import base64
 import collections
-import logging
 import os
 import secrets
 import sys
@@ -13,7 +12,7 @@ import voluptuous
 
 from mergify_engine import github_types
 from mergify_engine import utils
-from mergify_engine.config import urls
+from mergify_engine.config import types
 
 
 CONFIGURATION_FILE = os.getenv("MERGIFYENGINE_TEST_SETTINGS")
@@ -27,12 +26,14 @@ class SecretStrFromBase64(pydantic.SecretStr):
 
 
 class EngineSettings(pydantic.BaseSettings):
-    DATABASE_URL: urls.PostgresDSN = urls.PostgresDSN.parse("postgres://localhost:5432")
+    DATABASE_URL: types.PostgresDSN = types.PostgresDSN.parse(
+        "postgres://localhost:5432"
+    )
     DATABASE_POOL_SIZES: dict[str, int] = pydantic.Field(
         default={"worker": 15, "web": 55}
     )
 
-    GITHUB_URL: urls.NormalizedUrl = urls.NormalizedUrl.build(
+    GITHUB_URL: types.NormalizedUrl = types.NormalizedUrl.build(
         scheme="https", host="github.com"
     )
     GITHUB_APP_ID: int = pydantic.Field(extra_env="INTEGRATION_ID")
@@ -66,6 +67,13 @@ class EngineSettings(pydantic.BaseSettings):
         default_factory=list
     )
 
+    LOG_LEVEL: types.LogLevel = types.LogLevel("INFO")
+    LOG_STDOUT: bool = True
+    LOG_STDOUT_LEVEL: types.LogLevel | None = None
+    LOG_DATADOG: bool | pydantic.AnyHttpUrl = False
+    LOG_DATADOG_LEVEL: types.LogLevel | None = None
+    LOG_DEBUG_LOGGER_NAMES: list[str] = pydantic.Field(default_factory=list)
+
     class Config(pydantic.BaseSettings.Config):
         case_sensitive = True
         env_prefix = "MERGIFYENGINE_"
@@ -81,6 +89,7 @@ class EngineSettings(pydantic.BaseSettings):
                 "WEBHOOK_FORWARD_EVENT_TYPES",
                 "DASHBOARD_UI_FEATURES",
                 "DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO",
+                "LOG_DEBUG_LOGGER_NAMES",
             ):
                 return raw_val.split(",")
 
@@ -159,13 +168,6 @@ def CoercedBool(value: typing.Any) -> bool:
     return utils.strtobool(str(value))
 
 
-def CoercedLoggingLevel(value: str) -> int:
-    value = value.upper()
-    if value in ("CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"):
-        return int(getattr(logging, value))
-    raise ValueError(value)
-
-
 def CommaSeparatedStringList(value: str) -> list[str]:
     if value:
         return value.split(",")
@@ -236,22 +238,7 @@ Schema = voluptuous.Schema(
         ): str,
         voluptuous.Required("SAAS_MODE", default=False): CoercedBool,
         # Logging
-        voluptuous.Required(
-            "LOG_DEBUG_LOGGER_NAMES", default=""
-        ): CommaSeparatedStringList,
         voluptuous.Required("API_ENABLE", default=False): CoercedBool,
-        voluptuous.Required("LOG_LEVEL", default="INFO"): CoercedLoggingLevel,
-        voluptuous.Required("LOG_RATELIMIT", default=False): CoercedBool,
-        voluptuous.Required("LOG_STDOUT", default=True): CoercedBool,
-        voluptuous.Required("LOG_STDOUT_LEVEL", default=None): voluptuous.Any(
-            None, CoercedLoggingLevel
-        ),
-        voluptuous.Required("LOG_DATADOG", default=False): voluptuous.Any(
-            CoercedBool, voluptuous.Url
-        ),
-        voluptuous.Required("LOG_DATADOG_LEVEL", default=None): voluptuous.Any(
-            None, CoercedLoggingLevel
-        ),
         voluptuous.Required("SENTRY_URL", default=None): voluptuous.Any(None, str),
         voluptuous.Required("SENTRY_ENVIRONMENT", default="test"): str,
         voluptuous.Required(
@@ -452,12 +439,6 @@ TESTING_ORGANIZATION_NAME: github_types.GitHubLogin
 TESTING_REPOSITORY_ID: github_types.GitHubRepositoryIdType
 TESTING_REPOSITORY_NAME: str
 TESTING_FORWARDER_ENDPOINT: str
-LOG_LEVEL: int  # This is converted to an int by voluptuous
-LOG_STDOUT: bool
-LOG_STDOUT_LEVEL: int  # This is converted to an int by voluptuous
-LOG_DATADOG: bool | str
-LOG_DATADOG_LEVEL: int  # This is converted to an int by voluptuous
-LOG_DEBUG_LOGGER_NAMES: list[str]
 ORG_ADMIN_PERSONAL_TOKEN: github_types.GitHubOAuthToken
 ORG_ADMIN_ID: github_types.GitHubAccountIdType
 ORG_USER_ID: github_types.GitHubAccountIdType

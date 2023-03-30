@@ -1,10 +1,11 @@
+import logging
 import os
 
 import pydantic
 import pytest
 
 from mergify_engine import config
-from mergify_engine.config import urls
+from mergify_engine.config import types
 
 
 @pytest.fixture
@@ -49,6 +50,12 @@ def test_defaults(
     assert conf.DASHBOARD_UI_SESSION_EXPIRATION_HOURS == 24
     assert conf.DASHBOARD_UI_DATADOG_CLIENT_TOKEN is None
     assert conf.DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO == []
+    assert conf.LOG_LEVEL == logging.INFO
+    assert conf.LOG_STDOUT
+    assert conf.LOG_STDOUT_LEVEL is None
+    assert conf.LOG_DATADOG is False
+    assert conf.LOG_DATADOG_LEVEL is None
+    assert conf.LOG_DEBUG_LOGGER_NAMES == []
 
 
 def test_all_sets(
@@ -87,6 +94,12 @@ def test_all_sets(
         "MERGIFYENGINE_DASHBOARD_UI_FRONT_URL",
         "https://dashboard.mergify.com",
     )
+    monkeypatch.setenv("MERGIFYENGINE_LOG_LEVEL", "DEBUG")
+    monkeypatch.setenv("MERGIFYENGINE_LOG_STDOUT", "false")
+    monkeypatch.setenv("MERGIFYENGINE_LOG_STDOUT_LEVEL", "CRITICAL")
+    monkeypatch.setenv("MERGIFYENGINE_LOG_DATADOG", "true")
+    monkeypatch.setenv("MERGIFYENGINE_LOG_DATADOG_LEVEL", "WARNING")
+    monkeypatch.setenv("MERGIFYENGINE_LOG_DEBUG_LOGGER_NAMES", "foo,bar,yo")
 
     conf = config.EngineSettings()
     assert conf.GITHUB_URL == "https://my-ghes.example.com"
@@ -113,6 +126,12 @@ def test_all_sets(
     assert conf.DASHBOARD_UI_SESSION_EXPIRATION_HOURS == 100
     assert conf.DASHBOARD_UI_DATADOG_CLIENT_TOKEN == "no-secret"
     assert conf.DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO == [1234, 5432]
+    assert conf.LOG_LEVEL == logging.DEBUG
+    assert conf.LOG_STDOUT is False
+    assert conf.LOG_STDOUT_LEVEL == logging.CRITICAL
+    assert conf.LOG_DATADOG is True
+    assert conf.LOG_DATADOG_LEVEL == logging.WARNING
+    assert conf.LOG_DEBUG_LOGGER_NAMES == ["foo", "bar", "yo"]
 
 
 def test_legacy_env_sets(
@@ -167,6 +186,53 @@ def test_legacy_dashboard_urls(
 
 
 @pytest.mark.parametrize(
+    "value, expected",
+    (
+        ("10", 10),
+        ("1000", 1000),
+        (
+            "-100",
+            """
+1 validation error for EngineSettings
+MERGIFYENGINE_LOG_LEVEL
+  ensure this value is greater than 0 (type=value_error.number.not_gt; limit_value=0)
+""".strip(),
+        ),
+        ("INFO", logging.INFO),
+        ("ERROR", logging.ERROR),
+        ("WARNING", logging.WARNING),
+        ("DEBUG", logging.DEBUG),
+        ("CRITICAL", logging.CRITICAL),
+        ("info", logging.INFO),
+        ("debug", logging.DEBUG),
+        (
+            "NOT_A_STRING_LEVEL",
+            """
+1 validation error for EngineSettings
+MERGIFYENGINE_LOG_LEVEL
+  value is not a valid integer (type=type_error.integer)
+""".strip(),
+        ),
+    ),
+)
+def test_type_log_level(
+    original_environment_variables: None,
+    monkeypatch: pytest.MonkeyPatch,
+    value: str,
+    expected: int | None,
+) -> None:
+    monkeypatch.setenv("MERGIFYENGINE_LOG_LEVEL", value)
+    if isinstance(expected, int):
+        conf = config.EngineSettings()
+        assert conf.LOG_LEVEL == expected
+    else:
+        with pytest.raises(pydantic.ValidationError) as exc_info:
+            config.EngineSettings()
+
+        assert str(exc_info.value) == expected
+
+
+@pytest.mark.parametrize(
     "path", ("/", "/foobar", "/foobar/", "?foobar=1", "/foobar/?foobar=1")
 )
 def test_github_url_normalization(
@@ -199,7 +265,7 @@ def test_database_url_replace(
 
     # ensure we still protected after a _replace()
     new_url = conf.DATABASE_URL._replace(path="db2")
-    assert isinstance(new_url, urls.PostgresDSN)
+    assert isinstance(new_url, types.PostgresDSN)
     assert str(new_url) == "postgresql+psycopg://***@example.com:1234/db2"
     assert new_url.geturl() == "postgresql+psycopg://user:password@example.com:1234/db2"
 

@@ -127,17 +127,17 @@ def config_log() -> None:
 def setup_logging(dump_config: bool = True) -> None:
     outputs: list[daiquiri.output.Output] = []
 
-    if config.LOG_STDOUT:
+    if settings.LOG_STDOUT:
         outputs.append(
             daiquiri.output.Stream(
-                sys.stdout, level=config.LOG_STDOUT_LEVEL, formatter=CUSTOM_FORMATTER
+                sys.stdout, level=settings.LOG_STDOUT_LEVEL, formatter=CUSTOM_FORMATTER
             )
         )
 
-    if config.LOG_DATADOG:
+    if settings.LOG_DATADOG:
         dd_extras: dict[str, int | str] = {}
-        if isinstance(config.LOG_DATADOG, str):
-            dd_agent_parsed = parse.urlparse(config.LOG_DATADOG)
+        if isinstance(settings.LOG_DATADOG, str):
+            dd_agent_parsed = parse.urlparse(settings.LOG_DATADOG)
             if dd_agent_parsed.scheme != "udp":
                 raise RuntimeError(
                     "Only UDP protocol is supported for MERGIFYENGINE_LOG_DATADOG"
@@ -148,7 +148,7 @@ def setup_logging(dump_config: bool = True) -> None:
                 dd_extras["port"] = dd_agent_parsed.port
         outputs.append(
             daiquiri.output.Datadog(
-                level=config.LOG_DATADOG_LEVEL,
+                level=settings.LOG_DATADOG_LEVEL,
                 handler_class=daiquiri.handlers.PlainTextDatagramHandler,
                 formatter=HerokuDatadogFormatter(),
                 **dd_extras,  # type:ignore [arg-type]
@@ -157,7 +157,7 @@ def setup_logging(dump_config: bool = True) -> None:
 
     daiquiri.setup(
         outputs=outputs,
-        level=config.LOG_LEVEL,
+        level=settings.LOG_LEVEL,
     )
     daiquiri.set_default_log_levels(
         [
@@ -170,7 +170,7 @@ def setup_logging(dump_config: bool = True) -> None:
             ("ddtrace", "WARN"),
             ("uvicorn.access", "WARN"),
         ]
-        + [(name, "DEBUG") for name in config.LOG_DEBUG_LOGGER_NAMES]
+        + [(name, "DEBUG") for name in settings.LOG_DEBUG_LOGGER_NAMES]
     )
 
     if dump_config:
