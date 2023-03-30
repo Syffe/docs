@@ -18,7 +18,7 @@ from mergify_engine.config import urls
 
 CONFIGURATION_FILE = os.getenv("MERGIFYENGINE_TEST_SETTINGS")
 
-DASHBOARD_DEFAULT_URL = pydantic.HttpUrl("http://localhost:8802", scheme="http")
+DASHBOARD_DEFAULT_URL = pydantic.HttpUrl("http://localhost:3000", scheme="http")
 
 
 class SecretStrFromBase64(pydantic.SecretStr):
@@ -55,7 +55,7 @@ class EngineSettings(pydantic.BaseSettings):
     )
 
     DASHBOARD_UI_STATIC_FILES_DIRECTORY: pydantic.DirectoryPath | None = None
-    DASHBOARD_UI_FRONT_URL: pydantic.HttpUrl = pydantic.Field(
+    DASHBOARD_UI_FRONT_URL: pydantic.AnyHttpUrl = pydantic.Field(
         default=DASHBOARD_DEFAULT_URL,
         extra_env=("DASHBOARD_UI_FRONT_BASE_URL", "BASE_URL"),
     )

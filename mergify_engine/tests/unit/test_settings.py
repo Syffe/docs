@@ -44,7 +44,7 @@ def test_defaults(
     assert conf.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES == []
     assert conf.GITHUB_WEBHOOK_FORWARD_URL is None
     assert conf.DASHBOARD_UI_STATIC_FILES_DIRECTORY is None
-    assert conf.DASHBOARD_UI_FRONT_URL == "http://localhost:8802"
+    assert conf.DASHBOARD_UI_FRONT_URL == "http://localhost:3000"
     assert conf.DASHBOARD_UI_FEATURES == []
     assert conf.DASHBOARD_UI_SESSION_EXPIRATION_HOURS == 24
     assert conf.DASHBOARD_UI_DATADOG_CLIENT_TOKEN is None
