@@ -652,9 +652,9 @@ class TrainCar:
             )
             raise TrainCarPullRequestCreationFailure(self) from exc
 
+        autosquash = self.still_queued_embarked_pulls[0].config.get("autosquash", True)
         try:
-            # FIXME(sileht): should we enabled autosquash here? MRGFY-279
-            await branch_updater.rebase_with_git(ctxt, on_behalf, False)
+            await branch_updater.rebase_with_git(ctxt, on_behalf, autosquash)
         except branch_updater.BranchUpdateFailure as exc:
             await self._set_creation_failure(
                 f"{exc.title}\n\n{exc.message}", operation="updated"
@@ -683,12 +683,14 @@ class TrainCar:
             embarked_pull.user_pull_request_number
         )
 
+        # TODO(sileht): fallback to "merge" and None until all configs has
+        # the new fields
+        update_method = self.still_queued_embarked_pulls[0].config.get(
+            "update_method", "merge"
+        )
+        autosquash = self.still_queued_embarked_pulls[0].config.get("autosquash", True)
+
         if await ctxt.is_behind:
-            # TODO(sileht): fallback to "merge" and None until all configs has
-            # the new fields
-            update_method = self.still_queued_embarked_pulls[0].config.get(
-                "update_method", "merge"
-            )
             if update_method == "merge":
                 await self._start_checking_inplace_merge(ctxt)
             elif update_method == "rebase":
@@ -699,7 +701,16 @@ class TrainCar:
             # NOTE(sileht): We must update head_sha of the pull request otherwise
             # next temporary pull request may be created on a vanished reference.
             await ctxt.update()
+        elif (
+            update_method == "rebase"
+            and autosquash
+            and await ctxt.has_squashable_commits()
+        ):
+            await self._start_checking_inplace_rebase(ctxt)
 
+            # NOTE(sileht): We must update head_sha of the pull request otherwise
+            # next temporary pull request may be created on a vanished reference.
+            await ctxt.update()
         else:
             # Already done, just refresh it to merge it
             await refresher.send_pull_refresh(

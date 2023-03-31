@@ -477,6 +477,14 @@ These are the options of the ``queue`` action:
      - Default
      - Value Description
 
+   * - ``autosquash``
+     - bool
+     - True
+     - | This options is relevant only if you do inplace checks and if you use the ``rebase`` option
+       | of the ``update_method``.
+       | It will automatically squash your commits beginning by ``squash!``, ``fixup!`` or ``amend!``, just like
+       | the option with the same name when doing a ``git rebase``.
+
    * - ``commit_message_template``
      - :ref:`data type template`
      -
@@ -602,6 +610,14 @@ A ``queue_rules`` takes the following parameters:
        ``true``, Mergify will allow such modifications and trust the content of
        the branch. Make sure only Mergify and your external application are
        allowed to edit these branches.
+
+   * - ``autosquash``
+     - bool
+     - True
+     - | This options is relevant only if you do inplace checks and if you use the ``rebase`` option
+       | of the ``update_method``.
+       | It will automatically squash your commits beginning by ``squash!``, ``fixup!`` or ``amend!``, just like
+       | the option with the same name when doing a ``git rebase``.
 
    * - ``batch_max_failure_resolution_attempts``
      - int
@@ -734,7 +750,7 @@ A ``queue_rules`` takes the following parameters:
      - | Method to use to update the pull request with its base branch when the
        | speculative check is done in-place.
        | Possible values:
-       | 
+       |
        | * ``merge`` to merge the base branch into the pull request.
        | * ``rebase`` to rebase the pull request against its base branch.
        |

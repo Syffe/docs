@@ -1473,6 +1473,7 @@ def test_embarked_pull_old_serialization() -> None:
         effective_priority=0,
         bot_account=None,
         update_bot_account=None,
+        autosquash=True,
     )
 
     now = date.utcnow()

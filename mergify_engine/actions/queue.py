@@ -92,6 +92,7 @@ class QueueExecutorConfig(typing.TypedDict):
     priority: int
     require_branch_protection: bool
     allow_merging_configuration_change: bool
+    autosquash: bool
 
 
 @dataclasses.dataclass
@@ -141,6 +142,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     "allow_merging_configuration_change": action.config[
                         "allow_merging_configuration_change"
                     ],
+                    "autosquash": action.config["autosquash"],
                 }
             ),
             action.queue_rule,
@@ -489,6 +491,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 "update_bot_account": self.config["update_bot_account"],
                 "priority": self.config["priority"],
                 "name": self.config["name"],
+                "autosquash": self.config["autosquash"],
             }
         )
 
@@ -1128,6 +1131,7 @@ class QueueAction(actions.Action):
             voluptuous.Required(
                 "allow_merging_configuration_change", default=False
             ): bool,
+            voluptuous.Required("autosquash", default=True): bool,
         }
 
         if config.ALLOW_QUEUE_PRIORITY_ATTRIBUTE:

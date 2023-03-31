@@ -49,6 +49,7 @@ class QueueConfig(typing.TypedDict):
     merge_bot_account: github_types.GitHubLogin | None
     update_method: typing.Literal["rebase", "merge"] | None
     update_bot_account: github_types.GitHubLogin | None
+    autosquash: bool
 
 
 @dataclasses.dataclass
@@ -402,6 +403,7 @@ QueueRulesSchema = voluptuous.All(
                 voluptuous.Required("update_method", default=None): voluptuous.Any(
                     "rebase", "merge", None
                 ),
+                voluptuous.Required("autosquash", default=True): bool,
                 # TODO(sileht): options to deprecate
                 voluptuous.Required(
                     "allow_checks_interruption", default=None

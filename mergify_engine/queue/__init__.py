@@ -47,3 +47,4 @@ class PullQueueConfig(typing.TypedDict):
     bot_account: github_types.GitHubLogin | None
     update_bot_account: github_types.GitHubLogin | None
     name: "qr_config.QueueName"
+    autosquash: bool

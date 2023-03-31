@@ -187,6 +187,7 @@ class TestQueueApi(base.FunctionalTestBase):
                         "merge_bot_account": None,
                         "update_method": None,
                         "update_bot_account": None,
+                        "autosquash": True,
                     },
                 }
             ]
@@ -221,6 +222,7 @@ class TestQueueApi(base.FunctionalTestBase):
                         "merge_bot_account": None,
                         "update_method": None,
                         "update_bot_account": None,
+                        "autosquash": True,
                     },
                 },
                 {
@@ -243,6 +245,7 @@ class TestQueueApi(base.FunctionalTestBase):
                         "merge_bot_account": None,
                         "update_method": None,
                         "update_bot_account": None,
+                        "autosquash": True,
                     },
                 },
                 {
@@ -265,6 +268,7 @@ class TestQueueApi(base.FunctionalTestBase):
                         "merge_bot_account": None,
                         "update_method": None,
                         "update_bot_account": None,
+                        "autosquash": True,
                     },
                 },
             ]

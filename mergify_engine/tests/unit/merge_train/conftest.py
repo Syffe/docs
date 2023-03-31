@@ -305,6 +305,7 @@ def get_pull_queue_config(
         effective_priority=effective_priority,
         bot_account=None,
         update_bot_account=None,
+        autosquash=True,
     )
 
 

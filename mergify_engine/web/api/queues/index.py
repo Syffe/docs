@@ -217,6 +217,7 @@ class Queues:
                                                 "merge_method": "merge",
                                                 "update_bot_account": "",
                                                 "update_method": "rebase",
+                                                "autosquash": True,
                                             },
                                         },
                                         "speculative_check_pull_request": {
@@ -262,6 +263,7 @@ class Queues:
                                                 "merge_method": "merge",
                                                 "update_bot_account": "",
                                                 "update_method": "rebase",
+                                                "autosquash": False,
                                             },
                                         },
                                         "speculative_check_pull_request": {

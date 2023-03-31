@@ -5163,6 +5163,7 @@ class TestQueueAction(base.FunctionalTestBase):
                                     "merge_bot_account": None,
                                     "update_method": None,
                                     "update_bot_account": None,
+                                    "autosquash": True,
                                 },
                                 "name": "urgent",
                             },
@@ -5199,6 +5200,7 @@ class TestQueueAction(base.FunctionalTestBase):
                                     "merge_bot_account": None,
                                     "update_method": None,
                                     "update_bot_account": None,
+                                    "autosquash": True,
                                 },
                                 "name": "default",
                             },
@@ -5230,6 +5232,7 @@ class TestQueueAction(base.FunctionalTestBase):
                                     "merge_bot_account": None,
                                     "update_method": None,
                                     "update_bot_account": None,
+                                    "autosquash": True,
                                 },
                                 "name": "default",
                             },
@@ -6572,6 +6575,173 @@ pull_request_rules:
             ],
         )
 
+    async def test_queue_inplace_autosquash_true(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": True,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Automatic merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {
+                        "queue": {
+                            "name": "default",
+                            "update_method": "rebase",
+                            "autosquash": True,
+                            "update_bot_account": "mergify-test4",
+                        }
+                    },
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        pr_fixup = await self.create_pr_with_autosquash_commit("fixup")
+
+        p2 = await self.create_pr()
+        await self.merge_pull(p2["number"])
+        await self.wait_for_pull_request("closed", p2["number"])
+
+        await self.add_label(pr_fixup["number"], "queue")
+        await self.run_engine()
+        await self.wait_for_pull_request("synchronize", pr_fixup["number"])
+
+        fixup_commits = await self.get_commits(pr_fixup["number"])
+        assert len(fixup_commits) == 1
+
+    async def test_queue_inplace_autosquash_false(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": True,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Automatic merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {
+                        "queue": {
+                            "name": "default",
+                            "update_method": "rebase",
+                            "autosquash": False,
+                            "update_bot_account": "mergify-test4",
+                        }
+                    },
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        pr_fixup = await self.create_pr_with_autosquash_commit("fixup")
+
+        p2 = await self.create_pr()
+        await self.merge_pull(p2["number"])
+        await self.wait_for_pull_request("closed", p2["number"])
+
+        await self.add_label(pr_fixup["number"], "queue")
+        await self.run_engine()
+        await self.wait_for_pull_request("synchronize", pr_fixup["number"])
+
+        fixup_commits = await self.get_commits(pr_fixup["number"])
+        assert len(fixup_commits) == 2
+
+    async def test_queue_inplace_uptodate_autosquash_true(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": True,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Automatic merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {
+                        "queue": {
+                            "name": "default",
+                            "update_method": "rebase",
+                            "autosquash": True,
+                            "update_bot_account": "mergify-test4",
+                        }
+                    },
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        pr_fixup = await self.create_pr_with_autosquash_commit("fixup")
+
+        await self.add_label(pr_fixup["number"], "queue")
+        await self.run_engine()
+        await self.wait_for_pull_request("synchronize", pr_fixup["number"])
+
+        fixup_commits = await self.get_commits(pr_fixup["number"])
+        assert len(fixup_commits) == 1
+
+    async def test_queue_inplace_uptodate_autosquash_false(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [],
+                    "allow_inplace_checks": True,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Automatic merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {
+                        "queue": {
+                            "name": "default",
+                            "update_method": "rebase",
+                            "autosquash": False,
+                            "update_bot_account": "mergify-test4",
+                        }
+                    },
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        pr_fixup = await self.create_pr_with_autosquash_commit("fixup")
+
+        await self.add_label(pr_fixup["number"], "queue")
+        await self.run_engine()
+
+        await self.wait_for_pull_request("closed", pr_fixup["number"])
+
+        fixup_commits = await self.get_commits(pr_fixup["number"])
+        assert len(fixup_commits) == 2
+
 
 class TestTrainApiCalls(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
@@ -6623,6 +6793,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
             merge_bot_account=None,
             update_method=None,
             update_bot_account=None,
+            autosquash=True,
         )
         pull_queue_config = queue.PullQueueConfig(
             name=qr_config.QueueName("foo"),
@@ -6631,6 +6802,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
             effective_priority=0,
             bot_account=None,
             update_bot_account=None,
+            autosquash=True,
         )
 
         car = merge_train.TrainCar(
@@ -6768,6 +6940,7 @@ pull_requests:
             merge_bot_account=None,
             update_method=None,
             update_bot_account=None,
+            autosquash=True,
         )
         queue_pull_config = queue.PullQueueConfig(
             name=qr_config.QueueName("foo"),
@@ -6776,6 +6949,7 @@ pull_requests:
             effective_priority=0,
             bot_account=None,
             update_bot_account=None,
+            autosquash=True,
         )
 
         car = merge_train.TrainCar(
@@ -6872,6 +7046,7 @@ pull_requests:
             merge_bot_account=None,
             update_method=None,
             update_bot_account=None,
+            autosquash=True,
         )
         queue_pull_config = queue.PullQueueConfig(
             name=qr_config.QueueName("foo"),
@@ -6880,6 +7055,7 @@ pull_requests:
             effective_priority=0,
             bot_account=None,
             update_bot_account=None,
+            autosquash=True,
         )
 
         embarked_pulls = [
@@ -6952,6 +7128,7 @@ pull_requests:
             merge_bot_account=None,
             update_method=None,
             update_bot_account=None,
+            autosquash=True,
         )
         config = queue.PullQueueConfig(
             name=qr_config.QueueName("foo"),
@@ -6960,6 +7137,7 @@ pull_requests:
             effective_priority=0,
             bot_account=None,
             update_bot_account=None,
+            autosquash=True,
         )
 
         car = merge_train.TrainCar(
