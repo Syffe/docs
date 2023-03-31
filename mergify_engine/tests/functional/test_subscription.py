@@ -1,8 +1,8 @@
 from unittest import mock
 
-from mergify_engine import config
 from mergify_engine import github_types
 from mergify_engine import redis_utils
+from mergify_engine import settings
 from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 
@@ -15,7 +15,7 @@ class TestSubscription(base.FunctionalTestBase):
         ) -> subscription.Subscription:
             return subscription.Subscription(
                 self.redis_links.cache,
-                config.TESTING_ORGANIZATION_ID,
+                settings.TESTING_ORGANIZATION_ID,
                 "Abuse",
                 frozenset(
                     getattr(subscription.Features, f)

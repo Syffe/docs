@@ -86,6 +86,8 @@ def strip_url_credentials(url: str) -> str:
 def config_log() -> None:
     LOG.info("##################### CONFIGURATION ######################")
     for key, value in settings.dict().items():
+        if key.startswith("TESTING_"):
+            continue
         LOG.info("* %s: %s", key, value)
 
     for key, value in config.CONFIG.items():

@@ -1,6 +1,6 @@
 import pytest
 
-from mergify_engine import config
+from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
@@ -69,7 +69,7 @@ class TestDeleteHeadBranchAction(base.FunctionalTestBase):
 
         # Check event logs
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p2['number']}/events?per_page=5",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p2['number']}/events?per_page=5",
         )
         assert len(r.json()["events"]) == 1
         assert r.json()["events"][0]["metadata"]["branch"] == second_branch

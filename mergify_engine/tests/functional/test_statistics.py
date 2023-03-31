@@ -4,7 +4,7 @@ from unittest import mock
 from freezegun import freeze_time
 import msgpack
 
-from mergify_engine import config
+from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.queue import statistics
 from mergify_engine.tests.functional import base
@@ -122,7 +122,7 @@ class TestStatisticsRedis(base.FunctionalTestBase):
             assert await self.redis_links.stats.xlen(time_to_merge_key) == 2
 
             r = await self.admin_app.get(
-                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge?branch={self.main_branch_name}",
+                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/time_to_merge?branch={self.main_branch_name}",
             )
 
             estimated_value = r.json()["median"]

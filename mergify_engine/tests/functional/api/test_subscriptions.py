@@ -1,4 +1,4 @@
-from mergify_engine import config
+from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.tests.functional import base
 
@@ -67,7 +67,7 @@ class TestSubscriptionsApi(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules))
 
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/default/freeze",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/default/freeze",
         )
         assert r.status_code == 402
 
@@ -105,6 +105,6 @@ class TestSubscriptionsApi(base.FunctionalTestBase):
         await self.run_engine()
 
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events",
         )
         assert r.status_code == 402

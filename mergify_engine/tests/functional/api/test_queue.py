@@ -6,10 +6,10 @@ import anys
 from freezegun import freeze_time
 import msgpack
 
-from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
+from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.tests.functional import base
 
@@ -79,7 +79,7 @@ class TestQueueApi(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(invalid_rules), forward_to_engine=True)
 
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/configuration",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/configuration",
         )
 
         assert r.status_code == 422
@@ -159,7 +159,7 @@ class TestQueueApi(base.FunctionalTestBase):
         self.addCleanup(mock_get_mergify_config_file.stop)
 
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/configuration",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/configuration",
         )
 
         mock_get_mergify_config_file.stop()
@@ -196,7 +196,7 @@ class TestQueueApi(base.FunctionalTestBase):
         await self.setup_repo(yaml.dump(rules), forward_to_engine=True)
 
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/configuration",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/configuration",
         )
 
         assert r.status_code == 200
@@ -341,7 +341,7 @@ class TestQueueApi(base.FunctionalTestBase):
         # GET /queues
         repository_name = self.RECORD_CONFIG["repository_name"]
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queues",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{repository_name}/queues",
         )
 
         assert len(r.json()["queues"]) == 1
@@ -424,7 +424,7 @@ class TestQueueApi(base.FunctionalTestBase):
 
         repository_name = self.RECORD_CONFIG["repository_name"]
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/foo/pull/{p['number']}",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/foo/pull/{p['number']}",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -539,13 +539,13 @@ class TestQueueApi(base.FunctionalTestBase):
         }
 
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/unknown_queue/pull/{p['number']}",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/unknown_queue/pull/{p['number']}",
         )
         assert r.status_code == 404
         assert r.json()["detail"] == "Queue `unknown_queue` does not exist."
 
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/foo/pull/0",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/foo/pull/0",
         )
         assert r.status_code == 404
         assert r.json()["detail"] == "Pull request not found."
@@ -635,7 +635,7 @@ class TestQueueApi(base.FunctionalTestBase):
             # GET /queues
             repository_name = self.RECORD_CONFIG["repository_name"]
             r = await self.admin_app.get(
-                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queues",
+                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{repository_name}/queues",
             )
 
             assert len(r.json()["queues"]) == 1
@@ -745,7 +745,7 @@ class TestQueueApi(base.FunctionalTestBase):
             # GET /queues
             repository_name = self.RECORD_CONFIG["repository_name"]
             r = await self.admin_app.get(
-                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queues",
+                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{repository_name}/queues",
             )
 
             assert len(r.json()["queues"]) == 1
@@ -867,7 +867,7 @@ class TestQueueApi(base.FunctionalTestBase):
             # GET /queues
             repository_name = self.RECORD_CONFIG["repository_name"]
             r = await self.admin_app.get(
-                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queues",
+                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{repository_name}/queues",
             )
 
             assert r.status_code == 200, r.text
@@ -896,7 +896,7 @@ class TestQueueApi(base.FunctionalTestBase):
 
             # GET /queue/{queue_name}/pull/{pr_number}
             r = await self.admin_app.get(
-                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/foo/pull/{p6['number']}",
+                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/foo/pull/{p6['number']}",
             )
             # The PR alone cannot have an ETA because it doesn't have a car,
             # with evaluated rules (last_conditions_evaluation), and it doesn't
@@ -905,7 +905,7 @@ class TestQueueApi(base.FunctionalTestBase):
 
             # GET /queue/{queue_name}/pull/{pr_number}
             r = await self.admin_app.get(
-                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/foo/pull/{p4['number']}",
+                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/foo/pull/{p4['number']}",
             )
             assert (
                 datetime.datetime.fromisoformat(r.json()["estimated_time_of_merge"])
@@ -1015,7 +1015,7 @@ class TestQueueApi(base.FunctionalTestBase):
             # GET /queues
             repository_name = self.RECORD_CONFIG["repository_name"]
             r = await self.admin_app.get(
-                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queues",
+                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{repository_name}/queues",
             )
 
             assert len(r.json()["queues"]) == 1
@@ -1063,7 +1063,7 @@ class TestQueueApi(base.FunctionalTestBase):
 
             # GET /queue/{queue_name}/pull/{pr_number}
             r = await self.admin_app.get(
-                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/foo/pull/{p8['number']}",
+                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/foo/pull/{p8['number']}",
             )
             # The PR alone cannot have an ETA because it doesn't have a car,
             # with evaluated rules (last_conditions_evaluation), and it doesn't
@@ -1072,7 +1072,7 @@ class TestQueueApi(base.FunctionalTestBase):
 
             # GET /queue/{queue_name}/pull/{pr_number}
             r = await self.admin_app.get(
-                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/foo/pull/{p4['number']}",
+                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/foo/pull/{p4['number']}",
             )
             assert datetime.datetime.fromisoformat(
                 r.json()["estimated_time_of_merge"]
@@ -1140,13 +1140,13 @@ class TestQueueApi(base.FunctionalTestBase):
         assert await self.redis_links.stats.xlen(time_to_merge_key) == 2
 
         r = await self.admin_app.put(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/foo/freeze",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/foo/freeze",
             json={"reason": "test freeze"},
         )
         assert r.status_code == 200
 
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues",
         )
 
         assert len(r.json()["queues"]) == 1
@@ -1214,7 +1214,7 @@ class TestQueueApi(base.FunctionalTestBase):
             await self.run_engine()
 
             r = await self.admin_app.get(
-                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues",
+                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues",
             )
 
             assert len(r.json()["queues"]) == 1
@@ -1283,7 +1283,7 @@ class TestQueueApi(base.FunctionalTestBase):
             await self.wait_for("pull_request", {"action": "opened"})
 
             r = await self.admin_app.get(
-                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues",
+                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues",
             )
 
             assert len(r.json()["queues"]) == 1
@@ -1362,7 +1362,7 @@ class TestQueueApi(base.FunctionalTestBase):
             await self.wait_for("pull_request", {"action": "opened"})
 
             r = await self.admin_app.get(
-                f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues",
+                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues",
             )
 
             assert len(r.json()["queues"]) == 1

@@ -1,4 +1,5 @@
 import asyncio
+import base64
 from collections import abc
 import copy
 import datetime
@@ -167,7 +168,8 @@ class GitterRecorder(gitter.Gitter):
         ]
         if "user.signingkey" in prepared_args:
             prepared_args = [
-                arg.replace(config.TESTING_ID_GPGKEY_SECRET, "<SECRET>") for arg in args
+                arg.replace(settings.TESTING_ID_GPGKEY_SECRET, "<SECRET>")
+                for arg in args
             ]
         return prepared_args
 
@@ -208,7 +210,7 @@ class EventReader:
         self._counter = 0
 
         hostname = parse.urlparse(settings.GITHUB_URL).hostname
-        self.base_event_forwarder_url = f"{config.TESTING_FORWARDER_ENDPOINT}/events/{hostname}/{integration_id}/{repository_id}/"
+        self.base_event_forwarder_url = f"{settings.TESTING_FORWARDER_ENDPOINT}/events/{hostname}/{integration_id}/{repository_id}/"
         self.test_name = test_name.replace("/", "-")
 
     def get_events_forwarder_url(self, test_id: str | None = None) -> str:
@@ -389,7 +391,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
     # NOTE(sileht): The repository have been manually created in mergifyio-testing
     # organization and then forked in mergify-test2 user account
-    FORK_PERSONAL_TOKEN = config.EXTERNAL_USER_PERSONAL_TOKEN
+    FORK_PERSONAL_TOKEN = settings.TESTING_EXTERNAL_USER_PERSONAL_TOKEN
     SUBSCRIPTION_ACTIVE = False
 
     # To run tests on private repository, you can use:
@@ -488,13 +490,13 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         await self.redis_links.flushall()
 
         installation_json = await github.get_installation_from_account_id(
-            config.TESTING_ORGANIZATION_ID
+            settings.TESTING_ORGANIZATION_ID
         )
 
         self.client_integration = github.aget_client(installation_json)
         self.client_admin = github.AsyncGithubInstallationClient(
             auth=github.GithubTokenAuth(
-                token=config.ORG_ADMIN_PERSONAL_TOKEN,
+                token=settings.TESTING_ORG_ADMIN_PERSONAL_TOKEN,
             )
         )
         self.client_fork = github.AsyncGithubInstallationClient(
@@ -752,7 +754,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         while (await self.redis_links.stream.zcard("streams")) > 0:
             await shared_service.shared_stream_worker_task(0)
             await dedicated_service.dedicated_stream_worker_task(
-                config.TESTING_ORGANIZATION_ID
+                settings.TESTING_ORGANIZATION_ID
             )
             while not gitter_serv._queue.empty():
                 await gitter_serv._gitter_worker("gitter-worker-0")
@@ -789,7 +791,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
         await self.git.configure(self.redis_links.cache)
         await self.git.add_cred(
-            config.ORG_ADMIN_PERSONAL_TOKEN,
+            settings.TESTING_ORG_ADMIN_PERSONAL_TOKEN,
             "",
             f"mergifyio-testing/{self.RECORD_CONFIG['repository_name']}",
         )
@@ -895,10 +897,12 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             self.addCleanup(shutil.rmtree, temporary_folder)
             subprocess.run(
                 ["gpg", "--import"],
-                input=config.TESTING_GPGKEY_SECRET,
+                input=base64.b64decode(settings.TESTING_GPGKEY_SECRET),
                 env=self.git.prepare_safe_env(tmp_env),
             )
-            await self.git("config", "user.signingkey", config.TESTING_ID_GPGKEY_SECRET)
+            await self.git(
+                "config", "user.signingkey", settings.TESTING_ID_GPGKEY_SECRET
+            )
             await self.git(
                 "config", "user.email", "engineering+mergify-test@mergify.io"
             )
@@ -1008,10 +1012,12 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             self.addCleanup(shutil.rmtree, temporary_folder)
             subprocess.run(
                 ["gpg", "--import"],
-                input=config.TESTING_GPGKEY_SECRET,
+                input=base64.b64decode(settings.TESTING_GPGKEY_SECRET),
                 env=self.git.prepare_safe_env(tmp_env),
             )
-            await self.git("config", "user.signingkey", config.TESTING_ID_GPGKEY_SECRET)
+            await self.git(
+                "config", "user.signingkey", settings.TESTING_ID_GPGKEY_SECRET
+            )
             await self.git(
                 "config", "user.email", "engineering+mergify-test@mergify.io"
             )

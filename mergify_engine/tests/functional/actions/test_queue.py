@@ -20,6 +20,7 @@ from mergify_engine import engine
 from mergify_engine import eventlogs
 from mergify_engine import github_types
 from mergify_engine import queue
+from mergify_engine import settings
 from mergify_engine import utils
 from mergify_engine import yaml
 from mergify_engine.clients import github
@@ -1363,7 +1364,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         # Check event logs
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events?per_page=5",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events?per_page=5",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -1977,7 +1978,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         # Check event logs
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events?per_page=5",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events?per_page=5",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -2278,7 +2279,7 @@ class TestQueueAction(base.FunctionalTestBase):
         )
 
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events?per_page=2",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events?per_page=2",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -3257,7 +3258,7 @@ class TestQueueAction(base.FunctionalTestBase):
         self, pr_number: github_types.GitHubPullRequestNumber, expected_reason: str
     ) -> None:
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{pr_number}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{pr_number}/events",
         )
         assert r.status_code == 200
         response = r.json()
@@ -3505,7 +3506,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
 
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events",
         )
         assert r.status_code == 200
         response = r.json()
@@ -5131,7 +5132,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         # Queue API with token
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues",
         )
         assert r.status_code == 200
         assert r.json() == {

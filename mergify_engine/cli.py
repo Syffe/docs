@@ -2,13 +2,13 @@ import argparse
 import datetime
 import typing
 
-from mergify_engine import config
 from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine import json
 from mergify_engine import redis_utils
 from mergify_engine import refresher
 from mergify_engine import service
+from mergify_engine import settings
 from mergify_engine import utils
 from mergify_engine.ci import dump
 from mergify_engine.ci import job_registries
@@ -105,7 +105,7 @@ async def dump_handler(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
 
     auth = github.GithubTokenAuth(
-        token=config.DEV_PERSONAL_TOKEN,
+        token=settings.TESTING_DEV_PERSONAL_TOKEN,
     )
 
     async with redis_utils.RedisLinks(name="ci_dump") as redis_links:

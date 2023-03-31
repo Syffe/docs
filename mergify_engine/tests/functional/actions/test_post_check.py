@@ -1,8 +1,8 @@
 import operator
 from unittest import mock
 
-from mergify_engine import config
 from mergify_engine import context
+from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
@@ -42,7 +42,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
         unrelated_p = await self.create_pr(base=unrelated_branch)
 
         await self.create_review(
-            match_p["number"], oauth_token=config.ORG_ADMIN_PERSONAL_TOKEN
+            match_p["number"], oauth_token=settings.TESTING_ORG_ADMIN_PERSONAL_TOKEN
         )
 
         await self.run_engine()
@@ -75,7 +75,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
         assert "'body need sentry ticket' failed" == unmatch_check["output"]["title"]
 
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{match_p['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{match_p['number']}/events",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -106,7 +106,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
         }
 
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{unmatch_p['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{unmatch_p['number']}/events",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -149,7 +149,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
         assert "failure" == match_check["conclusion"]
 
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{match_p['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{match_p['number']}/events",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -255,7 +255,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
         assert "'body need sentry ticket' failed" == unmatch_check["output"]["title"]
 
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{unmatch_p['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{unmatch_p['number']}/events",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -346,7 +346,7 @@ class TestPostCheckActionNoSub(base.FunctionalTestBase):
     async def test_checks_feature_disabled(self) -> None:
         self.subscription = subscription.Subscription(
             self.redis_links.cache,
-            config.TESTING_INSTALLATION_ID,
+            settings.TESTING_ORGANIZATION_ID,
             "You're not nice",
             frozenset(
                 getattr(subscription.Features, f)

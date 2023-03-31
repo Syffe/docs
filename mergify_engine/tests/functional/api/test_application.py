@@ -1,7 +1,7 @@
 import httpx
 import pytest
 
-from mergify_engine import config
+from mergify_engine import settings
 from mergify_engine.tests.functional import conftest as func_conftest
 
 
@@ -19,7 +19,7 @@ async def test_api_application(
         "id": 123,
         "name": "testing application",
         "account_scope": {
-            "id": config.TESTING_ORGANIZATION_ID,
-            "login": config.TESTING_ORGANIZATION_NAME,
+            "id": settings.TESTING_ORGANIZATION_ID,
+            "login": settings.TESTING_ORGANIZATION_NAME,
         },
     }

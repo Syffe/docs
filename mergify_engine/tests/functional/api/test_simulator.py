@@ -1,6 +1,6 @@
 import pytest
 
-from mergify_engine import config
+from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
@@ -45,7 +45,7 @@ class TestApiSimulator(base.FunctionalTestBase):
 """
 
         r = await self.admin_app.post(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/simulator",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/simulator",
             json={"mergify_yml": mergify_yaml},
         )
         assert r.status_code == 200, r.json()
@@ -53,7 +53,7 @@ class TestApiSimulator(base.FunctionalTestBase):
         assert r.json()["summary"] == ""
 
         r = await self.admin_app.post(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/simulator",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/simulator",
             json={"mergify_yml": mergify_yaml},
         )
         assert r.status_code == 200, r.text
@@ -110,7 +110,7 @@ users_to_remove: []
 """
 
         r = await self.admin_app.post(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/simulator",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/simulator",
             json={"mergify_yml": mergify_yaml},
         )
         assert r.status_code == 422, r.json()
@@ -176,7 +176,7 @@ users_to_remove: []
           - mergify-test1
 """
         resp = await self.admin_app.post(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/42424242/simulator",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/42424242/simulator",
             json={"mergify_yml": mergify_yaml},
         )
         assert resp.status_code == 404
@@ -195,7 +195,7 @@ users_to_remove: []
         p = await self.create_pr()
 
         r = await self.admin_app.post(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/simulator",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/simulator",
             json={"mergify_yml": "- no\n* way"},
         )
         assert r.status_code == 422
@@ -216,7 +216,7 @@ did not find expected alphabetic or numeric character
         }
 
         r = await self.admin_app.post(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/simulator",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/simulator",
             json={"invalid": "json"},
         )
         assert r.status_code == 422

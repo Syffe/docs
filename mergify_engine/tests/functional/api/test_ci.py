@@ -2,8 +2,8 @@ import datetime
 
 import sqlalchemy
 
-from mergify_engine import config
 from mergify_engine import database
+from mergify_engine import settings
 from mergify_engine.models import github_actions as sql_models
 from mergify_engine.tests.functional import base
 
@@ -17,7 +17,7 @@ class TestCIApi(base.FunctionalTestBase):
         async with database.create_session() as db:
             await db.execute(
                 sqlalchemy.insert(sql_models.Account).values(
-                    id=1, login=config.TESTING_ORGANIZATION_NAME
+                    id=1, login=settings.TESTING_ORGANIZATION_NAME
                 )
             )
             sql = sqlalchemy.insert(sql_models.JobRun).values(
@@ -40,7 +40,7 @@ class TestCIApi(base.FunctionalTestBase):
             await db.commit()
 
     async def test_report(self) -> None:
-        r = await self.app.get(f"/v1/ci/{config.TESTING_ORGANIZATION_NAME}")
+        r = await self.app.get(f"/v1/ci/{settings.TESTING_ORGANIZATION_NAME}")
 
         assert r.status_code == 200
         assert r.json()["total_costs"] == {"amount": 0.02, "currency": "USD"}
@@ -50,11 +50,11 @@ class TestCIApi(base.FunctionalTestBase):
         assert "pull_requests" in r.json()["categories"]
 
         r = await self.app.get(
-            f"/v1/ci/{config.TESTING_ORGANIZATION_NAME}?repository={self.RECORD_CONFIG['repository_name']}",
+            f"/v1/ci/{settings.TESTING_ORGANIZATION_NAME}?repository={self.RECORD_CONFIG['repository_name']}",
         )
         assert r.status_code == 200
 
         r = await self.app.get(
-            f"/v1/ci/{config.TESTING_ORGANIZATION_NAME}?repository={self.RECORD_CONFIG['repository_name']}&start_at=2023-01-01&end_at=2023-01-15",
+            f"/v1/ci/{settings.TESTING_ORGANIZATION_NAME}?repository={self.RECORD_CONFIG['repository_name']}&start_at=2023-01-01&end_at=2023-01-15",
         )
         assert r.status_code == 200

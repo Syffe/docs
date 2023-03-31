@@ -6,9 +6,9 @@ from unittest import mock
 from freezegun import freeze_time
 import pytest
 
-from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
+from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.tests.functional import base
 
@@ -1047,7 +1047,7 @@ class TestAttributes(base.FunctionalTestBase):
 
         await self.create_review(
             pr["number"],
-            oauth_token=config.ORG_ADMIN_PERSONAL_TOKEN,
+            oauth_token=settings.TESTING_ORG_ADMIN_PERSONAL_TOKEN,
             event="REQUEST_CHANGES",
         )
         await self.run_engine()
@@ -1056,7 +1056,7 @@ class TestAttributes(base.FunctionalTestBase):
         assert comment_2["comment"]["body"] == "changes-requested"
 
         await self.create_review(
-            pr["number"], oauth_token=config.ORG_ADMIN_PERSONAL_TOKEN
+            pr["number"], oauth_token=settings.TESTING_ORG_ADMIN_PERSONAL_TOKEN
         )
         await self.run_engine()
 

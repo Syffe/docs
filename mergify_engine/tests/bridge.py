@@ -4,7 +4,6 @@ import json
 import logging
 import os
 
-from mergify_engine import config
 from mergify_engine import logs
 from mergify_engine import settings
 from mergify_engine import utils
@@ -17,7 +16,7 @@ LOG = logging.getLogger(__name__)
 async def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--clean", action="store_true")
-    parser.add_argument("--repository-id", default=config.TESTING_REPOSITORY_ID)
+    parser.add_argument("--repository-id", default=settings.TESTING_REPOSITORY_ID)
     parser.add_argument("--dest", default="http://localhost:8802/event")
 
     args = parser.parse_args()

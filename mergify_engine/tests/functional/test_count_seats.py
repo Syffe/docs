@@ -12,6 +12,7 @@ from mergify_engine import count_seats
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import json
+from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.tests import conftest
 from mergify_engine.tests.functional import base
@@ -41,12 +42,12 @@ class TestCountSeats(base.FunctionalTestBase):
         )
         active_users = {
             count_seats.ActiveUser(
-                github_types.GitHubAccountIdType(config.TESTING_MERGIFY_TEST_1_ID),
+                github_types.GitHubAccountIdType(settings.TESTING_MERGIFY_TEST_1_ID),
                 github_types.GitHubLogin("mergify-test1"),
                 date.utcnow(),
             ),
             count_seats.ActiveUser(
-                github_types.GitHubAccountIdType(config.TESTING_MERGIFY_TEST_2_ID),
+                github_types.GitHubAccountIdType(settings.TESTING_MERGIFY_TEST_2_ID),
                 github_types.GitHubLogin("mergify-test2"),
                 date.utcnow(),
             ),
@@ -59,8 +60,8 @@ class TestCountSeats(base.FunctionalTestBase):
 
         collaborators = {
             count_seats.SeatAccount(
-                github_types.GitHubAccountIdType(config.TESTING_ORGANIZATION_ID),
-                github_types.GitHubLogin(config.TESTING_ORGANIZATION_NAME),
+                github_types.GitHubAccountIdType(settings.TESTING_ORGANIZATION_ID),
+                github_types.GitHubLogin(settings.TESTING_ORGANIZATION_NAME),
             ): organization
         }
 
@@ -84,9 +85,9 @@ class TestCountSeats(base.FunctionalTestBase):
         await self.create_pr(as_="admin")
         await self.create_pr(as_="fork")
         await self.run_engine()
-        if github_types.GitHubAccountIdType(config.TESTING_MERGIFY_TEST_1_ID) is None:
+        if github_types.GitHubAccountIdType(settings.TESTING_MERGIFY_TEST_1_ID) is None:
             raise RuntimeError("client_admin owner_id is None")
-        if github_types.GitHubAccountIdType(config.TESTING_MERGIFY_TEST_2_ID) is None:
+        if github_types.GitHubAccountIdType(settings.TESTING_MERGIFY_TEST_2_ID) is None:
             raise RuntimeError("client_fork owner_id is None")
         if github_types.GitHubLogin("mergify-test1") is None:
             raise RuntimeError("client_admin owner is None")
@@ -103,8 +104,8 @@ class TestCountSeats(base.FunctionalTestBase):
                 assert len(json_reports["organizations"]) == 1
 
                 org = json_reports["organizations"][0]
-                assert org["id"] == config.TESTING_ORGANIZATION_ID
-                assert org["login"] == config.TESTING_ORGANIZATION_NAME
+                assert org["id"] == settings.TESTING_ORGANIZATION_ID
+                assert org["login"] == settings.TESTING_ORGANIZATION_NAME
 
                 assert len(org["repositories"]) == 1
                 repo = org["repositories"][0]
@@ -115,14 +116,14 @@ class TestCountSeats(base.FunctionalTestBase):
                     [
                         {
                             "id": github_types.GitHubAccountIdType(
-                                config.TESTING_MERGIFY_TEST_1_ID
+                                settings.TESTING_MERGIFY_TEST_1_ID
                             ),
                             "login": github_types.GitHubLogin("mergify-test1"),
                             "seen_at": anys.ANY_AWARE_DATETIME_STR,
                         },
                         {
                             "id": github_types.GitHubAccountIdType(
-                                config.TESTING_MERGIFY_TEST_2_ID
+                                settings.TESTING_MERGIFY_TEST_2_ID
                             ),
                             "login": github_types.GitHubLogin("mergify-test2"),
                             "seen_at": anys.ANY_AWARE_DATETIME_STR,
@@ -162,7 +163,9 @@ class TestCountSeats(base.FunctionalTestBase):
         user_fork, timestamp_fork = active_users[1]
         assert timestamp_admin <= now and timestamp_admin > now - 60
         assert (
-            user_admin == f"{config.TESTING_MERGIFY_TEST_1_ID}~mergify-test1".encode()
+            user_admin == f"{settings.TESTING_MERGIFY_TEST_1_ID}~mergify-test1".encode()
         )
         assert timestamp_fork <= now and timestamp_fork > now - 60
-        assert user_fork == f"{config.TESTING_MERGIFY_TEST_2_ID}~mergify-test2".encode()
+        assert (
+            user_fork == f"{settings.TESTING_MERGIFY_TEST_2_ID}~mergify-test2".encode()
+        )

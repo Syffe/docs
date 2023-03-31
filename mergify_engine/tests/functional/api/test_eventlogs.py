@@ -2,8 +2,8 @@ from unittest import mock
 
 import pytest
 
-from mergify_engine import config
 from mergify_engine import github_types
+from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine import yaml
 from mergify_engine.dashboard import subscription
@@ -124,7 +124,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
         ]
 
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -135,7 +135,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
         }
 
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p2['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p2['number']}/events",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -146,7 +146,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
         }
 
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/events",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -158,7 +158,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
 
         # pagination
         r_pagination = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/events?per_page=2",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/events?per_page=2",
         )
         assert r_pagination.status_code == 200
         assert r_pagination.json() == {
@@ -251,7 +251,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
         await self.run_engine()
 
         r = await self.admin_app.put(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/default/freeze",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/default/freeze",
             json={"reason": "test freeze reason"},
         )
         assert r.status_code == 200
@@ -270,7 +270,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
         await self.run_engine()
 
         r = await self.admin_app.put(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/default/freeze",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/default/freeze",
             json={"reason": "test updated freeze reason", "cascading": False},
         )
         assert r.status_code == 200
@@ -286,7 +286,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
         }
 
         r = await self.admin_app.delete(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/default/freeze",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/default/freeze",
         )
         assert r.status_code == 204
 
@@ -534,7 +534,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
         ]
 
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -545,7 +545,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
         }
 
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/events",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -578,7 +578,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
             "gogogo",
         )
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/123/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/123/events",
         )
         assert r.status_code == 200
         assert r.json() == {

@@ -2,8 +2,8 @@ from unittest import mock
 
 import pytest
 
-from mergify_engine import config
 from mergify_engine import github_types
+from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
@@ -169,7 +169,7 @@ Unknown pull request attribute: Loser
         )
 
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -265,7 +265,7 @@ Unknown pull request attribute: Loser
         p = await self.create_pr()
         await self.create_review(p["number"], "APPROVE")
         await self.create_review(
-            p["number"], "APPROVE", oauth_token=config.ORG_USER_PERSONAL_TOKEN
+            p["number"], "APPROVE", oauth_token=settings.TESTING_ORG_USER_PERSONAL_TOKEN
         )
 
         self.assertEqual(

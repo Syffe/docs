@@ -18,7 +18,6 @@ import vcr
 import vcr.request
 import vcr.stubs.urllib3_stubs
 
-from mergify_engine import config
 from mergify_engine import database
 from mergify_engine import date
 from mergify_engine import exceptions
@@ -131,7 +130,7 @@ async def dashboard(
 
     sub = subscription.Subscription(
         redis_cache,
-        config.TESTING_ORGANIZATION_ID,
+        settings.TESTING_ORGANIZATION_ID,
         "You're not nice",
         subscription_features,
     )
@@ -140,21 +139,21 @@ async def dashboard(
     async with database.create_session() as session:
         await github_user.GitHubUser.create_or_update(
             session,
-            config.ORG_ADMIN_ID,
+            settings.TESTING_ORG_ADMIN_ID,
             github_types.GitHubLogin("mergify-test1"),
-            config.ORG_ADMIN_PERSONAL_TOKEN,
+            settings.TESTING_ORG_ADMIN_PERSONAL_TOKEN,
         )
         await github_user.GitHubUser.create_or_update(
             session,
-            config.ORG_USER_ID,
+            settings.TESTING_ORG_USER_ID,
             github_types.GitHubLogin("mergify-test4"),
-            config.ORG_USER_PERSONAL_TOKEN,
+            settings.TESTING_ORG_USER_PERSONAL_TOKEN,
         )
         await github_user.GitHubUser.create_or_update(
             session,
-            config.TESTING_MERGIFY_TEST_2_ID,
+            settings.TESTING_MERGIFY_TEST_2_ID,
             github_types.GitHubLogin("mergify-test2"),
-            config.EXTERNAL_USER_PERSONAL_TOKEN,
+            settings.TESTING_EXTERNAL_USER_PERSONAL_TOKEN,
         )
 
     real_get_subscription = subscription.Subscription.get_subscription
@@ -163,7 +162,7 @@ async def dashboard(
         redis_cache: redis_utils.RedisCache,
         owner_id: github_types.GitHubAccountIdType,
     ) -> subscription.Subscription:
-        if owner_id == config.TESTING_ORGANIZATION_ID:
+        if owner_id == settings.TESTING_ORGANIZATION_ID:
             return sub
         return subscription.Subscription(
             redis_cache,
@@ -175,7 +174,7 @@ async def dashboard(
     async def fake_subscription(
         redis_cache: redis_utils.RedisCache, owner_id: github_types.GitHubAccountIdType
     ) -> subscription.Subscription:
-        if owner_id == config.TESTING_ORGANIZATION_ID:
+        if owner_id == settings.TESTING_ORGANIZATION_ID:
             return await real_get_subscription(redis_cache, owner_id)
         return subscription.Subscription(
             redis_cache,
@@ -214,8 +213,8 @@ async def dashboard(
                 api_access_key,
                 api_secret_key,
                 account_scope={
-                    "id": config.TESTING_ORGANIZATION_ID,
-                    "login": config.TESTING_ORGANIZATION_NAME,
+                    "id": settings.TESTING_ORGANIZATION_ID,
+                    "login": settings.TESTING_ORGANIZATION_NAME,
                 },
             )
         raise application_mod.ApplicationUserNotFound()
@@ -379,11 +378,11 @@ async def recorder(
                             "integration_id": settings.GITHUB_APP_ID,
                             "app_user_id": mergify_bot["id"],
                             "app_user_login": mergify_bot["login"],
-                            "organization_id": config.TESTING_ORGANIZATION_ID,
-                            "organization_name": config.TESTING_ORGANIZATION_NAME,
-                            "repository_id": config.TESTING_REPOSITORY_ID,
+                            "organization_id": settings.TESTING_ORGANIZATION_ID,
+                            "organization_name": settings.TESTING_ORGANIZATION_NAME,
+                            "repository_id": settings.TESTING_REPOSITORY_ID,
                             "repository_name": github_types.GitHubRepositoryName(
-                                config.TESTING_REPOSITORY_NAME
+                                settings.TESTING_REPOSITORY_NAME
                             ),
                             "branch_prefix": date.utcnow().strftime("%Y%m%d%H%M%S"),
                         }

@@ -4,8 +4,8 @@ from unittest import mock
 from first import first
 import httpx
 
-from mergify_engine import config
 from mergify_engine import context
+from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.queue import freeze
 from mergify_engine.tests.functional import base
@@ -21,7 +21,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
         expected_status_code: int = 200,
     ) -> httpx.Response:
         r = await self.admin_app.put(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/{queue_name}/freeze",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/{queue_name}/freeze",
             json=freeze_payload,
         )
         assert r.status_code == expected_status_code
@@ -33,7 +33,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
         expected_status_code: int = 200,
     ) -> httpx.Response:
         r = await self.admin_app.delete(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/{queue_name}/freeze",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/{queue_name}/freeze",
         )
         assert r.status_code == expected_status_code
         return r
@@ -44,7 +44,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
         expected_status_code: int = 200,
     ) -> httpx.Response:
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/{queue_name}/freeze",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/{queue_name}/freeze",
         )
         assert r.status_code == expected_status_code
         return r
@@ -54,7 +54,7 @@ class TestQueueFreeze(base.FunctionalTestBase):
         expected_status_code: int = 200,
     ) -> httpx.Response:
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/freezes",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/freezes",
         )
         assert r.status_code == expected_status_code
         return r

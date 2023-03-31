@@ -95,11 +95,58 @@ class DashboardUISettings(pydantic.BaseSettings):
     )
 
 
+class TestingSettings(pydantic.BaseSettings):
+    TESTING_FORWARDER_ENDPOINT: str = "https://test-forwarder.mergify.io"
+    TESTING_INSTALLATION_ID: int = 15398551
+    TESTING_ORGANIZATION_ID: github_types.GitHubAccountIdType = (
+        github_types.GitHubAccountIdType(40527191)
+    )
+    TESTING_ORGANIZATION_NAME: github_types.GitHubLogin = github_types.GitHubLogin(
+        "mergifyio-testing"
+    )
+    TESTING_REPOSITORY_ID: github_types.GitHubRepositoryIdType = (
+        github_types.GitHubRepositoryIdType(258840104)
+    )
+    TESTING_REPOSITORY_NAME: github_types.GitHubRepositoryName = (
+        github_types.GitHubRepositoryName("functional-testing-repo")
+    )
+    TESTING_ORG_ADMIN_ID: github_types.GitHubAccountIdType = pydantic.Field(
+        default=github_types.GitHubAccountIdType(38494943), extra_env="ORG_ADMIN_ID"
+    )
+    TESTING_ORG_ADMIN_PERSONAL_TOKEN: github_types.GitHubOAuthToken = pydantic.Field(
+        default=github_types.GitHubOAuthToken(""), extra_env="ORG_ADMIN_PERSONAL_TOKEN"
+    )
+    TESTING_EXTERNAL_USER_PERSONAL_TOKEN: github_types.GitHubOAuthToken = (
+        pydantic.Field(
+            default=github_types.GitHubOAuthToken(""),
+            extra_env="EXTERNAL_USER_PERSONAL_TOKEN",
+        )
+    )
+    TESTING_ORG_USER_ID: github_types.GitHubAccountIdType = pydantic.Field(
+        default=github_types.GitHubAccountIdType(74646794), extra_env="ORG_USER_ID"
+    )
+    TESTING_ORG_USER_PERSONAL_TOKEN: github_types.GitHubOAuthToken = pydantic.Field(
+        default=github_types.GitHubOAuthToken(""), extra_env="ORG_USER_PERSONAL_TOKEN"
+    )
+    TESTING_MERGIFY_TEST_1_ID: github_types.GitHubAccountIdType = (
+        github_types.GitHubAccountIdType(38494943)
+    )
+    TESTING_MERGIFY_TEST_2_ID: github_types.GitHubAccountIdType = (
+        github_types.GitHubAccountIdType(38495008)
+    )
+    TESTING_GPGKEY_SECRET: str = ""
+    TESTING_ID_GPGKEY_SECRET: str = ""
+    TESTING_DEV_PERSONAL_TOKEN: str = pydantic.Field(
+        default="", exta_env="DEV_PERSONAL_TOKEN"
+    )
+
+
 class EngineSettings(
     DatabaseSettings,
     LogsSettings,
     GitHubSettings,
     DashboardUISettings,
+    TestingSettings,
     pydantic.BaseSettings,
 ):
     class Config(pydantic.BaseSettings.Config):
@@ -362,44 +409,6 @@ Schema = voluptuous.Schema(
             "ALLOW_QUEUE_PRIORITY_ATTRIBUTE", default=True
         ): CoercedBool,
         # For test suite only (eg: tox -erecord)
-        voluptuous.Required(
-            "TESTING_FORWARDER_ENDPOINT",
-            default="https://test-forwarder.mergify.io",
-        ): str,
-        voluptuous.Required(
-            "TESTING_INSTALLATION_ID", default=15398551
-        ): voluptuous.Coerce(int),
-        voluptuous.Required(
-            "TESTING_REPOSITORY_ID", default=258840104
-        ): voluptuous.Coerce(int),
-        voluptuous.Required(
-            "TESTING_REPOSITORY_NAME", default="functional-testing-repo"
-        ): str,
-        voluptuous.Required(
-            "TESTING_ORGANIZATION_ID", default=40527191
-        ): voluptuous.Coerce(int),
-        voluptuous.Required(
-            "TESTING_ORGANIZATION_NAME", default="mergifyio-testing"
-        ): str,
-        voluptuous.Required("ORG_ADMIN_ID", default=38494943): int,
-        voluptuous.Required(
-            "ORG_ADMIN_PERSONAL_TOKEN",
-            default="<ORG_ADMIN_PERSONAL_TOKEN>",
-        ): str,
-        voluptuous.Required(
-            "EXTERNAL_USER_PERSONAL_TOKEN", default="<EXTERNAL_USER_TOKEN>"
-        ): str,
-        voluptuous.Required("ORG_USER_ID", default=74646794): int,
-        voluptuous.Required("ORG_USER_PERSONAL_TOKEN", default="<ORG_USER_TOKEN>"): str,
-        voluptuous.Required(
-            "TESTING_MERGIFY_TEST_1_ID", default=38494943
-        ): voluptuous.Coerce(int),
-        voluptuous.Required(
-            "TESTING_MERGIFY_TEST_2_ID", default=38495008
-        ): voluptuous.Coerce(int),
-        "TESTING_GPGKEY_SECRET": str,
-        "TESTING_ID_GPGKEY_SECRET": str,
-        voluptuous.Required("DEV_PERSONAL_TOKEN", default="<DEV_PERSONAL_TOKEN>"): str,
     }
 )
 
@@ -413,7 +422,6 @@ CACHE_TOKEN_SECRET_OLD: str | None
 SHARED_STREAM_PROCESSES: int
 DEDICATED_STREAM_PROCESSES: int
 SHARED_STREAM_TASKS_PER_PROCESS: int
-EXTERNAL_USER_PERSONAL_TOKEN: github_types.GitHubOAuthToken
 
 DATABASE_OAUTH_TOKEN_SECRET_CURRENT: str
 DATABASE_OAUTH_TOKEN_SECRET_OLD: str | None
@@ -448,22 +456,7 @@ REDIS_EVENTLOGS_WEB_MAX_CONNECTIONS: int | None
 REDIS_STATS_WEB_MAX_CONNECTIONS: int | None
 REDIS_AUTHENTICATION_WEB_MAX_CONNECTIONS: int | None
 REDIS_ACTIVE_USERS_WEB_MAX_CONNECTIONS: int | None
-TESTING_ORGANIZATION_ID: github_types.GitHubAccountIdType
-TESTING_ORGANIZATION_NAME: github_types.GitHubLogin
-TESTING_REPOSITORY_ID: github_types.GitHubRepositoryIdType
-TESTING_REPOSITORY_NAME: str
-TESTING_FORWARDER_ENDPOINT: str
-ORG_ADMIN_PERSONAL_TOKEN: github_types.GitHubOAuthToken
-ORG_ADMIN_ID: github_types.GitHubAccountIdType
-ORG_USER_ID: github_types.GitHubAccountIdType
-ORG_USER_PERSONAL_TOKEN: github_types.GitHubOAuthToken
-TESTING_MERGIFY_TEST_1_ID: github_types.GitHubAccountIdType
-TESTING_MERGIFY_TEST_2_ID: github_types.GitHubAccountIdType
-TESTING_GPGKEY_SECRET: bytes
-TESTING_ID_GPGKEY_SECRET: str
-TESTING_INSTALLATION_ID: github_types.GitHubAccountIdType
 SAAS_MODE: bool
-DEV_PERSONAL_TOKEN: github_types.GitHubOAuthToken
 
 
 def load() -> dict[str, typing.Any]:
@@ -530,13 +523,6 @@ def load() -> dict[str, typing.Any]:
             query += f"db={db}"
             url = default_redis_url_parsed._replace(query=query).geturl()
             parsed_config[config_key] = url
-
-    if "TESTING_GPGKEY_SECRET" in parsed_config and not parsed_config[
-        "TESTING_GPGKEY_SECRET"
-    ].startswith("----"):
-        parsed_config["TESTING_GPGKEY_SECRET"] = base64.b64decode(
-            parsed_config["TESTING_GPGKEY_SECRET"]
-        )
 
     if not parsed_config["SAAS_MODE"] and not parsed_config["SUBSCRIPTION_TOKEN"]:
         print("SUBSCRIPTION_TOKEN is missing. Mergify can't start.")

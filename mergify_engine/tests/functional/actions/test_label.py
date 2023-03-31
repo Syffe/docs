@@ -2,8 +2,8 @@ from unittest import mock
 
 import pytest
 
-from mergify_engine import config
 from mergify_engine import github_types
+from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
@@ -58,7 +58,7 @@ class TestLabelAction(base.FunctionalTestBase):
         )
 
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -124,7 +124,7 @@ class TestLabelAction(base.FunctionalTestBase):
         )
 
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -155,7 +155,7 @@ class TestLabelAction(base.FunctionalTestBase):
         self.assertEqual([], p_updated["pull_request"]["labels"])
 
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
         )
         assert r.status_code == 200
         assert r.json() == {
@@ -215,7 +215,7 @@ class TestLabelAction(base.FunctionalTestBase):
         self.assertEqual([], p_updated["pull_request"]["labels"])
 
         r = await self.admin_app.get(
-            f"/v1/repos/{config.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/events",
         )
         assert r.status_code == 200
         assert r.json() == {
