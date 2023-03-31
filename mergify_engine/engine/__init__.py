@@ -331,15 +331,9 @@ async def run(
     LOG.debug("engine get context")
     ctxt.log.debug("engine start processing context")
 
-    issue_comment_sources: list[T_PayloadEventIssueCommentSource] = []
-
-    for source in sources:
-        if source["event_type"] == "issue_comment":
-            issue_comment_sources.append(
-                typing.cast(T_PayloadEventIssueCommentSource, source)
-            )
-        else:
-            ctxt.sources.append(source)
+    ctxt.sources.extend(
+        [source for source in sources if source["event_type"] != "issue_comment"]
+    )
 
     permissions_need_to_be_updated = github_app.permissions_need_to_be_updated(
         ctxt.repository.installation.installation
