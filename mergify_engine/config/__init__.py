@@ -25,7 +25,7 @@ class SecretStrFromBase64(pydantic.SecretStr):
         super().__init__(base64.b64decode(value).decode())
 
 
-class EngineSettings(pydantic.BaseSettings):
+class DatabaseSettings(pydantic.BaseSettings):
     DATABASE_URL: types.PostgresDSN = types.PostgresDSN.parse(
         "postgres://localhost:5432"
     )
@@ -33,6 +33,17 @@ class EngineSettings(pydantic.BaseSettings):
         default={"worker": 15, "web": 55}
     )
 
+
+class LogsSettings(pydantic.BaseSettings):
+    LOG_LEVEL: types.LogLevel = types.LogLevel("INFO")
+    LOG_STDOUT: bool = True
+    LOG_STDOUT_LEVEL: types.LogLevel | None = None
+    LOG_DATADOG: bool | pydantic.AnyHttpUrl = False
+    LOG_DATADOG_LEVEL: types.LogLevel | None = None
+    LOG_DEBUG_LOGGER_NAMES: list[str] = pydantic.Field(default_factory=list)
+
+
+class GitHubSettings(pydantic.BaseSettings):
     GITHUB_URL: types.NormalizedUrl = types.NormalizedUrl.build(
         scheme="https", host="github.com"
     )
@@ -55,6 +66,22 @@ class EngineSettings(pydantic.BaseSettings):
         default_factory=list, extra_env="WEBHOOK_FORWARD_EVENT_TYPES"
     )
 
+    @property
+    def GITHUB_REST_API_URL(self) -> str:
+        if self.GITHUB_URL.host == "github.com":
+            return "https://api.github.com"
+        else:
+            return f"{self.GITHUB_URL}/api/v3"
+
+    @property
+    def GITHUB_GRAPHQL_API_URL(self) -> str:
+        if self.GITHUB_URL.host == "github.com":
+            return "https://api.github.com/graphql"
+        else:
+            return f"{self.GITHUB_URL}/api/graphql"
+
+
+class DashboardUISettings(pydantic.BaseSettings):
     DASHBOARD_UI_STATIC_FILES_DIRECTORY: pydantic.DirectoryPath | None = None
     DASHBOARD_UI_FRONT_URL: pydantic.AnyHttpUrl = pydantic.Field(
         default=DASHBOARD_DEFAULT_URL,
@@ -67,13 +94,14 @@ class EngineSettings(pydantic.BaseSettings):
         default_factory=list
     )
 
-    LOG_LEVEL: types.LogLevel = types.LogLevel("INFO")
-    LOG_STDOUT: bool = True
-    LOG_STDOUT_LEVEL: types.LogLevel | None = None
-    LOG_DATADOG: bool | pydantic.AnyHttpUrl = False
-    LOG_DATADOG_LEVEL: types.LogLevel | None = None
-    LOG_DEBUG_LOGGER_NAMES: list[str] = pydantic.Field(default_factory=list)
 
+class EngineSettings(
+    DatabaseSettings,
+    LogsSettings,
+    GitHubSettings,
+    DashboardUISettings,
+    pydantic.BaseSettings,
+):
     class Config(pydantic.BaseSettings.Config):
         case_sensitive = True
         env_prefix = "MERGIFYENGINE_"
@@ -147,20 +175,6 @@ class EngineSettings(pydantic.BaseSettings):
                     loc = str.upper(env_prefix + locs[0])
                     error._loc = (loc,) + locs[1:]
             raise
-
-    @property
-    def GITHUB_REST_API_URL(self) -> str:
-        if self.GITHUB_URL.host == "github.com":
-            return "https://api.github.com"
-        else:
-            return f"{self.GITHUB_URL}/api/v3"
-
-    @property
-    def GITHUB_GRAPHQL_API_URL(self) -> str:
-        if self.GITHUB_URL.host == "github.com":
-            return "https://api.github.com/graphql"
-        else:
-            return f"{self.GITHUB_URL}/api/graphql"
 
 
 # NOTE(sileht) we coerce bool and int in case they are loaded from the environment
