@@ -72,45 +72,6 @@ class Train:
 
         return f"{self.convoy.repository.repo['id']}~{self.convoy.ref}~{self.partition_name}"
 
-    @classmethod
-    async def iter_trains(
-        cls,
-        repository: context.Repository,
-        queue_rules: "qr_config.QueueRules",
-        partition_rules: "partr_config.PartitionRules",
-        *,
-        exclude_ref: github_types.GitHubRefType | None = None,
-    ) -> abc.AsyncIterator["Train"]:
-        # Circular import
-        from mergify_engine.queue.merge_train import convoy
-
-        repo_filter: (github_types.GitHubRepositoryIdType | typing.Literal["*"]) = "*"
-        if repository is not None:
-            repo_filter = repository.repo["id"]
-
-        async for key, train_raw in repository.installation.redis.cache.hscan_iter(
-            f"merge-trains~{repository.installation.owner_id}",
-            f"{repo_filter}~*",
-            count=10000,
-        ):
-            partition_name = None
-            repo_id_str, ref_str = key.decode().split("~", 1)
-            if "~" in ref_str:
-                ref_str, part_name_str = ref_str.split("~")
-                partition_name = partr_config.PartitionRuleName(part_name_str)
-
-            ref = github_types.GitHubRefType(ref_str)
-            if exclude_ref is not None and ref == exclude_ref:
-                continue
-
-            # FIXME: This is not optimal for partitioned setup
-            # but this is not a big deal and that will be fixed MRGFY-2087
-            conv = convoy.Convoy(repository, queue_rules, partition_rules, ref)
-            await conv.load_from_redis()
-            for train in conv.iter_trains():
-                if train.partition_name == partition_name:
-                    yield train
-
     async def test_helper_load_from_redis(self) -> None:
         train_raw = await self.convoy.repository.installation.redis.cache.hget(
             self._get_redis_key(), self._get_redis_hash_key()
@@ -457,7 +418,7 @@ class Train:
         if need_to_be_readded:
             # FIXME(sileht): this can be optimised by not dropping spec checks,
             # if the position in the queue does not change
-            await self._remove_pull_from_context(
+            await self.remove_pull(
                 ctxt.pull["number"],
                 signal_trigger,
                 queue_utils.PrWithHigherPriorityQueued(ctxt.pull["number"]),
@@ -514,26 +475,6 @@ class Train:
         )
 
     async def remove_pull(
-        self,
-        pull_number: github_types.GitHubPullRequestNumber,
-        signal_trigger: str,
-        unqueue_reason: queue_utils.BaseUnqueueReason,
-    ) -> None:
-        # NOTE(sileht): Remove the pull request from all trains, just in case
-        # the base branch change in the meantime
-        await self.force_remove_pull(
-            self.convoy.repository,
-            self.convoy.queue_rules,
-            self.convoy.partition_rules,
-            pull_number,
-            signal_trigger,
-            exclude_ref=self.convoy.ref,
-        )
-        await self._remove_pull_from_context(
-            pull_number, signal_trigger, unqueue_reason
-        )
-
-    async def _remove_pull_from_context(
         self,
         pull_number: github_types.GitHubPullRequestNumber,
         signal_trigger: str,
@@ -1113,29 +1054,6 @@ class Train:
         else:
             _i += 1
         return pulls[:_i], pulls[_i:]
-
-    @classmethod
-    async def force_remove_pull(
-        cls,
-        repository: context.Repository,
-        queue_rules: "qr_config.QueueRules",
-        partition_rules: partr_config.PartitionRules,
-        pull_number: github_types.GitHubPullRequestNumber,
-        signal_trigger: str,
-        *,
-        exclude_ref: github_types.GitHubRefType | None = None,
-    ) -> None:
-        async for train in cls.iter_trains(
-            repository,
-            queue_rules,
-            partition_rules,
-            exclude_ref=exclude_ref,
-        ):
-            await train._remove_pull_from_context(
-                pull_number,
-                signal_trigger,
-                queue_utils.TargetBranchChanged(),
-            )
 
     async def generate_merge_queue_summary_footer(
         self,

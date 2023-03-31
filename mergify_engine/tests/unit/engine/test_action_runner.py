@@ -89,7 +89,7 @@ async def test_cleanup_pending_actions_with_no_associated_rules(
     ]
     ctxt._caches.pull_check_runs.set(checks)
     with (
-        mock.patch.object(merge_train.Train, "force_remove_pull") as force_remove_pull,
+        mock.patch.object(merge_train.Convoy, "force_remove_pull") as force_remove_pull,
         mock.patch.object(check_api, "set_check_run") as set_check_run,
     ):
         await actions_runner.cleanup_pending_actions_with_no_associated_rules(

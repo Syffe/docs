@@ -139,16 +139,6 @@ class Convoy:
 
         return trains_and_cars
 
-    async def remove_pull_from_trains_if_queued(
-        self,
-        pull_number: github_types.GitHubPullRequestNumber,
-        signal_trigger: str,
-        unqueue_reason: queue_utils.BaseUnqueueReason,
-    ) -> None:
-        for train in self._trains:
-            if train.is_queued(pull_number):
-                await train.remove_pull(pull_number, signal_trigger, unqueue_reason)
-
     async def remove_pull(
         self,
         pull_number: github_types.GitHubPullRequestNumber,
@@ -156,53 +146,35 @@ class Convoy:
         unqueue_reason: queue_utils.BaseUnqueueReason,
     ) -> None:
         await self.force_remove_pull(
+            self.repository,
+            self.queue_rules,
+            self.partition_rules,
             pull_number,
             signal_trigger,
             exclude_ref=self.ref,
         )
+        for train in self._trains:
+            await train.remove_pull(pull_number, signal_trigger, unqueue_reason)
 
-        if isinstance(unqueue_reason, queue_utils.PrMerged):
-            await self._remove_merged_head_of_trains(
-                pull_number,
-                signal_trigger,
-                unqueue_reason,
-            )
-        else:
-            for train in self._trains:
-                await train._remove_pull(pull_number, signal_trigger, unqueue_reason)
-
+    @classmethod
     async def force_remove_pull(
-        self,
+        cls,
+        repository: context.Repository,
+        queue_rules: qr_config.QueueRules,
+        partition_rules: partr_config.PartitionRules,
         pull_number: github_types.GitHubPullRequestNumber,
         signal_trigger: str,
         exclude_ref: github_types.GitHubRefType | None = None,
     ) -> None:
-        async for train in train_import.Train.iter_trains(
-            self.repository,
-            self.queue_rules,
-            self.partition_rules,
-            exclude_ref=exclude_ref,
-        ):
-            await train._remove_pull_from_context(
-                pull_number,
-                signal_trigger,
-                queue_utils.TargetBranchChanged(),
-            )
-
-    async def _remove_merged_head_of_trains(
-        self,
-        pull_number: github_types.GitHubPullRequestNumber,
-        signal_trigger: str,
-        unqueue_reason: queue_utils.PrMerged,
-    ) -> None:
-        pr_queued_in = [train for train in self._trains if train.is_queued(pull_number)]
-        for train in pr_queued_in:
-            await train._remove_merged_head_of_train(
-                pull_number,
-                signal_trigger,
-                unqueue_reason,
-                send_eventlog_signal=False,
-            )
+        async for convoy in cls.iter_convoys(repository, queue_rules, partition_rules):
+            if exclude_ref is not None and exclude_ref == convoy.ref:
+                continue
+            for train in convoy.iter_trains():
+                await train.remove_pull(
+                    pull_number,
+                    signal_trigger,
+                    queue_utils.TargetBranchChanged(),
+                )
 
     async def add_pull(
         self,
@@ -214,6 +186,9 @@ class Convoy:
         # Ensure the pull is not in another branch
         # (base branch of a PR can be changed when editing the title)
         await self.force_remove_pull(
+            self.repository,
+            self.queue_rules,
+            self.partition_rules,
             ctxt.pull["number"],
             signal_trigger,
             exclude_ref=ctxt.pull["base"]["ref"],

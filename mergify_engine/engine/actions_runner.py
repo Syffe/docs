@@ -610,7 +610,7 @@ async def cleanup_pending_actions_with_no_associated_rules(
 
     if not is_queued and was_queued:
         ctxt.log.info("action removal cleanup, cleanup queue")
-        await merge_train.Train.force_remove_pull(
+        await merge_train.Convoy.force_remove_pull(
             ctxt.repository,
             queue_rules,
             partition_rules,

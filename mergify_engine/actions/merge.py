@@ -113,7 +113,7 @@ class MergeExecutor(
                 convoy = await merge_train.Convoy.from_context(
                     self.ctxt, self.queue_rules, self.partition_rules
                 )
-                await convoy.remove_pull_from_trains_if_queued(
+                await convoy.remove_pull(
                     self.ctxt.pull["number"],
                     self.rule.get_signal_trigger(),
                     queue_utils.PrDequeued(
