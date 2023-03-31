@@ -97,3 +97,32 @@ class GraphqlMinimizedCommentResponse(typing.TypedDict):
 GitHubPullRequestReviewDecision = typing.Literal[
     "APPROVED", "CHANGES_REQUESTED", "REVIEW_REQUIRED", None
 ]
+
+
+class GraphqlBranchProtectionRuleMatchingRef(typing.TypedDict):
+    name: str
+    prefix: str
+
+
+class GraphqlBranchProtectionRule(typing.TypedDict):
+    # https://docs.github.com/en/graphql/reference/objects#branchprotectionrule
+    allowsDeletions: bool
+    allowsForcePushes: bool
+    dismissesStaleReviews: bool
+    isAdminEnforced: bool
+    matchingRefs: list[GraphqlBranchProtectionRuleMatchingRef]
+    pattern: str
+    requireLastPushApproval: bool
+    requiredApprovingReviewCount: int
+    requiredDeploymentEnvironments: list[str]
+    requiredStatusCheckContexts: list[str]
+    requiresApprovingReviews: bool
+    requiresCodeOwnerReviews: bool
+    requiresCommitSignatures: bool
+    requiresConversationResolution: bool
+    requiresDeployments: bool
+    requiresLinearHistory: bool
+    requiresStatusChecks: bool
+    requiresStrictStatusChecks: bool
+    restrictsPushes: bool
+    restrictsReviewDismissals: bool

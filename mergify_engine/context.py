@@ -810,6 +810,56 @@ class Repository:
             )
         return None
 
+    async def get_all_branch_protection_rules(
+        self,
+    ) -> list[github_types.GitHubBranchProtection]:
+        query = f"""
+        query {{
+            repository(owner: "{self.repo['owner']['login']}", name: "{self.repo['name']}") {{
+                branchProtectionRules(first: 100) {{
+                    nodes {{
+                        allowsDeletions
+                        allowsForcePushes
+                        dismissesStaleReviews
+                        isAdminEnforced
+                        matchingRefs(first: 100) {{
+                            nodes {{
+                                name
+                                prefix
+                            }}
+                        }}
+                        pattern
+                        requireLastPushApproval
+                        requiredApprovingReviewCount
+                        requiredDeploymentEnvironments
+                        requiredStatusCheckContexts
+                        requiresApprovingReviews
+                        requiresCodeOwnerReviews
+                        requiresCommitSignatures
+                        requiresConversationResolution
+                        requiresDeployments
+                        requiresLinearHistory
+                        requiresStatusChecks
+                        requiresStrictStatusChecks
+                        restrictsPushes
+                        restrictsReviewDismissals
+                    }}
+                }}
+            }}
+        }}
+        """
+        response = await self.installation.client.graphql_post(query)
+        for node in response["data"]["repository"]["branchProtectionRules"]["nodes"]:
+            node["matchingRefs"] = typing.cast(
+                list[github_graphql_types.GraphqlBranchProtectionRuleMatchingRef],
+                node["matchingRefs"]["nodes"],
+            )
+
+        return typing.cast(
+            list[github_types.GitHubBranchProtection],
+            response["data"]["repository"]["branchProtectionRules"]["nodes"],
+        )
+
     async def get_branch_protection(
         self,
         branch_name: github_types.GitHubRefType,

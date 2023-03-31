@@ -83,6 +83,27 @@ class TestDebugger(base.FunctionalTestBase):
 * WORKER: Installation not queued to process
 * REPOSITORY IS PUBLIC
 * DEFAULT BRANCH: {self.main_branch_name}
+* BRANCH PROTECTION RULES:
+[{{'allowsDeletions': False,
+  'allowsForcePushes': False,
+  'dismissesStaleReviews': False,
+  'isAdminEnforced': True,
+  'matchingRefs': [{{'name': 'main', 'prefix': 'refs/heads/'}}],
+  'pattern': 'main',
+  'requireLastPushApproval': False,
+  'requiredApprovingReviewCount': 0,
+  'requiredDeploymentEnvironments': [],
+  'requiredStatusCheckContexts': [],
+  'requiresApprovingReviews': True,
+  'requiresCodeOwnerReviews': False,
+  'requiresCommitSignatures': False,
+  'requiresConversationResolution': False,
+  'requiresDeployments': False,
+  'requiresLinearHistory': False,
+  'requiresStatusChecks': False,
+  'requiresStrictStatusChecks': True,
+  'restrictsPushes': False,
+  'restrictsReviewDismissals': False}}]
 * CONFIGURATION:
 Config filename: .mergify.yml
 pull_request_rules:

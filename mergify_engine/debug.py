@@ -166,6 +166,10 @@ async def report(
 
     print(f"* DEFAULT BRANCH: {utils.extract_default_branch(repository.repo)}")
 
+    print("* BRANCH PROTECTION RULES:")
+    branch_protection_rules = await repository.get_all_branch_protection_rules()
+    pprint.pprint(branch_protection_rules, width=160)
+
     print("* CONFIGURATION:")
     mergify_config = None
     config_file = await repository.get_mergify_config_file()
