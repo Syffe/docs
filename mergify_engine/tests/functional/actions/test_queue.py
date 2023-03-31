@@ -6742,6 +6742,94 @@ pull_request_rules:
         fixup_commits = await self.get_commits(pr_fixup["number"])
         assert len(fixup_commits) == 2
 
+    async def test_queue_command_after_action_queue(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [],
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge on queue label",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+        p1 = await self.create_pr()
+
+        p2 = await self.create_pr()
+        await self.merge_pull(p2["number"])
+        await self.wait_for_pull_request("closed", p2["number"])
+
+        await self.add_label(p1["number"], "queue")
+        await self.create_comment_as_admin(p1["number"], "@mergifyio queue")
+        await self.run_engine()
+
+        await self.wait_for_issue_comment(str(p1["number"]), "created")
+        p1_closed = await self.wait_for_pull_request("closed", p1["number"])
+        assert p1_closed["pull_request"]["merged"]
+
+    async def test_unqueue_command_after_queue_action_and_command(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [],
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge on queue label",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+
+        p2 = await self.create_pr()
+        await self.merge_pull(p2["number"])
+        await self.wait_for_pull_request("closed", p2["number"])
+
+        await self.add_label(p1["number"], "queue")
+        await self.create_comment_as_admin(p1["number"], "@mergifyio queue")
+        await self.create_comment_as_admin(p1["number"], "@mergifyio unqueue")
+        await self.run_engine()
+
+        # queue command's comment
+        await self.wait_for_issue_comment(str(p1["number"]), "created")
+
+        comment_unqueue = await self.wait_for_issue_comment(
+            str(p1["number"]), "created"
+        )
+
+        assert (
+            "The pull request has been removed from the queue"
+            in comment_unqueue["comment"]["body"]
+        )
+
+        check_run = await self.wait_for_check_run(
+            name="Queue: Embarked in merge train",
+            status="completed",
+            conclusion="cancelled",
+        )
+        assert (
+            check_run["check_run"]["output"]["title"]
+            == "The pull request has been removed from the queue by an `unqueue` command"
+        )
+
 
 class TestTrainApiCalls(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
