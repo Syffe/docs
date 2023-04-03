@@ -74,7 +74,7 @@ class SubscriptionBase(abstract.ABC):
     features: frozenset[enum.Enum]
     ttl: int = -2
 
-    feature_flag_log_level: int = logging.ERROR
+    feature_flag_log_level: int = logging.WARNING
 
     @staticmethod
     def _cache_key(owner_id: github_types.GitHubAccountIdType) -> str:
