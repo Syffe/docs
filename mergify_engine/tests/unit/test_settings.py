@@ -24,6 +24,7 @@ def test_defaults(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     # defaults (if not mandatory)
+    monkeypatch.setenv("MERGIFYENGINE_DATABASE_OAUTH_TOKEN_SECRET_CURRENT", "secret")
     monkeypatch.setenv("MERGIFYENGINE_GITHUB_WEBHOOK_SECRET", "secret")
     monkeypatch.setenv("MERGIFYENGINE_GITHUB_APP_ID", "12345")
     monkeypatch.setenv("MERGIFYENGINE_GITHUB_PRIVATE_KEY", "aGVsbG8gd29ybGQ=")
@@ -33,6 +34,8 @@ def test_defaults(
     assert str(conf.DATABASE_URL) == "postgresql+psycopg://localhost:5432"
     assert conf.DATABASE_URL.geturl() == "postgresql+psycopg://localhost:5432"
     assert conf.DATABASE_POOL_SIZES == {"web": 55, "worker": 15}
+    assert conf.DATABASE_OAUTH_TOKEN_SECRET_CURRENT.get_secret_value() == "secret"
+    assert conf.DATABASE_OAUTH_TOKEN_SECRET_OLD is None
     assert conf.GITHUB_URL == "https://github.com"
     assert conf.GITHUB_REST_API_URL == "https://api.github.com"
     assert conf.GITHUB_GRAPHQL_API_URL == "https://api.github.com/graphql"
@@ -80,6 +83,8 @@ def test_all_sets(
         "MERGIFYENGINE_GITHUB_WEBHOOK_FORWARD_URL", "https://sub.example.com/events"
     )
     monkeypatch.setenv("MERGIFYENGINE_DATABASE_POOL_SIZES", "web:2,worker:3,foobar:6")
+    monkeypatch.setenv("MERGIFYENGINE_DATABASE_OAUTH_TOKEN_SECRET_CURRENT", "secret2")
+    monkeypatch.setenv("MERGIFYENGINE_DATABASE_OAUTH_TOKEN_SECRET_OLD", "secret3")
     monkeypatch.setenv(
         "MERGIFYENGINE_DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO", "1234,5432"
     )
@@ -115,6 +120,9 @@ def test_all_sets(
     assert conf.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES == ["foo", "bar", "yo"]
     assert conf.GITHUB_WEBHOOK_FORWARD_URL == "https://sub.example.com/events"
     assert conf.DATABASE_POOL_SIZES == {"web": 2, "worker": 3, "foobar": 6}
+    assert conf.DATABASE_OAUTH_TOKEN_SECRET_CURRENT.get_secret_value() == "secret2"
+    assert conf.DATABASE_OAUTH_TOKEN_SECRET_OLD is not None
+    assert conf.DATABASE_OAUTH_TOKEN_SECRET_OLD.get_secret_value() == "secret3"
     assert conf.DASHBOARD_UI_STATIC_FILES_DIRECTORY == tmpdir
     assert conf.DASHBOARD_UI_FRONT_URL == "https://dashboard.mergify.com"
     assert conf.DASHBOARD_UI_FEATURES == [
@@ -139,6 +147,7 @@ def test_legacy_env_sets(
     unset_testing_env: None,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setenv("MERGIFYENGINE_DATABASE_OAUTH_TOKEN_SECRET_CURRENT", "secret")
     monkeypatch.setenv("MERGIFYENGINE_BASE_URL", "https://dashboard.mergify.com")
     monkeypatch.setenv("MERGIFYENGINE_WEBHOOK_SECRET", "secret4")
     monkeypatch.setenv("MERGIFYENGINE_WEBHOOK_SECRET_PRE_ROTATION", "secret5")
@@ -174,6 +183,7 @@ def test_legacy_dashboard_urls(
 ) -> None:
     # Required values
     monkeypatch.setenv("MERGIFYENGINE_BASE_URL", "https://not-me-for-sure.example.com")
+    monkeypatch.setenv("MERGIFYENGINE_DATABASE_OAUTH_TOKEN_SECRET_CURRENT", "secret")
     monkeypatch.setenv("MERGIFYENGINE_GITHUB_WEBHOOK_SECRET", "secret")
     monkeypatch.setenv("MERGIFYENGINE_GITHUB_APP_ID", "12345")
     monkeypatch.setenv("MERGIFYENGINE_GITHUB_PRIVATE_KEY", "aGVsbG8gd29ybGQ=")

@@ -32,6 +32,8 @@ class DatabaseSettings(pydantic.BaseSettings):
     DATABASE_POOL_SIZES: dict[str, int] = pydantic.Field(
         default={"worker": 15, "web": 55}
     )
+    DATABASE_OAUTH_TOKEN_SECRET_CURRENT: pydantic.SecretStr
+    DATABASE_OAUTH_TOKEN_SECRET_OLD: pydantic.SecretStr | None = None
 
 
 class LogsSettings(pydantic.BaseSettings):
@@ -330,10 +332,6 @@ Schema = voluptuous.Schema(
         #
         # Mergify Engine settings
         #
-        voluptuous.Required("DATABASE_OAUTH_TOKEN_SECRET_CURRENT"): str,
-        voluptuous.Required(
-            "DATABASE_OAUTH_TOKEN_SECRET_OLD", default=None
-        ): voluptuous.Any(None, str),
         voluptuous.Required(
             "REDIS_SSL_VERIFY_MODE_CERT_NONE", default=False
         ): CoercedBool,
@@ -423,8 +421,6 @@ SHARED_STREAM_PROCESSES: int
 DEDICATED_STREAM_PROCESSES: int
 SHARED_STREAM_TASKS_PER_PROCESS: int
 
-DATABASE_OAUTH_TOKEN_SECRET_CURRENT: str
-DATABASE_OAUTH_TOKEN_SECRET_OLD: str | None
 
 STREAM_URL: str
 EVENTLOGS_URL: str

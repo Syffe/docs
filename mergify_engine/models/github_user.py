@@ -11,9 +11,9 @@ import sqlalchemy.sql.expression
 import sqlalchemy_utils
 from sqlalchemy_utils.types.encrypted import encrypted_type
 
-from mergify_engine import config
 from mergify_engine import github_types
 from mergify_engine import models
+from mergify_engine import settings
 
 
 class OAuthTokenSecretString(str):
@@ -37,19 +37,19 @@ class OAuthTokenEncryptedType(sqlalchemy_utils.StringEncryptedType):  # type: ig
         value: OAuthTokenSecretString | str | None,
         dialect: typing.Any,
     ) -> typing.Any:
-        self.key = config.DATABASE_OAUTH_TOKEN_SECRET_CURRENT
+        self.key = settings.DATABASE_OAUTH_TOKEN_SECRET_CURRENT.get_secret_value()
         return super().process_bind_param(value, dialect)
 
     def process_result_value(
         self, value: str | None, dialect: typing.Any
     ) -> OAuthTokenSecretString:
-        self.key = config.DATABASE_OAUTH_TOKEN_SECRET_CURRENT
+        self.key = settings.DATABASE_OAUTH_TOKEN_SECRET_CURRENT.get_secret_value()
         try:
             secret = typing.cast(str, super().process_result_value(value, dialect))
             oauth_secret = OAuthTokenSecretString(secret, self.key)
         except sqlalchemy_utils.types.encrypted.encrypted_type.InvalidCiphertextError:
-            if config.DATABASE_OAUTH_TOKEN_SECRET_OLD is not None:
-                self.key = config.DATABASE_OAUTH_TOKEN_SECRET_OLD
+            if settings.DATABASE_OAUTH_TOKEN_SECRET_OLD is not None:
+                self.key = settings.DATABASE_OAUTH_TOKEN_SECRET_OLD.get_secret_value()
                 secret = typing.cast(str, super().process_result_value(value, dialect))
                 return OAuthTokenSecretString(secret, self.key)
             raise
