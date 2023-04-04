@@ -1,3 +1,4 @@
+import asyncio
 from collections import abc
 import dataclasses
 import datetime
@@ -6,6 +7,7 @@ import typing
 
 import daiquiri
 import sqlalchemy
+from sqlalchemy import orm
 from sqlalchemy.dialects import postgresql
 import sqlalchemy.ext.asyncio
 
@@ -35,8 +37,16 @@ class JobRegistry(typing.Protocol):
     ) -> abc.AsyncIterator[ci_models.JobRun]:
         ...
 
+    def get_job_running_order(self, pull_id: int, job_run: ci_models.JobRun) -> int:
+        ...
 
+
+@dataclasses.dataclass
 class PostgresJobRegistry:
+    _job_running_order_cache: dict[tuple[int, int], int] = dataclasses.field(
+        default_factory=dict
+    )
+
     async def insert(self, job_run: ci_models.JobRun) -> None:
         async with database.create_session() as session:
             await self._insert_account(session, job_run.owner)
@@ -89,6 +99,49 @@ class PostgresJobRegistry:
         start_at: datetime.date | None,
         end_at: datetime.date | None,
     ) -> abc.AsyncIterator[ci_models.JobRun]:
+        _, records = await asyncio.gather(
+            self._fill_job_running_order_cache(owner, repository, start_at, end_at),
+            self._execute_search(owner, repository, start_at, end_at),
+        )
+
+        for record in records:
+            job = ci_models.JobRun(
+                id=record.id,
+                workflow_run_id=record.workflow_run_id,
+                workflow_id=record.workflow_id,
+                name=record.name,
+                owner=ci_models.Account(
+                    id=record.owner.id,
+                    login=github_types.GitHubLogin(record.owner.login),
+                ),
+                repository=record.repository,
+                conclusion=record.conclusion.value,
+                triggering_event=record.triggering_event.value,
+                triggering_actor=ci_models.Account(
+                    id=record.triggering_actor.id,
+                    login=github_types.GitHubLogin(record.triggering_actor.login),
+                ),
+                started_at=record.started_at,
+                completed_at=record.completed_at,
+                pulls=[
+                    ci_models.PullRequest(
+                        id=pr.id, number=pr.number, title=pr.title, state=pr.state
+                    )
+                    for pr in record.pull_requests
+                ],
+                run_attempt=record.run_attempt,
+                operating_system=record.operating_system.value,
+                cores=record.cores,
+            )
+            yield job
+
+    async def _execute_search(
+        self,
+        owner: str,
+        repository: str | None,
+        start_at: datetime.date | None,
+        end_at: datetime.date | None,
+    ) -> sqlalchemy.ScalarResult[sql_models.JobRun]:
         async with database.create_session() as session:
             sql = (
                 sqlalchemy.select(sql_models.JobRun)
@@ -98,36 +151,94 @@ class PostgresJobRegistry:
                 )
                 .where(*self._create_filter(owner, repository, start_at, end_at))
             )
-            for record in await session.scalars(sql):
-                job = ci_models.JobRun(
-                    id=record.id,
-                    workflow_run_id=record.workflow_run_id,
-                    workflow_id=record.workflow_id,
-                    name=record.name,
-                    owner=ci_models.Account(
-                        id=record.owner.id,
-                        login=github_types.GitHubLogin(record.owner.login),
+            return await session.scalars(sql)
+
+    async def _fill_job_running_order_cache(
+        self,
+        owner: str,
+        repository: str | None,
+        start_at: datetime.date | None,
+        end_at: datetime.date | None,
+    ) -> None:
+        """Fills the PR-job cache.
+
+        This cache contains the running order for each job.
+
+        Say we have a PR "p1" created at 12 a.m. and updated at 1 p.m., with one
+        workflow "w1" containing two jobs ("tests" and "linters"). We have to
+        calculate the running order like the following example.
+
+        +-----------------+-------------+----------+---------------------+----------+
+        | pull_request_id | workflow_id | job_name |   job_started_at    | position |
+        +-----------------+-------------+----------+---------------------+----------+
+        | p1              | w1          | tests    | 2023-03-30 12:00:00 |        1 |
+        | p1              | w1          | tests    | 2023-03-30 13:00:00 |        2 |
+        | p1              | w1          | linters  | 2023-03-30 12:00:00 |        1 |
+        | p1              | w1          | linters  | 2023-03-30 13:00:00 |        2 |
+        +-----------------+-------------+----------+---------------------+----------+
+        """
+        async with database.create_session() as session:
+            result = await session.execute(
+                self._job_running_order_sql(owner, repository, start_at, end_at)
+            )
+            for row in result:
+                pull_job_association: sql_models.PullRequestJobRunAssociation = row[0]
+                position: int = row[1]
+                self._job_running_order_cache[
+                    (
+                        pull_job_association.pull_request_id,
+                        pull_job_association.job_run_id,
+                    )
+                ] = position
+
+    def _job_running_order_sql(
+        self,
+        owner: str,
+        repository: str | None,
+        start_at: datetime.date | None,
+        end_at: datetime.date | None,
+    ) -> sqlalchemy.Select[tuple[sql_models.PullRequestJobRunAssociation, int]]:
+        PullRequestJobRunAssociation1 = orm.aliased(
+            sql_models.PullRequestJobRunAssociation
+        )
+        PullRequestJobRunAssociation2 = orm.aliased(
+            sql_models.PullRequestJobRunAssociation
+        )
+        JobRun1 = orm.aliased(sql_models.JobRun)
+        JobRun2 = orm.aliased(sql_models.JobRun)
+        subquery = (
+            sqlalchemy.select(PullRequestJobRunAssociation1)
+            .join(JobRun1)
+            .join(
+                sql_models.Account,
+                sql_models.Account.id == JobRun1.owner_id,
+            )
+            .where(
+                *self._create_filter(
+                    owner, repository, start_at, end_at, job_model=JobRun1
+                ),
+                PullRequestJobRunAssociation1.pull_request_id
+                == PullRequestJobRunAssociation2.pull_request_id,
+            )
+            .exists()
+        )
+        sql = (
+            sqlalchemy.select(
+                PullRequestJobRunAssociation2,
+                sqlalchemy.func.row_number().over(  # type: ignore [no-untyped-call]
+                    partition_by=(
+                        PullRequestJobRunAssociation2.pull_request_id,
+                        JobRun2.workflow_id,
+                        JobRun2.name,
                     ),
-                    repository=record.repository,
-                    conclusion=record.conclusion.value,
-                    triggering_event=record.triggering_event.value,
-                    triggering_actor=ci_models.Account(
-                        id=record.triggering_actor.id,
-                        login=github_types.GitHubLogin(record.triggering_actor.login),
-                    ),
-                    started_at=record.started_at,
-                    completed_at=record.completed_at,
-                    pulls=[
-                        ci_models.PullRequest(
-                            id=pr.id, number=pr.number, title=pr.title, state=pr.state
-                        )
-                        for pr in record.pull_requests
-                    ],
-                    run_attempt=record.run_attempt,
-                    operating_system=record.operating_system.value,
-                    cores=record.cores,
-                )
-                yield job
+                    order_by=JobRun2.started_at,
+                ),
+            )
+            .join(JobRun2)
+            .where(subquery, JobRun2.run_attempt == 1)
+        )
+
+        return sql
 
     def _create_filter(
         self,
@@ -135,18 +246,20 @@ class PostgresJobRegistry:
         repository: str | None,
         start_at: datetime.date | None,
         end_at: datetime.date | None,
+        job_model: type[sql_models.JobRun] = sql_models.JobRun,
     ) -> list[sqlalchemy.ColumnElement[bool]]:
         filter_ = [sqlalchemy.func.lower(sql_models.Account.login) == owner.lower()]
         if repository is not None:
-            filter_.append(sql_models.JobRun.repository == repository)
+            filter_.append(job_model.repository == repository)
         if start_at is not None:
-            filter_.append(sql_models.JobRun.started_at >= start_at)
+            filter_.append(job_model.started_at >= start_at)
         if end_at is not None:
-            filter_.append(
-                sql_models.JobRun.started_at < end_at + datetime.timedelta(days=1)
-            )
+            filter_.append(job_model.started_at < end_at + datetime.timedelta(days=1))
 
         return filter_
+
+    def get_job_running_order(self, pull_id: int, job_run: ci_models.JobRun) -> int:
+        return self._job_running_order_cache[pull_id, job_run.id]
 
 
 @dataclasses.dataclass

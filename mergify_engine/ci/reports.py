@@ -10,7 +10,6 @@ from mergify_engine import github_types
 from mergify_engine.ci import cost_calculator
 from mergify_engine.ci import job_registries
 from mergify_engine.ci import models
-from mergify_engine.ci import pull_registries
 
 
 @pydantic.dataclasses.dataclass
@@ -159,7 +158,6 @@ class Query:
 @dataclasses.dataclass
 class Report:
     job_registry: job_registries.JobRegistry
-    pull_registry: pull_registries.PullRequestWorkflowRunPositionRegistry
     query: Query
 
     async def run(self) -> ReportPayload:
@@ -362,10 +360,8 @@ class Report:
             return "Manual retry"
         else:
             for pull in job_run.pulls:
-                position = await self.pull_registry.get_job_run_position(
-                    pull_id=pull.id, job_run=job_run
-                )
-                if position == 0:
+                position = self.job_registry.get_job_running_order(pull.id, job_run)
+                if position == 1:
                     return "Initial push"
                 else:
                     return "Update"

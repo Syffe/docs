@@ -8,20 +8,11 @@ from mergify_engine.ci import reports
 from mergify_engine.tests.unit.ci import utils
 
 
-class FakePullRegistry:
-    def __init__(self) -> None:
-        self._positions: Counter[int] = Counter()
-
-    async def get_job_run_position(self, pull_id: int, job_run: models.JobRun) -> int:
-        position = self._positions[pull_id]
-        self._positions[pull_id] += 1
-        return position
-
-
 class FakeJobRegistry:
     def __init__(self) -> None:
         self._job_run_timing = 10_000
         self._pull_id = 1
+        self._positions: Counter[int] = Counter()
 
     async def search(
         self,
@@ -82,11 +73,14 @@ class FakeJobRegistry:
         # Change pull request ID, to prevent side effects on the lifecycle
         self._pull_id += 1
 
+    def get_job_running_order(self, pull_id: int, job_run: models.JobRun) -> int:
+        self._positions[pull_id] += 1
+        return self._positions[pull_id]
+
 
 async def test_report() -> None:
     report = reports.Report(
         FakeJobRegistry(),
-        FakePullRegistry(),
         reports.Query(
             owner=github_types.GitHubLogin("mergifyio"),
             repository=github_types.GitHubRepositoryName("engine"),
@@ -223,7 +217,6 @@ async def test_report() -> None:
 async def test_report_for_whole_owner() -> None:
     report = reports.Report(
         FakeJobRegistry(),
-        FakePullRegistry(),
         reports.Query(
             owner=github_types.GitHubLogin("mergifyio"),
             start_at=datetime.date(2023, 2, 1),

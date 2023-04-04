@@ -4,10 +4,7 @@ import datetime
 import typing
 
 import msgpack
-import sqlalchemy
 from sqlalchemy.dialects import postgresql
-import sqlalchemy.exc
-import sqlalchemy.ext.asyncio
 
 from mergify_engine import database
 from mergify_engine import github_types
@@ -19,13 +16,6 @@ from mergify_engine.models import github_actions as sql_models
 
 class NotFoundError(Exception):
     pass
-
-
-class PullRequestWorkflowRunPositionRegistry(typing.Protocol):
-    async def get_job_run_position(
-        self, pull_id: int, job_run: ci_models.JobRun
-    ) -> int:
-        ...
 
 
 class PostgresPullRequestRegistry:
@@ -58,42 +48,6 @@ class PostgresPullRequestRegistry:
             )
             await session.execute(sql)
             await session.commit()
-
-    async def get_job_run_position(
-        self, pull_id: int, job_run: ci_models.JobRun
-    ) -> int:
-        async with database.create_session() as session:
-            sql = (
-                sqlalchemy.select(
-                    sql_models.JobRun.workflow_run_id,
-                    sql_models.JobRun.started_at,
-                )
-                .join(sql_models.PullRequestJobRunAssociation.job_run)
-                .where(
-                    sql_models.PullRequestJobRunAssociation.pull_request_id == pull_id,
-                    sql_models.JobRun.workflow_id == job_run.workflow_id,
-                    sql_models.JobRun.name == job_run.name,
-                )
-            )
-            result = await session.execute(sql)
-            pull_workflow_runs: set[ci_models.WorkflowRun] = set()
-
-            for row in result:
-                pull_workflow_runs.add(
-                    ci_models.WorkflowRun(
-                        id=row.workflow_run_id,
-                        started_at=row.started_at,
-                    )
-                )
-
-            sorted_workflow_runs = sorted(
-                pull_workflow_runs, key=lambda wr: wr.started_at
-            )
-            for i, workflow_run in enumerate(sorted_workflow_runs):
-                if workflow_run.id == job_run.workflow_run_id:
-                    return i
-
-        raise NotFoundError(f"Workflow run `{job_run.workflow_run_id} not found")
 
 
 class PullRequestFromCommitRegistry(typing.Protocol):

@@ -1,10 +1,10 @@
 import argparse
 import datetime
+import time
 import typing
 
 from mergify_engine import database
 from mergify_engine import github_types
-from mergify_engine import json
 from mergify_engine import redis_utils
 from mergify_engine import refresher
 from mergify_engine import service
@@ -12,7 +12,6 @@ from mergify_engine import settings
 from mergify_engine import utils
 from mergify_engine.ci import dump
 from mergify_engine.ci import job_registries
-from mergify_engine.ci import pull_registries
 from mergify_engine.ci import reports
 from mergify_engine.clients import github
 from mergify_engine.clients import http
@@ -138,8 +137,11 @@ async def global_insight_handler(argv: list[str] | None = None) -> None:
 
     action = reports.Report(
         job_registries.PostgresJobRegistry(),
-        pull_registries.PostgresPullRequestRegistry(),
         query,
     )
+    started_at = time.monotonic()
     result = await action.run()
-    print(json.dumps(result))
+    ended_at = time.monotonic()
+
+    print(result)
+    print(f"processed in {ended_at-started_at} seconds")

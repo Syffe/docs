@@ -5,7 +5,6 @@ import fastapi
 
 from mergify_engine import github_types
 from mergify_engine.ci import job_registries
-from mergify_engine.ci import pull_registries
 from mergify_engine.ci import reports
 from mergify_engine.web import api
 from mergify_engine.web.api import security
@@ -135,8 +134,7 @@ async def repository_queues(
     ),
 ) -> reports.ReportPayload:
     job_registry = job_registries.PostgresJobRegistry()
-    pull_registry = pull_registries.PostgresPullRequestRegistry()
     query = reports.Query(owner, repository, start_at, end_at)
-    report = reports.Report(job_registry, pull_registry, query)
+    report = reports.Report(job_registry, query)
 
     return await report.run()
