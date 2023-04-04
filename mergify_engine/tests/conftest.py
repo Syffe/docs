@@ -380,3 +380,9 @@ def logging_reset() -> abc.Generator[None, None, None]:
         root_logger.manager.loggerDict = saved_loggers
         root_logger.filters = saved_filters
         root_logger.handlers = saved_handlers
+
+
+@pytest.hookimpl  # type: ignore[misc]
+def pytest_configure(config: pytest.Config) -> None:
+    logging_plugin = config.pluginmanager.get_plugin("logging-plugin")
+    logging_plugin.report_handler.setFormatter(logs.CUSTOM_FORMATTER)
