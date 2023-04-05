@@ -961,7 +961,7 @@ interactions:
       about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\n\n<details>\n<summary>Mergify
       commands</summary>\n\n<br />\n\nYou can also trigger Mergify actions by commenting
       on this pull request:\n\n- `@Mergifyio refresh` will re-evaluate the queue rules\n\nAdditionally,
-      on Mergify [dashboard](https://dashboard.mergify.com) you can:\n\n- look at
+      on Mergify [dashboard](http://localhost:3000) you can:\n\n- look at
       your merge queues\n- generate the Mergify configuration with the config editor.\n\nFinally,
       you can contact us on https://mergify.com\n</details>\n\n</details>\n\n\n<!---\nDO
       NOT EDIT\n-*- Mergify Payload -*-\n{\"command\": \"queue default\", \"conclusion\":
@@ -990,7 +990,7 @@ interactions:
       about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\\n\\n<details>\\n<summary>Mergify
       commands</summary>\\n\\n<br />\\n\\nYou can also trigger Mergify actions by
       commenting on this pull request:\\n\\n- `@Mergifyio refresh` will re-evaluate
-      the queue rules\\n\\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com)
+      the queue rules\\n\\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\\n\\n- look at your merge queues\\n- generate the Mergify configuration
       with the config editor.\\n\\nFinally, you can contact us on https://mergify.com\\n</details>\\n\\n</details>\\n\\n\\n<!---\\nDO
       NOT EDIT\\n-*- Mergify Payload -*-\\n{\\\"command\\\": \\\"queue default\\\",
@@ -1022,7 +1022,7 @@ interactions:
       refresh` will re-evaluate the rules\n- `@Mergifyio rebase` will rebase this
       PR on its base branch\n- `@Mergifyio update` will merge the base branch into
       this PR\n- `@Mergifyio backport <destination>` will backport this PR on `<destination>`
-      branch\n\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com/)
+      branch\n\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\n\n- look at your merge queues\n- generate the Mergify configuration
       with the config editor.\n\nFinally, you can contact us on https://mergify.com\n</details>\n"},
       "external_id": "8272", "conclusion": "success", "completed_at": "2023-02-13T16:22:33.960240+00:00"}'
@@ -1049,7 +1049,7 @@ interactions:
       the rules\n- `@Mergifyio rebase` will rebase this PR on its base branch\n- `@Mergifyio
       update` will merge the base branch into this PR\n- `@Mergifyio backport <destination>`
       will backport this PR on `<destination>` branch\n\nAdditionally, on Mergify
-      [dashboard](https://dashboard.mergify.com/) you can:\n\n- look at your merge
+      [dashboard](http://localhost:3000) you can:\n\n- look at your merge
       queues\n- generate the Mergify configuration with the config editor.\n\nFinally,
       you can contact us on https://mergify.com\n</details>\n","text":null,"annotations_count":0,"annotations_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Syffe/check-runs/11305288144/annotations"},"check_suite":{"id":10949827454},"app":{"id":214874,"slug":"mergify-syffe","node_id":"A_kwHOAmplV84AA0da","owner":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"name":"mergify-Syffe","description":"Mergify
       testing installation for Syffe","external_url":"https://mergify.com/","html_url":"https://github.com/apps/mergify-syffe","created_at":"2022-06-27T12:48:14Z","updated_at":"2022-06-27T12:48:14Z","permissions":{"administration":"read","checks":"write","contents":"write","emails":"read","issues":"write","members":"read","metadata":"read","pages":"write","pull_requests":"write","statuses":"write","workflows":"write"},"events":["check_run","check_suite","issue_comment","member","membership","organization","pull_request","pull_request_review","pull_request_review_comment","pull_request_review_thread","push","repository","status","team","team_add"]},"pull_requests":[{"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Syffe/pulls/8272","id":1239271610,"number":8272,"head":{"ref":"20230213162214/test_command_queue_with_routing_conditions_matching_and_default_queue_forced/integration/pr1","sha":"b8f0fa60643103b6bf34ed3172b27034d2f64e88","repo":{"id":453968595,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Syffe","name":"functional-testing-repo-Syffe"}},"base":{"ref":"20230213162214/test_command_queue_with_routing_conditions_matching_and_default_queue_forced/main","sha":"24e39e9fce61c6286a6333837ca2f8c500acfc35","repo":{"id":453968595,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Syffe","name":"functional-testing-repo-Syffe"}}}]}'
@@ -1113,7 +1113,7 @@ interactions:
       the rules\n- `@Mergifyio rebase` will rebase this PR on its base branch\n- `@Mergifyio
       update` will merge the base branch into this PR\n- `@Mergifyio backport <destination>`
       will backport this PR on `<destination>` branch\n\nAdditionally, on Mergify
-      [dashboard](https://dashboard.mergify.com/) you can:\n\n- look at your merge
+      [dashboard](http://localhost:3000) you can:\n\n- look at your merge
       queues\n- generate the Mergify configuration with the config editor.\n\nFinally,
       you can contact us on https://mergify.com\n</details>\n","text":null,"annotations_count":0,"annotations_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Syffe/check-runs/11305288144/annotations"},"check_suite":{"id":10949827454},"app":{"id":214874,"slug":"mergify-syffe","node_id":"A_kwHOAmplV84AA0da","owner":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"name":"mergify-Syffe","description":"Mergify
       testing installation for Syffe","external_url":"https://mergify.com/","html_url":"https://github.com/apps/mergify-syffe","created_at":"2022-06-27T12:48:14Z","updated_at":"2022-06-27T12:48:14Z","permissions":{"administration":"read","checks":"write","contents":"write","emails":"read","issues":"write","members":"read","metadata":"read","pages":"write","pull_requests":"write","statuses":"write","workflows":"write"},"events":["check_run","check_suite","issue_comment","member","membership","organization","pull_request","pull_request_review","pull_request_review_comment","pull_request_review_thread","push","repository","status","team","team_add"]},"pull_requests":[{"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Syffe/pulls/8272","id":1239271610,"number":8272,"head":{"ref":"20230213162214/test_command_queue_with_routing_conditions_matching_and_default_queue_forced/integration/pr1","sha":"b8f0fa60643103b6bf34ed3172b27034d2f64e88","repo":{"id":453968595,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Syffe","name":"functional-testing-repo-Syffe"}},"base":{"ref":"20230213162214/test_command_queue_with_routing_conditions_matching_and_default_queue_forced/main","sha":"24e39e9fce61c6286a6333837ca2f8c500acfc35","repo":{"id":453968595,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Syffe","name":"functional-testing-repo-Syffe"}}}]}]}'
@@ -1153,7 +1153,7 @@ interactions:
       about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\\n\\n<details>\\n<summary>Mergify
       commands</summary>\\n\\n<br />\\n\\nYou can also trigger Mergify actions by
       commenting on this pull request:\\n\\n- `@Mergifyio refresh` will re-evaluate
-      the queue rules\\n\\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com)
+      the queue rules\\n\\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\\n\\n- look at your merge queues\\n- generate the Mergify configuration
       with the config editor.\\n\\nFinally, you can contact us on https://mergify.com\\n</details>\\n\\n</details>\\n\\n\\n<!---\\nDO
       NOT EDIT\\n-*- Mergify Payload -*-\\n{\\\"command\\\": \\\"queue default\\\",
@@ -1410,7 +1410,7 @@ interactions:
       the rules\n- `@Mergifyio rebase` will rebase this PR on its base branch\n- `@Mergifyio
       update` will merge the base branch into this PR\n- `@Mergifyio backport <destination>`
       will backport this PR on `<destination>` branch\n\nAdditionally, on Mergify
-      [dashboard](https://dashboard.mergify.com/) you can:\n\n- look at your merge
+      [dashboard](http://localhost:3000) you can:\n\n- look at your merge
       queues\n- generate the Mergify configuration with the config editor.\n\nFinally,
       you can contact us on https://mergify.com\n</details>\n","text":null,"annotations_count":0,"annotations_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Syffe/check-runs/11305288144/annotations"},"check_suite":{"id":10949827454},"app":{"id":214874,"slug":"mergify-syffe","node_id":"A_kwHOAmplV84AA0da","owner":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"name":"mergify-Syffe","description":"Mergify
       testing installation for Syffe","external_url":"https://mergify.com/","html_url":"https://github.com/apps/mergify-syffe","created_at":"2022-06-27T12:48:14Z","updated_at":"2022-06-27T12:48:14Z","permissions":{"administration":"read","checks":"write","contents":"write","emails":"read","issues":"write","members":"read","metadata":"read","pages":"write","pull_requests":"write","statuses":"write","workflows":"write"},"events":["check_run","check_suite","issue_comment","member","membership","organization","pull_request","pull_request_review","pull_request_review_comment","pull_request_review_thread","push","repository","status","team","team_add"]},"pull_requests":[{"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Syffe/pulls/8272","id":1239271610,"number":8272,"head":{"ref":"20230213162214/test_command_queue_with_routing_conditions_matching_and_default_queue_forced/integration/pr1","sha":"b8f0fa60643103b6bf34ed3172b27034d2f64e88","repo":{"id":453968595,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Syffe","name":"functional-testing-repo-Syffe"}},"base":{"ref":"20230213162214/test_command_queue_with_routing_conditions_matching_and_default_queue_forced/main","sha":"24e39e9fce61c6286a6333837ca2f8c500acfc35","repo":{"id":453968595,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Syffe","name":"functional-testing-repo-Syffe"}}}]}]}'
@@ -1450,7 +1450,7 @@ interactions:
       about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\\n\\n<details>\\n<summary>Mergify
       commands</summary>\\n\\n<br />\\n\\nYou can also trigger Mergify actions by
       commenting on this pull request:\\n\\n- `@Mergifyio refresh` will re-evaluate
-      the queue rules\\n\\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com)
+      the queue rules\\n\\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\\n\\n- look at your merge queues\\n- generate the Mergify configuration
       with the config editor.\\n\\nFinally, you can contact us on https://mergify.com\\n</details>\\n\\n</details>\\n\\n\\n<!---\\nDO
       NOT EDIT\\n-*- Mergify Payload -*-\\n{\\\"command\\\": \\\"queue default\\\",
@@ -1675,7 +1675,7 @@ interactions:
       queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\n\n<details>\n<summary>Mergify
       commands</summary>\n\n<br />\n\nYou can also trigger Mergify actions by commenting
       on this pull request:\n\n- `@Mergifyio refresh` will re-evaluate the queue rules\n\nAdditionally,
-      on Mergify [dashboard](https://dashboard.mergify.com) you can:\n\n- look at
+      on Mergify [dashboard](http://localhost:3000) you can:\n\n- look at
       your merge queues\n- generate the Mergify configuration with the config editor.\n\nFinally,
       you can contact us on https://mergify.com\n</details>\n\n</details>\n\n\n<!---\nDO
       NOT EDIT\n-*- Mergify Payload -*-\n{\"command\": \"queue default\", \"conclusion\":
@@ -1708,7 +1708,7 @@ interactions:
       queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\\n\\n<details>\\n<summary>Mergify
       commands</summary>\\n\\n<br />\\n\\nYou can also trigger Mergify actions by
       commenting on this pull request:\\n\\n- `@Mergifyio refresh` will re-evaluate
-      the queue rules\\n\\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com)
+      the queue rules\\n\\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\\n\\n- look at your merge queues\\n- generate the Mergify configuration
       with the config editor.\\n\\nFinally, you can contact us on https://mergify.com\\n</details>\\n\\n</details>\\n\\n\\n<!---\\nDO
       NOT EDIT\\n-*- Mergify Payload -*-\\n{\\\"command\\\": \\\"queue default\\\",
@@ -1753,7 +1753,7 @@ interactions:
       queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\\n\\n<details>\\n<summary>Mergify
       commands</summary>\\n\\n<br />\\n\\nYou can also trigger Mergify actions by
       commenting on this pull request:\\n\\n- `@Mergifyio refresh` will re-evaluate
-      the queue rules\\n\\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com)
+      the queue rules\\n\\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\\n\\n- look at your merge queues\\n- generate the Mergify configuration
       with the config editor.\\n\\nFinally, you can contact us on https://mergify.com\\n</details>\\n\\n</details>\\n\\n\\n<!---\\nDO
       NOT EDIT\\n-*- Mergify Payload -*-\\n{\\\"command\\\": \\\"queue default\\\",

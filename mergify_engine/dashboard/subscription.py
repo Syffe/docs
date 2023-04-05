@@ -13,6 +13,7 @@ from mergify_engine import crypto
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import redis_utils
+from mergify_engine import settings
 from mergify_engine.clients import dashboard
 from mergify_engine.clients import http
 
@@ -100,7 +101,7 @@ class SubscriptionBase(abstract.ABC):
 
     @staticmethod
     def missing_feature_reason(owner: str) -> str:
-        return f"⚠ The [subscription](https://dashboard.mergify.com/github/{owner}/subscription) needs to be updated to enable this feature."
+        return f"⚠ The [subscription]({settings.DASHBOARD_UI_FRONT_URL}/github/{owner}/subscription) needs to be updated to enable this feature."
 
     @classmethod
     def from_dict(

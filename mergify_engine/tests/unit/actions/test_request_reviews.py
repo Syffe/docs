@@ -196,7 +196,7 @@ async def test_disabled(context_getter: conftest.ContextGetterFixture) -> None:
         await action.load_context(ctxt, mock.Mock())
         assert excinfo.value.reason == "Random request reviews are disabled"
         assert excinfo.value.details == (
-            "⚠ The [subscription](https://dashboard.mergify.com/github/Mergifyio/subscription) "
+            "⚠ The [subscription](http://localhost:3000/github/Mergifyio/subscription) "
             "needs to be updated to enable this feature."
         )
 

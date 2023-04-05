@@ -776,7 +776,7 @@ interactions:
       merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\n\n<details>\n<summary>Mergify
       commands</summary>\n\n<br />\n\nYou can also trigger Mergify actions by commenting
       on this pull request:\n\n- `@Mergifyio refresh` will re-evaluate the queue rules\n\nAdditionally,
-      on Mergify [dashboard](https://dashboard.mergify.com) you can:\n\n- look at
+      on Mergify [dashboard](http://localhost:3000) you can:\n\n- look at
       your merge queues\n- generate the Mergify configuration with the config editor.\n\nFinally,
       you can contact us on https://mergify.com\n</details>\n<!---\nDO NOT EDIT\n-*-
       Mergify Payload -*-\n{\"merge-queue-pr\": true}\n-*- Mergify Payload End -*-\n-->\n\n```yaml\n---\npull_requests:\n  -
@@ -810,7 +810,7 @@ interactions:
       merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\n\n<details>\n<summary>Mergify
       commands</summary>\n\n<br />\n\nYou can also trigger Mergify actions by commenting
       on this pull request:\n\n- `@Mergifyio refresh` will re-evaluate the queue rules\n\nAdditionally,
-      on Mergify [dashboard](https://dashboard.mergify.com) you can:\n\n- look at
+      on Mergify [dashboard](http://localhost:3000) you can:\n\n- look at
       your merge queues\n- generate the Mergify configuration with the config editor.\n\nFinally,
       you can contact us on https://mergify.com\n</details>\n<!---\nDO NOT EDIT\n-*-
       Mergify Payload -*-\n{\"merge-queue-pr\": true}\n-*- Mergify Payload End -*-\n-->\n\n```yaml\n---\npull_requests:\n  -
@@ -854,7 +854,7 @@ interactions:
       merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\n\n<details>\n<summary>Mergify
       commands</summary>\n\n<br />\n\nYou can also trigger Mergify actions by commenting
       on this pull request:\n\n- `@Mergifyio refresh` will re-evaluate the queue rules\n\nAdditionally,
-      on Mergify [dashboard](https://dashboard.mergify.com) you can:\n\n- look at
+      on Mergify [dashboard](http://localhost:3000) you can:\n\n- look at
       your merge queues\n- generate the Mergify configuration with the config editor.\n\nFinally,
       you can contact us on https://mergify.com\n</details>\n<!---\nDO NOT EDIT\n-*-
       Mergify Payload -*-\n{\"merge-queue-pr\": true}\n-*- Mergify Payload End -*-\n-->\n\n```yaml\n---\npull_requests:\n  -
@@ -985,7 +985,7 @@ interactions:
       queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\n\n<details>\n<summary>Mergify
       commands</summary>\n\n<br />\n\nYou can also trigger Mergify actions by commenting
       on this pull request:\n\n- `@Mergifyio refresh` will re-evaluate the queue rules\n\nAdditionally,
-      on Mergify [dashboard](https://dashboard.mergify.com) you can:\n\n- look at
+      on Mergify [dashboard](http://localhost:3000) you can:\n\n- look at
       your merge queues\n- generate the Mergify configuration with the config editor.\n\nFinally,
       you can contact us on https://mergify.com\n</details>\n<!---\nDO NOT EDIT\n-*-
       Mergify Payload -*-\n{\"merge-queue-pr\": true}\n-*- Mergify Payload End -*-\n-->\n\n```yaml\n---\npull_requests:\n  -
@@ -1019,7 +1019,7 @@ interactions:
       queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\n\n<details>\n<summary>Mergify
       commands</summary>\n\n<br />\n\nYou can also trigger Mergify actions by commenting
       on this pull request:\n\n- `@Mergifyio refresh` will re-evaluate the queue rules\n\nAdditionally,
-      on Mergify [dashboard](https://dashboard.mergify.com) you can:\n\n- look at
+      on Mergify [dashboard](http://localhost:3000) you can:\n\n- look at
       your merge queues\n- generate the Mergify configuration with the config editor.\n\nFinally,
       you can contact us on https://mergify.com\n</details>\n<!---\nDO NOT EDIT\n-*-
       Mergify Payload -*-\n{\"merge-queue-pr\": true}\n-*- Mergify Payload End -*-\n-->\n\n```yaml\n---\npull_requests:\n  -
@@ -1164,7 +1164,7 @@ interactions:
       queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\n\n<details>\n<summary>Mergify
       commands</summary>\n\n<br />\n\nYou can also trigger Mergify actions by commenting
       on this pull request:\n\n- `@Mergifyio refresh` will re-evaluate the queue rules\n\nAdditionally,
-      on Mergify [dashboard](https://dashboard.mergify.com) you can:\n\n- look at
+      on Mergify [dashboard](http://localhost:3000) you can:\n\n- look at
       your merge queues\n- generate the Mergify configuration with the config editor.\n\nFinally,
       you can contact us on https://mergify.com\n</details>\n<!---\nDO NOT EDIT\n-*-
       Mergify Payload -*-\n{\"merge-queue-pr\": true}\n-*- Mergify Payload End -*-\n-->\n\n```yaml\n---\npull_requests:\n  -
@@ -1199,7 +1199,7 @@ interactions:
       informations about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\n\n<details>\n<summary>Mergify
       commands</summary>\n\n<br />\n\nYou can also trigger Mergify actions by commenting
       on this pull request:\n\n- `@Mergifyio refresh` will re-evaluate the queue rules\n\nAdditionally,
-      on Mergify [dashboard](https://dashboard.mergify.com) you can:\n\n- look at
+      on Mergify [dashboard](http://localhost:3000) you can:\n\n- look at
       your merge queues\n- generate the Mergify configuration with the config editor.\n\nFinally,
       you can contact us on https://mergify.com\n</details>\n<!---\nDO NOT EDIT\n-*-
       Mergify Payload -*-\n{\"merge-queue-pr\": true}\n-*- Mergify Payload End -*-\n-->\n\n```yaml\n---\npull_requests:\n  -
@@ -1231,7 +1231,7 @@ interactions:
       informations about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\\n\\n<details>\\n<summary>Mergify
       commands</summary>\\n\\n<br />\\n\\nYou can also trigger Mergify actions by
       commenting on this pull request:\\n\\n- `@Mergifyio refresh` will re-evaluate
-      the queue rules\\n\\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com)
+      the queue rules\\n\\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\\n\\n- look at your merge queues\\n- generate the Mergify configuration
       with the config editor.\\n\\nFinally, you can contact us on https://mergify.com\\n</details>\\n<!---\\nDO
       NOT EDIT\\n-*- Mergify Payload -*-\\n{\\\"merge-queue-pr\\\": true}\\n-*- Mergify
@@ -1318,7 +1318,7 @@ interactions:
       informations about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\\n\\n<details>\\n<summary>Mergify
       commands</summary>\\n\\n<br />\\n\\nYou can also trigger Mergify actions by
       commenting on this pull request:\\n\\n- `@Mergifyio refresh` will re-evaluate
-      the queue rules\\n\\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com)
+      the queue rules\\n\\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\\n\\n- look at your merge queues\\n- generate the Mergify configuration
       with the config editor.\\n\\nFinally, you can contact us on https://mergify.com\\n</details>\\n<!---\\nDO
       NOT EDIT\\n-*- Mergify Payload -*-\\n{\\\"merge-queue-pr\\\": true}\\n-*- Mergify

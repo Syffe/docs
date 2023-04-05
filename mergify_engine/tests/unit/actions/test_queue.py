@@ -703,5 +703,5 @@ async def test_check_subscription_status(
     assert e.value.title == expected_title
     assert (
         e.value.message
-        == "⚠ The [subscription](https://dashboard.mergify.com/github/Mergifyio/subscription) needs to be updated to enable this feature."
+        == "⚠ The [subscription](http://localhost:3000/github/Mergifyio/subscription) needs to be updated to enable this feature."
     )

@@ -941,7 +941,7 @@ interactions:
       refresh` will re-evaluate the rules\n- `@Mergifyio rebase` will rebase this
       PR on its base branch\n- `@Mergifyio update` will merge the base branch into
       this PR\n- `@Mergifyio backport <destination>` will backport this PR on `<destination>`
-      branch\n\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com/)
+      branch\n\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\n\n- look at your merge queues\n- generate the Mergify configuration
       with the config editor.\n\nFinally, you can contact us on https://mergify.com\n</details>\n"},
       "external_id": "17501", "conclusion": "success", "completed_at": "2023-03-16T10:39:51.743054+00:00"}'
@@ -971,7 +971,7 @@ interactions:
       refresh` will re-evaluate the rules\n- `@Mergifyio rebase` will rebase this
       PR on its base branch\n- `@Mergifyio update` will merge the base branch into
       this PR\n- `@Mergifyio backport <destination>` will backport this PR on `<destination>`
-      branch\n\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com/)
+      branch\n\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\n\n- look at your merge queues\n- generate the Mergify configuration
       with the config editor.\n\nFinally, you can contact us on https://mergify.com\n</details>\n","text":null,"annotations_count":0,"annotations_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/check-runs/12047172488/annotations"},"check_suite":{"id":11602586394},"app":{"id":214877,"slug":"mergify-greesb","node_id":"A_kwHOAmplV84AA0dd","owner":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"name":"mergify-Greesb","description":"Mergify
       testing installation for Greesb","external_url":"https://mergify.com/","html_url":"https://github.com/apps/mergify-greesb","created_at":"2022-06-27T12:53:37Z","updated_at":"2022-06-27T12:53:37Z","permissions":{"administration":"read","checks":"write","contents":"write","emails":"read","issues":"write","members":"read","metadata":"read","pages":"write","pull_requests":"write","statuses":"write","workflows":"write"},"events":["check_run","check_suite","issue_comment","member","membership","organization","pull_request","pull_request_review","pull_request_review_comment","pull_request_review_thread","push","repository","status","team","team_add"]},"pull_requests":[{"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/pulls/17501","id":1278336244,"number":17501,"head":{"ref":"20230316103913/test_queue_1_pr_multiple_partitions_no_inplace_fail/integration/pr1","sha":"3d06120d25d75c6a291e287feeb224fd1ee64ab0","repo":{"id":500849499,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb","name":"functional-testing-repo-Greesb"}},"base":{"ref":"20230316103913/test_queue_1_pr_multiple_partitions_no_inplace_fail/main","sha":"07ce8c0db531cd29a0b1e7bf724a2c03fd26da38","repo":{"id":500849499,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb","name":"functional-testing-repo-Greesb"}}}]}'
@@ -1038,7 +1038,7 @@ interactions:
       refresh` will re-evaluate the rules\n- `@Mergifyio rebase` will rebase this
       PR on its base branch\n- `@Mergifyio update` will merge the base branch into
       this PR\n- `@Mergifyio backport <destination>` will backport this PR on `<destination>`
-      branch\n\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com/)
+      branch\n\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\n\n- look at your merge queues\n- generate the Mergify configuration
       with the config editor.\n\nFinally, you can contact us on https://mergify.com\n</details>\n","text":null,"annotations_count":0,"annotations_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/check-runs/12047172488/annotations"},"check_suite":{"id":11602586394},"app":{"id":214877,"slug":"mergify-greesb","node_id":"A_kwHOAmplV84AA0dd","owner":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"name":"mergify-Greesb","description":"Mergify
       testing installation for Greesb","external_url":"https://mergify.com/","html_url":"https://github.com/apps/mergify-greesb","created_at":"2022-06-27T12:53:37Z","updated_at":"2022-06-27T12:53:37Z","permissions":{"administration":"read","checks":"write","contents":"write","emails":"read","issues":"write","members":"read","metadata":"read","pages":"write","pull_requests":"write","statuses":"write","workflows":"write"},"events":["check_run","check_suite","issue_comment","member","membership","organization","pull_request","pull_request_review","pull_request_review_comment","pull_request_review_thread","push","repository","status","team","team_add"]},"pull_requests":[{"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/pulls/17501","id":1278336244,"number":17501,"head":{"ref":"20230316103913/test_queue_1_pr_multiple_partitions_no_inplace_fail/integration/pr1","sha":"3d06120d25d75c6a291e287feeb224fd1ee64ab0","repo":{"id":500849499,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb","name":"functional-testing-repo-Greesb"}},"base":{"ref":"20230316103913/test_queue_1_pr_multiple_partitions_no_inplace_fail/main","sha":"07ce8c0db531cd29a0b1e7bf724a2c03fd26da38","repo":{"id":500849499,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb","name":"functional-testing-repo-Greesb"}}}]},{"id":12047170959,"name":"Rule:
@@ -1283,7 +1283,7 @@ interactions:
       about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\n\n<details>\n<summary>Mergify
       commands</summary>\n\n<br />\n\nYou can also trigger Mergify actions by commenting
       on this pull request:\n\n- `@Mergifyio refresh` will re-evaluate the queue rules\n\nAdditionally,
-      on Mergify [dashboard](https://dashboard.mergify.com) you can:\n\n- look at
+      on Mergify [dashboard](http://localhost:3000) you can:\n\n- look at
       your merge queues\n- generate the Mergify configuration with the config editor.\n\nFinally,
       you can contact us on https://mergify.com\n</details>\n<!---\nDO NOT EDIT\n-*-
       Mergify Payload -*-\n{\"merge-queue-pr\": true}\n-*- Mergify Payload End -*-\n-->\n\n```yaml\n---\npull_requests:\n  -
@@ -1318,7 +1318,7 @@ interactions:
       about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\n\n<details>\n<summary>Mergify
       commands</summary>\n\n<br />\n\nYou can also trigger Mergify actions by commenting
       on this pull request:\n\n- `@Mergifyio refresh` will re-evaluate the queue rules\n\nAdditionally,
-      on Mergify [dashboard](https://dashboard.mergify.com) you can:\n\n- look at
+      on Mergify [dashboard](http://localhost:3000) you can:\n\n- look at
       your merge queues\n- generate the Mergify configuration with the config editor.\n\nFinally,
       you can contact us on https://mergify.com\n</details>\n<!---\nDO NOT EDIT\n-*-
       Mergify Payload -*-\n{\"merge-queue-pr\": true}\n-*- Mergify Payload End -*-\n-->\n\n```yaml\n---\npull_requests:\n  -
@@ -1362,7 +1362,7 @@ interactions:
       about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\n\n<details>\n<summary>Mergify
       commands</summary>\n\n<br />\n\nYou can also trigger Mergify actions by commenting
       on this pull request:\n\n- `@Mergifyio refresh` will re-evaluate the queue rules\n\nAdditionally,
-      on Mergify [dashboard](https://dashboard.mergify.com) you can:\n\n- look at
+      on Mergify [dashboard](http://localhost:3000) you can:\n\n- look at
       your merge queues\n- generate the Mergify configuration with the config editor.\n\nFinally,
       you can contact us on https://mergify.com\n</details>\n<!---\nDO NOT EDIT\n-*-
       Mergify Payload -*-\n{\"merge-queue-pr\": true}\n-*- Mergify Payload End -*-\n-->\n\n```yaml\n---\npull_requests:\n  -
@@ -1444,7 +1444,7 @@ interactions:
       queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\n\n<details>\n<summary>Mergify
       commands</summary>\n\n<br />\n\nYou can also trigger Mergify actions by commenting
       on this pull request:\n\n- `@Mergifyio refresh` will re-evaluate the queue rules\n\nAdditionally,
-      on Mergify [dashboard](https://dashboard.mergify.com) you can:\n\n- look at
+      on Mergify [dashboard](http://localhost:3000) you can:\n\n- look at
       your merge queues\n- generate the Mergify configuration with the config editor.\n\nFinally,
       you can contact us on https://mergify.com\n</details>\n<!---\nDO NOT EDIT\n-*-
       Mergify Payload -*-\n{\"merge-queue-pr\": true}\n-*- Mergify Payload End -*-\n-->\n\n```yaml\n---\npull_requests:\n  -
@@ -1479,7 +1479,7 @@ interactions:
       queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\n\n<details>\n<summary>Mergify
       commands</summary>\n\n<br />\n\nYou can also trigger Mergify actions by commenting
       on this pull request:\n\n- `@Mergifyio refresh` will re-evaluate the queue rules\n\nAdditionally,
-      on Mergify [dashboard](https://dashboard.mergify.com) you can:\n\n- look at
+      on Mergify [dashboard](http://localhost:3000) you can:\n\n- look at
       your merge queues\n- generate the Mergify configuration with the config editor.\n\nFinally,
       you can contact us on https://mergify.com\n</details>\n<!---\nDO NOT EDIT\n-*-
       Mergify Payload -*-\n{\"merge-queue-pr\": true}\n-*- Mergify Payload End -*-\n-->\n\n```yaml\n---\npull_requests:\n  -
@@ -1722,7 +1722,7 @@ interactions:
       about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\n\n<details>\n<summary>Mergify
       commands</summary>\n\n<br />\n\nYou can also trigger Mergify actions by commenting
       on this pull request:\n\n- `@Mergifyio refresh` will re-evaluate the queue rules\n\nAdditionally,
-      on Mergify [dashboard](https://dashboard.mergify.com) you can:\n\n- look at
+      on Mergify [dashboard](http://localhost:3000) you can:\n\n- look at
       your merge queues\n- generate the Mergify configuration with the config editor.\n\nFinally,
       you can contact us on https://mergify.com\n</details>\n<!---\nDO NOT EDIT\n-*-
       Mergify Payload -*-\n{\"merge-queue-pr\": true}\n-*- Mergify Payload End -*-\n-->\n\n```yaml\n---\npull_requests:\n  -
@@ -1870,7 +1870,7 @@ interactions:
       refresh` will re-evaluate the rules\n- `@Mergifyio rebase` will rebase this
       PR on its base branch\n- `@Mergifyio update` will merge the base branch into
       this PR\n- `@Mergifyio backport <destination>` will backport this PR on `<destination>`
-      branch\n\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com/)
+      branch\n\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\n\n- look at your merge queues\n- generate the Mergify configuration
       with the config editor.\n\nFinally, you can contact us on https://mergify.com\n</details>\n","text":null,"annotations_count":0,"annotations_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/check-runs/12047172488/annotations"},"check_suite":{"id":11602586394},"app":{"id":214877,"slug":"mergify-greesb","node_id":"A_kwHOAmplV84AA0dd","owner":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"name":"mergify-Greesb","description":"Mergify
       testing installation for Greesb","external_url":"https://mergify.com/","html_url":"https://github.com/apps/mergify-greesb","created_at":"2022-06-27T12:53:37Z","updated_at":"2022-06-27T12:53:37Z","permissions":{"administration":"read","checks":"write","contents":"write","emails":"read","issues":"write","members":"read","metadata":"read","pages":"write","pull_requests":"write","statuses":"write","workflows":"write"},"events":["check_run","check_suite","issue_comment","member","membership","organization","pull_request","pull_request_review","pull_request_review_comment","pull_request_review_thread","push","repository","status","team","team_add"]},"pull_requests":[{"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/pulls/17501","id":1278336244,"number":17501,"head":{"ref":"20230316103913/test_queue_1_pr_multiple_partitions_no_inplace_fail/integration/pr1","sha":"3d06120d25d75c6a291e287feeb224fd1ee64ab0","repo":{"id":500849499,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb","name":"functional-testing-repo-Greesb"}},"base":{"ref":"20230316103913/test_queue_1_pr_multiple_partitions_no_inplace_fail/main","sha":"07ce8c0db531cd29a0b1e7bf724a2c03fd26da38","repo":{"id":500849499,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb","name":"functional-testing-repo-Greesb"}}}]},{"id":12047170959,"name":"Rule:
@@ -1992,7 +1992,7 @@ interactions:
       queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\n\n<details>\n<summary>Mergify
       commands</summary>\n\n<br />\n\nYou can also trigger Mergify actions by commenting
       on this pull request:\n\n- `@Mergifyio refresh` will re-evaluate the queue rules\n\nAdditionally,
-      on Mergify [dashboard](https://dashboard.mergify.com) you can:\n\n- look at
+      on Mergify [dashboard](http://localhost:3000) you can:\n\n- look at
       your merge queues\n- generate the Mergify configuration with the config editor.\n\nFinally,
       you can contact us on https://mergify.com\n</details>\n<!---\nDO NOT EDIT\n-*-
       Mergify Payload -*-\n{\"merge-queue-pr\": true}\n-*- Mergify Payload End -*-\n-->\n\n```yaml\n---\npull_requests:\n  -
@@ -2184,7 +2184,7 @@ interactions:
       refresh` will re-evaluate the rules\n- `@Mergifyio rebase` will rebase this
       PR on its base branch\n- `@Mergifyio update` will merge the base branch into
       this PR\n- `@Mergifyio backport <destination>` will backport this PR on `<destination>`
-      branch\n\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com/)
+      branch\n\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\n\n- look at your merge queues\n- generate the Mergify configuration
       with the config editor.\n\nFinally, you can contact us on https://mergify.com\n</details>\n","text":null,"annotations_count":0,"annotations_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/check-runs/12047172488/annotations"},"check_suite":{"id":11602586394,"node_id":"CS_kwDOHdpbW88AAAACs5FrGg","head_branch":"20230316103913/test_queue_1_pr_multiple_partitions_no_inplace_fail/integration/pr1","head_sha":"3d06120d25d75c6a291e287feeb224fd1ee64ab0","status":"in_progress","conclusion":null,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/check-suites/11602586394","before":"0000000000000000000000000000000000000000","after":"3d06120d25d75c6a291e287feeb224fd1ee64ab0","pull_requests":[{"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/pulls/17501","id":1278336244,"number":17501,"head":{"ref":"20230316103913/test_queue_1_pr_multiple_partitions_no_inplace_fail/integration/pr1","sha":"3d06120d25d75c6a291e287feeb224fd1ee64ab0","repo":{"id":500849499,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb","name":"functional-testing-repo-Greesb"}},"base":{"ref":"20230316103913/test_queue_1_pr_multiple_partitions_no_inplace_fail/main","sha":"07ce8c0db531cd29a0b1e7bf724a2c03fd26da38","repo":{"id":500849499,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb","name":"functional-testing-repo-Greesb"}}}],"app":{"id":214877,"slug":"mergify-greesb","node_id":"A_kwHOAmplV84AA0dd","owner":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"name":"mergify-Greesb","description":"Mergify
       testing installation for Greesb","external_url":"https://mergify.com/","html_url":"https://github.com/apps/mergify-greesb","created_at":"2022-06-27T12:53:37Z","updated_at":"2022-06-27T12:53:37Z","permissions":{"administration":"read","checks":"write","contents":"write","emails":"read","issues":"write","members":"read","metadata":"read","pages":"write","pull_requests":"write","statuses":"write","workflows":"write"},"events":["check_run","check_suite","issue_comment","member","membership","organization","pull_request","pull_request_review","pull_request_review_comment","pull_request_review_thread","push","repository","status","team","team_add"]},"created_at":"2023-03-16T10:39:21Z","updated_at":"2023-03-16T10:39:51Z"},"app":{"id":214877,"slug":"mergify-greesb","node_id":"A_kwHOAmplV84AA0dd","owner":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"name":"mergify-Greesb","description":"Mergify
@@ -2203,7 +2203,7 @@ interactions:
       refresh` will re-evaluate the rules\n- `@Mergifyio rebase` will rebase this
       PR on its base branch\n- `@Mergifyio update` will merge the base branch into
       this PR\n- `@Mergifyio backport <destination>` will backport this PR on `<destination>`
-      branch\n\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com/)
+      branch\n\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\n\n- look at your merge queues\n- generate the Mergify configuration
       with the config editor.\n\nFinally, you can contact us on https://mergify.com\n</details>\n","text":null,"annotations_count":0,"annotations_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/check-runs/12047172488/annotations"},"check_suite":{"id":11602586394,"node_id":"CS_kwDOHdpbW88AAAACs5FrGg","head_branch":"20230316103913/test_queue_1_pr_multiple_partitions_no_inplace_fail/integration/pr1","head_sha":"3d06120d25d75c6a291e287feeb224fd1ee64ab0","status":"in_progress","conclusion":null,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/check-suites/11602586394","before":"0000000000000000000000000000000000000000","after":"3d06120d25d75c6a291e287feeb224fd1ee64ab0","pull_requests":[{"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/pulls/17501","id":1278336244,"number":17501,"head":{"ref":"20230316103913/test_queue_1_pr_multiple_partitions_no_inplace_fail/integration/pr1","sha":"3d06120d25d75c6a291e287feeb224fd1ee64ab0","repo":{"id":500849499,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb","name":"functional-testing-repo-Greesb"}},"base":{"ref":"20230316103913/test_queue_1_pr_multiple_partitions_no_inplace_fail/main","sha":"07ce8c0db531cd29a0b1e7bf724a2c03fd26da38","repo":{"id":500849499,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb","name":"functional-testing-repo-Greesb"}}}],"app":{"id":214877,"slug":"mergify-greesb","node_id":"A_kwHOAmplV84AA0dd","owner":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"name":"mergify-Greesb","description":"Mergify
       testing installation for Greesb","external_url":"https://mergify.com/","html_url":"https://github.com/apps/mergify-greesb","created_at":"2022-06-27T12:53:37Z","updated_at":"2022-06-27T12:53:37Z","permissions":{"administration":"read","checks":"write","contents":"write","emails":"read","issues":"write","members":"read","metadata":"read","pages":"write","pull_requests":"write","statuses":"write","workflows":"write"},"events":["check_run","check_suite","issue_comment","member","membership","organization","pull_request","pull_request_review","pull_request_review_comment","pull_request_review_thread","push","repository","status","team","team_add"]},"created_at":"2023-03-16T10:39:21Z","updated_at":"2023-03-16T10:39:51Z"},"app":{"id":214877,"slug":"mergify-greesb","node_id":"A_kwHOAmplV84AA0dd","owner":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"name":"mergify-Greesb","description":"Mergify
@@ -2224,7 +2224,7 @@ interactions:
       about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\n\n<details>\n<summary>Mergify
       commands</summary>\n\n<br />\n\nYou can also trigger Mergify actions by commenting
       on this pull request:\n\n- `@Mergifyio refresh` will re-evaluate the queue rules\n\nAdditionally,
-      on Mergify [dashboard](https://dashboard.mergify.com) you can:\n\n- look at
+      on Mergify [dashboard](http://localhost:3000) you can:\n\n- look at
       your merge queues\n- generate the Mergify configuration with the config editor.\n\nFinally,
       you can contact us on https://mergify.com\n</details>\n<!---\nDO NOT EDIT\n-*-
       Mergify Payload -*-\n{\"merge-queue-pr\": true}\n-*- Mergify Payload End -*-\n-->\n\n```yaml\n---\npull_requests:\n  -
@@ -2247,7 +2247,7 @@ interactions:
       queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\n\n<details>\n<summary>Mergify
       commands</summary>\n\n<br />\n\nYou can also trigger Mergify actions by commenting
       on this pull request:\n\n- `@Mergifyio refresh` will re-evaluate the queue rules\n\nAdditionally,
-      on Mergify [dashboard](https://dashboard.mergify.com) you can:\n\n- look at
+      on Mergify [dashboard](http://localhost:3000) you can:\n\n- look at
       your merge queues\n- generate the Mergify configuration with the config editor.\n\nFinally,
       you can contact us on https://mergify.com\n</details>\n<!---\nDO NOT EDIT\n-*-
       Mergify Payload -*-\n{\"merge-queue-pr\": true}\n-*- Mergify Payload End -*-\n-->\n\n```yaml\n---\npull_requests:\n  -
@@ -2265,7 +2265,7 @@ interactions:
       about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\n\n<details>\n<summary>Mergify
       commands</summary>\n\n<br />\n\nYou can also trigger Mergify actions by commenting
       on this pull request:\n\n- `@Mergifyio refresh` will re-evaluate the queue rules\n\nAdditionally,
-      on Mergify [dashboard](https://dashboard.mergify.com) you can:\n\n- look at
+      on Mergify [dashboard](http://localhost:3000) you can:\n\n- look at
       your merge queues\n- generate the Mergify configuration with the config editor.\n\nFinally,
       you can contact us on https://mergify.com\n</details>\n<!---\nDO NOT EDIT\n-*-
       Mergify Payload -*-\n{\"merge-queue-pr\": true}\n-*- Mergify Payload End -*-\n-->\n\n```yaml\n---\npull_requests:\n  -
@@ -2425,7 +2425,7 @@ interactions:
       queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\n\n<details>\n<summary>Mergify
       commands</summary>\n\n<br />\n\nYou can also trigger Mergify actions by commenting
       on this pull request:\n\n- `@Mergifyio refresh` will re-evaluate the queue rules\n\nAdditionally,
-      on Mergify [dashboard](https://dashboard.mergify.com) you can:\n\n- look at
+      on Mergify [dashboard](http://localhost:3000) you can:\n\n- look at
       your merge queues\n- generate the Mergify configuration with the config editor.\n\nFinally,
       you can contact us on https://mergify.com\n</details>\n<!---\nDO NOT EDIT\n-*-
       Mergify Payload -*-\n{\"merge-queue-pr\": true}\n-*- Mergify Payload End -*-\n-->\n\n```yaml\n---\npull_requests:\n  -
@@ -2622,7 +2622,7 @@ interactions:
       refresh` will re-evaluate the rules\n- `@Mergifyio rebase` will rebase this
       PR on its base branch\n- `@Mergifyio update` will merge the base branch into
       this PR\n- `@Mergifyio backport <destination>` will backport this PR on `<destination>`
-      branch\n\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com/)
+      branch\n\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\n\n- look at your merge queues\n- generate the Mergify configuration
       with the config editor.\n\nFinally, you can contact us on https://mergify.com\n</details>\n","text":null,"annotations_count":0,"annotations_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/check-runs/12047172488/annotations"},"check_suite":{"id":11602586394},"app":{"id":214877,"slug":"mergify-greesb","node_id":"A_kwHOAmplV84AA0dd","owner":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"name":"mergify-Greesb","description":"Mergify
       testing installation for Greesb","external_url":"https://mergify.com/","html_url":"https://github.com/apps/mergify-greesb","created_at":"2022-06-27T12:53:37Z","updated_at":"2022-06-27T12:53:37Z","permissions":{"administration":"read","checks":"write","contents":"write","emails":"read","issues":"write","members":"read","metadata":"read","pages":"write","pull_requests":"write","statuses":"write","workflows":"write"},"events":["check_run","check_suite","issue_comment","member","membership","organization","pull_request","pull_request_review","pull_request_review_comment","pull_request_review_thread","push","repository","status","team","team_add"]},"pull_requests":[{"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/pulls/17501","id":1278336244,"number":17501,"head":{"ref":"20230316103913/test_queue_1_pr_multiple_partitions_no_inplace_fail/integration/pr1","sha":"3d06120d25d75c6a291e287feeb224fd1ee64ab0","repo":{"id":500849499,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb","name":"functional-testing-repo-Greesb"}},"base":{"ref":"20230316103913/test_queue_1_pr_multiple_partitions_no_inplace_fail/main","sha":"07ce8c0db531cd29a0b1e7bf724a2c03fd26da38","repo":{"id":500849499,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb","name":"functional-testing-repo-Greesb"}}}]},{"id":12047170959,"name":"Rule:
@@ -2723,7 +2723,7 @@ interactions:
       about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\n\n<details>\n<summary>Mergify
       commands</summary>\n\n<br />\n\nYou can also trigger Mergify actions by commenting
       on this pull request:\n\n- `@Mergifyio refresh` will re-evaluate the queue rules\n\nAdditionally,
-      on Mergify [dashboard](https://dashboard.mergify.com) you can:\n\n- look at
+      on Mergify [dashboard](http://localhost:3000) you can:\n\n- look at
       your merge queues\n- generate the Mergify configuration with the config editor.\n\nFinally,
       you can contact us on https://mergify.com\n</details>\n<!---\nDO NOT EDIT\n-*-
       Mergify Payload -*-\n{\"merge-queue-pr\": true}\n-*- Mergify Payload End -*-\n-->\n\n```yaml\n---\npull_requests:\n  -
@@ -2755,7 +2755,7 @@ interactions:
       informations about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\\n\\n<details>\\n<summary>Mergify
       commands</summary>\\n\\n<br />\\n\\nYou can also trigger Mergify actions by
       commenting on this pull request:\\n\\n- `@Mergifyio refresh` will re-evaluate
-      the queue rules\\n\\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com)
+      the queue rules\\n\\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\\n\\n- look at your merge queues\\n- generate the Mergify configuration
       with the config editor.\\n\\nFinally, you can contact us on https://mergify.com\\n</details>\\n<!---\\nDO
       NOT EDIT\\n-*- Mergify Payload -*-\\n{\\\"merge-queue-pr\\\": true}\\n-*- Mergify
@@ -2913,7 +2913,7 @@ interactions:
       informations about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\\n\\n<details>\\n<summary>Mergify
       commands</summary>\\n\\n<br />\\n\\nYou can also trigger Mergify actions by
       commenting on this pull request:\\n\\n- `@Mergifyio refresh` will re-evaluate
-      the queue rules\\n\\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com)
+      the queue rules\\n\\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\\n\\n- look at your merge queues\\n- generate the Mergify configuration
       with the config editor.\\n\\nFinally, you can contact us on https://mergify.com\\n</details>\\n<!---\\nDO
       NOT EDIT\\n-*- Mergify Payload -*-\\n{\\\"merge-queue-pr\\\": true}\\n-*- Mergify
@@ -2988,7 +2988,7 @@ interactions:
       refresh` will re-evaluate the rules\n- `@Mergifyio rebase` will rebase this
       PR on its base branch\n- `@Mergifyio update` will merge the base branch into
       this PR\n- `@Mergifyio backport <destination>` will backport this PR on `<destination>`
-      branch\n\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com/)
+      branch\n\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\n\n- look at your merge queues\n- generate the Mergify configuration
       with the config editor.\n\nFinally, you can contact us on https://mergify.com\n</details>\n","text":null,"annotations_count":0,"annotations_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/check-runs/12047172488/annotations"},"check_suite":{"id":11602586394},"app":{"id":214877,"slug":"mergify-greesb","node_id":"A_kwHOAmplV84AA0dd","owner":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"name":"mergify-Greesb","description":"Mergify
       testing installation for Greesb","external_url":"https://mergify.com/","html_url":"https://github.com/apps/mergify-greesb","created_at":"2022-06-27T12:53:37Z","updated_at":"2022-06-27T12:53:37Z","permissions":{"administration":"read","checks":"write","contents":"write","emails":"read","issues":"write","members":"read","metadata":"read","pages":"write","pull_requests":"write","statuses":"write","workflows":"write"},"events":["check_run","check_suite","issue_comment","member","membership","organization","pull_request","pull_request_review","pull_request_review_comment","pull_request_review_thread","push","repository","status","team","team_add"]},"pull_requests":[{"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/pulls/17501","id":1278336244,"number":17501,"head":{"ref":"20230316103913/test_queue_1_pr_multiple_partitions_no_inplace_fail/integration/pr1","sha":"3d06120d25d75c6a291e287feeb224fd1ee64ab0","repo":{"id":500849499,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb","name":"functional-testing-repo-Greesb"}},"base":{"ref":"20230316103913/test_queue_1_pr_multiple_partitions_no_inplace_fail/main","sha":"07ce8c0db531cd29a0b1e7bf724a2c03fd26da38","repo":{"id":500849499,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb","name":"functional-testing-repo-Greesb"}}}]},{"id":12047170959,"name":"Rule:
@@ -3163,7 +3163,7 @@ interactions:
       about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\n\n<details>\n<summary>Mergify
       commands</summary>\n\n<br />\n\nYou can also trigger Mergify actions by commenting
       on this pull request:\n\n- `@Mergifyio refresh` will re-evaluate the queue rules\n\nAdditionally,
-      on Mergify [dashboard](https://dashboard.mergify.com) you can:\n\n- look at
+      on Mergify [dashboard](http://localhost:3000) you can:\n\n- look at
       your merge queues\n- generate the Mergify configuration with the config editor.\n\nFinally,
       you can contact us on https://mergify.com\n</details>\n<!---\nDO NOT EDIT\n-*-
       Mergify Payload -*-\n{\"merge-queue-pr\": true}\n-*- Mergify Payload End -*-\n-->\n\n```yaml\n---\npull_requests:\n  -
@@ -3195,7 +3195,7 @@ interactions:
       informations about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\\n\\n<details>\\n<summary>Mergify
       commands</summary>\\n\\n<br />\\n\\nYou can also trigger Mergify actions by
       commenting on this pull request:\\n\\n- `@Mergifyio refresh` will re-evaluate
-      the queue rules\\n\\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com)
+      the queue rules\\n\\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\\n\\n- look at your merge queues\\n- generate the Mergify configuration
       with the config editor.\\n\\nFinally, you can contact us on https://mergify.com\\n</details>\\n<!---\\nDO
       NOT EDIT\\n-*- Mergify Payload -*-\\n{\\\"merge-queue-pr\\\": true}\\n-*- Mergify
@@ -3353,7 +3353,7 @@ interactions:
       informations about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\\n\\n<details>\\n<summary>Mergify
       commands</summary>\\n\\n<br />\\n\\nYou can also trigger Mergify actions by
       commenting on this pull request:\\n\\n- `@Mergifyio refresh` will re-evaluate
-      the queue rules\\n\\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com)
+      the queue rules\\n\\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\\n\\n- look at your merge queues\\n- generate the Mergify configuration
       with the config editor.\\n\\nFinally, you can contact us on https://mergify.com\\n</details>\\n<!---\\nDO
       NOT EDIT\\n-*- Mergify Payload -*-\\n{\\\"merge-queue-pr\\\": true}\\n-*- Mergify
@@ -3400,7 +3400,7 @@ interactions:
       informations about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\\n\\n<details>\\n<summary>Mergify
       commands</summary>\\n\\n<br />\\n\\nYou can also trigger Mergify actions by
       commenting on this pull request:\\n\\n- `@Mergifyio refresh` will re-evaluate
-      the queue rules\\n\\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com)
+      the queue rules\\n\\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\\n\\n- look at your merge queues\\n- generate the Mergify configuration
       with the config editor.\\n\\nFinally, you can contact us on https://mergify.com\\n</details>\\n<!---\\nDO
       NOT EDIT\\n-*- Mergify Payload -*-\\n{\\\"merge-queue-pr\\\": true}\\n-*- Mergify
@@ -3497,7 +3497,7 @@ interactions:
       refresh` will re-evaluate the rules\n- `@Mergifyio rebase` will rebase this
       PR on its base branch\n- `@Mergifyio update` will merge the base branch into
       this PR\n- `@Mergifyio backport <destination>` will backport this PR on `<destination>`
-      branch\n\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com/)
+      branch\n\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\n\n- look at your merge queues\n- generate the Mergify configuration
       with the config editor.\n\nFinally, you can contact us on https://mergify.com\n</details>\n"},
       "external_id": "17501", "conclusion": "success", "completed_at": "2023-03-16T10:44:57.163559+00:00"}'
@@ -3527,7 +3527,7 @@ interactions:
       refresh` will re-evaluate the rules\n- `@Mergifyio rebase` will rebase this
       PR on its base branch\n- `@Mergifyio update` will merge the base branch into
       this PR\n- `@Mergifyio backport <destination>` will backport this PR on `<destination>`
-      branch\n\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com/)
+      branch\n\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\n\n- look at your merge queues\n- generate the Mergify configuration
       with the config editor.\n\nFinally, you can contact us on https://mergify.com\n</details>\n","text":null,"annotations_count":0,"annotations_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/check-runs/12047172488/annotations"},"check_suite":{"id":11602586394},"app":{"id":214877,"slug":"mergify-greesb","node_id":"A_kwHOAmplV84AA0dd","owner":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"name":"mergify-Greesb","description":"Mergify
       testing installation for Greesb","external_url":"https://mergify.com/","html_url":"https://github.com/apps/mergify-greesb","created_at":"2022-06-27T12:53:37Z","updated_at":"2022-06-27T12:53:37Z","permissions":{"administration":"read","checks":"write","contents":"write","emails":"read","issues":"write","members":"read","metadata":"read","pages":"write","pull_requests":"write","statuses":"write","workflows":"write"},"events":["check_run","check_suite","issue_comment","member","membership","organization","pull_request","pull_request_review","pull_request_review_comment","pull_request_review_thread","push","repository","status","team","team_add"]},"pull_requests":[{"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/pulls/17501","id":1278336244,"number":17501,"head":{"ref":"20230316103913/test_queue_1_pr_multiple_partitions_no_inplace_fail/integration/pr1","sha":"3d06120d25d75c6a291e287feeb224fd1ee64ab0","repo":{"id":500849499,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb","name":"functional-testing-repo-Greesb"}},"base":{"ref":"20230316103913/test_queue_1_pr_multiple_partitions_no_inplace_fail/main","sha":"07ce8c0db531cd29a0b1e7bf724a2c03fd26da38","repo":{"id":500849499,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb","name":"functional-testing-repo-Greesb"}}}]}'
@@ -3601,7 +3601,7 @@ interactions:
       refresh` will re-evaluate the rules\n- `@Mergifyio rebase` will rebase this
       PR on its base branch\n- `@Mergifyio update` will merge the base branch into
       this PR\n- `@Mergifyio backport <destination>` will backport this PR on `<destination>`
-      branch\n\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com/)
+      branch\n\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\n\n- look at your merge queues\n- generate the Mergify configuration
       with the config editor.\n\nFinally, you can contact us on https://mergify.com\n</details>\n","text":null,"annotations_count":0,"annotations_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/check-runs/12047172488/annotations"},"check_suite":{"id":11602586394},"app":{"id":214877,"slug":"mergify-greesb","node_id":"A_kwHOAmplV84AA0dd","owner":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"name":"mergify-Greesb","description":"Mergify
       testing installation for Greesb","external_url":"https://mergify.com/","html_url":"https://github.com/apps/mergify-greesb","created_at":"2022-06-27T12:53:37Z","updated_at":"2022-06-27T12:53:37Z","permissions":{"administration":"read","checks":"write","contents":"write","emails":"read","issues":"write","members":"read","metadata":"read","pages":"write","pull_requests":"write","statuses":"write","workflows":"write"},"events":["check_run","check_suite","issue_comment","member","membership","organization","pull_request","pull_request_review","pull_request_review_comment","pull_request_review_thread","push","repository","status","team","team_add"]},"pull_requests":[{"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/pulls/17501","id":1278336244,"number":17501,"head":{"ref":"20230316103913/test_queue_1_pr_multiple_partitions_no_inplace_fail/integration/pr1","sha":"3d06120d25d75c6a291e287feeb224fd1ee64ab0","repo":{"id":500849499,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb","name":"functional-testing-repo-Greesb"}},"base":{"ref":"20230316103913/test_queue_1_pr_multiple_partitions_no_inplace_fail/main","sha":"07ce8c0db531cd29a0b1e7bf724a2c03fd26da38","repo":{"id":500849499,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb","name":"functional-testing-repo-Greesb"}}}]},{"id":12047170959,"name":"Rule:
@@ -3756,7 +3756,7 @@ interactions:
       informations about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\\n\\n<details>\\n<summary>Mergify
       commands</summary>\\n\\n<br />\\n\\nYou can also trigger Mergify actions by
       commenting on this pull request:\\n\\n- `@Mergifyio refresh` will re-evaluate
-      the queue rules\\n\\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com)
+      the queue rules\\n\\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\\n\\n- look at your merge queues\\n- generate the Mergify configuration
       with the config editor.\\n\\nFinally, you can contact us on https://mergify.com\\n</details>\\n<!---\\nDO
       NOT EDIT\\n-*- Mergify Payload -*-\\n{\\\"merge-queue-pr\\\": true}\\n-*- Mergify
@@ -3776,7 +3776,7 @@ interactions:
       informations about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\\n\\n<details>\\n<summary>Mergify
       commands</summary>\\n\\n<br />\\n\\nYou can also trigger Mergify actions by
       commenting on this pull request:\\n\\n- `@Mergifyio refresh` will re-evaluate
-      the queue rules\\n\\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com)
+      the queue rules\\n\\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\\n\\n- look at your merge queues\\n- generate the Mergify configuration
       with the config editor.\\n\\nFinally, you can contact us on https://mergify.com\\n</details>\\n<!---\\nDO
       NOT EDIT\\n-*- Mergify Payload -*-\\n{\\\"merge-queue-pr\\\": true}\\n-*- Mergify
@@ -3796,7 +3796,7 @@ interactions:
       informations about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).\\n\\n<details>\\n<summary>Mergify
       commands</summary>\\n\\n<br />\\n\\nYou can also trigger Mergify actions by
       commenting on this pull request:\\n\\n- `@Mergifyio refresh` will re-evaluate
-      the queue rules\\n\\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com)
+      the queue rules\\n\\nAdditionally, on Mergify [dashboard](http://localhost:3000)
       you can:\\n\\n- look at your merge queues\\n- generate the Mergify configuration
       with the config editor.\\n\\nFinally, you can contact us on https://mergify.com\\n</details>\\n<!---\\nDO
       NOT EDIT\\n-*- Mergify Payload -*-\\n{\\\"merge-queue-pr\\\": true}\\n-*- Mergify

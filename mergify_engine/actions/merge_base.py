@@ -4,6 +4,7 @@ import re
 import typing
 
 from mergify_engine import check_api
+from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import github_types
@@ -361,8 +362,7 @@ class MergeUtilsMixin:
         ):
             conclusion = check_api.Conclusion.FAILURE
             title = "Pull request must be merged manually"
-            summary = """The new Mergify permissions must be accepted to merge pull request with `.github/workflows` changes.\n
-You can accept them at https://dashboard.mergify.com/\n
+            summary = f"""{constants.NEW_MERGIFY_PERMISSIONS_MUST_BE_ACCEPTED}
 \n
 In the meantime, the pull request must be merged manually."
 """

@@ -211,7 +211,7 @@ mergeable_state: clean
 > - `@Mergifyio update` will merge the base branch into this PR
 > - `@Mergifyio backport <destination>` will backport this PR on `<destination>` branch
 > 
-> Additionally, on Mergify [dashboard](https://dashboard.mergify.com/) you can:
+> Additionally, on Mergify [dashboard](http://localhost:3000) you can:
 > 
 > - look at your merge queues
 > - generate the Mergify configuration with the config editor.

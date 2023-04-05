@@ -1,5 +1,7 @@
 import datetime
 
+from mergify_engine import settings
+
 from . import github_types
 
 
@@ -34,7 +36,7 @@ MERGIFY_OPENSOURCE_SPONSOR_DOC = (
     "for free to open source projects.\n\n"
     ":rocket:&nbsp;&nbsp;You can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n"
 )
-MERGIFY_MERGE_QUEUE_PULL_REQUEST_DOC = """
+MERGIFY_MERGE_QUEUE_PULL_REQUEST_DOC = f"""
 
 ---
 
@@ -49,7 +51,7 @@ You can also trigger Mergify actions by commenting on this pull request:
 
 - `@Mergifyio refresh` will re-evaluate the queue rules
 
-Additionally, on Mergify [dashboard](https://dashboard.mergify.com) you can:
+Additionally, on Mergify [dashboard]({settings.DASHBOARD_UI_FRONT_URL}) you can:
 
 - look at your merge queues
 - generate the Mergify configuration with the config editor.
@@ -58,7 +60,7 @@ Finally, you can contact us on https://mergify.com
 </details>
 """
 
-MERGIFY_PULL_REQUEST_DOC = """
+MERGIFY_PULL_REQUEST_DOC = f"""
 <details>
 <summary>Mergify commands and options</summary>
 
@@ -73,7 +75,7 @@ You can also trigger Mergify actions by commenting on this pull request:
 - `@Mergifyio update` will merge the base branch into this PR
 - `@Mergifyio backport <destination>` will backport this PR on `<destination>` branch
 
-Additionally, on Mergify [dashboard](https://dashboard.mergify.com/) you can:
+Additionally, on Mergify [dashboard]({settings.DASHBOARD_UI_FRONT_URL}) you can:
 
 - look at your merge queues
 - generate the Mergify configuration with the config editor.
@@ -89,3 +91,7 @@ DEPENDABOT_PULL_REQUEST_AUTHOR_LOGIN = "dependabot[bot]"
 NORMAL_DELAY_BETWEEN_SAME_PULL_REQUEST = datetime.timedelta(seconds=30)
 # minimun delay to wait between two processing of the same PR
 MIN_DELAY_BETWEEN_SAME_PULL_REQUEST = datetime.timedelta(seconds=3)
+
+NEW_MERGIFY_PERMISSIONS_MUST_BE_ACCEPTED = f"""The new Mergify permissions must be accepted to rebase pull request with `.github/workflows` changes.
+You can accept them at {settings.DASHBOARD_UI_FRONT_URL}.
+"""

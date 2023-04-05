@@ -17,6 +17,7 @@ from mergify_engine import duplicate_pull
 from mergify_engine import github_types
 from mergify_engine import json
 from mergify_engine import refresher
+from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine import worker_pusher
 from mergify_engine.actions import utils as action_utils
@@ -369,7 +370,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 check_api.Conclusion.FAILURE,
                 self.FAILURE_MESSAGE,
                 "The new Mergify permissions must be accepted to create pull request with `.github/workflows` changes.\n"
-                "You can accept them at https://dashboard.mergify.com/",
+                f"You can accept them at {settings.DASHBOARD_UI_FRONT_URL}",
             )
 
         results = await self._do_copies()

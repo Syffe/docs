@@ -39,7 +39,7 @@ class TestSubscription(base.FunctionalTestBase):
         check_run = await self.wait_for_check_run(conclusion="failure")
 
         assert (
-            "⚠ The [subscription](https://dashboard.mergify.com/github/mergifyio-testing/subscription) needs to be updated to enable this feature."
+            "⚠ The [subscription](http://localhost:3000/github/mergifyio-testing/subscription) needs to be updated to enable this feature."
             == check_run["check_run"]["output"]["summary"]
         )
         assert (

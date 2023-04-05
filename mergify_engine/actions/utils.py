@@ -8,6 +8,7 @@ from mergify_engine import config
 from mergify_engine import context
 from mergify_engine import database
 from mergify_engine import github_types
+from mergify_engine import settings
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
 from mergify_engine.models import github_user
@@ -124,7 +125,7 @@ async def render_bot_account(
             raise RenderBotAccountFailure(
                 check_api.Conclusion.ACTION_REQUIRED,
                 f"User `{bot_account}` used as `{option_name}` is unknown",
-                f"Please make sure `{bot_account}` exists and has logged into the [Mergify dashboard](https://dashboard.mergify.com).",
+                f"Please make sure `{bot_account}` exists and has logged into the [Mergify dashboard]({settings.DASHBOARD_UI_FRONT_URL}).",
             )
 
         if permission not in required_permissions:

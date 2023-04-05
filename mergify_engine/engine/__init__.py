@@ -342,7 +342,7 @@ async def run(
         return check_api.Result(
             check_api.Conclusion.FAILURE,
             title="Required GitHub permissions are missing.",
-            summary="You can accept them at https://dashboard.mergify.com/",
+            summary=f"You can accept them at {settings.DASHBOARD_UI_FRONT_URL}",
         )
 
     if ctxt.pull["base"]["repo"]["private"]:

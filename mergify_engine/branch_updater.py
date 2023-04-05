@@ -4,6 +4,7 @@ import uuid
 
 import tenacity
 
+from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import exceptions
 from mergify_engine import github_types
@@ -72,8 +73,7 @@ async def pre_rebase_check(ctxt: context.Context) -> None:
         )
     elif not ctxt.can_change_github_workflow() and await ctxt.github_workflow_changed():
         raise BranchUpdateFailure(
-            "The new Mergify permissions must be accepted to rebase pull request with `.github/workflows` changes.\n"
-            "You can accept them at https://dashboard.mergify.com/.\n"
+            f"{constants.NEW_MERGIFY_PERMISSIONS_MUST_BE_ACCEPTED}"
             "In the meantime, this pull request must be rebased manually.",
             title="Pull request can't be updated with latest base branch changes",
         )
