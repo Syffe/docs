@@ -1132,7 +1132,7 @@ interactions:
       "output": {"title": "1 potential rule", "summary": "<!-- eydSdWxlOiBtZXJnZSAocXVldWUpJzogbmV1dHJhbH0K
       -->\n\n:bangbang: **Action Required** :bangbang:\n> **The configuration uses
       the deprecated `priority` attribute of the queue action and must be replaced
-      by `priority_rules`.**\n> A brownout is planned on April 3rd, 2023.\n> This
+      by `priority_rules`.**\n> A brownout is planned on April 17th, 2023.\n> This
       option will be removed on May 9th, 2023.\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\n###
       Rule: merge (queue)\n- [ ] `label=flag:merge`\n- [X] `-closed`\n- [X] `-conflict`\n-
       [X] `-draft`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-merged`\n-
@@ -1167,7 +1167,7 @@ interactions:
       potential rule","summary":"<!-- eydSdWxlOiBtZXJnZSAocXVldWUpJzogbmV1dHJhbH0K
       -->\n\n:bangbang: **Action Required** :bangbang:\n> **The configuration uses
       the deprecated `priority` attribute of the queue action and must be replaced
-      by `priority_rules`.**\n> A brownout is planned on April 3rd, 2023.\n> This
+      by `priority_rules`.**\n> A brownout is planned on April 17th, 2023.\n> This
       option will be removed on May 9th, 2023.\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\n###
       Rule: merge (queue)\n- [ ] `label=flag:merge`\n- [X] `-closed`\n- [X] `-conflict`\n-
       [X] `-draft`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-merged`\n-
@@ -1239,7 +1239,7 @@ interactions:
       potential rule","summary":"<!-- eydSdWxlOiBtZXJnZSAocXVldWUpJzogbmV1dHJhbH0K
       -->\n\n:bangbang: **Action Required** :bangbang:\n> **The configuration uses
       the deprecated `priority` attribute of the queue action and must be replaced
-      by `priority_rules`.**\n> A brownout is planned on April 3rd, 2023.\n> This
+      by `priority_rules`.**\n> A brownout is planned on April 17th, 2023.\n> This
       option will be removed on May 9th, 2023.\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\n###
       Rule: merge (queue)\n- [ ] `label=flag:merge`\n- [X] `-closed`\n- [X] `-conflict`\n-
       [X] `-draft`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-merged`\n-
@@ -1373,7 +1373,7 @@ interactions:
       -->\n\u26a0\ufe0f The pull request has been merged by @mergify-test1\n\n\n:bangbang:
       **Action Required** :bangbang:\n> **The configuration uses the deprecated `priority`
       attribute of the queue action and must be replaced by `priority_rules`.**\n>
-      A brownout is planned on April 3rd, 2023.\n> This option will be removed on
+      A brownout is planned on April 17th, 2023.\n> This option will be removed on
       May 9th, 2023.\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\n###
       Rule: merge (queue)\n- [ ] `-closed`\n- [ ] `-merged`\n- [ ] `label=flag:merge`\n-
       [X] `-conflict`\n- [X] `-draft`\n- [X] `-draft` [:pushpin: queue requirement]\n-
@@ -1409,7 +1409,7 @@ interactions:
       -->\\n\u26A0\uFE0F The pull request has been merged by @mergify-test1\\n\\n\\n:bangbang:
       **Action Required** :bangbang:\\n> **The configuration uses the deprecated `priority`
       attribute of the queue action and must be replaced by `priority_rules`.**\\n>
-      A brownout is planned on April 3rd, 2023.\\n> This option will be removed on
+      A brownout is planned on April 17th, 2023.\\n> This option will be removed on
       May 9th, 2023.\\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\\n###
       Rule: merge (queue)\\n- [ ] `-closed`\\n- [ ] `-merged`\\n- [ ] `label=flag:merge`\\n-
       [X] `-conflict`\\n- [X] `-draft`\\n- [X] `-draft` [:pushpin: queue requirement]\\n-
@@ -1532,7 +1532,7 @@ interactions:
       -->\\n\u26A0\uFE0F The pull request has been merged by @mergify-test1\\n\\n\\n:bangbang:
       **Action Required** :bangbang:\\n> **The configuration uses the deprecated `priority`
       attribute of the queue action and must be replaced by `priority_rules`.**\\n>
-      A brownout is planned on April 3rd, 2023.\\n> This option will be removed on
+      A brownout is planned on April 17th, 2023.\\n> This option will be removed on
       May 9th, 2023.\\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\\n###
       Rule: merge (queue)\\n- [ ] `-closed`\\n- [ ] `-merged`\\n- [ ] `label=flag:merge`\\n-
       [X] `-conflict`\\n- [X] `-draft`\\n- [X] `-draft` [:pushpin: queue requirement]\\n-
@@ -1557,7 +1557,7 @@ interactions:
       -->\\n\u26A0\uFE0F The pull request has been merged by @mergify-test1\\n\\n\\n:bangbang:
       **Action Required** :bangbang:\\n> **The configuration uses the deprecated `priority`
       attribute of the queue action and must be replaced by `priority_rules`.**\\n>
-      A brownout is planned on April 3rd, 2023.\\n> This option will be removed on
+      A brownout is planned on April 17th, 2023.\\n> This option will be removed on
       May 9th, 2023.\\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\\n###
       Rule: merge (queue)\\n- [ ] `-closed`\\n- [ ] `-merged`\\n- [ ] `label=flag:merge`\\n-
       [X] `-conflict`\\n- [X] `-draft`\\n- [X] `-draft` [:pushpin: queue requirement]\\n-
@@ -2000,7 +2000,7 @@ interactions:
       potential rule","summary":"<!-- eydSdWxlOiBtZXJnZSAocXVldWUpJzogbmV1dHJhbH0K
       -->\n\n:bangbang: **Action Required** :bangbang:\n> **The configuration uses
       the deprecated `priority` attribute of the queue action and must be replaced
-      by `priority_rules`.**\n> A brownout is planned on April 3rd, 2023.\n> This
+      by `priority_rules`.**\n> A brownout is planned on April 17th, 2023.\n> This
       option will be removed on May 9th, 2023.\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\n###
       Rule: merge (queue)\n- [ ] `label=flag:merge`\n- [X] `-closed`\n- [X] `-conflict`\n-
       [X] `-draft`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-merged`\n-
@@ -2146,7 +2146,7 @@ interactions:
       "output": {"title": "1 rule matches", "summary": "<!-- eydSdWxlOiBtZXJnZSAocXVldWUpJzogbnVsbH0K
       -->\n\n:bangbang: **Action Required** :bangbang:\n> **The configuration uses
       the deprecated `priority` attribute of the queue action and must be replaced
-      by `priority_rules`.**\n> A brownout is planned on April 3rd, 2023.\n> This
+      by `priority_rules`.**\n> A brownout is planned on April 17th, 2023.\n> This
       option will be removed on May 9th, 2023.\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\n###
       Rule: merge (queue)\n- [X] `-closed`\n- [X] `-conflict`\n- [X] `-draft`\n- [X]
       `-draft` [:pushpin: queue requirement]\n- [X] `-merged`\n- [X] `-mergify-configuration-changed`
@@ -2181,7 +2181,7 @@ interactions:
       rule matches","summary":"<!-- eydSdWxlOiBtZXJnZSAocXVldWUpJzogbnVsbH0K -->\n\n:bangbang:
       **Action Required** :bangbang:\n> **The configuration uses the deprecated `priority`
       attribute of the queue action and must be replaced by `priority_rules`.**\n>
-      A brownout is planned on April 3rd, 2023.\n> This option will be removed on
+      A brownout is planned on April 17th, 2023.\n> This option will be removed on
       May 9th, 2023.\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\n###
       Rule: merge (queue)\n- [X] `-closed`\n- [X] `-conflict`\n- [X] `-draft`\n- [X]
       `-draft` [:pushpin: queue requirement]\n- [X] `-merged`\n- [X] `-mergify-configuration-changed`
@@ -2270,7 +2270,7 @@ interactions:
       rule matches","summary":"<!-- eydSdWxlOiBtZXJnZSAocXVldWUpJzogbnVsbH0K -->\n\n:bangbang:
       **Action Required** :bangbang:\n> **The configuration uses the deprecated `priority`
       attribute of the queue action and must be replaced by `priority_rules`.**\n>
-      A brownout is planned on April 3rd, 2023.\n> This option will be removed on
+      A brownout is planned on April 17th, 2023.\n> This option will be removed on
       May 9th, 2023.\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\n###
       Rule: merge (queue)\n- [X] `-closed`\n- [X] `-conflict`\n- [X] `-draft`\n- [X]
       `-draft` [:pushpin: queue requirement]\n- [X] `-merged`\n- [X] `-mergify-configuration-changed`
@@ -2568,7 +2568,7 @@ interactions:
       rule matches","summary":"<!-- eydSdWxlOiBtZXJnZSAocXVldWUpJzogbnVsbH0K -->\n\n:bangbang:
       **Action Required** :bangbang:\n> **The configuration uses the deprecated `priority`
       attribute of the queue action and must be replaced by `priority_rules`.**\n>
-      A brownout is planned on April 3rd, 2023.\n> This option will be removed on
+      A brownout is planned on April 17th, 2023.\n> This option will be removed on
       May 9th, 2023.\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\n###
       Rule: merge (queue)\n- [X] `-closed`\n- [X] `-conflict`\n- [X] `-draft`\n- [X]
       `-draft` [:pushpin: queue requirement]\n- [X] `-merged`\n- [X] `-mergify-configuration-changed`
@@ -2861,7 +2861,7 @@ interactions:
       rule matches","summary":"<!-- eydSdWxlOiBtZXJnZSAocXVldWUpJzogbnVsbH0K -->\n\n:bangbang:
       **Action Required** :bangbang:\n> **The configuration uses the deprecated `priority`
       attribute of the queue action and must be replaced by `priority_rules`.**\n>
-      A brownout is planned on April 3rd, 2023.\n> This option will be removed on
+      A brownout is planned on April 17th, 2023.\n> This option will be removed on
       May 9th, 2023.\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\n###
       Rule: merge (queue)\n- [X] `-closed`\n- [X] `-conflict`\n- [X] `-draft`\n- [X]
       `-draft` [:pushpin: queue requirement]\n- [X] `-merged`\n- [X] `-mergify-configuration-changed`
@@ -2900,7 +2900,7 @@ interactions:
       "output": {"title": "1 rule matches", "summary": "<!-- eydSdWxlOiBtZXJnZSAocXVldWUpJzogbnVsbH0K
       -->\n\n:bangbang: **Action Required** :bangbang:\n> **The configuration uses
       the deprecated `priority` attribute of the queue action and must be replaced
-      by `priority_rules`.**\n> A brownout is planned on April 3rd, 2023.\n> This
+      by `priority_rules`.**\n> A brownout is planned on April 17th, 2023.\n> This
       option will be removed on May 9th, 2023.\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\n###
       Rule: merge (queue)\n- [X] `-closed`\n- [X] `-conflict`\n- [X] `-draft`\n- [X]
       `-draft` [:pushpin: queue requirement]\n- [X] `-merged`\n- [X] `-mergify-configuration-changed`
@@ -2935,7 +2935,7 @@ interactions:
       rule matches","summary":"<!-- eydSdWxlOiBtZXJnZSAocXVldWUpJzogbnVsbH0K -->\n\n:bangbang:
       **Action Required** :bangbang:\n> **The configuration uses the deprecated `priority`
       attribute of the queue action and must be replaced by `priority_rules`.**\n>
-      A brownout is planned on April 3rd, 2023.\n> This option will be removed on
+      A brownout is planned on April 17th, 2023.\n> This option will be removed on
       May 9th, 2023.\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\n###
       Rule: merge (queue)\n- [X] `-closed`\n- [X] `-conflict`\n- [X] `-draft`\n- [X]
       `-draft` [:pushpin: queue requirement]\n- [X] `-merged`\n- [X] `-mergify-configuration-changed`
@@ -3422,7 +3422,7 @@ interactions:
       rule matches\",\"summary\":\"<!-- eydSdWxlOiBtZXJnZSAocXVldWUpJzogbnVsbH0K -->\\n\\n:bangbang:
       **Action Required** :bangbang:\\n> **The configuration uses the deprecated `priority`
       attribute of the queue action and must be replaced by `priority_rules`.**\\n>
-      A brownout is planned on April 3rd, 2023.\\n> This option will be removed on
+      A brownout is planned on April 17th, 2023.\\n> This option will be removed on
       May 9th, 2023.\\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\\n###
       Rule: merge (queue)\\n- [X] `-closed`\\n- [X] `-conflict`\\n- [X] `-draft`\\n-
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-merged`\\n- [X] `-mergify-configuration-changed`
@@ -3892,7 +3892,7 @@ interactions:
       rule matches\",\"summary\":\"<!-- eydSdWxlOiBtZXJnZSAocXVldWUpJzogbnVsbH0K -->\\n\\n:bangbang:
       **Action Required** :bangbang:\\n> **The configuration uses the deprecated `priority`
       attribute of the queue action and must be replaced by `priority_rules`.**\\n>
-      A brownout is planned on April 3rd, 2023.\\n> This option will be removed on
+      A brownout is planned on April 17th, 2023.\\n> This option will be removed on
       May 9th, 2023.\\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\\n###
       Rule: merge (queue)\\n- [X] `-closed`\\n- [X] `-conflict`\\n- [X] `-draft`\\n-
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-merged`\\n- [X] `-mergify-configuration-changed`
@@ -4335,7 +4335,7 @@ interactions:
       rule matches\",\"summary\":\"<!-- eydSdWxlOiBtZXJnZSAocXVldWUpJzogbnVsbH0K -->\\n\\n:bangbang:
       **Action Required** :bangbang:\\n> **The configuration uses the deprecated `priority`
       attribute of the queue action and must be replaced by `priority_rules`.**\\n>
-      A brownout is planned on April 3rd, 2023.\\n> This option will be removed on
+      A brownout is planned on April 17th, 2023.\\n> This option will be removed on
       May 9th, 2023.\\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\\n###
       Rule: merge (queue)\\n- [X] `-closed`\\n- [X] `-conflict`\\n- [X] `-draft`\\n-
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-merged`\\n- [X] `-mergify-configuration-changed`
@@ -4587,7 +4587,7 @@ interactions:
       rule matches\",\"summary\":\"<!-- eydSdWxlOiBtZXJnZSAocXVldWUpJzogbnVsbH0K -->\\n\\n:bangbang:
       **Action Required** :bangbang:\\n> **The configuration uses the deprecated `priority`
       attribute of the queue action and must be replaced by `priority_rules`.**\\n>
-      A brownout is planned on April 3rd, 2023.\\n> This option will be removed on
+      A brownout is planned on April 17th, 2023.\\n> This option will be removed on
       May 9th, 2023.\\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\\n###
       Rule: merge (queue)\\n- [X] `-closed`\\n- [X] `-conflict`\\n- [X] `-draft`\\n-
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-merged`\\n- [X] `-mergify-configuration-changed`
@@ -5239,7 +5239,7 @@ interactions:
       rule matches\",\"summary\":\"<!-- eydSdWxlOiBtZXJnZSAocXVldWUpJzogbnVsbH0K -->\\n\\n:bangbang:
       **Action Required** :bangbang:\\n> **The configuration uses the deprecated `priority`
       attribute of the queue action and must be replaced by `priority_rules`.**\\n>
-      A brownout is planned on April 3rd, 2023.\\n> This option will be removed on
+      A brownout is planned on April 17th, 2023.\\n> This option will be removed on
       May 9th, 2023.\\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\\n###
       Rule: merge (queue)\\n- [X] `-closed`\\n- [X] `-conflict`\\n- [X] `-draft`\\n-
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-merged`\\n- [X] `-mergify-configuration-changed`
@@ -5887,7 +5887,7 @@ interactions:
       rule matches\",\"summary\":\"<!-- eydSdWxlOiBtZXJnZSAocXVldWUpJzogbnVsbH0K -->\\n\\n:bangbang:
       **Action Required** :bangbang:\\n> **The configuration uses the deprecated `priority`
       attribute of the queue action and must be replaced by `priority_rules`.**\\n>
-      A brownout is planned on April 3rd, 2023.\\n> This option will be removed on
+      A brownout is planned on April 17th, 2023.\\n> This option will be removed on
       May 9th, 2023.\\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\\n###
       Rule: merge (queue)\\n- [X] `-closed`\\n- [X] `-conflict`\\n- [X] `-draft`\\n-
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-merged`\\n- [X] `-mergify-configuration-changed`
@@ -6386,7 +6386,7 @@ interactions:
       rule matches\",\"summary\":\"<!-- eydSdWxlOiBtZXJnZSAocXVldWUpJzogbnVsbH0K -->\\n\\n:bangbang:
       **Action Required** :bangbang:\\n> **The configuration uses the deprecated `priority`
       attribute of the queue action and must be replaced by `priority_rules`.**\\n>
-      A brownout is planned on April 3rd, 2023.\\n> This option will be removed on
+      A brownout is planned on April 17th, 2023.\\n> This option will be removed on
       May 9th, 2023.\\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\\n###
       Rule: merge (queue)\\n- [X] `-closed`\\n- [X] `-conflict`\\n- [X] `-draft`\\n-
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-merged`\\n- [X] `-mergify-configuration-changed`
@@ -6461,7 +6461,7 @@ interactions:
       "output": {"title": "1 rule matches", "summary": "<!-- eydSdWxlOiBtZXJnZSAocXVldWUpJzogc3VjY2Vzc30K
       -->\n\n:bangbang: **Action Required** :bangbang:\n> **The configuration uses
       the deprecated `priority` attribute of the queue action and must be replaced
-      by `priority_rules`.**\n> A brownout is planned on April 3rd, 2023.\n> This
+      by `priority_rules`.**\n> A brownout is planned on April 17th, 2023.\n> This
       option will be removed on May 9th, 2023.\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\n###
       Rule: merge (queue)\n- [X] `-closed`\n- [X] `-conflict`\n- [X] `-draft`\n- [X]
       `-draft` [:pushpin: queue requirement]\n- [X] `-merged`\n- [X] `-mergify-configuration-changed`
@@ -6496,7 +6496,7 @@ interactions:
       rule matches","summary":"<!-- eydSdWxlOiBtZXJnZSAocXVldWUpJzogc3VjY2Vzc30K -->\n\n:bangbang:
       **Action Required** :bangbang:\n> **The configuration uses the deprecated `priority`
       attribute of the queue action and must be replaced by `priority_rules`.**\n>
-      A brownout is planned on April 3rd, 2023.\n> This option will be removed on
+      A brownout is planned on April 17th, 2023.\n> This option will be removed on
       May 9th, 2023.\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\n###
       Rule: merge (queue)\n- [X] `-closed`\n- [X] `-conflict`\n- [X] `-draft`\n- [X]
       `-draft` [:pushpin: queue requirement]\n- [X] `-merged`\n- [X] `-mergify-configuration-changed`
@@ -6630,7 +6630,7 @@ interactions:
       rule matches\",\"summary\":\"<!-- eydSdWxlOiBtZXJnZSAocXVldWUpJzogc3VjY2Vzc30K
       -->\\n\\n:bangbang: **Action Required** :bangbang:\\n> **The configuration uses
       the deprecated `priority` attribute of the queue action and must be replaced
-      by `priority_rules`.**\\n> A brownout is planned on April 3rd, 2023.\\n> This
+      by `priority_rules`.**\\n> A brownout is planned on April 17th, 2023.\\n> This
       option will be removed on May 9th, 2023.\\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\\n###
       Rule: merge (queue)\\n- [X] `-closed`\\n- [X] `-conflict`\\n- [X] `-draft`\\n-
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-merged`\\n- [X] `-mergify-configuration-changed`
@@ -6669,7 +6669,7 @@ interactions:
       "output": {"title": "1 potential rule", "summary": "<!-- eydSdWxlOiBtZXJnZSAocXVldWUpJzogc3VjY2Vzc30K
       -->\n\n:bangbang: **Action Required** :bangbang:\n> **The configuration uses
       the deprecated `priority` attribute of the queue action and must be replaced
-      by `priority_rules`.**\n> A brownout is planned on April 3rd, 2023.\n> This
+      by `priority_rules`.**\n> A brownout is planned on April 17th, 2023.\n> This
       option will be removed on May 9th, 2023.\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\n###
       Rule: merge (queue)\n- [ ] `-closed`\n- [ ] `-merged`\n- [X] `-conflict`\n-
       [X] `-draft`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
@@ -6704,7 +6704,7 @@ interactions:
       potential rule","summary":"<!-- eydSdWxlOiBtZXJnZSAocXVldWUpJzogc3VjY2Vzc30K
       -->\n\n:bangbang: **Action Required** :bangbang:\n> **The configuration uses
       the deprecated `priority` attribute of the queue action and must be replaced
-      by `priority_rules`.**\n> A brownout is planned on April 3rd, 2023.\n> This
+      by `priority_rules`.**\n> A brownout is planned on April 17th, 2023.\n> This
       option will be removed on May 9th, 2023.\n> For more information: https://docs.mergify.com/actions/queue/#priority-rules\n###
       Rule: merge (queue)\n- [ ] `-closed`\n- [ ] `-merged`\n- [X] `-conflict`\n-
       [X] `-draft`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`

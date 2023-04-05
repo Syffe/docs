@@ -44,7 +44,7 @@ QUEUE_ACTION_PRIORITY_ATTRIBUTE_DEPRECATION_GHES = """
 QUEUE_ACTION_PRIORITY_ATTRIBUTE_DEPRECATION_SAAS = """
 :bangbang: **Action Required** :bangbang:
 > **The configuration uses the deprecated `priority` attribute of the queue action and must be replaced by `priority_rules`.**
-> A brownout is planned on April 3rd, 2023.
+> A brownout is planned on April 17th, 2023.
 > This option will be removed on May 9th, 2023.
 > For more information: https://docs.mergify.com/actions/queue/#priority-rules
 """

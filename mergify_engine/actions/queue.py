@@ -45,7 +45,7 @@ BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT = (
 
 
 DEPRECATED_MESSAGE_PRIORITY_ATTRIBUTE_QUEUE_ACTION = """The configuration uses the deprecated `priority` attribute of the queue action and must be replaced by `priority_rules`.
-A brownout is planned on April 3rd, 2023.
+A brownout is planned on April 17th, 2023.
 This option will be removed on May 9th, 2023.
 For more information: https://docs.mergify.com/actions/queue/#priority-rules
 
