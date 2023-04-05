@@ -813,6 +813,31 @@ class Repository:
     async def get_all_branch_protection_rules(
         self,
     ) -> list[github_types.GitHubBranchProtection]:
+        # NOTE(Greesb): If this is one day used outside of the debugger,
+        # the result of the `query_fields` should be cached.
+        query_fields = """
+        query {
+            __type(name: "BranchProtectionRule") {
+                name
+                kind
+                description
+                fields {
+                    name
+                }
+            }
+        }
+        """
+        response = await self.installation.client.graphql_post(query_fields)
+        field_names = [f["name"] for f in response["data"]["__type"]["fields"]]
+        # Those fields may be absent in some GHES versions
+        maybe_missing_fields = [
+            "requireLastPushApproval",  # GHES 3.8
+            "requiredDeploymentEnvironments",  # GHES 3.9
+            "requiresDeployments",  # GHES 3.9
+        ]
+        maybe_missing_fields_query = "\n".join(
+            [f for f in maybe_missing_fields if f in field_names]
+        )
         query = f"""
         query {{
             repository(owner: "{self.repo['owner']['login']}", name: "{self.repo['name']}") {{
@@ -829,20 +854,18 @@ class Repository:
                             }}
                         }}
                         pattern
-                        requireLastPushApproval
                         requiredApprovingReviewCount
-                        requiredDeploymentEnvironments
                         requiredStatusCheckContexts
                         requiresApprovingReviews
                         requiresCodeOwnerReviews
                         requiresCommitSignatures
                         requiresConversationResolution
-                        requiresDeployments
                         requiresLinearHistory
                         requiresStatusChecks
                         requiresStrictStatusChecks
                         restrictsPushes
                         restrictsReviewDismissals
+                        {maybe_missing_fields_query}
                     }}
                 }}
             }}
