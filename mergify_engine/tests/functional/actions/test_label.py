@@ -307,9 +307,10 @@ class TestLabelAction(base.FunctionalTestBase):
         check_run = await self._test_label_invalid_template("branch:{{")
 
         assert (
-            """### Invalid template in label 'branch:{{'
-
-unexpected 'end of template'"""
+            """In the rule `add branch label`, the action `label` configuration is invalid:
+Invalid template in label 'branch:{{'
+unexpected 'end of template'
+"""
             == check_run["output"]["summary"]
         )
 
@@ -317,8 +318,9 @@ unexpected 'end of template'"""
         check_run = await self._test_label_invalid_template("branch:{{test}}")
 
         assert (
-            """### Invalid template in label 'branch:{{test}}'
-
-Unknown pull request attribute: test"""
+            """In the rule `add branch label`, the action `label` configuration is invalid:
+Invalid template in label 'branch:{{test}}'
+Unknown pull request attribute: test
+"""
             == check_run["output"]["summary"]
         )
