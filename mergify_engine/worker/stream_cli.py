@@ -3,17 +3,17 @@ import asyncio
 import datetime
 import itertools
 
-from mergify_engine import config
 from mergify_engine import date
 from mergify_engine import redis_utils
+from mergify_engine import settings
 from mergify_engine.worker import stream
 from mergify_engine.worker import stream_lua
 from mergify_engine.worker import stream_services
 
 
 async def async_status() -> None:
-    shared_stream_tasks_per_process: int = config.SHARED_STREAM_TASKS_PER_PROCESS
-    shared_stream_processes: int = config.SHARED_STREAM_PROCESSES
+    shared_stream_tasks_per_process: int = settings.SHARED_STREAM_TASKS_PER_PROCESS
+    shared_stream_processes: int = settings.SHARED_STREAM_PROCESSES
     global_shared_tasks_count: int = (
         shared_stream_tasks_per_process * shared_stream_processes
     )

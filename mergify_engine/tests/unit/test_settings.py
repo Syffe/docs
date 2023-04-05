@@ -60,6 +60,12 @@ def test_defaults(
     assert conf.LOG_DATADOG_LEVEL is None
     assert conf.LOG_DEBUG_LOGGER_NAMES == []
 
+    assert conf.SHARED_STREAM_PROCESSES == 1
+    assert conf.DEDICATED_STREAM_PROCESSES == 1
+    assert conf.SHARED_STREAM_TASKS_PER_PROCESS == 7
+    assert conf.BUCKET_PROCESSING_MAX_SECONDS == 30
+    assert conf.MAX_GITTER_CONCURRENT_JOBS == 20
+
 
 def test_all_sets(
     original_environment_variables: None,
@@ -106,6 +112,12 @@ def test_all_sets(
     monkeypatch.setenv("MERGIFYENGINE_LOG_DATADOG_LEVEL", "WARNING")
     monkeypatch.setenv("MERGIFYENGINE_LOG_DEBUG_LOGGER_NAMES", "foo,bar,yo")
 
+    monkeypatch.setenv("MERGIFYENGINE_SHARED_STREAM_PROCESSES", "2")
+    monkeypatch.setenv("MERGIFYENGINE_DEDICATED_STREAM_PROCESSES", "3")
+    monkeypatch.setenv("MERGIFYENGINE_SHARED_STREAM_TASKS_PER_PROCESS", "14")
+    monkeypatch.setenv("MERGIFYENGINE_BUCKET_PROCESSING_MAX_SECONDS", "60")
+    monkeypatch.setenv("MERGIFYENGINE_MAX_GITTER_CONCURRENT_JOBS", "40")
+
     conf = config.EngineSettings()
     assert conf.GITHUB_URL == "https://my-ghes.example.com"
     assert conf.GITHUB_REST_API_URL == "https://my-ghes.example.com/api/v3"
@@ -140,6 +152,12 @@ def test_all_sets(
     assert conf.LOG_DATADOG is True
     assert conf.LOG_DATADOG_LEVEL == logging.WARNING
     assert conf.LOG_DEBUG_LOGGER_NAMES == ["foo", "bar", "yo"]
+
+    assert conf.SHARED_STREAM_PROCESSES == 2
+    assert conf.DEDICATED_STREAM_PROCESSES == 3
+    assert conf.SHARED_STREAM_TASKS_PER_PROCESS == 14
+    assert conf.BUCKET_PROCESSING_MAX_SECONDS == 60
+    assert conf.MAX_GITTER_CONCURRENT_JOBS == 40
 
 
 def test_legacy_env_sets(

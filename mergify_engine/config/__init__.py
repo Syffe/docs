@@ -97,6 +97,14 @@ class DashboardUISettings(pydantic.BaseSettings):
     )
 
 
+class WorkerSettings(pydantic.BaseSettings):
+    SHARED_STREAM_PROCESSES: int = 1
+    DEDICATED_STREAM_PROCESSES: int = 1
+    SHARED_STREAM_TASKS_PER_PROCESS: int = 7
+    BUCKET_PROCESSING_MAX_SECONDS: int = 30
+    MAX_GITTER_CONCURRENT_JOBS: int = 20
+
+
 class TestingSettings(pydantic.BaseSettings):
     TESTING_FORWARDER_ENDPOINT: str = "https://test-forwarder.mergify.io"
     TESTING_INSTALLATION_ID: int = 15398551
@@ -148,6 +156,7 @@ class EngineSettings(
     LogsSettings,
     GitHubSettings,
     DashboardUISettings,
+    WorkerSettings,
     TestingSettings,
     pydantic.BaseSettings,
 ):
@@ -384,21 +393,6 @@ Schema = voluptuous.Schema(
         voluptuous.Required("AUTHENTICATION_URL", default=None): voluptuous.Any(
             None, str
         ),
-        voluptuous.Required("SHARED_STREAM_PROCESSES", default=1): voluptuous.Coerce(
-            int
-        ),
-        voluptuous.Required("DEDICATED_STREAM_PROCESSES", default=1): voluptuous.Coerce(
-            int
-        ),
-        voluptuous.Required(
-            "SHARED_STREAM_TASKS_PER_PROCESS", default=7
-        ): voluptuous.Coerce(int),
-        voluptuous.Required(
-            "BUCKET_PROCESSING_MAX_SECONDS", default=30
-        ): voluptuous.Coerce(int),
-        voluptuous.Required(
-            "MAX_GITTER_CONCURRENT_JOBS", default=20
-        ): voluptuous.Coerce(int),
         voluptuous.Required("CACHE_TOKEN_SECRET"): str,
         voluptuous.Required("CACHE_TOKEN_SECRET_OLD", default=None): voluptuous.Any(
             None, str
@@ -417,9 +411,6 @@ SENTRY_URL: str
 SENTRY_ENVIRONMENT: str
 CACHE_TOKEN_SECRET: str
 CACHE_TOKEN_SECRET_OLD: str | None
-SHARED_STREAM_PROCESSES: int
-DEDICATED_STREAM_PROCESSES: int
-SHARED_STREAM_TASKS_PER_PROCESS: int
 
 
 STREAM_URL: str
@@ -433,8 +424,6 @@ ACTIVE_USERS_URL: str
 STATISTICS_URL: str
 AUTHENTICATION_URL: str
 
-BUCKET_PROCESSING_MAX_SECONDS: int
-MAX_GITTER_CONCURRENT_JOBS: int
 SUBSCRIPTION_BASE_URL: str
 SUBSCRIPTION_TOKEN: str | None
 ENGINE_TO_DASHBOARD_API_KEY: str

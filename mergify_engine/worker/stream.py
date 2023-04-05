@@ -40,7 +40,6 @@ from redis import exceptions as redis_exceptions
 import sentry_sdk
 
 from mergify_engine import check_api
-from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
@@ -50,6 +49,7 @@ from mergify_engine import github_types
 from mergify_engine import pull_request_finder
 from mergify_engine import redis_utils
 from mergify_engine import refresher
+from mergify_engine import settings
 from mergify_engine import worker_pusher
 from mergify_engine.clients import github
 from mergify_engine.clients import http
@@ -534,7 +534,9 @@ class Processor:
             if bucket is None:
                 break
 
-            if (time.monotonic() - started_at) >= config.BUCKET_PROCESSING_MAX_SECONDS:
+            if (
+                time.monotonic() - started_at
+            ) >= settings.BUCKET_PROCESSING_MAX_SECONDS:
                 statsd.increment(
                     "engine.buckets.preempted",
                     tags=[f"priority:{bucket.priority.name}"],

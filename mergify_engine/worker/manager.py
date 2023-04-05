@@ -11,9 +11,9 @@ from datadog import statsd  # type: ignore[attr-defined]
 from redis import exceptions as redis_exceptions
 import tenacity
 
-from mergify_engine import config
 from mergify_engine import redis_utils
 from mergify_engine import service
+from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine.clients import github
 from mergify_engine.worker import gitter_service
@@ -99,11 +99,11 @@ class ServiceManager:
 
     # DedicatedStreamService
     dedicated_workers_spawner_idle_time: float = 60
-    dedicated_stream_processes: int = config.DEDICATED_STREAM_PROCESSES
+    dedicated_stream_processes: int = settings.DEDICATED_STREAM_PROCESSES
 
     # SharedStreamService
-    shared_stream_tasks_per_process: int = config.SHARED_STREAM_TASKS_PER_PROCESS
-    shared_stream_processes: int = config.SHARED_STREAM_PROCESSES
+    shared_stream_tasks_per_process: int = settings.SHARED_STREAM_TASKS_PER_PROCESS
+    shared_stream_processes: int = settings.SHARED_STREAM_PROCESSES
 
     # SharedStreamService & DedicatedStreamService
     idle_sleep_time: float = 0.42
@@ -111,7 +111,7 @@ class ServiceManager:
     retry_handled_exception_forever: bool = True
 
     # GitterService
-    gitter_concurrent_jobs: int = config.MAX_GITTER_CONCURRENT_JOBS
+    gitter_concurrent_jobs: int = settings.MAX_GITTER_CONCURRENT_JOBS
 
     # MonitoringStreamService & GitterService
     monitoring_idle_time: float = 60

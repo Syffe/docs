@@ -416,7 +416,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         # Otherwise preemption doesn't occur at the same moment during record
         # and replay. Making some tests working during record and failing
         # during replay.
-        config.BUCKET_PROCESSING_MAX_SECONDS = 100000
+        settings.BUCKET_PROCESSING_MAX_SECONDS = 100000
 
         config.API_ENABLE = True
 
