@@ -8,9 +8,9 @@ from sentry_sdk.integrations import httpx
 from sentry_sdk.integrations import sqlalchemy
 from sentry_sdk.integrations import starlette
 
-from mergify_engine import config
 from mergify_engine import database
 from mergify_engine import logs
+from mergify_engine import settings
 
 
 SERVICE_NAME: str = "engine-<unknown>"
@@ -31,12 +31,12 @@ def setup(service_name: str, dump_config: bool = True) -> None:
     global SERVICE_NAME
     SERVICE_NAME = "engine-" + service_name
 
-    if config.SENTRY_URL:  # pragma: no cover
+    if settings.SENTRY_URL:  # pragma: no cover
         sentry_sdk.init(
-            config.SENTRY_URL,
+            settings.SENTRY_URL.geturl(),
             max_breadcrumbs=10,
             release=VERSION,
-            environment=config.SENTRY_ENVIRONMENT,
+            environment=settings.SENTRY_ENVIRONMENT,
             request_bodies="never",
             integrations=[
                 httpx.HttpxIntegration(),

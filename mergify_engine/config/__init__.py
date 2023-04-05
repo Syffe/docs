@@ -43,6 +43,8 @@ class LogsSettings(pydantic.BaseSettings):
     LOG_DATADOG: bool | pydantic.AnyHttpUrl = False
     LOG_DATADOG_LEVEL: types.LogLevel | None = None
     LOG_DEBUG_LOGGER_NAMES: list[str] = pydantic.Field(default_factory=list)
+    SENTRY_URL: types.SecretUrl | None = None
+    SENTRY_ENVIRONMENT: str = "test"
 
 
 class GitHubSettings(pydantic.BaseSettings):
@@ -311,8 +313,6 @@ Schema = voluptuous.Schema(
         voluptuous.Required("SAAS_MODE", default=False): CoercedBool,
         # Logging
         voluptuous.Required("API_ENABLE", default=False): CoercedBool,
-        voluptuous.Required("SENTRY_URL", default=None): voluptuous.Any(None, str),
-        voluptuous.Required("SENTRY_ENVIRONMENT", default="test"): str,
         voluptuous.Required(
             "SUBSCRIPTION_BASE_URL", default="https://subscription.mergify.com"
         ): str,
@@ -407,8 +407,6 @@ Schema = voluptuous.Schema(
 # Config variables available from voluptuous
 VERSION: str
 API_ENABLE: bool
-SENTRY_URL: str
-SENTRY_ENVIRONMENT: str
 CACHE_TOKEN_SECRET: str
 CACHE_TOKEN_SECRET_OLD: str | None
 
