@@ -812,7 +812,7 @@ class Repository:
 
     async def get_all_branch_protection_rules(
         self,
-    ) -> list[github_types.GitHubBranchProtection]:
+    ) -> list[github_graphql_types.GraphqlBranchProtectionRule]:
         # NOTE(Greesb): If this is one day used outside of the debugger,
         # the result of the `query_fields` should be cached.
         query_fields = """
@@ -879,7 +879,7 @@ class Repository:
             )
 
         return typing.cast(
-            list[github_types.GitHubBranchProtection],
+            list[github_graphql_types.GraphqlBranchProtectionRule],
             response["data"]["repository"]["branchProtectionRules"]["nodes"],
         )
 
