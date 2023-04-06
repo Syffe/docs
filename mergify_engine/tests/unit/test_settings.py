@@ -68,12 +68,6 @@ def test_defaults(
     assert conf.BUCKET_PROCESSING_MAX_SECONDS == 30
     assert conf.MAX_GITTER_CONCURRENT_JOBS == 20
 
-    assert conf.SHARED_STREAM_PROCESSES == 1
-    assert conf.DEDICATED_STREAM_PROCESSES == 1
-    assert conf.SHARED_STREAM_TASKS_PER_PROCESS == 7
-    assert conf.BUCKET_PROCESSING_MAX_SECONDS == 30
-    assert conf.MAX_GITTER_CONCURRENT_JOBS == 20
-
 
 def test_all_sets(
     original_environment_variables: None,
