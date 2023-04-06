@@ -10,6 +10,7 @@ import pydantic
 from mergify_engine import constants
 from mergify_engine import github_types
 from mergify_engine.queue import merge_train
+from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.web import api
 from mergify_engine.web.api import security
 from mergify_engine.web.api import statistics as statistics_api
@@ -156,6 +157,9 @@ class PullRequestQueued:
     )
     estimated_time_of_merge: datetime.datetime | None = pydantic.Field(
         description="The estimated timestamp when this pull request will be merged"
+    )
+    partition_name: partr_config.PartitionRuleName | None = pydantic.Field(
+        description="The name of the partition, if any, in which the pull request is queued"
     )
 
 
@@ -332,6 +336,7 @@ async def repository_queues(
                 speculative_check_pull_request = (
                     SpeculativeCheckPullRequest.from_train_car(car)
                 )
+
                 previous_eta = (
                     estimated_time_of_merge
                 ) = await estimated_time_to_merge.get_estimation_from_stats(
@@ -355,6 +360,7 @@ async def repository_queues(
                         speculative_check_pull_request=speculative_check_pull_request,
                         mergeability_check=BriefMergeabilityCheck.from_train_car(car),
                         estimated_time_of_merge=estimated_time_of_merge,
+                        partition_name=train.partition_name,
                     )
                 )
 

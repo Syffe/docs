@@ -5145,6 +5145,7 @@ class TestQueueAction(base.FunctionalTestBase):
                             "position": 0,
                             "queued_at": anys.ANY_AWARE_DATETIME_STR,
                             "priority": 2000,
+                            "partition_name": None,
                             "queue_rule": {
                                 "config": {
                                     "allow_inplace_checks": True,
@@ -5182,6 +5183,7 @@ class TestQueueAction(base.FunctionalTestBase):
                             "number": p1["number"],
                             "position": 1,
                             "priority": 2000,
+                            "partition_name": None,
                             "queue_rule": {
                                 "config": {
                                     "allow_inplace_checks": True,
@@ -5214,6 +5216,7 @@ class TestQueueAction(base.FunctionalTestBase):
                             "number": p2["number"],
                             "position": 2,
                             "priority": 2000,
+                            "partition_name": None,
                             "queue_rule": {
                                 "config": {
                                     "allow_inplace_checks": True,

@@ -374,6 +374,7 @@ class TestQueueApi(base.FunctionalTestBase):
             },
             "queued_at": anys.ANY_DATETIME_STR,
             "estimated_time_of_merge": anys.ANY_DATETIME_STR,
+            "partition_name": None,
         }
 
     async def test_get_queue_pull(self) -> None:
