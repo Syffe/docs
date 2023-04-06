@@ -48,7 +48,7 @@ async def _send_refresh(
         }
     )
 
-    slim_event = worker_pusher.extract_slim_event("refresh", data)
+    slim_event = worker_pusher.extract_slim_event("refresh", None, data)
     await worker_pusher.push(
         redis_stream,
         repository["owner"]["id"],

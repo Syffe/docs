@@ -88,7 +88,9 @@ async def test_store_active_users(
     event: github_types.GitHubEvent,
     redis_links: redis_utils.RedisLinks,
 ) -> None:
-    await count_seats.store_active_users(redis_links.active_users, event_type, event)
+    await count_seats.store_active_users(
+        redis_links.active_users, event_type, "whatever", event
+    )
     one_month_ago = datetime.datetime.utcnow() - datetime.timedelta(days=30)
     if event_type == "push":
         assert await redis_links.active_users.zrangebyscore(
@@ -116,6 +118,7 @@ async def test_store_active_users(
         ) == {
             "action": "opened",
             "received_at": mock.ANY,
+            "delivery_id": "whatever",
             "sender": {"id": 21031067, "login": "Codertocat", "type": "User"},
         }
     else:
@@ -137,7 +140,9 @@ async def test_get_usage_count_seats(
     event: github_types.GitHubEvent,
     redis_links: redis_utils.RedisLinks,
 ) -> None:
-    await count_seats.store_active_users(redis_links.active_users, event_type, event)
+    await count_seats.store_active_users(
+        redis_links.active_users, event_type, "whatever", event
+    )
 
     reply = await web_client.request("GET", "/subscriptions/organization/1234/usage")
     assert reply.status_code == 403

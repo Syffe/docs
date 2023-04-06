@@ -66,8 +66,11 @@ def get_date_from_score(score: float) -> datetime.datetime:
     return date.fromtimestamp(timestamp)
 
 
-def extract_slim_event(event_type: str, data: typing.Any) -> typing.Any:
+def extract_slim_event(
+    event_type: str, event_id: str | None, data: typing.Any
+) -> typing.Any:
     slim_data = {
+        "delivery_id": event_id,
         "received_at": date.utcnow().isoformat(),
         "sender": {
             "id": data["sender"]["id"],

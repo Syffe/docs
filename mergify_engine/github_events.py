@@ -81,7 +81,9 @@ class EventBase:
 
     @property
     def slim_event(self) -> typing.Any:
-        return worker_pusher.extract_slim_event(self.event_type, self.event)
+        return worker_pusher.extract_slim_event(
+            self.event_type, self.event_id, self.event
+        )
 
 
 @dataclasses.dataclass
@@ -548,7 +550,9 @@ async def filter_and_dispatch(
 ) -> None:
     mergify_bot = await github.GitHubAppInfo.get_bot(redis_links.cache)
     await meter_event(event_type, event, mergify_bot)
-    await count_seats.store_active_users(redis_links.active_users, event_type, event)
+    await count_seats.store_active_users(
+        redis_links.active_users, event_type, event_id, event
+    )
 
     classified_event = await event_classifier(
         redis_links, event_type, event_id, event, mergify_bot

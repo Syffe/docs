@@ -127,6 +127,7 @@ async def get_active_users(
 async def store_active_users(
     redis: redis_utils.RedisActiveUsers,
     event_type: str,
+    event_id: str,
     event: github_types.GitHubEvent,
 ) -> None:
     typed_event: None | (
@@ -194,7 +195,9 @@ async def store_active_users(
         await transaction.setex(
             event_key,
             ACTIVE_USERS_EVENTS_EXPIRATION,
-            msgpack.packb(worker_pusher.extract_slim_event(event_type, typed_event)),
+            msgpack.packb(
+                worker_pusher.extract_slim_event(event_type, event_id, typed_event)
+            ),
         )
 
     await transaction.execute()
