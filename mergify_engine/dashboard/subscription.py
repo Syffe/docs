@@ -8,7 +8,6 @@ import typing
 
 import daiquiri
 
-from mergify_engine import config
 from mergify_engine import crypto
 from mergify_engine import exceptions
 from mergify_engine import github_types
@@ -257,7 +256,7 @@ class SubscriptionDashboardOnPremise(SubscriptionBase):
                 return cls.from_dict(redis, owner_id, sub)
 
 
-if config.SAAS_MODE:
+if settings.SAAS_MODE:
 
     @dataclasses.dataclass
     class Subscription(SubscriptionDashboardSaas):

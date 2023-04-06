@@ -1,12 +1,13 @@
 from unittest import mock
 
+import pydantic
 import pytest
 import respx
 
-from mergify_engine import config
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import redis_utils
+from mergify_engine import settings
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
 
@@ -174,9 +175,12 @@ async def test_active_feature(redis_cache: redis_utils.RedisCache) -> None:
 async def test_subscription_on_premise_valid(
     redis_cache: redis_utils.RedisCache,
     respx_mock: respx.MockRouter,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setattr(settings, "SUBSCRIPTION_TOKEN", pydantic.SecretStr("something"))
+
     route = respx_mock.get(
-        f"{config.SUBSCRIPTION_BASE_URL}/on-premise/subscription/1234"
+        f"{settings.SUBSCRIPTION_URL}/on-premise/subscription/1234"
     ).respond(
         200,
         json={
@@ -202,10 +206,13 @@ async def test_subscription_on_premise_valid(
 
 
 async def test_subscription_on_premise_wrong_token(
-    redis_cache: redis_utils.RedisCache, respx_mock: respx.MockRouter
+    redis_cache: redis_utils.RedisCache,
+    respx_mock: respx.MockRouter,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setattr(settings, "SUBSCRIPTION_TOKEN", pydantic.SecretStr("something"))
     route = respx_mock.get(
-        f"{config.SUBSCRIPTION_BASE_URL}/on-premise/subscription/1234"
+        f"{settings.SUBSCRIPTION_URL}/on-premise/subscription/1234"
     ).respond(401, json={"message": "error"})
 
     with pytest.raises(exceptions.MergifyNotInstalled):
@@ -217,10 +224,13 @@ async def test_subscription_on_premise_wrong_token(
 
 
 async def test_subscription_on_premise_invalid_sub(
-    redis_cache: redis_utils.RedisCache, respx_mock: respx.MockRouter
+    redis_cache: redis_utils.RedisCache,
+    respx_mock: respx.MockRouter,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setattr(settings, "SUBSCRIPTION_TOKEN", pydantic.SecretStr("something"))
     route = respx_mock.get(
-        f"{config.SUBSCRIPTION_BASE_URL}/on-premise/subscription/1234"
+        f"{settings.SUBSCRIPTION_URL}/on-premise/subscription/1234"
     ).respond(
         403,
         json={"message": "error"},

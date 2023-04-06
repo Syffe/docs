@@ -3,8 +3,8 @@ import typing
 import fastapi
 from starlette import responses
 
-from mergify_engine import config
 from mergify_engine import github_types
+from mergify_engine import settings
 from mergify_engine.web import api
 
 
@@ -20,7 +20,7 @@ def _get_badge_url(
     style: str,
 ) -> responses.RedirectResponse:
     return responses.RedirectResponse(
-        url=f"https://img.shields.io/endpoint.{ext}?url={config.SUBSCRIPTION_BASE_URL}/badges/{owner}/{repo}&style={style}",
+        url=f"https://img.shields.io/endpoint.{ext}?url={settings.SUBSCRIPTION_URL}/badges/{owner}/{repo}&style={style}",
         status_code=302,
     )
 
@@ -116,5 +116,5 @@ async def badge(
     ],
 ) -> responses.RedirectResponse:
     return responses.RedirectResponse(
-        url=f"{config.SUBSCRIPTION_BASE_URL}/badges/{owner}/{repository}"
+        url=f"{settings.SUBSCRIPTION_URL}/badges/{owner}/{repository}"
     )

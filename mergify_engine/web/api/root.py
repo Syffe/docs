@@ -5,7 +5,7 @@ import os
 import fastapi
 from starlette.middleware import cors
 
-from mergify_engine import config
+from mergify_engine import settings
 from mergify_engine.web import api
 from mergify_engine.web import utils as web_utils
 from mergify_engine.web.api import applications
@@ -18,7 +18,7 @@ from mergify_engine.web.api import statistics
 
 
 def api_enabled() -> None:
-    if not config.API_ENABLE:
+    if not settings.API_ENABLE:
         raise fastapi.HTTPException(status_code=404)
 
 

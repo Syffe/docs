@@ -30,6 +30,7 @@ def test_defaults(
     monkeypatch.setenv("MERGIFYENGINE_GITHUB_PRIVATE_KEY", "aGVsbG8gd29ybGQ=")
     monkeypatch.setenv("MERGIFYENGINE_GITHUB_OAUTH_CLIENT_ID", "Iv1.XXXXXX")
     monkeypatch.setenv("MERGIFYENGINE_GITHUB_OAUTH_CLIENT_SECRET", "secret")
+
     conf = config.EngineSettings()
     assert str(conf.DATABASE_URL) == "postgresql+psycopg://localhost:5432"
     assert conf.DATABASE_URL.geturl() == "postgresql+psycopg://localhost:5432"
@@ -67,6 +68,14 @@ def test_defaults(
     assert conf.SHARED_STREAM_TASKS_PER_PROCESS == 7
     assert conf.BUCKET_PROCESSING_MAX_SECONDS == 30
     assert conf.MAX_GITTER_CONCURRENT_JOBS == 20
+
+    assert conf.SUBSCRIPTION_TOKEN is None
+    assert conf.ENGINE_TO_DASHBOARD_API_KEY.get_secret_value()
+    assert conf.SUBSCRIPTION_URL == "https://subscription.mergify.com"
+    assert conf.DASHBOARD_TO_ENGINE_API_KEY.get_secret_value()
+    assert conf.DASHBOARD_TO_ENGINE_API_KEY_PRE_ROTATION is None
+    assert conf.ACCOUNT_TOKENS == []
+    assert conf.APPLICATION_APIKEYS == {}
 
 
 def test_all_sets(
@@ -120,6 +129,26 @@ def test_all_sets(
     monkeypatch.setenv("MERGIFYENGINE_BUCKET_PROCESSING_MAX_SECONDS", "60")
     monkeypatch.setenv("MERGIFYENGINE_MAX_GITTER_CONCURRENT_JOBS", "40")
 
+    monkeypatch.setenv("MERGIFYENGINE_ENGINE_TO_DASHBOARD_API_KEY", "api-secret-key")
+    monkeypatch.setenv("MERGIFYENGINE_DASHBOARD_TO_ENGINE_API_KEY", "webhook-secret")
+    monkeypatch.setenv(
+        "MERGIFYENGINE_DASHBOARD_TO_ENGINE_API_KEY_PRE_ROTATION", "webhook-secret-bis"
+    )
+    monkeypatch.setenv(
+        "MERGIFYENGINE_SUBSCRIPTION_URL", "https://subscription.example.com"
+    )
+    monkeypatch.setenv("MERGIFYENGINE_SUBSCRIPTION_TOKEN", "onprem-token")
+    monkeypatch.setenv(
+        "MERGIFYENGINE_APPLICATION_APIKEYS",
+        ",".join(
+            (
+                "peeph4iephaivohx4jeewociex3ruliiShai1Auyiekekeij4OeGh0OoGuph5zei:12345:login",
+                "tha0naCiWooj1yieV3AeChuDiaY9ieweiquahch3rib3quae3eP7sae7gohQuohB:54321:bot",
+                "Ub5kiekohyuoqua5oori7Moowuom8yiefiequie3yohmo6Eidieb9eihiepi5aiP:424242:other-bot",
+            )
+        ),
+    )
+
     conf = config.EngineSettings()
     assert conf.GITHUB_URL == "https://my-ghes.example.com"
     assert conf.GITHUB_REST_API_URL == "https://my-ghes.example.com/api/v3"
@@ -161,6 +190,38 @@ def test_all_sets(
     assert conf.BUCKET_PROCESSING_MAX_SECONDS == 60
     assert conf.MAX_GITTER_CONCURRENT_JOBS == 40
 
+    assert conf.SUBSCRIPTION_TOKEN is not None
+    assert conf.SUBSCRIPTION_TOKEN.get_secret_value() == "onprem-token"
+    assert conf.ENGINE_TO_DASHBOARD_API_KEY.get_secret_value() == "api-secret-key"
+    assert conf.SUBSCRIPTION_URL == "https://subscription.example.com"
+    assert conf.DASHBOARD_TO_ENGINE_API_KEY.get_secret_value() == "webhook-secret"
+    assert conf.DASHBOARD_TO_ENGINE_API_KEY_PRE_ROTATION is not None
+    assert (
+        conf.DASHBOARD_TO_ENGINE_API_KEY_PRE_ROTATION.get_secret_value()
+        == "webhook-secret-bis"
+    )
+    assert conf.ACCOUNT_TOKENS == []
+    assert conf.APPLICATION_APIKEYS == {
+        "peeph4iephaivohx4jeewociex3rulii": {
+            "api_access_key": "peeph4iephaivohx4jeewociex3rulii",
+            "api_secret_key": "Shai1Auyiekekeij4OeGh0OoGuph5zei",
+            "account_id": 12345,
+            "account_login": "login",
+        },
+        "tha0naCiWooj1yieV3AeChuDiaY9iewe": {
+            "api_access_key": "tha0naCiWooj1yieV3AeChuDiaY9iewe",
+            "api_secret_key": "iquahch3rib3quae3eP7sae7gohQuohB",
+            "account_id": 54321,
+            "account_login": "bot",
+        },
+        "Ub5kiekohyuoqua5oori7Moowuom8yie": {
+            "api_access_key": "Ub5kiekohyuoqua5oori7Moowuom8yie",
+            "api_secret_key": "fiequie3yohmo6Eidieb9eihiepi5aiP",
+            "account_id": 424242,
+            "account_login": "other-bot",
+        },
+    }
+
 
 def test_legacy_env_sets(
     original_environment_variables: None,
@@ -179,6 +240,12 @@ def test_legacy_env_sets(
     monkeypatch.setenv("MERGIFYENGINE_PRIVATE_KEY", "aGVsbG8gd29ybGQ=")
     monkeypatch.setenv("MERGIFYENGINE_OAUTH_CLIENT_ID", "Iv1.XXXXXX")
     monkeypatch.setenv("MERGIFYENGINE_OAUTH_CLIENT_SECRET", "secret")
+
+    monkeypatch.setenv(
+        "MERGIFYENGINE_SUBSCRIPTION_BASE_URL", "https://subscription.example.com"
+    )
+    monkeypatch.setenv("MERGIFYENGINE_SUBSCRIPTION_TOKEN", "onprem-token")
+
     conf = config.EngineSettings()
     assert conf.GITHUB_WEBHOOK_SECRET.get_secret_value() == "secret4"
     assert conf.GITHUB_WEBHOOK_SECRET_PRE_ROTATION is not None
@@ -190,6 +257,7 @@ def test_legacy_env_sets(
     assert conf.GITHUB_OAUTH_CLIENT_ID == "Iv1.XXXXXX"
     assert conf.GITHUB_OAUTH_CLIENT_SECRET.get_secret_value() == "secret"
     assert conf.DASHBOARD_UI_FRONT_URL == "https://dashboard.mergify.com"
+    assert conf.SUBSCRIPTION_URL == "https://subscription.example.com"
 
 
 @pytest.mark.parametrize(

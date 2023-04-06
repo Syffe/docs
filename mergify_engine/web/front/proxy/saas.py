@@ -1,7 +1,7 @@
 import fastapi
 import httpx
 
-from mergify_engine import config
+from mergify_engine import settings
 from mergify_engine.clients import dashboard
 from mergify_engine.web.front import security
 from mergify_engine.web.front import utils
@@ -18,7 +18,7 @@ async def saas_subscription(
     github_account_id: int,
     current_user: security.CurrentUser,
 ) -> fastapi.responses.Response:
-    if config.SAAS_MODE:
+    if settings.SAAS_MODE:
         return await saas_proxy(
             request,
             f"github-account/{github_account_id}/subscription-details",
@@ -66,7 +66,7 @@ async def saas_proxy(
     path: str,
     current_user: security.CurrentUser,
 ) -> fastapi.responses.Response:
-    if not config.SAAS_MODE:
+    if not settings.SAAS_MODE:
         raise fastapi.HTTPException(
             510, "On-Premise installation must not use SaaS endpoints"
         )
@@ -110,7 +110,7 @@ async def saas_proxy(
                 utils.httpx_to_fastapi_headers(
                     resp.headers,
                     rewrite_url=(
-                        f"{config.SUBSCRIPTION_BASE_URL}/engine/saas",
+                        f"{settings.SUBSCRIPTION_URL}/engine/saas",
                         f"{base_url}/front/proxy/saas",
                     ),
                 ),

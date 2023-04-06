@@ -107,6 +107,44 @@ class WorkerSettings(pydantic.BaseSettings):
     MAX_GITTER_CONCURRENT_JOBS: int = 20
 
 
+class APISettings(pydantic.BaseSettings):
+    API_ENABLE: bool = False
+
+
+class ApplicationAPIKey(typing.TypedDict):
+    api_access_key: str
+    api_secret_key: str
+    account_id: int
+    account_login: str
+
+
+class SubscriptionSetting(pydantic.BaseSettings):
+    SAAS_MODE: bool = False
+    SUBSCRIPTION_URL: str = pydantic.Field(
+        default="https://subscription.mergify.com", extra_env="SUBSCRIPTION_BASE_URL"
+    )
+    ENGINE_TO_DASHBOARD_API_KEY: pydantic.SecretStr = pydantic.Field(
+        default=pydantic.SecretStr(secrets.token_hex(16)),
+    )
+    SUBSCRIPTION_TOKEN: pydantic.SecretStr | None = pydantic.Field(default=None)
+
+    DASHBOARD_TO_ENGINE_API_KEY: pydantic.SecretStr = pydantic.Field(
+        default=pydantic.SecretStr(secrets.token_hex(16)),
+    )
+    DASHBOARD_TO_ENGINE_API_KEY_PRE_ROTATION: pydantic.SecretStr | None = (
+        pydantic.Field(
+            default=None,
+        )
+    )
+
+    ACCOUNT_TOKENS: list[tuple[int, str, pydantic.SecretStr]] = pydantic.Field(
+        default_factory=list
+    )
+    APPLICATION_APIKEYS: dict[str, ApplicationAPIKey] = pydantic.Field(
+        default_factory=dict
+    )
+
+
 class TestingSettings(pydantic.BaseSettings):
     TESTING_FORWARDER_ENDPOINT: str = "https://test-forwarder.mergify.io"
     TESTING_INSTALLATION_ID: int = 15398551
@@ -154,10 +192,12 @@ class TestingSettings(pydantic.BaseSettings):
 
 
 class EngineSettings(
+    APISettings,
     DatabaseSettings,
     LogsSettings,
     GitHubSettings,
     DashboardUISettings,
+    SubscriptionSetting,
     WorkerSettings,
     TestingSettings,
     pydantic.BaseSettings,
@@ -172,7 +212,7 @@ class EngineSettings(
             if field_name == "DATABASE_POOL_SIZES":
                 return utils.string_to_dict(raw_val, int)
 
-            if field_name in (
+            elif field_name in (
                 "GITHUB_WEBHOOK_FORWARD_EVENT_TYPES",
                 "WEBHOOK_FORWARD_EVENT_TYPES",
                 "DASHBOARD_UI_FEATURES",
@@ -180,6 +220,12 @@ class EngineSettings(
                 "LOG_DEBUG_LOGGER_NAMES",
             ):
                 return raw_val.split(",")
+
+            elif field_name == "APPLICATION_APIKEYS":
+                return ApplicationAPIKeys(raw_val)
+
+            elif field_name == "ACCOUNT_TOKENS":
+                return AccountTokens(raw_val)
 
             return super().parse_env_var(field_name, raw_val)
 
@@ -253,10 +299,10 @@ def CommaSeparatedIntList(value: str) -> list[int]:
     return [int(v) for v in CommaSeparatedStringList(value)]
 
 
-def AccountTokens(v: str) -> list[tuple[int, str, str]]:
+def AccountTokens(v: str) -> list[tuple[int, str, pydantic.SecretStr]]:
     try:
         return [
-            (int(_id), login, token)
+            (int(_id), login, pydantic.SecretStr(token))
             for _id, login, token in typing.cast(
                 list[tuple[int, str, str]],
                 utils.string_to_list_of_tuple(v, split=3),
@@ -268,13 +314,6 @@ def AccountTokens(v: str) -> list[tuple[int, str, str]]:
 
 API_ACCESS_KEY_LEN = 32
 API_SECRET_KEY_LEN = 32
-
-
-class ApplicationAPIKey(typing.TypedDict):
-    api_secret_key: str
-    api_access_key: str
-    account_id: int
-    account_login: str
 
 
 def ApplicationAPIKeys(v: str) -> dict[str, ApplicationAPIKey]:
@@ -310,34 +349,7 @@ Schema = voluptuous.Schema(
         voluptuous.Required(
             "VERSION", default=os.getenv("HEROKU_SLUG_COMMIT", "dev")
         ): str,
-        voluptuous.Required("SAAS_MODE", default=False): CoercedBool,
-        # Logging
         voluptuous.Required("API_ENABLE", default=False): CoercedBool,
-        voluptuous.Required(
-            "SUBSCRIPTION_BASE_URL", default="https://subscription.mergify.com"
-        ): str,
-        #
-        # OnPremise special config
-        #
-        voluptuous.Required("SUBSCRIPTION_TOKEN", default=None): voluptuous.Any(
-            None, str
-        ),
-        voluptuous.Required("ACCOUNT_TOKENS", default=""): voluptuous.Coerce(
-            AccountTokens
-        ),
-        voluptuous.Required("APPLICATION_APIKEYS", default=""): voluptuous.Coerce(
-            ApplicationAPIKeys
-        ),
-        # Saas Special config
-        voluptuous.Required(
-            "ENGINE_TO_DASHBOARD_API_KEY", default=secrets.token_hex(16)
-        ): str,
-        voluptuous.Required(
-            "DASHBOARD_TO_ENGINE_API_KEY", default=secrets.token_hex(16)
-        ): str,
-        voluptuous.Required(
-            "DASHBOARD_TO_ENGINE_API_KEY_PRE_ROTATION", default=None
-        ): voluptuous.Any(None, str),
         #
         # Mergify Engine settings
         #
@@ -410,7 +422,6 @@ API_ENABLE: bool
 CACHE_TOKEN_SECRET: str
 CACHE_TOKEN_SECRET_OLD: str | None
 
-
 STREAM_URL: str
 EVENTLOGS_URL: str
 QUEUE_URL: str
@@ -422,13 +433,7 @@ ACTIVE_USERS_URL: str
 STATISTICS_URL: str
 AUTHENTICATION_URL: str
 
-SUBSCRIPTION_BASE_URL: str
-SUBSCRIPTION_TOKEN: str | None
-ENGINE_TO_DASHBOARD_API_KEY: str
-DASHBOARD_TO_ENGINE_API_KEY: str
-DASHBOARD_TO_ENGINE_API_KEY_PRE_ROTATION: str
-ACCOUNT_TOKENS: list[tuple[int, str, str]]
-APPLICATION_APIKEYS: dict[str, ApplicationAPIKey]
+
 ALLOW_QUEUE_PRIORITY_ATTRIBUTE: bool
 ALLOW_REBASE_FALLBACK_ATTRIBUTE: bool
 REDIS_SSL_VERIFY_MODE_CERT_NONE: bool
@@ -439,7 +444,6 @@ REDIS_EVENTLOGS_WEB_MAX_CONNECTIONS: int | None
 REDIS_STATS_WEB_MAX_CONNECTIONS: int | None
 REDIS_AUTHENTICATION_WEB_MAX_CONNECTIONS: int | None
 REDIS_ACTIVE_USERS_WEB_MAX_CONNECTIONS: int | None
-SAAS_MODE: bool
 
 
 def load() -> dict[str, typing.Any]:
@@ -506,10 +510,6 @@ def load() -> dict[str, typing.Any]:
             query += f"db={db}"
             url = default_redis_url_parsed._replace(query=query).geturl()
             parsed_config[config_key] = url
-
-    if not parsed_config["SAAS_MODE"] and not parsed_config["SUBSCRIPTION_TOKEN"]:
-        print("SUBSCRIPTION_TOKEN is missing. Mergify can't start.")
-        sys.exit(1)
 
     return parsed_config  # type: ignore[no-any-return]
 

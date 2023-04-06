@@ -4,7 +4,6 @@ import daiquiri
 import fastapi
 from starlette import requests
 
-from mergify_engine import config
 from mergify_engine import settings
 from mergify_engine import utils
 
@@ -52,12 +51,13 @@ async def dashboard(request: requests.Request) -> None:
     if authorization:
         if authorization.lower().startswith("bearer "):
             token = authorization[7:]
-            if token == config.DASHBOARD_TO_ENGINE_API_KEY:
+            if token == settings.DASHBOARD_TO_ENGINE_API_KEY.get_secret_value():
                 return
 
             if (
-                config.DASHBOARD_TO_ENGINE_API_KEY_PRE_ROTATION is not None
-                and token == config.DASHBOARD_TO_ENGINE_API_KEY_PRE_ROTATION
+                settings.DASHBOARD_TO_ENGINE_API_KEY_PRE_ROTATION is not None
+                and token
+                == settings.DASHBOARD_TO_ENGINE_API_KEY_PRE_ROTATION.get_secret_value()
             ):
                 return
 

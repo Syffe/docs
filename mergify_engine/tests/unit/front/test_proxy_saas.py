@@ -2,7 +2,6 @@ import pytest
 import respx
 import sqlalchemy
 
-from mergify_engine import config
 from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine.models import github_user
@@ -16,7 +15,7 @@ async def test_saas_proxy_saas_mode_true(
     web_client: conftest.CustomTestClient,
     front_login_mock: None,
 ) -> None:
-    monkeypatch.setattr(config, "SAAS_MODE", True)
+    monkeypatch.setattr(settings, "SAAS_MODE", True)
 
     user = github_user.GitHubUser(
         id=github_types.GitHubAccountIdType(42),
@@ -34,7 +33,7 @@ async def test_saas_proxy_saas_mode_true(
             url="http://localhost:5000/engine/saas/github-account/42/stripe-create",
             params="plan=Essential",
             headers={
-                "Authorization": f"Bearer {config.ENGINE_TO_DASHBOARD_API_KEY}",
+                "Authorization": f"Bearer {settings.ENGINE_TO_DASHBOARD_API_KEY.get_secret_value()}",
                 "Mergify-On-Behalf-Of": str(user.id),
             },
         )
@@ -62,7 +61,7 @@ async def test_saas_proxy_saas_mode_false(
     web_client: conftest.CustomTestClient,
     front_login_mock: None,
 ) -> None:
-    monkeypatch.setattr(config, "SAAS_MODE", False)
+    monkeypatch.setattr(settings, "SAAS_MODE", False)
 
     user = github_user.GitHubUser(
         id=github_types.GitHubAccountIdType(42),
@@ -94,7 +93,7 @@ async def test_saas_subscription_with_saas_mode_true(
     web_client: conftest.CustomTestClient,
     front_login_mock: None,
 ) -> None:
-    monkeypatch.setattr(config, "SAAS_MODE", True)
+    monkeypatch.setattr(settings, "SAAS_MODE", True)
 
     user = github_user.GitHubUser(
         id=github_types.GitHubAccountIdType(42),
@@ -111,7 +110,7 @@ async def test_saas_subscription_with_saas_mode_true(
             method="get",
             url="http://localhost:5000/engine/saas/github-account/42/subscription-details",
             headers={
-                "Authorization": f"Bearer {config.ENGINE_TO_DASHBOARD_API_KEY}",
+                "Authorization": f"Bearer {settings.ENGINE_TO_DASHBOARD_API_KEY.get_secret_value()}",
                 "Mergify-On-Behalf-Of": str(user.id),
             },
         )
@@ -140,7 +139,7 @@ async def test_saas_subscription_with_saas_mode_false(
     web_client: conftest.CustomTestClient,
     front_login_mock: None,
 ) -> None:
-    monkeypatch.setattr(config, "SAAS_MODE", False)
+    monkeypatch.setattr(settings, "SAAS_MODE", False)
 
     user = github_user.GitHubUser(
         id=github_types.GitHubAccountIdType(42),
@@ -199,7 +198,7 @@ async def test_saas_intercom_with_saas_mode_true(
     web_client: conftest.CustomTestClient,
     front_login_mock: None,
 ) -> None:
-    monkeypatch.setattr(config, "SAAS_MODE", True)
+    monkeypatch.setattr(settings, "SAAS_MODE", True)
 
     user = github_user.GitHubUser(
         id=github_types.GitHubAccountIdType(42),
@@ -216,7 +215,7 @@ async def test_saas_intercom_with_saas_mode_true(
             method="get",
             url="http://localhost:5000/engine/saas/intercom",
             headers={
-                "Authorization": f"Bearer {config.ENGINE_TO_DASHBOARD_API_KEY}",
+                "Authorization": f"Bearer {settings.ENGINE_TO_DASHBOARD_API_KEY.get_secret_value()}",
                 "Mergify-On-Behalf-Of": str(user.id),
             },
         )
@@ -243,14 +242,14 @@ async def test_saas_intercom_with_saas_mode_true(
     (
         (
             "/front/proxy/saas/github-account/42/stripe-customer-portal",
-            f"{config.SUBSCRIPTION_BASE_URL}/engine/saas/github-account/42/stripe-customer-portal",
+            f"{settings.SUBSCRIPTION_URL}/engine/saas/github-account/42/stripe-customer-portal",
             "https://portal.stripe.com/",
             "https://portal.stripe.com/",
         ),
         (
             "/front/proxy/saas/github-account/42/something-else",
-            f"{config.SUBSCRIPTION_BASE_URL}/engine/saas/github-account/42/something-else",
-            f"{config.SUBSCRIPTION_BASE_URL}/engine/saas/foo/bar",
+            f"{settings.SUBSCRIPTION_URL}/engine/saas/github-account/42/something-else",
+            f"{settings.SUBSCRIPTION_URL}/engine/saas/foo/bar",
             f"{settings.DASHBOARD_UI_FRONT_URL}/front/proxy/saas/foo/bar",
         ),
     ),
@@ -266,7 +265,7 @@ async def test_saas_proxy_redirect(
     web_client: conftest.CustomTestClient,
     front_login_mock: None,
 ) -> None:
-    monkeypatch.setattr(config, "SAAS_MODE", True)
+    monkeypatch.setattr(settings, "SAAS_MODE", True)
 
     user = github_user.GitHubUser(
         id=github_types.GitHubAccountIdType(42),
@@ -279,7 +278,7 @@ async def test_saas_proxy_redirect(
     respx_mock.get(
         proxied_url,
         headers={
-            "Authorization": f"Bearer {config.ENGINE_TO_DASHBOARD_API_KEY}",
+            "Authorization": f"Bearer {settings.ENGINE_TO_DASHBOARD_API_KEY.get_secret_value()}",
             "Mergify-On-Behalf-Of": str(user.id),
         },
     ).respond(307, headers={"Location": proxy_location})

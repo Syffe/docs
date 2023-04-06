@@ -1,7 +1,7 @@
 import typing
 
-from mergify_engine import config
 from mergify_engine import github_types
+from mergify_engine import settings
 from mergify_engine.clients import http
 
 
@@ -26,8 +26,10 @@ class NoAssociatedUsersFound(Exception):
 class AsyncDashboardSaasClient(http.AsyncClient):
     def __init__(self) -> None:
         super().__init__(
-            base_url=config.SUBSCRIPTION_BASE_URL,
-            headers={"Authorization": f"Bearer {config.ENGINE_TO_DASHBOARD_API_KEY}"},
+            base_url=settings.SUBSCRIPTION_URL,
+            headers={
+                "Authorization": f"Bearer {settings.ENGINE_TO_DASHBOARD_API_KEY.get_secret_value()}"
+            },
             retry_stop_after_attempt=2,
             retry_exponential_multiplier=0.1,
         )
@@ -54,7 +56,11 @@ class AsyncDashboardSaasClient(http.AsyncClient):
 
 class AsyncDashboardOnPremiseClient(http.AsyncClient):
     def __init__(self) -> None:
+        if settings.SUBSCRIPTION_TOKEN is None:
+            raise RuntimeError("settings.SUBSCRIPTION_TOKEN is None")
         super().__init__(
-            base_url=config.SUBSCRIPTION_BASE_URL,
-            headers={"Authorization": f"token {config.SUBSCRIPTION_TOKEN}"},
+            base_url=settings.SUBSCRIPTION_URL,
+            headers={
+                "Authorization": f"token {settings.SUBSCRIPTION_TOKEN.get_secret_value()}"
+            },
         )

@@ -7,13 +7,14 @@ import anys
 from freezegun import freeze_time
 import httpx
 import msgpack
+import pydantic
 import pytest
 import respx
 
-from mergify_engine import config
 from mergify_engine import count_seats
 from mergify_engine import github_types
 from mergify_engine import redis_utils
+from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine.tests.unit import conftest
 
@@ -62,9 +63,12 @@ def test_seats_renamed_account_repo() -> None:
     assert repos == {repo1, repo2}
 
 
-async def test_send_seats(respx_mock: respx.MockRouter) -> None:
+async def test_send_seats(
+    respx_mock: respx.MockRouter, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(settings, "SUBSCRIPTION_TOKEN", pydantic.SecretStr("something"))
     route = respx_mock.post(
-        f"{config.SUBSCRIPTION_BASE_URL}/on-premise/report",
+        f"{settings.SUBSCRIPTION_URL}/on-premise/report",
         json={"active_users": 2, "engine_version": "dev"},
     ).respond(201, content="Accepted")
 
@@ -147,7 +151,9 @@ async def test_get_usage_count_seats(
     reply = await web_client.request("GET", "/subscriptions/organization/1234/usage")
     assert reply.status_code == 403
 
-    web_client.headers["Authorization"] = f"Bearer {config.DASHBOARD_TO_ENGINE_API_KEY}"
+    web_client.headers[
+        "Authorization"
+    ] = f"Bearer {settings.DASHBOARD_TO_ENGINE_API_KEY.get_secret_value()}"
     web_client.headers["Content-Type"] = "application/json; charset=utf8"
     reply = await web_client.request("GET", "/subscriptions/organization/1234/usage")
     assert reply.status_code == 200, reply.content
@@ -219,7 +225,9 @@ async def test_get_usage_last_seen(
     reply = await web_client.request("GET", "/subscriptions/organization/0/usage")
     assert reply.status_code == 403, reply.content
 
-    web_client.headers["Authorization"] = f"Bearer {config.DASHBOARD_TO_ENGINE_API_KEY}"
+    web_client.headers[
+        "Authorization"
+    ] = f"Bearer {settings.DASHBOARD_TO_ENGINE_API_KEY.get_secret_value()}"
     web_client.headers["Content-Type"] = "application/json; charset=utf8"
 
     reply = await web_client.request("GET", "/subscriptions/organization/0/usage")

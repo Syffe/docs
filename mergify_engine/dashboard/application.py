@@ -4,11 +4,11 @@ import dataclasses
 import json
 import typing
 
-from mergify_engine import config
 from mergify_engine import crypto
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import redis_utils
+from mergify_engine import settings
 from mergify_engine.clients import dashboard
 from mergify_engine.clients import http
 
@@ -288,7 +288,7 @@ class ApplicationOnPremise(ApplicationBase):
         api_access_key: str,
         api_secret_key: str,
     ) -> ApplicationClassT:
-        data = config.APPLICATION_APIKEYS.get(api_access_key)
+        data = settings.APPLICATION_APIKEYS.get(api_access_key)
         if data is None or data["api_secret_key"] != api_secret_key:
             raise ApplicationUserNotFound()
         return cls(
@@ -306,7 +306,7 @@ class ApplicationOnPremise(ApplicationBase):
         )
 
 
-if config.SAAS_MODE:
+if settings.SAAS_MODE:
 
     @dataclasses.dataclass
     class Application(ApplicationSaas):

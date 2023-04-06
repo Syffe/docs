@@ -8,7 +8,6 @@ import imia
 import sqlalchemy.ext.asyncio
 import starsessions.session
 
-from mergify_engine import config
 from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine import settings
@@ -111,7 +110,7 @@ async def create_or_update_user(
         session, user_data["id"], user_data["login"], token
     )
 
-    if config.SAAS_MODE:
+    if settings.SAAS_MODE:
         # NOTE(sileht): This part is critical if we fail this call, future API calls token
         # /front/proxy/saas/ will fail as the accounts attached to this user will
         # TODO(sileht): This API call may call back the engine API to cleanup the token

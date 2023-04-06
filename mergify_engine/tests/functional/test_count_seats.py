@@ -5,9 +5,9 @@ import time
 from unittest import mock
 
 import anys
+import pydantic
 import pytest
 
-from mergify_engine import config
 from mergify_engine import count_seats
 from mergify_engine import date
 from mergify_engine import github_types
@@ -21,8 +21,11 @@ from mergify_engine.tests.functional import base
 class TestCountSeats(base.FunctionalTestBase):
     @pytest.fixture(autouse=True)
     def prepare_fixture(
-        self, database_cleanup: None
+        self, database_cleanup: None, monkeypatch: pytest.MonkeyPatch
     ) -> abc.Generator[None, None, None]:
+        monkeypatch.setattr(
+            settings, "SUBSCRIPTION_TOKEN", pydantic.SecretStr("something")
+        )
         yield
 
     async def _prepare_repo(self) -> count_seats.Seats:
@@ -95,43 +98,42 @@ class TestCountSeats(base.FunctionalTestBase):
             raise RuntimeError("client_fork owner is None")
         args = argparse.Namespace(json=True, daemon=False)
         with mock.patch("sys.stdout") as stdout:
-            with mock.patch.object(config, "SUBSCRIPTION_TOKEN"):
-                await conftest.reset_database()
-                await count_seats.report(args)
-                s = "".join(call.args[0] for call in stdout.write.mock_calls)
-                json_reports = json.loads(s)
-                assert list(json_reports.keys()) == ["organizations"]
-                assert len(json_reports["organizations"]) == 1
+            await conftest.reset_database()
+            await count_seats.report(args)
+            s = "".join(call.args[0] for call in stdout.write.mock_calls)
+            json_reports = json.loads(s)
+            assert list(json_reports.keys()) == ["organizations"]
+            assert len(json_reports["organizations"]) == 1
 
-                org = json_reports["organizations"][0]
-                assert org["id"] == settings.TESTING_ORGANIZATION_ID
-                assert org["login"] == settings.TESTING_ORGANIZATION_NAME
+            org = json_reports["organizations"][0]
+            assert org["id"] == settings.TESTING_ORGANIZATION_ID
+            assert org["login"] == settings.TESTING_ORGANIZATION_NAME
 
-                assert len(org["repositories"]) == 1
-                repo = org["repositories"][0]
-                assert sorted(
-                    repo["collaborators"]["active_users"],
-                    key=operator.itemgetter("id"),
-                ) == sorted(
-                    [
-                        {
-                            "id": github_types.GitHubAccountIdType(
-                                settings.TESTING_MERGIFY_TEST_1_ID
-                            ),
-                            "login": github_types.GitHubLogin("mergify-test1"),
-                            "seen_at": anys.ANY_AWARE_DATETIME_STR,
-                        },
-                        {
-                            "id": github_types.GitHubAccountIdType(
-                                settings.TESTING_MERGIFY_TEST_2_ID
-                            ),
-                            "login": github_types.GitHubLogin("mergify-test2"),
-                            "seen_at": anys.ANY_AWARE_DATETIME_STR,
-                        },
-                    ],
-                    key=operator.itemgetter("id"),
-                )
-                assert len(repo["collaborators"]["active_users"]) == 2
+            assert len(org["repositories"]) == 1
+            repo = org["repositories"][0]
+            assert sorted(
+                repo["collaborators"]["active_users"],
+                key=operator.itemgetter("id"),
+            ) == sorted(
+                [
+                    {
+                        "id": github_types.GitHubAccountIdType(
+                            settings.TESTING_MERGIFY_TEST_1_ID
+                        ),
+                        "login": github_types.GitHubLogin("mergify-test1"),
+                        "seen_at": anys.ANY_AWARE_DATETIME_STR,
+                    },
+                    {
+                        "id": github_types.GitHubAccountIdType(
+                            settings.TESTING_MERGIFY_TEST_2_ID
+                        ),
+                        "login": github_types.GitHubLogin("mergify-test2"),
+                        "seen_at": anys.ANY_AWARE_DATETIME_STR,
+                    },
+                ],
+                key=operator.itemgetter("id"),
+            )
+            assert len(repo["collaborators"]["active_users"]) == 2
 
     async def test_stored_user_in_redis(self) -> None:
         rules = {

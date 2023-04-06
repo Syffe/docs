@@ -17,6 +17,7 @@ from mergify_engine import github_types
 from mergify_engine import json
 from mergify_engine import redis_utils
 from mergify_engine import service
+from mergify_engine import settings
 from mergify_engine import worker_pusher
 from mergify_engine.clients import http
 
@@ -329,10 +330,15 @@ class Seats:
 )
 async def send_seats(seats: SeatsCountResultT) -> None:
     async with http.AsyncClient() as client:
+        if settings.SUBSCRIPTION_TOKEN is None:
+            raise RuntimeError("SUBSCRIPTION_TOKEN is None")
+
         try:
             await client.post(
-                f"{config.SUBSCRIPTION_BASE_URL}/on-premise/report",
-                headers={"Authorization": f"token {config.SUBSCRIPTION_TOKEN}"},
+                f"{settings.SUBSCRIPTION_URL}/on-premise/report",
+                headers={
+                    "Authorization": f"token {settings.SUBSCRIPTION_TOKEN.get_secret_value()}"
+                },
                 json={
                     "active_users": seats.active_users,
                     "engine_version": config.VERSION,
@@ -353,7 +359,7 @@ async def count_and_send(redis: redis_utils.RedisActiveUsers) -> None:
         # NOTE(sileht): We loop even if SUBSCRIPTION_TOKEN is missing to not
         # break `tox -e test`. And we can et SUBSCRIPTION_TOKEN to test the
         # daemon with `tox -etest`
-        if config.SUBSCRIPTION_TOKEN is None:
+        if settings.SUBSCRIPTION_TOKEN is None:
             LOG.info("on-premise subscription token missing, nothing to do.")
         else:
             try:
@@ -378,7 +384,7 @@ async def report(args: argparse.Namespace) -> None:
             await count_and_send(redis_links.active_users)
         else:
             service.setup("count-seats", dump_config=False)
-            if config.SUBSCRIPTION_TOKEN is None:
+            if settings.SUBSCRIPTION_TOKEN is None:
                 LOG.error("on-premise subscription token missing")
             else:
                 seats = await Seats.get(redis_links.active_users)

@@ -111,7 +111,7 @@ def setup_new_event_loop() -> None:
 
 @pytest.fixture(autouse=True, scope="session")
 def enable_api() -> None:
-    config.API_ENABLE = True
+    settings.API_ENABLE = True
 
 
 CONFIG_URLS_TO_MOCK = (

@@ -3,8 +3,8 @@ import json
 import httpx
 import sqlalchemy
 
-from mergify_engine import config
 from mergify_engine import github_types
+from mergify_engine import settings
 from mergify_engine.dashboard import subscription
 from mergify_engine.models import github_user
 from mergify_engine.tests import conftest
@@ -12,7 +12,9 @@ from mergify_engine.tests import conftest
 
 async def test_tokens_cache_delete(web_client: httpx.AsyncClient) -> None:
     owner_id = 123
-    headers = {"Authorization": f"Bearer {config.DASHBOARD_TO_ENGINE_API_KEY}"}
+    headers = {
+        "Authorization": f"Bearer {settings.DASHBOARD_TO_ENGINE_API_KEY.get_secret_value()}"
+    }
     reply = await web_client.delete(
         f"/subscriptions/tokens-cache/{owner_id}", headers=headers
     )
@@ -22,7 +24,9 @@ async def test_tokens_cache_delete(web_client: httpx.AsyncClient) -> None:
 
 async def test_subscription_cache_delete(web_client: httpx.AsyncClient) -> None:
     owner_id = 123
-    headers = {"Authorization": f"Bearer {config.DASHBOARD_TO_ENGINE_API_KEY}"}
+    headers = {
+        "Authorization": f"Bearer {settings.DASHBOARD_TO_ENGINE_API_KEY.get_secret_value()}"
+    }
     reply = await web_client.delete(
         f"/subscriptions/subscription-cache/{owner_id}", headers=headers
     )
@@ -43,7 +47,7 @@ async def test_subscription_cache_update(web_client: httpx.AsyncClient) -> None:
         )
     ).encode(charset)
     headers = {
-        "Authorization": f"Bearer {config.DASHBOARD_TO_ENGINE_API_KEY}",
+        "Authorization": f"Bearer {settings.DASHBOARD_TO_ENGINE_API_KEY.get_secret_value()}",
         "Content-Type": f"application/json; charset={charset}",
     }
     reply = await web_client.put(
@@ -65,7 +69,9 @@ async def test_subscription_user_oauth_token(
     web_client: conftest.CustomTestClient,
     db: sqlalchemy.ext.asyncio.AsyncSession,
 ) -> None:
-    web_client.headers["Authorization"] = f"Bearer {config.DASHBOARD_TO_ENGINE_API_KEY}"
+    web_client.headers[
+        "Authorization"
+    ] = f"Bearer {settings.DASHBOARD_TO_ENGINE_API_KEY.get_secret_value()}"
 
     reply = await web_client.get("/subscriptions/user-oauth-access-token/42")
     assert reply.status_code == 404

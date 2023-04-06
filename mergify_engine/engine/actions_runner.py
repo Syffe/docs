@@ -10,13 +10,13 @@ import ddtrace
 
 from mergify_engine import actions
 from mergify_engine import check_api
-from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import delayed_refresh
 from mergify_engine import exceptions
 from mergify_engine import github_types
+from mergify_engine import settings
 from mergify_engine import utils
 from mergify_engine import yaml
 from mergify_engine.clients import github
@@ -164,7 +164,7 @@ async def gen_summary(
         if name == "queue" and "priority" in action.raw_config
     )
     if has_queue_action_priority:
-        if config.SAAS_MODE:
+        if settings.SAAS_MODE:
             summary += QUEUE_ACTION_PRIORITY_ATTRIBUTE_DEPRECATION_SAAS
         else:
             summary += QUEUE_ACTION_PRIORITY_ATTRIBUTE_DEPRECATION_GHES

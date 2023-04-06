@@ -23,7 +23,6 @@ import httpx
 import pytest
 
 from mergify_engine import branch_updater
-from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import duplicate_pull
@@ -418,7 +417,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         # during replay.
         settings.BUCKET_PROCESSING_MAX_SECONDS = 100000
 
-        config.API_ENABLE = True
+        settings.API_ENABLE = True
 
         self.register_mock(
             mock.patch.object(
