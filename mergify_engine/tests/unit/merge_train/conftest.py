@@ -205,7 +205,7 @@ def fake_client() -> mock.Mock:
             if url.startswith(f"/repos/Mergifyio/mergify-engine/pulls/{i}"):
                 return {"merged": True, "merge_commit_sha": f"sha{i}"}
 
-        raise Exception(f"url not mocked: {url}")
+        raise Exception(f"url not mocked: {url}")  # noqa: TRY002
 
     def update_base_sha(sha: github_types.SHAType) -> None:
         branch["commit"]["sha"] = sha

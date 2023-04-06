@@ -105,7 +105,7 @@ async def test_logging_middleware(
     @app.get("/")
     def root() -> starlette.responses.PlainTextResponse:
         if status_code == 0:
-            raise Exception("boom")
+            raise Exception("boom")  # noqa: TRY002
         else:
             return starlette.responses.PlainTextResponse(
                 content="", status_code=status_code, headers={"see": "me"}

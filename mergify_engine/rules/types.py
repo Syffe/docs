@@ -54,8 +54,8 @@ class DummyContext(context.Context):
             else:
                 return None
         elif key in context.PullRequest.LIST_ATTRIBUTES:
-            l: list[str] = []
-            return l
+            a_list: list[str] = []
+            return a_list
         elif key in context.PullRequest.LIST_ATTRIBUTES_WITH_LENGTH_OPTIMIZATION:
             return 0
         else:

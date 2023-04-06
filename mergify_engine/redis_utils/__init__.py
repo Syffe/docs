@@ -91,7 +91,7 @@ async def load_stream_scripts(redis: "redispy.connection.Connection") -> None:
 
     # exists is a list of 0 and/or 1, notifying the existence of each script
     exists = await redis.read_response()
-    for script_id, exist in zip(ids, exists):
+    for script_id, exist in zip(ids, exists, strict=True):
         if exist == 0:
             await load_script(redis, script_id)
 

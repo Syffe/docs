@@ -21,8 +21,8 @@ deps = ["setup"]
 help = "Run linters"
 default_item_type = "cmd"
 sequence = [
-  "flake8",
-  "isort -c .",
+  "ruff check .",
+  "black --check .",
   "mypy",
   "yamllint .",
   "reno lint",

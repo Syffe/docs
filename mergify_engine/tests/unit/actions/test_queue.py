@@ -205,7 +205,7 @@ def fake_client() -> mock.Mock:
                 }
             )
         else:
-            raise Exception(f"url not mocked: {url}")
+            raise Exception(f"url not mocked: {url}")  # noqa: TRY002
 
     def item_call(
         url: str, *args: typing.Any, **kwargs: typing.Any
@@ -250,7 +250,7 @@ def fake_client() -> mock.Mock:
                 message="boom", response=mock.Mock(), request=mock.Mock()
             )
         else:
-            raise Exception(f"url not mocked: {url}")
+            raise Exception(f"url not mocked: {url}")  # noqa: TRY002
 
     client = mock.Mock()
     client.item = mock.AsyncMock(side_effect=item_call)

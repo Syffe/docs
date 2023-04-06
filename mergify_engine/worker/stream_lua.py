@@ -79,7 +79,7 @@ return sources
 
 def lua_table_to_dict(table: list[bytes]) -> dict[bytes, bytes]:
     it = iter(table)
-    return dict(zip(it, it))
+    return dict(zip(it, it, strict=True))
 
 
 @tracer.wrap("stream_get_pull_messages", span_type="worker")

@@ -104,7 +104,7 @@ def extract_subscription_marker_features(
 
     for feat in marker.args:
         if not isinstance(feat, subscription.Features):
-            raise Exception(
+            raise Exception(  # noqa: TRY002
                 "Expected every arguments of `subscription` marker to be an instance of `subscription.Features`"
             )
 

@@ -191,7 +191,7 @@ class MissingEventTimeout(Exception):
     def __init__(
         self, event_type: github_types.GitHubEventType, expected_payload: typing.Any
     ) -> None:
-        return super().__init__(
+        super().__init__(
             f"Never got event `{event_type}` with payload `{expected_payload}` (timeout)"
         )
 

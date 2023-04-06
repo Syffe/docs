@@ -2224,13 +2224,6 @@ async def test_separate_dedicated_worker(
         return sub
 
     async def push_and_wait(blocked_stream: int = 0) -> None:
-        github_types.GitHubAccountIdType(1),
-        github_types.GitHubLogin("owner-1"),
-        github_types.GitHubRepositoryIdType(1),
-        github_types.GitHubRepositoryName("repo"),
-        github_types.GitHubPullRequestNumber(1),
-        "pull_request",
-        github_types.GitHubEvent({"payload": "whatever"}),  # type: ignore[typeddict-item]
         # worker hash == 2
         await worker_pusher.push(
             redis_links.stream,

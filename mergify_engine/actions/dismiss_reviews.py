@@ -21,7 +21,7 @@ WHEN_SYNCHRONIZE: DismissReviewWhenT = "synchronize"
 WHEN_ALWAYS: DismissReviewWhenT = "always"
 
 DismissReviewTypeT = typing.Union[
-    typing.Literal[True, False, "from_requested_reviewers"],  # noqa: NU003
+    typing.Literal[True, False, "from_requested_reviewers"],
     list[github_types.GitHubLogin],
 ]
 

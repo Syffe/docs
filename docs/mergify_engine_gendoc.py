@@ -36,7 +36,7 @@ def store_action(app, doctree):
 def render_action_list(app, docname, source):
     if docname == "actions/index":
         with open(
-            os.path.join(app.srcdir, "_templates/action-list.j2"), "r"
+            os.path.join(app.srcdir, "_templates/action-list.j2")
         ) as template_file:
             template = jinja2.Template(template_file.read())
         with open(

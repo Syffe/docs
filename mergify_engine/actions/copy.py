@@ -240,7 +240,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 # FIXME(sileht): this case should never occurs. If it does it
                 # means we don't recover from a failure correctly.
                 self.ctxt.log.error(
-                    f"{self.KIND} already exists, but pull request not found"
+                    "%s already exists, but pull request not found", self.KIND
                 )
                 return self._get_failure_copy_result(branch_name, e.reason)
             else:
@@ -530,9 +530,12 @@ class CopyAction(actions.Action):
             ): DuplicateTitleJinja2,
             voluptuous.Required(
                 "body",
-                default=f"This is an automatic {self.KIND} of pull request #{{{{number}}}} done by [Mergify](https://mergify.com).\n{{{{ cherry_pick_error }}}}"
-                + "\n\n---\n\n"
-                + constants.MERGIFY_PULL_REQUEST_DOC,
+                default=(
+                    f"This is an automatic {self.KIND} of pull request #{{{{number}}}} done by [Mergify](https://mergify.com).\n"
+                    "{{ cherry_pick_error }}"
+                    "\n\n---\n\n"
+                    f"{constants.MERGIFY_PULL_REQUEST_DOC}"
+                ),
             ): DuplicateBodyJinja2,
         }
 

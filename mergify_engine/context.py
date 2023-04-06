@@ -111,7 +111,7 @@ class Installation:
     client: github.AsyncGithubInstallationClient = dataclasses.field(repr=False)
     redis: redis_utils.RedisLinks = dataclasses.field(repr=False)
 
-    repositories: "typing.Dict[github_types.GitHubRepositoryName, Repository]" = (
+    repositories: "dict[github_types.GitHubRepositoryName, Repository]" = (
         dataclasses.field(default_factory=dict, repr=False)
     )
     _caches: InstallationCaches = dataclasses.field(
@@ -287,7 +287,7 @@ class RepositoryCaches:
 class Repository:
     installation: Installation
     repo: github_types.GitHubRepository
-    pull_contexts: "typing.Dict[github_types.GitHubPullRequestNumber, Context]" = (
+    pull_contexts: "dict[github_types.GitHubPullRequestNumber, Context]" = (
         dataclasses.field(default_factory=dict, repr=False)
     )
 
@@ -679,8 +679,9 @@ class Repository:
             return github_types.GitHubRepositoryPermission(permission_str)
         except ValueError:
             self.log.error(
-                f"Received unknown '{permission_str}' permission from GitHub. "
-                "Keeps processing with none permission."
+                "Received unknown '%s' permission from GitHub. "
+                "Keeps processing with none permission.",
+                permission_str,
             )
             return github_types.GitHubRepositoryPermission.default()
 
@@ -925,7 +926,8 @@ class Repository:
                 == 0
             ):
                 self.log.info(
-                    f"Repository {self.repo['full_name']} is using `require_code_owner_reviews=True` and `required_approving_review_count=0` branch protection",
+                    "Repository %s is using `require_code_owner_reviews=True` and `required_approving_review_count=0` branch protection",
+                    self.repo["full_name"],
                     branch=branch_name,
                 )
 

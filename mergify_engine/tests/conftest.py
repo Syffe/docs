@@ -146,10 +146,8 @@ def mock_redis_db_values(worker_id: str) -> abc.Generator[None, None, None]:
         db_number_re = re.search(r"\?db=(\d+)", config_url)
         if db_number_re is None:
             raise RuntimeError(
-                (
-                    f"Expected to find `?db=` at the end of config URL '{config_url_to_mock}', "
-                    f"got '{config_url}' instead"
-                )
+                f"Expected to find `?db=` at the end of config URL '{config_url_to_mock}', "
+                f"got '{config_url}' instead"
             )
         db_number = int(db_number_re.group(1))
         new_db_number = db_number + (len(CONFIG_URLS_TO_MOCK) * worker_id_int)
@@ -334,7 +332,7 @@ class CustomTestClient(httpx.AsyncClient):
     async def log_as(self, user_id: int) -> None:
         resp = await self.post(f"/front/for-testing/log-as/{user_id}")
         if resp.status_code != 200:
-            raise Exception(resp.text)
+            raise Exception(resp.text)  # noqa: TRY002
 
     async def logged_as(self) -> str | None:
         resp = await self.get("/front/for-testing/logged-as")

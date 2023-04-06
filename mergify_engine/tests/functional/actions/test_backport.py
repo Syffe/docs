@@ -244,7 +244,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
 ```
 
 
-"""
+"""  # noqa: W191
             == checks[0]["output"]["summary"]
         )
 

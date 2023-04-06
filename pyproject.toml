@@ -65,34 +65,23 @@ pytest-asyncio = "^0.20.1"
 pytest-cov = "^4.0.0"
 pytest-github-actions-annotate-failures = "^0.1.7"
 pytest-timeout = "^2.1.0"
-isort = "^5.12.0"
 mypy = "^1.1"
 mypy-extensions = "^1.0.0"
 vcrpy = ">=4.1.1"
-flake8 = "^6.0.0"
-flake8-black = "^0.3.3"
-flake8-blind-except = "^0.2.1"
-flake8-bugbear = "^23.3.23"
-flake8-builtins = "^2.0.0"
-flake8-comprehensions = "^3.11.1"
-flake8-docstrings = "^1.7.0"
-flake8-logging-format = "^0.9.0"
-flake8-rst-docstrings = "^0.3.0"
-flake8-use-fstring = "^1.4"
 freezegun = "^1.2.2"
 yamllint = "^1.30.0"
 reno = "^4.0.0"
 anys = "^0.2.1"
 pytest-split = "^0.8.0"
 tryceratops = "^1.1.0"
-flake8-pep585 = "^0.1.7"
-flake8-new-union-types = "^0.4.1"
 pytest-xdist = "^3.2.1"
 yesqa = "^1.4.0"
 asgi-lifespan = "^2.1.0"
 filelock = "^3.10.7"
 poethepoet = "^0.19.0"
 pytest-rerunfailures = "^11.1"
+ruff = "^0.0.261"
+black = "^23.3.0"
 
 [tool.poetry.scripts]
   mergify-database-update = "mergify_engine.models.manage:database_update"
@@ -201,11 +190,55 @@ module = [
 ]
 ignore_missing_imports = true
 
-[tool.isort]
-profile = "black"
-force_single_line = true
-lines_after_imports = "2"
-force_sort_within_sections = true
-known_first_party = "mergify_engine"
-known_third_party = "datadog"
-default_section = "THIRDPARTY"
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+select = [
+ "E", "W", "F", "I", "A", "B", "Q",
+ "C4", "T10", "ISC", "ICN", "BLE",
+ "G", "RSE", "TID", "TRY", "PLE", "UP",
+ "RUF",
+ # FIXME(sileht): very interresting, but require easy manual code change
+ # "DTZ", "ARG", "TCH", "RET", "COM",
+ # FIXME(sileht): doctring/rst-docstring like
+ # "D"
+]
+
+ignore = [
+    # NOTE(sileht): line-length is up to black
+    "E501",
+    # NOTE(sileht): we prefer using exc_info=True
+    "G201", "TRY200", "TRY400",
+    # NOTE(sileht): "Unnecessary parentheses on raised exception", this breaks
+    # isinstance on exception
+    "RSE102",
+    # NOTE(sileht): No exception with message set via __init__
+    "TRY003", "TRY301",
+    # NOTE(sileht): built-in shadow, interresting but to raise an error for
+    # TypedDict/NamedTuple with key named like builtin, so it's useless
+    "A003",
+    # NOTE(sileht): This enforce usage of raise ... from ...
+    "B904",
+    # FIXME(sileht):
+    "RUF005", "RUF100", "RUF003",
+    # FIXME(sileht): pyupgrade checks more case than flake8 pep585/new-union-types/fstring
+    "UP017", "UP037", "UP038",
+    # FIXME(sileht): Convert some exception -> TypeError
+    "TRY004",
+    # FIXME(sileht): very interresting, ruff BLE is far better that flake8-blind-except
+    "BLE001",
+    # NOTE(sileht): very interresting, but require manual logic change
+    # NOTE(sileht): looks buggy
+    "RET508"
+]
+
+[tool.ruff.isort]
+force-single-line = true
+force-sort-within-sections = true
+lines-after-imports = 2
+known-first-party = ["mergify_engine"]
+known-third-party = ["datadog"]
+
+[tool.ruff.flake8-tidy-imports]
+ban-relative-imports = "all"

@@ -1,8 +1,7 @@
 import datetime
 
+from mergify_engine import github_types
 from mergify_engine import settings
-
-from . import github_types
 
 
 GITHUB_PULL_REQUEST_BODY_MAX_SIZE = 65535

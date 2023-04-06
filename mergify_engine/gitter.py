@@ -198,7 +198,7 @@ class Gitter:
         elif cls._is_force_push_lease_reject(output):
             return GitErrorRetriable(
                 returncode,
-                "Remote branch changed in the meantime: \n" f"```\n{output}\n```\n",
+                f"Remote branch changed in the meantime: \n```\n{output}\n```\n",
             )
 
         for pattern, out_exception in GIT_MESSAGE_TO_EXCEPTION.items():
