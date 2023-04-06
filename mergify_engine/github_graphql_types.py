@@ -108,8 +108,10 @@ class GraphqlBranchProtectionRule(typing.TypedDict):
     # https://docs.github.com/en/graphql/reference/objects#branchprotectionrule
     allowsDeletions: bool
     allowsForcePushes: bool
+    blocksCreations: bool
     dismissesStaleReviews: bool
     isAdminEnforced: bool
+    lockBranch: bool
     matchingRefs: list[GraphqlBranchProtectionRuleMatchingRef]
     pattern: str
     requireLastPushApproval: bool

@@ -832,6 +832,8 @@ class Repository:
         field_names = [f["name"] for f in response["data"]["__type"]["fields"]]
         # Those fields may be absent in some GHES versions
         maybe_missing_fields = [
+            "blocksCreations",  # GHES 3.5
+            "lockBranch",  # GHES 3.8
             "requireLastPushApproval",  # GHES 3.8
             "requiredDeploymentEnvironments",  # GHES 3.9
             "requiresDeployments",  # GHES 3.9
