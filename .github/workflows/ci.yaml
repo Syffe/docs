@@ -38,7 +38,7 @@ jobs:
       - name: Setup Python 🔧
         uses: actions/setup-python@v4.5.0
         with:
-          python-version: 3.11.2
+          python-version: 3.11.3
 
       - name: Build 🔧 & Test 🔍
         run: |
@@ -58,7 +58,7 @@ jobs:
       - name: Setup Python 🔧
         uses: actions/setup-python@v4.5.0
         with:
-          python-version: 3.11.2
+          python-version: 3.11.3
 
       - name: Build 🔧 & Test 🔍
         run: |
@@ -89,7 +89,7 @@ jobs:
       - name: Setup Python 🔧
         uses: actions/setup-python@v4.5.0
         with:
-          python-version: 3.11.2
+          python-version: 3.11.3
 
       - name: Build 🔧 & Test 🔍
         run: |
@@ -123,7 +123,7 @@ jobs:
       - name: Setup Python 🔧
         uses: actions/setup-python@v4.5.0
         with:
-          python-version: 3.11.2
+          python-version: 3.11.3
 
       - name: Download test durations
         uses: actions/download-artifact@v3.0.2
@@ -159,7 +159,7 @@ jobs:
       - name: Setup Python 🔧
         uses: actions/setup-python@v4.5.0
         with:
-          python-version: 3.11.2
+          python-version: 3.11.3
 
       - name: Setup Node 🔧
         uses: actions/setup-node@v3
