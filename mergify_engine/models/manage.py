@@ -1,5 +1,8 @@
+import argparse
 import asyncio
 
+import alembic.command
+import alembic.config
 import sqlalchemy
 
 from mergify_engine import models
@@ -23,5 +26,19 @@ async def drop_all() -> None:
         await conn.run_sync(models.Base.metadata.drop_all)
 
 
-def database_update() -> None:
+def database_create() -> None:
     asyncio.run(create_all())
+
+
+def database_update() -> None:
+    config = alembic.config.Config("alembic.ini")
+    alembic.command.upgrade(config, "head")
+
+
+def database_stamp(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description="Create database stamp")
+    parser.add_argument("revision")
+    args = parser.parse_args(argv)
+
+    config = alembic.config.Config("alembic.ini")
+    alembic.command.stamp(config, args.revision)

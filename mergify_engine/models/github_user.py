@@ -30,7 +30,9 @@ class OAuthTokenEncryptedType(sqlalchemy_utils.StringEncryptedType):  # type: ig
     key: str
 
     def __init__(self) -> None:
-        super().__init__(sqlalchemy.String(512), None, encrypted_type.AesGcmEngine)
+        super().__init__(
+            sqlalchemy.String(512), None, encrypted_type.AesGcmEngine, length=512
+        )
 
     def process_bind_param(
         self,

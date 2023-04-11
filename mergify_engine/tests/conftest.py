@@ -29,6 +29,7 @@ from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.models import github_user
 from mergify_engine.models import manage
+from mergify_engine.tests import utils as test_utils
 from mergify_engine.web import root as web_root
 
 
@@ -167,32 +168,18 @@ def mock_redis_db_values(worker_id: str) -> abc.Generator[None, None, None]:
         yield
 
 
-async def create_database(db_url: str, db_name: str) -> None:
-    engine = sqlalchemy.ext.asyncio.create_async_engine(db_url)
-    try:
-        engine_no_transaction = engine.execution_options(isolation_level="AUTOCOMMIT")
-        async with engine_no_transaction.connect() as conn:
-            # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
-            await conn.execute(sqlalchemy.text(f"DROP DATABASE IF EXISTS {db_name}"))
-            # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
-            await conn.execute(sqlalchemy.text(f"CREATE DATABASE {db_name}"))
-    finally:
-        await engine.dispose()
-
-
 @pytest.fixture(autouse=True, scope="session")
 def mock_postgres_db_value(worker_id: str) -> abc.Generator[None, None, None]:
     worker_id_int = get_worker_id_as_int(worker_id)
-
     db_name = f"postgres{worker_id_int}"
-    mocked_url = settings.DATABASE_URL._replace(path=f"/{db_name}")
-    mocked_url_without_db_name = settings.DATABASE_URL._replace(path="")
+    mocked_url, mocked_url_without_db_name = test_utils.create_database_url(db_name)
+
     # We need to manually run the coroutine in an event loop because
     # pytest-asyncio has its own `event_loop` fixture that is function scoped and
     # in autouse (session scope fixture cannot require function scoped fixture)
     loop = asyncio.get_event_loop_policy().new_event_loop()
     loop.run_until_complete(
-        create_database(mocked_url_without_db_name.geturl(), db_name)
+        test_utils.create_database(mocked_url_without_db_name.geturl(), db_name)
     )
     loop.close()
 

@@ -119,3 +119,8 @@ cmd = "semgrep --config=auto --error"
 help = "Sync poetry virtualenv"
 executor = { type  = "simple" }
 cmd = "./tools/poetry-ci-install.sh"
+
+[tool.poe.tasks.revision]
+deps = ["setup"]
+help = "Create a database revision file"
+cmd = "alembic revision"

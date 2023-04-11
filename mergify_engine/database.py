@@ -65,6 +65,10 @@ def _get_app() -> SQLAlchemyAppState:
     return APP_STATE
 
 
+def get_engine() -> sqlalchemy.ext.asyncio.AsyncEngine:
+    return _get_app()["engine"]
+
+
 def create_session() -> sqlalchemy.ext.asyncio.AsyncSession:
     return _get_app()["sessionmaker"]()
 
