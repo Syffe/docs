@@ -121,6 +121,25 @@ class MergeabilityCheck:
 
 
 @pydantic.dataclasses.dataclass
+class PullRequestSummary:
+    title: str = dataclasses.field(
+        metadata={"description": "The title of the pull request summary"}
+    )
+    unexpected_changes: str | None = dataclasses.field(
+        metadata={"description": "The unexpected changes summary"}
+    )
+    freeze: str | None = dataclasses.field(
+        metadata={"description": "The queue freeze summary"}
+    )
+    checks_timeout: str | None = dataclasses.field(
+        metadata={"description": "The checks timeout summary"}
+    )
+    batch_failure: str | None = dataclasses.field(
+        metadata={"description": "The batch failure summary title"}
+    )
+
+
+@pydantic.dataclasses.dataclass
 class EnhancedPullRequestQueued:
     number: github_types.GitHubPullRequestNumber = dataclasses.field(
         metadata={"description": "The number of the pull request"}
@@ -150,6 +169,9 @@ class EnhancedPullRequestQueued:
         metadata={
             "description": "The estimated timestamp when this pull request will be merged"
         }
+    )
+    summary: PullRequestSummary | None = dataclasses.field(
+        metadata={"description": "The pull request summary"}
     )
 
 
@@ -262,6 +284,13 @@ class EnhancedPullRequestQueued:
                         },
                         "queued_at": "2021-10-14T14:19:12+00:00",
                         "estimated_time_of_merge": "2021-10-14T15:19:12+00:00",
+                        "summary": {
+                            "title": "The pull request is embarked for merge",
+                            "unexpected_changes": None,
+                            "freeze": None,
+                            "checks_timeout": None,
+                            "batch_failure": None,
+                        },
                     }
                 }
             }
@@ -270,14 +299,6 @@ class EnhancedPullRequestQueued:
     },
 )
 async def repository_queue_pull_request(
-    owner: typing.Annotated[
-        github_types.GitHubLogin,
-        fastapi.Path(description="The owner of the repository"),
-    ],
-    repository: typing.Annotated[
-        github_types.GitHubRepositoryName,
-        fastapi.Path(description="The name of the repository"),
-    ],
     queue_name: typing.Annotated[
         qr_config.QueueName, fastapi.Path(description="The queue name")
     ],
@@ -321,6 +342,19 @@ async def repository_queue_pull_request(
                         )
                     )
 
+                    if car is not None:
+                        checked_pull = car.get_checked_pull()
+                        raw_summary = car.get_original_pr_summary(checked_pull)
+                        summary = PullRequestSummary(
+                            title=raw_summary.title,
+                            unexpected_changes=raw_summary.unexpected_changes,
+                            freeze=raw_summary.freeze,
+                            checks_timeout=raw_summary.checks_timeout,
+                            batch_failure=raw_summary.get_batch_failure_summary_title(),
+                        )
+                    else:
+                        summary = None
+
                     return EnhancedPullRequestQueued(
                         number=embarked_pull.user_pull_request_number,
                         position=position,
@@ -331,6 +365,7 @@ async def repository_queue_pull_request(
                         queued_at=embarked_pull.queued_at,
                         mergeability_check=mergeability_check,
                         estimated_time_of_merge=estimated_time_of_merge,
+                        summary=summary,
                     )
 
     raise fastapi.HTTPException(

@@ -215,6 +215,6 @@ class QueueFreeze:
 
     def get_freeze_message(self) -> str:
         return (
-            f"\n❄️ The merge is currently blocked by the freeze of the queue `{self.name}`, "
+            f"❄️ The merge is currently blocked by the freeze of the queue `{self.name}`, "
             f"for the following reason: `{self.reason}` ❄️"
         )

@@ -374,7 +374,7 @@ class Convoy:
         self,
         pr_numbers: list[github_types.GitHubPullRequestNumber],
         delegating_partition: "partr_config.PartitionRuleName",
-    ) -> github_types.GitHubPullRequestNumber | None:
+    ) -> github_types.GitHubPullRequest | None:
         # FIXMEsileht): self._trains is always correctly initialized, we must drop this.
         # Reload trains instances
         await self.load_from_redis()
@@ -389,14 +389,19 @@ class Convoy:
                     [ep.user_pull_request_number for ep in car.initial_embarked_pulls]
                 ):
                     await car.add_delegating_partition(delegating_partition)
-                    return car.queue_pull_request_number
+                    pull_request_context = (
+                        await self.repository.get_pull_request_context(
+                            car.queue_pull_request_number
+                        )
+                    )
+                    return pull_request_context.pull
 
         return None
 
     async def update_user_pull_request_summary(
         self,
         user_pull_request_number: github_types.GitHubPullRequestNumber,
-        checked_pull: github_types.GitHubPullRequestNumber,
+        checked_pull: github_types.GitHubPullRequestNumber | None,
         default_car: "tc_import.TrainCar",
     ) -> None:
         user_pr_context = await self.repository.get_pull_request_context(
@@ -409,10 +414,11 @@ class Convoy:
 
         if len(train_cars) == 1 and train_cars[0].train.partition_name is None:
             queue_check_run_conclusion = train_cars[0].get_queue_check_run_conclusion()
+            original_pr_summary = train_cars[0].get_original_pr_summary(checked_pull)
             report = check_api.Result(
                 queue_check_run_conclusion,
-                title=train_cars[0].get_original_pull_request_title(),
-                summary=train_cars[0].get_original_pull_request_summary(checked_pull),
+                title=original_pr_summary.title,
+                summary=original_pr_summary.body,
             )
 
             await check_api.set_check_run(
@@ -443,7 +449,7 @@ class Convoy:
 
             summary = "\n\n".join(
                 [
-                    f"**Partition {tc.train.partition_name}**: {tc.get_original_pull_request_title()}"
+                    f"**Partition {tc.train.partition_name}**: {tc.get_original_pr_summary_title()}"
                     for tc in train_cars
                 ]
             )

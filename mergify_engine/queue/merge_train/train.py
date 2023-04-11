@@ -218,9 +218,9 @@ class Train:
                 )
                 return None
 
-    async def reset(self, unexpected_change: train_car.UnexpectedChange) -> None:
+    async def reset(self, unexpected_changes: train_car.UnexpectedChanges) -> None:
         await self._slice_cars(
-            0, reason=queue_utils.UnexpectedQueueChange(change=str(unexpected_change))
+            0, reason=queue_utils.UnexpectedQueueChange(change=str(unexpected_changes))
         )
         await self.save()
         self.log.info("train cars reset")
@@ -1163,7 +1163,7 @@ class Train:
             )
             return description.strip()
         else:
-            return await embarked_pull_with_car.car.generate_merge_queue_summary(
+            return await embarked_pull_with_car.car.build_draft_pr_summary(
                 pull_rule=pull_rule
             )
 

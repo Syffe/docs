@@ -3338,12 +3338,6 @@ class TestQueueAction(base.FunctionalTestBase):
 
         # when detecting external changes onto the draft PR, the engine should disembark it and
         # unqueue all its contained PRs
-        comments = await self.get_issue_comments(draft_pr["number"])
-        assert (
-            "cannot be merged, due to unexpected changes in this draft PR, and have been disembarked"
-            in comments[-1]["body"]
-        )
-
         check = first(
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
@@ -6946,7 +6940,7 @@ pull_requests:
 
         pull_url_prefix = f"/{self.installation_ctxt.owner_login}/{self.repository_ctxt.repo['name']}/pull"
         expected_table = f"| 1 | test_create_pull_basic: pull request n2 from integration ([#{p2['number']}]({pull_url_prefix}/{p2['number']})) | foo/0 | [#{tmp_pull['number']}]({pull_url_prefix}/{tmp_pull['number']}) | <fake_pretty_datetime()>|"
-        assert expected_table in await car.generate_merge_queue_summary()
+        assert expected_table in await car.build_draft_pr_summary()
 
         await car.send_checks_end_signal(
             p2["number"], queue_utils.ChecksFailed(), "REEMBARKED"

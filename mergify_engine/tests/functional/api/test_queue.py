@@ -427,6 +427,10 @@ class TestQueueApi(base.FunctionalTestBase):
         r = await self.admin_app.get(
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{repository_name}/queue/foo/pull/{p['number']}",
         )
+
+        q = await self.get_train()
+        base_sha = await q.get_base_sha()
+
         assert r.status_code == 200
         assert r.json() == {
             "number": p["number"],
@@ -510,6 +514,13 @@ class TestQueueApi(base.FunctionalTestBase):
             },
             "queued_at": anys.ANY_DATETIME_STR,
             "estimated_time_of_merge": None,
+            "summary": {
+                "title": f"The pull request is embarked with {self.main_branch_name} ({base_sha[:7]}) for merge",
+                "unexpected_changes": None,
+                "freeze": None,
+                "checks_timeout": None,
+                "batch_failure": None,
+            },
         }
 
         conditions_evaluation = r.json()["mergeability_check"]["conditions_evaluation"]

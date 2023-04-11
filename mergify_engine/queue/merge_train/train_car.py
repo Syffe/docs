@@ -19,6 +19,7 @@ from mergify_engine import date
 from mergify_engine import delayed_refresh
 from mergify_engine import github_types
 from mergify_engine import json
+from mergify_engine import pull_request_finder
 from mergify_engine import refresher
 from mergify_engine import settings
 from mergify_engine import signals
@@ -88,12 +89,12 @@ class TrainCarOutcome(enum.Enum):
     UNKNWON = "unknown"
 
 
-class UnexpectedChange:
+class UnexpectedChanges:
     pass
 
 
 @dataclasses.dataclass
-class UnexpectedDraftPullRequestChange(UnexpectedChange):
+class UnexpectedDraftPullRequestChange(UnexpectedChanges):
     draft_pull_request_number: github_types.GitHubPullRequestNumber
 
     def __str__(self) -> str:
@@ -101,7 +102,7 @@ class UnexpectedDraftPullRequestChange(UnexpectedChange):
 
 
 @dataclasses.dataclass
-class UnexpectedUpdatedPullRequestChange(UnexpectedChange):
+class UnexpectedUpdatedPullRequestChange(UnexpectedChanges):
     updated_pull_request_number: github_types.GitHubPullRequestNumber
 
     def __str__(self) -> str:
@@ -109,18 +110,78 @@ class UnexpectedUpdatedPullRequestChange(UnexpectedChange):
 
 
 @dataclasses.dataclass
-class UnexpectedBaseBranchChange(UnexpectedChange):
+class UnexpectedBaseBranchChange(UnexpectedChanges):
     base_sha: github_types.SHAType
 
     def __str__(self) -> str:
         return f"an external action moved the target branch head to {self.base_sha}"
 
 
-UNEXPECTED_CHANGE_COMPATIBILITY = {
+UNEXPECTED_CHANGES_COMPATIBILITY = {
     UnexpectedDraftPullRequestChange: TrainCarOutcome.DRAFT_PR_CHANGE,
     UnexpectedBaseBranchChange: TrainCarOutcome.BASE_BRANCH_CHANGE,
     UnexpectedUpdatedPullRequestChange: TrainCarOutcome.UPDATED_PR_CHANGE,
 }
+
+
+@dataclasses.dataclass
+class BatchFailureSummary:
+    title: str
+    pull_request: str
+    parent_pull_requests: str
+    spec_checks: list[str]
+
+
+@dataclasses.dataclass
+class QueueSummary:
+    title: str
+    train_car_state: str
+    unexpected_changes: str | None
+    freeze: str | None
+    checks_timeout: str | None
+    merge_conditions: str
+    check_runs: str | None
+    batch_failure: BatchFailureSummary | None
+
+    @property
+    def body(self) -> str:
+        body = self.train_car_state
+        if self.unexpected_changes is not None:
+            body += "\n\n" + self.unexpected_changes
+
+        if self.freeze is not None:
+            body += "\n\n" + self.freeze
+
+        if self.checks_timeout is not None:
+            body += "\n\n" + self.checks_timeout
+
+        body += "\n\n" + self.merge_conditions
+
+        if self.check_runs is not None:
+            body += "\n\n" + self.check_runs
+
+        if self.batch_failure is not None:
+            body += "\n\n" + self.build_batch_failure_summary()
+
+        return body
+
+    def build_batch_failure_summary(self) -> str:
+        if self.batch_failure is not None:
+            batch_failure_summary = (
+                self.batch_failure.title
+                + "\n\n| Pull request | Parents pull requests | Speculative checks |\n"
+                + "| ---: | :--- | :--- |\n"
+            )
+            for spec_check in self.batch_failure.spec_checks:
+                batch_failure_summary += f"| {self.batch_failure.pull_request} | {self.batch_failure.parent_pull_requests} | {spec_check} |"
+
+            return batch_failure_summary
+        return ""
+
+    def get_batch_failure_summary_title(self) -> str | None:
+        if self.batch_failure is not None:
+            return self.batch_failure.title
+        return None
 
 
 # NOTE(Syffe): type of the TrainCar's checks, can be created by rebasing a PR (inplace)
@@ -429,7 +490,7 @@ class TrainCar:
             return ""
 
     @property
-    def has_unexpected_change(self) -> bool:
+    def has_unexpected_changes(self) -> bool:
         return self.train_car_state.outcome in (
             TrainCarOutcome.DRAFT_PR_CHANGE,
             TrainCarOutcome.UPDATED_PR_CHANGE,
@@ -722,10 +783,7 @@ class TrainCar:
                 priority=worker_pusher.Priority.immediate,
             )
 
-        await self._set_initial_state(
-            TrainCarChecksType.INPLACE,
-            embarked_pull.user_pull_request_number,
-        )
+        await self._set_initial_state(TrainCarChecksType.INPLACE, ctxt.pull)
 
     @staticmethod
     def _get_pulls_branch_ref(
@@ -789,11 +847,11 @@ class TrainCar:
             TrainCarChecksType.DRAFT,
             TrainCarChecksType.DRAFT_DELEGATED,
         ],
-        github_types.GitHubPullRequestNumber,
+        github_types.GitHubPullRequest,
     ]:
         try:
             title = f"merge queue: embarking {self._get_embarked_refs()} together"
-            body = await self.generate_merge_queue_summary(for_queue_pull_request=True)
+            body = await self.build_draft_pr_summary(for_queue_pull_request=True)
             response = await self.repository.installation.client.post(
                 f"/repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/pulls",
                 json={
@@ -816,15 +874,15 @@ class TrainCar:
 
                 if self.train.partition_name is not None:
                     # The same PR already exists in another TrainCar
-                    existing_pr_number = await self.train.convoy.find_prs_in_train_cars_and_add_delegation(
+                    existing_pr = await self.train.convoy.find_prs_in_train_cars_and_add_delegation(
                         [
                             ep.user_pull_request_number
                             for ep in self.still_queued_embarked_pulls
                         ],
                         self.train.partition_name,
                     )
-                    if existing_pr_number is not None:
-                        return (TrainCarChecksType.DRAFT_DELEGATED, existing_pr_number)
+                    if existing_pr is not None:
+                        return (TrainCarChecksType.DRAFT_DELEGATED, existing_pr)
 
                 await self._close_already_existing_draft_pr(
                     branch_name, title, on_behalf
@@ -851,9 +909,7 @@ class TrainCar:
         else:
             return (
                 TrainCarChecksType.DRAFT,
-                typing.cast(
-                    github_types.GitHubPullRequestNumber, response.json()["number"]
-                ),
+                typing.cast(github_types.GitHubPullRequest, response.json()),
             )
 
     @tenacity.retry(
@@ -866,7 +922,7 @@ class TrainCar:
         branch_name: github_types.GitHubRefType,
         base_sha: github_types.SHAType,
         on_behalf: github_user.GitHubUser | None,
-    ) -> github_types.GitHubPullRequestNumber | None:
+    ) -> github_types.GitHubPullRequest | None:
         """
         Return a pull request number only if the creation of the branch fails
         and another TrainCar already has an existing PR for the exact same
@@ -886,15 +942,15 @@ class TrainCar:
                 # The same PR, with the same base_sha, already exists in another
                 # TrainCar from another partition
                 if self.train.partition_name is not None:
-                    existing_pr_number = await self.train.convoy.find_prs_in_train_cars_and_add_delegation(
+                    existing_pr = await self.train.convoy.find_prs_in_train_cars_and_add_delegation(
                         [
                             ep.user_pull_request_number
                             for ep in self.still_queued_embarked_pulls
                         ],
                         self.train.partition_name,
                     )
-                    if existing_pr_number is not None:
-                        return existing_pr_number
+                    if existing_pr is not None:
+                        return existing_pr
 
                 try:
                     await self._delete_branch()
@@ -1007,12 +1063,12 @@ class TrainCar:
         self.queue_branch_name = github_types.GitHubRefType(
             f"{self.QUEUE_BRANCH_PREFIX}{self.queue_branch_name}"
         )
-        existing_pr_number = await self._prepare_draft_pr_branch(
+        existing_pr = await self._prepare_draft_pr_branch(
             self.queue_branch_name, base_sha, on_behalf
         )
-        if existing_pr_number is not None:
+        if existing_pr is not None:
             await self._set_initial_state(
-                TrainCarChecksType.DRAFT_DELEGATED, existing_pr_number
+                TrainCarChecksType.DRAFT_DELEGATED, existing_pr
             )
 
         for pull_number in pulls_in_draft:
@@ -1070,13 +1126,13 @@ class TrainCar:
         self.queue_branch_name = new_branch_name
 
         try:
-            checks_type, tmp_pull_number = await self._create_draft_pull_request(
+            checks_type, tmp_pull = await self._create_draft_pull_request(
                 self.queue_branch_name, on_behalf
             )
         except DraftPullRequestCreationTemporaryFailure as e:
             await self._delete_branch()
             raise TrainCarPullRequestCreationPostponed(self) from e
-        await self._set_initial_state(checks_type, tmp_pull_number)
+        await self._set_initial_state(checks_type, tmp_pull)
 
     async def _set_initial_state(
         self,
@@ -1085,12 +1141,18 @@ class TrainCar:
             TrainCarChecksType.DRAFT,
             TrainCarChecksType.DRAFT_DELEGATED,
         ],
-        pull_request_number: github_types.GitHubPullRequestNumber,
+        pull_request: github_types.GitHubPullRequest,
     ) -> None:
         self.train_car_state.ci_started_at = date.utcnow()
         self.train_car_state.checks_type = checks_type
-        self.queue_pull_request_number = pull_request_number
+        self.queue_pull_request_number = pull_request["number"]
 
+        # NOTE(Syffe): As we don't use set_summary_check() in the summary update
+        # the function _save_cached_last_summary_head_sha() is not called anymore
+        # thus not updating the cache
+        await pull_request_finder.PullRequestFinder.sync(
+            self.repository.installation.redis.cache, pull_request
+        )
         queue_rule = self.get_queue_rule()
         queue_pull_requests = await self.get_pull_requests_to_evaluate()
         evaluated_queue_rule = await queue_rule.get_evaluated_queue_rule(
@@ -1133,7 +1195,7 @@ class TrainCar:
                 "merge queue internal",
             )
 
-    async def generate_merge_queue_summary(
+    async def build_draft_pr_summary(
         self,
         *,
         for_queue_pull_request: bool = False,
@@ -1249,7 +1311,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 headline += f" The pull request {self._get_user_refs(embarked_pulls=reembarked_pulls)} has been re-embarked."
             headline += " ✨"
 
-            body = await self.generate_merge_queue_summary(
+            body = await self.build_draft_pr_summary(
                 for_queue_pull_request=True,
                 headline=headline,
                 show_queue=False,
@@ -1261,13 +1323,6 @@ You don't need to do anything. Mergify will close this pull request automaticall
                     json={"body": body},
                 )
 
-            await tmp_pull_ctxt.set_summary_check(
-                check_api.Result(
-                    check_api.Conclusion.CANCELLED,
-                    title=f"The pull request {self._get_user_refs(create_link=False)} has been re-embarked for merge",
-                    summary=headline,
-                )
-            )
             tmp_pull_ctxt.log.info("train car deleted", reason=reason)
 
     async def send_checks_end_signal(
@@ -1470,13 +1525,13 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
         return False
 
-    async def get_unexpected_change(
+    async def get_unexpected_changes(
         self,
         queue_rule: "qr_config.QueueRule",
-    ) -> UnexpectedChange | None:
+    ) -> UnexpectedChanges | None:
         if self.queue_pull_request_number is None:
             raise RuntimeError(
-                "get_unexpected_change expected the train car to be started"
+                "get_unexpected_changes expected the train car to be started"
             )
 
         checked_ctxt = await self.repository.get_pull_request_context(
@@ -1491,7 +1546,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             )
             return None
 
-        unexpected_changes: UnexpectedChange | None = None
+        unexpected_changes: UnexpectedChanges | None = None
 
         # TODO(MRGFY-2020): Add a way to store the merge_commit_sha of the merges we did
         # to be able to check if the current sha of the base branch is one of those
@@ -1534,7 +1589,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             self.queue_pull_request_number
         )
         queue_rule = self.get_queue_rule()
-        unexpected_changes = await self.get_unexpected_change(queue_rule)
+        unexpected_changes = await self.get_unexpected_changes(queue_rule)
         if isinstance(unexpected_changes, UnexpectedBaseBranchChange):
             checked_ctxt.log.info(
                 "train will be reset",
@@ -1606,7 +1661,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
         await self.update_state(
             status,
             evaluated_queue_rule,
-            unexpected_change=unexpected_changes,
+            unexpected_changes=unexpected_changes,
         )
 
         if self.train_car_state.outcome == TrainCarOutcome.UNKNOWN:
@@ -1736,7 +1791,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
         self,
         queue_conditions_conclusion: check_api.Conclusion,
         evaluated_queue_rule: "qr_config.EvaluatedQueueRule",
-        unexpected_change: UnexpectedChange | None = None,
+        unexpected_changes: UnexpectedChanges | None = None,
     ) -> None:
         self.last_conditions_evaluation = (
             evaluated_queue_rule.merge_conditions.get_evaluation_result()
@@ -1818,12 +1873,12 @@ You don't need to do anything. Mergify will close this pull request automaticall
             self.train_car_state.add_waiting_for_freeze_start_date()
 
         # Update Outcome
-        if unexpected_change is not None:
+        if unexpected_changes is not None:
             # Unexpected change always override any outcome
-            self.train_car_state.outcome = UNEXPECTED_CHANGE_COMPATIBILITY[
-                type(unexpected_change)
+            self.train_car_state.outcome = UNEXPECTED_CHANGES_COMPATIBILITY[
+                type(unexpected_changes)
             ]
-            self.train_car_state.outcome_message = str(unexpected_change)
+            self.train_car_state.outcome_message = str(unexpected_changes)
         elif self.train_car_state.outcome == TrainCarOutcome.UNKNOWN:
             if (
                 self.train_car_state.ci_state == merge_train_types.CiState.PENDING
@@ -1929,58 +1984,23 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 )
             )
 
-    def get_summary_tmp_pull_title(self) -> str:
-        refs = self._get_user_refs(create_link=False)
-        if self.train_car_state.outcome == TrainCarOutcome.MERGEABLE:
-            if len(self.initial_embarked_pulls) == 1:
-                return f"The pull request {refs} is mergeable"
-            else:
-                return f"The pull requests {refs} are mergeable"
-        elif self.train_car_state.outcome == TrainCarOutcome.UNKNOWN:
-            if len(self.initial_embarked_pulls) == 1:
-                return f"The pull request {refs} is embarked for merge"
-            else:
-                return f"The pull requests {refs} are embarked for merge"
-        elif self.has_unexpected_change:
-            if len(self.initial_embarked_pulls) == 1:
-                return f"The pull request {refs} cannot be merged, due to unexpected changes in this draft PR, and has been disembarked."
-            else:
-                return f"The pull requests {refs} cannot be merged, due to unexpected changes in this draft PR, and have been disembarked."
-        elif self.train_car_state.outcome in (
-            TrainCarOutcome.CHECKS_FAILED,
-            TrainCarOutcome.CHECKS_TIMEOUT,
-        ):
-            if len(self.initial_embarked_pulls) == 1:
-                return f"The pull request {refs} cannot be merged and has been disembarked."
-            else:
-                return f"The pull requests {refs} cannot be merged and will be split."
-        elif (
-            self.train_car_state.outcome
-            == TrainCarOutcome.BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS
-        ):
-            if len(self.initial_embarked_pulls) == 1:
-                return f"The pull request {refs} cannot be merged, due to maximum batch failure resolution attempts reached, and has been disembarked."
-            else:
-                return f"The pull requests {refs} cannot be merged, due to maximum batch failure resolution attempts reached, and have been disembarked."
-        else:
-            raise RuntimeError(
-                f"Unhandled TrainCarOutcome: {self.train_car_state.outcome}"
-            )
-
-    def get_checks_copy_summary(
-        self, checked_pull: github_types.GitHubPullRequestNumber
-    ) -> str:
+    def get_check_runs_summary(
+        self, checked_pull: github_types.GitHubPullRequestNumber | None
+    ) -> str | None:
         if not self.last_checks:
-            return ""
+            return None
 
-        checks_copy_summary = (
-            "\n\nCheck-runs and statuses of the embarked "
+        if checked_pull is None:
+            checked_pull = github_types.GitHubPullRequestNumber(0)
+
+        check_runs_summary = (
+            "Check-runs and statuses of the embarked "
             f"pull request #{checked_pull}:\n\n<table>"
         )
         for qcheck in merge_train_checks.get_check_list_ordered(self.last_checks):
             qcheck_icon_url = CHECK_ASSERTS.get(qcheck.state, CHECK_ASSERTS["neutral"])
 
-            checks_copy_summary += (
+            check_runs_summary += (
                 "<tr>"
                 f'<td align="center" width="48" height="48"><img src="{qcheck_icon_url}" width="16" height="16" /></td>'
                 f'<td align="center" width="48" height="48"><img src="{qcheck.avatar_url}&s=40" width="16" height="16" /></td>'
@@ -1988,43 +2008,45 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 f'<td><a href="{qcheck.url}">details</a></td>'
                 "</tr>"
             )
-        checks_copy_summary += "</table>\n"
-        return checks_copy_summary
+        check_runs_summary += "</table>\n"
+        return check_runs_summary
 
-    def get_batch_failure_summary(self) -> str:
+    def get_batch_failure_summary(self) -> BatchFailureSummary | None:
         if not self.failure_history:
-            return ""
+            return None
 
-        batch_failure_summary = f"\n\nThe pull request {self._get_user_refs()} is part of a speculative checks batch that previously failed:\n\n"
-        batch_failure_summary += (
-            "| Pull request | Parents pull requests | Speculative checks |\n"
-        )
-        batch_failure_summary += "| ---: | :--- | :--- |\n"
+        spec_checks = []
         for failure in self.failure_history:
             if failure.train_car_state.checks_type == TrainCarChecksType.INPLACE:
-                speculative_checks = "[in place]"
+                spec_checks.append("[in place]")
             elif failure.train_car_state.checks_type == TrainCarChecksType.DRAFT:
                 if failure.queue_pull_request_number is None:
                     raise RuntimeError(
                         "car's spec checks type is draft, but queue_pull_request_number is None"
                     )
-                speculative_checks = train_utils.build_pr_link(
-                    self.repository, failure.queue_pull_request_number
+                spec_checks.append(
+                    train_utils.build_pr_link(
+                        self.repository, failure.queue_pull_request_number
+                    )
                 )
             else:
-                speculative_checks = ""
-        batch_failure_summary += f"| {self._get_user_refs()} | {self._get_embarked_refs(include_my_self=False, markdown=True)} | {speculative_checks} |"
-        return batch_failure_summary
+                spec_checks.append("")
 
-    def get_queue_summary(self) -> str:
-        queue_summary = "\n\nRequired conditions for merge:\n\n"
-        queue_summary += self.last_evaluated_conditions
+        return BatchFailureSummary(
+            title=f"❌ The pull request {self._get_user_refs()} is part of a speculative checks batch that previously failed ❌",
+            pull_request=self._get_user_refs(),
+            parent_pull_requests=self._get_embarked_refs(
+                include_my_self=False, markdown=True
+            ),
+            spec_checks=spec_checks,
+        )
 
+    def get_checks_timeout_summary(self) -> str | None:
         queue_rule = self.get_queue_rule()
         timeout = queue_rule.config["checks_timeout"]
-        timeout_summary = ""
+
         if self.train_car_state.outcome == TrainCarOutcome.CHECKS_TIMEOUT:
-            timeout_summary = "\n\n❌⏲️️  The checks have timed out ⏲❌"
+            return "❌⏲️️  The checks have timed out ⏲❌"
         elif (
             timeout is not None
             and self.train_car_state.ci_started_at is not None  # to please mypy
@@ -2036,166 +2058,179 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 if expected_finish_dt.date() > date.utcnow().date()
                 else date.pretty_time(expected_finish_dt)
             )
-            timeout_summary = (
-                f"\n\n⏲️  The checks have to pass before {expected_finish_pretty} ⏲"
-            )
+            return f"⏲️  The checks have to pass before {expected_finish_pretty} ⏲"
+        return None
 
-        queue_summary += timeout_summary
+    def get_train_car_state_for_summary(self) -> str:
+        # Circular import
+        from mergify_engine.queue.merge_train.train_car_state import (
+            TrainCarStateForSummary,
+        )
 
-        return queue_summary
+        return TrainCarStateForSummary.from_train_car_state(
+            self.train_car_state
+        ).serialized()
 
-    def get_original_pull_request_title(self) -> str:
+    def get_merge_conditions_summary(self) -> str:
+        return "Required conditions for merge:\n\n" + self.last_evaluated_conditions
+
+    def get_unexpected_changes_summary(self) -> str | None:
+        if not self.has_unexpected_changes:
+            return None
+        return f"❌ Unexpected queue change: {self.train_car_state.outcome_message}. ❌"
+
+    def get_freeze_summary(self) -> str | None:
+        if self.train_car_state.frozen_by is None:
+            return None
+
+        return self.train_car_state.frozen_by.get_freeze_message()
+
+    def get_original_pr_summary_title(self) -> str:
         if self.train_car_state.outcome == TrainCarOutcome.DRAFT_PR_CHANGE:
             return "The pull request has been removed from the queue"
-
         elif self.train_car_state.outcome in (
             TrainCarOutcome.BASE_BRANCH_CHANGE,
             TrainCarOutcome.UPDATED_PR_CHANGE,
         ):
             return "The pull request is going to be re-embarked soon"
-
         elif self.train_car_state.outcome == TrainCarOutcome.MERGEABLE:
             return f"The pull request embarked with {self._get_embarked_refs(include_my_self=False)} is mergeable"
         elif self.train_car_state.outcome == TrainCarOutcome.UNKNOWN:
             return f"The pull request is embarked with {self._get_embarked_refs(include_my_self=False)} for merge"
-
         elif self.train_car_state.outcome in (
             TrainCarOutcome.CHECKS_FAILED,
             TrainCarOutcome.CHECKS_TIMEOUT,
             TrainCarOutcome.BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS,
         ):
             return f"The pull request embarked with {self._get_embarked_refs(include_my_self=False)} cannot be merged and has been disembarked"
+        else:
+            raise RuntimeError(
+                f"Unhandled TrainCarOutcome: {self.train_car_state.outcome}"
+            )
 
-        raise RuntimeError(f"Unhandled TrainCarOutcome: {self.train_car_state.outcome}")
-
-    def get_original_pull_request_summary(
-        self, checked_pull: github_types.GitHubPullRequestNumber
-    ) -> str:
-        # Circular import
-        from mergify_engine.queue.merge_train.train_car_state import (
-            TrainCarStateForSummary,
+    def get_original_pr_summary(
+        self,
+        checked_pull: github_types.GitHubPullRequestNumber | None,
+    ) -> QueueSummary:
+        return QueueSummary(
+            title=self.get_original_pr_summary_title(),
+            train_car_state=self.get_train_car_state_for_summary(),
+            merge_conditions=self.get_merge_conditions_summary(),
+            unexpected_changes=self.get_unexpected_changes_summary(),
+            freeze=self.get_freeze_summary(),
+            checks_timeout=self.get_checks_timeout_summary(),
+            check_runs=self.get_check_runs_summary(checked_pull),
+            batch_failure=self.get_batch_failure_summary(),
         )
 
-        queue_freeze_summary = ""
-        if self.train_car_state.frozen_by is not None:
-            queue_freeze_summary = self.train_car_state.frozen_by.get_freeze_message()
-
-        train_car_state_summary = TrainCarStateForSummary.from_train_car_state(
-            self.train_car_state
-        ).serialized()
-
-        unexpected_change_summary = ""
-        if self.has_unexpected_change:
-            unexpected_change_summary = f"\n\n❌ Unexpected queue change: {self.train_car_state.outcome_message}. ❌"
-
-        original_pull_summary = (
-            train_car_state_summary
-            + unexpected_change_summary
-            + queue_freeze_summary
-            + self.get_queue_summary()
-            + self.get_checks_copy_summary(checked_pull)
-            + self.get_batch_failure_summary()
-        )
-        return original_pull_summary
-
-    async def update_summaries(self) -> None:
-        tmp_pull_title = self.get_summary_tmp_pull_title()
-        queue_summary = self.get_queue_summary()
-        batch_failure_summary = self.get_batch_failure_summary()
-
-        if self.train_car_state.checks_type == TrainCarChecksType.DRAFT:
-            summary = f"Embarking {self._get_embarked_refs(markdown=True)} together"
-            summary += queue_summary + batch_failure_summary
-
-            if self.queue_pull_request_number is None:
-                raise RuntimeError(
-                    "car's spec checks type is draft, but queue_pull_request_number is None"
-                )
-
-            headline: str | None = None
-            if self.train_car_state.outcome == TrainCarOutcome.MERGEABLE:
-                headline = "🎉 This combination of pull requests has been checked successfully 🎉"
-                show_queue = False
-            elif self.train_car_state.outcome == TrainCarOutcome.CHECKS_FAILED:
-                if len(self.initial_embarked_pulls) == 1:
-                    headline = f"🙁 This pull request has failed checks. {self._get_user_refs()} will be removed from the queue. 🙁"
-                elif self.has_previous_car_status_succeeded():
-                    headline = "🕵️ This combination of pull requests has failed checks. Mergify will split this batch to understand which pull request is responsible for the failure. 🕵️"
-                else:
-                    headline = "🕵️ This combination of pull requests has failed checks. Mergify is waiting for other pull requests ahead in the queue to understand which one is responsible for the failure. 🕵️"
-                show_queue = False
-            elif self.train_car_state.outcome == TrainCarOutcome.CHECKS_TIMEOUT:
-                headline = (
-                    "🙁 This combination of pull requests has timed out. "
-                    f"{self._get_user_refs()} will be removed from the queue. 🙁"
-                )
-                show_queue = False
-            elif self.has_unexpected_change:
-                headline = f"✨ Unexpected queue change: {self.train_car_state.outcome_message}. The pull request {self._get_user_refs()} will be re-embarked soon. ✨"
-                show_queue = True
-            elif (
-                self.train_car_state.outcome
-                == TrainCarOutcome.BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS
-            ):
-                headline = (
-                    "🙁 This combination of pull requests has failed checks and the maximum resolution attempts has been reached. "
-                    f"{self._get_user_refs()} will be removed from the queue. 🙁"
-                )
-                show_queue = False
-            elif self.train_car_state.outcome == TrainCarOutcome.UNKNOWN:
-                headline = None
-                show_queue = True
+    async def get_draft_pr_summary(self) -> str:
+        headline: str | None = None
+        show_queue = False
+        if self.train_car_state.outcome == TrainCarOutcome.MERGEABLE:
+            if len(self.initial_embarked_pulls) == 1:
+                headline = "🎉 This pull request has been checked successfully and will be merged. 🎉"
             else:
-                raise RuntimeError(
-                    f"Unhandled TrainCarOutcome: {self.train_car_state.outcome}"
+                headline = "🎉 This combination of pull requests has been checked successfully and will be merged. 🎉"
+        elif self.train_car_state.outcome == TrainCarOutcome.CHECKS_FAILED:
+            if len(self.initial_embarked_pulls) == 1:
+                headline = f"❌ This pull request has failed checks. {self._get_user_refs()} will be removed from the queue. ❌"
+            elif self.has_previous_car_status_succeeded():
+                headline = "🕵️ This combination of pull requests has failed checks. Mergify will split this batch to understand which pull request is responsible for the failure. 🕵️"
+            else:
+                headline = "🕵️ This combination of pull requests has failed checks. Mergify is waiting for other pull requests ahead in the queue to understand which one is responsible for the failure. 🕵️"
+        elif self.train_car_state.outcome == TrainCarOutcome.CHECKS_TIMEOUT:
+            if len(self.initial_embarked_pulls) == 1:
+                headline = (
+                    "❌ This pull request has timed out. "
+                    f"{self._get_user_refs()} will be removed from the queue. ❌"
+                )
+            else:
+                headline = (
+                    "❌ This combination of pull requests has timed out. "
+                    f"{self._get_user_refs()} will be removed from the queue. ❌"
                 )
 
-            body = await self.generate_merge_queue_summary(
-                for_queue_pull_request=True,
-                headline=headline,
-                show_queue=show_queue,
-            )
+        elif self.has_unexpected_changes:
+            show_queue = True
+            if len(self.initial_embarked_pulls) == 1:
+                headline = f"✨ Unexpected queue change: {self.train_car_state.outcome_message}. Due to an unexpected change in this draft PR, the pull request {self._get_user_refs()} cannot be merged and will be re-embarked soon. ✨"
+            else:
+                headline = f"✨ Unexpected queue change: {self.train_car_state.outcome_message}. Due to an unexpected change in this draft PR, the pull requests {self._get_user_refs()} cannot be merged and will be re-embarked soon. ✨"
 
-            tmp_pull_ctxt = await self.repository.get_pull_request_context(
-                self.queue_pull_request_number
-            )
-            if tmp_pull_ctxt.body != body:
-                await tmp_pull_ctxt.client.patch(
-                    f"{tmp_pull_ctxt.base_url}/pulls/{self.queue_pull_request_number}",
-                    json={"body": body},
+        elif (
+            self.train_car_state.outcome
+            == TrainCarOutcome.BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS
+        ):
+            if len(self.initial_embarked_pulls) == 1:
+                headline = (
+                    "❌ The pull request has failed checks and the maximum resolution attempts has been reached. "
+                    f"{self._get_user_refs()} will be removed from the queue. ❌"
                 )
-
-            await tmp_pull_ctxt.set_summary_check(
-                check_api.Result(
-                    self.get_queue_check_run_conclusion(),
-                    title=tmp_pull_title,
-                    summary=summary,
+            else:
+                headline = (
+                    "❌ This combination of pull requests has failed checks and the maximum resolution attempts has been reached. "
+                    f"{self._get_user_refs()} will be removed from the queue. ❌"
                 )
+        elif self.train_car_state.outcome == TrainCarOutcome.UNKNOWN:
+            if len(self.initial_embarked_pulls) == 1:
+                headline = f"⏳ The pull request {self._get_user_refs()} is embarked for merge and currently being checked. ⏳"
+            else:
+                headline = f"⏳ The pull requests {self._get_user_refs()} are embarked for merge and currently being checked. ⏳"
+            show_queue = True
+        else:
+            raise RuntimeError(
+                f"Unhandled TrainCarOutcome: {self.train_car_state.outcome}"
             )
 
-            checked_pull = self.queue_pull_request_number
-        elif self.train_car_state.checks_type in (
-            TrainCarChecksType.INPLACE,
+        summary = await self.build_draft_pr_summary(
+            for_queue_pull_request=True,
+            headline=headline,
+            show_queue=show_queue,
+        )
+
+        return summary
+
+    def get_checked_pull(self) -> github_types.GitHubPullRequestNumber | None:
+        if self.train_car_state.checks_type in (
+            TrainCarChecksType.DRAFT,
             TrainCarChecksType.DRAFT_DELEGATED,
+            TrainCarChecksType.INPLACE,
         ):
             if self.queue_pull_request_number is None:
                 raise RuntimeError(
-                    f"car's spec checks type is {self.train_car_state.checks_type},"
-                    " but queue_pull_request_number is None"
+                    f"car's spec checks type is {self.train_car_state.checks_type}, but queue_pull_request_number is None"
                 )
-            checked_pull = self.queue_pull_request_number
-        else:
-            checked_pull = github_types.GitHubPullRequestNumber(0)
+            return self.queue_pull_request_number
+        return None
+
+    async def update_summaries(self) -> None:
+        checked_pull = self.get_checked_pull()
+
+        # Draft PR summary update
+        if (
+            self.train_car_state.checks_type == TrainCarChecksType.DRAFT
+            and checked_pull is not None
+        ):
+            tmp_pull_ctxt = await self.repository.get_pull_request_context(checked_pull)
+            draft_summary = await self.get_draft_pr_summary()
+            if tmp_pull_ctxt.body != draft_summary:
+                await tmp_pull_ctxt.client.patch(
+                    f"{tmp_pull_ctxt.base_url}/pulls/{checked_pull}",
+                    json={"body": draft_summary},
+                )
+
+        # "Queue:" summary generation of the original PR
+        queue_summary = self.get_original_pr_summary(checked_pull)
 
         self.train.log.info(
             "pull request train car status update",
             legacy_conclusion=self.get_queue_check_run_conclusion(),
             outcome=self.train_car_state.outcome,
             outcome_message=self.train_car_state.outcome_message,
-            original_pull_title=self.get_original_pull_request_title(),
+            original_pull_title=queue_summary.title,
             gh_pull=checked_pull,
-            queue_summary=queue_summary.strip(),
-            batch_failure_summary=batch_failure_summary.strip(),
+            merge_conditions_summary=queue_summary.merge_conditions.strip(),
+            batch_failure_summary=queue_summary.build_batch_failure_summary().strip(),
             checks_copy_summary={check.name: check.state for check in self.last_checks},
             still_embarked_pull_numbers=[
                 ep.user_pull_request_number for ep in self.still_queued_embarked_pulls
@@ -2218,10 +2253,6 @@ You don't need to do anything. Mergify will close this pull request automaticall
             and self.get_queue_check_run_conclusion() != check_api.Conclusion.PENDING
             and not tmp_pull_ctxt.closed
         ):
-            await tmp_pull_ctxt.client.post(
-                f"{tmp_pull_ctxt.base_url}/issues/{self.queue_pull_request_number}/comments",
-                json={"body": tmp_pull_title},
-            )
             await tmp_pull_ctxt.client.patch(
                 f"{tmp_pull_ctxt.base_url}/pulls/{self.queue_pull_request_number}",
                 json={"state": "closed"},

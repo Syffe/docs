@@ -439,7 +439,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         # NOTE(sileht): the pull request gets checked and then changed
         # by user, we should unqueue and requeue it as the conditions still match.
         if await self.ctxt.synchronized_by_user_at():
-            unexpected_change = queue_utils.UnexpectedQueueChange(
+            unexpected_changes = queue_utils.UnexpectedQueueChange(
                 str(
                     merge_train.UnexpectedUpdatedPullRequestChange(
                         self.ctxt.pull["number"]
@@ -462,13 +462,13 @@ Then, re-embark the pull request into the merge queue by posting the comment
             await convoy.remove_pull(
                 self.ctxt.pull["number"],
                 self.rule.get_signal_trigger(),
-                unexpected_change,
+                unexpected_changes,
             )
             if isinstance(self.rule, prr_config.CommandRule):
                 return check_api.Result(
                     check_api.Conclusion.CANCELLED,
                     "The pull request has been removed from the queue",
-                    f"{unexpected_change!s}.\n{self.UNQUEUE_DOCUMENTATION}",
+                    f"{unexpected_changes!s}.\n{self.UNQUEUE_DOCUMENTATION}",
                 )
 
         if not await self._should_be_queued(self.ctxt):
