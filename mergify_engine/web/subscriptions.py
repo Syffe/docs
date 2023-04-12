@@ -14,7 +14,6 @@ from mergify_engine.usage import last_seen
 from mergify_engine.web import auth
 from mergify_engine.web import redis
 from mergify_engine.web import utils
-from mergify_engine.web.front.proxy import saas
 
 
 router = fastapi.APIRouter()
@@ -63,7 +62,6 @@ async def subscription_cache_update(
         await subscription.Subscription.update_subscription(
             redis_links.cache, owner_id, sub
         )
-        await saas.clear_subscription_details_cache(redis_links.cache, owner_id)
     except NotImplementedError:
         return responses.Response("Updating subscription is disabled", status_code=400)
 
@@ -79,7 +77,6 @@ async def subscription_cache_delete(
 ) -> responses.Response:
     try:
         await subscription.Subscription.delete_subscription(redis_links.cache, owner_id)
-        await saas.clear_subscription_details_cache(redis_links.cache, owner_id)
     except NotImplementedError:
         return responses.Response("Deleting subscription is disabled", status_code=400)
     return responses.Response("Cache cleaned", status_code=200)

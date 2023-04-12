@@ -3,11 +3,9 @@ import respx
 import sqlalchemy
 
 from mergify_engine import github_types
-from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine.models import github_user
 from mergify_engine.tests import conftest
-from mergify_engine.web.front.proxy import saas
 
 
 async def test_saas_proxy_saas_mode_true(
@@ -93,7 +91,6 @@ async def test_saas_subscription_with_saas_mode_true(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     respx_mock: respx.MockRouter,
     web_client: conftest.CustomTestClient,
-    redis_links: redis_utils.RedisLinks,
     front_login_mock: None,
 ) -> None:
     monkeypatch.setattr(settings, "SAAS_MODE", True)
@@ -129,19 +126,6 @@ async def test_saas_subscription_with_saas_mode_true(
 
     resp = await web_client.get(url, headers={"dnt": "1"})
     assert resp.json() == {"plan": {"name": "Essential"}}
-
-    # From cache
-    resp = await web_client.get(url, headers={"dnt": "1"})
-    assert resp.json() == {"plan": {"name": "Essential"}}
-    assert len(respx_mock.calls) == 1
-
-    # After cleaned cache
-    await saas.clear_subscription_details_cache(
-        redis_links.cache, github_types.GitHubAccountIdType(42)
-    )
-    resp = await web_client.get(url, headers={"dnt": "1"})
-    assert resp.json() == {"plan": {"name": "Essential"}}
-    assert len(respx_mock.calls) == 2
 
     await web_client.logout()
     resp = await web_client.get(url, headers={"dnt": "1"})
