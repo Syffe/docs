@@ -8,6 +8,7 @@ import starlette
 import starlette.middleware.sessions
 
 from mergify_engine.middlewares.logging import LoggingMiddleware
+from mergify_engine.middlewares.security import SecurityMiddleware
 from mergify_engine.middlewares.sudo import SudoMiddleware
 from mergify_engine.tests import conftest
 from mergify_engine.web import root as web_root
@@ -153,3 +154,26 @@ async def test_sudo_middleware() -> None:
     response = client.get("/")
     assert response.status_code == 200
     assert response.headers["Mergify-Sudo-Granted-To"] == "me"
+
+
+async def test_security_middleware() -> None:
+    app = fastapi.FastAPI(debug=True)
+    app.add_middleware(SecurityMiddleware)
+
+    @app.get("/")
+    def root(request: fastapi.Request) -> starlette.responses.PlainTextResponse:
+        return starlette.responses.PlainTextResponse(content="", status_code=200)
+
+    client = fastapi.testclient.TestClient(app)
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.headers == {
+        "content-length": "0",
+        "content-type": "text/plain; charset=utf-8",
+        "strict-transport-security": "max-age=2592000",
+        "content-security-policy": "default-src 'none'",
+        "x-frame-options": "DENY",
+        "x-content-type-options": "nosniff",
+        "referrer-policy": "no-referrer",
+        "permissions-policy": "accelerometer=(),ambient-light-sensor=(),attribution-reporting=(),autoplay=(),battery=(),camera=(),clipboard-read=(),clipboard-write=(),conversion-measurement=(),cross-origin-isolated=(),direct-sockets=(),display-capture=(),document-domain=(),encrypted-media=(),execution-while-not-rendered=(),execution-while-out-of-viewport=(),focus-without-user-activation=(),fullscreen=(),gamepad=(),geolocation=(),gyroscope=(),hid=(),idle-detection=(),interest-cohort=(),magnetometer=(),microphone=(),midi=(),navigation-override=(),otp-credentials=(),payment=(),picture-in-picture=(),publickey-credentials-get=(),screen-wake-lock=(),serial=(),shared-autofill=(),speaker-selection=(),storage-access-api=(),sync-script=(),sync-xhr=(),trust-token-redemption=(),usb=(),vertical-scroll=(),wake-lock=(),web-share=(),window-placement=(),xr-spatial-tracking=()",
+    }

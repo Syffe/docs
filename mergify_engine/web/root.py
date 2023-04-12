@@ -5,6 +5,7 @@ from uvicorn.middleware import proxy_headers
 
 from mergify_engine import settings
 from mergify_engine.clients import github
+from mergify_engine.middlewares import security
 from mergify_engine.web import github_webhook
 from mergify_engine.web import legacy_badges
 from mergify_engine.web import redis
@@ -30,6 +31,7 @@ def create_app(https_only: bool = True, debug: bool = False) -> fastapi.FastAPI:
         proxy_headers.ProxyHeadersMiddleware,
         trusted_hosts="*",
     )
+    app.add_middleware(security.SecurityMiddleware)
 
     app.mount("/badges", legacy_badges.create_app(debug=debug))
     app.mount("/v1", api_root.create_app(cors_enabled=True, debug=debug))
