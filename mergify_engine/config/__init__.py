@@ -36,6 +36,153 @@ class DatabaseSettings(pydantic.BaseSettings):
     DATABASE_OAUTH_TOKEN_SECRET_OLD: pydantic.SecretStr | None = None
 
 
+# NOTE(sileht): If we reach 15, we should update onpremise installation guide
+# and add an upgrade release note section to ensure people configure their Redis
+# correctly
+REDIS_AUTO_DB_SHARDING_MAPPING = {
+    # 0 reserved, never use it, this force people to select a DB before running any command
+    # and maybe be used by legacy onpremise installation.
+    # 1 temporary reserved, used by dashboard
+    "CACHE_URL": 2,
+    "STREAM_URL": 3,
+    "QUEUE_URL": 4,
+    "TEAM_MEMBERS_CACHE_URL": 5,
+    "TEAM_PERMISSIONS_CACHE_URL": 6,
+    "USER_PERMISSIONS_CACHE_URL": 7,
+    "EVENTLOGS_URL": 8,
+    "ACTIVE_USERS_URL": 9,
+    "STATISTICS_URL": 10,
+    "AUTHENTICATION_URL": 11,
+}
+
+
+class RedisSettings(pydantic.BaseSettings):
+    REDIS_SSL_VERIFY_MODE_CERT_NONE: bool = False
+    REDIS_CRYPTO_SECRET_CURRENT: pydantic.SecretStr = pydantic.Field(
+        extra_env="CACHE_TOKEN_SECRET"
+    )
+    REDIS_CRYPTO_SECRET_OLD: pydantic.SecretStr | None = pydantic.Field(
+        default=None, extra_env="CACHE_TOKEN_SECRET_OLD"
+    )
+
+    # Legacy on-premise url
+    STORAGE_URL: types.RedisDSN | None = None
+    DEFAULT_REDIS_URL: types.RedisDSN = pydantic.Field(
+        default=types.RedisDSN.parse("redis://localhost:6379"), extra_env="STORAGE_URL"
+    )
+    ENV_STREAM_URL: types.RedisDSN | None = pydantic.Field(
+        default=None, extra_env="STREAM_URL"
+    )
+    ENV_EVENTLOGS_URL: types.RedisDSN | None = pydantic.Field(
+        default=None, extra_env="EVENTLOGS_URL"
+    )
+    ENV_QUEUE_URL: types.RedisDSN | None = pydantic.Field(
+        default=None, extra_env="QUEUE_URL"
+    )
+    ENV_CACHE_URL: types.RedisDSN | None = pydantic.Field(
+        default=None, extra_env=("LEGACY_CACHE_URL", "CACHE_URL")
+    )
+    ENV_TEAM_PERMISSIONS_CACHE_URL: types.RedisDSN | None = pydantic.Field(
+        default=None, extra_env="TEAM_PERMISSIONS_CACHE_URL"
+    )
+    ENV_TEAM_MEMBERS_CACHE_URL: types.RedisDSN | None = pydantic.Field(
+        default=None, extra_env="TEAM_MEMBERS_CACHE_URL"
+    )
+    ENV_USER_PERMISSIONS_CACHE_URL: types.RedisDSN | None = pydantic.Field(
+        default=None, extra_env="USER_PERMISSIONS_CACHE_URL"
+    )
+    ENV_ACTIVE_USERS_URL: types.RedisDSN | None = pydantic.Field(
+        default=None, extra_env="ACTIVE_USERS_URL"
+    )
+    ENV_STATISTICS_URL: types.RedisDSN | None = pydantic.Field(
+        default=None, extra_env="STATISTICS_URL"
+    )
+    ENV_AUTHENTICATION_URL: types.RedisDSN | None = pydantic.Field(
+        default=None, extra_env="AUTHENTICATION_URL"
+    )
+
+    def _get_redis_url(self, name: str) -> types.RedisDSN:
+        from_env = typing.cast(types.RedisDSN | None, getattr(self, f"ENV_{name}"))
+        if from_env is not None:
+            return from_env
+
+        # NOTE(sileht): on legacy on-premise installation, before things were
+        # auto sharded in redis databases, STREAM/QUEUE/LEGACY_CACHE/... was in
+        # the same db, so keep it as-is
+        if self.STORAGE_URL and name in (
+            "STREAM_URL",
+            "QUEUE_URL",
+            "ACTIVE_USERS_URL",
+            "CACHE_URL",
+        ):
+            # Legacy on-premise url
+            return self.STORAGE_URL
+
+        return self._build_redis_url(REDIS_AUTO_DB_SHARDING_MAPPING[name])
+
+    def _build_redis_url(self, db: int) -> types.RedisDSN:
+        if self.DEFAULT_REDIS_URL.query and "db" in parse.parse_qs(
+            self.DEFAULT_REDIS_URL.query
+        ):
+            print(
+                "DEFAULT_REDIS_URL must not contain any db parameter. Mergify can't start."
+            )
+            sys.exit(1)
+
+        query = self.DEFAULT_REDIS_URL.query
+        if query:
+            query += "&"
+        query += f"db={db}"
+
+        return types.RedisDSN(
+            scheme=self.DEFAULT_REDIS_URL.scheme,
+            netloc=self.DEFAULT_REDIS_URL.netloc,
+            path=self.DEFAULT_REDIS_URL.path,
+            query=query,
+            fragment=self.DEFAULT_REDIS_URL.fragment,
+        )
+
+    @property
+    def STREAM_URL(self) -> types.RedisDSN:
+        return self._get_redis_url("STREAM_URL")
+
+    @property
+    def EVENTLOGS_URL(self) -> types.RedisDSN:
+        return self._get_redis_url("EVENTLOGS_URL")
+
+    @property
+    def QUEUE_URL(self) -> types.RedisDSN:
+        return self._get_redis_url("QUEUE_URL")
+
+    @property
+    def CACHE_URL(self) -> types.RedisDSN:
+        return self._get_redis_url("CACHE_URL")
+
+    @property
+    def TEAM_PERMISSIONS_CACHE_URL(self) -> types.RedisDSN:
+        return self._get_redis_url("TEAM_PERMISSIONS_CACHE_URL")
+
+    @property
+    def TEAM_MEMBERS_CACHE_URL(self) -> types.RedisDSN:
+        return self._get_redis_url("TEAM_MEMBERS_CACHE_URL")
+
+    @property
+    def USER_PERMISSIONS_CACHE_URL(self) -> types.RedisDSN:
+        return self._get_redis_url("USER_PERMISSIONS_CACHE_URL")
+
+    @property
+    def ACTIVE_USERS_URL(self) -> types.RedisDSN:
+        return self._get_redis_url("ACTIVE_USERS_URL")
+
+    @property
+    def STATISTICS_URL(self) -> types.RedisDSN:
+        return self._get_redis_url("STATISTICS_URL")
+
+    @property
+    def AUTHENTICATION_URL(self) -> types.RedisDSN:
+        return self._get_redis_url("AUTHENTICATION_URL")
+
+
 class LogsSettings(pydantic.BaseSettings):
     LOG_LEVEL: types.LogLevel = types.LogLevel("INFO")
     LOG_STDOUT: bool = True
@@ -109,6 +256,13 @@ class WorkerSettings(pydantic.BaseSettings):
 
 class APISettings(pydantic.BaseSettings):
     API_ENABLE: bool = False
+    REDIS_STREAM_WEB_MAX_CONNECTIONS: int = 50
+    REDIS_CACHE_WEB_MAX_CONNECTIONS: int = 50
+    REDIS_QUEUE_WEB_MAX_CONNECTIONS: int = 50
+    REDIS_EVENTLOGS_WEB_MAX_CONNECTIONS: int = 50
+    REDIS_STATS_WEB_MAX_CONNECTIONS: int = 50
+    REDIS_ACTIVE_USERS_WEB_MAX_CONNECTIONS: int = 50
+    REDIS_AUTHENTICATION_WEB_MAX_CONNECTIONS: int = 50
 
 
 class ApplicationAPIKey(typing.TypedDict):
@@ -195,6 +349,7 @@ class EngineSettings(
     APISettings,
     DatabaseSettings,
     LogsSettings,
+    RedisSettings,
     GitHubSettings,
     DashboardUISettings,
     SubscriptionSetting,
@@ -349,101 +504,16 @@ Schema = voluptuous.Schema(
         voluptuous.Required(
             "VERSION", default=os.getenv("HEROKU_SLUG_COMMIT", "dev")
         ): str,
-        voluptuous.Required("API_ENABLE", default=False): CoercedBool,
-        #
-        # Mergify Engine settings
-        #
-        voluptuous.Required(
-            "REDIS_SSL_VERIFY_MODE_CERT_NONE", default=False
-        ): CoercedBool,
-        voluptuous.Required(
-            "REDIS_STREAM_WEB_MAX_CONNECTIONS", default=50
-        ): voluptuous.Coerce(int),
-        voluptuous.Required(
-            "REDIS_CACHE_WEB_MAX_CONNECTIONS", default=50
-        ): voluptuous.Coerce(int),
-        voluptuous.Required(
-            "REDIS_QUEUE_WEB_MAX_CONNECTIONS", default=50
-        ): voluptuous.Coerce(int),
-        voluptuous.Required(
-            "REDIS_EVENTLOGS_WEB_MAX_CONNECTIONS", default=50
-        ): voluptuous.Coerce(int),
-        voluptuous.Required(
-            "REDIS_STATS_WEB_MAX_CONNECTIONS", default=50
-        ): voluptuous.Coerce(int),
-        voluptuous.Required(
-            "REDIS_ACTIVE_USERS_WEB_MAX_CONNECTIONS", default=50
-        ): voluptuous.Coerce(int),
-        voluptuous.Required(
-            "REDIS_AUTHENTICATION_WEB_MAX_CONNECTIONS", default=50
-        ): voluptuous.Coerce(int),
-        # NOTE(sileht): Unused anymore, but keep to detect legacy onpremise installation
-        voluptuous.Required("STORAGE_URL", default=None): voluptuous.Any(None, str),
-        # NOTE(sileht): Not used directly, but used to build other redis urls if not provided
-        voluptuous.Required("DEFAULT_REDIS_URL", default=None): voluptuous.Any(
-            None, str
-        ),
-        voluptuous.Required("LEGACY_CACHE_URL", default=None): voluptuous.Any(
-            None, str
-        ),
-        voluptuous.Required("QUEUE_URL", default=None): voluptuous.Any(None, str),
-        voluptuous.Required("STREAM_URL", default=None): voluptuous.Any(None, str),
-        voluptuous.Required("TEAM_MEMBERS_CACHE_URL", default=None): voluptuous.Any(
-            None, str
-        ),
-        voluptuous.Required("TEAM_PERMISSIONS_CACHE_URL", default=None): voluptuous.Any(
-            None, str
-        ),
-        voluptuous.Required("USER_PERMISSIONS_CACHE_URL", default=None): voluptuous.Any(
-            None, str
-        ),
-        voluptuous.Required("ACTIVE_USERS_URL", default=None): voluptuous.Any(
-            None, str
-        ),
-        voluptuous.Required("EVENTLOGS_URL", default=None): voluptuous.Any(None, str),
-        voluptuous.Required("STATISTICS_URL", default=None): voluptuous.Any(None, str),
-        voluptuous.Required("AUTHENTICATION_URL", default=None): voluptuous.Any(
-            None, str
-        ),
-        voluptuous.Required("CACHE_TOKEN_SECRET"): str,
-        voluptuous.Required("CACHE_TOKEN_SECRET_OLD", default=None): voluptuous.Any(
-            None, str
-        ),
         voluptuous.Required(
             "ALLOW_QUEUE_PRIORITY_ATTRIBUTE", default=True
         ): CoercedBool,
-        # For test suite only (eg: tox -erecord)
     }
 )
 
 # Config variables available from voluptuous
 VERSION: str
-API_ENABLE: bool
-CACHE_TOKEN_SECRET: str
-CACHE_TOKEN_SECRET_OLD: str | None
-
-STREAM_URL: str
-EVENTLOGS_URL: str
-QUEUE_URL: str
-LEGACY_CACHE_URL: str
-TEAM_PERMISSIONS_CACHE_URL: str
-TEAM_MEMBERS_CACHE_URL: str
-USER_PERMISSIONS_CACHE_URL: str
-ACTIVE_USERS_URL: str
-STATISTICS_URL: str
-AUTHENTICATION_URL: str
-
-
 ALLOW_QUEUE_PRIORITY_ATTRIBUTE: bool
 ALLOW_REBASE_FALLBACK_ATTRIBUTE: bool
-REDIS_SSL_VERIFY_MODE_CERT_NONE: bool
-REDIS_STREAM_WEB_MAX_CONNECTIONS: int | None
-REDIS_CACHE_WEB_MAX_CONNECTIONS: int | None
-REDIS_QUEUE_WEB_MAX_CONNECTIONS: int | None
-REDIS_EVENTLOGS_WEB_MAX_CONNECTIONS: int | None
-REDIS_STATS_WEB_MAX_CONNECTIONS: int | None
-REDIS_AUTHENTICATION_WEB_MAX_CONNECTIONS: int | None
-REDIS_ACTIVE_USERS_WEB_MAX_CONNECTIONS: int | None
 
 
 def load() -> dict[str, typing.Any]:
@@ -457,60 +527,6 @@ def load() -> dict[str, typing.Any]:
             raw_config[key] = val
 
     parsed_config = Schema(raw_config)
-
-    # NOTE(sileht): on legacy on-premise installation, before things were auto
-    # sharded in redis databases, STREAM/QUEUE/LEGACY_CACHE was in the same db, so
-    # keep until manual migration as been done
-    if parsed_config["STORAGE_URL"] is not None:
-        for config_key in (
-            "DEFAULT_REDIS_URL",
-            "STREAM_URL",
-            "QUEUE_URL",
-            "ACTIVE_USERS_URL",
-            "LEGACY_CACHE_URL",
-        ):
-            if parsed_config[config_key] is None:
-                parsed_config[config_key] = parsed_config["STORAGE_URL"]
-
-    # NOTE(sileht): If we reach 15, we should update onpremise installation guide
-    # and add an upgrade release note section to ensure people configure their Redis
-    # correctly
-    REDIS_AUTO_DB_SHARDING_MAPPING = {
-        # 0 reserved, never use it, this force people to select a DB before running any command
-        # and maybe be used by legacy onpremise installation.
-        # 1 temporary reserved, used by dashboard
-        "LEGACY_CACHE_URL": 2,
-        "STREAM_URL": 3,
-        "QUEUE_URL": 4,
-        "TEAM_MEMBERS_CACHE_URL": 5,
-        "TEAM_PERMISSIONS_CACHE_URL": 6,
-        "USER_PERMISSIONS_CACHE_URL": 7,
-        "EVENTLOGS_URL": 8,
-        "ACTIVE_USERS_URL": 9,
-        "STATISTICS_URL": 10,
-        "AUTHENTICATION_URL": 11,
-    }
-
-    default_redis_url_parsed = parse.urlparse(
-        parsed_config["DEFAULT_REDIS_URL"] or "redis://localhost:6379"
-    )
-    if default_redis_url_parsed.query and "db" in parse.parse_qs(
-        default_redis_url_parsed.query
-    ):
-        print(
-            "DEFAULT_REDIS_URL must not contain any db parameter. Mergify can't start."
-        )
-        sys.exit(1)
-
-    for config_key, db in REDIS_AUTO_DB_SHARDING_MAPPING.items():
-        if parsed_config[config_key] is None:
-            query = default_redis_url_parsed.query
-            if query:
-                query += "&"
-            query += f"db={db}"
-            url = default_redis_url_parsed._replace(query=query).geturl()
-            parsed_config[config_key] = url
-
     return parsed_config  # type: ignore[no-any-return]
 
 

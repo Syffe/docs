@@ -30,6 +30,7 @@ def test_defaults(
     monkeypatch.setenv("MERGIFYENGINE_GITHUB_PRIVATE_KEY", "aGVsbG8gd29ybGQ=")
     monkeypatch.setenv("MERGIFYENGINE_GITHUB_OAUTH_CLIENT_ID", "Iv1.XXXXXX")
     monkeypatch.setenv("MERGIFYENGINE_GITHUB_OAUTH_CLIENT_SECRET", "secret")
+    monkeypatch.setenv("MERGIFYENGINE_REDIS_CRYPTO_SECRET_CURRENT", "crypto-secret")
 
     conf = config.EngineSettings()
     assert str(conf.DATABASE_URL) == "postgresql+psycopg://localhost:5432"
@@ -76,6 +77,19 @@ def test_defaults(
     assert conf.DASHBOARD_TO_ENGINE_API_KEY_PRE_ROTATION is None
     assert conf.ACCOUNT_TOKENS == []
     assert conf.APPLICATION_APIKEYS == {}
+
+    assert conf.REDIS_CRYPTO_SECRET_CURRENT.get_secret_value() == "crypto-secret"
+    assert conf.REDIS_CRYPTO_SECRET_OLD is None
+
+    assert conf.DEFAULT_REDIS_URL.geturl() == "redis://localhost:6379"
+    assert conf.REDIS_STREAM_WEB_MAX_CONNECTIONS == 50
+    assert conf.REDIS_CACHE_WEB_MAX_CONNECTIONS == 50
+    assert conf.REDIS_QUEUE_WEB_MAX_CONNECTIONS == 50
+    assert conf.REDIS_EVENTLOGS_WEB_MAX_CONNECTIONS == 50
+    assert conf.REDIS_STATS_WEB_MAX_CONNECTIONS == 50
+    assert conf.REDIS_ACTIVE_USERS_WEB_MAX_CONNECTIONS == 50
+    assert conf.REDIS_AUTHENTICATION_WEB_MAX_CONNECTIONS == 50
+    assert conf.REDIS_SSL_VERIFY_MODE_CERT_NONE is False
 
 
 def test_all_sets(
@@ -148,6 +162,18 @@ def test_all_sets(
             )
         ),
     )
+    monkeypatch.setenv("MERGIFYENGINE_REDIS_CRYPTO_SECRET_CURRENT", "crypto-secret")
+    monkeypatch.setenv("MERGIFYENGINE_REDIS_CRYPTO_SECRET_OLD", "crypto-secret-old")
+
+    monkeypatch.setenv("MERGIFYENGINE_REDIS_STREAM_WEB_MAX_CONNECTIONS", "51")
+    monkeypatch.setenv("MERGIFYENGINE_REDIS_CACHE_WEB_MAX_CONNECTIONS", "52")
+    monkeypatch.setenv("MERGIFYENGINE_REDIS_QUEUE_WEB_MAX_CONNECTIONS", "53")
+    monkeypatch.setenv("MERGIFYENGINE_REDIS_EVENTLOGS_WEB_MAX_CONNECTIONS", "54")
+    monkeypatch.setenv("MERGIFYENGINE_REDIS_STATS_WEB_MAX_CONNECTIONS", "55")
+    monkeypatch.setenv("MERGIFYENGINE_REDIS_ACTIVE_USERS_WEB_MAX_CONNECTIONS", "56")
+    monkeypatch.setenv("MERGIFYENGINE_REDIS_AUTHENTICATION_WEB_MAX_CONNECTIONS", "57")
+    monkeypatch.setenv("MERGIFYENGINE_REDIS_SSL_VERIFY_MODE_CERT_NONE", "True")
+    monkeypatch.setenv("MERGIFYENGINE_DEFAULT_REDIS_URL", "redis://example.com:1234")
 
     conf = config.EngineSettings()
     assert conf.GITHUB_URL == "https://my-ghes.example.com"
@@ -222,6 +248,20 @@ def test_all_sets(
         },
     }
 
+    assert conf.REDIS_CRYPTO_SECRET_CURRENT.get_secret_value() == "crypto-secret"
+    assert conf.REDIS_CRYPTO_SECRET_OLD is not None
+    assert conf.REDIS_CRYPTO_SECRET_OLD.get_secret_value() == "crypto-secret-old"
+
+    assert conf.DEFAULT_REDIS_URL.geturl() == "redis://example.com:1234"
+    assert conf.REDIS_STREAM_WEB_MAX_CONNECTIONS == 51
+    assert conf.REDIS_CACHE_WEB_MAX_CONNECTIONS == 52
+    assert conf.REDIS_QUEUE_WEB_MAX_CONNECTIONS == 53
+    assert conf.REDIS_EVENTLOGS_WEB_MAX_CONNECTIONS == 54
+    assert conf.REDIS_STATS_WEB_MAX_CONNECTIONS == 55
+    assert conf.REDIS_ACTIVE_USERS_WEB_MAX_CONNECTIONS == 56
+    assert conf.REDIS_AUTHENTICATION_WEB_MAX_CONNECTIONS == 57
+    assert conf.REDIS_SSL_VERIFY_MODE_CERT_NONE is True
+
 
 def test_legacy_env_sets(
     original_environment_variables: None,
@@ -245,6 +285,8 @@ def test_legacy_env_sets(
         "MERGIFYENGINE_SUBSCRIPTION_BASE_URL", "https://subscription.example.com"
     )
     monkeypatch.setenv("MERGIFYENGINE_SUBSCRIPTION_TOKEN", "onprem-token")
+    monkeypatch.setenv("MERGIFYENGINE_CACHE_TOKEN_SECRET", "crypto-secret")
+    monkeypatch.setenv("MERGIFYENGINE_CACHE_TOKEN_SECRET_OLD", "crypto-secret-old")
 
     conf = config.EngineSettings()
     assert conf.GITHUB_WEBHOOK_SECRET.get_secret_value() == "secret4"
@@ -258,6 +300,10 @@ def test_legacy_env_sets(
     assert conf.GITHUB_OAUTH_CLIENT_SECRET.get_secret_value() == "secret"
     assert conf.DASHBOARD_UI_FRONT_URL == "https://dashboard.mergify.com"
     assert conf.SUBSCRIPTION_URL == "https://subscription.example.com"
+
+    assert conf.REDIS_CRYPTO_SECRET_CURRENT.get_secret_value() == "crypto-secret"
+    assert conf.REDIS_CRYPTO_SECRET_OLD is not None
+    assert conf.REDIS_CRYPTO_SECRET_OLD.get_secret_value() == "crypto-secret-old"
 
 
 @pytest.mark.parametrize(
@@ -277,6 +323,7 @@ def test_legacy_dashboard_urls(
     monkeypatch.setenv("MERGIFYENGINE_GITHUB_PRIVATE_KEY", "aGVsbG8gd29ybGQ=")
     monkeypatch.setenv("MERGIFYENGINE_GITHUB_OAUTH_CLIENT_ID", "Iv1.XXXXXX")
     monkeypatch.setenv("MERGIFYENGINE_GITHUB_OAUTH_CLIENT_SECRET", "secret")
+    monkeypatch.setenv("MERGIFYENGINE_REDIS_CRYPTO_SECRET_CURRENT", "secret")
 
     monkeypatch.setenv(env_var, "https://mergify.example.com")
     conf = config.EngineSettings()
@@ -412,4 +459,134 @@ def test_error_message(monkeypatch: pytest.MonkeyPatch) -> None:
         == """1 validation error for EngineSettings
 MERGIFYENGINE_DATABASE_URL
   scheme `https` is invalid, must be postgres,postgresql,postgresql+psycopg (type=value_error)"""
+    )
+
+
+def test_redis_onpremise_legacy(
+    original_environment_variables: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.delenv("MERGIFYENGINE_DEFAULT_REDIS_URL")
+    monkeypatch.setenv("MERGIFYENGINE_STORAGE_URL", "rediss://redis.example.com:1234")
+    conf = config.EngineSettings()
+    assert conf.STREAM_URL.geturl() == "rediss://redis.example.com:1234"
+    assert conf.QUEUE_URL.geturl() == "rediss://redis.example.com:1234"
+    assert conf.CACHE_URL.geturl() == "rediss://redis.example.com:1234"
+    assert (
+        conf.TEAM_MEMBERS_CACHE_URL.geturl() == "rediss://redis.example.com:1234?db=5"
+    )
+    assert (
+        conf.TEAM_PERMISSIONS_CACHE_URL.geturl()
+        == "rediss://redis.example.com:1234?db=6"
+    )
+    assert (
+        conf.USER_PERMISSIONS_CACHE_URL.geturl()
+        == "rediss://redis.example.com:1234?db=7"
+    )
+
+
+def test_redis_saas_current(
+    original_environment_variables: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv(
+        "MERGIFYENGINE_DEFAULT_REDIS_URL", "rediss://redis.example.com:1234"
+    )
+    monkeypatch.setenv(
+        "MERGIFYENGINE_STORAGE_URL",
+        "rediss://redis-legacy-cache.example.com:1234?db=2",
+    )
+    monkeypatch.setenv(
+        "MERGIFYENGINE_STREAM_URL",
+        "rediss://redis-stream.example.com:1234?db=3",
+    )
+    monkeypatch.setenv(
+        "MERGIFYENGINE_QUEUE_URL", "rediss://redis-queue.example.com:1234?db=4"
+    )
+    conf = config.EngineSettings()
+    assert conf.DEFAULT_REDIS_URL.geturl() == "rediss://redis.example.com:1234"
+    assert (
+        conf.CACHE_URL.geturl() == "rediss://redis-legacy-cache.example.com:1234?db=2"
+    )
+    assert conf.STREAM_URL.geturl() == "rediss://redis-stream.example.com:1234?db=3"
+    assert conf.QUEUE_URL.geturl() == "rediss://redis-queue.example.com:1234?db=4"
+    assert (
+        conf.TEAM_MEMBERS_CACHE_URL.geturl() == "rediss://redis.example.com:1234?db=5"
+    )
+    assert (
+        conf.TEAM_PERMISSIONS_CACHE_URL.geturl()
+        == "rediss://redis.example.com:1234?db=6"
+    )
+    assert (
+        conf.USER_PERMISSIONS_CACHE_URL.geturl()
+        == "rediss://redis.example.com:1234?db=7"
+    )
+
+
+def test_redis_default(
+    original_environment_variables: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv(
+        "MERGIFYENGINE_DEFAULT_REDIS_URL", "rediss://redis.example.com:1234"
+    )
+    conf = config.EngineSettings()
+    assert conf.CACHE_URL.geturl() == "rediss://redis.example.com:1234?db=2"
+    assert conf.STREAM_URL.geturl() == "rediss://redis.example.com:1234?db=3"
+    assert conf.QUEUE_URL.geturl() == "rediss://redis.example.com:1234?db=4"
+    assert (
+        conf.TEAM_MEMBERS_CACHE_URL.geturl() == "rediss://redis.example.com:1234?db=5"
+    )
+    assert (
+        conf.TEAM_PERMISSIONS_CACHE_URL.geturl()
+        == "rediss://redis.example.com:1234?db=6"
+    )
+    assert (
+        conf.USER_PERMISSIONS_CACHE_URL.geturl()
+        == "rediss://redis.example.com:1234?db=7"
+    )
+
+
+def test_redis_all_set(
+    original_environment_variables: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv(
+        "MERGIFYENGINE_DEFAULT_REDIS_URL",
+        "rediss://redis-default.example.com:1234",
+    )
+    monkeypatch.setenv(
+        "MERGIFYENGINE_CACHE_URL",
+        "rediss://redis-legacy-cache.example.com:1234",
+    )
+    monkeypatch.setenv(
+        "MERGIFYENGINE_STREAM_URL",
+        "rediss://redis-stream.example.com:1234",
+    )
+    monkeypatch.setenv(
+        "MERGIFYENGINE_QUEUE_URL", "rediss://redis-queue.example.com:1234"
+    )
+    monkeypatch.setenv(
+        "MERGIFYENGINE_TEAM_MEMBERS_CACHE_URL",
+        "rediss://redis-team-members.example.com:1234",
+    )
+    monkeypatch.setenv(
+        "MERGIFYENGINE_TEAM_PERMISSIONS_CACHE_URL",
+        "rediss://redis-team-perm.example.com:1234",
+    )
+    monkeypatch.setenv(
+        "MERGIFYENGINE_USER_PERMISSIONS_CACHE_URL",
+        "rediss://redis-user-perm.example.com:1234",
+    )
+    conf = config.EngineSettings()
+    assert conf.CACHE_URL.geturl() == "rediss://redis-legacy-cache.example.com:1234"
+    assert conf.STREAM_URL.geturl() == "rediss://redis-stream.example.com:1234"
+    assert conf.QUEUE_URL.geturl() == "rediss://redis-queue.example.com:1234"
+    assert (
+        conf.TEAM_MEMBERS_CACHE_URL.geturl()
+        == "rediss://redis-team-members.example.com:1234"
+    )
+    assert (
+        conf.TEAM_PERMISSIONS_CACHE_URL.geturl()
+        == "rediss://redis-team-perm.example.com:1234"
+    )
+    assert (
+        conf.USER_PERMISSIONS_CACHE_URL.geturl()
+        == "rediss://redis-user-perm.example.com:1234"
     )

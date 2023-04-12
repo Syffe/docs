@@ -8,19 +8,19 @@ from cryptography.hazmat.primitives import ciphers
 from cryptography.hazmat.primitives import hashes
 from datadog import statsd  # type: ignore[attr-defined]
 
-from mergify_engine import config
+from mergify_engine import settings
 
 
 digest_current = hashes.Hash(hashes.SHA256(), backend=default_backend())
-digest_current.update(config.CACHE_TOKEN_SECRET.encode())
+digest_current.update(settings.REDIS_CRYPTO_SECRET_CURRENT.get_secret_value().encode())
 SECRET_KEY = digest_current.finalize()
 del digest_current
 
 SECRET_KEY_OLD: bytes | None
 
-if config.CACHE_TOKEN_SECRET_OLD:
+if settings.REDIS_CRYPTO_SECRET_OLD is not None:
     digest_old = hashes.Hash(hashes.SHA256(), backend=default_backend())
-    digest_old.update(config.CACHE_TOKEN_SECRET_OLD.encode())
+    digest_old.update(settings.REDIS_CRYPTO_SECRET_OLD.get_secret_value().encode())
     SECRET_KEY_OLD = digest_old.finalize()
     del digest_old
 else:
