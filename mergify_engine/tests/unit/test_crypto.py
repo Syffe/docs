@@ -2,11 +2,10 @@ from collections import abc
 import importlib
 from unittest import mock
 
-import pydantic
 import pytest
 
+from mergify_engine import config
 from mergify_engine import crypto
-from mergify_engine import settings
 
 
 def test_encrypt() -> None:
@@ -18,30 +17,28 @@ def test_encrypt() -> None:
 
 @pytest.fixture
 def cleanup_secrets() -> abc.Generator[None, None, None]:
-    current_secret = settings.REDIS_CRYPTO_SECRET_CURRENT.get_secret_value()
+    current_secret = config.CACHE_TOKEN_SECRET
     try:
         yield
     finally:
         # ensure pytest monkeypatch has revert values and we reload the module
-        assert settings.REDIS_CRYPTO_SECRET_CURRENT.get_secret_value() == current_secret
-        assert settings.REDIS_CRYPTO_SECRET_OLD is None
+        assert config.CACHE_TOKEN_SECRET == current_secret
+        assert config.CACHE_TOKEN_SECRET_OLD is None
         importlib.reload(crypto)  # regen digest with default secrets
 
 
-def test_key_rotation(cleanup_secrets: None) -> None:
+def test_key_rotation(
+    cleanup_secrets: None,
+) -> None:
     x = "this is an amazing string, right? 🙄".encode()
 
-    with mock.patch.object(
-        settings, "REDIS_CRYPTO_SECRET_CURRENT", pydantic.SecretStr("old password")
-    ):
+    with mock.patch.object(config, "CACHE_TOKEN_SECRET", "old password"):
         importlib.reload(crypto)  # regen digest with new secret
         encryped_old = crypto.encrypt(x)
 
     with mock.patch.object(
-        settings, "REDIS_CRYPTO_SECRET_CURRENT", pydantic.SecretStr("new password")
-    ), mock.patch.object(
-        settings, "REDIS_CRYPTO_SECRET_OLD", pydantic.SecretStr("old password")
-    ):
+        config, "CACHE_TOKEN_SECRET", "new password"
+    ), mock.patch.object(config, "CACHE_TOKEN_SECRET_OLD", "old password"):
         importlib.reload(crypto)  # regen digest with new secrets
         encryped_new = crypto.encrypt(x)
         assert encryped_new != encryped_old
