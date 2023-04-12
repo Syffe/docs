@@ -79,6 +79,10 @@ class PostgresDSN(SecretUrl):
     override_scheme = "postgresql+psycopg"
 
 
+class RedisDSN(SecretUrl):
+    allowed_schemes = ("redis", "rediss")
+
+
 class LogLevel(pydantic.PositiveInt):
     @typing.no_type_check
     def __new__(cls, value):

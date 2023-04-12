@@ -115,20 +115,6 @@ def enable_api() -> None:
     settings.API_ENABLE = True
 
 
-CONFIG_URLS_TO_MOCK = (
-    "LEGACY_CACHE_URL",
-    "STREAM_URL",
-    "QUEUE_URL",
-    "TEAM_MEMBERS_CACHE_URL",
-    "TEAM_PERMISSIONS_CACHE_URL",
-    "USER_PERMISSIONS_CACHE_URL",
-    "EVENTLOGS_URL",
-    "ACTIVE_USERS_URL",
-    "STATISTICS_URL",
-    "AUTHENTICATION_URL",
-)
-
-
 def get_worker_id_as_int(worker_id: str) -> int:
     if not re.match(r"gw\d+", worker_id):
         return 0
@@ -142,24 +128,12 @@ def mock_redis_db_values(worker_id: str) -> abc.Generator[None, None, None]:
     # Need to have different database for each tests to avoid breaking
     # everything in other tests.
     mocks = []
-    for config_url_to_mock in CONFIG_URLS_TO_MOCK:
-        config_url = getattr(config, config_url_to_mock)
-        db_number_re = re.search(r"\?db=(\d+)", config_url)
-        if db_number_re is None:
-            raise RuntimeError(
-                f"Expected to find `?db=` at the end of config URL '{config_url_to_mock}', "
-                f"got '{config_url}' instead"
-            )
-        db_number = int(db_number_re.group(1))
-        new_db_number = db_number + (len(CONFIG_URLS_TO_MOCK) * worker_id_int)
-
-        mocks.append(
-            mock.patch.object(
-                config,
-                config_url_to_mock,
-                re.sub(r"\?db=\d+", f"?db={new_db_number}", config_url),
-            )
+    for name, db_number in config.REDIS_AUTO_DB_SHARDING_MAPPING.items():
+        new_db_number = db_number + (
+            len(config.REDIS_AUTO_DB_SHARDING_MAPPING) * worker_id_int
         )
+        url = settings._build_redis_url(new_db_number)
+        mocks.append(mock.patch.object(settings, f"ENV_{name}", url))
 
     with contextlib.ExitStack() as es:
         for url_mock in mocks:
