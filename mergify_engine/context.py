@@ -2137,18 +2137,18 @@ class Context:
                     self.pull["base"]["ref"], bypass_cache=True
                 )
                 commit_heads = await self._get_heads_from_commit()
-                if self.pull["head"]["sha"] not in commit_heads:
-                    self.log.error("is_behind may be wrong", commit_heads=commit_heads)
-
                 external_parents_sha = await self._get_external_parents()
                 is_behind = branch["commit"]["sha"] not in external_parents_sha
                 is_behind_testing = await self.commits_behind_count != 0
-                if is_behind_testing != is_behind:
+                is_behind_obsolete = self.pull["head"]["sha"] not in commit_heads
+                if is_behind_testing != is_behind or is_behind_obsolete:
                     self.log.error(
-                        "is_behind_testing different from expected value",
+                        "is_behind testing",
+                        is_behind_obsolete=is_behind_obsolete,
                         is_behind_testing=is_behind_testing,
                         is_behind=is_behind,
                         behind_by=await self.commits_behind_count,
+                        commit_heads=commit_heads,
                     )
             self._caches.is_behind.set(is_behind)
         return is_behind
