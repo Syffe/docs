@@ -158,7 +158,7 @@ class PostCheckAction(actions.Action):
     validator = {
         voluptuous.Required(
             "title",
-            default="'{{ check_rule_name }}' {% if check_succeeded %}succeeded{% else %}failed{% endif %}",  # noqa:FS003
+            default="'{{ check_rule_name }}' {% if check_succeeded %}succeeded{% else %}failed{% endif %}",
         ): CheckRunJinja2,
         voluptuous.Required(
             "summary", default="{{ check_conditions }}"

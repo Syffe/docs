@@ -41,7 +41,7 @@ class EventLogsResponse(pagination.PageResponse[Event]):
 
 
 @router.get(
-    "/repos/{owner}/{repository}/pulls/{pull}/events",  # noqa: FS003
+    "/repos/{owner}/{repository}/pulls/{pull}/events",
     summary="Get the events log of a pull request",
     description="Get the events log of the requested pull request",
     dependencies=[fastapi.Depends(security.check_subscription_feature_eventlogs)],
@@ -66,7 +66,7 @@ async def get_pull_request_eventlogs(
 
 
 @router.get(
-    "/repos/{owner}/{repository}/events",  # noqa: FS003
+    "/repos/{owner}/{repository}/events",
     summary="Get the events log of a repository",
     description="Get the events log of the requested repository",
     dependencies=[fastapi.Depends(security.check_subscription_feature_eventlogs)],

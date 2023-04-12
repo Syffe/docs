@@ -268,7 +268,7 @@ async def github_server(
 log_as_router = fastapi.APIRouter()
 
 
-@log_as_router.post("/log-as/{user_id}")  # noqa: FS003
+@log_as_router.post("/log-as/{user_id}")
 async def log_as(request: fastapi.Request, user_id: int) -> fastapi.Response:
     async with database.create_session() as session:
         result = await session.execute(

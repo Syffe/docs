@@ -131,8 +131,9 @@ async def tests_convoy_remove_middle_not_merged_multiple_partitions(
     config = mt_conftest.get_pull_queue_config("5x1")
 
     partition_rules_a = [partr_config.PartitionRuleName("projectA")]
-    partition_rules_ab = partition_rules_a + [
-        partr_config.PartitionRuleName("projectB")
+    partition_rules_ab = [
+        *partition_rules_a,
+        partr_config.PartitionRuleName("projectB"),
     ]
     await convoy.add_pull(await context_getter(1), config, partition_rules_ab, "")
     await convoy.add_pull(await context_getter(2), config, partition_rules_ab, "")
@@ -203,8 +204,9 @@ async def test_convoy_remove_head_merged_multiple_partitions(
     config = mt_conftest.get_pull_queue_config("5x1")
 
     partition_rules_a = [partr_config.PartitionRuleName("projectA")]
-    partition_rules_ab = partition_rules_a + [
-        partr_config.PartitionRuleName("projectB")
+    partition_rules_ab = [
+        *partition_rules_a,
+        partr_config.PartitionRuleName("projectB"),
     ]
     await convoy.add_pull(await context_getter(1), config, partition_rules_ab, "")
     await convoy.add_pull(await context_getter(2), config, partition_rules_a, "")

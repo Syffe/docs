@@ -36,7 +36,7 @@ FakeTreeT = dict[str, typing.Any]
 # but the file can't load in our type are recursively dependant
 # I hope cpython will fix the issue before releasing __futures__.annotations
 RuleConditionNode = typing.Union[
-    "RuleConditionCombination", "RuleConditionNegation", "RuleCondition"  # noqa : NU003
+    "RuleConditionCombination", "RuleConditionNegation", "RuleCondition"
 ]
 
 ConditionFilterKeyT = abc.Callable[[RuleConditionNode], bool]
@@ -47,7 +47,7 @@ EvaluatedConditionNodeT = abc.Mapping[
 EvaluatedConditionT = abc.Mapping[github_types.GitHubPullRequestNumber, "RuleCondition"]
 EvaluatedConditionGroupT = abc.Mapping[
     github_types.GitHubPullRequestNumber,
-    typing.Union["RuleConditionCombination", "RuleConditionNegation"],  # noqa : NU003
+    typing.Union["RuleConditionCombination", "RuleConditionNegation"],
 ]
 
 

@@ -11,7 +11,7 @@ router = fastapi.APIRouter()
 
 
 @router.get(
-    "/saas/github-account/{github_account_id}/subscription-details",  # noqa: FS003
+    "/saas/github-account/{github_account_id}/subscription-details",
 )
 async def saas_subscription(
     request: fastapi.Request,
@@ -58,7 +58,7 @@ async def saas_subscription(
 
 
 @router.api_route(
-    "/saas/{path:path}",  # noqa: FS003
+    "/saas/{path:path}",
     methods=["GET", "POST", "PATCH", "PUT", "DELETE"],
 )
 async def saas_proxy(

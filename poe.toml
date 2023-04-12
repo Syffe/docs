@@ -80,11 +80,6 @@ MERGIFYENGINE_SENTRY_URL = "https://12345@localhost/12345"
 MERGIFYENGINE_SENTRY_ENVIRONMENT = "ci"
 DD_API_KEY = "testing-false-key"
 
-[tool.poe.tasks.yesqa]
-deps = ["setup"]
-help = "Run yesqa"
-cmd = 'find mergify_engine -name "*.py" -exec echo yesqa \{\} ;'
-
 [tool.poe.tasks.serve]
 deps = ["setup"]
 help = "Start mergify-engine workers and API"

@@ -17,7 +17,7 @@ router = fastapi.APIRouter(
 
 
 @router.get(
-    "/{owner}",  # noqa: FS003
+    "/{owner}",
     include_in_schema=False,
     summary="Get global CI data",
     description="Get the global CI data for an organization",

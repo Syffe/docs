@@ -70,7 +70,7 @@ router = fastapi.APIRouter()
 
 
 @router.get(
-    "/sudo/{login}",  # noqa: FS003
+    "/sudo/{login}",
     dependencies=[
         fastapi.Depends(security.mergify_admin_login_required),
     ],

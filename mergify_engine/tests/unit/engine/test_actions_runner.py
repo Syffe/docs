@@ -117,20 +117,20 @@ async def test_get_already_merged_summary(
         (
             "bot_account",
             "sileht",
-            "{bot_account: sileht}\n",  # noqa: FS003
+            "{bot_account: sileht}\n",
         ),
         (
             "bot_account",
             {"login": "sileht", "oauth_token": "xxxxx"},
-            "{bot_account: sileht}\n",  # noqa: FS003
+            "{bot_account: sileht}\n",
         ),
         ("set", {"foo", "bar"}, ("set: [foo, bar]\n", "set: [bar, foo]\n")),
         (
             "re",
             re.compile("foobar"),
-            "{re: foobar}\n",  # noqa: FS003
+            "{re: foobar}\n",
         ),
-        ("str", "str", "{str: str}\n"),  # noqa: FS003
+        ("str", "str", "{str: str}\n"),
         (
             "multiline1",
             "str\nstr\nstr",

@@ -26,7 +26,7 @@ def _get_badge_url(
 
 
 @router.get(
-    "/badges/{owner}/{repository}.png",  # noqa: FS003
+    "/badges/{owner}/{repository}.png",
     summary="Get PNG badge",
     description="Get badge in PNG image format",
     response_class=fastapi.Response,  # to drop application/json from openapi media type
@@ -59,7 +59,7 @@ async def badge_png(
 
 
 @router.get(
-    "/badges/{owner}/{repository}.svg",  # noqa: FS003
+    "/badges/{owner}/{repository}.svg",
     summary="Get SVG badge",
     description="Get badge in SVG image format",
     response_class=fastapi.Response,  # to drop application/json from openapi media type
@@ -92,7 +92,7 @@ async def badge_svg(
 
 
 @router.get(
-    "/badges/{owner}/{repository}",  # noqa: FS003
+    "/badges/{owner}/{repository}",
     summary="Get shields.io badge config",
     description="Get shields.io badge JSON configuration",
     response_class=fastapi.Response,  # Allow to not document the shields.io format

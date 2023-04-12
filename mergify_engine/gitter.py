@@ -150,7 +150,7 @@ class Gitter:
         if self.repository is None:
             raise RuntimeError("__call__() called before init()")
 
-        command = ("git",) + args
+        command = ("git", *args)
         self.logger.info("git operation", command=command)
 
         try:

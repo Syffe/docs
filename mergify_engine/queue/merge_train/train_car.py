@@ -1214,8 +1214,10 @@ class TrainCar:
         if self.train.partition_name is not None:
             if self.delegating_train_cars_partition_names:
                 partition_names = sorted(
-                    self.delegating_train_cars_partition_names
-                    + [self.train.partition_name]
+                    (
+                        *self.delegating_train_cars_partition_names,
+                        self.train.partition_name,
+                    )
                 )
                 description += f" in partitions **{', '.join(partition_names)}**"
             else:

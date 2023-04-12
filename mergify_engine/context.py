@@ -2156,7 +2156,7 @@ class Context:
     def is_merge_queue_pr(self) -> bool:
         return (
             self.pull["title"].startswith("merge queue:")
-            # FIXME(jd): drop me in version >= 9.0.0
+            # FIXME(jd): drop me in version >= 9.0.0
             or self.pull["title"].startswith("merge-queue:")
         ) and (
             # NOTE(greesb): For retrocompatibility, to remove once there are

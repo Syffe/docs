@@ -1632,7 +1632,7 @@ class TestQueueAction(base.FunctionalTestBase):
                                 "name": "default",
                                 "priority": "high",
                                 "update_method": "rebase",
-                                "update_bot_account": '{% if not author or author.endswith("[bot]") -%}\nmergify-test4\n{% else -%}\n{{ author }}\n{% endif -%}',  # noqa [FS003]
+                                "update_bot_account": '{% if not author or author.endswith("[bot]") -%}\nmergify-test4\n{% else -%}\n{{ author }}\n{% endif -%}',
                             }
                         },
                     },
@@ -1650,7 +1650,7 @@ class TestQueueAction(base.FunctionalTestBase):
                             "status-success=continuous-integration/fake-ci",
                         ],
                         "update_method": "rebase",
-                        "update_bot_account": '{% if not author or author.endswith("[bot]") -%}\nmergify-test4\n{% else -%}\n{{ author }}\n{% endif -%}',  # noqa [FS003]
+                        "update_bot_account": '{% if not author or author.endswith("[bot]") -%}\nmergify-test4\n{% else -%}\n{{ author }}\n{% endif -%}',
                     }
                 ],
                 "pull_request_rules": [
@@ -1693,7 +1693,7 @@ class TestQueueAction(base.FunctionalTestBase):
                             "name": "default",
                             "priority": "high",
                             "update_method": "rebase",
-                            "update_bot_account": "{% if 1 -%}mergify-test4{% endif -%}",  # noqa [FS003]
+                            "update_bot_account": "{% if 1 -%}mergify-test4{% endif -%}",
                         }
                     },
                 },

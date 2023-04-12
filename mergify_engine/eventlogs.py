@@ -182,7 +182,7 @@ def _get_pull_request_key(
 
 
 # FIXME(sileht): if we use | here, we cannot introspec the __annotations__ with __args__
-Event = typing.Union[  # noqa: NU001
+Event = typing.Union[
     EventAssign,
     EventBackport,
     EventClose,

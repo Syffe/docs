@@ -68,7 +68,7 @@ class SimulatorResponse:
 
 
 @router.post(
-    "/repos/{owner}/{repository}/pulls/{number}/simulator",  # noqa: FS003
+    "/repos/{owner}/{repository}/pulls/{number}/simulator",
     summary="Get a Mergify simulation for a pull request",
     description="Get a simulation of what Mergify will do on a pull request",
     response_model=SimulatorResponse,
@@ -107,7 +107,7 @@ async def simulator_pull(
 
 
 @router.post(
-    "/repos/{owner}/{repository}/simulator",  # noqa: FS003
+    "/repos/{owner}/{repository}/simulator",
     summary="Get a Mergify simulation for a repository",
     description="Get a simulation of what Mergify will do for this repository",
     response_model=SimulatorResponse,

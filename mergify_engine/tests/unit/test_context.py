@@ -828,7 +828,7 @@ commits:
     )
     assert await ctxt.pull_request.get_commit_message(
         "{{ title | striptags }} (#{{ number }})\n\n{{ body | get_section('### Description') }}\n\n"
-        "{{ head | markdownify }}\n\ncommits:\n\n{% for c in commits %}* {{ c }}\n{% endfor %}",  # noqa: FS003|
+        "{{ head | markdownify }}\n\ncommits:\n\n{% for c in commits %}* {{ c }}\n{% endfor %}",
     ) == (expected_title, expected_body)
 
 

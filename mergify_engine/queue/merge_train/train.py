@@ -672,7 +672,7 @@ class Train:
                     parent_pull_request_numbers=car.parent_pull_request_numbers
                     + [ep.user_pull_request_number for ep in parents],
                     initial_current_base_sha=car.initial_current_base_sha,
-                    failure_history=car.failure_history + [car],
+                    failure_history=[*car.failure_history, car],
                 )
             )
 

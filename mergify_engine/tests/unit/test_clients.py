@@ -524,7 +524,7 @@ async def test_to_curl(
             '-H "content-length: 16" '
             '-H "content-type: application/json" '
             '-H "authorization: *****" '
-            """-d '{"ask": "What?"}' """  # noqa: FS003
+            """-d '{"ask": "What?"}' """
             "https://api.github.com/"
         )
         assert (

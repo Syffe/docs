@@ -164,8 +164,9 @@ class DedicatedStreamService(StreamService):
 
     @property
     def tasks(self) -> list[task.TaskRetriedForever]:
-        return list(self._dedicated_worker_tasks.values()) + [
-            self._dedicated_workers_spawner_task
+        return [
+            *list(self._dedicated_worker_tasks.values()),
+            self._dedicated_workers_spawner_task,
         ]
 
     async def dedicated_stream_worker_task(

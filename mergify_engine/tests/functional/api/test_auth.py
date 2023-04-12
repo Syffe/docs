@@ -20,7 +20,7 @@ def create_testing_router(web_server: fastapi.FastAPI) -> None:
     router = fastapi.APIRouter()
 
     @router.get(
-        "/testing-endpoint/{owner}/{repository}",  # noqa: FS003
+        "/testing-endpoint/{owner}/{repository}",
         response_model=ResponseTest,
     )
     async def test_explicit_deps(

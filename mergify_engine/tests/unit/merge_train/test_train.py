@@ -813,7 +813,7 @@ async def test_train_queue_splitted_on_failure_1x5(
         [41, 42, 43],
         [41, 42, 43, 44],
     ] == mt_conftest.get_train_cars_content(t)
-    assert [45] + list(range(6, 20)) == mt_conftest.get_train_waiting_pulls_content(t)
+    assert [45, *list(range(6, 20))] == mt_conftest.get_train_waiting_pulls_content(t)
     assert len(t._cars[0].failure_history) == 2
     assert len(t._cars[1].failure_history) == 1
     assert (
@@ -940,7 +940,7 @@ async def test_train_queue_splitted_on_failure_2x5(
         [41, 42, 43],
         [41, 42, 43, 44],
     ] == mt_conftest.get_train_cars_content(t)
-    assert [45] + list(range(6, 20)) == mt_conftest.get_train_waiting_pulls_content(t)
+    assert [45, *list(range(6, 20))] == mt_conftest.get_train_waiting_pulls_content(t)
     assert len(t._cars[0].failure_history) == 2
     assert len(t._cars[1].failure_history) == 1
     assert (
@@ -1021,9 +1021,12 @@ async def test_train_queue_splitted_on_failure_5x3(
         [41, 42],
         [41, 42, 43],
     ] == mt_conftest.get_train_cars_content(t)
-    assert [44, 45, 46] + list(
-        range(7, 22)
-    ) == mt_conftest.get_train_waiting_pulls_content(t)
+    assert [
+        44,
+        45,
+        46,
+        *list(range(7, 22)),
+    ] == mt_conftest.get_train_waiting_pulls_content(t)
     assert len(t._cars[0].failure_history) == 1
     assert len(t._cars[1].failure_history) == 1
     assert len(t._cars[2].failure_history) == 0

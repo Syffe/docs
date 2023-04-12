@@ -35,7 +35,7 @@ async def serve_static_file(
 @router.api_route("/asset-manifest.json", methods=["GET", "HEAD"])
 @router.api_route("/favicon.ico", methods=["GET", "HEAD"])
 @router.api_route("/manifest.json", methods=["GET", "HEAD"])
-@router.api_route("/static/{filename:path}", methods=["GET", "HEAD"])  # noqa: FS003
+@router.api_route("/static/{filename:path}", methods=["GET", "HEAD"])
 async def react_static_files(request: fastapi.Request) -> fastapi.Response:
     return await serve_static_file(request, request.url.path)
 
@@ -46,6 +46,6 @@ async def react_static_files(request: fastapi.Request) -> fastapi.Response:
 @router.get("/auth/callback")
 @router.get("/github")
 @router.get("/github/")
-@router.get("/github/{remaning:path}")  # noqa: FS003
+@router.get("/github/{remaning:path}")
 async def react_app(request: fastapi.Request) -> fastapi.Response:
     return await serve_static_file(request, "index.html")

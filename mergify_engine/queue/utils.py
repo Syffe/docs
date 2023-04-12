@@ -26,7 +26,7 @@ AbortCodeT = typing.Literal[
     "BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS",
 ]
 
-UnqueueCodeT = typing.Union[typing.Literal["PR_MERGED"], AbortCodeT]  # noqa: NU003
+UnqueueCodeT = typing.Union[typing.Literal["PR_MERGED"], AbortCodeT]
 
 
 @dataclasses.dataclass
@@ -47,7 +47,7 @@ class BaseUnqueueReason:
 
 @dataclasses.dataclass
 class PrDequeued(BaseUnqueueReason):
-    message = "Pull request #{pr_number} has been dequeued{details}"  # noqa: FS003
+    message = "Pull request #{pr_number} has been dequeued{details}"
     unqueue_code: typing.ClassVar[typing.Literal["PR_DEQUEUED"]] = "PR_DEQUEUED"
     pr_number: int
     details: str
@@ -55,7 +55,7 @@ class PrDequeued(BaseUnqueueReason):
 
 @dataclasses.dataclass
 class PrMerged(BaseUnqueueReason):
-    message = "Pull request #{pr_number} has been merged automatically at *{sha}*"  # noqa: FS003
+    message = "Pull request #{pr_number} has been merged automatically at *{sha}*"
     unqueue_code: typing.ClassVar[typing.Literal["PR_MERGED"]] = "PR_MERGED"
     pr_number: int
     sha: github_types.SHAType
@@ -63,7 +63,7 @@ class PrMerged(BaseUnqueueReason):
 
 @dataclasses.dataclass
 class PrAheadDequeued(BaseUnqueueReason):
-    message = "Pull request #{pr_number} which was ahead in the queue has been dequeued"  # noqa: FS003
+    message = "Pull request #{pr_number} which was ahead in the queue has been dequeued"
     unqueue_code: typing.ClassVar[
         typing.Literal["PR_AHEAD_DEQUEUED"]
     ] = "PR_AHEAD_DEQUEUED"
@@ -89,9 +89,7 @@ class PrUnexpectedlyFailedToMerge(BaseUnqueueReason):
 # FIXME(sileht): should be something like PRQueuePriorityChanged
 @dataclasses.dataclass
 class PrWithHigherPriorityQueued(BaseUnqueueReason):
-    message = (
-        "Pull request #{pr_number} with higher priority has been queued"  # noqa: FS003
-    )
+    message = "Pull request #{pr_number} with higher priority has been queued"
     unqueue_code: typing.ClassVar[
         typing.Literal["PR_WITH_HIGHER_PRIORITY_QUEUED"]
     ] = "PR_WITH_HIGHER_PRIORITY_QUEUED"
@@ -142,7 +140,7 @@ class QueueRuleMissing(BaseUnqueueReason):
 
 @dataclasses.dataclass
 class TargetBranchMissing(BaseUnqueueReason):
-    message = "The target branch does not exist anymore `{ref}`"  # noqa: FS003
+    message = "The target branch does not exist anymore `{ref}`"
     unqueue_code: typing.ClassVar[
         typing.Literal["TARGET_BRANCH_MISSING"]
     ] = "TARGET_BRANCH_MISSING"
@@ -159,7 +157,7 @@ class TargetBranchChanged(BaseUnqueueReason):
 
 @dataclasses.dataclass
 class UnexpectedQueueChange(BaseUnqueueReason):
-    message = "Unexpected queue change: {change}"  # noqa: FS003
+    message = "Unexpected queue change: {change}"
     unqueue_code: typing.ClassVar[
         typing.Literal["UNEXPECTED_QUEUE_CHANGE"]
     ] = "UNEXPECTED_QUEUE_CHANGE"

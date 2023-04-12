@@ -11,7 +11,7 @@ router = fastapi.APIRouter()
 
 
 @router.api_route(
-    "/github/{path:path}",  # noqa: FS003
+    "/github/{path:path}",
     methods=["GET", "POST", "PATCH", "PUT", "DELETE"],
 )
 async def github_proxy(

@@ -303,7 +303,7 @@ class TestPostCheckAction(base.FunctionalTestBase):
                         "post_check": {
                             "title": (
                                 "Pull request #{{ number }} does"
-                                "{% if not check_succeed %} not{% endif %}"  # noqa: FS003
+                                "{% if not check_succeed %} not{% endif %}"
                                 " follow our guideline"
                             ),
                             "summary": """

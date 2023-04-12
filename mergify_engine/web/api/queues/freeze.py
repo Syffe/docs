@@ -62,7 +62,7 @@ class QueueFreezePayload(pydantic.BaseModel):
 
 
 @router.put(
-    "/queue/{queue_name}/freeze",  # noqa: FS003
+    "/queue/{queue_name}/freeze",
     summary="Freezes merge queue",
     description="Freezes the merge of the requested queue and the queues following it",
     response_model=QueueFreezeResponse,
@@ -160,7 +160,7 @@ async def create_queue_freeze(
 
 
 @router.delete(
-    "/queue/{queue_name}/freeze",  # noqa: FS003
+    "/queue/{queue_name}/freeze",
     summary="Unfreeze merge queue",
     description="Unfreeze the specified merge queue",
     dependencies=[
@@ -214,7 +214,7 @@ async def delete_queue_freeze(
 
 
 @router.get(
-    "/queue/{queue_name}/freeze",  # noqa: FS003
+    "/queue/{queue_name}/freeze",
     summary="Get queue freeze data",
     description="Checks if the queue is frozen and get the queue freeze data",
     response_model=QueueFreezeResponse,

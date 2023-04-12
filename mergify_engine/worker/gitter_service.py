@@ -83,7 +83,7 @@ class GitterService:
 
     @property
     def tasks(self) -> list[task.TaskRetriedForever]:
-        return self._pools + [self._monitoring_task]
+        return [*self._pools, self._monitoring_task]
 
     async def _monitoring(self) -> None:
         LOG.debug("running gitter monitoring")
@@ -138,7 +138,7 @@ class GitterService:
             )
             # NOTE(sileht): we ignore exception on purpose, the job caller must
             # reawait the Coroutine to get the result
-            pass  # noqa: TC202
+            pass
         else:
             job.logger.debug("gitter worker finished job func", job_id=job.id)
 
