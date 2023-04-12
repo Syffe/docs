@@ -32,6 +32,8 @@ class Features(enum.Enum):
     RANDOM_REQUEST_REVIEWS = "random_request_reviews"
     MERGE_BOT_ACCOUNT = "merge_bot_account"
     BOT_ACCOUNT = "bot_account"
+    # QUEUE_ACTION is badly named because in the code it actually is
+    # the feature flag for multi queues
     QUEUE_ACTION = "queue_action"
     DEPENDS_ON = "depends_on"
     SHOW_SPONSOR = "show_sponsor"
@@ -41,6 +43,7 @@ class Features(enum.Enum):
     EVENTLOGS_SHORT = "eventlogs_short"
     EVENTLOGS_LONG = "eventlogs_long"
     MERGE_QUEUE_STATS = "merge_queue_stats"
+    MERGE_QUEUE = "merge_queue"
 
 
 class SubscriptionDict(typing.TypedDict):

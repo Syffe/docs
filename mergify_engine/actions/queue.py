@@ -992,6 +992,14 @@ Then, re-embark the pull request into the merge queue by posting the comment
         partition_rules: partr_config.PartitionRules,
         ctxt: context.Context,
     ) -> None:
+        if not ctxt.subscription.has_feature(subscription.Features.MERGE_QUEUE):
+            raise InvalidQueueConfiguration(
+                "Cannot use the merge queue.",
+                ctxt.subscription.missing_feature_reason(
+                    ctxt.pull["base"]["repo"]["owner"]["login"]
+                ),
+            )
+
         if len(queue_rules) > 1 and not ctxt.subscription.has_feature(
             subscription.Features.QUEUE_ACTION
         ):

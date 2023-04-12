@@ -1,4 +1,7 @@
+import pytest
+
 from mergify_engine import yaml
+from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 
 
@@ -25,6 +28,7 @@ class TestCommandUpdate(base.FunctionalTestBase):
         assert len(comments) == 2, comments
         assert "Nothing to do" in comments[-1]["body"]
 
+    @pytest.mark.subscription(subscription.Features.MERGE_QUEUE)
     async def test_update_pr_in_queue(self) -> None:
         rules = {
             "queue_rules": [

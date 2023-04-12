@@ -6829,6 +6829,57 @@ pull_request_rules:
         )
 
 
+class TestQueueActionFeaturesSubscription(base.FunctionalTestBase):
+    async def test_queue_action_and_command_without_merge_queue_feature_flag(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [],
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge on queue label",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        check_run_p1 = await self.wait_for_check_run(
+            name="Rule: Merge on queue label (queue)",
+            conclusion="action_required",
+        )
+        assert (
+            check_run_p1["check_run"]["output"]["title"]
+            == "Cannot use the merge queue."
+        )
+
+        await self.create_comment_as_admin(p1["number"], "@mergifyio queue")
+        await self.run_engine()
+
+        comment_p1_rep = await self.wait_for_issue_comment(str(p1["number"]), "created")
+        assert "Cannot use the merge queue" in comment_p1_rep["comment"]["body"]
+
+        await self.create_comment_as_admin(p1["number"], "@mergifyio unqueue")
+        await self.run_engine()
+
+        comment_p1_rep = await self.wait_for_issue_comment(str(p1["number"]), "created")
+        assert "Cannot use the merge queue" in comment_p1_rep["comment"]["body"]
+
+
 class TestTrainApiCalls(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
 

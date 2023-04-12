@@ -11,6 +11,7 @@ from mergify_engine import queue as merge_queue
 from mergify_engine import rules
 from mergify_engine.actions import queue
 from mergify_engine.clients import http
+from mergify_engine.dashboard import subscription
 from mergify_engine.rules import checks_status
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import pull_request_rules as prr_config
@@ -684,6 +685,15 @@ async def test_check_subscription_status(
     action.queue_rules = queue_rules["queue_rules"]
     action.config["priority"] = merge_queue.PriorityAliases.high.value
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
+    ctxt.subscription.features = frozenset(
+        {
+            subscription.Features.PUBLIC_REPOSITORY,
+            # Add this feature just to bypass the first test in the function
+            # and make sure all the others still work
+            subscription.Features.MERGE_QUEUE,
+        }
+    )
+
     evaluated_pull_request_rule = mock.Mock()
     executor = await action.executor_class.create(
         action, ctxt, evaluated_pull_request_rule

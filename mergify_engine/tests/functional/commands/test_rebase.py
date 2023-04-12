@@ -1,8 +1,11 @@
 import base64
 import typing
 
+import pytest
+
 from mergify_engine import github_types
 from mergify_engine import yaml
+from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 
 
@@ -42,6 +45,7 @@ class TestCommandRebase(base.FunctionalTestBase):
         data = base64.b64decode(bytearray(f["content"], "utf-8"))
         assert data == b"p2\n\nfoobar\n\n\np1"
 
+    @pytest.mark.subscription(subscription.Features.MERGE_QUEUE)
     async def test_rebase_pr_in_queue(self) -> None:
         rules = {
             "queue_rules": [
