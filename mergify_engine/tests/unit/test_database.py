@@ -13,7 +13,7 @@ from mergify_engine.models import manage
 from mergify_engine.tests import utils
 
 
-def test_migration(tmp_path: pathlib.Path) -> None:
+def test_migration(database_cleanup: None, tmp_path: pathlib.Path) -> None:
     # We need to manually run the coroutine in an event loop because
     # pytest-asyncio has its own `event_loop` fixture that is function scoped
     # and in autouse (session scope fixture cannot require function scoped
