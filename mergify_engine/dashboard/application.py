@@ -116,7 +116,7 @@ class ApplicationSaas(ApplicationBase):
         redis: redis_utils.RedisCache,
         api_access_key: str,
         api_secret_key: str,
-    ) -> "ApplicationSaas":
+    ) -> ApplicationSaas:
         cached_application = await cls._retrieve_from_cache(
             redis, api_access_key, api_secret_key
         )
@@ -253,7 +253,7 @@ class ApplicationSaas(ApplicationBase):
         redis: redis_utils.RedisCache,
         api_access_key: str,
         api_secret_key: str,
-    ) -> "ApplicationSaas":
+    ) -> ApplicationSaas:
         async with dashboard.AsyncDashboardSaasClient() as client:
             resp = await client.post(
                 "/engine/applications",

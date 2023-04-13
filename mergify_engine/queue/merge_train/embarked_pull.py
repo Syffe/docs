@@ -33,7 +33,7 @@ class EmbarkedPull:
         train: "Train",
         data: "EmbarkedPull.Serialized | EmbarkedPull.OldSerialized",
     ) -> "EmbarkedPull":
-        if isinstance(data, (tuple, list)):
+        if isinstance(data, tuple | list):
             user_pull_request_number = data[0]
             config = data[1]
             queued_at = data[2]

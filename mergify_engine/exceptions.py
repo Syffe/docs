@@ -62,7 +62,7 @@ def should_be_ignored(exception: Exception) -> bool:
             if exception.response.json().get("reason", "") in reasons:
                 return True
 
-    if isinstance(exception, (http.HTTPClientSideError, http.HTTPServerSideError)):
+    if isinstance(exception, http.HTTPClientSideError | http.HTTPServerSideError):
         for error in IGNORED_HTTP_ERROR_MESSAGES.get(exception.status_code, []):
             if isinstance(error, str):
                 if error in exception.message:
@@ -100,7 +100,7 @@ def need_retry(
     elif isinstance(exception, EngineNeedRetry):
         return exception.retry_in
 
-    elif isinstance(exception, (http.RequestError, http.HTTPServerSideError)):
+    elif isinstance(exception, http.RequestError | http.HTTPServerSideError):
         # NOTE(sileht): We already retry locally with urllib3, so if we get there, Github
         # is in a really bad shape...
         return datetime.timedelta(minutes=1)

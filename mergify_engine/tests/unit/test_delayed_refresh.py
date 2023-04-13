@@ -14,11 +14,11 @@ from mergify_engine.tests.unit import conftest
 @pytest.mark.parametrize(
     "pull, expected_refresh",
     (
-        ({}, datetime.datetime(2021, 9, 22, 15, 1, tzinfo=datetime.timezone.utc)),
+        ({}, datetime.datetime(2021, 9, 22, 15, 1, tzinfo=datetime.UTC)),
         ({"closed_at": "2021-09-10T08:00:05Z"}, None),
         (
             {"updated_at": "2021-09-22T08:02:05Z"},
-            datetime.datetime(2021, 9, 22, 9, 2, 5, tzinfo=datetime.timezone.utc),
+            datetime.datetime(2021, 9, 22, 9, 2, 5, tzinfo=datetime.UTC),
         ),
     ),
 )
@@ -74,7 +74,7 @@ pull_request_rules:
     )
 
     expected_refresh_due_to_rules = datetime.datetime(
-        2021, 9, 22, 15, 1, tzinfo=datetime.timezone.utc
+        2021, 9, 22, 15, 1, tzinfo=datetime.UTC
     )
 
     ctxt = await context_getter(0)
@@ -92,7 +92,7 @@ pull_request_rules:
     assert when == expected_refresh_due_to_rules
 
     # hardcode a date in the future and ensure it's overriden
-    future = datetime.datetime(2021, 9, 23, 00, 0, tzinfo=datetime.timezone.utc)
+    future = datetime.datetime(2021, 9, 23, 00, 0, tzinfo=datetime.UTC)
     await delayed_refresh._set_current_refresh_datetime(
         ctxt.repository, ctxt.pull["number"], future
     )
@@ -105,7 +105,7 @@ pull_request_rules:
     assert when == expected_refresh_due_to_rules
 
     # hardcode a date in the past and ensure it's not overriden
-    past = datetime.datetime(2021, 9, 22, 00, 0, tzinfo=datetime.timezone.utc)
+    past = datetime.datetime(2021, 9, 22, 00, 0, tzinfo=datetime.UTC)
     await delayed_refresh._set_current_refresh_datetime(
         ctxt.repository, ctxt.pull["number"], past
     )
@@ -118,7 +118,7 @@ pull_request_rules:
     assert when == past
 
     # Don't use only_if_earlier and it's overriden
-    past = datetime.datetime(2021, 9, 22, 00, 0, tzinfo=datetime.timezone.utc)
+    past = datetime.datetime(2021, 9, 22, 00, 0, tzinfo=datetime.UTC)
     await delayed_refresh._set_current_refresh_datetime(
         ctxt.repository, ctxt.pull["number"], past
     )

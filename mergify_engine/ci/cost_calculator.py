@@ -15,7 +15,7 @@ class MoneyAmount(decimal.Decimal):
         return self.__class__(super().__sub__(__other))
 
     @classmethod
-    def zero(cls) -> "MoneyAmount":
+    def zero(cls) -> MoneyAmount:
         return cls(0)
 
 

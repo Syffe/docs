@@ -64,7 +64,7 @@ async def teams(
     if not values:
         return []
     # FIXME(sileht): This should not belong here, we should accept only a List[str]
-    if not isinstance(values, (list, tuple)):
+    if not isinstance(values, list | tuple):
         values = [values]
 
     return list(

@@ -24,7 +24,7 @@ payload_decoded = {
     "timedelta": datetime.timedelta(hours=2, minutes=5, seconds=5),
     "datetime_naive": datetime.datetime(2021, 5, 15, 8, 35, 36, 442306),
     "datetime_aware": datetime.datetime(
-        2021, 5, 15, 8, 41, 36, 796485, tzinfo=datetime.timezone.utc
+        2021, 5, 15, 8, 41, 36, 796485, tzinfo=datetime.UTC
     ),
     "a set": {1, 2, 3},
     "uuid": uuid.UUID(uuid_str),

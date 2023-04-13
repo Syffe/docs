@@ -585,7 +585,7 @@ class TestQueueApi(base.FunctionalTestBase):
                 },
             ],
         }
-        start_date = datetime.datetime(2022, 1, 5, tzinfo=datetime.timezone.utc)
+        start_date = datetime.datetime(2022, 1, 5, tzinfo=datetime.UTC)
         with freeze_time(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 
@@ -687,7 +687,7 @@ class TestQueueApi(base.FunctionalTestBase):
                 },
             ],
         }
-        start_date = datetime.datetime(2022, 1, 5, tzinfo=datetime.timezone.utc)
+        start_date = datetime.datetime(2022, 1, 5, tzinfo=datetime.UTC)
         with freeze_time(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 
@@ -812,7 +812,7 @@ class TestQueueApi(base.FunctionalTestBase):
                 },
             ],
         }
-        start_date = datetime.datetime(2022, 1, 5, tzinfo=datetime.timezone.utc)
+        start_date = datetime.datetime(2022, 1, 5, tzinfo=datetime.UTC)
         with freeze_time(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 
@@ -952,7 +952,7 @@ class TestQueueApi(base.FunctionalTestBase):
                 },
             ],
         }
-        start_date = datetime.datetime(2022, 1, 5, tzinfo=datetime.timezone.utc)
+        start_date = datetime.datetime(2022, 1, 5, tzinfo=datetime.UTC)
         with freeze_time(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 
@@ -1194,7 +1194,7 @@ class TestQueueApi(base.FunctionalTestBase):
         }
 
         # Friday, 15:00 UTC
-        start_date = datetime.datetime(2022, 10, 14, 15, tzinfo=datetime.timezone.utc)
+        start_date = datetime.datetime(2022, 10, 14, 15, tzinfo=datetime.UTC)
         with freeze_time(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 
@@ -1239,7 +1239,7 @@ class TestQueueApi(base.FunctionalTestBase):
             # Make sure the eta is after the schedule start
             assert datetime.datetime.fromisoformat(
                 r.json()["queues"][0]["pull_requests"][0]["estimated_time_of_merge"]
-            ) == datetime.datetime(2022, 10, 17, 8, 0, 1, tzinfo=datetime.timezone.utc)
+            ) == datetime.datetime(2022, 10, 17, 8, 0, 1, tzinfo=datetime.UTC)
 
     async def test_estimated_time_of_merge_schedule_condition_match(self) -> None:
         rules = {
@@ -1267,7 +1267,7 @@ class TestQueueApi(base.FunctionalTestBase):
         }
 
         # Friday, 15:00 UTC
-        start_date = datetime.datetime(2022, 10, 14, 15, tzinfo=datetime.timezone.utc)
+        start_date = datetime.datetime(2022, 10, 14, 15, tzinfo=datetime.UTC)
         with freeze_time(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 
@@ -1338,7 +1338,7 @@ class TestQueueApi(base.FunctionalTestBase):
         }
 
         # Friday, 15:00 UTC
-        start_date = datetime.datetime(2022, 10, 14, 15, tzinfo=datetime.timezone.utc)
+        start_date = datetime.datetime(2022, 10, 14, 15, tzinfo=datetime.UTC)
         with freeze_time(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
 
@@ -1365,7 +1365,7 @@ class TestQueueApi(base.FunctionalTestBase):
         # This should make the ETA out of schedule
         # (16:52 + more than 10 minutes > 17:00 on the schedule)
         date_close_to_end_schedule = datetime.datetime(
-            2022, 10, 14, 16, 52, tzinfo=datetime.timezone.utc
+            2022, 10, 14, 16, 52, tzinfo=datetime.UTC
         )
         with freeze_time(date_close_to_end_schedule, tick=True):
             await self.add_label(p2["number"], "queue")
@@ -1387,4 +1387,4 @@ class TestQueueApi(base.FunctionalTestBase):
             # ETA should be close to `start_date` since p1 was merged really fast.
             assert datetime.datetime.fromisoformat(
                 r.json()["queues"][0]["pull_requests"][0]["estimated_time_of_merge"]
-            ) == datetime.datetime(2022, 10, 17, 8, 0, 1, tzinfo=datetime.timezone.utc)
+            ) == datetime.datetime(2022, 10, 17, 8, 0, 1, tzinfo=datetime.UTC)

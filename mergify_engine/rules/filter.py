@@ -22,7 +22,7 @@ class InvalidQuery(Exception):
 
 
 class ParseError(InvalidQuery):
-    def __init__(self, tree: "TreeT") -> None:
+    def __init__(self, tree: TreeT) -> None:
         super().__init__(f"Unable to parse tree: {str(tree)}")
         self.tree = tree
 
@@ -336,7 +336,7 @@ class Filter(typing.Generic[FilterResultT]):
 
 def BinaryFilter(
     tree: TreeT | CompiledTreeT[GetAttrObject, bool],
-) -> "Filter[bool]":
+) -> Filter[bool]:
     return Filter[bool](
         tree,
         {
@@ -365,7 +365,7 @@ class ListValuesFilterResult:
     filtered_values: list[typing.Any] = dataclasses.field(default_factory=list)
 
     @classmethod
-    def from_iterable(cls, values: abc.Iterable[object]) -> "ListValuesFilterResult":
+    def from_iterable(cls, values: abc.Iterable[object]) -> ListValuesFilterResult:
         values = typing.cast(abc.Iterable[tuple[typing.Any, bool]], values)
         obj = cls()
         for value, match in values:
@@ -376,7 +376,7 @@ class ListValuesFilterResult:
         return obj
 
     @classmethod
-    def negate(cls, other: "ListValuesFilterResult") -> "ListValuesFilterResult":
+    def negate(cls, other: ListValuesFilterResult) -> ListValuesFilterResult:
         return cls(values=other.filtered_values, filtered_values=other.values)
 
 
@@ -410,7 +410,7 @@ class _ListValuesFilter(Filter[ListValuesFilterResult]):
 
 def ListValuesFilter(
     tree: TreeT | CompiledTreeT[GetAttrObject, ListValuesFilterResult],
-) -> "_ListValuesFilter":
+) -> _ListValuesFilter:
     return _ListValuesFilter(
         tree,
         {
@@ -505,12 +505,12 @@ def _dt_op(
         if value is None:
             return date.DT_MAX
         try:
-            dt_value = _as_datetime(value).astimezone(datetime.timezone.utc)
+            dt_value = _as_datetime(value).astimezone(datetime.UTC)
 
             if isinstance(ref, date.Schedule):
                 return ref.get_next_datetime(dt_value)
 
-            dt_ref = _as_datetime(ref).astimezone(datetime.timezone.utc)
+            dt_ref = _as_datetime(ref).astimezone(datetime.UTC)
 
             handle_equality = op in (
                 operator.eq,
@@ -539,7 +539,7 @@ def _dt_op(
 
 def NearDatetimeFilter(
     tree: TreeT | CompiledTreeT[GetAttrObject, datetime.datetime],
-) -> "Filter[datetime.datetime]":
+) -> Filter[datetime.datetime]:
     """
     The principles:
     * the attribute can't be mapped to a datetime -> datetime.datetime.max

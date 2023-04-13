@@ -61,7 +61,7 @@ def register_script(script: str) -> ScriptIdT:
 # it works but if a script is loaded into two redis, this won't works as expected
 # as the app will think it's already loaded while it's not...
 async def load_script(
-    connection: "redispy.connection.Connection", script_id: ScriptIdT
+    connection: redispy.connection.Connection, script_id: ScriptIdT
 ) -> None:
     global SCRIPTS
     sha, script = SCRIPTS[script_id]
@@ -77,7 +77,7 @@ async def load_script(
         SCRIPTS[script_id] = (newsha, script)
 
 
-async def load_stream_scripts(connection: "redispy.connection.Connection") -> None:
+async def load_stream_scripts(connection: redispy.connection.Connection) -> None:
     # TODO(sileht): cleanup unused script, this is tricky, because during
     # deployment we have running in parallel due to the rolling upgrade:
     # * an old version of the asgi server
@@ -228,8 +228,8 @@ class RedisLinks:
         name: str,
         url: config_types.RedisDSN,
         max_connections: int | None = None,
-        redis_connect_func: "redispy.connection.ConnectCallbackT" | None = None,
-    ) -> "redispy.Redis[bytes]":
+        redis_connect_func: redispy.connection.ConnectCallbackT | None = None,
+    ) -> redispy.Redis[bytes]:
         options: dict[str, typing.Any] = self.connection_pool_kwargs.copy()
 
         if settings.REDIS_SSL_VERIFY_MODE_CERT_NONE and url.scheme == "rediss":

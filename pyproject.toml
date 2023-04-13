@@ -222,13 +222,10 @@ ignore = [
     "A003",
     # NOTE(sileht): This enforce usage of raise ... from ...
     "B904",
-    # FIXME(sileht): pyupgrade checks more case than flake8 pep585/new-union-types/fstring
-    "UP017", "UP037", "UP038",
     # FIXME(sileht): Convert some exception -> TypeError
     "TRY004",
     # FIXME(sileht): very interresting, ruff BLE is far better that flake8-blind-except
     "BLE001",
-    # NOTE(sileht): very interresting, but require manual logic change
     # NOTE(sileht): looks buggy
     "RET508"
 ]

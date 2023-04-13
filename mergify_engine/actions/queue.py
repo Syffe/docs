@@ -120,10 +120,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
     @classmethod
     async def create(
         cls,
-        action: "QueueAction",
-        ctxt: "context.Context",
-        rule: "prr_config.EvaluatedPullRequestRule",
-    ) -> "QueueExecutor":
+        action: QueueAction,
+        ctxt: context.Context,
+        rule: prr_config.EvaluatedPullRequestRule,
+    ) -> QueueExecutor:
         return cls(
             ctxt,
             rule,
@@ -840,7 +840,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
     @staticmethod
     async def _should_be_cancel(
         ctxt: context.Context,
-        rule: "prr_config.EvaluatedPullRequestRule",
+        rule: prr_config.EvaluatedPullRequestRule,
         previous_cars: list[merge_train_types.TrainAndTrainCar],
     ) -> bool:
         # It's closed, it's not going to change
@@ -892,7 +892,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
     async def get_pending_queue_status(
         ctxt: context.Context,
         convoy: merge_train.Convoy,
-        rule: "prr_config.EvaluatedPullRequestRule",
+        rule: prr_config.EvaluatedPullRequestRule,
         queue_rule: qr_config.QueueRule,
         queue_freeze: freeze.QueueFreeze | None,
     ) -> check_api.Result:
@@ -1158,7 +1158,7 @@ class QueueAction(actions.Action):
 
         return validator
 
-    def validate_config(self, mergify_config: "mergify_conf.MergifyConfig") -> None:
+    def validate_config(self, mergify_config: mergify_conf.MergifyConfig) -> None:
         self.queue_rules = mergify_config["queue_rules"]
         self.partition_rules = mergify_config["partition_rules"]
         if (

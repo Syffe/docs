@@ -29,7 +29,7 @@ T = typing.TypeVar("T")
 @dataclasses.dataclass
 class GitterJob(typing.Generic[T]):
     owner_login_for_tracing: github_types.GitHubLogin
-    logger: "logging.LoggerAdapter[logging.Logger]"
+    logger: logging.LoggerAdapter[logging.Logger]
     func: abc.Callable[[], abc.Coroutine[None, None, T]]
     callback: abc.Callable[[], abc.Coroutine[None, None, None]] | None = None
     id: GitterJobId = dataclasses.field(init=False, default_factory=uuid.uuid4)
@@ -61,7 +61,7 @@ class GitterService:
         init=False, default_factory=dict
     )
 
-    _instance: typing.ClassVar["GitterService" | None] = None
+    _instance: typing.ClassVar[GitterService | None] = None
 
     def __post_init__(self) -> None:
         self._queue = asyncio.Queue()

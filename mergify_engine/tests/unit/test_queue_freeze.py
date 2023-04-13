@@ -32,7 +32,7 @@ def test_queue_freeze_deserialize(
     reason: str,
     cascading: bool,
 ) -> None:
-    freeze_date = datetime.datetime(2022, 1, 23, tzinfo=datetime.timezone.utc)
+    freeze_date = datetime.datetime(2022, 1, 23, tzinfo=datetime.UTC)
     serialized_payload = {
         "name": name,
         "reason": reason,
@@ -78,7 +78,7 @@ def test_queue_freeze_serialized(
     reason: str,
     cascading: bool,
 ) -> None:
-    freeze_date = datetime.datetime(2022, 1, 23, tzinfo=datetime.timezone.utc)
+    freeze_date = datetime.datetime(2022, 1, 23, tzinfo=datetime.UTC)
     serialized_payload = {
         "name": name,
         "reason": reason,

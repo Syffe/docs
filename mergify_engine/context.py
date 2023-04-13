@@ -111,9 +111,9 @@ class Installation:
     client: github.AsyncGithubInstallationClient = dataclasses.field(repr=False)
     redis: redis_utils.RedisLinks = dataclasses.field(repr=False)
 
-    repositories: "dict[github_types.GitHubRepositoryName, Repository]" = (
-        dataclasses.field(default_factory=dict, repr=False)
-    )
+    repositories: dict[
+        github_types.GitHubRepositoryName, Repository
+    ] = dataclasses.field(default_factory=dict, repr=False)
     _caches: InstallationCaches = dataclasses.field(
         default_factory=InstallationCaches, repr=False
     )
@@ -148,7 +148,7 @@ class Installation:
         repo_id: github_types.GitHubRepositoryIdType,
         pull_number: github_types.GitHubPullRequestNumber,
         force_new: bool = False,
-    ) -> "Context":
+    ) -> Context:
         for repository in self.repositories.values():
             if repository.repo["id"] == repo_id:
                 return await repository.get_pull_request_context(
@@ -167,7 +167,7 @@ class Installation:
     def get_repository_from_github_data(
         self,
         repo: github_types.GitHubRepository,
-    ) -> "Repository":
+    ) -> Repository:
         if repo["name"] not in self.repositories:
             repository = Repository(self, repo)
             self.repositories[repo["name"]] = repository
@@ -176,7 +176,7 @@ class Installation:
     async def get_repository_by_name(
         self,
         name: github_types.GitHubRepositoryName,
-    ) -> "Repository":
+    ) -> Repository:
         if name in self.repositories:
             return self.repositories[name]
         repo_data: github_types.GitHubRepository = await self.client.item(
@@ -186,7 +186,7 @@ class Installation:
 
     async def get_repository_by_id(
         self, _id: github_types.GitHubRepositoryIdType
-    ) -> "Repository":
+    ) -> Repository:
         for repository in self.repositories.values():
             if repository.repo["id"] == _id:
                 return repository
@@ -261,7 +261,7 @@ class RepositoryCaches:
         MergifyConfigFile | None
     ] = dataclasses.field(default_factory=cache.SingleCache)
     mergify_config: cache.SingleCache[
-        "mergify_conf.MergifyConfig" | Exception
+        mergify_conf.MergifyConfig | Exception
     ] = dataclasses.field(default_factory=cache.SingleCache)
     branches: cache.Cache[
         github_types.GitHubRefType, github_types.GitHubBranch
@@ -287,14 +287,14 @@ class RepositoryCaches:
 class Repository:
     installation: Installation
     repo: github_types.GitHubRepository
-    pull_contexts: "dict[github_types.GitHubPullRequestNumber, Context]" = (
-        dataclasses.field(default_factory=dict, repr=False)
-    )
+    pull_contexts: dict[
+        github_types.GitHubPullRequestNumber, Context
+    ] = dataclasses.field(default_factory=dict, repr=False)
 
     _caches: RepositoryCaches = dataclasses.field(
         default_factory=RepositoryCaches, repr=False
     )
-    log: "logging.LoggerAdapter[logging.Logger]" = dataclasses.field(
+    log: logging.LoggerAdapter[logging.Logger] = dataclasses.field(
         init=False, repr=False
     )
 
@@ -361,7 +361,7 @@ class Repository:
     @tracer.wrap("get_mergify_config", span_type="worker")
     async def get_mergify_config(
         self, allow_extend: bool = True
-    ) -> "mergify_conf.MergifyConfig":
+    ) -> mergify_conf.MergifyConfig:
         # Circular import
         from mergify_engine.rules.config import mergify as mergify_conf
 
@@ -501,7 +501,7 @@ class Repository:
         pull_number: github_types.GitHubPullRequestNumber,
         pull: github_types.GitHubPullRequest | None = None,
         force_new: bool = False,
-    ) -> "Context":
+    ) -> Context:
         if force_new or pull_number not in self.pull_contexts:
             if pull is None:
                 pull = await self.installation.client.item(
@@ -1085,11 +1085,11 @@ class Context:
     pull: github_types.GitHubPullRequest
     sources: list[T_PayloadEventSource] = dataclasses.field(default_factory=list)
     configuration_changed: bool = False
-    pull_request: "PullRequest" = dataclasses.field(init=False, repr=False)
+    pull_request: PullRequest = dataclasses.field(init=False, repr=False)
     github_has_pending_background_jobs: bool = dataclasses.field(
         init=False, default=False
     )
-    log: "logging.LoggerAdapter[logging.Logger]" = dataclasses.field(
+    log: logging.LoggerAdapter[logging.Logger] = dataclasses.field(
         init=False, repr=False
     )
 
@@ -2520,7 +2520,7 @@ class PullRequest(BasePullRequest):
 
     @staticmethod
     async def _filter_get_section(
-        pull: "PullRequest", v: str, section: str, default: str | None = None
+        pull: PullRequest, v: str, section: str, default: str | None = None
     ) -> str:
         if not isinstance(section, str):
             raise jinja2.exceptions.TemplateError("level must be a string")

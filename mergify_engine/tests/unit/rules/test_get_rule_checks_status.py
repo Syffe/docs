@@ -102,9 +102,7 @@ async def test_rules_checks_basic(logger_checker: None) -> None:
         {
             "number": 1,
             # Thursday
-            "current-time": datetime.datetime(
-                2022, 11, 24, tzinfo=datetime.timezone.utc
-            ),
+            "current-time": datetime.datetime(2022, 11, 24, tzinfo=datetime.UTC),
             "author": "me",
             "base": "main",
             "head": "feature-1",
@@ -151,9 +149,7 @@ async def test_rules_checks_basic(logger_checker: None) -> None:
 
     # Pending reported and schedule missing
     # Saturday
-    pull.attrs["current-time"] = datetime.datetime(
-        2022, 11, 26, tzinfo=datetime.timezone.utc
-    )
+    pull.attrs["current-time"] = datetime.datetime(2022, 11, 26, tzinfo=datetime.UTC)
     pull.attrs["check-pending"] = ["fake-ci"]
     pull.attrs["check-failure"] = empty
     pull.attrs["check-success"] = ["test-starter"]
@@ -161,9 +157,7 @@ async def test_rules_checks_basic(logger_checker: None) -> None:
 
     # Failure reported and schedule missing
     # Saturday
-    pull.attrs["current-time"] = datetime.datetime(
-        2022, 11, 26, tzinfo=datetime.timezone.utc
-    )
+    pull.attrs["current-time"] = datetime.datetime(2022, 11, 26, tzinfo=datetime.UTC)
     pull.attrs["check-pending"] = ["whatever"]
     pull.attrs["check-failure"] = ["foo", "fake-ci"]
     pull.attrs["check-success"] = ["test-starter"]
@@ -171,9 +165,7 @@ async def test_rules_checks_basic(logger_checker: None) -> None:
 
     # Success reported and schedule missing
     # Saturday
-    pull.attrs["current-time"] = datetime.datetime(
-        2022, 11, 26, tzinfo=datetime.timezone.utc
-    )
+    pull.attrs["current-time"] = datetime.datetime(2022, 11, 26, tzinfo=datetime.UTC)
     pull.attrs["check-pending"] = ["whatever"]
     pull.attrs["check-failure"] = ["foo"]
     pull.attrs["check-success"] = ["fake-ci", "test-starter"]

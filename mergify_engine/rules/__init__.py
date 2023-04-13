@@ -69,10 +69,10 @@ class GenericRulesEvaluator(typing.Generic[types.T_Rule, types.T_EvaluatedRule])
     async def create(
         cls,
         rules: list[types.T_Rule],
-        repository: "context.Repository",
-        pulls: list["context.BasePullRequest"],
+        repository: context.Repository,
+        pulls: list[context.BasePullRequest],
         rule_hidden_from_merge_queue: bool,
-    ) -> "GenericRulesEvaluator[types.T_Rule, types.T_EvaluatedRule]":
+    ) -> GenericRulesEvaluator[types.T_Rule, types.T_EvaluatedRule]:
         # Circular import
         from mergify_engine.rules.config import queue_rules as qr_config
 
@@ -239,7 +239,7 @@ YamlSchema: abc.Callable[[str], typing.Any] = voluptuous.Schema(voluptuous.Coerc
 
 
 def apply_configure_filter(
-    repository: "context.Repository",
+    repository: context.Repository,
     conditions: (
         conditions_mod.PullRequestRuleConditions
         | conditions_mod.QueueRuleMergeConditions

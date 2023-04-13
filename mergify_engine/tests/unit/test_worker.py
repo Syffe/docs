@@ -2568,7 +2568,7 @@ def test_score_priority_helpers(
         score = float(worker_pusher.get_priority_score(priority))
         assert worker_pusher.get_priority_level_from_score(score) == priority
         assert worker_pusher.get_date_from_score(score) == frozen_time().replace(
-            tzinfo=datetime.timezone.utc
+            tzinfo=datetime.UTC
         )
 
 

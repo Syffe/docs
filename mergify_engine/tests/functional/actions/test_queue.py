@@ -7346,7 +7346,7 @@ pull_requests:
             ],
         }
         # Friday, 18:00 UTC
-        start_date = datetime.datetime(2022, 11, 4, 18, tzinfo=datetime.timezone.utc)
+        start_date = datetime.datetime(2022, 11, 4, 18, tzinfo=datetime.UTC)
 
         with freeze_time(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))

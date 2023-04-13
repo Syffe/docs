@@ -125,7 +125,7 @@ class RuleCondition:
         condition: FakeTreeT,
         label: str | None = None,
         description: str | None = None,
-    ) -> "RuleCondition":
+    ) -> RuleCondition:
         return cls(
             RuleConditionFilters(typing.cast(filter.TreeT, condition)),
             label,
@@ -138,7 +138,7 @@ class RuleCondition:
         condition: str,
         description: str | None = None,
         allow_command_attributes: bool = False,
-    ) -> "RuleCondition":
+    ) -> RuleCondition:
         try:
             return cls.from_tree(
                 parser.parse(condition, allow_command_attributes),
@@ -166,7 +166,7 @@ class RuleCondition:
         else:
             return str(self.filters.boolean)
 
-    def copy(self) -> "RuleCondition":
+    def copy(self) -> RuleCondition:
         return RuleCondition(self.filters, self.label, self.description)
 
     async def __call__(self, obj: filter.GetAttrObjectT) -> bool:
@@ -381,7 +381,7 @@ class RuleConditionCombination(RuleConditionGroup):
     def is_faulty(self) -> bool:
         return any(c.evaluation_error for c in self.walk())
 
-    def copy(self) -> "RuleConditionCombination":
+    def copy(self) -> RuleConditionCombination:
         return self.__class__(
             {self.operator: [c.copy() for c in self.conditions]},
             description=self.description,
@@ -406,7 +406,7 @@ class RuleConditionNegation(RuleConditionGroup):
 
         self.operator, self.condition = next(iter(data.items()))
 
-    def copy(self) -> "RuleConditionNegation":
+    def copy(self) -> RuleConditionNegation:
         return self.__class__(
             {self.operator: self.condition.copy()}, description=self.description
         )
@@ -852,11 +852,11 @@ class QueueConditionEvaluationResult:
     subconditions: list[QueueConditionEvaluationResult] = dataclasses.field(
         default_factory=list
     )
-    evaluations: list["QueueConditionEvaluationResult.Evaluation"] = dataclasses.field(
+    evaluations: list[QueueConditionEvaluationResult.Evaluation] = dataclasses.field(
         default_factory=list
     )
 
-    def copy(self) -> "QueueConditionEvaluationResult":
+    def copy(self) -> QueueConditionEvaluationResult:
         return QueueConditionEvaluationResult(
             match=self.match,
             label=self.label,
@@ -1113,7 +1113,7 @@ class QueueConditionEvaluationJsonSerialized:
     description: str | None
     schedule: date.ScheduleJSON | None
     subconditions: list[QueueConditionEvaluationJsonSerialized]
-    evaluations: list["QueueConditionEvaluationJsonSerialized.Evaluation"]
+    evaluations: list[QueueConditionEvaluationJsonSerialized.Evaluation]
 
     class Evaluation(typing.TypedDict):
         pull_request: github_types.GitHubPullRequestNumber

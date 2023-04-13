@@ -108,7 +108,7 @@ class RelativeDatetime:
     )
 
     @classmethod
-    def from_string(cls, value: str) -> "RelativeDatetime":
+    def from_string(cls, value: str) -> RelativeDatetime:
         m = cls._TIMEDELTA_TO_NOW_RE.match(value)
         if m is None:
             raise InvalidDate("Invalid relative date")
@@ -136,7 +136,7 @@ class Time:
     tzinfo: zoneinfo.ZoneInfo
 
     @classmethod
-    def from_string(cls, string: str, timezone_allowed: bool = True) -> "Time":
+    def from_string(cls, string: str, timezone_allowed: bool = True) -> Time:
         if not timezone_allowed and has_timezone(string):
             raise TimezoneNotAllowed("Timezone is not allowed")
 
@@ -168,7 +168,7 @@ class Time:
         return value
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, (Time, datetime.datetime)):
+        if not isinstance(other, Time | datetime.datetime):
             raise ValueError(f"Unsupported comparison type: {type(other)}")
 
         now = utcnow()
@@ -177,7 +177,7 @@ class Time:
         return d1 == d2
 
     def __gt__(self, other: object) -> bool:
-        if not isinstance(other, (Time, datetime.datetime)):
+        if not isinstance(other, Time | datetime.datetime):
             raise ValueError(f"Unsupported comparison type: {type(other)}")
 
         now = utcnow()
@@ -216,7 +216,7 @@ _LONG_WEEKDAY = (
 
 class DayOfWeek(int):
     @classmethod
-    def from_string(cls, string: str) -> "DayOfWeek":
+    def from_string(cls, string: str) -> DayOfWeek:
         try:
             return cls(_SHORT_WEEKDAY.index(string.lower()) + 1)
         except ValueError:
@@ -317,7 +317,7 @@ class Schedule:
         return (start_time, end_time)
 
     @classmethod
-    def from_days_string(cls, days: str) -> "Schedule":
+    def from_days_string(cls, days: str) -> Schedule:
         start_weekday, end_weekday = cls.get_weekdays_from_string(days)
         return cls(
             start_weekday=start_weekday,
@@ -332,7 +332,7 @@ class Schedule:
         )
 
     @classmethod
-    def from_times_string(cls, times: str) -> "Schedule":
+    def from_times_string(cls, times: str) -> Schedule:
         start_time_obj, end_time_obj = cls.get_start_and_end_time_obj_from_string(times)
         return cls(
             start_weekday=1,
@@ -350,7 +350,7 @@ class Schedule:
         cls,
         days: str,
         times: str,
-    ) -> "Schedule":
+    ) -> Schedule:
         start_weekday, end_weekday = cls.get_weekdays_from_string(days)
         start_time_obj, end_time_obj = cls.get_start_and_end_time_obj_from_string(times)
 
@@ -406,10 +406,7 @@ class Schedule:
     def __eq__(self, other: object) -> bool:
         if not isinstance(
             other,
-            (
-                Schedule,
-                datetime.datetime,
-            ),
+            Schedule | datetime.datetime,
         ):
             raise ValueError(f"Unsupported comparison type: {type(other)}")
 

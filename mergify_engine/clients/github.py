@@ -49,7 +49,7 @@ class GraphqlError(Exception):
 @dataclasses.dataclass
 class CachedToken:
     STORAGE: typing.ClassVar[
-        dict[github_types.GitHubInstallationIdType, "CachedToken"]
+        dict[github_types.GitHubInstallationIdType, CachedToken]
     ] = {}
 
     installation_id: github_types.GitHubInstallationIdType
@@ -309,7 +309,7 @@ def _check_rate_limit(client: http.AsyncClient, response: httpx.Response) -> Non
 
 def _inject_options(func: typing.Any) -> typing.Any:
     async def wrapper(
-        self: "AsyncGithubInstallationClient",
+        self: AsyncGithubInstallationClient,
         url: str,
         api_version: github_types.GitHubApiVersion | None = None,
         oauth_token: github_types.GitHubOAuthToken | None = None,

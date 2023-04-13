@@ -399,7 +399,7 @@ class EngineSettings(
                 elif isinstance(env, str):
                     env_names.append(env)
                 # NOTE(sileht): we support only list as order matter
-                elif isinstance(env, (list, tuple)):
+                elif isinstance(env, list | tuple):
                     env_names.extend(env)
                 else:
                     raise RuntimeError(f"Unsupport env type: {type(env)}")
@@ -408,7 +408,7 @@ class EngineSettings(
                     env_names.append(cls.env_prefix + extra_env)
 
                 # NOTE(sileht): we support only list as order matter
-                elif isinstance(extra_env, (list, tuple)):
+                elif isinstance(extra_env, list | tuple):
                     env_names.extend(
                         [
                             cls.env_prefix + extra_env_item

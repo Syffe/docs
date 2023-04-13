@@ -1353,9 +1353,9 @@ async def test_train_batch_max_wait_time(
             convoy.repository, github_types.GitHubPullRequestNumber(3)
         )
         assert d is not None
-        assert d == freezed_time().replace(
-            tzinfo=datetime.timezone.utc
-        ) + datetime.timedelta(minutes=5)
+        assert d == freezed_time().replace(tzinfo=datetime.UTC) + datetime.timedelta(
+            minutes=5
+        )
 
     with freeze_time("2021-09-22T08:05:02"):
         await t.refresh()

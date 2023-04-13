@@ -89,7 +89,7 @@ class TestStatisticsRedis(base.FunctionalTestBase):
             ],
         }
 
-        start_date = datetime.datetime(2022, 8, 18, 10, tzinfo=datetime.timezone.utc)
+        start_date = datetime.datetime(2022, 8, 18, 10, tzinfo=datetime.UTC)
 
         with freeze_time(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))

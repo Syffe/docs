@@ -417,7 +417,7 @@ class Processor:
             if e.attempts >= STREAM_ATTEMPTS_LOGGING_THRESHOLD:
                 if isinstance(
                     e.__cause__,
-                    (http.HTTPServerSideError, redis_exceptions.ConnectionError),
+                    http.HTTPServerSideError | redis_exceptions.ConnectionError,
                 ):
                     log_method = LOG.warning
                 else:

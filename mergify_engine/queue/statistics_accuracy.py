@@ -38,7 +38,7 @@ class StatisticsAccuracyMeasurement(signals.SignalBase):
         if not metadata["merged"]:
             return
 
-        queued_at = metadata["queued_at"].astimezone(datetime.timezone.utc)
+        queued_at = metadata["queued_at"].astimezone(datetime.UTC)
         stat_raw = await stats_api.get_time_to_merge_stats_for_queue(
             repository,
             qr_config.QueueName(metadata["queue_name"]),

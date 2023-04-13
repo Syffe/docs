@@ -16,7 +16,7 @@ if typing.TYPE_CHECKING:
 
 
 def get_conditions_with_ignored_attributes(
-    rule: "prr_config.EvaluatedPullRequestRule | qr_config.EvaluatedQueueRule",
+    rule: prr_config.EvaluatedPullRequestRule | qr_config.EvaluatedQueueRule,
     attribute_prefixes: tuple[str, ...],
 ) -> (
     rules_conditions.PullRequestRuleConditions
@@ -31,9 +31,9 @@ def get_conditions_with_ignored_attributes(
 
 
 async def conditions_without_some_attributes_match_p(
-    log: "logging.LoggerAdapter[logging.Logger]",
+    log: logging.LoggerAdapter[logging.Logger],
     pulls: list[context.BasePullRequest],
-    rule: "prr_config.EvaluatedPullRequestRule | qr_config.EvaluatedQueueRule",
+    rule: prr_config.EvaluatedPullRequestRule | qr_config.EvaluatedQueueRule,
     attribute_prefixes: tuple[str, ...],
 ) -> bool:
     conditions = get_conditions_with_ignored_attributes(rule, attribute_prefixes)
@@ -82,10 +82,10 @@ async def _get_checks_result(
 
 
 async def get_rule_checks_status(
-    log: "logging.LoggerAdapter[logging.Logger]",
+    log: logging.LoggerAdapter[logging.Logger],
     repository: context.Repository,
     pulls: list[context.BasePullRequest],
-    rule: "prr_config.EvaluatedPullRequestRule | qr_config.EvaluatedQueueRule",
+    rule: prr_config.EvaluatedPullRequestRule | qr_config.EvaluatedQueueRule,
     *,
     wait_for_schedule_to_match: bool = False,
 ) -> check_api.Conclusion:

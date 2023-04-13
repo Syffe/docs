@@ -52,7 +52,7 @@ class QueueFreeze:
         freeze_date: datetime.datetime
         cascading: bool
 
-    def serialized(self) -> "QueueFreeze.Serialized":
+    def serialized(self) -> QueueFreeze.Serialized:
         return self.Serialized(
             name=self.name,
             reason=self.reason,
@@ -65,8 +65,8 @@ class QueueFreeze:
         cls,
         repository: context.Repository,
         queue_rule: qr_config.QueueRule,
-        data: "QueueFreeze.Serialized",
-    ) -> "QueueFreeze":
+        data: QueueFreeze.Serialized,
+    ) -> QueueFreeze:
         return cls(
             repository=repository,
             queue_rule=queue_rule,
@@ -82,7 +82,7 @@ class QueueFreeze:
         repository: context.Repository,
         queue_rule: qr_config.QueueRule,
         queue_freeze_raw: typing.Any,
-    ) -> "QueueFreeze":
+    ) -> QueueFreeze:
         # NOTE(Syffe): timestamp parameter means that timestamp variables will be converted to
         # datetime (value 3=to_datetime()). Other values can be used: 1=to_float(), 2=to_unix_ns()
         qf = msgpack.unpackb(queue_freeze_raw, timestamp=3)
@@ -98,7 +98,7 @@ class QueueFreeze:
     @classmethod
     async def get_all(
         cls, repository: context.Repository, queue_rules: qr_config.QueueRules
-    ) -> abc.AsyncGenerator["QueueFreeze", None]:
+    ) -> abc.AsyncGenerator[QueueFreeze, None]:
         async for key, qf_raw in repository.installation.redis.queue.hscan_iter(
             name=cls._get_redis_hash(repository),
             match=cls._get_redis_key_match(repository),
@@ -119,7 +119,7 @@ class QueueFreeze:
     @classmethod
     async def get_all_non_cascading(
         cls, repository: context.Repository, queue_rules: qr_config.QueueRules
-    ) -> abc.AsyncGenerator["QueueFreeze", None]:
+    ) -> abc.AsyncGenerator[QueueFreeze, None]:
         async for qf in cls.get_all(repository, queue_rules):
             if not qf.cascading:
                 yield qf
@@ -129,7 +129,7 @@ class QueueFreeze:
         cls,
         repository: context.Repository,
         queue_rule: qr_config.QueueRule,
-    ) -> "QueueFreeze" | None:
+    ) -> QueueFreeze | None:
         qf_raw = await repository.installation.redis.queue.hget(
             cls._get_redis_hash(repository),
             cls._get_redis_key(repository, queue_rule.name),

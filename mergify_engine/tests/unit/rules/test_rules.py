@@ -2144,7 +2144,7 @@ queue_rules:
 
 
 def _dt(at: str) -> datetime.datetime:
-    return datetime.datetime.fromisoformat(at).replace(tzinfo=datetime.timezone.utc)
+    return datetime.datetime.fromisoformat(at).replace(tzinfo=datetime.UTC)
 
 
 @pytest.mark.parametrize(

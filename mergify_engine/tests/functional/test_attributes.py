@@ -579,7 +579,7 @@ class TestAttributes(base.FunctionalTestBase):
                 }
             ]
         }
-        start_date = datetime.datetime(2022, 12, 12, tzinfo=datetime.timezone.utc)
+        start_date = datetime.datetime(2022, 12, 12, tzinfo=datetime.UTC)
         with freeze_time(start_date, tick=True):
             await self.setup_repo(yaml.dump(rules))
             pr = await self.create_pr(commit_date=start_date)
