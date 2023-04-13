@@ -1,6 +1,8 @@
 import asyncio
+import subprocess
 
 from alembic import context
+from alembic.script import write_hooks
 import sqlalchemy
 import sqlalchemy.ext.asyncio
 
@@ -29,3 +31,8 @@ def do_run_migrations(connection: sqlalchemy.Connection) -> None:
 
 
 asyncio.run(run_async_migrations())
+
+
+@write_hooks.register("ruff")
+def ruff_hook(filename: str, options: dict[str, str | int]) -> None:
+    subprocess.run(["ruff", "check", "--fix", filename])
