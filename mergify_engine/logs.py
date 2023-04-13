@@ -8,7 +8,6 @@ import daiquiri
 import daiquiri.formatter
 import ddtrace
 
-from mergify_engine import config
 from mergify_engine import settings
 
 
@@ -89,22 +88,6 @@ def config_log() -> None:
         if key.startswith("TESTING_"):
             continue
         LOG.info("* %s: %s", key, value)
-
-    for key, value in config.CONFIG.items():
-        name = str(key)
-        if (
-            name == "OAUTH_CLIENT_ID"
-            or "TOKEN" in name
-            or "SECRET" in name
-            or "KEY" in name
-        ) and value is not None:
-            value = "*****"
-        if "URL" in name and value is not None:
-            if isinstance(value, list):
-                value = [strip_url_credentials(v) for v in value]
-            else:
-                value = strip_url_credentials(value)
-        LOG.info("* MERGIFYENGINE_%s: %s", name, value)
     LOG.info("* PATH: %s", os.environ.get("PATH"))
     LOG.info("##########################################################")
 

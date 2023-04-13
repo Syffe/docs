@@ -14,12 +14,12 @@ import voluptuous
 
 from mergify_engine import actions
 from mergify_engine import check_api
-from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import queue
+from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine import utils
 from mergify_engine.actions import merge_base
@@ -1144,7 +1144,7 @@ class QueueAction(actions.Action):
             voluptuous.Required("autosquash", default=True): bool,
         }
 
-        if config.ALLOW_QUEUE_PRIORITY_ATTRIBUTE:
+        if settings.ALLOW_QUEUE_PRIORITY_ATTRIBUTE:
             validator[
                 voluptuous.Required(
                     "priority", default=queue.PriorityAliases.medium.value

@@ -6,9 +6,7 @@ import sys
 import typing
 from urllib import parse
 
-import dotenv
 import pydantic
-import voluptuous
 
 from mergify_engine import github_types
 from mergify_engine import utils
@@ -357,6 +355,11 @@ class EngineSettings(
     TestingSettings,
     pydantic.BaseSettings,
 ):
+    VERSION: str = pydantic.Field("dev", extra_env="HEROKU_SLUG_COMMIT")
+    SHA: str = "unknown"
+
+    ALLOW_QUEUE_PRIORITY_ATTRIBUTE: bool = True
+
     class Config(pydantic.BaseSettings.Config):
         case_sensitive = True
         env_prefix = "MERGIFYENGINE_"
@@ -497,38 +500,3 @@ def _validate_application_api_keys(applications: list[tuple[str, ...]]) -> None:
     for api_key, _, _ in applications:
         if len(api_key) != API_ACCESS_KEY_LEN + API_ACCESS_KEY_LEN:
             raise ValueError("api_key must be 64 character long")
-
-
-Schema = voluptuous.Schema(
-    {
-        voluptuous.Required(
-            "VERSION", default=os.getenv("HEROKU_SLUG_COMMIT", "dev")
-        ): str,
-        voluptuous.Required(
-            "ALLOW_QUEUE_PRIORITY_ATTRIBUTE", default=True
-        ): CoercedBool,
-    }
-)
-
-# Config variables available from voluptuous
-VERSION: str
-ALLOW_QUEUE_PRIORITY_ATTRIBUTE: bool
-ALLOW_REBASE_FALLBACK_ATTRIBUTE: bool
-
-
-def load() -> dict[str, typing.Any]:
-    if CONFIGURATION_FILE is not None:
-        dotenv.load_dotenv(dotenv_path=CONFIGURATION_FILE, override=True)
-
-    raw_config: dict[str, typing.Any] = {}
-    for key, _ in Schema.schema.items():
-        val = os.getenv(f"MERGIFYENGINE_{key}")
-        if val is not None:
-            raw_config[key] = val
-
-    parsed_config = Schema(raw_config)
-    return parsed_config  # type: ignore[no-any-return]
-
-
-CONFIG = load()
-globals().update(CONFIG)

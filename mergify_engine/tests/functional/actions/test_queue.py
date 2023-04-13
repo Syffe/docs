@@ -12,7 +12,6 @@ import msgpack
 import pytest
 
 from mergify_engine import check_api
-from mergify_engine import config
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
@@ -54,7 +53,7 @@ jobs:
 class TestQueueAction(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
 
-    @mock.patch.object(config, "ALLOW_QUEUE_PRIORITY_ATTRIBUTE", False)
+    @mock.patch.object(settings, "ALLOW_QUEUE_PRIORITY_ATTRIBUTE", False)
     async def test_priority_brownout(self) -> None:
         rules = {
             "pull_request_rules": [

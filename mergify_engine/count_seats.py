@@ -10,7 +10,6 @@ import daiquiri
 import msgpack
 import tenacity
 
-from mergify_engine import config
 from mergify_engine import date
 from mergify_engine import exceptions
 from mergify_engine import github_types
@@ -341,7 +340,7 @@ async def send_seats(seats: SeatsCountResultT) -> None:
                 },
                 json={
                     "active_users": seats.active_users,
-                    "engine_version": config.VERSION,
+                    "engine_version": settings.VERSION,
                 },
             )
         except Exception as exc:

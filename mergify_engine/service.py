@@ -14,7 +14,11 @@ from mergify_engine import settings
 
 
 SERVICE_NAME: str = "engine-<unknown>"
-VERSION: str = os.environ.get("MERGIFYENGINE_SHA", "unknown")
+VERSION: str
+if settings.SAAS_MODE:
+    VERSION = settings.SHA
+else:
+    VERSION = settings.VERSION
 
 
 def ddtrace_hook(span: ddtrace.Span) -> None:
