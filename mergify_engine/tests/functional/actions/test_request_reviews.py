@@ -5,9 +5,11 @@ import pytest
 from mergify_engine import context
 from mergify_engine import yaml
 from mergify_engine.actions import request_reviews
+from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 
 
+@pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
 class TestRequestReviewsAction(base.FunctionalTestBase):
     async def test_request_reviews_users(self) -> None:
         rules = {

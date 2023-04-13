@@ -25,6 +25,7 @@ from mergify_engine import utils
 from mergify_engine import yaml
 from mergify_engine.clients import github
 from mergify_engine.clients import http
+from mergify_engine.dashboard import subscription
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import conditions
@@ -6830,6 +6831,7 @@ pull_request_rules:
 
 
 class TestQueueActionFeaturesSubscription(base.FunctionalTestBase):
+    @pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
     async def test_queue_action_and_command_without_merge_queue_feature_flag(
         self,
     ) -> None:

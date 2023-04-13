@@ -12,6 +12,7 @@ from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.tests.functional import base
 
 
+@pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
 class TestConfiguration(base.FunctionalTestBase):
     async def test_invalid_configuration_fixed_by_pull_request(self) -> None:
         rules = {

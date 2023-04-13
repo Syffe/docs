@@ -15,6 +15,7 @@ from mergify_engine.tests.functional import base
     subscription.Features.EVENTLOGS_LONG,
     subscription.Features.QUEUE_FREEZE,
     subscription.Features.MERGE_QUEUE,
+    subscription.Features.WORKFLOW_AUTOMATION,
 )
 class TestEventLogsAction(base.FunctionalTestBase):
     async def test_eventlogs(self) -> None:

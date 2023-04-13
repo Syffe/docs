@@ -14,6 +14,7 @@ from mergify_engine import refresher
 from mergify_engine import utils
 from mergify_engine import yaml
 from mergify_engine.clients import github
+from mergify_engine.dashboard import subscription
 from mergify_engine.rules import live_resolvers
 from mergify_engine.tests.functional import base
 
@@ -21,6 +22,7 @@ from mergify_engine.tests.functional import base
 LOG = logging.getLogger(__name__)
 
 
+@pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
 class TestEngineV2Scenario(base.FunctionalTestBase):
     """Mergify engine tests.
 

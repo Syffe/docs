@@ -1,7 +1,11 @@
+import pytest
+
 from mergify_engine import yaml
+from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 
 
+@pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
 class TestCommandBackport(base.FunctionalTestBase):
     async def test_command_backport(self) -> None:
         stable_branch = self.get_full_branch_name("stable/#3.1")

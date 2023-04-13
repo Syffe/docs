@@ -10,6 +10,7 @@ from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine.actions.backport import BackportAction
 from mergify_engine.actions.rebase import RebaseAction
+from mergify_engine.dashboard import subscription
 from mergify_engine.engine import commands_runner
 from mergify_engine.rules.config import mergify as mergify_conf
 from mergify_engine.tests.unit import conftest
@@ -160,6 +161,7 @@ def create_fake_installation_client(
     return client
 
 
+@pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
 @pytest.mark.parametrize(
     "user_id,permission,comment,result",
     [
@@ -327,6 +329,77 @@ DO NOT EDIT
     )
 
 
+@pytest.mark.parametrize(
+    "command_name",
+    (
+        "backport",
+        "copy",
+        "squash",
+        "update",
+        "rebase",
+        "refresh",
+        "queue",
+        "unqueue",
+        "requeue",
+    ),
+)
+async def test_run_command_with_no_subscription(
+    context_getter: conftest.ContextGetterFixture,
+    respx_mock: respx.MockRouter,
+    fake_mergify_bot: None,
+    command_name: str,
+) -> None:
+    user = create_fake_user()
+    ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
+    respx_mock.get(f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments").respond(
+        200,
+        json=[
+            github_types.GitHubComment(
+                {
+                    "id": github_types.GitHubCommentIdType(1),
+                    "url": "",
+                    "created_at": github_types.ISODateTimeType("2003-02-15T00:00:00Z"),
+                    "updated_at": github_types.ISODateTimeType("2003-02-15T00:00:00Z"),
+                    "user": user,
+                    "body": f"@mergifyio {command_name}",
+                }
+            )
+        ],
+    )
+
+    post_comment_router = respx_mock.post(
+        f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments"
+    ).respond(200, json={})
+
+    await commands_runner.run_commands_tasks(
+        ctxt=ctxt,
+        mergify_config=await get_empty_config(),
+    )
+
+    assert post_comment_router.call_count == 1
+    assert (
+        json.loads(post_comment_router.calls[0][0].content)["body"]
+        == f"""> {command_name}
+
+#### ⚠️ Cannot use the command `{command_name}`
+
+<details>
+
+⚠ The [subscription](http://localhost:3000/github/Mergifyio/subscription) needs to be updated to enable this feature.
+
+</details>
+
+
+<!---
+DO NOT EDIT
+-*- Mergify Payload -*-
+{{"command": "{command_name}", "conclusion": "action_required"}}
+-*- Mergify Payload End -*-
+-->"""
+    )
+
+
+@pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
 @pytest.mark.parametrize(
     "command_restriction,user_permission,is_command_allowed",
     [

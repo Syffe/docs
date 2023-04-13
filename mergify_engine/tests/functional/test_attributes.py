@@ -10,12 +10,14 @@ from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import settings
 from mergify_engine import yaml
+from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 
 
 LOG = logging.getLogger(__name__)
 
 
+@pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
 class TestAttributes(base.FunctionalTestBase):
     async def test_merged_attribute(self) -> None:
         rules = {

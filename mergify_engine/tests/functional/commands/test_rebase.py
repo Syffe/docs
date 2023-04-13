@@ -11,16 +11,7 @@ from mergify_engine.tests.functional import base
 
 class TestCommandRebase(base.FunctionalTestBase):
     async def test_command_rebase_ok(self) -> None:
-        rules = {
-            "pull_request_rules": [
-                {
-                    "name": "auto-rebase-on-label",
-                    "conditions": ["label=rebase"],
-                    "actions": {"comment": {"message": "nothing"}},
-                }
-            ]
-        }
-        await self.setup_repo(yaml.dump(rules), files={"TESTING": "foobar\n"})
+        await self.setup_repo(yaml.dump({}), files={"TESTING": "foobar\n"})
         p1 = await self.create_pr(files={"TESTING": "foobar\n\n\np1"}, as_="admin")
         p2 = await self.create_pr(files={"TESTING": "p2\n\nfoobar\n"}, as_="admin")
         await self.merge_pull(p1["number"])
@@ -45,7 +36,10 @@ class TestCommandRebase(base.FunctionalTestBase):
         data = base64.b64decode(bytearray(f["content"], "utf-8"))
         assert data == b"p2\n\nfoobar\n\n\np1"
 
-    @pytest.mark.subscription(subscription.Features.MERGE_QUEUE)
+    @pytest.mark.subscription(
+        subscription.Features.MERGE_QUEUE,
+        subscription.Features.WORKFLOW_AUTOMATION,
+    )
     async def test_rebase_pr_in_queue(self) -> None:
         rules = {
             "queue_rules": [

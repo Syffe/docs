@@ -294,9 +294,10 @@ async def get_summary_check_result(
             conclusions=conclusions,
             previous_conclusions=previous_conclusions,
         )
-        # NOTE(sileht): Here we run the engine, but nothing change so we didn't
-        # update GitHub. In pratice, only the started_at and the ended_at is
-        # not up2date, we don't really care, as no action has ran
+        # NOTE(sileht): Here we run the engine, but nothing changed so we didn't
+        # update GitHub.
+        # In pratice, only the started_at and the ended_at is
+        # not up2date but we don't really care since no action ran
         return None
 
 
@@ -625,6 +626,17 @@ async def handle(
     queue_rules: qr_config.QueueRules,
     partition_rules: partr_config.PartitionRules,
 ) -> check_api.Result | None:
+    if pull_request_rules.has_user_rules() and not ctxt.subscription.has_feature(
+        subscription.Features.WORKFLOW_AUTOMATION
+    ):
+        return check_api.Result(
+            check_api.Conclusion.ACTION_REQUIRED,
+            "Cannot use the pull request workflow automation",
+            ctxt.subscription.missing_feature_reason(
+                ctxt.pull["base"]["repo"]["owner"]["login"]
+            ),
+        )
+
     try:
         match = await pull_request_rules.get_pull_request_rules_evaluator(ctxt)
     except actions.InvalidDynamicActionConfiguration as e:
@@ -633,6 +645,7 @@ async def handle(
             "The current Mergify configuration is invalid",
             e.get_summary(),
         )
+
     await delayed_refresh.plan_next_refresh(
         ctxt, match.matching_rules, ctxt.pull_request
     )

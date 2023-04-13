@@ -6,10 +6,12 @@ from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 
 
+@pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
 class TestDeleteHeadBranchAction(base.FunctionalTestBase):
     @pytest.mark.subscription(
         subscription.Features.EVENTLOGS_SHORT,
         subscription.Features.EVENTLOGS_LONG,
+        subscription.Features.WORKFLOW_AUTOMATION,
     )
     async def test_delete_branch_basic(self) -> None:
         rules = {

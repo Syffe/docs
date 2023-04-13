@@ -12,6 +12,7 @@ from mergify_engine.tests.functional import base
 @pytest.mark.subscription(
     subscription.Features.EVENTLOGS_SHORT,
     subscription.Features.EVENTLOGS_LONG,
+    subscription.Features.WORKFLOW_AUTOMATION,
 )
 class TestLabelAction(base.FunctionalTestBase):
     async def test_label_basic(self) -> None:

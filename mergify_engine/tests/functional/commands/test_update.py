@@ -5,6 +5,7 @@ from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 
 
+@pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
 class TestCommandUpdate(base.FunctionalTestBase):
     async def test_command_update_noop(self) -> None:
         await self.setup_repo()
@@ -28,7 +29,10 @@ class TestCommandUpdate(base.FunctionalTestBase):
         assert len(comments) == 2, comments
         assert "Nothing to do" in comments[-1]["body"]
 
-    @pytest.mark.subscription(subscription.Features.MERGE_QUEUE)
+    @pytest.mark.subscription(
+        subscription.Features.MERGE_QUEUE,
+        subscription.Features.WORKFLOW_AUTOMATION,
+    )
     async def test_update_pr_in_queue(self) -> None:
         rules = {
             "queue_rules": [

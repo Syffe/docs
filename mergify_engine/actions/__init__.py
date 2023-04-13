@@ -7,6 +7,7 @@ import typing
 import voluptuous
 
 from mergify_engine import check_api
+from mergify_engine.dashboard import subscription
 from mergify_engine.rules import conditions
 from mergify_engine.rules.config import mergify as mergify_conf
 
@@ -206,6 +207,10 @@ class Action(abc.ABC):
     # If the command does not define a default command restriction (e.g. a
     # developper oversight), this restriction apply.
     default_restrictions: typing.ClassVar[list[str]] = ["sender-permission>=write"]
+
+    required_feature_for_command: typing.ClassVar[
+        subscription.Features
+    ] = subscription.Features.WORKFLOW_AUTOMATION
 
     def __post_init__(self, raw_config_: RawConfigT | None) -> None:
         self.raw_config = raw_config_ or {}

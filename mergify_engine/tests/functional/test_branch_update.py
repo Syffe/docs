@@ -1,8 +1,12 @@
+import pytest
+
 from mergify_engine import yaml
+from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 
 
 class TestBranchUpdatePublic(base.FunctionalTestBase):
+    @pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
     async def test_command_update(self) -> None:
         rules = {
             "pull_request_rules": [

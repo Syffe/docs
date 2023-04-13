@@ -1,5 +1,8 @@
+import pytest
+
 from mergify_engine import context
 from mergify_engine import yaml
+from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 
 
@@ -298,6 +301,7 @@ class TestRebaseAction(base.FunctionalTestBase):
 
         assert "\n\ntest123" in fixup_commits[0]["commit"]["message"]
 
+    @pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
     async def test_rebase_forced_with_autosquash_and_squashable_commits(self) -> None:
         rules = {
             "pull_request_rules": [

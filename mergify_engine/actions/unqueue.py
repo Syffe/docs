@@ -41,27 +41,7 @@ class UnqueueExecutor(
             action.partition_rules,
         )
 
-    @staticmethod
-    async def _check_subscription_status(
-        ctxt: context.Context,
-    ) -> check_api.Result | None:
-        if not ctxt.subscription.has_feature(subscription.Features.MERGE_QUEUE):
-            return check_api.Result(
-                check_api.Conclusion.ACTION_REQUIRED,
-                "Cannot use the merge queue.",
-                ctxt.subscription.missing_feature_reason(
-                    ctxt.pull["base"]["repo"]["owner"]["login"]
-                ),
-            )
-
-        return None
-
     async def run(self) -> check_api.Result:
-        # Check the subscription status to avoid doing unnecessary redis calls
-        result = await self._check_subscription_status(self.ctxt)
-        if result is not None:
-            return result
-
         convoy = await merge_train.Convoy.from_context(
             self.ctxt, self.queue_rules, self.partition_rules
         )
@@ -116,6 +96,8 @@ class UnqueueCommand(actions.Action):
     default_restrictions: typing.ClassVar[list[typing.Any]] = [
         "sender-permission>=write"
     ]
+
+    required_feature_for_command = subscription.Features.MERGE_QUEUE
 
     queue_rules: qr_config.QueueRules = dataclasses.field(init=False, repr=False)
     partition_rules: partr_config.PartitionRules = dataclasses.field(

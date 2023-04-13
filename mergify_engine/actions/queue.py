@@ -1102,6 +1102,8 @@ class QueueAction(actions.Action):
         "sender-permission>=write"
     ]
 
+    required_feature_for_command = subscription.Features.MERGE_QUEUE
+
     # NOTE(sileht): set by validate_config()
     partition_rules: partr_config.PartitionRules = dataclasses.field(
         init=False, repr=False

@@ -287,6 +287,23 @@ async def run_commands_tasks(
                     exc_info=True,
                 )
         else:
+            if not ctxt.subscription.has_feature(
+                command.action.required_feature_for_command
+            ):
+                await post_result(
+                    ctxt,
+                    command,
+                    state,
+                    check_api.Result(
+                        check_api.Conclusion.ACTION_REQUIRED,
+                        f"Cannot use the command `{pending}`",
+                        ctxt.subscription.missing_feature_reason(
+                            ctxt.pull["base"]["repo"]["owner"]["login"]
+                        ),
+                    ),
+                )
+                continue
+
             result = await run_command(ctxt, mergify_config, command, state)
             await post_result(ctxt, command, state, result)
 

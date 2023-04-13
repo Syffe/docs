@@ -44,6 +44,7 @@ class Features(enum.Enum):
     EVENTLOGS_LONG = "eventlogs_long"
     MERGE_QUEUE_STATS = "merge_queue_stats"
     MERGE_QUEUE = "merge_queue"
+    WORKFLOW_AUTOMATION = "workflow_automation"
 
 
 class SubscriptionDict(typing.TypedDict):

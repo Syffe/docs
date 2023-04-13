@@ -1,15 +1,19 @@
 import logging
 import re
 
+import pytest
+
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import yaml
+from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 
 
 LOG = logging.getLogger(__name__)
 
 
+@pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
 class TestSummary(base.FunctionalTestBase):
     """Mergify engine summary tests.
 
@@ -91,6 +95,7 @@ class TestSummary(base.FunctionalTestBase):
         assert summary["output"]["title"] == "1 rule matches"
         assert "1 not applicable rule" in summary["output"]["summary"]
 
+    @pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
     async def test_pull_request_rules_order_0_depth(self) -> None:
         rules = {
             "pull_request_rules": [

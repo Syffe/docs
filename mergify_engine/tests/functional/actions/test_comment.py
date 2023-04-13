@@ -1,5 +1,8 @@
+import pytest
+
 from mergify_engine import github_types
 from mergify_engine import yaml
+from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 
 
@@ -30,6 +33,7 @@ class TestCommentActionWithSub(base.FunctionalTestBase):
 
 
 class TestCommentAction(base.FunctionalTestBase):
+    @pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
     async def test_comment(self) -> None:
         rules = {
             "pull_request_rules": [

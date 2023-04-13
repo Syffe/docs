@@ -9,10 +9,14 @@ from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 
 
+@pytest.mark.subscription(
+    subscription.Features.WORKFLOW_AUTOMATION,
+)
 class TestDismissReviewsAction(base.FunctionalTestBase):
     @pytest.mark.subscription(
         subscription.Features.EVENTLOGS_SHORT,
         subscription.Features.EVENTLOGS_LONG,
+        subscription.Features.WORKFLOW_AUTOMATION,
     )
     async def test_dismiss_reviews(self) -> None:
         await self._test_dismiss_reviews()
@@ -20,6 +24,7 @@ class TestDismissReviewsAction(base.FunctionalTestBase):
     @pytest.mark.subscription(
         subscription.Features.EVENTLOGS_SHORT,
         subscription.Features.EVENTLOGS_LONG,
+        subscription.Features.WORKFLOW_AUTOMATION,
     )
     async def test_dismiss_reviews_custom_message(self) -> None:
         await self._test_dismiss_reviews(message="Loser")

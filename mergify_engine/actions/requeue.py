@@ -6,6 +6,7 @@ from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import refresher
 from mergify_engine import signals
+from mergify_engine.dashboard import subscription
 from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
@@ -96,3 +97,5 @@ class RequeueCommand(actions.Action):
     default_restrictions: typing.ClassVar[list[typing.Any]] = [
         "sender-permission>=write"
     ]
+
+    required_feature_for_command = subscription.Features.MERGE_QUEUE

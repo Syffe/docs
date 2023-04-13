@@ -1,7 +1,11 @@
+import pytest
+
 from mergify_engine import context
+from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 
 
+@pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
 class TestCommandSquash(base.FunctionalTestBase):
     async def test_squash_several_commits_ok(self) -> None:
         await self.setup_repo()
