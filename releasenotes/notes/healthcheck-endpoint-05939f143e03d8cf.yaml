@@ -1,0 +1,4 @@
+---
+features:
+  - |
+    A new endpoint /healthcheck allows checking the status of the application.

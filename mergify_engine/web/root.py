@@ -7,6 +7,7 @@ from mergify_engine import settings
 from mergify_engine.clients import github
 from mergify_engine.middlewares import security
 from mergify_engine.web import github_webhook
+from mergify_engine.web import healthcheck
 from mergify_engine.web import legacy_badges
 from mergify_engine.web import redis
 from mergify_engine.web import subscriptions
@@ -37,6 +38,7 @@ def create_app(https_only: bool = True, debug: bool = False) -> fastapi.FastAPI:
     app.mount("/v1", api_root.create_app(cors_enabled=True, debug=debug))
     app.mount("/front", front_root.create_app(debug=debug))
     app.mount("/subscriptions", subscriptions.create_app(debug=debug))
+    app.include_router(healthcheck.router)
 
     if settings.DASHBOARD_UI_STATIC_FILES_DIRECTORY is None:
         app.get("/")(saas_root_endpoint)

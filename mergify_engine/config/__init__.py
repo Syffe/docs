@@ -352,6 +352,7 @@ class EngineSettings(
     SHA: str = "unknown"
 
     ALLOW_QUEUE_PRIORITY_ATTRIBUTE: bool = True
+    HEALTHCHECK_SHARED_TOKEN: pydantic.SecretStr | None = None
 
     class Config(pydantic.BaseSettings.Config):
         case_sensitive = True
