@@ -45,3 +45,10 @@ Going Further
 
 You can check the `API references <https://docs.mergify.com/api>`_ to discover
 all the data you can access.
+
+Application key revocation
+==========================
+
+Application keys can be revoked by just deleting the associated application in the dashboard.
+
+.. figure:: _static/application_keys_delete.png
