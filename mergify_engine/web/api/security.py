@@ -5,11 +5,11 @@ import daiquiri
 import fastapi
 import sentry_sdk
 
-from mergify_engine import config
 from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine.clients import github
 from mergify_engine.clients import http
+from mergify_engine.config import types
 from mergify_engine.dashboard import application as application_mod
 from mergify_engine.dashboard import subscription
 from mergify_engine.models import github_user
@@ -59,8 +59,8 @@ class ApplicationAuth(fastapi.security.http.HTTPBearer):
             else:
                 return None
 
-        api_access_key = credentials.credentials[: config.API_ACCESS_KEY_LEN]
-        api_secret_key = credentials.credentials[config.API_ACCESS_KEY_LEN :]
+        api_access_key = credentials.credentials[: types.API_ACCESS_KEY_LEN]
+        api_secret_key = credentials.credentials[types.API_ACCESS_KEY_LEN :]
         try:
             app = await application_mod.Application.get(
                 redis_links.cache, api_access_key, api_secret_key

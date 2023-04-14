@@ -2,11 +2,11 @@ from unittest import mock
 
 import pytest
 
-from mergify_engine import config
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine.clients import http
+from mergify_engine.config import types
 from mergify_engine.dashboard import application
 
 
@@ -224,7 +224,7 @@ async def test_application_tokens_via_env(
     monkeypatch.setattr(
         settings,
         "APPLICATION_APIKEYS",
-        config.ApplicationAPIKeys(
+        types.ApplicationAPIKeys(
             f"{api_access_key1}{api_secret_key1}:{account_id1}:{account_login1},{api_access_key2}{api_secret_key2}:{account_id2}:{account_login2}"
         ),
     )

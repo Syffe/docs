@@ -263,13 +263,6 @@ class APISettings(pydantic.BaseSettings):
     REDIS_AUTHENTICATION_WEB_MAX_CONNECTIONS: int = 50
 
 
-class ApplicationAPIKey(typing.TypedDict):
-    api_access_key: str
-    api_secret_key: str
-    account_id: int
-    account_login: str
-
-
 class SubscriptionSetting(pydantic.BaseSettings):
     SAAS_MODE: bool = False
     SUBSCRIPTION_URL: str = pydantic.Field(
@@ -292,7 +285,7 @@ class SubscriptionSetting(pydantic.BaseSettings):
     ACCOUNT_TOKENS: list[tuple[int, str, pydantic.SecretStr]] = pydantic.Field(
         default_factory=list
     )
-    APPLICATION_APIKEYS: dict[str, ApplicationAPIKey] = pydantic.Field(
+    APPLICATION_APIKEYS: dict[str, types.ApplicationAPIKey] = pydantic.Field(
         default_factory=dict
     )
 
@@ -380,10 +373,10 @@ class EngineSettings(
                 return raw_val.split(",")
 
             elif field_name == "APPLICATION_APIKEYS":
-                return ApplicationAPIKeys(raw_val)
+                return types.ApplicationAPIKeys(raw_val)
 
             elif field_name == "ACCOUNT_TOKENS":
-                return AccountTokens(raw_val)
+                return types.AccountTokens(raw_val)
 
             return super().parse_env_var(field_name, raw_val)
 
@@ -439,64 +432,3 @@ class EngineSettings(
                     loc = str.upper(env_prefix + locs[0])
                     error._loc = (loc,) + locs[1:]
             raise
-
-
-# NOTE(sileht) we coerce bool and int in case they are loaded from the environment
-def CoercedBool(value: typing.Any) -> bool:
-    return utils.strtobool(str(value))
-
-
-def CommaSeparatedStringList(value: str) -> list[str]:
-    if value:
-        return value.split(",")
-    else:
-        return []
-
-
-def CommaSeparatedIntList(value: str) -> list[int]:
-    return [int(v) for v in CommaSeparatedStringList(value)]
-
-
-def AccountTokens(v: str) -> list[tuple[int, str, pydantic.SecretStr]]:
-    try:
-        return [
-            (int(_id), login, pydantic.SecretStr(token))
-            for _id, login, token in typing.cast(
-                list[tuple[int, str, str]],
-                utils.string_to_list_of_tuple(v, split=3),
-            )
-        ]
-    except ValueError:
-        raise ValueError("wrong format, expect `id1:login1:token1,id2:login2:token2`")
-
-
-API_ACCESS_KEY_LEN = 32
-API_SECRET_KEY_LEN = 32
-
-
-def ApplicationAPIKeys(v: str) -> dict[str, ApplicationAPIKey]:
-    try:
-        applications = utils.string_to_list_of_tuple(v, split=3)
-        _validate_application_api_keys(applications)
-    except ValueError:
-        raise ValueError(
-            "wrong format, "
-            "expect `api_key1:github_account_id1:github_account_login1,api_key1:github_account_id2:github_account_login2`, "
-            "api_key must be 64 character long"
-        )
-    else:
-        return {
-            api_key[:API_ACCESS_KEY_LEN]: {
-                "api_access_key": api_key[:API_ACCESS_KEY_LEN],
-                "api_secret_key": api_key[API_ACCESS_KEY_LEN:],
-                "account_id": int(account_id),
-                "account_login": account_login,
-            }
-            for api_key, account_id, account_login in applications
-        }
-
-
-def _validate_application_api_keys(applications: list[tuple[str, ...]]) -> None:
-    for api_key, _, _ in applications:
-        if len(api_key) != API_ACCESS_KEY_LEN + API_ACCESS_KEY_LEN:
-            raise ValueError("api_key must be 64 character long")
