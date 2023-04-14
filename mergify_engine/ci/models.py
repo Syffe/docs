@@ -9,7 +9,7 @@ from mergify_engine.ci import cost_calculator
 
 
 Lifecycle = typing.Literal["push", "retry"]
-OperatingSystem = typing.Literal["Linux", "macOS", "Windows"]
+OperatingSystem = typing.Literal["Linux", "macOS", "Windows", "Unknown"]
 
 
 @dataclasses.dataclass

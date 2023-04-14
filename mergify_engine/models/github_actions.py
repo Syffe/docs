@@ -55,6 +55,7 @@ class JobRunOperatingSystem(enum.Enum):
     LINUX = "Linux"
     MACOS = "macOS"
     WINDOWS = "Windows"
+    UNKNOWN = "Unknown"
 
 
 class JobRun(models.Base):

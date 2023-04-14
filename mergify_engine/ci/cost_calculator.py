@@ -21,6 +21,7 @@ class MoneyAmount(decimal.Decimal):
 
 # https://docs.github.com/en/billing/managing-billing-for-github-actions/about-billing-for-github-actions#per-minute-rates
 PER_MINUTE_RATES: dict[tuple[models.OperatingSystem, int], MoneyAmount] = {
+    ("Unknown", 0): MoneyAmount("0"),
     ("Linux", 2): MoneyAmount("0.008"),
     ("macOS", 3): MoneyAmount("0.08"),
     ("Windows", 2): MoneyAmount("0.016"),

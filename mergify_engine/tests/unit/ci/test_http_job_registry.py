@@ -160,6 +160,8 @@ async def test_search(respx_mock: respx.MockRouter) -> None:
         ({"labels": ["macos-latest-xl"]}, "macOS", 3),
         ({"labels": ["macos-12-xl"]}, "macOS", 3),
         ({"labels": ["macos-10.15"]}, "macOS", 3),
+        ({"labels": []}, "Unknown", 0),
+        ({"labels": ["whatever-latest"]}, "Unknown", 0),
     ),
 )
 async def test_extract_runner_properties(
@@ -173,17 +175,3 @@ async def test_extract_runner_properties(
 
     assert runner_properties.operating_system == expected_os
     assert runner_properties.cores == expected_cores
-
-
-@pytest.mark.parametrize(
-    "job_payload,expected_error_message",
-    (
-        ({"labels": []}, "Unknown runner"),
-        ({"labels": ["whatever-latest"]}, "Unknown runner"),
-    ),
-)
-async def test_extract_runner_properties_error(
-    job_payload: github_types.GitHubJobRun, expected_error_message: str
-) -> None:
-    with pytest.raises(RuntimeError, match=expected_error_message):
-        job_registries.HTTPJobRegistry._extract_runner_properties(job_payload)

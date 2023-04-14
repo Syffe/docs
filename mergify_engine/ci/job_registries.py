@@ -26,6 +26,10 @@ class RunnerProperties(typing.NamedTuple):
     operating_system: ci_models.OperatingSystem
     cores: int
 
+    @classmethod
+    def unknown(cls) -> "RunnerProperties":
+        return cls("Unknown", 0)
+
 
 class JobRegistry(typing.Protocol):
     def search(
@@ -368,7 +372,7 @@ class HTTPJobRegistry:
             except ValueError:
                 continue
 
-        raise RuntimeError("Unknown runner")
+        return RunnerProperties.unknown()
 
     @staticmethod
     def _extract_runner_properties_from_label(label: str) -> RunnerProperties:
