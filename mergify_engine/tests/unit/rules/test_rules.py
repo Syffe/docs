@@ -2092,6 +2092,19 @@ Attribute only allowed in commands_restrictions section
             ["ci-3"],
             id="if checks not yet reported",
         ),
+        pytest.param(
+            conditions.RuleCondition.from_string("check-failure!=ci-3"),
+            conftest.FakePullRequest(
+                {
+                    "check-success": ["ci-1", "ci-2"],
+                    "check-failure": ["ci-3", "ci-4"],
+                    "check": ["ci-1", "ci-2", "ci-3", "ci-4"],
+                }
+            ),
+            False,
+            ["ci-3"],
+            id="if operator is not equal",
+        ),
     ],
 )
 async def test_rule_condition_related_checks(

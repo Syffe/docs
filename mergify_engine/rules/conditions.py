@@ -67,7 +67,9 @@ class RuleConditionFilters:
 
         attribute = self.get_attribute_name()
         if attribute.startswith(("check-", "status-")):
-            new_tree = self._replace_attribute_name(condition, "check")
+            new_tree = self._replace_attribute_name(
+                condition, "check", overwrite_operator="="
+            )
             self.related_checks = filter.ListValuesFilter(
                 typing.cast(filter.TreeT, new_tree)
             )
@@ -84,10 +86,12 @@ class RuleConditionFilters:
         return str(name)
 
     @staticmethod
-    def _replace_attribute_name(tree: filter.TreeT, new_name: str) -> FakeTreeT:
+    def _replace_attribute_name(
+        tree: filter.TreeT, new_name: str, overwrite_operator: str | None = None
+    ) -> FakeTreeT:
         negate = "-" in tree
         tree = tree.get("-", tree)
-        operator = list(tree.keys())[0]
+        operator = overwrite_operator or list(tree.keys())[0]
         values = typing.cast(list[filter.TreeBinaryLeafT], list(tree.values()))
         name, value = values[0]
         if name.startswith(filter.Filter.LENGTH_OPERATOR):
