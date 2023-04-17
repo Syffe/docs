@@ -1433,26 +1433,6 @@ aiosqlite = ["aiosqlite (>=0.17.0,<0.18.0)"]
 sqlalchemy = ["SQLAlchemy (>=1.4.25,<2.0.0)"]
 
 [[package]]
-name = "importlib-metadata"
-version = "6.4.1"
-description = "Read metadata from Python packages"
-category = "main"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "importlib_metadata-6.4.1-py3-none-any.whl", hash = "sha256:63ace321e24167d12fbb176b6015f4dbe06868c54a2af4f15849586afb9027fd"},
-    {file = "importlib_metadata-6.4.1.tar.gz", hash = "sha256:eb1a7933041f0f85c94cd130258df3fb0dec060ad8c1c9318892ef4192c47ce1"},
-]
-
-[package.dependencies]
-zipp = ">=0.5"
-
-[package.extras]
-docs = ["furo", "jaraco.packaging (>=9)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-lint"]
-perf = ["ipython"]
-testing = ["flake8 (<5)", "flufl.flake8", "importlib-resources (>=1.3)", "packaging", "pyfakefs", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=1.3)", "pytest-flake8", "pytest-mypy (>=0.9.1)", "pytest-perf (>=0.9.2)"]
-
-[[package]]
 name = "iniconfig"
 version = "2.0.0"
 description = "brain-dead simple config-ini parsing"
@@ -2709,16 +2689,16 @@ files = [
 
 [[package]]
 name = "semgrep"
-version = "1.17.1"
+version = "1.18.0"
 description = "Lightweight static analysis for many languages. Find bug variants with patterns that look like source code."
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "semgrep-1.17.1-cp37.cp38.cp39.py37.py38.py39-none-any.whl", hash = "sha256:f3baa5fe8f55c8e92d1e6b577bde34e5e014a96019a38fd26ee23fde397ae4ae"},
-    {file = "semgrep-1.17.1-cp37.cp38.cp39.py37.py38.py39-none-macosx_10_14_x86_64.whl", hash = "sha256:e3048ed452e46e47ddedfbbc60af3e7a5e5a6d5ee09df970c570e4b625896167"},
-    {file = "semgrep-1.17.1-cp37.cp38.cp39.py37.py38.py39-none-macosx_11_0_arm64.whl", hash = "sha256:bcedebd65a914cd593f3649fa52fbb935333c955c445aa58114e16076f184ca8"},
-    {file = "semgrep-1.17.1.tar.gz", hash = "sha256:eb87ea9266bbabccaacac6975e5f084198a54db57f5c255acb3c5921d6a7a66d"},
+    {file = "semgrep-1.18.0-cp37.cp38.cp39.py37.py38.py39-none-any.whl", hash = "sha256:5fd51ef4f9878e979278ade357e429cc3dcd13990d2d41506371bd60386c6219"},
+    {file = "semgrep-1.18.0-cp37.cp38.cp39.py37.py38.py39-none-macosx_10_14_x86_64.whl", hash = "sha256:a7ee92223c498528a43ca6364272fe984ed9457a69d3d616ce2edd9ca154b174"},
+    {file = "semgrep-1.18.0-cp37.cp38.cp39.py37.py38.py39-none-macosx_11_0_arm64.whl", hash = "sha256:a9692a0103bec4c4d525b045ebbd06b7114a6fa400cd38efbc8a1c0d9f336e04"},
+    {file = "semgrep-1.18.0.tar.gz", hash = "sha256:30763d1d553b71c0aa448a03be49cd7ed8664002c4e718759ac58f69aa5b3eb0"},
 ]
 
 [package.dependencies]
@@ -3932,23 +3912,7 @@ files = [
 idna = ">=2.0"
 multidict = ">=4.0"
 
-[[package]]
-name = "zipp"
-version = "3.15.0"
-description = "Backport of pathlib-compatible object wrapper for zip files"
-category = "main"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "zipp-3.15.0-py3-none-any.whl", hash = "sha256:48904fc76a60e542af151aded95726c1a5c34ed43ab4134b597665c86d7ad556"},
-    {file = "zipp-3.15.0.tar.gz", hash = "sha256:112929ad649da941c23de50f356a2b5570c954b65150642bccdd66bf194d224b"},
-]
-
-[package.extras]
-docs = ["furo", "jaraco.packaging (>=9)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-lint"]
-testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more-itertools", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=1.3)", "pytest-flake8", "pytest-mypy (>=0.9.1)"]
-
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<4.0"
-content-hash = "ac143a5aed68faa90cd3c74726734df6ee594b541d75f5d4350cf07e0170a8da"
+content-hash = "742b601fcb3c305da4a94c1ab379083170ccf85131bae4c9726decf55078fb25"
