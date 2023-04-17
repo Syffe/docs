@@ -89,3 +89,11 @@ jobs:
         run: |
           echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
           echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
+
+
+      - name: Report Status
+        if: failure() && github.event_name != 'pull_request'
+        uses: Mergifyio/gha-slack-notification@main
+        with:
+          message: "Docker image security scan"
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WORKFLOWS_WEBHOOK_URL }}
