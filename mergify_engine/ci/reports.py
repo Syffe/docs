@@ -110,6 +110,12 @@ class Categories:
     pull_requests: Category
 
 
+@pydantic.dataclasses.dataclass
+class DateRange:
+    start_at: datetime.date | None
+    end_at: datetime.date | None
+
+
 @pydantic.dataclasses.dataclass(
     config=pydantic.ConfigDict(
         json_encoders={cost_calculator.MoneyAmount: lambda v: float(round(v, 2))}
@@ -118,6 +124,8 @@ class Categories:
 class ReportPayload:
     total_costs: Money
     categories: Categories
+    date_range: DateRange
+    compared_date_range: DateRange | None = None
     total_difference: Money = dataclasses.field(default_factory=Money.zero)
 
     def difference_with(self, other: "ReportPayload") -> "ReportPayload":
@@ -144,6 +152,8 @@ class ReportPayload:
                 scheduled_jobs=scheduled_jobs,
                 pull_requests=pull_requests,
             ),
+            date_range=self.date_range,
+            compared_date_range=other.date_range,
         )
 
 
@@ -217,6 +227,7 @@ class Report:
                 scheduled_jobs=scheduled_jobs,
                 pull_requests=pull_requests,
             ),
+            date_range=DateRange(start_at=start_at, end_at=end_at),
         )
 
     def _deployments(self, *job_runs: models.JobRun) -> Category:

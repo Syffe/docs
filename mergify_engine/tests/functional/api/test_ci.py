@@ -45,6 +45,12 @@ class TestCIApi(base.FunctionalTestBase):
         assert r.status_code == 200
         assert r.json()["total_costs"] == {"amount": 0.02, "currency": "USD"}
         assert r.json()["total_difference"] == {"amount": 0, "currency": "USD"}
+        assert "date_range" in r.json()
+        assert r.json()["date_range"]["start_at"] is None
+        assert r.json()["date_range"]["end_at"] is None
+        assert "compared_date_range" in r.json()
+        assert r.json()["compared_date_range"]["start_at"] is None
+        assert r.json()["compared_date_range"]["end_at"] is None
         assert "deployments" in r.json()["categories"]
         assert "scheduled_jobs" in r.json()["categories"]
         assert "pull_requests" in r.json()["categories"]
@@ -58,3 +64,9 @@ class TestCIApi(base.FunctionalTestBase):
             f"/v1/ci/{settings.TESTING_ORGANIZATION_NAME}?repository={self.RECORD_CONFIG['repository_name']}&start_at=2023-01-01&end_at=2023-01-15",
         )
         assert r.status_code == 200
+        assert "date_range" in r.json()
+        assert r.json()["date_range"]["start_at"] == "2023-01-01"
+        assert r.json()["date_range"]["end_at"] == "2023-01-15"
+        assert "compared_date_range" in r.json()
+        assert r.json()["compared_date_range"]["start_at"] == "2022-12-17"
+        assert r.json()["compared_date_range"]["end_at"] == "2022-12-31"
