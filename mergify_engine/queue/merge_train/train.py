@@ -143,11 +143,11 @@ class Train:
                 self._get_redis_key(), self._get_redis_hash_key(), raw
             )
             return True
-        else:
-            await self.convoy.repository.installation.redis.cache.hdel(
-                self._get_redis_key(), self._get_redis_hash_key()
-            )
-            return False
+
+        await self.convoy.repository.installation.redis.cache.hdel(
+            self._get_redis_key(), self._get_redis_hash_key()
+        )
+        return False
 
     def get_car(self, ctxt: context.Context) -> train_car.TrainCar | None:
         return first.first(
@@ -216,7 +216,7 @@ class Train:
                     i,
                     reason=queue_utils.QueueRuleMissing(),
                 )
-                return None
+                return
 
     async def reset(self, unexpected_changes: train_car.UnexpectedChanges) -> None:
         await self._slice_cars(
@@ -1162,10 +1162,10 @@ class Train:
                 pull_rule=pull_rule,
             )
             return description.strip()
-        else:
-            return await embarked_pull_with_car.car.build_draft_pr_summary(
-                pull_rule=pull_rule
-            )
+
+        return await embarked_pull_with_car.car.build_draft_pr_summary(
+            pull_rule=pull_rule
+        )
 
     async def _close_pull_request(
         self, pull_request_number: github_types.GitHubPullRequestNumber

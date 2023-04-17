@@ -78,7 +78,8 @@ def strip_url_credentials(url: str) -> str:
             netloc += parsed.hostname
         if parsed.port is not None:
             netloc += f":{parsed.port}"
-        url = parsed._replace(netloc=netloc).geturl()
+        return parsed._replace(netloc=netloc).geturl()
+
     return url
 
 

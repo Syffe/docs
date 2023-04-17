@@ -80,8 +80,7 @@ def is_datetime_inside_time_range(
 
     if strict:
         return d_start < time_to_check < d_end
-    else:
-        return d_start <= time_to_check <= d_end
+    return d_start <= time_to_check <= d_end
 
 
 class TimedeltaRegexResultT(typing.TypedDict):
@@ -158,7 +157,7 @@ class Time:
     def __post_init__(self) -> None:
         if self.hour < 0 or self.hour >= 24:
             raise InvalidDate("Hour must be between 0 and 23")
-        elif self.minute < 0 or self.minute >= 60:
+        if self.minute < 0 or self.minute >= 60:
             raise InvalidDate("Minute must be between 0 and 59")
 
     def __str__(self) -> str:
@@ -191,15 +190,14 @@ class Time:
     ) -> datetime.datetime:
         if isinstance(obj, datetime.datetime):
             return obj
-        elif isinstance(obj, Time):
+        if isinstance(obj, Time):
             return ref.astimezone(obj.tzinfo).replace(
                 minute=obj.minute,
                 hour=obj.hour,
                 second=0,
                 microsecond=0,
             )
-        else:
-            raise ValueError(f"Unsupport comparaison type: {type(obj)}")
+        raise ValueError(f"Unsupport comparaison type: {type(obj)}")
 
 
 _SHORT_WEEKDAY = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
@@ -429,11 +427,10 @@ class Schedule:
                 self.start_weekday <= dother.isoweekday() <= self.end_weekday
                 and self.is_datetime_inside_time_schedule(dother, strict=False)
             )
-        else:
-            return (
-                self.end_weekday <= dother.isoweekday()
-                or dother.isoweekday() <= self.start_weekday
-            ) and self.is_datetime_inside_time_schedule(dother, strict=False)
+        return (
+            self.end_weekday <= dother.isoweekday()
+            or dother.isoweekday() <= self.start_weekday
+        ) and self.is_datetime_inside_time_schedule(dother, strict=False)
 
     def is_datetime_inside_day_schedule(self, time_to_check: datetime.datetime) -> bool:
         time_to_check_as_tz = time_to_check.astimezone(self.tzinfo)
@@ -619,17 +616,14 @@ class Schedule:
 
             if reverse:
                 return {"times": self._timeranges_as_json_reversed()}
-            else:
-                return {"times": self._timeranges_as_json()}
+            return {"times": self._timeranges_as_json()}
 
-        else:
-            return FULL_DAY if reverse else EMPTY_DAY
+        return FULL_DAY if reverse else EMPTY_DAY
 
     def _is_day_in_schedule(self, day: DayOfWeek) -> bool:
         if self.start_weekday <= self.end_weekday:
             return self.start_weekday <= day <= self.end_weekday
-        else:
-            return day <= self.end_weekday or day >= self.start_weekday
+        return day <= self.end_weekday or day >= self.start_weekday
 
     def _timeranges_as_json(self) -> list[TimeRangeJSON]:
         return [
@@ -670,8 +664,7 @@ def fromisoformat(s: str) -> datetime.datetime:
     dt = datetime.datetime.fromisoformat(s)
     if dt.tzinfo is None:
         return dt.replace(tzinfo=UTC)
-    else:
-        return dt.astimezone(UTC)
+    return dt.astimezone(UTC)
 
 
 def fromisoformat_with_zoneinfo(string: str) -> datetime.datetime:

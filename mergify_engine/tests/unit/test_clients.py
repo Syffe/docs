@@ -279,13 +279,13 @@ async def _do_test_client_retry_429(
         if records:
             records.append(date.utcnow())
             return httpx.Response(200, text="It works now !")
-        else:
-            records.append(date.utcnow())
-            return httpx.Response(
-                429,
-                text="This is a 429 error",
-                headers={"Retry-After": retry_after},
-            )
+
+        records.append(date.utcnow())
+        return httpx.Response(
+            429,
+            text="This is a 429 error",
+            headers={"Retry-After": retry_after},
+        )
 
     respx_mock.get("/").mock(side_effect=record_date)
 

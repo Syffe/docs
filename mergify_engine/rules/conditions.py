@@ -99,7 +99,7 @@ class RuleConditionFilters:
 
         new_tree: FakeTreeT = {operator: (new_name, value)}
         if negate:
-            new_tree = {"-": new_tree}
+            return {"-": new_tree}
         return new_tree
 
 
@@ -167,8 +167,7 @@ class RuleCondition:
     def __str__(self) -> str:
         if self.label is not None:
             return self.label
-        else:
-            return str(self.filters.boolean)
+        return str(self.filters.boolean)
 
     def copy(self) -> RuleCondition:
         return RuleCondition(self.filters, self.label, self.description)
@@ -205,8 +204,7 @@ class RuleCondition:
         tree = typing.cast(filter.TreeT, self.filters.boolean.tree)
         tree = tree.get("-", tree)
         _, tree = tree.get("@", ("", tree))  # type: ignore[misc]
-        value = list(tree.keys())[0]
-        return value
+        return list(tree.keys())[0]
 
 
 class RuleConditionGroup(abstract.ABC):
@@ -322,7 +320,8 @@ class RuleConditionGroup(abstract.ABC):
     def extract_raw_filter_tree(self, condition: RuleConditionNode) -> filter.TreeT:
         if isinstance(condition, RuleCondition):
             return typing.cast(filter.TreeT, condition.filters.boolean.tree)
-        elif isinstance(condition, RuleConditionCombination):
+
+        if isinstance(condition, RuleConditionCombination):
             return typing.cast(
                 filter.TreeT,
                 {
@@ -331,13 +330,14 @@ class RuleConditionGroup(abstract.ABC):
                     ]
                 },
             )
-        elif isinstance(condition, RuleConditionNegation):
+
+        if isinstance(condition, RuleConditionNegation):
             return typing.cast(
                 filter.TreeT,
                 {condition.operator: self.extract_raw_filter_tree(condition.condition)},
             )
-        else:
-            raise RuntimeError(f"Unsupported condition type: {type(condition)}")
+
+        raise RuntimeError(f"Unsupported condition type: {type(condition)}")
 
 
 @dataclasses.dataclass
@@ -455,11 +455,11 @@ def get_mergify_configuration_change_conditions(
             },
             description=description,
         )
-    else:
-        return RuleCondition.from_tree(
-            {"=": ("mergify-configuration-changed", False)},
-            description=description,
-        )
+
+    return RuleCondition.from_tree(
+        {"=": ("mergify-configuration-changed", False)},
+        description=description,
+    )
 
 
 async def get_branch_protection_conditions(
@@ -717,8 +717,7 @@ class QueueRuleMergeConditions(BaseRuleConditions):
     def is_faulty(self) -> bool:
         if self._used:
             return any(c.is_faulty() for c in self._evaluated_conditions.values())
-        else:
-            return self.condition.is_faulty()
+        return self.condition.is_faulty()
 
     def walk(self) -> abc.Iterator[RuleCondition]:
         if self._used:
@@ -767,7 +766,8 @@ class ConditionEvaluationResult:
                     rule_condition_node, filter_key
                 ),
             )
-        elif isinstance(rule_condition_node, RuleCondition):
+
+        if isinstance(rule_condition_node, RuleCondition):
             return cls(
                 match=rule_condition_node.match,
                 label=str(rule_condition_node),
@@ -777,10 +777,8 @@ class ConditionEvaluationResult:
                 related_checks=rule_condition_node.related_checks,
                 next_evaluation_at=rule_condition_node.next_evaluation_at,
             )
-        else:
-            raise RuntimeError(
-                f"Unsupported condition type: {type(rule_condition_node)}"
-            )
+
+        raise RuntimeError(f"Unsupported condition type: {type(rule_condition_node)}")
 
     @classmethod
     def _create_subconditions(
@@ -801,7 +799,7 @@ class ConditionEvaluationResult:
     def deserialize(
         cls, data: ConditionEvaluationResult.Serialized
     ) -> ConditionEvaluationResult:
-        evaluation_result = cls(
+        return cls(
             match=data["match"],
             label=data["label"],
             is_label_user_input=data["is_label_user_input"],
@@ -811,7 +809,6 @@ class ConditionEvaluationResult:
             next_evaluation_at=data.get("next_evaluation_at"),
             subconditions=[cls.deserialize(c) for c in data["subconditions"]],
         )
-        return evaluation_result
 
     def serialized(self) -> ConditionEvaluationResult.Serialized:
         return typing.cast(
@@ -953,7 +950,8 @@ class QueueConditionEvaluationResult:
                 ),
                 is_label_user_input=False,
             )
-        elif isinstance(first_evaluated_condition, RuleCondition):
+
+        if isinstance(first_evaluated_condition, RuleCondition):
             evaluated_condition = typing.cast(
                 EvaluatedConditionT, evaluated_condition_node
             )
@@ -976,10 +974,10 @@ class QueueConditionEvaluationResult:
                 ],
                 is_label_user_input=True,
             )
-        else:
-            raise RuntimeError(
-                f"Unsupported condition type: {type(first_evaluated_condition)}"
-            )
+
+        raise RuntimeError(
+            f"Unsupported condition type: {type(first_evaluated_condition)}"
+        )
 
     @classmethod
     def _create_subconditions(

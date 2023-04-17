@@ -50,8 +50,7 @@ def DeprecatedOption(
     def validator(v: typing.Any) -> typing.Any:
         if v is UnsetMarker:
             return default
-        else:
-            raise voluptuous.Invalid(message % v)
+        raise voluptuous.Invalid(message % v)
 
     return validator
 
@@ -81,7 +80,8 @@ def unicode_truncate(
         cut_at = length - placeholder_length
         if position == "end":
             return (b[:cut_at] + placeholder_bytes).decode(encoding, errors="ignore")
-        elif position == "middle":
+
+        if position == "middle":
             cut_at_middle = cut_at / 2.0
             cut_at_left = cut_at_right = int(cut_at_middle)
 
@@ -94,10 +94,10 @@ def unicode_truncate(
             else:
                 end = b""
             return (start + placeholder_bytes + end).decode(encoding, errors="ignore")
-        else:
-            raise RuntimeError(f"Invalid position: {position}")
-    else:
-        return s
+
+        raise RuntimeError(f"Invalid position: {position}")
+
+    return s
 
 
 def compute_hmac(data: bytes, secret: str) -> str:

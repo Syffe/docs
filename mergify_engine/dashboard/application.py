@@ -200,7 +200,7 @@ class ApplicationSaas(ApplicationBase):
                 ),
             )
             await app.save_to_cache()
-        return None
+        return
 
     @classmethod
     async def _retrieve_from_cache(
@@ -226,15 +226,15 @@ class ApplicationSaas(ApplicationBase):
 
             if "account_scope" not in decrypted_application:
                 # TODO(sileht): Backward compat, delete me
-                return  # type: ignore[unreachable]
+                return None  # type: ignore[unreachable]
 
             if decrypted_application["account_scope"] is None:
                 # TODO(sileht): Backward compat, delete me
-                return  # type: ignore[unreachable]
+                return None  # type: ignore[unreachable]
 
             if "id" not in decrypted_application:
                 # TODO(sileht): Backward compat, delete me
-                return  # type: ignore[unreachable]
+                return None  # type: ignore[unreachable]
 
             return cls(
                 redis,

@@ -82,9 +82,7 @@ def should_be_ignored(exception: Exception) -> bool:
             return True
 
         # NOTE(sileht): branch is gone since we started to handle a PR
-        elif exception.status_code == 404 and "/branches/" in str(
-            exception.request.url
-        ):
+        if exception.status_code == 404 and "/branches/" in str(exception.request.url):
             return True
 
     return False
@@ -97,30 +95,32 @@ def need_retry(
         # NOTE(sileht): when we are close to reset date, and since utc time between us and
         # github differ a bit, we can have negative delta, so set a minimun for retrying
         return max(exception.countdown, RATE_LIMIT_RETRY_MIN)
-    elif isinstance(exception, EngineNeedRetry):
+
+    if isinstance(exception, EngineNeedRetry):
         return exception.retry_in
 
-    elif isinstance(exception, http.RequestError | http.HTTPServerSideError):
+    if isinstance(exception, http.RequestError | http.HTTPServerSideError):
         # NOTE(sileht): We already retry locally with urllib3, so if we get there, Github
         # is in a really bad shape...
         return datetime.timedelta(minutes=1)
 
     # NOTE(sileht): Most of the times token are just temporary invalid, Why ?
     # no idea, ask Github...
-    elif isinstance(exception, http.HTTPClientSideError):
+    if isinstance(exception, http.HTTPClientSideError):
         # Bad creds or token expired, we can't really known
         if exception.response.status_code == 401:
             return datetime.timedelta(minutes=1)
+
         # Rate limit or abuse detection mechanism, futures events will be rate limited
         # correctly by mergify_engine.utils.Github()
-        elif exception.response.status_code == 403:
+        if exception.response.status_code == 403:
             return datetime.timedelta(minutes=3)
 
-    elif isinstance(exception, redis_exceptions.ResponseError):
+    if isinstance(exception, redis_exceptions.ResponseError):
         # Redis script bug or OOM
         return datetime.timedelta(minutes=1)
 
-    elif isinstance(exception, redis_exceptions.ConnectionError):
+    if isinstance(exception, redis_exceptions.ConnectionError):
         # Redis down
         return datetime.timedelta(minutes=1)
 

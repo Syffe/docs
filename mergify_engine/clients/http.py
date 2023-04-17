@@ -117,7 +117,7 @@ class wait_retry_after_header(tenacity.wait.wait_base):
         value = exc.response.headers.get("retry-after")
         if value is None:
             return 0
-        elif value.isdigit():
+        if value.isdigit():
             return int(value)
 
         d = parse_date(value)

@@ -328,10 +328,9 @@ async def prepare_branch(
             raise DuplicateNeedRetry(
                 f"Git reported the following error:\n```\n{e.output}\n```\n"
             )
-        else:
-            raise DuplicateUnexpectedError(
-                f"Git reported the following error:\n```\n{e.output}\n```\n"
-            )
+        raise DuplicateUnexpectedError(
+            f"Git reported the following error:\n```\n{e.output}\n```\n"
+        )
     except gitter.GitErrorRetriable as e:
         raise DuplicateNeedRetry(
             f"Git reported the following error:\n```\n{e.output}\n```\n"
@@ -453,9 +452,9 @@ async def create_duplicate_pull(
             if "No commits between" in e.message:
                 if duplicate_branch_result.cherry_pick_error:
                     raise DuplicateFailed(duplicate_branch_result.cherry_pick_error)
-                else:
-                    raise DuplicateNotNeeded(e.message)
-            elif "A pull request already exists" in e.message:
+                raise DuplicateNotNeeded(e.message)
+
+            if "A pull request already exists" in e.message:
                 raise DuplicateAlreadyExists(e.message)
 
         raise

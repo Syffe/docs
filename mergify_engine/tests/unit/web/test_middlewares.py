@@ -107,10 +107,10 @@ async def test_logging_middleware(
     def root() -> starlette.responses.PlainTextResponse:
         if status_code == 0:
             raise Exception("boom")  # noqa: TRY002
-        else:
-            return starlette.responses.PlainTextResponse(
-                content="", status_code=status_code, headers={"see": "me"}
-            )
+
+        return starlette.responses.PlainTextResponse(
+            content="", status_code=status_code, headers={"see": "me"}
+        )
 
     client = fastapi.testclient.TestClient(app, raise_server_exceptions=False)
     response = client.get(

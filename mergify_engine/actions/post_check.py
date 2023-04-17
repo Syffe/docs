@@ -142,15 +142,13 @@ class PostCheckExecutor(
     async def cancel(self) -> check_api.Result:
         if self.config["always_show"]:
             return await self._run(self.config["check_conditions"])
-        else:
-            return actions.CANCELLED_CHECK_REPORT
+        return actions.CANCELLED_CHECK_REPORT
 
     @property
     def silenced_conclusion(self) -> tuple[check_api.Conclusion, ...]:
         if self.config["always_show"]:
             return ()
-        else:
-            return (check_api.Conclusion.CANCELLED,)
+        return (check_api.Conclusion.CANCELLED,)
 
 
 class PostCheckAction(actions.Action):

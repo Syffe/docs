@@ -72,15 +72,15 @@ class Conclusion(enum.Enum):
     def emoji(self) -> str | None:
         if self.value is None:
             return "🟠"
-        elif self.value == "success":
+        if self.value == "success":
             return "✅"
-        elif self.value in ("failure", "timed_out"):
+        if self.value in ("failure", "timed_out"):
             return "❌"
-        elif self.value == "cancelled":
+        if self.value == "cancelled":
             return "🛑"
-        elif self.value in ("skipped", "neutral", "stale"):
+        if self.value in ("skipped", "neutral", "stale"):
             return "☑️"
-        elif self.value == "action_required":
+        if self.value == "action_required":
             return "⚠️"
 
         return None
@@ -201,7 +201,7 @@ def check_need_update(
         if previous_check["output"] is None and expected_check["output"] is None:  # type: ignore[unreachable]
             return False  # type: ignore[unreachable]
 
-        elif previous_check["output"] is not None and compare_dict(
+        if previous_check["output"] is not None and compare_dict(
             typing.cast(dict[str, typing.Any], expected_check["output"]),
             typing.cast(dict[str, typing.Any], previous_check["output"]),
             ("title", "summary"),

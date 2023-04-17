@@ -102,7 +102,7 @@ class StreamService(abc.ABC):
 
         bucket_org_key = await self._get_next_bucket_to_proceed(stream_processor)
         if bucket_org_key is None:
-            return None
+            return
 
         LOG.debug(
             "worker %s take org bucket: %s",

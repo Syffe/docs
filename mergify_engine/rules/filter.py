@@ -151,20 +151,23 @@ class Filter(typing.Generic[FilterResultT]):
                 if op != "=":
                     raise InvalidOperator(op)
                 return ("" if nodes[1] else "-") + str(nodes[0])  # type: ignore[index]
-            elif isinstance(nodes[1], datetime.datetime):  # type: ignore[index]
+
+            if isinstance(nodes[1], datetime.datetime):  # type: ignore[index]
                 return (
                     str(nodes[0])  # type: ignore[index]
                     + op
                     + nodes[1].replace(tzinfo=None).isoformat(timespec="seconds")  # type: ignore[index]
                 )
-            elif isinstance(nodes[1], datetime.time):  # type: ignore[index]
+
+            if isinstance(nodes[1], datetime.time):  # type: ignore[index]
                 return (
                     str(nodes[0])  # type: ignore[index]
                     + op
                     + nodes[1].replace(tzinfo=None).isoformat(timespec="minutes")  # type: ignore[index]
                 )
-            else:
-                return str(nodes[0]) + op + str(nodes[1])  # type: ignore[index]
+
+            return str(nodes[0]) + op + str(nodes[1])  # type: ignore[index]
+
         raise InvalidOperator(op)  # pragma: no cover
 
     def __repr__(self) -> str:  # pragma: no cover
@@ -468,20 +471,18 @@ def _minimal_datetime(dts: abc.Iterable[object]) -> datetime.datetime:
     _dts = list(typing.cast(list[datetime.datetime], Filter._to_list(dts)))
     if len(_dts) == 0:
         return date.DT_MAX
-    else:
-        return min(_dts)
+
+    return min(_dts)
 
 
 def _as_datetime(value: typing.Any) -> datetime.datetime:
     if isinstance(value, datetime.datetime):
         return value
-    elif isinstance(value, date.RelativeDatetime):
+    if isinstance(value, date.RelativeDatetime):
         return value.value
-    elif isinstance(value, datetime.timedelta):
-        dt = date.utcnow()
-        return dt + value
-    else:
-        return date.DT_MAX
+    if isinstance(value, datetime.timedelta):
+        return date.utcnow() + value
+    return date.DT_MAX
 
 
 def _dt_max(value: typing.Any, ref: typing.Any) -> datetime.datetime:
@@ -525,13 +526,16 @@ def _dt_op(
                     return date.utcnow() + datetime.timedelta(minutes=1)
 
                 return _dt_in_future(dt_ref + datetime.timedelta(minutes=1))
-            elif isinstance(ref, date.RelativeDatetime):
+
+            if isinstance(ref, date.RelativeDatetime):
                 return _dt_in_future(dt_value + (date.utcnow() - dt_ref))
-            elif dt_value < dt_ref:
+
+            if dt_value < dt_ref:
                 return _dt_in_future(dt_ref)
-            else:
-                return date.DT_MAX
+
         except OverflowError:
+            return date.DT_MAX
+        else:
             return date.DT_MAX
 
     return _operator
@@ -595,8 +599,10 @@ def IncompleteChecksAll(
     for v in values:
         if v is False:
             return False
-        elif v is IncompleteCheck:
+
+        if v is IncompleteCheck:
             found_unknown = True
+
     if found_unknown:
         return IncompleteCheck
     return True
@@ -610,7 +616,7 @@ def IncompleteChecksAny(
     for v in values:
         if v is IncompleteCheck:
             return IncompleteCheck
-        elif v:
+        if v:
             found_true = True
     return found_true
 
@@ -618,8 +624,7 @@ def IncompleteChecksAny(
 def IncompleteChecksNegate(value: IncompleteChecksResult) -> IncompleteChecksResult:
     if value is IncompleteCheck:
         return IncompleteCheck
-    else:
-        return not value
+    return not value
 
 
 def cast_ret_to_incomplete_check_result(

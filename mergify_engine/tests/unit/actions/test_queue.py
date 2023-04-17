@@ -246,12 +246,13 @@ def fake_client() -> mock.Mock:
                     "name": github_types.GitHubRefType("foobar"),
                 }
             )
+
         if url == "/repos/Mergifyio/mergify-engine/branches/main/protection":
             raise http.HTTPNotFound(
                 message="boom", response=mock.Mock(), request=mock.Mock()
             )
-        else:
-            raise Exception(f"url not mocked: {url}")  # noqa: TRY002
+
+        raise Exception(f"url not mocked: {url}")  # noqa: TRY002
 
     client = mock.Mock()
     client.item = mock.AsyncMock(side_effect=item_call)

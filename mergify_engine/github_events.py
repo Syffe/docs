@@ -398,11 +398,11 @@ async def event_classifier(
             event_type, event_id, event, event["pull_request"]["number"]
         )
 
-    elif event_type == "refresh":
+    if event_type == "refresh":
         event = typing.cast(github_types.GitHubEventRefresh, event)
         return EventToProcess(event_type, event_id, event, event["pull_request_number"])
 
-    elif event_type == "pull_request_review_comment":
+    if event_type == "pull_request_review_comment":
         event = typing.cast(github_types.GitHubEventPullRequestReviewComment, event)
         return EventToProcess(
             event_type,
@@ -413,31 +413,31 @@ async def event_classifier(
             else None,
         )
 
-    elif event_type == "pull_request_review":
+    if event_type == "pull_request_review":
         event = typing.cast(github_types.GitHubEventPullRequestReview, event)
         return EventToProcess(
             event_type, event_id, event, event["pull_request"]["number"]
         )
 
-    elif event_type == "pull_request_review_thread":
+    if event_type == "pull_request_review_thread":
         event = typing.cast(github_types.GitHubEventPullRequestReviewThread, event)
         return EventToProcess(
             event_type, event_id, event, event["pull_request"]["number"]
         )
 
-    elif event_type == "issue_comment":
+    if event_type == "issue_comment":
         event = typing.cast(github_types.GitHubEventIssueComment, event)
         if "pull_request" not in event["issue"]:
             return EventToIgnore(
                 event_type, event_id, event, "comment is not on a pull request"
             )
 
-        elif event["action"] not in ("created", "edited"):
+        if event["action"] not in ("created", "edited"):
             return EventToIgnore(
                 event_type, event_id, event, f"comment action is '{event['action']}'"
             )
 
-        elif (
+        if (
             # When someone else edit our comment the user id is still us
             # but the sender id is the one that edited the comment
             event["comment"]["user"]["id"] == mergify_bot["id"]
@@ -445,7 +445,7 @@ async def event_classifier(
         ):
             return EventToIgnore(event_type, event_id, event, "comment by Mergify[bot]")
 
-        elif (
+        if (
             # At the moment there is no specific "action" key or event
             # for when someone hides a comment.
             # So we need all those checks to identify someone hiding the comment
@@ -456,7 +456,7 @@ async def event_classifier(
         ):
             return EventToIgnore(event_type, event_id, event, "comment has been hidden")
 
-        elif not commands_runner.COMMAND_MATCHER.search(event["comment"]["body"]):
+        if not commands_runner.COMMAND_MATCHER.search(event["comment"]["body"]):
             return EventToIgnore(
                 event_type, event_id, event, "comment is not a command"
             )
@@ -469,7 +469,7 @@ async def event_classifier(
             priority=worker_pusher.Priority.immediate,
         )
 
-    elif event_type == "status":
+    if event_type == "status":
         event = typing.cast(github_types.GitHubEventStatus, event)
         return EventToProcess(
             event_type,
@@ -482,7 +482,8 @@ async def event_classifier(
                 event["sha"],
             ),
         )
-    elif event_type == "push":
+
+    if event_type == "push":
         event = typing.cast(github_types.GitHubEventPush, event)
         if not event["ref"].startswith("refs/heads/"):
             return EventToIgnore(event_type, event_id, event, f"push on {event['ref']}")
@@ -492,14 +493,15 @@ async def event_classifier(
             event,
             None,
         )
-    elif event_type == "check_suite":
+
+    if event_type == "check_suite":
         event = typing.cast(github_types.GitHubEventCheckSuite, event)
         if event["action"] != "rerequested":
             return EventToIgnore(
                 event_type, event_id, event, f"check_suite/{event['action']}"
             )
 
-        elif (
+        if (
             event["check_suite"]["app"]["id"] == settings.GITHUB_APP_ID
             and event["action"] != "rerequested"
             and event["check_suite"].get("external_id") != check_api.USER_CREATED_CHECKS
@@ -517,7 +519,8 @@ async def event_classifier(
                 event["check_suite"]["head_sha"],
             ),
         )
-    elif event_type == "check_run":
+
+    if event_type == "check_run":
         event = typing.cast(github_types.GitHubEventCheckRun, event)
         if (
             event[event_type]["app"]["id"] == settings.GITHUB_APP_ID
@@ -537,8 +540,8 @@ async def event_classifier(
                 event["check_run"]["head_sha"],
             ),
         )
-    else:
-        return EventToIgnore(event_type, event_id, event, "unexpected event_type")
+
+    return EventToIgnore(event_type, event_id, event, "unexpected event_type")
 
 
 async def filter_and_dispatch(

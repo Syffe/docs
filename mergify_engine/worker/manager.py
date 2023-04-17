@@ -32,8 +32,7 @@ _DYNO = os.getenv("DYNO")
 def get_process_index_from_env() -> int:
     if _DYNO:
         return int(_DYNO.rsplit(".", 1)[-1]) - 1
-    else:
-        return 0
+    return 0
 
 
 def wait_before_next_retry(retry_state: tenacity.RetryCallState) -> typing.Any:

@@ -14,8 +14,8 @@ _EnumT = typing.TypeVar("_EnumT", bound=type[enum.Enum])
 def register_enum_type(enum_cls: _EnumT) -> _EnumT:
     if enum_cls.__name__ in _ENUM_TYPES:
         raise RuntimeError(f"{enum_cls.__name__} already registered")
-    else:
-        _ENUM_TYPES[enum_cls.__name__] = enum_cls
+
+    _ENUM_TYPES[enum_cls.__name__] = enum_cls
     return enum_cls
 
 
@@ -27,29 +27,32 @@ class Encoder(json.JSONEncoder):
                 "class": type(v).__name__,
                 "name": v.name,
             }
-        elif isinstance(v, datetime.timedelta):
+
+        if isinstance(v, datetime.timedelta):
             return {
                 "__pytype__": "datetime.timedelta",
                 "value": str(v.total_seconds()),
             }
 
-        elif isinstance(v, datetime.datetime):
+        if isinstance(v, datetime.datetime):
             return {
                 "__pytype__": "datetime.datetime",
                 "value": v.isoformat(),
             }
-        elif isinstance(v, set):
+
+        if isinstance(v, set):
             return {
                 "__pytype__": "set",
                 "value": list(v),
             }
-        elif isinstance(v, uuid.UUID):
+
+        if isinstance(v, uuid.UUID):
             return {
                 "__pytype__": "uuid.UUID",
                 "value": v.hex,
             }
-        else:
-            return super().default(v)
+
+        return super().default(v)
 
 
 JSONPyType = typing.Literal["enum"]
@@ -65,13 +68,13 @@ def _decode(v: dict[typing.Any, typing.Any]) -> typing.Any:
         enum_cls = _ENUM_TYPES[cls_name]
         enum_name = v["name"]
         return enum_cls[enum_name]
-    elif v.get("__pytype__") == "datetime.timedelta":
+    if v.get("__pytype__") == "datetime.timedelta":
         return datetime.timedelta(seconds=float(v["value"]))
-    elif v.get("__pytype__") == "datetime.datetime":
+    if v.get("__pytype__") == "datetime.datetime":
         return datetime.datetime.fromisoformat(v["value"])
-    elif v.get("__pytype__") == "set":
+    if v.get("__pytype__") == "set":
         return set(v["value"])
-    elif v.get("__pytype__") == "uuid.UUID":
+    if v.get("__pytype__") == "uuid.UUID":
         return uuid.UUID(v["value"])
     return v
 

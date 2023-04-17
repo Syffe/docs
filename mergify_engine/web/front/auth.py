@@ -144,8 +144,8 @@ async def auth_via_github(
             LOG.warning("OAuth2 failed, retrying", exc_info=True)
             if e.error == "redirect_uri_mismatch":
                 raise fastapi.HTTPException(410)
-            else:
-                raise fastapi.HTTPException(401)
+            raise fastapi.HTTPException(401)
+
         LOG.error(
             f"OAuth error error={e.error} description={e.description} uri={e.uri}",
             exc_info=True,
@@ -198,7 +198,8 @@ async def auth_setup(
         return AuthRedirectUrl(
             f"/github/{data['repositories'][0]['owner']['login']}?new=true"
         )
-    elif setup_action == "request":
+
+    if setup_action == "request":
         return AuthRedirectUrl("/?request=true")
 
     LOG.warning("Unknown setup_action: %s", setup_action)

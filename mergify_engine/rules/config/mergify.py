@@ -93,7 +93,7 @@ def merge_config_with_defaults(
             for action_name, action in actions.items():
                 if action_name not in defaults_actions:
                     continue
-                elif defaults_actions[action_name] is None:
+                if defaults_actions[action_name] is None:
                     continue
 
                 if action is None:

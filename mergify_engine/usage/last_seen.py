@@ -39,5 +39,4 @@ async def get(
     raw = await redis.get(get_last_seen_key(owner_id))
     if raw is None:
         return None
-    else:
-        return date.fromisoformat(raw.decode())
+    return date.fromisoformat(raw.decode())

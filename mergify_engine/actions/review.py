@@ -125,13 +125,13 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
                     check_api.Conclusion.SUCCESS, "Review already posted", ""
                 )
 
-            elif (
+            if (
                 self.config["type"] == "REQUEST_CHANGES"
                 and review["state"] == "APPROVED"
             ):
                 break
 
-            elif (
+            if (
                 self.config["type"] == "APPROVE"
                 and review["state"] == "CHANGES_REQUESTED"
             ):
@@ -151,7 +151,8 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
                     "GitHub returned an unexpected error:\n\n * "
                     + "\n * ".join(f"`{s}`" for s in e.response.json()["errors"]),
                 )
-            elif e.status_code == 404 and on_behalf is not None:
+
+            if e.status_code == 404 and on_behalf is not None:
                 # NOTE(sileht): If the oauth token is valid but the user is not
                 # allowed access this repository GitHub returns 404 for private
                 # repository instead of 403.
@@ -161,6 +162,7 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
                     f"GitHub account `{on_behalf.login}` is not "
                     "allowed to review pull requests of this repository",
                 )
+
             raise
 
         await signals.send(

@@ -88,7 +88,8 @@ async def compute_estimation(
     ):
         # The PR is in the same batch as the PR the `previous_eta` is from
         return previous_eta
-    elif car is None or car.last_conditions_evaluation is None:
+
+    if car is None or car.last_conditions_evaluation is None:
         # The PR is not in the same batch as the previous PR and has
         # no car.
         # mypy thinks previous_eta can be None, but the first `if` of this function prevents it.

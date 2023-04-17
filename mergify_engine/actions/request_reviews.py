@@ -255,10 +255,10 @@ class RequestReviewsExecutor(
             return check_api.Result(
                 check_api.Conclusion.SUCCESS, "New reviews requested", ""
             )
-        else:
-            return check_api.Result(
-                check_api.Conclusion.SUCCESS, "No new reviewers to request", ""
-            )
+
+        return check_api.Result(
+            check_api.Conclusion.SUCCESS, "No new reviewers to request", ""
+        )
 
     async def cancel(self) -> check_api.Result:  # pragma: no cover
         return actions.CANCELLED_CHECK_REPORT

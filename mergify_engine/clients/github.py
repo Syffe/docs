@@ -203,7 +203,8 @@ class GithubAppInstallationAuth(httpx.Auth):
         now = datetime.datetime.utcnow()
         if not self._cached_token:
             return None
-        elif self._cached_token.expiration <= now:
+
+        if self._cached_token.expiration <= now:
             LOG.debug(
                 "Token expired",
                 gh_owner=self._owner_login,
@@ -212,8 +213,8 @@ class GithubAppInstallationAuth(httpx.Auth):
             self._cached_token.invalidate()
             self._cached_token = None
             return None
-        else:
-            return self._cached_token.token
+
+        return self._cached_token.token
 
 
 async def get_installation_from_account_id(

@@ -123,8 +123,8 @@ def order_messages_without_pull_numbers(
     # NOTE(sileht): put push event first to make PullRequestFinder more efficient.
     if data[1]["event_type"] == "push":
         return ""
-    else:
-        return data[1]["timestamp"]
+
+    return data[1]["timestamp"]
 
 
 async def run_engine(
@@ -862,8 +862,8 @@ class Processor:
             if self.retry_unhandled_exception_forever:
                 # Ignore it, it will retried later
                 raise UnexpectedPullRetry()
-            else:
-                raise
+
+            raise
 
 
 async def get_dedicated_worker_owner_ids_from_redis(

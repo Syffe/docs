@@ -219,15 +219,13 @@ class GitHubSettings(pydantic.BaseSettings):
     def GITHUB_REST_API_URL(self) -> str:
         if self.GITHUB_URL.host == "github.com":
             return "https://api.github.com"
-        else:
-            return f"{self.GITHUB_URL}/api/v3"
+        return f"{self.GITHUB_URL}/api/v3"
 
     @property
     def GITHUB_GRAPHQL_API_URL(self) -> str:
         if self.GITHUB_URL.host == "github.com":
             return "https://api.github.com/graphql"
-        else:
-            return f"{self.GITHUB_URL}/api/graphql"
+        return f"{self.GITHUB_URL}/api/graphql"
 
 
 class DashboardUISettings(pydantic.BaseSettings):
@@ -364,7 +362,7 @@ class EngineSettings(
             if field_name == "DATABASE_POOL_SIZES":
                 return utils.string_to_dict(raw_val, int)
 
-            elif field_name in (
+            if field_name in (
                 "GITHUB_WEBHOOK_FORWARD_EVENT_TYPES",
                 "WEBHOOK_FORWARD_EVENT_TYPES",
                 "DASHBOARD_UI_FEATURES",
@@ -373,10 +371,10 @@ class EngineSettings(
             ):
                 return raw_val.split(",")
 
-            elif field_name == "APPLICATION_APIKEYS":
+            if field_name == "APPLICATION_APIKEYS":
                 return types.ApplicationAPIKeys(raw_val)
 
-            elif field_name == "ACCOUNT_TOKENS":
+            if field_name == "ACCOUNT_TOKENS":
                 return types.AccountTokens(raw_val)
 
             return super().parse_env_var(field_name, raw_val)

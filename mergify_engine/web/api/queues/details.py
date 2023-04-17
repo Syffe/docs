@@ -82,12 +82,14 @@ class MergeabilityCheck:
     ) -> MergeabilityCheck | None:
         if car is None:
             return None
-        elif car.train_car_state.checks_type in (
+
+        if car.train_car_state.checks_type in (
             merge_train.TrainCarChecksType.FAILED,
             None,
         ):
             return None
-        elif car.train_car_state.checks_type in (
+
+        if car.train_car_state.checks_type in (
             merge_train.TrainCarChecksType.DRAFT,
             merge_train.TrainCarChecksType.INPLACE,
         ):
@@ -114,10 +116,10 @@ class MergeabilityCheck:
                 evaluated_conditions=car.last_evaluated_conditions,
                 conditions_evaluation=conditions_evaluation,
             )
-        else:
-            raise RuntimeError(
-                f"Car's checks type unknown: {car.train_car_state.checks_type}"
-            )
+
+        raise RuntimeError(
+            f"Car's checks type unknown: {car.train_car_state.checks_type}"
+        )
 
 
 @pydantic.dataclasses.dataclass

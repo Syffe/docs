@@ -257,16 +257,16 @@ async def log_as(request: fastapi.Request, user_id: int) -> fastapi.Response:
     if user:
         await imia.login_user(request, user, "whatever")
         return fastapi.Response(status_code=200)
-    else:
-        return fastapi.Response(status_code=400, content=f"user id `{user_id}` invalid")
+
+    return fastapi.Response(status_code=400, content=f"user id `{user_id}` invalid")
 
 
 @log_as_router.get("/logged-as")
 async def logged_as(request: fastapi.Request) -> fastapi.Response:
     if request.auth.is_authenticated:
         return fastapi.responses.JSONResponse({"login": request.auth.user.login})
-    else:
-        raise fastapi.HTTPException(401)
+
+    raise fastapi.HTTPException(401)
 
 
 class CustomTestClient(httpx.AsyncClient):

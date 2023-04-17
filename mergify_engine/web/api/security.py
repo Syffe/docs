@@ -56,8 +56,8 @@ class ApplicationAuth(fastapi.security.http.HTTPBearer):
             if self.auto_error:
                 # Not really possible it has been raised earlier but I please mypy
                 raise fastapi.HTTPException(status_code=403)
-            else:
-                return None
+
+            return None
 
         api_access_key = credentials.credentials[: types.API_ACCESS_KEY_LEN]
         api_secret_key = credentials.credentials[types.API_ACCESS_KEY_LEN :]
@@ -68,8 +68,7 @@ class ApplicationAuth(fastapi.security.http.HTTPBearer):
         except application_mod.ApplicationUserNotFound:
             if self.auto_error:
                 raise fastapi.HTTPException(status_code=403)
-            else:
-                return None
+            return None
 
         if self.verify_scope:
             scope: github_types.GitHubLogin | None = request.path_params.get("owner")
@@ -81,8 +80,7 @@ class ApplicationAuth(fastapi.security.http.HTTPBearer):
             if app.account_scope["login"].lower() != scope.lower():
                 if self.auto_error:
                     raise fastapi.HTTPException(status_code=403)
-                else:
-                    return None
+                return None
 
         return app
 
@@ -105,12 +103,12 @@ def build_actor(
             id=auth_method.id,
             name=auth_method.name,
         )
-    else:
-        return github.Actor(
-            type="user",
-            id=auth_method.id,
-            name=auth_method.login,
-        )
+
+    return github.Actor(
+        type="user",
+        id=auth_method.id,
+        name=auth_method.login,
+    )
 
 
 async def get_logged_user(request: fastapi.Request) -> github_user.GitHubUser | None:
@@ -236,17 +234,18 @@ async def check_logged_user_has_write_access(
     if application is not None:
         # Application keys has no scope yet, just allow everything
         return
-    elif logged_user is not None:
-        try:
-            permission = await repository_ctxt.get_user_permission(
-                logged_user.to_github_account()
-            )
-        except http.HTTPForbidden:
-            raise fastapi.HTTPException(status_code=403)
 
-        if permission < github_types.GitHubRepositoryPermission.WRITE:
-            raise fastapi.HTTPException(status_code=403)
-    else:
+    if logged_user is None:
+        raise fastapi.HTTPException(status_code=403)
+
+    try:
+        permission = await repository_ctxt.get_user_permission(
+            logged_user.to_github_account()
+        )
+    except http.HTTPForbidden:
+        raise fastapi.HTTPException(status_code=403)
+
+    if permission < github_types.GitHubRepositoryPermission.WRITE:
         raise fastapi.HTTPException(status_code=403)
 
 

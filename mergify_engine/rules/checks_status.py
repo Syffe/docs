@@ -77,8 +77,7 @@ async def _get_checks_result(
 
     if all(results.values()):
         return check_api.Conclusion.SUCCESS
-    else:
-        return check_api.Conclusion.FAILURE
+    return check_api.Conclusion.FAILURE
 
 
 async def get_rule_checks_status(
@@ -106,26 +105,26 @@ async def get_rule_checks_status(
             # So don't merge broken stuff
             return check_api.Conclusion.PENDING
         return result
-    else:
-        if wait_for_schedule_to_match:
-            schedule_match = await conditions_without_some_attributes_match_p(
-                log, pulls, rule, ("check-", "status-", "schedule")
+
+    if wait_for_schedule_to_match:
+        schedule_match = await conditions_without_some_attributes_match_p(
+            log, pulls, rule, ("check-", "status-", "schedule")
+        )
+        # NOTE(sileht): when something not related to checks does not match
+        # we now also remove schedule from the tree, if it match
+        # afterwards, it means that a schedule didn't match yet
+        if schedule_match:
+            # NOTE(sileht): now we look at the CIs result and if it fail
+            # we fail too, otherwise we wait for the schedule to match
+            result_without_schedule = await _get_checks_result(
+                repository,
+                pulls,
+                get_conditions_with_ignored_attributes(rule, ("schedule",)),
             )
-            # NOTE(sileht): when something not related to checks does not match
-            # we now also remove schedule from the tree, if it match
-            # afterwards, it means that a schedule didn't match yet
-            if schedule_match:
-                # NOTE(sileht): now we look at the CIs result and if it fail
-                # we fail too, otherwise we wait for the schedule to match
-                result_without_schedule = await _get_checks_result(
-                    repository,
-                    pulls,
-                    get_conditions_with_ignored_attributes(rule, ("schedule",)),
-                )
-                if result_without_schedule == check_api.Conclusion.FAILURE:
-                    return result_without_schedule
-                return check_api.Conclusion.PENDING
-            else:
-                return check_api.Conclusion.FAILURE
-        else:
-            return check_api.Conclusion.FAILURE
+            if result_without_schedule == check_api.Conclusion.FAILURE:
+                return result_without_schedule
+            return check_api.Conclusion.PENDING
+
+        return check_api.Conclusion.FAILURE
+
+    return check_api.Conclusion.FAILURE

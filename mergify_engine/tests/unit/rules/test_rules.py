@@ -1108,12 +1108,15 @@ async def test_get_pull_request_rules_evaluator(
     ) -> dict[str, str] | None:
         if url == "/repos/Mergifyio/mergify-engine/collaborators/sileht/permission":
             return {"permission": "write"}
-        elif url == "/repos/Mergifyio/mergify-engine/collaborators/jd/permission":
+
+        if url == "/repos/Mergifyio/mergify-engine/collaborators/jd/permission":
             return {"permission": "write"}
-        elif url == "/repos/Mergifyio/mergify-engine/branches/main/protection":
+
+        if url == "/repos/Mergifyio/mergify-engine/branches/main/protection":
             raise http.HTTPNotFound(
                 message="boom", response=mock.Mock(), request=mock.Mock()
             )
+
         raise RuntimeError(f"not handled url {url}")
 
     client.item.side_effect = client_item

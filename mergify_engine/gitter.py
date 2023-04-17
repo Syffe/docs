@@ -195,7 +195,8 @@ class Gitter:
         if output == "" or returncode == -15:
             # SIGKILL...
             return GitErrorRetriable(returncode, "Git process got killed")
-        elif cls._is_force_push_lease_reject(output):
+
+        if cls._is_force_push_lease_reject(output):
             return GitErrorRetriable(
                 returncode,
                 f"Remote branch changed in the meantime: \n```\n{output}\n```\n",

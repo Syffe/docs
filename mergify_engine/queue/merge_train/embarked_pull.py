@@ -44,13 +44,13 @@ class EmbarkedPull:
                 config=config,
                 queued_at=queued_at,
             )
-        else:
-            return cls(
-                train=train,
-                user_pull_request_number=data["user_pull_request_number"],
-                config=data["config"],
-                queued_at=data["queued_at"],
-            )
+
+        return cls(
+            train=train,
+            user_pull_request_number=data["user_pull_request_number"],
+            config=data["config"],
+            queued_at=data["queued_at"],
+        )
 
     def serialized(self) -> "EmbarkedPull.Serialized":
         return self.Serialized(

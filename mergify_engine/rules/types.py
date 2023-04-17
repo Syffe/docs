@@ -51,15 +51,16 @@ class DummyContext(context.Context):
         if key in context.PullRequest.ATTRIBUTES:
             if key in cls.ALWAYS_STRING_ATTRIBUTES:
                 return ""
-            else:
-                return None
-        elif key in context.PullRequest.LIST_ATTRIBUTES:
+            return None
+
+        if key in context.PullRequest.LIST_ATTRIBUTES:
             a_list: list[str] = []
             return a_list
-        elif key in context.PullRequest.LIST_ATTRIBUTES_WITH_LENGTH_OPTIMIZATION:
+
+        if key in context.PullRequest.LIST_ATTRIBUTES_WITH_LENGTH_OPTIMIZATION:
             return 0
-        else:
-            raise context.PullRequestAttributeError(key)
+
+        raise context.PullRequestAttributeError(key)
 
     @staticmethod
     def ensure_complete() -> None:  # type: ignore[override]

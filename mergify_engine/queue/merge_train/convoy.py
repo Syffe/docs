@@ -341,8 +341,7 @@ class Convoy:
 
         # mypy still think the partition_names can have None elements even
         # with the if above
-        pull_summary = f"#{ctxt.pull['number']} is queued in the following partitions: {', '.join(partition_names)}"  # type: ignore[arg-type]
-        return pull_summary
+        return f"#{ctxt.pull['number']} is queued in the following partitions: {', '.join(partition_names)}"  # type: ignore[arg-type]
 
     def get_train_cars_by_tmp_pull(
         self, ctxt: context.Context

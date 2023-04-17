@@ -198,7 +198,8 @@ def fake_client() -> mock.Mock:
                 "content": base64.b64encode(MERGIFY_CONFIG.encode()).decode(),
                 "path": ".mergify.yml",
             }
-        elif url == "repos/Mergifyio/mergify-engine/branches/main":
+
+        if url == "repos/Mergifyio/mergify-engine/branches/main":
             return branch
 
         for i in range(40, 49):

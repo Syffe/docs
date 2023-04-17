@@ -43,7 +43,8 @@ async def sentry_tunnel(request: fastapi.Request) -> fastapi.Response:
     # required to not become an open sentry tunnel
     if dsn.hostname != SENTRY_HOST:
         raise fastapi.HTTPException(403, detail="Unauthorized sentry host")
-    elif project_id not in ALLOWED_PROJECT_IDS:
+
+    if project_id not in ALLOWED_PROJECT_IDS:
         raise fastapi.HTTPException(403, detail="Unauthorized project id")
 
     # nosemgrep: python.django.security.injection.tainted-url-host.tainted-url-host

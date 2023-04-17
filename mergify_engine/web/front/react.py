@@ -22,7 +22,8 @@ async def serve_static_file(
     if path.startswith(base_path) and os.path.isfile(path):
         if request.method == "HEAD":
             return fastapi.responses.Response(status_code=200)
-        elif request.method == "GET":
+
+        if request.method == "GET":
             response = starlette.responses.FileResponse(path)
             response.headers["Cache-control"] = "no-cache"
             response.headers["Expires"] = email.utils.format_datetime(date.utcnow())

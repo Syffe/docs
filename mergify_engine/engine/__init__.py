@@ -58,12 +58,9 @@ async def _check_configuration_changes(
     ):
         if await ctxt.get_engine_check_run(constants.CONFIGURATION_CHANGED_CHECK_NAME):
             return True
-        elif await ctxt.get_engine_check_run(
-            constants.CONFIGURATION_DELETED_CHECK_NAME
-        ):
+        if await ctxt.get_engine_check_run(constants.CONFIGURATION_DELETED_CHECK_NAME):
             return True
-        else:
-            return False
+        return False
 
     # NOTE(sileht): pull.base.sha is unreliable as its the sha when the PR is
     # open and not the merge-base/fork-point. So we compare the configuration from the base
@@ -223,10 +220,10 @@ async def _ensure_summary_on_head_sha(ctxt: context.Context) -> None:
         if sha == ctxt.pull["head"]["sha"]:
             ctxt.log.debug("head sha didn't changed, no need to copy summary")
             return
-        else:
-            ctxt.log.debug(
-                "head sha changed need to copy summary", gh_pull_previous_head_sha=sha
-            )
+
+        ctxt.log.debug(
+            "head sha changed need to copy summary", gh_pull_previous_head_sha=sha
+        )
 
     previous_summary = None
 
@@ -436,13 +433,13 @@ async def run(
             mergify_config["partition_rules"],
         )
         return None
-    else:
-        return await actions_runner.handle(
-            ctxt,
-            mergify_config["pull_request_rules"],
-            mergify_config["queue_rules"],
-            mergify_config["partition_rules"],
-        )
+
+    return await actions_runner.handle(
+        ctxt,
+        mergify_config["pull_request_rules"],
+        mergify_config["queue_rules"],
+        mergify_config["partition_rules"],
+    )
 
 
 @exceptions.log_and_ignore_exception("fail to create initial summary")

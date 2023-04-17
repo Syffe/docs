@@ -79,14 +79,12 @@ class HTTPPullRequestRegistry:
                 page_limit=None,
             ),
         )
-        pulls = [
+        return [
             ci_models.PullRequest(
                 id=p["id"], number=p["number"], title=p["title"], state=p["state"]
             )
             async for p in pull_payloads
         ]
-
-        return pulls
 
 
 @dataclasses.dataclass

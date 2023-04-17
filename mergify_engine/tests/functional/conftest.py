@@ -474,10 +474,11 @@ class wait_rate_limit(tenacity.wait.wait_base):
         exc = retry_state.outcome.exception()
         if exc is None:
             return 0
-        elif isinstance(exc, exceptions.RateLimited):
+
+        if isinstance(exc, exceptions.RateLimited):
             return int(exc.countdown.total_seconds())
 
-        elif isinstance(exc, RetrySecondaryRateLimit):
+        if isinstance(exc, RetrySecondaryRateLimit):
             if retry_state.attempt_number < 4:
                 return 10 * (retry_state.attempt_number + 1)
 
@@ -486,8 +487,8 @@ class wait_rate_limit(tenacity.wait.wait_base):
                 + datetime.timedelta(seconds=5)
                 - date.utcnow_from_clock_realtime()
             ).total_seconds()
-        else:
-            return 0
+
+        return 0
 
 
 @contextlib.asynccontextmanager

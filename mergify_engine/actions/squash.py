@@ -143,5 +143,4 @@ class SquashAction(actions.Action):
     def command_to_config(string: str) -> dict[str, typing.Any]:
         if string:
             return {"commit_message": string.strip()}
-        else:
-            return {}
+        return {}

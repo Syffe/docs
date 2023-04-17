@@ -98,12 +98,12 @@ class AssignExecutor(actions.ActionExecutor["AssignAction", AssignExecutorConfig
                 "Users added/removed from assignees",
                 "",
             )
-        else:
-            return check_api.Result(
-                check_api.Conclusion.SUCCESS,
-                "No users added/removed from assignees",
-                "",
-            )
+
+        return check_api.Result(
+            check_api.Conclusion.SUCCESS,
+            "No users added/removed from assignees",
+            "",
+        )
 
     async def cancel(self) -> check_api.Result:  # pragma: no cover
         return actions.CANCELLED_CHECK_REPORT

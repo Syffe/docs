@@ -188,7 +188,7 @@ async def get_stats_from_event_metadata(
             ),
         )
 
-    elif event_name == "action.queue.checks_end":
+    if event_name == "action.queue.checks_end":
         metadata = typing.cast(signals.EventQueueChecksEndMetadata, metadata)
         if metadata["aborted"]:
             if metadata["abort_code"] is None:

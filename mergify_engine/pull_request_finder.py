@@ -43,22 +43,23 @@ class PullRequestFinder:
             data = typing.cast(github_types.GitHubEventRefresh, data)
             if (pull_request_number := data.get("pull_request_number")) is not None:
                 return {pull_request_number}
-            elif (ref := data.get("ref")) is not None:
+
+            if (ref := data.get("ref")) is not None:
                 branch = github_types.GitHubRefType(ref[11:])  # refs/heads/
                 return await self._get_pull_numbers_from_repo(repo_id, branch)
-            else:
-                raise RuntimeError("unsupported refresh event format")
 
-        elif event_type == "push":
+            raise RuntimeError("unsupported refresh event format")
+
+        if event_type == "push":
             data = typing.cast(github_types.GitHubEventPush, data)
             branch = github_types.GitHubRefType(data["ref"][11:])  # refs/heads/
             return await self._get_pull_numbers_from_repo(repo_id, branch)
 
-        elif event_type == "status":
+        if event_type == "status":
             data = typing.cast(github_types.GitHubEventStatus, data)
             return await self._get_pull_numbers_from_sha(repo_id, data["sha"])
 
-        elif event_type in ("check_suite", "check_run"):
+        if event_type in ("check_suite", "check_run"):
             info: github_types.GitHubCheckRun | github_types.GitHubCheckSuite
             if event_type == "check_run":
                 data = typing.cast(github_types.GitHubEventCheckRun, data)
@@ -78,8 +79,8 @@ class PullRequestFinder:
                 sha = info["head_sha"]
                 pull_numbers = await self._get_pull_numbers_from_sha(repo_id, sha)
             return pull_numbers
-        else:
-            return set()
+
+        return set()
 
     async def _get_pull_numbers_from_sha(
         self,

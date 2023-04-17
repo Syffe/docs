@@ -207,7 +207,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
     ) -> check_api.Result:
         if not cars:
             raise RuntimeError("Ready to merge PR without any car....")
-        elif len(cars) > 1 or cars[0].train.partition_name is not None:
+
+        if len(cars) > 1 or cars[0].train.partition_name is not None:
             raise RuntimeError(
                 "Shouldn't be in queue_branch_merge_fastforward with partition rules in use"
             )
@@ -300,12 +301,11 @@ Then, re-embark the pull request into the merge queue by posting the comment
         queue_branch_merge_method = self.queue_rule.config["queue_branch_merge_method"]
         if queue_branch_merge_method is None:
             return self._queue_branch_merge_pull_request
-        elif queue_branch_merge_method == "fast-forward":
+        if queue_branch_merge_method == "fast-forward":
             return self._queue_branch_merge_fastforward
-        else:
-            raise RuntimeError(
-                f"Unsupported queue_branch_merge_method: {queue_branch_merge_method}"
-            )
+        raise RuntimeError(
+            f"Unsupported queue_branch_merge_method: {queue_branch_merge_method}"
+        )
 
     def _set_action_config_from_queue_rules(self) -> None:
         queue_rule_config_attributes_none_default: list[
@@ -740,16 +740,15 @@ Then, re-embark the pull request into the merge queue by posting the comment
             raise RuntimeError(
                 "get_unqueue_reason_from_action_result() on PENDING result"
             )
-        elif result.conclusion is check_api.Conclusion.SUCCESS:
+        if result.conclusion is check_api.Conclusion.SUCCESS:
             if self.ctxt.pull["merge_commit_sha"] is None:
                 raise RuntimeError("pull request merged but merge_commit_sha is null")
             return queue_utils.PrMerged(
                 self.ctxt.pull["number"], self.ctxt.pull["merge_commit_sha"]
             )
-        else:
-            return queue_utils.PrDequeued(
-                self.ctxt.pull["number"], details=f". {result.title}"
-            )
+        return queue_utils.PrDequeued(
+            self.ctxt.pull["number"], details=f". {result.title}"
+        )
 
     @staticmethod
     async def get_unqueue_reason_from_outcome(
@@ -761,7 +760,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 "get_unqueue_reason_from_outcome() called by check is not there"
             )
 
-        elif check["conclusion"] == "cancelled":
+        if check["conclusion"] == "cancelled":
             # NOTE(sileht): should not be possible as unqueue command already
             # remove the pull request from the queue
             return queue_utils.PrDequeued(
@@ -789,19 +788,22 @@ Then, re-embark the pull request into the merge queue by posting the comment
             return queue_utils.UnexpectedQueueChange(
                 change=train_car_state.outcome_message
             )
-        elif train_car_state.outcome == merge_train.TrainCarOutcome.CHECKS_FAILED:
+
+        if train_car_state.outcome == merge_train.TrainCarOutcome.CHECKS_FAILED:
             return queue_utils.ChecksFailed()
-        elif train_car_state.outcome == merge_train.TrainCarOutcome.CHECKS_TIMEOUT:
+
+        if train_car_state.outcome == merge_train.TrainCarOutcome.CHECKS_TIMEOUT:
             return queue_utils.ChecksTimeout()
-        elif (
+
+        if (
             train_car_state.outcome
             == merge_train.TrainCarOutcome.BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS
         ):
             return queue_utils.MaximumBatchFailureResolutionAttemptsReached()
-        else:
-            raise RuntimeError(
-                f"TrainCarState.outcome `{train_car_state.outcome.value}` can't be mapped to an AbortReason"
-            )
+
+        raise RuntimeError(
+            f"TrainCarState.outcome `{train_car_state.outcome.value}` can't be mapped to an AbortReason"
+        )
 
     @staticmethod
     async def _should_be_queued(ctxt: context.Context) -> bool:
@@ -963,22 +965,22 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 f"`update_method: {config['update_method']}` is not compatible with fast-forward merge method",
                 "`update_method` must be set to `rebase`.",
             )
-        elif config["commit_message_template"] is not None:
+        if config["commit_message_template"] is not None:
             raise InvalidQueueConfiguration(
                 "Commit message can't be changed with fast-forward merge method",
                 "`commit_message_template` must not be set if `method: fast-forward` is set.",
             )
-        elif queue_rule.config["batch_size"] > 1:
+        if queue_rule.config["batch_size"] > 1:
             raise InvalidQueueConfiguration(
                 "batch_size > 1 is not compatible with fast-forward merge method",
                 "The merge `method` or the queue configuration must be updated.",
             )
-        elif queue_rule.config["speculative_checks"] > 1:
+        if queue_rule.config["speculative_checks"] > 1:
             raise InvalidQueueConfiguration(
                 "speculative_checks > 1 is not compatible with fast-forward merge method",
                 "The merge `method` or the queue configuration must be updated.",
             )
-        elif not queue_rule.config["allow_inplace_checks"]:
+        if not queue_rule.config["allow_inplace_checks"]:
             raise InvalidQueueConfiguration(
                 "allow_inplace_checks=False is not compatible with fast-forward merge method",
                 "The merge `method` or the queue configuration must be updated.",
@@ -1010,7 +1012,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 ),
             )
 
-        elif queue_rule.config[
+        if queue_rule.config[
             "speculative_checks"
         ] > 1 and not ctxt.subscription.has_feature(subscription.Features.QUEUE_ACTION):
             raise InvalidQueueConfiguration(
@@ -1020,7 +1022,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 ),
             )
 
-        elif queue_rule.config["batch_size"] > 1 and not ctxt.subscription.has_feature(
+        if queue_rule.config["batch_size"] > 1 and not ctxt.subscription.has_feature(
             subscription.Features.QUEUE_ACTION
         ):
             raise InvalidQueueConfiguration(
@@ -1029,7 +1031,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     ctxt.pull["base"]["repo"]["owner"]["login"]
                 ),
             )
-        elif config[
+
+        if config[
             "priority"
         ] != queue.PriorityAliases.medium.value and not ctxt.subscription.has_feature(
             subscription.Features.PRIORITY_QUEUES
@@ -1040,7 +1043,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     ctxt.pull["base"]["repo"]["owner"]["login"]
                 ),
             )
-        elif len(partition_rules) > 0 and not ctxt.subscription.has_feature(
+
+        if len(partition_rules) > 0 and not ctxt.subscription.has_feature(
             subscription.Features.QUEUE_ACTION
         ):
             raise InvalidQueueConfiguration(
@@ -1058,7 +1062,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             # Note(charly): `queue_branch_merge_method=fast-forward` make the
             # use of batches compatible with branch protection
             # `required_status_checks=strict`
-            return None
+            return
 
         protection = await ctxt.repository.get_branch_protection(
             ctxt.pull["base"]["ref"]
@@ -1077,12 +1081,12 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     "batch_size>1",
                     BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT,
                 )
-            elif queue_rule.config["speculative_checks"] > 1:
+            if queue_rule.config["speculative_checks"] > 1:
                 raise IncompatibleBranchProtection(
                     "speculative_checks>1",
                     BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT,
                 )
-            elif queue_rule.config["allow_inplace_checks"] is False:
+            if queue_rule.config["allow_inplace_checks"] is False:
                 raise IncompatibleBranchProtection(
                     "allow_inplace_checks=false",
                     BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT,

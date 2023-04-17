@@ -43,8 +43,7 @@ class CommandMixin:
     def get_command(self) -> str:
         if self.command_args:
             return f"{self.name} {self.command_args}"
-        else:
-            return self.name
+        return self.name
 
 
 @dataclasses.dataclass

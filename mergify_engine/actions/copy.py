@@ -243,8 +243,8 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                     "%s already exists, but pull request not found", self.KIND
                 )
                 return self._get_failure_copy_result(branch_name, e.reason)
-            else:
-                return self._get_success_copy_result(branch_name, new_pull)
+            return self._get_success_copy_result(branch_name, new_pull)
+
         except duplicate_pull.DuplicateNotNeeded:
             return CopyResult(
                 branch_name,
@@ -252,6 +252,7 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 f"{self.KIND.capitalize()} to branch `{branch_name}` not needed, change already in branch `{branch_name}`",
                 None,
             )
+
         except duplicate_pull.DuplicateFailed as e:
             if isinstance(e, duplicate_pull.DuplicateUnexpectedError):
                 self.ctxt.log.error(
@@ -543,5 +544,4 @@ class CopyAction(actions.Action):
     def command_to_config(string: str) -> dict[str, typing.Any]:
         if string:
             return {"branches": string.split(" ")}
-        else:
-            return {}
+        return {}

@@ -35,16 +35,20 @@ async def test_user_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
                     == f"/repos/{self.owner}/{self.repo}/collaborators/foo/permission"
                 ):
                     return {"permission": "admin"}
-                elif url.startswith(f"/repos/{self.owner}/{self.repo}/collaborators/"):
+
+                if url.startswith(f"/repos/{self.owner}/{self.repo}/collaborators/"):
                     return {"permission": "loser"}
+
             elif self.repo == "test2":
                 if (
                     url
                     == f"/repos/{self.owner}/{self.repo}/collaborators/bar/permission"
                 ):
                     return {"permission": "admin"}
-                elif url.startswith(f"/repos/{self.owner}/{self.repo}/collaborators/"):
+
+                if url.startswith(f"/repos/{self.owner}/{self.repo}/collaborators/"):
                     return {"permission": "loser"}
+
             raise ValueError(f"Unknown test URL `{url}` for repo {self.repo}")
 
     gh_owner = github_types.GitHubAccount(
@@ -355,14 +359,16 @@ async def test_team_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
                 == f"/orgs/{self.owner}/teams/team-ok/repos/{self.owner}/{self.repo}"
             ):
                 return {}
-            elif (
+
+            if (
                 url
                 == f"/orgs/{self.owner}/teams/team-nok/repos/{self.owner}/{self.repo}"
             ):
                 raise http.HTTPNotFound(
                     message="Not found", request=mock.ANY, response=mock.ANY
                 )
-            elif (
+
+            if (
                 url
                 == f"/orgs/{self.owner}/teams/team-also-nok/repos/{self.owner}/{self.repo}"
             ):

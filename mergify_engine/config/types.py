@@ -105,7 +105,7 @@ class LogLevel(pydantic.PositiveInt):
             "INFO",
             "DEBUG",
         ):
-            value = int(getattr(logging, value.upper()))
+            return int(getattr(logging, value.upper()))
         return value
 
 

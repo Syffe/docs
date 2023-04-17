@@ -143,43 +143,40 @@ class MergeUtilsMixin:
                 f"The pull request has been merged automatically at *{ctxt.pull['head']['sha']}*",
             )
 
-        else:  # Via API
-            try:
-                commit_title_and_message = await ctxt.pull_request.get_commit_message(
-                    commit_message_template,
-                )
-            except context.RenderTemplateFailure as rmf:
-                return check_api.Result(
-                    check_api.Conclusion.FAILURE,
-                    "Invalid commit message",
-                    str(rmf),
-                )
+        try:
+            commit_title_and_message = await ctxt.pull_request.get_commit_message(
+                commit_message_template,
+            )
+        except context.RenderTemplateFailure as rmf:
+            return check_api.Result(
+                check_api.Conclusion.FAILURE,
+                "Invalid commit message",
+                str(rmf),
+            )
 
-            if commit_title_and_message is not None:
-                title, message = commit_title_and_message
-                data["commit_title"] = title
-                data["commit_message"] = message
+        if commit_title_and_message is not None:
+            title, message = commit_title_and_message
+            data["commit_title"] = title
+            data["commit_message"] = message
 
-            data["sha"] = ctxt.pull["head"]["sha"]
-            data["merge_method"] = merge_method
+        data["sha"] = ctxt.pull["head"]["sha"]
+        data["merge_method"] = merge_method
 
-            try:
-                await ctxt.client.put(
-                    f"{ctxt.base_url}/pulls/{ctxt.pull['number']}/merge",
-                    oauth_token=on_behalf.oauth_access_token if on_behalf else None,
-                    json=data,
-                )
-            except http.HTTPClientSideError as e:  # pragma: no cover
-                await ctxt.update()
-                if ctxt.pull["merged"]:
-                    ctxt.log.info("merged in the meantime")
-                else:
-                    return await self._handle_merge_error(
-                        e, ctxt, pending_result_builder
-                    )
+        try:
+            await ctxt.client.put(
+                f"{ctxt.base_url}/pulls/{ctxt.pull['number']}/merge",
+                oauth_token=on_behalf.oauth_access_token if on_behalf else None,
+                json=data,
+            )
+        except http.HTTPClientSideError as e:  # pragma: no cover
+            await ctxt.update()
+            if ctxt.pull["merged"]:
+                ctxt.log.info("merged in the meantime")
             else:
-                await ctxt.update(wait_merged=True)
-                ctxt.log.info("merged")
+                return await self._handle_merge_error(e, ctxt, pending_result_builder)
+        else:
+            await ctxt.update(wait_merged=True)
+            ctxt.log.info("merged")
 
         await self.create_recently_merged_tracker(
             ctxt.repository.installation.redis.cache,
@@ -206,7 +203,8 @@ class MergeUtilsMixin:
             )
             await self._refresh_for_retry(ctxt)
             return await pending_result_builder(ctxt)
-        elif "Base branch was modified" in e.message:
+
+        if "Base branch was modified" in e.message:
             # NOTE(sileht): The base branch was modified between pull.is_behind call and
             # here, usually by something not merged by mergify. So we need sync it again
             # with the base branch.
@@ -218,7 +216,7 @@ class MergeUtilsMixin:
             await self._refresh_for_retry(ctxt)
             return await pending_result_builder(ctxt)
 
-        elif e.status_code == 405:
+        if e.status_code == 405:
             if REQUIRED_STATUS_RE.match(e.message):
                 # NOTE(sileht): when brand protection are enabled, we might get
                 # a 405 with branch protection issue, when the head branch was
@@ -249,7 +247,8 @@ class MergeUtilsMixin:
                     "the [required status check](https://docs.github.com/en/github/administering-a-repository/about-required-status-checks) "
                     f"validate the pull request. (detail: {e.message})",
                 )
-            elif FORBIDDEN_REBASE_MERGE_MSG in e.message:
+
+            if FORBIDDEN_REBASE_MERGE_MSG in e.message:
                 ctxt.log.info(
                     "Repository configuration doesn't allow rebase merge",
                     status_code=e.status_code,
@@ -263,7 +262,7 @@ class MergeUtilsMixin:
                     "allowed in the repository configuration settings.",
                 )
 
-            elif FORBIDDEN_SQUASH_MERGE_MSG in e.message:
+            if FORBIDDEN_SQUASH_MERGE_MSG in e.message:
                 ctxt.log.info(
                     "Repository configuration doesn't allow squash merge",
                     status_code=e.status_code,
@@ -277,7 +276,7 @@ class MergeUtilsMixin:
                     "allowed in the repository configuration settings.",
                 )
 
-            elif FORBIDDEN_MERGE_COMMITS_MSG in e.message:
+            if FORBIDDEN_MERGE_COMMITS_MSG in e.message:
                 ctxt.log.info(
                     "Repository configuration doesn't allow merge commit",
                     status_code=e.status_code,
@@ -291,34 +290,33 @@ class MergeUtilsMixin:
                     "allowed in the repository configuration settings.",
                 )
 
-            else:
-                ctxt.log.info(
-                    "Branch protection settings are not validated anymore",
-                    status_code=e.status_code,
-                    error_message=e.message,
-                )
-
-                return check_api.Result(
-                    check_api.Conclusion.CANCELLED,
-                    "Branch protection settings are not validated anymore",
-                    "[Branch protection](https://docs.github.com/en/github/administering-a-repository/about-protected-branches) is enabled and is preventing Mergify "
-                    "to merge the pull request. Mergify will merge when "
-                    "branch protection settings validate the pull request once again. "
-                    f"(detail: {e.message})",
-                )
-        else:
-            message = "Mergify failed to merge the pull request"
             ctxt.log.info(
-                "merge fail",
+                "Branch protection settings are not validated anymore",
                 status_code=e.status_code,
-                mergify_message=message,
                 error_message=e.message,
             )
+
             return check_api.Result(
                 check_api.Conclusion.CANCELLED,
-                message,
-                f"GitHub error message: `{e.message}`",
+                "Branch protection settings are not validated anymore",
+                "[Branch protection](https://docs.github.com/en/github/administering-a-repository/about-protected-branches) is enabled and is preventing Mergify "
+                "to merge the pull request. Mergify will merge when "
+                "branch protection settings validate the pull request once again. "
+                f"(detail: {e.message})",
             )
+
+        message = "Mergify failed to merge the pull request"
+        ctxt.log.info(
+            "merge fail",
+            status_code=e.status_code,
+            mergify_message=message,
+            error_message=e.message,
+        )
+        return check_api.Result(
+            check_api.Conclusion.CANCELLED,
+            message,
+            f"GitHub error message: `{e.message}`",
+        )
 
     async def pre_merge_checks(
         self,

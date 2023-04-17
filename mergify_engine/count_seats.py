@@ -145,9 +145,9 @@ async def store_active_users(
             return
         if user["login"].endswith("[bot]"):
             return
-        elif user["type"] == "Bot":
+        if user["type"] == "Bot":
             return
-        elif user["login"] == "web-flow":
+        if user["login"] == "web-flow":
             return
 
         users[user["id"]] = user["login"]
@@ -346,10 +346,9 @@ async def send_seats(seats: SeatsCountResultT) -> None:
         except Exception as exc:
             if exceptions.should_be_ignored(exc):
                 return
-            elif exceptions.need_retry(exc):
+            if exceptions.need_retry(exc):
                 raise tenacity.TryAgain
-            else:
-                raise
+            raise
 
 
 async def count_and_send(redis: redis_utils.RedisActiveUsers) -> None:

@@ -43,10 +43,9 @@ async def get_repositories_setuped(
                 if "next" in response.links:
                     url = response.links["next"]["url"]
                     continue
-                else:
-                    return repositories
-            else:
-                response.raise_for_status()
+                return repositories
+
+            response.raise_for_status()
 
 
 async def report_worker_status(

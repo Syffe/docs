@@ -226,7 +226,7 @@ class PostgresJobRegistry:
             )
             .exists()
         )
-        sql = (
+        return (
             sqlalchemy.select(
                 PullRequestJobRunAssociation2,
                 sqlalchemy.func.row_number().over(  # type: ignore [no-untyped-call]
@@ -241,8 +241,6 @@ class PostgresJobRegistry:
             .join(JobRun2)
             .where(subquery, JobRun2.run_attempt == 1)
         )
-
-        return sql
 
     def _create_filter(
         self,

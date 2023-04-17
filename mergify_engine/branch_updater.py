@@ -71,7 +71,8 @@ async def pre_rebase_check(ctxt: context.Context) -> None:
             "You cannot `rebase` a pull request from a private fork.",
             title="Pull request can't be updated with latest base branch changes",
         )
-    elif not ctxt.can_change_github_workflow() and await ctxt.github_workflow_changed():
+
+    if not ctxt.can_change_github_workflow() and await ctxt.github_workflow_changed():
         raise BranchUpdateFailure(
             f"{constants.NEW_MERGIFY_PERMISSIONS_MUST_BE_ACCEPTED}"
             "In the meantime, this pull request must be rebased manually.",

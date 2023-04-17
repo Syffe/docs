@@ -200,9 +200,9 @@ select = [
  "E", "W", "F", "I", "A", "B", "Q",
  "C4", "T10", "ISC", "ICN", "BLE",
  "G", "RSE", "TID", "TRY", "PLE", "UP",
- "RUF",
+ "RUF", "RET",
  # FIXME(sileht): very interresting, but require easy manual code change
- # "DTZ", "ARG", "TCH", "RET", "COM",
+ # "DTZ", "ARG", "TCH", "COM",
  # FIXME(sileht): doctring/rst-docstring like
  # "D"
 ]

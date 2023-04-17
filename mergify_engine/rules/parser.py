@@ -196,19 +196,22 @@ def _to_dict(
 def _unquote(value: str) -> str:
     if not value:
         return value
-    elif (
+
+    if (
         (value[0] == "'" and value[-1] != "'")
         or (value[0] == '"' and value[-1] != '"')
         or (value[0] != "'" and value[-1] == "'")
         or (value[0] != '"' and value[-1] == '"')
     ):
         raise ConditionParsingError("Unbalanced quotes")
-    elif (
+
+    if (
         (value[0] == '"' and value[-1] == '"')
         or (value[0] == "'" and value[-1] == "'")
         and len(value) >= 2
     ):
-        value = value[1:-1]
+        return value[1:-1]
+
     return value
 
 
@@ -363,11 +366,12 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
 
     if parser == Parser.BOOL:
         return _to_dict(negate, False, attribute, op, True)
-    elif parser == Parser.SCHEDULE:
+
+    if parser == Parser.SCHEDULE:
         cond: dict[str, typing.Any] = {op: ("current-time", parse_schedule(value))}
         return _to_dict(False, False, attribute, "@", cond)
 
-    elif parser == Parser.TIMESTAMP_OR_TIMEDELTA:
+    if parser == Parser.TIMESTAMP_OR_TIMEDELTA:
         value = _unquote(value)
         if parser == Parser.TIMESTAMP_OR_TIMEDELTA:
             try:
@@ -383,7 +387,7 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
             raise ConditionParsingError(e.message)
         return _to_dict(False, False, attribute, op, d)
 
-    elif parser in (
+    if parser in (
         Parser.NUMBER,
         Parser.POSITIVE_NUMBER,
     ):
@@ -396,7 +400,7 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
             raise ConditionParsingError("Value must be positive")
         return _to_dict(negate, False, attribute, op, number)
 
-    elif parser in (
+    if parser in (
         Parser.BRANCH,
         Parser.ENUM,
         Parser.LOGIN_AND_TEAMS,
@@ -452,15 +456,17 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
                 validate_github_team_name(value)
             else:
                 validate_github_login(value)
+
         return _to_dict(negate, quantity, attribute, op, value)
-    elif parser == Parser.PERMISSION:
+
+    if parser == Parser.PERMISSION:
         try:
             permission = github_types.GitHubRepositoryPermission(value)
         except ValueError as e:
             raise ConditionParsingError(str(e))
         return _to_dict(negate, False, attribute, op, permission)
-    else:
-        raise RuntimeError(f"unhandled parser: {parser}")
+
+    raise RuntimeError(f"unhandled parser: {parser}")
 
 
 def is_jinja_template(value: str) -> bool:

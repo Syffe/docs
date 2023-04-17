@@ -369,8 +369,7 @@ class Repository:
         if mergify_config_or_exception is not cache.Unset:
             if isinstance(mergify_config_or_exception, Exception):
                 raise mergify_config_or_exception
-            else:
-                return mergify_config_or_exception
+            return mergify_config_or_exception
 
         config_file = await self.get_mergify_config_file()
         if config_file is None:
@@ -492,8 +491,8 @@ class Repository:
                 exc.status_code == 422 and "Reference does not exist" in exc.message
             ):
                 return False
-            else:
-                raise
+            raise
+
         return True
 
     async def get_pull_request_context(
@@ -999,10 +998,9 @@ class Repository:
         else:
             if data["status"] in ("ahead", "identical"):
                 return 0
-            elif data["status"] in ("behind", "diverged"):
+            if data["status"] in ("behind", "diverged"):
                 return data["behind_by"]
-            else:
-                return None
+            return None
 
 
 @dataclasses.dataclass
@@ -1179,8 +1177,7 @@ class Context:
         ]
         if timestamps:
             return max(timestamps)
-        else:
-            return None
+        return None
 
     async def retrieve_review_threads(
         self,
@@ -1482,7 +1479,7 @@ class Context:
 
             return max([ep.position for ep in embarked_pulls])
 
-        elif name in ("queued-at", "queued-at-relative"):
+        if name in ("queued-at", "queued-at-relative"):
             embarked_pulls = await convoy.find_embarked_pull(self.pull["number"])
             if not embarked_pulls:
                 return None
@@ -1491,21 +1488,20 @@ class Context:
             # the PR should be queued at the same time for every partitions.
             if name == "queued-at":
                 return embarked_pulls[0].embarked_pull.queued_at
-            else:
-                return date.RelativeDatetime(embarked_pulls[0].embarked_pull.queued_at)
+            return date.RelativeDatetime(embarked_pulls[0].embarked_pull.queued_at)
 
-        elif name in ("queue-merge-started-at", "queue-merge-started-at-relative"):
+        if name in ("queue-merge-started-at", "queue-merge-started-at-relative"):
             # Only used with QueuePullRequest
             cars = convoy.get_train_cars_by_tmp_pull(self)
             if not cars:
                 cars = convoy.get_train_cars_by_pull(self)
                 if not cars:
                     return None
-                elif len(cars) > 1:
+                if len(cars) > 1:
                     # NOTE(Greesb): Attribute not yet handled for multiple cars (monorepo case)
                     raise PullRequestAttributeError(name)
-                else:
-                    started_at = cars[0].train_car_state.ci_started_at
+                started_at = cars[0].train_car_state.ci_started_at
+
             elif len(cars) > 1:
                 # NOTE(Greesb): Attribute not yet handled for multiple cars (monorepo case)
                 raise PullRequestAttributeError(name)
@@ -1517,14 +1513,12 @@ class Context:
 
             if name == "queue-merge-started-at":
                 return started_at
-            else:
-                return date.RelativeDatetime(started_at)
+            return date.RelativeDatetime(started_at)
 
-        elif name == "queue-partition-name":
+        if name == "queue-partition-name":
             return convoy.get_queue_pull_request_partition_names_from_context(self)
 
-        else:
-            raise PullRequestAttributeError(name)
+        raise PullRequestAttributeError(name)
 
     async def _get_consolidated_checks_data(
         self, states: tuple[str | None, ...] | None
@@ -1549,17 +1543,16 @@ class Context:
         if commit_attribute in ("date_author", "date_committer"):
             if relative_time:
                 return typing.cast(list[date.RelativeDatetime], return_values)
-            else:
-                return typing.cast(list[datetime.datetime], return_values)
-        elif commit_attribute == "commit_verification_verified":
+            return typing.cast(list[datetime.datetime], return_values)
+        if commit_attribute == "commit_verification_verified":
             return typing.cast(list[bool], return_values)
-        elif commit_attribute in (
+        if commit_attribute in (
             "email_author",
             "email_committer",
             "commit_message",
         ):
             return typing.cast(list[str], return_values)
-        elif commit_attribute in ("author", "committer"):
+        if commit_attribute in ("author", "committer"):
             return typing.cast(list[github_types.GitHubLogin], return_values)
 
         raise RuntimeError(f"Unknown commit attribute `{commit_attribute}`")
@@ -1583,16 +1576,15 @@ class Context:
         if commit_attribute not in ("date_author", "date_committer"):
             if commit_attribute == "commit_verification_verified":
                 return typing.cast(bool, value)
-            elif commit_attribute in (
+            if commit_attribute in (
                 "email_author",
                 "email_committer",
                 "commit_message",
             ):
                 return typing.cast(str, value)
-            elif commit_attribute in ("author", "committer"):
+            if commit_attribute in ("author", "committer"):
                 return typing.cast(github_types.GitHubLogin, value)
-            else:
-                raise RuntimeError(f"Unknown commit attribute `{commit_attribute}`")
+            raise RuntimeError(f"Unknown commit attribute `{commit_attribute}`")
 
         date_value = date.fromisoformat(value)
         if relative_time:
@@ -1604,13 +1596,13 @@ class Context:
         if name == "assignee":
             return [a["login"] for a in self.pull["assignees"]]
 
-        elif name.startswith("queue"):
+        if name.startswith("queue"):
             return await self._get_consolidated_queue_data(name)
 
-        elif name == "label":
+        if name == "label":
             return [label["name"] for label in self.pull["labels"]]
 
-        elif name == "review-requested":
+        if name == "review-requested":
             return (
                 [typing.cast(str, u["login"]) for u in self.pull["requested_reviewers"]]
                 + [f"@{t['slug']}" for t in self.pull["requested_teams"]]
@@ -1619,82 +1611,82 @@ class Context:
                     for t in self.pull["requested_teams"]
                 ]
             )
-        elif name == "draft":
+        if name == "draft":
             return self.pull["draft"]
 
-        elif name == "mergify-configuration-changed":
+        if name == "mergify-configuration-changed":
             # NOTE(sileht): only internally used
             return self.configuration_changed
 
-        elif name == "author":
+        if name == "author":
             return self.pull["user"]["login"]
 
-        elif name == "merged-by":
+        if name == "merged-by":
             return (
                 self.pull["merged_by"]["login"]
                 if self.pull["merged_by"] is not None
                 else ""
             )
 
-        elif name == "merged":
+        if name == "merged":
             return self.pull["merged"]
 
-        elif name == "closed":
+        if name == "closed":
             return self.closed
 
-        elif name == "milestone":
+        if name == "milestone":
             return (
                 self.pull["milestone"]["title"]
                 if self.pull["milestone"] is not None
                 else ""
             )
 
-        elif name == "number":
+        if name == "number":
             return typing.cast(int, self.pull["number"])
 
-        elif name == "#commits-behind":
+        if name == "#commits-behind":
             return await self.commits_behind_count
 
-        elif name == "conflict":
+        if name == "conflict":
             return await self.is_conflicting()
 
-        elif name == "linear-history":
+        if name == "linear-history":
             return await self.has_linear_history()
 
-        elif name == "base":
+        if name == "base":
             return self.pull["base"]["ref"]
 
-        elif name == "head":
+        if name == "head":
             return self.pull["head"]["ref"]
 
-        elif name == "locked":
+        if name == "locked":
             return self.pull["locked"]
 
-        elif name == "title":
+        if name == "title":
             return self.pull["title"]
 
-        elif name == "body":
+        if name == "body":
             return MARKDOWN_COMMENT_RE.sub(
                 "",
                 self.body,
             )
 
-        elif name == "body-raw":
+        if name == "body-raw":
             return self.body
 
-        elif name == "#files":
+        if name == "#files":
             return self.pull["changed_files"]
 
-        elif name == "files":
+        if name == "files":
             return [f["filename"] for f in await self.files]
 
-        elif name == "#commits":
+        if name == "#commits":
             return self.pull["commits"]
 
-        elif name == "commits":
+        if name == "commits":
             return await self.commits
 
-        elif name.startswith("commits["):
+        if name.startswith("commits["):
             match = COMMITS_ARRAY_ATTRIBUTE_RE.match(name)
             if match is None:
                 raise PullRequestAttributeError(name)
@@ -1721,36 +1713,39 @@ class Context:
 
             return self._get_commit_attribute(commit, commit_attribute, relative_time)
 
-        elif name == "approved-reviews-by":
+        if name == "approved-reviews-by":
             _, approvals = await self.consolidated_reviews()
             return [r["user"]["login"] for r in approvals if r["state"] == "APPROVED"]
-        elif name == "dismissed-reviews-by":
+
+        if name == "dismissed-reviews-by":
             _, approvals = await self.consolidated_reviews()
             return [r["user"]["login"] for r in approvals if r["state"] == "DISMISSED"]
-        elif name == "changes-requested-reviews-by":
+
+        if name == "changes-requested-reviews-by":
             _, approvals = await self.consolidated_reviews()
             return [
                 r["user"]["login"]
                 for r in approvals
                 if r["state"] == "CHANGES_REQUESTED"
             ]
-        elif name == "commented-reviews-by":
+
+        if name == "commented-reviews-by":
             comments, _ = await self.consolidated_reviews()
             return [r["user"]["login"] for r in comments if r["state"] == "COMMENTED"]
 
         # NOTE(jd) The Check API set conclusion to None for pending.
-        elif name == "check-success-or-neutral-or-pending":
+        if name == "check-success-or-neutral-or-pending":
             return await self._get_consolidated_checks_data(
                 ("success", "neutral", "pending", None)
             )
 
-        elif name == "check-success-or-neutral":
+        if name == "check-success-or-neutral":
             return await self._get_consolidated_checks_data(("success", "neutral"))
 
-        elif name in ("status-success", "check-success"):
+        if name in ("status-success", "check-success"):
             return await self._get_consolidated_checks_data(("success",))
 
-        elif name in ("status-failure", "check-failure"):
+        if name in ("status-failure", "check-failure"):
             # hopefully "cancelled" is actually a failure state to github.
             # I think it is, however it could be the same thing as the
             # "skipped" status.
@@ -1758,28 +1753,28 @@ class Context:
                 ("failure", "action_required", "cancelled", "timed_out", "error")
             )
 
-        elif name in ("status-neutral", "check-neutral"):
+        if name in ("status-neutral", "check-neutral"):
             return await self._get_consolidated_checks_data(("neutral",))
 
-        elif name == "check-timed-out":
+        if name == "check-timed-out":
             return await self._get_consolidated_checks_data(("timed_out",))
 
-        elif name == "check-skipped":
+        if name == "check-skipped":
             # hopefully this handles the gray "skipped" state that github actions
             # workflows can send when a job that depends on a job and the job it
             # depends on fails, making it get skipped automatically then.
             return await self._get_consolidated_checks_data(("skipped",))
 
-        elif name == "check":
+        if name == "check":
             return await self._get_consolidated_checks_data(None)
 
-        elif name == "check-pending":
+        if name == "check-pending":
             return await self._get_consolidated_checks_data((None, "pending"))
 
-        elif name == "check-stale":
+        if name == "check-stale":
             return await self._get_consolidated_checks_data(("stale",))
 
-        elif name == "depends-on":
+        if name == "depends-on":
             # TODO(sileht):  This is the list of merged pull requests that are
             # required by this pull request. An optimisation can be to look at
             # the merge queues too, to queue this pull request earlier
@@ -1795,53 +1790,62 @@ class Context:
                     depends_on.append(f"#{pull_request_number}")
             return depends_on
 
-        elif name == "current-time":
+        if name == "current-time":
             return date.utcnow()
 
-        elif name == "updated-at-relative":
+        if name == "updated-at-relative":
             return date.RelativeDatetime(date.fromisoformat(self.pull["updated_at"]))
-        elif name == "created-at-relative":
+        if name == "created-at-relative":
             return date.RelativeDatetime(date.fromisoformat(self.pull["created_at"]))
-        elif name == "closed-at-relative":
+        if name == "closed-at-relative":
             if self.pull["closed_at"] is None:
                 return None
             return date.RelativeDatetime(date.fromisoformat(self.pull["closed_at"]))
-        elif name == "merged-at-relative":
+        if name == "merged-at-relative":
             if self.pull["merged_at"] is None:
                 return None
             return date.RelativeDatetime(date.fromisoformat(self.pull["merged_at"]))
 
-        elif name == "updated-at":
+        if name == "updated-at":
             return date.fromisoformat(self.pull["updated_at"])
-        elif name == "created-at":
+
+        if name == "created-at":
             return date.fromisoformat(self.pull["created_at"])
-        elif name == "closed-at":
+
+        if name == "closed-at":
             if self.pull["closed_at"] is None:
                 return None
             return date.fromisoformat(self.pull["closed_at"])
-        elif name == "merged-at":
+
+        if name == "merged-at":
             if self.pull["merged_at"] is None:
                 return None
             return date.fromisoformat(self.pull["merged_at"])
-        elif name == "commits-unverified":
+
+        if name == "commits-unverified":
             return await self.retrieve_unverified_commits()
-        elif name == "review-threads-resolved":
+
+        if name == "review-threads-resolved":
             return [
                 t["first_comment"]
                 for t in await self.retrieve_review_threads()
                 if t["isResolved"]
             ]
-        elif name == "review-threads-unresolved":
+
+        if name == "review-threads-unresolved":
             return [
                 t["first_comment"]
                 for t in await self.retrieve_review_threads()
                 if not t["isResolved"]
             ]
-        elif name == "repository-name":
+
+        if name == "repository-name":
             return self.repository.repo["name"]
-        elif name == "repository-full-name":
+
+        if name == "repository-full-name":
             return self.repository.repo["full_name"]
-        elif name in (
+
+        if name in (
             "dependabot-dependency-name",
             "dependabot-dependency-type",
             "dependabot-update-type",
@@ -1851,16 +1855,16 @@ class Context:
                 return None
             if name == "dependabot-dependency-name":
                 return dependabot_attributes["dependency-name"]
-            elif name == "dependabot-dependency-type":
+            if name == "dependabot-dependency-type":
                 return dependabot_attributes["dependency-type"]
-            elif name == "dependabot-update-type":
+            if name == "dependabot-update-type":
                 return dependabot_attributes["update-type"]
-            else:
-                raise PullRequestAttributeError(name)
-        elif name == "branch-protection-review-decision":
-            return await self.retrieve_review_decision()
-        else:
             raise PullRequestAttributeError(name)
+
+        if name == "branch-protection-review-decision":
+            return await self.retrieve_review_decision()
+
+        raise PullRequestAttributeError(name)
 
     DEPENDS_ON = re.compile(
         r"^ *Depends-On: +(?:#|"
@@ -2041,8 +2045,7 @@ class Context:
     ) -> datetime.datetime:
         if check_run["completed_at"] is None:
             return datetime.datetime.max
-        else:
-            return datetime.datetime.fromisoformat(check_run["completed_at"][:-1])
+        return datetime.datetime.fromisoformat(check_run["completed_at"][:-1])
 
     @tracer.wrap("ensure_complete", span_type="worker")
     async def ensure_complete(self) -> None:
@@ -2640,8 +2643,7 @@ class QueuePullRequest(BasePullRequest):
         fancy_name = name.replace("_", "-")
         if fancy_name in self.QUEUE_ATTRIBUTES:
             return await self.queue_context._get_consolidated_data(fancy_name)
-        else:
-            return await self.context._get_consolidated_data(fancy_name)
+        return await self.context._get_consolidated_data(fancy_name)
 
 
 @dataclasses.dataclass
@@ -2658,7 +2660,6 @@ class CommandPullRequest(PullRequest):
     async def __getattr__(self, name: str) -> ContextAttributeType:
         if name == "sender":
             return self.sender
-        elif name == "sender-permission":
+        if name == "sender-permission":
             return self.sender_permission
-        else:
-            return await super().__getattr__(name)
+        return await super().__getattr__(name)

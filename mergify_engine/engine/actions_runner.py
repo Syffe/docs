@@ -89,25 +89,25 @@ async def get_already_merged_summary(
             "⚠️ The pull request has been closed by GitHub "
             "because its commits are also part of another pull request\n\n"
         )
-    else:
-        if ctxt.pull["merged_by"] is None:
-            merged_by = "???"
-        else:
-            merged_by = ctxt.pull["merged_by"]["login"]
 
-        return f"⚠️ The pull request has been merged by @{merged_by}\n\n"
+    if ctxt.pull["merged_by"] is None:
+        merged_by = "???"
+    else:
+        merged_by = ctxt.pull["merged_by"]["login"]
+
+    return f"⚠️ The pull request has been merged by @{merged_by}\n\n"
 
 
 def _sanitize_action_config(config_key: str, config_value: typing.Any) -> typing.Any:
     if "bot_account" in config_key and isinstance(config_value, dict):
         return config_value["login"]
-    elif isinstance(config_value, conditions.PullRequestRuleConditions):
+    if isinstance(config_value, conditions.PullRequestRuleConditions):
         return yaml.LiteralYamlString(config_value.get_summary().strip())
-    elif isinstance(config_value, set):
+    if isinstance(config_value, set):
         return list(config_value)
-    elif isinstance(config_value, str) and "\n" in config_value:
+    if isinstance(config_value, str) and "\n" in config_value:
         return yaml.LiteralYamlString(config_value)
-    elif isinstance(config_value, re.Pattern):
+    if isinstance(config_value, re.Pattern):
         return config_value.pattern
     return config_value
 
@@ -288,17 +288,17 @@ async def get_summary_check_result(
         return check_api.Result(
             check_api.Conclusion.SUCCESS, title=summary_title, summary=summary
         )
-    else:
-        ctxt.log.info(
-            "summary unchanged",
-            conclusions=conclusions,
-            previous_conclusions=previous_conclusions,
-        )
-        # NOTE(sileht): Here we run the engine, but nothing changed so we didn't
-        # update GitHub.
-        # In pratice, only the started_at and the ended_at is
-        # not up2date but we don't really care since no action ran
-        return None
+
+    ctxt.log.info(
+        "summary unchanged",
+        conclusions=conclusions,
+        previous_conclusions=previous_conclusions,
+    )
+    # NOTE(sileht): Here we run the engine, but nothing changed so we didn't
+    # update GitHub.
+    # In pratice, only the started_at and the ended_at is
+    # not up2date but we don't really care since no action ran
+    return None
 
 
 async def exec_action(
@@ -354,7 +354,7 @@ def load_conclusions_line(
             return None
         if lines[-1].startswith("<!-- ") and lines[-1].endswith(" -->"):
             return lines[-1]
-        elif lines[0].startswith("<!-- ") and lines[0].endswith(" -->"):
+        if lines[0].startswith("<!-- ") and lines[0].endswith(" -->"):
             return lines[0]
     return None
 
@@ -401,7 +401,7 @@ def get_previous_conclusion(
         return previous_conclusions[name]
     # NOTE(sileht): fallback on posted check-run in case we lose the Summary
     # somehow
-    elif name in checks:
+    if name in checks:
         return check_api.Conclusion(checks[name]["conclusion"])
     return check_api.Conclusion.NEUTRAL
 

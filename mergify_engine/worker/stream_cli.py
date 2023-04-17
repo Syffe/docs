@@ -31,10 +31,10 @@ async def async_status() -> None:
         )
         if owner_id in dedicated_worker_owner_ids:
             return f"dedicated-{owner_id}"
-        else:
-            return stream_services.SharedStreamService.get_shared_worker_id_for(
-                owner_id, global_shared_tasks_count
-            )
+
+        return stream_services.SharedStreamService.get_shared_worker_id_for(
+            owner_id, global_shared_tasks_count
+        )
 
     org_buckets: list[tuple[bytes, float]] = sorted(
         await redis_links.stream.zrangebyscore(

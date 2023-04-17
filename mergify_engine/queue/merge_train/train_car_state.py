@@ -257,8 +257,11 @@ def extract_encoded_train_car_state_data_from_summary(
         lines = summary_check["output"]["summary"].splitlines()
         if not lines:
             return None
+
         if lines[-1].startswith("<!-- ") and lines[-1].endswith(" -->"):
             return lines[-1]
-        elif lines[0].startswith("<!-- ") and lines[0].endswith(" -->"):
+
+        if lines[0].startswith("<!-- ") and lines[0].endswith(" -->"):
             return lines[0]
+
     return None

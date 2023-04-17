@@ -37,8 +37,7 @@ class BackportAction(copy.CopyAction):
     def command_to_config(string: str) -> dict[str, typing.Any]:
         if string:
             return {"branches": string.split(" ")}
-        else:
-            return {}
+        return {}
 
     async def get_conditions_requirements(
         self, ctxt: context.Context

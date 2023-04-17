@@ -157,10 +157,10 @@ class LabelExecutor(actions.ActionExecutor["LabelAction", LabelExecutorConfig]):
             return check_api.Result(
                 check_api.Conclusion.SUCCESS, "Labels added/removed", ""
             )
-        else:
-            return check_api.Result(
-                check_api.Conclusion.SUCCESS, "No label to add or remove", ""
-            )
+
+        return check_api.Result(
+            check_api.Conclusion.SUCCESS, "No label to add or remove", ""
+        )
 
     async def cancel(self) -> check_api.Result:  # pragma: no cover
         if not self.config["toggle"]:

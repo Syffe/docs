@@ -174,17 +174,15 @@ class DismissReviewsExecutor(
                 "Unable to dismiss review",
                 "\n".join(errors),
             )
-        else:
-            await signals.send(
-                self.ctxt.repository,
-                self.ctxt.pull["number"],
-                "action.dismiss_reviews",
-                signals.EventDismissReviewsMetadata({"users": list(to_dismiss_users)}),
-                self.rule.get_signal_trigger(),
-            )
-            return check_api.Result(
-                check_api.Conclusion.SUCCESS, "Review dismissed", ""
-            )
+
+        await signals.send(
+            self.ctxt.repository,
+            self.ctxt.pull["number"],
+            "action.dismiss_reviews",
+            signals.EventDismissReviewsMetadata({"users": list(to_dismiss_users)}),
+            self.rule.get_signal_trigger(),
+        )
+        return check_api.Result(check_api.Conclusion.SUCCESS, "Review dismissed", "")
 
     async def cancel(self) -> check_api.Result:  # pragma: no cover
         return actions.CANCELLED_CHECK_REPORT

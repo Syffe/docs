@@ -356,13 +356,13 @@ class Report:
     async def _lifecycle(self, job_run: models.JobRun) -> str | None:
         if job_run.lifecycle is None:
             return None
-        elif job_run.lifecycle == "retry":
+        if job_run.lifecycle == "retry":
             return "Manual retry"
-        else:
-            for pull in job_run.pulls:
-                position = self.job_registry.get_job_running_order(pull.id, job_run)
-                if position == 1:
-                    return "Initial push"
-                else:
-                    return "Update"
+
+        for pull in job_run.pulls:
+            position = self.job_registry.get_job_running_order(pull.id, job_run)
+            if position == 1:
+                return "Initial push"
+            return "Update"
+
         return None

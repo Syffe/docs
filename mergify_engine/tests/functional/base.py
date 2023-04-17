@@ -145,21 +145,21 @@ class GitterRecorder(gitter.Gitter):
                     }
                 )
             return output
-        else:
-            r = self.records.pop(0)
-            if "exc" in r:
-                raise gitter.GitError(
-                    returncode=r["exc"]["returncode"],
-                    output=r["exc"]["output"],
-                )
-            else:
-                assert r["args"] == self.prepare_args(
-                    args
-                ), f'{r["args"]} != {self.prepare_args(args)}'
-                assert r["kwargs"] == self.prepare_kwargs(
-                    kwargs
-                ), f'{r["kwargs"]} != {self.prepare_kwargs(kwargs)}'
-                return r["out"]
+
+        r = self.records.pop(0)
+        if "exc" in r:
+            raise gitter.GitError(
+                returncode=r["exc"]["returncode"],
+                output=r["exc"]["output"],
+            )
+
+        assert r["args"] == self.prepare_args(
+            args
+        ), f'{r["args"]} != {self.prepare_args(args)}'
+        assert r["kwargs"] == self.prepare_kwargs(
+            kwargs
+        ), f'{r["kwargs"]} != {self.prepare_kwargs(kwargs)}'
+        return r["out"]
 
     def prepare_args(self, args: typing.Any) -> list[str]:
         prepared_args = [
@@ -278,8 +278,8 @@ class EventReader:
                 if not self._match(data[key], expected):  # type: ignore[literal-required]
                     return False
             return True
-        else:
-            return bool(data == expected_data)
+
+        return bool(data == expected_data)
 
     async def _get_events(self, test_id: str | None = None) -> list[ForwardedEvent]:
         # NOTE(sileht): we use a counter to make each call unique in cassettes
@@ -356,10 +356,11 @@ class EventReader:
                 else:
                     data[key] = self._remove_useless_links(value)
             return data
-        elif isinstance(data, list):
+
+        if isinstance(data, list):
             return [self._remove_useless_links(elem) for elem in data]
-        else:
-            return data
+
+        return data
 
 
 @pytest.mark.usefixtures("logger_checker", "unittest_asyncio_glue")
@@ -959,9 +960,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
         self.created_branches.add(github_types.GitHubRefType(branch))
 
-        pr = typing.cast(github_types.GitHubPullRequest, resp.json())
-
-        return pr
+        return typing.cast(github_types.GitHubPullRequest, resp.json())
 
     async def create_pr_with_specific_commits(
         self,
@@ -1408,11 +1407,11 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             }}
         }}
         """
-        data = typing.cast(
+
+        return typing.cast(
             github_graphql_types.GraphqlReviewThreadsQuery,
             (await self.client_integration.graphql_post(query))["data"],
         )
-        return data
 
     async def reply_to_review_comment(
         self,
