@@ -118,4 +118,4 @@ cmd = "./tools/poetry-ci-install.sh"
 [tool.poe.tasks.revision]
 deps = ["setup"]
 help = "Create a database revision file"
-cmd = "./tools/run-tests.sh alembic revision"
+cmd = "./tools/run-tests.sh ./tools/run-alembic-revision.sh"
