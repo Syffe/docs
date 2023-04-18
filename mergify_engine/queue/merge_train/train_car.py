@@ -1207,6 +1207,11 @@ class TrainCar:
         await self.update_summaries()
         await self.send_refresh_to_user_pull_requests()
 
+        # Needed for statistics_accuracy signal, otherwise the `action.queue.checks_start`
+        # signal is sent without the train being saved, which will cause
+        # the train car to be None and cause the ETA calculated to always be None
+        await self.train.save()
+
         for ep in self.still_queued_embarked_pulls:
             position, _ = self.train.find_embarked_pull(ep.user_pull_request_number)
             if position is None:

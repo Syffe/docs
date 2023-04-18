@@ -5,28 +5,43 @@ from datadog import statsd  # type: ignore[attr-defined]
 
 from mergify_engine import date
 from mergify_engine import github_types
+from mergify_engine import json
 from mergify_engine import signals
 from mergify_engine.dashboard import subscription
-from mergify_engine.rules.config import queue_rules as qr_config
-from mergify_engine.web.api import statistics as stats_api
+from mergify_engine.queue import merge_train
+from mergify_engine.queue import statistics as queue_stats
+from mergify_engine.web.api.queues import estimated_time_to_merge as eta_queues_api
 
 
 if typing.TYPE_CHECKING:
     from mergify_engine import context
+    from mergify_engine.rules.config import partition_rules as partr_config
+
+
+def get_statistic_redis_key(
+    repository_owner_id: github_types.GitHubAccountIdType,
+    repository_id: github_types.GitHubRepositoryIdType,
+    partition_name: "partr_config.PartitionRuleName | None",
+    pull_number: github_types.GitHubPullRequestNumber,
+) -> str:
+    return f"{queue_stats._get_repository_key(repository_owner_id, repository_id)}/eta_accuracy/{partition_name}/{pull_number}"
 
 
 class StatisticsAccuracyMeasurement(signals.SignalBase):
-    SUPPORTED_EVENT_NAMES: typing.ClassVar[tuple[str, ...]] = ("action.queue.leave",)
+    SUPPORTED_EVENT_NAMES: typing.ClassVar[tuple[str, ...]] = (
+        "action.queue.checks_start",
+        "action.queue.leave",
+    )
 
     async def __call__(
         self,
         repository: "context.Repository",
-        pull_request: github_types.GitHubPullRequestNumber | None,
+        pull_request_number: github_types.GitHubPullRequestNumber | None,
         event: signals.EventName,
         metadata: signals.EventMetadata,
         trigger: str,
     ) -> None:
-        if event not in self.SUPPORTED_EVENT_NAMES:
+        if event not in self.SUPPORTED_EVENT_NAMES or pull_request_number is None:
             return
 
         if not repository.installation.subscription.has_feature(
@@ -34,42 +49,144 @@ class StatisticsAccuracyMeasurement(signals.SignalBase):
         ):
             return
 
+        if event == "action.queue.leave":
+            await self.queue_leave(repository, pull_request_number, metadata)
+        else:
+            await self.queue_checks_start(repository, pull_request_number, metadata)
+
+    async def queue_checks_start(
+        self,
+        repository: "context.Repository",
+        pull_request_number: github_types.GitHubPullRequestNumber,
+        metadata: signals.EventMetadata,
+    ) -> None:
+        metadata = typing.cast(signals.EventQueueChecksStartMetadata, metadata)
+        mergify_config = await repository.get_mergify_config()
+
+        convoy = merge_train.Convoy(
+            repository,
+            mergify_config["queue_rules"],
+            mergify_config["partition_rules"],
+            github_types.GitHubRefType(metadata["branch"]),
+        )
+        await convoy.load_from_redis()
+
+        embarked_pulls_list = await convoy.find_embarked_pull_with_train(
+            pull_request_number
+        )
+        pipe = await repository.installation.redis.stats.pipeline()
+
+        for train, (car, embarked_pull, _, position) in embarked_pulls_list:
+            previous_eta = None
+            if position > 0:
+                # If queue is in position>0, retrieve eta of previous PR
+                prev_pr_number = None
+                found = False
+                for car in train._cars:
+                    for embarked_pull in car.still_queued_embarked_pulls:
+                        if (
+                            embarked_pull.user_pull_request_number
+                            == pull_request_number
+                        ):
+                            found = True
+                            break
+
+                        prev_pr_number = embarked_pull.user_pull_request_number
+
+                    if found:
+                        break
+
+                if prev_pr_number is not None:
+                    prev_pr_redis_key = get_statistic_redis_key(
+                        repository.installation.owner_id,
+                        repository.repo["id"],
+                        train.partition_name,
+                        prev_pr_number,
+                    )
+                    raw_previous_pr_data = (
+                        await repository.installation.redis.stats.get(prev_pr_redis_key)
+                    )
+                    if raw_previous_pr_data is not None:
+                        previous_pr_data = json.loads(raw_previous_pr_data)
+                        previous_eta = previous_pr_data["eta"]
+
+            eta = await eta_queues_api.get_estimation(
+                train,
+                embarked_pull,
+                position,
+                car,
+                previous_eta,
+            )
+            if eta is None:
+                continue
+
+            redis_key = get_statistic_redis_key(
+                repository.installation.owner_id,
+                repository.repo["id"],
+                train.partition_name,
+                pull_request_number,
+            )
+
+            data = {
+                "eta": eta,
+            }
+
+            await pipe.set(
+                redis_key,
+                json.dumps(data),
+                ex=int(queue_stats.BACKEND_MERGE_QUEUE_STATS_RETENTION.total_seconds()),
+            )
+
+        await pipe.execute()
+
+    async def queue_leave(
+        self,
+        repository: "context.Repository",
+        pull_request_number: github_types.GitHubPullRequestNumber,
+        metadata: signals.EventMetadata,
+    ) -> None:
         metadata = typing.cast(signals.EventQueueLeaveMetadata, metadata)
         if not metadata["merged"]:
             return
 
-        queued_at = metadata["queued_at"].astimezone(datetime.UTC)
-        stat_raw = await stats_api.get_time_to_merge_stats_for_queue(
-            repository,
-            qr_config.QueueName(metadata["queue_name"]),
-            metadata["branch"],
-            int(queued_at.timestamp()),
+        real_stat = date.utcnow()
+
+        redis_key = get_statistic_redis_key(
+            repository.installation.owner_id,
+            repository.repo["id"],
+            metadata["partition_name"],
+            pull_request_number,
         )
-        measured_stat = stat_raw["median"]
-        if measured_stat is None:
+        raw_measured_stat = await repository.installation.redis.stats.getdel(redis_key)
+        if raw_measured_stat is None:
             return
 
-        real_stat = (date.utcnow() - queued_at).total_seconds()
+        measured_stat = json.loads(raw_measured_stat)["eta"]
 
         tags = [
             f"github_login:{repository.installation.owner_login}",
             f"repo:{repository.repo['name']}",
             f"branch:{metadata['branch']}",
             f"queue_name:{metadata['queue_name']}",
+            f"partition_name:{metadata['partition_name']}",
         ]
 
         statsd.gauge(
-            "statistics.time_to_merge.accuracy.median_value",
-            measured_stat,
+            "statistics.estimated_time_of_merge.accuracy.minutes_difference",
+            ((real_stat - measured_stat).total_seconds()) / 60,
             tags=tags,
         )
+
+        seconds_waiting_for_queue_freeze = metadata.get("seconds_waiting_for_freeze", 0)
         statsd.gauge(
-            "statistics.time_to_merge.accuracy.real_value",
-            real_stat,
-            tags=tags,
-        )
-        statsd.gauge(
-            "statistics.time_to_merge.accuracy.seconds_waiting_for_queue_freeze",
-            metadata.get("seconds_waiting_for_freeze", 0),
+            "statistics.estimated_time_of_merge.accuracy.minutes_difference_minus_queue_freeze",
+            (
+                (
+                    real_stat
+                    - datetime.timedelta(seconds=seconds_waiting_for_queue_freeze)
+                    - measured_stat
+                ).total_seconds()
+            )
+            / 60,
             tags=tags,
         )
