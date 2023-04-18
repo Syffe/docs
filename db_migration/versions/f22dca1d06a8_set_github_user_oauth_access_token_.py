@@ -10,7 +10,7 @@ import sqlalchemy
 
 
 revision = "f22dca1d06a8"
-down_revision = "49d540f8edc6"
+down_revision = "b61249e451dc"
 branch_labels = None
 depends_on = None
 
