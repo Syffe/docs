@@ -105,9 +105,9 @@ def logger_checker(
 
 
 @pytest.fixture(autouse=True)
-def setup_new_event_loop() -> None:
+def setup_new_event_loop(event_loop: asyncio.BaseEventLoop) -> None:
     # ensure each tests have a fresh event loop
-    asyncio.set_event_loop(asyncio.new_event_loop())
+    pass
 
 
 @pytest.fixture(autouse=True, scope="session")
