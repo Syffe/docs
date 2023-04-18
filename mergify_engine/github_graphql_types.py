@@ -104,7 +104,7 @@ class GraphqlBranchProtectionRuleMatchingRef(typing.TypedDict):
     prefix: str
 
 
-class GraphqlBranchProtectionRule(typing.TypedDict):
+class GraphqlBranchProtectionRule(typing.TypedDict, total=False):
     # https://docs.github.com/en/graphql/reference/objects#branchprotectionrule
     allowsDeletions: bool
     allowsForcePushes: bool
@@ -128,3 +128,41 @@ class GraphqlBranchProtectionRule(typing.TypedDict):
     requiresStrictStatusChecks: bool
     restrictsPushes: bool
     restrictsReviewDismissals: bool
+
+
+class GraphqlRequiredStatusCheckInput(typing.TypedDict):
+    appId: str
+    context: str
+
+
+class CreateGraphqlBranchProtectionRule(typing.TypedDict, total=False):
+    # https://docs.github.com/en/graphql/reference/mutations#createbranchprotectionrule
+    allowsDeletions: bool
+    allowsForcePushes: bool
+    blocksCreations: bool
+    bypassForcePushActorIds: list[str]
+    bypassPullRequestActorIds: list[str]
+    clientMutationId: str
+    dismissesStaleReviews: bool
+    isAdminEnforced: bool
+    lockAllowsFetchAndMerge: bool
+    lockBranch: bool
+    pattern: str
+    pushActorIds: list[str]
+    repositoryId: str
+    requireLastPushApproval: bool
+    requiredApprovingReviewCount: int
+    requiredDeploymentEnvironments: list[str]
+    requiredStatusCheckContexts: list[str]
+    requiredStatusChecks: list[GraphqlRequiredStatusCheckInput]
+    requiresApprovingReviews: bool
+    requiresCodeOwnerReviews: bool
+    requiresCommitSignatures: bool
+    requiresConversationResolution: bool
+    requiresDeployments: bool
+    requiresLinearHistory: bool
+    requiresStatusChecks: bool
+    requiresStrictStatusChecks: bool
+    restrictsPushes: bool
+    restrictsReviewDismissals: bool
+    reviewDismissalActorIds: list[str]

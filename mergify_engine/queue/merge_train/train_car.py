@@ -993,9 +993,47 @@ class TrainCar:
                     await self._set_creation_failure(exc_patch.message)
                     raise TrainCarPullRequestCreationFailure(self) from exc_patch
 
+            elif (
+                exc.status_code == 403
+                and exc.message == "Resource not accessible by integration"
+            ):
+                # There are some branch protection rules that forbids us from renaming the branch.
+                # Fallback to duplicating old branch ref with a different branch name
+                await self.duplicate_old_branch_to_new_branch(
+                    current_branch_name, new_branch_name, on_behalf
+                )
             else:
                 await self._set_creation_failure(exc.message, report_as_error=True)
                 raise TrainCarPullRequestCreationFailure(self) from exc
+
+    async def duplicate_old_branch_to_new_branch(
+        self,
+        current_branch_name: github_types.GitHubRefType,
+        new_branch_name: github_types.GitHubRefType,
+        on_behalf: github_user.GitHubUser | None,
+    ) -> None:
+        old_ref = await self.repository.installation.client.get(
+            f"/repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/git/refs/heads/{current_branch_name}",
+            oauth_token=on_behalf.oauth_access_token if on_behalf else None,
+        )
+
+        try:
+            await self.repository.installation.client.post(
+                f"/repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/git/refs",
+                json={
+                    "ref": f"refs/heads/{new_branch_name}",
+                    "sha": old_ref.json()["object"]["sha"],
+                },
+                oauth_token=on_behalf.oauth_access_token if on_behalf else None,
+            )
+
+            await self.repository.installation.client.delete(
+                f"/repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/git/refs/heads/{current_branch_name}",
+                oauth_token=on_behalf.oauth_access_token if on_behalf else None,
+            )
+        except http.HTTPClientSideError as exc:
+            await self._set_creation_failure(exc.message, report_as_error=True)
+            raise TrainCarPullRequestCreationFailure(self) from exc
 
     async def _get_draft_pr_setup(
         self,
@@ -1035,7 +1073,10 @@ class TrainCar:
         return base_sha, pulls_in_draft
 
     @tracer.wrap("TrainCar.start_checking_with_draft", span_type="worker")
-    async def start_checking_with_draft(self, previous_car: "TrainCar | None") -> None:
+    async def start_checking_with_draft(
+        self,
+        previous_car: "TrainCar | None",
+    ) -> None:
         queue_rule = self.get_queue_rule()
         self.head_branch = self._get_pulls_branch_ref(
             self.initial_embarked_pulls, self.parent_pull_request_numbers
@@ -1062,6 +1103,7 @@ class TrainCar:
         self.queue_branch_name = github_types.GitHubRefType(
             f"{self.QUEUE_BRANCH_PREFIX}{self.queue_branch_name}"
         )
+
         existing_pr = await self._prepare_draft_pr_branch(
             self.queue_branch_name, base_sha, on_behalf
         )
@@ -1132,6 +1174,7 @@ class TrainCar:
         except DraftPullRequestCreationTemporaryFailure as e:
             await self._delete_branch()
             raise TrainCarPullRequestCreationPostponed(self) from e
+
         await self._set_initial_state(checks_type, tmp_pull)
 
     async def _set_initial_state(

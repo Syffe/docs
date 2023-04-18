@@ -435,6 +435,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             )
         )
 
+        self._graphql_repository_id: str | None = None
+        self.created_branch_protection_rule_ids: set[str] = set()
         self.created_branches: set[github_types.GitHubRefType] = set()
         self.existing_labels: list[str] = []
         self.pr_counter: int = 0
@@ -603,6 +605,9 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                     )
                 except http.HTTPNotFound:
                     continue
+
+            for rule_id in self.created_branch_protection_rule_ids:
+                await self.delete_graphql_branch_protection_rule(rule_id)
 
         await self.app.aclose()
 
@@ -1500,6 +1505,111 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         )
         await self.wait_for("pull_request", {"action": "unlabeled"})
 
+    async def get_graphql_repository_id(
+        self, repository_ctxt: context.Repository
+    ) -> str:
+        query = f"""
+        query {{
+            repository(owner: "{repository_ctxt.repo["owner"]["login"]}", name: "{repository_ctxt.repo["name"]}") {{
+                id
+            }}
+        }}
+        """
+        response = await self.client_integration.graphql_post(query)
+        return typing.cast(str, response["data"]["repository"]["id"])
+
+    @property
+    async def graphql_repository_id(self) -> str:
+        if self._graphql_repository_id is None:
+            self._graphql_repository_id = await self.get_graphql_repository_id(
+                self.repository_ctxt
+            )
+        return self._graphql_repository_id
+
+    async def delete_graphql_branch_protection_rule(
+        self, branch_protection_rule_id: str
+    ) -> None:
+        query = f"""
+        mutation {{
+            deleteBranchProtectionRule(
+                input: {{
+                    branchProtectionRuleId: "{branch_protection_rule_id}",
+                    clientMutationId: "{self.mergify_bot['id']}"
+                }}
+            ) {{
+                clientMutationId
+            }}
+        }}
+        """
+        await self.client_admin.graphql_post(query)
+
+    @staticmethod
+    def _get_graphql_query_from_dict(
+        _dict: github_graphql_types.CreateGraphqlBranchProtectionRule,
+    ) -> str:
+        def _get_value_as_graphql_str(val: typing.Any) -> typing.Any:
+            if isinstance(val, bool):
+                return str(val).lower()
+            if isinstance(val, int | float):
+                return str(val)
+            if isinstance(val, str):
+                return f'"{val}"'
+
+            return val
+
+        return ",\n".join(
+            [f"{k}: {_get_value_as_graphql_str(v)}" for k, v in _dict.items()]
+        )
+
+    async def create_branch_protection_rule(
+        self,
+        branch_protection_rule: github_graphql_types.CreateGraphqlBranchProtectionRule,
+    ) -> github_graphql_types.GraphqlBranchProtectionRule:
+        query = f"""
+        mutation {{
+            createBranchProtectionRule(
+                input: {{
+                    {self._get_graphql_query_from_dict(branch_protection_rule)},
+                    repositoryId: "{await self.graphql_repository_id}"
+                }}
+            ) {{
+                branchProtectionRule {{
+                    allowsDeletions
+                    allowsForcePushes
+                    dismissesStaleReviews
+                    id
+                    isAdminEnforced
+                    pattern
+                    requiredApprovingReviewCount
+                    requiredStatusCheckContexts
+                    requiresApprovingReviews
+                    requiresCodeOwnerReviews
+                    requiresCommitSignatures
+                    requiresConversationResolution
+                    requiresLinearHistory
+                    requiresStatusChecks
+                    requiresStrictStatusChecks
+                    restrictsPushes
+                    restrictsReviewDismissals
+                    requireLastPushApproval
+                    requiredDeploymentEnvironments
+                    requiresDeployments
+                }}
+            }}
+        }}
+        """
+        response = await self.client_admin.graphql_post(query)
+
+        node_id = response["data"]["createBranchProtectionRule"][
+            "branchProtectionRule"
+        ].pop("id")
+        self.created_branch_protection_rule_ids.add(node_id)
+
+        return typing.cast(
+            github_graphql_types.GraphqlBranchProtectionRule,
+            response["data"]["createBranchProtectionRule"]["branchProtectionRule"],
+        )
+
     async def branch_protection_unprotect(self, branch: str) -> None:
         await self.client_admin.delete(
             f"{self.url_origin}/branches/{branch}/protection",
@@ -1683,9 +1793,11 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     async def merge_pull(
         self,
         pull_number: github_types.GitHubPullRequestNumber,
+        merge_method: typing.Literal["merge", "rebase", "squash"] = "merge",
     ) -> None:
         await self.client_integration.put(
-            f"{self.url_origin}/pulls/{pull_number}/merge"
+            f"{self.url_origin}/pulls/{pull_number}/merge",
+            json={"merge_method": merge_method},
         )
 
     async def merge_pull_as_admin(
