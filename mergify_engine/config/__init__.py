@@ -330,7 +330,7 @@ class TestingSettings(pydantic.BaseSettings):
     TESTING_GPGKEY_SECRET: str = ""
     TESTING_ID_GPGKEY_SECRET: str = ""
     TESTING_DEV_PERSONAL_TOKEN: str = pydantic.Field(
-        default="", exta_env="DEV_PERSONAL_TOKEN"
+        default="", extra_env="DEV_PERSONAL_TOKEN"
     )
 
 
