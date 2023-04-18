@@ -22,15 +22,25 @@ def fake_subscription(
 ) -> subscription.Subscription:
     marker = request.node.get_closest_marker("subscription")
     subscribed = marker is not None
+
+    if subscribed:
+        features = frozenset(
+            getattr(subscription.Features, f) for f in subscription.Features.__members__
+        )
+        all_features = [
+            typing.cast(subscription.FeaturesLiteralT, f.value)
+            for f in subscription.Features
+        ]
+    else:
+        features = frozenset([subscription.Features.PUBLIC_REPOSITORY])
+        all_features = ["public_repository"]
+
     return subscription.Subscription(
         redis_cache,
         github_types.GitHubAccountIdType(123),
         "sub or not to sub",
-        frozenset(
-            getattr(subscription.Features, f) for f in subscription.Features.__members__
-        )
-        if subscribed
-        else frozenset([subscription.Features.PUBLIC_REPOSITORY]),
+        features,
+        all_features,
     )
 
 

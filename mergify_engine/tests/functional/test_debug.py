@@ -43,6 +43,11 @@ class TestDebugger(base.FunctionalTestBase):
                 subscription.Features.SHOW_SPONSOR,
             ]
         )
+        self.subscription._all_features = [
+            "priority_queues",
+            "public_repository",
+            "show_sponsor",
+        ]
 
         await self.setup_repo(yaml.dump(rules))
         p = await self.create_pr()
@@ -288,6 +293,11 @@ mergeable_state: clean
                 subscription.Features.SHOW_SPONSOR,
             ]
         )
+        self.subscription._all_features = [
+            "priority_queues",
+            "public_repository",
+            "show_sponsor",
+        ]
 
         await self.setup_repo(yaml.dump(rules))
         p = await self.create_pr()

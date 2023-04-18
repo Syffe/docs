@@ -47,27 +47,30 @@ class Features(enum.Enum):
     WORKFLOW_AUTOMATION = "workflow_automation"
 
 
+FeaturesLiteralT = typing.Literal[
+    "private_repository",
+    "public_repository",
+    "priority_queues",
+    "custom_checks",
+    "random_request_reviews",
+    "merge_bot_account",
+    "queue_action",
+    "depends_on",
+    "show_sponsor",
+    "dedicated_worker",
+    "advanced_monitoring",
+    "queue_freeze",
+    "eventlogs_short",
+    "eventlogs_long",
+    "merge_queue_stats",
+    "merge_queue",
+    "workflow_automation",
+]
+
+
 class SubscriptionDict(typing.TypedDict):
     subscription_reason: str
-    features: list[
-        typing.Literal[
-            "private_repository",
-            "public_repository",
-            "priority_queues",
-            "custom_checks",
-            "random_request_reviews",
-            "merge_bot_account",
-            "queue_action",
-            "depends_on",
-            "show_sponsor",
-            "dedicated_worker",
-            "advanced_monitoring",
-            "queue_freeze",
-            "eventlogs_short",
-            "eventlogs_long",
-            "merge_queue_stats",
-        ]
-    ]
+    features: list[FeaturesLiteralT]
 
 
 @dataclasses.dataclass
@@ -75,7 +78,12 @@ class SubscriptionBase(abstract.ABC):
     redis: redis_utils.RedisCache
     owner_id: github_types.GitHubAccountIdType
     reason: str
+    # `features` contains a frozenset of `Features` enum we were able to instantiate
     features: frozenset[enum.Enum]
+    # `_all_features` contains every feature string that was in database, even
+    # the one that we were not able to instantiate. The features we were not able to
+    # instantiate might be new features not yet implemented on the engine side.
+    _all_features: list[FeaturesLiteralT]
     ttl: int = -2
 
     feature_flag_log_level: int = logging.WARNING
@@ -119,13 +127,14 @@ class SubscriptionBase(abstract.ABC):
             owner_id,
             sub["subscription_reason"],
             cls._to_features(sub.get("features", [])),
+            sub.get("features", []),
             ttl,
         )
 
     def to_dict(self) -> SubscriptionDict:
         return {
             "subscription_reason": self.reason,
-            "features": [f.value for f in self.features],
+            "features": self._all_features,
         }
 
     RETENTION_SECONDS = 60 * 60 * 24 * 3  # 3 days
@@ -204,6 +213,7 @@ class SubscriptionBase(abstract.ABC):
             await pipe.get(cls._cache_key(owner_id))
             await pipe.ttl(cls._cache_key(owner_id))
             encrypted_sub, ttl = typing.cast(tuple[bytes, int], await pipe.execute())
+
         if encrypted_sub:
             return cls.from_dict(
                 redis,

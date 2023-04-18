@@ -133,6 +133,10 @@ async def dashboard(
         settings.TESTING_ORGANIZATION_ID,
         "You're not nice",
         subscription_features,
+        [
+            typing.cast(subscription.FeaturesLiteralT, s.value)
+            for s in subscription_features
+        ],
     )
     await sub._save_subscription_to_cache()
 
@@ -169,6 +173,7 @@ async def dashboard(
             owner_id,
             "We're just testing",
             frozenset({subscription.Features.PUBLIC_REPOSITORY}),
+            ["public_repository"],
         )
 
     async def fake_subscription(
@@ -181,6 +186,7 @@ async def dashboard(
             owner_id,
             "We're just testing",
             frozenset({subscription.Features.PUBLIC_REPOSITORY}),
+            ["public_repository"],
         )
 
     patcher = mock.patch(

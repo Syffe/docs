@@ -113,6 +113,7 @@ async def test_user_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
         github_types.GitHubAccountIdType(0),
         "",
         frozenset([subscription.Features.PUBLIC_REPOSITORY]),
+        ["public_repository"],
     )
     client = FakeClient(gh_owner["login"], gh_repo["name"])
     installation = context.Installation(installation_json, sub, client, redis_links)
@@ -260,6 +261,7 @@ async def test_team_members_cache(redis_links: redis_utils.RedisLinks) -> None:
         github_types.GitHubAccountIdType(0),
         "",
         frozenset([subscription.Features.PUBLIC_REPOSITORY]),
+        ["public_repository"],
     )
     client = FakeClient(gh_owner["login"], gh_repo["name"])
     installation = context.Installation(installation_json, sub, client, redis_links)
@@ -419,6 +421,7 @@ async def test_team_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
         github_types.GitHubAccountIdType(0),
         "",
         frozenset([subscription.Features.PUBLIC_REPOSITORY]),
+        ["public_repository"],
     )
     client = FakeClient(gh_owner["login"], gh_repo["name"])
     installation = context.Installation(installation_json, sub, client, redis_links)

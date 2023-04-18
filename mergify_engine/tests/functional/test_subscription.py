@@ -1,3 +1,4 @@
+import typing
 from unittest import mock
 
 from mergify_engine import github_types
@@ -13,16 +14,25 @@ class TestSubscription(base.FunctionalTestBase):
             redis_cache: redis_utils.RedisCache,
             owner_id: github_types.GitHubAccountIdType,
         ) -> subscription.Subscription:
+            if self.SUBSCRIPTION_ACTIVE:
+                features = frozenset(
+                    getattr(subscription.Features, f)
+                    for f in subscription.Features.__members__
+                )
+                all_features = [
+                    typing.cast(subscription.FeaturesLiteralT, f.value)
+                    for f in subscription.Features
+                ]
+            else:
+                features = frozenset([])
+                all_features = []
+
             return subscription.Subscription(
                 self.redis_links.cache,
                 settings.TESTING_ORGANIZATION_ID,
                 "Abuse",
-                frozenset(
-                    getattr(subscription.Features, f)
-                    for f in subscription.Features.__members__
-                )
-                if self.SUBSCRIPTION_ACTIVE
-                else frozenset([]),
+                features,
+                all_features,
             )
 
         patcher = mock.patch(

@@ -1,3 +1,5 @@
+import enum
+import typing
 from unittest import mock
 
 import pydantic
@@ -18,6 +20,7 @@ async def test_init(redis_cache: redis_utils.RedisCache) -> None:
         github_types.GitHubAccountIdType(123),
         "friend",
         frozenset({subscription.Features.PRIVATE_REPOSITORY}),
+        ["private_repository"],
     )
 
 
@@ -28,6 +31,7 @@ async def test_dict(redis_cache: redis_utils.RedisCache) -> None:
         owner_id,
         "friend",
         frozenset({subscription.Features.PRIVATE_REPOSITORY}),
+        ["private_repository"],
     )
 
     assert sub.from_dict(redis_cache, owner_id, sub.to_dict(), -2) == sub
@@ -54,6 +58,7 @@ async def test_save_sub(
         owner_id,
         "friend",
         frozenset(features),
+        [typing.cast(subscription.FeaturesLiteralT, f.value) for f in features],
     )
 
     await sub._save_subscription_to_cache()
@@ -61,6 +66,59 @@ async def test_save_sub(
         redis_cache, owner_id
     )
     assert rsub == sub
+
+
+async def test_save_sub_with_unhandled_feature(
+    redis_cache: redis_utils.RedisCache,
+) -> None:
+    owner_id = github_types.GitHubAccountIdType(1234)
+
+    sub = subscription.Subscription.from_dict(
+        redis_cache,
+        owner_id,
+        {
+            "subscription_reason": "sub reason",
+            "features": [
+                "private_repository",
+                "public_repository",
+                "new_feature",  # type: ignore[list-item]
+            ],
+        },
+    )
+
+    assert sorted(sub._all_features) == sorted(
+        ["public_repository", "private_repository", "new_feature"]
+    )
+    assert sub.features == frozenset(
+        [
+            subscription.Features.PRIVATE_REPOSITORY,
+            subscription.Features.PUBLIC_REPOSITORY,
+        ]
+    )
+
+    await sub._save_subscription_to_cache()
+
+    @enum.unique
+    class FeaturesMock(enum.Enum):
+        PRIVATE_REPOSITORY = "private_repository"
+        PUBLIC_REPOSITORY = "public_repository"
+        NEW_FEATURE = "new_feature"
+
+    with mock.patch.object(subscription, "Features", FeaturesMock):
+        rsub = await subscription.Subscription._retrieve_subscription_from_cache(
+            redis_cache, owner_id
+        )
+        assert rsub is not None
+        assert sorted(rsub._all_features) == sorted(
+            ["public_repository", "private_repository", "new_feature"]
+        )
+        assert rsub.features == frozenset(
+            [
+                FeaturesMock.PRIVATE_REPOSITORY,
+                FeaturesMock.PUBLIC_REPOSITORY,
+                FeaturesMock.NEW_FEATURE,
+            ]
+        )
 
 
 @mock.patch.object(subscription.Subscription, "_retrieve_subscription_from_db")
@@ -74,6 +132,7 @@ async def test_subscription_db_unavailable(
         owner_id,
         "friend",
         frozenset([subscription.Features.PUBLIC_REPOSITORY]),
+        ["public_repository"],
     )
     retrieve_subscription_from_db_mock.return_value = sub
 
@@ -139,6 +198,7 @@ async def test_from_dict_unknown_features(redis_cache: redis_utils.RedisCache) -
         github_types.GitHubAccountIdType(123),
         "friend",
         frozenset(),
+        ["unknown feature"],  # type: ignore[list-item]
         -2,
     )
 
@@ -149,6 +209,7 @@ async def test_active_feature(redis_cache: redis_utils.RedisCache) -> None:
         github_types.GitHubAccountIdType(123),
         "friend",
         frozenset([subscription.Features.PRIORITY_QUEUES]),
+        ["priority_queues"],
     )
 
     assert sub.has_feature(subscription.Features.PRIORITY_QUEUES) is True
@@ -157,6 +218,7 @@ async def test_active_feature(redis_cache: redis_utils.RedisCache) -> None:
         github_types.GitHubAccountIdType(123),
         "friend",
         frozenset([subscription.Features.PRIORITY_QUEUES]),
+        ["priority_queues"],
     )
     assert sub.has_feature(subscription.Features.PRIORITY_QUEUES) is True
 
