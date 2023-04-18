@@ -1388,3 +1388,175 @@ class TestQueueApi(base.FunctionalTestBase):
             assert datetime.datetime.fromisoformat(
                 r.json()["queues"][0]["pull_requests"][0]["estimated_time_of_merge"]
             ) == datetime.datetime(2022, 10, 17, 8, 0, 1, tzinfo=datetime.UTC)
+
+
+class TestNewQueueApiEndpoint(base.FunctionalTestBase):
+    SUBSCRIPTION_ACTIVE = True
+
+    async def test_pr_in_queue_without_partitions(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "foo",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "check-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "queue",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "foo"}},
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        draft_pr_p1 = await self.wait_for_pull_request("opened")
+
+        r = await self.admin_app.get(
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/new/queue/foo/pull/{p1['number']}",
+        )
+
+        assert r.status_code == 200
+        assert r.json() == {
+            "number": p1["number"],
+            "priority": 0,
+            "queue_rule": {
+                "name": "foo",
+                "config": anys.ANY_MAPPING,
+            },
+            "queued_at": anys.ANY_AWARE_DATETIME_STR,
+            "estimated_time_of_merge": None,
+            "positions": {"null": 0},
+            "mergeability_checks": {
+                "null": {
+                    "check_type": "draft_pr",
+                    "checks": [],
+                    "conditions_evaluation": anys.ANY_MAPPING,
+                    "continuous_integrations_ended_at": None,
+                    "continuous_integrations_state": "pending",
+                    "ended_at": None,
+                    "evaluated_conditions": anys.ANY_STR,
+                    "pull_request_number": draft_pr_p1["number"],
+                    "started_at": anys.ANY_AWARE_DATETIME_STR,
+                    "state": "pending",
+                }
+            },
+            "partition_names": [None],
+        }
+
+    async def test_pr_in_multiple_partitions(self) -> None:
+        rules = {
+            "partition_rules": [
+                {
+                    "name": "projectA",
+                    "conditions": [
+                        "files~=^projA/",
+                    ],
+                },
+                {
+                    "name": "projectB",
+                    "conditions": [
+                        "files~=^projB/",
+                    ],
+                },
+            ],
+            "queue_rules": [
+                {
+                    "name": "foo",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "check-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "queue",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "foo"}},
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr(
+            files={
+                "projA/test.txt": "testA",
+                "projB/test.txt": "testB",
+            }
+        )
+
+        r = await self.admin_app.get(
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/new/queue/foo/pull/{p1['number']}",
+        )
+
+        assert r.status_code == 404
+        assert r.json()["detail"] == f"Pull request `{p1['number']}` not found"
+
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        draft_pr_p1 = await self.wait_for_pull_request("opened")
+
+        r = await self.admin_app.get(
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/new/queue/foo/pull/{p1['number']}",
+        )
+
+        assert r.status_code == 200
+        assert r.json() == {
+            "number": p1["number"],
+            "priority": 0,
+            "queue_rule": {
+                "name": "foo",
+                "config": anys.ANY_MAPPING,
+            },
+            "queued_at": anys.ANY_AWARE_DATETIME_STR,
+            "estimated_time_of_merge": None,
+            "positions": {"projectA": 0, "projectB": 0},
+            "mergeability_checks": {
+                "projectA": {
+                    "check_type": "draft_pr",
+                    "checks": [],
+                    "conditions_evaluation": anys.ANY_MAPPING,
+                    "continuous_integrations_ended_at": None,
+                    "continuous_integrations_state": "pending",
+                    "ended_at": None,
+                    "evaluated_conditions": anys.ANY_STR,
+                    "pull_request_number": draft_pr_p1["number"],
+                    "started_at": anys.ANY_AWARE_DATETIME_STR,
+                    "state": "pending",
+                },
+                "projectB": {
+                    "check_type": "draft_pr",
+                    "checks": [],
+                    "conditions_evaluation": anys.ANY_MAPPING,
+                    "continuous_integrations_ended_at": None,
+                    "continuous_integrations_state": "pending",
+                    "ended_at": None,
+                    "evaluated_conditions": anys.ANY_STR,
+                    "pull_request_number": draft_pr_p1["number"],
+                    "started_at": anys.ANY_AWARE_DATETIME_STR,
+                    "state": "pending",
+                },
+            },
+            "partition_names": ["projectA", "projectB"],
+        }

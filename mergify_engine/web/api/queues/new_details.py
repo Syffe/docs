@@ -12,6 +12,7 @@ from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine.queue import merge_train
 from mergify_engine.rules import conditions as rules_conditions
+from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web import api
 from mergify_engine.web.api import security
@@ -24,6 +25,7 @@ TRAIN_CAR_CHECKS_TYPE_MAPPING: dict[
 ] = {
     merge_train.TrainCarChecksType.INPLACE: "in_place",
     merge_train.TrainCarChecksType.DRAFT: "draft_pr",
+    merge_train.TrainCarChecksType.DRAFT_DELEGATED: "draft_pr",
 }
 
 router = fastapi.APIRouter(
@@ -91,6 +93,7 @@ class MergeabilityCheck:
 
         if car.train_car_state.checks_type in (
             merge_train.TrainCarChecksType.DRAFT,
+            merge_train.TrainCarChecksType.DRAFT_DELEGATED,
             merge_train.TrainCarChecksType.INPLACE,
         ):
             if car.queue_pull_request_number is None:
@@ -123,62 +126,56 @@ class MergeabilityCheck:
 
 
 @pydantic.dataclasses.dataclass
-class PullRequestSummary:
-    title: str = dataclasses.field(
-        metadata={"description": "The title of the pull request summary"}
-    )
-    unexpected_changes: str | None = dataclasses.field(
-        metadata={"description": "The unexpected changes summary"}
-    )
-    freeze: str | None = dataclasses.field(
-        metadata={"description": "The queue freeze summary"}
-    )
-    checks_timeout: str | None = dataclasses.field(
-        metadata={"description": "The checks timeout summary"}
-    )
-    batch_failure: str | None = dataclasses.field(
-        metadata={"description": "The batch failure summary title"}
-    )
-
-
-@pydantic.dataclasses.dataclass
 class EnhancedPullRequestQueued:
     number: github_types.GitHubPullRequestNumber = dataclasses.field(
         metadata={"description": "The number of the pull request"}
     )
 
-    position: int = dataclasses.field(
-        metadata={
-            "description": "The position of the pull request in the queue. The first pull request in the queue is at position 0"
-        }
-    )
-
     priority: int = dataclasses.field(
         metadata={"description": "The priority of this pull request"}
     )
+
     queue_rule: types.QueueRule = dataclasses.field(
         metadata={"description": "The queue rule associated to this pull request"}
     )
 
     queued_at: datetime.datetime = dataclasses.field(
         metadata={
-            "description": "The timestamp when the pull requested has entered in the queue"
+            "description": "The timestamp when the pull requested has entered the queue"
         }
     )
-    mergeability_check: MergeabilityCheck | None
 
     estimated_time_of_merge: datetime.datetime | None = dataclasses.field(
         metadata={
             "description": "The estimated timestamp when this pull request will be merged"
         }
     )
-    summary: PullRequestSummary | None = dataclasses.field(
-        metadata={"description": "The pull request summary"}
+
+    positions: dict[partr_config.PartitionRuleName | None, int] = dataclasses.field(
+        metadata={
+            "description": (
+                "The position of the pull request in the queue for each partitions "
+                "(if partitions are not used, the key will be `None`). "
+                "The first pull request in the queue is at position 0"
+            )
+        },
+        default_factory=dict,
+    )
+
+    mergeability_checks: dict[
+        partr_config.PartitionRuleName | None, MergeabilityCheck | None
+    ] = dataclasses.field(default_factory=dict)
+
+    partition_names: list[partr_config.PartitionRuleName | None] = dataclasses.field(
+        metadata={
+            "description": "The names of the partitions in which the pull request is queued in the specified queue"
+        },
+        default_factory=list,
     )
 
 
 @router.get(
-    "/queue/{queue_name}/pull/{pr_number}",
+    "/new/queue/{queue_name}/pull/{pr_number}",
     include_in_schema=False,
     summary="Get a queued pull request",
     description="Get a pull request queued in a merge queue of a repository",
@@ -286,13 +283,6 @@ class EnhancedPullRequestQueued:
                         },
                         "queued_at": "2021-10-14T14:19:12+00:00",
                         "estimated_time_of_merge": "2021-10-14T15:19:12+00:00",
-                        "summary": {
-                            "title": "The pull request is embarked for merge",
-                            "unexpected_changes": None,
-                            "freeze": None,
-                            "checks_timeout": None,
-                            "batch_failure": None,
-                        },
                     }
                 }
             }
@@ -301,9 +291,16 @@ class EnhancedPullRequestQueued:
     },
 )
 async def repository_queue_pull_request(
+    owner: typing.Annotated[
+        github_types.GitHubLogin,
+        fastapi.Path(description="The owner of the repository"),
+    ],
+    repository: typing.Annotated[
+        github_types.GitHubRepositoryName,
+        fastapi.Path(description="The name of the repository"),
+    ],
     queue_name: typing.Annotated[
-        qr_config.QueueName,
-        fastapi.Path(description="The queue name"),
+        qr_config.QueueName, fastapi.Path(description="The queue name")
     ],
     pr_number: typing.Annotated[
         github_types.GitHubPullRequestNumber,
@@ -322,56 +319,53 @@ async def repository_queue_pull_request(
             detail=f"Queue `{queue_name}` does not exist.",
         )
 
+    queued_pr = None
     async for convoy in merge_train.Convoy.iter_convoys(
         repository_ctxt, queue_rules, partition_rules
     ):
-        # FIXME(sileht): This doesn't work as expected wihen the convoy as multiple partitions
-        # this will be fixed by MRGFY-2007
         for train in convoy.iter_trains():
-            if train.partition_name is None:
-                for position, (embarked_pull, car) in enumerate(
-                    train._iter_embarked_pulls()
-                ):
-                    if embarked_pull.user_pull_request_number != pr_number:
-                        continue
+            position, embarked_pull_with_car = train.find_embarked_pull(pr_number)
+            if position is None or embarked_pull_with_car is None:
+                # Only one check should be enough, doing both just to please mypy
+                continue
 
-                    mergeability_check = MergeabilityCheck.from_train_car(car)
-                    estimated_time_of_merge = (
-                        await estimated_time_to_merge.get_estimation(
-                            train,
-                            embarked_pull,
-                            position,
-                            car,
-                        )
-                    )
+            embarked_pull, car = embarked_pull_with_car
 
-                    if car is not None:
-                        checked_pull = car.get_checked_pull()
-                        raw_summary = car.get_original_pr_summary(checked_pull)
-                        summary = PullRequestSummary(
-                            title=raw_summary.title,
-                            unexpected_changes=raw_summary.unexpected_changes,
-                            freeze=raw_summary.freeze,
-                            checks_timeout=raw_summary.checks_timeout,
-                            batch_failure=raw_summary.get_batch_failure_summary_title(),
-                        )
-                    else:
-                        summary = None
+            if (
+                embarked_pull.config["name"] != queue_name
+                or embarked_pull.user_pull_request_number != pr_number
+            ):
+                continue
 
-                    return EnhancedPullRequestQueued(
-                        number=embarked_pull.user_pull_request_number,
-                        position=position,
-                        priority=embarked_pull.config["priority"],
-                        queue_rule=types.QueueRule(
-                            name=embarked_pull.config["name"], config=queue_rule.config
-                        ),
-                        queued_at=embarked_pull.queued_at,
-                        mergeability_check=mergeability_check,
-                        estimated_time_of_merge=estimated_time_of_merge,
-                        summary=summary,
-                    )
+            if queued_pr is None:
+                estimated_time_of_merge = await estimated_time_to_merge.get_estimation(
+                    train,
+                    embarked_pull,
+                    position,
+                    car,
+                )
 
-    raise fastapi.HTTPException(
-        status_code=404,
-        detail="Pull request not found.",
-    )
+                queued_pr = EnhancedPullRequestQueued(
+                    number=embarked_pull.user_pull_request_number,
+                    queued_at=embarked_pull.queued_at,
+                    estimated_time_of_merge=estimated_time_of_merge,
+                    queue_rule=types.QueueRule(
+                        name=queue_name, config=queue_rule.config
+                    ),
+                    priority=queue_rule.config["priority"],
+                )
+
+            queued_pr.positions[train.partition_name] = position
+            queued_pr.mergeability_checks[
+                train.partition_name
+            ] = MergeabilityCheck.from_train_car(car)
+            queued_pr.partition_names.append(train.partition_name)
+
+    if queued_pr is None:
+        raise fastapi.HTTPException(
+            status_code=404,
+            detail=f"Pull request `{pr_number}` not found",
+        )
+
+    queued_pr.partition_names.sort()
+    return queued_pr

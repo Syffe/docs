@@ -448,6 +448,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         self.main_branch_name = github_types.GitHubRefType(
             self.get_full_branch_name("main")
         )
+        self.escaped_main_branch_name = parse.quote(self.main_branch_name, safe="")
         # ########## MOCK MERGE_QUEUE_BRANCH_PREFIX
         # To easily delete all branches created by any queue-related
         # stuff.

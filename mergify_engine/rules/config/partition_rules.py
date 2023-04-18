@@ -61,6 +61,9 @@ class PartitionRules:
 
             names.add(rule.name)
 
+    def __contains__(self, partition_name: PartitionRuleName) -> bool:
+        return any(rule.name == partition_name for rule in self.rules)
+
     def __iter__(self) -> abc.Iterator[PartitionRule]:
         return iter(self.rules)
 
