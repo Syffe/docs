@@ -48,12 +48,12 @@ async def badge_png(
         github_types.GitHubRepositoryName,
         fastapi.Path(description="The name of the repository"),
     ],
-    # TODO(charly): we can't use typing.Annotated here, FastAPI 0.95.0 has a bug with APIRouter
-    # https://github.com/tiangolo/fastapi/discussions/9279
-    style: str = fastapi.Query(  # noqa: B008
-        default="flat",
-        description="The style of the button, more details on https://shields.io/.",
-    ),
+    style: typing.Annotated[
+        str,
+        fastapi.Query(
+            description="The style of the button, more details on https://shields.io/."
+        ),
+    ] = "flat",
 ) -> responses.RedirectResponse:  # pragma: no cover
     return _get_badge_url(owner, repository, "png", style)
 
@@ -81,12 +81,12 @@ async def badge_svg(
         github_types.GitHubRepositoryName,
         fastapi.Path(description="The name of the repository"),
     ],
-    # TODO(charly): we can't use typing.Annotated here, FastAPI 0.95.0 has a bug with APIRouter
-    # https://github.com/tiangolo/fastapi/discussions/9279
-    style: str = fastapi.Query(  # noqa: B008
-        default="flat",
-        description="The style of the button, more details on https://shields.io/.",
-    ),
+    style: typing.Annotated[
+        str,
+        fastapi.Query(
+            description="The style of the button, more details on https://shields.io/."
+        ),
+    ] = "flat",
 ) -> responses.RedirectResponse:  # pragma: no cover
     return _get_badge_url(owner, repository, "svg", style)
 

@@ -116,22 +116,18 @@ async def repository_queues(
         github_types.GitHubLogin,
         fastapi.Path(description="The owner"),
     ],
-    # TODO(charly): we can't use typing.Annotated here, FastAPI 0.95.0 has a bug with APIRouter
-    # https://github.com/tiangolo/fastapi/discussions/9279
-    repository: github_types.GitHubRepositoryName
-    | None = fastapi.Query(  # noqa: B008
-        None,
-        description="The repository",
-    ),
-    start_at: datetime.date
-    | None = fastapi.Query(  # noqa: B008
-        None, description="The start of the date range"
-    ),
-    end_at: datetime.date
-    | None = fastapi.Query(  # noqa: B008
-        None,
-        description="The end of the date range",
-    ),
+    repository: typing.Annotated[
+        github_types.GitHubRepositoryName | None,
+        fastapi.Query(description="The repository"),
+    ] = None,
+    start_at: typing.Annotated[
+        datetime.date | None,
+        fastapi.Query(description="The start of the date range"),
+    ] = None,
+    end_at: typing.Annotated[
+        datetime.date | None,
+        fastapi.Query(description="The end of the date range"),
+    ] = None,
 ) -> reports.ReportPayload:
     job_registry = job_registries.PostgresJobRegistry()
     query = reports.Query(owner, repository, start_at, end_at)

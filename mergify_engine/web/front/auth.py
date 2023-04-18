@@ -69,9 +69,7 @@ class AuthRedirectUrl:
 @router.get("/authorize")
 async def login_via_github(
     request: fastapi.Request,
-    # TODO(charly): we can't use typing.Annotated here, FastAPI 0.95.0 has a bug with APIRouter
-    # https://github.com/tiangolo/fastapi/discussions/9279
-    site_url: str | None = fastapi.Query(default=None),  # noqa: B008
+    site_url: typing.Annotated[str | None, fastapi.Query()] = None,
 ) -> AuthRedirectUrl:
     if not site_url or site_url != settings.DASHBOARD_UI_FRONT_URL:
         # NOT a whitelisted domain, we just redirect to the default one.

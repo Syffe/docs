@@ -26,19 +26,20 @@ class _CurrentPage:
 def get_current_page(
     request: fastapi.Request,
     response: fastapi.Response,
-    # TODO(charly): we can't use typing.Annotated here, FastAPI 0.95.0 has a bug with APIRouter
-    # https://github.com/tiangolo/fastapi/discussions/9279
-    cursor: str
-    | None = fastapi.Query(  # noqa: B008
-        default=None,
-        description="The opaque cursor of the current page. Must be extracted for RFC 5988 pagination links to get first/previous/next/last pages",
-    ),
-    per_page: int = fastapi.Query(  # noqa: B008
-        default=DEFAULT_PER_PAGE,
-        ge=1,
-        le=100,
-        description="The number of items per page",
-    ),
+    cursor: typing.Annotated[
+        str | None,
+        fastapi.Query(
+            description="The opaque cursor of the current page. Must be extracted for RFC 5988 pagination links to get first/previous/next/last pages",
+        ),
+    ] = None,
+    per_page: typing.Annotated[
+        int,
+        fastapi.Query(
+            ge=1,
+            le=100,
+            description="The number of items per page",
+        ),
+    ] = DEFAULT_PER_PAGE,
 ) -> "CurrentPage":
     return _CurrentPage(request, response, cursor, per_page)
 

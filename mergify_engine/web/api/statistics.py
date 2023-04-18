@@ -108,18 +108,18 @@ async def get_average_time_to_merge_stats_endpoint(
             description="Name of the queue",
         ),
     ],
-    # TODO(charly): we can't use typing.Annotated here, FastAPI 0.95.0 has a bug with APIRouter
-    # https://github.com/tiangolo/fastapi/discussions/9279
-    at: TimestampNotInFuture
-    | None = fastapi.Query(  # noqa: B008
-        default=None,
-        description="Retrieve the average time to merge for the queue at this timestamp (in seconds)",
-    ),
-    branch: str
-    | None = fastapi.Query(  # noqa: B008
-        default=None,
-        description="The name of the branch on which we want the statistics",
-    ),
+    at: typing.Annotated[
+        TimestampNotInFuture | None,
+        fastapi.Query(
+            description="Retrieve the average time to merge for the queue at this timestamp (in seconds)",
+        ),
+    ] = None,
+    branch: typing.Annotated[
+        str | None,
+        fastapi.Query(
+            description="The name of the branch on which we want the statistics",
+        ),
+    ] = None,
 ) -> TimeToMergeResponse:
     try:
         return await get_time_to_merge_stats_for_queue(
@@ -213,23 +213,24 @@ async def get_checks_duration_stats_endpoint(
         qr_config.QueueName,
         fastapi.Path(description="Name of the queue"),
     ],
-    # TODO(charly): we can't use typing.Annotated here, FastAPI 0.95.0 has a bug with APIRouter
-    # https://github.com/tiangolo/fastapi/discussions/9279
-    start_at: TimestampNotInFuture
-    | None = fastapi.Query(  # noqa: B008
-        default=None,
-        description="Retrieve the stats that happened after this timestamp (in seconds)",
-    ),
-    end_at: TimestampNotInFuture
-    | None = fastapi.Query(  # noqa: B008
-        default=None,
-        description="Retrieve the stats that happened before this timestamp (in seconds)",
-    ),
-    branch: str
-    | None = fastapi.Query(  # noqa: B008
-        default=None,
-        description="The name of the branch on which we want the statistics",
-    ),
+    start_at: typing.Annotated[
+        TimestampNotInFuture | None,
+        fastapi.Query(
+            description="Retrieve the stats that happened after this timestamp (in seconds)",
+        ),
+    ] = None,
+    end_at: typing.Annotated[
+        TimestampNotInFuture | None,
+        fastapi.Query(
+            description="Retrieve the stats that happened before this timestamp (in seconds)",
+        ),
+    ] = None,
+    branch: typing.Annotated[
+        str | None,
+        fastapi.Query(
+            description="The name of the branch on which we want the statistics",
+        ),
+    ] = None,
 ) -> ChecksDurationResponse:
     return await get_checks_duration_stats_for_queue(
         repository_ctxt,
@@ -353,23 +354,24 @@ async def get_queue_checks_outcome_stats_endpoint(
             description="Name of the queue",
         ),
     ],
-    # TODO(charly): we can't use typing.Annotated here, FastAPI 0.95.0 has a bug with APIRouter
-    # https://github.com/tiangolo/fastapi/discussions/9279
-    start_at: TimestampNotInFuture
-    | None = fastapi.Query(  # noqa: B008
-        default=None,
-        description="Retrieve the stats that happened after this timestamp (in seconds)",
-    ),
-    end_at: TimestampNotInFuture
-    | None = fastapi.Query(  # noqa: B008
-        default=None,
-        description="Retrieve the stats that happened before this timestamp (in seconds)",
-    ),
-    branch: str
-    | None = fastapi.Query(  # noqa: B008
-        default=None,
-        description="The name of the branch on which we want the statistics",
-    ),
+    start_at: typing.Annotated[
+        TimestampNotInFuture | None,
+        fastapi.Query(
+            description="Retrieve the stats that happened after this timestamp (in seconds)",
+        ),
+    ] = None,
+    end_at: typing.Annotated[
+        TimestampNotInFuture | None,
+        fastapi.Query(
+            description="Retrieve the stats that happened before this timestamp (in seconds)",
+        ),
+    ] = None,
+    branch: typing.Annotated[
+        str | None,
+        fastapi.Query(
+            description="The name of the branch on which we want the statistics",
+        ),
+    ] = None,
 ) -> QueueChecksOutcome:
     return QueueChecksOutcome(
         **(
