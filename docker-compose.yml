@@ -3,7 +3,7 @@ services:
   redis:
     image: redis
     ports:
-      - 0:6379
+      - "${LOCAL_REDIS_PORT:-0}:6379"
     # NOTE(greesb): This is to allow parallel testing.
     # Since, at the moment, we have only 10 redis databases we can
     # only execute 10 parallel tests at a time (since each test as its own databases).
@@ -13,6 +13,6 @@ services:
   postgres:
     image: postgres
     ports:
-      - 0:5432
+      - "${LOCAL_POSTGRES_PORT:-0}:5432"
     environment:
       POSTGRES_PASSWORD: password
