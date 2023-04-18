@@ -43,6 +43,7 @@ jobs:
           else
             image=registry.heroku.com/mergify-engine/web:latest
           fi
+          docker pull $image
           echo "image-ref=$image" >> "$GITHUB_OUTPUT"
 
       - name: Run Trivy vulnerability scanner
