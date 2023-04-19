@@ -550,8 +550,8 @@ def mock_asyncgithubclient_requests() -> abc.Generator[None, None, None]:
     if RECORD:
         real_request = github.AsyncGithubClient.request
 
-        async def mocked_request(
-            *args: typing.Any, **kwargs: typing.Any
+        async def mocked_request(  # type: ignore[no-untyped-def]
+            self, method: str, *args: typing.Any, **kwargs: typing.Any
         ) -> httpx.Response:
             async for attempts in tenacity.AsyncRetrying(
                 wait=wait_rate_limit(),
@@ -565,12 +565,14 @@ def mock_asyncgithubclient_requests() -> abc.Generator[None, None, None]:
             ):
                 with attempts:
                     async with contextlib.AsyncExitStack() as stack:
-                        await stack.enter_async_context(_request_sync_lock())
+                        if method != "GET":
+                            await stack.enter_async_context(_request_sync_lock())
+
                         await stack.enter_async_context(
                             _request_with_secondatary_rate_limit()
                         )
 
-                        response = await real_request(*args, **kwargs)
+                        response = await real_request(self, method, *args, **kwargs)
 
             return response
 
