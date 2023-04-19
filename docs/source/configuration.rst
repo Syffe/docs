@@ -669,3 +669,8 @@ The result will be:
 
    Values in the ``default`` key will be merged and remote default values will
    apply to local configuration.
+
+OpenAPI specification
+---------------------
+
+The configuration file format is available as a `OpenAPI schema </config/openapi.json>`_.
