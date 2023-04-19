@@ -129,7 +129,7 @@ jobs:
         uses: actions/download-artifact@v3.0.2
         continue-on-error: true
         with:
-          name: ${{ github.workflow }}-test-durations
+          name: engine-ci-test-durations
 
       - name: Build 🔧 & Test 🔍
         # yamllint disable rule:line-length
@@ -139,16 +139,18 @@ jobs:
           tools/poetry-ci-install.sh
           poetry run poe test \
             --splits 5 --group ${{ matrix.group }} \
-            --store-durations --splitting-algorithm=least_duration \
+            --store-durations \
+            --durations-path engine-ci-test-durations \
+            --splitting-algorithm=least_duration \
             --reruns 3 --only-rerun MissingEventTimeout
         # yamllint enable rule:line-length
 
       - name: Store test durations
         uses: actions/upload-artifact@v3.1.2
         with:
-          name: ${{ github.workflow }}-test-durations
+          name: engine-ci-test-durations
           if-no-files-found: warn
-          path: .test_durations
+          path: engine-ci-test-durations
   docs:
     timeout-minutes: 20
     runs-on: ubuntu-20.04
