@@ -72,6 +72,11 @@ async def test_command_loader() -> None:
         "@mergifyio rebase",
         "@Mergifyio rebase",
         "@mergifyio rebase\n",
+        " @MergifyIO rebase",
+        " @MergifyIO rebase\n",
+        " @MergifyIO rebase  ",
+        " @MergifyIO rebase  \n",
+        "    @MergifyIO rebase",
         "@mergifyio rebase foobar",
         "@mergifyio rebase foobar\nsecondline\n",
     ]:
