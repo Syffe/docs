@@ -329,6 +329,9 @@ async def _get_stats_items(
             if (queue_name is None or stat["queue_name"] == queue_name) and stat[
                 "branch_name"
             ] == branch_name:
+                # TODO(Greesb): To remove in a month after the commit introducing
+                # this has been merged.
+                stat.setdefault("partition_name", None)
                 yield stat
 
 
