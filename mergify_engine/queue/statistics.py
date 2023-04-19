@@ -13,6 +13,7 @@ from mergify_engine import signals
 from mergify_engine import utils
 from mergify_engine.dashboard import subscription
 from mergify_engine.queue import utils as queue_utils
+from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 
 
@@ -48,6 +49,7 @@ AvailableStatsKeyT = typing.Literal[
 class BaseQueueStats:
     queue_name: qr_config.QueueName
     branch_name: str
+    partition_name: partr_config.PartitionRuleName | None
     # List of variables to not include in the return of the `to_dict()`
     # if using an `_` is not enough/appropriate.
     _todict_ignore_vars: typing.ClassVar[tuple[str, ...]] = ()
@@ -130,11 +132,17 @@ class FailureByReason(BaseQueueStats):
 
     @classmethod
     def from_reason_code_str(
-        cls, reason_code_str: queue_utils.AbortCodeT, **kwargs: typing.Any
+        cls,
+        queue_name: qr_config.QueueName,
+        branch_name: str,
+        partition_name: partr_config.PartitionRuleName | None,
+        reason_code_str: queue_utils.AbortCodeT,
     ) -> "FailureByReason":
         return cls(
+            queue_name,
+            branch_name,
+            partition_name,
             reason_code=cls._ABORT_CODE_TO_INT_MAPPING[reason_code_str],
-            **kwargs,
         )
 
 
@@ -181,6 +189,7 @@ async def get_stats_from_event_metadata(
         return TimeToMerge(
             queue_name=qr_config.QueueName(metadata["queue_name"]),
             branch_name=metadata["branch"],
+            partition_name=metadata["partition_name"],
             time_seconds=(
                 _get_seconds_since_datetime(metadata["queued_at"])
                 - metadata.get("seconds_waiting_for_schedule", 0)
@@ -197,6 +206,7 @@ async def get_stats_from_event_metadata(
             return FailureByReason.from_reason_code_str(
                 queue_name=qr_config.QueueName(metadata["queue_name"]),
                 branch_name=metadata["branch"],
+                partition_name=metadata["partition_name"],
                 reason_code_str=metadata["abort_code"],
             )
 
@@ -219,6 +229,7 @@ async def get_stats_from_event_metadata(
         return ChecksDuration(
             queue_name=qr_config.QueueName(metadata["queue_name"]),
             branch_name=metadata["branch"],
+            partition_name=metadata["partition_name"],
             duration_seconds=duration_seconds,
         )
 
@@ -315,11 +326,9 @@ async def _get_stats_items(
     for result in results:
         for _, raw_stat in result:
             stat = msgpack.unpackb(raw_stat[b"data"], timestamp=3)
-            # NOTE(greesb): Replace ".get()" by "[]" when all the stats
-            # will have a branch_name (1 month from the time this modification has been merged)
-            if (queue_name is None or stat["queue_name"] == queue_name) and stat.get(
+            if (queue_name is None or stat["queue_name"] == queue_name) and stat[
                 "branch_name"
-            ) == branch_name:
+            ] == branch_name:
                 yield stat
 
 

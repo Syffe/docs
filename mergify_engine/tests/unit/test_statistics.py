@@ -26,6 +26,7 @@ async def test_statistics_start_at_boundary(
 ) -> None:
     queue_name = qr_config.QueueName("default")
     branch_name = "main"
+    partition_name = None
 
     failure_by_reason_key = queue_stats.get_statistic_redis_key(
         fake_repository.installation.owner_id,
@@ -36,6 +37,7 @@ async def test_statistics_start_at_boundary(
         queue_name=queue_name,
         branch_name=branch_name,
         reason_code_str=queue_utils.PrAheadDequeued.unqueue_code,
+        partition_name=partition_name,
     )
     pr_ahead_dequeued_fields = {
         b"version": queue_stats.VERSION,
@@ -59,7 +61,10 @@ async def test_statistics_start_at_boundary(
         "checks_duration",
     )
     checks_duration_stat = queue_stats.ChecksDuration(
-        queue_name=queue_name, branch_name=branch_name, duration_seconds=10
+        queue_name=queue_name,
+        branch_name=branch_name,
+        duration_seconds=10,
+        partition_name=partition_name,
     )
     checks_duration_fields = {
         b"version": queue_stats.VERSION,

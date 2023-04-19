@@ -12,7 +12,7 @@ from mergify_engine.tests.functional import base
 class TestStatisticsRedis(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
 
-    async def test_statistics_format_in_redis(self) -> None:
+    async def test_statistics_format_in_redis_without_partitions(self) -> None:
         rules = {
             "queue_rules": [
                 {
@@ -45,23 +45,94 @@ class TestStatisticsRedis(base.FunctionalTestBase):
 
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "opened"})
+        draft_pr = await self.wait_for_pull_request("opened")
+        await self.wait_for_pull_request("closed", draft_pr["number"])
 
-        await self.run_engine()
-
-        await self.wait_for("pull_request", {"action": "closed"})
-        await self.wait_for("pull_request", {"action": "closed"})
-        await self.wait_for("pull_request", {"action": "closed"})
-
-        redis_repo_key = statistics._get_repository_key(
-            self.subscription.owner_id, self.RECORD_CONFIG["repository_id"]
+        prs_closed = [
+            await self.wait_for_pull_request("closed"),
+            await self.wait_for_pull_request("closed"),
+        ]
+        assert sorted([p1["number"], p2["number"]]) == sorted(
+            [p["number"] for p in prs_closed]
         )
-        time_to_merge_key = f"{redis_repo_key}/time_to_merge"
+
+        time_to_merge_key = self.get_statistic_redis_key("time_to_merge")
         assert await self.redis_links.stats.xlen(time_to_merge_key) == 2
 
         bdata = await self.redis_links.stats.xrange(time_to_merge_key, min="-", max="+")
         for _, raw in bdata:
-            statistics.TimeToMerge(**msgpack.unpackb(raw[b"data"], timestamp=3))
+            unpacked = msgpack.unpackb(raw[b"data"], timestamp=3)
+            assert "time_seconds" in unpacked
+            assert unpacked["branch_name"] == self.main_branch_name
+            assert unpacked["queue_name"] == "default"
+            assert unpacked["partition_name"] is None
+
+            statistics.TimeToMerge(**unpacked)
+
+    async def test_statistics_format_in_redis_with_partitions(self) -> None:
+        rules = {
+            "partition_rules": [
+                {
+                    "name": "projA",
+                    "conditions": [
+                        "files~=^projA/",
+                    ],
+                },
+                {
+                    "name": "projB",
+                    "conditions": [
+                        "files~=^projB/",
+                    ],
+                },
+            ],
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [],
+                    "allow_inplace_checks": False,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge priority high",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr(files={"projA/test.txt": "test"})
+        p2 = await self.create_pr(files={"projB/test.txt": "test"})
+
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        await self.wait_for_pull_request("opened")
+        await self.wait_for_pull_request("opened")
+
+        await self.wait_for_pull_request("closed")
+        await self.wait_for_pull_request("closed")
+        await self.wait_for_pull_request("closed")
+        await self.wait_for_pull_request("closed")
+
+        time_to_merge_key = self.get_statistic_redis_key("time_to_merge")
+        assert await self.redis_links.stats.xlen(time_to_merge_key) == 2
+
+        bdata = await self.redis_links.stats.xrange(time_to_merge_key, min="-", max="+")
+        for _, raw in bdata:
+            unpacked = msgpack.unpackb(raw[b"data"], timestamp=3)
+            assert "time_seconds" in unpacked
+            assert unpacked["branch_name"] == self.main_branch_name
+            assert unpacked["queue_name"] == "default"
+            assert unpacked["partition_name"] in ("projA", "projB")
+
+            statistics.TimeToMerge(**unpacked)
 
     async def test_accuracy_measure(self) -> None:
         rules = {
