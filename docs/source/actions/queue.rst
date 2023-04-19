@@ -391,7 +391,7 @@ You can specify dependencies between pull requests from the same repository.
 Mergify waits for the linked pull requests to be merged before merging any pull
 request with a ``Depends-On:`` header.
 
-To use this feature, adds the ``Depends-On:`` header to the body of your pull
+To use this feature, add the ``Depends-On:`` header to the body of your pull
 request:
 
 .. code-block:: md
@@ -406,6 +406,40 @@ request:
 .. warning::
 
     This feature does not work for cross-repository dependencies.
+
+
+.. _queue-merge-after:
+
+🕒 Defining a minimum date to merge
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+|premium plan tag|
+|open source plan tag|
+
+You can specify a date after which you want a pull request to be merged with a ``Merge-After:`` header.
+Mergify will wait for the date and time to be passed before queueing your pull request.
+
+To use this feature, add the ``Merge-After:`` header to the body of your pull request, followed by the date, with optionally a time and/or a timezone.
+If no timezone is specified it will be set to ``UTC``.
+
+Here are the possible formats:
+
+.. code-block:: md
+
+   # Year-Month-Day
+   Merge-After: 2023-04-18
+
+   # Year-Month-Day[Timezone]
+   Merge-After: 2023-04-18[Australia/Sydney]
+
+   # Year-Month-Day Hours:Minutes
+   Merge-After: 2023-04-18 18:20
+
+   # Year-Month-Day Hours:Minutes[Timezone]
+   Merge-After: 2023-04-18 18:20[Australia/Sydney]
+
+For the list of available time zones, see `IANA format <https://www.iana.org/time-zones>`_.
+
 
 .. _update method rebase:
 

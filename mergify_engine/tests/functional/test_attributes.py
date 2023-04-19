@@ -2,6 +2,7 @@ import datetime
 import logging
 import operator
 from unittest import mock
+import zoneinfo
 
 from freezegun import freeze_time
 import pytest
@@ -1110,6 +1111,55 @@ class TestAttributesWithSub(base.FunctionalTestBase):
 - [X] `label=automerge`
 """
         assert expected in summary["output"]["summary"]
+
+    async def test_merge_after(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=automerge",
+                    ],
+                    "actions": {"merge": {}},
+                }
+            ]
+        }
+        # 12:00 18th April 2023
+        start_date = datetime.datetime(2023, 4, 18, 12)
+        with freeze_time(start_date, tick=True):
+            await self.setup_repo(yaml.dump(rules))
+
+            body = "Awesome body\nMerge-After: 2023-04-19"
+            pr = await self.create_pr(message=body)
+            pr_labeled = await self.add_label(pr["number"], "automerge")
+            await self.run_engine()
+
+            ctxt = context.Context(self.repository_ctxt, pr_labeled["pull_request"])
+            assert ctxt.get_merge_after() == context.MergeAfterTuple(
+                datetime.datetime(2023, 4, 19, tzinfo=zoneinfo.ZoneInfo("UTC")),
+                has_hoursminutes=False,
+            )
+
+            summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
+            assert summary is not None
+            expected = f"""### Rule: merge (merge)
+- [ ] `current-time>=2023-04-19T00:00:00` [🕒 Merge-After: 2023-04-19[UTC]]
+- [X] `-draft` [:pushpin: merge requirement]
+- [X] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]
+- [X] `base={self.main_branch_name}`
+- [X] `label=automerge`
+"""
+            assert expected in summary["output"]["summary"]
+
+            pr = await self.get_pull(pr["number"])
+            assert not pr["merged"]
+
+        with freeze_time(start_date + datetime.timedelta(days=1), tick=True):
+            await self.run_full_engine()
+
+            p_merged = await self.wait_for_pull_request("closed", pr["number"])
+            assert p_merged["pull_request"]["merged"]
 
     async def test_statuses_error(self) -> None:
         rules = {

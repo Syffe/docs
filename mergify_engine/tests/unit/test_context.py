@@ -1,10 +1,13 @@
 from collections import abc
+import datetime
 import typing
 from unittest import mock
+import zoneinfo
 
 import pytest
 
 from mergify_engine import context
+from mergify_engine import date
 from mergify_engine import dependabot_helpers
 from mergify_engine import dependabot_types
 from mergify_engine import github_types
@@ -639,6 +642,138 @@ footer
 
     ctxt = context.Context(mock.Mock(), a_pull_request)
     assert ctxt.get_depends_on() == [42, 48, 50, 123, 456, 457, 789]
+
+
+@pytest.mark.parametrize(
+    "merge_after_str,expected_out",
+    (
+        (
+            "Merge-After: 2023-01-18",
+            context.MergeAfterTuple(
+                datetime.datetime(2023, 1, 18, tzinfo=date.UTC),
+                False,
+            ),
+        ),
+        (
+            "Merge-After: 2023-01-18[Australia/Sydney]",
+            context.MergeAfterTuple(
+                datetime.datetime(
+                    2023, 1, 18, tzinfo=zoneinfo.ZoneInfo("Australia/Sydney")
+                ),
+                False,
+            ),
+        ),
+        (
+            "Merge-After: 2023-01-18 08:10",
+            context.MergeAfterTuple(
+                datetime.datetime(2023, 1, 18, 8, 10, tzinfo=date.UTC),
+                True,
+            ),
+        ),
+        (
+            "Merge-After: 2023-01-18 08:10[Europe/Paris]",
+            context.MergeAfterTuple(
+                datetime.datetime(
+                    2023, 1, 18, 8, 10, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                ),
+                True,
+            ),
+        ),
+        (
+            "Merge-After: 2023-01-18 08:10[Africa/Porto-Novo]",
+            context.MergeAfterTuple(
+                datetime.datetime(
+                    2023, 1, 18, 8, 10, tzinfo=zoneinfo.ZoneInfo("Africa/Porto-Novo")
+                ),
+                True,
+            ),
+        ),
+        (
+            "Merge-After: 2023-01-18 08:10[Africa/Sao_Tome]",
+            context.MergeAfterTuple(
+                datetime.datetime(
+                    2023, 1, 18, 8, 10, tzinfo=zoneinfo.ZoneInfo("Africa/Sao_Tome")
+                ),
+                True,
+            ),
+        ),
+        (
+            "Merge-After: 2023-01-18 08:10[America/Argentina/Cordoba]",
+            context.MergeAfterTuple(
+                datetime.datetime(
+                    2023,
+                    1,
+                    18,
+                    8,
+                    10,
+                    tzinfo=zoneinfo.ZoneInfo("America/Argentina/Cordoba"),
+                ),
+                True,
+            ),
+        ),
+    ),
+)
+async def test_context_merge_after_valid(
+    a_pull_request: github_types.GitHubPullRequest,
+    merge_after_str: str,
+    expected_out: context.MergeAfterTuple,
+) -> None:
+    a_pull_request[
+        "body"
+    ] = f"""header
+
+{merge_after_str}
+"""
+
+    ctxt = context.Context(mock.Mock(), a_pull_request)
+    assert ctxt.get_merge_after() == expected_out
+
+
+@pytest.mark.parametrize(
+    "merge_after_str",
+    (
+        "Merge-After: 1-01-18",
+        "Merge-After: -1-01-18",
+        "Merge-After: 2023-1-18",
+        "Merge-After: 2023--1-18",
+        "Merge-After: 2023-abc-18",
+        "Merge-After: 2023-01-1",
+        "Merge-After: 2023-01--1",
+        "Merge-After: -1-01-18[Australia/Sydney]",
+        "Merge-After: 2023-1-18[Australia/Sydney]",
+        "Merge-After: 2023-01-1[Australia/Sydney]",
+        "Merge-After: 2023-01-18[Australia/Sydne]",
+        "Merge-After: 2023-01-18[Australia/Sydne",
+        "Merge-After: 2023-01-18Australia/Sydney]",
+        "Merge-After: -1-01-18 08:10",
+        "Merge-After: 2023-1-18 08:10",
+        "Merge-After: 2023-01-1 08:10",
+        "Merge-After: 2023-01-18 8:10",
+        "Merge-After: 2023-01-18 08:1",
+        "Merge-After: 2023-01-18 08-10",
+        "Merge-After: -1-01-18 08:10[Europe/Paris]",
+        "Merge-After: 202-01-18 08:10[Europe/Paris]",
+        "Merge-After: 2023-01-1 08:10[Europe/Paris]",
+        "Merge-After: 2023-01-01 8:10[Europe/Paris]",
+        "Merge-After: 2023-01-01 08:0[Europe/Paris]",
+        "Merge-After: 2023-01-01 08:10Europe/Paris]",
+        "Merge-After: 2023-01-01 08:10[lol]",
+        "Merge-After: 2023-01-01 08:10[UTC",
+    ),
+)
+async def test_context_merge_after_invalid(
+    a_pull_request: github_types.GitHubPullRequest,
+    merge_after_str: str,
+) -> None:
+    a_pull_request[
+        "body"
+    ] = f"""header
+
+{merge_after_str}
+"""
+
+    ctxt = context.Context(mock.Mock(), a_pull_request)
+    assert ctxt.get_merge_after() is None
 
 
 async def test_context_body_null(

@@ -192,6 +192,11 @@ class MergeAction(actions.Action):
             )
         )
         conditions_requirements.extend(await conditions.get_depends_on_conditions(ctxt))
+
+        merge_after_condition = conditions.get_merge_after_condition(ctxt)
+        if merge_after_condition is not None:
+            conditions_requirements.append(merge_after_condition)
+
         return conditions_requirements
 
     executor_class = MergeExecutor

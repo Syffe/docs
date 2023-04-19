@@ -1,0 +1,18 @@
+---
+features:
+  - |
+    It is now possible to set a minimum merge date on a pull request
+    with the ``Merge-After`` header, to place in the body of the desired
+    pull request.
+    Here are the possible formats:
+      - ``Year-Month-Day``, eg: "Merge-After: 2023-04-18"
+      - ``Year-Month-Day[Timezone]``, eg: "Merge-After: 2023-04-18[Australia/Sydney]"
+      - ``Year-Month-Day Hours:Minutes``, eg: "Merge-After: 2023-04-18 18:20"
+      - ``Year-Month-Day Hours:Minutes[Timezone]``, eg: "Merge-After: 2023-04-18 18:20[Australia/Sydney]"
+
+    If used with the ``merge`` action, the pull request will be merged after the
+    specified date and time has passed.
+    If used with the ``queue`` action, the pull request will be queued after the
+    specified date and time has passed.
+
+    For the list of available time zones, see `IANA format <https://www.iana.org/time-zones>`_.
