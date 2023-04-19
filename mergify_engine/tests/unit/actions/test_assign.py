@@ -1,7 +1,11 @@
+from unittest import mock
+
 import pytest
 import voluptuous
 
+from mergify_engine import github_types
 from mergify_engine.actions import assign
+from mergify_engine.tests.unit import conftest
 
 
 def test_assign_get_schema() -> None:
@@ -42,3 +46,20 @@ def test_assign_get_schema_with_wrong_template() -> None:
     with pytest.raises(voluptuous.Invalid) as e:
         assign.AssignAction({"remove_users": ["{{ foo }}"]})
     assert str(e.value) == "Template syntax error @ data['remove_users'][0]"
+
+
+async def test_unassign_assignees(
+    context_getter: conftest.ContextGetterFixture,
+) -> None:
+    schema = {"remove_users": ["{{ assignee[0] }}"]}
+    action = assign.AssignAction(schema)
+
+    client = mock.MagicMock()
+    client.get = mock.AsyncMock(return_value={})
+    ctxt = await context_getter(
+        github_types.GitHubPullRequestNumber(1), assignees=[{"login": "me"}]
+    )
+    ctxt.repository.installation.client = client
+    await action.load_context(ctxt, mock.Mock())
+
+    assert action.executor.config["users_to_remove"] == {"me"}

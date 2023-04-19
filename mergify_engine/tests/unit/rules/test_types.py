@@ -9,6 +9,8 @@ from mergify_engine.rules import types
     (
         "hello",
         "{{author}}",
+        "{{ assignee[0] }}",
+        "{{ assignee[99] }}",
     ),
 )
 def test_jinja2_valid(s: str) -> None:

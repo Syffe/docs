@@ -42,6 +42,11 @@ class LineColumnPath:
         return f"line {self.line}, column {self.column}"
 
 
+class DummyList(list[str]):
+    def __getitem__(self, index: int) -> str:  # type: ignore [override]
+        return ""
+
+
 class DummyContext(context.Context):
     ALWAYS_STRING_ATTRIBUTES = ("title", "body")
 
@@ -54,8 +59,7 @@ class DummyContext(context.Context):
             return None
 
         if key in context.PullRequest.LIST_ATTRIBUTES:
-            a_list: list[str] = []
-            return a_list
+            return DummyList()
 
         if key in context.PullRequest.LIST_ATTRIBUTES_WITH_LENGTH_OPTIMIZATION:
             return 0

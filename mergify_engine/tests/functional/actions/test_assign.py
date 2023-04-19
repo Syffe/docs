@@ -89,6 +89,27 @@ class TestAssignAction(base.FunctionalTestBase):
             sorted(user["login"] for user in p["pull_request"]["assignees"]),
         )
 
+    async def test_unassign_valid_template(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "assign",
+                    "conditions": [f"base={self.main_branch_name}"],
+                    "actions": {"assign": {"remove_users": ["{{ assignee[0] }}"]}},
+                }
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        created_pr = await self.create_pr(as_="fork")
+        await self.add_assignee(created_pr["number"], "mergify-test1")
+
+        await self.run_engine()
+
+        unassigned_pr = await self.wait_for_pull_request("unassigned")
+        assert not unassigned_pr["pull_request"]["assignees"]
+
     async def test_assign_user_already_assigned(self) -> None:
         rules = {
             "pull_request_rules": [
