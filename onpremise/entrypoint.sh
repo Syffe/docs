@@ -13,7 +13,7 @@ if [ "$MERGIFYENGINE_INTEGRATION_ID" ]; then
   exec honcho start
 elif [ "$MERGIFYENGINE_INSTALLER" ]; then
   cd /installer
-  exec honcho start
+  python -m http.server $PORT
 else
   echo "MERGIFYENGINE_INTEGRATION_ID or MERGIFYENGINE_INSTALLER must set"
 fi

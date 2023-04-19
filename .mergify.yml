@@ -185,7 +185,6 @@ pull_request_rules:
           - files~=^dockerfiles/
           - files~=^datadog/
           - files~=^datadog-wrapper.sh$
-          - files~=^installer/
           - files~=^onpremise/
           - files~=^fake.env$
           - files~=^.github/workflows/docker-.*\.yaml

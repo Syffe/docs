@@ -1,6 +1,5 @@
 :include .gitignore
 
-installer/
 zfixtures/
 releasenotes/
 docs/source/_templates/

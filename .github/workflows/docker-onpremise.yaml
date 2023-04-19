@@ -12,7 +12,6 @@ on:
       - "dockerfiles/**"
       - "datadog/**"
       - "datadog-wrapper.sh"
-      - "installer/**"
       - "onpremise/**"
       - "fake.env"
       - ".github/workflows/docker-*.yaml"
