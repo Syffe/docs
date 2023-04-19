@@ -168,7 +168,6 @@ jobs:
 
       - name: Build 🔧
         run: |
-          sudo sed -i 's/azure\.//' /etc/apt/sources.list
           sudo apt update -y
           sudo apt install graphviz
           # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
