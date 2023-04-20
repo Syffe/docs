@@ -74,7 +74,7 @@ default_item_type = "cmd"
 sequence = [
     # Ensure no dev deps are installed like in production
     "poetry install --only main --sync",
-    "./tools/run-tests.sh bash -c 'mergify-import-check && mergify-import-check-worker && mergify-import-check-web'"
+    "./tools/run-tests.sh bash -c 'mergify-import-check-worker && mergify-import-check-web && mergify-import-check-db-update'",
 ]
 [tool.poe.tasks.import-checks.env]
 MERGIFYENGINE_SENTRY_URL = "https://12345@localhost/12345"
