@@ -10,6 +10,8 @@ from mergify_engine import settings
 
 # NOTE(sileht): ensure all models are loaded, to
 # allow create_all() to find all tables to creates
+from mergify_engine.models import application_keys  # noqa
+from mergify_engine.models import github_account  # noqa
 from mergify_engine.models import github_actions  # noqa
 from mergify_engine.models import github_user  # noqa
 

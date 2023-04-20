@@ -838,6 +838,13 @@ class GitHubCompareCommits(typing.TypedDict):
 GitHubMembershipRole = typing.Literal["admin", "member"]
 
 
+class GitHubMembership(typing.TypedDict):
+    state: typing.Literal["active", "pending"]
+    role: GitHubMembershipRole
+    user: GitHubAccount
+    organization: GitHubAccount
+
+
 class GitHubWorkflowRun(typing.TypedDict):
     id: int
     workflow_id: int

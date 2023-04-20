@@ -4,7 +4,9 @@ import daiquiri
 import fastapi
 import pydantic
 
+from mergify_engine import github_types
 from mergify_engine.dashboard import application as application_mod
+from mergify_engine.models import application_keys
 from mergify_engine.web import api
 from mergify_engine.web.api import security
 
@@ -48,12 +50,15 @@ router = fastapi.APIRouter(tags=["applications"])
 )
 async def application(
     application: typing.Annotated[
-        application_mod.Application,
+        application_keys.ApplicationKey,
         fastapi.Security(security.get_application_without_scope_verification),
     ],
 ) -> ApplicationResponse:
     return ApplicationResponse(
         id=application.id,
         name=application.name,
-        account_scope=application.account_scope,
+        account_scope={
+            "id": github_types.GitHubAccountIdType(application.github_account.id),
+            "login": application.github_account.login,
+        },
     )

@@ -4,6 +4,7 @@ import sqlalchemy
 
 from mergify_engine import database
 from mergify_engine import settings
+from mergify_engine.models import github_account
 from mergify_engine.models import github_actions as sql_models
 from mergify_engine.tests.functional import base
 
@@ -16,7 +17,7 @@ class TestCIApi(base.FunctionalTestBase):
 
         async with database.create_session() as db:
             await db.execute(
-                sqlalchemy.insert(sql_models.Account).values(
+                sqlalchemy.insert(github_account.GitHubAccount).values(
                     id=1, login=settings.TESTING_ORGANIZATION_NAME
                 )
             )

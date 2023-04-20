@@ -5,6 +5,7 @@ import sqlalchemy
 import sqlalchemy.ext.asyncio
 
 from mergify_engine.ci import job_registries
+from mergify_engine.models import github_account
 from mergify_engine.models import github_actions as sql_models
 from mergify_engine.tests.unit.ci import utils
 
@@ -68,13 +69,15 @@ async def test_search(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
 
 async def _insert_data(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
     await db.execute(
-        sqlalchemy.insert(sql_models.Account).values(id=1, login="some-owner")
+        sqlalchemy.insert(github_account.GitHubAccount).values(id=1, login="some-owner")
     )
     await db.execute(
-        sqlalchemy.insert(sql_models.Account).values(id=2, login="some-other-owner")
+        sqlalchemy.insert(github_account.GitHubAccount).values(
+            id=2, login="some-other-owner"
+        )
     )
     await db.execute(
-        sqlalchemy.insert(sql_models.Account).values(id=3, login="some-user")
+        sqlalchemy.insert(github_account.GitHubAccount).values(id=3, login="some-user")
     )
 
     # Insert a record matching the request

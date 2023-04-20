@@ -30,14 +30,18 @@ def create_job(
         workflow_run_id=workflow_run_id,
         workflow_id=workflow_id,
         name=name,
-        owner=models.Account(id=1, login=github_types.GitHubLogin(owner)),
+        owner=models.Account(
+            id=github_types.GitHubAccountIdType(1),
+            login=github_types.GitHubLogin(owner),
+        ),
         repository=github_types.GitHubRepositoryName(repository),
         conclusion=typing.cast(github_types.GitHubJobRunConclusionType, conclusion),
         triggering_event=typing.cast(
             github_types.GitHubWorkflowTriggerEventType, triggering_event
         ),
         triggering_actor=models.Account(
-            id=2, login=github_types.GitHubLogin(triggering_actor)
+            id=github_types.GitHubAccountIdType(2),
+            login=github_types.GitHubLogin(triggering_actor),
         ),
         started_at=started_at,
         completed_at=completed_at,

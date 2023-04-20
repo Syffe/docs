@@ -9,6 +9,7 @@ from mergify_engine.middlewares import logging
 from mergify_engine.middlewares import sudo
 from mergify_engine.web import utils
 from mergify_engine.web.front import admin
+from mergify_engine.web.front import applications
 from mergify_engine.web.front import auth
 from mergify_engine.web.front import configuration
 from mergify_engine.web.front import proxy
@@ -52,6 +53,7 @@ def create_app(debug: bool = False) -> fastapi.FastAPI:
     utils.setup_exception_handlers(app)
 
     app.include_router(admin.router)
+    app.include_router(applications.router)
     app.include_router(configuration.router)
     app.include_router(auth.router, prefix="/auth")
     app.include_router(proxy.router, prefix="/proxy")

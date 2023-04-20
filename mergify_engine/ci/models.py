@@ -14,7 +14,7 @@ OperatingSystem = typing.Literal["Linux", "macOS", "Windows", "Unknown"]
 
 @dataclasses.dataclass
 class Account:
-    id: int
+    id: github_types.GitHubAccountIdType
     login: github_types.GitHubLogin
 
 

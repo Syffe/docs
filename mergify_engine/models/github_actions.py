@@ -7,15 +7,7 @@ import sqlalchemy.ext.asyncio
 
 from mergify_engine import github_types
 from mergify_engine import models
-
-
-class Account(models.Base):
-    __tablename__ = "github_account"
-
-    id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.BigInteger, primary_key=True, autoincrement=False
-    )
-    login: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text, unique=True)
+from mergify_engine.models import github_account
 
 
 class PullRequest(models.Base):
@@ -107,10 +99,10 @@ class JobRun(models.Base):
     )
     cores: orm.Mapped[int] = orm.mapped_column(sqlalchemy.Integer)
 
-    owner: orm.Mapped[Account] = orm.relationship(
+    owner: orm.Mapped[github_account.GitHubAccount] = orm.relationship(
         lazy="joined", foreign_keys=[owner_id]
     )
-    triggering_actor: orm.Mapped[Account] = orm.relationship(
+    triggering_actor: orm.Mapped[github_account.GitHubAccount] = orm.relationship(
         lazy="joined", foreign_keys=[triggering_actor_id]
     )
     pull_requests: orm.Mapped[list[PullRequest]] = orm.relationship(

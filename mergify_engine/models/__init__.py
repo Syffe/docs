@@ -19,5 +19,7 @@ class Base(orm.DeclarativeBase):
 
 # NOTE(charly): ensure all models are loaded, to
 # allow Alembic to find all tables
+from mergify_engine.models import application_keys  # noqa
+from mergify_engine.models import github_account  # noqa
 from mergify_engine.models import github_actions  # noqa
 from mergify_engine.models import github_user  # noqa

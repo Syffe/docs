@@ -16,6 +16,7 @@ from mergify_engine import github_types
 from mergify_engine.ci import models as ci_models
 from mergify_engine.ci import pull_registries
 from mergify_engine.clients import github
+from mergify_engine.models import github_account
 from mergify_engine.models import github_actions as sql_models
 
 
@@ -87,14 +88,9 @@ class PostgresJobRegistry:
     async def _insert_account(
         session: sqlalchemy.ext.asyncio.AsyncSession, account: ci_models.Account
     ) -> None:
-        sql = (
-            postgresql.insert(sql_models.Account)  # type: ignore [no-untyped-call]
-            .values(id=account.id, login=account.login)
-            .on_conflict_do_update(
-                index_elements=[sql_models.Account.id], set_={"login": account.login}
-            )
+        await github_account.GitHubAccount.create_or_update(
+            session, account.id, account.login
         )
-        await session.execute(sql)
 
     async def search(
         self,
@@ -150,8 +146,8 @@ class PostgresJobRegistry:
             sql = (
                 sqlalchemy.select(sql_models.JobRun)
                 .join(
-                    sql_models.Account,
-                    sql_models.Account.id == sql_models.JobRun.owner_id,
+                    github_account.GitHubAccount,
+                    github_account.GitHubAccount.id == sql_models.JobRun.owner_id,
                 )
                 .where(*self._create_filter(owner, repository, start_at, end_at))
             )
@@ -214,8 +210,8 @@ class PostgresJobRegistry:
             sqlalchemy.select(PullRequestJobRunAssociation1)
             .join(JobRun1)
             .join(
-                sql_models.Account,
-                sql_models.Account.id == JobRun1.owner_id,
+                github_account.GitHubAccount,
+                github_account.GitHubAccount.id == JobRun1.owner_id,
             )
             .where(
                 *self._create_filter(
@@ -250,7 +246,9 @@ class PostgresJobRegistry:
         end_at: datetime.date | None,
         job_model: type[sql_models.JobRun] = sql_models.JobRun,
     ) -> list[sqlalchemy.ColumnElement[bool]]:
-        filter_ = [sqlalchemy.func.lower(sql_models.Account.login) == owner.lower()]
+        filter_ = [
+            sqlalchemy.func.lower(github_account.GitHubAccount.login) == owner.lower()
+        ]
         if repository is not None:
             filter_.append(job_model.repository == repository)
         if start_at is not None:

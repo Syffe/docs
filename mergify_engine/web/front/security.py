@@ -4,7 +4,10 @@ import fastapi
 import imia
 import starlette
 
+from mergify_engine import github_types
 from mergify_engine import settings
+from mergify_engine.clients import github
+from mergify_engine.clients import http
 from mergify_engine.models import github_user
 
 
@@ -33,4 +36,42 @@ def is_mergify_admin(
 
 def mergify_admin_login_required(request: fastapi.Request, _: RequiredLogin) -> None:
     if not is_mergify_admin(request.auth, request):
+        raise fastapi.HTTPException(403)
+
+
+GithubAccountId = typing.Annotated[
+    github_types.GitHubAccountIdType,
+    fastapi.Path(description="The GitHub account id"),
+]
+
+
+async def get_membership(
+    account_id: GithubAccountId, logged_user: CurrentUser
+) -> github_types.GitHubMembership:
+    if account_id == logged_user.id:
+        # We are always admin of our account
+        return github_types.GitHubMembership(
+            state="active",
+            role="admin",
+            user=logged_user.to_github_account(),
+            organization=logged_user.to_github_account(),
+        )
+
+    async with github.AsyncGithubInstallationClient(
+        github.GithubTokenAuth(logged_user.oauth_access_token)
+    ) as client:
+        try:
+            return typing.cast(
+                github_types.GitHubMembership,
+                await client.item(f"/user/memberships/orgs/{account_id}"),
+            )
+        except http.HTTPNotFound:
+            raise fastapi.HTTPException(403)
+
+
+async def github_admin_role_required(
+    account_id: GithubAccountId, logged_user: CurrentUser
+) -> None:
+    membership = await get_membership(account_id, logged_user)
+    if membership["role"] != "admin":
         raise fastapi.HTTPException(403)

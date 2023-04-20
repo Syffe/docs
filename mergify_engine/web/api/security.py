@@ -6,12 +6,16 @@ import fastapi
 import sentry_sdk
 
 from mergify_engine import context
+from mergify_engine import database
+from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.config import types
 from mergify_engine.dashboard import application as application_mod
 from mergify_engine.dashboard import subscription
+from mergify_engine.models import application_keys
+from mergify_engine.models import github_account
 from mergify_engine.models import github_user
 from mergify_engine.rules.config import mergify as mergify_conf
 from mergify_engine.rules.config import partition_rules as partr_config
@@ -49,8 +53,11 @@ class ApplicationAuth(fastapi.security.http.HTTPBearer):
         )
 
     async def __call__(  # type: ignore[override]
-        self, request: fastapi.Request, redis_links: redis.RedisLinks
-    ) -> application_mod.Application | None:
+        self,
+        request: fastapi.Request,
+        redis_links: redis.RedisLinks,
+        session: database.Session,
+    ) -> application_keys.ApplicationKey | None:
         credentials = await super().__call__(request)
         if credentials is None:
             if self.auto_error:
@@ -61,11 +68,29 @@ class ApplicationAuth(fastapi.security.http.HTTPBearer):
 
         api_access_key = credentials.credentials[: types.API_ACCESS_KEY_LEN]
         api_secret_key = credentials.credentials[types.API_ACCESS_KEY_LEN :]
+
         try:
-            app = await application_mod.Application.get(
+            legacy_app = await application_mod.Application.get(
                 redis_links.cache, api_access_key, api_secret_key
             )
         except application_mod.ApplicationUserNotFound:
+            app = await application_keys.ApplicationKey.get_by_key(
+                session, api_access_key, api_secret_key
+            )
+        else:
+            app = application_keys.ApplicationKey(
+                id=legacy_app.id,
+                name=legacy_app.name,
+                api_access_key=legacy_app.api_access_key,
+                api_secret_key=legacy_app.api_secret_key,
+                github_account=github_account.GitHubAccount(
+                    id=legacy_app.account_scope["id"],
+                    login=legacy_app.account_scope["login"],
+                ),
+                created_at=date.utcnow(),
+            )
+
+        if app is None:
             if self.auto_error:
                 raise fastapi.HTTPException(status_code=403)
             return None
@@ -77,7 +102,7 @@ class ApplicationAuth(fastapi.security.http.HTTPBearer):
                     "verify_scope is true, but url doesn't have owner variable"
                 )
             # Seatbelt
-            if app.account_scope["login"].lower() != scope.lower():
+            if app.github_account.login.lower() != scope.lower():
                 if self.auto_error:
                     raise fastapi.HTTPException(status_code=403)
                 return None
@@ -90,14 +115,14 @@ get_application_without_scope_verification = ApplicationAuth(verify_scope=False)
 get_optional_application = ApplicationAuth(auto_error=False)
 
 LoggedApplication = typing.Annotated[
-    application_mod.Application | None, fastapi.Security(get_optional_application)
+    application_keys.ApplicationKey | None, fastapi.Security(get_optional_application)
 ]
 
 
 def build_actor(
-    auth_method: application_mod.Application | github_user.GitHubUser,
+    auth_method: application_keys.ApplicationKey | github_user.GitHubUser,
 ) -> github.Actor:
-    if isinstance(auth_method, application_mod.Application):
+    if isinstance(auth_method, application_keys.ApplicationKey):
         return github.Actor(
             type="application",
             id=auth_method.id,
@@ -134,10 +159,7 @@ async def get_http_auth(
     if application is not None:
         installation_json = await github.get_installation_from_login(owner)
         # Authenticated by token
-        if (
-            application.account_scope is not None
-            and application.account_scope["id"] != installation_json["account"]["id"]
-        ):
+        if application.github_account.id != installation_json["account"]["id"]:
             raise fastapi.HTTPException(status_code=403)
         auth = github.GithubAppInstallationAuth(installation_json)
         actor = build_actor(auth_method=application)
