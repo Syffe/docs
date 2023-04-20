@@ -919,9 +919,15 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         await self.git(*args_commit, **tmp_kwargs)
 
         if two_commits:
-            await self.git(
-                "mv", f"test{self.pr_counter}", f"test{self.pr_counter}-moved"
-            )
+            if not files:
+                filename = f"test{self.pr_counter}"
+            else:
+                first_file = first(files.keys())
+                assert isinstance(first_file, str)
+                filename = first_file
+
+            await self.git("mv", filename, f"{filename}-moved")
+
             args_second_commit = [
                 "commit",
                 "--no-edit",
