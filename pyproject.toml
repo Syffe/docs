@@ -160,6 +160,7 @@ filterwarnings = [
     # sqlalchemy 2.0 warning
     "ignore:.*sqlalchemy.orm.mapper().*:sqlalchemy.exc.SADeprecationWarning"
 ]
+testpaths = ["mergify_engine/tests"]
 
 [tool.poe]
 include = ["poe.toml"]
