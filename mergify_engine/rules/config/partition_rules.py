@@ -90,7 +90,7 @@ class PartitionRules:
             False,
         )
 
-        if not any([rule.conditions.match for rule in evaluator.matching_rules]):
+        if not any(rule.conditions.match for rule in evaluator.matching_rules):
             # no match at all = match all partitions
             return [rule.name for rule in self.rules]
 
