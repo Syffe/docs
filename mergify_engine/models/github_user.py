@@ -63,7 +63,7 @@ class GitHubUser(models.Base):
     __tablename__ = "github_user"
 
     id: Mapped[github_types.GitHubAccountIdType] = orm.mapped_column(
-        sqlalchemy.Integer, primary_key=True
+        sqlalchemy.Integer, primary_key=True, autoincrement=False
     )
 
     login: Mapped[github_types.GitHubLogin] = orm.mapped_column(
