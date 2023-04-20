@@ -189,7 +189,8 @@ jobs:
               --entrypoint /bin/bash \
               $i:tmp \
               -c '/datadog-wrapper.sh mergify-import-check-worker;
-                  /datadog-wrapper.sh mergify-import-check-web;'
+                  /datadog-wrapper.sh mergify-import-check-web;
+                  /datadog-wrapper.sh mergify-import-check-db-update;'
           done
 
       ################

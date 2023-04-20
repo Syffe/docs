@@ -28,6 +28,7 @@ sequence = [
   "reno lint",
   "mergify-import-check-web",
   "mergify-import-check-worker",
+  "mergify-import-check-db-update",
   "tools/check-obsolete-fixtures.sh",
   "bash -n onpremise/entrypoint.sh",
   "bash -n datadog-wrapper.sh"

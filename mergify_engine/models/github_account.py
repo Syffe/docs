@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import sqlalchemy
 from sqlalchemy import orm
 from sqlalchemy.dialects import postgresql

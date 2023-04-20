@@ -16,3 +16,9 @@ def import_check_web() -> int:
     from mergify_engine.web import asgi  # noqa isort:skip
 
     return 0
+
+
+def import_check_db_update() -> int:
+    from mergify_engine.models import manage  # noqa isort:skip
+
+    return 0
