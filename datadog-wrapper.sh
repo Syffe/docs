@@ -55,7 +55,6 @@ MERGIFY_CONF_FILE="$DD_CONF_DIR/conf.d/mergify.d/conf.yaml"
 if [ -n "$DD_MERGIFY_API_TOKEN" ]; then
     echo "Installing datadog-mergify integration"
     sed -i "s/<YOUR DD_MERGIFY_API_TOKEN>/${DD_MERGIFY_API_TOKEN}/" "$MERGIFY_CONF_FILE"
-    datadog-agent integration install -r -w "/datadog_mergify-${DD_MERGIFY_VERSION}-py3-none-any.whl"
 else
     rm -f  "$MERGIFY_CONF_FILE"
 fi

@@ -60,9 +60,8 @@ RUN apt-get update -y && \
     apt-get update && apt-get -y --force-yes install --reinstall datadog-agent=${DD_AGENT_VERSION} && \
     apt-get autoremove --purge -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
+RUN datadog-agent integration install -t -r datadog-mergify==$DD_MERGIFY_VERSION
 COPY datadog-wrapper.sh /
-# FIXME(sileht): remove me when https://github.com/DataDog/integrations-extras/pull/1782 is merged
-COPY datadog/datadog_mergify-${DD_MERGIFY_VERSION}-py3-none-any.whl /
 COPY datadog/conf.d/mergify.yaml /etc/datadog-agent/conf.d/mergify.d/conf.yaml
 COPY datadog/conf.d/redisdb.yaml /etc/datadog-agent/conf.d/redisdb.d/conf.yaml
 COPY datadog/conf.d/postgres.yaml /etc/datadog-agent/conf.d/postgres.d/conf.yaml
