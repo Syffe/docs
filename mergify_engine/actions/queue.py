@@ -952,8 +952,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
             self.rule.get_signal_trigger(),
         )
 
-    @staticmethod
     def _check_method_fastforward_configuration(
+        self,
         config: QueueExecutorConfig,
         queue_rule: qr_config.QueueRule,
     ) -> None:
@@ -965,6 +965,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 f"`update_method: {config['update_method']}` is not compatible with fast-forward merge method",
                 "`update_method` must be set to `rebase`.",
             )
+
         if config["commit_message_template"] is not None:
             raise InvalidQueueConfiguration(
                 "Commit message can't be changed with fast-forward merge method",
@@ -984,6 +985,15 @@ Then, re-embark the pull request into the merge queue by posting the comment
             raise InvalidQueueConfiguration(
                 "allow_inplace_checks=False is not compatible with fast-forward merge method",
                 "The merge `method` or the queue configuration must be updated.",
+            )
+
+        if (
+            self.ctxt.pull["user"]["type"] == "Bot"
+            and config["update_bot_account"] is None
+        ):
+            raise InvalidQueueConfiguration(
+                "Pull requests created by GitHub App can't be impersonated for rebasing.",
+                "A `update_bot_account` must be set to be able to rebase and merge them with fast-forward merge method.",
             )
 
     @staticmethod
