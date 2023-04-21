@@ -69,26 +69,28 @@ class ApplicationAuth(fastapi.security.http.HTTPBearer):
         api_access_key = credentials.credentials[: types.API_ACCESS_KEY_LEN]
         api_secret_key = credentials.credentials[types.API_ACCESS_KEY_LEN :]
 
-        try:
-            legacy_app = await application_mod.Application.get(
-                redis_links.cache, api_access_key, api_secret_key
-            )
-        except application_mod.ApplicationUserNotFound:
-            app = await application_keys.ApplicationKey.get_by_key(
-                session, api_access_key, api_secret_key
-            )
-        else:
-            app = application_keys.ApplicationKey(
-                id=legacy_app.id,
-                name=legacy_app.name,
-                api_access_key=legacy_app.api_access_key,
-                api_secret_key=legacy_app.api_secret_key,
-                github_account=github_account.GitHubAccount(
-                    id=legacy_app.account_scope["id"],
-                    login=legacy_app.account_scope["login"],
-                ),
-                created_at=date.utcnow(),
-            )
+        app = await application_keys.ApplicationKey.get_by_key(
+            session, api_access_key, api_secret_key
+        )
+        if app is None:
+            try:
+                legacy_app = await application_mod.Application.get(
+                    redis_links.cache, api_access_key, api_secret_key
+                )
+            except application_mod.ApplicationUserNotFound:
+                pass
+            else:
+                app = application_keys.ApplicationKey(
+                    id=legacy_app.id,
+                    name=legacy_app.name,
+                    api_access_key=legacy_app.api_access_key,
+                    api_secret_key=legacy_app.api_secret_key,
+                    github_account=github_account.GitHubAccount(
+                        id=legacy_app.account_scope["id"],
+                        login=legacy_app.account_scope["login"],
+                    ),
+                    created_at=date.utcnow(),
+                )
 
         if app is None:
             if self.auto_error:
