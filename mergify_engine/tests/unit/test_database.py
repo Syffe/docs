@@ -1,5 +1,6 @@
 import asyncio
 import filecmp
+import os
 import pathlib
 import subprocess
 from unittest import mock
@@ -40,14 +41,30 @@ def test_migration(database_cleanup: None, tmp_path: pathlib.Path) -> None:
         utils.create_database(url_without_db_name.geturl(), "test_migration_migrate")
     )
 
-    with mock.patch.object(settings, "DATABASE_URL", url):
-        config = alembic.config.Config("alembic.ini")
-        alembic.command.upgrade(config, "head")
+    if os.getenv("MIGRATED_DATA_DUMP") is not None:
+        schema_dump_migration_path = pathlib.Path(os.environ["MIGRATED_DATA_DUMP"])
+    else:
+        with mock.patch.object(settings, "DATABASE_URL", url):
+            config = alembic.config.Config("alembic.ini")
+            alembic.command.upgrade(config, "head")
 
-        schema_dump_migration_path = tmp_path / "test_migration_migrate.sql"
-        dump_schema(schema_dump_migration_path)
+            schema_dump_migration_path = tmp_path / "test_migration_migrate.sql"
+            dump_schema(schema_dump_migration_path)
 
-        loop.run_until_complete(dispose_engine())
+            loop.run_until_complete(dispose_engine())
+
+    for _file in (schema_dump_creation_path, schema_dump_migration_path):
+        # nosemgrep: python.lang.security.audit.subprocess-shell-true.subprocess-shell-true
+        subprocess.run(
+            "sed -i"
+            " -e '/^--/d'"  # remove comments
+            " -e '/^$/d'"  # remove empty lines
+            " -e '/^CREATE EXTENSION/d' -e '/^COMMENT ON EXTENSION/d'"  # remove heroku extensions
+            " -e 's/public\\.//g'"  # remove schema prefix
+            f" {_file}",
+            shell=True,
+            check=True,
+        )
 
     assert filecmp.cmp(
         schema_dump_creation_path, schema_dump_migration_path, shallow=False
@@ -61,7 +78,11 @@ def dump_schema(filepath: pathlib.Path) -> None:
     subprocess.run(
         (
             "pg_dump",
+            "--no-acl",
+            "--no-owner",
+            "--no-comments",
             f"--dbname={db_url}",
+            "--exclude-schema=heroku_ext",
             "--schema-only",
             "--exclude-table=alembic_version",
             "--format=p",
