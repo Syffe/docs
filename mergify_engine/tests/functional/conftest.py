@@ -28,7 +28,7 @@ from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import github_app
 from mergify_engine.clients import http
-from mergify_engine.dashboard import application as application_mod
+from mergify_engine.config import types
 from mergify_engine.dashboard import subscription
 from mergify_engine.models import github_user
 
@@ -113,6 +113,7 @@ def extract_subscription_marker_features(
 
 @pytest.fixture
 async def dashboard(
+    monkeypatch: pytest.MonkeyPatch,
     redis_cache: redis_utils.RedisCache,
     request: pytest.FixtureRequest,
     setup_database: None,
@@ -203,34 +204,13 @@ async def dashboard(
     patcher.start()
     request.addfinalizer(patcher.stop)
 
-    async def fake_application_get(
-        redis_cache: redis_utils.RedisCache,
-        api_access_key: str,
-        api_secret_key: str,
-    ) -> application_mod.Application:
-        if (
-            api_access_key == api_key_admin[:32]
-            and api_secret_key == api_key_admin[32:]
-        ):
-            return application_mod.Application(
-                redis_cache,
-                123,
-                "testing application",
-                api_access_key,
-                api_secret_key,
-                account_scope={
-                    "id": settings.TESTING_ORGANIZATION_ID,
-                    "login": settings.TESTING_ORGANIZATION_NAME,
-                },
-            )
-        raise application_mod.ApplicationUserNotFound()
-
-    patcher = mock.patch(
-        "mergify_engine.dashboard.application.ApplicationSaas.get",
-        side_effect=fake_application_get,
+    monkeypatch.setattr(
+        settings,
+        "APPLICATION_APIKEYS",
+        types.ApplicationAPIKeys(
+            f"{api_key_admin}:{settings.TESTING_ORGANIZATION_ID}:{settings.TESTING_ORGANIZATION_NAME}",
+        ),
     )
-    patcher.start()
-    request.addfinalizer(patcher.stop)
 
     return DashboardFixture(api_key_admin, sub)
 

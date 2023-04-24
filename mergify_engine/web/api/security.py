@@ -9,10 +9,10 @@ from mergify_engine import context
 from mergify_engine import database
 from mergify_engine import date
 from mergify_engine import github_types
+from mergify_engine import settings
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.config import types
-from mergify_engine.dashboard import application as application_mod
 from mergify_engine.dashboard import subscription
 from mergify_engine.models import application_keys
 from mergify_engine.models import github_account
@@ -73,21 +73,16 @@ class ApplicationAuth(fastapi.security.http.HTTPBearer):
             session, api_access_key, api_secret_key
         )
         if app is None:
-            try:
-                legacy_app = await application_mod.Application.get(
-                    redis_links.cache, api_access_key, api_secret_key
-                )
-            except application_mod.ApplicationUserNotFound:
-                pass
-            else:
+            data = settings.APPLICATION_APIKEYS.get(api_access_key)
+            if data and data["api_secret_key"] == api_secret_key:
                 app = application_keys.ApplicationKey(
-                    id=legacy_app.id,
-                    name=legacy_app.name,
-                    api_access_key=legacy_app.api_access_key,
-                    api_secret_key=legacy_app.api_secret_key,
+                    id=0,
+                    name="on-premise-app-from-env",
+                    api_access_key=api_access_key,
+                    api_secret_key=api_secret_key,
                     github_account=github_account.GitHubAccount(
-                        id=legacy_app.account_scope["id"],
-                        login=legacy_app.account_scope["login"],
+                        id=github_types.GitHubAccountIdType(data["account_id"]),
+                        login=github_types.GitHubLogin(data["account_login"]),
                     ),
                     created_at=date.utcnow(),
                 )

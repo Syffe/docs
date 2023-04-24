@@ -4,7 +4,10 @@ import pytest
 import respx
 import sqlalchemy.orm
 
+from mergify_engine import github_types
+from mergify_engine import redis_utils
 from mergify_engine import settings
+from mergify_engine.config import types
 from mergify_engine.models import github_account
 from mergify_engine.models import github_user
 from mergify_engine.tests import conftest
@@ -269,3 +272,61 @@ async def test_applications_permissions_for_orgs(
     await web_client.log_as(user.id)
     resp = await web_client.get("/front/github-account/1234/applications")
     assert resp.status_code == status_code
+
+
+async def test_application_tokens_via_env(
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    monkeypatch: pytest.MonkeyPatch,
+    redis_cache: redis_utils.RedisCache,
+    web_client: conftest.CustomTestClient,
+) -> None:
+    api_access_key1 = "1" * 32
+    api_secret_key1 = "1" * 32
+    account_id1 = github_types.GitHubAccountIdType(12345)
+    account_login1 = github_types.GitHubLogin("login1")
+
+    api_access_key2 = "2" * 32
+    api_secret_key2 = "2" * 32
+    account_id2 = github_types.GitHubAccountIdType(67891)
+    account_login2 = github_types.GitHubLogin("login2")
+
+    resp = await web_client.get(
+        "/v1/application",
+        headers={"Authorization": f"bearer {api_access_key1}{api_secret_key1}"},
+    )
+    assert resp.status_code == 403
+    resp = await web_client.get(
+        "/v1/application",
+        headers={"Authorization": f"bearer {api_access_key2}{api_secret_key2}"},
+    )
+    assert resp.status_code == 403
+
+    monkeypatch.setattr(
+        settings,
+        "APPLICATION_APIKEYS",
+        types.ApplicationAPIKeys(
+            f"{api_access_key1}{api_secret_key1}:{account_id1}:{account_login1},{api_access_key2}{api_secret_key2}:{account_id2}:{account_login2}"
+        ),
+    )
+
+    resp = await web_client.get(
+        "/v1/application",
+        headers={"Authorization": f"bearer {api_access_key1}{api_secret_key1}"},
+    )
+    assert resp.status_code == 200
+    assert resp.json() == {
+        "account_scope": {"id": 12345, "login": "login1"},
+        "id": 0,
+        "name": "on-premise-app-from-env",
+    }
+
+    resp = await web_client.get(
+        "/v1/application",
+        headers={"Authorization": f"bearer {api_access_key2}{api_secret_key2}"},
+    )
+    assert resp.status_code == 200
+    assert resp.json() == {
+        "account_scope": {"id": 67891, "login": "login2"},
+        "id": 0,
+        "name": "on-premise-app-from-env",
+    }

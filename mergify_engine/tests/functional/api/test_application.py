@@ -16,8 +16,8 @@ async def test_api_application(
     )
     assert r.status_code == 200, r.text
     assert r.json() == {
-        "id": 123,
-        "name": "testing application",
+        "id": 0,
+        "name": "on-premise-app-from-env",
         "account_scope": {
             "id": settings.TESTING_ORGANIZATION_ID,
             "login": settings.TESTING_ORGANIZATION_NAME,

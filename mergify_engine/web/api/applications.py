@@ -5,7 +5,6 @@ import fastapi
 import pydantic
 
 from mergify_engine import github_types
-from mergify_engine.dashboard import application as application_mod
 from mergify_engine.models import application_keys
 from mergify_engine.web import api
 from mergify_engine.web.api import security
@@ -14,11 +13,16 @@ from mergify_engine.web.api import security
 LOG = daiquiri.getLogger(__name__)
 
 
+class ApplicationAccountScope(typing.TypedDict):
+    id: github_types.GitHubAccountIdType
+    login: github_types.GitHubLogin
+
+
 @pydantic.dataclasses.dataclass
 class ApplicationResponse:
     id: int
     name: str
-    account_scope: application_mod.ApplicationAccountScope
+    account_scope: ApplicationAccountScope
 
 
 router = fastapi.APIRouter(tags=["applications"])

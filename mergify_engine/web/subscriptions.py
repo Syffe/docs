@@ -1,5 +1,3 @@
-import typing
-
 import fastapi
 from starlette import requests
 from starlette import responses
@@ -7,7 +5,6 @@ from starlette import responses
 from mergify_engine import count_seats
 from mergify_engine import database
 from mergify_engine import github_types
-from mergify_engine.dashboard import application
 from mergify_engine.dashboard import subscription
 from mergify_engine.models import github_user
 from mergify_engine.usage import last_seen
@@ -100,17 +97,7 @@ async def tokens_cache_delete(
 async def application_cache_update(
     api_access_key: str, request: requests.Request, redis_links: redis.RedisLinks
 ) -> responses.Response:
-    data = typing.cast(
-        application.ApplicationDashboardJSON | None, await request.json()
-    )
-    if data is None:
-        return responses.Response("Empty content", status_code=400)
-
-    try:
-        await application.Application.update(redis_links.cache, api_access_key, data)
-    except NotImplementedError:
-        return responses.Response("Updating application is disabled", status_code=400)
-
+    # FIXME(sileht): drop me once dashboard is cleaned
     return responses.Response("Cache updated", status_code=200)
 
 
@@ -121,10 +108,7 @@ async def application_cache_update(
 async def application_cache_delete(
     api_access_key: str, redis_links: redis.RedisLinks
 ) -> responses.Response:
-    try:
-        await application.Application.delete(redis_links.cache, api_access_key)
-    except NotImplementedError:
-        return responses.Response("Deleting subscription is disabled", status_code=400)
+    # FIXME(sileht): drop me once dashboard is cleaned
     return responses.Response("Cache cleaned", status_code=200)
 
 

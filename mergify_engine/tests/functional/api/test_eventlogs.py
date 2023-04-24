@@ -457,8 +457,8 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "metadata": {
                     "queue_name": "default",
                     "deleted_by": {
-                        "id": 123,
-                        "name": "testing application",
+                        "id": 0,
+                        "name": "on-premise-app-from-env",
                         "type": "application",
                     },
                 },
@@ -474,8 +474,8 @@ class TestEventLogsAction(base.FunctionalTestBase):
                     "reason": "test updated freeze reason",
                     "cascading": False,
                     "updated_by": {
-                        "id": 123,
-                        "name": "testing application",
+                        "id": 0,
+                        "name": "on-premise-app-from-env",
                         "type": "application",
                     },
                 },
@@ -491,8 +491,8 @@ class TestEventLogsAction(base.FunctionalTestBase):
                     "reason": "test freeze reason",
                     "cascading": True,
                     "created_by": {
-                        "id": 123,
-                        "name": "testing application",
+                        "id": 0,
+                        "name": "on-premise-app-from-env",
                         "type": "application",
                     },
                 },
