@@ -6817,6 +6817,99 @@ pull_request_rules:
             == "The pull request has been removed from the queue by an `unqueue` command"
         )
 
+    async def test_unqueue_then_requeue_not_in_first_place_check_run(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Queue on label",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        p2 = await self.create_pr()
+
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        await self.wait_for_pull_request("opened")
+
+        ctxt = context.Context(self.repository_ctxt, p1)
+        rule_label_check = first(
+            await ctxt.pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue on label (queue)",
+        )
+        assert rule_label_check is not None
+        assert rule_label_check["status"] == "in_progress"
+        assert (
+            rule_label_check["output"]["title"]
+            == "The pull request is the 1st in the queue to be merged"
+        )
+
+        queue_summary_check = first(
+            await ctxt.pull_engine_check_runs,
+            key=lambda c: c["name"] == constants.MERGE_QUEUE_SUMMARY_NAME,
+        )
+        assert queue_summary_check is not None
+        assert queue_summary_check["status"] == "in_progress"
+
+        await self.remove_label(p1["number"], "queue")
+        await self.run_engine()
+
+        await self.wait_for_check_run(
+            name=constants.MERGE_QUEUE_SUMMARY_NAME,
+            status="completed",
+            conclusion="neutral",
+        )
+
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        p1 = await self.get_pull(p1["number"])
+        ctxt = context.Context(self.repository_ctxt, p1)
+        rule_label_check = first(
+            await ctxt.pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue on label (queue)",
+        )
+        assert rule_label_check is not None
+        assert (
+            rule_label_check["output"]["title"]
+            == "The pull request is the 2nd in the queue to be merged"
+        )
+
+        # Retrieve the second one from context check runs because the check run
+        # we receive from events are highly unreliable
+        queue_summary_check = first(
+            await ctxt.pull_engine_check_runs,
+            key=lambda c: c["name"] == constants.MERGE_QUEUE_SUMMARY_NAME,
+        )
+        assert queue_summary_check is not None
+        assert queue_summary_check["status"] == "completed"
+        assert queue_summary_check["conclusion"] == "neutral"
+        assert (
+            queue_summary_check["output"]["title"]
+            == f"The pull request {p1['number']} is in queue"
+        )
+
 
 class TestQueueActionFeaturesSubscription(base.FunctionalTestBase):
     @pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)

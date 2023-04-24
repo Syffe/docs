@@ -11,7 +11,7 @@ from mergify_engine.tests.functional import base
 class TestUnQueueCommand(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
 
-    async def test_unqueue(self) -> None:
+    async def test_unqueue_no_partitions(self) -> None:
         rules = {
             "queue_rules": [
                 {

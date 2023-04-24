@@ -522,6 +522,28 @@ Then, re-embark the pull request into the merge queue by posting the comment
         if result.conclusion is not check_api.Conclusion.PENDING:
             unqueue_reason = await self.get_unqueue_reason_from_action_result(result)
             await self._unqueue_pull_request(convoy, cars, unqueue_reason, result)
+        else:
+            # Reset MERGE_QUEUE_SUMMARY_NAME check_run to neutral only if it exists already
+            merge_queue_check_run = await self.ctxt.get_engine_check_run(
+                constants.MERGE_QUEUE_SUMMARY_NAME
+            )
+            if (
+                merge_queue_check_run is not None
+                and merge_queue_check_run["status"] != "in_progress"
+            ):
+                await check_api.set_check_run(
+                    self.ctxt,
+                    constants.MERGE_QUEUE_SUMMARY_NAME,
+                    check_api.Result(
+                        check_api.Conclusion.NEUTRAL,
+                        f"The pull request {self.ctxt.pull['number']} is in queue",
+                        (
+                            f"The pull request {self.ctxt.pull['number']} is in"
+                            " queue, this summary will be updated once the queue"
+                            " checks have started."
+                        ),
+                    ),
+                )
 
         return result
 
