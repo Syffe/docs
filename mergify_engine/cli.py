@@ -103,9 +103,12 @@ async def dump_handler(argv: list[str] | None = None) -> None:
     parser.add_argument("at", type=lambda v: datetime.date.fromisoformat(v))
     args = parser.parse_args(argv)
 
-    auth = github.GithubTokenAuth(
-        token=settings.TESTING_DEV_PERSONAL_TOKEN,
-    )
+    auth = None
+
+    if settings.TESTING_DEV_PERSONAL_TOKEN:
+        auth = github.GithubTokenAuth(
+            token=settings.TESTING_DEV_PERSONAL_TOKEN,
+        )
 
     async with redis_utils.RedisLinks(name="ci_dump") as redis_links:
         await dump.dump(
