@@ -2258,19 +2258,6 @@ You don't need to do anything. Mergify will close this pull request automaticall
     async def update_summaries(self) -> None:
         checked_pull = self.get_checked_pull()
 
-        # Draft PR summary update
-        if (
-            self.train_car_state.checks_type == TrainCarChecksType.DRAFT
-            and checked_pull is not None
-        ):
-            tmp_pull_ctxt = await self.repository.get_pull_request_context(checked_pull)
-            draft_summary = await self.get_draft_pr_summary()
-            if tmp_pull_ctxt.body != draft_summary:
-                await tmp_pull_ctxt.client.patch(
-                    f"{tmp_pull_ctxt.base_url}/pulls/{checked_pull}",
-                    json={"body": draft_summary},
-                )
-
         # "Queue:" summary generation of the original PR
         queue_summary = self.get_original_pr_summary(checked_pull)
 
@@ -2300,15 +2287,28 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 self,
             )
 
+        # Draft PR summary and state update
         if (
             self.train_car_state.checks_type == TrainCarChecksType.DRAFT
-            and self.get_queue_check_run_conclusion() != check_api.Conclusion.PENDING
-            and not tmp_pull_ctxt.closed
+            and checked_pull is not None
         ):
-            await tmp_pull_ctxt.client.patch(
-                f"{tmp_pull_ctxt.base_url}/pulls/{self.queue_pull_request_number}",
-                json={"state": "closed"},
-            )
+            tmp_pull_ctxt = await self.repository.get_pull_request_context(checked_pull)
+            draft_summary = await self.get_draft_pr_summary()
+            payload = {}
+            if tmp_pull_ctxt.body != draft_summary:
+                payload["body"] = draft_summary
+
+            if (
+                self.get_queue_check_run_conclusion() != check_api.Conclusion.PENDING
+                and not tmp_pull_ctxt.closed
+            ):
+                payload["state"] = "closed"
+
+            if payload:
+                await tmp_pull_ctxt.client.patch(
+                    f"{tmp_pull_ctxt.base_url}/pulls/{checked_pull}",
+                    json=payload,
+                )
 
     async def send_refresh_to_user_pull_requests(self) -> None:
         for i, ep in enumerate(self.still_queued_embarked_pulls):
