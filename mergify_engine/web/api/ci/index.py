@@ -148,9 +148,19 @@ async def repository_queues(
         datetime.date | None,
         fastapi.Query(description="The end of the date range"),
     ] = None,
+    compare_start_at: typing.Annotated[
+        datetime.date | None,
+        fastapi.Query(description="The start of the date range to compare to"),
+    ] = None,
+    compare_end_at: typing.Annotated[
+        datetime.date | None,
+        fastapi.Query(description="The end of the date range to compare to"),
+    ] = None,
 ) -> reports.ReportPayload:
     job_registry = job_registries.PostgresJobRegistry()
-    query = reports.Query(owner, repository, start_at, end_at)
+    query = reports.Query(
+        owner, repository, start_at, end_at, compare_start_at, compare_end_at
+    )
     report = reports.Report(job_registry, query)
 
     return await report.run()

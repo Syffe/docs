@@ -168,6 +168,22 @@ class Query:
     repository: github_types.GitHubRepositoryName | None = None
     start_at: datetime.date | None = None
     end_at: datetime.date | None = None
+    compare_start_at: datetime.date | None = None
+    compare_end_at: datetime.date | None = None
+
+    def __post_init__(self) -> None:
+        # No date range, we don't compute the comparison date range
+        if self.start_at is None or self.end_at is None:
+            return
+
+        # Comparison date range is specified
+        if self.compare_start_at is not None and self.compare_end_at is not None:
+            return
+
+        # Compute comparison date range
+        delta = self.end_at - self.start_at + datetime.timedelta(days=1)
+        self.compare_start_at = self.start_at - delta
+        self.compare_end_at = self.end_at - delta
 
 
 @dataclasses.dataclass
@@ -176,34 +192,21 @@ class Report:
     query: Query
 
     async def run(self) -> ReportPayload:
-        current = await self._run_without_differences(
+        report = await self._run_without_differences(
             self.query.owner,
             self.query.repository,
             self.query.start_at,
             self.query.end_at,
         )
 
-        previous_start_at, previous_end_at = self._get_previous_date_range(
-            self.query.start_at, self.query.end_at
-        )
-        previous = await self._run_without_differences(
+        other_report = await self._run_without_differences(
             self.query.owner,
             self.query.repository,
-            previous_start_at,
-            previous_end_at,
+            self.query.compare_start_at,
+            self.query.compare_end_at,
         )
 
-        return current.difference_with(previous)
-
-    @staticmethod
-    def _get_previous_date_range(
-        start_at: datetime.date | None, end_at: datetime.date | None
-    ) -> tuple[datetime.date | None, datetime.date | None]:
-        if start_at is None or end_at is None:
-            return start_at, end_at
-
-        delta = end_at - start_at + datetime.timedelta(days=1)
-        return start_at - delta, end_at - delta
+        return report.difference_with(other_report)
 
     async def _run_without_differences(
         self,

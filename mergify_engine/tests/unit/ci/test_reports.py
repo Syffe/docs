@@ -409,12 +409,13 @@ async def test_report_for_whole_owner() -> None:
     )
 
 
-def test_get_previous_date_range() -> None:
-    start_at, end_at = datetime.date(2023, 2, 5), datetime.date(2023, 2, 8)
-    (
-        previous_start_at,
-        previous_end_at,
-    ) = reports.Report._get_previous_date_range(start_at, end_at)
+def test_query_compute_date_range() -> None:
+    query = reports.Query(
+        github_types.GitHubLogin("some-owner"),
+        github_types.GitHubRepositoryName("some-repo"),
+        datetime.date(2023, 2, 5),
+        datetime.date(2023, 2, 8),
+    )
 
-    assert previous_start_at == datetime.date(2023, 2, 1)
-    assert previous_end_at == datetime.date(2023, 2, 4)
+    assert query.compare_start_at == datetime.date(2023, 2, 1)
+    assert query.compare_end_at == datetime.date(2023, 2, 4)

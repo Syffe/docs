@@ -57,12 +57,15 @@ class TestCIApi(base.FunctionalTestBase):
         assert "pull_requests" in r.json()["categories"]
 
         r = await self.app.get(
-            f"/v1/ci/{settings.TESTING_ORGANIZATION_NAME}?repository={self.RECORD_CONFIG['repository_name']}",
+            f"/v1/ci/{settings.TESTING_ORGANIZATION_NAME}?"
+            "repository={self.RECORD_CONFIG['repository_name']}",
         )
         assert r.status_code == 200
 
         r = await self.app.get(
-            f"/v1/ci/{settings.TESTING_ORGANIZATION_NAME}?repository={self.RECORD_CONFIG['repository_name']}&start_at=2023-01-01&end_at=2023-01-15",
+            f"/v1/ci/{settings.TESTING_ORGANIZATION_NAME}?"
+            "repository={self.RECORD_CONFIG['repository_name']}"
+            "&start_at=2023-01-01&end_at=2023-01-15",
         )
         assert r.status_code == 200
         assert "date_range" in r.json()
@@ -71,3 +74,17 @@ class TestCIApi(base.FunctionalTestBase):
         assert "compared_date_range" in r.json()
         assert r.json()["compared_date_range"]["start_at"] == "2022-12-17"
         assert r.json()["compared_date_range"]["end_at"] == "2022-12-31"
+
+        r = await self.app.get(
+            f"/v1/ci/{settings.TESTING_ORGANIZATION_NAME}?"
+            f"repository={self.RECORD_CONFIG['repository_name']}"
+            "&start_at=2023-01-01&end_at=2023-01-15"
+            "&compare_start_at=2022-12-01&compare_end_at=2022-12-15",
+        )
+        assert r.status_code == 200
+        assert "date_range" in r.json()
+        assert r.json()["date_range"]["start_at"] == "2023-01-01"
+        assert r.json()["date_range"]["end_at"] == "2023-01-15"
+        assert "compared_date_range" in r.json()
+        assert r.json()["compared_date_range"]["start_at"] == "2022-12-01"
+        assert r.json()["compared_date_range"]["end_at"] == "2022-12-15"
