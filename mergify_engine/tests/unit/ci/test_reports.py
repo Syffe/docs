@@ -119,6 +119,16 @@ async def test_report() -> None:
                     )
                 ],
             ),
+            repositories=reports.Dimension(
+                type="repositories",
+                items=[
+                    reports.DimensionItem(
+                        name="engine",
+                        cost=reports.Money.from_decimal("1.336"),
+                        difference=reports.Money.from_decimal("-0.136"),
+                    )
+                ],
+            ),
         ),
     )
     scheduled_jobs = result.categories.scheduled_jobs
@@ -142,6 +152,16 @@ async def test_report() -> None:
                 items=[
                     reports.DimensionItem(
                         name="success",
+                        cost=reports.Money.from_decimal("1.336"),
+                        difference=reports.Money.from_decimal("-0.136"),
+                    )
+                ],
+            ),
+            repositories=reports.Dimension(
+                type="repositories",
+                items=[
+                    reports.DimensionItem(
+                        name="engine",
                         cost=reports.Money.from_decimal("1.336"),
                         difference=reports.Money.from_decimal("-0.136"),
                     )
@@ -205,6 +225,16 @@ async def test_report() -> None:
                 items=[
                     reports.DimensionItem(
                         name="success",
+                        cost=reports.Money.from_decimal("4.008"),
+                        difference=reports.Money.from_decimal("-0.408"),
+                    )
+                ],
+            ),
+            repositories=reports.Dimension(
+                type="repositories",
+                items=[
+                    reports.DimensionItem(
+                        name="engine",
                         cost=reports.Money.from_decimal("4.008"),
                         difference=reports.Money.from_decimal("-0.408"),
                     )
@@ -254,6 +284,16 @@ async def test_report_for_whole_owner() -> None:
                     )
                 ],
             ),
+            repositories=reports.Dimension(
+                type="repositories",
+                items=[
+                    reports.DimensionItem(
+                        name="fake_repo",
+                        cost=reports.Money.from_decimal("1.336"),
+                        difference=reports.Money.from_decimal("-0.136"),
+                    )
+                ],
+            ),
         ),
     )
     scheduled_jobs = result.categories.scheduled_jobs
@@ -277,6 +317,16 @@ async def test_report_for_whole_owner() -> None:
                 items=[
                     reports.DimensionItem(
                         name="success",
+                        cost=reports.Money.from_decimal("1.336"),
+                        difference=reports.Money.from_decimal("-0.136"),
+                    )
+                ],
+            ),
+            repositories=reports.Dimension(
+                type="repositories",
+                items=[
+                    reports.DimensionItem(
+                        name="fake_repo",
                         cost=reports.Money.from_decimal("1.336"),
                         difference=reports.Money.from_decimal("-0.136"),
                     )
@@ -340,6 +390,16 @@ async def test_report_for_whole_owner() -> None:
                 items=[
                     reports.DimensionItem(
                         name="success",
+                        cost=reports.Money.from_decimal("4.008"),
+                        difference=reports.Money.from_decimal("-0.408"),
+                    )
+                ],
+            ),
+            repositories=reports.Dimension(
+                type="repositories",
+                items=[
+                    reports.DimensionItem(
+                        name="fake_repo",
                         cost=reports.Money.from_decimal("4.008"),
                         difference=reports.Money.from_decimal("-0.408"),
                     )

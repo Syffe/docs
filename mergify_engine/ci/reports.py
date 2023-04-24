@@ -44,7 +44,7 @@ class DimensionItem:
 
 @pydantic.dataclasses.dataclass
 class Dimension:
-    type: typing.Literal["conclusions", "jobs", "actors", "lifecycles"]
+    type: typing.Literal["conclusions", "jobs", "actors", "lifecycles", "repositories"]
     items: list[DimensionItem]
 
     def difference_with(self, other: "Dimension") -> "Dimension":
@@ -63,6 +63,7 @@ class Dimension:
 class Dimensions:
     conclusions: Dimension
     jobs: Dimension
+    repositories: Dimension
     actors: Dimension | None = None
     lifecycles: Dimension | None = None
 
@@ -79,6 +80,9 @@ class Category:
             other.dimensions.conclusions
         )
         jobs = self.dimensions.jobs.difference_with(other.dimensions.jobs)
+        repositories = self.dimensions.repositories.difference_with(
+            other.dimensions.repositories
+        )
         actors = (
             self.dimensions.actors.difference_with(other.dimensions.actors)
             if self.dimensions.actors and other.dimensions.actors
@@ -98,6 +102,7 @@ class Category:
                 jobs=jobs,
                 actors=actors,
                 lifecycles=lifecycles,
+                repositories=repositories,
             ),
             difference=Money(self.total_cost.amount - other.total_cost.amount),
         )
@@ -237,12 +242,16 @@ class Report:
         per_job: dict[str, cost_calculator.MoneyAmount] = collections.defaultdict(
             cost_calculator.MoneyAmount.zero
         )
+        per_repository: dict[
+            str, cost_calculator.MoneyAmount
+        ] = collections.defaultdict(cost_calculator.MoneyAmount.zero)
         total_cost = cost_calculator.MoneyAmount.zero()
 
         for job_run in job_runs:
             if job_run.triggering_event == "push":
                 per_conclusion[job_run.conclusion] += job_run.cost
                 per_job[job_run.name] += job_run.cost
+                per_repository[job_run.repository] += job_run.cost
                 total_cost += job_run.cost
 
         return Category(
@@ -263,6 +272,13 @@ class Report:
                         for conclusion, cost in per_job.items()
                     ],
                 ),
+                repositories=Dimension(
+                    type="repositories",
+                    items=[
+                        DimensionItem(name=conclusion, cost=Money(cost))
+                        for conclusion, cost in per_repository.items()
+                    ],
+                ),
             ),
         )
 
@@ -273,12 +289,16 @@ class Report:
         per_job: dict[str, cost_calculator.MoneyAmount] = collections.defaultdict(
             cost_calculator.MoneyAmount.zero
         )
+        per_repository: dict[
+            str, cost_calculator.MoneyAmount
+        ] = collections.defaultdict(cost_calculator.MoneyAmount.zero)
         total_cost = cost_calculator.MoneyAmount.zero()
 
         for job_run in job_runs:
             if job_run.triggering_event == "schedule":
                 per_conclusion[job_run.conclusion] += job_run.cost
                 per_job[job_run.name] += job_run.cost
+                per_repository[job_run.repository] += job_run.cost
                 total_cost += job_run.cost
 
         return Category(
@@ -299,6 +319,13 @@ class Report:
                         for conclusion, cost in per_job.items()
                     ],
                 ),
+                repositories=Dimension(
+                    type="repositories",
+                    items=[
+                        DimensionItem(name=conclusion, cost=Money(cost))
+                        for conclusion, cost in per_repository.items()
+                    ],
+                ),
             ),
         )
 
@@ -315,6 +342,9 @@ class Report:
         per_conclusion: dict[
             str, cost_calculator.MoneyAmount
         ] = collections.defaultdict(cost_calculator.MoneyAmount.zero)
+        per_repository: dict[
+            str, cost_calculator.MoneyAmount
+        ] = collections.defaultdict(cost_calculator.MoneyAmount.zero)
         total_cost = cost_calculator.MoneyAmount.zero()
 
         for job_run in job_runs:
@@ -322,6 +352,7 @@ class Report:
                 per_actor[job_run.triggering_actor.login] += job_run.cost
                 per_job[job_run.name] += job_run.cost
                 per_conclusion[job_run.conclusion] += job_run.cost
+                per_repository[job_run.repository] += job_run.cost
 
                 lifecycle = await self._lifecycle(job_run)
                 if lifecycle is not None:
@@ -359,6 +390,13 @@ class Report:
                     items=[
                         DimensionItem(name=conclusion, cost=Money(cost))
                         for conclusion, cost in per_conclusion.items()
+                    ],
+                ),
+                repositories=Dimension(
+                    type="repositories",
+                    items=[
+                        DimensionItem(name=conclusion, cost=Money(cost))
+                        for conclusion, cost in per_repository.items()
                     ],
                 ),
             ),

@@ -36,6 +36,10 @@ router = fastapi.APIRouter(
                                 "dimensions": {
                                     "conclusions": {"type": "conclusions", "items": []},
                                     "jobs": {"type": "jobs", "items": []},
+                                    "repositories": {
+                                        "type": "repositories",
+                                        "items": [],
+                                    },
                                 },
                                 "difference": {"amount": 0.0, "currency": "USD"},
                             },
@@ -45,6 +49,10 @@ router = fastapi.APIRouter(
                                 "dimensions": {
                                     "conclusions": {"type": "conclusions", "items": []},
                                     "jobs": {"type": "jobs", "items": []},
+                                    "repositories": {
+                                        "type": "repositories",
+                                        "items": [],
+                                    },
                                 },
                                 "difference": {"amount": 0.0, "currency": "USD"},
                             },
@@ -93,6 +101,18 @@ router = fastapi.APIRouter(
                                         "items": [
                                             {
                                                 "name": "failure",
+                                                "cost": {
+                                                    "amount": 0.02,
+                                                    "currency": "USD",
+                                                },
+                                            }
+                                        ],
+                                    },
+                                    "repositories": {
+                                        "type": "repositories",
+                                        "items": [
+                                            {
+                                                "name": "some-repo",
                                                 "cost": {
                                                     "amount": 0.02,
                                                     "currency": "USD",
