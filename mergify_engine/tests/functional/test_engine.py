@@ -827,7 +827,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
     async def test_sha_collision(self) -> None:
         await self.setup_repo()
-        prs = await self.create_conflicting_prs()
+        prs = await self.create_prs_with_same_head_sha()
 
         await self.run_engine()
         await self.wait_for(

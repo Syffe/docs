@@ -1094,7 +1094,9 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                 f.write(content)
             await self.git("add", name)
 
-    async def create_conflicting_prs(self) -> list[github_types.GitHubPullRequest]:
+    async def create_prs_with_same_head_sha(
+        self,
+    ) -> tuple[github_types.GitHubPullRequest, github_types.GitHubPullRequest]:
         pr1 = await self.create_pr(
             files={"testconflict": "testconflict"},
         )
@@ -1123,7 +1125,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         await self.wait_for("pull_request", {"action": "opened"})
         pr2 = typing.cast(github_types.GitHubPullRequest, resp.json())
 
-        return [pr1, pr2]
+        return (pr1, pr2)
 
     async def create_pr_with_autosquash_commit(
         self,
