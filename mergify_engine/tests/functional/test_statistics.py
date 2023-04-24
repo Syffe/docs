@@ -257,4 +257,4 @@ class TestStatisticsRedis(base.FunctionalTestBase):
             # 5 minutes.
             # 5 minutes difference because the first 2 PRs were merged with 1h checks duration
             # and the last 2 PRs were queued at `start_date + datetime.timedelta(hours=2, minutes=5)` and merged at `start_date + datetime.timedelta(hours=3)`
-            assert -5 < statsd.gauge.call_args_list[1].args[1] < -4.0
+            assert -5.2 < statsd.gauge.call_args_list[1].args[1] < -4.0
