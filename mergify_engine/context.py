@@ -1598,7 +1598,7 @@ class Context:
         return date_value
 
     async def _get_consolidated_data(self, name: str) -> ContextAttributeType:
-        if name == "assignee":
+        if name in ("assignee", "assignees"):
             return [a["login"] for a in self.pull["assignees"]]
 
         if name.startswith("queue"):
@@ -2503,6 +2503,7 @@ class PullRequest(BasePullRequest):
 
     LIST_ATTRIBUTES = {
         "assignee",
+        "assignees",
         "label",
         "review-requested",
         "approved-reviews-by",

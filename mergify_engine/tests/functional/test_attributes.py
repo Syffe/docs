@@ -357,6 +357,7 @@ class TestAttributes(base.FunctionalTestBase):
             "closed": False,
             "locked": False,
             "assignee": [],
+            "assignees": [],
             "approved-reviews-by": [],
             "files": ["test2"],
             "check-neutral": [],

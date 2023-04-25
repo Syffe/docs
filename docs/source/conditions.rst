@@ -132,7 +132,7 @@ Here's the list of pull request attribute that can be used in conditions:
        repository organization.
        This only matches reviewers with ``admin``, ``write`` or ``maintain``
        permission on the repository.
-   * - ``assignee``
+   * - ``assignees``
      - list of string
      - The list of GitHub user or team login that are assigned to the pull request.
        Team logins are prefixed with the ``@`` character and must belong to the

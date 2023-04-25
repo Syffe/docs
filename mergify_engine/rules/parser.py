@@ -59,7 +59,9 @@ CONDITION_PARSERS = {
     "merged-by": Parser.LOGIN_AND_TEAMS,
     "body": Parser.TEXT,
     "body-raw": Parser.TEXT,
+    # backward compat
     "assignee": Parser.LOGIN_AND_TEAMS,
+    "assignees": Parser.LOGIN_AND_TEAMS,
     "label": Parser.TEXT,
     "title": Parser.TEXT,
     "files": Parser.TEXT,
