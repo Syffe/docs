@@ -13,10 +13,10 @@ from mergify_engine.queue import merge_train
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.web import api
 from mergify_engine.web.api import security
-from mergify_engine.web.api import statistics as statistics_api
 from mergify_engine.web.api.queues import details
 from mergify_engine.web.api.queues import estimated_time_to_merge
 from mergify_engine.web.api.queues import types
+from mergify_engine.web.api.statistics import utils as web_stat_utils
 
 
 router = fastapi.APIRouter(
@@ -316,7 +316,7 @@ async def repository_queues(
     queues = Queues()
 
     checks_duration_stats = (
-        await statistics_api.get_checks_duration_stats_for_all_queues(
+        await web_stat_utils.get_checks_duration_stats_for_all_queues(
             repository_ctxt,
         )
     )

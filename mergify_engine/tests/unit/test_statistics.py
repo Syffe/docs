@@ -9,15 +9,15 @@ from mergify_engine import redis_utils
 from mergify_engine.queue import statistics as queue_stats
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules.config import queue_rules as qr_config
-from mergify_engine.web.api import statistics as api_stats
+from mergify_engine.web.api.statistics import utils as web_stat_utils
 
 
 def test_is_timestamp_in_future() -> None:
     with freeze_time("2022-10-14T10:00:00"):
         now_ts = int(date.utcnow().timestamp())
-        assert not api_stats.is_timestamp_in_future(now_ts)
-        assert api_stats.is_timestamp_in_future(now_ts + 1)
-        assert not api_stats.is_timestamp_in_future(now_ts - 1)
+        assert not web_stat_utils.is_timestamp_in_future(now_ts)
+        assert web_stat_utils.is_timestamp_in_future(now_ts + 1)
+        assert not web_stat_utils.is_timestamp_in_future(now_ts - 1)
 
 
 async def test_statistics_start_at_boundary(

@@ -7,7 +7,8 @@ from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import conditions as rules_conditions
 from mergify_engine.rules.config import queue_rules as qr_config
-from mergify_engine.web.api import statistics as statistics_api
+from mergify_engine.web.api.statistics import types as web_stat_types
+from mergify_engine.web.api.statistics import utils as web_stat_utils
 
 
 async def get_estimation_from_stats(
@@ -15,7 +16,7 @@ async def get_estimation_from_stats(
     embarked_pull: merge_train.EmbarkedPull,
     embarked_pull_position: int,
     checks_duration_stats: dict[
-        qr_config.QueueName, statistics_api.ChecksDurationResponse
+        qr_config.QueueName, web_stat_types.ChecksDurationResponse
     ],
     car: merge_train.TrainCar | None,
     previous_eta: datetime.datetime | None = None,
@@ -26,7 +27,7 @@ async def get_estimation_from_stats(
 
     queue_checks_duration_stats = checks_duration_stats.get(
         queue_name,
-        statistics_api.ChecksDurationResponse(mean=None, median=None),
+        web_stat_types.ChecksDurationResponse(mean=None, median=None),
     )
     return await compute_estimation(
         embarked_pull,
@@ -50,7 +51,7 @@ async def get_estimation(
         return None
 
     queue_checks_duration_stats = (
-        await statistics_api.get_checks_duration_stats_for_queue(
+        await web_stat_utils.get_checks_duration_stats_for_queue(
             train.convoy.repository,
             queue_name,
             branch_name=train.convoy.ref,
