@@ -1145,8 +1145,13 @@ class TrainCar:
                         if ep.user_pull_request_number == pull_number:
                             break
                         pull_requests_ahead.append(ep.user_pull_request_number)
-                    message = "The pull request conflicts with at least one pull request ahead in queue: "
-                    message += ", ".join([f"#{p}" for p in pull_requests_ahead])
+
+                    if not pull_requests_ahead:
+                        message = "The pull request conflicts with the base branch"
+                    else:
+                        message = "The pull request conflicts with at least one pull request ahead in queue: "
+                        message += ", ".join([f"#{p}" for p in pull_requests_ahead])
+
                     await self._set_creation_failure(
                         message, pull_requests_to_remove=[pull_number]
                     )

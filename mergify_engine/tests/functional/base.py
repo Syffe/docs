@@ -1125,7 +1125,19 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         await self.wait_for("pull_request", {"action": "opened"})
         pr2 = typing.cast(github_types.GitHubPullRequest, resp.json())
 
-        return (pr1, pr2)
+        return pr1, pr2
+
+    async def create_prs_with_conflicts(
+        self,
+    ) -> tuple[github_types.GitHubPullRequest, github_types.GitHubPullRequest]:
+        pr1 = await self.create_pr(
+            files={"testprsconflict": "welikeconflicts"},
+        )
+
+        pr2 = await self.create_pr(
+            files={"testprsconflict": "bigconflicts"},
+        )
+        return pr1, pr2
 
     async def create_pr_with_autosquash_commit(
         self,

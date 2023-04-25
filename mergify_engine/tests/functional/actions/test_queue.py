@@ -6910,6 +6910,53 @@ pull_request_rules:
             == f"The pull request {p1['number']} is in queue"
         )
 
+    async def test_base_branch_conflicts_check_run_message_draft(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [],
+                    "allow_inplace_checks": False,
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Merge on queue label",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1, p2 = await self.create_prs_with_conflicts()
+
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        p1_closed = await self.wait_for_pull_request("closed", p1["number"])
+        assert p1_closed["pull_request"]["merged"]
+
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        ctxt = context.Context(self.repository_ctxt, p2)
+        queue_summary_check_run = await ctxt.get_engine_check_run(
+            constants.MERGE_QUEUE_SUMMARY_NAME
+        )
+        assert queue_summary_check_run is not None
+        assert (
+            queue_summary_check_run["output"]["title"]
+            == "This pull request cannot be embarked for merge"
+        )
+        assert (
+            "The pull request conflicts with the base branch"
+            in queue_summary_check_run["output"]["summary"]
+        )
+
 
 class TestQueueActionFeaturesSubscription(base.FunctionalTestBase):
     @pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
