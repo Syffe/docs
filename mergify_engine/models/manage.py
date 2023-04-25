@@ -13,6 +13,7 @@ from mergify_engine import settings
 from mergify_engine.models import application_keys  # noqa
 from mergify_engine.models import github_account  # noqa
 from mergify_engine.models import github_actions  # noqa
+from mergify_engine.models import github_repository  # noqa
 from mergify_engine.models import github_user  # noqa
 
 

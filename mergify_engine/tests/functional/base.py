@@ -707,6 +707,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             dedicated_workers_syncer_idle_time=0.01,
             retry_handled_exception_forever=False,
             gitter_concurrent_jobs=1,
+            ci_dump_idle_time=0.01,
         )
         await w.start()
         gitter_serv = w.get_service(gitter_service.GitterService)

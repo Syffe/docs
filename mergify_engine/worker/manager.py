@@ -16,6 +16,7 @@ from mergify_engine import service
 from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine.clients import github
+from mergify_engine.worker import ci_dump_service
 from mergify_engine.worker import gitter_service
 from mergify_engine.worker import stream_services
 from mergify_engine.worker import task
@@ -73,6 +74,7 @@ ServiceNameT = typing.Literal[
     "stream-monitoring",
     "delayed-refresh",
     "gitter",
+    "ci-dump",
 ]
 ServiceNamesT = set[ServiceNameT]
 AVAILABLE_WORKER_SERVICES = set(ServiceNameT.__dict__["__args__"])
@@ -114,6 +116,9 @@ class ServiceManager:
 
     # MonitoringStreamService & GitterService
     monitoring_idle_time: float = 60
+
+    # CIDumpService
+    ci_dump_idle_time: float = 60
 
     _redis_links: redis_utils.RedisLinks = dataclasses.field(
         init=False, default_factory=lambda: redis_utils.RedisLinks(name="worker")
@@ -210,6 +215,14 @@ class ServiceManager:
                     shared_stream_processes=self.shared_stream_processes,
                     dedicated_stream_processes=self.dedicated_stream_processes,
                     dedicated_workers_cache_syncer=dedicated_workers_cache_syncer,
+                )
+            )
+
+        if "ci-dump" in self.enabled_services:
+            self._services.append(
+                ci_dump_service.CIDumpService(
+                    self._redis_links,
+                    ci_dump_idle_time=self.ci_dump_idle_time,
                 )
             )
 

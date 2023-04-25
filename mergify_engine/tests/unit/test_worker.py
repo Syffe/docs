@@ -164,6 +164,7 @@ async def run_worker(
         dedicated_workers_spawner_idle_time=0.01,
         dedicated_workers_syncer_idle_time=0.01,
         gitter_concurrent_jobs=0,
+        ci_dump_idle_time=0.01,
         **kwargs,
     )
     await w.start()
@@ -222,6 +223,7 @@ async def test_worker_legacy_push(
     get_subscription: mock.AsyncMock,
     redis_links: redis_utils.RedisLinks,
     logger_checker: None,
+    setup_database: None,
 ) -> None:
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
     get_subscription.side_effect = fake_get_subscription
@@ -333,6 +335,7 @@ async def test_worker_with_waiting_tasks(
     get_subscription: mock.AsyncMock,
     redis_links: redis_utils.RedisLinks,
     logger_checker: None,
+    setup_database: None,
 ) -> None:
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
     get_subscription.side_effect = fake_get_subscription
@@ -565,6 +568,7 @@ async def test_worker_with_one_task(
     get_subscription: mock.AsyncMock,
     redis_links: redis_utils.RedisLinks,
     logger_checker: None,
+    setup_database: None,
 ) -> None:
     get_subscription.side_effect = fake_get_subscription
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
@@ -1632,6 +1636,7 @@ async def test_stream_processor_ignore_503(
     get_subscription: mock.AsyncMock,
     redis_links: redis_utils.RedisLinks,
     logger_checker: None,
+    setup_database: None,
 ) -> None:
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
     get_subscription.side_effect = fake_get_subscription
@@ -2738,6 +2743,7 @@ async def test_start_stop_cycle(
     logger_checker: None,
     request: pytest.FixtureRequest,
     event_loop: asyncio.BaseEventLoop,
+    setup_database: None,
 ) -> None:
     w = manager.ServiceManager(
         shared_stream_tasks_per_process=3,
@@ -2756,10 +2762,10 @@ async def test_start_stop_cycle(
     # NOTE(sileht): ensure it doesn't crash instantly
     await asyncio.sleep(1)
 
-    assert len(w._services) == 6
+    assert len(w._services) == 7
 
     tasks = [a_task for serv in w._services for a_task in serv.tasks]
-    assert len(tasks) == 10
+    assert len(tasks) == 11
 
     serv_shared = w.get_service(stream_services.SharedStreamService)
     assert serv_shared is not None

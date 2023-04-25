@@ -103,20 +103,28 @@ async def dump_handler(argv: list[str] | None = None) -> None:
     parser.add_argument("at", type=lambda v: datetime.date.fromisoformat(v))
     args = parser.parse_args(argv)
 
-    auth = None
+    auth: github.GithubAppInstallationAuth | github.GithubTokenAuth
 
     if settings.TESTING_DEV_PERSONAL_TOKEN:
         auth = github.GithubTokenAuth(
             token=settings.TESTING_DEV_PERSONAL_TOKEN,
         )
+    else:
+        auth = github.GithubAppInstallationAuth(
+            await github.get_installation_from_login(
+                typing.cast(github_types.GitHubLogin, args.owner)
+            )
+        )
+
+    gh_client = github.AsyncGithubInstallationClient(auth=auth)
 
     async with redis_utils.RedisLinks(name="ci_dump") as redis_links:
         await dump.dump(
             redis_links,
+            gh_client,
             typing.cast(github_types.GitHubLogin, args.owner),
             typing.cast(github_types.GitHubRepositoryName, args.repository),
             args.at,
-            auth=auth,
         )
 
 
