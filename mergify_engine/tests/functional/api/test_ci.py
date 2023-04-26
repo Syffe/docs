@@ -58,13 +58,13 @@ class TestCIApi(base.FunctionalTestBase):
 
         r = await self.app.get(
             f"/v1/ci/{settings.TESTING_ORGANIZATION_NAME}?"
-            "repository={self.RECORD_CONFIG['repository_name']}",
+            f"repository={self.RECORD_CONFIG['repository_name']}",
         )
         assert r.status_code == 200
 
         r = await self.app.get(
             f"/v1/ci/{settings.TESTING_ORGANIZATION_NAME}?"
-            "repository={self.RECORD_CONFIG['repository_name']}"
+            f"repository={self.RECORD_CONFIG['repository_name']}"
             "&start_at=2023-01-01&end_at=2023-01-15",
         )
         assert r.status_code == 200

@@ -193,7 +193,7 @@ interactions:
       host:
       - test-forwarder.mergify.io
     method: DELETE
-    uri: https://test-forwarder.mergify.io/events/github.com/217024/510349721/20230420132650-test_report
+    uri: https://test-forwarder.mergify.io/events/github.com/217024/510349721/20230426075253-test_report
   response:
     content: Event queued
     headers:
@@ -307,7 +307,7 @@ interactions:
       host:
       - api.github.com
     method: GET
-    uri: https://api.github.com/repos/mergifyio-testing/functional-testing-repo-DouglasBlackwood/git/matching-refs/heads/20230420132650/test_report/main?per_page=100
+    uri: https://api.github.com/repos/mergifyio-testing/functional-testing-repo-DouglasBlackwood/git/matching-refs/heads/20230426075253/test_report/main?per_page=100
   response:
     content: '[]'
     headers:
@@ -335,7 +335,7 @@ interactions:
       host:
       - test-forwarder.mergify.io
     method: DELETE
-    uri: https://test-forwarder.mergify.io/events/github.com/217024/510349721/20230420132650-test_report
+    uri: https://test-forwarder.mergify.io/events/github.com/217024/510349721/20230426075253-test_report
   response:
     content: Event queued
     headers:
