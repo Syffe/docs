@@ -19,7 +19,7 @@ COPY datadog/conf.d/engine-worker.yaml /etc/datadog-agent/conf.d/engine-worker.d
 ### WORKER-SHARED ###
 FROM base-worker as saas-worker-shared
 USER mergify
-CMD ["/datadog-wrapper.sh", "mergify-engine-worker", "--enabled-services=shared-stream,stream-monitoring,delayed-refresh,gitter"]
+CMD ["/datadog-wrapper.sh", "mergify-engine-worker", "--enabled-services=shared-stream,stream-monitoring,delayed-refresh,gitter,ci-dump"]
 
 ### WORKER-DEDICATED ###
 FROM base-worker as saas-worker-dedicated
