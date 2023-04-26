@@ -21,7 +21,7 @@ router = fastapi.APIRouter(
     include_in_schema=False,
     summary="Get global CI data",
     description="Get the global CI data for an organization",
-    response_model=reports.ReportPayload,
+    response_model=reports.CategoryReportPayload,
     responses={
         **api.default_responses,  # type: ignore
         200: {
@@ -156,11 +156,11 @@ async def repository_queues(
         datetime.date | None,
         fastapi.Query(description="The end of the date range to compare to"),
     ] = None,
-) -> reports.ReportPayload:
+) -> reports.CategoryReportPayload:
     job_registry = job_registries.PostgresJobRegistry()
-    query = reports.Query(
+    query = reports.CategoryQuery(
         owner, repository, start_at, end_at, compare_start_at, compare_end_at
     )
-    report = reports.Report(job_registry, query)
+    report = reports.CategoryReport(job_registry, query)
 
     return await report.run()

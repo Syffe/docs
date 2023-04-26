@@ -139,14 +139,14 @@ async def global_insight_handler(argv: list[str] | None = None) -> None:
 
     database.init_sqlalchemy("ci")
 
-    query = reports.Query(
+    query = reports.CategoryQuery(
         owner=args.owner,
         repository=None if args.repository == "*" else args.repository,
         start_at=args.start_at,
         end_at=args.end_at,
     )
 
-    action = reports.Report(
+    action = reports.CategoryReport(
         job_registries.PostgresJobRegistry(),
         query,
     )

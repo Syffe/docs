@@ -78,10 +78,10 @@ class FakeJobRegistry:
         return self._positions[pull_id]
 
 
-async def test_report() -> None:
-    report = reports.Report(
+async def test_category_report() -> None:
+    report = reports.CategoryReport(
         FakeJobRegistry(),
-        reports.Query(
+        reports.CategoryQuery(
             owner=github_types.GitHubLogin("mergifyio"),
             repository=github_types.GitHubRepositoryName("engine"),
             start_at=datetime.date(2023, 2, 1),
@@ -244,10 +244,10 @@ async def test_report() -> None:
     )
 
 
-async def test_report_for_whole_owner() -> None:
-    report = reports.Report(
+async def test_category_report_for_all_repos() -> None:
+    report = reports.CategoryReport(
         FakeJobRegistry(),
-        reports.Query(
+        reports.CategoryQuery(
             owner=github_types.GitHubLogin("mergifyio"),
             start_at=datetime.date(2023, 2, 1),
             end_at=datetime.date(2023, 2, 1),
@@ -409,8 +409,8 @@ async def test_report_for_whole_owner() -> None:
     )
 
 
-def test_query_compute_date_range() -> None:
-    query = reports.Query(
+def test_category_query_compute_date_range() -> None:
+    query = reports.CategoryQuery(
         github_types.GitHubLogin("some-owner"),
         github_types.GitHubRepositoryName("some-repo"),
         datetime.date(2023, 2, 5),

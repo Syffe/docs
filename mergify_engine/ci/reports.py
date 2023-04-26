@@ -126,14 +126,16 @@ class DateRange:
         json_encoders={cost_calculator.MoneyAmount: lambda v: float(round(v, 2))}
     )
 )
-class ReportPayload:
+class CategoryReportPayload:
     total_costs: Money
     categories: Categories
     date_range: DateRange
     compared_date_range: DateRange | None = None
     total_difference: Money = dataclasses.field(default_factory=Money.zero)
 
-    def difference_with(self, other: "ReportPayload") -> "ReportPayload":
+    def difference_with(
+        self, other: "CategoryReportPayload"
+    ) -> "CategoryReportPayload":
         deployments = self.categories.deployments.difference_with(
             other.categories.deployments
         )
@@ -163,7 +165,7 @@ class ReportPayload:
 
 
 @dataclasses.dataclass
-class Query:
+class CategoryQuery:
     owner: github_types.GitHubLogin
     repository: github_types.GitHubRepositoryName | None = None
     start_at: datetime.date | None = None
@@ -187,11 +189,11 @@ class Query:
 
 
 @dataclasses.dataclass
-class Report:
+class CategoryReport:
     job_registry: job_registries.JobRegistry
-    query: Query
+    query: CategoryQuery
 
-    async def run(self) -> ReportPayload:
+    async def run(self) -> CategoryReportPayload:
         report = await self._run_without_differences(
             self.query.owner,
             self.query.repository,
@@ -214,7 +216,7 @@ class Report:
         repository: str | None,
         start_at: datetime.date | None,
         end_at: datetime.date | None,
-    ) -> ReportPayload:
+    ) -> CategoryReportPayload:
         job_runs = [
             j
             async for j in self.job_registry.search(owner, repository, start_at, end_at)
@@ -228,7 +230,7 @@ class Report:
             + pull_requests.total_cost.amount
         )
 
-        return ReportPayload(
+        return CategoryReportPayload(
             total_costs=Money(total_costs),
             categories=Categories(
                 deployments=deployments,
