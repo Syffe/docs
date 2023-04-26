@@ -125,6 +125,14 @@ router = fastapi.APIRouter(
                             },
                         },
                         "total_difference": {"amount": 0.0, "currency": "USD"},
+                        "date_range": {
+                            "start_at": "2023-04-11",
+                            "end_at": "2023-04-15",
+                        },
+                        "compared_date_range": {
+                            "start_at": "2023-04-01",
+                            "end_at": "2023-04-05",
+                        },
                     }
                 }
             }
