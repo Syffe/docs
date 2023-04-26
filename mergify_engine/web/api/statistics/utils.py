@@ -5,12 +5,14 @@ import typing
 from mergify_engine import context
 from mergify_engine import date
 from mergify_engine.queue import statistics as queue_statistics
+from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web.api.statistics import types as web_stat_types
 
 
 async def get_queue_checks_outcome_for_queue(
     repository_ctxt: context.Repository,
+    partition_name: partr_config.PartitionRuleName | None,
     queue_name: qr_config.QueueName,
     branch_name: str | None = None,
     start_at: int | None = None,
@@ -18,6 +20,7 @@ async def get_queue_checks_outcome_for_queue(
 ) -> queue_statistics.QueueChecksOutcomeT:
     stats = await queue_statistics.get_queue_checks_outcome_stats(
         repository_ctxt,
+        partition_name,
         queue_name=queue_name,
         branch_name=branch_name,
         start_at=start_at,
@@ -31,6 +34,7 @@ async def get_queue_checks_outcome_for_queue(
 
 async def get_checks_duration_stats_for_all_queues(
     repository_ctxt: context.Repository,
+    partition_name: partr_config.PartitionRuleName | None,
     branch_name: str | None = None,
     start_at: int | None = None,
     end_at: int | None = None,
@@ -42,6 +46,7 @@ async def get_checks_duration_stats_for_all_queues(
     """
     stats_dict = await queue_statistics.get_checks_duration_stats(
         repository_ctxt,
+        partition_name,
         branch_name=branch_name,
         start_at=start_at,
         end_at=end_at,
@@ -63,6 +68,7 @@ async def get_checks_duration_stats_for_all_queues(
 
 async def get_checks_duration_stats_for_queue(
     repository_ctxt: context.Repository,
+    partition_name: partr_config.PartitionRuleName | None,
     queue_name: qr_config.QueueName,
     branch_name: str | None = None,
     start_at: int | None = None,
@@ -70,6 +76,7 @@ async def get_checks_duration_stats_for_queue(
 ) -> web_stat_types.ChecksDurationResponse:
     stats = await queue_statistics.get_checks_duration_stats(
         repository_ctxt,
+        partition_name,
         queue_name=queue_name,
         branch_name=branch_name,
         start_at=start_at,
@@ -87,12 +94,14 @@ async def get_checks_duration_stats_for_queue(
 
 async def get_time_to_merge_stats_for_queue(
     repository_ctxt: context.Repository,
+    partition_name: partr_config.PartitionRuleName | None,
     queue_name: qr_config.QueueName,
     branch_name: str | None = None,
     at: int | None = None,
 ) -> web_stat_types.TimeToMergeResponse:
     stats = await queue_statistics.get_time_to_merge_stats(
         repository_ctxt,
+        partition_name,
         queue_name=queue_name,
         branch_name=branch_name,
         at=at,
@@ -107,6 +116,7 @@ async def get_time_to_merge_stats_for_queue(
 
 async def get_time_to_merge_stats_for_all_queues(
     repository_ctxt: context.Repository,
+    partition_name: partr_config.PartitionRuleName | None,
     branch_name: str | None = None,
     at: int | None = None,
 ) -> dict[qr_config.QueueName, web_stat_types.TimeToMergeResponse]:
@@ -117,6 +127,7 @@ async def get_time_to_merge_stats_for_all_queues(
     """
     stats_dict = await queue_statistics.get_time_to_merge_stats(
         repository_ctxt,
+        partition_name,
         branch_name=branch_name,
         at=at,
     )

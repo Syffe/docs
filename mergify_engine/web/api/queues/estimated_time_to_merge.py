@@ -53,6 +53,7 @@ async def get_estimation(
     queue_checks_duration_stats = (
         await web_stat_utils.get_checks_duration_stats_for_queue(
             train.convoy.repository,
+            train.partition_name,
             queue_name,
             branch_name=train.convoy.ref,
         )

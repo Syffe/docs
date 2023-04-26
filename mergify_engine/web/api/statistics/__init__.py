@@ -10,6 +10,7 @@ router = fastapi.APIRouter(
     tags=["statistics"],
     dependencies=[
         fastapi.Security(security.require_authentication),
+        fastapi.Depends(security.check_subscription_feature_merge_queue_stats),
     ],
 )
 

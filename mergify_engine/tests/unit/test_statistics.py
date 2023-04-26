@@ -81,6 +81,7 @@ async def test_statistics_start_at_boundary(
 
     queue_checks_outcome_2days = await queue_stats.get_queue_checks_outcome_stats(
         fake_repository,
+        partition_name,
         queue_name,
         branch_name,
         start_at=int(date_2days_back.timestamp()),
@@ -91,6 +92,7 @@ async def test_statistics_start_at_boundary(
     date_1day_back = date.utcnow() - datetime.timedelta(days=1)
     queue_checks_outcome_1day = await queue_stats.get_queue_checks_outcome_stats(
         fake_repository,
+        partition_name,
         queue_name,
         branch_name,
         start_at=int(date_1day_back.timestamp()),

@@ -315,15 +315,17 @@ async def repository_queues(
 ) -> Queues:
     queues = Queues()
 
-    checks_duration_stats = (
-        await web_stat_utils.get_checks_duration_stats_for_all_queues(
-            repository_ctxt,
-        )
-    )
     async for convoy in merge_train.Convoy.iter_convoys(
         repository_ctxt, queue_rules, partition_rules
     ):
         for train in convoy.iter_trains():
+            checks_duration_stats = (
+                await web_stat_utils.get_checks_duration_stats_for_all_queues(
+                    repository_ctxt,
+                    train.partition_name,
+                )
+            )
+
             queue = Queue(Branch(train.convoy.ref))
             previous_eta = None
             for position, (embarked_pull, car) in enumerate(

@@ -91,7 +91,7 @@ class TestStatisticsRedis(base.FunctionalTestBase):
         # In this function, we instantiate `TimeToMerge` class,
         # so this call also make sure that both new and old statistics can
         # be used properly.
-        stats = await statistics.get_time_to_merge_stats(self.repository_ctxt)
+        stats = await statistics.get_time_to_merge_stats(self.repository_ctxt, None)
         assert len(stats) == 1
         assert "default" in stats
         assert len(stats[qr_config.QueueName("default")]) == 3

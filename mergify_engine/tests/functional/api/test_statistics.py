@@ -540,60 +540,55 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             p2 = await self.create_pr(two_commits=True)
             p3 = await self.create_pr()
 
-            # To force others to be rebased
-            p = await self.create_pr()
-            await self.merge_pull(p["number"])
-            await self.wait_for("pull_request", {"action": "closed"})
-
             await self.add_label(p1["number"], "queue")
             await self.add_label(p2["number"], "queue")
             await self.add_label(p3["number"], "queue")
             await self.run_engine()
 
-            await self.wait_for("pull_request", {"action": "opened"})
+            draft_pr = await self.wait_for_pull_request("opened")
 
             await self.remove_label(p1["number"], "queue")
             await self.run_engine()
-            await self.wait_for("pull_request", {"action": "closed"})
+
+            await self.wait_for_pull_request("closed", draft_pr["number"])
+            draft_pr = await self.wait_for_pull_request("opened")
 
             failure_by_reason_key = self.get_statistic_redis_key("failure_by_reason")
             assert await self.redis_links.stats.xlen(failure_by_reason_key) == 3
 
             await self.close_pull(p1["number"])
+            await self.wait_for_pull_request("closed", p1["number"])
             await self.close_pull(p2["number"])
+            await self.wait_for_pull_request("closed", p2["number"])
             await self.close_pull(p3["number"])
+            await self.wait_for_pull_request("closed", p3["number"])
             await self.run_engine()
 
-            await self.wait_for("pull_request", {"action": "closed"})
+            await self.wait_for_pull_request("closed", draft_pr["number"])
 
             # #####
             # Create ChecksDuration
             p4 = await self.create_pr()
 
-            # To force others to be rebased
-            p5 = await self.create_pr()
-            await self.merge_pull(p5["number"])
-            await self.wait_for("pull_request", {"action": "closed"})
-
             await self.add_label(p4["number"], "queue")
             await self.run_full_engine()
 
-            tmp_mq_pr = await self.wait_for_pull_request("opened")
-            await self.create_status(tmp_mq_pr["pull_request"])
+            draft_pr = await self.wait_for_pull_request("opened")
+            await self.create_status(draft_pr["pull_request"])
 
         with freeze_time("2022-08-18T12:00:00", tick=True):
             await self.run_full_engine()
 
-            await self.wait_for("pull_request", {"action": "closed"})
-            await self.wait_for("pull_request", {"action": "closed"})
+            await self.wait_for_pull_request("closed", draft_pr["number"])
+            await self.wait_for_pull_request("closed", p4["number"])
 
             r = await self.admin_app.get(
                 f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queues/default/stats/queue_checks_outcome",
             )
 
             assert r.status_code == 200
-            assert r.json()[queue_utils.PrDequeued.unqueue_code] == 1
-            assert r.json()[queue_utils.PrAheadDequeued.unqueue_code] == 2
+            assert r.json()[queue_utils.PrDequeued.unqueue_code] == 2
+            assert r.json()[queue_utils.PrAheadDequeued.unqueue_code] == 3
             assert r.json()["SUCCESS"] == 1
 
     async def test_stats_endpoint_timestamp_in_future(self) -> None:

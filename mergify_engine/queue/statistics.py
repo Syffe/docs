@@ -305,6 +305,7 @@ async def _get_stats_items(
     stats_name_list: list[AvailableStatsKeyT],
     older_event_id: str,
     newer_event_id: str,
+    partition_name: partr_config.PartitionRuleName | None,
     queue_name: qr_config.QueueName | None = None,
     branch_name: str | None = None,
 ) -> abc.AsyncGenerator[dict[str, typing.Any], None]:
@@ -326,11 +327,14 @@ async def _get_stats_items(
     for result in results:
         for _, raw_stat in result:
             stat = msgpack.unpackb(raw_stat[b"data"], timestamp=3)
-            if (queue_name is None or stat["queue_name"] == queue_name) and stat[
-                "branch_name"
-            ] == branch_name:
-                # TODO(Greesb): To remove in a month after the commit introducing
-                # this has been merged.
+            # NOTE(greesb): Replace ".get()" by "[]" when all the stats
+            # will have a partition_name (21th June 2023)
+            if (
+                (queue_name is None or stat["queue_name"] == queue_name)
+                and stat.get("partition_name") == partition_name
+                and stat["branch_name"] == branch_name
+            ):
+                # TODO(Greesb): To remove the 21th June 2023
                 stat.setdefault("partition_name", None)
                 yield stat
 
@@ -338,6 +342,7 @@ async def _get_stats_items(
 async def _get_stats_items_date_range(
     repository: "context.Repository",
     stats_name_list: list[AvailableStatsKeyT],
+    partition_name: partr_config.PartitionRuleName | None,
     queue_name: qr_config.QueueName | None = None,
     branch_name: str | None = None,
     start_at: int | None = None,
@@ -359,6 +364,7 @@ async def _get_stats_items_date_range(
         stats_name_list,
         older_event_id,
         newer_event_id,
+        partition_name,
         queue_name,
         branch_name,
     ):
@@ -368,6 +374,7 @@ async def _get_stats_items_date_range(
 async def _get_stats_items_at_timestamp(
     repository: "context.Repository",
     stats_name_list: list[AvailableStatsKeyT],
+    partition_name: partr_config.PartitionRuleName | None,
     queue_name: qr_config.QueueName | None = None,
     branch_name: str | None = None,
     at: int | None = None,
@@ -391,6 +398,7 @@ async def _get_stats_items_at_timestamp(
         stats_name_list,
         older_event_id,
         newer_event_id,
+        partition_name,
         queue_name,
         branch_name,
     ):
@@ -399,6 +407,7 @@ async def _get_stats_items_at_timestamp(
 
 async def get_time_to_merge_stats(
     repository: "context.Repository",
+    partition_name: partr_config.PartitionRuleName | None,
     queue_name: qr_config.QueueName | None = None,
     branch_name: str | None = None,
     at: int | None = None,
@@ -408,6 +417,7 @@ async def get_time_to_merge_stats(
     async for stat in _get_stats_items_at_timestamp(
         repository,
         ["time_to_merge"],
+        partition_name,
         queue_name=queue_name,
         branch_name=branch_name,
         at=at,
@@ -423,6 +433,7 @@ async def get_time_to_merge_stats(
 
 async def get_checks_duration_stats(
     repository: "context.Repository",
+    partition_name: partr_config.PartitionRuleName | None,
     queue_name: qr_config.QueueName | None = None,
     branch_name: str | None = None,
     start_at: int | None = None,
@@ -432,6 +443,7 @@ async def get_checks_duration_stats(
     async for stat in _get_stats_items_date_range(
         repository,
         ["checks_duration"],
+        partition_name,
         queue_name=queue_name,
         branch_name=branch_name,
         start_at=start_at,
@@ -470,6 +482,7 @@ BASE_QUEUE_CHECKS_OUTCOME_T_DICT: QueueChecksOutcomeT = QueueChecksOutcomeT(
 
 async def get_queue_checks_outcome_stats(
     repository: "context.Repository",
+    partition_name: partr_config.PartitionRuleName | None,
     queue_name: qr_config.QueueName | None = None,
     branch_name: str | None = None,
     start_at: int | None = None,
@@ -482,6 +495,7 @@ async def get_queue_checks_outcome_stats(
     async for stat in _get_stats_items_date_range(
         repository,
         ["checks_duration", "failure_by_reason"],
+        partition_name,
         queue_name=queue_name,
         branch_name=branch_name,
         start_at=start_at,
