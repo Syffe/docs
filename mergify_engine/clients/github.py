@@ -697,7 +697,9 @@ class GitHubAppInfo:
     _redis_bot_key: typing.ClassVar[str] = "github-info-bot"
     _redis_app_key: typing.ClassVar[str] = "github-info-app"
 
-    EXPIRATION_CACHE: int = int(datetime.timedelta(days=1).total_seconds())
+    EXPIRATION_CACHE: typing.ClassVar[int] = int(
+        datetime.timedelta(days=1).total_seconds()
+    )
 
     @staticmethod
     async def _get_random_installation_auths() -> abc.AsyncGenerator[

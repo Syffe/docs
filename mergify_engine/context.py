@@ -2482,7 +2482,7 @@ class PullRequest(BasePullRequest):
 
     context: Context
 
-    ATTRIBUTES = {
+    ATTRIBUTES: typing.ClassVar[set[str]] = {
         "author",
         "merged-by",
         "merged",
@@ -2501,7 +2501,7 @@ class PullRequest(BasePullRequest):
         "branch-protection-review-decision",
     }
 
-    LIST_ATTRIBUTES = {
+    LIST_ATTRIBUTES: typing.ClassVar[set[str]] = {
         "assignee",
         "assignees",
         "label",
@@ -2530,7 +2530,7 @@ class PullRequest(BasePullRequest):
         "files",
     }
 
-    LIST_ATTRIBUTES_WITH_LENGTH_OPTIMIZATION = {
+    LIST_ATTRIBUTES_WITH_LENGTH_OPTIMIZATION: typing.ClassVar[set[str]] = {
         "#files",
         "#commits",
         "#commits-behind",

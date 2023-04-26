@@ -32,7 +32,9 @@ class RateLimited(Exception):
 @dataclasses.dataclass
 class EngineNeedRetry(Exception):
     message: str
-    retry_in: datetime.timedelta = datetime.timedelta(minutes=1)
+    retry_in: datetime.timedelta = dataclasses.field(
+        default=datetime.timedelta(minutes=1)
+    )
 
 
 RATE_LIMIT_RETRY_MIN = datetime.timedelta(seconds=3)
