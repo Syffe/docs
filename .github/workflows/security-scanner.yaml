@@ -74,7 +74,7 @@ jobs:
       - name: Create the Pull Request
         if: github.event_name != 'pull_request'
         id: cpr
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.MERGIFY_CI_BOT_PAT }}
           author: mergify-ci-bot <mergify-ci-bot@users.noreply.github.com>
