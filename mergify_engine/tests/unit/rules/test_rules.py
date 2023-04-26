@@ -285,6 +285,30 @@ async def test_same_partition_rules_name() -> None:
     )
 
 
+async def test_default_partition_name_used() -> None:
+    with pytest.raises(mergify_conf.InvalidRules) as x:
+        await mergify_conf.get_mergify_config_from_dict(
+            mock.MagicMock(),
+            {
+                "partition_rules": [
+                    {
+                        "name": partr_config.DEFAULT_PARTITION_NAME,
+                        "conditions": ["schedule: MON-FRI 08:00-17:00"],
+                    },
+                    {
+                        "name": "projectA",
+                        "conditions": ["schedule: MON-FRI 08:00-17:00"],
+                    },
+                ]
+            },
+            "",
+        )
+    assert (
+        str(x.value)
+        == f"`{partr_config.DEFAULT_PARTITION_NAME}` is a reserved partition name and cannot be used for dictionary value @ partition_rules"
+    )
+
+
 async def test_jinja_with_list_attribute() -> None:
     config = await utils.load_mergify_config(
         """

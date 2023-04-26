@@ -2,6 +2,7 @@ import anys
 
 from mergify_engine import settings
 from mergify_engine import yaml
+from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests.functional import base
 
 
@@ -46,7 +47,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
         assert r.status_code == 200
         assert r.json() == {
             "branch_name": self.main_branch_name,
-            "partitions": {"null": []},
+            "partitions": {partr_config.DEFAULT_PARTITION_NAME: []},
         }
 
         r = await self.admin_app.get(
@@ -65,7 +66,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
             {
                 "branch_name": self.main_branch_name,
                 "partitions": {
-                    "null": [
+                    partr_config.DEFAULT_PARTITION_NAME: [
                         {
                             "number": p1["number"],
                             "position": 0,

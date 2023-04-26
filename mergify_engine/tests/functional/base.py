@@ -1882,7 +1882,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
     async def get_train(
         self,
-        partition_name: partr_config.PartitionRuleName | None = None,
+        partition_name: partr_config.PartitionRuleName = partr_config.DEFAULT_PARTITION_NAME,
     ) -> merge_train.Train:
         convoy = merge_train.Convoy(
             repository=self.repository_ctxt,

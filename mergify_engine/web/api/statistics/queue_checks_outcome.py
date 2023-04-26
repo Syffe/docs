@@ -56,7 +56,7 @@ async def get_queue_checks_outcome_stats_all_partitions_endpoint(
         **(
             await web_stat_utils.get_queue_checks_outcome_for_queue(
                 repository_ctxt,
-                None,
+                partr_config.DEFAULT_PARTITION_NAME,
                 queue_name=queue_name,
                 branch_name=branch,
                 start_at=start_at,
@@ -104,7 +104,10 @@ async def get_queue_checks_outcome_stats_partition_endpoint(
         ),
     ] = None,
 ) -> web_stat_types.QueueChecksOutcome:
-    if partition_name not in partition_rules:
+    if (
+        partition_name != partr_config.DEFAULT_PARTITION_NAME
+        and partition_name not in partition_rules
+    ):
         raise fastapi.HTTPException(
             status_code=404,
             detail=f"Partition `{partition_name}` does not exist",

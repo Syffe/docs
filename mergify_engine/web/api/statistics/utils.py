@@ -12,7 +12,7 @@ from mergify_engine.web.api.statistics import types as web_stat_types
 
 async def get_queue_checks_outcome_for_queue(
     repository_ctxt: context.Repository,
-    partition_name: partr_config.PartitionRuleName | None,
+    partition_name: partr_config.PartitionRuleName,
     queue_name: qr_config.QueueName,
     branch_name: str | None = None,
     start_at: int | None = None,
@@ -34,7 +34,7 @@ async def get_queue_checks_outcome_for_queue(
 
 async def get_checks_duration_stats_for_all_queues(
     repository_ctxt: context.Repository,
-    partition_name: partr_config.PartitionRuleName | None,
+    partition_name: partr_config.PartitionRuleName,
     branch_name: str | None = None,
     start_at: int | None = None,
     end_at: int | None = None,
@@ -68,7 +68,7 @@ async def get_checks_duration_stats_for_all_queues(
 
 async def get_checks_duration_stats_for_queue(
     repository_ctxt: context.Repository,
-    partition_name: partr_config.PartitionRuleName | None,
+    partition_name: partr_config.PartitionRuleName,
     queue_name: qr_config.QueueName,
     branch_name: str | None = None,
     start_at: int | None = None,
@@ -94,7 +94,7 @@ async def get_checks_duration_stats_for_queue(
 
 async def get_time_to_merge_stats_for_queue(
     repository_ctxt: context.Repository,
-    partition_name: partr_config.PartitionRuleName | None,
+    partition_name: partr_config.PartitionRuleName,
     queue_name: qr_config.QueueName,
     branch_name: str | None = None,
     at: int | None = None,
@@ -116,7 +116,7 @@ async def get_time_to_merge_stats_for_queue(
 
 async def get_time_to_merge_stats_for_all_queues(
     repository_ctxt: context.Repository,
-    partition_name: partr_config.PartitionRuleName | None,
+    partition_name: partr_config.PartitionRuleName,
     branch_name: str | None = None,
     at: int | None = None,
 ) -> dict[qr_config.QueueName, web_stat_types.TimeToMergeResponse]:

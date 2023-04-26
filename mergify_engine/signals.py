@@ -116,7 +116,7 @@ class EventQueueLeaveMetadata(EventMetadata, total=False):
     queue_name: str
     branch: str
     position: int
-    partition_name: partr_config.PartitionRuleName | None
+    partition_name: partr_config.PartitionRuleName
     queued_at: datetime.datetime
     seconds_waiting_for_schedule: int
     seconds_waiting_for_freeze: int
@@ -156,7 +156,7 @@ class EventMergeMetadata(EventMetadata, total=False):
 
 class EventQueueMergedMetadata(EventMetadata, total=False):
     branch: str
-    partition_names: list[partr_config.PartitionRuleName] | None
+    partition_names: list[partr_config.PartitionRuleName]
     queue_name: str
     queued_at: datetime.datetime
 
@@ -167,7 +167,7 @@ class EventQueueChecksEndMetadata(EventMetadata, total=False):
     abort_reason: str | None
     abort_status: typing.Literal["DEFINITIVE", "REEMBARKED"]
     branch: str
-    partition_name: partr_config.PartitionRuleName | None
+    partition_name: partr_config.PartitionRuleName
     position: int | None
     queue_name: str
     queued_at: datetime.datetime

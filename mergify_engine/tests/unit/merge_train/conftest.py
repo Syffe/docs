@@ -326,7 +326,7 @@ def get_convoy_train_cars_content(
     convoy: merge_train.Convoy,
 ) -> list[
     tuple[
-        partr_config.PartitionRuleName | None,
+        partr_config.PartitionRuleName,
         list[list[github_types.GitHubPullRequestNumber]],
     ]
 ]:
@@ -347,7 +347,7 @@ def get_convoy_trains_waiting_pulls_content(
     convoy: merge_train.Convoy,
 ) -> list[
     tuple[
-        partr_config.PartitionRuleName | None,
+        partr_config.PartitionRuleName,
         list[github_types.GitHubPullRequestNumber],
     ]
 ]:

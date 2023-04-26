@@ -187,14 +187,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 ),
             )
 
-            partition_names = [
-                ep.partition_name
-                for ep in embarked_pulls
-                if ep.partition_name is not None
-            ]
+            partition_names = [ep.partition_name for ep in embarked_pulls]
             await self.send_merge_signal(
                 embarked_pulls[0].embarked_pull.queued_at,
-                partition_names or None,
+                partition_names,
             )
 
         return result
@@ -208,7 +204,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
         if not cars:
             raise RuntimeError("Ready to merge PR without any car....")
 
-        if len(cars) > 1 or cars[0].train.partition_name is not None:
+        if (
+            len(cars) > 1
+            or cars[0].train.partition_name != partr_config.DEFAULT_PARTITION_NAME
+        ):
             raise RuntimeError(
                 "Shouldn't be in queue_branch_merge_fastforward with partition rules in use"
             )
@@ -932,7 +931,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     _ord = utils.to_ordinal_numeric(embarked_pulls[0].position + 1)
                     title = f"The pull request is the {_ord} in the "
 
-                    if embarked_pulls[0].partition_name is None:
+                    if (
+                        embarked_pulls[0].partition_name
+                        == partr_config.DEFAULT_PARTITION_NAME
+                    ):
                         title += "queue"
                     else:
                         title += f"`{embarked_pulls[0].partition_name}` partition queue"
@@ -957,7 +959,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
     async def send_merge_signal(
         self,
         embarked_pull_queued_at: datetime.datetime,
-        partition_names: list[partr_config.PartitionRuleName] | None,
+        partition_names: list[partr_config.PartitionRuleName],
     ) -> None:
         await signals.send(
             self.ctxt.repository,

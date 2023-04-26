@@ -6,6 +6,7 @@ import msgpack
 
 from mergify_engine import yaml
 from mergify_engine.queue import statistics
+from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.tests.functional import base
 
@@ -66,7 +67,7 @@ class TestStatisticsRedis(base.FunctionalTestBase):
             assert "time_seconds" in unpacked
             assert unpacked["branch_name"] == self.main_branch_name
             assert unpacked["queue_name"] == "default"
-            assert unpacked["partition_name"] is None
+            assert unpacked["partition_name"] == partr_config.DEFAULT_PARTITION_NAME
 
             statistics.TimeToMerge(**unpacked)
 
@@ -91,7 +92,9 @@ class TestStatisticsRedis(base.FunctionalTestBase):
         # In this function, we instantiate `TimeToMerge` class,
         # so this call also make sure that both new and old statistics can
         # be used properly.
-        stats = await statistics.get_time_to_merge_stats(self.repository_ctxt, None)
+        stats = await statistics.get_time_to_merge_stats(
+            self.repository_ctxt, partr_config.DEFAULT_PARTITION_NAME
+        )
         assert len(stats) == 1
         assert "default" in stats
         assert len(stats[qr_config.QueueName("default")]) == 3

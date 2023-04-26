@@ -49,7 +49,7 @@ AvailableStatsKeyT = typing.Literal[
 class BaseQueueStats:
     queue_name: qr_config.QueueName
     branch_name: str
-    partition_name: partr_config.PartitionRuleName | None
+    partition_name: partr_config.PartitionRuleName
     # List of variables to not include in the return of the `to_dict()`
     # if using an `_` is not enough/appropriate.
     _todict_ignore_vars: typing.ClassVar[tuple[str, ...]] = ()
@@ -135,7 +135,7 @@ class FailureByReason(BaseQueueStats):
         cls,
         queue_name: qr_config.QueueName,
         branch_name: str,
-        partition_name: partr_config.PartitionRuleName | None,
+        partition_name: partr_config.PartitionRuleName,
         reason_code_str: queue_utils.AbortCodeT,
     ) -> "FailureByReason":
         return cls(
@@ -305,7 +305,7 @@ async def _get_stats_items(
     stats_name_list: list[AvailableStatsKeyT],
     older_event_id: str,
     newer_event_id: str,
-    partition_name: partr_config.PartitionRuleName | None,
+    partition_name: partr_config.PartitionRuleName,
     queue_name: qr_config.QueueName | None = None,
     branch_name: str | None = None,
 ) -> abc.AsyncGenerator[dict[str, typing.Any], None]:
@@ -327,22 +327,31 @@ async def _get_stats_items(
     for result in results:
         for _, raw_stat in result:
             stat = msgpack.unpackb(raw_stat[b"data"], timestamp=3)
+
+            # TODO(Greesb): Retrocompatibility for new default partition
+            # name, to remove the 24th June 2023
+            stat_partition_name = stat.get(
+                "partition_name", partr_config.DEFAULT_PARTITION_NAME
+            )
+            if stat_partition_name is None:
+                stat_partition_name = partr_config.DEFAULT_PARTITION_NAME
+
             # NOTE(greesb): Replace ".get()" by "[]" when all the stats
             # will have a partition_name (21th June 2023)
             if (
                 (queue_name is None or stat["queue_name"] == queue_name)
-                and stat.get("partition_name") == partition_name
+                and stat_partition_name == partition_name
                 and stat["branch_name"] == branch_name
             ):
                 # TODO(Greesb): To remove the 21th June 2023
-                stat.setdefault("partition_name", None)
+                stat.setdefault("partition_name", partr_config.DEFAULT_PARTITION_NAME)
                 yield stat
 
 
 async def _get_stats_items_date_range(
     repository: "context.Repository",
     stats_name_list: list[AvailableStatsKeyT],
-    partition_name: partr_config.PartitionRuleName | None,
+    partition_name: partr_config.PartitionRuleName,
     queue_name: qr_config.QueueName | None = None,
     branch_name: str | None = None,
     start_at: int | None = None,
@@ -374,7 +383,7 @@ async def _get_stats_items_date_range(
 async def _get_stats_items_at_timestamp(
     repository: "context.Repository",
     stats_name_list: list[AvailableStatsKeyT],
-    partition_name: partr_config.PartitionRuleName | None,
+    partition_name: partr_config.PartitionRuleName,
     queue_name: qr_config.QueueName | None = None,
     branch_name: str | None = None,
     at: int | None = None,
@@ -407,7 +416,7 @@ async def _get_stats_items_at_timestamp(
 
 async def get_time_to_merge_stats(
     repository: "context.Repository",
-    partition_name: partr_config.PartitionRuleName | None,
+    partition_name: partr_config.PartitionRuleName,
     queue_name: qr_config.QueueName | None = None,
     branch_name: str | None = None,
     at: int | None = None,
@@ -433,7 +442,7 @@ async def get_time_to_merge_stats(
 
 async def get_checks_duration_stats(
     repository: "context.Repository",
-    partition_name: partr_config.PartitionRuleName | None,
+    partition_name: partr_config.PartitionRuleName,
     queue_name: qr_config.QueueName | None = None,
     branch_name: str | None = None,
     start_at: int | None = None,
@@ -482,7 +491,7 @@ BASE_QUEUE_CHECKS_OUTCOME_T_DICT: QueueChecksOutcomeT = QueueChecksOutcomeT(
 
 async def get_queue_checks_outcome_stats(
     repository: "context.Repository",
-    partition_name: partr_config.PartitionRuleName | None,
+    partition_name: partr_config.PartitionRuleName,
     queue_name: qr_config.QueueName | None = None,
     branch_name: str | None = None,
     start_at: int | None = None,

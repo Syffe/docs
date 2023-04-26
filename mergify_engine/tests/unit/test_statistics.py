@@ -8,6 +8,7 @@ from mergify_engine import date
 from mergify_engine import redis_utils
 from mergify_engine.queue import statistics as queue_stats
 from mergify_engine.queue import utils as queue_utils
+from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web.api.statistics import utils as web_stat_utils
 
@@ -26,7 +27,7 @@ async def test_statistics_start_at_boundary(
 ) -> None:
     queue_name = qr_config.QueueName("default")
     branch_name = "main"
-    partition_name = None
+    partition_name = partr_config.PartitionRuleName("default")
 
     failure_by_reason_key = queue_stats.get_statistic_redis_key(
         fake_repository.installation.owner_id,

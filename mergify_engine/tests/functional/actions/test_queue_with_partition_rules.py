@@ -1,4 +1,5 @@
 from mergify_engine import yaml
+from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests.functional import base
 
 
@@ -563,7 +564,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
 
         convoy = await self.get_convoy()
         assert len(convoy._trains) == 1
-        assert convoy._trains[0].partition_name is None
+        assert convoy._trains[0].partition_name == partr_config.DEFAULT_PARTITION_NAME
         assert len(convoy._trains[0]._cars) == 1
 
         # Update conf with new partition rules

@@ -211,17 +211,14 @@ async def report(
     # TODO(sileht): display train if any
     if mergify_config is not None:
         convoy = await merge_train.Convoy.from_context(
-            ctxt, mergify_config["queue_rules"], mergify_config["partition_rules"]
+            ctxt,
+            mergify_config["queue_rules"],
+            mergify_config["partition_rules"],
         )
         for train in convoy.iter_trains():
-            if train.partition_name is not None:
-                print(
-                    f"* TRAIN (partition:{train.partition_name}): {', '.join([f'#{p}' for p in await train.get_pulls()])}"
-                )
-            else:
-                print(
-                    f"* TRAIN: {', '.join([f'#{p}' for p in await train.get_pulls()])}"
-                )
+            print(
+                f"* TRAIN (partition:{train.partition_name}): {', '.join([f'#{p}' for p in await train.get_pulls()])}"
+            )
 
     print("* PULL REQUEST:")
     pr_data = {

@@ -63,7 +63,7 @@ class Convoy:
         partition_names = set()
         for train in self._trains:
             if (
-                train.partition_name is not None
+                train.partition_name != partr_config.DEFAULT_PARTITION_NAME
                 and train.get_car_by_tmp_pull(ctxt) is not None
             ):
                 partition_names.add(train.partition_name)
@@ -83,26 +83,44 @@ class Convoy:
                 ] = part_rule.name
         else:
             query[f"{self.repository.repo['id']}~{self.ref}"] = None
+            query[
+                f"{self.repository.repo['id']}~{self.ref}~{partr_config.DEFAULT_PARTITION_NAME}"
+            ] = partr_config.DEFAULT_PARTITION_NAME
 
         raw_trains = await self.repository.installation.redis.cache.hmget(
             train_import.get_redis_train_key(self.repository.installation), query.keys()
         )
+
+        # NOTE(Greesb): Default partition retrocompatibility, remove once
+        # all trains have been saved with the new default partition name.
+        if not self.partition_rules:
+            # raw_trains[0] = partition_name set to None
+            # raw_trains[1] = partition_name set to partr_config.DEFAULT_PARTITION_NAME
+            if raw_trains[0] is not None and raw_trains[1] is None:
+                raw_trains.pop(1)
+            else:
+                # In all other cases we just want to keep the raw_trains[1].
+                # If raw_trains[0] is None then we don't have anything to retrieve
+                # If raw_trains[0] is not None and raw_trains[1] is not None,
+                # this shouldn't happen, but if it somehow does we want to keep
+                # only the `raw_trains[1]` because that is the train saved with
+                # the new default partition name, so it should be the one most up to date.
+                raw_trains.pop(0)
+
+            del query[f"{self.repository.repo['id']}~{self.ref}"]
+
         await self.load_from_bytes(
-            {
-                part_name: raw_trains[idx]
-                for idx, (_, part_name) in enumerate(query.items())
-            }
+            {part_name: raw_trains[idx] for idx, part_name in enumerate(query.values())}  # type: ignore[misc]
         )
 
     async def load_from_bytes(
         self,
-        raw_trains: "abc.Mapping[partr_config.PartitionRuleName | None, bytes | None]",
+        raw_trains: "abc.Mapping[partr_config.PartitionRuleName, bytes | None]",
     ) -> None:
         self._trains = []
-        partition_names: list["partr_config.PartitionRuleName" | None]
         partition_names = [part_rule.name for part_rule in self.partition_rules]
         if not partition_names:
-            partition_names = [None]
+            partition_names = [partr_config.DEFAULT_PARTITION_NAME]
 
         for part_name in partition_names:
             train = train_import.Train(self, part_name)
@@ -194,9 +212,9 @@ class Convoy:
             exclude_ref=ctxt.pull["base"]["ref"],
         )
 
-        real_partition_names: list["partr_config.PartitionRuleName | None"]
+        real_partition_names: list["partr_config.PartitionRuleName"]
         if not partition_names:
-            real_partition_names = [None]
+            real_partition_names = [partr_config.DEFAULT_PARTITION_NAME]
         else:
             real_partition_names = list(partition_names)
 
@@ -334,14 +352,14 @@ class Convoy:
             )
 
         partition_names = [ep[1].partition_name for ep in embarked_pulls]
-        if any(pname is None for pname in partition_names):
+        if any(
+            pname == partr_config.DEFAULT_PARTITION_NAME for pname in partition_names
+        ):
             raise RuntimeError(
-                "Should be impossible to have a partition name set to `None` here"
+                f"Should be impossible to have a partition name set to the default `{partr_config.DEFAULT_PARTITION_NAME}` here"
             )
 
-        # mypy still think the partition_names can have None elements even
-        # with the if above
-        return f"#{ctxt.pull['number']} is queued in the following partitions: {', '.join(partition_names)}"  # type: ignore[arg-type]
+        return f"#{ctxt.pull['number']} is queued in the following partitions: {', '.join(partition_names)}"
 
     def get_train_cars_by_tmp_pull(
         self, ctxt: context.Context
@@ -411,7 +429,11 @@ class Convoy:
             # Means we haven't saved the train yet
             train_cars.append(default_car)
 
-        if len(train_cars) == 1 and train_cars[0].train.partition_name is None:
+        if (
+            len(train_cars) == 1
+            and train_cars[0].train.partition_name
+            == partr_config.DEFAULT_PARTITION_NAME
+        ):
             queue_check_run_conclusion = train_cars[0].get_queue_check_run_conclusion()
             original_pr_summary = train_cars[0].get_original_pr_summary(checked_pull)
             report = check_api.Result(
@@ -439,12 +461,15 @@ class Convoy:
             else:
                 queue_check_run_conclusion = check_api.Conclusion.PENDING
 
-            if any(tc.train.partition_name is None for tc in train_cars):
-                raise RuntimeError("Cannot have a `partition_name` set to `None` here")
+            if any(
+                tc.train.partition_name == partr_config.DEFAULT_PARTITION_NAME
+                for tc in train_cars
+            ):
+                raise RuntimeError(
+                    f"Cannot have a `partition_name` set to the default `{partr_config.DEFAULT_PARTITION_NAME}` here"
+                )
 
-            # mypy doesn't understand that we already check that each partition_name
-            # cannot be None with the if above
-            check_title = f"The pull request is embarked in partitions {', '.join([tc.train.partition_name for tc in train_cars])}"  # type: ignore[misc]
+            check_title = f"The pull request is embarked in partitions {', '.join([tc.train.partition_name for tc in train_cars])}"
 
             summary = "\n\n".join(
                 [
@@ -470,17 +495,17 @@ class Convoy:
         cls, installation: context.Installation
     ) -> dict[
         tuple[github_types.GitHubRepositoryIdType, github_types.GitHubRefType],
-        dict[partr_config.PartitionRuleName | None, bytes],
+        dict[partr_config.PartitionRuleName, bytes],
     ]:
         trains_by_convoy: dict[
             tuple[github_types.GitHubRepositoryIdType, github_types.GitHubRefType],
-            dict[partr_config.PartitionRuleName | None, bytes],
+            dict[partr_config.PartitionRuleName, bytes],
         ] = collections.defaultdict(dict)
 
         trains_key = train_import.get_redis_train_key(installation)
         trains_raw = await installation.redis.cache.hgetall(trains_key)
         for key, train_raw in trains_raw.items():
-            partition_name = None
+            partition_name = partr_config.DEFAULT_PARTITION_NAME
             repo_id_str, ref_str = key.decode().split("~", 1)
             if "~" in ref_str:
                 ref_str, part_name_str = ref_str.split("~")

@@ -11,6 +11,7 @@ from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import settings
 from mergify_engine import yaml
+from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests.functional import base
 
 
@@ -374,7 +375,7 @@ class TestQueueApi(base.FunctionalTestBase):
             },
             "queued_at": anys.ANY_DATETIME_STR,
             "estimated_time_of_merge": anys.ANY_DATETIME_STR,
-            "partition_name": None,
+            "partition_name": partr_config.DEFAULT_PARTITION_NAME,
         }
 
     async def test_get_queue_pull(self) -> None:
@@ -1440,9 +1441,9 @@ class TestNewQueueApiEndpoint(base.FunctionalTestBase):
             },
             "queued_at": anys.ANY_AWARE_DATETIME_STR,
             "estimated_time_of_merge": None,
-            "positions": {"null": 0},
+            "positions": {partr_config.DEFAULT_PARTITION_NAME: 0},
             "mergeability_checks": {
-                "null": {
+                partr_config.DEFAULT_PARTITION_NAME: {
                     "check_type": "draft_pr",
                     "checks": [],
                     "conditions_evaluation": anys.ANY_MAPPING,
@@ -1455,7 +1456,7 @@ class TestNewQueueApiEndpoint(base.FunctionalTestBase):
                     "state": "pending",
                 }
             },
-            "partition_names": [None],
+            "partition_names": [partr_config.DEFAULT_PARTITION_NAME],
         }
 
     async def test_pr_in_multiple_partitions(self) -> None:

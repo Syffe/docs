@@ -160,7 +160,7 @@ class PullRequestQueued:
     estimated_time_of_merge: datetime.datetime | None = pydantic.Field(
         description="The estimated timestamp when this pull request will be merged"
     )
-    partition_name: partr_config.PartitionRuleName | None = pydantic.Field(
+    partition_name: partr_config.PartitionRuleName = pydantic.Field(
         description="The name of the partition, if any, in which the pull request is queued"
     )
 
@@ -203,6 +203,7 @@ class Queues:
                                         "number": 5678,
                                         "position": 1,
                                         "priority": 100,
+                                        "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                                         "queue_rule": {
                                             "name": "default",
                                             "config": {
@@ -249,6 +250,7 @@ class Queues:
                                         "number": 4242,
                                         "position": 1,
                                         "priority": 100,
+                                        "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                                         "queue_rule": {
                                             "name": "default",
                                             "config": {

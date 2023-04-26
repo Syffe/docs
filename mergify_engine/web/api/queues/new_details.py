@@ -155,7 +155,7 @@ class EnhancedPullRequestQueued:
         metadata={
             "description": (
                 "The position of the pull request in the queue for each partitions "
-                "(if partitions are not used, the key will be `None`). "
+                f"(if partitions are not used, the key will be `{partr_config.DEFAULT_PARTITION_NAME}`). "
                 "The first pull request in the queue is at position 0"
             )
         },
@@ -166,7 +166,7 @@ class EnhancedPullRequestQueued:
         partr_config.PartitionRuleName | None, MergeabilityCheck | None
     ] = dataclasses.field(default_factory=dict)
 
-    partition_names: list[partr_config.PartitionRuleName | None] = dataclasses.field(
+    partition_names: list[partr_config.PartitionRuleName] = dataclasses.field(
         metadata={
             "description": "The names of the partitions in which the pull request is queued in the specified queue"
         },

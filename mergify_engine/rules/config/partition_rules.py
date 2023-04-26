@@ -11,6 +11,8 @@ from mergify_engine.rules.config import conditions as cond_config
 
 
 PartitionRuleName = typing.NewType("PartitionRuleName", str)
+DEFAULT_PARTITION_NAME = PartitionRuleName("__default__")
+
 EvaluatedPartitionRule = typing.NewType("EvaluatedPartitionRule", "PartitionRule")
 
 PartitionRulesEvaluator = rules.GenericRulesEvaluator[
@@ -57,6 +59,11 @@ class PartitionRules:
             if rule.name in names:
                 raise voluptuous.error.Invalid(
                     f"partition_rules names must be unique, found `{rule.name}` twice"
+                )
+
+            if rule.name == DEFAULT_PARTITION_NAME:
+                raise voluptuous.error.Invalid(
+                    f"`{DEFAULT_PARTITION_NAME}` is a reserved partition name and cannot be used"
                 )
 
             names.add(rule.name)

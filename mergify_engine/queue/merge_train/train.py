@@ -48,8 +48,8 @@ class Train:
     convoy: "Convoy" = dataclasses.field(repr=False)
 
     # Stored in redis
-    partition_name: partr_config.PartitionRuleName | None = dataclasses.field(
-        default=None
+    partition_name: partr_config.PartitionRuleName = dataclasses.field(
+        default=partr_config.DEFAULT_PARTITION_NAME
     )
     _cars: list[train_car.TrainCar] = dataclasses.field(default_factory=list)
     _waiting_pulls: list[ep_import.EmbarkedPull] = dataclasses.field(
@@ -61,15 +61,14 @@ class Train:
         cars: list[train_car.TrainCar.Serialized]
         waiting_pulls: list[ep_import.EmbarkedPull.Serialized]
         current_base_sha: github_types.SHAType | None
+        # TODO(Greesb): Retrocompatibility, remove the `| None` part
+        # once all trains have been saved with the new default partition name
         partition_name: partr_config.PartitionRuleName | None
 
     def _get_redis_key(self) -> str:
         return get_redis_train_key(self.convoy.repository.installation)
 
     def _get_redis_hash_key(self) -> str:
-        if self.partition_name is None:
-            return f"{self.convoy.repository.repo['id']}~{self.convoy.ref}"
-
         return f"{self.convoy.repository.repo['id']}~{self.convoy.ref}~{self.partition_name}"
 
     async def test_helper_load_from_redis(self) -> None:
@@ -89,7 +88,12 @@ class Train:
             self._cars = [
                 train_car.TrainCar.deserialize(self, c) for c in train["cars"]
             ]
-            self.partition_name = train.get("partition_name")
+            partition_name = train.get(
+                "partition_name", partr_config.DEFAULT_PARTITION_NAME
+            )
+            # NOTE(Greesb): Default partition retrocompatibility, to remove once
+            # all trains have been saved with the new default partition name.
+            self.partition_name = partition_name or partr_config.DEFAULT_PARTITION_NAME
         else:
             self._cars = []
             self._waiting_pulls = []

@@ -19,6 +19,7 @@ from mergify_engine import yaml
 from mergify_engine.dashboard import subscription
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
+from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests.functional import base
 
 
@@ -1371,7 +1372,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "metadata": {
                         "branch": self.main_branch_name,
                         "merged": False,
-                        "partition_name": None,
+                        "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
@@ -1396,7 +1397,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "abort_status": "DEFINITIVE",
                         "aborted": True,
                         "branch": self.main_branch_name,
-                        "partition_name": None,
+                        "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
@@ -1418,7 +1419,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "event": "action.queue.checks_start",
                     "metadata": {
                         "branch": self.main_branch_name,
-                        "partition_name": None,
+                        "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
@@ -1439,7 +1440,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "event": "action.queue.enter",
                     "metadata": {
                         "branch": self.main_branch_name,
-                        "partition_name": None,
+                        "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
@@ -1978,7 +1979,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "branch": self.main_branch_name,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
-                        "partition_names": None,
+                        "partition_names": [partr_config.DEFAULT_PARTITION_NAME],
                     },
                     "pull_request": p1["number"],
                     "repository": self.repository_ctxt.repo["full_name"],
@@ -1990,7 +1991,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "metadata": {
                         "branch": self.main_branch_name,
                         "merged": True,
-                        "partition_name": None,
+                        "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
@@ -2012,7 +2013,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "abort_status": "DEFINITIVE",
                         "aborted": False,
                         "branch": self.main_branch_name,
-                        "partition_name": None,
+                        "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
@@ -2034,7 +2035,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "event": "action.queue.checks_start",
                     "metadata": {
                         "branch": self.main_branch_name,
-                        "partition_name": None,
+                        "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
@@ -2055,7 +2056,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "event": "action.queue.enter",
                     "metadata": {
                         "branch": self.main_branch_name,
-                        "partition_name": None,
+                        "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
@@ -2278,7 +2279,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "metadata": {
                         "merged": False,
                         "branch": self.main_branch_name,
-                        "partition_name": None,
+                        "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
@@ -2306,7 +2307,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         "abort_status": "DEFINITIVE",
                         "aborted": True,
                         "branch": self.main_branch_name,
-                        "partition_name": None,
+                        "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                         "position": 0,
                         "queue_name": "default",
                         "queued_at": anys.ANY_AWARE_DATETIME_STR,
@@ -5128,7 +5129,7 @@ class TestQueueAction(base.FunctionalTestBase):
                             "position": 0,
                             "queued_at": anys.ANY_AWARE_DATETIME_STR,
                             "priority": 2000,
-                            "partition_name": None,
+                            "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                             "queue_rule": {
                                 "config": {
                                     "allow_inplace_checks": True,
@@ -5166,7 +5167,7 @@ class TestQueueAction(base.FunctionalTestBase):
                             "number": p1["number"],
                             "position": 1,
                             "priority": 2000,
-                            "partition_name": None,
+                            "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                             "queue_rule": {
                                 "config": {
                                     "allow_inplace_checks": True,
@@ -5199,7 +5200,7 @@ class TestQueueAction(base.FunctionalTestBase):
                             "number": p2["number"],
                             "position": 2,
                             "priority": 2000,
-                            "partition_name": None,
+                            "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                             "queue_rule": {
                                 "config": {
                                     "allow_inplace_checks": True,

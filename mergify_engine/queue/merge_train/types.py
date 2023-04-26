@@ -26,11 +26,10 @@ class TrainAndTrainCar(typing.NamedTuple):
     train_car: "TrainCar"
 
 
-# TODO: Maybe find a better name?
 class ConvoyEmbarkedPullWithCarAndPos(typing.NamedTuple):
     car: "TrainCar | None"
     embarked_pull: "EmbarkedPull"
-    partition_name: "partr_config.PartitionRuleName | None"
+    partition_name: "partr_config.PartitionRuleName"
     position: int
 
 

@@ -3,6 +3,7 @@ from mergify_engine.queue.merge_train.checks import QueueCheck
 from mergify_engine.queue.merge_train.convoy import Convoy
 from mergify_engine.queue.merge_train.embarked_pull import EmbarkedPull
 from mergify_engine.queue.merge_train.train import Train
+from mergify_engine.queue.merge_train.train import get_redis_train_key
 from mergify_engine.queue.merge_train.train_car import CHECKS_TIMEOUT_MESSAGE
 from mergify_engine.queue.merge_train.train_car import CI_FAILED_MESSAGE
 from mergify_engine.queue.merge_train.train_car import TrainCar
@@ -21,6 +22,7 @@ from mergify_engine.queue.merge_train.types import EmbarkedPullWithCar
 
 
 __all__ = [
+    "get_redis_train_key",
     "CHECKS_TIMEOUT_MESSAGE",
     "CI_FAILED_MESSAGE",
     "CiState",

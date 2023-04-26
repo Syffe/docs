@@ -871,7 +871,7 @@ class TrainCar:
                 if not (self.repository.installation.owner_login and branch_name):
                     raise RuntimeError("Invalid merge queue head branch")
 
-                if self.train.partition_name is not None:
+                if self.train.partition_name != partr_config.DEFAULT_PARTITION_NAME:
                     # The same PR already exists in another TrainCar
                     existing_pr = await self.train.convoy.find_prs_in_train_cars_and_add_delegation(
                         [
@@ -940,7 +940,7 @@ class TrainCar:
             if exc.status_code == 422 and "Reference already exists" in exc.message:
                 # The same PR, with the same base_sha, already exists in another
                 # TrainCar from another partition
-                if self.train.partition_name is not None:
+                if self.train.partition_name != partr_config.DEFAULT_PARTITION_NAME:
                     existing_pr = await self.train.convoy.find_prs_in_train_cars_and_add_delegation(
                         [
                             ep.user_pull_request_number
@@ -1264,7 +1264,7 @@ class TrainCar:
             f"{self._get_embarked_refs(markdown=True)} are embarked together for merge"
         )
 
-        if self.train.partition_name is not None:
+        if self.train.partition_name != partr_config.DEFAULT_PARTITION_NAME:
             if self.delegating_train_cars_partition_names:
                 partition_names = sorted(
                     (
@@ -1607,7 +1607,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
         # to be able to check if the current sha of the base branch is one of those
         # instead of ignoring this check if we are using partitions.
         if (
-            self.train.partition_name is None
+            self.train.partition_name == partr_config.DEFAULT_PARTITION_NAME
             and not await self.train.is_synced_with_the_base_branch(current_base_sha)
         ):
             unexpected_changes = UnexpectedBaseBranchChange(current_base_sha)

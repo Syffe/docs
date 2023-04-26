@@ -6,6 +6,7 @@ import pytest
 import voluptuous
 
 from mergify_engine import check_api
+from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import delayed_refresh
 from mergify_engine import github_types
@@ -14,6 +15,7 @@ from mergify_engine import queue
 from mergify_engine import rules
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
+from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.tests.unit import conftest
 from mergify_engine.tests.unit.merge_train import conftest as mt_conftest
@@ -1614,6 +1616,52 @@ def test_train_car_old_serialization(
     )
     assert train_car.train_car_state.ci_state == ci_state
     assert train_car.train_car_state.outcome_message == outcome_message
+
+
+async def test_train_load_from_redis_with_None_partition_name(
+    context_getter: conftest.ContextGetterFixture,
+    repository: context.Repository,
+) -> None:
+    # This is a retrocompatibility test, it can be removed once all the trains with a None
+    # partition_name have disappeared.
+    ref = github_types.GitHubRefType("main")
+    train_serialized = merge_train.Train.Serialized(
+        waiting_pulls=[
+            merge_train.EmbarkedPull.Serialized(
+                user_pull_request_number=github_types.GitHubPullRequestNumber(12345),
+                config=mt_conftest.get_pull_queue_config("inplace"),
+                queued_at=date.utcnow(),
+            ),
+        ],
+        current_base_sha=github_types.SHAType("abc123"),
+        cars=[],
+        partition_name=None,
+    )
+    train_raw = json.dumps(train_serialized)
+    await repository.installation.redis.cache.hset(
+        merge_train.get_redis_train_key(repository.installation),
+        f"{repository.repo['id']}~{ref}",
+        train_raw,
+    )
+
+    convoy = merge_train.Convoy(
+        repository,
+        mt_conftest.QUEUE_RULES,
+        partr_config.PartitionRules([]),
+        ref,
+    )
+    await convoy.load_from_redis()
+
+    assert len(convoy._trains) == 1
+    assert convoy._trains[0].partition_name == partr_config.DEFAULT_PARTITION_NAME
+
+    trains_by_convoy = await merge_train.Convoy._get_raw_trains_by_convoy(
+        repository.installation
+    )
+    assert (
+        partr_config.DEFAULT_PARTITION_NAME
+        in trains_by_convoy[(repository.repo["id"], ref)]
+    )
 
 
 @pytest.mark.parametrize(

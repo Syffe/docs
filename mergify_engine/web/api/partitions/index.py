@@ -57,11 +57,14 @@ class BranchPartitions:
     )
 
     partitions: dict[
-        partr_config.PartitionRuleName | None, list[PullRequestQueued]
+        partr_config.PartitionRuleName, list[PullRequestQueued]
     ] = dataclasses.field(
         default_factory=dict,
         metadata={
-            "description": "A dictionary containing partition names as keys and, as a value of those key, the list of pull requests queued in the partition."
+            "description": (
+                "A dictionary containing partition names as keys and, as a value of those key, the list of pull requests queued in the partition."
+                f" If partition are not used in this repository, the default partition name used will be '{partr_config.DEFAULT_PARTITION_NAME}'."
+            )
         },
     )
 
@@ -98,7 +101,9 @@ async def repository_partitions(
         for rule in partition_rules:
             branch_partitions.partitions.setdefault(rule.name, [])
         if not partition_rules:
-            branch_partitions.partitions.setdefault(None, [])
+            branch_partitions.partitions.setdefault(
+                partr_config.DEFAULT_PARTITION_NAME, []
+            )
 
         for train in convoy.iter_trains():
             for position, (embarked_pull, car) in enumerate(
@@ -164,7 +169,7 @@ async def repository_partitions_branch(
     for rule in partition_rules:
         branch_partitions.partitions.setdefault(rule.name, [])
     if not partition_rules:
-        branch_partitions.partitions.setdefault(None, [])
+        branch_partitions.partitions.setdefault(partr_config.DEFAULT_PARTITION_NAME, [])
 
     for train in convoy.iter_trains():
         for position, (embarked_pull, car) in enumerate(train._iter_embarked_pulls()):
@@ -220,7 +225,10 @@ async def repository_partition_branch(
     queue_rules: security.QueueRules,
     partition_rules: security.PartitionRules,
 ) -> Partition | None:
-    if partition_name not in partition_rules:
+    if (
+        partition_name != partr_config.DEFAULT_PARTITION_NAME
+        and partition_name not in partition_rules
+    ):
         raise fastapi.HTTPException(
             status_code=404,
             detail=f"Partition `{partition_name}` does not exist",

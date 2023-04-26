@@ -12,6 +12,7 @@ from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine.queue import merge_train
 from mergify_engine.rules import conditions as rules_conditions
+from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.web import api
 from mergify_engine.web.api import security
@@ -325,51 +326,49 @@ async def repository_queue_pull_request(
     async for convoy in merge_train.Convoy.iter_convoys(
         repository_ctxt, queue_rules, partition_rules
     ):
-        # FIXME(sileht): This doesn't work as expected wihen the convoy as multiple partitions
-        # this will be fixed by MRGFY-2007
         for train in convoy.iter_trains():
-            if train.partition_name is None:
-                for position, (embarked_pull, car) in enumerate(
-                    train._iter_embarked_pulls()
-                ):
-                    if embarked_pull.user_pull_request_number != pr_number:
-                        continue
+            if train.partition_name != partr_config.DEFAULT_PARTITION_NAME:
+                continue
 
-                    mergeability_check = MergeabilityCheck.from_train_car(car)
-                    estimated_time_of_merge = (
-                        await estimated_time_to_merge.get_estimation(
-                            train,
-                            embarked_pull,
-                            position,
-                            car,
-                        )
+            for position, (embarked_pull, car) in enumerate(
+                train._iter_embarked_pulls()
+            ):
+                if embarked_pull.user_pull_request_number != pr_number:
+                    continue
+
+                mergeability_check = MergeabilityCheck.from_train_car(car)
+                estimated_time_of_merge = await estimated_time_to_merge.get_estimation(
+                    train,
+                    embarked_pull,
+                    position,
+                    car,
+                )
+
+                if car is not None:
+                    checked_pull = car.get_checked_pull()
+                    raw_summary = car.get_original_pr_summary(checked_pull)
+                    summary = PullRequestSummary(
+                        title=raw_summary.title,
+                        unexpected_changes=raw_summary.unexpected_changes,
+                        freeze=raw_summary.freeze,
+                        checks_timeout=raw_summary.checks_timeout,
+                        batch_failure=raw_summary.get_batch_failure_summary_title(),
                     )
+                else:
+                    summary = None
 
-                    if car is not None:
-                        checked_pull = car.get_checked_pull()
-                        raw_summary = car.get_original_pr_summary(checked_pull)
-                        summary = PullRequestSummary(
-                            title=raw_summary.title,
-                            unexpected_changes=raw_summary.unexpected_changes,
-                            freeze=raw_summary.freeze,
-                            checks_timeout=raw_summary.checks_timeout,
-                            batch_failure=raw_summary.get_batch_failure_summary_title(),
-                        )
-                    else:
-                        summary = None
-
-                    return EnhancedPullRequestQueued(
-                        number=embarked_pull.user_pull_request_number,
-                        position=position,
-                        priority=embarked_pull.config["priority"],
-                        queue_rule=types.QueueRule(
-                            name=embarked_pull.config["name"], config=queue_rule.config
-                        ),
-                        queued_at=embarked_pull.queued_at,
-                        mergeability_check=mergeability_check,
-                        estimated_time_of_merge=estimated_time_of_merge,
-                        summary=summary,
-                    )
+                return EnhancedPullRequestQueued(
+                    number=embarked_pull.user_pull_request_number,
+                    position=position,
+                    priority=embarked_pull.config["priority"],
+                    queue_rule=types.QueueRule(
+                        name=embarked_pull.config["name"], config=queue_rule.config
+                    ),
+                    queued_at=embarked_pull.queued_at,
+                    mergeability_check=mergeability_check,
+                    estimated_time_of_merge=estimated_time_of_merge,
+                    summary=summary,
+                )
 
     raise fastapi.HTTPException(
         status_code=404,

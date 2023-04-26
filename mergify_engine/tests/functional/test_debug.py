@@ -6,6 +6,7 @@ from mergify_engine import debug
 from mergify_engine import yaml
 from mergify_engine.clients import github
 from mergify_engine.dashboard import subscription
+from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests.functional import base
 
 
@@ -129,7 +130,7 @@ pull_request_rules:
     - title~=pull request
   name: comment
 
-* TRAIN: 
+* TRAIN (partition:{partr_config.DEFAULT_PARTITION_NAME}): 
 * PULL REQUEST:
 {{'#commits': 1,
  '#commits-behind': 0,
@@ -381,7 +382,7 @@ pull_request_rules:
     - title~=pull request
   name: comment
 
-* TRAIN: 
+* TRAIN (partition:{partr_config.DEFAULT_PARTITION_NAME}): 
 * PULL REQUEST:
 {{'#commits': 1,
  '#commits-behind': 0,

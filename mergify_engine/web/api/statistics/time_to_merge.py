@@ -50,7 +50,7 @@ async def get_average_time_to_merge_stats_endpoint(
     try:
         return await web_stat_utils.get_time_to_merge_stats_for_queue(
             repository_ctxt,
-            None,
+            partr_config.DEFAULT_PARTITION_NAME,
             queue_name=queue_name,
             branch_name=branch,
             at=at,
@@ -98,7 +98,10 @@ async def get_average_time_to_merge_stats_partition_endpoint(
         ),
     ] = None,
 ) -> web_stat_types.TimeToMergeResponse:
-    if partition_name not in partition_rules:
+    if (
+        partition_name != partr_config.DEFAULT_PARTITION_NAME
+        and partition_name not in partition_rules
+    ):
         raise fastapi.HTTPException(
             status_code=404,
             detail=f"Partition `{partition_name}` does not exist",

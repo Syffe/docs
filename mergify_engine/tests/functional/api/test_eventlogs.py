@@ -7,6 +7,7 @@ from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine import yaml
 from mergify_engine.dashboard import subscription
+from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests.functional import base
 
 
@@ -304,7 +305,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "event": "action.queue.merged",
                 "metadata": {
                     "branch": self.main_branch_name,
-                    "partition_names": None,
+                    "partition_names": [partr_config.DEFAULT_PARTITION_NAME],
                     "queue_name": "default",
                     "queued_at": mock.ANY,
                 },
@@ -320,7 +321,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                     "merged": True,
                     "queue_name": "default",
                     "branch": self.main_branch_name,
-                    "partition_name": None,
+                    "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                     "position": 0,
                     "queued_at": mock.ANY,
                     "seconds_waiting_for_schedule": 0,
@@ -340,7 +341,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                     "abort_status": "DEFINITIVE",
                     "queue_name": "default",
                     "branch": self.main_branch_name,
-                    "partition_name": None,
+                    "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                     "position": 0,
                     "queued_at": mock.ANY,
                     "speculative_check_pull_request": {
@@ -362,7 +363,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "metadata": {
                     "queue_name": "default",
                     "branch": self.main_branch_name,
-                    "partition_name": None,
+                    "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                     "position": 0,
                     "queued_at": mock.ANY,
                     "speculative_check_pull_request": {
@@ -383,7 +384,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "metadata": {
                     "queue_name": "default",
                     "branch": self.main_branch_name,
-                    "partition_name": None,
+                    "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                     "position": 0,
                     "queued_at": mock.ANY,
                 },
@@ -399,7 +400,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "event": "action.queue.merged",
                 "metadata": {
                     "branch": self.main_branch_name,
-                    "partition_names": None,
+                    "partition_names": [partr_config.DEFAULT_PARTITION_NAME],
                     "queue_name": "default",
                     "queued_at": mock.ANY,
                 },
@@ -415,7 +416,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                     "merged": True,
                     "queue_name": "default",
                     "branch": self.main_branch_name,
-                    "partition_name": None,
+                    "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                     "position": 0,
                     "queued_at": mock.ANY,
                     "seconds_waiting_for_schedule": 0,
@@ -435,7 +436,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                     "abort_status": "DEFINITIVE",
                     "queue_name": "default",
                     "branch": self.main_branch_name,
-                    "partition_name": None,
+                    "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                     "position": 0,
                     "queued_at": mock.ANY,
                     "speculative_check_pull_request": {
@@ -506,7 +507,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "metadata": {
                     "queue_name": "default",
                     "branch": self.main_branch_name,
-                    "partition_name": None,
+                    "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                     "position": 0,
                     "queued_at": mock.ANY,
                     "speculative_check_pull_request": {
@@ -527,7 +528,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 "metadata": {
                     "branch": self.main_branch_name,
                     "position": 0,
-                    "partition_name": None,
+                    "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                     "queue_name": "default",
                     "queued_at": mock.ANY,
                 },
