@@ -304,6 +304,7 @@ class HTTPJobRegistry:
                         f"job run {job['id']} ignored",
                         gh_owner=owner,
                         gh_repo=repository,
+                        workflow_run_payload=run,
                         job_payload=job,
                     )
                     continue
