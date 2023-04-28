@@ -12,6 +12,16 @@ from mergify_engine.ci import job_registries
 from mergify_engine.ci import models
 
 
+DEPLOYMENTS_EVENTS: tuple[github_types.GitHubWorkflowTriggerEventType, ...] = ("push",)
+SCHEDULED_JOBS_EVENTS: tuple[github_types.GitHubWorkflowTriggerEventType, ...] = (
+    "schedule",
+)
+PULL_REQUESTS_EVENTS: tuple[github_types.GitHubWorkflowTriggerEventType, ...] = (
+    "pull_request",
+    "pull_request_target",
+)
+
+
 @pydantic.dataclasses.dataclass
 class Money:
     amount: cost_calculator.MoneyAmount
@@ -253,7 +263,7 @@ class CategoryReport:
         total_cost = cost_calculator.MoneyAmount.zero()
 
         for job_run in job_runs:
-            if job_run.triggering_event == "push":
+            if job_run.triggering_event in DEPLOYMENTS_EVENTS:
                 per_conclusion[job_run.conclusion] += job_run.cost
                 per_job[job_run.name] += job_run.cost
                 per_repository[job_run.repository] += job_run.cost
@@ -300,7 +310,7 @@ class CategoryReport:
         total_cost = cost_calculator.MoneyAmount.zero()
 
         for job_run in job_runs:
-            if job_run.triggering_event == "schedule":
+            if job_run.triggering_event in SCHEDULED_JOBS_EVENTS:
                 per_conclusion[job_run.conclusion] += job_run.cost
                 per_job[job_run.name] += job_run.cost
                 per_repository[job_run.repository] += job_run.cost
@@ -353,7 +363,7 @@ class CategoryReport:
         total_cost = cost_calculator.MoneyAmount.zero()
 
         for job_run in job_runs:
-            if job_run.triggering_event in ("pull_request", "pull_request_target"):
+            if job_run.triggering_event in PULL_REQUESTS_EVENTS:
                 per_actor[job_run.triggering_actor.login] += job_run.cost
                 per_job[job_run.name] += job_run.cost
                 per_conclusion[job_run.conclusion] += job_run.cost
@@ -420,3 +430,88 @@ class CategoryReport:
             return "Update"
 
         return None
+
+
+@pydantic.dataclasses.dataclass
+class RepositoryCategories:
+    deployments: Money
+    scheduled_jobs: Money
+    pull_requests: Money
+
+
+@pydantic.dataclasses.dataclass
+class Repository:
+    name: github_types.GitHubRepositoryName
+    total_cost: Money
+    categories: RepositoryCategories
+
+
+@pydantic.dataclasses.dataclass(
+    config=pydantic.ConfigDict(
+        json_encoders={cost_calculator.MoneyAmount: lambda v: float(round(v, 2))}
+    )
+)
+class RepositoryReportPayload:
+    repositories: list[Repository]
+    date_range: DateRange
+
+
+@dataclasses.dataclass
+class RepositoryQuery:
+    owner: github_types.GitHubLogin
+    start_at: datetime.date | None = None
+    end_at: datetime.date | None = None
+
+
+@dataclasses.dataclass
+class RepositoryReport:
+    job_registry: job_registries.JobRegistry
+    query: RepositoryQuery
+
+    async def run(self) -> RepositoryReportPayload:
+        per_repository: dict[
+            github_types.GitHubRepositoryName, list[models.JobRun]
+        ] = collections.defaultdict(list)
+
+        job_runs = self.job_registry.search(
+            self.query.owner, None, self.query.start_at, self.query.end_at
+        )
+
+        async for job_run in job_runs:
+            per_repository[job_run.repository].append(job_run)
+
+        return RepositoryReportPayload(
+            repositories=[
+                self._create_repository(name, repo_job_runs)
+                for name, repo_job_runs in per_repository.items()
+            ],
+            date_range=DateRange(
+                start_at=self.query.start_at, end_at=self.query.end_at
+            ),
+        )
+
+    def _create_repository(
+        self, name: github_types.GitHubRepositoryName, job_runs: list[models.JobRun]
+    ) -> Repository:
+        total_cost = cost_calculator.MoneyAmount.zero()
+        deployments = cost_calculator.MoneyAmount.zero()
+        scheduled_jobs = cost_calculator.MoneyAmount.zero()
+        pull_requests = cost_calculator.MoneyAmount.zero()
+
+        for job_run in job_runs:
+            total_cost += job_run.cost
+
+            if job_run.triggering_event in DEPLOYMENTS_EVENTS:
+                deployments += job_run.cost
+            elif job_run.triggering_event in SCHEDULED_JOBS_EVENTS:
+                scheduled_jobs += job_run.cost
+            elif job_run.triggering_event in PULL_REQUESTS_EVENTS:
+                pull_requests += job_run.cost
+
+        categories = RepositoryCategories(
+            deployments=Money(deployments),
+            scheduled_jobs=Money(scheduled_jobs),
+            pull_requests=Money(pull_requests),
+        )
+
+        return Repository(name, Money(total_cost), categories)

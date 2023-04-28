@@ -139,7 +139,7 @@ router = fastapi.APIRouter(
         },
     },
 )
-async def repository_queues(
+async def index(
     owner: typing.Annotated[
         github_types.GitHubLogin,
         fastapi.Path(description="The owner"),
@@ -170,5 +170,65 @@ async def repository_queues(
         owner, repository, start_at, end_at, compare_start_at, compare_end_at
     )
     report = reports.CategoryReport(job_registry, query)
+
+    return await report.run()
+
+
+@router.get(
+    "/{owner}/repos",
+    include_in_schema=False,
+    summary="Get CI data per repository",
+    description="Get CI data per repository for an organization",
+    response_model=reports.RepositoryReportPayload,
+    responses={
+        **api.default_responses,  # type: ignore
+        200: {
+            "content": {
+                "application/json": {
+                    "example": {
+                        "repositories": [
+                            {
+                                "name": "some-repo",
+                                "total_cost": {"amount": 0.02, "currency": "USD"},
+                                "categories": {
+                                    "deployments": {"amount": 0.0, "currency": "USD"},
+                                    "scheduled_jobs": {
+                                        "amount": 0.0,
+                                        "currency": "USD",
+                                    },
+                                    "pull_requests": {
+                                        "amount": 0.02,
+                                        "currency": "USD",
+                                    },
+                                },
+                            }
+                        ],
+                        "date_range": {
+                            "start_at": "2023-04-25",
+                            "end_at": "2023-04-26",
+                        },
+                    }
+                }
+            }
+        },
+    },
+)
+async def repositories(
+    owner: typing.Annotated[
+        github_types.GitHubLogin,
+        fastapi.Path(description="The owner"),
+    ],
+    start_at: typing.Annotated[
+        datetime.date | None,
+        fastapi.Query(description="The start of the date range"),
+    ] = None,
+    end_at: typing.Annotated[
+        datetime.date | None,
+        fastapi.Query(description="The end of the date range"),
+    ] = None,
+) -> reports.RepositoryReportPayload:
+    job_registry = job_registries.PostgresJobRegistry()
+    query = reports.RepositoryQuery(owner, start_at, end_at)
+    report = reports.RepositoryReport(job_registry, query)
 
     return await report.run()

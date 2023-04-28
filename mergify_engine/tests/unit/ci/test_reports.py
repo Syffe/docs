@@ -419,3 +419,24 @@ def test_category_query_compute_date_range() -> None:
 
     assert query.compare_start_at == datetime.date(2023, 2, 1)
     assert query.compare_end_at == datetime.date(2023, 2, 4)
+
+
+async def test_repository_report() -> None:
+    report = reports.RepositoryReport(
+        FakeJobRegistry(),
+        reports.RepositoryQuery(
+            owner=github_types.GitHubLogin("mergifyio"),
+            start_at=datetime.date(2023, 2, 1),
+            end_at=datetime.date(2023, 2, 1),
+        ),
+    )
+
+    result = await report.run()
+
+    assert len(result.repositories) == 1
+    repo = result.repositories[0]
+    assert repo.name == "fake_repo"
+    assert repo.total_cost == reports.Money.from_decimal("6.68")
+    assert repo.categories.deployments == reports.Money.from_decimal("1.336")
+    assert repo.categories.scheduled_jobs == reports.Money.from_decimal("1.336")
+    assert repo.categories.pull_requests == reports.Money.from_decimal("4.008")

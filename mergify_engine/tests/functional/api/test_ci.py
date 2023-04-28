@@ -88,3 +88,28 @@ class TestCIApi(base.FunctionalTestBase):
         assert "compared_date_range" in r.json()
         assert r.json()["compared_date_range"]["start_at"] == "2022-12-01"
         assert r.json()["compared_date_range"]["end_at"] == "2022-12-15"
+
+    async def test_repository_report(self) -> None:
+        r = await self.app.get(f"/v1/ci/{settings.TESTING_ORGANIZATION_NAME}/repos")
+
+        assert r.status_code == 200
+        assert len(r.json()["repositories"]) == 1
+        repo = r.json()["repositories"][0]
+        assert repo["name"] == self.RECORD_CONFIG["repository_name"]
+        assert repo["total_cost"] == {"amount": 0.02, "currency": "USD"}
+        assert repo["categories"]["pull_requests"] == {
+            "amount": 0.02,
+            "currency": "USD",
+        }
+        assert "date_range" in r.json()
+        assert r.json()["date_range"]["start_at"] is None
+        assert r.json()["date_range"]["end_at"] is None
+
+        r = await self.app.get(
+            f"/v1/ci/{settings.TESTING_ORGANIZATION_NAME}/repos?"
+            "start_at=2023-01-01&end_at=2023-01-15",
+        )
+        assert r.status_code == 200
+        assert "date_range" in r.json()
+        assert r.json()["date_range"]["start_at"] == "2023-01-01"
+        assert r.json()["date_range"]["end_at"] == "2023-01-15"
