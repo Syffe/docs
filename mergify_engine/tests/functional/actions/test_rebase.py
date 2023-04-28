@@ -6,6 +6,7 @@ from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 
 
+@pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
 class TestRebaseAction(base.FunctionalTestBase):
     async def test_rebase_ok(self) -> None:
         rules = {
@@ -141,12 +142,11 @@ class TestRebaseAction(base.FunctionalTestBase):
 
         p2 = await self.create_pr()
         await self.merge_pull(p2["number"])
-
         await self.wait_for("pull_request", {"action": "closed"})
 
         await self.add_label(pr_fixup["number"], "rebase")
         await self.run_engine()
-        await self.wait_for("pull_request", {"action": "synchronize"})
+        await self.wait_for_pull_request("synchronize", pr_fixup["number"])
 
         fixup_commits = await self.get_commits(pr_fixup["number"])
         assert len(fixup_commits) == 2
@@ -168,12 +168,11 @@ class TestRebaseAction(base.FunctionalTestBase):
 
         p2 = await self.create_pr()
         await self.merge_pull(p2["number"])
-
         await self.wait_for("pull_request", {"action": "closed"})
 
         await self.add_label(pr_fixup["number"], "rebase")
         await self.run_engine()
-        await self.wait_for("pull_request", {"action": "synchronize"})
+        await self.wait_for_pull_request("synchronize", pr_fixup["number"])
 
         fixup_commits = await self.get_commits(pr_fixup["number"])
         assert len(fixup_commits) == 1
@@ -195,12 +194,11 @@ class TestRebaseAction(base.FunctionalTestBase):
 
         p2 = await self.create_pr()
         await self.merge_pull(p2["number"])
-
         await self.wait_for("pull_request", {"action": "closed"})
 
         await self.add_label(pr_fixup["number"], "rebase")
         await self.run_engine()
-        await self.wait_for("pull_request", {"action": "synchronize"})
+        await self.wait_for_pull_request("synchronize", pr_fixup["number"])
 
         fixup_commits = await self.get_commits(pr_fixup["number"])
         assert len(fixup_commits) == 1
@@ -227,12 +225,11 @@ class TestRebaseAction(base.FunctionalTestBase):
 
         p2 = await self.create_pr()
         await self.merge_pull(p2["number"])
-
         await self.wait_for("pull_request", {"action": "closed"})
 
         await self.add_label(pr_fixup["number"], "rebase")
         await self.run_engine()
-        await self.wait_for("pull_request", {"action": "synchronize"})
+        await self.wait_for_pull_request("synchronize", pr_fixup["number"])
 
         fixup_commits = await self.get_commits(pr_fixup["number"])
         assert len(fixup_commits) == 1
@@ -258,12 +255,11 @@ class TestRebaseAction(base.FunctionalTestBase):
 
         p2 = await self.create_pr()
         await self.merge_pull(p2["number"])
-
         await self.wait_for("pull_request", {"action": "closed"})
 
         await self.add_label(pr_fixup["number"], "rebase")
         await self.run_engine()
-        await self.wait_for("pull_request", {"action": "synchronize"})
+        await self.wait_for_pull_request("synchronize", pr_fixup["number"])
 
         fixup_commits = await self.get_commits(pr_fixup["number"])
         assert len(fixup_commits) == 1
@@ -289,19 +285,17 @@ class TestRebaseAction(base.FunctionalTestBase):
 
         p2 = await self.create_pr()
         await self.merge_pull(p2["number"])
-
         await self.wait_for("pull_request", {"action": "closed"})
 
         await self.add_label(pr_fixup["number"], "rebase")
         await self.run_engine()
-        await self.wait_for("pull_request", {"action": "synchronize"})
+        await self.wait_for_pull_request("synchronize", pr_fixup["number"])
 
         fixup_commits = await self.get_commits(pr_fixup["number"])
         assert len(fixup_commits) == 1
 
         assert "\n\ntest123" in fixup_commits[0]["commit"]["message"]
 
-    @pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
     async def test_rebase_forced_with_autosquash_and_squashable_commits(self) -> None:
         rules = {
             "pull_request_rules": [
@@ -319,7 +313,7 @@ class TestRebaseAction(base.FunctionalTestBase):
         await self.add_label(pr_fixup["number"], "rebase")
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "synchronize"})
+        await self.wait_for_pull_request("synchronize", pr_fixup["number"])
 
         fixup_commits = await self.get_commits(pr_fixup["number"])
         assert len(fixup_commits) == 1

@@ -7002,10 +7002,18 @@ class TestQueueActionFeaturesSubscription(base.FunctionalTestBase):
         await self.run_engine()
 
         comment_p1_rep = await self.wait_for_issue_comment(str(p1["number"]), "created")
-        assert "Cannot use the merge queue" in comment_p1_rep["comment"]["body"]
+        assert "Cannot use the command `queue`" in comment_p1_rep["comment"]["body"]
+        assert (
+            f"The [subscription]({settings.DASHBOARD_UI_FRONT_URL}/github/mergifyio-testing/subscription) needs to be updated to enable this feature"
+            in comment_p1_rep["comment"]["body"]
+        )
 
         await self.create_comment_as_admin(p1["number"], "@mergifyio unqueue")
         await self.run_engine()
 
         comment_p1_rep = await self.wait_for_issue_comment(str(p1["number"]), "created")
-        assert "Cannot use the merge queue" in comment_p1_rep["comment"]["body"]
+        assert "Cannot use the command `unqueue`" in comment_p1_rep["comment"]["body"]
+        assert (
+            f"The [subscription]({settings.DASHBOARD_UI_FRONT_URL}/github/mergifyio-testing/subscription) needs to be updated to enable this feature"
+            in comment_p1_rep["comment"]["body"]
+        )
