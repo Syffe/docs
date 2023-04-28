@@ -35,7 +35,7 @@ Options
    * - ``bot_account``
      - :ref:`data type template`
      -
-     - |premium plan tag|
+     - |essential plan tag|
        Mergify can impersonate a GitHub user to update a pull request.
        If no ``bot_account`` is set, Mergify will update the pull request
        itself.

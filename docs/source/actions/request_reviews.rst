@@ -30,7 +30,7 @@ Options
   * - ``bot_account``
     - :ref:`data type template`
     -
-    - |premium plan tag|
+    - |essential plan tag|
       Mergify can impersonate a GitHub user to request a review on a pull request.
       If no ``bot_account`` is set, Mergify will request the review itself.
   * - ``users``

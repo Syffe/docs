@@ -531,7 +531,7 @@ These are the options of the ``queue`` action:
    * - ``merge_bot_account``
      - :ref:`data type template`
      -
-     - | |premium plan tag|
+     - | |essential plan tag|
        | Mergify can impersonate a GitHub user to merge pull request.
        | If no ``merge_bot_account`` is set, Mergify will merge the pull request
        | itself. The user account **must** have already been
@@ -577,7 +577,7 @@ These are the options of the ``queue`` action:
    * - ``update_bot_account``
      - :ref:`data type template`
      -
-     - | |premium plan tag|
+     - | |essential plan tag|
        | For certain actions, such as rebasing branches, Mergify has to
        | impersonate a GitHub user. You can specify the account to use with this
        | option. If no ``update_bot_account`` is set, Mergify picks randomly one of the
@@ -697,7 +697,7 @@ A ``queue_rules`` takes the following parameters:
    * - ``draft_bot_account``
      - string
      -
-     - |premium plan tag|
+     - |essential plan tag|
        Mergify can impersonate a GitHub user to create draft pull requests.
        If no ``draft_bot_account`` is set, Mergify creates the draft pull request
        itself. The user account **must** have already been
@@ -707,7 +707,7 @@ A ``queue_rules`` takes the following parameters:
    * - ``merge_bot_account``
      - :ref:`data type template`
      -
-     - |premium plan tag|
+     - |essential plan tag|
        Mergify can impersonate a GitHub user to merge pull request.
        If no ``merge_bot_account`` is set, Mergify will merge the pull request
        itself. The user account **must** have already been
@@ -771,7 +771,7 @@ A ``queue_rules`` takes the following parameters:
    * - ``update_bot_account``
      - :ref:`data type template`
      -
-     - |premium plan tag|
+     - |essential plan tag|
        For certain actions, such as rebasing branches, Mergify has to
        impersonate a GitHub user. You can specify the account to use with this
        option. If no ``update_bot_account`` is set, Mergify picks randomly one of the
