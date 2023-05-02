@@ -42,12 +42,14 @@ class TestDebugger(base.FunctionalTestBase):
                 subscription.Features.PRIORITY_QUEUES,
                 subscription.Features.PUBLIC_REPOSITORY,
                 subscription.Features.SHOW_SPONSOR,
+                subscription.Features.WORKFLOW_AUTOMATION,
             ]
         )
         self.subscription._all_features = [
             "priority_queues",
             "public_repository",
             "show_sponsor",
+            "workflow_automation",
         ]
 
         await self.setup_repo(yaml.dump(rules))
@@ -82,10 +84,12 @@ class TestDebugger(base.FunctionalTestBase):
   - priority_queues
   - public_repository
   - show_sponsor
+  - workflow_automation
 * Features (cache):
   - priority_queues
   - public_repository
   - show_sponsor
+  - workflow_automation
 * ENGINE-CACHE SUB DETAIL: You're not nice
 * DASHBOARD SUB DETAIL: You're not nice
 * WORKER: Installation not queued to process
@@ -253,10 +257,12 @@ mergeable_state: clean
   - priority_queues
   - public_repository
   - show_sponsor
+  - workflow_automation
 * Features (cache):
   - priority_queues
   - public_repository
   - show_sponsor
+  - workflow_automation
 * ENGINE-CACHE SUB DETAIL: You're not nice
 * DASHBOARD SUB DETAIL: You're not nice
 * WORKER: Installation not queued to process"""
@@ -293,12 +299,14 @@ mergeable_state: clean
                 subscription.Features.PRIORITY_QUEUES,
                 subscription.Features.PUBLIC_REPOSITORY,
                 subscription.Features.SHOW_SPONSOR,
+                subscription.Features.WORKFLOW_AUTOMATION,
             ]
         )
         self.subscription._all_features = [
             "priority_queues",
             "public_repository",
             "show_sponsor",
+            "workflow_automation",
         ]
 
         await self.setup_repo(yaml.dump(rules))
@@ -339,10 +347,12 @@ mergeable_state: clean
   - priority_queues
   - public_repository
   - show_sponsor
+  - workflow_automation
 * Features (cache):
   - priority_queues
   - public_repository
   - show_sponsor
+  - workflow_automation
 * ENGINE-CACHE SUB DETAIL: You're not nice
 * DASHBOARD SUB DETAIL: You're not nice
 * WORKER: Installation not queued to process

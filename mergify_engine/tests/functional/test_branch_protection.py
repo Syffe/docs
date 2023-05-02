@@ -157,7 +157,6 @@ class TestBranchProtection(base.FunctionalTestBase):
                 "blocksCreations": False,
                 "dismissesStaleReviews": False,
                 "isAdminEnforced": False,
-                "lockBranch": False,
                 "pattern": "tmp-*/**/*",
                 "requireLastPushApproval": False,
                 "requiredDeploymentEnvironments": [],

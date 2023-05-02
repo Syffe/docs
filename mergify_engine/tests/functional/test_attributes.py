@@ -42,6 +42,10 @@ class TestAttributes(base.FunctionalTestBase):
         comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
         assert comment["comment"]["body"] == "no way"
 
+    @pytest.mark.subscription(
+        subscription.Features.WORKFLOW_AUTOMATION,
+        subscription.Features.MERGE_QUEUE,
+    )
     async def test_jit_schedule_on_queue_rules(self) -> None:
         rules = {
             "queue_rules": [
