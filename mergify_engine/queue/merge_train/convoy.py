@@ -87,8 +87,9 @@ class Convoy:
                 f"{self.repository.repo['id']}~{self.ref}~{partr_config.DEFAULT_PARTITION_NAME}"
             ] = partr_config.DEFAULT_PARTITION_NAME
 
+        redis_train_key = train_import.get_redis_train_key(self.repository.installation)
         raw_trains = await self.repository.installation.redis.cache.hmget(
-            train_import.get_redis_train_key(self.repository.installation), query.keys()
+            redis_train_key, query.keys()
         )
 
         # NOTE(Greesb): Default partition retrocompatibility, remove once
@@ -96,6 +97,13 @@ class Convoy:
         if not self.partition_rules:
             # raw_trains[0] = partition_name set to None
             # raw_trains[1] = partition_name set to partr_config.DEFAULT_PARTITION_NAME
+            if raw_trains[0] is not None and raw_trains[1] is not None:
+                # Remove the old train key, so we don't accidentally load the old train
+                # instead of the new one.
+                await self.repository.installation.redis.cache.hdel(
+                    redis_train_key, f"{self.repository.repo['id']}~{self.ref}"
+                )
+
             if raw_trains[0] is not None and raw_trains[1] is None:
                 raw_trains.pop(1)
             else:
@@ -504,6 +512,25 @@ class Convoy:
 
         trains_key = train_import.get_redis_train_key(installation)
         trains_raw = await installation.redis.cache.hgetall(trains_key)
+
+        # TODO(Greesb): Retrocompatibility, remove once all the trains are
+        # using the new default partition name.
+        if len(trains_raw.keys()) == 2:
+            trains_raw_keys = sorted(trains_raw.keys())
+            # Remove the old train key only if there is both the new one
+            # and the old one.
+            if (
+                trains_raw_keys[1]
+                .decode()
+                .endswith(partr_config.DEFAULT_PARTITION_NAME)
+                and trains_raw_keys[0].decode().count("~") == 1
+            ):
+                # Remove the key both from the dict and redis
+                await installation.redis.cache.hdel(
+                    trains_key, trains_raw_keys[0].decode()
+                )
+                del trains_raw[trains_raw_keys[0]]
+
         for key, train_raw in trains_raw.items():
             partition_name = partr_config.DEFAULT_PARTITION_NAME
             repo_id_str, ref_str = key.decode().split("~", 1)
@@ -514,6 +541,7 @@ class Convoy:
             ref = github_types.GitHubRefType(ref_str)
             repo_id = github_types.GitHubRepositoryIdType(int(repo_id_str))
             trains_by_convoy[(repo_id, ref)][partition_name] = train_raw
+
         return trains_by_convoy
 
     @classmethod

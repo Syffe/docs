@@ -149,9 +149,15 @@ class Train:
             )
             return True
 
-        await self.convoy.repository.installation.redis.cache.hdel(
-            self._get_redis_key(), self._get_redis_hash_key()
+        pipe = await self.convoy.repository.installation.redis.cache.pipeline()
+        await pipe.hdel(self._get_redis_key(), self._get_redis_hash_key())
+        # TODO(Greesb): Retrocompatibility code, to remove once all
+        # trains have been saved with the new key
+        await pipe.hdel(
+            self._get_redis_key(),
+            f"{self.convoy.repository.repo['id']}~{self.convoy.ref}",
         )
+        await pipe.execute()
         return False
 
     def get_car(self, ctxt: context.Context) -> train_car.TrainCar | None:

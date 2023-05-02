@@ -1644,6 +1644,27 @@ async def test_train_load_from_redis_with_None_partition_name(
         train_raw,
     )
 
+    # ######
+    # Loading all trains/convoy with `_get_raw_trains_by_convoy` should not
+    # delete anything in redis since there is only the old redis train key
+    trains_by_convoy = await merge_train.Convoy._get_raw_trains_by_convoy(
+        repository.installation
+    )
+    assert len(trains_by_convoy[(repository.repo["id"], ref)]) == 1
+    assert (
+        partr_config.DEFAULT_PARTITION_NAME
+        in trains_by_convoy[(repository.repo["id"], ref)]
+    )
+    redis_trains = await repository.installation.redis.cache.hgetall(
+        merge_train.get_redis_train_key(repository.installation)
+    )
+    assert len(redis_trains) == 1
+    assert list(redis_trains.keys())[0].decode() == f"{repository.repo['id']}~{ref}"
+
+    # ######
+    # Loading a convoy with the old default partition name with `load_from_redis`
+    # should load it properly with the partition_name of its only train set
+    # to the new default value, and also delete the old redis train key
     convoy = merge_train.Convoy(
         repository,
         mt_conftest.QUEUE_RULES,
@@ -1654,13 +1675,59 @@ async def test_train_load_from_redis_with_None_partition_name(
 
     assert len(convoy._trains) == 1
     assert convoy._trains[0].partition_name == partr_config.DEFAULT_PARTITION_NAME
+    await convoy.save()
 
+    # Make sure that `load_from_redis` does not delete the old key if
+    # there is not yet the new key.
+    redis_trains = await repository.installation.redis.cache.hgetall(
+        merge_train.get_redis_train_key(repository.installation)
+    )
+    assert len(redis_trains) == 2
+    redis_trains_keys = sorted(redis_trains.keys())
+    assert redis_trains_keys[0].decode() == f"{repository.repo['id']}~{ref}"
+    assert (
+        redis_trains_keys[1].decode()
+        == f"{repository.repo['id']}~{ref}~{partr_config.DEFAULT_PARTITION_NAME}"
+    )
+
+    # ######
+    # Make sure that `load_from_redis` delete the old redis train key
+    # when both the old and new are present.
+    await convoy.load_from_redis()
+    redis_trains = await repository.installation.redis.cache.hgetall(
+        merge_train.get_redis_train_key(repository.installation)
+    )
+    assert len(redis_trains) == 1
+    assert (
+        list(redis_trains.keys())[0]
+        .decode()
+        .endswith(partr_config.DEFAULT_PARTITION_NAME)
+    )
+    # ######
+    # Re-add the old train key and make sure that `Convoy._get_raw_trains_by_convoy`
+    # also properly deletes the old redis key when both are present
+    await repository.installation.redis.cache.hset(
+        merge_train.get_redis_train_key(repository.installation),
+        f"{repository.repo['id']}~{ref}",
+        train_raw,
+    )
     trains_by_convoy = await merge_train.Convoy._get_raw_trains_by_convoy(
         repository.installation
     )
+    assert len(trains_by_convoy[(repository.repo["id"], ref)]) == 1
     assert (
         partr_config.DEFAULT_PARTITION_NAME
         in trains_by_convoy[(repository.repo["id"], ref)]
+    )
+
+    redis_trains = await repository.installation.redis.cache.hgetall(
+        merge_train.get_redis_train_key(repository.installation)
+    )
+    assert len(redis_trains) == 1
+    assert (
+        list(redis_trains.keys())[0]
+        .decode()
+        .endswith(partr_config.DEFAULT_PARTITION_NAME)
     )
 
 
