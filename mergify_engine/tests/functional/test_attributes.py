@@ -78,13 +78,10 @@ class TestAttributes(base.FunctionalTestBase):
             await self.wait_for(
                 "pull_request", {"action": "closed", "number": pr_queue["number"]}
             )
-            await self.wait_for(
-                "pull_request",
-                {
-                    "action": "closed",
-                    "number": pr["number"],
-                    "pull_request": {"merged": True},
-                },
+            await self.wait_for_pull_request(
+                "closed",
+                pr_number=pr["number"],
+                merged=True,
             )
 
     async def test_disabled(self) -> None:
