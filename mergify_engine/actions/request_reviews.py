@@ -227,7 +227,7 @@ class RequestReviewsExecutor(
                     )
                 except http.HTTPClientSideError as e:  # pragma: no cover
                     return check_api.Result(
-                        check_api.Conclusion.PENDING,
+                        check_api.Conclusion.FAILURE,
                         "Unable to create review request",
                         f"GitHub error: [{e.status_code}] `{e.message}`",
                     )

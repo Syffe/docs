@@ -64,6 +64,34 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
             team["slug"] for team in pr["pull_request"]["requested_teams"]
         )
 
+    async def test_request_reviews_unknown_reviewer(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "request_reviews",
+                    "conditions": [f"base={self.main_branch_name}"],
+                    "actions": {"request_reviews": {"users": ["octocat"]}},
+                }
+            ]
+        }
+        await self.setup_repo(yaml.dump(rules))
+        await self.create_pr()
+        await self.run_engine()
+
+        failed_check_run = await self.wait_for_check_run(
+            conclusion="failure", name="Rule: request_reviews (request_reviews)"
+        )
+        assert (
+            failed_check_run["check_run"]["output"]["title"]
+            == "Unable to create review request"
+        )
+        assert (
+            failed_check_run["check_run"]["output"]["summary"]
+            == f"GitHub error: [422] `Reviews may only be requested from collaborators. One or more of the users or "
+            f"teams you specified is not a collaborator of the {self.RECORD_CONFIG['organization_name']}"
+            f"/{self.RECORD_CONFIG['repository_name']} repository.`"
+        )
+
     @mock.patch.object(
         request_reviews.RequestReviewsExecutor, "GITHUB_MAXIMUM_REVIEW_REQUEST", new=1
     )
