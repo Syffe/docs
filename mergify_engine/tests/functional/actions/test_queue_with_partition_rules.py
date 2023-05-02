@@ -1,10 +1,678 @@
+from unittest import mock
+
 from mergify_engine import yaml
+import mergify_engine.queue.merge_train
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests.functional import base
 
 
 class TestQueueWithPartitionRules(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
+
+    async def test_no_partition_reset_after_pr_manual_merge_have_reset_one_partition(
+        self,
+    ) -> None:
+        rules = {
+            "partition_rules": [
+                {
+                    "name": "fallback_partition",
+                    "fallback_partition": True,
+                },
+                {
+                    "name": "projA",
+                    "conditions": [
+                        "files~=^projA/",
+                    ],
+                },
+                {
+                    "name": "projB",
+                    "conditions": [
+                        "files~=^projB/",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Automatic merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                }
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        real_get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition = (
+            mergify_engine.queue.merge_train.Train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition
+        )
+        real_iter_trains_from_partition_names = (
+            mergify_engine.queue.merge_train.Convoy.iter_trains_from_partition_names
+        )
+        real_reset = mergify_engine.queue.merge_train.Train.reset
+
+        with mock.patch(
+            "mergify_engine.queue.merge_train.Train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition",
+            side_effect=real_get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition,
+            autospec=True,
+        ) as reset_partitions_mock, mock.patch(
+            "mergify_engine.queue.merge_train.Convoy.iter_trains_from_partition_names",
+            side_effect=real_iter_trains_from_partition_names,
+            autospec=True,
+        ) as iter_train_mock, mock.patch(
+            "mergify_engine.queue.merge_train.Train.reset",
+            side_effect=real_reset,
+            autospec=True,
+        ) as reset_mock:
+            p1 = await self.create_pr(files={"projB/test.txt": "test"})
+            p2 = await self.create_pr(files={"projA/toto.txt": "toto"})
+            p3 = await self.create_pr(files={"projB/toto.txt": "toto"})
+            await self.add_label(p2["number"], "queue")
+            await self.add_label(p3["number"], "queue")
+            await self.run_engine()
+            await self.merge_pull(p1["number"])
+            await self.wait_for_pull_request("closed", pr_number=p1["number"])
+            await self.run_engine()
+            p4 = await self.create_pr(files={"projA/tutu.txt": "tutu"})
+            p5 = await self.create_pr(files={"projB/tutu.txt": "tutu"})
+            await self.add_label(p4["number"], "queue")
+            await self.add_label(p5["number"], "queue")
+            await self.run_engine()
+            self.assertEqual(1, reset_mock.call_count)
+            self.assertEqual(4, reset_partitions_mock.call_count)
+            iter_train_mock.assert_any_call(mock.ANY, ["projB"])
+
+    async def test_all_partitions_reset_when_manual_force_push_on_base_branch_without_pr_and_with_fallback_partition(
+        self,
+    ) -> None:
+        rules = {
+            "partition_rules": [
+                {
+                    "name": "fallback_partition",
+                    "fallback_partition": True,
+                },
+                {
+                    "name": "projA",
+                    "conditions": [
+                        "files~=^projA/",
+                    ],
+                },
+                {
+                    "name": "projB",
+                    "conditions": [
+                        "files~=^projB/",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Automatic merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                }
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        real_reset = mergify_engine.queue.merge_train.Train.reset
+        with mock.patch(
+            "mergify_engine.queue.merge_train.Train.reset",
+            side_effect=real_reset,
+            autospec=True,
+        ) as reset_mock:
+            p1 = await self.create_pr(files={"toto.txt": "toto"})
+            p2 = await self.create_pr(files={"projA/toto.txt": "toto"})
+            p3 = await self.create_pr(files={"projB/toto.txt": "toto"})
+            await self.add_label(p1["number"], "queue")
+            await self.add_label(p2["number"], "queue")
+            await self.add_label(p3["number"], "queue")
+            await self.run_engine()
+
+            await self.git("fetch", "origin", self.main_branch_name)
+            await self.git(
+                "checkout", "-b", "random", f"origin/{self.main_branch_name}"
+            )
+            open(self.git.repository + "/random_file.txt", "wb").close()
+            await self.git("add", "random_file.txt")
+            await self.git("commit", "--no-edit", "-m", "random update")
+            await self.git(
+                "push", "-f", "--quiet", "origin", f"random:{self.main_branch_name}"
+            )
+            await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+            await self.run_engine()
+            self.assertEqual(3, reset_mock.call_count)
+
+    async def test_all_partitions_reset_when_manual_force_push_on_base_branch_without_pr_and_no_fallback_partition(
+        self,
+    ) -> None:
+        rules = {
+            "partition_rules": [
+                {
+                    "name": "projA",
+                    "conditions": [
+                        "files~=^projA/",
+                    ],
+                },
+                {
+                    "name": "projB",
+                    "conditions": [
+                        "files~=^projB/",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Automatic merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                }
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        real_reset = mergify_engine.queue.merge_train.Train.reset
+        with mock.patch(
+            "mergify_engine.queue.merge_train.Train.reset",
+            side_effect=real_reset,
+            autospec=True,
+        ) as reset_mock:
+            p1 = await self.create_pr(files={"projA/toto.txt": "toto"})
+            p2 = await self.create_pr(files={"projB/toto.txt": "toto"})
+            await self.add_label(p1["number"], "queue")
+            await self.add_label(p2["number"], "queue")
+            await self.run_engine()
+
+            await self.git("fetch", "origin", self.main_branch_name)
+            await self.git(
+                "checkout", "-b", "random", f"origin/{self.main_branch_name}"
+            )
+            open(self.git.repository + "/random_file.txt", "wb").close()
+            await self.git("add", "random_file.txt")
+            await self.git("commit", "--no-edit", "-m", "random update")
+            await self.git(
+                "push", "-f", "--quiet", "origin", f"random:{self.main_branch_name}"
+            )
+            await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+            await self.run_engine()
+
+            self.assertEqual(2, reset_mock.call_count)
+
+    async def test_all_partitions_reset_when_pr_manual_merge_with_no_fallback_partition(
+        self,
+    ) -> None:
+        rules = {
+            "partition_rules": [
+                {
+                    "name": "projA",
+                    "conditions": [
+                        "files~=^projA/",
+                    ],
+                },
+                {
+                    "name": "projB",
+                    "conditions": [
+                        "files~=^projB/",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Automatic merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                }
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        real_reset = mergify_engine.queue.merge_train.Train.reset
+        with mock.patch(
+            "mergify_engine.queue.merge_train.Train.reset",
+            side_effect=real_reset,
+            autospec=True,
+        ) as reset_mock:
+            p1 = await self.create_pr(files={"test.txt": "test"})
+            p2 = await self.create_pr(files={"projA/toto.txt": "toto"})
+            p3 = await self.create_pr(files={"projB/toto.txt": "toto"})
+            await self.add_label(p2["number"], "queue")
+            await self.add_label(p3["number"], "queue")
+            await self.run_engine()
+            await self.merge_pull(p1["number"])
+            await self.wait_for_pull_request("closed", pr_number=p1["number"])
+            await self.run_engine()
+            self.assertEqual(2, reset_mock.call_count)
+
+    async def test_fallback_partition_reset_when_pr_manual_merge_dont_match_any_partitions(
+        self,
+    ) -> None:
+        rules = {
+            "partition_rules": [
+                {
+                    "name": "fallback_partition",
+                    "fallback_partition": True,
+                },
+                {
+                    "name": "projA",
+                    "conditions": [
+                        "files~=^projA/",
+                    ],
+                },
+                {
+                    "name": "projB",
+                    "conditions": [
+                        "files~=^projB/",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Automatic merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                }
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        real_get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition = (
+            mergify_engine.queue.merge_train.Train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition
+        )
+        real_iter_trains_from_partition_names = (
+            mergify_engine.queue.merge_train.Convoy.iter_trains_from_partition_names
+        )
+        real_reset = mergify_engine.queue.merge_train.Train.reset
+
+        with mock.patch(
+            "mergify_engine.queue.merge_train.Train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition",
+            side_effect=real_get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition,
+            autospec=True,
+        ) as reset_partitions_mock, mock.patch(
+            "mergify_engine.queue.merge_train.Convoy.iter_trains_from_partition_names",
+            side_effect=real_iter_trains_from_partition_names,
+            autospec=True,
+        ) as iter_train_mock, mock.patch(
+            "mergify_engine.queue.merge_train.Train.reset",
+            side_effect=real_reset,
+            autospec=True,
+        ) as reset_mock:
+            p1 = await self.create_pr(files={"test.txt": "test"})
+            p2 = await self.create_pr(files={"tutu.txt": "test"})
+            p3 = await self.create_pr(files={"projA/toto.txt": "toto"})
+            p4 = await self.create_pr(files={"projB/toto.txt": "toto"})
+            await self.add_label(p2["number"], "queue")
+            await self.add_label(p3["number"], "queue")
+            await self.add_label(p4["number"], "queue")
+            await self.run_engine()
+            await self.merge_pull(p1["number"])
+            await self.wait_for_pull_request("closed", pr_number=p1["number"])
+            await self.run_engine()
+            self.assertEqual(1, reset_mock.call_count)
+            self.assertEqual(3, reset_partitions_mock.call_count)
+            iter_train_mock.assert_any_call(mock.ANY, ["fallback_partition"])
+
+    async def test_partition_reset_when_pr_manual_merge_matches_one_partition(
+        self,
+    ) -> None:
+        rules = {
+            "partition_rules": [
+                {
+                    "name": "fallback_partition",
+                    "fallback_partition": True,
+                },
+                {
+                    "name": "projA",
+                    "conditions": [
+                        "files~=^projA/",
+                    ],
+                },
+                {
+                    "name": "projB",
+                    "conditions": [
+                        "files~=^projB/",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Automatic merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                }
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        real_get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition = (
+            mergify_engine.queue.merge_train.Train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition
+        )
+        real_iter_trains_from_partition_names = (
+            mergify_engine.queue.merge_train.Convoy.iter_trains_from_partition_names
+        )
+        real_reset = mergify_engine.queue.merge_train.Train.reset
+
+        with mock.patch(
+            "mergify_engine.queue.merge_train.Train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition",
+            side_effect=real_get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition,
+            autospec=True,
+        ) as reset_partitions_mock, mock.patch(
+            "mergify_engine.queue.merge_train.Convoy.iter_trains_from_partition_names",
+            side_effect=real_iter_trains_from_partition_names,
+            autospec=True,
+        ) as iter_train_mock, mock.patch(
+            "mergify_engine.queue.merge_train.Train.reset",
+            side_effect=real_reset,
+            autospec=True,
+        ) as reset_mock:
+            p1 = await self.create_pr(files={"projB/test.txt": "test"})
+            p2 = await self.create_pr(files={"projA/toto.txt": "toto"})
+            p3 = await self.create_pr(files={"projB/toto.txt": "toto"})
+            await self.add_label(p2["number"], "queue")
+            await self.add_label(p3["number"], "queue")
+            await self.run_engine()
+            await self.merge_pull(p1["number"])
+            await self.wait_for_pull_request("closed", pr_number=p1["number"])
+            await self.run_engine()
+            self.assertEqual(1, reset_mock.call_count)
+            self.assertEqual(2, reset_partitions_mock.call_count)
+            iter_train_mock.assert_any_call(mock.ANY, ["projB"])
+
+    async def test_partition_reset_when_pr_manual_merge_matches_several_partitions(
+        self,
+    ) -> None:
+        rules = {
+            "partition_rules": [
+                {
+                    "name": "fallback_partition",
+                    "fallback_partition": True,
+                },
+                {
+                    "name": "projA",
+                    "conditions": [
+                        "files~=^projA/",
+                    ],
+                },
+                {
+                    "name": "projB",
+                    "conditions": [
+                        "files~=^projB/",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Automatic merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                }
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        real_get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition = (
+            mergify_engine.queue.merge_train.Train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition
+        )
+        real_iter_trains_from_partition_names = (
+            mergify_engine.queue.merge_train.Convoy.iter_trains_from_partition_names
+        )
+        real_reset = mergify_engine.queue.merge_train.Train.reset
+
+        with mock.patch(
+            "mergify_engine.queue.merge_train.Train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition",
+            side_effect=real_get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition,
+            autospec=True,
+        ) as reset_partitions_mock, mock.patch(
+            "mergify_engine.queue.merge_train.Convoy.iter_trains_from_partition_names",
+            side_effect=real_iter_trains_from_partition_names,
+            autospec=True,
+        ) as iter_train_mock, mock.patch(
+            "mergify_engine.queue.merge_train.Train.reset",
+            side_effect=real_reset,
+            autospec=True,
+        ) as reset_mock:
+            p1 = await self.create_pr(
+                files={
+                    "projA/test.txt": "testA",
+                    "projB/test.txt": "testB",
+                }
+            )
+            p2 = await self.create_pr(files={"projA/toto.txt": "toto"})
+            p3 = await self.create_pr(files={"projB/toto.txt": "toto"})
+            await self.add_label(p2["number"], "queue")
+            await self.add_label(p3["number"], "queue")
+            await self.run_engine()
+            await self.merge_pull(p1["number"])
+            await self.wait_for_pull_request("closed", pr_number=p1["number"])
+            await self.run_engine()
+            self.assertEqual(2, reset_mock.call_count)
+            self.assertEqual(2, reset_partitions_mock.call_count)
+            iter_train_mock.assert_any_call(mock.ANY, ["projA"])
+            iter_train_mock.assert_any_call(mock.ANY, ["projB"])
+
+    async def test_no_partition_reset_after_queued_merged_pr_with_partition_and_fallback_partition(
+        self,
+    ) -> None:
+        rules = {
+            "partition_rules": [
+                {
+                    "name": "fallback_partition",
+                    "fallback_partition": True,
+                },
+                {
+                    "name": "projA",
+                    "conditions": [
+                        "files~=^projA/",
+                    ],
+                },
+                {
+                    "name": "projB",
+                    "conditions": [
+                        "files~=^projB/",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Automatic merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                }
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        real_get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition = (
+            mergify_engine.queue.merge_train.Train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition
+        )
+        real_reset = mergify_engine.queue.merge_train.Train.reset
+
+        with mock.patch(
+            "mergify_engine.queue.merge_train.Train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition",
+            side_effect=real_get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition,
+            autospec=True,
+        ) as reset_partitions_mock, mock.patch(
+            "mergify_engine.queue.merge_train.Train.reset",
+            side_effect=real_reset,
+            autospec=True,
+        ) as reset_mock:
+            p1 = await self.create_pr(files={"projA/toto.txt": "toto"})
+            p2 = await self.create_pr(files={"projB/toto.txt": "toto"})
+            await self.add_label(p1["number"], "queue")
+            await self.add_label(p2["number"], "queue")
+            await self.run_engine()
+
+            draft_pr = await self.wait_for_pull_request("opened")
+            await self.create_status(draft_pr["pull_request"])
+            await self.run_engine()
+
+            await self.wait_for_pull_request("closed", draft_pr["number"])
+            p1_closed = await self.wait_for_pull_request("closed", p1["number"])
+            assert p1_closed["pull_request"]["merged"]
+            self.assertEqual(0, reset_partitions_mock.call_count)
+            self.assertEqual(0, reset_mock.call_count)
+
+    async def test_no_partition_reset_after_queued_merged_pr_with_partition_and_no_fallback_partition(
+        self,
+    ) -> None:
+        rules = {
+            "partition_rules": [
+                {
+                    "name": "projA",
+                    "conditions": [
+                        "files~=^projA/",
+                    ],
+                },
+                {
+                    "name": "projB",
+                    "conditions": [
+                        "files~=^projB/",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Automatic merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                }
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        real_get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition = (
+            mergify_engine.queue.merge_train.Train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition
+        )
+        real_reset = mergify_engine.queue.merge_train.Train.reset
+
+        with mock.patch(
+            "mergify_engine.queue.merge_train.Train.get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition",
+            side_effect=real_get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition,
+            autospec=True,
+        ) as reset_partitions_mock, mock.patch(
+            "mergify_engine.queue.merge_train.Train.reset",
+            side_effect=real_reset,
+            autospec=True,
+        ) as reset_mock:
+            p1 = await self.create_pr(files={"projA/toto.txt": "toto"})
+            p2 = await self.create_pr(files={"projB/toto.txt": "toto"})
+            await self.add_label(p1["number"], "queue")
+            await self.add_label(p2["number"], "queue")
+            await self.run_engine()
+
+            draft_pr = await self.wait_for_pull_request("opened")
+            await self.create_status(draft_pr["pull_request"])
+            await self.run_engine()
+
+            await self.wait_for_pull_request("closed", draft_pr["number"])
+            p1_closed = await self.wait_for_pull_request("closed", p1["number"])
+            assert p1_closed["pull_request"]["merged"]
+            self.assertEqual(0, reset_partitions_mock.call_count)
+            self.assertEqual(0, reset_mock.call_count)
 
     async def test_queue_multiple_partition_only_1_match(self) -> None:
         rules = {

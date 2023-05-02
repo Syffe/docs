@@ -23,6 +23,13 @@ FORBIDDEN_MERGE_COMMITS_MSG = "Merge commits are not allowed on this repository.
 FORBIDDEN_SQUASH_MERGE_MSG = "Squash merges are not allowed on this repository."
 FORBIDDEN_REBASE_MERGE_MSG = "Rebase merges are not allowed on this repository."
 
+"""
+We've esteemed 7 days is enough for keeping merge_commit_sha history of the pull requests we have merged with Mergify.
+It should avoid loosing information or keeping them for too long to make decisions, and also cover weekends
+where repository activity is often reduced.
+"""
+MERGE_COMMIT_SHA_EXPIRATION = int(datetime.timedelta(days=7).total_seconds())
+
 PendingResultBuilderT = abc.Callable[
     [context.Context],
     abc.Awaitable[check_api.Result],
@@ -175,8 +182,21 @@ class MergeUtilsMixin:
             else:
                 return await self._handle_merge_error(e, ctxt, pending_result_builder)
         else:
-            await ctxt.update(wait_merged=True)
+            await ctxt.update(wait_merged=True, wait_merge_commit_sha=True)
             ctxt.log.info("merged")
+
+        if ctxt.pull["merge_commit_sha"]:
+            await ctxt.repository.installation.redis.queue.set(
+                ctxt.redis_merged_by_mergify_key(
+                    owner_id=ctxt.repository.installation.owner_id,
+                    repo_id=ctxt.repository.repo["id"],
+                    merge_commit_sha=ctxt.pull["merge_commit_sha"],
+                ),
+                ctxt.pull["merge_commit_sha"],
+                ex=MERGE_COMMIT_SHA_EXPIRATION,
+            )
+        else:
+            ctxt.log.error("PR got merged with unknown merge_commit_sha")
 
         await self.create_recently_merged_tracker(
             ctxt.repository.installation.redis.cache,

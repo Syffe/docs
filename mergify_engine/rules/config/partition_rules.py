@@ -24,10 +24,12 @@ PartitionRulesEvaluator = rules.GenericRulesEvaluator[
 class PartitionRule:
     name: PartitionRuleName
     conditions: conditions_mod.PartitionRuleConditions
+    fallback_partition: bool
 
     class T_from_dict(typing.TypedDict):
         name: PartitionRuleName
         conditions: conditions_mod.PartitionRuleConditions
+        fallback_partition: bool
 
     @classmethod
     def from_dict(cls, d: T_from_dict) -> "PartitionRule":
@@ -46,6 +48,7 @@ class PartitionRule:
             conditions=conditions_mod.PartitionRuleConditions(
                 self.conditions.condition.copy().conditions
             ),
+            fallback_partition=self.fallback_partition,
         )
 
 
@@ -55,11 +58,24 @@ class PartitionRules:
 
     def __post_init__(self) -> None:
         names: set[PartitionRuleName] = set()
+        fallback_partition_name: PartitionRuleName | None = None
+
         for rule in self.rules:
             if rule.name in names:
                 raise voluptuous.error.Invalid(
                     f"partition_rules names must be unique, found `{rule.name}` twice"
                 )
+            if rule.fallback_partition:
+                if rule.conditions.condition.conditions:
+                    raise voluptuous.error.Invalid(
+                        f"conditions of partition `{rule.name}` must be empty to use `fallback_partition` attribute"
+                    )
+
+                if fallback_partition_name is not None:
+                    raise voluptuous.error.Invalid(
+                        "found more than one usage of `fallback_partition` attribute, it must be used only once"
+                    )
+                fallback_partition_name = rule.name
 
             if rule.name == DEFAULT_PARTITION_NAME:
                 raise voluptuous.error.Invalid(
@@ -89,19 +105,32 @@ class PartitionRules:
         if not self.rules:
             return []
 
-        partition_rules = [rule.copy() for rule in self.rules]
+        partition_rules = [
+            rule.copy() for rule in self.rules if not rule.fallback_partition
+        ]
         evaluator = await PartitionRulesEvaluator.create(
             partition_rules,
             ctxt.repository,
             [ctxt.pull_request],
             False,
         )
+        fallback_partition_name = self.get_fallback_partition_name()
 
         if not any(rule.conditions.match for rule in evaluator.matching_rules):
+            # If a fallback partition is defined, we fall back the PR into it
+            if fallback_partition_name is not None:
+                return [fallback_partition_name]
+
             # no match at all = match all partitions
             return [rule.name for rule in self.rules]
 
         return [rule.name for rule in evaluator.matching_rules if rule.conditions.match]
+
+    def get_fallback_partition_name(self) -> PartitionRuleName | None:
+        for rule in self.rules:
+            if rule.fallback_partition:
+                return rule.name
+        return None
 
 
 PartitionRulesSchema = voluptuous.All(
@@ -109,10 +138,14 @@ PartitionRulesSchema = voluptuous.All(
         voluptuous.All(
             {
                 voluptuous.Required("name"): str,
-                voluptuous.Required("conditions"): voluptuous.All(
+                voluptuous.Required("conditions", default=list): voluptuous.All(
                     [voluptuous.Coerce(cond_config.RuleConditionSchema)],
                     voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
                 ),
+                voluptuous.Required(
+                    "fallback_partition",
+                    default=False,
+                ): bool,
             },
             voluptuous.Coerce(PartitionRule.from_dict),
         )

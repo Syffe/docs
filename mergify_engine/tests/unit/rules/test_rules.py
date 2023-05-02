@@ -261,6 +261,51 @@ async def test_same_queue_rules_name() -> None:
     )
 
 
+async def test_fallback_partition_attribute_without_empty_conditions() -> None:
+    with pytest.raises(mergify_conf.InvalidRules) as x:
+        await mergify_conf.get_mergify_config_from_dict(
+            mock.MagicMock(),
+            {
+                "partition_rules": [
+                    {
+                        "name": "projectA",
+                        "conditions": ["schedule: MON-FRI 08:00-17:00"],
+                        "fallback_partition": True,
+                    },
+                ]
+            },
+            "",
+        )
+    assert (
+        str(x.value)
+        == "conditions of partition `projectA` must be empty to use `fallback_partition` attribute for dictionary value @ partition_rules"
+    )
+
+
+async def test_double_fallback_partition_attribute() -> None:
+    with pytest.raises(mergify_conf.InvalidRules) as x:
+        await mergify_conf.get_mergify_config_from_dict(
+            mock.MagicMock(),
+            {
+                "partition_rules": [
+                    {
+                        "name": "projectA",
+                        "fallback_partition": True,
+                    },
+                    {
+                        "name": "projectB",
+                        "fallback_partition": True,
+                    },
+                ]
+            },
+            "",
+        )
+    assert (
+        str(x.value)
+        == "found more than one usage of `fallback_partition` attribute, it must be used only once for dictionary value @ partition_rules"
+    )
+
+
 async def test_same_partition_rules_name() -> None:
     with pytest.raises(mergify_conf.InvalidRules) as x:
         await mergify_conf.get_mergify_config_from_dict(

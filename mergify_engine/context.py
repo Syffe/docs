@@ -1296,6 +1296,27 @@ class Context:
             raise
 
     @staticmethod
+    def redis_merged_by_mergify_key(
+        owner_id: github_types.GitHubAccountIdType,
+        repo_id: github_types.GitHubRepositoryIdType,
+        merge_commit_sha: github_types.SHAType,
+    ) -> str:
+        return f"merged-by-mergify~{owner_id}~{repo_id}~{merge_commit_sha}"
+
+    async def is_sha_merged_by_mergify(
+        self,
+        merge_commit_sha: github_types.SHAType,
+    ) -> bool:
+        stored_merge_commit_sha = await self.redis.queue.get(
+            self.redis_merged_by_mergify_key(
+                self.repository.installation.owner_id,
+                self.repository.repo["id"],
+                merge_commit_sha,
+            )
+        )
+        return stored_merge_commit_sha is not None
+
+    @staticmethod
     def redis_last_summary_head_sha_key(pull: github_types.GitHubPullRequest) -> str:
         owner = pull["base"]["repo"]["owner"]["id"]
         repo = pull["base"]["repo"]["id"]
@@ -2144,13 +2165,17 @@ class Context:
         retry=tenacity.retry_never,
         reraise=True,
     )
-    async def update(self, wait_merged: bool = False) -> None:
+    async def update(
+        self, wait_merged: bool = False, wait_merge_commit_sha: bool = False
+    ) -> None:
         # Don't use it, because consolidated data are not updated after that.
         # Only used by merge/queue action for posting an update report after rebase.
         self.pull = await self.client.item(
             f"{self.base_url}/pulls/{self.pull['number']}"
         )
-        if wait_merged and not self.pull["merged"]:
+        if (wait_merged and not self.pull["merged"]) or (
+            wait_merge_commit_sha and not self.pull["merge_commit_sha"]
+        ):
             raise tenacity.TryAgain
         self._caches.pull_check_runs.delete()
 

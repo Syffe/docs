@@ -236,6 +236,61 @@ class Train:
         await self.save()
         self.log.info("train cars reset")
 
+    async def get_unexpected_base_branch_change_after_manually_merged_pr_with_fallback_partition(
+        self,
+        ctxt: context.Context,
+        merge_commit_sha: github_types.SHAType,
+        fallback_partition_name: partr_config.PartitionRuleName,
+    ) -> train_car.UnexpectedBaseBranchChange | None:
+        # NOTE(Syffe): the way we examine if a train needs to be reset is train centered,
+        # meaning that each train is going to be evaluated individually from others,
+        # and thus we don't have to iterate on the other trains, we can focus only on the current one.
+
+        if fallback_partition_name == self.partition_name:
+            # There is an unexpected change, we are in the fallback partition's train,
+            # we need to ensure that the PR doesn't match any other partition before we reset it.
+            partition_rule_to_evaluate = [
+                rule.copy()
+                for rule in self.convoy.partition_rules.rules
+                if not rule.fallback_partition
+            ]
+        else:
+            # we are not in the fallback partition's train, we evaluate if the PR matches
+            # the current train.
+            partition_rule_to_evaluate = [
+                rule.copy()
+                for rule in self.convoy.partition_rules.rules
+                if rule.name == self.partition_name
+            ]
+
+        evaluator = await partr_config.PartitionRulesEvaluator.create(
+            partition_rule_to_evaluate,
+            ctxt.repository,
+            [ctxt.pull_request],
+            False,
+        )
+
+        if not any(rule.conditions.match for rule in evaluator.matching_rules):
+            if self.partition_name == fallback_partition_name:
+                # The PR doesn't match any partition and we are in the fallback partition's train,
+                # so we reset the fallback partition.
+                return train_car.UnexpectedBaseBranchChange(merge_commit_sha)
+
+            # We are not in the fallback partition train, the PR doesn't match the current train
+            # we do nothing
+
+        elif self.partition_name != fallback_partition_name:
+            # We are not in the fallback partition's train and the PR matches the current train's partition rules,
+            # so we reset the partition.
+            return train_car.UnexpectedBaseBranchChange(merge_commit_sha)
+
+        # NOTE(Syffe): In a context with a fallback partition, doing nothing here handles the cases where,
+        # there has been a manually merged PR, one or more partition have been reset and their base sha have changed,
+        # but some other partition are out of sync.
+        # These out of sync partitions don't need to be reset, because it is normal for them to be out of sync
+        # after a manually merged PR that don't match their partition rules.
+        return None
+
     async def _slice_cars(
         self,
         new_queue_size: int,
@@ -1065,12 +1120,17 @@ class Train:
         return branch["commit"]["sha"]
 
     async def is_synced_with_the_base_branch(
-        self, base_sha: github_types.SHAType
+        self,
+        ctxt: context.Context,
+        base_sha: github_types.SHAType,
     ) -> bool:
         if not self._cars:
             return True
 
-        if base_sha == self._current_base_sha:
+        # NOTE(Syffe): We check if the sha has been merged by another partition
+        if base_sha == self._current_base_sha or await ctxt.is_sha_merged_by_mergify(
+            base_sha
+        ):
             return True
 
         if not self._cars:
