@@ -46,6 +46,9 @@ jobs:
           docker pull $image
           echo "image-ref=$image" >> "$GITHUB_OUTPUT"
 
+      - name: ⬇️ Checkout
+        uses: actions/checkout@v3.3.0
+
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.10.0
         with:
@@ -53,9 +56,6 @@ jobs:
           format: "json"
           scanners: "vuln"
           output: "docker-security-scan.json.tmp"
-
-      - name: ⬇️ Checkout
-        uses: actions/checkout@v3.3.0
 
       - name: Keep only the results section
         if: github.event_name != 'pull_request'
