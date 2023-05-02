@@ -126,6 +126,25 @@ class MergeabilityCheck:
 
 
 @pydantic.dataclasses.dataclass
+class PullRequestSummary:
+    title: str = dataclasses.field(
+        metadata={"description": "The title of the pull request summary"}
+    )
+    unexpected_changes: str | None = dataclasses.field(
+        metadata={"description": "The unexpected changes summary"}
+    )
+    freeze: str | None = dataclasses.field(
+        metadata={"description": "The queue freeze summary"}
+    )
+    checks_timeout: str | None = dataclasses.field(
+        metadata={"description": "The checks timeout summary"}
+    )
+    batch_failure: str | None = dataclasses.field(
+        metadata={"description": "The batch failure summary title"}
+    )
+
+
+@pydantic.dataclasses.dataclass
 class EnhancedPullRequestQueued:
     number: github_types.GitHubPullRequestNumber = dataclasses.field(
         metadata={"description": "The number of the pull request"}
@@ -166,6 +185,10 @@ class EnhancedPullRequestQueued:
         partr_config.PartitionRuleName | None, MergeabilityCheck | None
     ] = dataclasses.field(default_factory=dict)
 
+    summary: dict[
+        partr_config.PartitionRuleName | None, PullRequestSummary | None
+    ] = dataclasses.field(default_factory=dict)
+
     partition_names: list[partr_config.PartitionRuleName] = dataclasses.field(
         metadata={
             "description": "The names of the partitions in which the pull request is queued in the specified queue"
@@ -187,7 +210,10 @@ class EnhancedPullRequestQueued:
                 "application/json": {
                     "example": {
                         "number": 5678,
-                        "position": 1,
+                        "partition_names": ["__default__"],
+                        "positions": {
+                            "__default__": 1,
+                        },
                         "priority": 100,
                         "queue_rule": {
                             "name": "default",
@@ -212,74 +238,76 @@ class EnhancedPullRequestQueued:
                             },
                         },
                         "mergeability_check": {
-                            "check_type": "draft_pr",
-                            "pull_request_number": 5678,
-                            "started_at": "2021-10-14T14:19:12+00:00",
-                            "ended_at": "2021-10-14T15:00:42+00:00",
-                            "checks": [],
-                            "evaluated_conditions": "",
-                            "conditions_evaluation": {
-                                "match": False,
-                                "label": "all of",
-                                "description": None,
-                                "schedule": None,
-                                "subconditions": [
-                                    {
-                                        "match": False,
-                                        "label": "check-success=continuous-integration/fake-ci",
-                                        "description": None,
-                                        "schedule": None,
-                                        "subconditions": [],
-                                        "evaluations": [
-                                            {
-                                                "pull_request": 5678,
-                                                "match": False,
-                                                "evaluation_error": None,
-                                                "related_checks": [
-                                                    "continuous-integration/fake-ci"
-                                                ],
-                                                "next_evaluation_at": None,
-                                            }
-                                        ],
-                                    },
-                                    {
-                                        "match": True,
-                                        "label": "schedule=MON-FRI 12:00-15:00",
-                                        "description": None,
-                                        "schedule": date.Schedule.from_string(
-                                            "MON-FRI 12:00-15:00"
-                                        ).as_json_dict(),
-                                        "subconditions": [],
-                                        "evaluations": [
-                                            {
-                                                "pull_request": 5678,
-                                                "match": True,
-                                                "evaluation_error": None,
-                                                "related_checks": [],
-                                                "next_evaluation_at": "2023-01-10T15:01:00+00:00",
-                                            }
-                                        ],
-                                    },
-                                    {
-                                        "match": True,
-                                        "label": "base=main",
-                                        "description": None,
-                                        "schedule": None,
-                                        "subconditions": [],
-                                        "evaluations": [
-                                            {
-                                                "pull_request": 5678,
-                                                "match": True,
-                                                "evaluation_error": None,
-                                                "related_checks": [],
-                                                "next_evaluation_at": None,
-                                            }
-                                        ],
-                                    },
-                                ],
-                                "evaluations": [],
-                            },
-                            "state": "success",
+                            "__default__": {
+                                "check_type": "draft_pr",
+                                "pull_request_number": 5678,
+                                "started_at": "2021-10-14T14:19:12+00:00",
+                                "ended_at": "2021-10-14T15:00:42+00:00",
+                                "checks": [],
+                                "evaluated_conditions": "",
+                                "conditions_evaluation": {
+                                    "match": False,
+                                    "label": "all of",
+                                    "description": None,
+                                    "schedule": None,
+                                    "subconditions": [
+                                        {
+                                            "match": False,
+                                            "label": "check-success=continuous-integration/fake-ci",
+                                            "description": None,
+                                            "schedule": None,
+                                            "subconditions": [],
+                                            "evaluations": [
+                                                {
+                                                    "pull_request": 5678,
+                                                    "match": False,
+                                                    "evaluation_error": None,
+                                                    "related_checks": [
+                                                        "continuous-integration/fake-ci"
+                                                    ],
+                                                    "next_evaluation_at": None,
+                                                }
+                                            ],
+                                        },
+                                        {
+                                            "match": True,
+                                            "label": "schedule=MON-FRI 12:00-15:00",
+                                            "description": None,
+                                            "schedule": date.Schedule.from_string(
+                                                "MON-FRI 12:00-15:00"
+                                            ).as_json_dict(),
+                                            "subconditions": [],
+                                            "evaluations": [
+                                                {
+                                                    "pull_request": 5678,
+                                                    "match": True,
+                                                    "evaluation_error": None,
+                                                    "related_checks": [],
+                                                    "next_evaluation_at": "2023-01-10T15:01:00+00:00",
+                                                }
+                                            ],
+                                        },
+                                        {
+                                            "match": True,
+                                            "label": "base=main",
+                                            "description": None,
+                                            "schedule": None,
+                                            "subconditions": [],
+                                            "evaluations": [
+                                                {
+                                                    "pull_request": 5678,
+                                                    "match": True,
+                                                    "evaluation_error": None,
+                                                    "related_checks": [],
+                                                    "next_evaluation_at": None,
+                                                }
+                                            ],
+                                        },
+                                    ],
+                                    "evaluations": [],
+                                },
+                                "state": "success",
+                            }
                         },
                         "queued_at": "2021-10-14T14:19:12+00:00",
                         "estimated_time_of_merge": "2021-10-14T15:19:12+00:00",
@@ -355,11 +383,24 @@ async def repository_queue_pull_request(
                     priority=queue_rule.config["priority"],
                 )
 
+            summary = None
+            if car is not None:
+                checked_pull = car.get_checked_pull()
+                raw_summary = car.get_original_pr_summary(checked_pull)
+                summary = PullRequestSummary(
+                    title=raw_summary.title,
+                    unexpected_changes=raw_summary.unexpected_changes,
+                    freeze=raw_summary.freeze,
+                    checks_timeout=raw_summary.checks_timeout,
+                    batch_failure=raw_summary.get_batch_failure_summary_title(),
+                )
+
             queued_pr.positions[train.partition_name] = position
             queued_pr.mergeability_checks[
                 train.partition_name
             ] = MergeabilityCheck.from_train_car(car)
             queued_pr.partition_names.append(train.partition_name)
+            queued_pr.summary[train.partition_name] = summary
 
     if queued_pr is None:
         raise fastapi.HTTPException(

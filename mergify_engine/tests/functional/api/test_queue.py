@@ -1431,6 +1431,9 @@ class TestNewQueueApiEndpoint(base.FunctionalTestBase):
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/new/queue/foo/pull/{p1['number']}",
         )
 
+        train = await self.get_train()
+        base_sha = await train.get_base_sha()
+
         assert r.status_code == 200
         assert r.json() == {
             "number": p1["number"],
@@ -1457,6 +1460,17 @@ class TestNewQueueApiEndpoint(base.FunctionalTestBase):
                 }
             },
             "partition_names": [partr_config.DEFAULT_PARTITION_NAME],
+            "summary": {
+                "__default__": {
+                    "batch_failure": None,
+                    "checks_timeout": None,
+                    "freeze": None,
+                    "title": "The pull request is embarked with "
+                    f"{self.main_branch_name} "
+                    f"({base_sha[:7]}) for merge",
+                    "unexpected_changes": None,
+                }
+            },
         }
 
     async def test_pr_in_multiple_partitions(self) -> None:
@@ -1522,6 +1536,12 @@ class TestNewQueueApiEndpoint(base.FunctionalTestBase):
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/new/queue/foo/pull/{p1['number']}",
         )
 
+        train_projA = await self.get_train(partr_config.PartitionRuleName("projectA"))
+        base_sha_projA = await train_projA.get_base_sha()
+
+        train_projB = await self.get_train(partr_config.PartitionRuleName("projectB"))
+        base_sha_projB = await train_projB.get_base_sha()
+
         assert r.status_code == 200
         assert r.json() == {
             "number": p1["number"],
@@ -1560,4 +1580,24 @@ class TestNewQueueApiEndpoint(base.FunctionalTestBase):
                 },
             },
             "partition_names": ["projectA", "projectB"],
+            "summary": {
+                "projectA": {
+                    "batch_failure": None,
+                    "checks_timeout": None,
+                    "freeze": None,
+                    "title": "The pull request is embarked with "
+                    f"{self.main_branch_name} "
+                    f"({base_sha_projA[:7]}) for merge",
+                    "unexpected_changes": None,
+                },
+                "projectB": {
+                    "batch_failure": None,
+                    "checks_timeout": None,
+                    "freeze": None,
+                    "title": "The pull request is embarked with "
+                    f"{self.main_branch_name} "
+                    f"({base_sha_projB[:7]}) for merge",
+                    "unexpected_changes": None,
+                },
+            },
         }
