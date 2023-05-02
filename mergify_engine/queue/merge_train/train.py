@@ -8,6 +8,7 @@ from urllib import parse
 
 import daiquiri
 import first
+import tenacity
 
 from mergify_engine import constants
 from mergify_engine import context
@@ -770,7 +771,7 @@ class Train:
                 return
 
             try:
-                await self._start_checking_car(self._cars[0], None)
+                await self._try_checking_car(0, None)
             except train_car.TrainCarPullRequestCreationPostponed:
                 return
             except train_car.TrainCarPullRequestCreationFailure:
@@ -779,6 +780,75 @@ class Train:
                 # from the train soon. We don't need to create remaining cars now.
                 # When this car will be removed the remaining one will be created
                 return
+
+    @tenacity.retry(
+        wait=tenacity.wait_exponential(multiplier=0.2),
+        stop=tenacity.stop_after_attempt(5),
+        retry=tenacity.retry_never,
+        reraise=True,
+    )
+    async def _try_checking_car(
+        self,
+        car_index: int,
+        previous_car: train_car.TrainCar | None,
+    ) -> None:
+        car = self._cars[car_index]
+        try:
+            await self._start_checking_car(car, previous_car)
+        except train_car.TrainCarPullRequestCreationFailure as exc:
+            self.log.info(
+                "train car pull request creation failure",
+                guilty_prs=exc.guilty_prs,
+            )
+
+            if (
+                len(exc.guilty_prs) == 1
+                and exc.guilty_prs[0] in car.parent_pull_request_numbers
+            ):
+                # Means the problem comes from a parent pull request,
+                # nothing we can do here.
+                raise
+
+            car_still_ep = {
+                ep.user_pull_request_number for ep in car.still_queued_embarked_pulls
+            }
+
+            prs_left_to_check = car_still_ep - set(exc.guilty_prs)
+
+            train_waiting_pulls = {
+                ep.user_pull_request_number for ep in self._waiting_pulls
+            }
+            # If there is enough PR waiting to replace the guilty PRs, then we can raise the
+            # error and let the calling function or the next refresh handle it
+            has_waiting_pulls_to_fill_batch = len(
+                train_waiting_pulls - set(exc.guilty_prs) - prs_left_to_check
+            ) >= len(exc.guilty_prs)
+
+            if not prs_left_to_check or has_waiting_pulls_to_fill_batch:
+                raise
+
+            # Retry immediately if there are still pull requests that can be
+            # checked inside the train car that failed
+            self.log.info(
+                "Train car still has PRs left to check: %s. Retrying car checking without the guilty PRs...",
+                ", ".join([str(p) for p in prs_left_to_check]),
+            )
+
+            embarked_pulls_left = [
+                ep
+                for ep in car.still_queued_embarked_pulls
+                if ep.user_pull_request_number in prs_left_to_check
+            ]
+            self._cars[car_index] = train_car.TrainCar(
+                self,
+                tcs_import.TrainCarState(),
+                embarked_pulls_left,
+                embarked_pulls_left,
+                car.parent_pull_request_numbers.copy(),
+                car.initial_current_base_sha,
+                failure_history=[*car.failure_history, car],
+            )
+            raise tenacity.TryAgain
 
     async def _slice_frozen_cars(self, frozen_queues: set[str]) -> None:
         for i, car in enumerate(self._cars):
@@ -942,12 +1012,11 @@ class Train:
                 self._cars.append(car)
 
                 try:
-                    await self._start_checking_car(car, previous_car)
+                    await self._try_checking_car(-1, previous_car)
                 except train_car.TrainCarPullRequestCreationPostponed:
                     self.log.info("train car pull request creation postponed")
                     return
                 except train_car.TrainCarPullRequestCreationFailure:
-                    self.log.info("train car pull request creation failure")
                     # NOTE(sileht): We posted failure merge queue check-run on
                     # car.user_pull_request_number and refreshed it, so it will be removed
                     # from the train soon. We don't need to create remaining cars now.

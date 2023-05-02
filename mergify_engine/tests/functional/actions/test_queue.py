@@ -4382,9 +4382,9 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p3["number"], "queue")
         await self.run_engine()
 
+        # p2 merge failed in draft pr, p2 is taken out of the queue
+        # p1 should be checked with p3 in draft
         tmp_mq_pr = await self.wait_for_pull_request("opened")
-
-        assert tmp_mq_pr["number"] not in [p1["number"], p2["number"], p3["number"]]
 
         # Check only p1 and p3 are in the train
         q = await self.get_train()
@@ -4422,8 +4422,8 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.create_status(tmp_mq_pr["pull_request"])
         await self.run_engine()
 
+        await self.wait_for_pull_request("closed", tmp_mq_pr["number"])
         pulls = [
-            await self.wait_for_pull_request("closed"),
             await self.wait_for_pull_request("closed"),
             await self.wait_for_pull_request("closed"),
         ]
@@ -4431,8 +4431,8 @@ class TestQueueAction(base.FunctionalTestBase):
         assert sorted([p["number"] for p in pulls]) == [
             p1["number"],
             p3["number"],
-            tmp_mq_pr["number"],
         ]
+        assert all(p["pull_request"]["merged"] for p in pulls)
 
         await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
 
@@ -6922,7 +6922,7 @@ pull_request_rules:
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge on queue label",
+                    "name": "Queue on label",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue",
@@ -6957,6 +6957,82 @@ pull_request_rules:
             "The pull request conflicts with the base branch"
             in queue_summary_check_run["output"]["summary"]
         )
+
+    async def test_batch_max_wait_time_after_pr_conflicts(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": True,
+                    "batch_size": 2,
+                    "batch_max_wait_time": "5 m",
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Queue on label",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        p2, p3 = await self.create_prs_with_conflicts()
+        p4 = await self.create_pr()
+
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p2["number"], "queue")
+        await self.add_label(p3["number"], "queue")
+        await self.add_label(p4["number"], "queue")
+        await self.run_engine()
+
+        draft_pr = await self.wait_for_pull_request("opened")
+
+        train = await self.get_train()
+        assert len(train._cars) == 1
+        assert [p1["number"], p2["number"]] == [
+            p.user_pull_request_number
+            for p in train._cars[0].still_queued_embarked_pulls
+        ]
+        assert [p3["number"], p4["number"]] == [
+            p.user_pull_request_number for p in train._waiting_pulls
+        ]
+
+        await self.create_status(draft_pr["pull_request"])
+        await self.run_engine()
+
+        await self.wait_for_pull_request("closed", draft_pr["number"])
+        # p1 and p2
+        await self.wait_for_pull_request("closed")
+        await self.wait_for_pull_request("closed")
+
+        draft_pr_p4 = await self.wait_for_pull_request("opened")
+
+        # p3 should be taken out of the train because of conflicts
+        # and p4 should be checked immediately without waiting for batch_max_wait_time
+
+        train = await self.get_train()
+        assert len(train._cars) == 1
+        assert [p4["number"]] == [
+            p.user_pull_request_number
+            for p in train._cars[0].still_queued_embarked_pulls
+        ]
+        assert [] == [p.user_pull_request_number for p in train._waiting_pulls]
+
+        await self.create_status(draft_pr_p4["pull_request"])
+        await self.run_engine()
+
+        await self.wait_for_pull_request("closed", draft_pr_p4["number"])
+        p4_closed = await self.wait_for_pull_request("closed", p4["number"])
+        assert p4_closed["pull_request"]["merged"]
 
 
 class TestQueueActionFeaturesSubscription(base.FunctionalTestBase):

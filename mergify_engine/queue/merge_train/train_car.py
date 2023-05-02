@@ -207,6 +207,16 @@ class TrainCarPullRequestCreationPostponed(Exception):
 @dataclasses.dataclass
 class TrainCarPullRequestCreationFailure(Exception):
     car: "TrainCar"
+    guilty_prs: list[github_types.GitHubPullRequestNumber] = dataclasses.field(
+        default_factory=list
+    )
+
+    def __post_init__(self) -> None:
+        if not self.guilty_prs:
+            self.guilty_prs = [
+                ep.user_pull_request_number
+                for ep in self.car.still_queued_embarked_pulls
+            ]
 
 
 @dataclasses.dataclass
@@ -1156,7 +1166,7 @@ class TrainCar:
                         message, pull_requests_to_remove=[pull_number]
                     )
                     await self._delete_branch()
-                    raise TrainCarPullRequestCreationFailure(self) from e
+                    raise TrainCarPullRequestCreationFailure(self, [pull_number]) from e
 
                 await self._set_creation_failure(
                     e.message,
@@ -1164,7 +1174,7 @@ class TrainCar:
                     report_as_error=True,
                 )
                 await self._delete_branch()
-                raise TrainCarPullRequestCreationFailure(self) from e
+                raise TrainCarPullRequestCreationFailure(self, [pull_number]) from e
 
         new_branch_name = github_types.GitHubRefType(
             self.queue_branch_name.replace(self.QUEUE_BRANCH_PREFIX, "", 1)
