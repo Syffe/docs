@@ -2096,7 +2096,6 @@ pull_request_rules:
       - sender-permission=write
      actions:
        comment:
-         message: foobar
 """
         )
     assert (

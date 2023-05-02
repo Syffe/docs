@@ -15,7 +15,7 @@ from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 class CommentExecutorConfig(typing.TypedDict):
-    message: str
+    message: str | None
     bot_account: github_types.GitHubLogin | None
 
 
@@ -27,6 +27,16 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorCo
         ctxt: "context.Context",
         rule: "prr_config.EvaluatedPullRequestRule",
     ) -> "CommentExecutor":
+        if action.config["message"] is None:
+            # Happens when the config for a comment action is just `None` and
+            # there is no "defaults" for the comment action.
+            raise actions.InvalidDynamicActionConfiguration(
+                rule,
+                action,
+                "Cannot have `comment` action with no `message`",
+                str(action.config),
+            )
+
         try:
             bot_account = await action_utils.render_bot_account(
                 ctxt,
@@ -55,6 +65,11 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorCo
         )
 
     async def run(self) -> check_api.Result:
+        if self.config["message"] is None:
+            return check_api.Result(
+                check_api.Conclusion.SUCCESS, "Message is empty", ""
+            )
+
         try:
             on_behalf = await action_utils.get_github_user_from_bot_account(
                 "squash", self.config["bot_account"]
@@ -92,7 +107,9 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorCo
 class CommentAction(actions.Action):
     flags = actions.ActionFlag.NONE
     validator = {
-        voluptuous.Required("message"): types.Jinja2,
+        # FIXME(sileht): we shouldn't allow None here, we should raise an error
+        # or set a default message.
+        voluptuous.Required("message", default=None): types.Jinja2WithNone,
         voluptuous.Required("bot_account", default=None): types.Jinja2WithNone,
     }
     executor_class = CommentExecutor
