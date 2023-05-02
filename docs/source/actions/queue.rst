@@ -836,9 +836,18 @@ Partition Rules
 ~~~~~~~~~~~~~~~
 |premium plan tag|
 
-Partition rules are used to handle monorepos better. Each partition runs in parallel and includes all the queues defined in the ``queue_rules``.
+Partition rules are used to handle monorepos better. Each partition runs in parallel and includes all the queues defined in the ``queue_rules``. Partitions
+are independent from each others, meaning that if one merges a pull request, changing the base branch, the others will not be reset, as the change is known by Mergify,
+and will continue to act independently, as if they were separated repositories.
+
+A pull request can be queued in multiple partitions at the same time. In that case, Mergify will wait for the pull request to be validated in each partition before it
+can be merged. Even though each partition is independent, they can work together to ensure validation.
+
+If a pull request is queued in several partitions and the queue checks fail in at least one partition, the pull request will be reported as not mergeable.
+To be merged, the pull request needs to fulfill all the requirements of all the partitions it is queued in.
 
 If your partitions have different criteria for merging pull requests, you can replicate the partition rules logic inside the queue rules ``merge_conditions`` and by using the :ref:`attribute <attributes>` ``queue-partition-name``.
+For more information, see :ref:`partition rules example`.
 
 A partition rule takes the following parameters:
 
@@ -862,6 +871,30 @@ A partition rule takes the following parameters:
      - List of ``conditions`` to determine the partition(s) in which
        the pull request will be queued. If no partition matches, the pull request will be
        added to every partition.
+
+   * - ``fallback_partition``
+     - bool
+     - false
+     - Allow the partition to work as a ``fallback_partition``, see :ref:`fallback partition`.
+
+.. _fallback partition:
+
+Fallback Partition
+~~~~~~~~~~~~~~~~~~
+
+If you are in a migration stage towards the use of partition rules, you can use a ``fallback_partition`` to handle the pull requests that does not yet have
+a partition implemented. Thus, the ``fallback_partition`` will catch every pull request that does not match any existing partition, in order to not stop your project
+from performing as usual, while you are designing your rules for your future partitions.
+
+There can only be one ``fallback_partition`` in a configuration file, it needs to have no conditions in order to catch every possible pull requests.
+
+.. code-block:: yaml
+
+        partition_rules:
+          - name: my fallback partition
+            fallback_partition: true
+
+For more information, see :ref:`fallback partition example`.
 
 
 Examples
@@ -1047,14 +1080,17 @@ additional configuration in branch protection settings, you also need to allow
    projectA
    projectB
 
+.. _partition rules example:
+
 🚥 Using partition rules to handle different projects in a monorepo
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If a PR contains a modification on any file in the folder ``projectA/`` it will be added in the partition projectA,
-if it contains a modification on any file in the folder ``projectB/`` then it will be added in the partition projectB.
+If a pull request contains a modification on any file in the folder ``projectA/`` it will be added in the partition projectA,
+if it contains a modification on any file in the folder ``projectB/`` then it will be added in the partition projectB,
+if it contains a modification in both folder ``projectA/`` and ``projectB/``, then it will be added in both partitions.
 
 If none of the two partitions rules matches, then the PR will be added in both partitions.
-The ``queue_rules`` will still determine in which queue in the partition(s) the PR will be added in.
+The ``queue_rules`` will still determine in which queue in the partition(s) the pull request will be added in.
 
 Here is a table representing the partition and queues with the code below:
 
@@ -1125,3 +1161,103 @@ Here is a table representing the partition and queues with the code below:
                 - and:
                   - queue-partition-name=projectB
                   - check-success=ciB
+
+.. _fallback partition example:
+
+📬 Using a fallback partition to handle your project migration phase to partition rules
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If a pull request contains a modification on any file in the folder ``projectA/`` it will be added in the partition projectA,
+if it contains a modification on any file in the folder ``projectB/`` then it will be added in the partition projectB,
+if it contains a modification in both folder ``projectA/`` and ``projectB/``, then it will be added in both partitions.
+
+If none of the two partitions rules matches, then the PR will be added in the fallback partition.
+The ``queue_rules`` will still determine in which queue in the partition(s) the pull request will be added in.
+
+In the usual context of use, when a pull request is manually merged, Mergify will reset every queue and partition.
+But during your project migration phase towards the implementation of partition rules, you might need to manually merge some
+pull requests. Then, in a context where your are using a fallback partition, Mergify will detect the manually merged pull request
+and evaluate it against the current partition rules. If the pull request matches an existing partition, it will be reset, otherwise,
+only the fallback partition will be reset.
+
+Here is a table representing the partition and queues with the code below:
+
+.. list-table::
+        :header-rows: 1
+        :widths: 1 1 1
+
+        * - projectA
+          - projectB
+          - fallback
+
+        * - hotfix
+          - hotfix
+          - hotfix
+
+        * - default
+          - default
+          - default
+
+
+.. code-block:: yaml
+
+        shared:
+            priority_rules: &priority_rules
+                - name: hotfix PR detected
+                  conditions:
+                    - label=hotfix
+                  priority: high
+                - name: lowprio PR detected
+                  conditions:
+                    - author=dependabot[bot]
+                  priority: low
+
+        pull_request_rules:
+           - name: queue PR with queue label
+             conditions:
+               - label=queue
+             actions:
+               queue:
+
+        partition_rules:
+          - name: fallback
+            fallback_partition: true
+
+          - name: projectA
+            conditions:
+              - files~=^projectA/
+
+          - name: projectB
+            conditions:
+              - files~=^projectB/
+
+        queue_rules:
+          - name: hotfix
+            priority_rules: *priority_rules
+            routing_conditions:
+              - label=hotfix
+            merge_conditions:
+              - or:
+                - and:
+                  - queue-partition-name=projectA
+                  - check-success=ciA
+                - and:
+                  - queue-partition-name=projectB
+                  - check-success=ciB
+                - and:
+                  - queue-partition-name=fallback
+                  - check-success=ciFallback
+
+          - name: default
+            priority_rules: *priority_rules
+            merge_conditions:
+              - or:
+                - and:
+                  - queue-partition-name=projectA
+                  - check-success=ciA
+                - and:
+                  - queue-partition-name=projectB
+                  - check-success=ciB
+                - and:
+                  - queue-partition-name=fallback
+                  - check-success=ciFallback
