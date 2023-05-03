@@ -72,11 +72,13 @@ class CopyResult(typing.NamedTuple):
     status: check_api.Conclusion
     details: str
     job_id: gitter_service.GitterJobId | None
+    pull_request_number: github_types.GitHubPullRequestNumber | None
+    conflicting: bool
 
 
 class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
     KIND: duplicate_pull.KindT = "copy"
-    KIND_PLURAL = "copies"
+    KIND_PLURAL: str = "copies"
     HOOK_EVENT_NAME: typing.Literal["action.backport", "action.copy"] = "action.copy"
     BRANCH_PREFIX: str = "copy"
     SUCCESS_MESSAGE: str = "Pull request copies have been created"
@@ -251,6 +253,8 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 check_api.Conclusion.SUCCESS,
                 f"{self.KIND.capitalize()} to branch `{branch_name}` not needed, change already in branch `{branch_name}`",
                 None,
+                None,
+                False,
             )
 
         except duplicate_pull.DuplicateFailed as e:
@@ -262,8 +266,10 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                     kind=self.KIND,
                     exc_info=True,
                 )
-            return self._get_failure_copy_result(branch_name, e.reason)
+            conflicting = isinstance(e, duplicate_pull.DuplicateFailedConflicts)
+            return self._get_failure_copy_result(branch_name, e.reason, conflicting)
 
+        conflicting = bool(duplicate_branch_result.cherry_pick_error)
         await signals.send(
             self.ctxt.repository,
             self.ctxt.pull["number"],
@@ -272,12 +278,12 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 {
                     "to": branch_name,
                     "pull_request_number": new_pull["number"],
-                    "conflicts": bool(duplicate_branch_result.cherry_pick_error),
+                    "conflicts": conflicting,
                 }
             ),
             self.rule.get_signal_trigger(),
         )
-        return self._get_success_copy_result(branch_name, new_pull)
+        return self._get_success_copy_result(branch_name, new_pull, conflicting)
 
     @classmethod
     def _get_inprogress_copy_result(
@@ -286,28 +292,45 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
         job_id: gitter_service.GitterJobId | None,
     ) -> CopyResult:
         message = f"{cls.KIND.capitalize()} to branch `{branch_name}` in progress"
-        return CopyResult(branch_name, check_api.Conclusion.PENDING, message, job_id)
+        return CopyResult(
+            branch_name, check_api.Conclusion.PENDING, message, job_id, None, False
+        )
 
     @classmethod
     def _get_failure_copy_result(
-        cls, branch_name: github_types.GitHubRefType, details: str
+        cls,
+        branch_name: github_types.GitHubRefType,
+        details: str,
+        conflicting: bool = False,
     ) -> CopyResult:
         message = f"{cls.KIND.capitalize()} to branch `{branch_name}` failed"
+        if conflicting:
+            message += " due to conflicts"
         if details:
             message += f"\n\n{details}"
-        return CopyResult(branch_name, check_api.Conclusion.FAILURE, message, None)
+        return CopyResult(
+            branch_name, check_api.Conclusion.FAILURE, message, None, None, conflicting
+        )
 
     @staticmethod
     def _get_success_copy_result(
         branch_name: github_types.GitHubRefType,
         new_pull: github_types.GitHubPullRequest,
+        conflicting: bool = False,
     ) -> CopyResult:
+        detail = (
+            f"[#{new_pull['number']} {new_pull['title']}]({new_pull['html_url']}) "
+            f"has been created for branch `{branch_name}`"
+        )
+        if conflicting:
+            detail += " but encountered conflicts"
         return CopyResult(
             branch_name,
             check_api.Conclusion.SUCCESS,
-            f"[#{new_pull['number']} {new_pull['title']}]({new_pull['html_url']}) "
-            f"has been created for branch `{branch_name}`",
+            detail,
             None,
+            new_pull["number"],
+            conflicting,
         )
 
     async def _get_job(
@@ -422,7 +445,9 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
         for branch_name in self.config["branches"]:
             previous_result = previous_results.get(
                 branch_name,
-                CopyResult(branch_name, check_api.Conclusion.PENDING, "", None),
+                CopyResult(
+                    branch_name, check_api.Conclusion.PENDING, "", None, None, False
+                ),
             )
             if previous_result.status == check_api.Conclusion.PENDING:
                 try:

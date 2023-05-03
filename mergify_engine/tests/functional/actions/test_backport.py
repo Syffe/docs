@@ -227,8 +227,7 @@ class TestBackportAction(BackportActionTestBase):
 
         assert "failure" == checks[0]["conclusion"]
         assert "No backport have been created" == checks[0]["output"]["title"]
-        assert (
-            f"""* Backport to branch `{stable_branch}` failed
+        expected_body = f"""* Backport to branch `{stable_branch}` failed due to conflicts
 
 Cherry-pick of {commit_id} has failed:
 ```
@@ -249,8 +248,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
 
 
 """  # noqa: W191
-            == checks[0]["output"]["summary"]
-        )
+        assert expected_body == checks[0]["output"]["summary"]
 
     async def test_backport_ignore_conflicts(self) -> None:
         stable_branch = self.get_full_branch_name("stable/#3.1")
@@ -261,7 +259,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
         assert "success" == checks[0]["conclusion"]
         assert "Backports have been created" == checks[0]["output"]["title"]
         assert (
-            f"* [#%d %s](%s) has been created for branch `{stable_branch}`"
+            f"* [#%d %s](%s) has been created for branch `{stable_branch}` but encountered conflicts"
             % (
                 pull["number"],
                 pull["title"],

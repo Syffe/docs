@@ -173,3 +173,30 @@ class TestCommandBackport(base.FunctionalTestBase):
         ctxt = await self.repository_ctxt.get_pull_request_context(p["number"], p)
         checks = await ctxt.pull_engine_check_runs
         assert len(checks) == 1
+
+    async def test_command_backport_conflicts(self) -> None:
+        stable_branch = self.get_full_branch_name("stable/#3.1")
+        await self.setup_repo(test_branches=[stable_branch])
+
+        # add the coming conflict to stable
+        await self.push_file("conflicts", "conflicts incoming", stable_branch)
+
+        p = await self.create_pr(files={"conflicts": "ohoh"})
+        await self.run_engine()
+        await self.create_comment_as_admin(
+            p["number"], f"@mergifyio backport {stable_branch}"
+        )
+
+        await self.run_engine()
+        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
+        assert "Waiting for conditions to match" in comment["comment"]["body"]
+
+        # triggers backport
+        await self.merge_pull(p["number"])
+        await self.wait_for_pull_request("closed", p["number"])
+        await self.run_engine()
+        comment_1 = await self.wait_for_issue_comment(str(p["number"]), "edited")
+        assert "in progress" in comment_1["comment"]["body"]
+
+        comment_2 = await self.wait_for_issue_comment(str(p["number"]), "edited")
+        assert "but encountered conflict" in comment_2["comment"]["body"]

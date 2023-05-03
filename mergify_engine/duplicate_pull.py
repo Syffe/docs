@@ -48,6 +48,11 @@ class DuplicateWithMergeFailure(DuplicateFailed):
 
 
 @dataclasses.dataclass
+class DuplicateFailedConflicts(DuplicateFailed):
+    reason: str
+
+
+@dataclasses.dataclass
 class DuplicateBranchResult:
     target_branch: github_types.GitHubRefType
     destination_branch: github_types.GitHubRefType
@@ -311,7 +316,7 @@ async def prepare_branch(
                     f"Cherry-pick of {commit.sha} has failed:\n```\n{output}```\n\n\n"
                 )
                 if not ignore_conflicts:
-                    raise DuplicateFailed(cherry_pick_error)
+                    raise DuplicateFailedConflicts(cherry_pick_error)
                 await git("add", "*", _env={"GIT_NOGLOB_PATHSPECS": "0"})
                 await git("commit", "-a", "--no-edit", "--allow-empty")
 
