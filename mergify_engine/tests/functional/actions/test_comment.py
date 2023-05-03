@@ -32,8 +32,8 @@ class TestCommentActionWithSub(base.FunctionalTestBase):
         assert comment["comment"]["user"]["login"] == "mergify-test4"
 
 
+@pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
 class TestCommentAction(base.FunctionalTestBase):
-    @pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
     async def test_comment(self) -> None:
         rules = {
             "pull_request_rules": [
@@ -185,7 +185,7 @@ Unknown pull request attribute: hello
             == "The current Mergify configuration is invalid"
         )
         assert check_run["check_run"]["output"]["summary"].startswith(
-            "### Comments with `bot_account` set are disabled"
+            "In the rule `comment`, the action `comment` configuration is invalid:\nComments with `bot_account` set are disabled"
         )
 
     async def test_comment_without_default_message(self) -> None:
@@ -277,5 +277,5 @@ Unknown pull request attribute: hello
             == "The current Mergify configuration is invalid"
         )
         assert check_run["check_run"]["output"]["summary"].startswith(
-            "### Cannot have `comment` action with no `message"
+            "In the rule `comment without default message`, the action `comment` configuration is invalid:\nCannot have `comment` action with no `message"
         )

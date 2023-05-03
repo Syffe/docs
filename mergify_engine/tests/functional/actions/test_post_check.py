@@ -1,6 +1,7 @@
 import operator
-import typing
 from unittest import mock
+
+import pytest
 
 from mergify_engine import context
 from mergify_engine import settings
@@ -343,31 +344,9 @@ Rule list:
         assert "failure" == check["conclusion"]
 
 
+@pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
 class TestPostCheckActionNoSub(base.FunctionalTestBase):
     async def test_checks_feature_disabled(self) -> None:
-        if self.SUBSCRIPTION_ACTIVE:
-            features = frozenset(
-                getattr(subscription.Features, f)
-                for f in subscription.Features.__members__
-                if f is not subscription.Features.CUSTOM_CHECKS.value
-            )
-            all_features = [
-                typing.cast(subscription.FeaturesLiteralT, f.value)
-                for f in subscription.Features
-            ]
-        else:
-            features = frozenset([subscription.Features.PUBLIC_REPOSITORY])
-            all_features = ["public_repository"]
-
-        self.subscription = subscription.Subscription(
-            self.redis_links.cache,
-            settings.TESTING_ORGANIZATION_ID,
-            "You're not nice",
-            features,
-            all_features,
-        )
-        await self.subscription._save_subscription_to_cache()
-
         rules = {
             "pull_request_rules": [
                 {
