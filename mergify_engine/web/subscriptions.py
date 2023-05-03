@@ -79,39 +79,6 @@ async def subscription_cache_delete(
     return responses.Response("Cache cleaned", status_code=200)
 
 
-@router.delete(
-    "/tokens-cache/{owner_id}",
-    dependencies=[fastapi.Depends(auth.dashboard)],
-)
-async def tokens_cache_delete(
-    owner_id: github_types.GitHubAccountIdType, redis_links: redis.RedisLinks
-) -> responses.Response:
-    # FIXME(sileht): drop me once dashboard is cleaned
-    return responses.Response("Cache cleaned", status_code=200)
-
-
-@router.put(
-    "/application/{api_access_key}",
-    dependencies=[fastapi.Depends(auth.dashboard)],
-)
-async def application_cache_update(
-    api_access_key: str, request: requests.Request, redis_links: redis.RedisLinks
-) -> responses.Response:
-    # FIXME(sileht): drop me once dashboard is cleaned
-    return responses.Response("Cache updated", status_code=200)
-
-
-@router.delete(
-    "/application/{api_access_key}",
-    dependencies=[fastapi.Depends(auth.dashboard)],
-)
-async def application_cache_delete(
-    api_access_key: str, redis_links: redis.RedisLinks
-) -> responses.Response:
-    # FIXME(sileht): drop me once dashboard is cleaned
-    return responses.Response("Cache cleaned", status_code=200)
-
-
 @router.get(
     "/user-oauth-access-token/{github_account_id}",
     dependencies=[fastapi.Depends(auth.dashboard)],
