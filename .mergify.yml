@@ -13,6 +13,7 @@ queue_rules:
           - check-success=import-checks
           - check-success=pep8
           - check-success=semgrep
+          - check-success=secrets-leakage
           - check-success=test (1)
           - check-success=test (2)
           - check-success=test (3)

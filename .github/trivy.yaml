@@ -1,0 +1,7 @@
+format: table
+exit-code: 1
+secret:
+  config: ./.github/trivy-secret.yaml
+scan:
+  scanners:
+    - secret
