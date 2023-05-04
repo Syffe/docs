@@ -308,24 +308,6 @@ def _check_rate_limit(client: http.AsyncClient, response: httpx.Response) -> Non
         raise exceptions.RateLimited(delta, remaining)
 
 
-def _inject_options(func: typing.Any) -> typing.Any:
-    async def wrapper(
-        self: AsyncGithubInstallationClient,
-        url: str,
-        api_version: github_types.GitHubApiVersion | None = None,
-        oauth_token: github_types.GitHubOAuthToken | None = None,
-        **kwargs: typing.Any,
-    ) -> typing.Any:
-        headers = kwargs.pop("headers", {})
-        if api_version:
-            headers["Accept"] = f"application/vnd.github.{api_version}-preview+json"
-        if oauth_token:
-            kwargs["auth"] = GithubTokenAuth(oauth_token)
-        return await func(url, headers=headers, **kwargs)
-
-    return wrapper
-
-
 DEFAULT_GITHUB_TRANSPORT = httpx.AsyncHTTPTransport(
     limits=httpx.Limits(max_connections=None, max_keepalive_connections=20),
     http2=True,
