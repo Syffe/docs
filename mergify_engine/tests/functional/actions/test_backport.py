@@ -247,7 +247,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
 ```
 
 
-"""  # noqa: W191
+"""
         assert expected_body == checks[0]["output"]["summary"]
 
     async def test_backport_ignore_conflicts(self) -> None:
