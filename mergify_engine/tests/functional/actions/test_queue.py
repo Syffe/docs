@@ -4518,17 +4518,15 @@ class TestQueueAction(base.FunctionalTestBase):
         # Merge the train
         await self.create_status(p1)
         await self.run_engine()
-        await self.wait_for_pull_request("closed", p1["number"])
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+        await self.wait_for_pull_request("closed", p1["number"], merged=True)
 
         await self.create_status(tmp_mq_pr["pull_request"])
         await self.run_engine()
 
         # Only p2 is remaining and not in train
         await self.wait_for_pull_request("closed", tmp_mq_pr["number"])
-        await self.wait_for_pull_request("closed", p3["number"])
+        await self.wait_for_pull_request("closed", p3["number"], merged=True)
 
-        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
         await self.assert_merge_queue_contents(q, None, [])
 
     async def test_queue_cancel_and_refresh(self) -> None:
