@@ -64,7 +64,6 @@ class IncompatibleBranchProtection(InvalidQueueConfiguration):
 
     configuration: str
     branch_protection_setting: str
-    required_additional_configuration: str | None = dataclasses.field(default=None)
 
     title: str = dataclasses.field(
         init=False,
@@ -75,13 +74,9 @@ class IncompatibleBranchProtection(InvalidQueueConfiguration):
     def __post_init__(self) -> None:
         self.message = (
             "The branch protection setting "
-            f"`{self.branch_protection_setting}` is not compatible with `{self.configuration}`"
+            f"`{self.branch_protection_setting}` is not compatible with `{self.configuration}` "
+            "and must be unset."
         )
-
-        if self.required_additional_configuration is None:
-            self.message += " and must be unset."
-        else:
-            self.message += f" if `{self.required_additional_configuration}` isn't set."
 
 
 QueueUpdateT = typing.Literal["merge", "rebase"]
@@ -684,9 +679,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         try:
             await self._set_action_queue_rule()
             await self._check_config_compatibility_with_branch_protection(
-                ctxt=self.ctxt,
-                queue_rule_config=self.queue_rule.config,
-                queue_executor_config=self.config,
+                queue_rule=self.queue_rule, ctxt=self.ctxt
             )
             self._check_method_fastforward_configuration(
                 config=self.config,
@@ -1097,11 +1090,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
     @staticmethod
     async def _check_config_compatibility_with_branch_protection(
-        ctxt: context.Context,
-        queue_rule_config: qr_config.QueueConfig,
-        queue_executor_config: QueueExecutorConfig,
+        queue_rule: qr_config.QueueRule, ctxt: context.Context
     ) -> None:
-        if queue_rule_config["queue_branch_merge_method"] == "fast-forward":
+        if queue_rule.config["queue_branch_merge_method"] == "fast-forward":
             # Note(charly): `queue_branch_merge_method=fast-forward` make the
             # use of batches compatible with branch protection
             # `required_status_checks=strict`
@@ -1114,33 +1105,25 @@ Then, re-embark the pull request into the merge queue by posting the comment
         _has_required_status_checks_strict = (
             protection is not None
             and "required_status_checks" in protection
-            and protection["required_status_checks"].get("strict", False)
+            and "strict" in protection["required_status_checks"]
+            and protection["required_status_checks"]["strict"]
         )
 
         if _has_required_status_checks_strict:
-            if queue_rule_config["batch_size"] > 1:
+            if queue_rule.config["batch_size"] > 1:
                 raise IncompatibleBranchProtection(
                     "batch_size>1",
                     BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT,
                 )
-            if queue_rule_config["speculative_checks"] > 1:
+            if queue_rule.config["speculative_checks"] > 1:
                 raise IncompatibleBranchProtection(
                     "speculative_checks>1",
                     BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT,
                 )
-            if queue_rule_config["allow_inplace_checks"] is False:
+            if queue_rule.config["allow_inplace_checks"] is False:
                 raise IncompatibleBranchProtection(
                     "allow_inplace_checks=false",
                     BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT,
-                )
-            if (
-                queue_executor_config["update_method"] == "rebase"
-                and not queue_executor_config["update_bot_account"]
-            ):
-                raise IncompatibleBranchProtection(
-                    "update_method=rebase",
-                    BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT,
-                    "update_bot_account",
                 )
 
 
