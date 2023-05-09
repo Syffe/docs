@@ -67,6 +67,9 @@ html_js_files = [
     "jquery.js",
 ]
 
+# This sets canonical URL which helps search engine
+html_baseurl = "https://docs.mergify.com"
+
 # Spelling checker configuration
 spelling_warning = True
 spelling_show_whole_line = False
