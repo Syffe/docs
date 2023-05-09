@@ -834,6 +834,7 @@ A priority rule takes the following parameters:
 
 Partition Rules
 ~~~~~~~~~~~~~~~
+|beta tag|
 |premium plan tag|
 
 Partition rules are used to handle monorepos better. Each partition runs in parallel and includes all the queues defined in the ``queue_rules``. Partitions
