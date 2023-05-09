@@ -379,7 +379,7 @@ class TrainCar:
         # backward compat <= 7.2.1
         if "queue_branch_name" not in data:
             data["queue_branch_name"] = github_types.GitHubRefType(  # type: ignore[unreachable]
-                f"{constants.MERGE_QUEUE_BRANCH_PREFIX}{train.ref}/{cls._get_pulls_branch_ref(initial_embarked_pulls)}"
+                f"{constants.MERGE_QUEUE_BRANCH_PREFIX}{train.convoy.ref}/{cls._get_pulls_branch_ref(initial_embarked_pulls)}"
             )
 
         # NOTE(Syffe): Backward compatibility for old TrainCar without TrainCarState attribute
