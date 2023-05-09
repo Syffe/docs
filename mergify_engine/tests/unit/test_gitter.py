@@ -11,7 +11,6 @@ async def test_gitter(
     monkeypatch: pytest.MonkeyPatch,
     redis_links: redis_utils.RedisLinks,
 ) -> None:
-    monkeypatch.setenv("LANG", "C")
     git = gitter.Gitter(mock.Mock())
     try:
         await git.init()

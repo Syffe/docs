@@ -109,6 +109,7 @@ class Gitter:
             "PATH": os.environ["PATH"],
             "HOME": self.tmp,
             "TMPDIR": self.tmp,
+            "LANG": "C.UTF-8",
         }
         version = await self("version")
         self.logger.info("git directory created", path=self.tmp, version=version)
