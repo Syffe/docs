@@ -63,7 +63,7 @@ class BranchPartitions:
         metadata={
             "description": (
                 "A dictionary containing partition names as keys and, as a value of those key, the list of pull requests queued in the partition."
-                f" If partition are not used in this repository, the default partition name used will be '{partr_config.DEFAULT_PARTITION_NAME}'."
+                f" If partition are not used in this repository, the default partition name used will be `{partr_config.DEFAULT_PARTITION_NAME}`."
             )
         },
     )
