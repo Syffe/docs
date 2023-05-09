@@ -181,36 +181,35 @@ def _get_pull_request_key(
     return f"eventlogs/{owner_id}/{repo_id}/{pull_request}"
 
 
-# FIXME(sileht): if we use | here, we cannot introspec the __annotations__ with __args__
-Event = typing.Union[
-    EventAssign,
-    EventBackport,
-    EventClose,
-    EventComment,
-    EventCopy,
-    EventDeleteHeadBranch,
-    EventDismissReviews,
-    EventEdit,
-    EventLabel,
-    EventMerge,
-    EventPostCheck,
-    EventQueueEnter,
-    EventQueueLeave,
-    EventQueueChecksStart,
-    EventQueueChecksEnd,
-    EventQueueMerged,
-    EventRebase,
-    EventRefresh,
-    EventRequestReviewers,
-    EventRequeue,
-    EventReview,
-    EventSquash,
-    EventUnqueue,
-    EventUpdate,
-    EventQueueFreezeCreate,
-    EventQueueFreezeUpdate,
-    EventQueueFreezeDelete,
-]
+Event = (
+    EventAssign
+    | EventBackport
+    | EventClose
+    | EventComment
+    | EventCopy
+    | EventDeleteHeadBranch
+    | EventDismissReviews
+    | EventEdit
+    | EventLabel
+    | EventMerge
+    | EventPostCheck
+    | EventQueueEnter
+    | EventQueueLeave
+    | EventQueueChecksStart
+    | EventQueueChecksEnd
+    | EventQueueMerged
+    | EventRebase
+    | EventRefresh
+    | EventRequestReviewers
+    | EventRequeue
+    | EventReview
+    | EventSquash
+    | EventUnqueue
+    | EventUpdate
+    | EventQueueFreezeCreate
+    | EventQueueFreezeUpdate
+    | EventQueueFreezeDelete
+)
 
 SUPPORTED_EVENT_NAMES = list(
     itertools.chain(

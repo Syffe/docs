@@ -20,9 +20,7 @@ from mergify_engine.rules.config import priority_rules as priority_rules_config
 from mergify_engine.rules.config import pull_request_rules as pull_request_rules_config
 
 
-# FIXME(sileht): intropection with __args__ doesn't work if the type looks
-# like: str | None
-QueueBranchMergeMethod = typing.Optional[typing.Literal["fast-forward"]]
+QueueBranchMergeMethod = typing.Literal["fast-forward"] | None
 QueueName = typing.NewType("QueueName", str)
 
 EvaluatedQueueRule = typing.NewType("EvaluatedQueueRule", "QueueRule")

@@ -26,7 +26,7 @@ AbortCodeT = typing.Literal[
     "BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS",
 ]
 
-UnqueueCodeT = typing.Union[typing.Literal["PR_MERGED"], AbortCodeT]
+UnqueueCodeT = typing.Literal["PR_MERGED"] | AbortCodeT
 
 
 @dataclasses.dataclass
