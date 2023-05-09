@@ -9,6 +9,7 @@ from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 
 
+@pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
 class TestCommandRebase(base.FunctionalTestBase):
     async def test_command_rebase_ok(self) -> None:
         await self.setup_repo(yaml.dump({}), files={"TESTING": "foobar\n"})

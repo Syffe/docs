@@ -817,6 +817,7 @@ class Repository:
 
     async def get_all_branch_protection_rules(
         self,
+        pattern_branch_filter: str | None = None,
     ) -> list[github_graphql_types.GraphqlBranchProtectionRule]:
         # NOTE(Greesb): If this is one day used outside of the debugger,
         # the result of the `query_fields` should be cached.
@@ -879,16 +880,22 @@ class Repository:
         }}
         """
         response = await self.installation.client.graphql_post(query)
+        nodes: list[github_graphql_types.GraphqlBranchProtectionRule] = []
+
         for node in response["data"]["repository"]["branchProtectionRules"]["nodes"]:
+            if (
+                pattern_branch_filter is not None
+                and node["pattern"] != pattern_branch_filter
+            ):
+                continue
+
             node["matchingRefs"] = typing.cast(
                 list[github_graphql_types.GraphqlBranchProtectionRuleMatchingRef],
                 node["matchingRefs"]["nodes"],
             )
+            nodes.append(node)
 
-        return typing.cast(
-            list[github_graphql_types.GraphqlBranchProtectionRule],
-            response["data"]["repository"]["branchProtectionRules"]["nodes"],
-        )
+        return nodes
 
     async def get_branch_protection(
         self,

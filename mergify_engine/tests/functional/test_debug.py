@@ -3,6 +3,7 @@ from unittest import mock
 
 from mergify_engine import context
 from mergify_engine import debug
+from mergify_engine import github_graphql_types
 from mergify_engine import yaml
 from mergify_engine.clients import github
 from mergify_engine.dashboard import subscription
@@ -11,6 +12,26 @@ from mergify_engine.tests.functional import base
 
 
 class TestDebugger(base.FunctionalTestBase):
+    async def _mock_get_all_branch_protection_rules(self) -> None:
+        # Mock the get_all_branch_protection_rules to retrieve only the "main"
+        # branch protections and avoid having comparison errors when running those
+        # tests in parallel with other tests that also have branch protections.
+        real_get_all_branch_protection_rules = (
+            context.Repository.get_all_branch_protection_rules
+        )
+
+        async def mocked_get_all(
+            self: typing.Any, pattern_branch_filter: str | None = None
+        ) -> list[github_graphql_types.GraphqlBranchProtectionRule]:
+            return await real_get_all_branch_protection_rules(
+                self, pattern_branch_filter="main"
+            )
+
+        m = mock.patch.object(
+            context.Repository, "get_all_branch_protection_rules", mocked_get_all
+        )
+        self.register_mock(m)
+
     async def test_debugger(self) -> None:
         rules = {
             "pull_request_rules": [
@@ -54,6 +75,8 @@ class TestDebugger(base.FunctionalTestBase):
 
         await self.setup_repo(yaml.dump(rules))
         p = await self.create_pr()
+
+        await self._mock_get_all_branch_protection_rules()
 
         await self.run_engine()
 
@@ -311,6 +334,8 @@ mergeable_state: clean
 
         await self.setup_repo(yaml.dump(rules))
         p = await self.create_pr()
+
+        await self._mock_get_all_branch_protection_rules()
 
         await self.run_engine()
 
