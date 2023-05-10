@@ -1635,10 +1635,14 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         )
 
     async def branch_protection_unprotect(self, branch: str) -> None:
-        await self.client_admin.delete(
-            f"{self.url_origin}/branches/{branch}/protection",
-            headers={"Accept": "application/vnd.github.luke-cage-preview+json"},
-        )
+        try:
+            await self.client_admin.delete(
+                f"{self.url_origin}/branches/{branch}/protection",
+                headers={"Accept": "application/vnd.github.luke-cage-preview+json"},
+            )
+        except http.HTTPNotFound as exc:
+            if "Branch not protected" not in exc.message:
+                raise
 
     async def branch_protection_protect(
         self, branch: str, protection: dict[str, typing.Any]
