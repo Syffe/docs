@@ -241,7 +241,9 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         assert not await self.is_pull_merged(p["number"])
 
         check_run_p = await self.wait_for_check_run(
-            conclusion="action_required", status="completed", name="Rule: merge (merge)"
+            conclusion="failure",
+            status="completed",
+            name="Rule: merge (merge)",
         )
         assert check_run_p["check_run"]["pull_requests"][0]["number"] == p["number"]
         assert (
@@ -252,17 +254,18 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
         # Edit and fixes the typo
         await self.edit_pull(
-            p["number"], body="It fixes it\n\n## Commit Message\n\nHere it is valid now"
+            p["number"],
+            body="It fixes it\n\n## Commit Message\n\nHere it is valid now",
         )
-        await self.wait_for("pull_request", {"action": "edited"})
-
+        await self.wait_for_pull_request("edited", p["number"])
+        await self.create_comment_as_admin(p["number"], "@mergifyio refresh")
         await self.run_engine()
 
-        p_merged = await self.wait_for_pull_request("closed", pr_number=p["number"])
-        assert p_merged["pull_request"]["merged"]
-
+        await self.wait_for_pull_request("closed", p["number"], merged=True)
         await self.wait_for_check_run(
-            conclusion="success", status="completed", name="Rule: merge (merge)"
+            conclusion="success",
+            status="completed",
+            name="Rule: merge (merge)",
         )
 
     async def test_rebase(self) -> None:

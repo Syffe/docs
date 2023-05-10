@@ -66,7 +66,7 @@ class TestEditAction(base.FunctionalTestBase):
         rules = {
             "pull_request_rules": [
                 {
-                    "name": "convert Pull Request to Draft",
+                    "name": "Remove Draft from Pull Request",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {
                         "edit": {"draft": False},
@@ -95,7 +95,7 @@ class TestEditAction(base.FunctionalTestBase):
                     "pull_request": p["number"],
                     "metadata": {"draft": False},
                     "timestamp": mock.ANY,
-                    "trigger": "Rule: convert Pull Request to Draft",
+                    "trigger": "Rule: Remove Draft from Pull Request",
                     "repository": p_updated["pull_request"]["base"]["repo"][
                         "full_name"
                     ],

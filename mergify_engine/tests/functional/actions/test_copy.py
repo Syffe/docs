@@ -1,8 +1,12 @@
+import pytest
+
 from mergify_engine import context
 from mergify_engine import yaml
+from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 
 
+@pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
 class CopyActionTestBase(base.FunctionalTestBase):
     async def test_copy_with_no_matching_branch(self) -> None:
         rules = {
