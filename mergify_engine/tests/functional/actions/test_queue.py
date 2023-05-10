@@ -929,12 +929,12 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "default merge",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }
@@ -988,7 +988,7 @@ class TestQueueAction(base.FunctionalTestBase):
         async def assert_queued() -> None:
             check = first(
                 await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-                key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+                key=lambda c: c["name"] == "Rule: default merge (queue)",
             )
             assert check is not None
             assert (
@@ -1035,12 +1035,12 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "default merge",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }
@@ -1080,7 +1080,7 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "merge fast-forward",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue",
@@ -1088,7 +1088,6 @@ class TestQueueAction(base.FunctionalTestBase):
                     "actions": {
                         "queue": {
                             "name": "default",
-                            "priority": "high",
                             "method": "fast-forward",
                         }
                     },
@@ -1140,7 +1139,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
         check = first(
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+            key=lambda c: c["name"] == "Rule: merge fast-forward (queue)",
         )
         assert check is not None
         assert (
@@ -1156,7 +1155,7 @@ class TestQueueAction(base.FunctionalTestBase):
             await context.Context(
                 self.repository_ctxt, p1_merged["pull_request"]
             ).pull_engine_check_runs,
-            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+            key=lambda c: c["name"] == "Rule: merge fast-forward (queue)",
         )
         assert check is not None
         assert check["conclusion"] == "success"
@@ -1198,7 +1197,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
         check = first(
             await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
-            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+            key=lambda c: c["name"] == "Rule: merge fast-forward (queue)",
         )
         assert check is not None
         assert (
@@ -1214,7 +1213,7 @@ class TestQueueAction(base.FunctionalTestBase):
             await context.Context(
                 self.repository_ctxt, p2_merged["pull_request"]
             ).pull_engine_check_runs,
-            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+            key=lambda c: c["name"] == "Rule: merge fast-forward (queue)",
         )
         assert check is not None
         assert check["conclusion"] == "success"
@@ -1469,12 +1468,12 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "default merge",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }
@@ -1522,7 +1521,7 @@ class TestQueueAction(base.FunctionalTestBase):
         async def assert_queued() -> None:
             check = first(
                 await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-                key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+                key=lambda c: c["name"] == "Rule: default merge (queue)",
             )
             assert check is not None
             assert (
@@ -1612,7 +1611,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 ],
                 "pull_request_rules": [
                     {
-                        "name": "Merge priority high",
+                        "name": "default merge",
                         "conditions": [
                             f"base={self.main_branch_name}",
                             "label=queue",
@@ -1620,7 +1619,6 @@ class TestQueueAction(base.FunctionalTestBase):
                         "actions": {
                             "queue": {
                                 "name": "default",
-                                "priority": "high",
                                 "update_method": "rebase",
                                 "update_bot_account": '{% if not author or author.endswith("[bot]") -%}\nmergify-test4\n{% else -%}\n{{ author }}\n{% endif -%}',
                             }
@@ -1645,7 +1643,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 ],
                 "pull_request_rules": [
                     {
-                        "name": "Merge priority high",
+                        "name": "default merge",
                         "conditions": [
                             f"base={self.main_branch_name}",
                             "label=queue",
@@ -1653,7 +1651,6 @@ class TestQueueAction(base.FunctionalTestBase):
                         "actions": {
                             "queue": {
                                 "name": "default",
-                                "priority": "high",
                             }
                         },
                     },
@@ -1673,7 +1670,7 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "default merge",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue",
@@ -1681,7 +1678,6 @@ class TestQueueAction(base.FunctionalTestBase):
                     "actions": {
                         "queue": {
                             "name": "default",
-                            "priority": "high",
                             "update_method": "rebase",
                             "update_bot_account": "{% if 1 -%}mergify-test4{% endif -%}",
                         }
@@ -1737,7 +1733,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
         check = first(
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+            key=lambda c: c["name"] == "Rule: default merge (queue)",
         )
         assert check is not None
         assert (
@@ -1794,12 +1790,12 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "default merge",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }
@@ -1869,7 +1865,7 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "default merge",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "status-success=continuous-integration/fake-ci",
@@ -1877,7 +1873,6 @@ class TestQueueAction(base.FunctionalTestBase):
                     "actions": {
                         "queue": {
                             "name": "default",
-                            "priority": "high",
                             "update_method": "rebase",
                         }
                     },
@@ -1948,7 +1943,7 @@ class TestQueueAction(base.FunctionalTestBase):
         ).pull_engine_check_runs
         check = first(
             p2_checks,
-            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+            key=lambda c: c["name"] == "Rule: default merge (queue)",
         )
         assert check is not None
         summary = check["output"]["summary"]
@@ -1984,7 +1979,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "pull_request": p1["number"],
                     "repository": self.repository_ctxt.repo["full_name"],
                     "timestamp": anys.ANY_AWARE_DATETIME_STR,
-                    "trigger": "Rule: Merge priority high",
+                    "trigger": "Rule: default merge",
                 },
                 {
                     "event": "action.queue.leave",
@@ -2003,7 +1998,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "pull_request": p1["number"],
                     "repository": self.repository_ctxt.repo["full_name"],
                     "timestamp": anys.ANY_AWARE_DATETIME_STR,
-                    "trigger": "Rule: Merge priority high",
+                    "trigger": "Rule: default merge",
                 },
                 {
                     "event": "action.queue.checks_end",
@@ -2064,7 +2059,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "pull_request": p1["number"],
                     "repository": self.repository_ctxt.repo["full_name"],
                     "timestamp": anys.ANY_AWARE_DATETIME_STR,
-                    "trigger": "Rule: Merge priority high",
+                    "trigger": "Rule: default merge",
                 },
             ],
             "per_page": 5,
@@ -2175,12 +2170,12 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "default merge",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }
@@ -2243,14 +2238,14 @@ class TestQueueAction(base.FunctionalTestBase):
 
         check = first(
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+            key=lambda c: c["name"] == "Rule: default merge (queue)",
         )
         assert check is not None
         assert check["output"]["title"] == "The pull request rule doesn't match anymore"
 
         check = first(
             await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
-            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+            key=lambda c: c["name"] == "Rule: default merge (queue)",
         )
         assert check is not None
         assert (
@@ -2260,7 +2255,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         check = first(
             await context.Context(self.repository_ctxt, p3).pull_engine_check_runs,
-            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+            key=lambda c: c["name"] == "Rule: default merge (queue)",
         )
         assert check is not None
         assert (
@@ -2290,7 +2285,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "repository": p1["base"]["repo"]["full_name"],
                     "pull_request": p1["number"],
                     "timestamp": anys.ANY_AWARE_DATETIME_STR,
-                    "trigger": "Rule: Merge priority high",
+                    "trigger": "Rule: default merge",
                 },
                 {
                     "event": "action.queue.checks_end",
@@ -2347,12 +2342,12 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "default merge",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }
@@ -2416,7 +2411,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         check = first(
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+            key=lambda c: c["name"] == "Rule: default merge (queue)",
         )
         assert check is not None
         assert check["conclusion"] == "cancelled"
@@ -2430,7 +2425,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         check = first(
             await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
-            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+            key=lambda c: c["name"] == "Rule: default merge (queue)",
         )
         assert check is not None
         assert check["conclusion"] is None
@@ -2441,7 +2436,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         check = first(
             await context.Context(self.repository_ctxt, p3).pull_engine_check_runs,
-            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+            key=lambda c: c["name"] == "Rule: default merge (queue)",
         )
         assert check is not None
         assert check["conclusion"] is None
@@ -2585,12 +2580,12 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "default merge",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }
@@ -2714,12 +2709,12 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "default merge",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }
@@ -2879,12 +2874,12 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "default merge",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }
@@ -3037,12 +3032,12 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "default merge",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }
@@ -3550,12 +3545,12 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "default merge",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }
@@ -3590,12 +3585,12 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "merge default",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }
@@ -3626,13 +3621,13 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "merge default",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue",
                         "status-success=continuous-integration/fake-ci",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }
@@ -3697,7 +3692,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
         check = first(
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+            key=lambda c: c["name"] == "Rule: merge default (queue)",
         )
         assert check is not None
         assert (
@@ -3710,7 +3705,7 @@ class TestQueueAction(base.FunctionalTestBase):
         # Ensure it have not been cancelled on pending event
         check = first(
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+            key=lambda c: c["name"] == "Rule: merge default (queue)",
         )
         assert check is not None
         assert (
@@ -3739,12 +3734,12 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "default merge",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }
@@ -3939,12 +3934,12 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "default merge",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }
@@ -4081,12 +4076,12 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "merge default",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }
@@ -4252,12 +4247,12 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "merge default",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }
@@ -4363,12 +4358,12 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "merge default",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }
@@ -4453,12 +4448,12 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "merge default",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }
@@ -4710,12 +4705,12 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "merge default",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }
@@ -4838,6 +4833,30 @@ class TestQueueAction(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "default",
+                    "priority_rules": [
+                        {
+                            "name": "high priority",
+                            "conditions": [
+                                "label=high",
+                            ],
+                            "priority": "high",
+                        },
+                        {
+                            "name": "default priority",
+                            "conditions": [
+                                "-label=high",
+                                "-label=low",
+                            ],
+                            "priority": "medium",
+                        },
+                        {
+                            "name": "low priority",
+                            "conditions": [
+                                "label=low",
+                            ],
+                            "priority": "low",
+                        },
+                    ],
                     "conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
@@ -4847,28 +4866,23 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "merge default",
                     "conditions": [
                         f"base={self.main_branch_name}",
-                        "label=high",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
-                },
-                {
-                    "name": "Merge priority low",
-                    "conditions": [
-                        f"base={self.main_branch_name}",
-                        "label=low",
-                    ],
-                    "actions": {"queue": {"name": "default", "priority": "low"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }
         await self.setup_repo(yaml.dump(rules))
 
+        # put 3 PRs in queue
         p1 = await self.create_pr()
         p2 = await self.create_pr()
         p3 = await self.create_pr()
+        await self.add_label(p1["number"], "low")
+        await self.add_label(p2["number"], "low")
+        await self.add_label(p3["number"], "low")
 
         # To force others to be rebased
         p_merged = await self.create_pr()
@@ -4876,22 +4890,18 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.wait_for("pull_request", {"action": "closed"})
         await self.run_engine()
         p_merged = await self.get_pull(p_merged["number"])
-
-        # Put first PR in queue
-        await self.add_label(p1["number"], "low")
-        await self.add_label(p2["number"], "low")
-        await self.run_engine()
-
         q = await self.get_train()
 
-        # my 3 PRs + 2 merge queue PR
+        # my 3 PRs + 3 merge queue PR (3 spec checks)
         pulls = await self.get_pulls()
-        assert len(pulls) == 5
+        assert len(pulls) == 6
 
-        tmp_mq_p1 = pulls[1]
-        tmp_mq_p2 = pulls[0]
+        tmp_mq_p1 = pulls[2]
+        tmp_mq_p2 = pulls[1]
+        tmp_mq_p3 = pulls[0]
         assert tmp_mq_p1["number"] not in [p1["number"], p2["number"], p3["number"]]
         assert tmp_mq_p2["number"] not in [p1["number"], p2["number"], p3["number"]]
+        assert tmp_mq_p3["number"] not in [p1["number"], p2["number"], p3["number"]]
         assert p_merged["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
@@ -4911,6 +4921,13 @@ class TestQueueAction(base.FunctionalTestBase):
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_mq_p2["number"],
                 ),
+                base.MergeQueueCarMatcher(
+                    [p3["number"]],
+                    [p1["number"], p2["number"]],
+                    p_merged["merge_commit_sha"],
+                    merge_train.TrainCarChecksType.DRAFT,
+                    tmp_mq_p3["number"],
+                ),
             ],
         )
 
@@ -4929,14 +4946,16 @@ class TestQueueAction(base.FunctionalTestBase):
 
         q = await self.get_train()
 
-        # my 3 PRs + 2 merge queue PR
+        # my 3 PRs + 3 merge queue PR (3 spec checks)
         pulls = await self.get_pulls()
-        assert len(pulls) == 5
+        assert len(pulls) == 6
 
-        tmp_mq_p1 = pulls[1]
-        tmp_mq_p2 = pulls[0]
+        tmp_mq_p1 = pulls[2]
+        tmp_mq_p2 = pulls[1]
+        tmp_mq_p3 = pulls[0]
         assert tmp_mq_p1["number"] not in [p1["number"], p2["number"], p3["number"]]
         assert tmp_mq_p2["number"] not in [p1["number"], p2["number"], p3["number"]]
+        assert tmp_mq_p3["number"] not in [p1["number"], p2["number"], p3["number"]]
         assert p_new_config["merge_commit_sha"] is not None
         await self.assert_merge_queue_contents(
             q,
@@ -4956,13 +4975,20 @@ class TestQueueAction(base.FunctionalTestBase):
                     merge_train.TrainCarChecksType.DRAFT,
                     tmp_mq_p2["number"],
                 ),
+                base.MergeQueueCarMatcher(
+                    [p3["number"]],
+                    [p1["number"], p2["number"]],
+                    p_new_config["merge_commit_sha"],
+                    merge_train.TrainCarChecksType.DRAFT,
+                    tmp_mq_p3["number"],
+                ),
             ],
         )
 
-        # Put second PR at the begining of the queue via pr priority Checks
+        # Put last PR at the begining of the queue via pr priority Checks
         # must not be interrupted due to
         # disallow_checks_interruption_from_queues config
-        await self.add_label(p3["number"], "high")
+        await self.remove_label(p3["number"], "low")
         await self.run_engine()
 
         pulls = await self.get_pulls()
@@ -4970,7 +4996,6 @@ class TestQueueAction(base.FunctionalTestBase):
 
         tmp_mq_p3 = pulls[0]
         assert tmp_mq_p3["number"] not in [p1["number"], p2["number"], p3["number"]]
-
         await self.assert_merge_queue_contents(
             q,
             p_new_config["merge_commit_sha"],
@@ -5335,12 +5360,12 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "merge default",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }
@@ -5421,7 +5446,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         check = first(
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+            key=lambda c: c["name"] == "Rule: merge default (queue)",
         )
         assert check is not None
         assert (
@@ -5449,14 +5474,14 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "default merge",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "status-success=continuous-integration/fake-ci",
                         "status-success=very-long-ci",
                         "label=queue",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }
@@ -5501,7 +5526,7 @@ class TestQueueAction(base.FunctionalTestBase):
         async def assert_queued() -> None:
             check = first(
                 await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-                key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+                key=lambda c: c["name"] == "Rule: default merge (queue)",
             )
             assert check is not None
             assert (
@@ -5536,14 +5561,14 @@ class TestQueueAction(base.FunctionalTestBase):
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "merge default",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "status-success=continuous-integration/fake-ci",
                         "status-success=very-long-ci",
                         "label=queue",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }
@@ -5588,7 +5613,7 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.run_engine()
         check = first(
             await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-            key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
+            key=lambda c: c["name"] == "Rule: merge default (queue)",
         )
         assert check is not None
         assert (
@@ -6271,7 +6296,6 @@ pull_request_rules:
     actions:
       queue:
         name: default
-        priority: medium
         update_method: rebase
         require_branch_protection: false
 """
@@ -6439,11 +6463,11 @@ pull_request_rules:
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "merge default",
                     "conditions": [
                         f"base={featureA}",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }
@@ -6500,20 +6524,20 @@ pull_request_rules:
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "merge high",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=high",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
                 {
-                    "name": "Merge priority low",
+                    "name": "merge low",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=low",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "low"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }

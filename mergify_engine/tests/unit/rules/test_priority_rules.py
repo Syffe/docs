@@ -13,8 +13,8 @@ from mergify_engine.tests.unit import conftest
 @pytest.mark.parametrize(
     "labels,expected_priority",
     (
-        (["queue-bar"], 42),
-        (["queue-foo"], 10048),
+        (["queue-bar"], 2000),
+        (["queue-foo"], 12000),
         (["queue-foo", "high"], 13000),
         (["queue-foo", "medium"], 12000),
         (["queue-foo", "low"], 11000),
@@ -67,14 +67,12 @@ pull_request_rules:
   actions:
     queue:
       name: bar
-      priority: 42
 - name: foo
   conditions:
     - label=queue-foo
   actions:
     queue:
       name: foo
-      priority: 48
 """
     )
 

@@ -480,12 +480,12 @@ pull_requests:
             ],
             "pull_request_rules": [
                 {
-                    "name": "Merge priority high",
+                    "name": "merge default",
                     "conditions": [
                         f"base={self.main_branch_name}",
                         "label=queue",
                     ],
-                    "actions": {"queue": {"name": "default", "priority": "high"}},
+                    "actions": {"queue": {"name": "default"}},
                 },
             ],
         }
