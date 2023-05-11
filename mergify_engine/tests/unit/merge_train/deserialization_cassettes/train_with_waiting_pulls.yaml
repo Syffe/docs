@@ -1,0 +1,36 @@
+train_dumped: |
+  {
+    "waiting_pulls": [
+      {
+        "user_pull_request_number": 123,
+        "queued_at": "2023-05-04 14:21:15.695247+00:00",
+        "config": {
+          "update_method": "rebase",
+          "priority": 1000,
+          "effective_priority": 1000,
+          "bot_account": null,
+          "update_bot_account": "test",
+          "name": "default",
+          "autosquash": false
+        }
+      }
+    ],
+    "current_base_sha": "abc123",
+    "cars": [],
+    "partition_name": "__default__"
+  }
+
+train_properties_asserts:
+  partition_name: "__default__"
+  cars: []
+  waiting_pulls:
+    - user_pull_request_number: 123
+      queued_at: "2023-05-04 14:21:15.695247+00:00"
+      config:
+        update_method: "rebase"
+        priority: 1000
+        effective_priority: 1000
+        bot_account: null
+        update_bot_account: "test"
+        name: "default"
+        autosquash: false

@@ -1,0 +1,16 @@
+test_infos: |
+  Retrocompatibility test to make sure that a Train that has been saved
+  with a partition_name set to `None` gets correctly loaded with a
+  partition_name set to the new default partition name `"__default__"`
+
+train_dumped: |
+  {
+    "waiting_pulls": [],
+    "current_base_sha": "abc123",
+    "cars": [],
+    "partition_name": null
+  }
+
+train_properties_asserts:
+  partition_name: "__default__"
+  cars: []

@@ -124,8 +124,10 @@ class Train:
             **self.log_queue_extras,
         )
 
-    def to_serialized(self) -> "Train.Serialized | None":
-        if not self._waiting_pulls and not self._cars:
+    def to_serialized(
+        self, serialize_if_empty: bool = False
+    ) -> "Train.Serialized | None":
+        if not self._waiting_pulls and not self._cars and not serialize_if_empty:
             return None
 
         return self.Serialized(

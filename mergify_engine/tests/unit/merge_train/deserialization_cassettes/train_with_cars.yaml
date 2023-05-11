@@ -1,0 +1,153 @@
+test_infos: |
+  Test loading a train with a car that has data nearly for every
+  attributes just to make sure the deserialization process works properly
+
+train_dumped: |
+  {
+    "waiting_pulls": [],
+    "current_base_sha": "abc123",
+    "cars": [{
+      "train_car_state": {
+        "outcome": "mergeable",
+        "ci_state": "success",
+        "ci_started_at": "2023-05-04 14:21:15.695247+00:00",
+        "ci_ended_at": "2023-05-04 14:21:15.695247+00:00",
+        "outcome_message": "merge this",
+        "checks_type": "DRAFT",
+        "frozen_by": null,
+        "waiting_for_freeze_start_dates": [],
+        "waiting_for_freeze_end_dates": [],
+        "waiting_for_schedule_start_dates": [],
+        "waiting_for_schedule_end_dates": []
+      },
+      "initial_embarked_pulls": [
+        {
+          "user_pull_request_number": 123,
+          "queued_at": "2023-05-04 14:21:15.695247+00:00",
+          "config": {
+            "update_method": "rebase",
+            "priority": 1000,
+            "effective_priority": 1000,
+            "bot_account": null,
+            "update_bot_account": "test",
+            "name": "default",
+            "autosquash": false
+          }
+        }
+      ],
+      "still_queued_embarked_pulls": [{
+        "user_pull_request_number": 123,
+        "queued_at": "2023-05-04 14:21:15.695247+00:00",
+        "config": {
+          "update_method": "rebase",
+          "priority": 1000,
+          "effective_priority": 1000,
+          "bot_account": null,
+          "update_bot_account": "test",
+          "name": "default",
+          "autosquash": false
+        }
+      }],
+      "parent_pull_request_numbers": [123],
+      "initial_current_base_sha": "someshaiguess",
+      "queue_pull_request_number": 1234,
+      "failure_history": [],
+      "head_branch": "main-head",
+      "last_checks": [{
+        "name": "some check name",
+        "description": "some check description",
+        "url": "www.check-run-description.com",
+        "state": "success",
+        "avatar_url": null
+      }],
+      "last_conditions_evaluation": {
+        "match": true,
+        "label": "hellothere",
+        "is_label_user_input": false,
+        "description": "some condition description",
+        "attribute_name": "label",
+        "operator": "=",
+        "schedule": null,
+        "subconditions": [],
+        "evaluations": [{
+          "pull_request": 123,
+          "match": true,
+          "evaluation_error": null,
+          "related_checks": [],
+          "next_evaluation_at": null
+        }]
+      },
+      "checks_ended_timestamp": null,
+      "queue_branch_name": "tmp-abc123",
+      "delegating_train_cars_partition_names": []
+    }],
+    "partition_name": "__default__"
+  }
+
+train_properties_asserts:
+  partition_name: "__default__"
+  cars:
+    - train_car_state:
+        outcome: "mergeable"
+        ci_state: "success"
+        ci_started_at: "2023-05-04 14:21:15.695247+00:00"
+        ci_ended_at: "2023-05-04 14:21:15.695247+00:00"
+        outcome_message: "merge this"
+        checks_type: "DRAFT"
+        frozen_by: null
+        waiting_for_freeze_start_dates: []
+        waiting_for_freeze_end_dates: []
+        waiting_for_schedule_start_dates: []
+        waiting_for_schedule_end_dates: []
+      initial_embarked_pulls:
+        - user_pull_request_number: 123
+          queued_at: "2023-05-04 14:21:15.695247+00:00"
+          config:
+            update_method: "rebase"
+            priority: 1000
+            effective_priority: 1000
+            bot_account: null
+            update_bot_account: "test"
+            name: "default"
+            autosquash: false
+      still_queued_embarked_pulls:
+        - user_pull_request_number: 123
+          queued_at: "2023-05-04 14:21:15.695247+00:00"
+          config:
+            update_method: "rebase"
+            priority: 1000
+            effective_priority: 1000
+            bot_account: null
+            update_bot_account: "test"
+            name: "default"
+            autosquash: false
+      initial_current_base_sha: "someshaiguess"
+      parent_pull_request_numbers:
+        - 123
+      queue_pull_request_number: 1234
+      failure_history: []
+      head_branch: "main-head"
+      last_checks:
+        - name: "some check name"
+          description: "some check description"
+          url: "www.check-run-description.com"
+          state: "success"
+          avatar_url: null
+      last_conditions_evaluation:
+        match: true
+        label: "hellothere"
+        is_label_user_input: false
+        description: "some condition description"
+        attribute_name: "label"
+        operator: "="
+        schedule: null
+        subconditions: []
+        evaluations:
+          - pull_request: 123
+            match: true
+            evaluation_error: null
+            related_checks: []
+            next_evaluation_at: null
+      checks_ended_timestamp: null
+      queue_branch_name: "tmp-abc123"
+      delegating_train_cars_partition_names: []
