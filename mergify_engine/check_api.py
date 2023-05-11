@@ -6,6 +6,7 @@ import typing
 
 import daiquiri
 
+from mergify_engine import dashboard
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import json
@@ -231,7 +232,7 @@ async def set_check_run(
             "head_sha": ctxt.pull["head"]["sha"],
             "status": typing.cast(github_types.GitHubCheckRunStatus, status.value),
             "started_at": typing.cast(github_types.ISODateTimeType, started_at),
-            "details_url": f"{ctxt.pull['html_url']}/checks",
+            "details_url": dashboard.get_queue_pull_request_details_url(ctxt.pull),
             "output": {
                 "title": result.title,
                 "summary": result.summary,
