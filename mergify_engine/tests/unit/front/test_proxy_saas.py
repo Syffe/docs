@@ -187,7 +187,6 @@ async def test_saas_subscription_with_saas_mode_false(
         "billable_seats_count": 0,
         "billing_manager": False,
         "plan": {
-            "discontinued": False,
             "features": [
                 "private_repository",
                 "public_repository",

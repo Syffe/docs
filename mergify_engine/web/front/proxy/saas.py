@@ -118,7 +118,6 @@ async def saas_subscription(
             "subscription": None,
             "plan": {
                 "name": "OnPremise Premium",
-                "discontinued": False,
                 "features": [
                     "private_repository",
                     "public_repository",
