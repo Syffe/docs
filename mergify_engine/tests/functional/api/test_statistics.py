@@ -568,6 +568,19 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
         with freeze_time("2022-08-18T10:00:00", tick=True):
             await self.setup_repo(yaml.dump(rules))
 
+            r = await self.admin_app.get(
+                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/stats/queue_checks_outcome",
+            )
+
+            assert r.status_code == 200
+            assert len(r.json()) == 1
+            assert r.json()[0]["partition_name"] == partr_config.DEFAULT_PARTITION_NAME
+            assert len(r.json()[0]["queues"]) == 1
+            assert r.json()[0]["queues"][0]["queue_name"] == "default"
+            assert (
+                r.json()[0]["queues"][0]["queue_checks_outcome"]
+                == queue_statistics.BASE_QUEUE_CHECKS_OUTCOME_T_DICT
+            )
             # #####
             # Create FailureByReason
             p1 = await self.create_pr()
@@ -624,6 +637,29 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             assert r.json()[queue_utils.PrDequeued.unqueue_code] == 2
             assert r.json()[queue_utils.PrAheadDequeued.unqueue_code] == 3
             assert r.json()["SUCCESS"] == 1
+
+            r = await self.admin_app.get(
+                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/stats/queue_checks_outcome",
+            )
+
+            assert r.status_code == 200
+            assert len(r.json()) == 1
+            assert r.json()[0]["partition_name"] == partr_config.DEFAULT_PARTITION_NAME
+            assert len(r.json()[0]["queues"]) == 1
+            assert r.json()[0]["queues"][0]["queue_name"] == "default"
+            assert (
+                r.json()[0]["queues"][0]["queue_checks_outcome"][
+                    queue_utils.PrDequeued.unqueue_code
+                ]
+                == 2
+            )
+            assert (
+                r.json()[0]["queues"][0]["queue_checks_outcome"][
+                    queue_utils.PrAheadDequeued.unqueue_code
+                ]
+                == 3
+            )
+            assert r.json()[0]["queues"][0]["queue_checks_outcome"]["SUCCESS"] == 1
 
     async def test_stats_endpoint_timestamp_in_future(self) -> None:
         with freeze_time("2022-08-18T10:00:00"):

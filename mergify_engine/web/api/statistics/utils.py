@@ -32,6 +32,22 @@ async def get_queue_checks_outcome_for_queue(
     return stats[queue_name]
 
 
+async def get_queue_checks_outcome_for_all_queues(
+    repository_ctxt: context.Repository,
+    partition_name: partr_config.PartitionRuleName,
+    branch_name: str | None = None,
+    start_at: int | None = None,
+    end_at: int | None = None,
+) -> dict[qr_config.QueueName, queue_statistics.QueueChecksOutcomeT]:
+    return await queue_statistics.get_queue_checks_outcome_stats(
+        repository_ctxt,
+        partition_name,
+        branch_name=branch_name,
+        start_at=start_at,
+        end_at=end_at,
+    )
+
+
 async def get_checks_duration_stats_for_all_queues(
     repository_ctxt: context.Repository,
     partition_name: partr_config.PartitionRuleName,
