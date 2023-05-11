@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    Added a new statistics endpoint that returns the time_to_merge data
+    for every partition and queues of the repository.
+    The endpoint path is "/v1/repos/{repository_owner}/{repository_name}/stats/time_to_merge".

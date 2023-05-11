@@ -1,6 +1,8 @@
+import dataclasses
 import typing
 
 import fastapi
+import pydantic
 
 from mergify_engine.queue import statistics as queue_statistics
 from mergify_engine.rules.config import partition_rules as partr_config
@@ -11,6 +13,98 @@ from mergify_engine.web.api.statistics import utils as web_stat_utils
 
 
 router = fastapi.APIRouter()
+
+
+@pydantic.dataclasses.dataclass
+class TimeToMergePerQueue:
+    queue_name: qr_config.QueueName = dataclasses.field(
+        metadata={"description": "The name of the queue"}
+    )
+
+    time_to_merge: web_stat_types.TimeToMergeResponse = dataclasses.field(
+        metadata={"description": "The time to merge data for the partition's queue"}
+    )
+
+
+@pydantic.dataclasses.dataclass
+class TimeToMergePerPartition:
+    partition_name: partr_config.PartitionRuleName = dataclasses.field(
+        metadata={
+            "description": f"The name of the partition, if no partition are used the partition name will be `{partr_config.DEFAULT_PARTITION_NAME}`"
+        }
+    )
+
+    queues: list[TimeToMergePerQueue] = dataclasses.field(
+        metadata={
+            "description": "The time to merge data for each queue in the current partition"
+        }
+    )
+
+
+@router.get(
+    "/repos/{owner}/{repository}/stats/time_to_merge",
+    summary="Time to merge statistics for every queues and partitions",
+    description="Get the average time to merge statistics, in seconds, for all the queues and partitions in the repository",
+    response_model=list[TimeToMergePerPartition],
+)
+async def get_time_to_merge_stats_for_all_queues_and_partitions_endpoint(
+    repository_ctxt: security.Repository,
+    queue_rules: security.QueueRules,
+    partition_rules: security.PartitionRules,
+    at: typing.Annotated[
+        web_stat_utils.TimestampNotInFuture | None,
+        fastapi.Query(
+            description="Retrieve the time to merge at this timestamp (in seconds)",
+        ),
+    ] = None,
+    branch: typing.Annotated[
+        str | None,
+        fastapi.Query(
+            description="The name of the branch on which we want the statistics",
+        ),
+    ] = None,
+) -> list[TimeToMergePerPartition]:
+    if not len(partition_rules):
+        partition_names = [partr_config.DEFAULT_PARTITION_NAME]
+    else:
+        partition_names = [rule.name for rule in partition_rules]
+
+    queue_names = [rule.name for rule in queue_rules]
+
+    data: list[TimeToMergePerPartition] = []
+    for part_name in partition_names:
+        ttm_queues = await web_stat_utils.get_time_to_merge_stats_for_all_queues(
+            repository_ctxt,
+            part_name,
+            branch,
+            at,
+        )
+
+        queues: list[TimeToMergePerQueue] = []
+        for queue_name in queue_names:
+            if queue_name in ttm_queues:
+                ttm_data = ttm_queues[queue_name]
+            else:
+                ttm_data = web_stat_types.TimeToMergeResponse(
+                    mean=None,
+                    median=None,
+                )
+
+            queues.append(
+                TimeToMergePerQueue(
+                    queue_name=queue_name,
+                    time_to_merge=ttm_data,
+                )
+            )
+
+        data.append(
+            TimeToMergePerPartition(
+                partition_name=part_name,
+                queues=queues,
+            )
+        )
+
+    return data
 
 
 @router.get(

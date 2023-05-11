@@ -7,6 +7,7 @@ from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.queue import statistics as queue_statistics
 from mergify_engine.queue import utils as queue_utils
+from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests.functional import base
 
 
@@ -50,6 +51,17 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             assert r.status_code == 200
             assert r.json()["median"] is None
 
+            r = await self.admin_app.get(
+                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/stats/time_to_merge",
+            )
+
+            assert r.status_code == 200
+            assert len(r.json()) == 1
+            assert r.json()[0]["partition_name"] == partr_config.DEFAULT_PARTITION_NAME
+            assert len(r.json()[0]["queues"]) == 1
+            assert r.json()[0]["queues"][0]["queue_name"] == "default"
+            assert r.json()[0]["queues"][0]["time_to_merge"]["median"] is None
+
             p1 = await self.create_pr()
             p2 = await self.create_pr()
 
@@ -85,6 +97,17 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
             )
             previous_result = r.json()["median"]
 
+            r = await self.admin_app.get(
+                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/stats/time_to_merge",
+            )
+
+            assert r.status_code == 200
+            assert len(r.json()) == 1
+            assert len(r.json()[0]["queues"]) == 1
+            assert (
+                r.json()[0]["queues"][0]["time_to_merge"]["median"] == previous_result
+            )
+
         with freeze_time(
             start_date + (queue_statistics.QUERY_MERGE_QUEUE_STATS_RETENTION / 2),
             tick=True,
@@ -96,6 +119,17 @@ class TestStatisticsEndpoints(base.FunctionalTestBase):
 
             assert r.status_code == 200
             assert r.json()["median"] == previous_result
+
+            r = await self.admin_app.get(
+                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/stats/time_to_merge?at={at_timestamp}",
+            )
+
+            assert r.status_code == 200
+            assert len(r.json()) == 1
+            assert len(r.json()[0]["queues"]) == 1
+            assert (
+                r.json()[0]["queues"][0]["time_to_merge"]["median"] == previous_result
+            )
 
     async def test_time_to_merge_endpoint_with_schedule(self) -> None:
         rules = {
