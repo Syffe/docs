@@ -62,7 +62,7 @@ class TestDismissReviewsAction(base.FunctionalTestBase):
         self.assertEqual(
             [("APPROVED", "mergify-test1")],
             [
-                (r["state"], r["user"]["login"])
+                (r["state"], r["user"] and r["user"]["login"])
                 for r in await self.get_reviews(p["number"])
             ],
         )
@@ -129,7 +129,7 @@ Unknown pull request attribute: Loser
         self.assertEqual(
             [("APPROVED", "mergify-test1")],
             [
-                (r["state"], r["user"]["login"])
+                (r["state"], r["user"] and r["user"]["login"])
                 for r in await self.get_reviews(p["number"])
             ],
         )
@@ -143,7 +143,7 @@ Unknown pull request attribute: Loser
         self.assertEqual(
             [("DISMISSED", "mergify-test1")],
             [
-                (r["state"], r["user"]["login"])
+                (r["state"], r["user"] and r["user"]["login"])
                 for r in await self.get_reviews(p["number"])
             ],
         )
@@ -153,7 +153,7 @@ Unknown pull request attribute: Loser
         self.assertEqual(
             [("DISMISSED", "mergify-test1"), ("CHANGES_REQUESTED", "mergify-test1")],
             [
-                (r["state"], r["user"]["login"])
+                (r["state"], r["user"] and r["user"]["login"])
                 for r in await self.get_reviews(p["number"])
             ],
         )
@@ -168,7 +168,7 @@ Unknown pull request attribute: Loser
         self.assertEqual(
             [("DISMISSED", "mergify-test1"), ("DISMISSED", "mergify-test1")],
             [
-                (r["state"], r["user"]["login"])
+                (r["state"], r["user"] and r["user"]["login"])
                 for r in await self.get_reviews(p["number"])
             ],
         )
@@ -228,7 +228,7 @@ Unknown pull request attribute: Loser
         self.assertEqual(
             [("APPROVED", "mergify-test1")],
             [
-                (r["state"], r["user"]["login"])
+                (r["state"], r["user"] and r["user"]["login"])
                 for r in await self.get_reviews(p["number"])
             ],
         )
@@ -245,7 +245,7 @@ Unknown pull request attribute: Loser
         self.assertEqual(
             [("APPROVED", "mergify-test1")],
             [
-                (r["state"], r["user"]["login"])
+                (r["state"], r["user"] and r["user"]["login"])
                 for r in await self.get_reviews(p["number"])
             ],
         )
@@ -276,7 +276,7 @@ Unknown pull request attribute: Loser
         self.assertEqual(
             [("APPROVED", "mergify-test1"), ("APPROVED", "mergify-test4")],
             [
-                (r["state"], r["user"]["login"])
+                (r["state"], r["user"] and r["user"]["login"])
                 for r in await self.get_reviews(p["number"])
             ],
         )
@@ -287,7 +287,7 @@ Unknown pull request attribute: Loser
         self.assertEqual(
             [("DISMISSED", "mergify-test1"), ("APPROVED", "mergify-test4")],
             [
-                (r["state"], r["user"]["login"])
+                (r["state"], r["user"] and r["user"]["login"])
                 for r in await self.get_reviews(p["number"])
             ],
         )
@@ -326,7 +326,7 @@ Unknown pull request attribute: Loser
         self.assertEqual(
             [("APPROVED", "mergify-test1")],
             [
-                (r["state"], r["user"]["login"])
+                (r["state"], r["user"] and r["user"]["login"])
                 for r in await self.get_reviews(p["number"])
             ],
         )

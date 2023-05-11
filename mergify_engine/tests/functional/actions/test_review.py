@@ -166,7 +166,9 @@ Unknown pull request attribute: hello
 
         r2 = await self.wait_for_pull_request_review("changes_requested")
         assert r2["review"]["body"] == "WTF?"
-        assert r2["review"]["user"]["login"] == "mergify-test4"
+        assert (
+            r2["review"]["user"] and r2["review"]["user"]["login"]
+        ) == "mergify-test4"
 
         # ensure review don't get posted twice
         await self.create_comment(p["number"], "@mergifyio refresh")

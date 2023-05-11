@@ -117,16 +117,20 @@ class DismissReviewsExecutor(
             conf = self.config.get(review["state"].lower(), False)
             if conf is True:
                 to_dismiss.add(review["id"])
-                to_dismiss_users.add(review["user"]["login"])
+                if review["user"] is not None:
+                    to_dismiss_users.add(review["user"]["login"])
             elif conf == FROM_REQUESTED_REVIEWERS:
-                if review["user"]["login"] in requested_reviewers_login:
+                if (
+                    review["user"] is not None
+                    and review["user"]["login"] in requested_reviewers_login
+                ):
                     to_dismiss.add(review["id"])
                     to_dismiss_users.add(review["user"]["login"])
                     to_dismiss_user_from_requested_reviewers.add(
                         review["user"]["login"]
                     )
             elif isinstance(conf, list):
-                if review["user"]["login"] in conf:
+                if review["user"] is not None and review["user"]["login"] in conf:
                     to_dismiss_users.add(review["user"]["login"])
                     to_dismiss.add(review["id"])
 

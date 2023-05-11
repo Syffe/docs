@@ -563,7 +563,7 @@ GitHubCommentAuthorAssociation = typing.Literal[
 
 class GitHubReview(typing.TypedDict):
     id: GitHubReviewIdType
-    user: GitHubAccount
+    user: GitHubAccount | None
     body: str | None
     pull_request: GitHubPullRequest
     repository: GitHubRepository

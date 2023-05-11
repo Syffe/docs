@@ -102,7 +102,8 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
         reviews = reversed(
             list(
                 filter(
-                    lambda r: r["user"]["id"] == review_user_id,
+                    lambda r: r["user"] is not None
+                    and r["user"]["id"] == review_user_id,
                     await self.ctxt.reviews,
                 )
             )
@@ -165,6 +166,8 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
 
             raise
 
+        review = typing.cast(github_types.GitHubReview, response.json())
+
         await signals.send(
             self.ctxt.repository,
             self.ctxt.pull["number"],
@@ -172,9 +175,7 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
             signals.EventReviewMetadata(
                 {
                     "type": self.config["type"],
-                    "reviewer": typing.cast(github_types.GitHubReview, response.json())[
-                        "user"
-                    ]["login"],
+                    "reviewer": (review["user"] and review["user"]["login"]) or None,
                     "message": payload.get("body"),
                 }
             ),

@@ -1748,23 +1748,35 @@ class Context:
 
         if name == "approved-reviews-by":
             _, approvals = await self.consolidated_reviews()
-            return [r["user"]["login"] for r in approvals if r["state"] == "APPROVED"]
+            return [
+                r["user"]["login"]
+                for r in approvals
+                if r["state"] == "APPROVED" and r["user"] is not None
+            ]
 
         if name == "dismissed-reviews-by":
             _, approvals = await self.consolidated_reviews()
-            return [r["user"]["login"] for r in approvals if r["state"] == "DISMISSED"]
+            return [
+                r["user"]["login"]
+                for r in approvals
+                if r["state"] == "DISMISSED" and r["user"] is not None
+            ]
 
         if name == "changes-requested-reviews-by":
             _, approvals = await self.consolidated_reviews()
             return [
                 r["user"]["login"]
                 for r in approvals
-                if r["state"] == "CHANGES_REQUESTED"
+                if r["state"] == "CHANGES_REQUESTED" and r["user"] is not None
             ]
 
         if name == "commented-reviews-by":
             comments, _ = await self.consolidated_reviews()
-            return [r["user"]["login"] for r in comments if r["state"] == "COMMENTED"]
+            return [
+                r["user"]["login"]
+                for r in comments
+                if r["state"] == "COMMENTED" and r["user"] is not None
+            ]
 
         # NOTE(jd) The Check API set conclusion to None for pending.
         if name == "check-success-or-neutral-or-pending":

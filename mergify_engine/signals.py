@@ -63,7 +63,7 @@ class EventCloseMetadata(EventMetadata, total=False):
 
 class EventReviewMetadata(EventMetadata, total=False):
     type: str
-    reviewer: str
+    reviewer: str | None
     message: str | None
 
 
