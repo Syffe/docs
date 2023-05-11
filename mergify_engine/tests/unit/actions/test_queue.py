@@ -387,51 +387,81 @@ def create_context_with_branch_protection_required_status_checks_strict() -> (
 
 
 @pytest.mark.parametrize(
-    ("queue_rule_config"),
+    ("queue_rule_config", "queue_executor_config"),
     (
-        pytest.param({}),
-        pytest.param({"batch_size": 5, "queue_branch_merge_method": "fast-forward"}),
+        ({}, {}),
+        (
+            {"batch_size": 5, "queue_branch_merge_method": "fast-forward"},
+            {},
+        ),
     ),
 )
 async def test_required_status_checks_strict_compatibility_with_queue_rules(
-    queue_rule_config: dict[str, typing.Any]
+    queue_rule_config: dict[str, typing.Any],
+    queue_executor_config: dict[str, typing.Any],
 ) -> None:
     action = create_queue_action(queue_rule_config)
     ctxt = create_context_with_branch_protection_required_status_checks_strict()
+    queue_executor = await queue.QueueExecutor.create(action, ctxt, mock.Mock())
+    queue_executor.config.update(queue_executor_config)  # type: ignore[typeddict-item]
 
     # Nothing raised
     await queue.QueueExecutor._check_config_compatibility_with_branch_protection(
-        action.queue_rule, ctxt
+        ctxt,
+        action.queue_rule.config,
+        queue_executor.config,
     )
 
 
 @pytest.mark.parametrize(
-    ("queue_rule_config", "expected_config_error"),
     (
-        ({"batch_size": 2}, "batch_size>1"),
-        ({"speculative_checks": 2}, "speculative_checks>1"),
-        ({"allow_inplace_checks": False}, "allow_inplace_checks=false"),
+        "queue_rule_config",
+        "queue_executor_config",
+        "expected_config_error_configuration",
+    ),
+    (
+        (
+            {"batch_size": 2},
+            {"update_method": "merge"},
+            "batch_size>1",
+        ),
+        (
+            {"speculative_checks": 2},
+            {},
+            "speculative_checks>1",
+        ),
+        (
+            {"allow_inplace_checks": False},
+            {},
+            "allow_inplace_checks=false",
+        ),
     ),
 )
 async def test_required_status_checks_strict_incompatibility_with_queue_rules(
-    queue_rule_config: dict[str, typing.Any], expected_config_error: str
+    queue_rule_config: dict[str, typing.Any],
+    queue_executor_config: dict[str, typing.Any],
+    expected_config_error_configuration: str,
 ) -> None:
     action = create_queue_action(queue_rule_config)
     ctxt = create_context_with_branch_protection_required_status_checks_strict()
+    queue_executor = await queue.QueueExecutor.create(action, ctxt, mock.Mock())
+    queue_executor.config.update(queue_executor_config)  # type: ignore[typeddict-item]
 
     with pytest.raises(queue.IncompatibleBranchProtection) as e:
         await queue.QueueExecutor._check_config_compatibility_with_branch_protection(
-            action.queue_rule, ctxt
+            ctxt,
+            action.queue_rule.config,
+            queue_executor.config,
         )
 
-    assert e.value.configuration == expected_config_error
+    assert e.value.configuration == expected_config_error_configuration
     assert (
         e.value.branch_protection_setting
         == queue.BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT
     )
-    assert (
-        e.value.message == "The branch protection setting "
-        f"`{queue.BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT}` is not compatible with `{expected_config_error}` "
+    assert e.value.message == (
+        "The branch protection setting "
+        f"`{queue.BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT}` is not compatible with `{expected_config_error_configuration}` "
         "and must be unset."
     )
 
