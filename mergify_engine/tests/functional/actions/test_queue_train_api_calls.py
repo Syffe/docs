@@ -52,7 +52,6 @@ class TestTrainApiCalls(base.FunctionalTestBase):
         p1 = await self.create_pr()
         p2 = await self.create_pr()
 
-        ctxt = context.Context(self.repository_ctxt, p1)
         q = await self.get_train()
         base_sha = await q.get_base_sha()
 
@@ -117,12 +116,10 @@ class TestTrainApiCalls(base.FunctionalTestBase):
         )
         await car.start_checking_with_draft(None)
         assert car.queue_pull_request_number is not None
-        pulls = await self.get_pulls()
-        assert len(pulls) == 3
 
-        tmp_pull = [p for p in pulls if p["number"] == car.queue_pull_request_number][0]
-        assert tmp_pull["draft"]
-        assert tmp_pull["body"] is not None
+        tmp_pull = await self.wait_for_pull_request("opened")
+        assert tmp_pull["pull_request"]["draft"]
+        assert tmp_pull["pull_request"]["body"] is not None
         assert (
             f"""
 ---
@@ -130,12 +127,8 @@ pull_requests:
   - number: {p2["number"]}
 ...
 """
-            in tmp_pull["body"]
+            in tmp_pull["pull_request"]["body"]
         )
-
-        pull_url_prefix = f"/{self.installation_ctxt.owner_login}/{self.repository_ctxt.repo['name']}/pull"
-        expected_table = f"| 1 | test_create_pull_basic: pull request n2 from integration ([#{p2['number']}]({pull_url_prefix}/{p2['number']})) | foo/0 | [#{tmp_pull['number']}]({pull_url_prefix}/{tmp_pull['number']}) | <fake_pretty_datetime()>|"
-        assert expected_table in await car.build_draft_pr_summary()
 
         await car.send_checks_end_signal(
             p2["number"], queue_utils.ChecksFailed(), "REEMBARKED"
@@ -144,14 +137,12 @@ pull_requests:
             reason=queue_utils.ChecksFailed(), not_reembarked_pull_requests={}
         )
 
-        ctxt = context.Context(self.repository_ctxt, tmp_pull)
-        summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
-        assert summary is not None
-        assert summary["conclusion"] == "cancelled"
-        assert str(queue_utils.ChecksFailed()) in summary["output"]["summary"]
+        await self.wait_for_pull_request("edited", tmp_pull["number"])
+        tmp_pull = await self.wait_for_pull_request("edited", tmp_pull["number"])
+        assert tmp_pull["pull_request"]["body"] is not None
+        assert str(queue_utils.ChecksFailed()) in tmp_pull["pull_request"]["body"]
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 2
+        await self.wait_for_pull_request("closed", tmp_pull["number"])
 
         failure_by_reason_key = self.get_statistic_redis_key("failure_by_reason")
         assert await self.redis_links.stats.xlen(failure_by_reason_key) == 1

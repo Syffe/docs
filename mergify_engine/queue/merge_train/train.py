@@ -18,6 +18,7 @@ from mergify_engine import github_types
 from mergify_engine import json
 from mergify_engine import queue
 from mergify_engine import refresher
+from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine import utils
 from mergify_engine import worker_pusher
@@ -1201,7 +1202,6 @@ class Train:
         queue_rule_report: merge_train_types.QueueRuleReport,
         *,
         pull_rule: "prr_config.EvaluatedPullRequestRule | None" = None,
-        show_queue: bool = True,
         for_queue_pull_request: bool = False,
     ) -> str:
         description = f"\n\n**Required conditions of queue** `{queue_rule_report.name}` **for merge:**\n\n"
@@ -1212,61 +1212,15 @@ class Train:
             description += "\n\n**Required conditions to stay in the queue:**\n\n"
             description += pull_rule.conditions.get_unmatched_summary()
 
-        if show_queue:
-            table = [
-                "| | Pull request | Queue/Priority | Speculative checks | Queued",
-                "| ---: | :--- | :--- | :--- | :--- |",
-            ]
-            for i, (embarked_pull, car) in enumerate(self._iter_embarked_pulls()):
-                title = await self.convoy.repository.get_pull_request_title(
-                    embarked_pull.user_pull_request_number
-                )
-                # NOTE(sileht): we use this weird url format to not trigger the GitHub pull request cross references
-                # [#1234](/Mergifyio/mergify-engine/pull/1234]
-                try:
-                    fancy_priority = queue.PriorityAliases(
-                        embarked_pull.config["priority"]
-                    ).name
-                except ValueError:
-                    fancy_priority = str(embarked_pull.config["priority"])
-
-                speculative_checks = ""
-                if car is not None:
-                    if (
-                        car.train_car_state.checks_type
-                        == train_car.TrainCarChecksType.INPLACE
-                    ):
-                        speculative_checks = train_utils.build_pr_link(
-                            self.convoy.repository,
-                            embarked_pull.user_pull_request_number,
-                            "in place",
-                        )
-                    elif (
-                        car.train_car_state.checks_type
-                        == train_car.TrainCarChecksType.DRAFT
-                    ):
-                        if car.queue_pull_request_number is None:
-                            raise RuntimeError(
-                                "car's spec checks type is draft, but queue_pull_request_number is None"
-                            )
-
-                        speculative_checks = train_utils.build_pr_link(
-                            self.convoy.repository, car.queue_pull_request_number
-                        )
-
-                queued_at = date.pretty_datetime(embarked_pull.queued_at)
-                table.append(
-                    f"| {i + 1} "
-                    f"| {title} ({train_utils.build_pr_link(self.convoy.repository, embarked_pull.user_pull_request_number)}) "
-                    f"| {embarked_pull.config['name']}/{fancy_priority} "
-                    f"| {speculative_checks} "
-                    f"| {queued_at}"
-                    "|"
-                )
-
-            description += (
-                "\n\n**The following pull requests are queued:**\n\n" + "\n".join(table)
-            )
+        repo_owner = self.convoy.repository.repo["owner"]["login"]
+        repo_name = self.convoy.repository.repo["name"]
+        # TODO: Once the dashboard has an url that allows to target a specific branch
+        # and a specific queue (MRGFY-2201 and MRGFY-2202), modify the url below to include them.
+        description += (
+            "\n\n**Visit the [Mergify Dashboard]"
+            f"({settings.DASHBOARD_UI_FRONT_URL}/github/{repo_owner}/repo/{repo_name}/queues/partitions/{self.partition_name})"
+            f" to check the state of the queue `{queue_rule_report.name}`.**"
+        )
 
         description += constants.MERGIFY_MERGE_QUEUE_PULL_REQUEST_DOC
 

@@ -1301,8 +1301,6 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 self.last_evaluated_conditions,
             ),
             pull_rule=pull_rule,
-            # We don't want to show the queue if there are multiple partitions
-            show_queue=show_queue and not self.delegating_train_cars_partition_names,
             for_queue_pull_request=for_queue_pull_request,
         )
 
@@ -1363,6 +1361,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             or self.queue_pull_request_number is None
         ):
             raise RuntimeError("can be called only on draft pr")
+
         tmp_pull_ctxt = await self.repository.get_pull_request_context(
             self.queue_pull_request_number
         )
