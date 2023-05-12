@@ -111,6 +111,42 @@ async def test_get_already_merged_summary(
     assert result == await actions_runner.get_already_merged_summary(ctxt, match)
 
 
+async def test_get_already_merged_summary_without_rules(
+    context_getter: conftest.ContextGetterFixture,
+    fake_mergify_bot: github_types.GitHubAccount,
+) -> None:
+    merged_by = github_types.GitHubLogin("foobar")
+    merged_by_id = github_types.GitHubAccountIdType(1)
+
+    ctxt = await context_getter(
+        github_types.GitHubPullRequestNumber(1),
+        merged=True,
+        merged_by=github_types.GitHubAccount(
+            {
+                "id": merged_by_id,
+                "login": merged_by,
+                "type": "User",
+                "avatar_url": "",
+            }
+        ),
+    )
+    ctxt.repository._caches.branch_protections[
+        github_types.GitHubRefType("main")
+    ] = None
+
+    file = context.MergifyConfigFile(
+        type="file",
+        content="whatever",
+        sha=github_types.SHAType("azertyuiop"),
+        path=github_types.GitHubFilePath("whatever"),
+        decoded_content="",
+    )
+
+    config = await mergify_conf.get_mergify_config_from_file(mock.MagicMock(), file)
+    match = await config["pull_request_rules"].get_pull_request_rules_evaluator(ctxt)
+    assert "" == await actions_runner.get_already_merged_summary(ctxt, match)
+
+
 @pytest.mark.parametrize(
     "config_key,config_value,expected_value",
     [

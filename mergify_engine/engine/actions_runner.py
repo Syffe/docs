@@ -53,7 +53,8 @@ QUEUE_ACTION_PRIORITY_ATTRIBUTE_DEPRECATION_SAAS = """
 async def get_already_merged_summary(
     ctxt: context.Context, match: prr_config.PullRequestRulesEvaluator
 ) -> str:
-    if not ctxt.pull["merged"]:
+    has_user_defined_rules = any(not r.hidden for r in match.rules)
+    if not ctxt.pull["merged"] or not has_user_defined_rules:
         return ""
 
     mergify_bot = await github.GitHubAppInfo.get_bot(
