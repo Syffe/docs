@@ -11,6 +11,12 @@ sources:
     spec:
       command: bash .github/get-latest-datadog-agent-version.sh
 
+  datadog-mergify-integration-version:
+    name: Get the latest datadog-mergify version from datadog wheels
+    kind: shell
+    spec:
+      command: python3 .github/get-latest-datadog-mergify-integration-version.py
+
 targets:
   # PYTHON VERSION
   heroku_runtime.txt:
@@ -44,7 +50,7 @@ targets:
       file: datadog/agent-version.txt
       forcecreate: true
       content: "{{ source `datadog-agent-version` }}"
-  dockerfile:
+  dockerfile-dd-agent:
     name: "Update DD_AGENT_VERSION in dockerfiles/Dockerfile.common"
     sourceID: datadog-agent-version
     kind: file
@@ -86,3 +92,22 @@ targets:
     transformers:
       - find: "^\\d+\\.\\d+"
       - replaceRegexGroup: 2
+
+  # DATADOG MERGIFY INTEGRATION VERSION
+  dockerfile-dd-mergify:
+    name: "Update DD_MERGIFY_VERSION in dockerfiles/Dockerfile.common"
+    sourceID: datadog-mergify-integration-version
+    kind: file
+    spec:
+      file: dockerfiles/Dockerfile.common
+      lineMatchPattern: "^ARG DD_MERGIFY_VERSION="
+    transformers:
+      - addPrefix: "ARG DD_MERGIFY_VERSION="
+  datadog-mergify-integration-version-txt:
+    name: "Update datadog/agent-version.txt"
+    kind: file
+    sourceID: datadog-mergify-integration-version
+    spec:
+      file: datadog/mergify-integration-version.txt
+      forcecreate: true
+      content: "{{ source `datadog-mergify-integration-version` }}"

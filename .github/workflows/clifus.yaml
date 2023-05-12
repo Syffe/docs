@@ -94,3 +94,49 @@ jobs:
         with:
           message: "Clifus: Datadog Agent bump"
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WORKFLOWS_WEBHOOK_URL }}
+
+  datadog-mergify-integration-bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3.3.0
+
+      - uses: ./.github/actions/clifus-setup
+        with:
+          github_token: ${{ secrets.MERGIFY_CI_BOT_PAT }}
+
+      - name: Clifus
+        id: clifus
+        run: |
+          python clifus.py -c ./.github/clifus.yml -s datadog-mergify-integration-version
+          echo "DD_MERGIFY_VERSION=$(cat datadog/mergify-integration-version.txt)" >> "$GITHUB_OUTPUT"
+          rm clifus.py
+
+      - name: Create the Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.MERGIFY_CI_BOT_PAT }}
+          # yamllint disable-line rule:line-length
+          title: "chore: bump datadog-mergify integration version to ${{ steps.clifus.outputs.DD_MERGIFY_VERSION }}"
+          # yamllint disable-line rule:line-length
+          commit-message: "chore: bump datadog-mergify integration version to ${{ steps.clifus.outputs.DD_MERGIFY_VERSION }}"
+          body: >
+            This is an automated bump of datadog-mergify integration version to
+            ${{ steps.clifus.outputs.DD_MERGIFY_VERSION }}
+          branch: clifus/datadog-mergify-integration-upgrade
+          base: main
+          labels: |
+            dependencies
+
+      - name: Check outputs
+        run: |
+          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
+
+      - name: Report Status
+        if: failure()
+        uses: Mergifyio/gha-slack-notification@main
+        with:
+          message: "Clifus: Datadog Mergify Integration bump"
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WORKFLOWS_WEBHOOK_URL }}
