@@ -183,20 +183,6 @@ class CategoryQuery:
     compare_start_at: datetime.date | None = None
     compare_end_at: datetime.date | None = None
 
-    def __post_init__(self) -> None:
-        # No date range, we don't compute the comparison date range
-        if self.start_at is None or self.end_at is None:
-            return
-
-        # Comparison date range is specified
-        if self.compare_start_at is not None and self.compare_end_at is not None:
-            return
-
-        # Compute comparison date range
-        delta = self.end_at - self.start_at + datetime.timedelta(days=1)
-        self.compare_start_at = self.start_at - delta
-        self.compare_end_at = self.end_at - delta
-
 
 @dataclasses.dataclass
 class CategoryReport:
@@ -210,6 +196,8 @@ class CategoryReport:
             self.query.start_at,
             self.query.end_at,
         )
+        if self.query.compare_start_at is None and self.query.compare_end_at is None:
+            return report
 
         other_report = await self._run_without_differences(
             self.query.owner,

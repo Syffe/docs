@@ -86,6 +86,8 @@ async def test_category_report() -> None:
             repository=github_types.GitHubRepositoryName("engine"),
             start_at=datetime.date(2023, 2, 1),
             end_at=datetime.date(2023, 2, 1),
+            compare_start_at=datetime.date(2023, 1, 31),
+            compare_end_at=datetime.date(2023, 1, 31),
         ),
     )
     result = await report.run()
@@ -251,6 +253,8 @@ async def test_category_report_for_all_repos() -> None:
             owner=github_types.GitHubLogin("mergifyio"),
             start_at=datetime.date(2023, 2, 1),
             end_at=datetime.date(2023, 2, 1),
+            compare_start_at=datetime.date(2023, 1, 31),
+            compare_end_at=datetime.date(2023, 1, 31),
         ),
     )
     result = await report.run()
@@ -409,16 +413,21 @@ async def test_category_report_for_all_repos() -> None:
     )
 
 
-def test_category_query_compute_date_range() -> None:
-    query = reports.CategoryQuery(
-        github_types.GitHubLogin("some-owner"),
-        github_types.GitHubRepositoryName("some-repo"),
-        datetime.date(2023, 2, 5),
-        datetime.date(2023, 2, 8),
+async def test_category_report_without_comparison() -> None:
+    report = reports.CategoryReport(
+        FakeJobRegistry(),
+        reports.CategoryQuery(
+            owner=github_types.GitHubLogin("mergifyio"),
+            repository=github_types.GitHubRepositoryName("engine"),
+            start_at=datetime.date(2023, 2, 1),
+            end_at=datetime.date(2023, 2, 1),
+        ),
     )
+    result = await report.run()
 
-    assert query.compare_start_at == datetime.date(2023, 2, 1)
-    assert query.compare_end_at == datetime.date(2023, 2, 4)
+    assert result.total_costs == reports.Money.from_decimal("6.68")
+    assert result.total_difference == reports.Money.zero()
+    assert result.categories.pull_requests.difference == reports.Money.zero()
 
 
 async def test_repository_report() -> None:

@@ -50,8 +50,7 @@ class TestCIApi(base.FunctionalTestBase):
         assert r.json()["date_range"]["start_at"] is None
         assert r.json()["date_range"]["end_at"] is None
         assert "compared_date_range" in r.json()
-        assert r.json()["compared_date_range"]["start_at"] is None
-        assert r.json()["compared_date_range"]["end_at"] is None
+        assert r.json()["compared_date_range"] is None
         assert "deployments" in r.json()["categories"]
         assert "scheduled_jobs" in r.json()["categories"]
         assert "pull_requests" in r.json()["categories"]
@@ -72,8 +71,7 @@ class TestCIApi(base.FunctionalTestBase):
         assert r.json()["date_range"]["start_at"] == "2023-01-01"
         assert r.json()["date_range"]["end_at"] == "2023-01-15"
         assert "compared_date_range" in r.json()
-        assert r.json()["compared_date_range"]["start_at"] == "2022-12-17"
-        assert r.json()["compared_date_range"]["end_at"] == "2022-12-31"
+        assert r.json()["compared_date_range"] is None
 
         r = await self.app.get(
             f"/v1/ci/{settings.TESTING_ORGANIZATION_NAME}?"
