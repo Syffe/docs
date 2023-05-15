@@ -690,18 +690,6 @@ async def test_check_queue_branch_merge_method_fastforward_with_partition_rules(
             },
             "Cannot use `batch_size` with queue action.",
         ),
-        (
-            {
-                "queue_rules": [
-                    {
-                        "name": "default",
-                        "batch_size": 1,
-                        "speculative_checks": 1,
-                    },
-                ],
-            },
-            "Cannot use `priority` with queue action.",
-        ),
     ),
 )
 async def test_check_subscription_status(

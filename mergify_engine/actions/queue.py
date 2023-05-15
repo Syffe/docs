@@ -19,7 +19,6 @@ from mergify_engine import context
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import queue
-from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine import utils
 from mergify_engine.actions import merge_base
@@ -42,14 +41,6 @@ from mergify_engine.rules.config import queue_rules as qr_config
 BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT = (
     "Require branches to be up to date before merging"
 )
-
-
-DEPRECATED_MESSAGE_PRIORITY_ATTRIBUTE_QUEUE_ACTION = """The configuration uses the deprecated `priority` attribute of the queue action and must be replaced by `priority_rules`.
-A brownout is planned on April 17th, 2023.
-This option will be removed on May 9th, 2023.
-For more information: https://docs.mergify.com/actions/queue/#priority-rules
-
-`%s` is invalid"""
 
 
 @dataclasses.dataclass
@@ -89,7 +80,6 @@ class QueueExecutorConfig(typing.TypedDict):
     update_bot_account: github_types.GitHubLogin | None
     update_method: QueueUpdateT
     commit_message_template: str | None
-    priority: int
     require_branch_protection: bool
     allow_merging_configuration_change: bool
     autosquash: bool
@@ -100,7 +90,6 @@ class QueueExecutor(
     actions.ActionExecutor["QueueAction", "QueueExecutorConfig"],
     merge_base.MergeUtilsMixin,
 ):
-    config_hidden_from_simulator = ("priority",)
     queue_rule: qr_config.QueueRule
     queue_rules: qr_config.QueueRules
     partition_rules: partr_config.PartitionRules
@@ -135,7 +124,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     "commit_message_template": action.config["commit_message_template"],
                     "merge_bot_account": action.config["merge_bot_account"],
                     "update_bot_account": action.config["update_bot_account"],
-                    "priority": action.config["priority"],
                     "require_branch_protection": action.config[
                         "require_branch_protection"
                     ],
@@ -483,12 +471,14 @@ Then, re-embark the pull request into the merge queue by posting the comment
         pull_queue_config = queue.PullQueueConfig(
             {
                 "update_method": self.config["update_method"],
-                "effective_priority": await self.queue_rule.get_effective_priority(
-                    self.ctxt, self.config["priority"]
+                "effective_priority": await self.queue_rule.get_context_effective_priority(
+                    self.ctxt
                 ),
                 "bot_account": self.config["merge_bot_account"],
                 "update_bot_account": self.config["update_bot_account"],
-                "priority": self.config["priority"],
+                "priority": await self.queue_rule.priority_rules.get_context_priority(
+                    self.ctxt
+                ),
                 "name": self.config["name"],
                 "autosquash": self.config["autosquash"],
             }
@@ -1068,18 +1058,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 ),
             )
 
-        if config[
-            "priority"
-        ] != queue.PriorityAliases.medium.value and not ctxt.subscription.has_feature(
-            subscription.Features.PRIORITY_QUEUES
-        ):
-            raise InvalidQueueConfiguration(
-                "Cannot use `priority` with queue action.",
-                ctxt.subscription.missing_feature_reason(
-                    ctxt.pull["base"]["repo"]["owner"]["login"]
-                ),
-            )
-
         if len(partition_rules) > 0 and not ctxt.subscription.has_feature(
             subscription.Features.QUEUE_ACTION
         ):
@@ -1156,6 +1134,31 @@ class QueueAction(actions.Action):
         # | actions.ActionFlag.ALWAYS_RUN
     )
 
+    validator: actions.ValidatorT = {
+        voluptuous.Required("name", default=None): voluptuous.Any(
+            str,
+            None,
+        ),
+        voluptuous.Required("method", default=None): voluptuous.Any(
+            None,  # fallback to queue_rule
+            "rebase",
+            "merge",
+            "squash",
+            "fast-forward",
+        ),
+        voluptuous.Required("merge_bot_account", default=None): types.Jinja2WithNone,
+        voluptuous.Required("update_bot_account", default=None): types.Jinja2WithNone,
+        voluptuous.Required("update_method", default=None): voluptuous.Any(
+            "rebase", "merge", None
+        ),
+        voluptuous.Required(
+            "commit_message_template", default=None
+        ): types.Jinja2WithNone,
+        voluptuous.Required("require_branch_protection", default=True): bool,
+        voluptuous.Required("allow_merging_configuration_change", default=False): bool,
+        voluptuous.Required("autosquash", default=True): bool,
+    }
+
     default_restrictions: typing.ClassVar[list[typing.Any]] = [
         "sender-permission>=write"
     ]
@@ -1168,55 +1171,6 @@ class QueueAction(actions.Action):
     )
     queue_rules: qr_config.QueueRules = dataclasses.field(init=False, repr=False)
     queue_rule: qr_config.QueueRule = dataclasses.field(init=False, repr=False)
-
-    @property
-    def validator(self) -> dict[typing.Any, typing.Any]:
-        validator = {
-            voluptuous.Required("name", default=None): voluptuous.Any(
-                str,
-                None,
-            ),
-            voluptuous.Required("method", default=None): voluptuous.Any(
-                None,  # fallback to queue_rule
-                "rebase",
-                "merge",
-                "squash",
-                "fast-forward",
-            ),
-            voluptuous.Required(
-                "merge_bot_account", default=None
-            ): types.Jinja2WithNone,
-            voluptuous.Required(
-                "update_bot_account", default=None
-            ): types.Jinja2WithNone,
-            voluptuous.Required("update_method", default=None): voluptuous.Any(
-                "rebase", "merge", None
-            ),
-            voluptuous.Required(
-                "commit_message_template", default=None
-            ): types.Jinja2WithNone,
-            voluptuous.Required("require_branch_protection", default=True): bool,
-            voluptuous.Required(
-                "allow_merging_configuration_change", default=False
-            ): bool,
-            voluptuous.Required("autosquash", default=True): bool,
-        }
-
-        if settings.ALLOW_QUEUE_PRIORITY_ATTRIBUTE:
-            validator[
-                voluptuous.Required(
-                    "priority", default=queue.PriorityAliases.medium.value
-                )
-            ] = queue.PrioritySchema
-        else:
-            validator[
-                voluptuous.Required("priority", default=utils.UnsetMarker)
-            ] = utils.DeprecatedOption(
-                DEPRECATED_MESSAGE_PRIORITY_ATTRIBUTE_QUEUE_ACTION,
-                queue.PriorityAliases.medium.value,
-            )
-
-        return validator
 
     def validate_config(self, mergify_config: mergify_conf.MergifyConfig) -> None:
         self.queue_rules = mergify_config["queue_rules"]

@@ -1,0 +1,4 @@
+deprecations:
+  - |
+    Deprecate attribute `priority` from the `queue` action.
+    This property is now replaced by `priority_rules`.

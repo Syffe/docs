@@ -89,7 +89,5 @@ pull_request_rules:
     await queue_action.load_context(ctxt, rule)
     executor = await queue_action.executor_class.create(queue_action, ctxt, rule)
     await executor._set_action_queue_rule()
-    priority = await executor.queue_rule.get_effective_priority(
-        ctxt, queue_action.config["priority"]
-    )
+    priority = await executor.queue_rule.get_context_effective_priority(ctxt)
     assert priority == expected_priority

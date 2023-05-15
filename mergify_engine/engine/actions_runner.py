@@ -16,7 +16,6 @@ from mergify_engine import date
 from mergify_engine import delayed_refresh
 from mergify_engine import exceptions
 from mergify_engine import github_types
-from mergify_engine import settings
 from mergify_engine import utils
 from mergify_engine import yaml
 from mergify_engine.clients import github
@@ -32,22 +31,6 @@ NOT_APPLICABLE_TEMPLATE = """<details>
 <summary>Rules not applicable to this pull request:</summary>
 %s
 </details>"""
-
-
-QUEUE_ACTION_PRIORITY_ATTRIBUTE_DEPRECATION_GHES = """
-:bangbang: **Action Required** :bangbang:
-> **The configuration uses the deprecated `priority` attribute of the queue action and must be replaced by `priority_rules`.**
-> This option will be removed on a future version.
-> For more information: https://docs.mergify.com/actions/queue/#priority-rules
-"""
-
-QUEUE_ACTION_PRIORITY_ATTRIBUTE_DEPRECATION_SAAS = """
-:bangbang: **Action Required** :bangbang:
-> **The configuration uses the deprecated `priority` attribute of the queue action and must be replaced by `priority_rules`.**
-> A brownout is planned on April 17th, 2023.
-> This option will be removed on May 9th, 2023.
-> For more information: https://docs.mergify.com/actions/queue/#priority-rules
-"""
 
 
 async def get_already_merged_summary(
@@ -157,18 +140,6 @@ async def gen_summary(
 ) -> tuple[str, str]:
     summary = ""
     summary += await get_already_merged_summary(ctxt, match)
-
-    has_queue_action_priority = any(
-        action
-        for rule in match.rules
-        for name, action in rule.actions.items()
-        if name == "queue" and "priority" in action.raw_config
-    )
-    if has_queue_action_priority:
-        if settings.SAAS_MODE:
-            summary += QUEUE_ACTION_PRIORITY_ATTRIBUTE_DEPRECATION_SAAS
-        else:
-            summary += QUEUE_ACTION_PRIORITY_ATTRIBUTE_DEPRECATION_GHES
 
     matching_rules_to_display = match.matching_rules[:]
     not_applicable_base_changeable_attributes_rules_to_display = []

@@ -156,14 +156,11 @@ class QueueRule:
         await self.routing_conditions(pulls)
         return typing.cast(EvaluatedQueueRule, self)
 
-    async def get_effective_priority(
-        self, ctxt: context.Context, fallback_priority: int
-    ) -> int:
-        priority = await self.priority_rules.get_context_priority(ctxt)
-        if priority is None:
-            priority = fallback_priority
-
-        return priority + self.config["priority"] * queue.QUEUE_PRIORITY_OFFSET
+    async def get_context_effective_priority(self, ctxt: context.Context) -> int:
+        return (
+            await self.priority_rules.get_context_priority(ctxt)
+            + self.config["priority"] * queue.QUEUE_PRIORITY_OFFSET
+        )
 
 
 @dataclasses.dataclass

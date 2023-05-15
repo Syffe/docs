@@ -349,7 +349,6 @@ class EngineSettings(
     VERSION: str = pydantic.Field("dev", extra_env="HEROKU_SLUG_COMMIT")
     SHA: str = "unknown"
 
-    ALLOW_QUEUE_PRIORITY_ATTRIBUTE: bool = True
     HEALTHCHECK_SHARED_TOKEN: pydantic.SecretStr | None = None
 
     class Config(pydantic.BaseSettings.Config):

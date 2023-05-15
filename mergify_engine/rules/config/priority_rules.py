@@ -65,9 +65,9 @@ class PriorityRules:
     def __iter__(self) -> abc.Iterator[PriorityRule]:
         return iter(self.rules)
 
-    async def get_context_priority(self, ctxt: context.Context) -> int | None:
+    async def get_context_priority(self, ctxt: context.Context) -> int:
         if not self.rules:
-            return None
+            return queue.PriorityAliases.medium.value
 
         priority_rules = [rule.copy() for rule in self.rules]
         priority_rules_evaluator = await PriorityRulesEvaluator.create(
@@ -89,4 +89,6 @@ class PriorityRules:
             if final_priority is None or rule_priority > final_priority:  # type: ignore[unreachable]
                 final_priority = rule_priority
 
+        if final_priority is None:
+            return queue.PriorityAliases.medium.value
         return final_priority

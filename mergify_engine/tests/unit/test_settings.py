@@ -91,7 +91,6 @@ def test_defaults(
     assert conf.REDIS_AUTHENTICATION_WEB_MAX_CONNECTIONS == 50
     assert conf.REDIS_SSL_VERIFY_MODE_CERT_NONE is False
 
-    assert conf.ALLOW_QUEUE_PRIORITY_ATTRIBUTE is True
     assert conf.VERSION == "dev"
     assert conf.SHA == "unknown"
 
@@ -178,7 +177,6 @@ def test_all_sets(
     monkeypatch.setenv("MERGIFYENGINE_REDIS_AUTHENTICATION_WEB_MAX_CONNECTIONS", "57")
     monkeypatch.setenv("MERGIFYENGINE_REDIS_SSL_VERIFY_MODE_CERT_NONE", "True")
     monkeypatch.setenv("MERGIFYENGINE_DEFAULT_REDIS_URL", "redis://example.com:1234")
-    monkeypatch.setenv("MERGIFYENGINE_ALLOW_QUEUE_PRIORITY_ATTRIBUTE", "False")
     monkeypatch.setenv("MERGIFYENGINE_SHA", "f8c4fe06d56cd89cbe48975aa8507d479d881bdc")
     monkeypatch.setenv("MERGIFYENGINE_VERSION", "3.1")
 
@@ -268,7 +266,6 @@ def test_all_sets(
     assert conf.REDIS_ACTIVE_USERS_WEB_MAX_CONNECTIONS == 56
     assert conf.REDIS_AUTHENTICATION_WEB_MAX_CONNECTIONS == 57
     assert conf.REDIS_SSL_VERIFY_MODE_CERT_NONE is True
-    assert conf.ALLOW_QUEUE_PRIORITY_ATTRIBUTE is False
     assert conf.VERSION == "3.1"
     assert conf.SHA == "f8c4fe06d56cd89cbe48975aa8507d479d881bdc"
 

@@ -2,7 +2,6 @@ import copy
 import datetime
 import re
 import typing
-from unittest import mock
 from urllib import parse
 
 import anys
@@ -45,98 +44,6 @@ jobs:
 
 class TestQueueAction(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
-
-    @mock.patch.object(settings, "ALLOW_QUEUE_PRIORITY_ATTRIBUTE", False)
-    async def test_priority_brownout(self) -> None:
-        rules = {
-            "pull_request_rules": [
-                {
-                    "name": "Merge priority high",
-                    "conditions": [
-                        f"base={self.main_branch_name}",
-                        "label=high",
-                        "status-success=continuous-integration/fake-ci",
-                    ],
-                    "actions": {"queue": {"priority": "high"}},
-                },
-            ]
-        }
-
-        await self.setup_repo(yaml.dump(rules))
-        p1 = await self.create_pr()
-        await self.run_engine()
-
-        checks = await context.Context(self.repository_ctxt, p1).pull_engine_check_runs
-        assert len(checks) == 1
-        assert "failure" == checks[0]["conclusion"]
-        assert (
-            "The current Mergify configuration is invalid"
-            == checks[0]["output"]["title"]
-        )
-        assert (
-            "`high` is invalid for dictionary value @ pull_request_rules → item 0 → actions → queue → priority"
-            in checks[0]["output"]["summary"]
-        )
-        assert (
-            "The configuration uses the deprecated `priority` attribute"
-            in checks[0]["output"]["summary"]
-        )
-
-    async def test_queue_priority_deprecation_notice(self) -> None:
-        rules = {
-            "pull_request_rules": [
-                {
-                    "name": "Merge priority high",
-                    "conditions": [
-                        f"base={self.main_branch_name}",
-                        "label=high",
-                        "status-success=continuous-integration/fake-ci",
-                    ],
-                    "actions": {"queue": {"priority": "high"}},
-                },
-            ]
-        }
-
-        await self.setup_repo(yaml.dump(rules))
-        p1 = await self.create_pr()
-        await self.run_engine()
-
-        checks = await context.Context(self.repository_ctxt, p1).pull_engine_check_runs
-        assert len(checks) == 1
-        assert "success" == checks[0]["conclusion"]
-        assert (
-            "**The configuration uses the deprecated `priority` attribute of the queue action and must be replaced by `priority_rules`.**"
-            in checks[0]["output"]["summary"]
-        )
-
-    async def test_queue_priority_deprecation_notice_not_present_in_summary(
-        self,
-    ) -> None:
-        rules = {
-            "pull_request_rules": [
-                {
-                    "name": "Merge priority high",
-                    "conditions": [
-                        f"base={self.main_branch_name}",
-                        "label=high",
-                        "status-success=continuous-integration/fake-ci",
-                    ],
-                    "actions": {"queue": {}},
-                },
-            ]
-        }
-
-        await self.setup_repo(yaml.dump(rules))
-        p1 = await self.create_pr()
-        await self.run_engine()
-
-        checks = await context.Context(self.repository_ctxt, p1).pull_engine_check_runs
-        assert len(checks) == 1
-        assert "success" == checks[0]["conclusion"]
-        assert (
-            "**The configuration uses the deprecated `priority` attribute of the queue action and must be replaced by `priority_rules`.**"
-            not in checks[0]["output"]["summary"]
-        )
 
     async def test_queue_routing_conditions_matching_with_pull_request_rules(
         self,

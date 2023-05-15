@@ -199,10 +199,24 @@ When using the :ref:`queue <queue action page>` action and many pull requests
 are waiting to be merged, some of them might be more urgent. In that case, you
 could add a condition using a `label
 <https://docs.github.com/en/issues/using-labels-and-milestones-to-track-work/managing-labels>`_
-and configure the priority option of the :ref:`queue <queue action page>`
-action:
+and configure the priority rules of the :ref:`queue <priority_rules>`:
 
 .. code-block:: yaml
+
+    queue_rules:
+      - name: default
+        merge_conditions:
+          - "#approved-reviews-by>=2"
+          - check-success=Travis CI - Pull Request
+        priority_rules:
+          - name: 🚑 hotfix
+            conditions:
+              - label=🚑 hotfix
+            priority: high
+          - name: 🤖 low priority
+            conditions:
+              - author=dependabot[bot]
+            priority: low
 
     pull_request_rules:
       - name: automatic merge of 🚑 hotfix (high priority)
@@ -214,7 +228,6 @@ action:
         actions:
           queue:
             method: merge
-            priority: high
       - name: automatic merge of bot 🤖 (low priority)
         conditions:
           - author=dependabot[bot]
@@ -224,7 +237,6 @@ action:
         actions:
           queue:
             method: merge
-            priority: low
       - name: automatic merge for main when reviewed and CI passes
         conditions:
           - check-success=Travis CI - Pull Request
@@ -233,11 +245,11 @@ action:
         actions:
           queue:
             method: merge
-            priority: medium
 
 As soon as the pull request has been approved by 2 contributors, the pull
-request will be added to the merge queue. Within the merge queue, the pull
-requests with the label ``🚑 hotfix`` will be merged first. The pull requests
+request will be added to the merge queue. Each pull request will be evaluated against the priority rules
+and will be attributed with a priority value, by default the value is ``medium``. Thus, within the merge queue,
+the pull requests with the label ``🚑 hotfix`` will be merged first. The pull requests
 from `dependabot` will always be merged last.
 
 🙅️ Require All Requested Reviews to Be Approved
