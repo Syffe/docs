@@ -1,6 +1,10 @@
 .. meta::
    :description:
 
+.. |advanced plan tag| raw:: html
+
+   <div class="feature-tag"><a href="https://mergify.com/pricing" target="_blank"><span class="badge bg-info">Advanced Plan<br/>Feature 💪</span></a></div>
+
 .. |essential plan tag| raw:: html
 
    <div class="feature-tag"><a href="https://mergify.com/pricing" target="_blank"><span class="badge bg-success">Essential Plan<br/>Feature 💪</span></a></div>

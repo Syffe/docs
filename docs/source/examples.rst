@@ -194,6 +194,7 @@ passing.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 |premium plan tag|
+|advanced plan tag|
 
 When using the :ref:`queue <queue action page>` action and many pull requests
 are waiting to be merged, some of them might be more urgent. In that case, you

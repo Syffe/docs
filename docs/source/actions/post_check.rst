@@ -10,6 +10,7 @@ post_check
 ==========
 
 |premium plan tag|
+|advanced plan tag|
 
 The ``post_check`` action adds an item in a pull request check list. The check
 status is ``success`` when all conditions match, otherwise, it is set to

@@ -199,6 +199,7 @@ Speculative Checks
 ------------------
 
 |premium plan tag|
+|advanced plan tag|
 
 Merging pull requests one by one serially can take a lot of time, depending on
 the continuous integration run time. To merge pull requests faster, Mergify
@@ -254,6 +255,7 @@ Batch Size
 ----------
 
 |premium plan tag|
+|advanced plan tag|
 
 Mergify allows checking the mergeability of multiple pull requests at once using
 the ``batch_size`` option. If set to ``3``, Mergify will create a draft pull
@@ -287,6 +289,7 @@ Priority Rules
 ~~~~~~~~~~~~~~
 
 |premium plan tag|
+|advanced plan tag|
 
 The usage of priority rules is optional but can be used to have thinner control over how your pull requests
 are ordered inside a queue.
@@ -334,6 +337,7 @@ Queue Freeze
 ------------
 
 |premium plan tag|
+|advanced plan tag|
 
 Mergify allows freezing the merge of one or several queues simultaneously to provide maximum control
 and flexibility on how and when you want the code to be merged.
@@ -385,6 +389,7 @@ To get the pull request back in the queue, you can either:
 -------------------------------------
 
 |premium plan tag|
+|advanced plan tag|
 |open source plan tag|
 
 You can specify dependencies between pull requests from the same repository.
@@ -414,6 +419,7 @@ request:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 |premium plan tag|
+|advanced plan tag|
 |open source plan tag|
 
 You can specify a date after which you want a pull request to be merged with a ``Merge-After:`` header.
@@ -532,6 +538,7 @@ These are the options of the ``queue`` action:
      - :ref:`data type template`
      -
      - | |essential plan tag|
+       | |advanced plan tag|
        | Mergify can impersonate a GitHub user to merge pull request.
        | If no ``merge_bot_account`` is set, Mergify will merge the pull request
        | itself. The user account **must** have already been
@@ -568,6 +575,7 @@ These are the options of the ``queue`` action:
      - :ref:`data type template`
      -
      - | |essential plan tag|
+       | |advanced plan tag|
        | For certain actions, such as rebasing branches, Mergify has to
        | impersonate a GitHub user. You can specify the account to use with this
        | option. If no ``update_bot_account`` is set, Mergify picks randomly one of the
@@ -646,7 +654,8 @@ A ``queue_rules`` takes the following parameters:
    * - ``batch_max_failure_resolution_attempts``
      - int
      -
-     - |premium plan tag| The number of attempts to resolve a batch failure
+     - |premium plan tag| |advanced plan tag|
+       The number of attempts to resolve a batch failure
        before unqueueing pull requests. By default, Mergify will attempt to
        resolve a batch failure by splitting the batch multiple times until it
        finds the root cause of the failure. You can stop this process earlier by
@@ -656,13 +665,17 @@ A ``queue_rules`` takes the following parameters:
    * - ``batch_max_wait_time``
      - :ref:`Duration <duration>`
      - 30 s
-     - |premium plan tag| The time to wait before creating the speculative check temporary pull request.
+     - |premium plan tag|
+       |advanced plan tag|
+       The time to wait before creating the speculative check temporary pull request.
        See :ref:`speculative checks`.
 
    * - ``batch_size``
      - int
      - 1
-     - |premium plan tag| The maximum number of pull requests per speculative check in the queue. Must be
+     - |premium plan tag|
+       |advanced plan tag|
+       The maximum number of pull requests per speculative check in the queue. Must be
        between 1 and 20.
        See :ref:`speculative checks`.
 
@@ -681,13 +694,16 @@ A ``queue_rules`` takes the following parameters:
    * - ``disallow_checks_interruption_from_queues``
      - list of ``queue`` names
      -
-     - |premium plan tag| The list of higher priorities ``queue`` that are not
+     - |premium plan tag|
+       |advanced plan tag|
+       The list of higher priorities ``queue`` that are not
        allowed to interrupt the ongoing checks of this queue.
 
    * - ``draft_bot_account``
      - string
      -
      - |essential plan tag|
+       |advanced plan tag|
        Mergify can impersonate a GitHub user to create draft pull requests.
        If no ``draft_bot_account`` is set, Mergify creates the draft pull request
        itself. The user account **must** have already been
@@ -698,6 +714,7 @@ A ``queue_rules`` takes the following parameters:
      - :ref:`data type template`
      -
      - |essential plan tag|
+       |advanced plan tag|
        Mergify can impersonate a GitHub user to merge pull request.
        If no ``merge_bot_account`` is set, Mergify will merge the pull request
        itself. The user account **must** have already been
@@ -728,6 +745,7 @@ A ``queue_rules`` takes the following parameters:
      - list of :ref:`priority rules`
      -
      - |premium plan tag|
+       |advanced plan tag|
        The list of ``priority_rules`` a pull request can match in order to be
        prioritized when added to a queue. The set of conditions available for
        ``priority_rules`` configuration is the same as the usual :ref:`Conditions`.
@@ -746,6 +764,7 @@ A ``queue_rules`` takes the following parameters:
      - string
      - mergify/merge-queue/
      - |premium plan tag|
+       |advanced plan tag|
        When creating a draft pull request for a queue, this prefix will be used to name the branch.
    * - ``routing_conditions``
      - list of :ref:`Conditions`
@@ -754,7 +773,9 @@ A ``queue_rules`` takes the following parameters:
    * - ``speculative_checks``
      - int
      - 1
-     - |premium plan tag| The maximum number of checks to run in parallel in the queue. Must be
+     - |premium plan tag|
+       |advanced plan tag|
+       The maximum number of checks to run in parallel in the queue. Must be
        between 1 and 20.
        See :ref:`speculative checks`.
 
@@ -762,6 +783,7 @@ A ``queue_rules`` takes the following parameters:
      - :ref:`data type template`
      -
      - |essential plan tag|
+       |advanced plan tag|
        For certain actions, such as rebasing branches, Mergify has to
        impersonate a GitHub user. You can specify the account to use with this
        option. If no ``update_bot_account`` is set, Mergify picks randomly one of the
@@ -783,6 +805,7 @@ A ``queue_rules`` takes the following parameters:
 .. note::
 
    |premium plan tag|
+   |advanced plan tag|
    Defining multiple queue rules is only available for `Premium subscribers <https://mergify.com/pricing>`_.
 
 .. _priority rules:
@@ -790,6 +813,7 @@ A ``queue_rules`` takes the following parameters:
 Priority Rules
 ~~~~~~~~~~~~~~
 |premium plan tag|
+|advanced plan tag|
 
 
 A priority rule takes the following parameters:
@@ -826,6 +850,7 @@ Partition Rules
 ~~~~~~~~~~~~~~~
 |beta tag|
 |premium plan tag|
+|advanced plan tag|
 
 Partition rules are used to handle monorepos better. Each partition runs in parallel and includes all the queues defined in the ``queue_rules``. Partitions
 are independent from each others, meaning that if one merges a pull request, changing the base branch, the others will not be reset, as the change is known by Mergify,
@@ -924,6 +949,7 @@ in the queue, it will be updated with the latest commit of its base branch.
 🚥 Multiple Queues
 ~~~~~~~~~~~~~~~~~~
 |premium plan tag|
+|advanced plan tag|
 
 By using multiple queues, it's possible to put some pull requests in a higher
 priority queue. As queues are processed one after the other, the following
@@ -974,6 +1000,7 @@ pass and then merge the pull request.
 🎲 Speculative Checks
 ~~~~~~~~~~~~~~~~~~~~~
 |premium plan tag|
+|advanced plan tag|
 
 If your continuous integration system takes a long time to validate the
 enqueued pull requests, it might be interesting to enable :ref:`speculative
