@@ -180,7 +180,7 @@ async def report(
         try:
             mergify_config = await repository.get_mergify_config()
         except mergify_conf.InvalidRules as e:  # pragma: no cover
-            print(f"configuration is invalid {str(e)}")
+            print(f"configuration is invalid {e!s}")
 
     if pull_number is None:
         if mergify_config is None:

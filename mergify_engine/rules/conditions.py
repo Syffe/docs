@@ -154,7 +154,7 @@ class RuleCondition:
             # Escape HTML chars that a user can insert in configuration
             escaped_condition = html.escape(condition)
             raise voluptuous.Invalid(
-                message=f"Invalid condition '{escaped_condition}'. {str(e)}",
+                message=f"Invalid condition '{escaped_condition}'. {e!s}",
                 error_message=str(e),
             )
 

@@ -23,31 +23,31 @@ class InvalidQuery(Exception):
 
 class ParseError(InvalidQuery):
     def __init__(self, tree: TreeT) -> None:
-        super().__init__(f"Unable to parse tree: {str(tree)}")
+        super().__init__(f"Unable to parse tree: {tree!s}")
         self.tree = tree
 
 
 class UnknownAttribute(InvalidQuery, ValueError):
     def __init__(self, key: str) -> None:
-        super().__init__(f"Unknown attribute: {str(key)}")
+        super().__init__(f"Unknown attribute: {key!s}")
         self.key = key
 
 
 class UnknownOperator(InvalidQuery, ValueError):
     def __init__(self, operator: str) -> None:
-        super().__init__(f"Unknown operator: {str(operator)}")
+        super().__init__(f"Unknown operator: {operator!s}")
         self.operator = operator
 
 
 class InvalidOperator(InvalidQuery, TypeError):
     def __init__(self, operator: str) -> None:
-        super().__init__(f"Invalid operator: {str(operator)}")
+        super().__init__(f"Invalid operator: {operator!s}")
         self.operator = operator
 
 
 class InvalidArguments(InvalidQuery, ValueError):
     def __init__(self, arguments: typing.Any) -> None:
-        super().__init__(f"Invalid arguments: {str(arguments)}")
+        super().__init__(f"Invalid arguments: {arguments!s}")
         self.arguments = arguments
 
 
@@ -171,7 +171,7 @@ class Filter(typing.Generic[FilterResultT]):
         raise InvalidOperator(op)  # pragma: no cover
 
     def __repr__(self) -> str:  # pragma: no cover
-        return f"{self.__class__.__name__}({str(self)})"
+        return f"{self.__class__.__name__}({self!s})"
 
     async def __call__(self, obj: GetAttrObjectT) -> FilterResultT:
         return await self._eval(obj)

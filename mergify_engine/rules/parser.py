@@ -435,7 +435,7 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
                 # Filter() doesn't have to (re)compile it.
                 re.compile(value)
             except re.error as e:
-                raise ConditionParsingError(f"Invalid regular expression: {str(e)}")
+                raise ConditionParsingError(f"Invalid regular expression: {e!s}")
             return _to_dict(negate, quantity, attribute, op, value)
 
         if parser == Parser.TEXT:
