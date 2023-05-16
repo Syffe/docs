@@ -9,7 +9,6 @@ from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine.clients import http
-from mergify_engine.dashboard import subscription
 from mergify_engine.models import github_user
 from mergify_engine.rules import types
 
@@ -31,8 +30,6 @@ async def render_bot_account(
     *,
     bot_account_fallback: github_types.GitHubLogin,
     option_name: str = "bot_account",
-    required_feature: subscription.Features,
-    missing_feature_message: str = "Cannot use `bot_account`",
     required_permissions: None | (list[github_types.GitHubRepositoryPermission]) = None,
 ) -> github_types.GitHubLogin:
     ...
@@ -45,8 +42,6 @@ async def render_bot_account(
     *,
     bot_account_fallback: None,
     option_name: str = "bot_account",
-    required_feature: subscription.Features,
-    missing_feature_message: str = "Cannot use `bot_account`",
     required_permissions: None | (list[github_types.GitHubRepositoryPermission]) = None,
 ) -> github_types.GitHubLogin | None:
     ...
@@ -58,23 +53,8 @@ async def render_bot_account(
     *,
     bot_account_fallback: github_types.GitHubLogin | None,
     option_name: str = "bot_account",
-    required_feature: subscription.Features,
-    missing_feature_message: str = "Cannot use `bot_account`",
     required_permissions: None | (list[github_types.GitHubRepositoryPermission]) = None,
 ) -> github_types.GitHubLogin | None:
-    if (
-        bot_account_template is not None
-        and required_feature is not None
-        and not ctxt.subscription.has_feature(required_feature)
-    ):
-        raise RenderBotAccountFailure(
-            check_api.Conclusion.ACTION_REQUIRED,
-            missing_feature_message,
-            ctxt.subscription.missing_feature_reason(
-                ctxt.pull["base"]["repo"]["owner"]["login"]
-            ),
-        )
-
     if bot_account_template is None:
         if bot_account_fallback is None:
             return None

@@ -22,7 +22,6 @@ from mergify_engine import signals
 from mergify_engine import worker_pusher
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import http
-from mergify_engine.dashboard import subscription
 from mergify_engine.models import github_user
 from mergify_engine.rules import types
 from mergify_engine.rules.config import pull_request_rules as prr_config
@@ -100,8 +99,6 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 ctxt,
                 action.config["bot_account"],
                 bot_account_fallback=None,
-                required_feature=subscription.Features.BOT_ACCOUNT,
-                missing_feature_message=f"Cannot use `bot_account` with {cls.KIND.capitalize()} action",
                 required_permissions=[],
             )
         except action_utils.RenderBotAccountFailure as e:

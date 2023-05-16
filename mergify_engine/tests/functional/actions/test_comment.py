@@ -6,32 +6,6 @@ from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 
 
-class TestCommentActionWithSub(base.FunctionalTestBase):
-    SUBSCRIPTION_ACTIVE = True
-
-    async def test_comment_with_bot_account(self) -> None:
-        rules = {
-            "pull_request_rules": [
-                {
-                    "name": "comment",
-                    "conditions": [f"base={self.main_branch_name}"],
-                    "actions": {
-                        "comment": {"message": "WTF?", "bot_account": "{{ body }}"}
-                    },
-                }
-            ]
-        }
-
-        await self.setup_repo(yaml.dump(rules))
-
-        p = await self.create_pr(message="mergify-test4")
-        await self.run_engine()
-
-        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
-        assert comment["comment"]["body"] == "WTF?"
-        assert comment["comment"]["user"]["login"] == "mergify-test4"
-
-
 @pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
 class TestCommentAction(base.FunctionalTestBase):
     async def test_comment(self) -> None:
@@ -161,7 +135,7 @@ Unknown pull request attribute: hello
                     "name": "comment",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {
-                        "comment": {"message": "WTF?", "bot_account": "mergify-test4"}
+                        "comment": {"message": "WTF?", "bot_account": "{{ body }}"}
                     },
                 }
             ]
@@ -169,24 +143,12 @@ Unknown pull request attribute: hello
 
         await self.setup_repo(yaml.dump(rules))
 
-        p = await self.create_pr()
+        p = await self.create_pr(message="mergify-test4")
         await self.run_engine()
 
-        check_run = await self.wait_for_check_run(
-            action="completed", status="completed", conclusion="action_required"
-        )
-
-        # Make sure no message have been posted
-        comments = await self.get_issue_comments(p["number"])
-        assert len(comments) == 0
-
-        assert (
-            check_run["check_run"]["output"]["title"]
-            == "The current Mergify configuration is invalid"
-        )
-        assert check_run["check_run"]["output"]["summary"].startswith(
-            "In the rule `comment`, the action `comment` configuration is invalid:\nComments with `bot_account` set are disabled"
-        )
+        comment = await self.wait_for_issue_comment(str(p["number"]), "created")
+        assert comment["comment"]["body"] == "WTF?"
+        assert comment["comment"]["user"]["login"] == "mergify-test4"
 
     async def test_comment_without_default_message(self) -> None:
         rules = {

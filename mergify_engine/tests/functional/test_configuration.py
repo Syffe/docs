@@ -557,9 +557,7 @@ did not find expected alphabetic or numeric character
         assert len(config["queue_rules"]) == 1
         assert len(config["pull_request_rules"].rules) == 2
 
-    @pytest.mark.subscription(
-        subscription.Features.CUSTOM_CHECKS, subscription.Features.BOT_ACCOUNT
-    )
+    @pytest.mark.subscription(subscription.Features.CUSTOM_CHECKS)
     async def test_extend_config_file_merge_ok(self) -> None:
         # Notes(Jules): this config is stored here: https://github.com/mergifyio-testing/.github/blob/main/.mergify.yml
         mergify_config = {

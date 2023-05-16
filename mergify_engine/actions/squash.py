@@ -9,7 +9,6 @@ from mergify_engine import github_types
 from mergify_engine import signals
 from mergify_engine import squash_pull
 from mergify_engine.actions import utils as action_utils
-from mergify_engine.dashboard import subscription
 from mergify_engine.rules import types
 from mergify_engine.rules.config import pull_request_rules as prr_config
 
@@ -37,8 +36,6 @@ class SquashExecutor(actions.ActionExecutor["SquashAction", SquashExecutorConfig
                 ctxt,
                 action.config["bot_account"],
                 bot_account_fallback=bot_account_fallback,
-                required_feature=subscription.Features.BOT_ACCOUNT,
-                missing_feature_message="Squash with `bot_account` set is disabled",
                 required_permissions=[],
             )
         except action_utils.RenderBotAccountFailure as e:

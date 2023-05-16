@@ -9,7 +9,6 @@ from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import signals
 from mergify_engine.actions import utils as action_utils
-from mergify_engine.dashboard import subscription
 from mergify_engine.queue import merge_train
 from mergify_engine.rules import conditions
 from mergify_engine.rules import types
@@ -33,8 +32,6 @@ class UpdateExecutor(actions.ActionExecutor["UpdateAction", "UpdateExecutorConfi
                 ctxt,
                 action.config["bot_account"],
                 bot_account_fallback=None,
-                required_feature=subscription.Features.BOT_ACCOUNT,
-                missing_feature_message="Update with `bot_account` set are disabled",
                 required_permissions=[],
             )
         except action_utils.RenderBotAccountFailure as e:

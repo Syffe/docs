@@ -4,7 +4,6 @@ from mergify_engine import context
 from mergify_engine import exceptions
 from mergify_engine import gitter
 from mergify_engine import settings
-from mergify_engine.dashboard.subscription import Features
 from mergify_engine.models import github_user
 
 
@@ -40,10 +39,7 @@ async def _do_squash(
     try:
         await git.init()
 
-        if ctxt.subscription.has_feature(Features.BOT_ACCOUNT):
-            await git.configure(ctxt.repository.installation.redis.cache, user)
-        else:
-            await git.configure(ctxt.repository.installation.redis.cache)
+        await git.configure(ctxt.repository.installation.redis.cache, user)
 
         await git.setup_remote(
             "origin", ctxt.pull["head"]["repo"], user.oauth_access_token, ""

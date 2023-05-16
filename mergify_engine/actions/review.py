@@ -10,7 +10,6 @@ from mergify_engine import signals
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
-from mergify_engine.dashboard import subscription
 from mergify_engine.rules import types
 from mergify_engine.rules.config import pull_request_rules as prr_config
 
@@ -41,8 +40,6 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
                 ctxt,
                 action.config["bot_account"],
                 bot_account_fallback=None,
-                required_feature=subscription.Features.BOT_ACCOUNT,
-                missing_feature_message="Review with `bot_account` set are disabled",
                 required_permissions=[],
             )
         except action_utils.RenderBotAccountFailure as e:

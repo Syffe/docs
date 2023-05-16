@@ -12,7 +12,6 @@ from mergify_engine import signals
 from mergify_engine import utils
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import http
-from mergify_engine.dashboard import subscription
 from mergify_engine.rules import types
 from mergify_engine.rules.config import pull_request_rules as prr_config
 
@@ -52,27 +51,11 @@ class RequestReviewsExecutor(
                 ctxt,
                 action.config["bot_account"],
                 bot_account_fallback=None,
-                required_feature=subscription.Features.BOT_ACCOUNT,
-                missing_feature_message="Request reviews with `bot_account` set are disabled",
                 required_permissions=[],
             )
         except action_utils.RenderBotAccountFailure as e:
             raise actions.InvalidDynamicActionConfiguration(
                 rule, action, e.title, e.reason
-            )
-
-        if action.config[
-            "random_count"
-        ] is not None and not ctxt.subscription.has_feature(
-            subscription.Features.RANDOM_REQUEST_REVIEWS
-        ):
-            raise actions.InvalidDynamicActionConfiguration(
-                rule,
-                action,
-                "Random request reviews are disabled",
-                ctxt.subscription.missing_feature_reason(
-                    ctxt.pull["base"]["repo"]["owner"]["login"]
-                ),
             )
 
         team_errors = set()

@@ -29,13 +29,9 @@ class Features(enum.Enum):
     PUBLIC_REPOSITORY = "public_repository"
     PRIORITY_QUEUES = "priority_queues"
     CUSTOM_CHECKS = "custom_checks"
-    RANDOM_REQUEST_REVIEWS = "random_request_reviews"
-    MERGE_BOT_ACCOUNT = "merge_bot_account"
-    BOT_ACCOUNT = "bot_account"
     # QUEUE_ACTION is badly named because in the code it actually is
     # the feature flag for multi queues
     QUEUE_ACTION = "queue_action"
-    DEPENDS_ON = "depends_on"
     SHOW_SPONSOR = "show_sponsor"
     DEDICATED_WORKER = "dedicated_worker"
     ADVANCED_MONITORING = "advanced_monitoring"

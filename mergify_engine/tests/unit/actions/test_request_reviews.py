@@ -9,7 +9,6 @@ from mergify_engine import check_api
 from mergify_engine import github_types
 from mergify_engine.actions import request_reviews
 from mergify_engine.clients import http
-from mergify_engine.dashboard import subscription
 from mergify_engine.tests.unit import conftest
 
 
@@ -86,7 +85,6 @@ async def test_random_reviewers_no_weight(
     assert reviewers == {"@foobaz", "@foobar"}
 
 
-@pytest.mark.subscription(subscription.Features.RANDOM_REQUEST_REVIEWS)
 async def test_random_reviewers_count_bigger(
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
@@ -118,7 +116,6 @@ async def test_random_reviewers_count_bigger(
     assert reviewers == {"@foobar", "@foobaz", "sileht"}
 
 
-@pytest.mark.subscription(subscription.Features.RANDOM_REQUEST_REVIEWS)
 def test_random_config_too_much_count() -> None:
     with pytest.raises(voluptuous.MultipleInvalid) as p:
         request_reviews.RequestReviewsAction(
@@ -140,7 +137,6 @@ def test_random_config_too_much_count() -> None:
     )
 
 
-@pytest.mark.subscription(subscription.Features.RANDOM_REQUEST_REVIEWS)
 async def test_get_reviewers(context_getter: conftest.ContextGetterFixture) -> None:
     action = request_reviews.RequestReviewsAction(
         {
@@ -175,30 +171,6 @@ async def test_get_reviewers(context_getter: conftest.ContextGetterFixture) -> N
     assert reviewers == ({"sileht"}, {"foobar"})
     reviewers = executor._get_reviewers(845, set(), "SILEHT")
     assert reviewers == ({"jd"}, {"foobar"})
-
-
-async def test_disabled(context_getter: conftest.ContextGetterFixture) -> None:
-    action = request_reviews.RequestReviewsAction(
-        {
-            "random_count": 2,
-            "teams": {
-                "foobar": 2,
-                "foobaz": 1,
-            },
-            "users": {
-                "jd": 2,
-                "sileht": 1,
-            },
-        },
-    )
-    ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
-    with pytest.raises(actions.InvalidDynamicActionConfiguration) as excinfo:
-        await action.load_context(ctxt, mock.Mock())
-        assert excinfo.value.reason == "Random request reviews are disabled"
-        assert excinfo.value.details == (
-            "⚠ The [subscription](http://localhost:3000/github/Mergifyio/subscription) "
-            "needs to be updated to enable this feature."
-        )
 
 
 @pytest.mark.subscription

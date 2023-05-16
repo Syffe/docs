@@ -11,7 +11,6 @@ from mergify_engine import github_types
 from mergify_engine import signals
 from mergify_engine.actions import merge_base
 from mergify_engine.actions import utils as action_utils
-from mergify_engine.dashboard import subscription
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import conditions
@@ -54,8 +53,6 @@ class MergeExecutor(
                 action.config["merge_bot_account"],
                 bot_account_fallback=None,
                 option_name="merge_bot_account",
-                required_feature=subscription.Features.MERGE_BOT_ACCOUNT,
-                missing_feature_message="Cannot use `merge_bot_account` with merge action",
                 # NOTE(sileht): we don't allow admin, because if branch protection are
                 # enabled, but not enforced on admins, we may bypass them
                 required_permissions=[github_types.GitHubRepositoryPermission.WRITE],

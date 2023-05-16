@@ -644,8 +644,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 self.config["update_bot_account"],
                 bot_account_fallback=None,
                 option_name="update_bot_account",
-                required_feature=subscription.Features.MERGE_BOT_ACCOUNT,
-                missing_feature_message="Cannot use `update_bot_account` with queue action",
             )
         except action_utils.RenderBotAccountFailure as e:
             raise InvalidQueueConfiguration(e.title, e.reason)
@@ -656,8 +654,6 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 self.config["merge_bot_account"],
                 bot_account_fallback=None,
                 option_name="merge_bot_account",
-                required_feature=subscription.Features.MERGE_BOT_ACCOUNT,
-                missing_feature_message="Cannot use `merge_bot_account` with queue action",
                 # NOTE(sileht): we don't allow admin, because if branch protection are
                 # enabled, but not enforced on admins, we may bypass them
                 required_permissions=[github_types.GitHubRepositoryPermission.WRITE],
