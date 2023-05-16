@@ -26,9 +26,7 @@ Options
    * - ``bot_account``
      - :ref:`data type template`
      -
-     - |essential plan tag|
-       |advanced plan tag|
-       Mergify can impersonate a GitHub user to squash a pull request.
+     - Mergify can impersonate a GitHub user to squash a pull request.
        If no ``bot_account`` is set, Mergify will squash the pull request
        itself.
 

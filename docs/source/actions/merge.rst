@@ -42,8 +42,7 @@ Options
    * - ``merge_bot_account``
      - :ref:`data type template`
      -
-     - |essential plan tag|
-       Mergify can impersonate a GitHub user to merge pull request.
+     - Mergify can impersonate a GitHub user to merge pull request.
        If no ``merge_bot_account`` is set, Mergify will merge the pull request
        itself. The user account **must** have already been
        logged in Mergify dashboard once and have **write** or **maintain** permission.

@@ -52,8 +52,7 @@ Options
   * - ``bot_account``
     - :ref:`data type template`
     -
-    - |essential plan tag|
-      For certain actions, such as rebasing branches, Mergify has to
+    - For certain actions, such as rebasing branches, Mergify has to
       impersonate a GitHub user. You can specify the account to use with this
       option. If no ``bot_account`` is set, Mergify picks randomly one of the
       organization users instead. The user account **must** have already been

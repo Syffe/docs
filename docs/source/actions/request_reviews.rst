@@ -30,10 +30,7 @@ Options
   * - ``bot_account``
     - :ref:`data type template`
     -
-    - |essential plan tag|
-      |advanced plan tag|
-      |advanced plan tag|
-      Mergify can impersonate a GitHub user to request a review on a pull request.
+    - Mergify can impersonate a GitHub user to request a review on a pull request.
       If no ``bot_account`` is set, Mergify will request the review itself.
   * - ``users``
     - list of string or dictionary of login and weight
@@ -47,8 +44,7 @@ Options
   * - ``random_count``
     - integer between 1 and 15
     -
-    - |premium plan tag| |essential plan tag| |advanced plan tag|
-      Pick random users and teams from the provided lists. When
+    - Pick random users and teams from the provided lists. When
       ``random_count`` is specified, ``users`` and ``teams`` can be a
       dictionary where the key is the login and the value is the weight to use.
       Weight must be between 1 and 65535 included.
@@ -96,10 +92,6 @@ You can also ask entire teams to review a pull request based on, e.g., labels:
 
 👘 Random Review Assignment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-|premium plan tag|
-|essential plan tag|
-|advanced plan tag|
 
 It's not fair to ask for the same users or teams to always do the review. You
 can rather randomly assign a pull request to a group of users.
