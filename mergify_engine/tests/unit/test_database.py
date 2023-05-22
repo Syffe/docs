@@ -135,3 +135,15 @@ def filediff(path1: pathlib.Path, path2: pathlib.Path) -> str | None:
             if l1 != l2:
                 return f'Difference at line {i+1}: "{l1.strip()}" != "{l2.strip()}"'
     return None
+
+
+def test_one_head() -> None:
+    # NOTE(charly): it would be better to use `alembic.command.heads(config)`
+    # here, but the function doesn't return anything. The result is sent to
+    # STDOUT, which hard to catch without the `subprocess` module.
+    result = subprocess.run(["alembic", "heads"], capture_output=True)
+
+    heads = result.stdout.decode().splitlines()
+    assert (
+        len(heads) == 1
+    ), f"One head revision allowed, {len(heads)} found: {', '.join(heads)}"
