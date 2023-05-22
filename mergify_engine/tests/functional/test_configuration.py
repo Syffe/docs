@@ -1,3 +1,4 @@
+import typing
 from unittest import mock
 
 import pytest
@@ -422,6 +423,66 @@ did not find expected alphabetic or numeric character
             summary["output"]["summary"]
             == "extra keys not allowed @ pull_request_rules → item 0 → actions → comment → unknown"
         )
+
+    @pytest.mark.subscription(
+        subscription.Features.WORKFLOW_AUTOMATION,
+        subscription.Features.MERGE_QUEUE,
+    )
+    async def test_configuration_changed(self) -> None:
+        rules: dict[str, list[dict[str, typing.Any]]] = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "foobar",
+                    "conditions": [
+                        "label=queue",
+                    ],
+                    "actions": {
+                        "queue": {},
+                    },
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        p1 = await self.create_pr()
+        await self.run_engine()
+
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        rules["pull_request_rules"].append(
+            {
+                "name": "label on queued",
+                "conditions": ["queue-position>=0"],
+                "actions": {
+                    "label": {"toggle": ["queued"]},
+                },
+            }
+        )
+
+        p2 = await self.create_pr(files={".mergify.yml": yaml.dump(rules)})
+        await self.merge_pull(p2["number"])
+        await self.wait_for_pull_request("closed", p2["number"], merged=True)
+        await self.run_engine()
+
+        p2 = await self.create_pr()
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        await self.wait_for_pull_request("labeled", p2["number"])
+
+        await self.send_refresh(p1["number"])
+        await self.run_engine()
+
+        await self.wait_for_pull_request("labeled", p1["number"])
 
     async def test_no_configuration(self) -> None:
         await self.setup_repo()
