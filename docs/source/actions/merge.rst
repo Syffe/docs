@@ -64,6 +64,7 @@ Options
 -------------------------------------
 
 |premium plan tag|
+|advanced plan tag|
 |open source plan tag|
 
 You can specify dependencies between pull requests from the same repository.
@@ -100,6 +101,7 @@ request:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 |premium plan tag|
+|advanced plan tag|
 |open source plan tag|
 
 You can specify a date after which you want a pull request to be merged with a ``Merge-After:`` header.
