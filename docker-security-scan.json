@@ -429,7 +429,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "curl: TELNET option IAC injection",
+        "Title": "TELNET option IAC injection",
         "Description": "A vulnerability in input validation exists in curl <8.0 during communication using the TELNET protocol may allow an attacker to pass on maliciously crafted user name and \"telnet options\" during server negotiation. The lack of proper input scrubbing allows an attacker to send content or perform option negotiation without the application's intent. This vulnerability could be exploited if an application allows user input, thereby enabling attackers to execute arbitrary code on the system.",
         "Severity": "HIGH",
         "CweIDs": [
@@ -472,7 +472,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "curl: SFTP path ~ resolving discrepancy",
+        "Title": "SFTP path ~ resolving discrepancy",
         "Description": "A path traversal vulnerability exists in curl <8.0.0 SFTP implementation causes the tilde (~) character to be wrongly replaced when used as a prefix in the first path element, in addition to its intended use as the first element to indicate a path relative to the user's home directory. Attackers can exploit this flaw to bypass filtering or execute arbitrary code by crafting a path like /~2/foo while accessing a server with a specific user.",
         "Severity": "HIGH",
         "CweIDs": [
@@ -537,6 +537,8 @@
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-27535",
           "https://errata.almalinux.org/9/ALSA-2023-2650.html",
           "https://hackerone.com/reports/1892780",
+          "https://linux.oracle.com/cve/CVE-2023-27535.html",
+          "https://linux.oracle.com/errata/ELSA-2023-2650.html",
           "https://lists.debian.org/debian-lts-announce/2023/04/msg00025.html",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/36NBD5YLJXXEDZLDGNFCERWRYJQ6LAQW/",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-27535",
@@ -599,7 +601,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "curl: SSH connection too eager reuse still",
+        "Title": "SSH connection too eager reuse still",
         "Description": "An authentication bypass vulnerability exists in libcurl prior to v8.0.0 where it reuses a previously established SSH connection despite the fact that an SSH option was modified, which should have prevented reuse. libcurl maintains a pool of previously used connections to reuse them for subsequent transfers if the configurations match. However, two SSH settings were omitted from the configuration check, allowing them to match easily, potentially leading to the reuse of an inappropriate connection.",
         "Severity": "MEDIUM",
         "CweIDs": [
@@ -628,6 +630,62 @@
           "https://www.cve.org/CVERecord?id=CVE-2023-27538"
         ],
         "PublishedDate": "2023-03-30T20:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2023-28321",
+        "PkgID": "curl@7.74.0-1.3+deb11u7",
+        "PkgName": "curl",
+        "InstalledVersion": "7.74.0-1.3+deb11u7",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28321",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "IDN wildcard match may lead to Improper Cerificate Validation",
+        "Description": "No description is available for this CVE.",
+        "Severity": "MEDIUM",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:L",
+            "V3Score": 5.6
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2023-28321",
+          "https://curl.se/docs/CVE-2023-28321.html",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-28321",
+          "https://nvd.nist.gov/vuln/detail/CVE-2023-28321",
+          "https://www.cve.org/CVERecord?id=CVE-2023-28321"
+        ]
+      },
+      {
+        "VulnerabilityID": "CVE-2023-28322",
+        "PkgID": "curl@7.74.0-1.3+deb11u7",
+        "PkgName": "curl",
+        "InstalledVersion": "7.74.0-1.3+deb11u7",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28322",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "more POST-after-PUT confusion",
+        "Description": "No description is available for this CVE.",
+        "Severity": "MEDIUM",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:L",
+            "V3Score": 4.8
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2023-28322",
+          "https://curl.se/docs/CVE-2023-28322.html",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-28322",
+          "https://nvd.nist.gov/vuln/detail/CVE-2023-28322",
+          "https://www.cve.org/CVERecord?id=CVE-2023-28322"
+        ]
       },
       {
         "VulnerabilityID": "CVE-2021-22922",
@@ -724,6 +782,33 @@
           "https://www.oracle.com/security-alerts/cpuoct2021.html"
         ],
         "PublishedDate": "2021-08-05T21:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2023-28320",
+        "PkgID": "curl@7.74.0-1.3+deb11u7",
+        "PkgName": "curl",
+        "InstalledVersion": "7.74.0-1.3+deb11u7",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28320",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "siglongjmp race condition may lead to crash",
+        "Description": "No description is available for this CVE.",
+        "Severity": "LOW",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:H/PR:N/UI:R/S:U/C:N/I:N/A:L",
+            "V3Score": 2.5
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2023-28320",
+          "https://curl.se/docs/CVE-2023-28320.html",
+          "https://nvd.nist.gov/vuln/detail/CVE-2023-28320",
+          "https://www.cve.org/CVERecord?id=CVE-2023-28320"
+        ]
       },
       {
         "VulnerabilityID": "CVE-2022-3219",
@@ -854,6 +939,7 @@
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/YFZWGQKB6MM5MNF2DLFTD7KS2KWPICKL/",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-25652",
           "https://ubuntu.com/security/notices/USN-6050-1",
+          "https://ubuntu.com/security/notices/USN-6050-2",
           "https://www.cve.org/CVERecord?id=CVE-2023-25652"
         ],
         "PublishedDate": "2023-04-25T20:15:00Z"
@@ -897,6 +983,7 @@
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/YFZWGQKB6MM5MNF2DLFTD7KS2KWPICKL/",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-29007",
           "https://ubuntu.com/security/notices/USN-6050-1",
+          "https://ubuntu.com/security/notices/USN-6050-2",
           "https://www.cve.org/CVERecord?id=CVE-2023-29007"
         ],
         "PublishedDate": "2023-04-25T21:15:00Z"
@@ -1066,6 +1153,7 @@
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/YFZWGQKB6MM5MNF2DLFTD7KS2KWPICKL/",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-25652",
           "https://ubuntu.com/security/notices/USN-6050-1",
+          "https://ubuntu.com/security/notices/USN-6050-2",
           "https://www.cve.org/CVERecord?id=CVE-2023-25652"
         ],
         "PublishedDate": "2023-04-25T20:15:00Z"
@@ -1109,6 +1197,7 @@
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/YFZWGQKB6MM5MNF2DLFTD7KS2KWPICKL/",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-29007",
           "https://ubuntu.com/security/notices/USN-6050-1",
+          "https://ubuntu.com/security/notices/USN-6050-2",
           "https://www.cve.org/CVERecord?id=CVE-2023-29007"
         ],
         "PublishedDate": "2023-04-25T21:15:00Z"
@@ -2487,6 +2576,62 @@
         "PublishedDate": "2019-02-26T18:29:00Z"
       },
       {
+        "VulnerabilityID": "CVE-2023-2602",
+        "PkgID": "libcap2@1:2.44-1",
+        "PkgName": "libcap2",
+        "InstalledVersion": "1:2.44-1",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2602",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "[LCAP-CR-23-01]",
+        "Severity": "UNKNOWN"
+      },
+      {
+        "VulnerabilityID": "CVE-2023-2603",
+        "PkgID": "libcap2@1:2.44-1",
+        "PkgName": "libcap2",
+        "InstalledVersion": "1:2.44-1",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2603",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "[LCAP-CR-23-02]",
+        "Severity": "UNKNOWN"
+      },
+      {
+        "VulnerabilityID": "CVE-2023-2602",
+        "PkgID": "libcap2-bin@1:2.44-1",
+        "PkgName": "libcap2-bin",
+        "InstalledVersion": "1:2.44-1",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2602",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "[LCAP-CR-23-01]",
+        "Severity": "UNKNOWN"
+      },
+      {
+        "VulnerabilityID": "CVE-2023-2603",
+        "PkgID": "libcap2-bin@1:2.44-1",
+        "PkgName": "libcap2-bin",
+        "InstalledVersion": "1:2.44-1",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2603",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "[LCAP-CR-23-02]",
+        "Severity": "UNKNOWN"
+      },
+      {
         "VulnerabilityID": "CVE-2022-1304",
         "PkgID": "libcom-err2@1.46.2-2",
         "PkgName": "libcom-err2",
@@ -2718,7 +2863,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "curl: TELNET option IAC injection",
+        "Title": "TELNET option IAC injection",
         "Description": "A vulnerability in input validation exists in curl <8.0 during communication using the TELNET protocol may allow an attacker to pass on maliciously crafted user name and \"telnet options\" during server negotiation. The lack of proper input scrubbing allows an attacker to send content or perform option negotiation without the application's intent. This vulnerability could be exploited if an application allows user input, thereby enabling attackers to execute arbitrary code on the system.",
         "Severity": "HIGH",
         "CweIDs": [
@@ -2761,7 +2906,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "curl: SFTP path ~ resolving discrepancy",
+        "Title": "SFTP path ~ resolving discrepancy",
         "Description": "A path traversal vulnerability exists in curl <8.0.0 SFTP implementation causes the tilde (~) character to be wrongly replaced when used as a prefix in the first path element, in addition to its intended use as the first element to indicate a path relative to the user's home directory. Attackers can exploit this flaw to bypass filtering or execute arbitrary code by crafting a path like /~2/foo while accessing a server with a specific user.",
         "Severity": "HIGH",
         "CweIDs": [
@@ -2826,6 +2971,8 @@
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-27535",
           "https://errata.almalinux.org/9/ALSA-2023-2650.html",
           "https://hackerone.com/reports/1892780",
+          "https://linux.oracle.com/cve/CVE-2023-27535.html",
+          "https://linux.oracle.com/errata/ELSA-2023-2650.html",
           "https://lists.debian.org/debian-lts-announce/2023/04/msg00025.html",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/36NBD5YLJXXEDZLDGNFCERWRYJQ6LAQW/",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-27535",
@@ -2888,7 +3035,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "curl: SSH connection too eager reuse still",
+        "Title": "SSH connection too eager reuse still",
         "Description": "An authentication bypass vulnerability exists in libcurl prior to v8.0.0 where it reuses a previously established SSH connection despite the fact that an SSH option was modified, which should have prevented reuse. libcurl maintains a pool of previously used connections to reuse them for subsequent transfers if the configurations match. However, two SSH settings were omitted from the configuration check, allowing them to match easily, potentially leading to the reuse of an inappropriate connection.",
         "Severity": "MEDIUM",
         "CweIDs": [
@@ -2917,6 +3064,62 @@
           "https://www.cve.org/CVERecord?id=CVE-2023-27538"
         ],
         "PublishedDate": "2023-03-30T20:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2023-28321",
+        "PkgID": "libcurl3-gnutls@7.88.1-7~bpo11+2",
+        "PkgName": "libcurl3-gnutls",
+        "InstalledVersion": "7.88.1-7~bpo11+2",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28321",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "IDN wildcard match may lead to Improper Cerificate Validation",
+        "Description": "No description is available for this CVE.",
+        "Severity": "MEDIUM",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:L",
+            "V3Score": 5.6
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2023-28321",
+          "https://curl.se/docs/CVE-2023-28321.html",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-28321",
+          "https://nvd.nist.gov/vuln/detail/CVE-2023-28321",
+          "https://www.cve.org/CVERecord?id=CVE-2023-28321"
+        ]
+      },
+      {
+        "VulnerabilityID": "CVE-2023-28322",
+        "PkgID": "libcurl3-gnutls@7.88.1-7~bpo11+2",
+        "PkgName": "libcurl3-gnutls",
+        "InstalledVersion": "7.88.1-7~bpo11+2",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28322",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "more POST-after-PUT confusion",
+        "Description": "No description is available for this CVE.",
+        "Severity": "MEDIUM",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:L",
+            "V3Score": 4.8
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2023-28322",
+          "https://curl.se/docs/CVE-2023-28322.html",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-28322",
+          "https://nvd.nist.gov/vuln/detail/CVE-2023-28322",
+          "https://www.cve.org/CVERecord?id=CVE-2023-28322"
+        ]
       },
       {
         "VulnerabilityID": "CVE-2021-22922",
@@ -3013,6 +3216,33 @@
           "https://www.oracle.com/security-alerts/cpuoct2021.html"
         ],
         "PublishedDate": "2021-08-05T21:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2023-28320",
+        "PkgID": "libcurl3-gnutls@7.88.1-7~bpo11+2",
+        "PkgName": "libcurl3-gnutls",
+        "InstalledVersion": "7.88.1-7~bpo11+2",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28320",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "siglongjmp race condition may lead to crash",
+        "Description": "No description is available for this CVE.",
+        "Severity": "LOW",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:H/PR:N/UI:R/S:U/C:N/I:N/A:L",
+            "V3Score": 2.5
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2023-28320",
+          "https://curl.se/docs/CVE-2023-28320.html",
+          "https://nvd.nist.gov/vuln/detail/CVE-2023-28320",
+          "https://www.cve.org/CVERecord?id=CVE-2023-28320"
+        ]
       },
       {
         "VulnerabilityID": "CVE-2023-23914",
@@ -3198,7 +3428,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "curl: TELNET option IAC injection",
+        "Title": "TELNET option IAC injection",
         "Description": "A vulnerability in input validation exists in curl <8.0 during communication using the TELNET protocol may allow an attacker to pass on maliciously crafted user name and \"telnet options\" during server negotiation. The lack of proper input scrubbing allows an attacker to send content or perform option negotiation without the application's intent. This vulnerability could be exploited if an application allows user input, thereby enabling attackers to execute arbitrary code on the system.",
         "Severity": "HIGH",
         "CweIDs": [
@@ -3241,7 +3471,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "curl: SFTP path ~ resolving discrepancy",
+        "Title": "SFTP path ~ resolving discrepancy",
         "Description": "A path traversal vulnerability exists in curl <8.0.0 SFTP implementation causes the tilde (~) character to be wrongly replaced when used as a prefix in the first path element, in addition to its intended use as the first element to indicate a path relative to the user's home directory. Attackers can exploit this flaw to bypass filtering or execute arbitrary code by crafting a path like /~2/foo while accessing a server with a specific user.",
         "Severity": "HIGH",
         "CweIDs": [
@@ -3306,6 +3536,8 @@
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-27535",
           "https://errata.almalinux.org/9/ALSA-2023-2650.html",
           "https://hackerone.com/reports/1892780",
+          "https://linux.oracle.com/cve/CVE-2023-27535.html",
+          "https://linux.oracle.com/errata/ELSA-2023-2650.html",
           "https://lists.debian.org/debian-lts-announce/2023/04/msg00025.html",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/36NBD5YLJXXEDZLDGNFCERWRYJQ6LAQW/",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-27535",
@@ -3368,7 +3600,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "curl: SSH connection too eager reuse still",
+        "Title": "SSH connection too eager reuse still",
         "Description": "An authentication bypass vulnerability exists in libcurl prior to v8.0.0 where it reuses a previously established SSH connection despite the fact that an SSH option was modified, which should have prevented reuse. libcurl maintains a pool of previously used connections to reuse them for subsequent transfers if the configurations match. However, two SSH settings were omitted from the configuration check, allowing them to match easily, potentially leading to the reuse of an inappropriate connection.",
         "Severity": "MEDIUM",
         "CweIDs": [
@@ -3397,6 +3629,62 @@
           "https://www.cve.org/CVERecord?id=CVE-2023-27538"
         ],
         "PublishedDate": "2023-03-30T20:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2023-28321",
+        "PkgID": "libcurl4@7.74.0-1.3+deb11u7",
+        "PkgName": "libcurl4",
+        "InstalledVersion": "7.74.0-1.3+deb11u7",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28321",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "IDN wildcard match may lead to Improper Cerificate Validation",
+        "Description": "No description is available for this CVE.",
+        "Severity": "MEDIUM",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:L",
+            "V3Score": 5.6
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2023-28321",
+          "https://curl.se/docs/CVE-2023-28321.html",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-28321",
+          "https://nvd.nist.gov/vuln/detail/CVE-2023-28321",
+          "https://www.cve.org/CVERecord?id=CVE-2023-28321"
+        ]
+      },
+      {
+        "VulnerabilityID": "CVE-2023-28322",
+        "PkgID": "libcurl4@7.74.0-1.3+deb11u7",
+        "PkgName": "libcurl4",
+        "InstalledVersion": "7.74.0-1.3+deb11u7",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28322",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "more POST-after-PUT confusion",
+        "Description": "No description is available for this CVE.",
+        "Severity": "MEDIUM",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:L",
+            "V3Score": 4.8
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2023-28322",
+          "https://curl.se/docs/CVE-2023-28322.html",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-28322",
+          "https://nvd.nist.gov/vuln/detail/CVE-2023-28322",
+          "https://www.cve.org/CVERecord?id=CVE-2023-28322"
+        ]
       },
       {
         "VulnerabilityID": "CVE-2021-22922",
@@ -3493,6 +3781,33 @@
           "https://www.oracle.com/security-alerts/cpuoct2021.html"
         ],
         "PublishedDate": "2021-08-05T21:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2023-28320",
+        "PkgID": "libcurl4@7.74.0-1.3+deb11u7",
+        "PkgName": "libcurl4",
+        "InstalledVersion": "7.74.0-1.3+deb11u7",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28320",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "siglongjmp race condition may lead to crash",
+        "Description": "No description is available for this CVE.",
+        "Severity": "LOW",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:H/PR:N/UI:R/S:U/C:N/I:N/A:L",
+            "V3Score": 2.5
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2023-28320",
+          "https://curl.se/docs/CVE-2023-28320.html",
+          "https://nvd.nist.gov/vuln/detail/CVE-2023-28320",
+          "https://www.cve.org/CVERecord?id=CVE-2023-28320"
+        ]
       },
       {
         "VulnerabilityID": "CVE-2019-8457",
@@ -4480,7 +4795,10 @@
           "http://www.openwall.com/lists/oss-security/2023/04/19/10",
           "http://www.openwall.com/lists/oss-security/2023/04/19/11",
           "https://access.redhat.com/security/cve/CVE-2023-29491",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-29491",
+          "https://invisible-island.net/ncurses/NEWS.html#index-t20230408",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-29491",
+          "https://security.netapp.com/advisory/ntap-20230517-0009/",
           "https://www.cve.org/CVERecord?id=CVE-2023-29491",
           "https://www.openwall.com/lists/oss-security/2023/04/12/5",
           "https://www.openwall.com/lists/oss-security/2023/04/13/4"
@@ -4520,7 +4838,10 @@
           "http://www.openwall.com/lists/oss-security/2023/04/19/10",
           "http://www.openwall.com/lists/oss-security/2023/04/19/11",
           "https://access.redhat.com/security/cve/CVE-2023-29491",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-29491",
+          "https://invisible-island.net/ncurses/NEWS.html#index-t20230408",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-29491",
+          "https://security.netapp.com/advisory/ntap-20230517-0009/",
           "https://www.cve.org/CVERecord?id=CVE-2023-29491",
           "https://www.openwall.com/lists/oss-security/2023/04/12/5",
           "https://www.openwall.com/lists/oss-security/2023/04/13/4"
@@ -4613,6 +4934,34 @@
           "https://www.cve.org/CVERecord?id=CVE-2020-13529"
         ],
         "PublishedDate": "2021-05-10T16:15:00Z"
+      },
+      {
+        "VulnerabilityID": "CVE-2023-2602",
+        "PkgID": "libpam-cap@1:2.44-1",
+        "PkgName": "libpam-cap",
+        "InstalledVersion": "1:2.44-1",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2602",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "[LCAP-CR-23-01]",
+        "Severity": "UNKNOWN"
+      },
+      {
+        "VulnerabilityID": "CVE-2023-2603",
+        "PkgID": "libpam-cap@1:2.44-1",
+        "PkgName": "libpam-cap",
+        "InstalledVersion": "1:2.44-1",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2603",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "[LCAP-CR-23-02]",
+        "Severity": "UNKNOWN"
       },
       {
         "VulnerabilityID": "CVE-2013-4392",
@@ -5342,6 +5691,44 @@
         "PublishedDate": "2022-02-21T19:15:00Z"
       },
       {
+        "VulnerabilityID": "CVE-2021-31239",
+        "PkgID": "libsqlite3-0@3.34.1-3",
+        "PkgName": "libsqlite3-0",
+        "InstalledVersion": "3.34.1-3",
+        "SeveritySource": "nvd",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-31239",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "denial of service via the appendvfs.c function",
+        "Description": "An issue found in SQLite SQLite3 v.3.35.4 that allows a remote attacker to cause a denial of service via the appendvfs.c function.",
+        "Severity": "HIGH",
+        "CweIDs": [
+          "CWE-125"
+        ],
+        "CVSS": {
+          "nvd": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 7.5
+          },
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 5.9
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2021-31239",
+          "https://github.com/Tsiming/Vulnerabilities/blob/main/SQLite/CVE-2021-31239",
+          "https://nvd.nist.gov/vuln/detail/CVE-2021-31239",
+          "https://www.cve.org/CVERecord?id=CVE-2021-31239",
+          "https://www.sqlite.org/cves.html",
+          "https://www.sqlite.org/forum/forumpost/d9fce1a89b"
+        ],
+        "PublishedDate": "2023-05-09T02:15:00Z"
+      },
+      {
         "VulnerabilityID": "CVE-2021-36690",
         "PkgID": "libsqlite3-0@3.34.1-3",
         "PkgName": "libsqlite3-0",
@@ -5858,7 +6245,10 @@
           "http://www.openwall.com/lists/oss-security/2023/04/19/10",
           "http://www.openwall.com/lists/oss-security/2023/04/19/11",
           "https://access.redhat.com/security/cve/CVE-2023-29491",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-29491",
+          "https://invisible-island.net/ncurses/NEWS.html#index-t20230408",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-29491",
+          "https://security.netapp.com/advisory/ntap-20230517-0009/",
           "https://www.cve.org/CVERecord?id=CVE-2023-29491",
           "https://www.openwall.com/lists/oss-security/2023/04/12/5",
           "https://www.openwall.com/lists/oss-security/2023/04/13/4"
@@ -6351,7 +6741,10 @@
           "http://www.openwall.com/lists/oss-security/2023/04/19/10",
           "http://www.openwall.com/lists/oss-security/2023/04/19/11",
           "https://access.redhat.com/security/cve/CVE-2023-29491",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-29491",
+          "https://invisible-island.net/ncurses/NEWS.html#index-t20230408",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-29491",
+          "https://security.netapp.com/advisory/ntap-20230517-0009/",
           "https://www.cve.org/CVERecord?id=CVE-2023-29491",
           "https://www.openwall.com/lists/oss-security/2023/04/12/5",
           "https://www.openwall.com/lists/oss-security/2023/04/13/4"
@@ -6391,7 +6784,10 @@
           "http://www.openwall.com/lists/oss-security/2023/04/19/10",
           "http://www.openwall.com/lists/oss-security/2023/04/19/11",
           "https://access.redhat.com/security/cve/CVE-2023-29491",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-29491",
+          "https://invisible-island.net/ncurses/NEWS.html#index-t20230408",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-29491",
+          "https://security.netapp.com/advisory/ntap-20230517-0009/",
           "https://www.cve.org/CVERecord?id=CVE-2023-29491",
           "https://www.openwall.com/lists/oss-security/2023/04/12/5",
           "https://www.openwall.com/lists/oss-security/2023/04/13/4"
@@ -6431,7 +6827,10 @@
           "http://www.openwall.com/lists/oss-security/2023/04/19/10",
           "http://www.openwall.com/lists/oss-security/2023/04/19/11",
           "https://access.redhat.com/security/cve/CVE-2023-29491",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-29491",
+          "https://invisible-island.net/ncurses/NEWS.html#index-t20230408",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-29491",
+          "https://security.netapp.com/advisory/ntap-20230517-0009/",
           "https://www.cve.org/CVERecord?id=CVE-2023-29491",
           "https://www.openwall.com/lists/oss-security/2023/04/12/5",
           "https://www.openwall.com/lists/oss-security/2023/04/13/4"
