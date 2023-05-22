@@ -3,6 +3,7 @@ from unittest import mock
 import pytest
 
 from mergify_engine import context
+from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.actions import request_reviews
 from mergify_engine.dashboard import subscription
@@ -50,6 +51,36 @@ class TestRequestReviewsAction(base.FunctionalTestBase):
                     "conditions": [f"base={self.main_branch_name}"],
                     # The wrong team case matter
                     "actions": {"request_reviews": {"teams": [team["slug"].upper()]}},
+                }
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        await self.create_pr()
+        await self.run_engine()
+
+        pr = await self.wait_for_pull_request("review_requested")
+        assert sorted([team["slug"]]) == sorted(
+            team["slug"] for team in pr["pull_request"]["requested_teams"]
+        )
+
+    async def test_request_reviews_teams_with_organization(self) -> None:
+        team = (await self.get_teams())[0]
+
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "request_reviews",
+                    "conditions": [f"base={self.main_branch_name}"],
+                    # The wrong team case matter
+                    "actions": {
+                        "request_reviews": {
+                            "teams": [
+                                f"{settings.TESTING_ORGANIZATION_NAME}/{team['slug'].upper()}"
+                            ]
+                        }
+                    },
                 }
             ]
         }
