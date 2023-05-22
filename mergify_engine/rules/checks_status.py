@@ -16,13 +16,14 @@ if typing.TYPE_CHECKING:
 
 
 def get_conditions_with_ignored_attributes(
-    rule: prr_config.EvaluatedPullRequestRule | qr_config.EvaluatedQueueRule,
+    conditions: rules_conditions.PullRequestRuleConditions
+    | rules_conditions.QueueRuleMergeConditions,
     attribute_prefixes: tuple[str, ...],
 ) -> (
     rules_conditions.PullRequestRuleConditions
     | rules_conditions.QueueRuleMergeConditions
 ):
-    conditions = rule.conditions.copy()
+    conditions = conditions.copy()
     for condition in conditions.walk():
         attr = condition.get_attribute_name()
         if attr.startswith(attribute_prefixes):
@@ -33,10 +34,11 @@ def get_conditions_with_ignored_attributes(
 async def conditions_without_some_attributes_match_p(
     log: logging.LoggerAdapter[logging.Logger],
     pulls: list[context.BasePullRequest],
-    rule: prr_config.EvaluatedPullRequestRule | qr_config.EvaluatedQueueRule,
+    conditions: rules_conditions.PullRequestRuleConditions
+    | rules_conditions.QueueRuleMergeConditions,
     attribute_prefixes: tuple[str, ...],
 ) -> bool:
-    conditions = get_conditions_with_ignored_attributes(rule, attribute_prefixes)
+    conditions = get_conditions_with_ignored_attributes(conditions, attribute_prefixes)
     await conditions(pulls)
     log.debug(
         "does_conditions_without_some_attributes_match ?",
@@ -87,20 +89,24 @@ async def get_rule_checks_status(
     rule: prr_config.EvaluatedPullRequestRule | qr_config.EvaluatedQueueRule,
     *,
     wait_for_schedule_to_match: bool = False,
+    conditions_type: typing.Literal["conditions", "routing_conditions"] = "conditions",
 ) -> check_api.Conclusion:
-    if rule.conditions.match:
+    conditions = getattr(rule, conditions_type)
+
+    if conditions.match:
         return check_api.Conclusion.SUCCESS
 
     only_checks_does_not_match = await conditions_without_some_attributes_match_p(
-        log, pulls, rule, ("check-", "status-")
+        log, pulls, conditions, ("check-", "status-")
     )
     if only_checks_does_not_match:
-        result = await _get_checks_result(repository, pulls, rule.conditions)
+        result = await _get_checks_result(repository, pulls, conditions)
         if result == check_api.Conclusion.SUCCESS:
             log.error(
-                "_get_checks_result() unexpectly returned check_api.Conclusion.SUCCESS "
-                "while rule.conditions.match is false",
-                tree=rule.conditions.extract_raw_filter_tree(),
+                "_get_checks_result() unexpectedly returned check_api.Conclusion.SUCCESS "
+                "while rule.%s.match is false",
+                conditions_type,
+                tree=conditions.extract_raw_filter_tree(),
             )
             # So don't merge broken stuff
             return check_api.Conclusion.PENDING
@@ -108,7 +114,7 @@ async def get_rule_checks_status(
 
     if wait_for_schedule_to_match:
         schedule_match = await conditions_without_some_attributes_match_p(
-            log, pulls, rule, ("check-", "status-", "schedule")
+            log, pulls, conditions, ("check-", "status-", "schedule")
         )
         # NOTE(sileht): when something not related to checks does not match
         # we now also remove schedule from the tree, if it match
@@ -119,7 +125,7 @@ async def get_rule_checks_status(
             result_without_schedule = await _get_checks_result(
                 repository,
                 pulls,
-                get_conditions_with_ignored_attributes(rule, ("schedule",)),
+                get_conditions_with_ignored_attributes(conditions, ("schedule",)),
             )
             if result_without_schedule == check_api.Conclusion.FAILURE:
                 return result_without_schedule

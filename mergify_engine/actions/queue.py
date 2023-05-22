@@ -690,6 +690,8 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 e.title,
                 e.message,
             )
+        except qr_config.RoutingConditionsPendingChecks as e:
+            return check_api.Result(check_api.Conclusion.PENDING, e.title, e.message)
 
         try:
             await self._check_subscription_status(

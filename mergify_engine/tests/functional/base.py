@@ -1235,20 +1235,59 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
     async def create_check_run(
         self,
         pull: github_types.GitHubPullRequest,
-        context: str = "continuous-integration/fake-ci",
-        conclusion: str = "success",
-    ) -> None:
+        name: str = "continuous-integration/fake-ci",
+        conclusion: github_types.GitHubCheckRunConclusion = "success",
+        external_id: str | None = None,
+    ) -> github_types.GitHubEventCheckRun:
+        payload: dict[str, typing.Any] = {"name": name, "head_sha": pull["head"]["sha"]}
+        wait_payload: dict[str, typing.Any] = {}
+
+        if conclusion is None:
+            payload["status"] = wait_payload["status"] = "in_progress"
+        else:
+            payload["conclusion"] = conclusion
+            wait_payload.update({"status": "completed", "conclusion": conclusion})
+
+        if external_id:
+            payload["external_id"] = external_id
+
         await self.client_integration.post(
-            f"{self.url_origin}/check-runs",
-            json={
-                "name": context,
-                "head_sha": pull["head"]["sha"],
-                "conclusion": conclusion,
-            },
+            f"{self.url_origin}/check-runs", json=payload
         )
-        await self.wait_for(
-            "check_run",
-            {"check_run": {"conclusion": conclusion, "status": "completed"}},
+
+        return typing.cast(
+            github_types.GitHubEventCheckRun,
+            await self.wait_for(
+                "check_run",
+                {"check_run": wait_payload},
+            ),
+        )
+
+    async def update_check_run(
+        self,
+        pull: github_types.GitHubPullRequest,
+        check_id: int,
+        conclusion: github_types.GitHubCheckRunConclusion = "success",
+    ) -> github_types.GitHubEventCheckRun:
+        payload: dict[str, typing.Any] = {"head_sha": pull["head"]["sha"]}
+        wait_payload: dict[str, typing.Any] = {"id": check_id}
+
+        if conclusion is None:
+            payload["status"] = wait_payload["status"] = "in_progress"
+        else:
+            payload["conclusion"] = conclusion
+            wait_payload.update({"status": "completed", "conclusion": conclusion})
+
+        await self.client_integration.patch(
+            f"{self.url_origin}/check-runs/{check_id}", json=payload
+        )
+
+        return typing.cast(
+            github_types.GitHubEventCheckRun,
+            await self.wait_for(
+                "check_run",
+                {"check_run": wait_payload},
+            ),
         )
 
     async def create_review(

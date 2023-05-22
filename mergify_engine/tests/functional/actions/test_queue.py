@@ -457,6 +457,66 @@ class TestQueueAction(base.FunctionalTestBase):
             in check["output"]["summary"]
         )
 
+    async def test_queue_routing_conditions_with_pending_check_runs(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "pending-check-success",
+                    "routing_conditions": [
+                        "check-success=some-pending-check-in-ci",
+                    ],
+                },
+                {
+                    "name": "default",
+                    "routing_conditions": ["label=will-not-be-set"],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Queue",
+                    "conditions": [
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        await self.add_label(p1["number"], "queue")
+        pending_check = await self.create_check_run(
+            p1,
+            name="some-pending-check-in-ci",
+            conclusion=None,
+            external_id=check_api.USER_CREATED_CHECKS,
+        )
+
+        # engine detects pending check runs
+        await self.run_engine()
+        check = await self.wait_for_check_run(name="Rule: Queue (queue)")
+        assert check["check_run"]["status"] == "in_progress"
+        assert (
+            check["check_run"]["output"]["title"]
+            == "Waiting for checks in routing conditions to complete to be able to select a queue"
+        )
+        assert (
+            check["check_run"]["output"]["summary"]
+            == "The following queues have routing conditions with pending checks:\n* `pending-check-success`\n"
+        )
+
+        # check runs completed
+        await self.update_check_run(
+            p1,
+            pending_check["check_run"]["id"],
+        )
+        await self.run_engine()
+        check = await self.wait_for_check_run(name="Rule: Queue (queue)")
+        assert (
+            check["check_run"]["output"]["title"]
+            == "The pull request has been merged automatically"
+        )
+
     async def test_queue_priority_rules(self) -> None:
         rules = {
             "queue_rules": [
