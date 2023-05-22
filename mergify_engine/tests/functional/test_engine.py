@@ -858,6 +858,93 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         )
         await self.run_engine()
 
-        # Ensure the sha collision message it is not posted twice
+        # Ensure the sha collision message is not posted twice
         comments = await self.get_issue_comments(prs[1]["number"])
         assert len(comments) == 3
+
+    @pytest.mark.subscription(
+        subscription.Features.MERGE_QUEUE,
+        subscription.Features.WORKFLOW_AUTOMATION,
+    )
+    async def test_sha_collision_after_pr_synchronization(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        {
+                            "or": [
+                                "status-success=continuous-integration/fake-ci",
+                                "label=merge",
+                            ]
+                        }
+                    ],
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "default merge",
+                    "conditions": [
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+
+        other_branch = self.get_full_branch_name("other")
+        await self.setup_repo(yaml.dump(rules), test_branches=(other_branch,))
+
+        # Create 2 PRs from the same branch
+        pr1, pr2 = await self.create_prs_with_same_head_sha()
+
+        # Make them point to different base to avoid merging one result in merging
+        # the other one automatically
+        await self.edit_pull(pr2["number"], base=other_branch)
+        await self.wait_for_pull_request("edited", pr2["number"])
+
+        # Change the headsha on pr1
+        await self.push_file(target_branch=pr1["head"]["ref"])
+        pr1 = (await self.wait_for_pull_request("synchronize", pr1["number"]))[
+            "pull_request"
+        ]
+        await self.add_label(pr1["number"], "queue")
+
+        # Add both to the cache and include pr1 in the train
+        await self.run_engine()
+        await self.wait_for_check_run(name=constants.MERGE_QUEUE_SUMMARY_NAME)
+
+        # Synchronize pr2 to have same headsha as pr1
+        await self.git("rebase", f"origin/{pr1['head']['ref']}", pr2["head"]["ref"])
+        await self.git("push", "--quiet", "origin", pr2["head"]["ref"])
+        pr2 = (await self.wait_for_pull_request("synchronize", pr2["number"]))[
+            "pull_request"
+        ]
+
+        assert pr2["head"]["sha"] == pr1["head"]["sha"]
+
+        await self.run_engine()
+        comment = await self.wait_for_issue_comment(str(pr2["number"]), "created")
+        assert (
+            comment["comment"]["body"]
+            == f":warning: The sha of the head commit of this PR conflicts with #{pr1['number']}. Mergify cannot evaluate rules on this PR. :warning:"
+        )
+
+        # Pr2 is not merged even if it fulfill the requirements
+        await self.add_label(pr2["number"], "queue")
+        await self.add_label(pr2["number"], "merge")
+        await self.create_command(pr2["number"], "@Mergifyio refresh", as_="admin")
+        await self.run_engine()
+        pr2 = await self.get_pull(pr2["number"])
+
+        assert pr2["merged"] is False
+
+        # Merge automaticaly pr1 even if pr2 has a sha collision
+        await self.add_label(pr1["number"], "merge")
+        await self.run_engine()
+        await self.wait_for_pull_request("closed", pr1["number"], merged=True)
+
+        # Now pr2 can be merged
+        await self.create_command(pr2["number"], "@Mergifyio refresh", as_="admin")
+        await self.run_engine()
+        await self.wait_for_pull_request("closed", pr2["number"], merged=True)

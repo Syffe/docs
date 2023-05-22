@@ -410,14 +410,14 @@ async def run(
         ctxt.log.debug("engine run pending commands")
         await commands_runner.run_commands_tasks(ctxt, mergify_config)
 
-    await _ensure_summary_on_head_sha(ctxt)
-
     summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
 
     conflicting_ctxt = await get_context_with_sha_collision(ctxt, summary)
     if conflicting_ctxt is not None:
         await report_sha_collision(ctxt, conflicting_ctxt)
         return None
+
+    await _ensure_summary_on_head_sha(ctxt)
 
     if not ctxt.has_been_opened() and summary is None:
         ctxt.log.warning(
