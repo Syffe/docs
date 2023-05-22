@@ -1928,10 +1928,6 @@ class TestQueueAction(base.FunctionalTestBase):
 **Required conditions to stay in the queue:**
 
 - [ ] `status-success=continuous-integration/fake-ci`
-
-**The following pull requests are queued:**
-
-| | Pull request | Queue/Priority | Speculative checks | Queued
 """
             in summary
         )
