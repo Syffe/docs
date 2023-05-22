@@ -215,7 +215,12 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         try:
             on_behalf = await action_utils.get_github_user_from_bot_account(
-                "queue", self.config["merge_bot_account"]
+                self.ctxt.repository,
+                "queue",
+                self.config["merge_bot_account"],
+                # NOTE(sileht): we don't allow admin, because if branch protection are
+                # enabled, but not enforced on admins, we may bypass them
+                required_permissions=[github_types.GitHubRepositoryPermission.WRITE],
             )
         except action_utils.BotAccountNotFound as e:
             return check_api.Result(e.status, e.title, e.reason)
@@ -652,7 +657,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             await self._unqueue_pull_request(convoy, cars, unqueue_reason, result)
         return result
 
-    async def _render_bot_account(self) -> None:
+    async def _render_bot_accounts(self) -> None:
         try:
             self.config["update_bot_account"] = await action_utils.render_bot_account(
                 self.ctxt,
@@ -660,20 +665,34 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 bot_account_fallback=None,
                 option_name="update_bot_account",
             )
-        except action_utils.RenderBotAccountFailure as e:
-            raise InvalidQueueConfiguration(e.title, e.reason)
-
-        try:
             self.config["merge_bot_account"] = await action_utils.render_bot_account(
                 self.ctxt,
                 self.config["merge_bot_account"],
                 bot_account_fallback=None,
                 option_name="merge_bot_account",
-                # NOTE(sileht): we don't allow admin, because if branch protection are
+            )
+        except action_utils.RenderBotAccountFailure as e:
+            raise InvalidQueueConfiguration(e.title, e.reason)
+
+        try:
+            await action_utils.get_github_user_from_bot_account(
+                self.ctxt.repository,
+                "update queued pull request",
+                self.config["update_bot_account"],
+                required_permissions=(
+                    github_types.GitHubRepositoryPermission.permissions_above(
+                        github_types.GitHubRepositoryPermission.WRITE
+                    )
+                ),
+            )
+            await action_utils.get_github_user_from_bot_account(
+                self.ctxt.repository,
+                "merge queued pull request",
+                self.config["merge_bot_account"],
                 # enabled, but not enforced on admins, we may bypass them
                 required_permissions=[github_types.GitHubRepositoryPermission.WRITE],
             )
-        except action_utils.RenderBotAccountFailure as e:
+        except action_utils.BotAccountNotFound as e:
             raise InvalidQueueConfiguration(e.title, e.reason)
 
     async def _check_action_validity(self) -> check_api.Result | None:
@@ -688,7 +707,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 config=self.config,
                 queue_rule=self.queue_rule,
             )
-            await self._render_bot_account()
+            await self._render_bot_accounts()
         except InvalidQueueConfiguration as e:
             return check_api.Result(
                 check_api.Conclusion.FAILURE,

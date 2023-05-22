@@ -99,7 +99,6 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
                 ctxt,
                 action.config["bot_account"],
                 bot_account_fallback=None,
-                required_permissions=[],
             )
         except action_utils.RenderBotAccountFailure as e:
             raise actions.InvalidDynamicActionConfiguration(
@@ -188,7 +187,10 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
 
         try:
             on_behalf = await action_utils.get_github_user_from_bot_account(
-                self.KIND, self.config["bot_account"]
+                self.ctxt.repository,
+                self.KIND,
+                self.config["bot_account"],
+                required_permissions=[],
             )
         except action_utils.BotAccountNotFound as e:
             return self._get_failure_copy_result(branch_name, f"{e.title}\n{e.reason}")

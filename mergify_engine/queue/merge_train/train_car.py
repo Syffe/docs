@@ -715,7 +715,7 @@ class TrainCar:
 
         try:
             on_behalf = await action_utils.get_github_user_from_bot_account(
-                "update", bot_account
+                self.repository, "update", bot_account, required_permissions=[]
             )
         except action_utils.BotAccountNotFound as exc:
             await self._set_creation_failure(
@@ -1101,7 +1101,10 @@ class TrainCar:
         if queue_rule.config["draft_bot_account"]:
             try:
                 on_behalf = await action_utils.get_github_user_from_bot_account(
-                    "prepare draft pull request", queue_rule.config["draft_bot_account"]
+                    self.repository,
+                    "prepare draft pull request",
+                    queue_rule.config["draft_bot_account"],
+                    required_permissions=[],
                 )
             except action_utils.BotAccountNotFound as e:
                 await self._set_creation_failure(f"{e.title}. {e.reason}")

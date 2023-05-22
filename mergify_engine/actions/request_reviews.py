@@ -51,7 +51,6 @@ class RequestReviewsExecutor(
                 ctxt,
                 action.config["bot_account"],
                 bot_account_fallback=None,
-                required_permissions=[],
             )
         except action_utils.RenderBotAccountFailure as e:
             raise actions.InvalidDynamicActionConfiguration(
@@ -194,7 +193,10 @@ class RequestReviewsExecutor(
             if not already_at_max:
                 try:
                     on_behalf = await action_utils.get_github_user_from_bot_account(
-                        "request review", self.config["bot_account"]
+                        self.ctxt.repository,
+                        "request review",
+                        self.config["bot_account"],
+                        required_permissions=[],
                     )
                 except action_utils.BotAccountNotFound as e:
                     return check_api.Result(e.status, e.title, e.reason)

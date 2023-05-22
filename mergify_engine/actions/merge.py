@@ -53,9 +53,6 @@ class MergeExecutor(
                 action.config["merge_bot_account"],
                 bot_account_fallback=None,
                 option_name="merge_bot_account",
-                # NOTE(sileht): we don't allow admin, because if branch protection are
-                # enabled, but not enforced on admins, we may bypass them
-                required_permissions=[github_types.GitHubRepositoryPermission.WRITE],
             )
         except action_utils.RenderBotAccountFailure as e:
             raise actions.InvalidDynamicActionConfiguration(

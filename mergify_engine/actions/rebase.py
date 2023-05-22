@@ -38,7 +38,6 @@ class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig
                 ctxt,
                 action.config["bot_account"],
                 bot_account_fallback=bot_account_fallback,
-                required_permissions=[],
             )
         except action_utils.RenderBotAccountFailure as e:
             raise actions.InvalidDynamicActionConfiguration(
@@ -77,7 +76,10 @@ class RebaseExecutor(actions.ActionExecutor["RebaseAction", RebaseExecutorConfig
 
         try:
             on_behalf = await action_utils.get_github_user_from_bot_account(
-                "rebase", self.config["bot_account"]
+                self.ctxt.repository,
+                "rebase",
+                self.config["bot_account"],
+                required_permissions=[],
             )
         except action_utils.BotAccountNotFound as e:
             return check_api.Result(e.status, e.title, e.reason)

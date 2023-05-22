@@ -30,7 +30,6 @@ async def render_bot_account(
     *,
     bot_account_fallback: github_types.GitHubLogin,
     option_name: str = "bot_account",
-    required_permissions: None | (list[github_types.GitHubRepositoryPermission]) = None,
 ) -> github_types.GitHubLogin:
     ...
 
@@ -42,7 +41,6 @@ async def render_bot_account(
     *,
     bot_account_fallback: None,
     option_name: str = "bot_account",
-    required_permissions: None | (list[github_types.GitHubRepositoryPermission]) = None,
 ) -> github_types.GitHubLogin | None:
     ...
 
@@ -53,7 +51,6 @@ async def render_bot_account(
     *,
     bot_account_fallback: github_types.GitHubLogin | None,
     option_name: str = "bot_account",
-    required_permissions: None | (list[github_types.GitHubRepositoryPermission]) = None,
 ) -> github_types.GitHubLogin | None:
     if bot_account_template is None:
         if bot_account_fallback is None:
@@ -78,55 +75,15 @@ async def render_bot_account(
     if not bot_account:
         return None
 
-    try:
-        bot_account = typing.cast(
-            github_types.GitHubLogin, GitHubLoginSchema(bot_account)
-        )
-    except voluptuous.Invalid as e:
-        raise RenderBotAccountFailure(
-            check_api.Conclusion.FAILURE,
-            f"Invalid {option_name} value",
-            str(e),
-        )
-
-    if required_permissions is None:
-        required_permissions = (
-            github_types.GitHubRepositoryPermission.permissions_above(
-                github_types.GitHubRepositoryPermission.WRITE
-            )
-        )
-
-    if required_permissions:
+    if not bot_account.endswith("[bot]"):
         try:
-            user = await ctxt.repository.installation.get_user(bot_account)
-            permission = await ctxt.repository.get_user_permission(user)
-        except http.HTTPNotFound:
+            bot_account = GitHubLoginSchema(bot_account)
+        except voluptuous.Invalid as e:
             raise RenderBotAccountFailure(
-                check_api.Conclusion.ACTION_REQUIRED,
-                f"User `{bot_account}` used as `{option_name}` is unknown",
-                f"Please make sure `{bot_account}` exists and has logged into the [Mergify dashboard]({settings.DASHBOARD_UI_FRONT_URL}).",
+                check_api.Conclusion.FAILURE, f"Invalid {option_name} value", str(e)
             )
 
-        if permission not in required_permissions:
-            quoted_required_permissions = [f"`{p}`" for p in required_permissions]
-            if len(quoted_required_permissions) == 1:
-                fancy_perm = quoted_required_permissions[0]
-            else:
-                fancy_perm = ", ".join(quoted_required_permissions[0:-1])
-                fancy_perm += f" or {quoted_required_permissions[-1]}"
-            required_permissions[0:-1]
-            # `write` or `maintain`
-            raise RenderBotAccountFailure(
-                check_api.Conclusion.ACTION_REQUIRED,
-                (
-                    f"`{bot_account}` account used as "
-                    f"`{option_name}` must have {fancy_perm} permission, "
-                    f"not `{permission}`"
-                ),
-                "",
-            )
-
-    return bot_account
+    return typing.cast(github_types.GitHubLogin, bot_account)
 
 
 async def render_users_template(ctxt: context.Context, users: list[str]) -> set[str]:
@@ -153,23 +110,29 @@ class BotAccountNotFound(Exception):
 
 @typing.overload
 async def get_github_user_from_bot_account(
+    repository: context.Repository,
     purpose: str,
     login: github_types.GitHubLogin,
+    required_permissions: list[github_types.GitHubRepositoryPermission],
 ) -> github_user.GitHubUser:
     ...
 
 
 @typing.overload
 async def get_github_user_from_bot_account(
+    repository: context.Repository,
     purpose: str,
     login: github_types.GitHubLogin | None,
+    required_permissions: list[github_types.GitHubRepositoryPermission],
 ) -> github_user.GitHubUser | None:
     ...
 
 
 async def get_github_user_from_bot_account(
+    repository: context.Repository,
     purpose: str,
     login: github_types.GitHubLogin | None,
+    required_permissions: list[github_types.GitHubRepositoryPermission],
 ) -> github_user.GitHubUser | None:
     if login is None:
         return None
@@ -181,6 +144,35 @@ async def get_github_user_from_bot_account(
             "",
         )
 
+    if required_permissions:
+        try:
+            user = await repository.installation.get_user(login)
+            permission = await repository.get_user_permission(user)
+        except http.HTTPNotFound:
+            raise BotAccountNotFound(
+                check_api.Conclusion.ACTION_REQUIRED,
+                f"User `{login}` used as `bot_account` is unknown",
+                f"Please make sure `{login}` exists and has logged into the [Mergify dashboard]({settings.DASHBOARD_UI_FRONT_URL}).",
+            )
+
+        if permission not in required_permissions:
+            quoted_required_permissions = [f"`{p}`" for p in required_permissions]
+            if len(quoted_required_permissions) == 1:
+                fancy_perm = quoted_required_permissions[0]
+            else:
+                fancy_perm = ", ".join(quoted_required_permissions[0:-1])
+                fancy_perm += f" or {quoted_required_permissions[-1]}"
+            required_permissions[0:-1]
+            # `write` or `maintain`
+            raise BotAccountNotFound(
+                check_api.Conclusion.ACTION_REQUIRED,
+                (
+                    f"`{login}` account used as "
+                    f"`bot_account` must have {fancy_perm} permission, "
+                    f"not `{permission}`"
+                ),
+                "",
+            )
     if not settings.SAAS_MODE:
         for (
             hardcoded_id,

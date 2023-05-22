@@ -99,7 +99,14 @@ class MergeUtilsMixin:
         if merge_bot_account:
             try:
                 on_behalf = await action_utils.get_github_user_from_bot_account(
-                    kind, merge_bot_account
+                    ctxt.repository,
+                    kind,
+                    merge_bot_account,
+                    # NOTE(sileht): we don't allow admin, because if branch protection are
+                    # enabled, but not enforced on admins, we may bypass them
+                    required_permissions=[
+                        github_types.GitHubRepositoryPermission.WRITE
+                    ],
                 )
             except action_utils.BotAccountNotFound as e:
                 return check_api.Result(e.status, e.title, e.reason)
