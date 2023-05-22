@@ -56,6 +56,7 @@ class IncompatibleBranchProtection(InvalidQueueConfiguration):
 
     configuration: str
     branch_protection_setting: str
+    required_additional_configuration: str | None = dataclasses.field(default=None)
 
     title: str = dataclasses.field(
         init=False,
@@ -66,9 +67,13 @@ class IncompatibleBranchProtection(InvalidQueueConfiguration):
     def __post_init__(self) -> None:
         self.message = (
             "The branch protection setting "
-            f"`{self.branch_protection_setting}` is not compatible with `{self.configuration}` "
-            "and must be unset."
+            f"`{self.branch_protection_setting}` is not compatible with `{self.configuration}`"
         )
+
+        if self.required_additional_configuration is None:
+            self.message += " and must be unset."
+        else:
+            self.message += f" if `{self.required_additional_configuration}` isn't set."
 
 
 QueueUpdateT = typing.Literal["merge", "rebase"]
@@ -1121,15 +1126,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 and queue_executor_config["update_method"] == "rebase"
                 and not queue_executor_config["update_bot_account"]
             ):
-                # NOTE(Greesb): Just a warning for the moment to make sure we didn't miss
-                # any special behavior. When we are sure, replace the log by an
-                # `IncompatibleBranchProtection` exception.
-                ctxt.log.warning(
-                    "Pull request %s should not be queued because of branch protection issues",
-                    ctxt.pull["number"],
-                    pull_is_behind=await ctxt.is_behind,
-                    queue_rule_config=queue_rule_config,
-                    queue_executor_config=queue_executor_config,
+                raise IncompatibleBranchProtection(
+                    "update_method=rebase",
+                    BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT,
+                    "update_bot_account",
                 )
 
 

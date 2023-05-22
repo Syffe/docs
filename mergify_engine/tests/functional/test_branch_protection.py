@@ -217,3 +217,79 @@ class TestBranchProtection(base.FunctionalTestBase):
         await self.wait_for_pull_request("closed", draft_pr["number"])
         p1_closed = await self.wait_for_pull_request("closed", p1["number"])
         assert p1_closed["pull_request"]["merged"]
+
+    async def test_strict_status_check_with_rebase_update_method_and_no_bot_account(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [],
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Queue on label",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {
+                        "queue": {
+                            "name": "default",
+                            "update_method": "rebase",
+                        },
+                    },
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        await self.protect_main_branch_with_required_status_checks_strict()
+
+        pr = await self.create_pr()
+        pr2 = await self.create_pr(as_="fork")
+
+        pr3 = await self.create_pr()
+        await self.merge_pull_as_admin(pr3["number"])
+        await self.wait_for_pull_request("closed", pr3["number"], merged=True)
+
+        await self.add_label(pr["number"], "queue")
+        await self.run_engine()
+
+        # pr should not be merged because created by a bot
+        check_run = await self.wait_for_check_run(
+            name="Rule: Queue on label (queue)",
+            status="completed",
+            conclusion="failure",
+        )
+        assert (
+            check_run["check_run"]["output"]["title"]
+            == "Configuration not compatible with a branch protection setting"
+        )
+        assert (
+            check_run["check_run"]["output"]["summary"]
+            == "The branch protection setting `Require branches to be up to date before merging` is not compatible with `update_method=rebase` if `update_bot_account` isn't set."
+        )
+
+        await self.add_label(pr2["number"], "queue")
+        await self.run_engine()
+
+        # pr2 should be merged because not created by a bot
+        await self.wait_for_pull_request("synchronize", pr2["number"])
+        await self.wait_for_pull_request("closed", pr2["number"], merged=True)
+        await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
+
+        # Pull changes for pr4 to be uptodate
+        await self.git("pull")
+        pr4 = await self.create_pr()
+
+        # Make sure p4, an up to date pr created by a bot, is merged
+        ctxt = context.Context(self.repository_ctxt, pr4)
+        assert not await ctxt.is_behind
+
+        await self.add_label(pr4["number"], "queue")
+        await self.run_engine()
+
+        await self.wait_for_pull_request("closed", pr4["number"], merged=True)
