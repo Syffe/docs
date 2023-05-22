@@ -1,7 +1,9 @@
-init_config:
 instances:
-  token: <YOUR DD_MERGFIFY_API_TOKEN>
-  repositories:
-    mergifyio/engine: [main]
-    mergifyio/dashboard: [main]
-    mergifyio/dashboard-ui: [main]
+  - token: <YOUR DD_MERGFIFY_API_TOKEN>
+    repositories:
+      mergifyio/engine:
+        - main
+      mergifyio/dashboard:
+        - main
+      mergifyio/dashboard-ui:
+        - main
