@@ -5,6 +5,7 @@ from mergify_engine import actions
 from mergify_engine import check_api
 from mergify_engine import constants
 from mergify_engine import context
+from mergify_engine import dashboard
 from mergify_engine import signals
 from mergify_engine.dashboard import subscription
 from mergify_engine.queue import merge_train
@@ -61,6 +62,7 @@ class UnqueueExecutor(
                 title="The pull request has been removed from the queue by an `unqueue` command",
                 summary="",
             ),
+            details_url=dashboard.get_queue_pull_request_details_url(self.ctxt.pull),
         )
         await signals.send(
             self.ctxt.repository,

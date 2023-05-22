@@ -16,6 +16,7 @@ from mergify_engine import actions
 from mergify_engine import check_api
 from mergify_engine import constants
 from mergify_engine import context
+from mergify_engine import dashboard
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import queue
@@ -394,6 +395,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
                         "The pull request has been refreshed and is going to be re-embarked soon",
                         "",
                     ),
+                    details_url=dashboard.get_queue_pull_request_details_url(
+                        self.ctxt.pull
+                    ),
                 )
 
         convoy = await merge_train.Convoy.from_context(
@@ -532,6 +536,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
                             " checks have started."
                         ),
                     ),
+                    details_url=dashboard.get_queue_pull_request_details_url(
+                        self.ctxt.pull
+                    ),
                 )
 
         return result
@@ -572,6 +579,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     conclusion,
                     f"The pull request {self.ctxt.pull['number']} cannot be merged and has been disembarked",
                     result.title + "\n" + result.summary,
+                ),
+                details_url=dashboard.get_queue_pull_request_details_url(
+                    self.ctxt.pull
                 ),
             )
 

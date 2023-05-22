@@ -4,6 +4,7 @@ from mergify_engine import actions
 from mergify_engine import check_api
 from mergify_engine import constants
 from mergify_engine import context
+from mergify_engine import dashboard
 from mergify_engine import refresher
 from mergify_engine import signals
 from mergify_engine.dashboard import subscription
@@ -58,6 +59,7 @@ class RequeueExecutor(
                 "This pull request can be re-embarked automatically",
                 "",
             ),
+            details_url=dashboard.get_queue_pull_request_details_url(self.ctxt.pull),
         )
 
         # NOTE(sileht): refresh it to maybe, retrigger the queue action.

@@ -9,6 +9,7 @@ from ddtrace import tracer
 from mergify_engine import check_api
 from mergify_engine import constants
 from mergify_engine import context
+from mergify_engine import dashboard
 from mergify_engine import github_types
 from mergify_engine import queue
 from mergify_engine.clients import http
@@ -454,6 +455,9 @@ class Convoy:
                 user_pr_context,
                 constants.MERGE_QUEUE_SUMMARY_NAME,
                 report,
+                details_url=dashboard.get_queue_pull_request_details_url(
+                    user_pr_context.pull
+                ),
             )
         else:
             if any(
@@ -496,6 +500,9 @@ class Convoy:
                 user_pr_context,
                 constants.MERGE_QUEUE_SUMMARY_NAME,
                 report,
+                details_url=dashboard.get_queue_pull_request_details_url(
+                    user_pr_context.pull
+                ),
             )
 
     @classmethod

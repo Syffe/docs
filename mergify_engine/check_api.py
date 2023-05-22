@@ -6,7 +6,6 @@ import typing
 
 import daiquiri
 
-from mergify_engine import dashboard
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import json
@@ -218,6 +217,7 @@ async def set_check_run(
     result: Result,
     external_id: str | None = None,
     skip_cache: bool = False,
+    details_url: str | None = None,
 ) -> github_types.CachedGitHubCheckRun:
     if result.conclusion is Conclusion.PENDING:
         status = Status.IN_PROGRESS
@@ -232,7 +232,7 @@ async def set_check_run(
             "head_sha": ctxt.pull["head"]["sha"],
             "status": typing.cast(github_types.GitHubCheckRunStatus, status.value),
             "started_at": typing.cast(github_types.ISODateTimeType, started_at),
-            "details_url": dashboard.get_queue_pull_request_details_url(ctxt.pull),
+            "details_url": details_url or f"{ctxt.pull['html_url']}/checks",
             "output": {
                 "title": result.title,
                 "summary": result.summary,
@@ -312,7 +312,8 @@ async def set_check_run(
             )
         )
     else:
-        post_parameters["details_url"] += f"?check_run_id={checks[0]['id']}"
+        if details_url is None:
+            post_parameters["details_url"] += f"?check_run_id={checks[0]['id']}"
 
         # Don't do useless update
         if check_need_update(checks[0], post_parameters):

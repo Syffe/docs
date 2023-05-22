@@ -5,6 +5,7 @@ import pytest
 
 from mergify_engine import constants
 from mergify_engine import context
+from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
@@ -309,11 +310,17 @@ class TestQueueCISummary(base.FunctionalTestBase):
         check_runs = await self.get_check_runs(p1)
 
         assert len(check_runs) == 3
+
         assert check_runs[0]["name"] == "Queue: Embarked in merge train"
         regex = rf"Check-runs and statuses of the embarked pull request #{tmp_pull_1['number']}:.*The CI is failure.*The CI is pending.*The CI is success"
         assert (
             re.search(regex, check_runs[0]["output"]["summary"], flags=re.DOTALL)
             is not None
+        )
+        base_repo = p1["base"]["repo"]
+        assert (
+            check_runs[0]["details_url"]
+            == f"{settings.DASHBOARD_UI_FRONT_URL}/github/{base_repo['owner']['login']}/repo/{base_repo['name']}/queues?pull={p1['number']}"
         )
 
     async def test_summary_html_escape(self) -> None:

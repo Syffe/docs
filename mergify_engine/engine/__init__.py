@@ -7,7 +7,6 @@ import first
 from mergify_engine import check_api
 from mergify_engine import constants
 from mergify_engine import context
-from mergify_engine import dashboard
 from mergify_engine import date
 from mergify_engine import exceptions
 from mergify_engine import github_types
@@ -473,15 +472,12 @@ async def create_initial_summary(
 
     installation_json = await github.get_installation_from_account_id(owner["id"])
     async with github.aget_client(installation_json) as client:
-        base_repo = event["pull_request"]["base"]["repo"]
         post_parameters = {
             "name": constants.SUMMARY_NAME,
             "head_sha": event["pull_request"]["head"]["sha"],
             "status": check_api.Status.IN_PROGRESS.value,
             "started_at": date.utcnow().isoformat(),
-            "details_url": dashboard.get_queue_pull_request_details_url(
-                event["pull_request"]
-            ),
+            "details_url": f"{event['pull_request']['html_url']}/checks",
             "output": {
                 "title": constants.INITIAL_SUMMARY_TITLE,
                 "summary": "Be patient, the page will be updated soon.",
@@ -490,7 +486,7 @@ async def create_initial_summary(
         }
         try:
             await client.post(
-                f"/repos/{event['pull_request']['base']['user']['login']}/{base_repo['name']}/check-runs",
+                f"/repos/{event['pull_request']['base']['user']['login']}/{event['pull_request']['base']['repo']['name']}/check-runs",
                 api_version="antiope",
                 json=post_parameters,
             )

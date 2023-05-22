@@ -15,6 +15,7 @@ from mergify_engine import branch_updater
 from mergify_engine import check_api
 from mergify_engine import constants
 from mergify_engine import context
+from mergify_engine import dashboard
 from mergify_engine import date
 from mergify_engine import delayed_refresh
 from mergify_engine import github_types
@@ -1536,6 +1537,9 @@ You don't need to do anything. Mergify will close this pull request automaticall
                     check_api.Conclusion.ACTION_REQUIRED,
                     title=title,
                     summary=summary,
+                ),
+                details_url=dashboard.get_queue_pull_request_details_url(
+                    original_ctxt.pull
                 ),
             )
 
