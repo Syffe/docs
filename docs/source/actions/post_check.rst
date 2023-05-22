@@ -9,6 +9,7 @@
 post_check
 ==========
 
+|open source plan tag|
 |premium plan tag|
 |advanced plan tag|
 
