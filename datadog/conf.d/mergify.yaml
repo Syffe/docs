@@ -1,5 +1,6 @@
 instances:
   - token: <YOUR DD_MERGFIFY_API_TOKEN>
+    mergify_api_url: https://api.mergify.com/
     repositories:
       mergifyio/engine:
         - main
