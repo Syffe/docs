@@ -34,6 +34,8 @@ from mergify_engine import refresher
 from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine import utils
+from mergify_engine.actions import backport
+from mergify_engine.actions import copy as copy_action
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.dashboard import subscription
@@ -453,10 +455,11 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         # To easily delete all branches created by any queue-related
         # stuff.
 
+        self.mocked_merge_queue_branch_prefix = f"{self._testMethodName[:50]}/mq/"
         self.mock_merge_queue_branch_prefix = mock.patch.object(
             constants,
             "MERGE_QUEUE_BRANCH_PREFIX",
-            f"{self._testMethodName[:50]}/mq/",
+            self.mocked_merge_queue_branch_prefix,
         )
         self.register_mock(self.mock_merge_queue_branch_prefix)
         # ##############################
@@ -588,9 +591,16 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             current_test_branches = [
                 github_types.GitHubRefType(ref["ref"].replace("refs/heads/", ""))
                 async for ref in self.find_git_refs(
-                    self.url_origin, [self.main_branch_name]
+                    self.url_origin,
+                    [
+                        self.main_branch_name,
+                        self.mocked_merge_queue_branch_prefix,
+                        f"mergify/{backport.BackportExecutor.BRANCH_PREFIX}",
+                        f"mergify/{copy_action.CopyExecutor.BRANCH_PREFIX}",
+                    ],
                 )
             ]
+
             for branch_name in self.created_branches.union(current_test_branches):
                 try:
                     branch = await self.get_branch(branch_name)
