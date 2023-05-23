@@ -5721,6 +5721,8 @@
         "References": [
           "https://access.redhat.com/security/cve/CVE-2021-31239",
           "https://github.com/Tsiming/Vulnerabilities/blob/main/SQLite/CVE-2021-31239",
+          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/73XUIHJ6UT75VFPDPLJOXJON7MVIKVZI/",
+          "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/FXFL4TDAH72PRCPD5UPZMJMKIMVOPLTI/",
           "https://nvd.nist.gov/vuln/detail/CVE-2021-31239",
           "https://www.cve.org/CVERecord?id=CVE-2021-31239",
           "https://www.sqlite.org/cves.html",
