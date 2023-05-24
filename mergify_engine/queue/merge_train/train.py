@@ -1216,9 +1216,12 @@ class Train:
         repo_name = self.convoy.repository.repo["name"]
         # TODO: Once the dashboard has an url that allows to target a specific branch
         # and a specific queue (MRGFY-2201 and MRGFY-2202), modify the url below to include them.
+        escaped_queue_name = parse.quote(queue_rule_report.name, safe="")
+        escaped_branch_name = parse.quote(self.convoy.ref, safe="")
         description += (
             "\n\n**Visit the [Mergify Dashboard]"
-            f"({settings.DASHBOARD_UI_FRONT_URL}/github/{repo_owner}/repo/{repo_name}/queues/partitions/{self.partition_name})"
+            f"({settings.DASHBOARD_UI_FRONT_URL}/github/{repo_owner}/repo/{repo_name}/queues/partitions/{self.partition_name}"
+            f"?queues={escaped_queue_name}&branch={escaped_branch_name})"
             f" to check the state of the queue `{queue_rule_report.name}`.**"
         )
 
