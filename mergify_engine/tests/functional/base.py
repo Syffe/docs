@@ -588,6 +588,9 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         if RECORD:
             await asyncio.sleep(self.WAIT_TIME_BEFORE_TEARDOWN)
 
+            for rule_id in self.created_branch_protection_rule_ids:
+                await self.delete_graphql_branch_protection_rule(rule_id)
+
             current_test_branches = [
                 github_types.GitHubRefType(ref["ref"].replace("refs/heads/", ""))
                 async for ref in self.find_git_refs(
@@ -616,9 +619,6 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                     )
                 except http.HTTPNotFound:
                     continue
-
-            for rule_id in self.created_branch_protection_rule_ids:
-                await self.delete_graphql_branch_protection_rule(rule_id)
 
         await self.app.aclose()
 

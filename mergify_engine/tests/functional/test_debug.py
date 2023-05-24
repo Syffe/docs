@@ -20,17 +20,46 @@ class TestDebugger(base.FunctionalTestBase):
             context.Repository.get_all_branch_protection_rules
         )
 
+        main_branch_name = self.main_branch_name
+
         async def mocked_get_all(
             self: typing.Any, pattern_branch_filter: str | None = None
         ) -> list[github_graphql_types.GraphqlBranchProtectionRule]:
             return await real_get_all_branch_protection_rules(
-                self, pattern_branch_filter="main"
+                self, pattern_branch_filter=main_branch_name
             )
 
         m = mock.patch.object(
-            context.Repository, "get_all_branch_protection_rules", mocked_get_all
+            context.Repository,
+            "get_all_branch_protection_rules",
+            mocked_get_all,
         )
         self.register_mock(m)
+
+    async def create_main_branch_protection(self) -> None:
+        protection = github_graphql_types.CreateGraphqlBranchProtectionRule(
+            {
+                "allowsDeletions": False,
+                "allowsForcePushes": False,
+                "dismissesStaleReviews": False,
+                "isAdminEnforced": True,
+                "pattern": self.main_branch_name,
+                "requireLastPushApproval": False,
+                "requiredDeploymentEnvironments": [],
+                "requiredStatusCheckContexts": [],
+                "requiresApprovingReviews": True,
+                "requiresCodeOwnerReviews": False,
+                "requiresCommitSignatures": False,
+                "requiresConversationResolution": False,
+                "requiresDeployments": False,
+                "requiresLinearHistory": False,
+                "requiresStatusChecks": True,
+                "requiresStrictStatusChecks": True,
+                "restrictsPushes": False,
+                "restrictsReviewDismissals": False,
+            }
+        )
+        await self.create_branch_protection_rule(protection)
 
     async def test_debugger(self) -> None:
         rules = {
@@ -74,6 +103,8 @@ class TestDebugger(base.FunctionalTestBase):
         ]
 
         await self.setup_repo(yaml.dump(rules))
+        await self.create_main_branch_protection()
+
         p = await self.create_pr()
 
         await self._mock_get_all_branch_protection_rules()
@@ -125,10 +156,10 @@ class TestDebugger(base.FunctionalTestBase):
   'dismissesStaleReviews': False,
   'isAdminEnforced': True,
   'lockBranch': False,
-  'matchingRefs': [{{'name': 'main', 'prefix': 'refs/heads/'}}],
-  'pattern': 'main',
+  'matchingRefs': [{{'name': '{self.main_branch_name}', 'prefix': 'refs/heads/'}}],
+  'pattern': '{self.main_branch_name}',
   'requireLastPushApproval': False,
-  'requiredApprovingReviewCount': 0,
+  'requiredApprovingReviewCount': 1,
   'requiredDeploymentEnvironments': [],
   'requiredStatusCheckContexts': [],
   'requiresApprovingReviews': True,
@@ -137,7 +168,7 @@ class TestDebugger(base.FunctionalTestBase):
   'requiresConversationResolution': False,
   'requiresDeployments': False,
   'requiresLinearHistory': False,
-  'requiresStatusChecks': False,
+  'requiresStatusChecks': True,
   'requiresStrictStatusChecks': True,
   'restrictsPushes': False,
   'restrictsReviewDismissals': False}}]
@@ -169,7 +200,7 @@ pull_request_rules:
  'base': '{self.main_branch_name}',
  'body': 'test_debugger: pull request n1 from integration',
  'body-raw': 'test_debugger: pull request n1 from integration',
- 'branch-protection-review-decision': None,
+ 'branch-protection-review-decision': 'REVIEW_REQUIRED',
  'changes-requested-reviews-by': [],
  'check-failure': [],
  'check-neutral': [],
@@ -214,7 +245,7 @@ pull_request_rules:
  'status-success': ['Summary'],
  'title': 'test_debugger: pull request n1 from integration'}}
 is_behind: False
-mergeable_state: clean
+mergeable_state: blocked
 * MERGIFY LAST CHECKS:
 [Summary]: success | 1 potential rule | {summary_html_url}
 > <!-- eydSdWxlOiBjb21tZW50IChjb21tZW50KSc6IG5ldXRyYWx9Cg== -->
@@ -333,6 +364,8 @@ mergeable_state: clean
         ]
 
         await self.setup_repo(yaml.dump(rules))
+        await self.create_main_branch_protection()
+
         p = await self.create_pr()
 
         await self._mock_get_all_branch_protection_rules()
@@ -388,16 +421,16 @@ mergeable_state: clean
   'allowsForcePushes': False,
   'dismissesStaleReviews': False,
   'isAdminEnforced': True,
-  'matchingRefs': [{{'name': 'main', 'prefix': 'refs/heads/'}}],
-  'pattern': 'main',
-  'requiredApprovingReviewCount': 0,
+  'matchingRefs': [{{'name': '{self.main_branch_name}', 'prefix': 'refs/heads/'}}],
+  'pattern': '{self.main_branch_name}',
+  'requiredApprovingReviewCount': 1,
   'requiredStatusCheckContexts': [],
   'requiresApprovingReviews': True,
   'requiresCodeOwnerReviews': False,
   'requiresCommitSignatures': False,
   'requiresConversationResolution': False,
   'requiresLinearHistory': False,
-  'requiresStatusChecks': False,
+  'requiresStatusChecks': True,
   'requiresStrictStatusChecks': True,
   'restrictsPushes': False,
   'restrictsReviewDismissals': False}}]
@@ -429,7 +462,7 @@ pull_request_rules:
  'base': '{self.main_branch_name}',
  'body': 'test_debugger_with_missing_branch_protection_rule_fields: pull request n1 from integration',
  'body-raw': 'test_debugger_with_missing_branch_protection_rule_fields: pull request n1 from integration',
- 'branch-protection-review-decision': None,
+ 'branch-protection-review-decision': 'REVIEW_REQUIRED',
  'changes-requested-reviews-by': [],
  'check-failure': [],
  'check-neutral': [],
@@ -474,7 +507,7 @@ pull_request_rules:
  'status-success': ['Summary'],
  'title': 'test_debugger_with_missing_branch_protection_rule_fields: pull request n1 from integration'}}
 is_behind: False
-mergeable_state: clean
+mergeable_state: blocked
 * MERGIFY LAST CHECKS:
 [Summary]: success | 1 potential rule | {summary_html_url}
 > <!-- eydSdWxlOiBjb21tZW50IChjb21tZW50KSc6IG5ldXRyYWx9Cg== -->
