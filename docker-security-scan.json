@@ -643,7 +643,7 @@
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
         "Title": "IDN wildcard match may lead to Improper Cerificate Validation",
-        "Description": "No description is available for this CVE.",
+        "Description": "A flaw was found in the Curl package. An incorrect International Domain Name (IDN) wildcard match may lead to improper certificate validation.",
         "Severity": "MEDIUM",
         "CVSS": {
           "redhat": {
@@ -671,7 +671,7 @@
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
         "Title": "more POST-after-PUT confusion",
-        "Description": "No description is available for this CVE.",
+        "Description": "A use-after-free flaw was found in the Curl package. This issue may lead to unintended information disclosure by the application.",
         "Severity": "MEDIUM",
         "CVSS": {
           "redhat": {
@@ -942,7 +942,7 @@
           "https://github.com/git/git/commit/668f2d53613ac8fd373926ebe219f2c29112d93e",
           "https://github.com/git/git/security/advisories/GHSA-2hvf-7c8p-28fx",
           "https://linux.oracle.com/cve/CVE-2023-25652.html",
-          "https://linux.oracle.com/errata/ELSA-2023-3245.html",
+          "https://linux.oracle.com/errata/ELSA-2023-3263.html",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/PI7FZ4NNR5S5J5K6AMVQBH2JFP6NE4L7/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/RKOXOAZ42HLXHXTW6JZI4L5DAIYDTYCU/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/YFZWGQKB6MM5MNF2DLFTD7KS2KWPICKL/",
@@ -995,7 +995,7 @@
           "https://github.com/git/git/commit/528290f8c61222433a8cf02fb7cfffa8438432b4",
           "https://github.com/git/git/security/advisories/GHSA-v48j-4xgg-4844",
           "https://linux.oracle.com/cve/CVE-2023-29007.html",
-          "https://linux.oracle.com/errata/ELSA-2023-3245.html",
+          "https://linux.oracle.com/errata/ELSA-2023-3263.html",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/PI7FZ4NNR5S5J5K6AMVQBH2JFP6NE4L7/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/RKOXOAZ42HLXHXTW6JZI4L5DAIYDTYCU/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/YFZWGQKB6MM5MNF2DLFTD7KS2KWPICKL/",
@@ -1183,7 +1183,7 @@
           "https://github.com/git/git/commit/668f2d53613ac8fd373926ebe219f2c29112d93e",
           "https://github.com/git/git/security/advisories/GHSA-2hvf-7c8p-28fx",
           "https://linux.oracle.com/cve/CVE-2023-25652.html",
-          "https://linux.oracle.com/errata/ELSA-2023-3245.html",
+          "https://linux.oracle.com/errata/ELSA-2023-3263.html",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/PI7FZ4NNR5S5J5K6AMVQBH2JFP6NE4L7/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/RKOXOAZ42HLXHXTW6JZI4L5DAIYDTYCU/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/YFZWGQKB6MM5MNF2DLFTD7KS2KWPICKL/",
@@ -1236,7 +1236,7 @@
           "https://github.com/git/git/commit/528290f8c61222433a8cf02fb7cfffa8438432b4",
           "https://github.com/git/git/security/advisories/GHSA-v48j-4xgg-4844",
           "https://linux.oracle.com/cve/CVE-2023-29007.html",
-          "https://linux.oracle.com/errata/ELSA-2023-3245.html",
+          "https://linux.oracle.com/errata/ELSA-2023-3263.html",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/PI7FZ4NNR5S5J5K6AMVQBH2JFP6NE4L7/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/RKOXOAZ42HLXHXTW6JZI4L5DAIYDTYCU/",
           "https://lists.fedoraproject.org/archives/list/package-announce@lists.fedoraproject.org/message/YFZWGQKB6MM5MNF2DLFTD7KS2KWPICKL/",
@@ -1820,6 +1820,7 @@
         "References": [
           "https://bugs.launchpad.net/apparmor/+bug/1597017",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2016-1585",
+          "https://gitlab.com/apparmor/apparmor/-/merge_requests/333",
           "https://lists.apache.org/thread.html/rf9fa47ab66495c78bb4120b0754dd9531ca2ff0430f6685ac9b07772@%3Cdev.mina.apache.org%3E",
           "https://nvd.nist.gov/vuln/detail/CVE-2016-1585"
         ],
@@ -3131,7 +3132,7 @@
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
         "Title": "IDN wildcard match may lead to Improper Cerificate Validation",
-        "Description": "No description is available for this CVE.",
+        "Description": "A flaw was found in the Curl package. An incorrect International Domain Name (IDN) wildcard match may lead to improper certificate validation.",
         "Severity": "MEDIUM",
         "CVSS": {
           "redhat": {
@@ -3159,7 +3160,7 @@
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
         "Title": "more POST-after-PUT confusion",
-        "Description": "No description is available for this CVE.",
+        "Description": "A use-after-free flaw was found in the Curl package. This issue may lead to unintended information disclosure by the application.",
         "Severity": "MEDIUM",
         "CVSS": {
           "redhat": {
@@ -3696,7 +3697,7 @@
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
         "Title": "IDN wildcard match may lead to Improper Cerificate Validation",
-        "Description": "No description is available for this CVE.",
+        "Description": "A flaw was found in the Curl package. An incorrect International Domain Name (IDN) wildcard match may lead to improper certificate validation.",
         "Severity": "MEDIUM",
         "CVSS": {
           "redhat": {
@@ -3724,7 +3725,7 @@
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
         "Title": "more POST-after-PUT confusion",
-        "Description": "No description is available for this CVE.",
+        "Description": "A use-after-free flaw was found in the Curl package. This issue may lead to unintended information disclosure by the application.",
         "Severity": "MEDIUM",
         "CVSS": {
           "redhat": {
@@ -4853,6 +4854,7 @@
           "https://invisible-island.net/ncurses/NEWS.html#index-t20230408",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-29491",
           "https://security.netapp.com/advisory/ntap-20230517-0009/",
+          "https://ubuntu.com/security/notices/USN-6099-1",
           "https://www.cve.org/CVERecord?id=CVE-2023-29491",
           "https://www.openwall.com/lists/oss-security/2023/04/12/5",
           "https://www.openwall.com/lists/oss-security/2023/04/13/4"
@@ -4896,6 +4898,7 @@
           "https://invisible-island.net/ncurses/NEWS.html#index-t20230408",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-29491",
           "https://security.netapp.com/advisory/ntap-20230517-0009/",
+          "https://ubuntu.com/security/notices/USN-6099-1",
           "https://www.cve.org/CVERecord?id=CVE-2023-29491",
           "https://www.openwall.com/lists/oss-security/2023/04/12/5",
           "https://www.openwall.com/lists/oss-security/2023/04/13/4"
@@ -5402,6 +5405,8 @@
           "http://www.openwall.com/lists/oss-security/2023/05/03/5",
           "http://www.openwall.com/lists/oss-security/2023/05/07/2",
           "https://blog.hackeriet.no/perl-http-tiny-insecure-tls-default-affects-cpan-modules/",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-31484",
+          "https://github.com/andk/cpanpm/commit/9c98370287f4e709924aee7c58ef21c85289a7f0 (2.35-TRIAL)",
           "https://github.com/andk/cpanpm/pull/175",
           "https://metacpan.org/dist/CPAN/changes",
           "https://www.openwall.com/lists/oss-security/2023/04/18/14"
@@ -6305,6 +6310,7 @@
           "https://invisible-island.net/ncurses/NEWS.html#index-t20230408",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-29491",
           "https://security.netapp.com/advisory/ntap-20230517-0009/",
+          "https://ubuntu.com/security/notices/USN-6099-1",
           "https://www.cve.org/CVERecord?id=CVE-2023-29491",
           "https://www.openwall.com/lists/oss-security/2023/04/12/5",
           "https://www.openwall.com/lists/oss-security/2023/04/13/4"
@@ -6801,6 +6807,7 @@
           "https://invisible-island.net/ncurses/NEWS.html#index-t20230408",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-29491",
           "https://security.netapp.com/advisory/ntap-20230517-0009/",
+          "https://ubuntu.com/security/notices/USN-6099-1",
           "https://www.cve.org/CVERecord?id=CVE-2023-29491",
           "https://www.openwall.com/lists/oss-security/2023/04/12/5",
           "https://www.openwall.com/lists/oss-security/2023/04/13/4"
@@ -6844,6 +6851,7 @@
           "https://invisible-island.net/ncurses/NEWS.html#index-t20230408",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-29491",
           "https://security.netapp.com/advisory/ntap-20230517-0009/",
+          "https://ubuntu.com/security/notices/USN-6099-1",
           "https://www.cve.org/CVERecord?id=CVE-2023-29491",
           "https://www.openwall.com/lists/oss-security/2023/04/12/5",
           "https://www.openwall.com/lists/oss-security/2023/04/13/4"
@@ -6887,6 +6895,7 @@
           "https://invisible-island.net/ncurses/NEWS.html#index-t20230408",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-29491",
           "https://security.netapp.com/advisory/ntap-20230517-0009/",
+          "https://ubuntu.com/security/notices/USN-6099-1",
           "https://www.cve.org/CVERecord?id=CVE-2023-29491",
           "https://www.openwall.com/lists/oss-security/2023/04/12/5",
           "https://www.openwall.com/lists/oss-security/2023/04/13/4"
@@ -8743,6 +8752,8 @@
           "http://www.openwall.com/lists/oss-security/2023/05/03/5",
           "http://www.openwall.com/lists/oss-security/2023/05/07/2",
           "https://blog.hackeriet.no/perl-http-tiny-insecure-tls-default-affects-cpan-modules/",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-31484",
+          "https://github.com/andk/cpanpm/commit/9c98370287f4e709924aee7c58ef21c85289a7f0 (2.35-TRIAL)",
           "https://github.com/andk/cpanpm/pull/175",
           "https://metacpan.org/dist/CPAN/changes",
           "https://www.openwall.com/lists/oss-security/2023/04/18/14"
@@ -8903,6 +8914,8 @@
           "http://www.openwall.com/lists/oss-security/2023/05/03/5",
           "http://www.openwall.com/lists/oss-security/2023/05/07/2",
           "https://blog.hackeriet.no/perl-http-tiny-insecure-tls-default-affects-cpan-modules/",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-31484",
+          "https://github.com/andk/cpanpm/commit/9c98370287f4e709924aee7c58ef21c85289a7f0 (2.35-TRIAL)",
           "https://github.com/andk/cpanpm/pull/175",
           "https://metacpan.org/dist/CPAN/changes",
           "https://www.openwall.com/lists/oss-security/2023/04/18/14"
@@ -9063,6 +9076,8 @@
           "http://www.openwall.com/lists/oss-security/2023/05/03/5",
           "http://www.openwall.com/lists/oss-security/2023/05/07/2",
           "https://blog.hackeriet.no/perl-http-tiny-insecure-tls-default-affects-cpan-modules/",
+          "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-31484",
+          "https://github.com/andk/cpanpm/commit/9c98370287f4e709924aee7c58ef21c85289a7f0 (2.35-TRIAL)",
           "https://github.com/andk/cpanpm/pull/175",
           "https://metacpan.org/dist/CPAN/changes",
           "https://www.openwall.com/lists/oss-security/2023/04/18/14"
