@@ -349,6 +349,14 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
         commits_to_cherry_pick: list[github_types.CachedGitHubBranchCommit],
         on_behalf: github_user.GitHubUser | None,
     ) -> gitter_service.GitterJob[duplicate_pull.DuplicateBranchResult]:
+        # NOTE(Syffe): At this point, we are sure that there are no existing duplicate pull
+        # but a backport branch might already be created, but empty, due to previous failures.
+        # In that case, we delete the branch, and it will be recreated by the job afterward.
+        buffer_branch = duplicate_pull.get_destination_branch_name(
+            self.ctxt.pull["number"], branch_name, self.BRANCH_PREFIX
+        )
+        await self.ctxt.repository.delete_branch_if_exists(buffer_branch)
+
         job = gitter_service.GitterJob[duplicate_pull.DuplicateBranchResult](
             self.ctxt.repository.installation.owner_login,
             self.ctxt.log,
