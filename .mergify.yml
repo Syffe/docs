@@ -193,11 +193,3 @@ pull_request_rules:
       label:
         toggle:
           - docker
-
-  - name: Label toggle for tests purpose
-    conditions:
-      - label=hello there
-    actions:
-      label:
-        toggle:
-          - general kenobi
