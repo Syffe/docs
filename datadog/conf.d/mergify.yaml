@@ -1,5 +1,6 @@
 instances:
   - token: <YOUR DD_MERGIFY_API_TOKEN>
+    min_collection_interval: 120  # in seconds
     mergify_api_url: https://api.mergify.com
     repositories:
       mergifyio/engine:
