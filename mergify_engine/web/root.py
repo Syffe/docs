@@ -4,6 +4,7 @@ from fastapi.middleware import httpsredirect
 from uvicorn.middleware import proxy_headers
 
 from mergify_engine import settings
+from mergify_engine import signals
 from mergify_engine.clients import github
 from mergify_engine.middlewares import security
 from mergify_engine.web import github_webhook
@@ -54,10 +55,12 @@ def create_app(https_only: bool = True, debug: bool = False) -> fastapi.FastAPI:
         await redis.startup()
         # NOTE(sileht): Warm GitHubAppInfo cache
         redis_links = redis.get_redis_links()
+        signals.register()
         await github.GitHubAppInfo.warm_cache(redis_links.cache)
 
     @app.on_event("shutdown")
     async def shutdown() -> None:
         await redis.shutdown()
+        signals.unregister()
 
     return app
