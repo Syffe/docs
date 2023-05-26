@@ -3,7 +3,27 @@ extends: .github
 queue_rules:
   - name: hotfix
     allow_inplace_checks: true
-    conditions:
+    routing_conditions:
+      - check-success=semantic-pull-request
+      - "check-success=Rule: testing requirements (post_check)"
+      - or:
+          # Author is engineering manager, we allow with one review
+          - and:
+              - author=@eng-mgr
+              - "#approved-reviews-by>=1"
+          - and:
+              - author=@devs
+              # in any other case, we allow if approve by engineering manager
+              # or anyone if it's a regular fix/revert
+              - or:
+                  - approved-reviews-by=@eng-mgr
+                  - and:
+                      - title~=^(revert|fix)
+                      - "#approved-reviews-by>=1"
+      - label=hotfix
+      - "#changes-requested-reviews-by=0"
+      - "#review-requested=0"
+    merge_conditions:
       - and: &CheckRuns
           - or:
               - -label=docker
@@ -24,53 +44,7 @@ queue_rules:
 
   - name: default
     allow_inplace_checks: true
-    conditions:
-      - and: *CheckRuns
-      - schedule=Mon-Fri 09:00-17:30[Europe/Paris]
-    speculative_checks: 5
-
-  - name: lowprio
-    allow_inplace_checks: true
-    conditions:
-      - and: *CheckRuns
-      - schedule=Mon-Fri 09:00-17:00[Europe/Paris]
-    batch_size: 7
-    batch_max_wait_time: 5min
-    queue_branch_merge_method: fast-forward
-    disallow_checks_interruption_from_queues:
-      - default
-
-pull_request_rules:
-  - name: automatic merge for hotfix
-    conditions:
-      - base=main
-      - check-success=semantic-pull-request
-      - "check-success=Rule: testing requirements (post_check)"
-      - or:
-          # Author is engineering manager, we allow with one review
-          - and:
-              - author=@eng-mgr
-              - "#approved-reviews-by>=1"
-          - and:
-              - author=@devs
-              # in any other case, we allow if approve by engineering manager
-              # or anyone if it's a regular fix/revert
-              - or:
-                  - approved-reviews-by=@eng-mgr
-                  - and:
-                      - title~=^(revert|fix)
-                      - "#approved-reviews-by>=1"
-      - label=hotfix
-      - "#changes-requested-reviews-by=0"
-      - "#review-requested=0"
-      - label!=manual merge
-    actions:
-      queue:
-        name: hotfix
-
-  - name: automatic merge
-    conditions:
-      - base=main
+    routing_conditions:
       - check-success=semantic-pull-request
       - and: *CheckRuns
       - "check-success=Rule: feature requirements (post_check)"
@@ -80,51 +54,45 @@ pull_request_rules:
       - "#changes-requested-reviews-by=0"
       - "#review-threads-unresolved=0"
       - "#review-requested=0"
-      - label!=manual merge
-    actions:
-      queue:
-
-  - name: automatic merge for clifus version bump
-    conditions:
+    merge_conditions:
       - and: *CheckRuns
-      - check-success=semantic-pull-request
-      - author=mergify-ci-bot
-      - label!=manual merge
-      - "title~=^chore: bump"
-      - "#commits=1"
-      - head~=^clifus/
-    actions:
-      queue:
-        name: lowprio
-        method: merge
+      - schedule=Mon-Fri 09:00-17:30[Europe/Paris]
+    speculative_checks: 5
 
-  - name: automatic merge from trivy
-    conditions:
-      - and: *CheckRuns
+  - name: lowprio
+    allow_inplace_checks: true
+    routing_conditions:
       - check-success=semantic-pull-request
-      - head=trivy/daily-report
-      - author=mergify-ci-bot
-      - label!=manual merge
-      - label!=new CVE
+      - and: *CheckRuns
       - "#commits=1"
-    actions:
-      queue:
-        name: lowprio
-        commit_message_template: null
-        method: merge
+      - or:
+          - and:
+              - author=mergify-ci-bot
+              - head~=^clifus/
+              - "title~=^chore: bump"
+          - and:
+              - author=mergify-ci-bot
+              - head=trivy/daily-report
+              - label!=new CVE
+          - author=dependabot[bot]
+    merge_conditions:
+      - and: *CheckRuns
+      - schedule=Mon-Fri 09:00-17:00[Europe/Paris]
+    merge_method: merge
+    batch_size: 7
+    batch_max_wait_time: 5min
+    commit_message_template: null
+    queue_branch_merge_method: fast-forward
+    disallow_checks_interruption_from_queues:
+      - default
 
-  - name: automatic merge from dependabot
+pull_request_rules:
+  - name: automatic merge
     conditions:
-      - and: *CheckRuns
-      - check-success=semantic-pull-request
-      - author=dependabot[bot]
+      - base=main
       - label!=manual merge
-      - "#commits=1"
     actions:
       queue:
-        name: lowprio
-        method: merge
-        commit_message_template: null
 
   - name: request review
     conditions:
