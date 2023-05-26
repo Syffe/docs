@@ -218,6 +218,20 @@ async def update_with_api(
                     error=e.message,
                 )
                 return
+
+        # NOTE(charly): We have an ongoing support ticket at GitHub. This error
+        # happens sometimes and it's an undocumented behavior or a bug. We have
+        # to reproduce it on a public repository in order to report it. See
+        # MRGFY-2178
+        elif e.status_code == 403:
+            ctxt.log.error(
+                "permission error",
+                status_code=e.status_code,
+                error=e.message,
+                expected_head_sha=ctxt.pull["head"]["sha"],
+                response_body=e.response.json(),
+            )
+
         ctxt.log.info(
             "update branch failed",
             status_code=e.status_code,
