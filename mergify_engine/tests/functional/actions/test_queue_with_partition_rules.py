@@ -674,6 +674,142 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
             self.assertEqual(0, reset_partitions_mock.call_count)
             self.assertEqual(0, reset_mock.call_count)
 
+    async def test_queue_fallback_partition_if_pr_dont_match_any_partitions_inplace(
+        self,
+    ) -> None:
+        rules = {
+            "partition_rules": [
+                {
+                    "name": "fallback_partition",
+                    "fallback_partition": True,
+                },
+                {
+                    "name": "projA",
+                    "conditions": [
+                        "files~=^projA/",
+                    ],
+                },
+                {
+                    "name": "projB",
+                    "conditions": [
+                        "files~=^projB/",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Automatic merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": True,
+                }
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        p1 = await self.create_pr(
+            files={
+                "test.txt": "test",
+            }
+        )
+
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        check_run_p1 = await self.wait_for_check_run(
+            action="created", name="Rule: Automatic merge (queue)"
+        )
+        assert (
+            check_run_p1["check_run"]["output"]["title"]
+            == "The pull request is the 1st in the `fallback_partition` partition queue to be merged"
+        )
+
+        await self.create_status(p1)
+        await self.run_engine()
+
+        p1_closed = await self.wait_for_pull_request("closed", p1["number"])
+        assert p1_closed["pull_request"]["merged"]
+
+    async def test_queue_fallback_partition_if_pr_dont_match_any_partitions_no_inplace(
+        self,
+    ) -> None:
+        rules = {
+            "partition_rules": [
+                {
+                    "name": "fallback_partition",
+                    "fallback_partition": True,
+                },
+                {
+                    "name": "projA",
+                    "conditions": [
+                        "files~=^projA/",
+                    ],
+                },
+                {
+                    "name": "projB",
+                    "conditions": [
+                        "files~=^projB/",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Automatic merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                }
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        p1 = await self.create_pr(
+            files={
+                "test.txt": "test",
+            }
+        )
+
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        check_run_p1 = await self.wait_for_check_run(
+            action="created", name="Rule: Automatic merge (queue)"
+        )
+        assert (
+            check_run_p1["check_run"]["output"]["title"]
+            == "The pull request is the 1st in the `fallback_partition` partition queue to be merged"
+        )
+
+        draft_pr = await self.wait_for_pull_request("opened")
+        await self.create_status(draft_pr["pull_request"])
+        await self.run_engine()
+
+        await self.wait_for_pull_request("closed", draft_pr["number"])
+        p1_closed = await self.wait_for_pull_request("closed", p1["number"])
+        assert p1_closed["pull_request"]["merged"]
+
     async def test_queue_multiple_partition_only_1_match(self) -> None:
         rules = {
             "partition_rules": [
