@@ -7,6 +7,7 @@ import first
 from mergify_engine import check_api
 from mergify_engine import constants
 from mergify_engine import context
+from mergify_engine import dashboard
 from mergify_engine import date
 from mergify_engine import exceptions
 from mergify_engine import github_types
@@ -477,7 +478,7 @@ async def create_initial_summary(
             "head_sha": event["pull_request"]["head"]["sha"],
             "status": check_api.Status.IN_PROGRESS.value,
             "started_at": date.utcnow().isoformat(),
-            "details_url": f"{event['pull_request']['html_url']}/checks",
+            "details_url": dashboard.get_eventlogs_url(owner["login"], repo["name"]),
             "output": {
                 "title": constants.INITIAL_SUMMARY_TITLE,
                 "summary": "Be patient, the page will be updated soon.",

@@ -31,6 +31,7 @@ import tenacity
 from mergify_engine import cache
 from mergify_engine import check_api
 from mergify_engine import constants
+from mergify_engine import dashboard
 from mergify_engine import date
 from mergify_engine import dependabot_helpers
 from mergify_engine import dependabot_types
@@ -1293,6 +1294,10 @@ class Context:
                 result,
                 external_id=str(self.pull["number"]),
                 skip_cache=self._caches.pull_check_runs.get() is cache.Unset,
+                details_url=dashboard.get_eventlogs_url(
+                    self.repository.installation.owner_login,
+                    self.repository.repo["name"],
+                ),
             )
         except Exception:
             if previous_sha:
