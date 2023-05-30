@@ -643,7 +643,7 @@
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
         "Title": "IDN wildcard match may lead to Improper Cerificate Validation",
-        "Description": "A flaw was found in the Curl package. An incorrect International Domain Name (IDN) wildcard match may lead to improper certificate validation.",
+        "Description": "An improper certificate validation vulnerability exists in curl <v8.1.0 in the way it supports matching of wildcard patterns when listed as \"Subject Alternative Name\" in TLS server certificates. curl can be built to use its own name matching function for TLS rather than one provided by a TLS library. This private wildcard matching function would match IDN (International Domain Name) hosts incorrectly and could as a result accept patterns that otherwise should mismatch. IDN hostnames are converted to puny code before used for certificate checks. Puny coded names always start with `xn--` and should not be allowed to pattern match, but the wildcard check in curl could still check for `x*`, which would match even though the IDN name most likely contained nothing even resembling an `x`.",
         "Severity": "MEDIUM",
         "CVSS": {
           "redhat": {
@@ -655,9 +655,11 @@
           "https://access.redhat.com/security/cve/CVE-2023-28321",
           "https://curl.se/docs/CVE-2023-28321.html",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-28321",
+          "https://hackerone.com/reports/1950627",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-28321",
           "https://www.cve.org/CVERecord?id=CVE-2023-28321"
-        ]
+        ],
+        "PublishedDate": "2023-05-26T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2023-28322",
@@ -671,7 +673,7 @@
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
         "Title": "more POST-after-PUT confusion",
-        "Description": "A use-after-free flaw was found in the Curl package. This issue may lead to unintended information disclosure by the application.",
+        "Description": "An information disclosure vulnerability exists in curl <v8.1.0 when doing HTTP(S) transfers, libcurl might erroneously use the read callback (`CURLOPT_READFUNCTION`) to ask for data to send, even when the `CURLOPT_POSTFIELDS` option has been set, if the same handle previously wasused to issue a `PUT` request which used that callback. This flaw may surprise the application and cause it to misbehave and either send off the wrong data or use memory after free or similar in the second transfer. The problem exists in the logic for a reused handle when it is (expected to be) changed from a PUT to a POST.",
         "Severity": "MEDIUM",
         "CVSS": {
           "redhat": {
@@ -683,9 +685,11 @@
           "https://access.redhat.com/security/cve/CVE-2023-28322",
           "https://curl.se/docs/CVE-2023-28322.html",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-28322",
+          "https://hackerone.com/reports/1954658",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-28322",
           "https://www.cve.org/CVERecord?id=CVE-2023-28322"
-        ]
+        ],
+        "PublishedDate": "2023-05-26T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-22922",
@@ -788,6 +792,7 @@
         "PkgID": "curl@7.74.0-1.3+deb11u7",
         "PkgName": "curl",
         "InstalledVersion": "7.74.0-1.3+deb11u7",
+        "SeveritySource": "debian",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28320",
         "DataSource": {
           "ID": "debian",
@@ -795,7 +800,7 @@
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
         "Title": "siglongjmp race condition may lead to crash",
-        "Description": "No description is available for this CVE.",
+        "Description": "A denial of service vulnerability exists in curl <v8.1.0 in the way libcurl provides several different backends for resolving host names, selected at build time. If it is built to use the synchronous resolver, it allows name resolves to time-out slow operations using `alarm()` and `siglongjmp()`. When doing this, libcurl used a global buffer that was not mutex protected and a multi-threaded application might therefore crash or otherwise misbehave.",
         "Severity": "LOW",
         "CVSS": {
           "redhat": {
@@ -806,9 +811,11 @@
         "References": [
           "https://access.redhat.com/security/cve/CVE-2023-28320",
           "https://curl.se/docs/CVE-2023-28320.html",
+          "https://hackerone.com/reports/1929597",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-28320",
           "https://www.cve.org/CVERecord?id=CVE-2023-28320"
-        ]
+        ],
+        "PublishedDate": "2023-05-26T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2022-3219",
@@ -822,7 +829,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "gnupg: denial of service issue (resource consumption) using compressed packets",
+        "Title": "denial of service issue (resource consumption) using compressed packets",
         "Description": "GnuPG can be made to spin on a relatively small input by (for example) crafting a public key with thousands of signatures attached, compressed down to just a few KB.",
         "Severity": "LOW",
         "CweIDs": [
@@ -830,8 +837,8 @@
         ],
         "CVSS": {
           "nvd": {
-            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
-            "V3Score": 5.5
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L",
+            "V3Score": 3.3
           },
           "redhat": {
             "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
@@ -1393,7 +1400,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "gnupg: denial of service issue (resource consumption) using compressed packets",
+        "Title": "denial of service issue (resource consumption) using compressed packets",
         "Description": "GnuPG can be made to spin on a relatively small input by (for example) crafting a public key with thousands of signatures attached, compressed down to just a few KB.",
         "Severity": "LOW",
         "CweIDs": [
@@ -1401,8 +1408,8 @@
         ],
         "CVSS": {
           "nvd": {
-            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
-            "V3Score": 5.5
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L",
+            "V3Score": 3.3
           },
           "redhat": {
             "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
@@ -1434,7 +1441,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "gnupg: denial of service issue (resource consumption) using compressed packets",
+        "Title": "denial of service issue (resource consumption) using compressed packets",
         "Description": "GnuPG can be made to spin on a relatively small input by (for example) crafting a public key with thousands of signatures attached, compressed down to just a few KB.",
         "Severity": "LOW",
         "CweIDs": [
@@ -1442,8 +1449,8 @@
         ],
         "CVSS": {
           "nvd": {
-            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
-            "V3Score": 5.5
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L",
+            "V3Score": 3.3
           },
           "redhat": {
             "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
@@ -1475,7 +1482,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "gnupg: denial of service issue (resource consumption) using compressed packets",
+        "Title": "denial of service issue (resource consumption) using compressed packets",
         "Description": "GnuPG can be made to spin on a relatively small input by (for example) crafting a public key with thousands of signatures attached, compressed down to just a few KB.",
         "Severity": "LOW",
         "CweIDs": [
@@ -1483,8 +1490,8 @@
         ],
         "CVSS": {
           "nvd": {
-            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
-            "V3Score": 5.5
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L",
+            "V3Score": 3.3
           },
           "redhat": {
             "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
@@ -1516,7 +1523,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "gnupg: denial of service issue (resource consumption) using compressed packets",
+        "Title": "denial of service issue (resource consumption) using compressed packets",
         "Description": "GnuPG can be made to spin on a relatively small input by (for example) crafting a public key with thousands of signatures attached, compressed down to just a few KB.",
         "Severity": "LOW",
         "CweIDs": [
@@ -1524,8 +1531,8 @@
         ],
         "CVSS": {
           "nvd": {
-            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
-            "V3Score": 5.5
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L",
+            "V3Score": 3.3
           },
           "redhat": {
             "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
@@ -1557,7 +1564,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "gnupg: denial of service issue (resource consumption) using compressed packets",
+        "Title": "denial of service issue (resource consumption) using compressed packets",
         "Description": "GnuPG can be made to spin on a relatively small input by (for example) crafting a public key with thousands of signatures attached, compressed down to just a few KB.",
         "Severity": "LOW",
         "CweIDs": [
@@ -1565,8 +1572,8 @@
         ],
         "CVSS": {
           "nvd": {
-            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
-            "V3Score": 5.5
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L",
+            "V3Score": 3.3
           },
           "redhat": {
             "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
@@ -1598,7 +1605,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "gnupg: denial of service issue (resource consumption) using compressed packets",
+        "Title": "denial of service issue (resource consumption) using compressed packets",
         "Description": "GnuPG can be made to spin on a relatively small input by (for example) crafting a public key with thousands of signatures attached, compressed down to just a few KB.",
         "Severity": "LOW",
         "CweIDs": [
@@ -1606,8 +1613,8 @@
         ],
         "CVSS": {
           "nvd": {
-            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
-            "V3Score": 5.5
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L",
+            "V3Score": 3.3
           },
           "redhat": {
             "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
@@ -1639,7 +1646,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "gnupg: denial of service issue (resource consumption) using compressed packets",
+        "Title": "denial of service issue (resource consumption) using compressed packets",
         "Description": "GnuPG can be made to spin on a relatively small input by (for example) crafting a public key with thousands of signatures attached, compressed down to just a few KB.",
         "Severity": "LOW",
         "CweIDs": [
@@ -1647,8 +1654,8 @@
         ],
         "CVSS": {
           "nvd": {
-            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
-            "V3Score": 5.5
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L",
+            "V3Score": 3.3
           },
           "redhat": {
             "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
@@ -1680,7 +1687,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "gnupg: denial of service issue (resource consumption) using compressed packets",
+        "Title": "denial of service issue (resource consumption) using compressed packets",
         "Description": "GnuPG can be made to spin on a relatively small input by (for example) crafting a public key with thousands of signatures attached, compressed down to just a few KB.",
         "Severity": "LOW",
         "CweIDs": [
@@ -1688,8 +1695,8 @@
         ],
         "CVSS": {
           "nvd": {
-            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
-            "V3Score": 5.5
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L",
+            "V3Score": 3.3
           },
           "redhat": {
             "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
@@ -1721,7 +1728,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "gnupg: denial of service issue (resource consumption) using compressed packets",
+        "Title": "denial of service issue (resource consumption) using compressed packets",
         "Description": "GnuPG can be made to spin on a relatively small input by (for example) crafting a public key with thousands of signatures attached, compressed down to just a few KB.",
         "Severity": "LOW",
         "CweIDs": [
@@ -1729,8 +1736,8 @@
         ],
         "CVSS": {
           "nvd": {
-            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
-            "V3Score": 5.5
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L",
+            "V3Score": 3.3
           },
           "redhat": {
             "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
@@ -1762,7 +1769,7 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "gnupg: denial of service issue (resource consumption) using compressed packets",
+        "Title": "denial of service issue (resource consumption) using compressed packets",
         "Description": "GnuPG can be made to spin on a relatively small input by (for example) crafting a public key with thousands of signatures attached, compressed down to just a few KB.",
         "Severity": "LOW",
         "CweIDs": [
@@ -1770,8 +1777,8 @@
         ],
         "CVSS": {
           "nvd": {
-            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
-            "V3Score": 5.5
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L",
+            "V3Score": 3.3
           },
           "redhat": {
             "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
@@ -2631,20 +2638,6 @@
         "PublishedDate": "2019-02-26T18:29:00Z"
       },
       {
-        "VulnerabilityID": "CVE-2023-2602",
-        "PkgID": "libcap2@1:2.44-1",
-        "PkgName": "libcap2",
-        "InstalledVersion": "1:2.44-1",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2602",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Title": "[LCAP-CR-23-01]",
-        "Severity": "UNKNOWN"
-      },
-      {
         "VulnerabilityID": "CVE-2023-2603",
         "PkgID": "libcap2@1:2.44-1",
         "PkgName": "libcap2",
@@ -2655,8 +2648,75 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "[LCAP-CR-23-02]",
-        "Severity": "UNKNOWN"
+        "Title": "Integer Overflow in _libcap_strdup()",
+        "Description": "No description is available for this CVE.",
+        "Severity": "MEDIUM",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:L/A:L",
+            "V3Score": 4.4
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2023-2603",
+          "https://nvd.nist.gov/vuln/detail/CVE-2023-2603",
+          "https://www.cve.org/CVERecord?id=CVE-2023-2603",
+          "https://www.x41-dsec.de/static/reports/X41-libcap-Code-Review-2023-OSTIF-Final-Report.pdf"
+        ]
+      },
+      {
+        "VulnerabilityID": "CVE-2023-2602",
+        "PkgID": "libcap2@1:2.44-1",
+        "PkgName": "libcap2",
+        "InstalledVersion": "1:2.44-1",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2602",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "Memory Leak on pthread_create() Error",
+        "Description": "No description is available for this CVE.",
+        "Severity": "LOW",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L",
+            "V3Score": 3.3
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2023-2602",
+          "https://nvd.nist.gov/vuln/detail/CVE-2023-2602",
+          "https://www.cve.org/CVERecord?id=CVE-2023-2602",
+          "https://www.x41-dsec.de/static/reports/X41-libcap-Code-Review-2023-OSTIF-Final-Report.pdf"
+        ]
+      },
+      {
+        "VulnerabilityID": "CVE-2023-2603",
+        "PkgID": "libcap2-bin@1:2.44-1",
+        "PkgName": "libcap2-bin",
+        "InstalledVersion": "1:2.44-1",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2603",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "Integer Overflow in _libcap_strdup()",
+        "Description": "No description is available for this CVE.",
+        "Severity": "MEDIUM",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:L/A:L",
+            "V3Score": 4.4
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2023-2603",
+          "https://nvd.nist.gov/vuln/detail/CVE-2023-2603",
+          "https://www.cve.org/CVERecord?id=CVE-2023-2603",
+          "https://www.x41-dsec.de/static/reports/X41-libcap-Code-Review-2023-OSTIF-Final-Report.pdf"
+        ]
       },
       {
         "VulnerabilityID": "CVE-2023-2602",
@@ -2669,22 +2729,21 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "[LCAP-CR-23-01]",
-        "Severity": "UNKNOWN"
-      },
-      {
-        "VulnerabilityID": "CVE-2023-2603",
-        "PkgID": "libcap2-bin@1:2.44-1",
-        "PkgName": "libcap2-bin",
-        "InstalledVersion": "1:2.44-1",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2603",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        "Title": "Memory Leak on pthread_create() Error",
+        "Description": "No description is available for this CVE.",
+        "Severity": "LOW",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L",
+            "V3Score": 3.3
+          }
         },
-        "Title": "[LCAP-CR-23-02]",
-        "Severity": "UNKNOWN"
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2023-2602",
+          "https://nvd.nist.gov/vuln/detail/CVE-2023-2602",
+          "https://www.cve.org/CVERecord?id=CVE-2023-2602",
+          "https://www.x41-dsec.de/static/reports/X41-libcap-Code-Review-2023-OSTIF-Final-Report.pdf"
+        ]
       },
       {
         "VulnerabilityID": "CVE-2022-1304",
@@ -3132,7 +3191,7 @@
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
         "Title": "IDN wildcard match may lead to Improper Cerificate Validation",
-        "Description": "A flaw was found in the Curl package. An incorrect International Domain Name (IDN) wildcard match may lead to improper certificate validation.",
+        "Description": "An improper certificate validation vulnerability exists in curl <v8.1.0 in the way it supports matching of wildcard patterns when listed as \"Subject Alternative Name\" in TLS server certificates. curl can be built to use its own name matching function for TLS rather than one provided by a TLS library. This private wildcard matching function would match IDN (International Domain Name) hosts incorrectly and could as a result accept patterns that otherwise should mismatch. IDN hostnames are converted to puny code before used for certificate checks. Puny coded names always start with `xn--` and should not be allowed to pattern match, but the wildcard check in curl could still check for `x*`, which would match even though the IDN name most likely contained nothing even resembling an `x`.",
         "Severity": "MEDIUM",
         "CVSS": {
           "redhat": {
@@ -3144,9 +3203,11 @@
           "https://access.redhat.com/security/cve/CVE-2023-28321",
           "https://curl.se/docs/CVE-2023-28321.html",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-28321",
+          "https://hackerone.com/reports/1950627",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-28321",
           "https://www.cve.org/CVERecord?id=CVE-2023-28321"
-        ]
+        ],
+        "PublishedDate": "2023-05-26T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2023-28322",
@@ -3160,7 +3221,7 @@
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
         "Title": "more POST-after-PUT confusion",
-        "Description": "A use-after-free flaw was found in the Curl package. This issue may lead to unintended information disclosure by the application.",
+        "Description": "An information disclosure vulnerability exists in curl <v8.1.0 when doing HTTP(S) transfers, libcurl might erroneously use the read callback (`CURLOPT_READFUNCTION`) to ask for data to send, even when the `CURLOPT_POSTFIELDS` option has been set, if the same handle previously wasused to issue a `PUT` request which used that callback. This flaw may surprise the application and cause it to misbehave and either send off the wrong data or use memory after free or similar in the second transfer. The problem exists in the logic for a reused handle when it is (expected to be) changed from a PUT to a POST.",
         "Severity": "MEDIUM",
         "CVSS": {
           "redhat": {
@@ -3172,9 +3233,11 @@
           "https://access.redhat.com/security/cve/CVE-2023-28322",
           "https://curl.se/docs/CVE-2023-28322.html",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-28322",
+          "https://hackerone.com/reports/1954658",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-28322",
           "https://www.cve.org/CVERecord?id=CVE-2023-28322"
-        ]
+        ],
+        "PublishedDate": "2023-05-26T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-22922",
@@ -3277,6 +3340,7 @@
         "PkgID": "libcurl3-gnutls@7.88.1-7~bpo11+2",
         "PkgName": "libcurl3-gnutls",
         "InstalledVersion": "7.88.1-7~bpo11+2",
+        "SeveritySource": "debian",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28320",
         "DataSource": {
           "ID": "debian",
@@ -3284,7 +3348,7 @@
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
         "Title": "siglongjmp race condition may lead to crash",
-        "Description": "No description is available for this CVE.",
+        "Description": "A denial of service vulnerability exists in curl <v8.1.0 in the way libcurl provides several different backends for resolving host names, selected at build time. If it is built to use the synchronous resolver, it allows name resolves to time-out slow operations using `alarm()` and `siglongjmp()`. When doing this, libcurl used a global buffer that was not mutex protected and a multi-threaded application might therefore crash or otherwise misbehave.",
         "Severity": "LOW",
         "CVSS": {
           "redhat": {
@@ -3295,9 +3359,11 @@
         "References": [
           "https://access.redhat.com/security/cve/CVE-2023-28320",
           "https://curl.se/docs/CVE-2023-28320.html",
+          "https://hackerone.com/reports/1929597",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-28320",
           "https://www.cve.org/CVERecord?id=CVE-2023-28320"
-        ]
+        ],
+        "PublishedDate": "2023-05-26T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2023-23914",
@@ -3697,7 +3763,7 @@
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
         "Title": "IDN wildcard match may lead to Improper Cerificate Validation",
-        "Description": "A flaw was found in the Curl package. An incorrect International Domain Name (IDN) wildcard match may lead to improper certificate validation.",
+        "Description": "An improper certificate validation vulnerability exists in curl <v8.1.0 in the way it supports matching of wildcard patterns when listed as \"Subject Alternative Name\" in TLS server certificates. curl can be built to use its own name matching function for TLS rather than one provided by a TLS library. This private wildcard matching function would match IDN (International Domain Name) hosts incorrectly and could as a result accept patterns that otherwise should mismatch. IDN hostnames are converted to puny code before used for certificate checks. Puny coded names always start with `xn--` and should not be allowed to pattern match, but the wildcard check in curl could still check for `x*`, which would match even though the IDN name most likely contained nothing even resembling an `x`.",
         "Severity": "MEDIUM",
         "CVSS": {
           "redhat": {
@@ -3709,9 +3775,11 @@
           "https://access.redhat.com/security/cve/CVE-2023-28321",
           "https://curl.se/docs/CVE-2023-28321.html",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-28321",
+          "https://hackerone.com/reports/1950627",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-28321",
           "https://www.cve.org/CVERecord?id=CVE-2023-28321"
-        ]
+        ],
+        "PublishedDate": "2023-05-26T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2023-28322",
@@ -3725,7 +3793,7 @@
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
         "Title": "more POST-after-PUT confusion",
-        "Description": "A use-after-free flaw was found in the Curl package. This issue may lead to unintended information disclosure by the application.",
+        "Description": "An information disclosure vulnerability exists in curl <v8.1.0 when doing HTTP(S) transfers, libcurl might erroneously use the read callback (`CURLOPT_READFUNCTION`) to ask for data to send, even when the `CURLOPT_POSTFIELDS` option has been set, if the same handle previously wasused to issue a `PUT` request which used that callback. This flaw may surprise the application and cause it to misbehave and either send off the wrong data or use memory after free or similar in the second transfer. The problem exists in the logic for a reused handle when it is (expected to be) changed from a PUT to a POST.",
         "Severity": "MEDIUM",
         "CVSS": {
           "redhat": {
@@ -3737,9 +3805,11 @@
           "https://access.redhat.com/security/cve/CVE-2023-28322",
           "https://curl.se/docs/CVE-2023-28322.html",
           "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-28322",
+          "https://hackerone.com/reports/1954658",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-28322",
           "https://www.cve.org/CVERecord?id=CVE-2023-28322"
-        ]
+        ],
+        "PublishedDate": "2023-05-26T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2021-22922",
@@ -3842,6 +3912,7 @@
         "PkgID": "libcurl4@7.74.0-1.3+deb11u7",
         "PkgName": "libcurl4",
         "InstalledVersion": "7.74.0-1.3+deb11u7",
+        "SeveritySource": "debian",
         "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28320",
         "DataSource": {
           "ID": "debian",
@@ -3849,7 +3920,7 @@
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
         "Title": "siglongjmp race condition may lead to crash",
-        "Description": "No description is available for this CVE.",
+        "Description": "A denial of service vulnerability exists in curl <v8.1.0 in the way libcurl provides several different backends for resolving host names, selected at build time. If it is built to use the synchronous resolver, it allows name resolves to time-out slow operations using `alarm()` and `siglongjmp()`. When doing this, libcurl used a global buffer that was not mutex protected and a multi-threaded application might therefore crash or otherwise misbehave.",
         "Severity": "LOW",
         "CVSS": {
           "redhat": {
@@ -3860,9 +3931,11 @@
         "References": [
           "https://access.redhat.com/security/cve/CVE-2023-28320",
           "https://curl.se/docs/CVE-2023-28320.html",
+          "https://hackerone.com/reports/1929597",
           "https://nvd.nist.gov/vuln/detail/CVE-2023-28320",
           "https://www.cve.org/CVERecord?id=CVE-2023-28320"
-        ]
+        ],
+        "PublishedDate": "2023-05-26T21:15:00Z"
       },
       {
         "VulnerabilityID": "CVE-2019-8457",
@@ -4993,20 +5066,6 @@
         "PublishedDate": "2021-05-10T16:15:00Z"
       },
       {
-        "VulnerabilityID": "CVE-2023-2602",
-        "PkgID": "libpam-cap@1:2.44-1",
-        "PkgName": "libpam-cap",
-        "InstalledVersion": "1:2.44-1",
-        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2602",
-        "DataSource": {
-          "ID": "debian",
-          "Name": "Debian Security Tracker",
-          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
-        },
-        "Title": "[LCAP-CR-23-01]",
-        "Severity": "UNKNOWN"
-      },
-      {
         "VulnerabilityID": "CVE-2023-2603",
         "PkgID": "libpam-cap@1:2.44-1",
         "PkgName": "libpam-cap",
@@ -5017,8 +5076,48 @@
           "Name": "Debian Security Tracker",
           "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
         },
-        "Title": "[LCAP-CR-23-02]",
-        "Severity": "UNKNOWN"
+        "Title": "Integer Overflow in _libcap_strdup()",
+        "Description": "No description is available for this CVE.",
+        "Severity": "MEDIUM",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:L/A:L",
+            "V3Score": 4.4
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2023-2603",
+          "https://nvd.nist.gov/vuln/detail/CVE-2023-2603",
+          "https://www.cve.org/CVERecord?id=CVE-2023-2603",
+          "https://www.x41-dsec.de/static/reports/X41-libcap-Code-Review-2023-OSTIF-Final-Report.pdf"
+        ]
+      },
+      {
+        "VulnerabilityID": "CVE-2023-2602",
+        "PkgID": "libpam-cap@1:2.44-1",
+        "PkgName": "libpam-cap",
+        "InstalledVersion": "1:2.44-1",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2602",
+        "DataSource": {
+          "ID": "debian",
+          "Name": "Debian Security Tracker",
+          "URL": "https://salsa.debian.org/security-tracker-team/security-tracker"
+        },
+        "Title": "Memory Leak on pthread_create() Error",
+        "Description": "No description is available for this CVE.",
+        "Severity": "LOW",
+        "CVSS": {
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L",
+            "V3Score": 3.3
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2023-2602",
+          "https://nvd.nist.gov/vuln/detail/CVE-2023-2602",
+          "https://www.cve.org/CVERecord?id=CVE-2023-2602",
+          "https://www.x41-dsec.de/static/reports/X41-libcap-Code-Review-2023-OSTIF-Final-Report.pdf"
+        ]
       },
       {
         "VulnerabilityID": "CVE-2013-4392",
@@ -9482,8 +9581,8 @@
             "V3Score": 7.8
           },
           "redhat": {
-            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H",
-            "V3Score": 7.8
+            "V3Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H",
+            "V3Score": 5.5
           }
         },
         "References": [
