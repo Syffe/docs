@@ -426,8 +426,8 @@ async def test_category_report_without_comparison() -> None:
     result = await report.run()
 
     assert result.total_costs == reports.Money.from_decimal("6.68")
-    assert result.total_difference == reports.Money.zero()
-    assert result.categories.pull_requests.difference == reports.Money.zero()
+    assert result.total_difference is None
+    assert result.categories.pull_requests.difference is None
 
 
 async def test_repository_report() -> None:

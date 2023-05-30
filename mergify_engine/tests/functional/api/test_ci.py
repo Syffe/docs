@@ -42,18 +42,22 @@ class TestCIApi(base.FunctionalTestBase):
 
     async def test_report(self) -> None:
         r = await self.app.get(f"/v1/ci/{settings.TESTING_ORGANIZATION_NAME}")
-
+        response = r.json()
         assert r.status_code == 200
-        assert r.json()["total_costs"] == {"amount": 0.02, "currency": "USD"}
-        assert r.json()["total_difference"] == {"amount": 0, "currency": "USD"}
-        assert "date_range" in r.json()
-        assert r.json()["date_range"]["start_at"] is None
-        assert r.json()["date_range"]["end_at"] is None
-        assert "compared_date_range" in r.json()
-        assert r.json()["compared_date_range"] is None
-        assert "deployments" in r.json()["categories"]
-        assert "scheduled_jobs" in r.json()["categories"]
-        assert "pull_requests" in r.json()["categories"]
+        assert response["total_costs"] == {"amount": 0.02, "currency": "USD"}
+        assert response["total_difference"] is None
+        assert "date_range" in response
+        assert response["date_range"]["start_at"] is None
+        assert response["date_range"]["end_at"] is None
+        assert "compared_date_range" in response
+        assert response["compared_date_range"] is None
+        assert "deployments" in response["categories"]
+        assert "scheduled_jobs" in response["categories"]
+        assert "pull_requests" in response["categories"]
+        assert all(
+            category["difference"] is None
+            for category in response["categories"].values()
+        )
 
         r = await self.app.get(
             f"/v1/ci/{settings.TESTING_ORGANIZATION_NAME}?"
@@ -66,12 +70,13 @@ class TestCIApi(base.FunctionalTestBase):
             f"repository={self.RECORD_CONFIG['repository_name']}"
             "&start_at=2023-01-01&end_at=2023-01-15",
         )
+        response = r.json()
         assert r.status_code == 200
-        assert "date_range" in r.json()
-        assert r.json()["date_range"]["start_at"] == "2023-01-01"
-        assert r.json()["date_range"]["end_at"] == "2023-01-15"
-        assert "compared_date_range" in r.json()
-        assert r.json()["compared_date_range"] is None
+        assert "date_range" in response
+        assert response["date_range"]["start_at"] == "2023-01-01"
+        assert response["date_range"]["end_at"] == "2023-01-15"
+        assert "compared_date_range" in response
+        assert response["compared_date_range"] is None
 
         r = await self.app.get(
             f"/v1/ci/{settings.TESTING_ORGANIZATION_NAME}?"
@@ -79,13 +84,18 @@ class TestCIApi(base.FunctionalTestBase):
             "&start_at=2023-01-01&end_at=2023-01-15"
             "&compare_start_at=2022-12-01&compare_end_at=2022-12-15",
         )
+        response = r.json()
         assert r.status_code == 200
-        assert "date_range" in r.json()
-        assert r.json()["date_range"]["start_at"] == "2023-01-01"
-        assert r.json()["date_range"]["end_at"] == "2023-01-15"
-        assert "compared_date_range" in r.json()
-        assert r.json()["compared_date_range"]["start_at"] == "2022-12-01"
-        assert r.json()["compared_date_range"]["end_at"] == "2022-12-15"
+        assert "date_range" in response
+        assert response["date_range"]["start_at"] == "2023-01-01"
+        assert response["date_range"]["end_at"] == "2023-01-15"
+        assert "compared_date_range" in response
+        assert response["compared_date_range"]["start_at"] == "2022-12-01"
+        assert response["compared_date_range"]["end_at"] == "2022-12-15"
+        assert all(
+            category["difference"] == {"amount": 0.00, "currency": "USD"}
+            for category in response["categories"].values()
+        )
 
     async def test_repository_report(self) -> None:
         r = await self.app.get(f"/v1/ci/{settings.TESTING_ORGANIZATION_NAME}/repos")

@@ -40,7 +40,7 @@ class Money:
 class DimensionItem:
     name: str
     cost: Money
-    difference: Money = dataclasses.field(default_factory=Money.zero)
+    difference: Money | None = None
 
     def difference_with(self, other_items: list["DimensionItem"]) -> Money:
         for other_item in other_items:
@@ -83,7 +83,7 @@ class Category:
     type: typing.Literal["deployments", "scheduled_jobs", "pull_requests"]
     total_cost: Money
     dimensions: Dimensions
-    difference: Money = dataclasses.field(default_factory=Money.zero)
+    difference: Money | None = None
 
     def difference_with(self, other: "Category") -> "Category":
         conclusions = self.dimensions.conclusions.difference_with(
@@ -141,7 +141,7 @@ class CategoryReportPayload:
     categories: Categories
     date_range: DateRange
     compared_date_range: DateRange | None = None
-    total_difference: Money = dataclasses.field(default_factory=Money.zero)
+    total_difference: Money | None = None
 
     def difference_with(
         self, other: "CategoryReportPayload"
@@ -155,11 +155,17 @@ class CategoryReportPayload:
         pull_requests = self.categories.pull_requests.difference_with(
             other.categories.pull_requests
         )
-        total_difference = Money(
-            deployments.difference.amount
-            + scheduled_jobs.difference.amount
-            + pull_requests.difference.amount
-        )
+        total_difference = None
+        if (
+            deployments.difference is not None
+            and scheduled_jobs.difference is not None
+            and pull_requests.difference is not None
+        ):
+            total_difference = Money(
+                deployments.difference.amount
+                + scheduled_jobs.difference.amount
+                + pull_requests.difference.amount
+            )
 
         return self.__class__(
             total_costs=self.total_costs,
