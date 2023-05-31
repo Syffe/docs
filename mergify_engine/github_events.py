@@ -19,6 +19,7 @@ from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine import utils
 from mergify_engine import worker_pusher
+from mergify_engine.ci import job_registries
 from mergify_engine.ci import models as ci_models
 from mergify_engine.ci import pull_registries
 from mergify_engine.clients import github
@@ -108,6 +109,27 @@ class EventToProcess(EventBase):
             slim_event=self.slim_event,
             priority=self.priority,
             gh_pull=self.pull_request_number,
+        )
+
+
+@dataclasses.dataclass
+class CIEventToProcess(EventBase):
+    event: github_types.GitHubEventWorkflowRun | github_types.GitHubEventWorkflowJob
+
+    def set_sentry_info(self) -> None:
+        sentry_sdk.set_user({"username": self.event["repository"]["owner"]["login"]})
+        sentry_sdk.set_tag("gh_owner", self.event["repository"]["owner"]["login"])
+        sentry_sdk.set_tag("gh_repo", self.event["repository"]["name"])
+
+    def emit_log(self) -> None:
+        LOG.info(
+            "GithubApp CI event pushed",
+            event_type=self.event_type,
+            event_id=self.event_id,
+            sender=self.event["sender"]["login"],
+            gh_owner=self.event["repository"]["owner"]["login"],
+            gh_repo=self.event["repository"]["name"],
+            slim_event=self.slim_event,
         )
 
 
@@ -389,7 +411,7 @@ async def event_classifier(
     event_id: str,
     event: github_types.GitHubEvent,
     mergify_bot: github_types.GitHubAccount,
-) -> EventToIgnore | EventToProcess:
+) -> EventToIgnore | EventToProcess | CIEventToProcess:
     # NOTE(sileht): those events are only used by synack or cache cleanup/feed
     if event_type in (
         "installation",
@@ -578,6 +600,26 @@ async def event_classifier(
             ),
         )
 
+    if event_type == "workflow_run":
+        event = typing.cast(github_types.GitHubEventWorkflowRun, event)
+        if job_registries.HTTPJobRegistry.is_workflow_run_ignored(
+            event["workflow_run"]
+        ):
+            return EventToIgnore(
+                event_type, event_id, event, reason="workflow_run ignored"
+            )
+        return CIEventToProcess(event_type, event_id, event)
+
+    if event_type == "workflow_job":
+        event = typing.cast(github_types.GitHubEventWorkflowJob, event)
+        if job_registries.HTTPJobRegistry.is_workflow_job_ignored(
+            event["workflow_job"]
+        ):
+            return EventToIgnore(
+                event_type, event_id, event, reason="workflow_job ignored"
+            )
+        return CIEventToProcess(event_type, event_id, event)
+
     return EventToIgnore(event_type, event_id, event, "unexpected event_type")
 
 
@@ -615,6 +657,16 @@ async def filter_and_dispatch(
             event_type,
             classified_event.slim_event,
             classified_event.priority,
+        )
+
+    if isinstance(classified_event, CIEventToProcess):
+        classified_event.set_sentry_info()
+        await worker_pusher.push_ci_event(
+            redis_links.stream,
+            classified_event.event["repository"]["owner"]["id"],
+            classified_event.event["repository"]["id"],
+            event_type,
+            classified_event.event,
         )
 
     classified_event.emit_log()

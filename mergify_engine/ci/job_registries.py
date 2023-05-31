@@ -52,6 +52,14 @@ class PostgresJobRegistry:
         default_factory=dict
     )
 
+    async def filter_if_exist(self, *run_ids: int) -> set[int]:
+        async with database.create_session() as session:
+            sql = sqlalchemy.select(sql_models.JobRun.workflow_run_id).where(
+                sql_models.JobRun.workflow_run_id.in_(run_ids)
+            )
+            existing_run_ids = set(await session.scalars(sql))
+            return set(run_ids) - existing_run_ids
+
     async def insert(self, job_run: ci_models.JobRun) -> None:
         async with database.create_session() as session:
             await self._insert_account(session, job_run.owner)
@@ -266,70 +274,92 @@ class PostgresJobRegistry:
 class HTTPJobRegistry:
     client: github.AsyncGithubClient
     pull_registry: pull_registries.PullRequestFromCommitRegistry
+    destination_registry: PostgresJobRegistry
 
     async def search(
         self, owner: str, repository: str, at: datetime.date
     ) -> abc.AsyncGenerator[ci_models.JobRun, None]:
         # https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository
-        runs = typing.cast(
-            abc.AsyncIterable[github_types.GitHubWorkflowRun],
-            self.client.items(
+        http_runs = [
+            typing.cast(github_types.GitHubWorkflowRun, run)
+            async for run in self.client.items(
                 f"/repos/{owner}/{repository}/actions/runs",
                 resource_name="runs",
                 page_limit=None,
                 list_items="workflow_runs",
                 params={"created": at.isoformat()},
+            )
+        ]
+        runs = {run["id"]: run for run in http_runs}
+        missing_run_ids = await self.destination_registry.filter_if_exist(*runs.keys())
+
+        for run_id in missing_run_ids:
+            LOG.debug(f"workflow run {run_id}", gh_owner=owner, gh_repo=repository)
+
+            async for job in self._get_jobs_from_url(runs[run_id]):
+                yield job
+
+    async def _get_jobs_from_url(
+        self, run: github_types.GitHubWorkflowRun
+    ) -> abc.AsyncGenerator[ci_models.JobRun, None]:
+        owner = run["repository"]["owner"]["login"]
+        repository = run["repository"]["name"]
+
+        # https://docs.github.com/en/rest/actions/workflow-jobs?apiVersion=2022-11-28#list-jobs-for-a-workflow-run
+        jobs = typing.cast(
+            abc.AsyncIterable[github_types.GitHubJobRun],
+            self.client.items(
+                run["jobs_url"],
+                resource_name="jobs",
+                list_items="jobs",
+                page_limit=None,
             ),
         )
 
-        async for run in runs:
-            LOG.debug(f"workflow run {run['id']}", gh_owner=owner, gh_repo=repository)
+        async for job in jobs:
+            LOG.debug(f"job run {job['id']}", gh_owner=owner, gh_repo=repository)
 
-            # https://docs.github.com/en/rest/actions/workflow-jobs?apiVersion=2022-11-28#list-jobs-for-a-workflow-run
-            jobs = typing.cast(
-                abc.AsyncIterable[github_types.GitHubJobRun],
-                self.client.items(
-                    run["jobs_url"],
-                    resource_name="jobs",
-                    list_items="jobs",
-                    page_limit=None,
-                ),
-            )
+            if self._is_ignored(run, job):
+                LOG.info(
+                    f"job run {job['id']} ignored",
+                    gh_owner=owner,
+                    gh_repo=repository,
+                    workflow_run_payload=run,
+                    job_payload=job,
+                )
+                continue
 
-            async for job in jobs:
-                LOG.debug(f"job run {job['id']}", gh_owner=owner, gh_repo=repository)
-
-                if self._is_ignored(run, job):
-                    LOG.info(
-                        f"job run {job['id']} ignored",
-                        gh_owner=owner,
-                        gh_repo=repository,
-                        workflow_run_payload=run,
-                        job_payload=job,
-                    )
-                    continue
-
-                yield await self._create_job(job, run)
+            yield await self.create_job(self.pull_registry, job, run)
 
     def _is_ignored(
         self, run: github_types.GitHubWorkflowRun, job: github_types.GitHubJobRun
     ) -> bool:
-        if not job["completed_at"] or job["conclusion"] == "skipped":
+        return self.is_workflow_run_ignored(run) or self.is_workflow_job_ignored(job)
+
+    @staticmethod
+    def is_workflow_job_ignored(payload: github_types.GitHubJobRun) -> bool:
+        return not payload["completed_at"] or payload["conclusion"] == "skipped"
+
+    @staticmethod
+    def is_workflow_run_ignored(payload: github_types.GitHubWorkflowRun) -> bool:
+        if payload["conclusion"] is None:
             return True
 
         try:
-            sql_models.JobRunTriggerEvent(run["event"])
+            sql_models.JobRunTriggerEvent(payload["event"])
         except ValueError:
             return True
+        else:
+            return False
 
-        return False
-
-    async def _create_job(
-        self,
+    @classmethod
+    async def create_job(
+        cls,
+        pull_registry: pull_registries.PullRequestFromCommitRegistry,
         job_payload: github_types.GitHubJobRun,
         run_payload: github_types.GitHubWorkflowRun,
     ) -> ci_models.JobRun:
-        runner_properties = self._extract_runner_properties(job_payload)
+        runner_properties = cls._extract_runner_properties(job_payload)
 
         return ci_models.JobRun(
             id=job_payload["id"],
@@ -349,7 +379,7 @@ class HTTPJobRegistry:
             ),
             started_at=datetime.datetime.fromisoformat(job_payload["started_at"]),
             completed_at=datetime.datetime.fromisoformat(job_payload["completed_at"]),
-            pulls=await self.pull_registry.get_from_commit(
+            pulls=await pull_registry.get_from_commit(
                 run_payload["repository"]["owner"]["login"],
                 run_payload["repository"]["name"],
                 run_payload["head_sha"],

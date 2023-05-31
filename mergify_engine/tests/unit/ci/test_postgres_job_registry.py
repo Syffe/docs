@@ -67,6 +67,15 @@ async def test_search(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
     assert job_run.completed_at.date() == datetime.date.today()
 
 
+async def test_filter_if_exist(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
+    registry = job_registries.PostgresJobRegistry()
+    assert await registry.filter_if_exist(1) == {1}
+
+    await _insert_data(db)
+
+    assert await registry.filter_if_exist(1) == set()
+
+
 async def _insert_data(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
     await db.execute(
         sqlalchemy.insert(github_account.GitHubAccount).values(id=1, login="some-owner")

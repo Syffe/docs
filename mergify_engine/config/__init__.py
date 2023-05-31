@@ -248,6 +248,7 @@ class WorkerSettings(pydantic.BaseSettings):
     SHARED_STREAM_TASKS_PER_PROCESS: int = 7
     BUCKET_PROCESSING_MAX_SECONDS: int = 30
     MAX_GITTER_CONCURRENT_JOBS: int = 20
+    CI_DUMP_STREAM_BATCH_SIZE: int = 5000
 
 
 class APISettings(pydantic.BaseSettings):

@@ -18,6 +18,7 @@ from mergify_engine.worker import stream_lua
 LOG = daiquiri.getLogger(__name__)
 
 WORKER_PROCESSING_DELAY: float = 30
+CI_EVENT_EXPIRATION = datetime.timedelta(days=7)
 
 
 class Priority(enum.IntEnum):
@@ -221,3 +222,75 @@ async def push(
             gh_pull=pull_number,
             event_type=event_type,
         )
+
+
+async def push_ci_event(
+    redis: redis_utils.RedisStream,
+    owner_id: github_types.GitHubAccountIdType,
+    repo_id: github_types.GitHubRepositoryIdType,
+    event_type: github_types.GitHubEventType,
+    data: github_types.GitHubEventWorkflowRun | github_types.GitHubEventWorkflowJob,
+) -> None:
+    """Completed workflow runs are added to a Redis stream to be processed later.
+
+    Workflow events are stored in Redis as hashes.
+
+                        key                                    field: workflow_run                       field: workflow_job/<job_id>
+    ┌────────────────────────────────────────────┬─────────────────────────────────────────────┬─────────────────────────────────────────────┐
+    │                                            │ {                                           │ {                                           │
+    │                                            │    "event_type": "workflow_run",            │    "event_type": "workflow_job",            │
+    │                                            │    "data": {                                │    "data": {                                │
+    │                                            │      "action": "completed",                 │      "action": "completed",                 │
+    │                                            │      "workflow_run": {...},                 │      "workflow_run": {...},                 │
+    │ workflow_run/<owner_id>/<repo_id>/<run_id> │      "repository": {...},                   │      "repository": {...},                   │
+    │                                            │      "organization": {...},                 │      "organization": {...},                 │
+    │                                            │      "sender": {...}                        │      "sender": {...}                        │
+    │                                            │    },                                       │    },                                       │
+    │                                            │    "timestamp": "2019-05-18T15:17:00+00:00" │    "timestamp": "2019-05-18T15:17:00+00:00" │
+    │                                            │  }                                          │  }                                          │
+    └────────────────────────────────────────────┴─────────────────────────────────────────────┴─────────────────────────────────────────────┘
+    """
+    event = msgpack.packb(
+        {
+            "event_type": event_type,
+            "data": data,
+            "timestamp": date.utcnow().isoformat(),
+        },
+    )
+
+    if event_type == "workflow_run":
+        data = typing.cast(github_types.GitHubEventWorkflowRun, data)
+        run_id = data["workflow_run"]["id"]
+        job_id = None
+        field_name = "workflow_run"
+    elif event_type == "workflow_job":
+        data = typing.cast(github_types.GitHubEventWorkflowJob, data)
+        run_id = data["workflow_job"]["run_id"]
+        job_id = data["workflow_job"]["id"]
+        field_name = f"workflow_job/{data['workflow_job']['id']}"
+    else:
+        raise ValueError(f"Unhandled CI event {event_type}")
+
+    key = f"workflow_run/{owner_id}/{repo_id}/{run_id}"
+
+    pipe = await redis.pipeline()
+    await pipe.hset(key, field_name, event)
+    await pipe.expire(key, CI_EVENT_EXPIRATION)
+
+    if event_type == "workflow_job":
+        stream_event = {
+            "owner_id": owner_id,
+            "repo_id": repo_id,
+            "workflow_run_id": run_id,
+            "workflow_job_id": job_id,
+            "workflow_run_key": key,
+            "timestamp": date.utcnow().isoformat(),
+        }
+        await pipe.xadd(
+            "workflow_job",
+            fields=stream_event,
+            minid=redis_utils.get_expiration_minid(CI_EVENT_EXPIRATION),
+        )
+        await pipe.expire("workflow_job", CI_EVENT_EXPIRATION)
+
+    await pipe.execute()

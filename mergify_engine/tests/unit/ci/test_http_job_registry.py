@@ -1,9 +1,11 @@
+import dataclasses
 import datetime
 
 import pytest
 import respx
 
 from mergify_engine import github_types
+from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine.ci import job_registries
 from mergify_engine.ci import models
@@ -25,10 +27,21 @@ class FakePullRequestRegistry:
         ]
 
 
+@dataclasses.dataclass
+class FakeDestinationJobRegistry:
+    exists: bool = False
+
+    async def filter_if_exist(self, *run_ids: int) -> set[int]:
+        if self.exists:
+            return set()
+        return set(run_ids)
+
+
 @pytest.mark.respx(base_url=settings.GITHUB_REST_API_URL)
-async def test_search(respx_mock: respx.MockRouter) -> None:
-    client = github.AsyncGithubClient(auth=None)  # type: ignore [arg-type]
-    registry = job_registries.HTTPJobRegistry(client, FakePullRequestRegistry())
+async def test_search(
+    respx_mock: respx.MockRouter, redis_links: redis_utils.RedisLinks
+) -> None:
+    # Mock GitHub API endpoints (workflow runs and jobs)
     respx_mock.get("/repos/some-owner/some-repo/actions/runs").respond(
         200,
         json={
@@ -38,10 +51,12 @@ async def test_search(respx_mock: respx.MockRouter) -> None:
                     "id": 1,
                     "workflow_id": 4,
                     "repository": {
+                        "id": 1,
                         "name": "some-repo",
                         "owner": {"id": 1, "login": "some-owner"},
                     },
                     "event": "pull_request",
+                    "conclusion": "success",
                     "triggering_actor": {"id": 2, "login": "some-user"},
                     "head_sha": "some-sha",
                     "run_attempt": 1,
@@ -52,10 +67,12 @@ async def test_search(respx_mock: respx.MockRouter) -> None:
                     "id": 11,
                     "workflow_id": 4,
                     "repository": {
+                        "id": 1,
                         "name": "some-repo",
                         "owner": {"id": 1, "login": "some-owner"},
                     },
                     "event": "unknown",
+                    "conclusion": "success",
                     "triggering_actor": {"id": 2, "login": "some-user"},
                     "head_sha": "some-sha",
                     "run_attempt": 1,
@@ -116,6 +133,13 @@ async def test_search(respx_mock: respx.MockRouter) -> None:
         },
     )
 
+    client = github.AsyncGithubClient(auth=None)  # type: ignore [arg-type]
+    registry = job_registries.HTTPJobRegistry(
+        client,
+        pull_registry=FakePullRequestRegistry(),
+        destination_registry=FakeDestinationJobRegistry(exists=False),  # type: ignore [arg-type]
+    )
+
     jobs = registry.search(
         github_types.GitHubLogin("some-owner"),
         github_types.GitHubRepositoryName("some-repo"),
@@ -144,6 +168,51 @@ async def test_search(respx_mock: respx.MockRouter) -> None:
         assert job.run_attempt == 1
         assert job.operating_system == "Linux"
         assert job.cores == 2
+
+
+@pytest.mark.respx(base_url=settings.GITHUB_REST_API_URL)
+async def test_search_for_already_dumped_jobs(
+    respx_mock: respx.MockRouter, redis_links: redis_utils.RedisLinks
+) -> None:
+    run_payload = {
+        "id": 1,
+        "workflow_id": 4,
+        "repository": {
+            "id": 1,
+            "name": "some-repo",
+            "owner": {"id": 1, "login": "some-owner"},
+        },
+        "event": "pull_request",
+        "conclusion": "success",
+        "triggering_actor": {"id": 2, "login": "some-user"},
+        "head_sha": "some-sha",
+        "run_attempt": 1,
+        "jobs_url": "https://api.github.com/repos/some-owner/some-repo/actions/runs/1/jobs",
+    }
+    # Mock Workflow runs endpoint
+    respx_mock.get("/repos/some-owner/some-repo/actions/runs").respond(
+        200,
+        json={
+            "total_count": 1,
+            "workflow_runs": [run_payload],
+        },
+    )
+
+    client = github.AsyncGithubClient(auth=None)  # type: ignore [arg-type]
+    registry = job_registries.HTTPJobRegistry(
+        client,
+        pull_registry=FakePullRequestRegistry(),
+        destination_registry=FakeDestinationJobRegistry(exists=True),  # type: ignore [arg-type]
+    )
+
+    jobs = registry.search(
+        github_types.GitHubLogin("some-owner"),
+        github_types.GitHubRepositoryName("some-repo"),
+        datetime.date(2023, 2, 1),
+    )
+
+    # Every job is already in the DB
+    assert len([job async for job in jobs]) == 0
 
 
 @pytest.mark.parametrize(

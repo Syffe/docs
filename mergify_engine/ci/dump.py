@@ -3,13 +3,16 @@ import typing
 
 import daiquiri
 import ddtrace
+import msgpack
 import sqlalchemy
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine import redis_utils
+from mergify_engine import settings
 from mergify_engine.ci import job_registries
+from mergify_engine.ci import models as ci_models
 from mergify_engine.ci import pull_registries
 from mergify_engine.clients import github
 from mergify_engine.models import github_repository
@@ -120,13 +123,16 @@ async def dump(
     repository: github_types.GitHubRepositoryName,
     at: datetime.date,
 ) -> None:
+    pg_job_registry = job_registries.PostgresJobRegistry()
+    pg_pull_registry = pull_registries.PostgresPullRequestRegistry()
     http_pull_registry = pull_registries.RedisPullRequestRegistry(
         redis_links.cache, pull_registries.HTTPPullRequestRegistry(gh_client)
     )
-    http_job_registry = job_registries.HTTPJobRegistry(gh_client, http_pull_registry)
-
-    pg_job_registry = job_registries.PostgresJobRegistry()
-    pg_pull_registry = pull_registries.PostgresPullRequestRegistry()
+    http_job_registry = job_registries.HTTPJobRegistry(
+        client=gh_client,
+        pull_registry=http_pull_registry,
+        destination_registry=pg_job_registry,
+    )
 
     with ddtrace.tracer.trace(
         "ci.dump", span_type="worker", resource=f"{owner}/{repository}"
@@ -135,8 +141,95 @@ async def dump(
         LOG.info("dump CI data", gh_owner=owner, gh_repo=repository, at=at)
 
         async for job in http_job_registry.search(owner, repository, at):
-            await pg_job_registry.insert(job)
+            await _insert_job(pg_job_registry, pg_pull_registry, job)
 
-            for pull in job.pulls:
-                await pg_pull_registry.insert(pull)
-                await pg_pull_registry.register_job_run(pull.id, job)
+
+async def dump_event_stream(redis_links: redis_utils.RedisLinks) -> None:
+    pg_job_registry = job_registries.PostgresJobRegistry()
+    pg_pull_registry = pull_registries.PostgresPullRequestRegistry()
+
+    with ddtrace.tracer.trace("ci.dump_stream", span_type="worker"):
+        stream_events = await redis_links.stream.xrange(
+            "workflow_job", count=settings.CI_DUMP_STREAM_BATCH_SIZE
+        )
+        LOG.info("dump CI stream data", stream_events=stream_events)
+
+        for stream_event_id, stream_event in stream_events:
+            try:
+                await _process_stream_event(
+                    redis_links,
+                    pg_job_registry,
+                    pg_pull_registry,
+                    stream_event_id,
+                    stream_event,
+                )
+            except Exception:
+                LOG.exception(
+                    "unprocessable CI stream event",
+                    stream_event=stream_event,
+                    stream_event_id=stream_event_id,
+                )
+
+
+async def _process_stream_event(
+    redis_links: redis_utils.RedisLinks,
+    pg_job_registry: job_registries.PostgresJobRegistry,
+    pg_pull_registry: pull_registries.PostgresPullRequestRegistry,
+    stream_event_id: bytes,
+    stream_event: dict[bytes, bytes],
+) -> None:
+    run_key = stream_event[b"workflow_run_key"]
+    events = await redis_links.stream.hgetall(run_key)
+
+    # NOTE(charly): we haven't received the completed workflow run event, we
+    # process the next event in the stream, this one will be processed later
+    try:
+        raw_run_event = msgpack.unpackb(events[b"workflow_run"])
+    except KeyError:
+        return
+
+    run_event = typing.cast(
+        github_types.GitHubEventWorkflowRun,
+        raw_run_event["data"],
+    )
+
+    job_id = stream_event[b"workflow_job_id"].decode()
+    job_event = typing.cast(
+        github_types.GitHubEventWorkflowJob,
+        msgpack.unpackb(events[f"workflow_job/{job_id}".encode()])["data"],
+    )
+
+    job = await _create_job(redis_links, run_event, job_event)
+    await _insert_job(pg_job_registry, pg_pull_registry, job)
+
+    delete_pipeline = await redis_links.stream.pipeline()
+    await delete_pipeline.hdel(run_key, f"workflow_job/{job_id}")
+    await delete_pipeline.xdel("workflow_job", stream_event_id)
+    await delete_pipeline.execute()
+
+
+async def _create_job(
+    redis_links: redis_utils.RedisLinks,
+    run_event: github_types.GitHubEventWorkflowRun,
+    job_event: github_types.GitHubEventWorkflowJob,
+) -> ci_models.JobRun:
+    gh_client = await _create_gh_client_from_login(run_event["organization"]["login"])
+    http_pull_registry = pull_registries.RedisPullRequestRegistry(
+        redis_links.cache, pull_registries.HTTPPullRequestRegistry(gh_client)
+    )
+
+    return await job_registries.HTTPJobRegistry.create_job(
+        http_pull_registry, job_event["workflow_job"], run_event["workflow_run"]
+    )
+
+
+async def _insert_job(
+    pg_job_registry: job_registries.PostgresJobRegistry,
+    pg_pull_registry: pull_registries.PostgresPullRequestRegistry,
+    job: ci_models.JobRun,
+) -> None:
+    await pg_job_registry.insert(job)
+
+    for pull in job.pulls:
+        await pg_pull_registry.insert(pull)
+        await pg_pull_registry.register_job_run(pull.id, job)

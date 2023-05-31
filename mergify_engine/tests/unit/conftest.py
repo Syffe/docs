@@ -1,6 +1,8 @@
 from collections import abc
 import dataclasses
 import functools
+import json
+import os
 import typing
 from unittest import mock
 
@@ -271,3 +273,16 @@ async def fake_mergify_bot(
     redis_links: redis_utils.RedisLinks,
 ) -> github_types.GitHubAccount:
     return await github.GitHubAppInfo.get_bot(redis_links.cache)
+
+
+@pytest.fixture
+def sample_events() -> dict[str, tuple[github_types.GitHubEventType, typing.Any]]:
+    events = {}
+    event_dir = os.path.join(os.path.dirname(__file__), "events")
+
+    for filename in os.listdir(event_dir):
+        event_type = typing.cast(github_types.GitHubEventType, filename.split(".")[0])
+        with open(os.path.join(event_dir, filename)) as event:
+            events[filename] = (event_type, json.load(event))
+
+    return events

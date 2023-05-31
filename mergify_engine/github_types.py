@@ -421,6 +421,8 @@ GitHubEventType = typing.Literal[
     "membership",
     "team",
     "team_add",
+    "workflow_job",
+    "workflow_run",
     # This does not exist in GitHub, it's a Mergify made one
     "refresh",
 ]
@@ -845,11 +847,17 @@ class GitHubMembership(typing.TypedDict):
     organization: GitHubAccount
 
 
+GitHubWorkflowRunConclusionType = typing.Literal[
+    "success", "failure", "skipped", "cancelled", None
+]
+
+
 class GitHubWorkflowRun(typing.TypedDict):
     id: int
     workflow_id: int
     name: str
     event: GitHubWorkflowTriggerEventType
+    conclusion: GitHubWorkflowRunConclusionType
     triggering_actor: GitHubAccount
     jobs_url: str
     head_sha: SHAType
@@ -863,6 +871,18 @@ class GitHubWorkflowRunList(typing.TypedDict):
     workflow_runs: list[GitHubWorkflowRun]
 
 
+GitHubEventWorkflowRunActionType = typing.Literal[
+    "completed",
+    "in_progress",
+    "requested",
+]
+
+
+class GitHubEventWorkflowRun(GitHubEventWithRepository):
+    action: GitHubEventPullRequestActionType
+    workflow_run: GitHubWorkflowRun
+
+
 GitHubJobRunConclusionType = typing.Literal[
     "success", "failure", "skipped", "cancelled"
 ]
@@ -870,6 +890,7 @@ GitHubJobRunConclusionType = typing.Literal[
 
 class GitHubJobRun(typing.TypedDict):
     id: int
+    run_id: int
     name: str
     conclusion: GitHubJobRunConclusionType
     started_at: ISODateTimeType
@@ -881,3 +902,16 @@ class GitHubJobRun(typing.TypedDict):
 class GitHubJobRunList(typing.TypedDict):
     total_count: int
     jobs: list[GitHubJobRun]
+
+
+GitHubEventWorkflowJobActionType = typing.Literal[
+    "completed",
+    "in_progress",
+    "queued",
+    "waiting",
+]
+
+
+class GitHubEventWorkflowJob(GitHubEventWithRepository):
+    action: GitHubEventPullRequestActionType
+    workflow_job: GitHubJobRun
