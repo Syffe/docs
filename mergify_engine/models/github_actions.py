@@ -16,7 +16,7 @@ class PullRequest(models.Base):
     id: orm.Mapped[int] = orm.mapped_column(
         sqlalchemy.BigInteger, primary_key=True, autoincrement=False
     )
-    number: orm.Mapped[int] = orm.mapped_column(sqlalchemy.BigInteger, unique=True)
+    number: orm.Mapped[int] = orm.mapped_column(sqlalchemy.BigInteger)
     title: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
     state: orm.Mapped[github_types.GitHubPullRequestState] = orm.mapped_column(
         sqlalchemy.Text
