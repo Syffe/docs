@@ -1003,7 +1003,7 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         for train in convoy.iter_trains():
             assert len(train._cars) == 0
 
-    async def test_two_prs_in_differents_partitions_merged(self) -> None:
+    async def test_two_prs_in_differents_partitions_merged_no_inplace(self) -> None:
         rules = {
             "partition_rules": [
                 {
@@ -1094,6 +1094,77 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         p_closed = await self.wait_for_pull_request("closed")
         assert p_closed["number"] == p_closed_nbs[0]
         assert p_closed["pull_request"]["merged"]
+
+    async def test_two_prs_in_differents_partitions_merged_inplace(self) -> None:
+        rules = {
+            "partition_rules": [
+                {
+                    "name": "projA",
+                    "conditions": [
+                        "files~=projA/",
+                    ],
+                },
+                {
+                    "name": "projB",
+                    "conditions": [
+                        "files~=projB/",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Automatic merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                }
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr(
+            files={
+                "projA/test.txt": "testA",
+            }
+        )
+
+        p2 = await self.create_pr(
+            files={
+                "projB/test.txt": "testB",
+            }
+        )
+
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        convoy = await self.get_convoy()
+        assert len(convoy._trains) == 2
+        assert convoy._trains[0].partition_name == "projA"
+        assert convoy._trains[0].find_embarked_pull(p1["number"]) != (None, None)
+        assert convoy._trains[1].partition_name == "projB"
+        assert convoy._trains[1].find_embarked_pull(p2["number"]) != (None, None)
+
+        await self.create_status(p1)
+        await self.create_status(p2)
+        await self.run_engine()
+
+        p_closed = [
+            await self.wait_for_pull_request("closed", merged=True),
+            await self.wait_for_pull_request("closed", merged=True),
+        ]
+        assert sorted([p["number"] for p in p_closed]) == [p1["number"], p2["number"]]
 
     async def test_queue_1_pr_multiple_partitions_no_inplace_fail(self) -> None:
         rules = {
