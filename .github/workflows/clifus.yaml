@@ -13,16 +13,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3.3.0
 
-      - uses: ./.github/actions/clifus-setup
+      - uses: ./.github/actions/tooling-setup
         with:
           github_token: ${{ secrets.MERGIFY_CI_BOT_PAT }}
 
       - name: Clifus
         id: clifus
         run: |
-          python clifus.py -c ./.github/clifus.yml -s python-version
+          python ${{ runner.temp }}/tooling/tooling/clifus.py -c ./.github/clifus.yml -s python-version
           echo "PYTHON_VERSION=$(cut -d- -f2 < runtime.txt)" >> "$GITHUB_OUTPUT"
-          rm clifus.py
 
       - name: Create the Pull Request
         id: cpr
@@ -33,7 +32,7 @@ jobs:
           title: "chore: bump python version to ${{ steps.clifus.outputs.PYTHON_VERSION }}"
           commit-message: "chore: bump python version to ${{ steps.clifus.outputs.PYTHON_VERSION }}"
           body: This is an automated bump of python version to ${{ steps.clifus.outputs.PYTHON_VERSION }}
-          branch: clifus/python-version-upgrade
+          branch: ${{ runner.temp }}/tooling/clifus.python-version-upgrade
           base: main
           labels: |
             python
@@ -57,16 +56,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3.3.0
 
-      - uses: ./.github/actions/clifus-setup
+      - uses: ./.github/actions/tooling-setup
         with:
           github_token: ${{ secrets.MERGIFY_CI_BOT_PAT }}
 
       - name: Clifus
         id: clifus
         run: |
-          python clifus.py -c ./.github/clifus.yml -s datadog-agent-version
+          python ${{ runner.temp }}/tooling/clifus.py -c ./.github/clifus.yml -s datadog-agent-version
           echo "DD_AGENT_VERSION=$(cat datadog/agent-version.txt)" >> "$GITHUB_OUTPUT"
-          rm clifus.py
 
       - name: Create the Pull Request
         id: cpr
@@ -101,16 +99,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3.3.0
 
-      - uses: ./.github/actions/clifus-setup
+      - uses: ./.github/actions/tooling-setup
         with:
           github_token: ${{ secrets.MERGIFY_CI_BOT_PAT }}
 
       - name: Clifus
         id: clifus
+        # yamllint disable rule:line-length
         run: |
-          python clifus.py -c ./.github/clifus.yml -s datadog-mergify-integration-version
+          python ${{ runner.temp }}/tooling/clifus.py -c ./.github/clifus.yml -s datadog-mergify-integration-version
           echo "DD_MERGIFY_VERSION=$(cat datadog/mergify-integration-version.txt)" >> "$GITHUB_OUTPUT"
-          rm clifus.py
+        # yamllint enable rule:line-length
 
       - name: Create the Pull Request
         id: cpr

@@ -1,0 +1,30 @@
+name: Tooling setup
+
+inputs:
+  github_token:
+    required: true
+    description: "Token used to curl the tooling file"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@v4.1.0
+      with:
+        python-version: 3.11.3
+
+    - name: Install dependencies
+      shell: bash
+      run: pip install PyYAML
+
+    - name: Retrieve tooling
+      shell: bash
+      run: |
+        mkdir ${{ runner.temp }}/tooling
+        cd ${{ runner.temp }}/tooling
+        curl \
+          -O -H "Authorization: token ${{ inputs.github_token }}" \
+          https://raw.githubusercontent.com/Mergifyio/developer-tooling/main/docker-security-reporter.py
+        curl \
+          -O -H "Authorization: token ${{ inputs.github_token }}" \
+          https://raw.githubusercontent.com/Mergifyio/developer-tooling/main/clifus.py

@@ -1,0 +1,10 @@
+excluded-packages:
+  # unused mandatory system package
+  - libldap
+  - libldap-common
+  - apt
+  - apt-transport-https
+  - libapt-pkg6.0
+  - systemd
+  - systemd-sysv
+  - systemd-timesyncd

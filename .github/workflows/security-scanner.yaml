@@ -57,20 +57,23 @@ jobs:
           scanners: "vuln"
           output: "docker-security-scan.json.tmp"
 
+      - uses: ./.github/actions/tooling-setup
+        with:
+          github_token: ${{ secrets.MERGIFY_CI_BOT_PAT }}
+
       - name: Keep only the results section
         if: github.event_name != 'pull_request'
         id: update
         # yamllint disable rule:line-length
         run: |
-          BEFORE="$(jq '.[].Vulnerabilities|length' < docker-security-scan.json)"
-          jq --raw-output '.Results | del(.[].Vulnerabilities[].Layer) | del(.[].Vulnerabilities[].LastModifiedDate)' docker-security-scan.json.tmp > docker-security-scan.json
-          rm -f docker-security-scan.json.tmp
-          AFTER="$(jq '.[].Vulnerabilities|length' < docker-security-scan.json)"
-          if [[ $BEFORE -lt $AFTER ]]; then
-            echo "labels=new CVE" >> "$GITHUB_OUTPUT"
-          fi
+          jq --raw-output '.Results[0].Vulnerabilities' docker-security-scan.json.tmp > docker-security-scan.json.new
 
+          ${{ runner.temp }}/tooling/docker-security-reporter.py docker-security-scan.json docker-security-scan.json.new >> "$GITHUB_OUTPUT"
+
+          rm -f docker-security-scan.json.tmp
+          rm -f docker-security-scan.json.new
         # yamllint enable rule:line-length
+
       - name: Create the Pull Request
         if: github.event_name != 'pull_request'
         id: cpr
@@ -78,10 +81,18 @@ jobs:
         with:
           token: ${{ secrets.MERGIFY_CI_BOT_PAT }}
           author: mergify-ci-bot <mergify-ci-bot@users.noreply.github.com>
-          title: "chore(docker): image security scanning report"
           labels: ${{ steps.update.outputs.labels }}
+          title: "chore(docker): image security scanning report"
           body: >
             This is the docker image security scanning report
+
+            ${{ steps.update.outputs.report }}
+          commit-message: >
+            chore(docker): image security scanning report
+
+            This is the docker image security scanning report
+
+            ${{ steps.update.outputs.report }}
           branch: trivy/daily-report
           base: main
 
@@ -90,7 +101,6 @@ jobs:
         run: |
           echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
           echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
-
 
       - name: Report Status
         if: failure() && github.event_name != 'pull_request'
