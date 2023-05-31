@@ -12,8 +12,9 @@ for img in ${TO_BUILD[@]}; do
     # if devs want to rebuild they just need to use --no-cache
     if [ "$img" == "onpremise" ]; then
       cat \
+        dockerfiles/Dockerfile.onpremise.header \
         dockerfiles/Dockerfile.common \
-        dockerfiles/Dockerfile.onpremise \
+        dockerfiles/Dockerfile.onpremise.footer \
         > Dockerfile
     else
       cat \
@@ -27,6 +28,7 @@ for img in ${TO_BUILD[@]}; do
         --build-arg PYTHON_VERSION="$(cut -d- -f2 runtime.txt)" \
         --build-arg MERGIFYENGINE_SHA="$(git log -1 --format='%H')" \
         --build-arg MERGIFYENGINE_VERSION=dev \
+        --build-arg MERGIFYUI_VERSION=latest \
         --build-arg BUILD_DATE="never" \
 	    --target "$img" \
 	    --tag engine-"$img" \

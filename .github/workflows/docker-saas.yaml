@@ -35,7 +35,10 @@ jobs:
           dockerfile: dockerfiles/Dockerfile.saas
       - uses: hadolint/hadolint-action@v3.1.0
         with:
-          dockerfile: dockerfiles/Dockerfile.onpremise
+          dockerfile: dockerfiles/Dockerfile.onpremise.header
+      - uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: dockerfiles/Dockerfile.onpremise.footer
 
   docker-saas:
     timeout-minutes: 15

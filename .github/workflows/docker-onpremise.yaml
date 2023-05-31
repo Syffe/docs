@@ -59,11 +59,18 @@ jobs:
       - name: 📝 Prepare variables
         id: vars
         run: |
-          VERSION="${{ github.ref_name }}"
-          echo "VERSION=${VERSION}" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            UI_VERSION="latest"
+          else
+            UI_VERSION="${{ github.ref_name }}"
+          fi
+          echo "UI_VERSION=${UI_VERSION}" >> "$GITHUB_OUTPUT"
 
-          SHA="$(/usr/bin/git log -1 --format='%H')"
-          echo "SHA=${SHA}" >> "$GITHUB_OUTPUT"
+          ENGINE_VERSION="${{ github.ref_name }}"
+          echo "ENGINE_VERSION=${ENGINE_VERSION}" >> "$GITHUB_OUTPUT"
+
+          ENGINE_SHA="$(/usr/bin/git log -1 --format='%H')"
+          echo "ENGINE_SHA=${ENGINE_SHA}" >> "$GITHUB_OUTPUT"
 
           PYTHON_VERSION="$(cut -d- -f2 runtime.txt)"
           echo "PYTHON_VERSION=${PYTHON_VERSION}" >> "$GITHUB_OUTPUT"
@@ -72,8 +79,9 @@ jobs:
           echo "BUILD_DATE=${BUILD_DATE}" >> "$GITHUB_OUTPUT"
 
           cat \
+            dockerfiles/Dockerfile.onpremise.header \
             dockerfiles/Dockerfile.common \
-            dockerfiles/Dockerfile.onpremise \
+            dockerfiles/Dockerfile.onpremise.footer \
             > Dockerfile
 
       - name: ⚙️ Set up Docker Buildx
@@ -90,8 +98,9 @@ jobs:
           # GitHub workflow does not support Yaml Anchors, so we have to duplciate it...
           build-args: |
             PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
-            MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
-            MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
+            MERGIFYENGINE_VERSION=${{ steps.vars.outputs.ENGINE_VERSION }}
+            MERGIFYUI_VERSION=${{ steps.vars.outputs.UI_VERSION }}
+            MERGIFYENGINE_SHA=${{ steps.vars.outputs.ENGINE_SHA }}
             BUILD_DATE=${{ steps.vars.outputs.BUILD_DATE }}
           context: .
           push: false

@@ -1,5 +1,4 @@
-# hadolint ignore=DL3007
-FROM mergifyio/dashboard:latest as js-ui
+FROM mergifyio/dashboard:${MERGIFYUI_VERSION} as js-ui
 
 # hadolint ignore=DL3007
 FROM mergifyio/installer:latest as js-installer
