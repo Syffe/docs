@@ -115,6 +115,11 @@ def enable_api() -> None:
     settings.API_ENABLE = True
 
 
+@pytest.fixture(autouse=True, scope="session")
+def enable_ci_dump_ingestion() -> None:
+    settings.CI_DUMP_INGESTION = True
+
+
 def get_worker_id_as_int(worker_id: str) -> int:
     if not re.match(r"gw\d+", worker_id):
         return 0
