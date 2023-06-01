@@ -28,3 +28,4 @@ runs:
         curl \
           -O -H "Authorization: token ${{ inputs.github_token }}" \
           https://raw.githubusercontent.com/Mergifyio/developer-tooling/main/clifus.py
+        chmod +x ${{ runner.temp }}/tooling/*.py
