@@ -45,15 +45,6 @@
     "PublishedDate": "2023-02-23T20:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2023-27536",
-    "PkgName": "curl",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27536",
-    "Title": "GSS delegation too eager connection re-use",
-    "Severity": "CRITICAL",
-    "PublishedDate": "2023-03-30T20:15:00Z"
-  },
-  {
     "VulnerabilityID": "CVE-2022-42916",
     "PkgName": "curl",
     "SeveritySource": "nvd",
@@ -95,6 +86,15 @@
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27535",
     "Title": "FTP too eager connection reuse",
+    "Severity": "HIGH",
+    "PublishedDate": "2023-03-30T20:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-27536",
+    "PkgName": "curl",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27536",
+    "Title": "GSS delegation too eager connection re-use",
     "Severity": "HIGH",
     "PublishedDate": "2023-03-30T20:15:00Z"
   },
@@ -584,15 +584,6 @@
     "PublishedDate": "2023-02-23T20:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2023-27536",
-    "PkgName": "libcurl3-gnutls",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27536",
-    "Title": "GSS delegation too eager connection re-use",
-    "Severity": "CRITICAL",
-    "PublishedDate": "2023-03-30T20:15:00Z"
-  },
-  {
     "VulnerabilityID": "CVE-2022-42916",
     "PkgName": "libcurl3-gnutls",
     "SeveritySource": "nvd",
@@ -634,6 +625,15 @@
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27535",
     "Title": "FTP too eager connection reuse",
+    "Severity": "HIGH",
+    "PublishedDate": "2023-03-30T20:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-27536",
+    "PkgName": "libcurl3-gnutls",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27536",
+    "Title": "GSS delegation too eager connection re-use",
     "Severity": "HIGH",
     "PublishedDate": "2023-03-30T20:15:00Z"
   },
@@ -708,15 +708,6 @@
     "PublishedDate": "2023-02-23T20:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2023-27536",
-    "PkgName": "libcurl4",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27536",
-    "Title": "GSS delegation too eager connection re-use",
-    "Severity": "CRITICAL",
-    "PublishedDate": "2023-03-30T20:15:00Z"
-  },
-  {
     "VulnerabilityID": "CVE-2022-42916",
     "PkgName": "libcurl4",
     "SeveritySource": "nvd",
@@ -758,6 +749,15 @@
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27535",
     "Title": "FTP too eager connection reuse",
+    "Severity": "HIGH",
+    "PublishedDate": "2023-03-30T20:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-27536",
+    "PkgName": "libcurl4",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27536",
+    "Title": "GSS delegation too eager connection re-use",
     "Severity": "HIGH",
     "PublishedDate": "2023-03-30T20:15:00Z"
   },
@@ -920,6 +920,14 @@
     "Title": "krb5: integer overflow in dbentry->n_key_data in kadmin/dbutil/dump.c",
     "Severity": "LOW",
     "PublishedDate": "2018-01-16T09:29:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-2953",
+    "PkgName": "libldap-2.4-2",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2953",
+    "Title": "null pointer dereference in  ber_memalloc_x  function",
+    "Severity": "MEDIUM",
+    "PublishedDate": "2023-05-30T22:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2015-3276",
@@ -1204,33 +1212,6 @@
     "Title": "e2fsprogs: out-of-bounds read/write via crafted filesystem",
     "Severity": "HIGH",
     "PublishedDate": "2022-04-14T21:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-0464",
-    "PkgName": "libssl1.1",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-0464",
-    "Title": "Denial of service by excessive resource usage in verifying X509 policy constraints",
-    "Severity": "HIGH",
-    "PublishedDate": "2023-03-22T17:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-0465",
-    "PkgName": "libssl1.1",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-0465",
-    "Title": "Invalid certificate policies in leaf certificates are silently ignored",
-    "Severity": "MEDIUM",
-    "PublishedDate": "2023-03-28T15:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-0466",
-    "PkgName": "libssl1.1",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-0466",
-    "Title": "Certificate policy check not enabled",
-    "Severity": "MEDIUM",
-    "PublishedDate": "2023-03-28T15:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2007-6755",
@@ -1672,33 +1653,6 @@
     "Title": "openssh: possible bypass of fido 2 devices and ssh-askpass",
     "Severity": "LOW",
     "PublishedDate": "2022-03-13T00:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-0464",
-    "PkgName": "openssl",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-0464",
-    "Title": "Denial of service by excessive resource usage in verifying X509 policy constraints",
-    "Severity": "HIGH",
-    "PublishedDate": "2023-03-22T17:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-0465",
-    "PkgName": "openssl",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-0465",
-    "Title": "Invalid certificate policies in leaf certificates are silently ignored",
-    "Severity": "MEDIUM",
-    "PublishedDate": "2023-03-28T15:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-0466",
-    "PkgName": "openssl",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-0466",
-    "Title": "Certificate policy check not enabled",
-    "Severity": "MEDIUM",
-    "PublishedDate": "2023-03-28T15:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2007-6755",
