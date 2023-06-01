@@ -30,7 +30,7 @@ async def test_gitter(
         with open(git.repository + "/.mergify.yml", "w") as f:
             f.write("pull_request_rules:")
         await git("add", ".mergify.yml")
-        await git("commit", "-m", "Intial commit", "-a", "--no-edit")
+        await git("commit", "-m", "Initial commit", "-a", "--no-edit")
 
         assert os.path.exists(f"{git.repository}/.git")
     finally:

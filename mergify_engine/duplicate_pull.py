@@ -69,6 +69,7 @@ GIT_MESSAGE_TO_EXCEPTION = {
     "is not a commit and a branch": DuplicateFailed,
     "couldn't find remote ref": DuplicateFailed,
     "does not have a commit checked": DuplicateFailed,
+    "Merge conflict in .gitmodules": DuplicateFailedConflicts,
 }
 
 
@@ -249,7 +250,7 @@ async def prepare_branch(
     :param logger: a logger
     :param pull: The pull request.
     :param auth: The httpx auth object to get the installation access token
-    :param branch: The branch to copy to.
+    :param branch_name: The branch to copy to.
     :param branch_prefix: the prefix of the temporary created branch
     :param commits_to_cherry_pick: The list of commits to cherry-pick
     :param ignore_conflicts: Whether to commit the result if the cherry-pick fails.
