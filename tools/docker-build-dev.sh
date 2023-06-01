@@ -3,7 +3,7 @@
 rootdir=$(cd "$(dirname $0)"; pwd)/..
 cd $rootdir
 
-TO_BUILD="${@:-saas-web saas-worker-shared saas-worker-dedicated onpremise}"
+TO_BUILD="${@:-saas-web saas-worker onpremise}"
 
 # NOTE: build date is always the same to leverage/test the layer caching mechanism
 # if devs want to rebuild they just need to use --no-cache

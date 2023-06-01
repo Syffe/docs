@@ -146,27 +146,11 @@ jobs:
           push: false
           cache-from: type=local,src=/home/runner/docker-cache
 
-      - name: ⚙️ Build saas-worker-shared
+      - name: ⚙️ Build saas-worker
         uses: docker/build-push-action@v4
         with:
-          target: saas-worker-shared
-          tags: worker-shared:tmp
-          outputs: type=docker
-          # COMMON
-          build-args: |
-            PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
-            MERGIFYENGINE_VERSION=${{ steps.vars.outputs.VERSION }}
-            MERGIFYENGINE_SHA=${{ steps.vars.outputs.SHA }}
-            BUILD_DATE=${{ steps.vars.outputs.BUILD_DATE }}
-          context: .
-          push: false
-          cache-from: type=local,src=/home/runner/docker-cache
-
-      - name: ⚙️ Build saas-worker-dedicated
-        uses: docker/build-push-action@v4
-        with:
-          target: saas-worker-dedicated
-          tags: worker-dedicated:tmp
+          target: saas-worker
+          tags: worker:tmp
           outputs: type=docker
           # COMMON
           build-args: |
@@ -180,7 +164,7 @@ jobs:
 
       - name: 🏓 Testing
         run: |
-          for i in web worker-shared worker-dedicated; do
+          for i in web worker; do
             docker run \
               --env-file fake.env \
               -e DD_API_KEY=testing-false-key \
@@ -236,6 +220,9 @@ jobs:
         env:
           HEROKU_ENVIRONMENT: ${{ steps.vars.outputs.HEROKU_ENVIRONMENT }}
         run: |
+          for i in worker-shared worker-dedicated; do
+            docker tag "worker:tmp" "${i}:tmp"
+          done
           for i in web worker-shared worker-dedicated; do
             image="registry.heroku.com/${HEROKU_ENVIRONMENT}/${i}:latest"
             docker tag "${i}:tmp" "$image"
