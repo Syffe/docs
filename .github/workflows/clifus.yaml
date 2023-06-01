@@ -20,7 +20,7 @@ jobs:
       - name: Clifus
         id: clifus
         run: |
-          python ${{ runner.temp }}/tooling/tooling/clifus.py -c ./.github/clifus.yml -s python-version
+          python ${{ runner.temp }}/tooling/clifus.py -c ./.github/clifus.yml -s python-version
           echo "PYTHON_VERSION=$(cut -d- -f2 < runtime.txt)" >> "$GITHUB_OUTPUT"
 
       - name: Create the Pull Request
