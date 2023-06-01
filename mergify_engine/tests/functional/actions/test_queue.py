@@ -115,6 +115,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "name": "default",
                     "routing_conditions": [
                         "label=toto",
+                        "label=tata",
                     ],
                     "merge_conditions": [
                         "status-success=continuous-integration/fake-ci",
@@ -146,9 +147,11 @@ class TestQueueAction(base.FunctionalTestBase):
         assert (
             check["output"]["title"] == "There are no queue routing conditions matching"
         )
-        assert (
-            check["output"]["summary"]
-            == "There are routing conditions defined in the configuration, but none matches; the pull request has not been embarked"
+        assert check["output"]["summary"] == (
+            "There are routing conditions defined in the configuration, but none "
+            "matches. The pull request has not been embarked.\n\nDetails:"
+            "\n* Queue `hotfix`: \n- [ ] `label=hotfix`"
+            "\n* Queue `default`: \n- [ ] `label=tata`\n- [ ] `label=toto`"
         )
 
     async def test_queue_routing_conditions_failure_with_pull_request_rules_and_fallback(
@@ -295,9 +298,10 @@ class TestQueueAction(base.FunctionalTestBase):
         assert (
             check["output"]["title"] == "There are no queue routing conditions matching"
         )
-        assert (
-            check["output"]["summary"]
-            == "There are routing conditions defined in the configuration, but none matches; the pull request has not been embarked"
+        assert check["output"]["summary"] == (
+            "There are routing conditions defined in the configuration, but none matches."
+            " The pull request has not been embarked.\n\nDetails:"
+            "\n* Queue `default`: \n- [ ] `files~=^dummy/`"
         )
 
     async def test_queue_routing_conditions_failure_update_after_queued(self) -> None:
@@ -351,9 +355,11 @@ class TestQueueAction(base.FunctionalTestBase):
         assert (
             check["output"]["title"] == "There are no queue routing conditions matching"
         )
-        assert (
-            check["output"]["summary"]
-            == "There are routing conditions defined in the configuration, but none matches; the pull request has not been embarked"
+
+        assert check["output"]["summary"] == (
+            "There are routing conditions defined in the configuration, but none matches."
+            " The pull request has not been embarked.\n\nDetails:"
+            "\n* Queue `default`: \n- [ ] `label=routing`"
         )
 
     async def test_queue_routing_conditions_empty(self) -> None:

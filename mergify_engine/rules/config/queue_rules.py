@@ -227,15 +227,7 @@ class QueueRules:
                 return True
         return False
 
-    async def are_routing_conditions_matching(self, ctxt: context.Context) -> bool:
-        if not await self.routing_conditions_exists():
-            return False
-        evaluated_routing_conditions = (
-            await self.get_matching_evaluated_routing_conditions(ctxt=ctxt)
-        )
-        return bool(evaluated_routing_conditions)
-
-    async def get_matching_evaluated_routing_conditions(
+    async def get_evaluated_routing_conditions(
         self, ctxt: context.Context
     ) -> list[EvaluatedQueueRule]:
         # NOTE(Syffe): in order to only evaluate routing_conditions (and not basic conditions) before queuing the PR,
@@ -264,7 +256,7 @@ class QueueRules:
         if pending_rules := await self._get_pending_rules(ctxt, matching_rules):
             raise RoutingConditionsPendingChecks(pending_rules)
 
-        return [rule for rule in matching_rules if rule.routing_conditions.match]
+        return matching_rules
 
     @staticmethod
     async def _get_pending_rules(

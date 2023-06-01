@@ -335,26 +335,39 @@ Then, re-embark the pull request into the merge queue by posting the comment
             )
 
     async def _set_action_queue_rule(self) -> None:
-        if (
-            await self.queue_rules.routing_conditions_exists()
-            and not await self.queue_rules.are_routing_conditions_matching(self.ctxt)
-        ):
+        mismatching_routing_conditions: list[qr_config.EvaluatedQueueRule] = []
+        matching_routing_conditions: list[qr_config.EvaluatedQueueRule] = []
+        if await self.queue_rules.routing_conditions_exists():
+            for rule in await self.queue_rules.get_evaluated_routing_conditions(
+                self.ctxt
+            ):
+                (
+                    matching_routing_conditions
+                    if rule.routing_conditions.match
+                    else mismatching_routing_conditions
+                ).append(rule)
+
+        if mismatching_routing_conditions and not matching_routing_conditions:
+            self.ctxt.log.info(
+                "no routing conditions matching",
+                summary=[
+                    q.routing_conditions.condition
+                    for q in mismatching_routing_conditions
+                ],
+            )
+            routing_summary_str = "\n".join(
+                f"* Queue `{q.name}`: \n{q.routing_conditions.condition.get_summary()}"
+                for q in mismatching_routing_conditions
+            )
             raise InvalidQueueConfiguration(
-                "There are no queue routing conditions matching",
-                "There are routing conditions defined in the configuration, but none matches; the pull request has not been embarked",
+                title="There are no queue routing conditions matching",
+                message="There are routing conditions defined in the configuration, but none matches. "
+                "The pull request has not been embarked.\n\nDetails:\n"
+                f"{routing_summary_str}",
             )
 
-        if (
-            self.config["name"] is None
-            and await self.queue_rules.routing_conditions_exists()
-        ):
-            evaluated_routing_conditions = (
-                await self.queue_rules.get_matching_evaluated_routing_conditions(
-                    self.ctxt
-                )
-            )
-            if evaluated_routing_conditions:
-                self.config["name"] = evaluated_routing_conditions[0].name
+        if matching_routing_conditions and self.config["name"] is None:
+            self.config["name"] = matching_routing_conditions[0].name
 
         # default queue name
         if self.config["name"] is None:
