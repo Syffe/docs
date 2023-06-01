@@ -239,3 +239,47 @@ async def test_dump_event_stream(
     hash_keys = await redis_links.stream.hkeys("some/key")
     assert b"workflow_job/some-job-id" not in hash_keys
     assert len(hash_keys) == 1
+
+
+async def test_dump_event_stream_without_organization(
+    redis_links: redis_utils.RedisLinks,
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    sample_events: dict[str, tuple[github_types.GitHubEventType, typing.Any]],
+) -> None:
+    await redis_links.stream.xadd(
+        "workflow_job",
+        {"workflow_run_key": "some/key", "workflow_job_id": "some-job-id"},
+    )
+    await redis_links.stream.hset(
+        "some/key",
+        "workflow_job/some-job-id",
+        msgpack.packb(
+            {
+                "event_type": "workflow_job",
+                "data": sample_events["workflow_job.no_org.json"][1],
+            }
+        ),
+    )
+    await redis_links.stream.hset(
+        "some/key",
+        "workflow_run",
+        msgpack.packb(
+            {
+                "event_type": "workflow_run",
+                "data": sample_events["workflow_run.no_org.json"][1],
+            }
+        ),
+    )
+
+    with mock.patch(
+        "mergify_engine.ci.pull_registries.RedisPullRequestRegistry.get_from_commit",
+        return_value=[],
+    ), mock.patch("mergify_engine.ci.dump._create_gh_client_from_login"):
+        await dump.dump_event_stream(redis_links)
+
+    sql = sqlalchemy.select(github_actions.JobRun)
+    result = await db.scalars(sql)
+    job_runs = list(result)
+    assert len(job_runs) == 1
+    actual_job_run = job_runs[0]
+    assert actual_job_run.conclusion == github_actions.JobRunConclusion.SUCCESS

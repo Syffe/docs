@@ -213,7 +213,12 @@ async def _create_job(
     run_event: github_types.GitHubEventWorkflowRun,
     job_event: github_types.GitHubEventWorkflowJob,
 ) -> ci_models.JobRun:
-    gh_client = await _create_gh_client_from_login(run_event["organization"]["login"])
+    try:
+        owner = run_event["organization"]["login"]
+    except KeyError:
+        owner = run_event["repository"]["owner"]["login"]
+
+    gh_client = await _create_gh_client_from_login(owner)
     http_pull_registry = pull_registries.RedisPullRequestRegistry(
         redis_links.cache, pull_registries.HTTPPullRequestRegistry(gh_client)
     )
