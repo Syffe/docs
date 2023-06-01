@@ -27,6 +27,10 @@ class NoDataToDump(Exception):
     pass
 
 
+class MissingWorkflowRunEvent(Exception):
+    pass
+
+
 async def dump_next_repository(redis_links: redis_utils.RedisLinks) -> None:
     async with database.create_session() as session:
         try:
@@ -178,26 +182,17 @@ async def _process_stream_event(
     stream_event_id: bytes,
     stream_event: dict[bytes, bytes],
 ) -> None:
-    run_key = stream_event[b"workflow_run_key"]
-    events = await redis_links.stream.hgetall(run_key)
+    run_key = stream_event[b"workflow_run_key"].decode()
 
     # NOTE(charly): we haven't received the completed workflow run event, we
     # process the next event in the stream, this one will be processed later
     try:
-        raw_run_event = msgpack.unpackb(events[b"workflow_run"])
-    except KeyError:
+        run_event = await _get_run_event(redis_links, run_key)
+    except MissingWorkflowRunEvent:
         return
 
-    run_event = typing.cast(
-        github_types.GitHubEventWorkflowRun,
-        raw_run_event["data"],
-    )
-
     job_id = stream_event[b"workflow_job_id"].decode()
-    job_event = typing.cast(
-        github_types.GitHubEventWorkflowJob,
-        msgpack.unpackb(events[f"workflow_job/{job_id}".encode()])["data"],
-    )
+    job_event = await _get_job_event(redis_links, run_key, job_id)
 
     job = await _create_job(redis_links, run_event, job_event)
     await _insert_job(pg_job_registry, pg_pull_registry, job)
@@ -206,6 +201,32 @@ async def _process_stream_event(
     await delete_pipeline.hdel(run_key, f"workflow_job/{job_id}")
     await delete_pipeline.xdel("workflow_job", stream_event_id)
     await delete_pipeline.execute()
+
+
+async def _get_run_event(
+    redis_links: redis_utils.RedisLinks, run_key: str
+) -> github_types.GitHubEventWorkflowRun:
+    raw_run_event = await redis_links.stream.hget(run_key, "workflow_run")
+
+    if raw_run_event is None:
+        raise MissingWorkflowRunEvent
+
+    return typing.cast(
+        github_types.GitHubEventWorkflowRun,
+        msgpack.unpackb(raw_run_event)["data"],
+    )
+
+
+async def _get_job_event(
+    redis_links: redis_utils.RedisLinks, run_key: str, job_id: str
+) -> github_types.GitHubEventWorkflowJob:
+    job_key = f"workflow_job/{job_id}"
+    raw_job_event = await redis_links.stream.hget(run_key, job_key)
+
+    return typing.cast(
+        github_types.GitHubEventWorkflowJob,
+        msgpack.unpackb(raw_job_event)["data"],
+    )
 
 
 async def _create_job(

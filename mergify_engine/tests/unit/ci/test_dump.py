@@ -187,6 +187,7 @@ async def test_dump_event_stream(
     redis_links: redis_utils.RedisLinks,
     db: sqlalchemy.ext.asyncio.AsyncSession,
     sample_events: dict[str, tuple[github_types.GitHubEventType, typing.Any]],
+    logger_checker: None,
 ) -> None:
     await redis_links.stream.xadd(
         "workflow_job",
