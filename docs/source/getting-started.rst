@@ -190,6 +190,9 @@ Below is the list of the required Mergify permission on GitHub to function.
    * - Permission
      - Access
      - Usage
+   * - Repository: Actions
+     - Read-only
+     - Used to read workflow information details.
    * - Repository: Administration
      - Read-only
      - Used to access team details.
