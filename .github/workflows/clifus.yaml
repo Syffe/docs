@@ -32,7 +32,7 @@ jobs:
           title: "chore: bump python version to ${{ steps.clifus.outputs.PYTHON_VERSION }}"
           commit-message: "chore: bump python version to ${{ steps.clifus.outputs.PYTHON_VERSION }}"
           body: This is an automated bump of python version to ${{ steps.clifus.outputs.PYTHON_VERSION }}
-          branch: ${{ runner.temp }}/tooling/clifus.python-version-upgrade
+          branch: clifus/python-version-upgrade
           base: main
           labels: |
             python
