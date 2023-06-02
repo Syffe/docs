@@ -37,7 +37,7 @@ RUN poetry install --only main --sync
 ### BASE RUNNER ###
 FROM python-base as system-base
 ARG DD_AGENT_VERSION=1:7.44.1-1
-ARG DD_MERGIFY_VERSION=0.1.0
+ARG DD_MERGIFY_VERSION=1.0.0
 LABEL datadog-agent.version="$DD_AGENT_VERSION"
 ENV DD_DOGSTATSD_DISABLE 1
 ENV DD_TRACE_ENABLED 0
