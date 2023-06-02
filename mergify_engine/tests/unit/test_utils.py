@@ -331,3 +331,21 @@ def test_url_parser_with_branch_ok(url: str) -> None:
 def test_url_parser_fail(url: str) -> None:
     with pytest.raises(ValueError):
         utils.github_url_parser(url)
+
+
+def test_filter_dict() -> None:
+    data = {"a": 1, "b": True, "z": "hello"}
+    mask = {"a": True, "b": True}
+
+    filtered_data = utils.filter_dict(data, mask)
+
+    assert filtered_data == {"a": 1, "b": True}
+
+
+def test_filter_dict_recursively() -> None:
+    data = {"a": 1, "b": {"c": True, "z": "hello"}}
+    mask: utils.Mask = {"a": True, "b": {"c": True}}
+
+    filtered_data = utils.filter_dict(data, mask)
+
+    assert filtered_data == {"a": 1, "b": {"c": True}}

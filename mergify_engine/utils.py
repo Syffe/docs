@@ -310,3 +310,20 @@ def make_sync_for_entrypoint(
         asyncio.run(func())
 
     return inner_func
+
+
+_D = typing.TypeVar("_D", bound=typing.Mapping[str, typing.Any])
+Mask = typing.Mapping[str, typing.Union[bool, "Mask"]]
+
+
+def filter_dict(data: _D, mask: Mask) -> _D:
+    filtered = {}
+
+    for key, value in data.items():
+        if mask.get(key, False):
+            if isinstance(mask[key], dict):
+                filtered[key] = filter_dict(value, typing.cast(Mask, mask[key]))
+            else:
+                filtered[key] = value
+
+    return typing.cast(_D, filtered)

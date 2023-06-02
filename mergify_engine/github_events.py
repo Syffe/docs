@@ -132,6 +132,52 @@ class CIEventToProcess(EventBase):
             slim_event=self.slim_event,
         )
 
+    @property
+    def slim_event(
+        self,
+    ) -> github_types.GitHubEventWorkflowRun | github_types.GitHubEventWorkflowJob:
+        if self.event_type == "workflow_run":
+            mask: utils.Mask = {
+                "workflow_run": {
+                    "id": True,
+                    "workflow_id": True,
+                    "event": True,
+                    "triggering_actor": {"id": True, "login": True},
+                    "head_sha": True,
+                    "run_attempt": True,
+                    "repository": {
+                        "id": True,
+                        "name": True,
+                        "owner": {"id": True, "login": True},
+                    },
+                },
+                "repository": {
+                    "id": True,
+                    "name": True,
+                    "owner": {"id": True, "login": True},
+                },
+                "organization": {"login": True},
+            }
+        elif self.event_type == "workflow_job":
+            mask = {
+                "workflow_job": {
+                    "id": True,
+                    "run_id": True,
+                    "name": True,
+                    "conclusion": True,
+                    "started_at": True,
+                    "completed_at": True,
+                    "labels": True,
+                }
+            }
+        else:
+            LOG.warn(
+                "unknown CI event type, unable to filter it", event_type=self.event_type
+            )
+            return self.event
+
+        return utils.filter_dict(self.event, mask)
+
 
 @dataclasses.dataclass
 class EventToIgnore(EventBase):
@@ -666,7 +712,7 @@ async def filter_and_dispatch(
             classified_event.event["repository"]["owner"]["id"],
             classified_event.event["repository"]["id"],
             event_type,
-            classified_event.event,
+            classified_event.slim_event,
         )
 
     classified_event.emit_log()

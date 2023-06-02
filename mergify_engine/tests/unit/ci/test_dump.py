@@ -8,6 +8,7 @@ import pytest
 import sqlalchemy
 import sqlalchemy.ext.asyncio
 
+from mergify_engine import github_events
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine.ci import dump
@@ -183,10 +184,23 @@ async def test_get_next_repository_not_up_to_date(
     assert next_sub.last_dump_at == DAY_BEFORE_YESTERDAY
 
 
+@pytest.fixture
+def sample_ci_events_to_process(
+    sample_events: dict[str, tuple[github_types.GitHubEventType, typing.Any]]
+) -> dict[str, github_events.CIEventToProcess]:
+    ci_events = {}
+
+    for filename, (event_type, event) in sample_events.items():
+        if event_type in ("workflow_run", "workflow_job"):
+            ci_events[filename] = github_events.CIEventToProcess(event_type, "", event)
+
+    return ci_events
+
+
 async def test_dump_event_stream(
     redis_links: redis_utils.RedisLinks,
     db: sqlalchemy.ext.asyncio.AsyncSession,
-    sample_events: dict[str, tuple[github_types.GitHubEventType, typing.Any]],
+    sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
     logger_checker: None,
 ) -> None:
     await redis_links.stream.xadd(
@@ -199,7 +213,9 @@ async def test_dump_event_stream(
         msgpack.packb(
             {
                 "event_type": "workflow_job",
-                "data": sample_events["workflow_job.completed.json"][1],
+                "data": sample_ci_events_to_process[
+                    "workflow_job.completed.json"
+                ].slim_event,
             }
         ),
     )
@@ -215,7 +231,9 @@ async def test_dump_event_stream(
         msgpack.packb(
             {
                 "event_type": "workflow_run",
-                "data": sample_events["workflow_run.completed.json"][1],
+                "data": sample_ci_events_to_process[
+                    "workflow_run.completed.json"
+                ].slim_event,
             }
         ),
     )
@@ -245,7 +263,7 @@ async def test_dump_event_stream(
 async def test_dump_event_stream_without_organization(
     redis_links: redis_utils.RedisLinks,
     db: sqlalchemy.ext.asyncio.AsyncSession,
-    sample_events: dict[str, tuple[github_types.GitHubEventType, typing.Any]],
+    sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
 ) -> None:
     await redis_links.stream.xadd(
         "workflow_job",
@@ -257,7 +275,9 @@ async def test_dump_event_stream_without_organization(
         msgpack.packb(
             {
                 "event_type": "workflow_job",
-                "data": sample_events["workflow_job.no_org.json"][1],
+                "data": sample_ci_events_to_process[
+                    "workflow_job.no_org.json"
+                ].slim_event,
             }
         ),
     )
@@ -267,7 +287,9 @@ async def test_dump_event_stream_without_organization(
         msgpack.packb(
             {
                 "event_type": "workflow_run",
-                "data": sample_events["workflow_run.no_org.json"][1],
+                "data": sample_ci_events_to_process[
+                    "workflow_run.no_org.json"
+                ].slim_event,
             }
         ),
     )
