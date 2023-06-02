@@ -261,17 +261,19 @@ async def push_ci_event(
     if event_type == "workflow_run":
         data = typing.cast(github_types.GitHubEventWorkflowRun, data)
         run_id = data["workflow_run"]["id"]
+        key = f"workflow_run/{owner_id}/{repo_id}/{run_id}"
         job_id = None
         field_name = "workflow_run"
     elif event_type == "workflow_job":
         data = typing.cast(github_types.GitHubEventWorkflowJob, data)
         run_id = data["workflow_job"]["run_id"]
+        key = f"workflow_run/{owner_id}/{repo_id}/{run_id}"
         job_id = data["workflow_job"]["id"]
         field_name = f"workflow_job/{data['workflow_job']['id']}"
+
+        await _check_if_exists(redis, key, field_name, data)
     else:
         raise ValueError(f"Unhandled CI event {event_type}")
-
-    key = f"workflow_run/{owner_id}/{repo_id}/{run_id}"
 
     pipe = await redis.pipeline()
     await pipe.hset(key, field_name, event)
@@ -294,3 +296,21 @@ async def push_ci_event(
         await pipe.expire("workflow_job", CI_EVENT_EXPIRATION)
 
     await pipe.execute()
+
+
+async def _check_if_exists(
+    redis: redis_utils.RedisStream,
+    key: str,
+    field_name: str,
+    data: github_types.GitHubEventWorkflowRun | github_types.GitHubEventWorkflowJob,
+) -> None:
+    existing_data = await redis.hget(key, field_name)
+
+    if existing_data is not None:
+        LOG.error(
+            "workflow_job.completed event sent twice",
+            redis_key=key,
+            field_name=field_name,
+            existing_data=existing_data,
+            data=data,
+        )

@@ -52,6 +52,13 @@ class PostgresJobRegistry:
         default_factory=dict
     )
 
+    async def exists(self, job_id: int) -> bool:
+        async with database.create_session() as session:
+            sql = sqlalchemy.select(
+                sqlalchemy.exists().where(sql_models.JobRun.id == job_id)
+            )
+            return await session.scalar(sql) or False
+
     async def filter_if_exist(self, *run_ids: int) -> set[int]:
         async with database.create_session() as session:
             sql = sqlalchemy.select(sql_models.JobRun.workflow_run_id).where(

@@ -31,6 +31,14 @@ class MissingWorkflowRunEvent(Exception):
     pass
 
 
+class MissingWorkflowJobEvent(Exception):
+    pass
+
+
+class WorkflowJobAlreadyExists(Exception):
+    pass
+
+
 async def dump_next_repository(redis_links: redis_utils.RedisLinks) -> None:
     async with database.create_session() as session:
         try:
@@ -184,18 +192,23 @@ async def _process_stream_event(
 ) -> None:
     run_key = stream_event[b"workflow_run_key"].decode()
 
-    # NOTE(charly): we haven't received the completed workflow run event, we
-    # process the next event in the stream, this one will be processed later
     try:
         run_event = await _get_run_event(redis_links, run_key)
     except MissingWorkflowRunEvent:
+        # NOTE(charly): we haven't received the completed workflow run event, we
+        # process the next event in the stream, this one will be processed later
         return
 
     job_id = stream_event[b"workflow_job_id"].decode()
-    job_event = await _get_job_event(redis_links, run_key, job_id)
-
-    job = await _create_job(redis_links, run_event, job_event)
-    await _insert_job(pg_job_registry, pg_pull_registry, job)
+    try:
+        job_event = await _get_job_event(redis_links, run_key, job_id, pg_job_registry)
+    except WorkflowJobAlreadyExists:
+        # NOTE(charly): we already processed the workflow job event, GitHub send
+        # it twice.
+        pass
+    else:
+        job = await _create_job(redis_links, run_event, job_event)
+        await _insert_job(pg_job_registry, pg_pull_registry, job)
 
     delete_pipeline = await redis_links.stream.pipeline()
     await delete_pipeline.hdel(run_key, f"workflow_job/{job_id}")
@@ -218,10 +231,19 @@ async def _get_run_event(
 
 
 async def _get_job_event(
-    redis_links: redis_utils.RedisLinks, run_key: str, job_id: str
+    redis_links: redis_utils.RedisLinks,
+    run_key: str,
+    job_id: str,
+    pg_job_registry: job_registries.PostgresJobRegistry,
 ) -> github_types.GitHubEventWorkflowJob:
     job_key = f"workflow_job/{job_id}"
     raw_job_event = await redis_links.stream.hget(run_key, job_key)
+
+    if raw_job_event is None:
+        if await pg_job_registry.exists(int(job_id)):
+            raise WorkflowJobAlreadyExists
+
+        raise MissingWorkflowJobEvent
 
     return typing.cast(
         github_types.GitHubEventWorkflowJob,

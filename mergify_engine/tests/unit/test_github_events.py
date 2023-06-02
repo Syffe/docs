@@ -108,3 +108,14 @@ async def test_push_ci_event(
     assert f"workflow_job/{job_id}".encode() in events
     run = msgpack.unpackb(events[f"workflow_job/{job_id}".encode()])
     assert run["event_type"] == "workflow_job"
+
+    # Push the same event twice, shouldn't raise an error
+    _, event = sample_events["workflow_job.completed.json"]
+    job_id = event["workflow_job"]["id"]
+    await worker_pusher.push_ci_event(
+        redis_links.stream,
+        github_types.GitHubAccountIdType(123),
+        github_types.GitHubRepositoryIdType(456),
+        "workflow_job",
+        event,
+    )

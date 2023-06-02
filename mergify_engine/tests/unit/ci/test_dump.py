@@ -205,11 +205,11 @@ async def test_dump_event_stream(
 ) -> None:
     await redis_links.stream.xadd(
         "workflow_job",
-        {"workflow_run_key": "some/key", "workflow_job_id": "some-job-id"},
+        {"workflow_run_key": "some/key", "workflow_job_id": 13403743463},
     )
     await redis_links.stream.hset(
         "some/key",
-        "workflow_job/some-job-id",
+        "workflow_job/13403743463",
         msgpack.packb(
             {
                 "event_type": "workflow_job",
@@ -256,8 +256,20 @@ async def test_dump_event_stream(
     assert len(stream_events) == 0
 
     hash_keys = await redis_links.stream.hkeys("some/key")
-    assert b"workflow_job/some-job-id" not in hash_keys
+    assert b"workflow_job/13403743463" not in hash_keys
     assert len(hash_keys) == 1
+
+    # Try to process again the event, in case GitHub sends an event twice. It
+    # shouldn't raise an error if the job is in the database.
+    await redis_links.stream.xadd(
+        "workflow_job",
+        {"workflow_run_key": "some/key", "workflow_job_id": 13403743463},
+    )
+
+    await dump.dump_event_stream(redis_links)
+
+    stream_events = await redis_links.stream.xrange("workflow_job")
+    assert len(stream_events) == 0
 
 
 async def test_dump_event_stream_without_organization(
@@ -267,11 +279,11 @@ async def test_dump_event_stream_without_organization(
 ) -> None:
     await redis_links.stream.xadd(
         "workflow_job",
-        {"workflow_run_key": "some/key", "workflow_job_id": "some-job-id"},
+        {"workflow_run_key": "some/key", "workflow_job_id": 13897999414},
     )
     await redis_links.stream.hset(
         "some/key",
-        "workflow_job/some-job-id",
+        "workflow_job/13897999414",
         msgpack.packb(
             {
                 "event_type": "workflow_job",
