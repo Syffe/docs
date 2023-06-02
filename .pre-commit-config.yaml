@@ -12,13 +12,11 @@ repos:
       - id: tests
         name: run tests in parallel
         language: system
-        files: ^(mergify_engine|zfixtures)/
         pass_filenames: false
-        entry: poetry run poe test-parallel -vv
+        entry: ./.pre-commit-scripts/launch_tests.sh
 
       - id: docs
         name: validate docs
         language: system
-        files: ^docs/
         pass_filenames: false
-        entry: poetry run poe docs
+        entry: ./.pre-commit-scripts/validate_docs.sh
