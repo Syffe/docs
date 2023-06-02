@@ -2760,16 +2760,16 @@ files = [
 
 [[package]]
 name = "semgrep"
-version = "1.23.0"
+version = "1.24.1"
 description = "Lightweight static analysis for many languages. Find bug variants with patterns that look like source code."
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "semgrep-1.23.0-cp37.cp38.cp39.py37.py38.py39-none-any.whl", hash = "sha256:afec0e2211833add7604e63813bb27b024aeef5f5198c9a37719b9afcd56e544"},
-    {file = "semgrep-1.23.0-cp37.cp38.cp39.py37.py38.py39-none-macosx_10_14_x86_64.whl", hash = "sha256:6c10a487ba437e4f22231f59b8f9bd7765608e70cf1ad41d28cad3c21a0d0f1b"},
-    {file = "semgrep-1.23.0-cp37.cp38.cp39.py37.py38.py39-none-macosx_11_0_arm64.whl", hash = "sha256:f5f3dcdf897109896b163664e64a773ed373d8a3e44a5dc86a8682b06043746d"},
-    {file = "semgrep-1.23.0.tar.gz", hash = "sha256:efdd21f465abc6d72fd91d90ec2a727f760061b3b74971629e8d8443309d8dd2"},
+    {file = "semgrep-1.24.1-cp37.cp38.cp39.py37.py38.py39-none-any.whl", hash = "sha256:aa905c86a289049720dee1cbb939c5df2f72cc06f9c8a236566f76ed68334102"},
+    {file = "semgrep-1.24.1-cp37.cp38.cp39.py37.py38.py39-none-macosx_10_14_x86_64.whl", hash = "sha256:f32a5e0970ca4ec4e41e5675efb4c88055aceaeaa01522566b2bc2d13937b236"},
+    {file = "semgrep-1.24.1-cp37.cp38.cp39.py37.py38.py39-none-macosx_11_0_arm64.whl", hash = "sha256:7b16dde60826ea952e6c7c91cd7d155a042c25ef7c80b671232453bf2d4b6278"},
+    {file = "semgrep-1.24.1.tar.gz", hash = "sha256:ea885429d862390eb126d627aff3694de5568cb5ce37c07b6bd990a9e95646ab"},
 ]
 
 [package.dependencies]
@@ -3977,4 +3977,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<4.0"
-content-hash = "69948ff52e511e6ba786b7591d44557a4e36ce5a66bffff7536a2e86d5dff0d6"
+content-hash = "6caa4bd5e47ccdcdaf26c69179bb2e3a58505d9613a8485477d5b25d81e0b6d7"
