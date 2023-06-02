@@ -136,12 +136,16 @@ class JobRun:
 
     @staticmethod
     def _extract_runner_properties_from_label(label: str) -> RunnerProperties:
-        # NOTE(charly): https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
-        match = re.match(r"(ubuntu|windows|macos)-[\w\.]+(-xl)?(-(\d+)-cores)?", label)
+        # NOTE(charly):
+        # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
+        # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#choosing-github-hosted-runners
+        match = re.match(
+            r"(ubuntu|windows|macos)-[\w\.]+(-xl)?(?:-(\d+)-cores)?", label
+        )
         if not match:
             raise ValueError(f"Cannot parse label '{label}'")
 
-        raw_os, _, _, raw_cores = match.groups()
+        raw_os, is_xl, raw_cores = match.groups()
 
         operating_system: OperatingSystem
         if raw_os == "ubuntu":
@@ -156,7 +160,7 @@ class JobRun:
         if raw_cores is not None:
             cores = int(raw_cores)
         elif operating_system == "macOS":
-            cores = 3
+            cores = 3 if not is_xl else 12
         else:
             cores = 2
 
