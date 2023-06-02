@@ -9,7 +9,6 @@ from mergify_engine import redis_utils
 from mergify_engine import settings
 from mergify_engine.ci import job_registries
 from mergify_engine.ci import models
-from mergify_engine.ci import models as ci_models
 from mergify_engine.clients import github
 
 
@@ -213,34 +212,3 @@ async def test_search_for_already_dumped_jobs(
 
     # Every job is already in the DB
     assert len([job async for job in jobs]) == 0
-
-
-@pytest.mark.parametrize(
-    "job_payload,expected_os,expected_cores",
-    (
-        ({"labels": ["ubuntu-20.04"]}, "Linux", 2),
-        ({"labels": ["ubuntu-latest"]}, "Linux", 2),
-        ({"labels": ["ubuntu-latest-8-cores"]}, "Linux", 8),
-        ({"labels": ["windows-latest"]}, "Windows", 2),
-        ({"labels": ["windows-2022"]}, "Windows", 2),
-        ({"labels": ["windows-latest-64-cores"]}, "Windows", 64),
-        ({"labels": ["macos-latest"]}, "macOS", 3),
-        ({"labels": ["macos-12"]}, "macOS", 3),
-        ({"labels": ["macos-latest-xl"]}, "macOS", 3),
-        ({"labels": ["macos-12-xl"]}, "macOS", 3),
-        ({"labels": ["macos-10.15"]}, "macOS", 3),
-        ({"labels": []}, "Unknown", 0),
-        ({"labels": ["whatever-latest"]}, "Unknown", 0),
-    ),
-)
-async def test_extract_runner_properties(
-    job_payload: github_types.GitHubJobRun,
-    expected_os: ci_models.OperatingSystem,
-    expected_cores: int,
-) -> None:
-    runner_properties = job_registries.HTTPJobRegistry._extract_runner_properties(
-        job_payload
-    )
-
-    assert runner_properties.operating_system == expected_os
-    assert runner_properties.cores == expected_cores

@@ -266,7 +266,7 @@ async def _create_job(
         redis_links.cache, pull_registries.HTTPPullRequestRegistry(gh_client)
     )
 
-    return await job_registries.HTTPJobRegistry.create_job(
+    return await ci_models.JobRun.create_job(
         http_pull_registry, job_event["workflow_job"], run_event["workflow_run"]
     )
 

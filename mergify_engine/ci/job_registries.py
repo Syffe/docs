@@ -2,7 +2,6 @@ import asyncio
 from collections import abc
 import dataclasses
 import datetime
-import re
 import typing
 
 import daiquiri
@@ -21,15 +20,6 @@ from mergify_engine.models import github_actions as sql_models
 
 
 LOG = daiquiri.getLogger(__name__)
-
-
-class RunnerProperties(typing.NamedTuple):
-    operating_system: ci_models.OperatingSystem
-    cores: int
-
-    @classmethod
-    def unknown(cls) -> "RunnerProperties":
-        return cls("Unknown", 0)
 
 
 class JobRegistry(typing.Protocol):
@@ -336,7 +326,7 @@ class HTTPJobRegistry:
                 )
                 continue
 
-            yield await self.create_job(self.pull_registry, job, run)
+            yield await ci_models.JobRun.create_job(self.pull_registry, job, run)
 
     def _is_ignored(
         self, run: github_types.GitHubWorkflowRun, job: github_types.GitHubJobRun
@@ -358,80 +348,3 @@ class HTTPJobRegistry:
             return True
         else:
             return False
-
-    @classmethod
-    async def create_job(
-        cls,
-        pull_registry: pull_registries.PullRequestFromCommitRegistry,
-        job_payload: github_types.GitHubJobRun,
-        run_payload: github_types.GitHubWorkflowRun,
-    ) -> ci_models.JobRun:
-        runner_properties = cls._extract_runner_properties(job_payload)
-
-        return ci_models.JobRun(
-            id=job_payload["id"],
-            workflow_run_id=run_payload["id"],
-            workflow_id=run_payload["workflow_id"],
-            name=job_payload["name"],
-            owner=ci_models.Account(
-                id=run_payload["repository"]["owner"]["id"],
-                login=run_payload["repository"]["owner"]["login"],
-            ),
-            repository=run_payload["repository"]["name"],
-            conclusion=job_payload["conclusion"],
-            triggering_event=run_payload["event"],
-            triggering_actor=ci_models.Account(
-                id=run_payload["triggering_actor"]["id"],
-                login=run_payload["triggering_actor"]["login"],
-            ),
-            started_at=datetime.datetime.fromisoformat(job_payload["started_at"]),
-            completed_at=datetime.datetime.fromisoformat(job_payload["completed_at"]),
-            pulls=await pull_registry.get_from_commit(
-                run_payload["repository"]["owner"]["login"],
-                run_payload["repository"]["name"],
-                run_payload["head_sha"],
-            ),
-            run_attempt=run_payload["run_attempt"],
-            operating_system=runner_properties.operating_system,
-            cores=runner_properties.cores,
-        )
-
-    @staticmethod
-    def _extract_runner_properties(
-        job_payload: github_types.GitHubJobRun,
-    ) -> RunnerProperties:
-        for label in job_payload["labels"]:
-            try:
-                return HTTPJobRegistry._extract_runner_properties_from_label(label)
-            except ValueError:
-                continue
-
-        return RunnerProperties.unknown()
-
-    @staticmethod
-    def _extract_runner_properties_from_label(label: str) -> RunnerProperties:
-        # NOTE(charly): https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
-        match = re.match(r"(ubuntu|windows|macos)-[\w\.]+(-xl)?(-(\d+)-cores)?", label)
-        if not match:
-            raise ValueError(f"Cannot parse label '{label}'")
-
-        raw_os, _, _, raw_cores = match.groups()
-
-        operating_system: ci_models.OperatingSystem
-        if raw_os == "ubuntu":
-            operating_system = "Linux"
-        elif raw_os == "windows":
-            operating_system = "Windows"
-        elif raw_os == "macos":
-            operating_system = "macOS"
-        else:
-            raise ValueError(f"Unknown operating system '{operating_system}'")
-
-        if raw_cores is not None:
-            cores = int(raw_cores)
-        elif operating_system == "macOS":
-            cores = 3
-        else:
-            cores = 2
-
-        return RunnerProperties(operating_system, cores)
