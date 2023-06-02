@@ -1214,8 +1214,6 @@ class Train:
 
         repo_owner = self.convoy.repository.repo["owner"]["login"]
         repo_name = self.convoy.repository.repo["name"]
-        # TODO: Once the dashboard has an url that allows to target a specific branch
-        # and a specific queue (MRGFY-2201 and MRGFY-2202), modify the url below to include them.
         escaped_queue_name = parse.quote(queue_rule_report.name, safe="")
         escaped_branch_name = parse.quote(self.convoy.ref, safe="")
         description += (
