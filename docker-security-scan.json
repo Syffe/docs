@@ -1,21 +1,345 @@
 [
   {
-    "VulnerabilityID": "CVE-2022-3715",
-    "PkgName": "bash",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3715",
-    "Title": "a heap-buffer-overflow in valid_parameter_transform",
-    "Severity": "HIGH",
-    "PublishedDate": "2023-01-05T15:15:00Z"
+    "VulnerabilityID": "CVE-2005-2541",
+    "PkgName": "tar",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2005-2541",
+    "Title": "tar: does not properly warn the user when extracting setuid or setgid files",
+    "Severity": "LOW",
+    "PublishedDate": "2005-08-10T04:00:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2022-0563",
-    "PkgName": "bsdutils",
+    "VulnerabilityID": "CVE-2007-2243",
+    "PkgName": "openssh-client",
     "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
-    "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-2243",
+    "Title": "OpenSSH 4.6 and earlier, when ChallengeResponseAuthentication is enabl ...",
     "Severity": "LOW",
-    "PublishedDate": "2022-02-21T19:15:00Z"
+    "PublishedDate": "2007-04-25T16:19:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2007-2243",
+    "PkgName": "openssh-server",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-2243",
+    "Title": "OpenSSH 4.6 and earlier, when ChallengeResponseAuthentication is enabl ...",
+    "Severity": "LOW",
+    "PublishedDate": "2007-04-25T16:19:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2007-2243",
+    "PkgName": "openssh-sftp-server",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-2243",
+    "Title": "OpenSSH 4.6 and earlier, when ChallengeResponseAuthentication is enabl ...",
+    "Severity": "LOW",
+    "PublishedDate": "2007-04-25T16:19:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2007-2768",
+    "PkgName": "openssh-client",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-2768",
+    "Title": "OpenSSH, when using OPIE (One-Time Passwords in Everything) for PAM, a ...",
+    "Severity": "LOW",
+    "PublishedDate": "2007-05-21T20:30:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2007-2768",
+    "PkgName": "openssh-server",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-2768",
+    "Title": "OpenSSH, when using OPIE (One-Time Passwords in Everything) for PAM, a ...",
+    "Severity": "LOW",
+    "PublishedDate": "2007-05-21T20:30:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2007-2768",
+    "PkgName": "openssh-sftp-server",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-2768",
+    "Title": "OpenSSH, when using OPIE (One-Time Passwords in Everything) for PAM, a ...",
+    "Severity": "LOW",
+    "PublishedDate": "2007-05-21T20:30:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2007-5686",
+    "PkgName": "login",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-5686",
+    "Title": "initscripts in rPath Linux 1 sets insecure permissions for the /var/lo ...",
+    "Severity": "LOW",
+    "PublishedDate": "2007-10-28T17:08:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2007-5686",
+    "PkgName": "passwd",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-5686",
+    "Title": "initscripts in rPath Linux 1 sets insecure permissions for the /var/lo ...",
+    "Severity": "LOW",
+    "PublishedDate": "2007-10-28T17:08:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2007-6755",
+    "PkgName": "libssl1.1",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-6755",
+    "Title": "Dual_EC_DRBG: weak pseudo random number generator",
+    "Severity": "LOW",
+    "PublishedDate": "2013-10-11T22:55:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2007-6755",
+    "PkgName": "openssl",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-6755",
+    "Title": "Dual_EC_DRBG: weak pseudo random number generator",
+    "Severity": "LOW",
+    "PublishedDate": "2013-10-11T22:55:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2008-3234",
+    "PkgName": "openssh-client",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2008-3234",
+    "Title": "sshd in OpenSSH 4 on Debian GNU/Linux, and the 20070303 OpenSSH snapsh ...",
+    "Severity": "LOW",
+    "PublishedDate": "2008-07-18T16:41:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2008-3234",
+    "PkgName": "openssh-server",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2008-3234",
+    "Title": "sshd in OpenSSH 4 on Debian GNU/Linux, and the 20070303 OpenSSH snapsh ...",
+    "Severity": "LOW",
+    "PublishedDate": "2008-07-18T16:41:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2008-3234",
+    "PkgName": "openssh-sftp-server",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2008-3234",
+    "Title": "sshd in OpenSSH 4 on Debian GNU/Linux, and the 20070303 OpenSSH snapsh ...",
+    "Severity": "LOW",
+    "PublishedDate": "2008-07-18T16:41:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2010-0928",
+    "PkgName": "libssl1.1",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2010-0928",
+    "Title": "openssl: RSA authentication weakness",
+    "Severity": "LOW",
+    "PublishedDate": "2010-03-05T19:30:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2010-0928",
+    "PkgName": "openssl",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2010-0928",
+    "Title": "openssl: RSA authentication weakness",
+    "Severity": "LOW",
+    "PublishedDate": "2010-03-05T19:30:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2010-4651",
+    "PkgName": "patch",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2010-4651",
+    "Title": "patch: directory traversal flaw allows for arbitrary file creation",
+    "Severity": "LOW",
+    "PublishedDate": "2011-03-11T22:55:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2010-4756",
+    "PkgName": "libc-bin",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2010-4756",
+    "Title": "glibc: glob implementation can cause excessive CPU and memory consumption due to crafted glob expressions",
+    "Severity": "LOW",
+    "PublishedDate": "2011-03-02T20:00:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2010-4756",
+    "PkgName": "libc6",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2010-4756",
+    "Title": "glibc: glob implementation can cause excessive CPU and memory consumption due to crafted glob expressions",
+    "Severity": "LOW",
+    "PublishedDate": "2011-03-02T20:00:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2011-3389",
+    "PkgName": "libgnutls30",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2011-3389",
+    "Title": "HTTPS: block-wise chosen-plaintext attack against SSL/TLS (BEAST)",
+    "Severity": "LOW",
+    "PublishedDate": "2011-09-06T19:55:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2011-4116",
+    "PkgName": "libperl5.32",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2011-4116",
+    "Title": "perl: File::Temp insecure temporary file handling",
+    "Severity": "LOW",
+    "PublishedDate": "2020-01-31T18:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2011-4116",
+    "PkgName": "perl",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2011-4116",
+    "Title": "perl: File::Temp insecure temporary file handling",
+    "Severity": "LOW",
+    "PublishedDate": "2020-01-31T18:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2011-4116",
+    "PkgName": "perl-base",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2011-4116",
+    "Title": "perl: File::Temp insecure temporary file handling",
+    "Severity": "LOW",
+    "PublishedDate": "2020-01-31T18:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2011-4116",
+    "PkgName": "perl-modules-5.32",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2011-4116",
+    "Title": "perl: File::Temp insecure temporary file handling",
+    "Severity": "LOW",
+    "PublishedDate": "2020-01-31T18:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2012-2663",
+    "PkgName": "libip4tc2",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2012-2663",
+    "Title": "iptables: --syn flag bypass",
+    "Severity": "LOW",
+    "PublishedDate": "2014-02-15T14:57:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2012-2663",
+    "PkgName": "libxtables12",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2012-2663",
+    "Title": "iptables: --syn flag bypass",
+    "Severity": "LOW",
+    "PublishedDate": "2014-02-15T14:57:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2013-0340",
+    "PkgName": "libexpat1",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2013-0340",
+    "Title": "expat: internal entity expansion",
+    "Severity": "LOW",
+    "PublishedDate": "2014-01-21T18:55:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2013-4235",
+    "PkgName": "login",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2013-4235",
+    "Title": "shadow-utils: TOCTOU race conditions by copying and removing directory trees",
+    "Severity": "LOW",
+    "PublishedDate": "2019-12-03T15:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2013-4235",
+    "PkgName": "passwd",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2013-4235",
+    "Title": "shadow-utils: TOCTOU race conditions by copying and removing directory trees",
+    "Severity": "LOW",
+    "PublishedDate": "2019-12-03T15:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2013-4392",
+    "PkgName": "libnss-systemd",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2013-4392",
+    "Title": "TOCTOU race condition when updating file permissions and SELinux security contexts",
+    "Severity": "LOW",
+    "PublishedDate": "2013-10-28T22:55:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2013-4392",
+    "PkgName": "libpam-systemd",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2013-4392",
+    "Title": "TOCTOU race condition when updating file permissions and SELinux security contexts",
+    "Severity": "LOW",
+    "PublishedDate": "2013-10-28T22:55:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2013-4392",
+    "PkgName": "libsystemd0",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2013-4392",
+    "Title": "TOCTOU race condition when updating file permissions and SELinux security contexts",
+    "Severity": "LOW",
+    "PublishedDate": "2013-10-28T22:55:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2013-4392",
+    "PkgName": "libudev1",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2013-4392",
+    "Title": "TOCTOU race condition when updating file permissions and SELinux security contexts",
+    "Severity": "LOW",
+    "PublishedDate": "2013-10-28T22:55:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2015-3276",
+    "PkgName": "libldap-2.4-2",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2015-3276",
+    "Title": "incorrect multi-keyword mode cipherstring parsing",
+    "Severity": "LOW",
+    "PublishedDate": "2015-12-07T20:59:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2016-1585",
+    "PkgName": "libapparmor1",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2016-1585",
+    "Title": "In all versions of AppArmor mount rules are accidentally widened when  ...",
+    "Severity": "LOW",
+    "PublishedDate": "2019-04-22T16:29:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2016-20012",
+    "PkgName": "openssh-client",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2016-20012",
+    "Title": "openssh: Public key information leak",
+    "Severity": "LOW",
+    "PublishedDate": "2021-09-15T20:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2016-20012",
+    "PkgName": "openssh-server",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2016-20012",
+    "Title": "openssh: Public key information leak",
+    "Severity": "LOW",
+    "PublishedDate": "2021-09-15T20:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2016-20012",
+    "PkgName": "openssh-sftp-server",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2016-20012",
+    "Title": "openssh: Public key information leak",
+    "Severity": "LOW",
+    "PublishedDate": "2021-09-15T20:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2016-2781",
@@ -27,6 +351,42 @@
     "PublishedDate": "2017-02-07T15:59:00Z"
   },
   {
+    "VulnerabilityID": "CVE-2017-11164",
+    "PkgName": "libpcre3",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2017-11164",
+    "Title": "pcre: OP_KETRMAX feature in the match function in pcre_exec.c",
+    "Severity": "LOW",
+    "PublishedDate": "2017-07-11T03:29:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2017-14159",
+    "PkgName": "libldap-2.4-2",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2017-14159",
+    "Title": "openldap: Privilege escalation via PID file manipulation",
+    "Severity": "LOW",
+    "PublishedDate": "2017-09-05T18:29:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2017-16231",
+    "PkgName": "libpcre3",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2017-16231",
+    "Title": "pcre: self-recursive call in match() in pcre_exec.c leads to denial of service",
+    "Severity": "LOW",
+    "PublishedDate": "2019-03-21T15:59:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2017-17740",
+    "PkgName": "libldap-2.4-2",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2017-17740",
+    "Title": "openldap: contrib/slapd-modules/nops/nops.c attempts to free stack buffer allowing remote attackers to cause a denial of service",
+    "Severity": "LOW",
+    "PublishedDate": "2017-12-18T06:29:00Z"
+  },
+  {
     "VulnerabilityID": "CVE-2017-18018",
     "PkgName": "coreutils",
     "SeveritySource": "debian",
@@ -36,105 +396,458 @@
     "PublishedDate": "2018-01-04T04:29:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2023-23914",
-    "PkgName": "curl",
+    "VulnerabilityID": "CVE-2017-7245",
+    "PkgName": "libpcre3",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2017-7245",
+    "Title": "pcre: stack-based buffer overflow write in pcre32_copy_substring",
+    "Severity": "LOW",
+    "PublishedDate": "2017-03-23T21:59:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2017-7246",
+    "PkgName": "libpcre3",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2017-7246",
+    "Title": "pcre: stack-based buffer overflow write in pcre32_copy_substring",
+    "Severity": "LOW",
+    "PublishedDate": "2017-03-23T21:59:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2018-1000021",
+    "PkgName": "git",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-1000021",
+    "Title": "git: client prints server-sent ANSI escape codes to the terminal, allowing for unverified messages to potentially execute arbitrary commands",
+    "Severity": "LOW",
+    "PublishedDate": "2018-02-09T23:29:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2018-1000021",
+    "PkgName": "git-man",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-1000021",
+    "Title": "git: client prints server-sent ANSI escape codes to the terminal, allowing for unverified messages to potentially execute arbitrary commands",
+    "Severity": "LOW",
+    "PublishedDate": "2018-02-09T23:29:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2018-15919",
+    "PkgName": "openssh-client",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-15919",
+    "Title": "openssh: User enumeration via malformed packets in authentication requests",
+    "Severity": "LOW",
+    "PublishedDate": "2018-08-28T08:29:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2018-15919",
+    "PkgName": "openssh-server",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-15919",
+    "Title": "openssh: User enumeration via malformed packets in authentication requests",
+    "Severity": "LOW",
+    "PublishedDate": "2018-08-28T08:29:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2018-15919",
+    "PkgName": "openssh-sftp-server",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-15919",
+    "Title": "openssh: User enumeration via malformed packets in authentication requests",
+    "Severity": "LOW",
+    "PublishedDate": "2018-08-28T08:29:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2018-20796",
+    "PkgName": "libc-bin",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-20796",
+    "Title": "glibc: uncontrolled recursion in function check_dst_limits_calc_pos_1 in posix/regexec.c",
+    "Severity": "LOW",
+    "PublishedDate": "2019-02-26T02:29:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2018-20796",
+    "PkgName": "libc6",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-20796",
+    "Title": "glibc: uncontrolled recursion in function check_dst_limits_calc_pos_1 in posix/regexec.c",
+    "Severity": "LOW",
+    "PublishedDate": "2019-02-26T02:29:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2018-5709",
+    "PkgName": "libgssapi-krb5-2",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-5709",
+    "Title": "krb5: integer overflow in dbentry->n_key_data in kadmin/dbutil/dump.c",
+    "Severity": "LOW",
+    "PublishedDate": "2018-01-16T09:29:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2018-5709",
+    "PkgName": "libk5crypto3",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-5709",
+    "Title": "krb5: integer overflow in dbentry->n_key_data in kadmin/dbutil/dump.c",
+    "Severity": "LOW",
+    "PublishedDate": "2018-01-16T09:29:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2018-5709",
+    "PkgName": "libkrb5-3",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-5709",
+    "Title": "krb5: integer overflow in dbentry->n_key_data in kadmin/dbutil/dump.c",
+    "Severity": "LOW",
+    "PublishedDate": "2018-01-16T09:29:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2018-5709",
+    "PkgName": "libkrb5support0",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-5709",
+    "Title": "krb5: integer overflow in dbentry->n_key_data in kadmin/dbutil/dump.c",
+    "Severity": "LOW",
+    "PublishedDate": "2018-01-16T09:29:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2018-6829",
+    "PkgName": "libgcrypt20",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-6829",
+    "Title": "libgcrypt: ElGamal implementation doesn't have semantic security due to incorrectly encoded plaintexts possibly allowing to obtain sensitive information",
+    "Severity": "LOW",
+    "PublishedDate": "2018-02-07T23:29:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2018-6951",
+    "PkgName": "patch",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-6951",
+    "Title": "patch: NULL pointer dereference in pch.c:intuit_diff_type() causes a crash",
+    "Severity": "LOW",
+    "PublishedDate": "2018-02-13T19:29:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2018-6952",
+    "PkgName": "patch",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-6952",
+    "Title": "patch: Double free of memory in pch.c:another_hunk() causes a crash",
+    "Severity": "LOW",
+    "PublishedDate": "2018-02-13T19:29:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2019-1010022",
+    "PkgName": "libc-bin",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-1010022",
+    "Title": "glibc: stack guard protection bypass",
+    "Severity": "LOW",
+    "PublishedDate": "2019-07-15T04:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2019-1010022",
+    "PkgName": "libc6",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-1010022",
+    "Title": "glibc: stack guard protection bypass",
+    "Severity": "LOW",
+    "PublishedDate": "2019-07-15T04:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2019-1010023",
+    "PkgName": "libc-bin",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-1010023",
+    "Title": "glibc: running ldd on malicious ELF leads to code execution because of wrong size computation",
+    "Severity": "LOW",
+    "PublishedDate": "2019-07-15T04:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2019-1010023",
+    "PkgName": "libc6",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-1010023",
+    "Title": "glibc: running ldd on malicious ELF leads to code execution because of wrong size computation",
+    "Severity": "LOW",
+    "PublishedDate": "2019-07-15T04:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2019-1010024",
+    "PkgName": "libc-bin",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-1010024",
+    "Title": "glibc: ASLR bypass using cache of thread stack and heap",
+    "Severity": "LOW",
+    "PublishedDate": "2019-07-15T04:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2019-1010024",
+    "PkgName": "libc6",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-1010024",
+    "Title": "glibc: ASLR bypass using cache of thread stack and heap",
+    "Severity": "LOW",
+    "PublishedDate": "2019-07-15T04:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2019-1010025",
+    "PkgName": "libc-bin",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-1010025",
+    "Title": "glibc: information disclosure of heap addresses of pthread_created thread",
+    "Severity": "LOW",
+    "PublishedDate": "2019-07-15T04:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2019-1010025",
+    "PkgName": "libc6",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-1010025",
+    "Title": "glibc: information disclosure of heap addresses of pthread_created thread",
+    "Severity": "LOW",
+    "PublishedDate": "2019-07-15T04:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2019-19882",
+    "PkgName": "login",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-19882",
+    "Title": "shadow-utils: local users can obtain root access because setuid programs are misconfigured",
+    "Severity": "LOW",
+    "PublishedDate": "2019-12-18T16:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2019-19882",
+    "PkgName": "passwd",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-19882",
+    "Title": "shadow-utils: local users can obtain root access because setuid programs are misconfigured",
+    "Severity": "LOW",
+    "PublishedDate": "2019-12-18T16:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2019-20838",
+    "PkgName": "libpcre3",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-20838",
+    "Title": "pcre: Buffer over-read in JIT when UTF is disabled and \\X or \\R has fixed quantifier greater than 1",
+    "Severity": "LOW",
+    "PublishedDate": "2020-06-15T17:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2019-6110",
+    "PkgName": "openssh-client",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-6110",
+    "Title": "openssh: Acceptance and display of arbitrary stderr allows for spoofing of scp client output",
+    "Severity": "LOW",
+    "PublishedDate": "2019-01-31T18:29:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2019-6110",
+    "PkgName": "openssh-server",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-6110",
+    "Title": "openssh: Acceptance and display of arbitrary stderr allows for spoofing of scp client output",
+    "Severity": "LOW",
+    "PublishedDate": "2019-01-31T18:29:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2019-6110",
+    "PkgName": "openssh-sftp-server",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-6110",
+    "Title": "openssh: Acceptance and display of arbitrary stderr allows for spoofing of scp client output",
+    "Severity": "LOW",
+    "PublishedDate": "2019-01-31T18:29:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2019-8457",
+    "PkgName": "libdb5.3",
     "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-23914",
-    "Title": "HSTS ignored on multiple requests",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-8457",
+    "Title": "sqlite: heap out-of-bound read in function rtreenode()",
     "Severity": "CRITICAL",
-    "PublishedDate": "2023-02-23T20:15:00Z"
+    "PublishedDate": "2019-05-30T16:29:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2022-42916",
-    "PkgName": "curl",
+    "VulnerabilityID": "CVE-2019-9192",
+    "PkgName": "libc-bin",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-9192",
+    "Title": "glibc: uncontrolled recursion in function check_dst_limits_calc_pos_1 in posix/regexec.c",
+    "Severity": "LOW",
+    "PublishedDate": "2019-02-26T18:29:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2019-9192",
+    "PkgName": "libc6",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-9192",
+    "Title": "glibc: uncontrolled recursion in function check_dst_limits_calc_pos_1 in posix/regexec.c",
+    "Severity": "LOW",
+    "PublishedDate": "2019-02-26T18:29:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2020-13529",
+    "PkgName": "libnss-systemd",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-13529",
+    "Title": "systemd: DHCP FORCERENEW authentication not implemented can cause a system running the DHCP client to have its network reconfigured",
+    "Severity": "LOW",
+    "PublishedDate": "2021-05-10T16:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2020-13529",
+    "PkgName": "libpam-systemd",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-13529",
+    "Title": "systemd: DHCP FORCERENEW authentication not implemented can cause a system running the DHCP client to have its network reconfigured",
+    "Severity": "LOW",
+    "PublishedDate": "2021-05-10T16:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2020-13529",
+    "PkgName": "libsystemd0",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-13529",
+    "Title": "systemd: DHCP FORCERENEW authentication not implemented can cause a system running the DHCP client to have its network reconfigured",
+    "Severity": "LOW",
+    "PublishedDate": "2021-05-10T16:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2020-13529",
+    "PkgName": "libudev1",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-13529",
+    "Title": "systemd: DHCP FORCERENEW authentication not implemented can cause a system running the DHCP client to have its network reconfigured",
+    "Severity": "LOW",
+    "PublishedDate": "2021-05-10T16:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2020-14145",
+    "PkgName": "openssh-client",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-14145",
+    "Title": "openssh: Observable discrepancy leading to an information leak in the algorithm negotiation",
+    "Severity": "LOW",
+    "PublishedDate": "2020-06-29T18:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2020-14145",
+    "PkgName": "openssh-server",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-14145",
+    "Title": "openssh: Observable discrepancy leading to an information leak in the algorithm negotiation",
+    "Severity": "LOW",
+    "PublishedDate": "2020-06-29T18:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2020-14145",
+    "PkgName": "openssh-sftp-server",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-14145",
+    "Title": "openssh: Observable discrepancy leading to an information leak in the algorithm negotiation",
+    "Severity": "LOW",
+    "PublishedDate": "2020-06-29T18:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2020-15719",
+    "PkgName": "libldap-2.4-2",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-15719",
+    "Title": "openldap: Certificate validation incorrectly matches name against CN-ID",
+    "Severity": "LOW",
+    "PublishedDate": "2020-07-14T14:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2020-15778",
+    "PkgName": "openssh-client",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-15778",
+    "Title": "openssh: scp allows command injection when using backtick characters in the destination argument",
+    "Severity": "LOW",
+    "PublishedDate": "2020-07-24T14:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2020-15778",
+    "PkgName": "openssh-server",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-15778",
+    "Title": "openssh: scp allows command injection when using backtick characters in the destination argument",
+    "Severity": "LOW",
+    "PublishedDate": "2020-07-24T14:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2020-15778",
+    "PkgName": "openssh-sftp-server",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-15778",
+    "Title": "openssh: scp allows command injection when using backtick characters in the destination argument",
+    "Severity": "LOW",
+    "PublishedDate": "2020-07-24T14:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2020-16156",
+    "PkgName": "libperl5.32",
     "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-42916",
-    "Title": "curl: HSTS bypass via IDN",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-16156",
+    "Title": "perl-CPAN: Bypass of verification of signatures in CHECKSUMS files",
     "Severity": "HIGH",
-    "PublishedDate": "2022-10-29T02:15:00Z"
+    "PublishedDate": "2021-12-13T18:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2022-43551",
-    "PkgName": "curl",
+    "VulnerabilityID": "CVE-2020-16156",
+    "PkgName": "perl",
     "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-43551",
-    "Title": "curl: HSTS bypass via IDN",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-16156",
+    "Title": "perl-CPAN: Bypass of verification of signatures in CHECKSUMS files",
     "Severity": "HIGH",
-    "PublishedDate": "2022-12-23T15:15:00Z"
+    "PublishedDate": "2021-12-13T18:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2023-27533",
-    "PkgName": "curl",
+    "VulnerabilityID": "CVE-2020-16156",
+    "PkgName": "perl-base",
     "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27533",
-    "Title": "TELNET option IAC injection",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-16156",
+    "Title": "perl-CPAN: Bypass of verification of signatures in CHECKSUMS files",
     "Severity": "HIGH",
-    "PublishedDate": "2023-03-30T20:15:00Z"
+    "PublishedDate": "2021-12-13T18:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2023-27534",
-    "PkgName": "curl",
+    "VulnerabilityID": "CVE-2020-16156",
+    "PkgName": "perl-modules-5.32",
     "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27534",
-    "Title": "SFTP path ~ resolving discrepancy",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-16156",
+    "Title": "perl-CPAN: Bypass of verification of signatures in CHECKSUMS files",
     "Severity": "HIGH",
-    "PublishedDate": "2023-03-30T20:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-27535",
-    "PkgName": "curl",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27535",
-    "Title": "FTP too eager connection reuse",
-    "Severity": "HIGH",
-    "PublishedDate": "2023-03-30T20:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-27536",
-    "PkgName": "curl",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27536",
-    "Title": "GSS delegation too eager connection re-use",
-    "Severity": "HIGH",
-    "PublishedDate": "2023-03-30T20:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-23915",
-    "PkgName": "curl",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-23915",
-    "Title": "HSTS amnesia with --parallel",
-    "Severity": "MEDIUM",
-    "PublishedDate": "2023-02-23T20:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-27538",
-    "PkgName": "curl",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27538",
-    "Title": "SSH connection too eager reuse still",
-    "Severity": "MEDIUM",
-    "PublishedDate": "2023-03-30T20:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-28321",
-    "PkgName": "curl",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28321",
-    "Title": "IDN wildcard match may lead to Improper Cerificate Validation",
-    "Severity": "MEDIUM",
-    "PublishedDate": "2023-05-26T21:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-28322",
-    "PkgName": "curl",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28322",
-    "Title": "more POST-after-PUT confusion",
-    "Severity": "MEDIUM",
-    "PublishedDate": "2023-05-26T21:15:00Z"
+    "PublishedDate": "2021-12-13T18:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2021-22922",
     "PkgName": "curl",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-22922",
+    "Title": "curl: Content not matching hash in Metalink is not being discarded",
+    "Severity": "LOW",
+    "PublishedDate": "2021-08-05T21:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2021-22922",
+    "PkgName": "libcurl3-gnutls",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-22922",
+    "Title": "curl: Content not matching hash in Metalink is not being discarded",
+    "Severity": "LOW",
+    "PublishedDate": "2021-08-05T21:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2021-22922",
+    "PkgName": "libcurl4",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-22922",
     "Title": "curl: Content not matching hash in Metalink is not being discarded",
@@ -151,22 +864,238 @@
     "PublishedDate": "2021-08-05T21:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2023-28320",
-    "PkgName": "curl",
+    "VulnerabilityID": "CVE-2021-22923",
+    "PkgName": "libcurl3-gnutls",
     "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28320",
-    "Title": "siglongjmp race condition may lead to crash",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-22923",
+    "Title": "curl: Metalink download sends credentials",
     "Severity": "LOW",
-    "PublishedDate": "2023-05-26T21:15:00Z"
+    "PublishedDate": "2021-08-05T21:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2022-3219",
-    "PkgName": "dirmngr",
+    "VulnerabilityID": "CVE-2021-22923",
+    "PkgName": "libcurl4",
     "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3219",
-    "Title": "denial of service issue (resource consumption) using compressed packets",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-22923",
+    "Title": "curl: Metalink download sends credentials",
     "Severity": "LOW",
-    "PublishedDate": "2023-02-23T20:15:00Z"
+    "PublishedDate": "2021-08-05T21:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2021-31239",
+    "PkgName": "libsqlite3-0",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-31239",
+    "Title": "denial of service via the appendvfs.c function",
+    "Severity": "HIGH",
+    "PublishedDate": "2023-05-09T02:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2021-33560",
+    "PkgName": "libgcrypt20",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-33560",
+    "Title": "libgcrypt: mishandles ElGamal encryption because it lacks exponent blinding to address a side-channel attack against mpi_powm",
+    "Severity": "HIGH",
+    "PublishedDate": "2021-06-08T11:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2021-36084",
+    "PkgName": "libsepol1",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-36084",
+    "Title": "libsepol: use-after-free in __cil_verify_classperms()",
+    "Severity": "LOW",
+    "PublishedDate": "2021-07-01T03:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2021-36085",
+    "PkgName": "libsepol1",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-36085",
+    "Title": "libsepol: use-after-free in __cil_verify_classperms()",
+    "Severity": "LOW",
+    "PublishedDate": "2021-07-01T03:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2021-36086",
+    "PkgName": "libsepol1",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-36086",
+    "Title": "use-after-free in cil_reset_classpermission()",
+    "Severity": "LOW",
+    "PublishedDate": "2021-07-01T03:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2021-36087",
+    "PkgName": "libsepol1",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-36087",
+    "Title": "libsepol: heap-based buffer overflow in ebitmap_match_any()",
+    "Severity": "LOW",
+    "PublishedDate": "2021-07-01T03:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2021-36368",
+    "PkgName": "openssh-client",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-36368",
+    "Title": "openssh: possible bypass of fido 2 devices and ssh-askpass",
+    "Severity": "LOW",
+    "PublishedDate": "2022-03-13T00:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2021-36368",
+    "PkgName": "openssh-server",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-36368",
+    "Title": "openssh: possible bypass of fido 2 devices and ssh-askpass",
+    "Severity": "LOW",
+    "PublishedDate": "2022-03-13T00:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2021-36368",
+    "PkgName": "openssh-sftp-server",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-36368",
+    "Title": "openssh: possible bypass of fido 2 devices and ssh-askpass",
+    "Severity": "LOW",
+    "PublishedDate": "2022-03-13T00:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2021-36690",
+    "PkgName": "libsqlite3-0",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-36690",
+    "Title": "A segmentation fault can occur in the sqlite3.exe command-line compone ...",
+    "Severity": "LOW",
+    "PublishedDate": "2021-08-24T14:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2021-41617",
+    "PkgName": "openssh-client",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-41617",
+    "Title": "openssh: privilege escalation when AuthorizedKeysCommand or AuthorizedPrincipalsCommand are configured",
+    "Severity": "HIGH",
+    "PublishedDate": "2021-09-26T19:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2021-41617",
+    "PkgName": "openssh-server",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-41617",
+    "Title": "openssh: privilege escalation when AuthorizedKeysCommand or AuthorizedPrincipalsCommand are configured",
+    "Severity": "HIGH",
+    "PublishedDate": "2021-09-26T19:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2021-41617",
+    "PkgName": "openssh-sftp-server",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-41617",
+    "Title": "openssh: privilege escalation when AuthorizedKeysCommand or AuthorizedPrincipalsCommand are configured",
+    "Severity": "HIGH",
+    "PublishedDate": "2021-09-26T19:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2021-45261",
+    "PkgName": "patch",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-45261",
+    "Title": "patch: Invalid Pointer via another_hunk function",
+    "Severity": "LOW",
+    "PublishedDate": "2021-12-22T18:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2021-45346",
+    "PkgName": "libsqlite3-0",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-45346",
+    "Title": "sqlite: crafted SQL query allows a malicious user to obtain sensitive information",
+    "Severity": "LOW",
+    "PublishedDate": "2022-02-14T19:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2021-45940",
+    "PkgName": "libbpf0",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-45940",
+    "Title": "libbpf: heap-based buffer overflow (4 bytes) in __bpf_object__open",
+    "Severity": "MEDIUM",
+    "PublishedDate": "2022-01-01T01:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2021-45941",
+    "PkgName": "libbpf0",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-45941",
+    "Title": "libbpf: heap-based buffer overflow (8 bytes) in __bpf_object__open",
+    "Severity": "MEDIUM",
+    "PublishedDate": "2022-01-01T01:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2022-0563",
+    "PkgName": "bsdutils",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
+    "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
+    "Severity": "LOW",
+    "PublishedDate": "2022-02-21T19:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2022-0563",
+    "PkgName": "libblkid1",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
+    "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
+    "Severity": "LOW",
+    "PublishedDate": "2022-02-21T19:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2022-0563",
+    "PkgName": "libmount1",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
+    "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
+    "Severity": "LOW",
+    "PublishedDate": "2022-02-21T19:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2022-0563",
+    "PkgName": "libsmartcols1",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
+    "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
+    "Severity": "LOW",
+    "PublishedDate": "2022-02-21T19:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2022-0563",
+    "PkgName": "libuuid1",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
+    "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
+    "Severity": "LOW",
+    "PublishedDate": "2022-02-21T19:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2022-0563",
+    "PkgName": "mount",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
+    "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
+    "Severity": "LOW",
+    "PublishedDate": "2022-02-21T19:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2022-0563",
+    "PkgName": "util-linux",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
+    "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
+    "Severity": "LOW",
+    "PublishedDate": "2022-02-21T19:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2022-1304",
@@ -178,31 +1107,40 @@
     "PublishedDate": "2022-04-14T21:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2023-25652",
-    "PkgName": "git",
+    "VulnerabilityID": "CVE-2022-1304",
+    "PkgName": "libcom-err2",
     "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-25652",
-    "Title": "by feeding specially crafted input to `git apply --reject`, a path outside the working tree can be overwritten with partially controlled contents",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-1304",
+    "Title": "e2fsprogs: out-of-bounds read/write via crafted filesystem",
     "Severity": "HIGH",
-    "PublishedDate": "2023-04-25T20:15:00Z"
+    "PublishedDate": "2022-04-14T21:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2023-29007",
-    "PkgName": "git",
+    "VulnerabilityID": "CVE-2022-1304",
+    "PkgName": "libext2fs2",
     "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-29007",
-    "Title": "arbitrary configuration injection when renaming or deleting a section from a configuration file",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-1304",
+    "Title": "e2fsprogs: out-of-bounds read/write via crafted filesystem",
     "Severity": "HIGH",
-    "PublishedDate": "2023-04-25T21:15:00Z"
+    "PublishedDate": "2022-04-14T21:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2018-1000021",
-    "PkgName": "git",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-1000021",
-    "Title": "git: client prints server-sent ANSI escape codes to the terminal, allowing for unverified messages to potentially execute arbitrary commands",
-    "Severity": "LOW",
-    "PublishedDate": "2018-02-09T23:29:00Z"
+    "VulnerabilityID": "CVE-2022-1304",
+    "PkgName": "libss2",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-1304",
+    "Title": "e2fsprogs: out-of-bounds read/write via crafted filesystem",
+    "Severity": "HIGH",
+    "PublishedDate": "2022-04-14T21:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2022-1304",
+    "PkgName": "logsave",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-1304",
+    "Title": "e2fsprogs: out-of-bounds read/write via crafted filesystem",
+    "Severity": "HIGH",
+    "PublishedDate": "2022-04-14T21:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2022-24975",
@@ -214,42 +1152,6 @@
     "PublishedDate": "2022-02-11T20:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2023-25815",
-    "PkgName": "git",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-25815",
-    "Title": "malicious placement of crafted messages when git was compiled with runtime prefix",
-    "Severity": "LOW",
-    "PublishedDate": "2023-04-25T20:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-25652",
-    "PkgName": "git-man",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-25652",
-    "Title": "by feeding specially crafted input to `git apply --reject`, a path outside the working tree can be overwritten with partially controlled contents",
-    "Severity": "HIGH",
-    "PublishedDate": "2023-04-25T20:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-29007",
-    "PkgName": "git-man",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-29007",
-    "Title": "arbitrary configuration injection when renaming or deleting a section from a configuration file",
-    "Severity": "HIGH",
-    "PublishedDate": "2023-04-25T21:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2018-1000021",
-    "PkgName": "git-man",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-1000021",
-    "Title": "git: client prints server-sent ANSI escape codes to the terminal, allowing for unverified messages to potentially execute arbitrary commands",
-    "Severity": "LOW",
-    "PublishedDate": "2018-02-09T23:29:00Z"
-  },
-  {
     "VulnerabilityID": "CVE-2022-24975",
     "PkgName": "git-man",
     "SeveritySource": "debian",
@@ -259,13 +1161,13 @@
     "PublishedDate": "2022-02-11T20:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2023-25815",
-    "PkgName": "git-man",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-25815",
-    "Title": "malicious placement of crafted messages when git was compiled with runtime prefix",
+    "VulnerabilityID": "CVE-2022-3219",
+    "PkgName": "dirmngr",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3219",
+    "Title": "denial of service issue (resource consumption) using compressed packets",
     "Severity": "LOW",
-    "PublishedDate": "2023-04-25T20:15:00Z"
+    "PublishedDate": "2023-02-23T20:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2022-3219",
@@ -358,24 +1260,6 @@
     "PublishedDate": "2023-02-23T20:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2016-1585",
-    "PkgName": "libapparmor1",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2016-1585",
-    "Title": "In all versions of AppArmor mount rules are accidentally widened when  ...",
-    "Severity": "LOW",
-    "PublishedDate": "2019-04-22T16:29:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2022-0563",
-    "PkgName": "libblkid1",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
-    "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
-    "Severity": "LOW",
-    "PublishedDate": "2022-02-21T19:15:00Z"
-  },
-  {
     "VulnerabilityID": "CVE-2022-3534",
     "PkgName": "libbpf0",
     "SeveritySource": "nvd",
@@ -385,22 +1269,13 @@
     "PublishedDate": "2022-10-17T09:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2021-45940",
-    "PkgName": "libbpf0",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-45940",
-    "Title": "libbpf: heap-based buffer overflow (4 bytes) in __bpf_object__open",
-    "Severity": "MEDIUM",
-    "PublishedDate": "2022-01-01T01:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2021-45941",
-    "PkgName": "libbpf0",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-45941",
-    "Title": "libbpf: heap-based buffer overflow (8 bytes) in __bpf_object__open",
-    "Severity": "MEDIUM",
-    "PublishedDate": "2022-01-01T01:15:00Z"
+    "VulnerabilityID": "CVE-2022-35737",
+    "PkgName": "libsqlite3-0",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-35737",
+    "Title": "an array-bounds overflow if billions of bytes are used in a string argument to a C API",
+    "Severity": "LOW",
+    "PublishedDate": "2022-08-03T06:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2022-3606",
@@ -412,185 +1287,49 @@
     "PublishedDate": "2022-10-19T09:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2010-4756",
-    "PkgName": "libc-bin",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2010-4756",
-    "Title": "glibc: glob implementation can cause excessive CPU and memory consumption due to crafted glob expressions",
-    "Severity": "LOW",
-    "PublishedDate": "2011-03-02T20:00:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2018-20796",
-    "PkgName": "libc-bin",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-20796",
-    "Title": "glibc: uncontrolled recursion in function check_dst_limits_calc_pos_1 in posix/regexec.c",
-    "Severity": "LOW",
-    "PublishedDate": "2019-02-26T02:29:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2019-1010022",
-    "PkgName": "libc-bin",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-1010022",
-    "Title": "glibc: stack guard protection bypass",
-    "Severity": "LOW",
-    "PublishedDate": "2019-07-15T04:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2019-1010023",
-    "PkgName": "libc-bin",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-1010023",
-    "Title": "glibc: running ldd on malicious ELF leads to code execution because of wrong size computation",
-    "Severity": "LOW",
-    "PublishedDate": "2019-07-15T04:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2019-1010024",
-    "PkgName": "libc-bin",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-1010024",
-    "Title": "glibc: ASLR bypass using cache of thread stack and heap",
-    "Severity": "LOW",
-    "PublishedDate": "2019-07-15T04:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2019-1010025",
-    "PkgName": "libc-bin",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-1010025",
-    "Title": "glibc: information disclosure of heap addresses of pthread_created thread",
-    "Severity": "LOW",
-    "PublishedDate": "2019-07-15T04:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2019-9192",
-    "PkgName": "libc-bin",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-9192",
-    "Title": "glibc: uncontrolled recursion in function check_dst_limits_calc_pos_1 in posix/regexec.c",
-    "Severity": "LOW",
-    "PublishedDate": "2019-02-26T18:29:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2010-4756",
-    "PkgName": "libc6",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2010-4756",
-    "Title": "glibc: glob implementation can cause excessive CPU and memory consumption due to crafted glob expressions",
-    "Severity": "LOW",
-    "PublishedDate": "2011-03-02T20:00:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2018-20796",
-    "PkgName": "libc6",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-20796",
-    "Title": "glibc: uncontrolled recursion in function check_dst_limits_calc_pos_1 in posix/regexec.c",
-    "Severity": "LOW",
-    "PublishedDate": "2019-02-26T02:29:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2019-1010022",
-    "PkgName": "libc6",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-1010022",
-    "Title": "glibc: stack guard protection bypass",
-    "Severity": "LOW",
-    "PublishedDate": "2019-07-15T04:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2019-1010023",
-    "PkgName": "libc6",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-1010023",
-    "Title": "glibc: running ldd on malicious ELF leads to code execution because of wrong size computation",
-    "Severity": "LOW",
-    "PublishedDate": "2019-07-15T04:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2019-1010024",
-    "PkgName": "libc6",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-1010024",
-    "Title": "glibc: ASLR bypass using cache of thread stack and heap",
-    "Severity": "LOW",
-    "PublishedDate": "2019-07-15T04:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2019-1010025",
-    "PkgName": "libc6",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-1010025",
-    "Title": "glibc: information disclosure of heap addresses of pthread_created thread",
-    "Severity": "LOW",
-    "PublishedDate": "2019-07-15T04:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2019-9192",
-    "PkgName": "libc6",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-9192",
-    "Title": "glibc: uncontrolled recursion in function check_dst_limits_calc_pos_1 in posix/regexec.c",
-    "Severity": "LOW",
-    "PublishedDate": "2019-02-26T18:29:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-2603",
-    "PkgName": "libcap2",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2603",
-    "Title": "Integer Overflow in _libcap_strdup()",
-    "Severity": "MEDIUM"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-2602",
-    "PkgName": "libcap2",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2602",
-    "Title": "Memory Leak on pthread_create() Error",
-    "Severity": "LOW"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-2603",
-    "PkgName": "libcap2-bin",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2603",
-    "Title": "Integer Overflow in _libcap_strdup()",
-    "Severity": "MEDIUM"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-2602",
-    "PkgName": "libcap2-bin",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2602",
-    "Title": "Memory Leak on pthread_create() Error",
-    "Severity": "LOW"
-  },
-  {
-    "VulnerabilityID": "CVE-2022-1304",
-    "PkgName": "libcom-err2",
+    "VulnerabilityID": "CVE-2022-3715",
+    "PkgName": "bash",
     "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-1304",
-    "Title": "e2fsprogs: out-of-bounds read/write via crafted filesystem",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-3715",
+    "Title": "a heap-buffer-overflow in valid_parameter_transform",
     "Severity": "HIGH",
-    "PublishedDate": "2022-04-14T21:15:00Z"
+    "PublishedDate": "2023-01-05T15:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2023-23914",
-    "PkgName": "libcurl3-gnutls",
+    "VulnerabilityID": "CVE-2022-42916",
+    "PkgName": "curl",
     "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-23914",
-    "Title": "HSTS ignored on multiple requests",
-    "Severity": "CRITICAL",
-    "PublishedDate": "2023-02-23T20:15:00Z"
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-42916",
+    "Title": "HSTS bypass via IDN",
+    "Severity": "HIGH",
+    "PublishedDate": "2022-10-29T02:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2022-42916",
     "PkgName": "libcurl3-gnutls",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-42916",
-    "Title": "curl: HSTS bypass via IDN",
+    "Title": "HSTS bypass via IDN",
     "Severity": "HIGH",
     "PublishedDate": "2022-10-29T02:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2022-42916",
+    "PkgName": "libcurl4",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-42916",
+    "Title": "HSTS bypass via IDN",
+    "Severity": "HIGH",
+    "PublishedDate": "2022-10-29T02:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2022-43551",
+    "PkgName": "curl",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-43551",
+    "Title": "curl: HSTS bypass via IDN",
+    "Severity": "HIGH",
+    "PublishedDate": "2022-12-23T15:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2022-43551",
@@ -602,40 +1341,67 @@
     "PublishedDate": "2022-12-23T15:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2023-27533",
-    "PkgName": "libcurl3-gnutls",
+    "VulnerabilityID": "CVE-2022-43551",
+    "PkgName": "libcurl4",
     "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27533",
-    "Title": "TELNET option IAC injection",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-43551",
+    "Title": "curl: HSTS bypass via IDN",
     "Severity": "HIGH",
-    "PublishedDate": "2023-03-30T20:15:00Z"
+    "PublishedDate": "2022-12-23T15:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2023-27534",
-    "PkgName": "libcurl3-gnutls",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27534",
-    "Title": "SFTP path ~ resolving discrepancy",
-    "Severity": "HIGH",
-    "PublishedDate": "2023-03-30T20:15:00Z"
+    "VulnerabilityID": "CVE-2022-48303",
+    "PkgName": "tar",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-48303",
+    "Title": "heap buffer overflow at from_header() in list.c via specially crafted checksum",
+    "Severity": "LOW",
+    "PublishedDate": "2023-01-30T04:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2023-27535",
-    "PkgName": "libcurl3-gnutls",
+    "VulnerabilityID": "CVE-2022-4899",
+    "PkgName": "libzstd1",
     "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27535",
-    "Title": "FTP too eager connection reuse",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-4899",
+    "Title": "buffer overrun in util.c",
     "Severity": "HIGH",
-    "PublishedDate": "2023-03-30T20:15:00Z"
+    "PublishedDate": "2023-03-31T20:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2023-27536",
+    "VulnerabilityID": "CVE-2023-23914",
+    "PkgName": "curl",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-23914",
+    "Title": "HSTS ignored on multiple requests",
+    "Severity": "CRITICAL",
+    "PublishedDate": "2023-02-23T20:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-23914",
     "PkgName": "libcurl3-gnutls",
     "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27536",
-    "Title": "GSS delegation too eager connection re-use",
-    "Severity": "HIGH",
-    "PublishedDate": "2023-03-30T20:15:00Z"
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-23914",
+    "Title": "HSTS ignored on multiple requests",
+    "Severity": "CRITICAL",
+    "PublishedDate": "2023-02-23T20:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-23914",
+    "PkgName": "libcurl4",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-23914",
+    "Title": "HSTS ignored on multiple requests",
+    "Severity": "CRITICAL",
+    "PublishedDate": "2023-02-23T20:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-23915",
+    "PkgName": "curl",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-23915",
+    "Title": "HSTS amnesia with --parallel",
+    "Severity": "MEDIUM",
+    "PublishedDate": "2023-02-23T20:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-23915",
@@ -647,83 +1413,109 @@
     "PublishedDate": "2023-02-23T20:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2023-27538",
-    "PkgName": "libcurl3-gnutls",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27538",
-    "Title": "SSH connection too eager reuse still",
-    "Severity": "MEDIUM",
-    "PublishedDate": "2023-03-30T20:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-28321",
-    "PkgName": "libcurl3-gnutls",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28321",
-    "Title": "IDN wildcard match may lead to Improper Cerificate Validation",
-    "Severity": "MEDIUM",
-    "PublishedDate": "2023-05-26T21:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-28322",
-    "PkgName": "libcurl3-gnutls",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28322",
-    "Title": "more POST-after-PUT confusion",
-    "Severity": "MEDIUM",
-    "PublishedDate": "2023-05-26T21:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2021-22922",
-    "PkgName": "libcurl3-gnutls",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-22922",
-    "Title": "curl: Content not matching hash in Metalink is not being discarded",
-    "Severity": "LOW",
-    "PublishedDate": "2021-08-05T21:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2021-22923",
-    "PkgName": "libcurl3-gnutls",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-22923",
-    "Title": "curl: Metalink download sends credentials",
-    "Severity": "LOW",
-    "PublishedDate": "2021-08-05T21:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-28320",
-    "PkgName": "libcurl3-gnutls",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28320",
-    "Title": "siglongjmp race condition may lead to crash",
-    "Severity": "LOW",
-    "PublishedDate": "2023-05-26T21:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-23914",
+    "VulnerabilityID": "CVE-2023-23915",
     "PkgName": "libcurl4",
     "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-23914",
-    "Title": "HSTS ignored on multiple requests",
-    "Severity": "CRITICAL",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-23915",
+    "Title": "HSTS amnesia with --parallel",
+    "Severity": "MEDIUM",
     "PublishedDate": "2023-02-23T20:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2022-42916",
-    "PkgName": "libcurl4",
+    "VulnerabilityID": "CVE-2023-25652",
+    "PkgName": "git",
     "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-42916",
-    "Title": "curl: HSTS bypass via IDN",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-25652",
+    "Title": "by feeding specially crafted input to `git apply --reject`, a path outside the working tree can be overwritten with partially controlled contents",
     "Severity": "HIGH",
-    "PublishedDate": "2022-10-29T02:15:00Z"
+    "PublishedDate": "2023-04-25T20:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2022-43551",
-    "PkgName": "libcurl4",
+    "VulnerabilityID": "CVE-2023-25652",
+    "PkgName": "git-man",
     "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-43551",
-    "Title": "curl: HSTS bypass via IDN",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-25652",
+    "Title": "by feeding specially crafted input to `git apply --reject`, a path outside the working tree can be overwritten with partially controlled contents",
     "Severity": "HIGH",
-    "PublishedDate": "2022-12-23T15:15:00Z"
+    "PublishedDate": "2023-04-25T20:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-25815",
+    "PkgName": "git",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-25815",
+    "Title": "malicious placement of crafted messages when git was compiled with runtime prefix",
+    "Severity": "LOW",
+    "PublishedDate": "2023-04-25T20:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-25815",
+    "PkgName": "git-man",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-25815",
+    "Title": "malicious placement of crafted messages when git was compiled with runtime prefix",
+    "Severity": "LOW",
+    "PublishedDate": "2023-04-25T20:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-2602",
+    "PkgName": "libcap2",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2602",
+    "Title": "Memory Leak on pthread_create() Error",
+    "Severity": "LOW"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-2602",
+    "PkgName": "libcap2-bin",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2602",
+    "Title": "Memory Leak on pthread_create() Error",
+    "Severity": "LOW"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-2602",
+    "PkgName": "libpam-cap",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2602",
+    "Title": "Memory Leak on pthread_create() Error",
+    "Severity": "LOW"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-2603",
+    "PkgName": "libcap2",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2603",
+    "Title": "Integer Overflow in _libcap_strdup()",
+    "Severity": "MEDIUM"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-2603",
+    "PkgName": "libcap2-bin",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2603",
+    "Title": "Integer Overflow in _libcap_strdup()",
+    "Severity": "MEDIUM"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-2603",
+    "PkgName": "libpam-cap",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2603",
+    "Title": "Integer Overflow in _libcap_strdup()",
+    "Severity": "MEDIUM"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-27533",
+    "PkgName": "curl",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27533",
+    "Title": "TELNET option IAC injection",
+    "Severity": "HIGH",
+    "PublishedDate": "2023-03-30T20:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-27533",
+    "PkgName": "libcurl3-gnutls",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27533",
+    "Title": "TELNET option IAC injection",
+    "Severity": "HIGH",
+    "PublishedDate": "2023-03-30T20:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-27533",
@@ -731,6 +1523,24 @@
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27533",
     "Title": "TELNET option IAC injection",
+    "Severity": "HIGH",
+    "PublishedDate": "2023-03-30T20:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-27534",
+    "PkgName": "curl",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27534",
+    "Title": "SFTP path ~ resolving discrepancy",
+    "Severity": "HIGH",
+    "PublishedDate": "2023-03-30T20:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-27534",
+    "PkgName": "libcurl3-gnutls",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27534",
+    "Title": "SFTP path ~ resolving discrepancy",
     "Severity": "HIGH",
     "PublishedDate": "2023-03-30T20:15:00Z"
   },
@@ -745,10 +1555,46 @@
   },
   {
     "VulnerabilityID": "CVE-2023-27535",
+    "PkgName": "curl",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27535",
+    "Title": "FTP too eager connection reuse",
+    "Severity": "HIGH",
+    "PublishedDate": "2023-03-30T20:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-27535",
+    "PkgName": "libcurl3-gnutls",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27535",
+    "Title": "FTP too eager connection reuse",
+    "Severity": "HIGH",
+    "PublishedDate": "2023-03-30T20:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-27535",
     "PkgName": "libcurl4",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27535",
     "Title": "FTP too eager connection reuse",
+    "Severity": "HIGH",
+    "PublishedDate": "2023-03-30T20:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-27536",
+    "PkgName": "curl",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27536",
+    "Title": "GSS delegation too eager connection re-use",
+    "Severity": "HIGH",
+    "PublishedDate": "2023-03-30T20:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-27536",
+    "PkgName": "libcurl3-gnutls",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27536",
+    "Title": "GSS delegation too eager connection re-use",
     "Severity": "HIGH",
     "PublishedDate": "2023-03-30T20:15:00Z"
   },
@@ -762,13 +1608,22 @@
     "PublishedDate": "2023-03-30T20:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2023-23915",
-    "PkgName": "libcurl4",
+    "VulnerabilityID": "CVE-2023-27538",
+    "PkgName": "curl",
     "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-23915",
-    "Title": "HSTS amnesia with --parallel",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27538",
+    "Title": "SSH connection too eager reuse still",
     "Severity": "MEDIUM",
-    "PublishedDate": "2023-02-23T20:15:00Z"
+    "PublishedDate": "2023-03-30T20:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-27538",
+    "PkgName": "libcurl3-gnutls",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27538",
+    "Title": "SSH connection too eager reuse still",
+    "Severity": "MEDIUM",
+    "PublishedDate": "2023-03-30T20:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-27538",
@@ -780,38 +1635,22 @@
     "PublishedDate": "2023-03-30T20:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2023-28321",
-    "PkgName": "libcurl4",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28321",
-    "Title": "IDN wildcard match may lead to Improper Cerificate Validation",
-    "Severity": "MEDIUM",
+    "VulnerabilityID": "CVE-2023-28320",
+    "PkgName": "curl",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28320",
+    "Title": "siglongjmp race condition may lead to crash",
+    "Severity": "LOW",
     "PublishedDate": "2023-05-26T21:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2023-28322",
-    "PkgName": "libcurl4",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28322",
-    "Title": "more POST-after-PUT confusion",
-    "Severity": "MEDIUM",
+    "VulnerabilityID": "CVE-2023-28320",
+    "PkgName": "libcurl3-gnutls",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28320",
+    "Title": "siglongjmp race condition may lead to crash",
+    "Severity": "LOW",
     "PublishedDate": "2023-05-26T21:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2021-22922",
-    "PkgName": "libcurl4",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-22922",
-    "Title": "curl: Content not matching hash in Metalink is not being discarded",
-    "Severity": "LOW",
-    "PublishedDate": "2021-08-05T21:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2021-22923",
-    "PkgName": "libcurl4",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-22923",
-    "Title": "curl: Metalink download sends credentials",
-    "Severity": "LOW",
-    "PublishedDate": "2021-08-05T21:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-28320",
@@ -823,156 +1662,94 @@
     "PublishedDate": "2023-05-26T21:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2019-8457",
-    "PkgName": "libdb5.3",
+    "VulnerabilityID": "CVE-2023-28321",
+    "PkgName": "curl",
     "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-8457",
-    "Title": "sqlite: heap out-of-bound read in function rtreenode()",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28321",
+    "Title": "IDN wildcard match may lead to Improper Cerificate Validation",
+    "Severity": "HIGH",
+    "PublishedDate": "2023-05-26T21:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-28321",
+    "PkgName": "libcurl3-gnutls",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28321",
+    "Title": "IDN wildcard match may lead to Improper Cerificate Validation",
+    "Severity": "HIGH",
+    "PublishedDate": "2023-05-26T21:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-28321",
+    "PkgName": "libcurl4",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28321",
+    "Title": "IDN wildcard match may lead to Improper Cerificate Validation",
+    "Severity": "HIGH",
+    "PublishedDate": "2023-05-26T21:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-28322",
+    "PkgName": "curl",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28322",
+    "Title": "more POST-after-PUT confusion",
     "Severity": "CRITICAL",
-    "PublishedDate": "2019-05-30T16:29:00Z"
+    "PublishedDate": "2023-05-26T21:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2013-0340",
-    "PkgName": "libexpat1",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2013-0340",
-    "Title": "expat: internal entity expansion",
-    "Severity": "LOW",
-    "PublishedDate": "2014-01-21T18:55:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2022-1304",
-    "PkgName": "libext2fs2",
+    "VulnerabilityID": "CVE-2023-28322",
+    "PkgName": "libcurl3-gnutls",
     "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-1304",
-    "Title": "e2fsprogs: out-of-bounds read/write via crafted filesystem",
-    "Severity": "HIGH",
-    "PublishedDate": "2022-04-14T21:15:00Z"
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28322",
+    "Title": "more POST-after-PUT confusion",
+    "Severity": "CRITICAL",
+    "PublishedDate": "2023-05-26T21:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2021-33560",
-    "PkgName": "libgcrypt20",
+    "VulnerabilityID": "CVE-2023-28322",
+    "PkgName": "libcurl4",
     "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-33560",
-    "Title": "libgcrypt: mishandles ElGamal encryption because it lacks exponent blinding to address a side-channel attack against mpi_powm",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28322",
+    "Title": "more POST-after-PUT confusion",
+    "Severity": "CRITICAL",
+    "PublishedDate": "2023-05-26T21:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-29007",
+    "PkgName": "git",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-29007",
+    "Title": "arbitrary configuration injection when renaming or deleting a section from a configuration file",
     "Severity": "HIGH",
-    "PublishedDate": "2021-06-08T11:15:00Z"
+    "PublishedDate": "2023-04-25T21:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2018-6829",
-    "PkgName": "libgcrypt20",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-6829",
-    "Title": "libgcrypt: ElGamal implementation doesn't have semantic security due to incorrectly encoded plaintexts possibly allowing to obtain sensitive information",
+    "VulnerabilityID": "CVE-2023-29007",
+    "PkgName": "git-man",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-29007",
+    "Title": "arbitrary configuration injection when renaming or deleting a section from a configuration file",
+    "Severity": "HIGH",
+    "PublishedDate": "2023-04-25T21:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-29383",
+    "PkgName": "login",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-29383",
+    "Title": "Improper input validation in shadow-utils package utility chfn",
     "Severity": "LOW",
-    "PublishedDate": "2018-02-07T23:29:00Z"
+    "PublishedDate": "2023-04-14T22:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2011-3389",
-    "PkgName": "libgnutls30",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2011-3389",
-    "Title": "HTTPS: block-wise chosen-plaintext attack against SSL/TLS (BEAST)",
+    "VulnerabilityID": "CVE-2023-29383",
+    "PkgName": "passwd",
+    "SeveritySource": "nvd",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-29383",
+    "Title": "Improper input validation in shadow-utils package utility chfn",
     "Severity": "LOW",
-    "PublishedDate": "2011-09-06T19:55:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2018-5709",
-    "PkgName": "libgssapi-krb5-2",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-5709",
-    "Title": "krb5: integer overflow in dbentry->n_key_data in kadmin/dbutil/dump.c",
-    "Severity": "LOW",
-    "PublishedDate": "2018-01-16T09:29:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2012-2663",
-    "PkgName": "libip4tc2",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2012-2663",
-    "Title": "iptables: --syn flag bypass",
-    "Severity": "LOW",
-    "PublishedDate": "2014-02-15T14:57:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2018-5709",
-    "PkgName": "libk5crypto3",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-5709",
-    "Title": "krb5: integer overflow in dbentry->n_key_data in kadmin/dbutil/dump.c",
-    "Severity": "LOW",
-    "PublishedDate": "2018-01-16T09:29:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2018-5709",
-    "PkgName": "libkrb5-3",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-5709",
-    "Title": "krb5: integer overflow in dbentry->n_key_data in kadmin/dbutil/dump.c",
-    "Severity": "LOW",
-    "PublishedDate": "2018-01-16T09:29:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2018-5709",
-    "PkgName": "libkrb5support0",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-5709",
-    "Title": "krb5: integer overflow in dbentry->n_key_data in kadmin/dbutil/dump.c",
-    "Severity": "LOW",
-    "PublishedDate": "2018-01-16T09:29:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-2953",
-    "PkgName": "libldap-2.4-2",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2953",
-    "Title": "null pointer dereference in  ber_memalloc_x  function",
-    "Severity": "MEDIUM",
-    "PublishedDate": "2023-05-30T22:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2015-3276",
-    "PkgName": "libldap-2.4-2",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2015-3276",
-    "Title": "incorrect multi-keyword mode cipherstring parsing",
-    "Severity": "LOW",
-    "PublishedDate": "2015-12-07T20:59:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2017-14159",
-    "PkgName": "libldap-2.4-2",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2017-14159",
-    "Title": "openldap: Privilege escalation via PID file manipulation",
-    "Severity": "LOW",
-    "PublishedDate": "2017-09-05T18:29:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2017-17740",
-    "PkgName": "libldap-2.4-2",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2017-17740",
-    "Title": "openldap: contrib/slapd-modules/nops/nops.c attempts to free stack buffer allowing remote attackers to cause a denial of service",
-    "Severity": "LOW",
-    "PublishedDate": "2017-12-18T06:29:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2020-15719",
-    "PkgName": "libldap-2.4-2",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-15719",
-    "Title": "openldap: Certificate validation incorrectly matches name against CN-ID",
-    "Severity": "LOW",
-    "PublishedDate": "2020-07-14T14:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2022-0563",
-    "PkgName": "libmount1",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
-    "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
-    "Severity": "LOW",
-    "PublishedDate": "2022-02-21T19:15:00Z"
+    "PublishedDate": "2023-04-14T22:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-29491",
@@ -993,263 +1770,6 @@
     "PublishedDate": "2023-04-14T01:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2013-4392",
-    "PkgName": "libnss-systemd",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2013-4392",
-    "Title": "TOCTOU race condition when updating file permissions and SELinux security contexts",
-    "Severity": "LOW",
-    "PublishedDate": "2013-10-28T22:55:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2020-13529",
-    "PkgName": "libnss-systemd",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-13529",
-    "Title": "systemd: DHCP FORCERENEW authentication not implemented can cause a system running the DHCP client to have its network reconfigured",
-    "Severity": "LOW",
-    "PublishedDate": "2021-05-10T16:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-2603",
-    "PkgName": "libpam-cap",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2603",
-    "Title": "Integer Overflow in _libcap_strdup()",
-    "Severity": "MEDIUM"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-2602",
-    "PkgName": "libpam-cap",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2602",
-    "Title": "Memory Leak on pthread_create() Error",
-    "Severity": "LOW"
-  },
-  {
-    "VulnerabilityID": "CVE-2013-4392",
-    "PkgName": "libpam-systemd",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2013-4392",
-    "Title": "TOCTOU race condition when updating file permissions and SELinux security contexts",
-    "Severity": "LOW",
-    "PublishedDate": "2013-10-28T22:55:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2020-13529",
-    "PkgName": "libpam-systemd",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-13529",
-    "Title": "systemd: DHCP FORCERENEW authentication not implemented can cause a system running the DHCP client to have its network reconfigured",
-    "Severity": "LOW",
-    "PublishedDate": "2021-05-10T16:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2017-11164",
-    "PkgName": "libpcre3",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2017-11164",
-    "Title": "pcre: OP_KETRMAX feature in the match function in pcre_exec.c",
-    "Severity": "LOW",
-    "PublishedDate": "2017-07-11T03:29:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2017-16231",
-    "PkgName": "libpcre3",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2017-16231",
-    "Title": "pcre: self-recursive call in match() in pcre_exec.c leads to denial of service",
-    "Severity": "LOW",
-    "PublishedDate": "2019-03-21T15:59:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2017-7245",
-    "PkgName": "libpcre3",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2017-7245",
-    "Title": "pcre: stack-based buffer overflow write in pcre32_copy_substring",
-    "Severity": "LOW",
-    "PublishedDate": "2017-03-23T21:59:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2017-7246",
-    "PkgName": "libpcre3",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2017-7246",
-    "Title": "pcre: stack-based buffer overflow write in pcre32_copy_substring",
-    "Severity": "LOW",
-    "PublishedDate": "2017-03-23T21:59:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2019-20838",
-    "PkgName": "libpcre3",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-20838",
-    "Title": "pcre: Buffer over-read in JIT when UTF is disabled and \\X or \\R has fixed quantifier greater than 1",
-    "Severity": "LOW",
-    "PublishedDate": "2020-06-15T17:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2020-16156",
-    "PkgName": "libperl5.32",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-16156",
-    "Title": "perl-CPAN: Bypass of verification of signatures in CHECKSUMS files",
-    "Severity": "HIGH",
-    "PublishedDate": "2021-12-13T18:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-31484",
-    "PkgName": "libperl5.32",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31484",
-    "Title": "CPAN.pm before 2.35 does not verify TLS certificates when downloading  ...",
-    "Severity": "HIGH",
-    "PublishedDate": "2023-04-29T00:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2011-4116",
-    "PkgName": "libperl5.32",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2011-4116",
-    "Title": "perl: File::Temp insecure temporary file handling",
-    "Severity": "LOW",
-    "PublishedDate": "2020-01-31T18:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-31486",
-    "PkgName": "libperl5.32",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31486",
-    "Title": "HTTP::Tiny 0.082, a Perl core module since 5.13.9 and available standa ...",
-    "Severity": "LOW",
-    "PublishedDate": "2023-04-29T00:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2021-36084",
-    "PkgName": "libsepol1",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-36084",
-    "Title": "libsepol: use-after-free in __cil_verify_classperms()",
-    "Severity": "LOW",
-    "PublishedDate": "2021-07-01T03:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2021-36085",
-    "PkgName": "libsepol1",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-36085",
-    "Title": "libsepol: use-after-free in __cil_verify_classperms()",
-    "Severity": "LOW",
-    "PublishedDate": "2021-07-01T03:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2021-36086",
-    "PkgName": "libsepol1",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-36086",
-    "Title": "use-after-free in cil_reset_classpermission()",
-    "Severity": "LOW",
-    "PublishedDate": "2021-07-01T03:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2021-36087",
-    "PkgName": "libsepol1",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-36087",
-    "Title": "libsepol: heap-based buffer overflow in ebitmap_match_any()",
-    "Severity": "LOW",
-    "PublishedDate": "2021-07-01T03:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2022-0563",
-    "PkgName": "libsmartcols1",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
-    "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
-    "Severity": "LOW",
-    "PublishedDate": "2022-02-21T19:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2021-31239",
-    "PkgName": "libsqlite3-0",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-31239",
-    "Title": "denial of service via the appendvfs.c function",
-    "Severity": "HIGH",
-    "PublishedDate": "2023-05-09T02:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2021-36690",
-    "PkgName": "libsqlite3-0",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-36690",
-    "Title": "A segmentation fault can occur in the sqlite3.exe command-line compone ...",
-    "Severity": "LOW",
-    "PublishedDate": "2021-08-24T14:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2021-45346",
-    "PkgName": "libsqlite3-0",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-45346",
-    "Title": "sqlite: crafted SQL query allows a malicious user to obtain sensitive information",
-    "Severity": "LOW",
-    "PublishedDate": "2022-02-14T19:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2022-35737",
-    "PkgName": "libsqlite3-0",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-35737",
-    "Title": "sqlite: an array-bounds overflow if billions of bytes are used in a string argument to a C API",
-    "Severity": "LOW",
-    "PublishedDate": "2022-08-03T06:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2022-1304",
-    "PkgName": "libss2",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-1304",
-    "Title": "e2fsprogs: out-of-bounds read/write via crafted filesystem",
-    "Severity": "HIGH",
-    "PublishedDate": "2022-04-14T21:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2007-6755",
-    "PkgName": "libssl1.1",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-6755",
-    "Title": "Dual_EC_DRBG: weak pseudo random number generator",
-    "Severity": "LOW",
-    "PublishedDate": "2013-10-11T22:55:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2010-0928",
-    "PkgName": "libssl1.1",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2010-0928",
-    "Title": "openssl: RSA authentication weakness",
-    "Severity": "LOW",
-    "PublishedDate": "2010-03-05T19:30:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2013-4392",
-    "PkgName": "libsystemd0",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2013-4392",
-    "Title": "TOCTOU race condition when updating file permissions and SELinux security contexts",
-    "Severity": "LOW",
-    "PublishedDate": "2013-10-28T22:55:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2020-13529",
-    "PkgName": "libsystemd0",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-13529",
-    "Title": "systemd: DHCP FORCERENEW authentication not implemented can cause a system running the DHCP client to have its network reconfigured",
-    "Severity": "LOW",
-    "PublishedDate": "2021-05-10T16:15:00Z"
-  },
-  {
     "VulnerabilityID": "CVE-2023-29491",
     "PkgName": "libtinfo6",
     "SeveritySource": "nvd",
@@ -1257,105 +1777,6 @@
     "Title": "Local users can trigger security-relevant memory corruption via malformed data",
     "Severity": "HIGH",
     "PublishedDate": "2023-04-14T01:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2013-4392",
-    "PkgName": "libudev1",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2013-4392",
-    "Title": "TOCTOU race condition when updating file permissions and SELinux security contexts",
-    "Severity": "LOW",
-    "PublishedDate": "2013-10-28T22:55:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2020-13529",
-    "PkgName": "libudev1",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-13529",
-    "Title": "systemd: DHCP FORCERENEW authentication not implemented can cause a system running the DHCP client to have its network reconfigured",
-    "Severity": "LOW",
-    "PublishedDate": "2021-05-10T16:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2022-0563",
-    "PkgName": "libuuid1",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
-    "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
-    "Severity": "LOW",
-    "PublishedDate": "2022-02-21T19:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2012-2663",
-    "PkgName": "libxtables12",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2012-2663",
-    "Title": "iptables: --syn flag bypass",
-    "Severity": "LOW",
-    "PublishedDate": "2014-02-15T14:57:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2022-4899",
-    "PkgName": "libzstd1",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-4899",
-    "Title": "buffer overrun in util.c",
-    "Severity": "HIGH",
-    "PublishedDate": "2023-03-31T20:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2007-5686",
-    "PkgName": "login",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-5686",
-    "Title": "initscripts in rPath Linux 1 sets insecure permissions for the /var/lo ...",
-    "Severity": "LOW",
-    "PublishedDate": "2007-10-28T17:08:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2013-4235",
-    "PkgName": "login",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2013-4235",
-    "Title": "shadow-utils: TOCTOU race conditions by copying and removing directory trees",
-    "Severity": "LOW",
-    "PublishedDate": "2019-12-03T15:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2019-19882",
-    "PkgName": "login",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-19882",
-    "Title": "shadow-utils: local users can obtain root access because setuid programs are misconfigured",
-    "Severity": "LOW",
-    "PublishedDate": "2019-12-18T16:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-29383",
-    "PkgName": "login",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-29383",
-    "Title": "Improper input validation in shadow-utils package utility chfn",
-    "Severity": "LOW",
-    "PublishedDate": "2023-04-14T22:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2022-1304",
-    "PkgName": "logsave",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-1304",
-    "Title": "e2fsprogs: out-of-bounds read/write via crafted filesystem",
-    "Severity": "HIGH",
-    "PublishedDate": "2022-04-14T21:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2022-0563",
-    "PkgName": "mount",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
-    "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
-    "Severity": "LOW",
-    "PublishedDate": "2022-02-21T19:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-29491",
@@ -1385,373 +1806,21 @@
     "PublishedDate": "2023-04-14T01:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2021-41617",
-    "PkgName": "openssh-client",
+    "VulnerabilityID": "CVE-2023-2953",
+    "PkgName": "libldap-2.4-2",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2953",
+    "Title": "null pointer dereference in  ber_memalloc_x  function",
+    "Severity": "MEDIUM",
+    "PublishedDate": "2023-05-30T22:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-31484",
+    "PkgName": "libperl5.32",
     "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-41617",
-    "Title": "openssh: privilege escalation when AuthorizedKeysCommand or AuthorizedPrincipalsCommand are configured",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31484",
+    "Title": "CPAN.pm before 2.35 does not verify TLS certificates when downloading  ...",
     "Severity": "HIGH",
-    "PublishedDate": "2021-09-26T19:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2007-2243",
-    "PkgName": "openssh-client",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-2243",
-    "Title": "OpenSSH 4.6 and earlier, when ChallengeResponseAuthentication is enabl ...",
-    "Severity": "LOW",
-    "PublishedDate": "2007-04-25T16:19:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2007-2768",
-    "PkgName": "openssh-client",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-2768",
-    "Title": "OpenSSH, when using OPIE (One-Time Passwords in Everything) for PAM, a ...",
-    "Severity": "LOW",
-    "PublishedDate": "2007-05-21T20:30:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2008-3234",
-    "PkgName": "openssh-client",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2008-3234",
-    "Title": "sshd in OpenSSH 4 on Debian GNU/Linux, and the 20070303 OpenSSH snapsh ...",
-    "Severity": "LOW",
-    "PublishedDate": "2008-07-18T16:41:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2016-20012",
-    "PkgName": "openssh-client",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2016-20012",
-    "Title": "openssh: Public key information leak",
-    "Severity": "LOW",
-    "PublishedDate": "2021-09-15T20:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2018-15919",
-    "PkgName": "openssh-client",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-15919",
-    "Title": "openssh: User enumeration via malformed packets in authentication requests",
-    "Severity": "LOW",
-    "PublishedDate": "2018-08-28T08:29:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2019-6110",
-    "PkgName": "openssh-client",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-6110",
-    "Title": "openssh: Acceptance and display of arbitrary stderr allows for spoofing of scp client output",
-    "Severity": "LOW",
-    "PublishedDate": "2019-01-31T18:29:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2020-14145",
-    "PkgName": "openssh-client",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-14145",
-    "Title": "openssh: Observable discrepancy leading to an information leak in the algorithm negotiation",
-    "Severity": "LOW",
-    "PublishedDate": "2020-06-29T18:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2020-15778",
-    "PkgName": "openssh-client",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-15778",
-    "Title": "openssh: scp allows command injection when using backtick characters in the destination argument",
-    "Severity": "LOW",
-    "PublishedDate": "2020-07-24T14:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2021-36368",
-    "PkgName": "openssh-client",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-36368",
-    "Title": "openssh: possible bypass of fido 2 devices and ssh-askpass",
-    "Severity": "LOW",
-    "PublishedDate": "2022-03-13T00:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2021-41617",
-    "PkgName": "openssh-server",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-41617",
-    "Title": "openssh: privilege escalation when AuthorizedKeysCommand or AuthorizedPrincipalsCommand are configured",
-    "Severity": "HIGH",
-    "PublishedDate": "2021-09-26T19:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2007-2243",
-    "PkgName": "openssh-server",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-2243",
-    "Title": "OpenSSH 4.6 and earlier, when ChallengeResponseAuthentication is enabl ...",
-    "Severity": "LOW",
-    "PublishedDate": "2007-04-25T16:19:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2007-2768",
-    "PkgName": "openssh-server",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-2768",
-    "Title": "OpenSSH, when using OPIE (One-Time Passwords in Everything) for PAM, a ...",
-    "Severity": "LOW",
-    "PublishedDate": "2007-05-21T20:30:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2008-3234",
-    "PkgName": "openssh-server",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2008-3234",
-    "Title": "sshd in OpenSSH 4 on Debian GNU/Linux, and the 20070303 OpenSSH snapsh ...",
-    "Severity": "LOW",
-    "PublishedDate": "2008-07-18T16:41:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2016-20012",
-    "PkgName": "openssh-server",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2016-20012",
-    "Title": "openssh: Public key information leak",
-    "Severity": "LOW",
-    "PublishedDate": "2021-09-15T20:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2018-15919",
-    "PkgName": "openssh-server",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-15919",
-    "Title": "openssh: User enumeration via malformed packets in authentication requests",
-    "Severity": "LOW",
-    "PublishedDate": "2018-08-28T08:29:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2019-6110",
-    "PkgName": "openssh-server",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-6110",
-    "Title": "openssh: Acceptance and display of arbitrary stderr allows for spoofing of scp client output",
-    "Severity": "LOW",
-    "PublishedDate": "2019-01-31T18:29:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2020-14145",
-    "PkgName": "openssh-server",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-14145",
-    "Title": "openssh: Observable discrepancy leading to an information leak in the algorithm negotiation",
-    "Severity": "LOW",
-    "PublishedDate": "2020-06-29T18:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2020-15778",
-    "PkgName": "openssh-server",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-15778",
-    "Title": "openssh: scp allows command injection when using backtick characters in the destination argument",
-    "Severity": "LOW",
-    "PublishedDate": "2020-07-24T14:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2021-36368",
-    "PkgName": "openssh-server",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-36368",
-    "Title": "openssh: possible bypass of fido 2 devices and ssh-askpass",
-    "Severity": "LOW",
-    "PublishedDate": "2022-03-13T00:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2021-41617",
-    "PkgName": "openssh-sftp-server",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-41617",
-    "Title": "openssh: privilege escalation when AuthorizedKeysCommand or AuthorizedPrincipalsCommand are configured",
-    "Severity": "HIGH",
-    "PublishedDate": "2021-09-26T19:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2007-2243",
-    "PkgName": "openssh-sftp-server",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-2243",
-    "Title": "OpenSSH 4.6 and earlier, when ChallengeResponseAuthentication is enabl ...",
-    "Severity": "LOW",
-    "PublishedDate": "2007-04-25T16:19:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2007-2768",
-    "PkgName": "openssh-sftp-server",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-2768",
-    "Title": "OpenSSH, when using OPIE (One-Time Passwords in Everything) for PAM, a ...",
-    "Severity": "LOW",
-    "PublishedDate": "2007-05-21T20:30:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2008-3234",
-    "PkgName": "openssh-sftp-server",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2008-3234",
-    "Title": "sshd in OpenSSH 4 on Debian GNU/Linux, and the 20070303 OpenSSH snapsh ...",
-    "Severity": "LOW",
-    "PublishedDate": "2008-07-18T16:41:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2016-20012",
-    "PkgName": "openssh-sftp-server",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2016-20012",
-    "Title": "openssh: Public key information leak",
-    "Severity": "LOW",
-    "PublishedDate": "2021-09-15T20:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2018-15919",
-    "PkgName": "openssh-sftp-server",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-15919",
-    "Title": "openssh: User enumeration via malformed packets in authentication requests",
-    "Severity": "LOW",
-    "PublishedDate": "2018-08-28T08:29:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2019-6110",
-    "PkgName": "openssh-sftp-server",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-6110",
-    "Title": "openssh: Acceptance and display of arbitrary stderr allows for spoofing of scp client output",
-    "Severity": "LOW",
-    "PublishedDate": "2019-01-31T18:29:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2020-14145",
-    "PkgName": "openssh-sftp-server",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-14145",
-    "Title": "openssh: Observable discrepancy leading to an information leak in the algorithm negotiation",
-    "Severity": "LOW",
-    "PublishedDate": "2020-06-29T18:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2020-15778",
-    "PkgName": "openssh-sftp-server",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-15778",
-    "Title": "openssh: scp allows command injection when using backtick characters in the destination argument",
-    "Severity": "LOW",
-    "PublishedDate": "2020-07-24T14:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2021-36368",
-    "PkgName": "openssh-sftp-server",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-36368",
-    "Title": "openssh: possible bypass of fido 2 devices and ssh-askpass",
-    "Severity": "LOW",
-    "PublishedDate": "2022-03-13T00:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2007-6755",
-    "PkgName": "openssl",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-6755",
-    "Title": "Dual_EC_DRBG: weak pseudo random number generator",
-    "Severity": "LOW",
-    "PublishedDate": "2013-10-11T22:55:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2010-0928",
-    "PkgName": "openssl",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2010-0928",
-    "Title": "openssl: RSA authentication weakness",
-    "Severity": "LOW",
-    "PublishedDate": "2010-03-05T19:30:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2007-5686",
-    "PkgName": "passwd",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2007-5686",
-    "Title": "initscripts in rPath Linux 1 sets insecure permissions for the /var/lo ...",
-    "Severity": "LOW",
-    "PublishedDate": "2007-10-28T17:08:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2013-4235",
-    "PkgName": "passwd",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2013-4235",
-    "Title": "shadow-utils: TOCTOU race conditions by copying and removing directory trees",
-    "Severity": "LOW",
-    "PublishedDate": "2019-12-03T15:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2019-19882",
-    "PkgName": "passwd",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2019-19882",
-    "Title": "shadow-utils: local users can obtain root access because setuid programs are misconfigured",
-    "Severity": "LOW",
-    "PublishedDate": "2019-12-18T16:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-29383",
-    "PkgName": "passwd",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-29383",
-    "Title": "Improper input validation in shadow-utils package utility chfn",
-    "Severity": "LOW",
-    "PublishedDate": "2023-04-14T22:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2010-4651",
-    "PkgName": "patch",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2010-4651",
-    "Title": "patch: directory traversal flaw allows for arbitrary file creation",
-    "Severity": "LOW",
-    "PublishedDate": "2011-03-11T22:55:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2018-6951",
-    "PkgName": "patch",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-6951",
-    "Title": "patch: NULL pointer dereference in pch.c:intuit_diff_type() causes a crash",
-    "Severity": "LOW",
-    "PublishedDate": "2018-02-13T19:29:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2018-6952",
-    "PkgName": "patch",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-6952",
-    "Title": "patch: Double free of memory in pch.c:another_hunk() causes a crash",
-    "Severity": "LOW",
-    "PublishedDate": "2018-02-13T19:29:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2021-45261",
-    "PkgName": "patch",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-45261",
-    "Title": "patch: Invalid Pointer via another_hunk function",
-    "Severity": "LOW",
-    "PublishedDate": "2021-12-22T18:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2020-16156",
-    "PkgName": "perl",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-16156",
-    "Title": "perl-CPAN: Bypass of verification of signatures in CHECKSUMS files",
-    "Severity": "HIGH",
-    "PublishedDate": "2021-12-13T18:15:00Z"
+    "PublishedDate": "2023-04-29T00:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-31484",
@@ -1763,33 +1832,6 @@
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2011-4116",
-    "PkgName": "perl",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2011-4116",
-    "Title": "perl: File::Temp insecure temporary file handling",
-    "Severity": "LOW",
-    "PublishedDate": "2020-01-31T18:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-31486",
-    "PkgName": "perl",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31486",
-    "Title": "HTTP::Tiny 0.082, a Perl core module since 5.13.9 and available standa ...",
-    "Severity": "LOW",
-    "PublishedDate": "2023-04-29T00:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2020-16156",
-    "PkgName": "perl-base",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-16156",
-    "Title": "perl-CPAN: Bypass of verification of signatures in CHECKSUMS files",
-    "Severity": "HIGH",
-    "PublishedDate": "2021-12-13T18:15:00Z"
-  },
-  {
     "VulnerabilityID": "CVE-2023-31484",
     "PkgName": "perl-base",
     "SeveritySource": "nvd",
@@ -1797,33 +1839,6 @@
     "Title": "CPAN.pm before 2.35 does not verify TLS certificates when downloading  ...",
     "Severity": "HIGH",
     "PublishedDate": "2023-04-29T00:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2011-4116",
-    "PkgName": "perl-base",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2011-4116",
-    "Title": "perl: File::Temp insecure temporary file handling",
-    "Severity": "LOW",
-    "PublishedDate": "2020-01-31T18:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2023-31486",
-    "PkgName": "perl-base",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31486",
-    "Title": "HTTP::Tiny 0.082, a Perl core module since 5.13.9 and available standa ...",
-    "Severity": "LOW",
-    "PublishedDate": "2023-04-29T00:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2020-16156",
-    "PkgName": "perl-modules-5.32",
-    "SeveritySource": "nvd",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-16156",
-    "Title": "perl-CPAN: Bypass of verification of signatures in CHECKSUMS files",
-    "Severity": "HIGH",
-    "PublishedDate": "2021-12-13T18:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-31484",
@@ -1835,13 +1850,31 @@
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2011-4116",
-    "PkgName": "perl-modules-5.32",
+    "VulnerabilityID": "CVE-2023-31486",
+    "PkgName": "libperl5.32",
     "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2011-4116",
-    "Title": "perl: File::Temp insecure temporary file handling",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31486",
+    "Title": "HTTP::Tiny 0.082, a Perl core module since 5.13.9 and available standa ...",
     "Severity": "LOW",
-    "PublishedDate": "2020-01-31T18:15:00Z"
+    "PublishedDate": "2023-04-29T00:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-31486",
+    "PkgName": "perl",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31486",
+    "Title": "HTTP::Tiny 0.082, a Perl core module since 5.13.9 and available standa ...",
+    "Severity": "LOW",
+    "PublishedDate": "2023-04-29T00:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-31486",
+    "PkgName": "perl-base",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31486",
+    "Title": "HTTP::Tiny 0.082, a Perl core module since 5.13.9 and available standa ...",
+    "Severity": "LOW",
+    "PublishedDate": "2023-04-29T00:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-31486",
@@ -1851,32 +1884,5 @@
     "Title": "HTTP::Tiny 0.082, a Perl core module since 5.13.9 and available standa ...",
     "Severity": "LOW",
     "PublishedDate": "2023-04-29T00:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2005-2541",
-    "PkgName": "tar",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2005-2541",
-    "Title": "tar: does not properly warn the user when extracting setuid or setgid files",
-    "Severity": "LOW",
-    "PublishedDate": "2005-08-10T04:00:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2022-48303",
-    "PkgName": "tar",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-48303",
-    "Title": "heap buffer overflow at from_header() in list.c via specially crafted checksum",
-    "Severity": "LOW",
-    "PublishedDate": "2023-01-30T04:15:00Z"
-  },
-  {
-    "VulnerabilityID": "CVE-2022-0563",
-    "PkgName": "util-linux",
-    "SeveritySource": "debian",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
-    "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
-    "Severity": "LOW",
-    "PublishedDate": "2022-02-21T19:15:00Z"
   }
 ]
