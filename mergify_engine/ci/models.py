@@ -93,6 +93,14 @@ class JobRun:
     ) -> JobRun:
         runner_properties = cls._extract_runner_properties(job_payload)
 
+        pulls = []
+        if run_payload["event"] in ("pull_request", "pull_request_target"):
+            pulls = await pull_registry.get_from_commit(
+                run_payload["repository"]["owner"]["login"],
+                run_payload["repository"]["name"],
+                run_payload["head_sha"],
+            )
+
         return cls(
             id=job_payload["id"],
             workflow_run_id=run_payload["id"],
@@ -111,11 +119,7 @@ class JobRun:
             ),
             started_at=datetime.datetime.fromisoformat(job_payload["started_at"]),
             completed_at=datetime.datetime.fromisoformat(job_payload["completed_at"]),
-            pulls=await pull_registry.get_from_commit(
-                run_payload["repository"]["owner"]["login"],
-                run_payload["repository"]["name"],
-                run_payload["head_sha"],
-            ),
+            pulls=pulls,
             run_attempt=run_payload["run_attempt"],
             operating_system=runner_properties.operating_system,
             cores=runner_properties.cores,

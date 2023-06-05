@@ -1,3 +1,6 @@
+import typing
+from unittest import mock
+
 import pytest
 
 from mergify_engine import github_types
@@ -31,3 +34,40 @@ async def test_extract_runner_properties(
 
     assert runner_properties.operating_system == expected_os
     assert runner_properties.cores == expected_cores
+
+
+async def test_create_job(
+    sample_events: dict[str, tuple[github_types.GitHubEventType, typing.Any]]
+) -> None:
+    fake_pull = ci_models.PullRequest(id=1, number=1, title="hello", state="open")
+    fake_pull_registry = mock.AsyncMock()
+    fake_pull_registry.get_from_commit.return_value = [fake_pull]
+    run_payload = sample_events["workflow_run.completed.json"][1]["workflow_run"]
+    job_payload = sample_events["workflow_job.completed.json"][1]["workflow_job"]
+
+    job = await ci_models.JobRun.create_job(
+        fake_pull_registry, job_payload, run_payload
+    )
+
+    assert job.id == 13403743463
+    assert job.pulls == [fake_pull]
+    assert job.operating_system == "Linux"
+    assert job.cores == 2
+
+
+async def test_create_job_without_pull_request(
+    sample_events: dict[str, tuple[github_types.GitHubEventType, typing.Any]]
+) -> None:
+    fake_pull_registry = mock.AsyncMock()
+    fake_pull_registry.get_from_commit.side_effect = AssertionError(
+        "PullRequestFromCommitRegistry.get_from_commit() shouldn't be called"
+    )
+    run_payload = sample_events["workflow_run.completed.json"][1]["workflow_run"]
+    run_payload["event"] = "push"
+    job_payload = sample_events["workflow_job.completed.json"][1]["workflow_job"]
+
+    job = await ci_models.JobRun.create_job(
+        fake_pull_registry, job_payload, run_payload
+    )
+
+    assert job.pulls == []
