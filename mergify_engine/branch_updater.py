@@ -219,17 +219,19 @@ async def update_with_api(
                 )
                 return
 
-        # NOTE(charly): We have an ongoing support ticket at GitHub. This error
-        # happens sometimes and it's an undocumented behavior or a bug. We have
-        # to reproduce it on a public repository in order to report it. See
-        # MRGFY-2178
         elif e.status_code == 403:
-            ctxt.log.error(
+            ctxt.log.info(
                 "permission error",
                 status_code=e.status_code,
                 error=e.message,
                 expected_head_sha=ctxt.pull["head"]["sha"],
                 response_body=e.response.json(),
+            )
+            raise BranchUpdateFailure(
+                title="Mergify doesn't have permission to update",
+                msg="For security reasons, Mergify can't update this pull request. "
+                "Try updating locally.\n"
+                f"GitHub response: {e.message}",
             )
 
         ctxt.log.info(
