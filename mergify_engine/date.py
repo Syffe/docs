@@ -718,3 +718,13 @@ def interval_from_string(value: str) -> datetime.timedelta:
         minutes=int(kw["minutes"] or 0),
         seconds=int(kw["seconds"] or 0),
     )
+
+
+@dataclasses.dataclass
+class DateTimeRange:
+    start: datetime.datetime
+    end: datetime.datetime
+
+    def as_github_date_query(self) -> str:
+        # https://docs.github.com/en/search-github/getting-started-with-searching-on-github/understanding-the-search-syntax#query-for-dates
+        return f"{self.start.isoformat()}..{self.end.isoformat()}"

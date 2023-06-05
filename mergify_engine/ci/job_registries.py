@@ -11,6 +11,7 @@ from sqlalchemy.dialects import postgresql
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import database
+from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine.ci import models as ci_models
 from mergify_engine.ci import pull_registries
@@ -274,7 +275,7 @@ class HTTPJobRegistry:
     destination_registry: PostgresJobRegistry
 
     async def search(
-        self, owner: str, repository: str, at: datetime.date
+        self, owner: str, repository: str, date_range: date.DateTimeRange
     ) -> abc.AsyncGenerator[ci_models.JobRun, None]:
         # https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository
         http_runs = [
@@ -284,7 +285,7 @@ class HTTPJobRegistry:
                 resource_name="runs",
                 page_limit=None,
                 list_items="workflow_runs",
-                params={"created": at.isoformat()},
+                params={"created": date_range.as_github_date_query()},
             )
         ]
         runs = {run["id"]: run for run in http_runs}

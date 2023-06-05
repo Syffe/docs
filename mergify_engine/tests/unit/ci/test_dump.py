@@ -8,6 +8,7 @@ import pytest
 import sqlalchemy
 import sqlalchemy.ext.asyncio
 
+from mergify_engine import date
 from mergify_engine import github_events
 from mergify_engine import github_types
 from mergify_engine import redis_utils
@@ -17,9 +18,10 @@ from mergify_engine.models import github_actions
 from mergify_engine.models import github_repository
 
 
-TODAY = datetime.datetime(2023, 4, 20)
-YESTERDAY = datetime.datetime(2023, 4, 19)
-DAY_BEFORE_YESTERDAY = datetime.datetime(2023, 4, 18)
+NOW = datetime.datetime(2023, 4, 20, 12, 0, tzinfo=datetime.UTC)
+AN_HOUR_AGO = datetime.datetime(2023, 4, 20, 11, 0, tzinfo=datetime.UTC)
+TWO_HOURS_AGO = datetime.datetime(2023, 4, 20, 10, 0, tzinfo=datetime.UTC)
+LESS_THAN_AN_HOUR_AGO = datetime.datetime(2023, 4, 20, 11, 1, tzinfo=datetime.UTC)
 
 
 @pytest.fixture(autouse=True)
@@ -42,7 +44,7 @@ async def mock_repositories() -> typing.AsyncGenerator[None, None]:
         yield
 
 
-@freeze_time(TODAY)
+@freeze_time(NOW)
 async def test_dump_next_repository(
     redis_links: redis_utils.RedisLinks, db: sqlalchemy.ext.asyncio.AsyncSession
 ) -> None:
@@ -52,7 +54,7 @@ async def test_dump_next_repository(
             {
                 "id": 11,
                 "owner_id": 1,
-                "last_dump_at": YESTERDAY,
+                "last_dump_at": AN_HOUR_AGO,
             }
         ],
     )
@@ -71,7 +73,7 @@ async def test_dump_next_repository(
             mocked_gh_client,
             "some_owner",
             "some_repo",
-            YESTERDAY.date(),
+            date.DateTimeRange(AN_HOUR_AGO, NOW),
         )
 
     result = await db.execute(
@@ -79,10 +81,10 @@ async def test_dump_next_repository(
     )
     row = result.first()
     assert row is not None
-    assert row.last_dump_at == TODAY
+    assert row.last_dump_at == NOW.replace(tzinfo=None)
 
 
-@freeze_time(TODAY)
+@freeze_time(NOW)
 async def test_get_next_repository_normal_case(
     db: sqlalchemy.ext.asyncio.AsyncSession,
 ) -> None:
@@ -92,12 +94,12 @@ async def test_get_next_repository_normal_case(
             {
                 "id": 11,
                 "owner_id": 1,
-                "last_dump_at": YESTERDAY,
+                "last_dump_at": AN_HOUR_AGO,
             },
             {
                 "id": 12,
                 "owner_id": 1,
-                "last_dump_at": TODAY,
+                "last_dump_at": NOW,
             },
         ],
     )
@@ -108,10 +110,10 @@ async def test_get_next_repository_normal_case(
     assert next_sub.owner_id == 1
     assert next_sub.owner == "some_owner"
     assert next_sub.repository_id == 11
-    assert next_sub.last_dump_at == YESTERDAY
+    assert next_sub.last_dump_at == AN_HOUR_AGO
 
 
-@freeze_time(TODAY)
+@freeze_time(NOW)
 async def test_get_next_repository_new_repository(
     db: sqlalchemy.ext.asyncio.AsyncSession,
 ) -> None:
@@ -126,7 +128,7 @@ async def test_get_next_repository_new_repository(
             {
                 "id": 12,
                 "owner_id": 1,
-                "last_dump_at": TODAY,
+                "last_dump_at": NOW,
             },
         ],
     )
@@ -137,10 +139,10 @@ async def test_get_next_repository_new_repository(
     assert next_sub.owner_id == 1
     assert next_sub.owner == "some_owner"
     assert next_sub.repository_id == 11
-    assert next_sub.last_dump_at == YESTERDAY
+    assert next_sub.last_dump_at == AN_HOUR_AGO
 
 
-@freeze_time(TODAY)
+@freeze_time(NOW)
 async def test_get_next_repository_nothing_to_dump(
     db: sqlalchemy.ext.asyncio.AsyncSession,
 ) -> None:
@@ -150,7 +152,7 @@ async def test_get_next_repository_nothing_to_dump(
             {
                 "id": 11,
                 "owner_id": 1,
-                "last_dump_at": TODAY,
+                "last_dump_at": LESS_THAN_AN_HOUR_AGO,
             },
         ],
     )
@@ -160,7 +162,7 @@ async def test_get_next_repository_nothing_to_dump(
         await dump.get_next_repository(db)
 
 
-@freeze_time(TODAY)
+@freeze_time(NOW)
 async def test_get_next_repository_not_up_to_date(
     db: sqlalchemy.ext.asyncio.AsyncSession,
 ) -> None:
@@ -170,7 +172,7 @@ async def test_get_next_repository_not_up_to_date(
             {
                 "id": 11,
                 "owner_id": 1,
-                "last_dump_at": DAY_BEFORE_YESTERDAY,
+                "last_dump_at": TWO_HOURS_AGO,
             },
         ],
     )
@@ -181,7 +183,7 @@ async def test_get_next_repository_not_up_to_date(
     assert next_sub.owner_id == 1
     assert next_sub.owner == "some_owner"
     assert next_sub.repository_id == 11
-    assert next_sub.last_dump_at == DAY_BEFORE_YESTERDAY
+    assert next_sub.last_dump_at == TWO_HOURS_AGO
 
 
 @pytest.fixture

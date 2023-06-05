@@ -4,6 +4,7 @@ import datetime
 import pytest
 import respx
 
+from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import settings
@@ -142,7 +143,10 @@ async def test_search(
     jobs = registry.search(
         github_types.GitHubLogin("some-owner"),
         github_types.GitHubRepositoryName("some-repo"),
-        datetime.date(2023, 2, 1),
+        date.DateTimeRange(
+            datetime.datetime(2023, 1, 24, 17, 0, tzinfo=datetime.UTC),
+            datetime.datetime(2023, 1, 24, 18, 0, tzinfo=datetime.UTC),
+        ),
     )
 
     async for job in jobs:
@@ -207,7 +211,10 @@ async def test_search_for_already_dumped_jobs(
     jobs = registry.search(
         github_types.GitHubLogin("some-owner"),
         github_types.GitHubRepositoryName("some-repo"),
-        datetime.date(2023, 2, 1),
+        date.DateTimeRange(
+            datetime.datetime(2023, 1, 24, 17, 0, tzinfo=datetime.UTC),
+            datetime.datetime(2023, 1, 24, 18, 0, tzinfo=datetime.UTC),
+        ),
     )
 
     # Every job is already in the DB

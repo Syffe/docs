@@ -887,3 +887,14 @@ def test_schedule_dict_serialization() -> None:
 
     assert schedule.serialized() == expected_dict
     assert schedule.deserialize(schedule.serialized()) == schedule
+
+
+def test_datetimerange_as_github_date_query() -> None:
+    r = date.DateTimeRange(
+        datetime.datetime(2023, 5, 30, 15, 30, tzinfo=datetime.UTC),
+        datetime.datetime(2023, 5, 30, 16, 0, tzinfo=datetime.UTC),
+    )
+    assert (
+        r.as_github_date_query()
+        == "2023-05-30T15:30:00+00:00..2023-05-30T16:00:00+00:00"
+    )

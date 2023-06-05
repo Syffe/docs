@@ -4,6 +4,7 @@ import time
 import typing
 
 from mergify_engine import database
+from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import refresher
@@ -119,12 +120,16 @@ async def dump_handler(argv: list[str] | None = None) -> None:
     gh_client = github.AsyncGithubInstallationClient(auth=auth)
 
     async with redis_utils.RedisLinks(name="ci_dump") as redis_links:
+        start = datetime.datetime.combine(args.at, datetime.time.min)
+        end = start + datetime.timedelta(days=1)
+        date_range = date.DateTimeRange(start, end)
+
         await dump.dump(
             redis_links,
             gh_client,
             typing.cast(github_types.GitHubLogin, args.owner),
             typing.cast(github_types.GitHubRepositoryName, args.repository),
-            args.at,
+            date_range,
         )
 
 

@@ -8,6 +8,7 @@ import sqlalchemy
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import database
+from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import settings
@@ -19,8 +20,6 @@ from mergify_engine.models import github_repository
 
 
 LOG = daiquiri.getLogger(__name__)
-
-DUMP_FREQUENCY = datetime.timedelta(days=1)
 
 
 class NoDataToDump(Exception):
@@ -49,7 +48,13 @@ async def dump_next_repository(redis_links: redis_utils.RedisLinks) -> None:
     gh_client = await _create_gh_client_from_login(next_sub.owner)
     repository = await _get_repository_name_from_id(gh_client, next_sub.repository_id)
     await dump(
-        redis_links, gh_client, next_sub.owner, repository, next_sub.last_dump_at.date()
+        redis_links,
+        gh_client,
+        next_sub.owner,
+        repository,
+        date.DateTimeRange(
+            next_sub.last_dump_at, next_sub.last_dump_at + settings.CI_DUMP_FREQUENCY
+        ),
     )
 
     async with database.create_session() as session:
@@ -71,7 +76,10 @@ async def get_next_repository(
     sql = (
         sqlalchemy.select(github_repository.GitHubRepository)
         .where(
-            (github_repository.GitHubRepository.last_dump_at < datetime.date.today())
+            (
+                github_repository.GitHubRepository.last_dump_at
+                <= date.utcnow() - settings.CI_DUMP_FREQUENCY
+            )
             | (github_repository.GitHubRepository.last_dump_at.is_(None))
         )
         .order_by(github_repository.GitHubRepository.last_dump_at.asc().nulls_first())
@@ -86,13 +94,14 @@ async def get_next_repository(
     owner_id = row.GitHubRepository.owner.id
     owner = row.GitHubRepository.owner.login
     repository_id = row.GitHubRepository.id
-    yesterday = (
-        datetime.datetime.combine(datetime.date.today(), datetime.time.min)
-        - DUMP_FREQUENCY
-    )
-    at = row.GitHubRepository.last_dump_at or yesterday
+    default_last_dump_at = date.utcnow() - settings.CI_DUMP_FREQUENCY
+    at = row.GitHubRepository.last_dump_at or default_last_dump_at
+    # NOTE(charly): we set the timezone because last_dump_at is stored as a
+    # TIMESTAMP WITHOUT TIME ZONE. We always work with UTC, the timezone doesn't
+    # come from the user.
+    atz = at.replace(tzinfo=datetime.UTC)
 
-    return NextRepositoryResult(owner_id, owner, repository_id, at)
+    return NextRepositoryResult(owner_id, owner, repository_id, atz)
 
 
 async def _create_gh_client_from_login(
@@ -121,7 +130,7 @@ async def update_repository_dump_date(
 ) -> None:
     sql = (
         sqlalchemy.update(github_repository.GitHubRepository)
-        .values(last_dump_at=dump_at + DUMP_FREQUENCY)
+        .values(last_dump_at=dump_at + settings.CI_DUMP_FREQUENCY)
         .where(github_repository.GitHubRepository.id == repository_id)
     )
     await session.execute(sql)
@@ -133,7 +142,7 @@ async def dump(
     gh_client: github.AsyncGithubInstallationClient,
     owner: github_types.GitHubLogin,
     repository: github_types.GitHubRepositoryName,
-    at: datetime.date,
+    date_range: date.DateTimeRange,
 ) -> None:
     pg_job_registry = job_registries.PostgresJobRegistry()
     pg_pull_registry = pull_registries.PostgresPullRequestRegistry()
@@ -150,9 +159,11 @@ async def dump(
         "ci.dump", span_type="worker", resource=f"{owner}/{repository}"
     ) as span:
         span.set_tags({"gh_owner": owner, "gh_repo": repository})
-        LOG.info("dump CI data", gh_owner=owner, gh_repo=repository, at=at)
+        LOG.info(
+            "dump CI data", gh_owner=owner, gh_repo=repository, date_range=date_range
+        )
 
-        async for job in http_job_registry.search(owner, repository, at):
+        async for job in http_job_registry.search(owner, repository, date_range):
             await _insert_job(pg_job_registry, pg_pull_registry, job)
 
 
