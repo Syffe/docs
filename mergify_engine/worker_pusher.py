@@ -229,6 +229,7 @@ async def push_ci_event(
     owner_id: github_types.GitHubAccountIdType,
     repo_id: github_types.GitHubRepositoryIdType,
     event_type: github_types.GitHubEventType,
+    event_id: str,
     data: github_types.GitHubEventWorkflowRun | github_types.GitHubEventWorkflowJob,
 ) -> None:
     """Completed workflow runs are added to a Redis stream to be processed later.
@@ -247,16 +248,16 @@ async def push_ci_event(
     │                                            │      "sender": {...}                        │      "sender": {...}                        │
     │                                            │    },                                       │    },                                       │
     │                                            │    "timestamp": "2019-05-18T15:17:00+00:00" │    "timestamp": "2019-05-18T15:17:00+00:00" │
+    │                                            │    "delivery_id": "10d1bf91-7388-4b19-b..." │    "delivery_id": "e1bcace3-9f9e-4087-b..." │
     │                                            │  }                                          │  }                                          │
     └────────────────────────────────────────────┴─────────────────────────────────────────────┴─────────────────────────────────────────────┘
     """
-    event = msgpack.packb(
-        {
-            "event_type": event_type,
-            "data": data,
-            "timestamp": date.utcnow().isoformat(),
-        },
-    )
+    event = {
+        "event_type": event_type,
+        "data": data,
+        "timestamp": date.utcnow().isoformat(),
+        "delivery_id": event_id,
+    }
 
     if event_type == "workflow_run":
         data = typing.cast(github_types.GitHubEventWorkflowRun, data)
@@ -271,12 +272,14 @@ async def push_ci_event(
         job_id = data["workflow_job"]["id"]
         field_name = f"workflow_job/{data['workflow_job']['id']}"
 
-        await _check_if_exists(redis, key, field_name, data)
+        # FIXME(charly): log duplicate events until we find out why we receive
+        # some events twice
+        await _check_if_exists(redis, key, field_name, event)
     else:
         raise ValueError(f"Unhandled CI event {event_type}")
 
     pipe = await redis.pipeline()
-    await pipe.hset(key, field_name, event)
+    await pipe.hset(key, field_name, msgpack.packb(event))
     await pipe.expire(key, CI_EVENT_EXPIRATION)
 
     if event_type == "workflow_job":
@@ -299,10 +302,7 @@ async def push_ci_event(
 
 
 async def _check_if_exists(
-    redis: redis_utils.RedisStream,
-    key: str,
-    field_name: str,
-    data: github_types.GitHubEventWorkflowRun | github_types.GitHubEventWorkflowJob,
+    redis: redis_utils.RedisStream, key: str, field_name: str, event: typing.Any
 ) -> None:
     existing_data = await redis.hget(key, field_name)
 
@@ -311,6 +311,6 @@ async def _check_if_exists(
             "workflow_job.completed event sent twice",
             redis_key=key,
             field_name=field_name,
-            existing_data=existing_data,
-            data=data,
+            existing_event=msgpack.unpackb(existing_data),
+            new_event=event,
         )

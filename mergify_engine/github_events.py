@@ -712,6 +712,7 @@ async def filter_and_dispatch(
             classified_event.event["repository"]["owner"]["id"],
             classified_event.event["repository"]["id"],
             event_type,
+            event_id,
             classified_event.slim_event,
         )
 

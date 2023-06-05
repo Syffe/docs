@@ -76,6 +76,7 @@ async def test_push_ci_event(
         github_types.GitHubAccountIdType(123),
         github_types.GitHubRepositoryIdType(456),
         "workflow_run",
+        "whatever",
         event,
     )
 
@@ -86,6 +87,7 @@ async def test_push_ci_event(
         github_types.GitHubAccountIdType(123),
         github_types.GitHubRepositoryIdType(456),
         "workflow_job",
+        "whatever",
         event,
     )
 
@@ -117,5 +119,6 @@ async def test_push_ci_event(
         github_types.GitHubAccountIdType(123),
         github_types.GitHubRepositoryIdType(456),
         "workflow_job",
+        "whatever",
         event,
     )
