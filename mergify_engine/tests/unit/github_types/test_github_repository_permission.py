@@ -13,9 +13,17 @@ from mergify_engine.github_types import GitHubRepositoryPermission
             ],
         ),
         (
+            GitHubRepositoryPermission.MAINTAIN,
+            [
+                GitHubRepositoryPermission.MAINTAIN,
+                GitHubRepositoryPermission.ADMIN,
+            ],
+        ),
+        (
             GitHubRepositoryPermission.WRITE,
             [
                 GitHubRepositoryPermission.WRITE,
+                GitHubRepositoryPermission.MAINTAIN,
                 GitHubRepositoryPermission.ADMIN,
             ],
         ),
@@ -24,6 +32,7 @@ from mergify_engine.github_types import GitHubRepositoryPermission
             [
                 GitHubRepositoryPermission.READ,
                 GitHubRepositoryPermission.WRITE,
+                GitHubRepositoryPermission.MAINTAIN,
                 GitHubRepositoryPermission.ADMIN,
             ],
         ),
@@ -33,6 +42,7 @@ from mergify_engine.github_types import GitHubRepositoryPermission
                 GitHubRepositoryPermission.NONE,
                 GitHubRepositoryPermission.READ,
                 GitHubRepositoryPermission.WRITE,
+                GitHubRepositoryPermission.MAINTAIN,
                 GitHubRepositoryPermission.ADMIN,
             ],
         ),

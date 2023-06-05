@@ -101,10 +101,11 @@ class GitHubRepositoryPermission(enum.Enum):
         member.level = len(cls.__members__)
         return member
 
-    _order_ = "NONE READ WRITE ADMIN"
+    _order_ = "NONE READ WRITE MAINTAIN ADMIN"
     NONE = "none"
     READ = "read"
     WRITE = "write"
+    MAINTAIN = "maintain"
     ADMIN = "admin"
 
     @classmethod
