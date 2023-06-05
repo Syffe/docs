@@ -120,17 +120,23 @@ class RedisPullRequestRegistry:
         repository: github_types.GitHubRepositoryName,
         commit_sha: github_types.SHAType,
     ) -> list[ci_models.PullRequest]:
-        result = await self.redis.hgetall(self.cache_key(owner, repository, commit_sha))
-        if result:
-            return [
-                ci_models.PullRequest(**msgpack.unpackb(raw)) for raw in result.values()
-            ]
+        cache = await self.redis.hgetall(self.cache_key(owner, repository, commit_sha))
+        if cache:
+            return self._parse(cache)
 
         pulls = await self.source_registry.get_from_commit(
             owner, repository, commit_sha
         )
         await self._store(self.redis, owner, repository, {commit_sha}, pulls)
 
+        return pulls
+
+    def _parse(self, cache: dict[bytes, bytes]) -> list[ci_models.PullRequest]:
+        pulls = []
+        for raw in cache.values():
+            data = msgpack.unpackb(raw)
+            if data["id"]:
+                pulls.append(ci_models.PullRequest(**data))
         return pulls
 
     @classmethod
@@ -142,6 +148,16 @@ class RedisPullRequestRegistry:
         commit_shas: set[github_types.SHAType],
         pulls: list[ci_models.PullRequest],
     ) -> None:
+        # NOTE(charly): no pull requests means that the commit is not associated
+        # to any. We store a fake pull request to return an empty list and avoid
+        # doint HTTP request later.
+        if not pulls:
+            pulls = [
+                ci_models.PullRequest(
+                    0, 0, "No pull request associated to this commit", state="closed"
+                )
+            ]
+
         for commit_sha in commit_shas:
             cache_key = cls.cache_key(owner, repository, commit_sha)
             pipe = await redis.pipeline()

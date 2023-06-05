@@ -1,3 +1,5 @@
+import dataclasses
+
 import msgpack
 import pytest
 
@@ -7,18 +9,23 @@ from mergify_engine.ci import models
 from mergify_engine.ci import pull_registries
 
 
+@dataclasses.dataclass
 class FakePullRequestRegistry:
+    pulls: list[models.PullRequest] | None = None
+
     async def get_from_commit(
         self,
         owner: github_types.GitHubLogin,
         repository: github_types.GitHubRepositoryName,
         commit_sha: github_types.SHAType,
     ) -> list[models.PullRequest]:
-        return [
-            models.PullRequest(
-                id=1234, number=12, title="feat: my awesome feature", state="open"
-            )
-        ]
+        if self.pulls is None:
+            return [
+                models.PullRequest(
+                    id=1234, number=12, title="feat: my awesome feature", state="open"
+                )
+            ]
+        return self.pulls
 
 
 @pytest.fixture
@@ -112,3 +119,31 @@ async def test_register(registry: pull_registries.RedisPullRequestRegistry) -> N
         pull_registries.RedisPullRequestRegistry.cache_key(owner, repo, commit_sha)
     )
     assert len(redis_content) == 1
+
+
+async def test_get_from_commit_empyt_list(redis_links: redis_utils.RedisLinks) -> None:
+    registry = pull_registries.RedisPullRequestRegistry(
+        redis_links.cache, FakePullRequestRegistry(pulls=[])
+    )
+    owner = github_types.GitHubLogin("some-owner")
+    repo = github_types.GitHubRepositoryName("some-repo")
+    commit_sha = github_types.SHAType("some-sha")
+
+    pulls = await registry.get_from_commit(owner, repo, commit_sha)
+
+    assert len(pulls) == 0
+    # Cache is set with a fake pull request
+    redis_content = await registry.redis.hgetall(
+        registry.cache_key(
+            github_types.GitHubLogin("some-owner"),
+            github_types.GitHubRepositoryName("some-repo"),
+            github_types.SHAType("some-sha"),
+        )
+    )
+    assert len(redis_content) == 1
+    assert msgpack.unpackb(redis_content[b"0"]) == {
+        "id": 0,
+        "number": 0,
+        "title": "No pull request associated to this commit",
+        "state": "closed",
+    }
