@@ -210,16 +210,6 @@ async def clean_and_fill_caches(
 
     elif event_type == "push":
         event = typing.cast(github_types.GitHubEventPush, event)
-        LOG.info(
-            "Received push event on ref '%s'",
-            event["ref"],
-            event_forced=event["forced"],
-            event_commits=len(event["commits"]),
-            sender=event["sender"]["login"],
-            gh_owner=event["repository"]["owner"]["login"],
-            gh_repo=event["repository"]["name"],
-            gh_repo_default_branch=utils.extract_default_branch(event["repository"]),
-        )
         if (
             f"refs/heads/{utils.extract_default_branch(event['repository'])}"
             == event["ref"]
@@ -237,8 +227,6 @@ async def clean_and_fill_caches(
                 commits = event["commits"].copy()
                 if event["head_commit"] is not None:
                     commits.insert(0, event["head_commit"])
-
-                filename_list: set[str] = set()
                 for commit in commits:
                     if (
                         set(commit["added"]) & mergify_config_filenames
@@ -248,31 +236,6 @@ async def clean_and_fill_caches(
                         mergify_configuration_changed = True
                         break
 
-                    filename_list |= set(commit["added"])
-                    filename_list |= set(commit["modified"])
-                    filename_list |= set(commit["removed"])
-                else:
-                    LOG.info(
-                        "Files added+modified+removed for all commits of push event: '%s'",
-                        "', '".join(filename_list),
-                        sender=event["sender"]["login"],
-                        gh_owner=event["repository"]["owner"]["login"],
-                        gh_repo=event["repository"]["name"],
-                        gh_repo_default_branch=utils.extract_default_branch(
-                            event["repository"]
-                        ),
-                    )
-
-            LOG.info(
-                "mergify_configuration_changed=%s",
-                mergify_configuration_changed,
-                sender=event["sender"]["login"],
-                gh_owner=event["repository"]["owner"]["login"],
-                gh_repo=event["repository"]["name"],
-                gh_repo_default_branch=utils.extract_default_branch(
-                    event["repository"]
-                ),
-            )
             if mergify_configuration_changed:
                 await context.Repository.clear_config_file_cache(
                     redis_links.cache, event["repository"]["id"]
