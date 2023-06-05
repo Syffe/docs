@@ -138,7 +138,7 @@ async def dump(
     pg_job_registry = job_registries.PostgresJobRegistry()
     pg_pull_registry = pull_registries.PostgresPullRequestRegistry()
     http_pull_registry = pull_registries.RedisPullRequestRegistry(
-        redis_links.cache, pull_registries.HTTPPullRequestRegistry(gh_client)
+        redis_links.cache, pull_registries.HTTPPullRequestRegistry(client=gh_client)
     )
     http_job_registry = job_registries.HTTPJobRegistry(
         client=gh_client,
@@ -261,9 +261,8 @@ async def _create_job(
     except KeyError:
         owner = run_event["repository"]["owner"]["login"]
 
-    gh_client = await _create_gh_client_from_login(owner)
     http_pull_registry = pull_registries.RedisPullRequestRegistry(
-        redis_links.cache, pull_registries.HTTPPullRequestRegistry(gh_client)
+        redis_links.cache, pull_registries.HTTPPullRequestRegistry(login=owner)
     )
 
     return await ci_models.JobRun.create_job(

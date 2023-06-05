@@ -62,7 +62,22 @@ class PullRequestFromCommitRegistry(typing.Protocol):
 
 @dataclasses.dataclass
 class HTTPPullRequestRegistry:
-    client: github.AsyncGithubClient
+    login: github_types.GitHubLogin | None = None
+    client: github.AsyncGithubClient | None = None
+    _installation: github_types.GitHubInstallation | None = None
+
+    async def get_client(self) -> github.AsyncGithubClient:
+        if self.client is not None:
+            return self.client
+
+        if self._installation is None and self.login is not None:
+            self._installation = await github.get_installation_from_login(self.login)
+
+        if self._installation is None:
+            raise RuntimeError("client or login not provided")
+
+        auth = github.GithubAppInstallationAuth(self._installation)
+        return github.AsyncGithubInstallationClient(auth=auth)
 
     async def get_from_commit(
         self,
@@ -71,9 +86,10 @@ class HTTPPullRequestRegistry:
         commit_sha: github_types.SHAType,
     ) -> list[ci_models.PullRequest]:
         # https://docs.github.com/en/rest/commits/commits#list-pull-requests-associated-with-a-commit
+        client = await self.get_client()
         pull_payloads = typing.cast(
             abc.AsyncIterable[github_types.GitHubPullRequest],
-            self.client.items(
+            client.items(
                 f"/repos/{owner}/{repository}/commits/{commit_sha}/pulls",
                 resource_name="pulls",
                 page_limit=None,
