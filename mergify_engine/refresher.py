@@ -3,6 +3,7 @@ import typing
 import daiquiri
 
 from mergify_engine import date
+from mergify_engine import filtered_github_types
 from mergify_engine import github_types
 from mergify_engine import worker_pusher
 
@@ -48,7 +49,7 @@ async def _send_refresh(
         }
     )
 
-    slim_event = worker_pusher.extract_slim_event("refresh", None, data)
+    slim_event = filtered_github_types.extract("refresh", None, data)
     await worker_pusher.push(
         redis_stream,
         repository["owner"]["id"],

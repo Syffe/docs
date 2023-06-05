@@ -13,6 +13,7 @@ from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import count_seats
 from mergify_engine import engine
+from mergify_engine import filtered_github_types
 from mergify_engine import github_types
 from mergify_engine import pull_request_finder
 from mergify_engine import redis_utils
@@ -82,9 +83,7 @@ class EventBase:
 
     @property
     def slim_event(self) -> typing.Any:
-        return worker_pusher.extract_slim_event(
-            self.event_type, self.event_id, self.event
-        )
+        return filtered_github_types.extract(self.event_type, self.event_id, self.event)
 
 
 @dataclasses.dataclass
@@ -131,52 +130,6 @@ class CIEventToProcess(EventBase):
             gh_repo=self.event["repository"]["name"],
             slim_event=self.slim_event,
         )
-
-    @property
-    def slim_event(
-        self,
-    ) -> github_types.GitHubEventWorkflowRun | github_types.GitHubEventWorkflowJob:
-        if self.event_type == "workflow_run":
-            mask: utils.Mask = {
-                "workflow_run": {
-                    "id": True,
-                    "workflow_id": True,
-                    "event": True,
-                    "triggering_actor": {"id": True, "login": True},
-                    "head_sha": True,
-                    "run_attempt": True,
-                    "repository": {
-                        "id": True,
-                        "name": True,
-                        "owner": {"id": True, "login": True},
-                    },
-                },
-                "repository": {
-                    "id": True,
-                    "name": True,
-                    "owner": {"id": True, "login": True},
-                },
-                "organization": {"login": True},
-            }
-        elif self.event_type == "workflow_job":
-            mask = {
-                "workflow_job": {
-                    "id": True,
-                    "run_id": True,
-                    "name": True,
-                    "conclusion": True,
-                    "started_at": True,
-                    "completed_at": True,
-                    "labels": True,
-                }
-            }
-        else:
-            LOG.warn(
-                "unknown CI event type, unable to filter it", event_type=self.event_type
-            )
-            return self.event
-
-        return utils.filter_dict(self.event, mask)
 
 
 @dataclasses.dataclass

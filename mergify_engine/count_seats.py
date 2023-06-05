@@ -12,12 +12,12 @@ import tenacity
 
 from mergify_engine import date
 from mergify_engine import exceptions
+from mergify_engine import filtered_github_types
 from mergify_engine import github_types
 from mergify_engine import json
 from mergify_engine import redis_utils
 from mergify_engine import service
 from mergify_engine import settings
-from mergify_engine import worker_pusher
 from mergify_engine.clients import http
 
 
@@ -196,9 +196,7 @@ async def store_active_users(
         await transaction.setex(
             event_key,
             ACTIVE_USERS_EVENTS_EXPIRATION,
-            msgpack.packb(
-                worker_pusher.extract_slim_event(event_type, event_id, typed_event)
-            ),
+            msgpack.packb(filtered_github_types.extract(event_type, event_id, event)),
         )
 
     await transaction.execute()

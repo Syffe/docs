@@ -335,7 +335,7 @@ def test_url_parser_fail(url: str) -> None:
 
 def test_filter_dict() -> None:
     data = {"a": 1, "b": True, "z": "hello"}
-    mask = {"a": True, "b": True}
+    mask: utils.Mask = {"a": True, "b": True}
 
     filtered_data = utils.filter_dict(data, mask)
 

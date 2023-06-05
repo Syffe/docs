@@ -313,7 +313,7 @@ def make_sync_for_entrypoint(
 
 
 _D = typing.TypeVar("_D", bound=typing.Mapping[str, typing.Any])
-Mask = typing.Mapping[str, typing.Union[bool, "Mask"]]
+Mask = dict[str, typing.Union[bool, "Mask", list["Mask"]]]
 
 
 def filter_dict(data: _D, mask: Mask) -> _D:
@@ -323,6 +323,11 @@ def filter_dict(data: _D, mask: Mask) -> _D:
         if mask.get(key, False):
             if isinstance(mask[key], dict):
                 filtered[key] = filter_dict(value, typing.cast(Mask, mask[key]))
+            elif isinstance(mask[key], list):
+                filtered[key] = [
+                    filter_dict(item, typing.cast(list[Mask], mask[key])[0])
+                    for item in value
+                ]
             else:
                 filtered[key] = value
 
