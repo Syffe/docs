@@ -107,14 +107,14 @@ class HTTPPullRequestRegistry:
 class RedisPullRequestRegistry:
     """Commit cache is stored in Redis as hashes:
 
-         key                      field: 1234                       field: 3456
-                     +--------------------------------------+-----------------------------+
-                     | {                                    | {                           |
-                     |   "id": 1234,                        |   "id": 3456,               |
-    commits/6dcb09b  |   "number": 12,                      |   "number": 34,             |
-                     |   "title": "feat: my awesome feature"|   "title": "fix: my bad bug"|
-                     | }                                    | }                           |
-                     +--------------------------------------+-----------------------------+
+         key                                                  field: 1234                       field: 3456
+    ┌──────────────────────────────────────────┬──────────────────────────────────────┬─────────────────────────────┐
+    |                                          | {                                    | {                           |
+    |                                          |   "id": 1234,                        |   "id": 3456,               |
+    |commits/<owner>/<repository>/<commit_sha> |   "number": 12,                      |   "number": 34,             |
+    |                                          |   "title": "feat: my awesome feature"|   "title": "fix: my bad bug"|
+    |                                          | }                                    | }                           |
+    └──────────────────────────────────────────┴──────────────────────────────────────┴─────────────────────────────┘
 
     """
 
