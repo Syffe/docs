@@ -93,7 +93,7 @@ async def test_store_active_users(
     redis_links: redis_utils.RedisLinks,
 ) -> None:
     await count_seats.store_active_users(
-        redis_links.active_users, event_type, "whatever", event
+        redis_links.active_users, event_type, "whatever", "whatever", event
     )
     one_month_ago = datetime.datetime.utcnow() - datetime.timedelta(days=30)
     if event_type == "push":
@@ -123,6 +123,7 @@ async def test_store_active_users(
             "action": "opened",
             "received_at": mock.ANY,
             "delivery_id": "whatever",
+            "hook_id": "whatever",
             "sender": {"id": 21031067, "login": "Codertocat", "type": "User"},
         }
     else:
@@ -145,7 +146,7 @@ async def test_get_usage_count_seats(
     redis_links: redis_utils.RedisLinks,
 ) -> None:
     await count_seats.store_active_users(
-        redis_links.active_users, event_type, "whatever", event
+        redis_links.active_users, event_type, "whatever", "whatever", event
     )
 
     reply = await web_client.request("GET", "/subscriptions/organization/1234/usage")

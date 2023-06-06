@@ -30,12 +30,14 @@ async def test_filter_and_dispatch(
     redis_links: redis_utils.RedisLinks,
 ) -> None:
     event_id = "my_event_id"
+    hook_id = "my_hook_id"
     try:
         await github_events.filter_and_dispatch(
             mock.Mock(),
             redis_links,
             event_type,
             event_id,
+            hook_id,
             event,
         )
     except github_events.IgnoredEvent as e:
@@ -60,7 +62,7 @@ async def test_event_classifier(
     for filename, expected_event_class in expected_event_classes.items():
         event_type, event = sample_events[filename]
         classified_event = await github_events.event_classifier(
-            redis_links, event_type, "whatever", event, mergify_bot
+            redis_links, event_type, "whatever", "whatever", event, mergify_bot
         )
         assert isinstance(classified_event, expected_event_class)
 

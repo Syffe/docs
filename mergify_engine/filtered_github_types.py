@@ -4,7 +4,9 @@ from mergify_engine import date
 from mergify_engine import utils
 
 
-def extract(event_type: str, event_id: str | None, event: typing.Any) -> typing.Any:
+def extract(
+    event_type: str, event_id: str | None, hook_id: str | None, event: typing.Any
+) -> typing.Any:
     mask: utils.Mask = {
         "sender": {
             "id": True,
@@ -136,5 +138,6 @@ def extract(event_type: str, event_id: str | None, event: typing.Any) -> typing.
     slim_event = utils.filter_dict(event, mask)
     # Inject some data for debugging purpose
     slim_event["delivery_id"] = event_id
+    slim_event["hook_id"] = hook_id
     slim_event["received_at"] = date.utcnow().isoformat()
     return slim_event

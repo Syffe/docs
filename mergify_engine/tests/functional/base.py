@@ -324,6 +324,7 @@ class EventReader:
                 headers={
                     "X-GitHub-Event": event["type"],
                     "X-GitHub-Delivery": "123456789",
+                    "X-GitHub-Hook-ID": "123456789",
                     "X-Hub-Signature": "sha1=whatever",
                     "Content-type": "application/json",
                 },

@@ -49,7 +49,7 @@ async def _send_refresh(
         }
     )
 
-    slim_event = filtered_github_types.extract("refresh", None, data)
+    slim_event = filtered_github_types.extract("refresh", None, None, data)
     await worker_pusher.push(
         redis_stream,
         repository["owner"]["id"],

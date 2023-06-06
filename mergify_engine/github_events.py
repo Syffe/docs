@@ -79,11 +79,14 @@ class IgnoredEvent(Exception):
 class EventBase:
     event_type: str
     event_id: str
+    hook_id: str
     event: github_types.GitHubEventWithRepository | github_types.GitHubEvent
 
     @property
     def slim_event(self) -> typing.Any:
-        return filtered_github_types.extract(self.event_type, self.event_id, self.event)
+        return filtered_github_types.extract(
+            self.event_type, self.event_id, self.hook_id, self.event
+        )
 
 
 @dataclasses.dataclass
@@ -371,6 +374,7 @@ async def event_classifier(
     redis_links: redis_utils.RedisLinks,
     event_type: github_types.GitHubEventType,
     event_id: str,
+    hook_id: str,
     event: github_types.GitHubEvent,
     mergify_bot: github_types.GitHubAccount,
 ) -> EventToIgnore | EventToProcess | CIEventToProcess:
@@ -385,12 +389,16 @@ async def event_classifier(
         "team_add",
         "repository",
     ):
-        return EventToIgnore(event_type, event_id, event, f"{event_type} event")
+        return EventToIgnore(
+            event_type, event_id, hook_id, event, f"{event_type} event"
+        )
 
     if "repository" in event:
         event = typing.cast(github_types.GitHubEventWithRepository, event)
         if event["repository"]["archived"]:
-            return EventToIgnore(event_type, event_id, event, "repository archived")
+            return EventToIgnore(
+                event_type, event_id, hook_id, event, "repository archived"
+            )
 
     if event_type == "pull_request":
         event = typing.cast(github_types.GitHubEventPullRequest, event)
@@ -411,23 +419,27 @@ async def event_classifier(
             return EventToIgnore(
                 event_type,
                 event_id,
+                hook_id,
                 event,
                 "mergify merge queue description update",
             )
 
         return EventToProcess(
-            event_type, event_id, event, event["pull_request"]["number"]
+            event_type, event_id, hook_id, event, event["pull_request"]["number"]
         )
 
     if event_type == "refresh":
         event = typing.cast(github_types.GitHubEventRefresh, event)
-        return EventToProcess(event_type, event_id, event, event["pull_request_number"])
+        return EventToProcess(
+            event_type, event_id, hook_id, event, event["pull_request_number"]
+        )
 
     if event_type == "pull_request_review_comment":
         event = typing.cast(github_types.GitHubEventPullRequestReviewComment, event)
         return EventToProcess(
             event_type,
             event_id,
+            hook_id,
             event,
             event["pull_request"]["number"]
             if event["pull_request"] is not None
@@ -437,25 +449,29 @@ async def event_classifier(
     if event_type == "pull_request_review":
         event = typing.cast(github_types.GitHubEventPullRequestReview, event)
         return EventToProcess(
-            event_type, event_id, event, event["pull_request"]["number"]
+            event_type, event_id, hook_id, event, event["pull_request"]["number"]
         )
 
     if event_type == "pull_request_review_thread":
         event = typing.cast(github_types.GitHubEventPullRequestReviewThread, event)
         return EventToProcess(
-            event_type, event_id, event, event["pull_request"]["number"]
+            event_type, event_id, hook_id, event, event["pull_request"]["number"]
         )
 
     if event_type == "issue_comment":
         event = typing.cast(github_types.GitHubEventIssueComment, event)
         if "pull_request" not in event["issue"]:
             return EventToIgnore(
-                event_type, event_id, event, "comment is not on a pull request"
+                event_type, event_id, hook_id, event, "comment is not on a pull request"
             )
 
         if event["action"] not in ("created", "edited"):
             return EventToIgnore(
-                event_type, event_id, event, f"comment action is '{event['action']}'"
+                event_type,
+                event_id,
+                hook_id,
+                event,
+                f"comment action is '{event['action']}'",
             )
 
         if (
@@ -464,7 +480,9 @@ async def event_classifier(
             event["comment"]["user"]["id"] == mergify_bot["id"]
             and event["sender"]["id"] == mergify_bot["id"]
         ):
-            return EventToIgnore(event_type, event_id, event, "comment by Mergify[bot]")
+            return EventToIgnore(
+                event_type, event_id, hook_id, event, "comment by Mergify[bot]"
+            )
 
         if (
             # At the moment there is no specific "action" key or event
@@ -475,16 +493,19 @@ async def event_classifier(
             and event["action"] == "edited"
             and event["changes"]["body"]["from"] == event["comment"]["body"]
         ):
-            return EventToIgnore(event_type, event_id, event, "comment has been hidden")
+            return EventToIgnore(
+                event_type, event_id, hook_id, event, "comment has been hidden"
+            )
 
         if not commands_runner.COMMAND_MATCHER.search(event["comment"]["body"]):
             return EventToIgnore(
-                event_type, event_id, event, "comment is not a command"
+                event_type, event_id, hook_id, event, "comment is not a command"
             )
 
         return EventToProcess(
             event_type,
             event_id,
+            hook_id,
             event,
             github_types.GitHubPullRequestNumber(event["issue"]["number"]),
             priority=worker_pusher.Priority.immediate,
@@ -495,6 +516,7 @@ async def event_classifier(
         return EventToProcess(
             event_type,
             event_id,
+            hook_id,
             event,
             await get_pull_request_head_sha_to_number_mapping(
                 redis_links.cache,
@@ -507,10 +529,13 @@ async def event_classifier(
     if event_type == "push":
         event = typing.cast(github_types.GitHubEventPush, event)
         if not event["ref"].startswith("refs/heads/"):
-            return EventToIgnore(event_type, event_id, event, f"push on {event['ref']}")
+            return EventToIgnore(
+                event_type, event_id, hook_id, event, f"push on {event['ref']}"
+            )
         return EventToProcess(
             event_type,
             event_id,
+            hook_id,
             event,
             None,
         )
@@ -519,7 +544,7 @@ async def event_classifier(
         event = typing.cast(github_types.GitHubEventCheckSuite, event)
         if event["action"] != "rerequested":
             return EventToIgnore(
-                event_type, event_id, event, f"check_suite/{event['action']}"
+                event_type, event_id, hook_id, event, f"check_suite/{event['action']}"
             )
 
         if (
@@ -527,11 +552,14 @@ async def event_classifier(
             and event["action"] != "rerequested"
             and event["check_suite"].get("external_id") != check_api.USER_CREATED_CHECKS
         ):
-            return EventToIgnore(event_type, event_id, event, "mergify check_suite")
+            return EventToIgnore(
+                event_type, event_id, hook_id, event, "mergify check_suite"
+            )
 
         return EventToProcess(
             event_type,
             event_id,
+            hook_id,
             event,
             await get_pull_request_head_sha_to_number_mapping(
                 redis_links.cache,
@@ -548,11 +576,14 @@ async def event_classifier(
             and event["action"] != "rerequested"
             and event[event_type].get("external_id") != check_api.USER_CREATED_CHECKS
         ):
-            return EventToIgnore(event_type, event_id, event, "mergify check_run")
+            return EventToIgnore(
+                event_type, event_id, hook_id, event, "mergify check_run"
+            )
 
         return EventToProcess(
             event_type,
             event_id,
+            hook_id,
             event,
             await get_pull_request_head_sha_to_number_mapping(
                 redis_links.cache,
@@ -568,9 +599,9 @@ async def event_classifier(
             event["workflow_run"]
         ):
             return EventToIgnore(
-                event_type, event_id, event, reason="workflow_run ignored"
+                event_type, event_id, hook_id, event, reason="workflow_run ignored"
             )
-        return CIEventToProcess(event_type, event_id, event)
+        return CIEventToProcess(event_type, event_id, hook_id, event)
 
     if event_type == "workflow_job":
         event = typing.cast(github_types.GitHubEventWorkflowJob, event)
@@ -578,11 +609,11 @@ async def event_classifier(
             event["workflow_job"]
         ):
             return EventToIgnore(
-                event_type, event_id, event, reason="workflow_job ignored"
+                event_type, event_id, hook_id, event, reason="workflow_job ignored"
             )
-        return CIEventToProcess(event_type, event_id, event)
+        return CIEventToProcess(event_type, event_id, hook_id, event)
 
-    return EventToIgnore(event_type, event_id, event, "unexpected event_type")
+    return EventToIgnore(event_type, event_id, hook_id, event, "unexpected event_type")
 
 
 async def filter_and_dispatch(
@@ -590,16 +621,17 @@ async def filter_and_dispatch(
     redis_links: redis_utils.RedisLinks,
     event_type: github_types.GitHubEventType,
     event_id: str,
+    hook_id: str,
     event: github_types.GitHubEvent,
 ) -> None:
     mergify_bot = await github.GitHubAppInfo.get_bot(redis_links.cache)
     await meter_event(event_type, event, mergify_bot)
     await count_seats.store_active_users(
-        redis_links.active_users, event_type, event_id, event
+        redis_links.active_users, event_type, event_id, hook_id, event
     )
 
     classified_event = await event_classifier(
-        redis_links, event_type, event_id, event, mergify_bot
+        redis_links, event_type, event_id, hook_id, event, mergify_bot
     )
 
     if isinstance(classified_event, EventToProcess):

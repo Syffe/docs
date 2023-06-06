@@ -65,6 +65,7 @@ async def test_push_event(
         "X-GitHub-Event": event_type,
         "Content-Type": f"application/json; charset={charset}",
         "X-GitHub-Delivery": "f00bar",
+        "X-GitHub-Hook-ID": "f00bar",
     }
     reply = await web_client.post("/event", content=data, headers=headers)
     assert reply.content == reason
@@ -79,6 +80,7 @@ async def test_push_event(
         "X-GitHub-Event": event_type,
         "Content-Type": f"application/json; charset={charset}",
         "X-GitHub-Delivery": "f00bar",
+        "X-GitHub-Hook-ID": "f00bar",
     }
     reply = await web_client.post("/event", content=data, headers=headers)
     assert reply.content == reason
