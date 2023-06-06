@@ -105,29 +105,16 @@ class GenericRulesEvaluator(typing.Generic[types.T_Rule, types.T_EvaluatedRule])
                 )
 
             if rule_hidden_from_merge_queue and not evaluated_rule_conditions.match:
-                # NOTE(sileht): Replace non-base attribute and non-base changeables attributes
-                # by true, if it still matches it's a potential rule otherwise hide it.
-                base_changeable_conditions = evaluated_rule_conditions.copy()
-                for condition in base_changeable_conditions.walk():
-                    attr = condition.get_attribute_name()
-                    if attr not in self.BASE_CHANGEABLE_ATTRIBUTES:
-                        condition.make_always_true()
-
-                base_conditions = evaluated_rule_conditions.copy()
-                for condition in base_conditions.walk():
-                    attr = condition.get_attribute_name()
-                    if attr not in self.BASE_ATTRIBUTES:
-                        condition.make_always_true()
-
-                await base_changeable_conditions(pulls)
-                await base_conditions(pulls)
-
-                if not base_changeable_conditions.match:
+                if await cls.can_attributes_make_rule_always_false(
+                    evaluated_rule_conditions, self.BASE_CHANGEABLE_ATTRIBUTES, pulls
+                ):
                     self.not_applicable_base_changeable_attributes_rules.append(
                         evaluated_rule
                     )
 
-                if not base_conditions.match:
+                if await cls.can_attributes_make_rule_always_false(
+                    evaluated_rule_conditions, self.BASE_ATTRIBUTES, pulls
+                ):
                     self.ignored_rules.append(evaluated_rule)
                     categorized = True
 
@@ -139,6 +126,22 @@ class GenericRulesEvaluator(typing.Generic[types.T_Rule, types.T_EvaluatedRule])
                 self.matching_rules.append(evaluated_rule)
 
         return self
+
+    @staticmethod
+    async def can_attributes_make_rule_always_false(
+        conditions: conditions_mod.BaseRuleConditions,
+        base_attributes: tuple[str, ...],
+        pulls: list[context.BasePullRequest],
+    ) -> bool:
+        # NOTE(sileht): Replace non-base attribute and non-base changeables attributes
+        # by true, if it still matches it's a potential rule otherwise hide it.
+        conditions_with_only_base_attributes = conditions.copy()
+        for condition in conditions_with_only_base_attributes.walk():
+            attr = condition.get_attribute_name()
+            if attr not in base_attributes:
+                condition.make_always_true()
+
+        return not await conditions_with_only_base_attributes(pulls)
 
 
 class YAMLInvalid(voluptuous.Invalid):  # type: ignore[misc]
