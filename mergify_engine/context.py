@@ -93,11 +93,6 @@ class T_PayloadEventSource(typing.TypedDict):
     initial_score: float
 
 
-@dataclasses.dataclass
-class PullRequestAttributeError(AttributeError):
-    name: str
-
-
 class MergeAfterTuple(typing.NamedTuple):
     merge_after_date: datetime.datetime
     has_hoursminutes: bool
@@ -1497,76 +1492,6 @@ class Context:
             self.log, commits[0].commit_message
         )
 
-    async def _get_consolidated_queue_data(self, name: str) -> ContextAttributeType:
-        # Circular import
-        from mergify_engine.queue import merge_train
-
-        mergify_config = await self.repository.get_mergify_config()
-        queue_rules = mergify_config["queue_rules"]
-        partition_rules = mergify_config["partition_rules"]
-        convoy = await merge_train.Convoy.from_context(
-            self, queue_rules, partition_rules
-        )
-
-        if name == "queue-position":
-            embarked_pulls = await convoy.find_embarked_pull(self.pull["number"])
-            if not embarked_pulls:
-                return -1
-            if len(embarked_pulls) == 1:
-                return embarked_pulls[0].position
-
-            return max([ep.position for ep in embarked_pulls])
-
-        if name in ("queued-at", "queued-at-relative"):
-            embarked_pulls = await convoy.find_embarked_pull(self.pull["number"])
-            if not embarked_pulls:
-                return None
-
-            # NOTE(Greesb): Use the embarked_pulls at index 0 because
-            # the PR should be queued at the same time for every partitions.
-            if name == "queued-at":
-                return embarked_pulls[0].embarked_pull.queued_at
-            return date.RelativeDatetime(embarked_pulls[0].embarked_pull.queued_at)
-
-        if name in ("queue-merge-started-at", "queue-merge-started-at-relative"):
-            # Only used with QueuePullRequest
-            cars = convoy.get_train_cars_by_tmp_pull(self)
-            if not cars:
-                cars = convoy.get_train_cars_by_pull(self)
-                if not cars:
-                    return None
-                if len(cars) > 1:
-                    # NOTE(Greesb): Attribute not yet handled for multiple cars (monorepo case)
-                    raise PullRequestAttributeError(name)
-                started_at = cars[0].train_car_state.ci_started_at
-
-            elif len(cars) > 1:
-                # NOTE(Greesb): Attribute not yet handled for multiple cars (monorepo case)
-                raise PullRequestAttributeError(name)
-            else:
-                started_at = cars[0].train_car_state.ci_started_at
-
-            if started_at is None:
-                return None
-
-            if name == "queue-merge-started-at":
-                return started_at
-            return date.RelativeDatetime(started_at)
-
-        if name == "queue-partition-name":
-            return convoy.get_queue_pull_request_partition_names_from_context(self)
-
-        raise PullRequestAttributeError(name)
-
-    async def _get_consolidated_checks_data(
-        self, states: tuple[str | None, ...] | None
-    ) -> ContextAttributeType:
-        return [
-            check_name
-            for check_name, state in (await self.checks).items()
-            if states is None or state in states
-        ]
-
     async def _get_commits_attribute(
         self, commit_attribute: str, relative_time: bool
     ) -> CommitListAttributeType:
@@ -1629,292 +1554,6 @@ class Context:
             return date.RelativeDatetime(date_value)
 
         return date_value
-
-    async def _get_consolidated_data(self, name: str) -> ContextAttributeType:
-        if name in ("assignee", "assignees"):
-            return [a["login"] for a in self.pull["assignees"]]
-
-        if name.startswith("queue"):
-            return await self._get_consolidated_queue_data(name)
-
-        if name == "label":
-            return [label["name"] for label in self.pull["labels"]]
-
-        if name == "review-requested":
-            return (
-                [typing.cast(str, u["login"]) for u in self.pull["requested_reviewers"]]
-                + [f"@{t['slug']}" for t in self.pull["requested_teams"]]
-                + [
-                    f"@{self.repository.installation.owner_login}/{t['slug']}"
-                    for t in self.pull["requested_teams"]
-                ]
-            )
-        if name == "draft":
-            return self.pull["draft"]
-
-        if name == "mergify-configuration-changed":
-            # NOTE(sileht): only internally used
-            return self.configuration_changed
-
-        if name == "author":
-            return self.pull["user"]["login"]
-
-        if name == "merged-by":
-            return (
-                self.pull["merged_by"]["login"]
-                if self.pull["merged_by"] is not None
-                else ""
-            )
-
-        if name == "merged":
-            return self.pull["merged"]
-
-        if name == "closed":
-            return self.closed
-
-        if name == "milestone":
-            return (
-                self.pull["milestone"]["title"]
-                if self.pull["milestone"] is not None
-                else ""
-            )
-
-        if name == "number":
-            return typing.cast(int, self.pull["number"])
-
-        if name == "#commits-behind":
-            return await self.commits_behind_count
-
-        if name == "conflict":
-            return await self.is_conflicting()
-
-        if name == "linear-history":
-            return await self.has_linear_history()
-
-        if name == "base":
-            return self.pull["base"]["ref"]
-
-        if name == "head":
-            return self.pull["head"]["ref"]
-
-        if name == "locked":
-            return self.pull["locked"]
-
-        if name == "title":
-            return self.pull["title"]
-
-        if name == "body":
-            return MARKDOWN_COMMENT_RE.sub(
-                "",
-                self.body,
-            )
-
-        if name == "body-raw":
-            return self.body
-
-        if name == "#files":
-            return self.pull["changed_files"]
-
-        if name == "files":
-            return [f["filename"] for f in await self.files]
-
-        if name == "#commits":
-            return self.pull["commits"]
-
-        if name == "commits":
-            return await self.commits
-
-        if name.startswith("commits["):
-            match = COMMITS_ARRAY_ATTRIBUTE_RE.match(name)
-            if match is None:
-                raise PullRequestAttributeError(name)
-
-            commit_attribute = match.group(2)
-
-            relative_time = False
-            if commit_attribute.endswith("-relative"):
-                relative_time = True
-                commit_attribute = re.sub(r"-relative$", "", commit_attribute)
-
-            commit_attribute = commit_attribute.replace("-", "_")
-
-            nb_commit = match.group(1)
-            if nb_commit == "*":
-                return await self._get_commits_attribute(
-                    commit_attribute, relative_time
-                )
-
-            try:
-                commit = (await self.commits)[int(nb_commit)]
-            except IndexError:
-                return None
-
-            return self._get_commit_attribute(commit, commit_attribute, relative_time)
-
-        if name == "approved-reviews-by":
-            _, approvals = await self.consolidated_reviews()
-            return [
-                r["user"]["login"]
-                for r in approvals
-                if r["state"] == "APPROVED" and r["user"] is not None
-            ]
-
-        if name == "dismissed-reviews-by":
-            _, approvals = await self.consolidated_reviews()
-            return [
-                r["user"]["login"]
-                for r in approvals
-                if r["state"] == "DISMISSED" and r["user"] is not None
-            ]
-
-        if name == "changes-requested-reviews-by":
-            _, approvals = await self.consolidated_reviews()
-            return [
-                r["user"]["login"]
-                for r in approvals
-                if r["state"] == "CHANGES_REQUESTED" and r["user"] is not None
-            ]
-
-        if name == "commented-reviews-by":
-            comments, _ = await self.consolidated_reviews()
-            return [
-                r["user"]["login"]
-                for r in comments
-                if r["state"] == "COMMENTED" and r["user"] is not None
-            ]
-
-        # NOTE(jd) The Check API set conclusion to None for pending.
-        if name == "check-success-or-neutral-or-pending":
-            return await self._get_consolidated_checks_data(
-                ("success", "neutral", "pending", None)
-            )
-
-        if name == "check-success-or-neutral":
-            return await self._get_consolidated_checks_data(("success", "neutral"))
-
-        if name in ("status-success", "check-success"):
-            return await self._get_consolidated_checks_data(("success",))
-
-        if name in ("status-failure", "check-failure"):
-            # hopefully "cancelled" is actually a failure state to github.
-            # I think it is, however it could be the same thing as the
-            # "skipped" status.
-            return await self._get_consolidated_checks_data(
-                ("failure", "action_required", "cancelled", "timed_out", "error")
-            )
-
-        if name in ("status-neutral", "check-neutral"):
-            return await self._get_consolidated_checks_data(("neutral",))
-
-        if name == "check-timed-out":
-            return await self._get_consolidated_checks_data(("timed_out",))
-
-        if name == "check-skipped":
-            # hopefully this handles the gray "skipped" state that github actions
-            # workflows can send when a job that depends on a job and the job it
-            # depends on fails, making it get skipped automatically then.
-            return await self._get_consolidated_checks_data(("skipped",))
-
-        if name == "check":
-            return await self._get_consolidated_checks_data(None)
-
-        if name == "check-pending":
-            return await self._get_consolidated_checks_data((None, "pending"))
-
-        if name == "check-stale":
-            return await self._get_consolidated_checks_data(("stale",))
-
-        if name == "depends-on":
-            # TODO(sileht):  This is the list of merged pull requests that are
-            # required by this pull request. An optimisation can be to look at
-            # the merge queues too, to queue this pull request earlier
-            depends_on = []
-            for pull_request_number in self.get_depends_on():
-                try:
-                    ctxt = await self.repository.get_pull_request_context(
-                        pull_request_number
-                    )
-                except http.HTTPNotFound:
-                    continue
-                if ctxt.pull["merged"]:
-                    depends_on.append(f"#{pull_request_number}")
-            return depends_on
-
-        if name == "current-time":
-            return date.utcnow()
-
-        if name == "updated-at-relative":
-            return date.RelativeDatetime(date.fromisoformat(self.pull["updated_at"]))
-        if name == "created-at-relative":
-            return date.RelativeDatetime(date.fromisoformat(self.pull["created_at"]))
-        if name == "closed-at-relative":
-            if self.pull["closed_at"] is None:
-                return None
-            return date.RelativeDatetime(date.fromisoformat(self.pull["closed_at"]))
-        if name == "merged-at-relative":
-            if self.pull["merged_at"] is None:
-                return None
-            return date.RelativeDatetime(date.fromisoformat(self.pull["merged_at"]))
-
-        if name == "updated-at":
-            return date.fromisoformat(self.pull["updated_at"])
-
-        if name == "created-at":
-            return date.fromisoformat(self.pull["created_at"])
-
-        if name == "closed-at":
-            if self.pull["closed_at"] is None:
-                return None
-            return date.fromisoformat(self.pull["closed_at"])
-
-        if name == "merged-at":
-            if self.pull["merged_at"] is None:
-                return None
-            return date.fromisoformat(self.pull["merged_at"])
-
-        if name == "commits-unverified":
-            return await self.retrieve_unverified_commits()
-
-        if name == "review-threads-resolved":
-            return [
-                t["first_comment"]
-                for t in await self.retrieve_review_threads()
-                if t["isResolved"]
-            ]
-
-        if name == "review-threads-unresolved":
-            return [
-                t["first_comment"]
-                for t in await self.retrieve_review_threads()
-                if not t["isResolved"]
-            ]
-
-        if name == "repository-name":
-            return self.repository.repo["name"]
-
-        if name == "repository-full-name":
-            return self.repository.repo["full_name"]
-
-        if name in (
-            "dependabot-dependency-name",
-            "dependabot-dependency-type",
-            "dependabot-update-type",
-        ):
-            dependabot_attributes = await self.dependabot_attributes
-            if dependabot_attributes is None:
-                return None
-            if name == "dependabot-dependency-name":
-                return dependabot_attributes["dependency-name"]
-            if name == "dependabot-dependency-type":
-                return dependabot_attributes["dependency-type"]
-            if name == "dependabot-update-type":
-                return dependabot_attributes["update-type"]
-            raise PullRequestAttributeError(name)
-
-        if name == "branch-protection-review-decision":
-            return await self.retrieve_review_decision()
-
-        raise PullRequestAttributeError(name)
 
     DEPENDS_ON = re.compile(
         r"^ *Depends-On: +(?:#|"
@@ -2518,8 +2157,374 @@ class RenderTemplateFailure(Exception):
         return self.message
 
 
+@dataclasses.dataclass
+class PullRequestAttributeError(AttributeError):
+    name: str
+
+
 class BasePullRequest:
-    pass
+    @staticmethod
+    async def _get_consolidated_queue_data(
+        ctxt: Context, name: str
+    ) -> ContextAttributeType:
+        # Circular import
+        from mergify_engine.queue import merge_train
+
+        mergify_config = await ctxt.repository.get_mergify_config()
+        queue_rules = mergify_config["queue_rules"]
+        partition_rules = mergify_config["partition_rules"]
+        convoy = await merge_train.Convoy.from_context(
+            ctxt, queue_rules, partition_rules
+        )
+
+        if name == "queue-position":
+            embarked_pulls = await convoy.find_embarked_pull(ctxt.pull["number"])
+            if not embarked_pulls:
+                return -1
+            if len(embarked_pulls) == 1:
+                return embarked_pulls[0].position
+
+            return max([ep.position for ep in embarked_pulls])
+
+        if name in ("queued-at", "queued-at-relative"):
+            embarked_pulls = await convoy.find_embarked_pull(ctxt.pull["number"])
+            if not embarked_pulls:
+                return None
+
+            # NOTE(Greesb): Use the embarked_pulls at index 0 because
+            # the PR should be queued at the same time for every partitions.
+            if name == "queued-at":
+                return embarked_pulls[0].embarked_pull.queued_at
+            return date.RelativeDatetime(embarked_pulls[0].embarked_pull.queued_at)
+
+        if name in ("queue-merge-started-at", "queue-merge-started-at-relative"):
+            # Only used with QueuePullRequest
+            cars = convoy.get_train_cars_by_tmp_pull(ctxt)
+            if not cars:
+                cars = convoy.get_train_cars_by_pull(ctxt)
+                if not cars:
+                    return None
+                if len(cars) > 1:
+                    # NOTE(Greesb): Attribute not yet handled for multiple cars (monorepo case)
+                    raise PullRequestAttributeError(name)
+                started_at = cars[0].train_car_state.ci_started_at
+
+            elif len(cars) > 1:
+                # NOTE(Greesb): Attribute not yet handled for multiple cars (monorepo case)
+                raise PullRequestAttributeError(name)
+            else:
+                started_at = cars[0].train_car_state.ci_started_at
+
+            if started_at is None:
+                return None
+
+            if name == "queue-merge-started-at":
+                return started_at
+            return date.RelativeDatetime(started_at)
+
+        if name == "queue-partition-name":
+            return convoy.get_queue_pull_request_partition_names_from_context(ctxt)
+
+        raise PullRequestAttributeError(name)
+
+    @staticmethod
+    async def _get_consolidated_checks_data(
+        ctxt: Context, states: tuple[str | None, ...] | None
+    ) -> ContextAttributeType:
+        return [
+            check_name
+            for check_name, state in (await ctxt.checks).items()
+            if states is None or state in states
+        ]
+
+    @classmethod
+    async def _get_consolidated_data(
+        cls, ctxt: Context, name: str
+    ) -> ContextAttributeType:
+        if name in ("assignee", "assignees"):
+            return [a["login"] for a in ctxt.pull["assignees"]]
+
+        if name.startswith("queue"):
+            return await cls._get_consolidated_queue_data(ctxt, name)
+
+        if name == "label":
+            return [label["name"] for label in ctxt.pull["labels"]]
+
+        if name == "review-requested":
+            return (
+                [typing.cast(str, u["login"]) for u in ctxt.pull["requested_reviewers"]]
+                + [f"@{t['slug']}" for t in ctxt.pull["requested_teams"]]
+                + [
+                    f"@{ctxt.repository.installation.owner_login}/{t['slug']}"
+                    for t in ctxt.pull["requested_teams"]
+                ]
+            )
+        if name == "draft":
+            return ctxt.pull["draft"]
+
+        if name == "mergify-configuration-changed":
+            # NOTE(sileht): only internally used
+            return ctxt.configuration_changed
+
+        if name == "author":
+            return ctxt.pull["user"]["login"]
+
+        if name == "merged-by":
+            return (
+                ctxt.pull["merged_by"]["login"]
+                if ctxt.pull["merged_by"] is not None
+                else ""
+            )
+
+        if name == "merged":
+            return ctxt.pull["merged"]
+
+        if name == "closed":
+            return ctxt.closed
+
+        if name == "milestone":
+            return (
+                ctxt.pull["milestone"]["title"]
+                if ctxt.pull["milestone"] is not None
+                else ""
+            )
+
+        if name == "number":
+            return typing.cast(int, ctxt.pull["number"])
+
+        if name == "#commits-behind":
+            return await ctxt.commits_behind_count
+
+        if name == "conflict":
+            return await ctxt.is_conflicting()
+
+        if name == "linear-history":
+            return await ctxt.has_linear_history()
+
+        if name == "base":
+            return ctxt.pull["base"]["ref"]
+
+        if name == "head":
+            return ctxt.pull["head"]["ref"]
+
+        if name == "locked":
+            return ctxt.pull["locked"]
+
+        if name == "title":
+            return ctxt.pull["title"]
+
+        if name == "body":
+            return MARKDOWN_COMMENT_RE.sub(
+                "",
+                ctxt.body,
+            )
+
+        if name == "body-raw":
+            return ctxt.body
+
+        if name == "#files":
+            return ctxt.pull["changed_files"]
+
+        if name == "files":
+            return [f["filename"] for f in await ctxt.files]
+
+        if name == "#commits":
+            return ctxt.pull["commits"]
+
+        if name == "commits":
+            return await ctxt.commits
+
+        if name.startswith("commits["):
+            match = COMMITS_ARRAY_ATTRIBUTE_RE.match(name)
+            if match is None:
+                raise PullRequestAttributeError(name)
+
+            commit_attribute = match.group(2)
+
+            relative_time = False
+            if commit_attribute.endswith("-relative"):
+                relative_time = True
+                commit_attribute = re.sub(r"-relative$", "", commit_attribute)
+
+            commit_attribute = commit_attribute.replace("-", "_")
+
+            nb_commit = match.group(1)
+            if nb_commit == "*":
+                return await ctxt._get_commits_attribute(
+                    commit_attribute, relative_time
+                )
+
+            try:
+                commit = (await ctxt.commits)[int(nb_commit)]
+            except IndexError:
+                return None
+
+            return ctxt._get_commit_attribute(commit, commit_attribute, relative_time)
+
+        if name == "approved-reviews-by":
+            _, approvals = await ctxt.consolidated_reviews()
+            return [
+                r["user"]["login"]
+                for r in approvals
+                if r["state"] == "APPROVED" and r["user"] is not None
+            ]
+
+        if name == "dismissed-reviews-by":
+            _, approvals = await ctxt.consolidated_reviews()
+            return [
+                r["user"]["login"]
+                for r in approvals
+                if r["state"] == "DISMISSED" and r["user"] is not None
+            ]
+
+        if name == "changes-requested-reviews-by":
+            _, approvals = await ctxt.consolidated_reviews()
+            return [
+                r["user"]["login"]
+                for r in approvals
+                if r["state"] == "CHANGES_REQUESTED" and r["user"] is not None
+            ]
+
+        if name == "commented-reviews-by":
+            comments, _ = await ctxt.consolidated_reviews()
+            return [
+                r["user"]["login"]
+                for r in comments
+                if r["state"] == "COMMENTED" and r["user"] is not None
+            ]
+
+        # NOTE(jd) The Check API set conclusion to None for pending.
+        if name == "check-success-or-neutral-or-pending":
+            return await cls._get_consolidated_checks_data(
+                ctxt, ("success", "neutral", "pending", None)
+            )
+
+        if name == "check-success-or-neutral":
+            return await cls._get_consolidated_checks_data(ctxt, ("success", "neutral"))
+
+        if name in ("status-success", "check-success"):
+            return await cls._get_consolidated_checks_data(ctxt, ("success",))
+
+        if name in ("status-failure", "check-failure"):
+            # hopefully "cancelled" is actually a failure state to github.
+            # I think it is, however it could be the same thing as the
+            # "skipped" status.
+            return await cls._get_consolidated_checks_data(
+                ctxt, ("failure", "action_required", "cancelled", "timed_out", "error")
+            )
+
+        if name in ("status-neutral", "check-neutral"):
+            return await cls._get_consolidated_checks_data(ctxt, ("neutral",))
+
+        if name == "check-timed-out":
+            return await cls._get_consolidated_checks_data(ctxt, ("timed_out",))
+
+        if name == "check-skipped":
+            # hopefully this handles the gray "skipped" state that github actions
+            # workflows can send when a job that depends on a job and the job it
+            # depends on fails, making it get skipped automatically then.
+            return await cls._get_consolidated_checks_data(ctxt, ("skipped",))
+
+        if name == "check":
+            return await cls._get_consolidated_checks_data(ctxt, None)
+
+        if name == "check-pending":
+            return await cls._get_consolidated_checks_data(ctxt, (None, "pending"))
+
+        if name == "check-stale":
+            return await cls._get_consolidated_checks_data(ctxt, ("stale",))
+
+        if name == "depends-on":
+            # TODO(sileht):  This is the list of merged pull requests that are
+            # required by this pull request. An optimisation can be to look at
+            # the merge queues too, to queue this pull request earlier
+            depends_on = []
+            for pull_request_number in ctxt.get_depends_on():
+                try:
+                    ctxt = await ctxt.repository.get_pull_request_context(
+                        pull_request_number
+                    )
+                except http.HTTPNotFound:
+                    continue
+                if ctxt.pull["merged"]:
+                    depends_on.append(f"#{pull_request_number}")
+            return depends_on
+
+        if name == "current-time":
+            return date.utcnow()
+
+        if name == "updated-at-relative":
+            return date.RelativeDatetime(date.fromisoformat(ctxt.pull["updated_at"]))
+        if name == "created-at-relative":
+            return date.RelativeDatetime(date.fromisoformat(ctxt.pull["created_at"]))
+        if name == "closed-at-relative":
+            if ctxt.pull["closed_at"] is None:
+                return None
+            return date.RelativeDatetime(date.fromisoformat(ctxt.pull["closed_at"]))
+        if name == "merged-at-relative":
+            if ctxt.pull["merged_at"] is None:
+                return None
+            return date.RelativeDatetime(date.fromisoformat(ctxt.pull["merged_at"]))
+
+        if name == "updated-at":
+            return date.fromisoformat(ctxt.pull["updated_at"])
+
+        if name == "created-at":
+            return date.fromisoformat(ctxt.pull["created_at"])
+
+        if name == "closed-at":
+            if ctxt.pull["closed_at"] is None:
+                return None
+            return date.fromisoformat(ctxt.pull["closed_at"])
+
+        if name == "merged-at":
+            if ctxt.pull["merged_at"] is None:
+                return None
+            return date.fromisoformat(ctxt.pull["merged_at"])
+
+        if name == "commits-unverified":
+            return await ctxt.retrieve_unverified_commits()
+
+        if name == "review-threads-resolved":
+            return [
+                t["first_comment"]
+                for t in await ctxt.retrieve_review_threads()
+                if t["isResolved"]
+            ]
+
+        if name == "review-threads-unresolved":
+            return [
+                t["first_comment"]
+                for t in await ctxt.retrieve_review_threads()
+                if not t["isResolved"]
+            ]
+
+        if name == "repository-name":
+            return ctxt.repository.repo["name"]
+
+        if name == "repository-full-name":
+            return ctxt.repository.repo["full_name"]
+
+        if name in (
+            "dependabot-dependency-name",
+            "dependabot-dependency-type",
+            "dependabot-update-type",
+        ):
+            dependabot_attributes = await ctxt.dependabot_attributes
+            if dependabot_attributes is None:
+                return None
+            if name == "dependabot-dependency-name":
+                return dependabot_attributes["dependency-name"]
+            if name == "dependabot-dependency-type":
+                return dependabot_attributes["dependency-type"]
+            if name == "dependabot-update-type":
+                return dependabot_attributes["update-type"]
+            raise PullRequestAttributeError(name)
+
+        if name == "branch-protection-review-decision":
+            return await ctxt.retrieve_review_decision()
+
+        raise PullRequestAttributeError(name)
 
 
 @dataclasses.dataclass
@@ -2586,7 +2591,7 @@ class PullRequest(BasePullRequest):
     }
 
     async def __getattr__(self, name: str) -> ContextAttributeType:
-        return await self.context._get_consolidated_data(name.replace("_", "-"))
+        return await self._get_consolidated_data(self.context, name.replace("_", "-"))
 
     def __iter__(self) -> abc.Iterator[str]:
         return iter(
@@ -2760,8 +2765,8 @@ class QueuePullRequest(BasePullRequest):
     async def __getattr__(self, name: str) -> ContextAttributeType:
         fancy_name = name.replace("_", "-")
         if fancy_name in self.QUEUE_ATTRIBUTES:
-            return await self.queue_context._get_consolidated_data(fancy_name)
-        return await self.context._get_consolidated_data(fancy_name)
+            return await self._get_consolidated_data(self.queue_context, fancy_name)
+        return await self._get_consolidated_data(self.context, fancy_name)
 
 
 @dataclasses.dataclass

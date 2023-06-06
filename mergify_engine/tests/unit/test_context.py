@@ -781,7 +781,7 @@ async def test_context_body_null(
 ) -> None:
     a_pull_request["body"] = None
     ctxt = context.Context(mock.Mock(), a_pull_request)
-    assert await ctxt._get_consolidated_data("body") == ""
+    assert await ctxt.pull_request._get_consolidated_data(ctxt, "body") == ""
 
 
 async def test_context_body_html(

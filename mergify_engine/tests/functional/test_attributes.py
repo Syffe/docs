@@ -1098,7 +1098,9 @@ class TestAttributesWithSub(base.FunctionalTestBase):
 
         ctxt = context.Context(self.repository_ctxt, pr_labeled["pull_request"])
         assert ctxt.get_depends_on() == [pr1["number"], pr2["number"], 9999999]
-        assert await ctxt._get_consolidated_data("depends-on") == [f"#{pr2['number']}"]
+        assert await ctxt.pull_request._get_consolidated_data(ctxt, "depends-on") == [
+            f"#{pr2['number']}"
+        ]
 
         repo_url = ctxt.pull["base"]["repo"]["html_url"]
         summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)

@@ -48,13 +48,19 @@ class DummyList(list[str]):
 
 
 class DummyContext(context.Context):
+    @staticmethod
+    def ensure_complete() -> None:  # type: ignore[override]
+        return None
+
+
+class DummyPullRequest(context.PullRequest):
     ALWAYS_STRING_ATTRIBUTES = ("title", "body")
 
     # This is only used to check Jinja2 syntax validity and must be sync
-    @classmethod
-    def _get_consolidated_data(cls, key: str) -> context.ContextAttributeType:  # type: ignore[override]
+    def __getattr__(self, name: str) -> context.ContextAttributeType:  # type: ignore[override]
+        key = name.replace("_", "-")
         if key in context.PullRequest.ATTRIBUTES:
-            if key in cls.ALWAYS_STRING_ATTRIBUTES:
+            if key in self.ALWAYS_STRING_ATTRIBUTES:
                 return ""
             return None
 
@@ -65,16 +71,6 @@ class DummyContext(context.Context):
             return 0
 
         raise context.PullRequestAttributeError(key)
-
-    @staticmethod
-    def ensure_complete() -> None:  # type: ignore[override]
-        return None
-
-
-class DummyPullRequest(context.PullRequest):
-    # This is only used to check Jinja2 syntax validity and must be sync
-    def __getattr__(self, name: str) -> typing.Any:
-        return self.context._get_consolidated_data(name.replace("_", "-"))
 
     def render_template(self, template: str, extra_variables: dict[str, str] | None = None) -> str:  # type: ignore[override]
         """Render a template interpolating variables based on pull request attributes."""
