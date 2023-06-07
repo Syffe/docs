@@ -22,10 +22,6 @@ from mergify_engine.models import github_repository
 LOG = daiquiri.getLogger(__name__)
 
 
-class NoDataToDump(Exception):
-    pass
-
-
 class MissingWorkflowRunEvent(Exception):
     pass
 
@@ -38,29 +34,30 @@ class WorkflowJobAlreadyExists(Exception):
     pass
 
 
-async def dump_next_repository(redis_links: redis_utils.RedisLinks) -> None:
+async def dump_next_repositories(redis_links: redis_utils.RedisLinks) -> None:
     async with database.create_session() as session:
-        try:
-            next_sub = await get_next_repository(session)
-        except NoDataToDump:
-            return
+        next_repos = await get_next_repositories(session)
 
-    gh_client = await _create_gh_client_from_login(next_sub.owner)
-    repository = await _get_repository_name_from_id(gh_client, next_sub.repository_id)
-    await dump(
-        redis_links,
-        gh_client,
-        next_sub.owner,
-        repository,
-        date.DateTimeRange(
-            next_sub.last_dump_at, next_sub.last_dump_at + settings.CI_DUMP_FREQUENCY
-        ),
-    )
-
-    async with database.create_session() as session:
-        await update_repository_dump_date(
-            session, next_sub.repository_id, next_sub.last_dump_at
+    for next_repo in next_repos:
+        gh_client = await _create_gh_client_from_login(next_repo.owner)
+        repository = await _get_repository_name_from_id(
+            gh_client, next_repo.repository_id
         )
+        await dump(
+            redis_links,
+            gh_client,
+            next_repo.owner,
+            repository,
+            date.DateTimeRange(
+                next_repo.last_dump_at,
+                next_repo.last_dump_at + settings.CI_DUMP_FREQUENCY,
+            ),
+        )
+
+        async with database.create_session() as session:
+            await update_repository_dump_date(
+                session, next_repo.repository_id, next_repo.last_dump_at
+            )
 
 
 class NextRepositoryResult(typing.NamedTuple):
@@ -70,9 +67,9 @@ class NextRepositoryResult(typing.NamedTuple):
     last_dump_at: datetime.datetime
 
 
-async def get_next_repository(
+async def get_next_repositories(
     session: sqlalchemy.ext.asyncio.AsyncSession,
-) -> NextRepositoryResult:
+) -> list[NextRepositoryResult]:
     sql = (
         sqlalchemy.select(github_repository.GitHubRepository)
         .where(
@@ -83,25 +80,21 @@ async def get_next_repository(
             | (github_repository.GitHubRepository.last_dump_at.is_(None))
         )
         .order_by(github_repository.GitHubRepository.last_dump_at.asc().nulls_first())
-        .limit(1)
+        .limit(settings.CI_DUMP_BATCH_SIZE)
     )
+    result = await session.scalars(sql)
 
-    result = await session.execute(sql)
-    row = result.first()
-    if not row:
-        raise NoDataToDump
+    repos = []
+    for row in result:
+        default_last_dump_at = date.utcnow() - settings.CI_DUMP_FREQUENCY
+        at = row.last_dump_at or default_last_dump_at
+        # NOTE(charly): we set the timezone because last_dump_at is stored as a
+        # TIMESTAMP WITHOUT TIME ZONE. We always work with UTC, the timezone doesn't
+        # come from the user.
+        atz = at.replace(tzinfo=datetime.UTC)
 
-    owner_id = row.GitHubRepository.owner.id
-    owner = row.GitHubRepository.owner.login
-    repository_id = row.GitHubRepository.id
-    default_last_dump_at = date.utcnow() - settings.CI_DUMP_FREQUENCY
-    at = row.GitHubRepository.last_dump_at or default_last_dump_at
-    # NOTE(charly): we set the timezone because last_dump_at is stored as a
-    # TIMESTAMP WITHOUT TIME ZONE. We always work with UTC, the timezone doesn't
-    # come from the user.
-    atz = at.replace(tzinfo=datetime.UTC)
-
-    return NextRepositoryResult(owner_id, owner, repository_id, atz)
+        repos.append(NextRepositoryResult(row.owner_id, row.owner.login, row.id, atz))
+    return repos
 
 
 async def _create_gh_client_from_login(

@@ -253,6 +253,7 @@ class WorkerSettings(pydantic.BaseSettings):
     CI_DUMP_STREAM_BATCH_SIZE: int = 1000
     # FIXME: stop injecting events until we reenable the consuming part
     CI_DUMP_INGESTION: bool = False
+    CI_DUMP_BATCH_SIZE: int = 50
 
 
 class APISettings(pydantic.BaseSettings):

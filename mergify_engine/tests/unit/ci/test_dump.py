@@ -66,7 +66,7 @@ async def test_dump_next_repository(
         "mergify_engine.ci.dump._create_gh_client_from_login",
         return_value=mocked_gh_client,
     ):
-        await dump.dump_next_repository(redis_links)
+        await dump.dump_next_repositories(redis_links)
 
         mocked_dump.assert_called_once_with(
             redis_links,
@@ -105,12 +105,14 @@ async def test_get_next_repository_normal_case(
     )
     await db.commit()
 
-    next_sub = await dump.get_next_repository(db)
+    repos = await dump.get_next_repositories(db)
 
-    assert next_sub.owner_id == 1
-    assert next_sub.owner == "some_owner"
-    assert next_sub.repository_id == 11
-    assert next_sub.last_dump_at == AN_HOUR_AGO
+    assert len(repos) == 1
+    repo = repos[0]
+    assert repo.owner_id == 1
+    assert repo.owner == "some_owner"
+    assert repo.repository_id == 11
+    assert repo.last_dump_at == AN_HOUR_AGO
 
 
 @freeze_time(NOW)
@@ -134,12 +136,14 @@ async def test_get_next_repository_new_repository(
     )
     await db.commit()
 
-    next_sub = await dump.get_next_repository(db)
+    repos = await dump.get_next_repositories(db)
 
-    assert next_sub.owner_id == 1
-    assert next_sub.owner == "some_owner"
-    assert next_sub.repository_id == 11
-    assert next_sub.last_dump_at == AN_HOUR_AGO
+    assert len(repos) == 1
+    repo = repos[0]
+    assert repo.owner_id == 1
+    assert repo.owner == "some_owner"
+    assert repo.repository_id == 11
+    assert repo.last_dump_at == AN_HOUR_AGO
 
 
 @freeze_time(NOW)
@@ -158,8 +162,9 @@ async def test_get_next_repository_nothing_to_dump(
     )
     await db.commit()
 
-    with pytest.raises(dump.NoDataToDump):
-        await dump.get_next_repository(db)
+    repos = await dump.get_next_repositories(db)
+
+    assert len(repos) == 0
 
 
 @freeze_time(NOW)
@@ -178,12 +183,14 @@ async def test_get_next_repository_not_up_to_date(
     )
     await db.commit()
 
-    next_sub = await dump.get_next_repository(db)
+    repos = await dump.get_next_repositories(db)
 
-    assert next_sub.owner_id == 1
-    assert next_sub.owner == "some_owner"
-    assert next_sub.repository_id == 11
-    assert next_sub.last_dump_at == TWO_HOURS_AGO
+    assert len(repos) == 1
+    repo = repos[0]
+    assert repo.owner_id == 1
+    assert repo.owner == "some_owner"
+    assert repo.repository_id == 11
+    assert repo.last_dump_at == TWO_HOURS_AGO
 
 
 @pytest.fixture

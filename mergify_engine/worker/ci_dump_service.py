@@ -24,4 +24,4 @@ class CIDumpService:
         return [self._ci_dump_task]
 
     async def ci_dump_task(self) -> None:
-        await dump.dump_next_repository(self.redis_links)
+        await dump.dump_next_repositories(self.redis_links)
