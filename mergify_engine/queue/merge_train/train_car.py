@@ -804,8 +804,7 @@ class TrainCar:
         if parent_pr_numbers:
             pr_numbers += parent_pr_numbers
 
-        pr_numbers_str = list(map(str, sorted(pr_numbers)))
-        return "-".join(pr_numbers_str)
+        return "-".join(map(str, sorted(pr_numbers)))
 
     async def _close_already_existing_draft_pr(
         self,
