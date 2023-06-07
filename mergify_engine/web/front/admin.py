@@ -81,13 +81,21 @@ router = fastapi.APIRouter()
 async def sudo(
     request: fastapi.Request, login: github_types.GitHubLogin, session: database.Session
 ) -> fastapi.Response:
-    from_user = request.auth.user.login
+    from_user = imia.impersonation.get_original_user(request).login
+
+    if imia.impersonation.impersonation_is_active(request):
+        request.session.pop("sudo", None)
+        request.session.pop("sudoGrantedTo", None)
+        imia.impersonation.exit_impersonation(request)
+
     LOG.info("sudo to %s requested for %s", login, from_user, gh_owner=from_user)
     user = await select_user_from_login(session, login)
     LOG.info("sudo to %s granted for %s", login, from_user, gh_owner=from_user)
-    request.session["sudo"] = True
-    request.session["sudoGrantedTo"] = from_user
-    imia.impersonation.impersonate(request, user)
+
+    if from_user != login:
+        imia.impersonation.impersonate(request, user)
+        request.session["sudo"] = True
+        request.session["sudoGrantedTo"] = from_user
     return fastapi.responses.JSONResponse({})
 
 

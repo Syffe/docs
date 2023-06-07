@@ -30,7 +30,8 @@ def is_mergify_admin(
     return (
         auth
         and auth.is_authenticated
-        and auth.user.id in settings.DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO
+        and imia.impersonation.get_original_user(connection).id
+        in settings.DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO
     )
 
 
