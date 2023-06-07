@@ -172,26 +172,35 @@ async def dump_event_stream(redis_links: redis_utils.RedisLinks) -> None:
     pg_pull_registry = pull_registries.PostgresPullRequestRegistry()
 
     with ddtrace.tracer.trace("ci.dump_stream", span_type="worker"):
-        stream_events = await redis_links.stream.xrange(
-            "workflow_job", count=settings.CI_DUMP_STREAM_BATCH_SIZE
-        )
-        LOG.info("dump CI stream data", stream_events=stream_events)
+        min_stream_event_id = "-"
 
-        for stream_event_id, stream_event in stream_events:
-            try:
-                await _process_stream_event(
-                    redis_links,
-                    pg_job_registry,
-                    pg_pull_registry,
-                    stream_event_id,
-                    stream_event,
-                )
-            except Exception:
-                LOG.exception(
-                    "unprocessable CI stream event",
-                    stream_event=stream_event,
-                    stream_event_id=stream_event_id,
-                )
+        while stream_events := await redis_links.stream.xrange(
+            "workflow_job",
+            min=min_stream_event_id,
+            count=settings.CI_DUMP_STREAM_BATCH_SIZE,
+        ):
+            LOG.info(
+                "process CI stream data",
+                stream_event_ids=[id_.decode() for id_, _ in stream_events],
+            )
+
+            for stream_event_id, stream_event in stream_events:
+                try:
+                    await _process_stream_event(
+                        redis_links,
+                        pg_job_registry,
+                        pg_pull_registry,
+                        stream_event_id,
+                        stream_event,
+                    )
+                except Exception:
+                    LOG.exception(
+                        "unprocessable CI stream event",
+                        stream_event=stream_event,
+                        stream_event_id=stream_event_id,
+                    )
+
+            min_stream_event_id = f"({stream_event_id.decode()}"
 
 
 async def _process_stream_event(

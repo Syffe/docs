@@ -250,7 +250,7 @@ class WorkerSettings(pydantic.BaseSettings):
     BUCKET_PROCESSING_MAX_SECONDS: int = 30
     MAX_GITTER_CONCURRENT_JOBS: int = 20
     CI_DUMP_FREQUENCY: datetime.timedelta = datetime.timedelta(hours=1)
-    CI_DUMP_STREAM_BATCH_SIZE: int = 5000
+    CI_DUMP_STREAM_BATCH_SIZE: int = 1000
     # FIXME: stop injecting events until we reenable the consuming part
     CI_DUMP_INGESTION: bool = False
 

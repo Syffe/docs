@@ -18,7 +18,7 @@ from mergify_engine.worker import stream_lua
 LOG = daiquiri.getLogger(__name__)
 
 WORKER_PROCESSING_DELAY: float = 30
-CI_EVENT_EXPIRATION = datetime.timedelta(days=7)
+CI_EVENT_EXPIRATION = datetime.timedelta(days=1)
 
 
 class Priority(enum.IntEnum):
