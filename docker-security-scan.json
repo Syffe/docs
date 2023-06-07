@@ -1327,7 +1327,7 @@
     "PkgName": "curl",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-43551",
-    "Title": "curl: HSTS bypass via IDN",
+    "Title": "HSTS bypass via IDN",
     "Severity": "HIGH",
     "PublishedDate": "2022-12-23T15:15:00Z"
   },
@@ -1336,7 +1336,7 @@
     "PkgName": "libcurl3-gnutls",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-43551",
-    "Title": "curl: HSTS bypass via IDN",
+    "Title": "HSTS bypass via IDN",
     "Severity": "HIGH",
     "PublishedDate": "2022-12-23T15:15:00Z"
   },
@@ -1345,7 +1345,7 @@
     "PkgName": "libcurl4",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-43551",
-    "Title": "curl: HSTS bypass via IDN",
+    "Title": "HSTS bypass via IDN",
     "Severity": "HIGH",
     "PublishedDate": "2022-12-23T15:15:00Z"
   },
