@@ -1,7 +1,10 @@
+from unittest import mock
+
 import pytest
 import respx
 import sqlalchemy.orm
 
+from mergify_engine import debug
 from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine.models import github_user
@@ -110,3 +113,41 @@ async def test_sudo_org(
     r = await web_client.get("/front/sudo/anotheruser")
     assert r.status_code == 403
     assert await web_client.logged_as() == "impersonated_user"
+
+
+async def test_sudo_debug(
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    web_client: conftest.CustomTestClient,
+    monkeypatch: pytest.MonkeyPatch,
+    respx_mock: respx.MockRouter,
+) -> None:
+    monkeypatch.setattr(settings, "DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO", [2644])
+
+    admin_account = github_user.GitHubUser(
+        id=github_types.GitHubAccountIdType(2644),
+        login=github_types.GitHubLogin("jd"),
+        oauth_access_token=github_types.GitHubOAuthToken("foobar"),
+    )
+    impersonated_user = github_user.GitHubUser(
+        id=github_types.GitHubAccountIdType(26441),
+        login=github_types.GitHubLogin("impersonated_user"),
+        oauth_access_token=github_types.GitHubOAuthToken("foobar"),
+    )
+    db.add(admin_account)
+    db.add(impersonated_user)
+    await db.commit()
+
+    r = await web_client.get("/front/sudo-debug/anotheruser/reponame/pull/1234")
+    assert r.status_code == 401
+
+    await web_client.log_as(admin_account.id)
+
+    def fake_debug(url: str) -> None:
+        print("hello world")
+
+    with mock.patch.object(debug, "report", side_effect=fake_debug):
+        # user is unknown I'm back to real myself
+        r = await web_client.get("/front/sudo-debug/anotheruser/reponame/pull/1234")
+        assert r.status_code == 200
+        assert r.text == "hello world\n"
+        assert await web_client.logged_as() == admin_account.login

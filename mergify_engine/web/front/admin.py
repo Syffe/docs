@@ -1,3 +1,5 @@
+import contextlib
+import io
 import typing
 
 import daiquiri
@@ -9,6 +11,7 @@ import sqlalchemy.ext.asyncio
 import sqlalchemy.orm.exc
 
 from mergify_engine import database
+from mergify_engine import debug
 from mergify_engine import github_types
 from mergify_engine.clients import dashboard
 from mergify_engine.models import github_user
@@ -86,3 +89,27 @@ async def sudo(
     request.session["sudoGrantedTo"] = from_user
     imia.impersonation.impersonate(request, user)
     return fastapi.responses.JSONResponse({})
+
+
+@router.get(
+    "/sudo-debug/{login}/{repository}/pull/{pull_number}",
+    dependencies=[
+        fastapi.Depends(security.mergify_admin_login_required),
+    ],
+)
+async def sudo_debug(
+    request: fastapi.Request,
+    login: github_types.GitHubLogin,
+    repository: github_types.GitHubRepositoryName,
+    pull_number: github_types.GitHubPullRequestNumber,
+    session: database.Session,
+) -> fastapi.Response:
+    from_user = imia.impersonation.get_original_user(request).login
+
+    url = f"https://api.github.com/repos/{login}/{repository}/pull/{pull_number}"
+    LOG.info("sudo-debug to %s granted for %s", url, from_user)
+
+    f = io.StringIO()
+    with contextlib.redirect_stdout(f):
+        await debug.report(url)
+    return fastapi.responses.Response(f.getvalue(), media_type="text/plain")
