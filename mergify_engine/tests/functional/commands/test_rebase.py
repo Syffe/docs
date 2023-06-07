@@ -4,8 +4,8 @@ import typing
 import pytest
 
 from mergify_engine import github_types
+from mergify_engine import subscription
 from mergify_engine import yaml
-from mergify_engine.dashboard import subscription
 from mergify_engine.tests.functional import base
 
 

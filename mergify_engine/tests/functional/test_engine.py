@@ -12,10 +12,10 @@ from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import refresher
 from mergify_engine import settings
+from mergify_engine import subscription
 from mergify_engine import utils
 from mergify_engine import yaml
 from mergify_engine.clients import github
-from mergify_engine.dashboard import subscription
 from mergify_engine.rules import live_resolvers
 from mergify_engine.tests.functional import base
 

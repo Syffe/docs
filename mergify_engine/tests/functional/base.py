@@ -33,12 +33,12 @@ from mergify_engine import redis_utils
 from mergify_engine import refresher
 from mergify_engine import settings
 from mergify_engine import signals
+from mergify_engine import subscription
 from mergify_engine import utils
 from mergify_engine.actions import backport
 from mergify_engine.actions import copy as copy_action
 from mergify_engine.clients import github
 from mergify_engine.clients import http
-from mergify_engine.dashboard import subscription
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import statistics as queue_statistics
 from mergify_engine.rules.config import partition_rules as partr_config

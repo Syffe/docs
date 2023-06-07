@@ -7,7 +7,7 @@ import typing
 import voluptuous
 
 from mergify_engine import check_api
-from mergify_engine.dashboard import subscription
+from mergify_engine import subscription
 from mergify_engine.rules import conditions
 from mergify_engine.rules.config import mergify as mergify_conf
 

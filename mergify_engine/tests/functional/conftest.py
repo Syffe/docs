@@ -24,12 +24,12 @@ from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import settings
+from mergify_engine import subscription
 from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import github_app
 from mergify_engine.clients import http
 from mergify_engine.config import types
-from mergify_engine.dashboard import subscription
 from mergify_engine.models import github_user
 
 
@@ -191,14 +191,14 @@ async def dashboard(
         )
 
     patcher = mock.patch(
-        "mergify_engine.dashboard.subscription.Subscription._retrieve_subscription_from_db",
+        "mergify_engine.subscription.Subscription._retrieve_subscription_from_db",
         side_effect=fake_retrieve_subscription_from_db,
     )
     patcher.start()
     request.addfinalizer(patcher.stop)
 
     patcher = mock.patch(
-        "mergify_engine.dashboard.subscription.Subscription.get_subscription",
+        "mergify_engine.subscription.Subscription.get_subscription",
         side_effect=fake_subscription,
     )
     patcher.start()

@@ -7,7 +7,7 @@ from mergify_engine import context
 from mergify_engine import dashboard
 from mergify_engine import refresher
 from mergify_engine import signals
-from mergify_engine.dashboard import subscription
+from mergify_engine import subscription
 from mergify_engine.rules.config import pull_request_rules as prr_config
 
 

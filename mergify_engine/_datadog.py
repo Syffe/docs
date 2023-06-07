@@ -4,7 +4,7 @@ from datadog import statsd  # type: ignore[attr-defined]
 
 from mergify_engine import github_types
 from mergify_engine import signals
-from mergify_engine.dashboard import subscription
+from mergify_engine import subscription
 
 
 if typing.TYPE_CHECKING:

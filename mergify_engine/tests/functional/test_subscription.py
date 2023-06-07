@@ -4,7 +4,7 @@ from unittest import mock
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import settings
-from mergify_engine.dashboard import subscription
+from mergify_engine import subscription
 from mergify_engine.tests.functional import base
 
 
@@ -36,7 +36,7 @@ class TestSubscription(base.FunctionalTestBase):
             )
 
         patcher = mock.patch(
-            "mergify_engine.dashboard.subscription.Subscription._retrieve_subscription_from_db",
+            "mergify_engine.subscription.Subscription._retrieve_subscription_from_db",
             side_effect=fake_subscription,
         )
         patcher.start()

@@ -4,8 +4,8 @@ import first
 import pytest
 
 from mergify_engine import github_types
+from mergify_engine import subscription
 from mergify_engine.actions import queue
-from mergify_engine.dashboard import subscription
 from mergify_engine.tests import utils
 from mergify_engine.tests.unit import conftest
 

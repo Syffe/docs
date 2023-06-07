@@ -8,9 +8,9 @@ from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import settings
+from mergify_engine import subscription
 from mergify_engine.actions.backport import BackportAction
 from mergify_engine.actions.rebase import RebaseAction
-from mergify_engine.dashboard import subscription
 from mergify_engine.engine import commands_runner
 from mergify_engine.rules.config import mergify as mergify_conf
 from mergify_engine.tests.unit import conftest

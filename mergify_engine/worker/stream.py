@@ -50,10 +50,10 @@ from mergify_engine import pull_request_finder
 from mergify_engine import redis_utils
 from mergify_engine import refresher
 from mergify_engine import settings
+from mergify_engine import subscription
 from mergify_engine import worker_pusher
 from mergify_engine.clients import github
 from mergify_engine.clients import http
-from mergify_engine.dashboard import subscription
 from mergify_engine.queue import merge_train
 from mergify_engine.worker import stream_lua
 

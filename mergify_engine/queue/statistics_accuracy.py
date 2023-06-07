@@ -7,7 +7,7 @@ from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import json
 from mergify_engine import signals
-from mergify_engine.dashboard import subscription
+from mergify_engine import subscription
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import statistics as queue_stats
 from mergify_engine.web.api.queues import estimated_time_to_merge as eta_queues_api

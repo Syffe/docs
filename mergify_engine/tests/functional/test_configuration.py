@@ -7,8 +7,8 @@ from mergify_engine import check_api
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import rules
+from mergify_engine import subscription
 from mergify_engine import yaml
-from mergify_engine.dashboard import subscription
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.tests.functional import base
 

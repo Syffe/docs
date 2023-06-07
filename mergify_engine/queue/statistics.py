@@ -10,8 +10,8 @@ from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import signals
+from mergify_engine import subscription
 from mergify_engine import utils
-from mergify_engine.dashboard import subscription
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config

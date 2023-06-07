@@ -10,13 +10,13 @@ from mergify_engine import redis_utils
 from mergify_engine import refresher
 from mergify_engine import service
 from mergify_engine import settings
+from mergify_engine import subscription
 from mergify_engine import utils
 from mergify_engine.ci import dump
 from mergify_engine.ci import job_registries
 from mergify_engine.ci import reports
 from mergify_engine.clients import github
 from mergify_engine.clients import http
-from mergify_engine.dashboard import subscription
 
 
 @utils.make_sync_for_entrypoint

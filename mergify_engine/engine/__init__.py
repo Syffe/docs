@@ -13,11 +13,11 @@ from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import settings
+from mergify_engine import subscription
 from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import github_app
 from mergify_engine.clients import http
-from mergify_engine.dashboard import subscription
 from mergify_engine.engine import actions_runner
 from mergify_engine.engine import commands_runner
 from mergify_engine.engine import queue_runner

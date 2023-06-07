@@ -10,10 +10,10 @@ from mergify_engine import database
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import settings
+from mergify_engine import subscription
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.config import types
-from mergify_engine.dashboard import subscription
 from mergify_engine.models import application_keys
 from mergify_engine.models import github_account
 from mergify_engine.models import github_user

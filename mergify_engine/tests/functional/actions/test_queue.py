@@ -16,9 +16,9 @@ from mergify_engine import date
 from mergify_engine import engine
 from mergify_engine import github_types
 from mergify_engine import settings
+from mergify_engine import subscription
 from mergify_engine import utils
 from mergify_engine import yaml
-from mergify_engine.dashboard import subscription
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules.config import partition_rules as partr_config

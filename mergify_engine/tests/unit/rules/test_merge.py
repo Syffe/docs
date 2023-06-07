@@ -6,7 +6,6 @@ import pytest
 
 from mergify_engine.rules.config import mergify as mergify_conf
 
-
 source_config = {
     "pull_request_rules": [
         {

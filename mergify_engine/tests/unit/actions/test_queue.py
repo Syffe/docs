@@ -9,9 +9,9 @@ from mergify_engine import check_api
 from mergify_engine import github_types
 from mergify_engine import queue as merge_queue
 from mergify_engine import rules
+from mergify_engine import subscription
 from mergify_engine.actions import queue
 from mergify_engine.clients import http
-from mergify_engine.dashboard import subscription
 from mergify_engine.rules import checks_status
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import pull_request_rules as prr_config
