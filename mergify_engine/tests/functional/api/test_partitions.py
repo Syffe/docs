@@ -71,6 +71,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
                             "number": p1["number"],
                             "position": 0,
                             "priority": anys.ANY_INT,
+                            "effective_priority": anys.ANY_INT,
                             "queue_rule": {
                                 "name": "foo",
                                 "config": anys.ANY_MAPPING,
@@ -191,6 +192,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
                             "number": p1["number"],
                             "position": 0,
                             "priority": anys.ANY_INT,
+                            "effective_priority": anys.ANY_INT,
                             "queue_rule": {
                                 "name": "foo",
                                 "config": anys.ANY_MAPPING,
@@ -248,6 +250,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
                             "number": p1["number"],
                             "position": 0,
                             "priority": anys.ANY_INT,
+                            "effective_priority": anys.ANY_INT,
                             "queue_rule": {
                                 "name": "foo",
                                 "config": anys.ANY_MAPPING,
@@ -265,6 +268,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
                             "number": p2["number"],
                             "position": 1,
                             "priority": anys.ANY_INT,
+                            "effective_priority": anys.ANY_INT,
                             "queue_rule": {
                                 "name": "foo",
                                 "config": anys.ANY_MAPPING,
@@ -278,6 +282,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
                             "number": p2["number"],
                             "position": 0,
                             "priority": anys.ANY_INT,
+                            "effective_priority": anys.ANY_INT,
                             "queue_rule": {
                                 "name": "foo",
                                 "config": anys.ANY_MAPPING,

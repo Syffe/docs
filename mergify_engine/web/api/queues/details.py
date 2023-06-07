@@ -157,6 +157,9 @@ class EnhancedPullRequestQueued:
     priority: int = dataclasses.field(
         metadata={"description": "The priority of this pull request"}
     )
+    effective_priority: int = dataclasses.field(
+        metadata={"description": "The effective priority of this pull request"}
+    )
     queue_rule: types.QueueRule = dataclasses.field(
         metadata={"description": "The queue rule associated to this pull request"}
     )
@@ -361,6 +364,7 @@ async def repository_queue_pull_request(
                     number=embarked_pull.user_pull_request_number,
                     position=position,
                     priority=embarked_pull.config["priority"],
+                    effective_priority=embarked_pull.config["effective_priority"],
                     queue_rule=types.QueueRule(
                         name=embarked_pull.config["name"], config=queue_rule.config
                     ),

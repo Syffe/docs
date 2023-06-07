@@ -353,6 +353,7 @@ class TestQueueApi(base.FunctionalTestBase):
             "number": p4["number"],
             "position": anys.ANY_INT,
             "priority": anys.ANY_INT,
+            "effective_priority": anys.ANY_INT,
             "queue_rule": {
                 "name": "foo",
                 "config": anys.ANY_MAPPING,
@@ -437,6 +438,7 @@ class TestQueueApi(base.FunctionalTestBase):
             "number": p["number"],
             "position": anys.ANY_INT,
             "priority": anys.ANY_INT,
+            "effective_priority": anys.ANY_INT,
             "queue_rule": {
                 "name": "foo",
                 "config": anys.ANY_MAPPING,
@@ -1437,7 +1439,8 @@ class TestNewQueueApiEndpoint(base.FunctionalTestBase):
         assert r.status_code == 200
         assert r.json() == {
             "number": p1["number"],
-            "priority": 0,
+            "priority": 2000,
+            "effective_priority": 2000,
             "queue_rule": {
                 "name": "foo",
                 "config": anys.ANY_MAPPING,
@@ -1545,7 +1548,8 @@ class TestNewQueueApiEndpoint(base.FunctionalTestBase):
         assert r.status_code == 200
         assert r.json() == {
             "number": p1["number"],
-            "priority": 0,
+            "priority": 2000,
+            "effective_priority": 2000,
             "queue_rule": {
                 "name": "foo",
                 "config": anys.ANY_MAPPING,

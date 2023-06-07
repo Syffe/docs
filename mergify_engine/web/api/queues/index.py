@@ -145,6 +145,9 @@ class PullRequestQueued:
         description="The position of the pull request in the queue. The first pull request in the queue is at position 0"
     )
     priority: int = pydantic.Field(description="The priority of this pull request")
+    effective_priority: int = pydantic.Field(
+        description="The effective priority of this pull request"
+    )
     queue_rule: types.QueueRule = pydantic.Field(
         description="The queue rule associated to this pull request"
     )
@@ -203,6 +206,7 @@ class Queues:
                                         "number": 5678,
                                         "position": 1,
                                         "priority": 100,
+                                        "effective_priority": 100,
                                         "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                                         "queue_rule": {
                                             "name": "default",
@@ -250,6 +254,7 @@ class Queues:
                                         "number": 4242,
                                         "position": 1,
                                         "priority": 100,
+                                        "effective_priority": 100,
                                         "partition_name": partr_config.DEFAULT_PARTITION_NAME,
                                         "queue_rule": {
                                             "name": "default",
@@ -359,6 +364,7 @@ async def repository_queues(
                         number=embarked_pull.user_pull_request_number,
                         position=position,
                         priority=embarked_pull.config["priority"],
+                        effective_priority=embarked_pull.config["effective_priority"],
                         queue_rule=types.QueueRule(
                             name=embarked_pull.config["name"], config=queue_rule.config
                         ),
