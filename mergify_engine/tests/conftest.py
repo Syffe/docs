@@ -117,7 +117,7 @@ def enable_api() -> None:
 
 @pytest.fixture(autouse=True, scope="session")
 def enable_ci_dump_ingestion() -> None:
-    settings.CI_DUMP_INGESTION = True
+    settings.CI_EVENT_INGESTION = True
 
 
 def get_worker_id_as_int(worker_id: str) -> int:

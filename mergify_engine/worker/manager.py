@@ -16,8 +16,8 @@ from mergify_engine import service
 from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine.clients import github
-from mergify_engine.worker import ci_dump_service
-from mergify_engine.worker import ci_dump_stream_service
+from mergify_engine.worker import ci_download_service
+from mergify_engine.worker import ci_event_processing_service
 from mergify_engine.worker import gitter_service
 from mergify_engine.worker import stream_services
 from mergify_engine.worker import task
@@ -75,6 +75,8 @@ ServiceNameT = typing.Literal[
     "stream-monitoring",
     "delayed-refresh",
     "gitter",
+    "ci-download",
+    # FIXME(charly): delete ci-dump when we use ci-download everywhere
     "ci-dump",
 ]
 ServiceNamesT = set[ServiceNameT]
@@ -118,9 +120,9 @@ class ServiceManager:
     # MonitoringStreamService & GitterService
     monitoring_idle_time: float = 60
 
-    # CIDumpService
-    ci_dump_stream_idle_time: float = 30
-    ci_dump_idle_time: float = 60
+    # CIDownloadService
+    ci_event_processing_idle_time: float = 30
+    ci_download_idle_time: float = 60
 
     _redis_links: redis_utils.RedisLinks = dataclasses.field(
         init=False, default_factory=lambda: redis_utils.RedisLinks(name="worker")
@@ -220,18 +222,19 @@ class ServiceManager:
                 )
             )
 
-        if "ci-dump" in self.enabled_services:
+        # FIXME(charly): delete ci-dump when we use ci-download everywhere
+        if "ci-dump" in self.enabled_services or "ci-download" in self.enabled_services:
             self._services.append(
-                ci_dump_stream_service.CIDumpStreamService(
+                ci_event_processing_service.CIEventProcessingService(
                     self._redis_links,
-                    ci_dump_stream_idle_time=self.ci_dump_stream_idle_time,
+                    ci_event_processing_idle_time=self.ci_event_processing_idle_time,
                 )
             )
 
             self._services.append(
-                ci_dump_service.CIDumpService(
+                ci_download_service.CIDownloadService(
                     self._redis_links,
-                    ci_dump_idle_time=self.ci_dump_idle_time,
+                    ci_download_idle_time=self.ci_download_idle_time,
                 )
             )
 

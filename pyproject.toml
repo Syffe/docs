@@ -98,7 +98,7 @@ black = "^23.3.0"
   mergify-count-seats = "mergify_engine.count_seats:main"
   mergify-openapi-spec = "mergify_engine.web.api.root:generate_openapi_spec"
   mergify-admin = "mergify_engine.admin:main"
-  mergify-ci-dump = "mergify_engine.cli:dump_handler"
+  mergify-ci-download = "mergify_engine.cli:ci_download_handler"
   mergify-ci-global-insight = "mergify_engine.cli:global_insight_handler"
   mergify-redis-dump = "mergify_engine.redis_utils.dumper:main"
 

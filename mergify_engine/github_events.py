@@ -653,7 +653,7 @@ async def filter_and_dispatch(
             classified_event.priority,
         )
 
-    if settings.CI_DUMP_INGESTION and isinstance(classified_event, CIEventToProcess):
+    if settings.CI_EVENT_INGESTION and isinstance(classified_event, CIEventToProcess):
         classified_event.set_sentry_info()
         await worker_pusher.push_ci_event(
             redis_links.stream,

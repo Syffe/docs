@@ -12,7 +12,7 @@ from mergify_engine import date
 from mergify_engine import github_events
 from mergify_engine import github_types
 from mergify_engine import redis_utils
-from mergify_engine.ci import dump
+from mergify_engine.ci import download
 from mergify_engine.models import github_account
 from mergify_engine.models import github_actions
 from mergify_engine.models import github_repository
@@ -38,14 +38,14 @@ async def mock_repositories() -> typing.AsyncGenerator[None, None]:
     repos = {11: "some_repo", 12: "another_repo"}
 
     with mock.patch(
-        "mergify_engine.ci.dump._get_repository_name_from_id",
+        "mergify_engine.ci.download._get_repository_name_from_id",
         side_effect=lambda _, _id: repos.get(_id),
     ):
         yield
 
 
 @freeze_time(NOW)
-async def test_dump_next_repository(
+async def test_download_next_repositories(
     redis_links: redis_utils.RedisLinks, db: sqlalchemy.ext.asyncio.AsyncSession
 ) -> None:
     await db.execute(
@@ -54,7 +54,7 @@ async def test_dump_next_repository(
             {
                 "id": 11,
                 "owner_id": 1,
-                "last_dump_at": AN_HOUR_AGO,
+                "last_download_at": AN_HOUR_AGO,
             }
         ],
     )
@@ -62,13 +62,15 @@ async def test_dump_next_repository(
 
     mocked_gh_client = mock.AsyncMock()
 
-    with mock.patch("mergify_engine.ci.dump.dump") as mocked_dump, mock.patch(
-        "mergify_engine.ci.dump._create_gh_client_from_login",
+    with mock.patch(
+        "mergify_engine.ci.download.download"
+    ) as mocked_download, mock.patch(
+        "mergify_engine.ci.download._create_gh_client_from_login",
         return_value=mocked_gh_client,
     ):
-        await dump.dump_next_repositories(redis_links)
+        await download.download_next_repositories(redis_links)
 
-        mocked_dump.assert_called_once_with(
+        mocked_download.assert_called_once_with(
             redis_links,
             mocked_gh_client,
             "some_owner",
@@ -77,15 +79,15 @@ async def test_dump_next_repository(
         )
 
     result = await db.execute(
-        sqlalchemy.select(github_repository.GitHubRepository.last_dump_at)
+        sqlalchemy.select(github_repository.GitHubRepository.last_download_at)
     )
     row = result.first()
     assert row is not None
-    assert row.last_dump_at == NOW.replace(tzinfo=None)
+    assert row.last_download_at == NOW.replace(tzinfo=None)
 
 
 @freeze_time(NOW)
-async def test_get_next_repository_normal_case(
+async def test_get_next_repositories_normal_case(
     db: sqlalchemy.ext.asyncio.AsyncSession,
 ) -> None:
     await db.execute(
@@ -94,29 +96,29 @@ async def test_get_next_repository_normal_case(
             {
                 "id": 11,
                 "owner_id": 1,
-                "last_dump_at": AN_HOUR_AGO,
+                "last_download_at": AN_HOUR_AGO,
             },
             {
                 "id": 12,
                 "owner_id": 1,
-                "last_dump_at": NOW,
+                "last_download_at": NOW,
             },
         ],
     )
     await db.commit()
 
-    repos = await dump.get_next_repositories(db)
+    repos = await download.get_next_repositories(db)
 
     assert len(repos) == 1
     repo = repos[0]
     assert repo.owner_id == 1
     assert repo.owner == "some_owner"
     assert repo.repository_id == 11
-    assert repo.last_dump_at == AN_HOUR_AGO
+    assert repo.last_download_at == AN_HOUR_AGO
 
 
 @freeze_time(NOW)
-async def test_get_next_repository_new_repository(
+async def test_get_next_repositories_new_repository(
     db: sqlalchemy.ext.asyncio.AsyncSession,
 ) -> None:
     await db.execute(
@@ -125,29 +127,29 @@ async def test_get_next_repository_new_repository(
             {
                 "id": 11,
                 "owner_id": 1,
-                "last_dump_at": None,
+                "last_download_at": None,
             },
             {
                 "id": 12,
                 "owner_id": 1,
-                "last_dump_at": NOW,
+                "last_download_at": NOW,
             },
         ],
     )
     await db.commit()
 
-    repos = await dump.get_next_repositories(db)
+    repos = await download.get_next_repositories(db)
 
     assert len(repos) == 1
     repo = repos[0]
     assert repo.owner_id == 1
     assert repo.owner == "some_owner"
     assert repo.repository_id == 11
-    assert repo.last_dump_at == AN_HOUR_AGO
+    assert repo.last_download_at == AN_HOUR_AGO
 
 
 @freeze_time(NOW)
-async def test_get_next_repository_nothing_to_dump(
+async def test_get_next_repositories_nothing_to_download(
     db: sqlalchemy.ext.asyncio.AsyncSession,
 ) -> None:
     await db.execute(
@@ -156,19 +158,19 @@ async def test_get_next_repository_nothing_to_dump(
             {
                 "id": 11,
                 "owner_id": 1,
-                "last_dump_at": LESS_THAN_AN_HOUR_AGO,
+                "last_download_at": LESS_THAN_AN_HOUR_AGO,
             },
         ],
     )
     await db.commit()
 
-    repos = await dump.get_next_repositories(db)
+    repos = await download.get_next_repositories(db)
 
     assert len(repos) == 0
 
 
 @freeze_time(NOW)
-async def test_get_next_repository_not_up_to_date(
+async def test_get_next_repositories_not_up_to_date(
     db: sqlalchemy.ext.asyncio.AsyncSession,
 ) -> None:
     await db.execute(
@@ -177,20 +179,20 @@ async def test_get_next_repository_not_up_to_date(
             {
                 "id": 11,
                 "owner_id": 1,
-                "last_dump_at": TWO_HOURS_AGO,
+                "last_download_at": TWO_HOURS_AGO,
             },
         ],
     )
     await db.commit()
 
-    repos = await dump.get_next_repositories(db)
+    repos = await download.get_next_repositories(db)
 
     assert len(repos) == 1
     repo = repos[0]
     assert repo.owner_id == 1
     assert repo.owner == "some_owner"
     assert repo.repository_id == 11
-    assert repo.last_dump_at == TWO_HOURS_AGO
+    assert repo.last_download_at == TWO_HOURS_AGO
 
 
 @pytest.fixture
@@ -208,7 +210,7 @@ def sample_ci_events_to_process(
     return ci_events
 
 
-async def test_dump_event_stream(
+async def test_process_event_stream(
     redis_links: redis_utils.RedisLinks,
     db: sqlalchemy.ext.asyncio.AsyncSession,
     sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
@@ -232,7 +234,7 @@ async def test_dump_event_stream(
     )
 
     # We havn't received the completed workflow run event, it should do nothing
-    await dump.dump_event_stream(redis_links)
+    await download.process_event_stream(redis_links)
     stream_events = await redis_links.stream.xrange("workflow_job")
     assert len(stream_events) == 1
 
@@ -252,8 +254,8 @@ async def test_dump_event_stream(
     with mock.patch(
         "mergify_engine.ci.pull_registries.RedisPullRequestRegistry.get_from_commit",
         return_value=[],
-    ), mock.patch("mergify_engine.ci.dump._create_gh_client_from_login"):
-        await dump.dump_event_stream(redis_links)
+    ), mock.patch("mergify_engine.ci.download._create_gh_client_from_login"):
+        await download.process_event_stream(redis_links)
 
     sql = sqlalchemy.select(github_actions.JobRun)
     result = await db.scalars(sql)
@@ -277,13 +279,13 @@ async def test_dump_event_stream(
         {"workflow_run_key": "some/key", "workflow_job_id": 13403743463},
     )
 
-    await dump.dump_event_stream(redis_links)
+    await download.process_event_stream(redis_links)
 
     stream_events = await redis_links.stream.xrange("workflow_job")
     assert len(stream_events) == 0
 
 
-async def test_dump_event_stream_without_organization(
+async def test_process_event_stream_without_organization(
     redis_links: redis_utils.RedisLinks,
     db: sqlalchemy.ext.asyncio.AsyncSession,
     sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
@@ -320,8 +322,8 @@ async def test_dump_event_stream_without_organization(
     with mock.patch(
         "mergify_engine.ci.pull_registries.RedisPullRequestRegistry.get_from_commit",
         return_value=[],
-    ), mock.patch("mergify_engine.ci.dump._create_gh_client_from_login"):
-        await dump.dump_event_stream(redis_links)
+    ), mock.patch("mergify_engine.ci.download._create_gh_client_from_login"):
+        await download.process_event_stream(redis_links)
 
     sql = sqlalchemy.select(github_actions.JobRun)
     result = await db.scalars(sql)

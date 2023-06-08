@@ -34,7 +34,7 @@ class WorkflowJobAlreadyExists(Exception):
     pass
 
 
-async def dump_next_repositories(redis_links: redis_utils.RedisLinks) -> None:
+async def download_next_repositories(redis_links: redis_utils.RedisLinks) -> None:
     async with database.create_session() as session:
         next_repos = await get_next_repositories(session)
 
@@ -43,20 +43,20 @@ async def dump_next_repositories(redis_links: redis_utils.RedisLinks) -> None:
         repository = await _get_repository_name_from_id(
             gh_client, next_repo.repository_id
         )
-        await dump(
+        await download(
             redis_links,
             gh_client,
             next_repo.owner,
             repository,
             date.DateTimeRange(
-                next_repo.last_dump_at,
-                next_repo.last_dump_at + settings.CI_DUMP_FREQUENCY,
+                next_repo.last_download_at,
+                next_repo.last_download_at + settings.CI_DOWNLOAD_FREQUENCY,
             ),
         )
 
         async with database.create_session() as session:
-            await update_repository_dump_date(
-                session, next_repo.repository_id, next_repo.last_dump_at
+            await update_repository_download_date(
+                session, next_repo.repository_id, next_repo.last_download_at
             )
 
 
@@ -64,7 +64,7 @@ class NextRepositoryResult(typing.NamedTuple):
     owner_id: github_types.GitHubAccountIdType
     owner: github_types.GitHubLogin
     repository_id: github_types.GitHubRepositoryIdType
-    last_dump_at: datetime.datetime
+    last_download_at: datetime.datetime
 
 
 async def get_next_repositories(
@@ -74,21 +74,23 @@ async def get_next_repositories(
         sqlalchemy.select(github_repository.GitHubRepository)
         .where(
             (
-                github_repository.GitHubRepository.last_dump_at
-                <= date.utcnow() - settings.CI_DUMP_FREQUENCY
+                github_repository.GitHubRepository.last_download_at
+                <= date.utcnow() - settings.CI_DOWNLOAD_FREQUENCY
             )
-            | (github_repository.GitHubRepository.last_dump_at.is_(None))
+            | (github_repository.GitHubRepository.last_download_at.is_(None))
         )
-        .order_by(github_repository.GitHubRepository.last_dump_at.asc().nulls_first())
-        .limit(settings.CI_DUMP_BATCH_SIZE)
+        .order_by(
+            github_repository.GitHubRepository.last_download_at.asc().nulls_first()
+        )
+        .limit(settings.CI_DOWNLOAD_BATCH_SIZE)
     )
     result = await session.scalars(sql)
 
     repos = []
     for row in result:
-        default_last_dump_at = date.utcnow() - settings.CI_DUMP_FREQUENCY
-        at = row.last_dump_at or default_last_dump_at
-        # NOTE(charly): we set the timezone because last_dump_at is stored as a
+        default_last_download_at = date.utcnow() - settings.CI_DOWNLOAD_FREQUENCY
+        at = row.last_download_at or default_last_download_at
+        # NOTE(charly): we set the timezone because last_download_at is stored as a
         # TIMESTAMP WITHOUT TIME ZONE. We always work with UTC, the timezone doesn't
         # come from the user.
         atz = at.replace(tzinfo=datetime.UTC)
@@ -116,21 +118,21 @@ async def _get_repository_name_from_id(
     return repo_data["name"]
 
 
-async def update_repository_dump_date(
+async def update_repository_download_date(
     session: sqlalchemy.ext.asyncio.AsyncSession,
     repository_id: github_types.GitHubRepositoryIdType,
-    dump_at: datetime.date,
+    download_at: datetime.date,
 ) -> None:
     sql = (
         sqlalchemy.update(github_repository.GitHubRepository)
-        .values(last_dump_at=dump_at + settings.CI_DUMP_FREQUENCY)
+        .values(last_download_at=download_at + settings.CI_DOWNLOAD_FREQUENCY)
         .where(github_repository.GitHubRepository.id == repository_id)
     )
     await session.execute(sql)
     await session.commit()
 
 
-async def dump(
+async def download(
     redis_links: redis_utils.RedisLinks,
     gh_client: github.AsyncGithubInstallationClient,
     owner: github_types.GitHubLogin,
@@ -149,31 +151,34 @@ async def dump(
     )
 
     with ddtrace.tracer.trace(
-        "ci.dump", span_type="worker", resource=f"{owner}/{repository}"
+        "ci.download", span_type="worker", resource=f"{owner}/{repository}"
     ) as span:
         span.set_tags({"gh_owner": owner, "gh_repo": repository})
         LOG.info(
-            "dump CI data", gh_owner=owner, gh_repo=repository, date_range=date_range
+            "download CI data",
+            gh_owner=owner,
+            gh_repo=repository,
+            date_range=date_range,
         )
 
         async for job in http_job_registry.search(owner, repository, date_range):
             await _insert_job(pg_job_registry, pg_pull_registry, job)
 
 
-async def dump_event_stream(redis_links: redis_utils.RedisLinks) -> None:
+async def process_event_stream(redis_links: redis_utils.RedisLinks) -> None:
     pg_job_registry = job_registries.PostgresJobRegistry()
     pg_pull_registry = pull_registries.PostgresPullRequestRegistry()
 
-    with ddtrace.tracer.trace("ci.dump_stream", span_type="worker"):
+    with ddtrace.tracer.trace("ci.event_processing", span_type="worker"):
         min_stream_event_id = "-"
 
         while stream_events := await redis_links.stream.xrange(
             "workflow_job",
             min=min_stream_event_id,
-            count=settings.CI_DUMP_STREAM_BATCH_SIZE,
+            count=settings.CI_EVENT_PROCESSING_BATCH_SIZE,
         ):
             LOG.info(
-                "process CI stream data",
+                "process CI events",
                 stream_event_ids=[id_.decode() for id_, _ in stream_events],
             )
 
@@ -188,7 +193,7 @@ async def dump_event_stream(redis_links: redis_utils.RedisLinks) -> None:
                     )
                 except Exception:
                     LOG.exception(
-                        "unprocessable CI stream event",
+                        "unprocessable CI event",
                         stream_event=stream_event,
                         stream_event_id=stream_event_id,
                     )

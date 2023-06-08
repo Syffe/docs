@@ -17,7 +17,7 @@ class GitHubRepository(models.Base):
     owner_id: orm.Mapped[github_types.GitHubAccountIdType] = orm.mapped_column(
         sqlalchemy.ForeignKey("github_account.id")
     )
-    last_dump_at: orm.Mapped[datetime.datetime | None] = orm.mapped_column(
+    last_download_at: orm.Mapped[datetime.datetime | None] = orm.mapped_column(
         sqlalchemy.DateTime, nullable=True
     )
 

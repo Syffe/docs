@@ -249,11 +249,11 @@ class WorkerSettings(pydantic.BaseSettings):
     SHARED_STREAM_TASKS_PER_PROCESS: int = 7
     BUCKET_PROCESSING_MAX_SECONDS: int = 30
     MAX_GITTER_CONCURRENT_JOBS: int = 20
-    CI_DUMP_FREQUENCY: datetime.timedelta = datetime.timedelta(hours=1)
-    CI_DUMP_STREAM_BATCH_SIZE: int = 1000
+    CI_DOWNLOAD_FREQUENCY: datetime.timedelta = datetime.timedelta(hours=1)
+    CI_EVENT_PROCESSING_BATCH_SIZE: int = 1000
     # FIXME: stop injecting events until we reenable the consuming part
-    CI_DUMP_INGESTION: bool = False
-    CI_DUMP_BATCH_SIZE: int = 50
+    CI_EVENT_INGESTION: bool = False
+    CI_DOWNLOAD_BATCH_SIZE: int = 50
 
 
 class APISettings(pydantic.BaseSettings):

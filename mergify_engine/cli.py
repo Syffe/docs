@@ -12,7 +12,7 @@ from mergify_engine import service
 from mergify_engine import settings
 from mergify_engine import subscription
 from mergify_engine import utils
-from mergify_engine.ci import dump
+from mergify_engine.ci import download
 from mergify_engine.ci import job_registries
 from mergify_engine.ci import reports
 from mergify_engine.clients import github
@@ -95,10 +95,10 @@ async def refresher_cli() -> None:
 
 
 @utils.make_sync_for_entrypoint
-async def dump_handler(argv: list[str] | None = None) -> None:
-    service.setup("ci-dump")
+async def ci_download_handler(argv: list[str] | None = None) -> None:
+    service.setup("ci-download")
 
-    parser = argparse.ArgumentParser(description="Mergify CI dump")
+    parser = argparse.ArgumentParser(description="Mergify CI download")
     parser.add_argument("owner", type=github_types.GitHubLogin)
     parser.add_argument("repository", type=github_types.GitHubRepositoryName)
     parser.add_argument("at", type=lambda v: datetime.date.fromisoformat(v))
@@ -119,12 +119,12 @@ async def dump_handler(argv: list[str] | None = None) -> None:
 
     gh_client = github.AsyncGithubInstallationClient(auth=auth)
 
-    async with redis_utils.RedisLinks(name="ci_dump") as redis_links:
+    async with redis_utils.RedisLinks(name="ci_download") as redis_links:
         start = datetime.datetime.combine(args.at, datetime.time.min)
         end = start + datetime.timedelta(days=1)
         date_range = date.DateTimeRange(start, end)
 
-        await dump.dump(
+        await download.download(
             redis_links,
             gh_client,
             typing.cast(github_types.GitHubLogin, args.owner),
@@ -135,7 +135,7 @@ async def dump_handler(argv: list[str] | None = None) -> None:
 
 @utils.make_sync_for_entrypoint
 async def global_insight_handler(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(description="Mergify CI dump")
+    parser = argparse.ArgumentParser(description="Mergify CI Optimizer report")
     parser.add_argument("owner", type=github_types.GitHubLogin)
     parser.add_argument("repository", type=github_types.GitHubRepositoryName)
     parser.add_argument("start_at", type=lambda v: datetime.date.fromisoformat(v))
