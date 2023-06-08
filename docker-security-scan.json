@@ -1462,42 +1462,48 @@
     "PkgName": "libcap2",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2602",
     "Title": "Memory Leak on pthread_create() Error",
-    "Severity": "LOW"
+    "Severity": "LOW",
+    "PublishedDate": "2023-06-06T20:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-2602",
     "PkgName": "libcap2-bin",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2602",
     "Title": "Memory Leak on pthread_create() Error",
-    "Severity": "LOW"
+    "Severity": "LOW",
+    "PublishedDate": "2023-06-06T20:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-2602",
     "PkgName": "libpam-cap",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2602",
     "Title": "Memory Leak on pthread_create() Error",
-    "Severity": "LOW"
+    "Severity": "LOW",
+    "PublishedDate": "2023-06-06T20:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-2603",
     "PkgName": "libcap2",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2603",
     "Title": "Integer Overflow in _libcap_strdup()",
-    "Severity": "MEDIUM"
+    "Severity": "MEDIUM",
+    "PublishedDate": "2023-06-06T20:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-2603",
     "PkgName": "libcap2-bin",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2603",
     "Title": "Integer Overflow in _libcap_strdup()",
-    "Severity": "MEDIUM"
+    "Severity": "MEDIUM",
+    "PublishedDate": "2023-06-06T20:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-2603",
     "PkgName": "libpam-cap",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2603",
     "Title": "Integer Overflow in _libcap_strdup()",
-    "Severity": "MEDIUM"
+    "Severity": "MEDIUM",
+    "PublishedDate": "2023-06-06T20:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-27533",
@@ -1586,7 +1592,7 @@
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27536",
     "Title": "GSS delegation too eager connection re-use",
-    "Severity": "HIGH",
+    "Severity": "MEDIUM",
     "PublishedDate": "2023-03-30T20:15:00Z"
   },
   {
@@ -1595,7 +1601,7 @@
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27536",
     "Title": "GSS delegation too eager connection re-use",
-    "Severity": "HIGH",
+    "Severity": "MEDIUM",
     "PublishedDate": "2023-03-30T20:15:00Z"
   },
   {
@@ -1604,7 +1610,7 @@
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27536",
     "Title": "GSS delegation too eager connection re-use",
-    "Severity": "HIGH",
+    "Severity": "MEDIUM",
     "PublishedDate": "2023-03-30T20:15:00Z"
   },
   {
@@ -1808,9 +1814,10 @@
   {
     "VulnerabilityID": "CVE-2023-2953",
     "PkgName": "libldap-2.4-2",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2953",
     "Title": "null pointer dereference in  ber_memalloc_x  function",
-    "Severity": "MEDIUM",
+    "Severity": "HIGH",
     "PublishedDate": "2023-05-30T22:15:00Z"
   },
   {
