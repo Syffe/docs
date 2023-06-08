@@ -1,8 +1,25 @@
 #!/usr/bin/env python3
 
 import json
+import os
+import pathlib
 import re
 import urllib.request as request
+
+
+RUNTIME_TXT_FILE = pathlib.Path(os.path.dirname(__file__)) / ".." / "runtime.txt"
+
+
+def get_runtime_txt_version() -> str:
+    with open(RUNTIME_TXT_FILE) as f:
+        version_raw = f.read()
+
+    version_raw = version_raw.replace("python-", "")
+    return version_raw
+
+
+def version_str_to_version_int_list(s: str) -> list[int]:
+    return list(map(int, s.split(".")))
 
 
 def get_latest_version_number() -> str:
@@ -24,8 +41,15 @@ def get_latest_version_number() -> str:
     }
 
     common_tags = list(docker_tags & github_action_tags)
-    common_tags.sort(key=lambda s: list(map(int, s.split("."))))
-    return common_tags[-1]
+    common_tags.sort(key=lambda s: version_str_to_version_int_list(s))
+
+    runtime_version = get_runtime_txt_version()
+    if version_str_to_version_int_list(
+        common_tags[-1]
+    ) > version_str_to_version_int_list(runtime_version):
+        return common_tags[-1]
+
+    return runtime_version
 
 
 if __name__ == "__main__":
