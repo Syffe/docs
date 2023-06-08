@@ -839,4 +839,4 @@ async def test_rules_checks_status_ceph(logger_checker: None) -> None:
     )
 
     live_resolvers.configure_filter(repo_with_team, f)
-    assert await f(pull) == filter.IncompleteCheck
+    assert await f(pull) == filter.IncompleteAttribute

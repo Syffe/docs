@@ -585,134 +585,148 @@ class IncompleteMarkerType(enum.Enum):
     _MARKER = 0
 
 
-IncompleteCheck: typing.Final = IncompleteMarkerType._MARKER
+IncompleteAttribute: typing.Final = IncompleteMarkerType._MARKER
 
 
-IncompleteChecksResult = bool | IncompleteMarkerType
+IncompleteAttributesResult = bool | IncompleteMarkerType
 
 
-def IncompleteChecksAll(
+def IncompleteAttributesAll(
     values: abc.Iterable[object],
-) -> IncompleteChecksResult:
-    values = typing.cast(abc.Iterable[IncompleteChecksResult], values)
+) -> IncompleteAttributesResult:
+    values = typing.cast(abc.Iterable[IncompleteAttributesResult], values)
     found_unknown = False
     for v in values:
         if v is False:
             return False
 
-        if v is IncompleteCheck:
+        if v is IncompleteAttribute:
             found_unknown = True
 
     if found_unknown:
-        return IncompleteCheck
+        return IncompleteAttribute
     return True
 
 
-def IncompleteChecksAny(
+def IncompleteAttributesAny(
     values: abc.Iterable[object],
-) -> IncompleteChecksResult:
-    values = typing.cast(abc.Iterable[IncompleteChecksResult], values)
+) -> IncompleteAttributesResult:
+    values = typing.cast(abc.Iterable[IncompleteAttributesResult], values)
     found_true = False
     for v in values:
-        if v is IncompleteCheck:
-            return IncompleteCheck
+        if v is IncompleteAttribute:
+            return IncompleteAttribute
         if v:
             found_true = True
     return found_true
 
 
-def IncompleteChecksNegate(value: IncompleteChecksResult) -> IncompleteChecksResult:
-    if value is IncompleteCheck:
-        return IncompleteCheck
+def IncompleteAttributesNegate(
+    value: IncompleteAttributesResult,
+) -> IncompleteAttributesResult:
+    if value is IncompleteAttribute:
+        return IncompleteAttribute
     return not value
 
 
-def cast_ret_to_incomplete_check_result(
+def cast_ret_to_incomplete_attribute_result(
     op: abc.Callable[[typing.Any, typing.Any], bool]
-) -> abc.Callable[[typing.Any, typing.Any], IncompleteChecksResult]:
+) -> abc.Callable[[typing.Any, typing.Any], IncompleteAttributesResult]:
     return typing.cast(
-        abc.Callable[[typing.Any, typing.Any], IncompleteChecksResult], op
+        abc.Callable[[typing.Any, typing.Any], IncompleteAttributesResult], op
     )
 
 
 @dataclasses.dataclass(repr=False)
-class IncompleteChecksFilter(Filter[IncompleteChecksResult]):
+class IncompleteAttributesFilter(Filter[IncompleteAttributesResult]):
     tree: TreeT | CompiledTreeT[GetAttrObject, bool]
     unary_operators: dict[
-        str, UnaryOperatorT[IncompleteChecksResult]
+        str, UnaryOperatorT[IncompleteAttributesResult]
     ] = dataclasses.field(
         default_factory=lambda: {
-            "-": IncompleteChecksNegate,
-            "not": IncompleteChecksNegate,
+            "-": IncompleteAttributesNegate,
+            "not": IncompleteAttributesNegate,
         }
     )
     binary_operators: dict[
-        str, BinaryOperatorT[IncompleteChecksResult]
+        str, BinaryOperatorT[IncompleteAttributesResult]
     ] = dataclasses.field(
         default_factory=lambda: {
             "=": (
-                cast_ret_to_incomplete_check_result(operator.eq),
-                IncompleteChecksAny,
+                cast_ret_to_incomplete_attribute_result(operator.eq),
+                IncompleteAttributesAny,
                 _identity,
             ),
             "<": (
-                cast_ret_to_incomplete_check_result(operator.lt),
-                IncompleteChecksAny,
+                cast_ret_to_incomplete_attribute_result(operator.lt),
+                IncompleteAttributesAny,
                 _identity,
             ),
             ">": (
-                cast_ret_to_incomplete_check_result(operator.gt),
-                IncompleteChecksAny,
+                cast_ret_to_incomplete_attribute_result(operator.gt),
+                IncompleteAttributesAny,
                 _identity,
             ),
             "<=": (
-                cast_ret_to_incomplete_check_result(operator.le),
-                IncompleteChecksAny,
+                cast_ret_to_incomplete_attribute_result(operator.le),
+                IncompleteAttributesAny,
                 _identity,
             ),
             ">=": (
-                cast_ret_to_incomplete_check_result(operator.ge),
-                IncompleteChecksAny,
+                cast_ret_to_incomplete_attribute_result(operator.ge),
+                IncompleteAttributesAny,
                 _identity,
             ),
             "!=": (
-                cast_ret_to_incomplete_check_result(operator.ne),
-                IncompleteChecksAll,
+                cast_ret_to_incomplete_attribute_result(operator.ne),
+                IncompleteAttributesAll,
                 _identity,
             ),
             "~=": (
-                cast_ret_to_incomplete_check_result(
+                cast_ret_to_incomplete_attribute_result(
                     lambda a, b: a is not None and b.search(a)
                 ),
-                IncompleteChecksAny,
+                IncompleteAttributesAny,
                 re.compile,
             ),
         }
     )
     multiple_operators: dict[
-        str, MultipleOperatorT[IncompleteChecksResult]
+        str, MultipleOperatorT[IncompleteAttributesResult]
     ] = dataclasses.field(
         default_factory=lambda: {
-            "or": IncompleteChecksAny,
-            "and": IncompleteChecksAll,
+            "or": IncompleteAttributesAny,
+            "and": IncompleteAttributesAll,
         }
     )
-    pending_checks: list[str] = dataclasses.field(default_factory=list)
-    all_checks: list[str] = dataclasses.field(default_factory=list)
 
     def _eval_binary_op(
         self,
-        op: BinaryOperatorT[IncompleteChecksResult],
+        op: BinaryOperatorT[IncompleteAttributesResult],
         attribute_name: str,
         attribute_values: list[typing.Any],
         ref_values_expanded: list[typing.Any],
-    ) -> IncompleteChecksResult:
+    ) -> IncompleteAttributesResult:
         if not self.is_complete(op, attribute_name, ref_values_expanded):
-            return IncompleteCheck
+            return IncompleteAttribute
 
         return super()._eval_binary_op(
             op, attribute_name, attribute_values, ref_values_expanded
         )
+
+    def is_complete(
+        self,
+        op: BinaryOperatorT[FilterResultT],
+        attribute_name: str,
+        ref_values: list[typing.Any],
+    ) -> bool:
+        raise NotImplementedError
+
+
+@dataclasses.dataclass(repr=False)
+class IncompleteChecksFilter(IncompleteAttributesFilter):
+    pending_checks: list[str] = dataclasses.field(default_factory=list)
+    all_checks: list[str] = dataclasses.field(default_factory=list)
 
     def is_complete(
         self,
