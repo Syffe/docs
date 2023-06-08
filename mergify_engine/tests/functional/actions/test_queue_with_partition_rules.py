@@ -9,6 +9,159 @@ from mergify_engine.tests.functional import base
 class TestQueueWithPartitionRules(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
 
+    async def test_multi_partition_pull_request_reporting_when_pr_in_only_one_partition(
+        self,
+    ) -> None:
+        rules = {
+            "partition_rules": [
+                {
+                    "name": "projA",
+                    "conditions": [
+                        "files~=^projA/",
+                    ],
+                },
+                {
+                    "name": "projB",
+                    "conditions": [
+                        "files~=^projB/",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Automatic merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": True,
+                }
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        p1 = await self.create_pr(
+            files={
+                "projA/test.txt": "test",
+            }
+        )
+
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        check_run_p1 = await self.wait_for_check_run(
+            action="created", name="Rule: Automatic merge (queue)"
+        )
+        assert (
+            check_run_p1["check_run"]["output"]["title"]
+            == "The pull request is the 1st in the `projA` partition queue to be merged"
+        )
+
+        await self.create_status(p1, state="failure")
+        await self.run_engine()
+
+        check_run_p1 = await self.wait_for_check_run(
+            name="Queue: Embarked in merge train",
+            conclusion="failure",
+        )
+
+        assert (
+            "cannot be merged and has been disembarked"
+            in check_run_p1["check_run"]["output"]["summary"]
+        )
+        assert (
+            "Required conditions for merge:\n\n- [ ] `status-success=continuous-integration/fake-ci`"
+            in check_run_p1["check_run"]["output"]["summary"]
+        )
+        assert "Check-runs and statuses of the embarked pull request"
+
+    async def test_multi_partition_pull_request_reporting_when_pr_in_several_partitions(
+        self,
+    ) -> None:
+        rules = {
+            "partition_rules": [
+                {
+                    "name": "projA",
+                    "conditions": [
+                        "files~=^projA/",
+                    ],
+                },
+                {
+                    "name": "projB",
+                    "conditions": [
+                        "files~=^projB/",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Automatic merge",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": True,
+                }
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        p1 = await self.create_pr(
+            files={
+                "projA/test.txt": "testA",
+                "projB/test.txt": "testB",
+            }
+        )
+
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        check_run_p1 = await self.wait_for_check_run(
+            action="created", name="Rule: Automatic merge (queue)"
+        )
+        assert (
+            check_run_p1["check_run"]["output"]["title"]
+            == "The pull request is queued in the following partitions to be merged: 1st in projA, 1st in projB"
+        )
+
+        await self.create_status(p1, state="failure")
+        await self.run_engine()
+
+        check_run_p1 = await self.wait_for_check_run(
+            name="Queue: Embarked in merge train",
+            conclusion="failure",
+        )
+
+        assert "**Partition projA**:" in check_run_p1["check_run"]["output"]["summary"]
+        assert "**Partition projB**:" in check_run_p1["check_run"]["output"]["summary"]
+        assert (
+            "cannot be merged and has been disembarked"
+            in check_run_p1["check_run"]["output"]["summary"]
+        )
+        assert (
+            "Required conditions for merge:\n\n- [ ] `status-success=continuous-integration/fake-ci`"
+            in check_run_p1["check_run"]["output"]["summary"]
+        )
+        assert "Check-runs and statuses of the embarked pull request"
+
     async def test_no_partition_reset_after_pr_manual_merge_have_reset_one_partition(
         self,
     ) -> None:

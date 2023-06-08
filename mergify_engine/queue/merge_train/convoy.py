@@ -483,9 +483,9 @@ class Convoy:
 
             check_title = f"The pull request is embarked in partitions {', '.join([tc.train.partition_name for tc in train_cars])}"
 
-            summary = "\n\n".join(
+            summary = "".join(
                 [
-                    f"**Partition {tc.train.partition_name}**: {tc.get_original_pr_summary_title()}"
+                    tc.build_original_pr_summary_for_partition_report(checked_pull)
                     for tc in train_cars
                 ]
             )

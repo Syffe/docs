@@ -2257,6 +2257,15 @@ You don't need to do anything. Mergify will close this pull request automaticall
             batch_failure=self.get_batch_failure_summary(),
         )
 
+    def build_original_pr_summary_for_partition_report(
+        self, checked_pull: github_types.GitHubPullRequestNumber | None
+    ) -> str:
+        original_pr_summary = self.get_original_pr_summary(checked_pull)
+        return (
+            f"\n\n**Partition {self.train.partition_name}**: {original_pr_summary.title}\n"
+            + original_pr_summary.body
+        )
+
     async def get_draft_pr_summary(self) -> str:
         headline: str | None = None
         show_queue = False
