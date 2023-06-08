@@ -136,6 +136,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
         p1 = await self.create_pr()
         await self.add_label(p1["number"], "queue")
+        await self.add_label(p1["number"], "tata")
         await self.run_engine()
 
         check = first(
@@ -151,7 +152,7 @@ class TestQueueAction(base.FunctionalTestBase):
             "There are routing conditions defined in the configuration, but none "
             "matches. The pull request has not been embarked.\n\nDetails:"
             "\n* Queue `hotfix`: \n- [ ] `label=hotfix`"
-            "\n* Queue `default`: \n- [ ] `label=tata`\n- [ ] `label=toto`"
+            "\n* Queue `default`: \n- [ ] `label=toto`\n- [X] `label=tata`"
         )
 
     async def test_queue_routing_conditions_failure_with_pull_request_rules_and_fallback(

@@ -729,15 +729,17 @@ class QueueRuleMergeConditions(BaseRuleConditions):
         )
         return cond_cpy
 
-    def get_summary(self) -> str:
+    def get_summary(self, display_evaluations: bool | None = None) -> str:
         if self._used:
-            return self.get_evaluation_result().as_markdown()
+            return self.get_evaluation_result(display_evaluations).as_markdown()
 
         return self.condition.get_summary()
 
-    def get_evaluation_result(self) -> QueueConditionEvaluationResult:
+    def get_evaluation_result(
+        self, display_evaluations: bool | None = None
+    ) -> QueueConditionEvaluationResult:
         return QueueConditionEvaluationResult.from_evaluated_condition_node(
-            self._evaluated_conditions
+            self._evaluated_conditions, display_evaluations
         )
 
     def is_faulty(self) -> bool:
@@ -882,6 +884,7 @@ class QueueConditionEvaluationResult:
     evaluations: list[QueueConditionEvaluationResult.Evaluation] = dataclasses.field(
         default_factory=list
     )
+    display_evaluations_: bool | None = None
 
     def copy(self) -> QueueConditionEvaluationResult:
         return QueueConditionEvaluationResult(
@@ -894,6 +897,7 @@ class QueueConditionEvaluationResult:
             schedule=self.schedule,
             subconditions=[s.copy() for s in self.subconditions],
             evaluations=[e.copy() for e in self.evaluations],
+            display_evaluations_=self.display_evaluations_,
         )
 
     @pydantic.dataclasses.dataclass
@@ -953,11 +957,15 @@ class QueueConditionEvaluationResult:
 
     @property
     def display_evaluations(self) -> bool:
+        if self.display_evaluations_ is not None:
+            return self.display_evaluations_
         return self.attribute_name not in context.QueuePullRequest.QUEUE_ATTRIBUTES
 
     @classmethod
     def from_evaluated_condition_node(
-        cls, evaluated_condition_node: EvaluatedConditionNodeT
+        cls,
+        evaluated_condition_node: EvaluatedConditionNodeT,
+        display_evaluations: bool | None = None,
     ) -> QueueConditionEvaluationResult:
         first_evaluated_condition = first(evaluated_condition_node.values())
 
@@ -972,7 +980,7 @@ class QueueConditionEvaluationResult:
                 label=first_evaluated_condition.operator_label,
                 description=first_evaluated_condition.description,
                 subconditions=cls._create_subconditions(
-                    evaluated_condition_group, global_match
+                    evaluated_condition_group, global_match, display_evaluations
                 ),
                 is_label_user_input=False,
             )
@@ -999,6 +1007,7 @@ class QueueConditionEvaluationResult:
                     for pull_request, condition in evaluated_condition.items()
                 ],
                 is_label_user_input=True,
+                display_evaluations_=display_evaluations,
             )
 
         raise RuntimeError(
@@ -1007,7 +1016,10 @@ class QueueConditionEvaluationResult:
 
     @classmethod
     def _create_subconditions(
-        cls, evaluated_condition_group: EvaluatedConditionGroupT, global_match: bool
+        cls,
+        evaluated_condition_group: EvaluatedConditionGroupT,
+        global_match: bool,
+        display_evaluations: bool | None = None,
     ) -> list[QueueConditionEvaluationResult]:
         first_evaluated_condition = next(iter(evaluated_condition_group.values()))
         evaluated_subconditions: list[EvaluatedConditionNodeT] = [
@@ -1017,7 +1029,10 @@ class QueueConditionEvaluationResult:
         sorted_subconditions = QueueRuleMergeConditions._get_conditions_ordered(
             evaluated_subconditions, global_match
         )
-        return [cls.from_evaluated_condition_node(c) for c in sorted_subconditions]
+        return [
+            cls.from_evaluated_condition_node(c, display_evaluations)
+            for c in sorted_subconditions
+        ]
 
     @classmethod
     def deserialize(

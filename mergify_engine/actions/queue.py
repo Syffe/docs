@@ -348,16 +348,19 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 ).append(rule)
 
         if mismatching_routing_conditions and not matching_routing_conditions:
+            summary = {
+                q.name: q.routing_conditions.get_summary(display_evaluations=False)
+                for q in mismatching_routing_conditions
+            }
+
             self.ctxt.log.info(
                 "no routing conditions matching",
-                summary=[
-                    q.routing_conditions.condition
-                    for q in mismatching_routing_conditions
-                ],
+                summary=summary,
             )
+
             routing_summary_str = "\n".join(
-                f"* Queue `{q.name}`: \n{q.routing_conditions.condition.get_summary()}"
-                for q in mismatching_routing_conditions
+                f"* Queue `{name}`: \n{routing_conditions_summary}"
+                for name, routing_conditions_summary in summary.items()
             )
             raise InvalidQueueConfiguration(
                 title="There are no queue routing conditions matching",

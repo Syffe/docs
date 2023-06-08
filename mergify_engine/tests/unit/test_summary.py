@@ -265,6 +265,42 @@ async def test_queue_rules_order_operator_or() -> None:
     )
 
 
+async def test_queue_condition_summary_display_override() -> None:
+    c: conditions_mod.QueueRuleMergeConditions = SCHEMA(
+        [
+            "author=somebody",
+            "base=main",
+            "label=test",
+            {
+                "or": [
+                    "label=test",
+                    "label=test2",
+                ]
+            },
+        ]
+    )
+    await c(
+        [
+            conftest.FakePullRequest(
+                {
+                    "author": "anybody",
+                    "number": 2,
+                    "base": "main",
+                    "label": ["test"],
+                }
+            ),
+        ]
+    )
+    assert """- [ ] `author=somebody`
+- [X] `base=main`
+- [X] `label=test`
+- [X] any of:
+  - [X] `label=test`
+  - [ ] `label=test2`""" in c.get_summary(
+        display_evaluations=False
+    )
+
+
 async def test_condition_summary_simple() -> None:
     single_condition_checked = conditions_mod.RuleCondition.from_tree(
         {"=": ("base", "main")}, description="Description"
