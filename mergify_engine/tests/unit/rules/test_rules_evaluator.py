@@ -13,33 +13,31 @@ from mergify_engine.tests.unit import conftest
         (
             """
 pull_request_rules:
-  - name: "base do not match and label do not match"
+  - name: "head do not match and label do not match"
     conditions:
-    - base=do-not-match
+    - head=do-not-match
     - label=do-not-match
     actions: {}
 """,
-            # FIXME(sileht): should be ignored: MRGFY-2284
-            False,
+            True,
         ),
         (
             """
 pull_request_rules:
-  - name: "base do not match and label match"
+  - name: "head do not match and label match"
     conditions:
-    - base=do-not-match
+    - head=do-not-match
     - label=match
     actions: {}
 """,
-            # FIXME(sileht): should be ignored: MRGFY-2284
-            False,
+            True,
         ),
         (
             """
 pull_request_rules:
-  - name: "base match and label do not match"
+  - name: "head match and label match"
     conditions:
-    - base=match
+    - head=match
     - label=match
     actions: {}
 """,
@@ -48,9 +46,9 @@ pull_request_rules:
         (
             """
 pull_request_rules:
-  - name: "base match and label do not match"
+  - name: "head match and label do not match"
     conditions:
-    - base=match
+    - head=match
     - label=do-not-match
     actions: {}
 """,
@@ -73,10 +71,22 @@ pull_request_rules:
     - not:
         or:
           - label=do-not-match
+    actions: {}
+""",
+            False,
+        ),
+        (
+            """
+pull_request_rules:
+  - name: not with combination that match
+    conditions:
+    - not:
+        or:
+          - label=do-not-match
           - label=match
     actions: {}
 """,
-            # FIXME(sileht): should not be ignored: MRGFY-2284
+            # FIXME(sileht): should be ignored: MRGFY-2284
             True,
         ),
         (
@@ -100,7 +110,7 @@ async def test_pull_request_rules_evaluator(
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
     ctxt = await context_getter(1)
-    ctxt.pull["base"]["ref"] = github_types.GitHubRefType("match")
+    ctxt.pull["head"]["ref"] = github_types.GitHubRefType("match")
     ctxt.pull["labels"] = [
         {
             "id": 4876718741,

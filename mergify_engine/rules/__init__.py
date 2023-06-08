@@ -27,9 +27,9 @@ LOG = daiquiri.getLogger(__name__)
 class GenericRulesEvaluator(typing.Generic[types.T_Rule, types.T_EvaluatedRule]):
     """A rules that matches a pull request."""
 
-    # Fixed base attributes that are not considered when looking for the
+    # Fixed attributes that are not considered when looking for the
     # next matching rules.
-    BASE_ATTRIBUTES = (
+    FIXED_ATTRIBUTES = (
         "head",
         "author",
         "merged_by",
@@ -113,7 +113,7 @@ class GenericRulesEvaluator(typing.Generic[types.T_Rule, types.T_EvaluatedRule])
                     )
 
                 if await cls.can_attributes_make_rule_always_false(
-                    evaluated_rule_conditions, self.BASE_ATTRIBUTES, pulls
+                    evaluated_rule_conditions, self.FIXED_ATTRIBUTES, pulls
                 ):
                     self.ignored_rules.append(evaluated_rule)
                     categorized = True
