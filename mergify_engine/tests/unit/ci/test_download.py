@@ -203,9 +203,7 @@ def sample_ci_events_to_process(
 
     for filename, (event_type, event) in sample_events.items():
         if event_type in ("workflow_run", "workflow_job"):
-            ci_events[filename] = github_events.CIEventToProcess(
-                event_type, "", "", event
-            )
+            ci_events[filename] = github_events.CIEventToProcess(event_type, "", event)
 
     return ci_events
 

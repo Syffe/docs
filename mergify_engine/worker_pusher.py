@@ -152,7 +152,6 @@ async def push_ci_event(
     repo_id: github_types.GitHubRepositoryIdType,
     event_type: github_types.GitHubEventType,
     event_id: str,
-    hook_id: str,
     data: github_types.GitHubEventWorkflowRun | github_types.GitHubEventWorkflowJob,
 ) -> None:
     """Completed workflow runs are added to a Redis stream to be processed later.
@@ -180,7 +179,6 @@ async def push_ci_event(
         "data": data,
         "timestamp": date.utcnow().isoformat(),
         "delivery_id": event_id,
-        "hook_id": hook_id,
     }
 
     if event_type == "workflow_run":

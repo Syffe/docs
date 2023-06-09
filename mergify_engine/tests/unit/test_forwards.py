@@ -28,7 +28,6 @@ async def test_app_event_forward(
 
     headers = {
         "X-GitHub-Delivery": str(uuid.uuid4()),
-        "X-GitHub-Hook-ID": "f00bar",
         "X-GitHub-Event": "push",
         "X-Hub-Signature": f"sha1={utils.compute_hmac(data.encode(), settings.GITHUB_WEBHOOK_SECRET.get_secret_value())}",
         "User-Agent": "GitHub-Hookshot/044aadd",

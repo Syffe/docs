@@ -38,7 +38,6 @@ async def event_handler(
         github_types.GitHubEventType, request.headers["X-GitHub-Event"]
     )
     event_id = request.headers["X-GitHub-Delivery"]
-    hook_id = request.headers["X-GitHub-Hook-ID"]
     data = await request.json()
 
     # FIXME: complete payload with fake data. A ticket has been created at
@@ -54,7 +53,7 @@ async def event_handler(
 
     try:
         await github_events.filter_and_dispatch(
-            background_tasks, redis_links, event_type, event_id, hook_id, data
+            background_tasks, redis_links, event_type, event_id, data
         )
     except github_events.IgnoredEvent as ie:
         status_code = 200
