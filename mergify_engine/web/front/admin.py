@@ -114,7 +114,7 @@ async def sudo_debug(
 ) -> fastapi.Response:
     from_user = imia.impersonation.get_original_user(request).login
 
-    url = f"https://api.github.com/repos/{login}/{repository}/pull/{pull_number}"
+    url = f"https://github.com/{login}/{repository}/pull/{pull_number}"
     LOG.info("sudo-debug to %s granted for %s", url, from_user)
 
     f = io.StringIO()
