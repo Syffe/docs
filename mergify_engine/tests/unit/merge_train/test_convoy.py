@@ -16,7 +16,7 @@ async def test_convoy_add_pull_1_partition_rule(
     convoy: merge_train.Convoy,
 ) -> None:
     await convoy.load_from_redis()
-    config = mt_conftest.get_pull_queue_config("5x1")
+    config = conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "5x1")
 
     await convoy.add_pull(
         await context_getter(123),
@@ -53,7 +53,7 @@ async def test_convoy_add_pull_multiple_partition_rules(
     convoy: merge_train.Convoy,
 ) -> None:
     await convoy.load_from_redis()
-    config = mt_conftest.get_pull_queue_config("5x1")
+    config = conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "5x1")
 
     await convoy.add_pull(
         await context_getter(123),
@@ -95,7 +95,7 @@ async def tests_convoy_remove_middle_not_merged_1_partition(
     convoy: merge_train.Convoy,
 ) -> None:
     await convoy.load_from_redis()
-    config = mt_conftest.get_pull_queue_config("5x1")
+    config = conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "5x1")
 
     partition_rules = [partr_config.PartitionRuleName("projectA")]
     await convoy.add_pull(await context_getter(1), config, partition_rules, "")
@@ -128,7 +128,7 @@ async def tests_convoy_remove_middle_not_merged_multiple_partitions(
     convoy: merge_train.Convoy,
 ) -> None:
     await convoy.load_from_redis()
-    config = mt_conftest.get_pull_queue_config("5x1")
+    config = conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "5x1")
 
     partition_rules_a = [partr_config.PartitionRuleName("projectA")]
     partition_rules_ab = [
@@ -166,7 +166,7 @@ async def test_convoy_remove_head_merged_1_partition(
 ) -> None:
     await convoy.load_from_redis()
 
-    config = mt_conftest.get_pull_queue_config("5x1")
+    config = conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "5x1")
 
     partition_rules_a = [partr_config.PartitionRuleName("projectA")]
     await convoy.add_pull(await context_getter(1), config, partition_rules_a, "")
@@ -201,7 +201,7 @@ async def test_convoy_remove_head_merged_multiple_partitions(
 ) -> None:
     await convoy.load_from_redis()
 
-    config = mt_conftest.get_pull_queue_config("5x1")
+    config = conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "5x1")
 
     partition_rules_a = [partr_config.PartitionRuleName("projectA")]
     partition_rules_ab = [

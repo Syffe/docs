@@ -511,6 +511,7 @@ async def run_actions(
                         check_name,
                         report,
                         external_id=external_id,
+                        details_url=report.details_url,
                     )
                 except Exception as e:
                     if exceptions.should_be_ignored(e):

@@ -1540,8 +1540,8 @@ You don't need to do anything. Mergify will close this pull request automaticall
                     title=title,
                     summary=summary,
                 ),
-                details_url=dashboard.get_queue_pull_request_details_url(
-                    original_ctxt.pull
+                details_url=await dashboard.get_queues_url_from_context(
+                    original_ctxt, self.train.convoy
                 ),
             )
 

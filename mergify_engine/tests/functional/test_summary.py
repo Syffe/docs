@@ -1,5 +1,6 @@
 import logging
 import re
+from urllib import parse
 
 import pytest
 
@@ -320,7 +321,7 @@ class TestQueueCISummary(base.FunctionalTestBase):
         base_repo = p1["base"]["repo"]
         assert (
             check_runs[0]["details_url"]
-            == f"{settings.DASHBOARD_UI_FRONT_URL}/github/{base_repo['owner']['login']}/repo/{base_repo['name']}/queues?pull={p1['number']}"
+            == f"{settings.DASHBOARD_UI_FRONT_URL}/github/{base_repo['owner']['login']}/repo/{base_repo['name']}/queues?branch={parse.quote(p1['base']['ref'], safe='')}&queues=default&pull={p1['number']}"
         )
 
     async def test_summary_html_escape(self) -> None:

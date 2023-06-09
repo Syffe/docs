@@ -31,7 +31,7 @@ async def test_train_inplace_with_speculative_checks_out_of_date(
     t = merge_train.Train(convoy)
     await t.test_helper_load_from_redis()
 
-    config = mt_conftest.get_pull_queue_config("inplace")
+    config = conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "inplace")
 
     await t.add_pull(await context_getter(12345), config, "")
     await t.add_pull(await context_getter(54321), config, "")
@@ -57,7 +57,7 @@ async def test_train_inplace_with_speculative_checks_up_to_date(
     t = merge_train.Train(convoy)
     await t.test_helper_load_from_redis()
 
-    config = mt_conftest.get_pull_queue_config("inplace")
+    config = conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "inplace")
 
     await t.add_pull(await context_getter(12345), config, "")
     await t.add_pull(await context_getter(54321), config, "")
@@ -83,7 +83,7 @@ async def test_train_add_pull(
     t = merge_train.Train(convoy)
     await t.test_helper_load_from_redis()
 
-    config = mt_conftest.get_pull_queue_config("5x1")
+    config = conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "5x1")
 
     await t.add_pull(await context_getter(1), config, "")
     await t.refresh()
@@ -119,7 +119,7 @@ async def test_train_remove_middle_merged(
     t = merge_train.Train(convoy)
     await t.test_helper_load_from_redis()
 
-    config = mt_conftest.get_pull_queue_config("5x1")
+    config = conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "5x1")
     await t.add_pull(await context_getter(1), config, "")
     await t.add_pull(await context_getter(2), config, "")
     await t.add_pull(await context_getter(3), config, "")
@@ -142,13 +142,19 @@ async def test_train_remove_middle_not_merged(
     await t.test_helper_load_from_redis()
 
     await t.add_pull(
-        await context_getter(1), mt_conftest.get_pull_queue_config("5x1", 1000), ""
+        await context_getter(1),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "5x1", 1000),
+        "",
     )
     await t.add_pull(
-        await context_getter(3), mt_conftest.get_pull_queue_config("5x1", 100), ""
+        await context_getter(3),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "5x1", 100),
+        "",
     )
     await t.add_pull(
-        await context_getter(2), mt_conftest.get_pull_queue_config("5x1", 1000), ""
+        await context_getter(2),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "5x1", 1000),
+        "",
     )
 
     await t.refresh()
@@ -168,7 +174,7 @@ async def test_train_remove_head_not_merged(
     t = merge_train.Train(convoy)
     await t.test_helper_load_from_redis()
 
-    config = mt_conftest.get_pull_queue_config("5x1")
+    config = conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "5x1")
 
     await t.add_pull(await context_getter(1), config, "")
     await t.add_pull(await context_getter(2), config, "")
@@ -190,7 +196,7 @@ async def test_train_remove_head_merged(
     t = merge_train.Train(convoy)
     await t.test_helper_load_from_redis()
 
-    config = mt_conftest.get_pull_queue_config("5x1")
+    config = conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "5x1")
 
     await t.add_pull(await context_getter(1), config, "")
     await t.add_pull(await context_getter(2), config, "")
@@ -214,7 +220,7 @@ async def test_train_add_remove_pull_idempotent(
     t = merge_train.Train(convoy)
     await t.test_helper_load_from_redis()
 
-    config = mt_conftest.get_pull_queue_config("5x1", priority=0)
+    config = conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "5x1", priority=0)
 
     await t.add_pull(await context_getter(1), config, "")
     await t.add_pull(await context_getter(2), config, "")
@@ -222,7 +228,7 @@ async def test_train_add_remove_pull_idempotent(
     await t.refresh()
     assert [[1], [1, 2], [1, 2, 3]] == mt_conftest.get_train_cars_content(t)
 
-    config = mt_conftest.get_pull_queue_config("5x1", priority=10)
+    config = conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "5x1", priority=10)
 
     await t.add_pull(await context_getter(1), config, "")
     await t.refresh()
@@ -256,8 +262,12 @@ async def test_train_multiple_queue(
     t = merge_train.Train(convoy)
     await t.test_helper_load_from_redis()
 
-    config_two = mt_conftest.get_pull_queue_config("2x1", priority=0)
-    config_five = mt_conftest.get_pull_queue_config("5x1", priority=0)
+    config_two = conftest.get_pull_queue_config(
+        mt_conftest.QUEUE_RULES, "2x1", priority=0
+    )
+    config_five = conftest.get_pull_queue_config(
+        mt_conftest.QUEUE_RULES, "5x1", priority=0
+    )
 
     await t.add_pull(await context_getter(1), config_two, "")
     await t.add_pull(await context_getter(2), config_two, "")
@@ -331,16 +341,24 @@ async def test_train_remove_duplicates(
     await t.test_helper_load_from_redis()
 
     await t.add_pull(
-        await context_getter(1), mt_conftest.get_pull_queue_config("2x1", 1000), ""
+        await context_getter(1),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "2x1", 1000),
+        "",
     )
     await t.add_pull(
-        await context_getter(2), mt_conftest.get_pull_queue_config("2x1", 1000), ""
+        await context_getter(2),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "2x1", 1000),
+        "",
     )
     await t.add_pull(
-        await context_getter(3), mt_conftest.get_pull_queue_config("2x1", 1000), ""
+        await context_getter(3),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "2x1", 1000),
+        "",
     )
     await t.add_pull(
-        await context_getter(4), mt_conftest.get_pull_queue_config("2x1", 1000), ""
+        await context_getter(4),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "2x1", 1000),
+        "",
     )
 
     await t.refresh()
@@ -377,13 +395,19 @@ async def test_train_remove_end_wp(
     await t.test_helper_load_from_redis()
 
     await t.add_pull(
-        await context_getter(1), mt_conftest.get_pull_queue_config("high-1x1", 1000), ""
+        await context_getter(1),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "high-1x1", 1000),
+        "",
     )
     await t.add_pull(
-        await context_getter(2), mt_conftest.get_pull_queue_config("high-1x1", 1000), ""
+        await context_getter(2),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "high-1x1", 1000),
+        "",
     )
     await t.add_pull(
-        await context_getter(3), mt_conftest.get_pull_queue_config("high-1x1", 1000), ""
+        await context_getter(3),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "high-1x1", 1000),
+        "",
     )
 
     await t.refresh()
@@ -406,13 +430,19 @@ async def test_train_remove_first_wp(
     await t.test_helper_load_from_redis()
 
     await t.add_pull(
-        await context_getter(1), mt_conftest.get_pull_queue_config("high-1x1", 1000), ""
+        await context_getter(1),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "high-1x1", 1000),
+        "",
     )
     await t.add_pull(
-        await context_getter(2), mt_conftest.get_pull_queue_config("high-1x1", 1000), ""
+        await context_getter(2),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "high-1x1", 1000),
+        "",
     )
     await t.add_pull(
-        await context_getter(3), mt_conftest.get_pull_queue_config("high-1x1", 1000), ""
+        await context_getter(3),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "high-1x1", 1000),
+        "",
     )
 
     await t.refresh()
@@ -435,13 +465,19 @@ async def test_train_remove_last_cars(
     await t.test_helper_load_from_redis()
 
     await t.add_pull(
-        await context_getter(1), mt_conftest.get_pull_queue_config("high-1x1", 1000), ""
+        await context_getter(1),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "high-1x1", 1000),
+        "",
     )
     await t.add_pull(
-        await context_getter(2), mt_conftest.get_pull_queue_config("high-1x1", 1000), ""
+        await context_getter(2),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "high-1x1", 1000),
+        "",
     )
     await t.add_pull(
-        await context_getter(3), mt_conftest.get_pull_queue_config("high-1x1", 1000), ""
+        await context_getter(3),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "high-1x1", 1000),
+        "",
     )
 
     await t.refresh()
@@ -463,7 +499,7 @@ async def test_train_with_speculative_checks_decreased(
     t = merge_train.Train(convoy)
     await t.test_helper_load_from_redis()
 
-    config = mt_conftest.get_pull_queue_config("5x1", 1000)
+    config = conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "5x1", 1000)
     await t.add_pull(await context_getter(1), config, "")
 
     await t.add_pull(await context_getter(2), config, "")
@@ -502,13 +538,19 @@ async def test_train_queue_config_change(
     await t.test_helper_load_from_redis()
 
     await t.add_pull(
-        await context_getter(1), mt_conftest.get_pull_queue_config("2x1", 1000), ""
+        await context_getter(1),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "2x1", 1000),
+        "",
     )
     await t.add_pull(
-        await context_getter(2), mt_conftest.get_pull_queue_config("2x1", 1000), ""
+        await context_getter(2),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "2x1", 1000),
+        "",
     )
     await t.add_pull(
-        await context_getter(3), mt_conftest.get_pull_queue_config("2x1", 1000), ""
+        await context_getter(3),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "2x1", 1000),
+        "",
     )
 
     await t.refresh()
@@ -540,13 +582,19 @@ async def test_train_queue_config_deleted(
     await t.test_helper_load_from_redis()
 
     await t.add_pull(
-        await context_getter(1), mt_conftest.get_pull_queue_config("2x1", 1000), ""
+        await context_getter(1),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "2x1", 1000),
+        "",
     )
     await t.add_pull(
-        await context_getter(2), mt_conftest.get_pull_queue_config("2x1", 1000), ""
+        await context_getter(2),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "2x1", 1000),
+        "",
     )
     await t.add_pull(
-        await context_getter(3), mt_conftest.get_pull_queue_config("5x1", 1000), ""
+        await context_getter(3),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "5x1", 1000),
+        "",
     )
 
     await t.refresh()
@@ -577,13 +625,19 @@ async def test_train_priority_change(
     await t.test_helper_load_from_redis()
 
     await t.add_pull(
-        await context_getter(1), mt_conftest.get_pull_queue_config("2x1", 1000), ""
+        await context_getter(1),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "2x1", 1000),
+        "",
     )
     await t.add_pull(
-        await context_getter(2), mt_conftest.get_pull_queue_config("2x1", 1000), ""
+        await context_getter(2),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "2x1", 1000),
+        "",
     )
     await t.add_pull(
-        await context_getter(3), mt_conftest.get_pull_queue_config("2x1", 1000), ""
+        await context_getter(3),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "2x1", 1000),
+        "",
     )
 
     await t.refresh()
@@ -600,7 +654,9 @@ async def test_train_priority_change(
     # NOTE(sileht): pull request got requeued with new configuration that don't
     # update the position but update the prio
     await t.add_pull(
-        await context_getter(1), mt_conftest.get_pull_queue_config("2x1", 2000), ""
+        await context_getter(1),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "2x1", 2000),
+        "",
     )
     await t.refresh()
     assert [[1], [1, 2]] == mt_conftest.get_train_cars_content(t)
@@ -622,25 +678,25 @@ def test_train_batch_split(
     p1_two = merge_train.EmbarkedPull(
         t,
         github_types.GitHubPullRequestNumber(1),
-        mt_conftest.get_pull_queue_config("2x1"),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "2x1"),
         now,
     )
     p2_two = merge_train.EmbarkedPull(
         t,
         github_types.GitHubPullRequestNumber(2),
-        mt_conftest.get_pull_queue_config("2x1"),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "2x1"),
         now,
     )
     p3_two = merge_train.EmbarkedPull(
         t,
         github_types.GitHubPullRequestNumber(3),
-        mt_conftest.get_pull_queue_config("2x1"),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "2x1"),
         now,
     )
     p4_five = merge_train.EmbarkedPull(
         t,
         github_types.GitHubPullRequestNumber(4),
-        mt_conftest.get_pull_queue_config("5x1"),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "5x1"),
         now,
     )
 
@@ -671,13 +727,13 @@ async def test_train_queue_splitted_on_failure_1x2(
     for i in range(41, 43):
         await t.add_pull(
             await context_getter(i),
-            mt_conftest.get_pull_queue_config("high-1x2", 1000),
+            conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "high-1x2", 1000),
             "",
         )
     for i in range(6, 20):
         await t.add_pull(
             await context_getter(i),
-            mt_conftest.get_pull_queue_config("high-1x2", 1000),
+            conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "high-1x2", 1000),
             "",
         )
 
@@ -735,11 +791,15 @@ async def test_train_queue_splitted_on_failure_1x5(
 
     for i in range(41, 46):
         await t.add_pull(
-            await context_getter(i), mt_conftest.get_pull_queue_config("1x5", 1000), ""
+            await context_getter(i),
+            conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "1x5", 1000),
+            "",
         )
     for i in range(6, 20):
         await t.add_pull(
-            await context_getter(i), mt_conftest.get_pull_queue_config("1x5", 1000), ""
+            await context_getter(i),
+            conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "1x5", 1000),
+            "",
         )
 
     await t.refresh()
@@ -852,11 +912,15 @@ async def test_train_queue_splitted_on_failure_2x5(
 
     for i in range(41, 46):
         await t.add_pull(
-            await context_getter(i), mt_conftest.get_pull_queue_config("2x5", 1000), ""
+            await context_getter(i),
+            conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "2x5", 1000),
+            "",
         )
     for i in range(6, 20):
         await t.add_pull(
-            await context_getter(i), mt_conftest.get_pull_queue_config("2x5", 1000), ""
+            await context_getter(i),
+            conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "2x5", 1000),
+            "",
         )
 
     await t.refresh()
@@ -988,11 +1052,15 @@ async def test_train_queue_splitted_on_failure_5x3(
 
     for i in range(41, 47):
         await t.add_pull(
-            await context_getter(i), mt_conftest.get_pull_queue_config("5x3", 1000), ""
+            await context_getter(i),
+            conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "5x3", 1000),
+            "",
         )
     for i in range(7, 22):
         await t.add_pull(
-            await context_getter(i), mt_conftest.get_pull_queue_config("5x3", 1000), ""
+            await context_getter(i),
+            conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "5x3", 1000),
+            "",
         )
 
     await t.refresh()
@@ -1150,7 +1218,7 @@ async def test_train_no_interrupt_add_pull(
     t = merge_train.Train(convoy)
     await t.test_helper_load_from_redis()
 
-    config = mt_conftest.get_pull_queue_config("high-2x5-noint")
+    config = conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "high-2x5-noint")
 
     await t.add_pull(await context_getter(1), config, "")
     await t.refresh()
@@ -1171,7 +1239,9 @@ async def test_train_no_interrupt_add_pull(
     # move above other
     await t.add_pull(
         await context_getter(4),
-        mt_conftest.get_pull_queue_config("high-2x5-noint", 20000),
+        conftest.get_pull_queue_config(
+            mt_conftest.QUEUE_RULES, "high-2x5-noint", 20000
+        ),
         "",
     )
     await t.refresh()
@@ -1186,7 +1256,7 @@ async def test_train_always_interrupt_across_queue(
     t = merge_train.Train(convoy)
     await t.test_helper_load_from_redis()
 
-    config = mt_conftest.get_pull_queue_config("low-2x5-noint")
+    config = conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "low-2x5-noint")
 
     await t.add_pull(await context_getter(1), config, "")
     await t.refresh()
@@ -1206,7 +1276,9 @@ async def test_train_always_interrupt_across_queue(
     # Inserting pr in high queue always break started speculative checks even
     # if allow_checks_interruption is set
     await t.add_pull(
-        await context_getter(4), mt_conftest.get_pull_queue_config("high-2x5-noint"), ""
+        await context_getter(4),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "high-2x5-noint"),
+        "",
     )
     await t.refresh()
     assert [[4]] == mt_conftest.get_train_cars_content(t)
@@ -1220,7 +1292,7 @@ async def test_train_interrupt_mixed_across_queue(
     t = merge_train.Train(convoy)
     await t.test_helper_load_from_redis()
 
-    config = mt_conftest.get_pull_queue_config("low-1x5-noint")
+    config = conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "low-1x5-noint")
 
     await t.add_pull(await context_getter(1), config, "")
     await t.refresh()
@@ -1239,7 +1311,9 @@ async def test_train_interrupt_mixed_across_queue(
 
     # Inserting pr in high queue always break started speculative checks
     await t.add_pull(
-        await context_getter(4), mt_conftest.get_pull_queue_config("high-1x2"), ""
+        await context_getter(4),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "high-1x2"),
+        "",
     )
     await t.refresh()
     assert [[4]] == mt_conftest.get_train_cars_content(t)
@@ -1253,10 +1327,12 @@ async def test_train_disallow_checks_interruption_scenario_1(
     t = merge_train.Train(convoy)
     await t.test_helper_load_from_redis()
 
-    urgent = mt_conftest.get_pull_queue_config("urgent-1x4")
-    fastlane = mt_conftest.get_pull_queue_config("fastlane-1x8-noint")
-    regular = mt_conftest.get_pull_queue_config(
-        "regular-1x8-noint-from-fastlane-and-regular"
+    urgent = conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "urgent-1x4")
+    fastlane = conftest.get_pull_queue_config(
+        mt_conftest.QUEUE_RULES, "fastlane-1x8-noint"
+    )
+    regular = conftest.get_pull_queue_config(
+        mt_conftest.QUEUE_RULES, "regular-1x8-noint-from-fastlane-and-regular"
     )
 
     await t.add_pull(await context_getter(1), fastlane, "")
@@ -1292,10 +1368,12 @@ async def test_train_disallow_checks_interruption_scenario_2(
     t = merge_train.Train(convoy)
     await t.test_helper_load_from_redis()
 
-    urgent = mt_conftest.get_pull_queue_config("urgent-1x4")
-    fastlane = mt_conftest.get_pull_queue_config("fastlane-1x8-noint")
-    regular = mt_conftest.get_pull_queue_config(
-        "regular-1x8-noint-from-fastlane-and-regular"
+    urgent = conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "urgent-1x4")
+    fastlane = conftest.get_pull_queue_config(
+        mt_conftest.QUEUE_RULES, "fastlane-1x8-noint"
+    )
+    regular = conftest.get_pull_queue_config(
+        mt_conftest.QUEUE_RULES, "regular-1x8-noint-from-fastlane-and-regular"
     )
 
     await t.add_pull(await context_getter(1), regular, "")
@@ -1333,7 +1411,9 @@ async def test_train_batch_max_wait_time(
         t = merge_train.Train(convoy)
         await t.test_helper_load_from_redis()
 
-        config = mt_conftest.get_pull_queue_config("batch-wait-time")
+        config = conftest.get_pull_queue_config(
+            mt_conftest.QUEUE_RULES, "batch-wait-time"
+        )
 
         await t.add_pull(await context_getter(1), config, "")
         await t.refresh()
@@ -1377,7 +1457,9 @@ async def test_train_queue_pr_with_higher_prio_enters_in_queue_during_merging_1x
 
     for i in range(41, 46):
         await t.add_pull(
-            await context_getter(i), mt_conftest.get_pull_queue_config("1x5", 1000), ""
+            await context_getter(i),
+            conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "1x5", 1000),
+            "",
         )
 
     await t.refresh()
@@ -1404,7 +1486,9 @@ async def test_train_queue_pr_with_higher_prio_enters_in_queue_during_merging_1x
     assert [] == mt_conftest.get_train_waiting_pulls_content(t)
 
     await t.add_pull(
-        await context_getter(7), mt_conftest.get_pull_queue_config("1x5", 10000), ""
+        await context_getter(7),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "1x5", 10000),
+        "",
     )
     await t.refresh()
     assert [[44, 45]] == mt_conftest.get_train_cars_content(t)
@@ -1423,7 +1507,9 @@ async def test_train_queue_pr_with_higher_prio_enters_in_queue_during_merging_2x
 
     for i in range(41, 52):
         await t.add_pull(
-            await context_getter(i), mt_conftest.get_pull_queue_config("2x5", 1000), ""
+            await context_getter(i),
+            conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "2x5", 1000),
+            "",
         )
 
     await t.refresh()
@@ -1459,7 +1545,9 @@ async def test_train_queue_pr_with_higher_prio_enters_in_queue_during_merging_2x
     assert [51] == mt_conftest.get_train_waiting_pulls_content(t)
 
     await t.add_pull(
-        await context_getter(7), mt_conftest.get_pull_queue_config("2x5", 2000), ""
+        await context_getter(7),
+        conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, "2x5", 2000),
+        "",
     )
 
     await t.refresh()
@@ -1629,7 +1717,9 @@ async def test_train_load_from_redis_with_None_partition_name(
         waiting_pulls=[
             merge_train.EmbarkedPull.Serialized(
                 user_pull_request_number=github_types.GitHubPullRequestNumber(12345),
-                config=mt_conftest.get_pull_queue_config("inplace"),
+                config=conftest.get_pull_queue_config(
+                    mt_conftest.QUEUE_RULES, "inplace"
+                ),
                 queued_at=date.utcnow(),
             ),
         ],
@@ -1752,7 +1842,9 @@ async def test_train_car_has_reached_batch_max_failure(
     # Populate train
     for i in range(40, 48):
         await t.add_pull(
-            await context_getter(i), mt_conftest.get_pull_queue_config(config_name), ""
+            await context_getter(i),
+            conftest.get_pull_queue_config(mt_conftest.QUEUE_RULES, config_name),
+            "",
         )
     await t.refresh()
 

@@ -1,5 +1,7 @@
 from unittest import mock
+from urllib import parse
 
+from mergify_engine import settings
 from mergify_engine import yaml
 import mergify_engine.queue.merge_train
 from mergify_engine.rules.config import partition_rules as partr_config
@@ -1461,6 +1463,10 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
             check_run_p2["check_run"]["output"]["title"]
             == "The pull request is the 1st in the `projB` partition queue to be merged"
         )
+        assert (
+            check_run_p2["check_run"]["details_url"]
+            == f"{settings.DASHBOARD_UI_FRONT_URL}/github/{p2['base']['repo']['owner']['login']}/repo/{p2['base']['repo']['name']}/queues/partitions/projB?branch={parse.quote(p2['base']['ref'], safe='')}&queues=default&pull={p2['number']}"
+        )
         draft_pr_p2 = await self.wait_for_pull_request("opened")
 
         await self.add_label(p1["number"], "queue")
@@ -1472,6 +1478,11 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         assert (
             check_run_p1["check_run"]["output"]["title"]
             == "The pull request is queued in the following partitions to be merged: 1st in projA, 2nd in projB"
+        )
+
+        assert (
+            check_run_p1["check_run"]["details_url"]
+            == f"{settings.DASHBOARD_UI_FRONT_URL}/github/{p2['base']['repo']['owner']['login']}/repo/{p2['base']['repo']['name']}/queues/partitions/projA?branch={parse.quote(p1['base']['ref'], safe='')}&queues=default&pull={p1['number']}"
         )
 
         draft_pr_p1_projA = await self.wait_for_pull_request("opened")
@@ -1503,6 +1514,14 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
         await self.wait_for_pull_request("closed", draft_pr_p1_projB["number"])
         p1_closed = await self.wait_for_pull_request("closed", p1["number"])
         assert p1_closed["pull_request"]["merged"]
+
+        check_run_p1 = await self.wait_for_check_run(
+            action="completed", name="Rule: Automatic merge (queue)"
+        )
+        assert (
+            check_run_p1["check_run"]["details_url"]
+            == f"{settings.DASHBOARD_UI_FRONT_URL}/github/{p2['base']['repo']['owner']['login']}/repo/{p2['base']['repo']['name']}/queues?branch={parse.quote(p1['base']['ref'], safe='')}&pull={p1['number']}"
+        )
 
     async def test_fastforward_merge_forbidden_with_partition_rules(self) -> None:
         rules = {

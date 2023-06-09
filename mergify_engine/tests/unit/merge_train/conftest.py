@@ -7,7 +7,6 @@ import voluptuous
 
 from mergify_engine import context
 from mergify_engine import github_types
-from mergify_engine import queue
 from mergify_engine import redis_utils
 from mergify_engine import rules
 from mergify_engine.queue import merge_train
@@ -288,25 +287,6 @@ def monkeypatched_traincar(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         "mergify_engine.queue.merge_train.TrainCar.check_mergeability",
         fake_train_car_check_mergeability,
-    )
-
-
-def get_pull_queue_config(
-    queue_name: str, priority: int = 100
-) -> queue.PullQueueConfig:
-    effective_priority = typing.cast(
-        int,
-        priority
-        + QUEUE_RULES[queue_name].config["priority"] * queue.QUEUE_PRIORITY_OFFSET,
-    )
-    return queue.PullQueueConfig(
-        name=qr_config.QueueName(queue_name),
-        update_method="merge",
-        priority=priority,
-        effective_priority=effective_priority,
-        bot_account=None,
-        update_bot_account=None,
-        autosquash=True,
     )
 
 

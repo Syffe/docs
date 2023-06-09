@@ -9,12 +9,63 @@ from unittest import mock
 import jinja2
 import jinja2.sandbox
 import pytest
+import voluptuous
 
 from mergify_engine import context
 from mergify_engine import github_types
+from mergify_engine import queue
 from mergify_engine import redis_utils
+from mergify_engine import rules
 from mergify_engine import subscription
 from mergify_engine.clients import github
+from mergify_engine.queue import merge_train
+from mergify_engine.rules.config import partition_rules as partr_config
+from mergify_engine.rules.config import queue_rules as qr_config
+
+
+MERGIFY_CONFIG = """
+queue_rules:
+  - name: default
+    conditions: []
+
+partition_rules:
+  - name: projectA
+    conditions:
+      - label=projectA
+
+  - name: projectB
+    conditions:
+      - label=projectB
+"""
+
+QUEUE_RULES = voluptuous.Schema(qr_config.QueueRulesSchema)(
+    rules.YamlSchema(MERGIFY_CONFIG)["queue_rules"]
+)
+PARTITION_RULES = voluptuous.Schema(partr_config.PartitionRulesSchema)(
+    rules.YamlSchema(MERGIFY_CONFIG)["partition_rules"]
+)
+
+
+def get_pull_queue_config(
+    queue_rules: qr_config.QueueRules,
+    queue_name: str,
+    priority: int = 100,
+) -> queue.PullQueueConfig:
+    effective_priority = (
+        priority
+        + queue_rules[qr_config.QueueName(queue_name)].config["priority"]
+        * queue.QUEUE_PRIORITY_OFFSET
+    )
+
+    return queue.PullQueueConfig(
+        name=qr_config.QueueName(queue_name),
+        update_method="merge",
+        priority=priority,
+        effective_priority=effective_priority,
+        bot_account=None,
+        update_bot_account=None,
+        autosquash=True,
+    )
 
 
 @pytest.fixture
@@ -90,6 +141,16 @@ def fake_repository(
         installation_json, fake_subscription, fake_client, redis_links
     )
     return context.Repository(installation, gh_repo)
+
+
+@pytest.fixture
+def fake_convoy(fake_repository: context.Repository) -> merge_train.Convoy:
+    return merge_train.Convoy(
+        fake_repository,
+        QUEUE_RULES,
+        PARTITION_RULES,
+        github_types.GitHubRefType("main"),
+    )
 
 
 async def build_fake_context(

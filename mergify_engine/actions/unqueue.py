@@ -62,7 +62,7 @@ class UnqueueExecutor(
                 title="The pull request has been removed from the queue by an `unqueue` command",
                 summary="",
             ),
-            details_url=dashboard.get_queue_pull_request_details_url(self.ctxt.pull),
+            details_url=await dashboard.get_queues_url_from_context(self.ctxt, convoy),
         )
         await signals.send(
             self.ctxt.repository,

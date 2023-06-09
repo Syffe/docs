@@ -421,9 +421,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                         "The pull request has been refreshed and is going to be re-embarked soon",
                         "",
                     ),
-                    details_url=dashboard.get_queue_pull_request_details_url(
-                        self.ctxt.pull
-                    ),
+                    details_url=await dashboard.get_queues_url_from_context(self.ctxt),
                 )
 
         convoy = await merge_train.Convoy.from_context(
@@ -562,10 +560,16 @@ Then, re-embark the pull request into the merge queue by posting the comment
                             " checks have started."
                         ),
                     ),
-                    details_url=dashboard.get_queue_pull_request_details_url(
-                        self.ctxt.pull
+                    details_url=await dashboard.get_queues_url_from_context(
+                        self.ctxt,
+                        convoy,
                     ),
                 )
+
+        result.details_url = await dashboard.get_queues_url_from_context(
+            self.ctxt,
+            convoy,
+        )
 
         return result
 
@@ -606,8 +610,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     f"The pull request {self.ctxt.pull['number']} cannot be merged and has been disembarked",
                     result.title + "\n" + result.summary,
                 ),
-                details_url=dashboard.get_queue_pull_request_details_url(
-                    self.ctxt.pull
+                details_url=await dashboard.get_queues_url_from_context(
+                    self.ctxt,
+                    convoy,
                 ),
             )
 

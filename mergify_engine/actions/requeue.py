@@ -59,7 +59,7 @@ class RequeueExecutor(
                 "This pull request can be re-embarked automatically",
                 "",
             ),
-            details_url=dashboard.get_queue_pull_request_details_url(self.ctxt.pull),
+            details_url=await dashboard.get_queues_url_from_context(self.ctxt),
         )
 
         # NOTE(sileht): refresh it to maybe, retrigger the queue action.

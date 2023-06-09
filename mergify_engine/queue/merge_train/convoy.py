@@ -455,8 +455,8 @@ class Convoy:
                 user_pr_context,
                 constants.MERGE_QUEUE_SUMMARY_NAME,
                 report,
-                details_url=dashboard.get_queue_pull_request_details_url(
-                    user_pr_context.pull
+                details_url=await dashboard.get_queues_url_from_context(
+                    user_pr_context, self
                 ),
             )
         else:
@@ -500,8 +500,8 @@ class Convoy:
                 user_pr_context,
                 constants.MERGE_QUEUE_SUMMARY_NAME,
                 report,
-                details_url=dashboard.get_queue_pull_request_details_url(
-                    user_pr_context.pull
+                details_url=await dashboard.get_queues_url_from_context(
+                    user_pr_context, self
                 ),
             )
 

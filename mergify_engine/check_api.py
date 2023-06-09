@@ -104,6 +104,7 @@ class Result:
     started_at: datetime.datetime | None = None
     ended_at: datetime.datetime | None = None
     log_details: dict[str, typing.Any] | None = None
+    details_url: str | None = None
 
 
 def to_check_run_light(
