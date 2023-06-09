@@ -39,7 +39,7 @@ MERGIFY_MERGE_QUEUE_PULL_REQUEST_DOC = f"""
 
 ---
 
-More informations about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue.html).
+More information about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue/).
 
 <details>
 <summary>Mergify commands</summary>
