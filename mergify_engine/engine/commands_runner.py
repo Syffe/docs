@@ -18,6 +18,7 @@ from mergify_engine import settings
 from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
+from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import conditions as conditions_mod
 from mergify_engine.rules.config import mergify as mergify_conf
 from mergify_engine.rules.config import pull_request_rules as prr_config
@@ -436,7 +437,7 @@ async def check_init_command_run(
     if state.github_comment_result is not None:
         return
 
-    if command.name != "refresh" and ctxt.is_merge_queue_pr():
+    if command.name != "refresh" and queue_utils.is_merge_queue_pr(ctxt.pull):
         raise CommandNotAllowed(MERGE_QUEUE_COMMAND_MESSAGE, "")
 
     await check_command_restrictions(

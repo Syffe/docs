@@ -44,7 +44,6 @@ from mergify_engine import subscription as subscription_mod
 from mergify_engine import utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
-from mergify_engine.queue import utils as queue_utils
 
 
 if typing.TYPE_CHECKING:
@@ -1911,18 +1910,6 @@ class Context:
                     )
             self._caches.is_behind.set(is_behind)
         return is_behind
-
-    def is_merge_queue_pr(self) -> bool:
-        return (
-            self.pull["title"].startswith("merge queue:")
-            # FIXME(jd): drop me in version >= 9.0.0
-            or self.pull["title"].startswith("merge-queue:")
-        ) and (
-            # NOTE(greesb): For retrocompatibility, to remove once there are
-            # no more PR using this.
-            self.pull["head"]["ref"].startswith(constants.MERGE_QUEUE_BRANCH_PREFIX)
-            or queue_utils.is_pr_body_a_merge_queue_pr(self.pull["body"])
-        )
 
     async def synchronized_by_user_at(self) -> datetime.datetime | None:
         for source in self.sources:

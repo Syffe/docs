@@ -21,6 +21,7 @@ from mergify_engine.clients import http
 from mergify_engine.engine import actions_runner
 from mergify_engine.engine import commands_runner
 from mergify_engine.engine import queue_runner
+from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules.config import mergify as mergify_conf
 
 
@@ -427,7 +428,7 @@ async def run(
         )
 
     ctxt.log.debug("engine handle actions")
-    if ctxt.is_merge_queue_pr():
+    if queue_utils.is_merge_queue_pr(ctxt.pull):
         await queue_runner.handle(
             ctxt,
             mergify_config["queue_rules"],
@@ -456,6 +457,9 @@ async def create_initial_summary(
         )
     ):
         # Mergify is probably not activated on this repo
+        return
+
+    if queue_utils.is_merge_queue_pr(event["pull_request"]):
         return
 
     # NOTE(sileht): It's possible that a "push" event creates a summary before we

@@ -3,6 +3,7 @@ import math
 import string
 import typing
 
+from mergify_engine import constants
 from mergify_engine import github_types
 from mergify_engine import utils
 
@@ -170,6 +171,19 @@ class MaximumBatchFailureResolutionAttemptsReached(BaseUnqueueReason):
     unqueue_code: typing.ClassVar[
         typing.Literal["BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS"]
     ] = "BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS"
+
+
+def is_merge_queue_pr(pull: github_types.GitHubPullRequest) -> bool:
+    return (
+        pull["title"].startswith("merge queue:")
+        # FIXME(jd): drop me in version >= 9.0.0
+        or pull["title"].startswith("merge-queue:")
+    ) and (
+        # NOTE(greesb): For retrocompatibility, to remove once there are
+        # no more PR using this.
+        pull["head"]["ref"].startswith(constants.MERGE_QUEUE_BRANCH_PREFIX)
+        or is_pr_body_a_merge_queue_pr(pull["body"])
+    )
 
 
 def is_pr_body_a_merge_queue_pr(pull_request_body: str | None) -> bool:

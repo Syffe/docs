@@ -16,6 +16,7 @@ from mergify_engine import subscription
 from mergify_engine import utils
 from mergify_engine import yaml
 from mergify_engine.clients import github
+from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import live_resolvers
 from mergify_engine.tests.functional import base
 
@@ -23,7 +24,9 @@ from mergify_engine.tests.functional import base
 LOG = logging.getLogger(__name__)
 
 
-@pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
+@pytest.mark.subscription(
+    subscription.Features.WORKFLOW_AUTOMATION, subscription.Features.MERGE_QUEUE
+)
 class TestEngineV2Scenario(base.FunctionalTestBase):
     """Mergify engine tests.
 
@@ -649,7 +652,17 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
     async def test_pull_request_init_summary(self) -> None:
         rules = {
-            "pull_request_rules": [{"name": "noop", "conditions": [], "actions": {}}]
+            "pull_request_rules": [{"name": "noop", "conditions": [], "actions": {}}],
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "check-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                }
+            ],
         }
         await self.setup_repo(yaml.dump(rules))
 
@@ -677,6 +690,13 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
             == f"{settings.DASHBOARD_UI_FRONT_URL}/github/{pr['base']['user']['login']}"
             f"/repo/{pr['base']['repo']['name']}/event-logs"
         )
+
+        # Check that initial summary is not created on merge queue pr
+        await self.create_command(pr["number"], "@mergifyio queue", as_="admin")
+        await self.run_engine()
+        draft_pr = await self.wait_for_pull_request("opened")
+        assert queue_utils.is_merge_queue_pr(draft_pr["pull_request"])
+        assert [] == (await self.get_check_runs(draft_pr["pull_request"]))
 
     async def test_pull_refreshed_after_config_change(self) -> None:
         rules = {
