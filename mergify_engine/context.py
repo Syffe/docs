@@ -1268,6 +1268,37 @@ class Context:
             self._caches.review_decision.set(review_decision)
         return review_decision
 
+    async def is_pr_queued_upper(
+        self,
+        current_pr_number: github_types.GitHubPullRequestNumber,
+        dependent_pr_number: github_types.GitHubPullRequestNumber,
+    ) -> bool:
+        # Circular import
+        from mergify_engine.queue import merge_train
+
+        mergify_config = await self.repository.get_mergify_config()
+        queue_rules = mergify_config["queue_rules"]
+        partition_rules = mergify_config["partition_rules"]
+        convoy = await merge_train.Convoy.from_context(
+            self, queue_rules, partition_rules
+        )
+
+        list_dependent_pr = await convoy.find_embarked_pull(dependent_pr_number)
+        list_current_pr = await convoy.find_embarked_pull(current_pr_number)
+
+        if not list_dependent_pr:
+            return False
+
+        if list_dependent_pr and not list_current_pr:
+            return True
+
+        return all(
+            dependant_pr.position < current_pr.position
+            for current_pr in list_current_pr
+            for dependant_pr in list_dependent_pr
+            if dependant_pr.partition_name == current_pr.partition_name
+        )
+
     async def set_summary_check(
         self,
         result: check_api.Result,
@@ -2426,6 +2457,7 @@ class BasePullRequest:
             # required by this pull request. An optimisation can be to look at
             # the merge queues too, to queue this pull request earlier
             depends_on = []
+            current_ctxt_pr_number = ctxt.pull["number"]
             for pull_request_number in ctxt.get_depends_on():
                 try:
                     ctxt = await ctxt.repository.get_pull_request_context(
@@ -2433,7 +2465,12 @@ class BasePullRequest:
                     )
                 except http.HTTPNotFound:
                     continue
-                if ctxt.pull["merged"]:
+
+                is_pr_queued_upper = await ctxt.is_pr_queued_upper(
+                    current_ctxt_pr_number, pull_request_number
+                )
+
+                if ctxt.pull["merged"] or is_pr_queued_upper:
                     depends_on.append(f"#{pull_request_number}")
             return depends_on
 
