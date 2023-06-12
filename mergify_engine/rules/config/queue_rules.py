@@ -110,7 +110,6 @@ class QueueRule:
         if allow_checks_interruption is None:
             allow_checks_interruption = d["allow_speculative_checks_interruption"]  # type: ignore[typeddict-item]
 
-        # TODO(sileht): We should just delete this option at some point and hardcode the false behavior by default
         if allow_checks_interruption is False:
             d["disallow_checks_interruption_from_queues"].append(name)
 
