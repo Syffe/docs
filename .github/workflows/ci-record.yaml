@@ -42,7 +42,7 @@ jobs:
       - name: Setup Python 🔧
         uses: actions/setup-python@v4.6.1
         with:
-          python-version: 3.11.3
+          python-version: 3.11.4
 
       - name: Build 🔧 & Test 🔍
         run: |
