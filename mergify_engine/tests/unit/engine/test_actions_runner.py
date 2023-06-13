@@ -14,6 +14,11 @@ from mergify_engine.rules.config import mergify as mergify_conf
 from mergify_engine.tests.unit import conftest
 
 
+@mock.patch.object(
+    conditions,
+    "get_routing_conditions",
+    mock.AsyncMock(return_value=None),
+)
 @pytest.mark.parametrize(
     "merged_by,merged_by_id,raw_config,result",
     [

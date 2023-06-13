@@ -1268,6 +1268,9 @@ class QueueAction(actions.Action):
         if merge_after_condition is not None:
             conditions_requirements.append(merge_after_condition)
 
+        if routing_conditions := await conditions.get_routing_conditions(ctxt):
+            conditions_requirements.append(routing_conditions)
+
         conditions_requirements.append(
             conditions.RuleCondition.from_tree(
                 {"=": ("draft", False)}, description=":pushpin: queue requirement"

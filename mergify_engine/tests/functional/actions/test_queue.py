@@ -136,23 +136,21 @@ class TestQueueAction(base.FunctionalTestBase):
 
         p1 = await self.create_pr()
         await self.add_label(p1["number"], "queue")
-        await self.add_label(p1["number"], "tata")
         await self.run_engine()
 
-        check = first(
-            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-            key=lambda c: c["name"] == "Rule: Queue (queue)",
-        )
-        assert check is not None
-        assert check["conclusion"] == "failure"
+        check = await self.wait_for_check_run(name="Summary", conclusion="success")
+        assert check["check_run"]["output"]["title"] == "1 potential rule"
         assert (
-            check["output"]["title"] == "There are no queue routing conditions matching"
-        )
-        assert check["output"]["summary"] == (
-            "There are routing conditions defined in the configuration, but none "
-            "matches. The pull request has not been embarked.\n\nDetails:"
-            "\n* Queue `hotfix`: \n- [ ] `label=hotfix`"
-            "\n* Queue `default`: \n- [ ] `label=toto`\n- [X] `label=tata`"
+            """- [ ] any of: [:twisted_rightwards_arrows: routing conditions]
+  - [ ] all of: [:pushpin: routing conditions of queue `default`]
+    - [ ] `label=tata`
+    - [ ] `label=toto`
+  - [ ] all of: [:pushpin: routing conditions of queue `hotfix`]
+    - [ ] `label=hotfix`
+- [X] `-draft` [:pushpin: queue requirement]
+- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+- [X] `label=queue`"""
+            in check["check_run"]["output"]["summary"]
         )
 
     async def test_queue_routing_conditions_failure_with_pull_request_rules_and_fallback(
@@ -287,25 +285,20 @@ class TestQueueAction(base.FunctionalTestBase):
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
 
-        q = await self.get_train()
-        await self.assert_merge_queue_contents(q, None, [])
+        check = await self.wait_for_check_run(name="Summary")
+        assert check["check_run"]["output"]["title"] == "1 potential rule"
+        expected_summary = f"""- [ ] any of: [:twisted_rightwards_arrows: routing conditions]
+  - [ ] all of: [:pushpin: routing conditions of queue `default`]
+    - [ ] `files~=^dummy/`
+- [X] `-draft` [:pushpin: queue requirement]
+- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+- [X] `base={p1['base']['ref']}`
+- [X] `label=queue`"""
+        assert expected_summary in check["check_run"]["output"]["summary"]
 
-        check = first(
-            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
-            key=lambda c: c["name"] == "Rule: Queue (queue)",
-        )
-        assert check is not None
-        assert check["conclusion"] == "failure"
-        assert (
-            check["output"]["title"] == "There are no queue routing conditions matching"
-        )
-        assert check["output"]["summary"] == (
-            "There are routing conditions defined in the configuration, but none matches."
-            " The pull request has not been embarked.\n\nDetails:"
-            "\n* Queue `default`: \n- [ ] `files~=^dummy/`"
-        )
-
-    async def test_queue_routing_conditions_failure_update_after_queued(self) -> None:
+    async def test_queue_routing_conditions_failure_update_after_queued(
+        self,
+    ) -> None:
         rules = {
             "queue_rules": [
                 {
@@ -490,39 +483,41 @@ class TestQueueAction(base.FunctionalTestBase):
         }
         await self.setup_repo(yaml.dump(rules))
 
-        p1 = await self.create_pr()
-        await self.add_label(p1["number"], "queue")
+        # run engine with pending check
+        p = await self.create_pr()
+        await self.add_label(p["number"], "queue")
         pending_check = await self.create_check_run(
-            p1,
+            p,
             name="some-pending-check-in-ci",
             conclusion=None,
             external_id=check_api.USER_CREATED_CHECKS,
         )
-
-        # engine detects pending check runs
         await self.run_engine()
-        check = await self.wait_for_check_run(name="Rule: Queue (queue)")
-        assert check["check_run"]["status"] == "in_progress"
+
+        check = await self.wait_for_check_run(name="Summary", conclusion="success")
+        assert check["check_run"]["output"]["title"] == "1 potential rule"
         assert (
-            check["check_run"]["output"]["title"]
-            == "Waiting for checks in routing conditions to complete to be able to select a queue"
-        )
-        assert (
-            check["check_run"]["output"]["summary"]
-            == "The following queues have routing conditions with pending checks:\n* `pending-check-success`\n"
+            """- [ ] any of: [:twisted_rightwards_arrows: routing conditions]
+  - [ ] all of: [:pushpin: routing conditions of queue `default`]
+    - [ ] `label=will-not-be-set`
+  - [ ] all of: [:pushpin: routing conditions of queue `pending-check-success`]
+    - [ ] `check-success=some-pending-check-in-ci`
+- [X] `-draft` [:pushpin: queue requirement]
+- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+- [X] `label=queue`"""
+            in check["check_run"]["output"]["summary"]
         )
 
-        # check runs completed
+        # run engine with check in success -> pull request is queued
         await self.update_check_run(
-            p1,
+            p,
             pending_check["check_run"]["id"],
         )
         await self.run_engine()
-        check = await self.wait_for_check_run(name="Rule: Queue (queue)")
-        assert (
-            check["check_run"]["output"]["title"]
-            == "The pull request has been merged automatically"
+        check = await self.wait_for_check_run(
+            name="Rule: Queue (queue)", conclusion="success"
         )
+        assert check is not None
 
     async def test_queue_priority_rules(self) -> None:
         rules = {

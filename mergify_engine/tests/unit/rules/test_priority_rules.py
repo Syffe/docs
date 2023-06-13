@@ -1,4 +1,5 @@
 import typing
+from unittest import mock
 
 import first
 import pytest
@@ -6,10 +7,16 @@ import pytest
 from mergify_engine import github_types
 from mergify_engine import subscription
 from mergify_engine.actions import queue
+from mergify_engine.rules import conditions
 from mergify_engine.tests import utils
 from mergify_engine.tests.unit import conftest
 
 
+@mock.patch.object(
+    conditions,
+    "get_routing_conditions",
+    mock.AsyncMock(return_value=None),
+)
 @pytest.mark.parametrize(
     "labels,expected_priority",
     (
@@ -33,6 +40,7 @@ async def test_queue_effective_priority(
     context_getter: conftest.ContextGetterFixture,
     labels: list[str],
     expected_priority: int,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     config = await utils.load_mergify_config(
         """queue_rules:
