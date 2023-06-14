@@ -2428,12 +2428,12 @@ class BasePullRequest:
             depends_on = []
             for pull_request_number in ctxt.get_depends_on():
                 try:
-                    ctxt = await ctxt.repository.get_pull_request_context(
+                    depends_on_ctxt = await ctxt.repository.get_pull_request_context(
                         pull_request_number
                     )
                 except http.HTTPNotFound:
                     continue
-                if ctxt.pull["merged"]:
+                if depends_on_ctxt.pull["merged"]:
                     depends_on.append(f"#{pull_request_number}")
             return depends_on
 
