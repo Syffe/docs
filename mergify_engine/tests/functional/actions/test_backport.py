@@ -315,6 +315,103 @@ no changes added to commit (use "git add" and/or "git commit -a")
             expected_body=f"foo: {stable_branch}",
         )
 
+    async def test_backport_skips_commit_when_change_already_in_destination_branch(
+        self,
+    ) -> None:
+        stable_branch = self.get_full_branch_name("stable/#3.1")
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "Merge on stable branch",
+                    "conditions": [
+                        f"base={stable_branch}",
+                        "label=merge stable branch",
+                    ],
+                    "actions": {"merge": {"method": "merge"}},
+                },
+                {
+                    "name": "Merge on main",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=backport-#3.1",
+                    ],
+                    "actions": {"merge": {"method": "merge"}},
+                },
+                {
+                    "name": "Backport to stable/#3.1",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=backport-#3.1",
+                    ],
+                    "actions": {"backport": {"branches": [stable_branch]}},
+                },
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules), test_branches=[stable_branch])
+
+        # We create a PR with 2 commits
+        p1 = await self.create_pr(
+            files={
+                "test.txt": "test",
+            },
+            two_commits=True,
+        )
+
+        # We create one of the previous two commits into the stable branch
+        p2 = await self.create_pr(
+            base=stable_branch,
+            files={
+                "test.txt": "test",
+            },
+        )
+        # We merge the change in the stable branch
+        await self.add_label(p2["number"], "merge stable branch")
+        await self.run_engine()
+        await self.wait_for_pull_request("closed", p2["number"], merged=True)
+
+        await self.add_label(p1["number"], "backport-#3.1")
+        await self.run_engine()
+        await self.wait_for_pull_request("closed", p1["number"], merged=True)
+
+        await self.run_engine()
+        bp_pull_event = await self.wait_for_pull_request("opened")
+        bp_pull = await self.get_pull(bp_pull_event["pull_request"]["number"])
+        assert not bp_pull["merged"]
+
+        assert bp_pull["title"].endswith(
+            f": pull request n1 from integration (backport #{p1['number']})"
+        )
+        commits = await self.get_commits(bp_pull["number"])
+        # Asserts the commit already present, introduced by P2, in the stable branch has been skipped
+        assert len(commits) == 1
+
+        ctxt = context.Context(self.repository_ctxt, p1, [])
+        checks = [
+            c
+            for c in await ctxt.pull_engine_check_runs
+            if c["name"] == "Rule: Backport to stable/#3.1 (backport)"
+        ]
+        assert "success" == checks[0]["conclusion"]
+        assert "Backports have been created" == checks[0]["output"]["title"]
+        assert (
+            f"* [#%d %s](%s) has been created for branch `{stable_branch}`"
+            % (
+                bp_pull["number"],
+                bp_pull["title"],
+                bp_pull["html_url"],
+            )
+            == checks[0]["output"]["summary"]
+        )
+
+        refs = [
+            ref["ref"]
+            async for ref in self.find_git_refs(
+                self.url_origin, [f"mergify/bp/{stable_branch}/pr-{p1['number']}"]
+            )
+        ]
+        assert [f"refs/heads/mergify/bp/{stable_branch}/pr-{p1['number']}"] == refs
+
 
 class TestBackportActionWithSub(BackportActionTestBase):
     SUBSCRIPTION_ACTIVE = True

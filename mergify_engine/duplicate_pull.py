@@ -307,6 +307,10 @@ async def prepare_branch(
             ):
                 raise
             except gitter.GitError as e:  # pragma: no cover
+                if "The previous cherry-pick is now empty," in e.output:
+                    await git("cherry-pick", "--skip")
+                    continue
+
                 for message in GIT_MESSAGE_TO_EXCEPTION.keys():
                     if message in e.output:
                         raise
