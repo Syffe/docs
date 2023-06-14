@@ -1,0 +1,36 @@
+name: Mergify configuration openapi spec sync
+permissions: write-all
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  configuration-openapi-spec-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download file
+        env:
+          TOKEN: ${{ secrets.MERGIFY_CI_BOT_PAT }}
+        # yamllint disable rule:line-length
+        run: |
+          rm -f src/mergify-schema.json
+          curl -L \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${TOKEN}"\
+            https://api.github.com/repos/Mergifyio/docs/contents/src/content/mergify-configuration-openapi.json \
+            -o docs/source/_extra/config/openapi.json
+        # yamllint enable rule:line-length
+
+      - name: Create the Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.MERGIFY_CI_BOT_PAT }}
+          author: mergify-ci-bot <mergify-ci-bot@users.noreply.github.com>
+          title: "chore: sync Mergify configuration openapi spec file"
+          body: ""
+          commit-message: "chore: sync Mergify configuration openapi spec file"
+          branch: openapi-spec-sync
+          base: main
