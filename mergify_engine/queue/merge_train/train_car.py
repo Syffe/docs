@@ -1554,7 +1554,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 priority=worker_pusher.Priority.immediate,
             )
 
-    def _get_conditions_without_checks(
+    def _get_conditions_with_only_checks(
         cls,
         evaluated_queue_rule: "qr_config.EvaluatedQueueRule",
     ) -> "conditions.QueueRuleMergeConditions":
@@ -1948,7 +1948,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             self.train_car_state.ci_ended_at = date.utcnow()
         elif queue_conditions_conclusion == check_api.Conclusion.PENDING:
             queue_pull_requests = await self.get_pull_requests_to_evaluate()
-            conditions_with_only_checks = self._get_conditions_without_checks(
+            conditions_with_only_checks = self._get_conditions_with_only_checks(
                 evaluated_queue_rule
             )
 
