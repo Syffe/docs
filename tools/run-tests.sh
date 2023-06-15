@@ -29,8 +29,8 @@ export MERGIFYENGINE_DATABASE_URL=postgresql://postgres:password@localhost:${POS
 export MERGIFYENGINE_DEFAULT_REDIS_URL="redis://localhost:${REDIS_PORT}"
 export MERGIFYENGINE_DATABASE_OAUTH_TOKEN_SECRET_CURRENT=$(pwgen -1 48)
 
-while ! docker run -t --net host --rm redis redis-cli -h localhost -p "$REDIS_PORT" keys '*' ; do sleep 1 ; done
-while ! docker run -t --net host --rm postgres psql "$MERGIFYENGINE_DATABASE_URL" -c "select 1 as connected" ; do sleep 1 ; done
+while ! docker run --net host --rm redis redis-cli -h localhost -p "$REDIS_PORT" keys '*' ; do sleep 1 ; done
+while ! docker run --net host --rm postgres psql "$MERGIFYENGINE_DATABASE_URL" -c "select 1 as connected" ; do sleep 1 ; done
 
 cmd="$1"
 shift
