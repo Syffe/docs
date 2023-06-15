@@ -1268,6 +1268,33 @@ class Context:
             self._caches.review_decision.set(review_decision)
         return review_decision
 
+    async def is_pr_queued_above(
+        self,
+        dependent_pr_number: github_types.GitHubPullRequestNumber,
+    ) -> bool:
+        # Circular import
+        from mergify_engine.queue import merge_train
+
+        mergify_config = await self.repository.get_mergify_config()
+        queue_rules = mergify_config["queue_rules"]
+        partition_rules = mergify_config["partition_rules"]
+        convoy = await merge_train.Convoy.from_context(
+            self, queue_rules, partition_rules
+        )
+
+        list_dependent_pr = await convoy.find_embarked_pull(dependent_pr_number)
+        if not list_dependent_pr:
+            return False
+
+        list_current_pr = await convoy.find_embarked_pull(self.pull["number"])
+
+        return all(
+            dependant_pr.position < current_pr.position
+            for current_pr in list_current_pr
+            for dependant_pr in list_dependent_pr
+            if dependant_pr.partition_name == current_pr.partition_name
+        )
+
     async def set_summary_check(
         self,
         result: check_api.Result,
@@ -2422,9 +2449,6 @@ class BasePullRequest:
             return await cls._get_consolidated_checks_data(ctxt, ("stale",))
 
         if name == "depends-on":
-            # TODO(sileht):  This is the list of merged pull requests that are
-            # required by this pull request. An optimisation can be to look at
-            # the merge queues too, to queue this pull request earlier
             depends_on = []
             for pull_request_number in ctxt.get_depends_on():
                 try:
@@ -2433,7 +2457,10 @@ class BasePullRequest:
                     )
                 except http.HTTPNotFound:
                     continue
-                if depends_on_ctxt.pull["merged"]:
+
+                is_pr_queued_above = await ctxt.is_pr_queued_above(pull_request_number)
+
+                if depends_on_ctxt.pull["merged"] or is_pr_queued_above:
                     depends_on.append(f"#{pull_request_number}")
             return depends_on
 

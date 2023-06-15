@@ -45,6 +45,369 @@ jobs:
 class TestQueueAction(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
 
+    async def test_pr_with_depends_on_unqueued_after_dependent_pr_failed_checks_with_speculative_checks(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "speculative_checks": 5,
+                    "allow_inplace_checks": False,
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Queue",
+                    "conditions": [
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+        p1 = await self.create_pr()
+        body = f"Awesome body\nDepends-On: #{p1['number']}\n"
+        p2 = await self.create_pr(message=body)
+
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        tmp_pull_1 = await self.wait_for_pull_request("opened")
+        await self.wait_for_pull_request("opened")
+
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 1st in the queue to be merged"
+        )
+
+        check = first(
+            await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 2nd in the queue to be merged"
+        )
+
+        await self.create_status(tmp_pull_1["pull_request"], state="failure")
+        await self.run_engine()
+
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request has been removed from the queue"
+        )
+
+        check = first(
+            await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Queue: Embarked in merge train",
+        )
+        assert check is not None
+        assert "cannot be merged and has been disembarked" in check["output"]["title"]
+
+        check = first(
+            await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert check["output"]["title"] == "The pull request rule doesn't match anymore"
+
+    async def test_pr_with_depends_on_unqueued_after_dependent_pr_failed_to_merge_no_inplace(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": False,
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Queue",
+                    "conditions": [
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+        p1 = await self.create_pr()
+        body = f"Awesome body\nDepends-On: #{p1['number']}\n"
+        p2 = await self.create_pr(message=body)
+
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        tmp_pull_1 = await self.wait_for_pull_request("opened")
+
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 1st in the queue to be merged"
+        )
+
+        check = first(
+            await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 2nd in the queue to be merged"
+        )
+
+        await self.create_status(tmp_pull_1["pull_request"], state="failure")
+        await self.run_engine()
+
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request has been removed from the queue"
+        )
+
+        check = first(
+            await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Queue: Embarked in merge train",
+        )
+        assert check is not None
+        assert "cannot be merged and has been disembarked" in check["output"]["title"]
+
+        check = first(
+            await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert check["output"]["title"] == "The pull request rule doesn't match anymore"
+
+    async def test_pr_with_depends_on_unqueued_after_dependent_pr_failed_to_merge_inplace(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                    "allow_inplace_checks": True,
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Queue",
+                    "conditions": [
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+        p1 = await self.create_pr()
+        body = f"Awesome body\nDepends-On: #{p1['number']}\n"
+        p2 = await self.create_pr(message=body)
+
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 1st in the queue to be merged"
+        )
+
+        check = first(
+            await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 2nd in the queue to be merged"
+        )
+
+        await self.create_status(p1, state="failure")
+        await self.run_engine()
+
+        check = first(
+            await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request has been removed from the queue"
+        )
+
+        check = first(
+            await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Queue: Embarked in merge train",
+        )
+        assert check is not None
+        assert "cannot be merged and has been disembarked" in check["output"]["title"]
+
+        check = first(
+            await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert check["output"]["title"] == "The pull request rule doesn't match anymore"
+
+    async def test_pr_with_depends_on_not_queued_if_dependent_pr_is_not_queued(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Queue",
+                    "conditions": [
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+        p1 = await self.create_pr()
+        body = f"Awesome body\nDepends-On: #{p1['number']}\n"
+        p2 = await self.create_pr(message=body)
+
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        check = first(
+            await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is None
+
+        await self.add_label(p1["number"], "queue")
+        await self.run_engine()
+
+        await self.create_comment_as_admin(p2["number"], "@mergifyio refresh")
+        await self.run_engine()
+
+        check = first(
+            await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 2nd in the queue to be merged"
+        )
+
+    async def test_pr_queued_with_depends_on_then_merged_after_first_pr_merged(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                },
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Queue",
+                    "conditions": [
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+        p1 = await self.create_pr()
+        body = f"Awesome body\nDepends-On: #{p1['number']}\n"
+        p2 = await self.create_pr(message=body)
+
+        await self.add_label(p1["number"], "queue")
+        await self.add_label(p2["number"], "queue")
+        await self.run_engine()
+
+        check = first(
+            await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 2nd in the queue to be merged"
+        )
+
+        await self.create_status(p2)
+        await self.run_engine()
+
+        check = first(
+            await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
+            key=lambda c: c["name"] == "Rule: Queue (queue)",
+        )
+        assert check is not None
+        assert (
+            check["output"]["title"]
+            == "The pull request is the 2nd in the queue to be merged"
+        )
+        await self.create_status(p1)
+        await self.run_engine()
+
+        p1_merged = await self.wait_for_pull_request("closed")
+        assert p1_merged["pull_request"]["merged"]
+
+        await self.wait_for_pull_request("synchronize")
+        p2_updated = await self.get_pull(p2["number"])
+
+        await self.create_status(p2_updated)
+        await self.run_engine()
+
+        p2_merged = await self.wait_for_pull_request("closed")
+        assert p2_merged["pull_request"]["merged"]
+
     async def test_queue_routing_conditions_matching_with_pull_request_rules(
         self,
     ) -> None:
