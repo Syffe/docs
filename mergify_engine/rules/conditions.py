@@ -1171,6 +1171,16 @@ class QueueConditionEvaluationResult:
                 return evaluation.match
         return None
 
+    def get_related_checks(self) -> set[str]:
+        related_checks = set()
+        for evaluation in self.evaluations:
+            related_checks.update(set(evaluation.related_checks))
+
+        for subcondition in self.subconditions:
+            related_checks.update(subcondition.get_related_checks())
+
+        return related_checks
+
 
 @pydantic.dataclasses.dataclass
 class QueueConditionEvaluationJsonSerialized:

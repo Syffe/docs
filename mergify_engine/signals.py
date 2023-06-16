@@ -9,6 +9,7 @@ import daiquiri
 from mergify_engine import github_types
 from mergify_engine.clients import github
 from mergify_engine.queue import utils as queue_utils
+from mergify_engine.queue.merge_train import checks as merge_train_checks
 from mergify_engine.rules.config import partition_rules as partr_config
 
 
@@ -148,6 +149,7 @@ class SpeculativeCheckPullRequest(typing.TypedDict, total=False):
     checks_conclusion: ChecksConclusion
     checks_started_at: datetime.datetime
     checks_ended_at: datetime.datetime | None
+    unsuccessful_checks: list[merge_train_checks.QueueCheck.Serialized]
 
 
 class EventMergeMetadata(EventMetadata, total=False):

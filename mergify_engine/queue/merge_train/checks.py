@@ -50,6 +50,28 @@ class QueueCheck:
         state: CheckStateT
         avatar_url: str | None
 
+    def serialized(self) -> "QueueCheck.Serialized":
+        return self.Serialized(
+            name=self.name,
+            description=self.description,
+            url=self.url,
+            state=self.state,
+            avatar_url=self.avatar_url,
+        )
+
+    @classmethod
+    def deserialize(
+        cls,
+        data: "QueueCheck.Serialized",
+    ) -> "QueueCheck":
+        return cls(
+            name=data["name"],
+            description=data["description"],
+            url=data["url"],
+            state=data["state"],
+            avatar_url=data["avatar_url"],
+        )
+
 
 def get_check_list_ordered(
     checks: list[QueueCheck],

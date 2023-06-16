@@ -1,5 +1,9 @@
+from datetime import datetime
+from datetime import timedelta
 from unittest import mock
 
+import anys
+from freezegun import freeze_time
 import pytest
 
 from mergify_engine import github_types
@@ -351,6 +355,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                         "checks_conclusion": "success",
                         "checks_started_at": mock.ANY,
                         "checks_ended_at": mock.ANY,
+                        "unsuccessful_checks": [],
                     },
                 },
                 "trigger": "merge queue internal",
@@ -446,6 +451,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
                         "checks_conclusion": "success",
                         "checks_started_at": mock.ANY,
                         "checks_ended_at": mock.ANY,
+                        "unsuccessful_checks": [],
                     },
                 },
                 "trigger": "merge queue internal",
@@ -590,3 +596,144 @@ class TestEventLogsAction(base.FunctionalTestBase):
             "size": 1,
             "total": 1,
         }
+
+    async def test_unsuccessful_checks_failed(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                        "status-success=continuous-integration/fake-ci_2",
+                        "status-success=continuous-integration/fake-ci_3",
+                    ],
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "merge default",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        pr = await self.create_pr()
+
+        await self.add_label(pr["number"], "queue")
+
+        await self.run_engine()
+
+        await self.create_status(pr, "continuous-integration/fake-ci", state="failure")
+        await self.create_status(
+            pr, "continuous-integration/fake-ci_2", state="pending"
+        )
+        await self.create_status(
+            pr, "continuous-integration/fake-ci_3", state="success"
+        )
+        # Create another one to check that it's not present in the eventlog even if it
+        # not success
+        await self.create_status(
+            pr, "continuous-integration/fake-ci_4", state="failure"
+        )
+
+        await self.run_engine()
+
+        r = await self.admin_app.get(
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{pr['number']}/events",
+        )
+
+        for event in r.json()["events"]:
+            if event["event"] == "action.queue.checks_end":
+                assert event["metadata"]["speculative_check_pull_request"][
+                    "unsuccessful_checks"
+                ] == [
+                    {
+                        "avatar_url": anys.ANY_STR,
+                        "description": "The CI is failure",
+                        "name": "continuous-integration/fake-ci",
+                        "state": "failure",
+                        "url": anys.ANY_STR,
+                    },
+                    {
+                        "avatar_url": anys.ANY_STR,
+                        "description": "The CI is pending",
+                        "name": "continuous-integration/fake-ci_2",
+                        "state": "pending",
+                        "url": anys.ANY_STR,
+                    },
+                ]
+                break
+        else:
+            raise KeyError("Event `action.queue.checks_end` not found")
+
+    async def test_unsuccessful_checks_timeout(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                        "status-success=continuous-integration/fake-ci_2",
+                    ],
+                    "checks_timeout": "10 m",
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "merge default",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        with freeze_time(datetime.now(), tick=True):
+            pr = await self.create_pr()
+
+            await self.add_label(pr["number"], "queue")
+
+            await self.run_full_engine()
+
+            await self.create_status(
+                pr, "continuous-integration/fake-ci", state="success"
+            )
+            await self.create_status(
+                pr, "continuous-integration/fake-ci_2", state="pending"
+            )
+            # Create another one to check that it's not present in the eventlog even
+            # if it not success
+            await self.create_status(
+                pr, "continuous-integration/fake-ci_3", state="pending"
+            )
+
+            with freeze_time(datetime.now() + timedelta(minutes=15), tick=True):
+                await self.run_full_engine()
+
+                r = await self.admin_app.get(
+                    f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{pr['number']}/events",
+                )
+                for event in r.json()["events"]:
+                    if event["event"] == "action.queue.checks_end":
+                        assert event["metadata"]["speculative_check_pull_request"][
+                            "unsuccessful_checks"
+                        ] == [
+                            {
+                                "avatar_url": anys.ANY_STR,
+                                "description": "The CI is pending",
+                                "name": "continuous-integration/fake-ci_2",
+                                "state": "pending",
+                                "url": anys.ANY_STR,
+                            }
+                        ]
+                        break
+                else:
+                    raise KeyError("Event `action.queue.checks_end` not found")

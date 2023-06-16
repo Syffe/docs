@@ -281,13 +281,7 @@ class TrainCar:
             queue_pull_request_number=self.queue_pull_request_number,
             failure_history=[fh.serialized() for fh in self.failure_history],
             head_branch=self.head_branch,
-            last_checks=[
-                typing.cast(
-                    merge_train_checks.QueueCheck.Serialized,
-                    dataclasses.asdict(c),
-                )
-                for c in self.last_checks
-            ],
+            last_checks=[c.serialized() for c in self.last_checks],
             last_conditions_evaluation=last_conditions_evaluation,
             checks_ended_timestamp=self.checks_ended_timestamp,
             queue_branch_name=self.queue_branch_name,
@@ -353,7 +347,8 @@ class TrainCar:
 
         if "last_checks" in data:
             last_checks = [
-                merge_train_checks.QueueCheck(**c) for c in data["last_checks"]
+                merge_train_checks.QueueCheck.deserialize(c)
+                for c in data["last_checks"]
             ]
         else:
             # backward compat <= 7.2.1
@@ -1422,6 +1417,24 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 queue_utils.AbortCodeT, unqueue_reason.unqueue_code
             )
 
+        if (
+            self.train_car_state.outcome
+            in (
+                TrainCarOutcome.CHECKS_TIMEOUT,
+                TrainCarOutcome.CHECKS_FAILED,
+            )
+            and self.last_conditions_evaluation
+        ):
+            related_checks = self.last_conditions_evaluation.get_related_checks()
+
+            unsuccessful_checks = [
+                check.serialized()
+                for check in self.last_checks
+                if check.state != "success" and check.name in related_checks
+            ]
+        else:
+            unsuccessful_checks = []
+
         metadata = signals.EventQueueChecksEndMetadata(
             {
                 "aborted": aborted,
@@ -1443,6 +1456,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
                     == TrainCarOutcome.CHECKS_TIMEOUT,
                     "checks_ended_at": self.checks_ended_timestamp,
                     "checks_started_at": self.train_car_state.ci_started_at,
+                    "unsuccessful_checks": unsuccessful_checks,
                 },
             }
         )
