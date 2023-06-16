@@ -1460,6 +1460,7 @@
   {
     "VulnerabilityID": "CVE-2023-2602",
     "PkgName": "libcap2",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2602",
     "Title": "Memory Leak on pthread_create() Error",
     "Severity": "LOW",
@@ -1468,6 +1469,7 @@
   {
     "VulnerabilityID": "CVE-2023-2602",
     "PkgName": "libcap2-bin",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2602",
     "Title": "Memory Leak on pthread_create() Error",
     "Severity": "LOW",
@@ -1476,6 +1478,7 @@
   {
     "VulnerabilityID": "CVE-2023-2602",
     "PkgName": "libpam-cap",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2602",
     "Title": "Memory Leak on pthread_create() Error",
     "Severity": "LOW",
@@ -1861,7 +1864,7 @@
     "PkgName": "libperl5.32",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31486",
-    "Title": "HTTP::Tiny 0.082, a Perl core module since 5.13.9 and available standa ...",
+    "Title": "HTTP::Tiny before 0.083, a Perl core module since 5.13.9 and available ...",
     "Severity": "LOW",
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
@@ -1870,7 +1873,7 @@
     "PkgName": "perl",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31486",
-    "Title": "HTTP::Tiny 0.082, a Perl core module since 5.13.9 and available standa ...",
+    "Title": "HTTP::Tiny before 0.083, a Perl core module since 5.13.9 and available ...",
     "Severity": "LOW",
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
@@ -1879,7 +1882,7 @@
     "PkgName": "perl-base",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31486",
-    "Title": "HTTP::Tiny 0.082, a Perl core module since 5.13.9 and available standa ...",
+    "Title": "HTTP::Tiny before 0.083, a Perl core module since 5.13.9 and available ...",
     "Severity": "LOW",
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
@@ -1888,7 +1891,7 @@
     "PkgName": "perl-modules-5.32",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31486",
-    "Title": "HTTP::Tiny 0.082, a Perl core module since 5.13.9 and available standa ...",
+    "Title": "HTTP::Tiny before 0.083, a Perl core module since 5.13.9 and available ...",
     "Severity": "LOW",
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
