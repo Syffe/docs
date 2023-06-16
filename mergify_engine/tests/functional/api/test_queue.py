@@ -23,7 +23,7 @@ class TestQueueApi(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "urgent",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fast-ci",
                     ],
                     "batch_max_wait_time": "15 s",
@@ -32,7 +32,7 @@ class TestQueueApi(base.FunctionalTestBase):
                 },
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                     "false_condition": 2,
@@ -41,7 +41,7 @@ class TestQueueApi(base.FunctionalTestBase):
                 },
                 {
                     "name": "low-priority",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                     "allow_inplace_checks": False,
@@ -91,7 +91,7 @@ class TestQueueApi(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "urgent",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fast-ci",
                     ],
                     "batch_max_wait_time": "15 s",
@@ -101,7 +101,7 @@ class TestQueueApi(base.FunctionalTestBase):
                 },
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                     "speculative_checks": 2,
@@ -110,7 +110,7 @@ class TestQueueApi(base.FunctionalTestBase):
                 },
                 {
                     "name": "low-priority",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                     "allow_inplace_checks": False,
@@ -280,7 +280,7 @@ class TestQueueApi(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "foo",
-                    "conditions": [
+                    "merge_conditions": [
                         f"base={self.main_branch_name}",
                         "check-success=continuous-integration/fake-ci",
                     ],
@@ -384,7 +384,7 @@ class TestQueueApi(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "foo",
-                    "conditions": [
+                    "merge_conditions": [
                         f"base={self.main_branch_name}",
                         "check-success=continuous-integration/fake-ci",
                         "schedule!=MON-FRI 12:00-15:00",
@@ -570,7 +570,7 @@ class TestQueueApi(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "foo",
-                    "conditions": [
+                    "merge_conditions": [
                         f"base={self.main_branch_name}",
                         "check-success=continuous-integration/fake-ci",
                     ],
@@ -672,7 +672,7 @@ class TestQueueApi(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "foo",
-                    "conditions": [
+                    "merge_conditions": [
                         f"base={self.main_branch_name}",
                         "check-success=continuous-integration/fake-ci",
                     ],
@@ -795,7 +795,7 @@ class TestQueueApi(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "foo",
-                    "conditions": [
+                    "merge_conditions": [
                         f"base={self.main_branch_name}",
                         "check-success=continuous-integration/fake-ci",
                     ],
@@ -934,7 +934,7 @@ class TestQueueApi(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "foo",
-                    "conditions": [
+                    "merge_conditions": [
                         f"base={self.main_branch_name}",
                         "check-success=continuous-integration/fake-ci",
                     ],
@@ -1100,7 +1100,7 @@ class TestQueueApi(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "foo",
-                    "conditions": [
+                    "merge_conditions": [
                         f"base={self.main_branch_name}",
                         "check-success=continuous-integration/fake-ci",
                     ],
@@ -1176,7 +1176,7 @@ class TestQueueApi(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "foo",
-                    "conditions": [
+                    "merge_conditions": [
                         f"base={self.main_branch_name}",
                         "check-success=continuous-integration/fake-ci",
                         "schedule=MON-FRI 08:00-17:00[UTC]",
@@ -1249,7 +1249,7 @@ class TestQueueApi(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "foo",
-                    "conditions": [
+                    "merge_conditions": [
                         f"base={self.main_branch_name}",
                         "check-success=continuous-integration/fake-ci",
                         "schedule=MON-FRI 08:00-17:00[UTC]",
@@ -1320,7 +1320,7 @@ class TestQueueApi(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "foo",
-                    "conditions": [
+                    "merge_conditions": [
                         f"base={self.main_branch_name}",
                         "check-success=continuous-integration/fake-ci",
                         "schedule=MON-FRI 08:00-17:00[UTC]",
@@ -1401,7 +1401,7 @@ class TestNewQueueApiEndpoint(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "foo",
-                    "conditions": [
+                    "merge_conditions": [
                         f"base={self.main_branch_name}",
                         "check-success=continuous-integration/fake-ci",
                     ],
@@ -1495,7 +1495,7 @@ class TestNewQueueApiEndpoint(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "foo",
-                    "conditions": [
+                    "merge_conditions": [
                         f"base={self.main_branch_name}",
                         "check-success=continuous-integration/fake-ci",
                     ],

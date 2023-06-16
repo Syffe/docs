@@ -17,7 +17,7 @@ class TestBranchProtection(base.FunctionalTestBase):
     async def setup_repo_with_queue(self, queue_rules: dict[str, typing.Any]) -> None:
         default_queue_rules = {
             "name": "default",
-            "conditions": ["status-success=continuous-integration/fake-ci"],
+            "merge_conditions": ["status-success=continuous-integration/fake-ci"],
             "speculative_checks": 1,
             "allow_inplace_checks": True,
             "batch_size": 1,
@@ -102,7 +102,7 @@ class TestBranchProtection(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "#review-requested=0",
                         "#changes-requested-reviews-by=0",
                         "label=ready-to-merge",
@@ -225,7 +225,7 @@ class TestBranchProtection(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "default",
-                    "conditions": [],
+                    "merge_conditions": [],
                 }
             ],
             "pull_request_rules": [

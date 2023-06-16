@@ -45,7 +45,7 @@ async def test_queue_effective_priority(
     config = await utils.load_mergify_config(
         """queue_rules:
 - name: foo
-  conditions: []
+  merge_conditions: []
   priority_rules:
   - name: default
     conditions:
@@ -61,7 +61,7 @@ async def test_queue_effective_priority(
     priority: low
 
 - name: bar
-  conditions: []
+  merge_conditions: []
   priority_rules:
   - name: default
     conditions:

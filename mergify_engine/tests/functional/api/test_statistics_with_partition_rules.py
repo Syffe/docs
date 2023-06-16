@@ -31,7 +31,7 @@ class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "speculative_checks": 5,
@@ -173,7 +173,7 @@ class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fake-ci",
                         "schedule=Mon-Fri 08:00-17:00[UTC]",
                     ],
@@ -260,7 +260,7 @@ class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "speculative_checks": 5,
@@ -351,7 +351,7 @@ class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
                 {
                     "name": "default",
                     "speculative_checks": 1,
-                    "conditions": [
+                    "merge_conditions": [
                         f"base={self.main_branch_name}",
                         "status-success=continuous-integration/fake-ci",
                     ],
@@ -444,7 +444,7 @@ class TestStatisticsWithPartitionsEndpoints(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         f"base={self.main_branch_name}",
                         "status-success=continuous-integration/fake-ci",
                         "label=queue",

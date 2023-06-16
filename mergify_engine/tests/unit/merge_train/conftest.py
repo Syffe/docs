@@ -24,65 +24,65 @@ def setup_fake_mergify_bot_user(fake_mergify_bot: None) -> None:
 MERGIFY_CONFIG = """
 queue_rules:
   - name: inplace
-    conditions: []
+    merge_conditions: []
     speculative_checks: 5
 
   - name: high-1x1
-    conditions: []
+    merge_conditions: []
     speculative_checks: 1
 
   - name: high-1x2
-    conditions: []
+    merge_conditions: []
     speculative_checks: 1
     allow_inplace_checks: False
     batch_size: 2
     batch_max_wait_time: 0 s
 
   - name: 1x5
-    conditions: []
+    merge_conditions: []
     speculative_checks: 1
     allow_inplace_checks: False
     batch_size: 5
     batch_max_wait_time: 0 s
 
   - name: 2x1
-    conditions: []
+    merge_conditions: []
     speculative_checks: 2
     allow_inplace_checks: False
   - name: 2x5
-    conditions: []
+    merge_conditions: []
     speculative_checks: 2
     allow_inplace_checks: False
     batch_size: 5
     batch_max_wait_time: 0 s
 
   - name: 5x1
-    conditions: []
+    merge_conditions: []
     speculative_checks: 5
     allow_inplace_checks: False
   - name: 5x3
-    conditions: []
+    merge_conditions: []
     speculative_checks: 5
     allow_inplace_checks: False
     batch_size: 3
     batch_max_wait_time: 0 s
 
   - name: batch-wait-time
-    conditions: []
+    merge_conditions: []
     speculative_checks: 2
     allow_inplace_checks: False
     batch_size: 2
     batch_max_wait_time: 5 m
 
   - name: high-2x5-noint
-    conditions: []
+    merge_conditions: []
     speculative_checks: 2
     allow_inplace_checks: False
     batch_size: 5
     batch_max_wait_time: 0 s
     allow_checks_interruption: False
   - name: low-2x5-noint
-    conditions: []
+    merge_conditions: []
     speculative_checks: 2
     allow_inplace_checks: False
     batch_size: 5
@@ -90,7 +90,7 @@ queue_rules:
     allow_checks_interruption: False
     allow_inplace_checks: False
   - name: low-1x5-noint
-    conditions: []
+    merge_conditions: []
     speculative_checks: 1
     batch_size: 5
     batch_max_wait_time: 0 s
@@ -98,20 +98,20 @@ queue_rules:
     allow_inplace_checks: False
 
   - name: urgent-1x4
-    conditions: []
+    merge_conditions: []
     speculative_checks: 1
     batch_size: 4
     batch_max_wait_time: 0 s
     allow_inplace_checks: False
   - name: fastlane-1x8-noint
-    conditions: []
+    merge_conditions: []
     speculative_checks: 1
     batch_size: 8
     batch_max_wait_time: 0 s
     allow_checks_interruption: False
     allow_inplace_checks: False
   - name: regular-1x8-noint-from-fastlane-and-regular
-    conditions: []
+    merge_conditions: []
     speculative_checks: 1
     batch_size: 4
     batch_max_wait_time: 0 s
@@ -121,28 +121,28 @@ queue_rules:
       - fastlane-1x8-noint
 
   - name: 2x8-batch-max-failure-2
-    conditions: []
+    merge_conditions: []
     speculative_checks: 2
     batch_size: 8
     allow_inplace_checks: False
     batch_max_wait_time: 0 s
     batch_max_failure_resolution_attempts: 2
   - name: 2x8-batch-max-failure-0
-    conditions: []
+    merge_conditions: []
     speculative_checks: 2
     batch_size: 8
     allow_inplace_checks: False
     batch_max_wait_time: 0 s
     batch_max_failure_resolution_attempts: 0
   - name: 1x8-batch-max-failure-2
-    conditions: []
+    merge_conditions: []
     speculative_checks: 1
     batch_size: 8
     allow_inplace_checks: False
     batch_max_wait_time: 0 s
     batch_max_failure_resolution_attempts: 2
   - name: 1x8-batch-max-failure-0
-    conditions: []
+    merge_conditions: []
     speculative_checks: 1
     batch_size: 8
     allow_inplace_checks: False

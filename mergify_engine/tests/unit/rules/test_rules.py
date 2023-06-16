@@ -243,12 +243,12 @@ async def test_same_queue_rules_name() -> None:
                 "queue_rules": [
                     {
                         "name": "default",
-                        "conditions": ["schedule: MON-FRI 08:00-17:00"],
+                        "merge_conditions": ["schedule: MON-FRI 08:00-17:00"],
                         "allow_inplace_checks": False,
                     },
                     {
                         "name": "default",
-                        "conditions": ["schedule: MON-FRI 08:00-17:00"],
+                        "merge_conditions": ["schedule: MON-FRI 08:00-17:00"],
                         "allow_inplace_checks": False,
                     },
                 ]

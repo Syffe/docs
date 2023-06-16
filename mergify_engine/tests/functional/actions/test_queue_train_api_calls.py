@@ -32,7 +32,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "foo",
-                    "conditions": [
+                    "merge_conditions": [
                         "check-success=continuous-integration/fake-ci",
                     ],
                 }
@@ -171,7 +171,7 @@ pull_requests:
             "queue_rules": [
                 {
                     "name": "foo",
-                    "conditions": [
+                    "merge_conditions": [
                         "check-success=continuous-integration/fake-ci",
                     ],
                 }
@@ -278,7 +278,7 @@ pull_requests:
             "queue_rules": [
                 {
                     "name": "foo",
-                    "conditions": [
+                    "merge_conditions": [
                         "check-success=continuous-integration/fake-ci",
                     ],
                 }
@@ -460,7 +460,7 @@ pull_requests:
             "queue_rules": [
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "schedule=MON-FRI 08:00-17:00[UTC]",
                     ],
                     "speculative_checks": 1,
@@ -534,7 +534,7 @@ pull_requests:
             "queue_rules": [
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "speculative_checks": 2,
@@ -584,7 +584,7 @@ pull_requests:
             "queue_rules": [
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,

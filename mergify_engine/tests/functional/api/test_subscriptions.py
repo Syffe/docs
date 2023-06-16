@@ -9,7 +9,7 @@ class TestSubscriptionsApi(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "urgent",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fast-ci",
                     ],
                     "batch_max_wait_time": "15 s",
@@ -19,7 +19,7 @@ class TestSubscriptionsApi(base.FunctionalTestBase):
                 },
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                     "speculative_checks": 2,
@@ -28,7 +28,7 @@ class TestSubscriptionsApi(base.FunctionalTestBase):
                 },
                 {
                     "name": "low-priority",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                     "allow_inplace_checks": False,

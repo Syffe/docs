@@ -656,7 +656,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         f"base={self.main_branch_name}",
                         "check-success=continuous-integration/fake-ci",
                     ],

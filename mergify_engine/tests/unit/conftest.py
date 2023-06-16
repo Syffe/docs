@@ -26,7 +26,7 @@ from mergify_engine.rules.config import queue_rules as qr_config
 MERGIFY_CONFIG = """
 queue_rules:
   - name: default
-    conditions: []
+    merge_conditions: []
 
 partition_rules:
   - name: projectA

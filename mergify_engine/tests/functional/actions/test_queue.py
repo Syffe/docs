@@ -42,6 +42,10 @@ jobs:
 """
 
 
+# NOTE(Syffe): The tests contained in this test file are using
+# the keyword "conditions" instead of "merge_conditions" for queue_rules config
+# in order to keep the backward compatibility tested. They should not be changed
+# until we totally deprecate the "conditions" keyword.
 class TestQueueAction(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
 

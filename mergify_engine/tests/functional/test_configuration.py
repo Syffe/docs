@@ -105,7 +105,7 @@ class TestConfiguration(base.FunctionalTestBase):
                             "priority": "false text",
                         },
                     ],
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
                 }
@@ -433,7 +433,7 @@ did not find expected alphabetic or numeric character
             "queue_rules": [
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
                 },
@@ -633,7 +633,7 @@ did not find expected alphabetic or numeric character
             "queue_rules": [
                 {
                     "name": "new_rule",
-                    "conditions": ["schedule: MON-FRI 08:00-17:00"],
+                    "merge_conditions": ["schedule: MON-FRI 08:00-17:00"],
                     "allow_inplace_checks": False,
                 }
             ],

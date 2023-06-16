@@ -51,7 +51,7 @@ class TestAttributes(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "default",
-                    "conditions": ["schedule: MON-FRI 08:00-17:00"],
+                    "merge_conditions": ["schedule: MON-FRI 08:00-17:00"],
                     "allow_inplace_checks": False,
                 }
             ],
@@ -1293,7 +1293,7 @@ class TestAttributesWithSub(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
                 }

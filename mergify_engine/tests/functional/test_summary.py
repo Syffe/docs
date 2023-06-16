@@ -252,7 +252,7 @@ class TestQueueCISummary(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fail-ci",
                         "status-success=continuous-integration/pending-ci",
                         "status-success=continuous-integration/success-ci",

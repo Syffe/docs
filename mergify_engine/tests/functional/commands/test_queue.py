@@ -167,7 +167,7 @@ class TestQueueCommand(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "speculative_checks": 5,
@@ -334,7 +334,7 @@ class TestQueueCommand(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "allow_inplace_checks": False,

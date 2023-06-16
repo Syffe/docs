@@ -19,7 +19,7 @@ class TestStatisticsRedis(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "default",
-                    "conditions": [],
+                    "merge_conditions": [],
                     "speculative_checks": 5,
                     "batch_size": 2,
                     "allow_inplace_checks": False,
@@ -118,7 +118,7 @@ class TestStatisticsRedis(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "default",
-                    "conditions": [],
+                    "merge_conditions": [],
                     "allow_inplace_checks": False,
                 }
             ],
@@ -169,7 +169,7 @@ class TestStatisticsRedis(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
                     "speculative_checks": 5,

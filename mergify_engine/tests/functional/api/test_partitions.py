@@ -14,7 +14,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "foo",
-                    "conditions": [
+                    "merge_conditions": [
                         f"base={self.main_branch_name}",
                         "check-success=continuous-integration/fake-ci",
                     ],
@@ -121,7 +121,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "foo",
-                    "conditions": [
+                    "merge_conditions": [
                         f"base={self.main_branch_name}",
                         "check-success=continuous-integration/fake-ci",
                     ],
@@ -329,7 +329,7 @@ class TestPartitionsApi(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "foo",
-                    "conditions": [
+                    "merge_conditions": [
                         f"base={self.main_branch_name}",
                         "check-success=continuous-integration/fake-ci",
                     ],

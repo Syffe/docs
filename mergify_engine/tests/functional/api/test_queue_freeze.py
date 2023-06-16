@@ -64,19 +64,19 @@ class TestQueueFreeze(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "urgent",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fast-ci",
                     ],
                 },
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                 },
                 {
                     "name": "low-priority",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                 },
@@ -167,19 +167,19 @@ class TestQueueFreeze(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "urgent",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fast-ci",
                     ],
                 },
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                 },
                 {
                     "name": "low-priority",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                 },
@@ -344,19 +344,19 @@ class TestQueueFreeze(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "urgent",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fast-ci",
                     ],
                 },
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                 },
                 {
                     "name": "low-priority",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                 },
@@ -466,19 +466,19 @@ class TestQueueFreeze(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "urgent",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fast-ci",
                     ],
                 },
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                 },
                 {
                     "name": "low-priority",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                 },
@@ -532,19 +532,19 @@ class TestQueueFreeze(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "urgent",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fast-ci",
                     ],
                 },
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                 },
                 {
                     "name": "low-priority",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                 },
@@ -661,19 +661,19 @@ class TestQueueFreeze(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "urgent",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fast-ci",
                     ],
                 },
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                 },
                 {
                     "name": "low-priority",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                 },
@@ -720,19 +720,19 @@ class TestQueueFreeze(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "urgent",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fast-ci",
                     ],
                 },
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                 },
                 {
                     "name": "low-priority",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                 },
@@ -805,19 +805,19 @@ class TestQueueFreeze(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "urgent",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fast-ci",
                     ],
                 },
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                 },
                 {
                     "name": "low-priority",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                 },
@@ -914,11 +914,11 @@ class TestQueueFreeze(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "urgent",
-                    "conditions": [],
+                    "merge_conditions": [],
                 },
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                 },
@@ -989,17 +989,17 @@ class TestQueueFreeze(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "urgent",
-                    "conditions": [],
+                    "merge_conditions": [],
                 },
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/default-ci",
                     ],
                 },
                 {
                     "name": "lowprio",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/low-ci",
                     ],
                 },
@@ -1079,19 +1079,19 @@ class TestQueueFreeze(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "urgent",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fast-ci",
                     ],
                 },
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                 },
                 {
                     "name": "low-priority",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                 },
@@ -1305,19 +1305,19 @@ class TestQueueFreeze(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "urgent",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fast-ci",
                     ],
                 },
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                 },
                 {
                     "name": "low-priority",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                 },
@@ -1402,19 +1402,19 @@ class TestQueueFreeze(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "urgent",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fast-ci",
                     ],
                 },
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                 },
                 {
                     "name": "low-priority",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                 },
@@ -1638,19 +1638,19 @@ class TestQueueFreeze(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "urgent",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/fast-ci",
                     ],
                 },
                 {
                     "name": "default",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                 },
                 {
                     "name": "low-priority",
-                    "conditions": [
+                    "merge_conditions": [
                         "status-success=continuous-integration/slow-ci",
                     ],
                 },

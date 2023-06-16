@@ -562,7 +562,7 @@ async def test_train_queue_config_change(
             """
 queue_rules:
   - name: 2x1
-    conditions: []
+    merge_conditions: []
     speculative_checks: 1
 """
         )["queue_rules"]
@@ -606,7 +606,7 @@ async def test_train_queue_config_deleted(
             """
 queue_rules:
   - name: five
-    conditions: []
+    merge_conditions: []
     speculative_checks: 5
 """
         )["queue_rules"]
