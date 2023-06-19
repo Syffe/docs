@@ -160,7 +160,8 @@ async def store_active_users(
         _add_user(typed_event["comment"]["user"])
     elif event_type == "pull_request":
         typed_event = typing.cast(github_types.GitHubEventPullRequest, event)
-        _add_user(typed_event["pull_request"]["user"])
+        if typed_event["action"] == "opened":
+            _add_user(typed_event["pull_request"]["user"])
         list(map(_add_user, typed_event["pull_request"]["assignees"]))
     elif event_type == "pull_request_review":
         typed_event = typing.cast(github_types.GitHubEventPullRequestReview, event)
