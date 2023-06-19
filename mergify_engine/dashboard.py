@@ -62,6 +62,9 @@ async def get_queues_url_from_context(
 def get_eventlogs_url(
     login: github_types.GitHubLogin,
     repo_name: github_types.GitHubRepositoryName,
+    pull_request_number: github_types.GitHubPullRequestNumber | None = None,
 ) -> str:
-    # TODO(lecrepont01): add the pull request number to query parameters with new eventlogs version
-    return f"{get_dashboard_repo_url(login, repo_name)}/event-logs"
+    url = f"{get_dashboard_repo_url(login, repo_name)}/event-logs"
+    if pull_request_number:
+        url += f"?pullRequestNumber={pull_request_number}"
+    return url

@@ -688,7 +688,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         assert (
             check_run_p2["check_run"]["details_url"]
             == f"{settings.DASHBOARD_UI_FRONT_URL}/github/{pr['base']['user']['login']}"
-            f"/repo/{pr['base']['repo']['name']}/event-logs"
+            f"/repo/{pr['base']['repo']['name']}/event-logs?pullRequestNumber={pr['number']}"
         )
 
         # Check that initial summary is not created on merge queue pr

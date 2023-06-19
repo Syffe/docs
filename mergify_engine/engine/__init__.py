@@ -482,7 +482,9 @@ async def create_initial_summary(
             "head_sha": event["pull_request"]["head"]["sha"],
             "status": check_api.Status.IN_PROGRESS.value,
             "started_at": date.utcnow().isoformat(),
-            "details_url": dashboard.get_eventlogs_url(owner["login"], repo["name"]),
+            "details_url": dashboard.get_eventlogs_url(
+                owner["login"], repo["name"], event["pull_request"]["number"]
+            ),
             "output": {
                 "title": constants.INITIAL_SUMMARY_TITLE,
                 "summary": "Be patient, the page will be updated soon.",

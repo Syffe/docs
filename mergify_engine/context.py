@@ -1318,6 +1318,7 @@ class Context:
                 details_url=dashboard.get_eventlogs_url(
                     self.repository.installation.owner_login,
                     self.repository.repo["name"],
+                    self.pull["number"],
                 ),
             )
         except Exception:

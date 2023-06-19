@@ -70,3 +70,12 @@ def test_get_eventlogs_url() -> None:
         dashboard.get_eventlogs_url(fake_login, fake_repo_name)
         == f"{settings.DASHBOARD_UI_FRONT_URL}/github/{fake_login}/repo/{fake_repo_name}/event-logs"
     )
+
+    assert (
+        dashboard.get_eventlogs_url(
+            fake_login,
+            fake_repo_name,
+            typing.cast(github_types.GitHubPullRequestNumber, 42),
+        )
+        == f"{settings.DASHBOARD_UI_FRONT_URL}/github/{fake_login}/repo/{fake_repo_name}/event-logs?pullRequestNumber=42"
+    )
