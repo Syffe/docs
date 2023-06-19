@@ -1676,7 +1676,7 @@
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28321",
     "Title": "IDN wildcard match may lead to Improper Cerificate Validation",
-    "Severity": "HIGH",
+    "Severity": "MEDIUM",
     "PublishedDate": "2023-05-26T21:15:00Z"
   },
   {
@@ -1685,7 +1685,7 @@
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28321",
     "Title": "IDN wildcard match may lead to Improper Cerificate Validation",
-    "Severity": "HIGH",
+    "Severity": "MEDIUM",
     "PublishedDate": "2023-05-26T21:15:00Z"
   },
   {
@@ -1694,7 +1694,7 @@
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28321",
     "Title": "IDN wildcard match may lead to Improper Cerificate Validation",
-    "Severity": "HIGH",
+    "Severity": "MEDIUM",
     "PublishedDate": "2023-05-26T21:15:00Z"
   },
   {
@@ -1703,7 +1703,7 @@
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28322",
     "Title": "more POST-after-PUT confusion",
-    "Severity": "CRITICAL",
+    "Severity": "LOW",
     "PublishedDate": "2023-05-26T21:15:00Z"
   },
   {
@@ -1712,7 +1712,7 @@
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28322",
     "Title": "more POST-after-PUT confusion",
-    "Severity": "CRITICAL",
+    "Severity": "LOW",
     "PublishedDate": "2023-05-26T21:15:00Z"
   },
   {
@@ -1721,7 +1721,7 @@
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-28322",
     "Title": "more POST-after-PUT confusion",
-    "Severity": "CRITICAL",
+    "Severity": "LOW",
     "PublishedDate": "2023-05-26T21:15:00Z"
   },
   {
@@ -1822,6 +1822,20 @@
     "Title": "null pointer dereference in  ber_memalloc_x  function",
     "Severity": "HIGH",
     "PublishedDate": "2023-05-30T22:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-3138",
+    "PkgName": "libx11-6",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-3138",
+    "Title": "InitExt.c can overwrite unintended portions of the Display structure if the extension request leads to a buffer overflow",
+    "Severity": "MEDIUM"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-3138",
+    "PkgName": "libx11-data",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-3138",
+    "Title": "InitExt.c can overwrite unintended portions of the Display structure if the extension request leads to a buffer overflow",
+    "Severity": "MEDIUM"
   },
   {
     "VulnerabilityID": "CVE-2023-31484",
