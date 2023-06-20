@@ -367,8 +367,8 @@ async def test_configuration_changed(
     )
 
     installation_json = await github.get_installation_from_account_id(GH_OWNER["id"])
-    async with github.AsyncGithubInstallationClient(
-        github.GithubAppInstallationAuth(installation_json)
+    async with github.AsyncGitHubInstallationClient(
+        github.GitHubAppInstallationAuth(installation_json)
     ) as client:
         installation = context.Installation(
             installation_json,
@@ -467,8 +467,8 @@ async def test_configuration_duplicated(
     ).respond(200, json={"check_runs": []})
 
     installation_json = await github.get_installation_from_account_id(GH_OWNER["id"])
-    async with github.AsyncGithubInstallationClient(
-        github.GithubAppInstallationAuth(installation_json)
+    async with github.AsyncGitHubInstallationClient(
+        github.GitHubAppInstallationAuth(installation_json)
     ) as client:
         installation = context.Installation(
             installation_json,
@@ -548,8 +548,8 @@ async def test_configuration_not_changed(
     ).respond(200, json={"check_runs": []})
 
     installation_json = await github.get_installation_from_account_id(GH_OWNER["id"])
-    async with github.AsyncGithubInstallationClient(
-        github.GithubAppInstallationAuth(installation_json)
+    async with github.AsyncGitHubInstallationClient(
+        github.GitHubAppInstallationAuth(installation_json)
     ) as client:
         installation = context.Installation(
             installation_json,
@@ -664,8 +664,8 @@ async def test_configuration_initial(
     )
 
     installation_json = await github.get_installation_from_account_id(GH_OWNER["id"])
-    async with github.AsyncGithubInstallationClient(
-        github.GithubAppInstallationAuth(installation_json)
+    async with github.AsyncGitHubInstallationClient(
+        github.GitHubAppInstallationAuth(installation_json)
     ) as client:
         installation = context.Installation(
             installation_json,
@@ -738,8 +738,8 @@ async def test_configuration_check_not_needed_with_configuration_not_changed(
     )
 
     installation_json = await github.get_installation_from_account_id(GH_OWNER["id"])
-    async with github.AsyncGithubInstallationClient(
-        github.GithubAppInstallationAuth(installation_json)
+    async with github.AsyncGitHubInstallationClient(
+        github.GitHubAppInstallationAuth(installation_json)
     ) as client:
         installation = context.Installation(
             installation_json,
@@ -809,8 +809,8 @@ async def test_configuration_check_not_needed_with_configuration_changed(
     )
 
     installation_json = await github.get_installation_from_account_id(GH_OWNER["id"])
-    async with github.AsyncGithubInstallationClient(
-        github.GithubAppInstallationAuth(installation_json)
+    async with github.AsyncGitHubInstallationClient(
+        github.GitHubAppInstallationAuth(installation_json)
     ) as client:
         installation = context.Installation(
             installation_json,
@@ -881,8 +881,8 @@ async def test_configuration_check_not_needed_with_configuration_deleted(
     )
 
     installation_json = await github.get_installation_from_account_id(GH_OWNER["id"])
-    async with github.AsyncGithubInstallationClient(
-        github.GithubAppInstallationAuth(installation_json)
+    async with github.AsyncGitHubInstallationClient(
+        github.GitHubAppInstallationAuth(installation_json)
     ) as client:
         installation = context.Installation(
             installation_json,

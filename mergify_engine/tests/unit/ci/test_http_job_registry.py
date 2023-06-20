@@ -133,7 +133,7 @@ async def test_search(
         },
     )
 
-    client = github.AsyncGithubClient(auth=None)  # type: ignore [arg-type]
+    client = github.AsyncGitHubClient(auth=None)  # type: ignore [arg-type]
     registry = job_registries.HTTPJobRegistry(
         client,
         pull_registry=FakePullRequestRegistry(),
@@ -201,7 +201,7 @@ async def test_search_for_already_dumped_jobs(
         },
     )
 
-    client = github.AsyncGithubClient(auth=None)  # type: ignore [arg-type]
+    client = github.AsyncGitHubClient(auth=None)  # type: ignore [arg-type]
     registry = job_registries.HTTPJobRegistry(
         client,
         pull_registry=FakePullRequestRegistry(),

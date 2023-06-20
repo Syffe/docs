@@ -10,7 +10,7 @@ from mergify_engine.clients import github_app
 async def suspended(
     verb: typing.Literal["PUT", "DELETE"], owner: github_types.GitHubLogin
 ) -> None:
-    async with github.AsyncGithubClient(auth=github_app.GithubBearerAuth()) as client:
+    async with github.AsyncGitHubClient(auth=github_app.GitHubBearerAuth()) as client:
         installation = typing.cast(
             github_types.GitHubInstallation,
             await client.item(f"/orgs/{owner}/installation"),

@@ -336,10 +336,10 @@ class GitHubIssue(GitHubIssueOrPullRequest):
 
 GitHubPullRequestState = typing.Literal["open", "closed"]
 
-# NOTE(sileht): Github mergeable_state is undocumented, here my finding by
+# NOTE(sileht): GitHub mergeable_state is undocumented, here my finding by
 # testing and and some info from other project:
 #
-# unknown: not yet computed by Github
+# unknown: not yet computed by GitHub
 # dirty: pull request conflict with the base branch
 # behind: head branch is behind the base branch (only if strict: True)
 # unstable: branch up2date (if strict: True) and not required status

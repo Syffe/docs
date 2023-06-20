@@ -341,7 +341,7 @@ async def recorder(
         patcher.start()
         request.addfinalizer(patcher.stop)
         patcher = mock.patch.object(
-            github.GithubAppInstallationAuth,
+            github.GitHubAppInstallationAuth,
             "get_access_token",
             return_value="<TOKEN>",
         )
@@ -528,7 +528,7 @@ def mock_asyncgithubclient_requests() -> abc.Generator[None, None, None]:
     # https://docs.github.com/en/rest/guides/best-practices-for-integrators#dealing-with-secondary-rate-limits
 
     if RECORD:
-        real_request = github.AsyncGithubClient.request
+        real_request = github.AsyncGitHubClient.request
 
         async def mocked_request(  # type: ignore[no-untyped-def]
             self, method: str, *args: typing.Any, **kwargs: typing.Any
@@ -556,7 +556,7 @@ def mock_asyncgithubclient_requests() -> abc.Generator[None, None, None]:
 
             return response
 
-        with mock.patch.object(github.AsyncGithubClient, "request", mocked_request):
+        with mock.patch.object(github.AsyncGitHubClient, "request", mocked_request):
             yield
     else:
         yield

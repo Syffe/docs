@@ -63,10 +63,10 @@ class PullRequestFromCommitRegistry(typing.Protocol):
 @dataclasses.dataclass
 class HTTPPullRequestRegistry:
     login: github_types.GitHubLogin | None = None
-    client: github.AsyncGithubClient | None = None
+    client: github.AsyncGitHubClient | None = None
     _installation: github_types.GitHubInstallation | None = None
 
-    async def get_client(self) -> github.AsyncGithubClient:
+    async def get_client(self) -> github.AsyncGitHubClient:
         if self.client is not None:
             return self.client
 
@@ -76,8 +76,8 @@ class HTTPPullRequestRegistry:
         if self._installation is None:
             raise RuntimeError("client or login not provided")
 
-        auth = github.GithubAppInstallationAuth(self._installation)
-        return github.AsyncGithubInstallationClient(auth=auth)
+        auth = github.GitHubAppInstallationAuth(self._installation)
+        return github.AsyncGitHubInstallationClient(auth=auth)
 
     async def get_from_commit(
         self,

@@ -9,7 +9,7 @@ from mergify_engine.clients import github
 
 @pytest.mark.respx(base_url=settings.GITHUB_REST_API_URL)
 async def test_get_from_commit(respx_mock: respx.MockRouter) -> None:
-    client = github.AsyncGithubClient(auth=None)  # type: ignore [arg-type]
+    client = github.AsyncGitHubClient(auth=None)  # type: ignore [arg-type]
     registry = pull_registries.HTTPPullRequestRegistry(client=client)
     respx_mock.get("/repos/some-owner/some-repo/commits/some-sha/pulls").respond(
         200,

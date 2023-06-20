@@ -236,7 +236,7 @@ async def prepare_branch(
     redis: redis_utils.RedisCache,
     logger: "logging.LoggerAdapter[logging.Logger]",
     pull: github_types.GitHubPullRequest,
-    auth: github.GithubAppInstallationAuth | github.GithubTokenAuth,
+    auth: github.GitHubAppInstallationAuth | github.GitHubTokenAuth,
     branch_name: github_types.GitHubRefType,
     branch_prefix: str,
     commits_to_cherry_pick: list[github_types.CachedGitHubBranchCommit],
@@ -262,7 +262,7 @@ async def prepare_branch(
 
     cherry_pick_error: str = ""
 
-    # TODO(sileht): This can be done with the Github API only I think:
+    # TODO(sileht): This can be done with the GitHub API only I think:
     # An example:
     # https://github.com/shiqiyang-okta/ghpick/blob/master/ghpick/cherry.py
     git = gitter.Gitter(logger)
@@ -270,7 +270,7 @@ async def prepare_branch(
         await git.init()
 
         if on_behalf is None:
-            async with github.AsyncGithubInstallationClient(auth) as client:
+            async with github.AsyncGitHubInstallationClient(auth) as client:
                 token = await client.get_access_token()
             await git.configure(redis)
             username = "x-access-token"
@@ -290,7 +290,7 @@ async def prepare_branch(
         )
 
         for commit in commits_to_cherry_pick:
-            # FIXME(sileht): Github does not allow to fetch only one commit
+            # FIXME(sileht): GitHub does not allow to fetch only one commit
             # So we have to fetch the branch since the commit date ...
             # git("fetch", "origin", "%s:refs/remotes/origin/%s-commit" %
             #    (commit["sha"], commit["sha"])

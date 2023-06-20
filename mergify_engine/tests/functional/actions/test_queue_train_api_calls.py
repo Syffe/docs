@@ -611,7 +611,7 @@ pull_requests:
         draft_pr = await self.wait_for_pull_request("opened")
         await self.create_status(draft_pr["pull_request"])
 
-        real_put = github.AsyncGithubClient.put
+        real_put = github.AsyncGitHubClient.put
         counter = 0
 
         async def mock_put(self, *args, **kwargs) -> httpx.Response:  # type: ignore[no-untyped-def]
@@ -632,7 +632,7 @@ pull_requests:
         # We just want to trigger the part of the code that calls the
         # `pending_result_builder` to make sure it is called properly
         with mock.patch.object(
-            github.AsyncGithubClient,
+            github.AsyncGitHubClient,
             "put",
             new=mock_put,
         ):

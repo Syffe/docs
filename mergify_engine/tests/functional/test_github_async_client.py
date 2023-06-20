@@ -5,7 +5,7 @@ from mergify_engine.clients import http
 from mergify_engine.tests.functional import base
 
 
-class TestGithubClient(base.FunctionalTestBase):
+class TestGitHubClient(base.FunctionalTestBase):
     async def test_github_async_client(self) -> None:
         rules = {
             "pull_request_rules": [

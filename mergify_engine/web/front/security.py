@@ -40,14 +40,14 @@ def mergify_admin_login_required(request: fastapi.Request, _: RequiredLogin) -> 
         raise fastapi.HTTPException(403)
 
 
-GithubAccountId = typing.Annotated[
+GitHubAccountId = typing.Annotated[
     github_types.GitHubAccountIdType,
     fastapi.Path(description="The GitHub account id"),
 ]
 
 
 async def get_membership(
-    account_id: GithubAccountId, logged_user: CurrentUser
+    account_id: GitHubAccountId, logged_user: CurrentUser
 ) -> github_types.GitHubMembership:
     if account_id == logged_user.id:
         # We are always admin of our account
@@ -58,8 +58,8 @@ async def get_membership(
             organization=logged_user.to_github_account(),
         )
 
-    async with github.AsyncGithubInstallationClient(
-        github.GithubTokenAuth(logged_user.oauth_access_token)
+    async with github.AsyncGitHubInstallationClient(
+        github.GitHubTokenAuth(logged_user.oauth_access_token)
     ) as client:
         try:
             return typing.cast(
@@ -71,7 +71,7 @@ async def get_membership(
 
 
 async def github_admin_role_required(
-    account_id: GithubAccountId, logged_user: CurrentUser
+    account_id: GitHubAccountId, logged_user: CurrentUser
 ) -> None:
     membership = await get_membership(account_id, logged_user)
     if membership["role"] != "admin":

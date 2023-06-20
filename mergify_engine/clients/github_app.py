@@ -101,7 +101,7 @@ def permissions_need_to_be_updated(
     return False
 
 
-class GithubBearerAuth(httpx.Auth):
+class GitHubBearerAuth(httpx.Auth):
     def auth_flow(
         self, request: httpx.Request
     ) -> abc.Generator[httpx.Request, httpx.Response, None]:

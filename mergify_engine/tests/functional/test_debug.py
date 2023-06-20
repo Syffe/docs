@@ -372,7 +372,7 @@ mergeable_state: blocked
 
         await self.run_engine()
 
-        real_graphql_post = github.AsyncGithubClient.graphql_post
+        real_graphql_post = github.AsyncGitHubClient.graphql_post
 
         async def graphql_post_mock(  # type: ignore[no-untyped-def]
             self, query: str, **kwargs: typing.Any
@@ -386,7 +386,7 @@ mergeable_state: blocked
         with (
             mock.patch("sys.stdout") as stdout,
             mock.patch.object(
-                github.AsyncGithubClient, "graphql_post", graphql_post_mock
+                github.AsyncGitHubClient, "graphql_post", graphql_post_mock
             ),
         ):
             await debug.report(p["html_url"])

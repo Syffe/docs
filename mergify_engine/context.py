@@ -108,7 +108,7 @@ class InstallationCaches:
 class Installation:
     installation: github_types.GitHubInstallation
     subscription: subscription_mod.Subscription = dataclasses.field(repr=False)
-    client: github.AsyncGithubInstallationClient = dataclasses.field(repr=False)
+    client: github.AsyncGitHubInstallationClient = dataclasses.field(repr=False)
     redis: redis_utils.RedisLinks = dataclasses.field(repr=False)
 
     repositories: dict[
@@ -1157,7 +1157,7 @@ class Context:
         return self.repository.installation.subscription
 
     @property
-    def client(self) -> github.AsyncGithubInstallationClient:
+    def client(self) -> github.AsyncGitHubInstallationClient:
         # TODO(sileht): remove me when context split if done
         return self.repository.installation.client
 

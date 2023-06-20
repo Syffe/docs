@@ -23,8 +23,8 @@ async def github_proxy(
         k: v for k, v in request.headers.items() if k.lower().startswith("accept")
     }
 
-    async with github.AsyncGithubInstallationClient(
-        github.GithubTokenAuth(current_user.oauth_access_token)
+    async with github.AsyncGitHubInstallationClient(
+        github.GitHubTokenAuth(current_user.oauth_access_token)
     ) as client:
         proxy_request: httpx.Request | None = None
         try:

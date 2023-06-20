@@ -30,7 +30,7 @@ ScopeT = typing.NewType("ScopeT", str)
 
 class _HttpAuth(typing.NamedTuple):
     installation: github_types.GitHubInstallation
-    auth: github.GithubAppInstallationAuth | github.GithubTokenAuth
+    auth: github.GitHubAppInstallationAuth | github.GitHubTokenAuth
     actor: github.Actor
 
 
@@ -152,19 +152,19 @@ async def get_http_auth(
     application: LoggedApplication,
     logged_user: LoggedUser,
 ) -> _HttpAuth:
-    auth: github.GithubAppInstallationAuth | github.GithubTokenAuth
+    auth: github.GitHubAppInstallationAuth | github.GitHubTokenAuth
     if application is not None:
         installation_json = await github.get_installation_from_login(owner)
         # Authenticated by token
         if application.github_account.id != installation_json["account"]["id"]:
             raise fastapi.HTTPException(status_code=403)
-        auth = github.GithubAppInstallationAuth(installation_json)
+        auth = github.GitHubAppInstallationAuth(installation_json)
         actor = build_actor(auth_method=application)
 
     elif logged_user is not None:
         # Authenticated by cookie session
         installation_json = await github.get_installation_from_login(owner)
-        auth = github.GithubTokenAuth(logged_user.oauth_access_token)
+        auth = github.GitHubTokenAuth(logged_user.oauth_access_token)
         actor = build_actor(auth_method=logged_user)
     else:
         raise fastapi.HTTPException(403)
@@ -196,7 +196,7 @@ async def get_repository_context(
         owner, application, logged_user
     )
 
-    async with github.AsyncGithubInstallationClient(
+    async with github.AsyncGitHubInstallationClient(
         auth,
     ) as client:
         try:

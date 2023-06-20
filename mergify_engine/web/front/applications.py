@@ -90,7 +90,7 @@ APPLICATIONS_LIMIT = 200
     ],
 )
 async def create_application(
-    account_id: security.GithubAccountId,
+    account_id: security.GitHubAccountId,
     json: ApplicationBody,
     session: database.Session,
     current_user: security.CurrentUser,
@@ -155,7 +155,7 @@ async def create_application(
     ],
 )
 async def update_application(
-    account_id: security.GithubAccountId,
+    account_id: security.GitHubAccountId,
     application_id: int,
     json: ApplicationBody,
     session: database.Session,
@@ -194,7 +194,7 @@ async def update_application(
     ],
 )
 async def delete_application(
-    account_id: security.GithubAccountId,
+    account_id: security.GitHubAccountId,
     application_id: int,
     session: database.Session,
 ) -> fastapi.responses.Response:

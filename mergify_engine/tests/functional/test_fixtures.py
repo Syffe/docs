@@ -17,7 +17,7 @@ async def test_fixture_web_client(
 
 @pytest.mark.recorder
 async def test_fixture_recorder() -> None:
-    async with github.AsyncGithubClient(auth=github_app.GithubBearerAuth()) as client:
+    async with github.AsyncGitHubClient(auth=github_app.GitHubBearerAuth()) as client:
         r = await client.get("/app")
         assert r.status_code == 200
         assert r.json()["owner"]["id"] == settings.TESTING_ORGANIZATION_ID

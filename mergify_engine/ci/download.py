@@ -101,15 +101,15 @@ async def get_next_repositories(
 
 async def _create_gh_client_from_login(
     owner: github_types.GitHubLogin,
-) -> github.AsyncGithubInstallationClient:
-    auth = github.GithubAppInstallationAuth(
+) -> github.AsyncGitHubInstallationClient:
+    auth = github.GitHubAppInstallationAuth(
         await github.get_installation_from_login(owner)
     )
-    return github.AsyncGithubInstallationClient(auth=auth)
+    return github.AsyncGitHubInstallationClient(auth=auth)
 
 
 async def _get_repository_name_from_id(
-    gh_client: github.AsyncGithubInstallationClient,
+    gh_client: github.AsyncGitHubInstallationClient,
     repository_id: github_types.GitHubRepositoryIdType,
 ) -> github_types.GitHubRepositoryName:
     repo_data: github_types.GitHubRepository = await gh_client.item(
@@ -134,7 +134,7 @@ async def update_repository_download_date(
 
 async def download(
     redis_links: redis_utils.RedisLinks,
-    gh_client: github.AsyncGithubInstallationClient,
+    gh_client: github.AsyncGitHubInstallationClient,
     owner: github_types.GitHubLogin,
     repository: github_types.GitHubRepositoryName,
     date_range: date.DateTimeRange,

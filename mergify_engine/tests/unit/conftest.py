@@ -134,8 +134,8 @@ def fake_repository(
         }
     )
 
-    fake_client = github.AsyncGithubInstallationClient(
-        auth=github.GithubTokenAuth("fake")
+    fake_client = github.AsyncGitHubInstallationClient(
+        auth=github.GitHubTokenAuth("fake")
     )
     installation = context.Installation(
         installation_json, fake_subscription, fake_client, redis_links

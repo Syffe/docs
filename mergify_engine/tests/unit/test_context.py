@@ -19,7 +19,7 @@ from mergify_engine.clients import http
 
 
 async def test_user_permission_cache(redis_links: redis_utils.RedisLinks) -> None:
-    class FakeClient(github.AsyncGithubInstallationClient):
+    class FakeClient(github.AsyncGitHubInstallationClient):
         called: int
 
         def __init__(self, owner: str, repo: str) -> None:
@@ -200,7 +200,7 @@ async def test_user_permission_cache(redis_links: redis_utils.RedisLinks) -> Non
 
 
 async def test_team_members_cache(redis_links: redis_utils.RedisLinks) -> None:
-    class FakeClient(github.AsyncGithubInstallationClient):
+    class FakeClient(github.AsyncGitHubInstallationClient):
         called: int
 
         def __init__(self, owner: str, repo: str) -> None:
@@ -346,7 +346,7 @@ async def test_team_members_cache(redis_links: redis_utils.RedisLinks) -> None:
 
 
 async def test_team_permission_cache(redis_links: redis_utils.RedisLinks) -> None:
-    class FakeClient(github.AsyncGithubInstallationClient):
+    class FakeClient(github.AsyncGitHubInstallationClient):
         called: int
 
         def __init__(self, owner: str, repo: str) -> None:

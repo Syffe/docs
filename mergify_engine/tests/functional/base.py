@@ -500,13 +500,13 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         )
 
         self.client_integration = github.aget_client(installation_json)
-        self.client_admin = github.AsyncGithubInstallationClient(
-            auth=github.GithubTokenAuth(
+        self.client_admin = github.AsyncGitHubInstallationClient(
+            auth=github.GitHubTokenAuth(
                 token=settings.TESTING_ORG_ADMIN_PERSONAL_TOKEN,
             )
         )
-        self.client_fork = github.AsyncGithubInstallationClient(
-            auth=github.GithubTokenAuth(
+        self.client_fork = github.AsyncGitHubInstallationClient(
+            auth=github.GitHubTokenAuth(
                 token=self.FORK_PERSONAL_TOKEN,
             )
         )

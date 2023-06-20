@@ -79,7 +79,7 @@ class Actor(typing.TypedDict):
     name: str
 
 
-class GithubTokenAuth(httpx.Auth):
+class GitHubTokenAuth(httpx.Auth):
     _token: str
 
     def __init__(self, token: str) -> None:
@@ -108,7 +108,7 @@ class GithubTokenAuth(httpx.Auth):
         return self._token
 
 
-class GithubAppInstallationAuth(httpx.Auth):
+class GitHubAppInstallationAuth(httpx.Auth):
     installation: github_types.GitHubInstallation
 
     def __init__(self, installation: github_types.GitHubInstallation) -> None:
@@ -220,7 +220,7 @@ class GithubAppInstallationAuth(httpx.Auth):
 async def get_installation_from_account_id(
     account_id: github_types.GitHubAccountIdType,
 ) -> github_types.GitHubInstallation:
-    async with AsyncGithubClient(auth=github_app.GithubBearerAuth()) as client:
+    async with AsyncGitHubClient(auth=github_app.GitHubBearerAuth()) as client:
         try:
             return typing.cast(
                 github_types.GitHubInstallation,
@@ -240,7 +240,7 @@ async def get_installation_from_account_id(
 async def get_installation_from_login(
     login: github_types.GitHubLogin,
 ) -> github_types.GitHubInstallation:
-    async with AsyncGithubClient(auth=github_app.GithubBearerAuth()) as client:
+    async with AsyncGitHubClient(auth=github_app.GitHubBearerAuth()) as client:
         try:
             return typing.cast(
                 github_types.GitHubInstallation,
@@ -314,13 +314,13 @@ DEFAULT_GITHUB_TRANSPORT = httpx.AsyncHTTPTransport(
 )
 
 
-class AsyncGithubClient(http.AsyncClient):
-    auth: (github_app.GithubBearerAuth | GithubAppInstallationAuth | GithubTokenAuth)
+class AsyncGitHubClient(http.AsyncClient):
+    auth: (github_app.GitHubBearerAuth | GitHubAppInstallationAuth | GitHubTokenAuth)
 
     def __init__(
         self,
         auth: (
-            github_app.GithubBearerAuth | GithubAppInstallationAuth | GithubTokenAuth
+            github_app.GitHubBearerAuth | GitHubAppInstallationAuth | GitHubTokenAuth
         ),
     ) -> None:
         super().__init__(
@@ -341,11 +341,11 @@ class AsyncGithubClient(http.AsyncClient):
                 "Accept"
             ] = f"application/vnd.github.{api_version}-preview+json"
         if oauth_token:
-            if isinstance(self.auth, github_app.GithubBearerAuth):
+            if isinstance(self.auth, github_app.GitHubBearerAuth):
                 raise TypeError(
-                    "oauth_token is not supported for GithubBearerAuth auth"
+                    "oauth_token is not supported for GitHubBearerAuth auth"
                 )
-            kwargs["auth"] = GithubTokenAuth(oauth_token)
+            kwargs["auth"] = GitHubTokenAuth(oauth_token)
         return kwargs
 
     async def get(  # type: ignore[override]
@@ -542,12 +542,12 @@ class RequestHistory:
 """
 
 
-class AsyncGithubInstallationClient(AsyncGithubClient):
-    auth: (GithubAppInstallationAuth | GithubTokenAuth)
+class AsyncGitHubInstallationClient(AsyncGitHubClient):
+    auth: (GitHubAppInstallationAuth | GitHubTokenAuth)
 
     def __init__(
         self,
-        auth: (GithubAppInstallationAuth | GithubTokenAuth),
+        auth: (GitHubAppInstallationAuth | GitHubTokenAuth),
         extra_metrics: bool = False,
     ) -> None:
         self._requests: list[RequestHistory] = []
@@ -665,9 +665,9 @@ class AsyncGithubInstallationClient(AsyncGithubClient):
 
 def aget_client(
     installation: github_types.GitHubInstallation, extra_metrics: bool = False
-) -> AsyncGithubInstallationClient:
-    return AsyncGithubInstallationClient(
-        GithubAppInstallationAuth(installation), extra_metrics=extra_metrics
+) -> AsyncGitHubInstallationClient:
+    return AsyncGitHubInstallationClient(
+        GitHubAppInstallationAuth(installation), extra_metrics=extra_metrics
     )
 
 
@@ -685,11 +685,11 @@ class GitHubAppInfo:
 
     @staticmethod
     async def _get_random_installation_auths() -> abc.AsyncGenerator[
-        GithubAppInstallationAuth, None
+        GitHubAppInstallationAuth, None
     ]:
         # NOTE(sileht): we can't query the /users endpoint with the
         # JWT, so just pick a random installation.
-        async with AsyncGithubClient(auth=github_app.GithubBearerAuth()) as client:
+        async with AsyncGitHubClient(auth=github_app.GitHubBearerAuth()) as client:
             async for installations in typing.cast(
                 abc.AsyncGenerator[list[github_types.GitHubInstallation], None],
                 client.items(
@@ -703,7 +703,7 @@ class GitHubAppInfo:
                 for installation in installations:
                     if installation["suspended_at"]:
                         continue
-                    yield GithubAppInstallationAuth(installation)
+                    yield GitHubAppInstallationAuth(installation)
 
         raise RuntimeError(
             "Can't find an installation that can retrieve the GitHubApp bot account"
@@ -724,7 +724,7 @@ class GitHubAppInfo:
     ) -> github_types.GitHubAccount:
         app = await cls.get_app(redis_cache)
         async for auth in cls._get_random_installation_auths():
-            async with AsyncGithubClient(auth=auth) as client_install:
+            async with AsyncGitHubClient(auth=auth) as client_install:
                 try:
                     bot = await client_install.item(f"/users/{app['slug']}[bot]")
                 except (http.HTTPForbidden, http.HTTPUnauthorized):
@@ -764,7 +764,7 @@ class GitHubAppInfo:
     async def _fetch_app_from_github(
         cls, redis_cache: redis_utils.RedisCache
     ) -> github_types.GitHubApp:
-        async with AsyncGithubClient(auth=github_app.GithubBearerAuth()) as client:
+        async with AsyncGitHubClient(auth=github_app.GitHubBearerAuth()) as client:
             app = await client.item("/app")
 
         await redis_cache.setex(

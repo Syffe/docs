@@ -99,7 +99,7 @@ class EventToProcess(EventBase):
 
     def emit_log(self) -> None:
         LOG.info(
-            "GithubApp event pushed",
+            "GitHubApp event pushed",
             event_type=self.event_type,
             event_id=self.event_id,
             sender=self.event["sender"]["login"],
@@ -122,7 +122,7 @@ class CIEventToProcess(EventBase):
 
     def emit_log(self) -> None:
         LOG.info(
-            "GithubApp CI event pushed",
+            "GitHubApp CI event pushed",
             event_type=self.event_type,
             event_id=self.event_id,
             sender=self.event["sender"]["login"],
@@ -152,7 +152,7 @@ class EventToIgnore(EventBase):
             gh_repo = None
 
         LOG.info(
-            "GithubApp event ignored",
+            "GitHubApp event ignored",
             reason=self.reason,
             event_type=self.event_type,
             event_id=self.event_id,

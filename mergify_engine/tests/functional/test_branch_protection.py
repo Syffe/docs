@@ -192,7 +192,7 @@ class TestBranchProtection(base.FunctionalTestBase):
             status_code = 403
             message = "Resource not accessible by integration"
 
-        real_client_post = github.AsyncGithubClient.post
+        real_client_post = github.AsyncGitHubClient.post
 
         async def mock_client_post(  # type: ignore[no-untyped-def]
             self, url: str, **kwargs: typing.Any
@@ -208,7 +208,7 @@ class TestBranchProtection(base.FunctionalTestBase):
 
         # Mock only in non-record mode to keep the real request from github in record mode
         if not base.RECORD:
-            with mock.patch.object(github.AsyncGithubClient, "post", mock_client_post):
+            with mock.patch.object(github.AsyncGitHubClient, "post", mock_client_post):
                 await self.run_engine()
         else:
             await self.run_engine()

@@ -48,13 +48,13 @@ async def test_client_installation_token_with_owner_id(
     installation_json = await github.get_installation_from_account_id(
         github_types.GitHubAccountIdType(12345)
     )
-    async with github.AsyncGithubInstallationClient(
-        github.GithubAppInstallationAuth(installation_json),
+    async with github.AsyncGitHubInstallationClient(
+        github.GitHubAppInstallationAuth(installation_json),
     ) as client:
         client.retry_exponential_multiplier = 0
         ret = await client.get("/")
         assert ret.json()["work"]
-        assert isinstance(client.auth, github.GithubAppInstallationAuth)
+        assert isinstance(client.auth, github.GitHubAppInstallationAuth)
         assert client.auth._installation is not None
         assert client.auth._installation["account"]["login"] == "testing"
         assert client.auth._installation["account"]["id"] == 12345
@@ -84,8 +84,8 @@ async def test_client_user_token(respx_mock: respx.MockRouter) -> None:
     installation_json = await github.get_installation_from_account_id(
         github_types.GitHubAccountIdType(12345)
     )
-    async with github.AsyncGithubInstallationClient(
-        github.GithubAppInstallationAuth(installation_json)
+    async with github.AsyncGitHubInstallationClient(
+        github.GitHubAppInstallationAuth(installation_json)
     ) as client:
         client.retry_exponential_multiplier = 0
         ret = await client.get(
@@ -344,8 +344,8 @@ async def test_client_access_token_HTTP_500(respx_mock: respx.MockRouter) -> Non
     installation_json = await github.get_installation_from_account_id(
         github_types.GitHubAccountIdType(12345)
     )
-    async with github.AsyncGithubInstallationClient(
-        github.GithubAppInstallationAuth(installation_json)
+    async with github.AsyncGitHubInstallationClient(
+        github.GitHubAppInstallationAuth(installation_json)
     ) as client:
         client.retry_exponential_multiplier = 0
         with pytest.raises(http.HTTPServerSideError) as exc_info:
@@ -373,20 +373,20 @@ async def test_client_installation_HTTP_500(respx_mock: respx.MockRouter) -> Non
         ]
     )
 
-    real_init = github.AsyncGithubClient.__init__
+    real_init = github.AsyncGitHubClient.__init__
 
     def mocked_init(
-        self: github.AsyncGithubClient,
+        self: github.AsyncGitHubClient,
         auth: (
-            github_app.GithubBearerAuth
-            | github.GithubAppInstallationAuth
-            | github.GithubTokenAuth
+            github_app.GitHubBearerAuth
+            | github.GitHubAppInstallationAuth
+            | github.GitHubTokenAuth
         ),
     ) -> None:
         real_init(self, auth)
         self.retry_exponential_multiplier = 0
 
-    with mock.patch.object(github.AsyncGithubClient, "__init__", mocked_init):
+    with mock.patch.object(github.AsyncGitHubClient, "__init__", mocked_init):
         with pytest.raises(http.HTTPServerSideError) as exc_info:
             await github.get_installation_from_account_id(
                 github_types.GitHubAccountIdType(12345)
@@ -463,8 +463,8 @@ async def test_client_abuse_403_no_header(respx_mock: respx.MockRouter) -> None:
     installation_json = await github.get_installation_from_account_id(
         github_types.GitHubAccountIdType(12345)
     )
-    async with github.AsyncGithubInstallationClient(
-        github.GithubAppInstallationAuth(installation_json)
+    async with github.AsyncGitHubInstallationClient(
+        github.GitHubAppInstallationAuth(installation_json)
     ) as client:
         client.retry_exponential_multiplier = 0
         with pytest.raises(http.HTTPClientSideError) as exc_info:
@@ -508,8 +508,8 @@ async def test_to_curl(
     installation_json = await github.get_installation_from_account_id(
         github_types.GitHubAccountIdType(12345)
     )
-    async with github.AsyncGithubInstallationClient(
-        github.GithubAppInstallationAuth(installation_json)
+    async with github.AsyncGitHubInstallationClient(
+        github.GitHubAppInstallationAuth(installation_json)
     ) as client:
         client.retry_exponential_multiplier = 0
         await client.post("/", headers={"Foo": "Bar"}, json={"ask": "What?"})

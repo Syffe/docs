@@ -93,8 +93,8 @@ async def create_or_update_user(
     session: sqlalchemy.ext.asyncio.AsyncSession,
     token: github_types.GitHubOAuthToken,
 ) -> github_user.GitHubUser:
-    async with github.AsyncGithubInstallationClient(
-        github.GithubTokenAuth(token)
+    async with github.AsyncGitHubInstallationClient(
+        github.GitHubTokenAuth(token)
     ) as client:
         try:
             user_data = typing.cast(
@@ -177,8 +177,8 @@ async def auth_setup(
 
         # NOTE(sileht): didn't found a better way to get the owner id from the
         # installation id with listing all installations
-        async with github.AsyncGithubInstallationClient(
-            github.GithubTokenAuth(current_user.oauth_access_token)
+        async with github.AsyncGitHubInstallationClient(
+            github.GitHubTokenAuth(current_user.oauth_access_token)
         ) as client:
             try:
                 data = typing.cast(

@@ -527,7 +527,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         await self.merge_pull(p1["number"])
         await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
 
-        # Wait a bit than Github refresh the mergeable_state before running the
+        # Wait a bit than GitHub refresh the mergeable_state before running the
         # engine
         if base.RECORD:
             await asyncio.sleep(3)
@@ -555,7 +555,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
         await self.merge_pull(p1["number"])
         await self.wait_for("push", {"ref": f"refs/heads/{self.main_branch_name}"})
 
-        # Wait a bit than Github refresh the mergeable_state before running the
+        # Wait a bit than GitHub refresh the mergeable_state before running the
         # engine
         if base.RECORD:
             await asyncio.sleep(3)

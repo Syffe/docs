@@ -104,20 +104,20 @@ async def ci_download_handler(argv: list[str] | None = None) -> None:
     parser.add_argument("at", type=lambda v: datetime.date.fromisoformat(v))
     args = parser.parse_args(argv)
 
-    auth: github.GithubAppInstallationAuth | github.GithubTokenAuth
+    auth: github.GitHubAppInstallationAuth | github.GitHubTokenAuth
 
     if settings.TESTING_DEV_PERSONAL_TOKEN:
-        auth = github.GithubTokenAuth(
+        auth = github.GitHubTokenAuth(
             token=settings.TESTING_DEV_PERSONAL_TOKEN,
         )
     else:
-        auth = github.GithubAppInstallationAuth(
+        auth = github.GitHubAppInstallationAuth(
             await github.get_installation_from_login(
                 typing.cast(github_types.GitHubLogin, args.owner)
             )
         )
 
-    gh_client = github.AsyncGithubInstallationClient(auth=auth)
+    gh_client = github.AsyncGitHubInstallationClient(auth=auth)
 
     async with redis_utils.RedisLinks(name="ci_download") as redis_links:
         start = datetime.datetime.combine(args.at, datetime.time.min)

@@ -270,7 +270,7 @@ class PostgresJobRegistry:
 
 @dataclasses.dataclass
 class HTTPJobRegistry:
-    client: github.AsyncGithubClient
+    client: github.AsyncGitHubClient
     pull_registry: pull_registries.PullRequestFromCommitRegistry
     destination_registry: PostgresJobRegistry
 

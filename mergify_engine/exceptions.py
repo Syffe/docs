@@ -42,7 +42,7 @@ RATE_LIMIT_RETRY_MIN = datetime.timedelta(seconds=3)
 IGNORED_HTTP_ERROR_REASONS: dict[int, list[str]] = {451: ["dmca"]}
 IGNORED_HTTP_ERROR_MESSAGES: dict[int, list[str | re.Pattern[str]]] = {
     403: [
-        "Repository access blocked",  # Blocked Github Account or Repo
+        "Repository access blocked",  # Blocked GitHub Account or Repo
         "Resource not accessible by integration",  # missing permission
         "Repository was archived so is read-only",
         re.compile(
@@ -102,19 +102,19 @@ def need_retry(
         return exception.retry_in
 
     if isinstance(exception, http.RequestError | http.HTTPServerSideError):
-        # NOTE(sileht): We already retry locally with urllib3, so if we get there, Github
+        # NOTE(sileht): We already retry locally with urllib3, so if we get there, GitHub
         # is in a really bad shape...
         return datetime.timedelta(minutes=1)
 
     # NOTE(sileht): Most of the times token are just temporary invalid, Why ?
-    # no idea, ask Github...
+    # no idea, ask GitHub...
     if isinstance(exception, http.HTTPClientSideError):
         # Bad creds or token expired, we can't really known
         if exception.response.status_code == 401:
             return datetime.timedelta(minutes=1)
 
         # Rate limit or abuse detection mechanism, futures events will be rate limited
-        # correctly by mergify_engine.utils.Github()
+        # correctly by mergify_engine.utils.GitHub()
         if exception.response.status_code == 403:
             return datetime.timedelta(minutes=3)
 

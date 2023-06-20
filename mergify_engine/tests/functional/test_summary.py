@@ -19,7 +19,7 @@ LOG = logging.getLogger(__name__)
 class TestSummary(base.FunctionalTestBase):
     """Mergify engine summary tests.
 
-    Github resources are slow, so we must reduce the number
+    GitHub resources are slow, so we must reduce the number
     of scenario as much as possible for now.
     """
 

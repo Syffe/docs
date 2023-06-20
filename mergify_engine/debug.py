@@ -110,7 +110,7 @@ async def report_queue(title: str, train: merge_train.Train) -> None:
 
 async def report(
     url: str,
-) -> context.Context | github.AsyncGithubInstallationClient | None:
+) -> context.Context | github.AsyncGitHubInstallationClient | None:
     redis_links = redis_utils.RedisLinks(name="debug")
 
     try:
