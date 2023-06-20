@@ -342,7 +342,9 @@ class TestAttributes(base.FunctionalTestBase):
 
         # Test items
         assert list(ctxt.pull_request) == list(
-            context.PullRequest.ATTRIBUTES
+            context.PullRequest.STRING_ATTRIBUTES
+            | context.PullRequest.NUMBER_ATTRIBUTES
+            | context.PullRequest.BOOLEAN_ATTRIBUTES
             | context.PullRequest.LIST_ATTRIBUTES
             | context.PullRequest.LIST_ATTRIBUTES_WITH_LENGTH_OPTIMIZATION
         )

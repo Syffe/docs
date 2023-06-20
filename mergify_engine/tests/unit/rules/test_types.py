@@ -1,6 +1,7 @@
 import pytest
 import voluptuous
 
+from mergify_engine import context
 from mergify_engine.rules import types
 
 
@@ -137,3 +138,24 @@ def test_github_team_nok(login: str, error: str) -> None:
     with pytest.raises(voluptuous.Invalid) as x:
         voluptuous.Schema(types.GitHubTeam)(login)
     assert str(x.value) == error
+
+
+params = []
+for attr in context.PullRequest.BOOLEAN_ATTRIBUTES:
+    attr = attr.replace("-", "_")
+    params.append((f"{{{{ {attr} }}}}", "False"))
+for attr in context.PullRequest.STRING_ATTRIBUTES:
+    attr = attr.replace("-", "_")
+    params.append((f"{{{{ {attr}|replace('foo', 'bar') }}}}", ""))
+for attr in context.PullRequest.NUMBER_ATTRIBUTES:
+    attr = attr.replace("-", "_")
+    params.append((f"{{{{ {attr} * 123 }}}}", "0"))
+for attr in context.PullRequest.LIST_ATTRIBUTES:
+    attr = attr.replace("-", "_")
+    params.append((f"{{{{ {attr}|join(', ') }}}}", ""))
+
+
+@pytest.mark.parametrize("tmpl, expectation", params)
+def test_jinja2_template_with_all_attributes(tmpl: str, expectation: str) -> None:
+    value = types._DUMMY_PR.render_template(tmpl, None)
+    assert value == expectation

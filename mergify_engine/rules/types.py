@@ -54,19 +54,17 @@ class DummyContext(context.Context):
 
 
 class DummyPullRequest(context.PullRequest):
-    ALWAYS_STRING_ATTRIBUTES = ("title", "body")
-
     # This is only used to check Jinja2 syntax validity and must be sync
     def __getattr__(self, name: str) -> context.ContextAttributeType:  # type: ignore[override]
         key = name.replace("_", "-")
-        if key in context.PullRequest.ATTRIBUTES:
-            if key in self.ALWAYS_STRING_ATTRIBUTES:
-                return ""
-            return None
-
+        if key in context.PullRequest.STRING_ATTRIBUTES:
+            return ""
+        if key in context.PullRequest.NUMBER_ATTRIBUTES:
+            return 0
+        if key in context.PullRequest.BOOLEAN_ATTRIBUTES:
+            return False
         if key in context.PullRequest.LIST_ATTRIBUTES:
             return DummyList()
-
         if key in context.PullRequest.LIST_ATTRIBUTES_WITH_LENGTH_OPTIMIZATION:
             return 0
 

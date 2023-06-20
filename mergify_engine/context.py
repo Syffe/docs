@@ -2326,7 +2326,7 @@ class BasePullRequest:
             return ctxt.pull["locked"]
 
         if name == "title":
-            return ctxt.pull["title"]
+            return ctxt.pull["title"] or ""
 
         if name == "body":
             return MARKDOWN_COMMENT_RE.sub(
@@ -2551,23 +2551,29 @@ class PullRequest(BasePullRequest):
 
     context: Context
 
-    ATTRIBUTES: typing.ClassVar[set[str]] = {
-        "author",
-        "merged-by",
+    BOOLEAN_ATTRIBUTES: typing.ClassVar[set[str]] = {
         "merged",
         "closed",
-        "milestone",
-        "number",
-        "conflict",
+        "locked",
         "linear-history",
+        "conflict",
+        "branch-protection-review-decision",
+    }
+    NUMBER_ATTRIBUTES: typing.ClassVar[set[str]] = {
+        "number",
+        "queue-position",
+    }
+    STRING_ATTRIBUTES: typing.ClassVar[set[str]] = {
+        "author",
+        "merged-by",
+        "milestone",
         "base",
         "head",
-        "locked",
         "title",
         "body",
         "body-raw",
-        "queue-position",
-        "branch-protection-review-decision",
+        "repository-name",
+        "repository-full-name",
     }
 
     LIST_ATTRIBUTES: typing.ClassVar[set[str]] = {
@@ -2594,8 +2600,6 @@ class PullRequest(BasePullRequest):
         "commits-unverified",
         "review-threads-resolved",
         "review-threads-unresolved",
-        "repository-name",
-        "repository-full-name",
         "files",
     }
 
@@ -2610,7 +2614,9 @@ class PullRequest(BasePullRequest):
 
     def __iter__(self) -> abc.Iterator[str]:
         return iter(
-            self.ATTRIBUTES
+            self.STRING_ATTRIBUTES
+            | self.NUMBER_ATTRIBUTES
+            | self.BOOLEAN_ATTRIBUTES
             | self.LIST_ATTRIBUTES
             | self.LIST_ATTRIBUTES_WITH_LENGTH_OPTIMIZATION
         )
