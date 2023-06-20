@@ -100,6 +100,9 @@ def logger_checker(
             rec.getMessage()
             for rec in caplog.get_records(when)
             if rec.levelname in ("CRITICAL", "ERROR")
+            # FIXME(sileht): redis/asyncio bug
+            # https://github.com/redis/redis-py/issues/2749
+            and "coro=<Connection.disconnect() done" not in rec.getMessage()
         ]
         assert [] == messages
 
