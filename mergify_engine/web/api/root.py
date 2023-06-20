@@ -45,7 +45,6 @@ def create_app(cors_enabled: bool, debug: bool = False) -> fastapi.FastAPI:
             "url": "https://mergify.com",
             "email": "support@mergify.com",
         },
-        openapi_url=None,
         redoc_url=None,
         docs_url=None,
         openapi_tags=[
