@@ -18,7 +18,7 @@ jobs:
         run: |
           rm -f src/mergify-schema.json
           curl -L \
-            -H "Accept: application/vnd.github+json" \
+            -H "Accept: application/vnd.github.raw" \
             -H "Authorization: Bearer ${TOKEN}"\
             https://api.github.com/repos/Mergifyio/docs/contents/src/content/mergify-configuration-openapi.json \
             -o docs/source/_extra/config/openapi.json
