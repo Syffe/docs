@@ -39,8 +39,7 @@ class TestQueueCommand(base.FunctionalTestBase):
         await self.run_engine()
         comments = await self.get_issue_comments(p1["number"])
         assert (
-            "There are routing conditions defined in the configuration, but none matches; the pull request has not been embarked"
-            in comments[-1]["body"]
+            "> queue\n\n#### 🟠 Waiting for conditions to match" in comments[-1]["body"]
         )
 
     async def test_command_queue_with_routing_conditions_not_matching_and_fallback(
