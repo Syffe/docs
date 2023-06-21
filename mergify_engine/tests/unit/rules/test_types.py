@@ -140,22 +140,23 @@ def test_github_team_nok(login: str, error: str) -> None:
     assert str(x.value) == error
 
 
-params = []
-for attr in context.PullRequest.BOOLEAN_ATTRIBUTES:
-    attr = attr.replace("-", "_")
-    params.append((f"{{{{ {attr} }}}}", "False"))
-for attr in context.PullRequest.STRING_ATTRIBUTES:
-    attr = attr.replace("-", "_")
-    params.append((f"{{{{ {attr}|replace('foo', 'bar') }}}}", ""))
-for attr in context.PullRequest.NUMBER_ATTRIBUTES:
-    attr = attr.replace("-", "_")
-    params.append((f"{{{{ {attr} * 123 }}}}", "0"))
-for attr in context.PullRequest.LIST_ATTRIBUTES:
-    attr = attr.replace("-", "_")
-    params.append((f"{{{{ {attr}|join(', ') }}}}", ""))
+@pytest.mark.parametrize(
+    "tmpl, expectation, context_attributes_var",
+    [
+        ("{{{{ {attr} }}}}", "False", "BOOLEAN_ATTRIBUTES"),
+        ("{{{{ {attr}|replace('foo', 'bar') }}}}", "", "STRING_ATTRIBUTES"),
+        ("{{{{ {attr} * 123 }}}}", "0", "NUMBER_ATTRIBUTES"),
+        ("{{{{ {attr}|join(', ') }}}}", "", "LIST_ATTRIBUTES"),
+    ],
+)
+def test_jinja2_template_with_all_attributes(
+    tmpl: str,
+    expectation: str,
+    context_attributes_var: str,
+) -> None:
+    for attr in getattr(context.PullRequest, context_attributes_var):
+        attr = attr.replace("-", "_")
+        tmpl_attr = tmpl.format(attr=attr)
 
-
-@pytest.mark.parametrize("tmpl, expectation", params)
-def test_jinja2_template_with_all_attributes(tmpl: str, expectation: str) -> None:
-    value = types._DUMMY_PR.render_template(tmpl, None)
-    assert value == expectation
+        value = types._DUMMY_PR.render_template(tmpl_attr, None)
+        assert value == expectation
