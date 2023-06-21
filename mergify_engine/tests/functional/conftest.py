@@ -560,3 +560,17 @@ def mock_asyncgithubclient_requests() -> abc.Generator[None, None, None]:
             yield
     else:
         yield
+
+
+@pytest.fixture(autouse=True)
+async def lock_settings_delete_branch_on_merge(
+    request: pytest.FixtureRequest,
+) -> abc.AsyncIterator[None]:
+    if request.node.get_closest_marker("delete_branch_on_merge"):
+        request.node.get_closest_marker("delete_branch_on_merge")
+        with filelock.FileLock(
+            os.path.join(os.path.dirname(__file__), "delete_branch_on_merge.lock")
+        ):
+            yield
+    else:
+        yield

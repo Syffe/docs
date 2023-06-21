@@ -581,8 +581,12 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
         self.addCleanup(cleanup_consume)
 
+        await self.update_delete_branch_on_merge()
+
     async def asyncTearDown(self) -> None:
         await super().asyncTearDown()
+
+        await self.update_delete_branch_on_merge(teardown=True)
 
         # NOTE(sileht): Wait a bit to ensure all remaining events arrive.
         if RECORD:
@@ -625,6 +629,24 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         await self._event_reader.aclose()
         await self.redis_links.flushall()
         await self.redis_links.shutdown_all()
+
+    async def update_delete_branch_on_merge(self, teardown: bool = False) -> None:
+        for marker in self.pytestmark:  # type: ignore[attr-defined]
+            if marker.name == "delete_branch_on_merge":
+                if teardown:
+                    await self._set_delete_branch_on_merge(False)
+                else:
+                    await self._set_delete_branch_on_merge(*marker.args)
+
+    async def _set_delete_branch_on_merge(self, value: bool) -> None:
+        r = await self.repository_ctxt.installation.client.patch(
+            self.repository_ctxt.base_url,
+            api_version="antiope",
+            json={"delete_branch_on_merge": value},
+            oauth_token=settings.TESTING_ORG_ADMIN_PERSONAL_TOKEN,
+        )
+
+        assert r.json()["delete_branch_on_merge"] is value
 
     def clear_repository_ctxt_caches(self) -> None:
         self.repository_ctxt.clear_caches()

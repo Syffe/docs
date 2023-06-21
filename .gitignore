@@ -16,3 +16,4 @@ docs/source/actions/action-list.html
 .git
 .docker
 .venv
+delete_branch_on_merge.lock

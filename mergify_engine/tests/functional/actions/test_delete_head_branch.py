@@ -7,6 +7,7 @@ from mergify_engine.tests.functional import base
 
 
 @pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
+@pytest.mark.delete_branch_on_merge(False)
 class TestDeleteHeadBranchAction(base.FunctionalTestBase):
     @pytest.mark.subscription(
         subscription.Features.EVENTLOGS_SHORT,

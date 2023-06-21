@@ -147,7 +147,7 @@ black = "^23.3.0"
 minversion = "6.0"
 addopts = "--strict-markers --durations=10"
 asyncio_mode = "auto"
-markers = ["recorder", "subscription"]
+markers = ["recorder", "subscription", "delete_branch_on_merge"]
 filterwarnings = [
     "error",
     # FIXME(sileht): no idea where it comes from, backtraces are cryptic
