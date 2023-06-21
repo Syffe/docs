@@ -10,6 +10,7 @@ from mergify_engine.queue import merge_train
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.web import api
 from mergify_engine.web.api import security
+from mergify_engine.web.api.queues import estimated_time_to_merge
 from mergify_engine.web.api.queues import types as queue_types
 from mergify_engine.web.api.queues.index import BriefMergeabilityCheck
 
@@ -42,6 +43,9 @@ class PullRequestQueued:
     )
     mergeability_check: BriefMergeabilityCheck | None = pydantic.Field(
         description="Information about the mergeability check currently processed"
+    )
+    estimated_time_of_merge: datetime.datetime | None = pydantic.Field(
+        description="The estimated timestamp when this pull request will be merged"
     )
 
 
@@ -109,6 +113,7 @@ async def repository_partitions(
             )
 
         for train in convoy.iter_trains():
+            previous_eta = None
             for position, (embarked_pull, car) in enumerate(
                 train._iter_embarked_pulls()
             ):
@@ -117,6 +122,16 @@ async def repository_partitions(
                 except KeyError:
                     # This car is going to be deleted so skip it
                     continue
+
+                previous_eta = (
+                    estimated_time_of_merge
+                ) = await estimated_time_to_merge.get_estimation(
+                    train,
+                    embarked_pull,
+                    position,
+                    car,
+                    previous_eta,
+                )
 
                 branch_partitions.partitions[train.partition_name].append(
                     PullRequestQueued(
@@ -129,6 +144,7 @@ async def repository_partitions(
                         ),
                         queued_at=embarked_pull.queued_at,
                         mergeability_check=BriefMergeabilityCheck.from_train_car(car),
+                        estimated_time_of_merge=estimated_time_of_merge,
                     )
                 )
 
@@ -176,6 +192,7 @@ async def repository_partitions_branch(
         branch_partitions.partitions.setdefault(partr_config.DEFAULT_PARTITION_NAME, [])
 
     for train in convoy.iter_trains():
+        previous_eta = None
         for position, (embarked_pull, car) in enumerate(train._iter_embarked_pulls()):
             try:
                 queue_rule = queue_rules[embarked_pull.config["name"]]
@@ -183,6 +200,15 @@ async def repository_partitions_branch(
                 # This car is going to be deleted so skip it
                 continue
 
+            previous_eta = (
+                estimated_time_of_merge
+            ) = await estimated_time_to_merge.get_estimation(
+                train,
+                embarked_pull,
+                position,
+                car,
+                previous_eta,
+            )
             branch_partitions.partitions[train.partition_name].append(
                 PullRequestQueued(
                     number=embarked_pull.user_pull_request_number,
@@ -194,6 +220,7 @@ async def repository_partitions_branch(
                     ),
                     queued_at=embarked_pull.queued_at,
                     mergeability_check=BriefMergeabilityCheck.from_train_car(car),
+                    estimated_time_of_merge=estimated_time_of_merge,
                 )
             )
 
@@ -249,6 +276,7 @@ async def repository_partition_branch(
         if train.partition_name != partition_name:
             continue
 
+        previous_eta = None
         for position, (embarked_pull, car) in enumerate(train._iter_embarked_pulls()):
             try:
                 queue_rule = queue_rules[embarked_pull.config["name"]]
@@ -256,6 +284,15 @@ async def repository_partition_branch(
                 # This car is going to be deleted so skip it
                 continue
 
+            previous_eta = (
+                estimated_time_of_merge
+            ) = await estimated_time_to_merge.get_estimation(
+                train,
+                embarked_pull,
+                position,
+                car,
+                previous_eta,
+            )
             partition.pull_requests.append(
                 PullRequestQueued(
                     number=embarked_pull.user_pull_request_number,
@@ -267,6 +304,7 @@ async def repository_partition_branch(
                     ),
                     queued_at=embarked_pull.queued_at,
                     mergeability_check=BriefMergeabilityCheck.from_train_car(car),
+                    estimated_time_of_merge=estimated_time_of_merge,
                 )
             )
 
