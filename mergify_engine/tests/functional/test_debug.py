@@ -1,3 +1,4 @@
+import pprint
 import typing
 from unittest import mock
 
@@ -44,14 +45,12 @@ class TestDebugger(base.FunctionalTestBase):
                 "dismissesStaleReviews": False,
                 "isAdminEnforced": True,
                 "pattern": self.main_branch_name,
-                "requireLastPushApproval": False,
                 "requiredDeploymentEnvironments": [],
                 "requiredStatusCheckContexts": [],
                 "requiresApprovingReviews": True,
                 "requiresCodeOwnerReviews": False,
                 "requiresCommitSignatures": False,
                 "requiresConversationResolution": False,
-                "requiresDeployments": False,
                 "requiresLinearHistory": False,
                 "requiresStatusChecks": True,
                 "requiresStrictStatusChecks": True,
@@ -60,6 +59,63 @@ class TestDebugger(base.FunctionalTestBase):
             }
         )
         await self.create_branch_protection_rule(protection)
+
+        self.expected_branch_protection_rules = await self.get_expected_branch_protection_rules_without_missing_graphql_fields(
+            [
+                github_graphql_types.GraphqlBranchProtectionRule(
+                    {
+                        "allowsDeletions": False,
+                        "allowsForcePushes": False,
+                        "blocksCreations": False,
+                        "dismissesStaleReviews": False,
+                        "isAdminEnforced": True,
+                        "lockBranch": False,
+                        "matchingRefs": [
+                            github_graphql_types.GraphqlBranchProtectionRuleMatchingRef(
+                                {
+                                    "name": self.main_branch_name,
+                                    "prefix": "refs/heads/",
+                                }
+                            )
+                        ],
+                        "pattern": self.main_branch_name,
+                        "requireLastPushApproval": False,
+                        "requiredApprovingReviewCount": 1,
+                        "requiredDeploymentEnvironments": [],
+                        "requiredStatusCheckContexts": [],
+                        "requiresApprovingReviews": True,
+                        "requiresCodeOwnerReviews": False,
+                        "requiresCommitSignatures": False,
+                        "requiresConversationResolution": False,
+                        "requiresDeployments": False,
+                        "requiresLinearHistory": False,
+                        "requiresStatusChecks": True,
+                        "requiresStrictStatusChecks": True,
+                        "restrictsPushes": False,
+                        "restrictsReviewDismissals": False,
+                    }
+                )
+            ],
+        )
+
+    async def get_expected_branch_protection_rules_without_missing_graphql_fields(
+        self, rules: list[github_graphql_types.GraphqlBranchProtectionRule]
+    ) -> list[github_graphql_types.GraphqlBranchProtectionRule]:
+        graphql_fields = (
+            await self.repository_ctxt.get_graphql_allowed_branch_protection_rules_fields()
+        )
+        for branch_rule in rules:
+            branch_rule = typing.cast(
+                github_graphql_types.GraphqlBranchProtectionRule,
+                dict(
+                    filter(
+                        lambda key_value: key_value[0] in graphql_fields,
+                        branch_rule.items(),
+                    )
+                ),
+            )
+
+        return rules
 
     async def test_debugger(self) -> None:
         rules = {
@@ -131,6 +187,7 @@ class TestDebugger(base.FunctionalTestBase):
             check for check in await ctxt.pull_check_runs if check["name"] == "Summary"
         ][0]["html_url"]
         commit = (await ctxt.commits)[0]
+
         assert (
             s1.strip()
             == f"""* INSTALLATION ID: {self.installation_ctxt.installation["id"]}
@@ -150,28 +207,7 @@ class TestDebugger(base.FunctionalTestBase):
 * REPOSITORY IS PUBLIC
 * DEFAULT BRANCH: {self.main_branch_name}
 * BRANCH PROTECTION RULES:
-[{{'allowsDeletions': False,
-  'allowsForcePushes': False,
-  'blocksCreations': False,
-  'dismissesStaleReviews': False,
-  'isAdminEnforced': True,
-  'lockBranch': False,
-  'matchingRefs': [{{'name': '{self.main_branch_name}', 'prefix': 'refs/heads/'}}],
-  'pattern': '{self.main_branch_name}',
-  'requireLastPushApproval': False,
-  'requiredApprovingReviewCount': 1,
-  'requiredDeploymentEnvironments': [],
-  'requiredStatusCheckContexts': [],
-  'requiresApprovingReviews': True,
-  'requiresCodeOwnerReviews': False,
-  'requiresCommitSignatures': False,
-  'requiresConversationResolution': False,
-  'requiresDeployments': False,
-  'requiresLinearHistory': False,
-  'requiresStatusChecks': True,
-  'requiresStrictStatusChecks': True,
-  'restrictsPushes': False,
-  'restrictsReviewDismissals': False}}]
+{pprint.pformat(self.expected_branch_protection_rules, width=160)}
 * CONFIGURATION:
 Config filename: .mergify.yml
 pull_request_rules:
@@ -301,7 +337,7 @@ mergeable_state: blocked
 > :sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for free to open source projects.
 > 
 > :rocket:&nbsp;&nbsp;You can help us by [becoming a sponsor](/sponsors/Mergifyio)!
-> <hr />"""  # noqa:W291
+> <hr />"""  # noqa: W291
         )
 
         assert (
@@ -377,6 +413,10 @@ mergeable_state: blocked
         async def graphql_post_mock(  # type: ignore[no-untyped-def]
             self, query: str, **kwargs: typing.Any
         ) -> typing.Any:
+            # NOTE: Return an empty list of fields so that the call made to
+            # `Repository.get_graphql_allowed_branch_protection_rules_fields`
+            # from `Repository.get_all_branch_protection_rules` does not include
+            # any of the fields that are missing in older GHES versions
             if ' __type(name: "BranchProtectionRule")' in query:
                 return {"data": {"__type": {"fields": []}}}
 
@@ -398,6 +438,19 @@ mergeable_state: blocked
         ][0]["html_url"]
         commit = (await ctxt.commits)[0]
 
+        expected_branch_protection_rules = self.expected_branch_protection_rules.copy()
+        for k in (
+            "blocksCreations",
+            "lockBranch",
+            "requireLastPushApproval",
+            "requiredDeploymentEnvironments",
+            "requiresDeployments",
+        ):
+            # All those keys should not be present in the output of branch protection
+            # rule since we simulated a case were they are all missing because
+            # of an old GHES version.
+            del expected_branch_protection_rules[0][k]  # type: ignore[misc]
+
         assert (
             s1.strip()
             == f"""* INSTALLATION ID: {self.installation_ctxt.installation["id"]}
@@ -417,23 +470,7 @@ mergeable_state: blocked
 * REPOSITORY IS PUBLIC
 * DEFAULT BRANCH: {self.main_branch_name}
 * BRANCH PROTECTION RULES:
-[{{'allowsDeletions': False,
-  'allowsForcePushes': False,
-  'dismissesStaleReviews': False,
-  'isAdminEnforced': True,
-  'matchingRefs': [{{'name': '{self.main_branch_name}', 'prefix': 'refs/heads/'}}],
-  'pattern': '{self.main_branch_name}',
-  'requiredApprovingReviewCount': 1,
-  'requiredStatusCheckContexts': [],
-  'requiresApprovingReviews': True,
-  'requiresCodeOwnerReviews': False,
-  'requiresCommitSignatures': False,
-  'requiresConversationResolution': False,
-  'requiresLinearHistory': False,
-  'requiresStatusChecks': True,
-  'requiresStrictStatusChecks': True,
-  'restrictsPushes': False,
-  'restrictsReviewDismissals': False}}]
+{pprint.pformat(expected_branch_protection_rules, width=160)}
 * CONFIGURATION:
 Config filename: .mergify.yml
 pull_request_rules:
@@ -563,5 +600,5 @@ mergeable_state: blocked
 > :sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for free to open source projects.
 > 
 > :rocket:&nbsp;&nbsp;You can help us by [becoming a sponsor](/sponsors/Mergifyio)!
-> <hr />"""  # noqa:W291
+> <hr />"""  # noqa: W291
         )

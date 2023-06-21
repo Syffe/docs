@@ -1686,9 +1686,6 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                     requiresStrictStatusChecks
                     restrictsPushes
                     restrictsReviewDismissals
-                    requireLastPushApproval
-                    requiredDeploymentEnvironments
-                    requiresDeployments
                 }}
             }}
         }}

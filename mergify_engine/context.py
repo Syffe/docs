@@ -810,12 +810,9 @@ class Repository:
             )
         return None
 
-    async def get_all_branch_protection_rules(
-        self,
-        pattern_branch_filter: str | None = None,
-    ) -> list[github_graphql_types.GraphqlBranchProtectionRule]:
-        # NOTE(Greesb): If this is one day used outside of the debugger,
-        # the result of the `query_fields` should be cached.
+    async def get_graphql_allowed_branch_protection_rules_fields(self) -> list[str]:
+        # NOTE(Greesb): If this is one day used outside of the tests,
+        # the request's response should be cached.
         query_fields = """
         query {
             __type(name: "BranchProtectionRule") {
@@ -829,7 +826,13 @@ class Repository:
         }
         """
         response = await self.installation.client.graphql_post(query_fields)
-        field_names = [f["name"] for f in response["data"]["__type"]["fields"]]
+        return [f["name"] for f in response["data"]["__type"]["fields"]]
+
+    async def get_all_branch_protection_rules(
+        self,
+        pattern_branch_filter: str | None = None,
+    ) -> list[github_graphql_types.GraphqlBranchProtectionRule]:
+        field_names = await self.get_graphql_allowed_branch_protection_rules_fields()
         # Those fields may be absent in some GHES versions
         maybe_missing_fields = [
             "blocksCreations",  # GHES 3.5
@@ -841,6 +844,7 @@ class Repository:
         maybe_missing_fields_query = "\n".join(
             [f for f in maybe_missing_fields if f in field_names]
         )
+
         query = f"""
         query {{
             repository(owner: "{self.repo['owner']['login']}", name: "{self.repo['name']}") {{
