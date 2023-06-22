@@ -68,7 +68,7 @@ async def meter_event(
 
 @dataclasses.dataclass
 class IgnoredEvent(Exception):
-    """Raised when an is ignored."""
+    """Raised when an event is ignored."""
 
     event_type: str
     event_id: str
