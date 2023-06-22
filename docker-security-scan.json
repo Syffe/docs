@@ -1825,14 +1825,22 @@
   },
   {
     "VulnerabilityID": "CVE-2023-3138",
+    "VendorIDs": [
+      "DSA-5433-1"
+    ],
     "PkgName": "libx11-6",
+    "FixedVersion": "2:1.7.2-1+deb11u1",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-3138",
     "Title": "InitExt.c can overwrite unintended portions of the Display structure if the extension request leads to a buffer overflow",
     "Severity": "MEDIUM"
   },
   {
     "VulnerabilityID": "CVE-2023-3138",
+    "VendorIDs": [
+      "DSA-5433-1"
+    ],
     "PkgName": "libx11-data",
+    "FixedVersion": "2:1.7.2-1+deb11u1",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-3138",
     "Title": "InitExt.c can overwrite unintended portions of the Display structure if the extension request leads to a buffer overflow",
     "Severity": "MEDIUM"
@@ -1912,6 +1920,7 @@
   {
     "VulnerabilityID": "CVE-2023-34969",
     "PkgName": "dbus",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-34969",
     "Title": "assertion failure when a monitor is active and a message from the driver cannot be delivered",
     "Severity": "MEDIUM",
@@ -1920,6 +1929,7 @@
   {
     "VulnerabilityID": "CVE-2023-34969",
     "PkgName": "libdbus-1-3",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-34969",
     "Title": "assertion failure when a monitor is active and a message from the driver cannot be delivered",
     "Severity": "MEDIUM",
