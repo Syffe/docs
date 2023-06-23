@@ -61,9 +61,9 @@ error: failed to push some refs to 'https://github.com/owner/repo'
         ),
         (
             """
-To gitlab.com:example/my-project.git
+To github.com:example/my-project.git
  ! [rejected]        my-branch -> my-branch (stale info)
-error: failed to push some refs to 'git@gitlab.com:example/my-project.git'
+error: failed to push some refs to 'https://github.com/example/my-project.git'
 """,
             gitter.GitErrorRetriable,
             "Remote branch changed in the meantime",
