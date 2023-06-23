@@ -256,7 +256,7 @@ class RequestReviewsAction(actions.Action):
         voluptuous.All(int, voluptuous.Range(min=1, max=65535)), default=1
     )
 
-    validator = {
+    validator: typing.ClassVar[actions.ValidatorT] = {
         voluptuous.Required("users", default=list): voluptuous.Any(
             voluptuous.All(
                 [types.GitHubLogin],

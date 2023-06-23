@@ -186,7 +186,7 @@ class LabelExecutor(actions.ActionExecutor["LabelAction", LabelExecutorConfig]):
 class LabelAction(actions.Action):
     flags = actions.ActionFlag.ALWAYS_RUN
 
-    validator = {
+    validator: typing.ClassVar[actions.ValidatorT] = {
         voluptuous.Required("add", default=list): [str],
         voluptuous.Required("remove", default=list): [str],
         voluptuous.Required("remove_all", default=False): bool,

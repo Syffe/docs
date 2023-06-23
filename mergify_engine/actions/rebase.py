@@ -115,7 +115,7 @@ class RebaseAction(actions.Action):
     flags = (
         actions.ActionFlag.ALWAYS_RUN | actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
     )
-    validator = {
+    validator: typing.ClassVar[actions.ValidatorT] = {
         voluptuous.Required("bot_account", default=None): voluptuous.Any(
             None, types.Jinja2
         ),

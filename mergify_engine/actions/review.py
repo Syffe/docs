@@ -188,7 +188,7 @@ class ReviewExecutor(actions.ActionExecutor["ReviewAction", ReviewExecutorConfig
 
 class ReviewAction(actions.Action):
     flags = actions.ActionFlag.ALWAYS_RUN
-    validator = {
+    validator: typing.ClassVar[actions.ValidatorT] = {
         voluptuous.Required("type", default="APPROVE"): voluptuous.Any(
             *github_types.GitHubReviewStateChangeType.__args__  # type: ignore[attr-defined]
         ),

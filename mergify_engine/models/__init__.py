@@ -1,10 +1,12 @@
+import typing
+
 import sqlalchemy
 from sqlalchemy import orm
 
 
 class Base(orm.DeclarativeBase):
     __allow_unmapped__ = True
-    __mapper_args__ = {"eager_defaults": True}
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {"eager_defaults": True}  # type: ignore [misc]
 
     metadata = sqlalchemy.MetaData(
         naming_convention={

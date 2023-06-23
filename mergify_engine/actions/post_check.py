@@ -153,7 +153,7 @@ class PostCheckExecutor(
 
 class PostCheckAction(actions.Action):
     flags = actions.ActionFlag.ALWAYS_RUN | actions.ActionFlag.ALLOW_RETRIGGER_MERGIFY
-    validator = {
+    validator: typing.ClassVar[actions.ValidatorT] = {
         voluptuous.Required(
             "title",
             default="'{{ check_rule_name }}' {% if check_succeeded %}succeeded{% else %}failed{% endif %}",

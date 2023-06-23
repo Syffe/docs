@@ -110,7 +110,7 @@ class AssignExecutor(actions.ActionExecutor["AssignAction", AssignExecutorConfig
 
 
 class AssignAction(actions.Action):
-    validator = {
+    validator: typing.ClassVar[actions.ValidatorT] = {
         # NOTE: "users" is deprecated, but kept as legacy code for old config
         voluptuous.Required("users", default=list): [types.Jinja2],
         voluptuous.Required("add_users", default=list): [types.Jinja2],

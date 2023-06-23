@@ -110,7 +110,9 @@ class DeleteHeadBranchExecutor(
 
 class DeleteHeadBranchAction(actions.Action):
     flags = actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
-    validator = {voluptuous.Required("force", default=False): bool}
+    validator: typing.ClassVar[actions.ValidatorT] = {
+        voluptuous.Required("force", default=False): bool
+    }
     executor_class = DeleteHeadBranchExecutor
 
     async def get_conditions_requirements(

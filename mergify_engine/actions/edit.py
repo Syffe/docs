@@ -136,7 +136,7 @@ class EditExecutor(actions.ActionExecutor["EditAction", EditExecutorConfig]):
 class EditAction(actions.Action):
     flags = actions.ActionFlag.ALWAYS_RUN
 
-    validator = {
+    validator: typing.ClassVar[actions.ValidatorT] = {
         voluptuous.Required("bot_account", default=None): types.Jinja2WithNone,
         voluptuous.Required("draft", default=None): voluptuous.Any(None, bool),
     }

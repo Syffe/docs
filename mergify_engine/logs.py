@@ -2,6 +2,7 @@ import contextvars
 import logging
 import os
 import sys
+import typing
 from urllib import parse
 
 import daiquiri
@@ -45,7 +46,7 @@ CUSTOM_FORMATTER = CustomFormatter(
 class HerokuDatadogFormatter(daiquiri.formatter.DatadogFormatter):
     # NOTE(sileht): for security reason we empty the os.environ at runtime
     # We can access it only when modules load.
-    HEROKU_LOG_EXTRAS = {
+    HEROKU_LOG_EXTRAS: typing.ClassVar[dict[str, str]] = {
         envvar: os.environ[envvar]
         for envvar in ("HEROKU_RELEASE_VERSION",)
         if envvar in os.environ

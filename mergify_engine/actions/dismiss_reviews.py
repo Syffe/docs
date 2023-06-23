@@ -195,7 +195,7 @@ class DismissReviewsExecutor(
 class DismissReviewsAction(actions.Action):
     flags = actions.ActionFlag.ALWAYS_RUN
 
-    validator = {
+    validator: typing.ClassVar[actions.ValidatorT] = {
         voluptuous.Required("approved", default=True): voluptuous.Any(
             True,
             False,

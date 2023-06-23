@@ -105,7 +105,7 @@ class CommentExecutor(actions.ActionExecutor["CommentAction", "CommentExecutorCo
 
 class CommentAction(actions.Action):
     flags = actions.ActionFlag.NONE
-    validator = {
+    validator: typing.ClassVar[actions.ValidatorT] = {
         # FIXME(sileht): we shouldn't allow None here, we should raise an error
         # or set a default message.
         voluptuous.Required("message", default=None): types.Jinja2WithNone,

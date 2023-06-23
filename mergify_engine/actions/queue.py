@@ -1182,7 +1182,7 @@ class QueueAction(actions.Action):
         # | actions.ActionFlag.ALWAYS_RUN
     )
 
-    validator: actions.ValidatorT = {
+    validator: typing.ClassVar[actions.ValidatorT] = {
         voluptuous.Required("name", default=None): voluptuous.Any(
             str,
             None,

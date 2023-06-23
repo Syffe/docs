@@ -126,7 +126,7 @@ class SquashAction(actions.Action):
     flags = (
         actions.ActionFlag.ALWAYS_RUN | actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
     )
-    validator = {
+    validator: typing.ClassVar[actions.ValidatorT] = {
         voluptuous.Required("bot_account", default=None): types.Jinja2WithNone,
         voluptuous.Required("commit_message", default="all-commits"): voluptuous.Any(
             "all-commits", "first-commit", "title+body"

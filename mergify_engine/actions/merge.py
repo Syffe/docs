@@ -147,7 +147,7 @@ class MergeAction(actions.Action):
         # | actions.ActionFlag.ALWAYS_RUN
     )
 
-    validator = {
+    validator: typing.ClassVar[actions.ValidatorT] = {
         voluptuous.Required("method", default="merge"): voluptuous.Any(
             *typing.get_args(merge_base.MergeMethodT)
         ),
