@@ -79,7 +79,7 @@ asgi-lifespan = "^2.1.0"
 filelock = "^3.12.2"
 poethepoet = "^0.20.0"
 pytest-rerunfailures = "^11.1"
-ruff = "^0.0.272"
+ruff = "^0.0.275"
 black = "^23.3.0"
 
 [tool.poetry.scripts]
