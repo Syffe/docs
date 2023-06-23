@@ -47,8 +47,7 @@ def encrypt(value: bytes) -> bytes:
     )
     encryptor = cipher.encryptor()
     encrypted = encryptor.update(value) + encryptor.finalize()
-    encrypted = base64.b64encode(iv + encryptor.tag + encrypted)
-    return encrypted
+    return base64.b64encode(iv + encryptor.tag + encrypted)
 
 
 def _decrypt(iv: bytes, tag: bytes, value: bytes, secret: bytes) -> bytes:
