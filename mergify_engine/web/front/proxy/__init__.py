@@ -6,7 +6,7 @@ from mergify_engine.web.front.proxy import saas
 from mergify_engine.web.front.proxy import sentry
 
 
-router = fastapi.APIRouter()
+router = fastapi.APIRouter(tags=["front"])
 
 
 router.include_router(engine.router, prefix="/engine/v1")

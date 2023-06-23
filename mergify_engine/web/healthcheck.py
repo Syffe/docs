@@ -32,7 +32,9 @@ class HealthCheckAuth(fastapi.security.http.HTTPBearer):
 
 check_healthcheck_auth = HealthCheckAuth()
 
-router = fastapi.APIRouter(dependencies=[fastapi.Security(check_healthcheck_auth)])
+router = fastapi.APIRouter(
+    tags=["monitoring"], dependencies=[fastapi.Security(check_healthcheck_auth)]
+)
 
 
 @pydantic.dataclasses.dataclass

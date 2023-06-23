@@ -14,7 +14,7 @@ from mergify_engine.web import utils
 from mergify_engine.web.front.proxy import saas
 
 
-router = fastapi.APIRouter()
+router = fastapi.APIRouter(tags=["subscription"])
 
 
 @router.get(

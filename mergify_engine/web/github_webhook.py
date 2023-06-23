@@ -24,6 +24,7 @@ EVENT_FORWARD_TIMEOUT = 5
 
 
 router = fastapi.APIRouter(
+    tags=["github"],
     dependencies=[fastapi.Depends(auth.github_webhook_signature)],
 )
 

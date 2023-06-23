@@ -41,6 +41,7 @@ class ApplicationBody(pydantic.BaseModel):
 
 
 router = fastapi.APIRouter(
+    tags=["front"],
     dependencies=[
         fastapi.Depends(security.get_current_user),
     ],

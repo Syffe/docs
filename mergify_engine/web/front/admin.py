@@ -69,7 +69,7 @@ async def select_user_from_login(
     )
 
 
-router = fastapi.APIRouter()
+router = fastapi.APIRouter(tags=["front"])
 
 
 @router.get(

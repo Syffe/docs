@@ -14,7 +14,7 @@ class ConfigJSON(typing.TypedDict):
     ui_features: list[str]
 
 
-router = fastapi.APIRouter()
+router = fastapi.APIRouter(tags=["front"])
 
 
 @router.get("/configuration", response_model=ConfigJSON)

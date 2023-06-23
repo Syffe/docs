@@ -5,7 +5,7 @@ from mergify_engine import settings
 from mergify_engine.web import utils
 
 
-router = fastapi.APIRouter()
+router = fastapi.APIRouter(tags=["badges"])
 
 
 def _get_badge_url(

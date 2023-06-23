@@ -36,7 +36,7 @@ oauth.register(
 )
 
 
-router = fastapi.APIRouter()
+router = fastapi.APIRouter(tags=["front"])
 
 
 async def clear_session_and_auth(request: fastapi.Request) -> None:
