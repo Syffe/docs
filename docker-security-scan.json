@@ -1487,25 +1487,28 @@
   {
     "VulnerabilityID": "CVE-2023-2603",
     "PkgName": "libcap2",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2603",
     "Title": "Integer Overflow in _libcap_strdup()",
-    "Severity": "MEDIUM",
+    "Severity": "HIGH",
     "PublishedDate": "2023-06-06T20:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-2603",
     "PkgName": "libcap2-bin",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2603",
     "Title": "Integer Overflow in _libcap_strdup()",
-    "Severity": "MEDIUM",
+    "Severity": "HIGH",
     "PublishedDate": "2023-06-06T20:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-2603",
     "PkgName": "libpam-cap",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-2603",
     "Title": "Integer Overflow in _libcap_strdup()",
-    "Severity": "MEDIUM",
+    "Severity": "HIGH",
     "PublishedDate": "2023-06-06T20:15:00Z"
   },
   {
@@ -1824,26 +1827,112 @@
     "PublishedDate": "2023-05-30T22:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2023-3138",
-    "VendorIDs": [
-      "DSA-5433-1"
-    ],
-    "PkgName": "libx11-6",
-    "FixedVersion": "2:1.7.2-1+deb11u1",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-3138",
-    "Title": "InitExt.c can overwrite unintended portions of the Display structure if the extension request leads to a buffer overflow",
-    "Severity": "MEDIUM"
+    "VulnerabilityID": "CVE-2023-31437",
+    "PkgName": "libnss-systemd",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31437",
+    "Title": "An issue was discovered in systemd 253. An attacker can modify a seale ...",
+    "Severity": "LOW",
+    "PublishedDate": "2023-06-13T17:15:00Z"
   },
   {
-    "VulnerabilityID": "CVE-2023-3138",
-    "VendorIDs": [
-      "DSA-5433-1"
-    ],
-    "PkgName": "libx11-data",
-    "FixedVersion": "2:1.7.2-1+deb11u1",
-    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-3138",
-    "Title": "InitExt.c can overwrite unintended portions of the Display structure if the extension request leads to a buffer overflow",
-    "Severity": "MEDIUM"
+    "VulnerabilityID": "CVE-2023-31437",
+    "PkgName": "libpam-systemd",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31437",
+    "Title": "An issue was discovered in systemd 253. An attacker can modify a seale ...",
+    "Severity": "LOW",
+    "PublishedDate": "2023-06-13T17:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-31437",
+    "PkgName": "libsystemd0",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31437",
+    "Title": "An issue was discovered in systemd 253. An attacker can modify a seale ...",
+    "Severity": "LOW",
+    "PublishedDate": "2023-06-13T17:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-31437",
+    "PkgName": "libudev1",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31437",
+    "Title": "An issue was discovered in systemd 253. An attacker can modify a seale ...",
+    "Severity": "LOW",
+    "PublishedDate": "2023-06-13T17:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-31438",
+    "PkgName": "libnss-systemd",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31438",
+    "Title": "An issue was discovered in systemd 253. An attacker can truncate a sea ...",
+    "Severity": "LOW",
+    "PublishedDate": "2023-06-13T17:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-31438",
+    "PkgName": "libpam-systemd",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31438",
+    "Title": "An issue was discovered in systemd 253. An attacker can truncate a sea ...",
+    "Severity": "LOW",
+    "PublishedDate": "2023-06-13T17:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-31438",
+    "PkgName": "libsystemd0",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31438",
+    "Title": "An issue was discovered in systemd 253. An attacker can truncate a sea ...",
+    "Severity": "LOW",
+    "PublishedDate": "2023-06-13T17:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-31438",
+    "PkgName": "libudev1",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31438",
+    "Title": "An issue was discovered in systemd 253. An attacker can truncate a sea ...",
+    "Severity": "LOW",
+    "PublishedDate": "2023-06-13T17:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-31439",
+    "PkgName": "libnss-systemd",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31439",
+    "Title": "An issue was discovered in systemd 253. An attacker can modify the con ...",
+    "Severity": "LOW",
+    "PublishedDate": "2023-06-13T17:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-31439",
+    "PkgName": "libpam-systemd",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31439",
+    "Title": "An issue was discovered in systemd 253. An attacker can modify the con ...",
+    "Severity": "LOW",
+    "PublishedDate": "2023-06-13T17:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-31439",
+    "PkgName": "libsystemd0",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31439",
+    "Title": "An issue was discovered in systemd 253. An attacker can modify the con ...",
+    "Severity": "LOW",
+    "PublishedDate": "2023-06-13T17:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-31439",
+    "PkgName": "libudev1",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31439",
+    "Title": "An issue was discovered in systemd 253. An attacker can modify the con ...",
+    "Severity": "LOW",
+    "PublishedDate": "2023-06-13T17:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-31484",
