@@ -14,8 +14,7 @@ def get_runtime_txt_version() -> str:
     with open(RUNTIME_TXT_FILE) as f:
         version_raw = f.read()
 
-    version_raw = version_raw.replace("python-", "")
-    return version_raw
+    return version_raw.replace("python-", "")
 
 
 def version_str_to_version_int_list(s: str) -> list[int]:
@@ -26,17 +25,16 @@ def get_latest_version_number() -> str:
     github_action_request = request.urlopen(
         "https://raw.githubusercontent.com/actions/python-versions/main/versions-manifest.json"
     )
+    github_action_response = json.load(github_action_request)
+    github_action_tags: set[str] = {tag["version"] for tag in github_action_response}
+
     docker_request = request.urlopen(
         "https://hub.docker.com/v2/repositories/library/python/tags/?name=-slim&page_size=50"
     )
-
-    github_action_tags = json.load(github_action_request)
-    github_action_tags = {tag["version"] for tag in github_action_tags}
-
-    docker_tags = json.load(docker_request)["results"]
-    docker_tags = {
+    docker_response = json.load(docker_request)["results"]
+    docker_tags: set[str] = {
         tag["name"].replace("-slim", "")
-        for tag in docker_tags
+        for tag in docker_response
         if re.fullmatch(r"^\d+\.\d+\.\d+-slim", tag["name"])
     }
 
