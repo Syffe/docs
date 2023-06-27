@@ -1993,6 +1993,29 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         assert car.train_car_state.checks_type == expected_car.checks_type
         assert car.queue_pull_request_number == expected_car.queue_pull_request_number
 
+    @staticmethod
+    def order_expected_waiting_pulls_by_priority(
+        q: merge_train.Train,
+        expected_waiting_pulls: list[github_types.GitHubPullRequestNumber] | None,
+    ) -> list[github_types.GitHubPullRequestNumber]:
+        if not expected_waiting_pulls:
+            return []
+
+        waiting_pulls = []
+        for embarked_pull in q._iter_embarked_pulls():
+            if (
+                embarked_pull.embarked_pull.user_pull_request_number
+                in expected_waiting_pulls
+            ):
+                waiting_pulls.append(embarked_pull.embarked_pull)
+        return [
+            wp.user_pull_request_number
+            for wp in sorted(
+                waiting_pulls,
+                key=q._waiting_pulls_sorter,
+            )
+        ]
+
     async def assert_merge_queue_contents(
         self,
         q: merge_train.Train,
@@ -2008,6 +2031,12 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         self.assertEqual(q._current_base_sha, expected_base_sha)
 
         pulls_in_queue = await q.get_pulls()
+        expected_waiting_pulls_ordered_by_priority = (
+            self.order_expected_waiting_pulls_by_priority(q, expected_waiting_pulls)
+        )
+        assert len(expected_waiting_pulls_ordered_by_priority) == len(
+            expected_waiting_pulls
+        )
         assert (
             pulls_in_queue
             == list(
@@ -2015,7 +2044,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                     [p.user_pull_request_numbers for p in expected_cars]
                 )
             )
-            + expected_waiting_pulls
+            + expected_waiting_pulls_ordered_by_priority
         )
 
         assert len(q._cars) == len(expected_cars)

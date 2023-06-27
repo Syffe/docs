@@ -88,3 +88,8 @@ class QueueChecksOutcome:
             "description": "The maximum batch failure resolution attempts has been reached"
         }
     )
+    PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE: int = dataclasses.field(
+        metadata={
+            "description": "The checks have been interrupted because the merge queue is paused on this repository"
+        }
+    )

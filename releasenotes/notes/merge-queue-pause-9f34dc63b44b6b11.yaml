@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    Mergify allows to pause the merge queue repository wide through a newly added API endpoint.
+    (``/api/repos/<owner>/<repo>/queue/pause``)

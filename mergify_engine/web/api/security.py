@@ -268,6 +268,16 @@ async def check_logged_user_has_write_access(
         raise fastapi.HTTPException(status_code=403)
 
 
+async def check_subscription_feature_queue_pause(repository_ctxt: Repository) -> None:
+    if not repository_ctxt.installation.subscription.has_feature(
+        subscription.Features.QUEUE_PAUSE
+    ):
+        raise fastapi.HTTPException(
+            status_code=402,
+            detail="⚠ The subscription needs to be upgraded to enable the `queue_pause` feature.",
+        )
+
+
 async def check_subscription_feature_queue_freeze(repository_ctxt: Repository) -> None:
     if not repository_ctxt.installation.subscription.has_feature(
         subscription.Features.QUEUE_FREEZE

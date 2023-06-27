@@ -927,6 +927,14 @@ class Train:
     async def _populate_cars(self) -> None:
         # Circular import
         from mergify_engine.queue import freeze
+        from mergify_engine.queue import pause
+
+        if await pause.QueuePause.get(self.convoy.repository):
+            if self._cars:
+                await self._slice_cars(
+                    0, reason=queue_utils.ChecksStoppedBecauseMergeQueuePause()
+                )
+            return
 
         if self._cars and (
             self._cars[-1].train_car_state.checks_type

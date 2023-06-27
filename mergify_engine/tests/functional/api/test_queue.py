@@ -1468,6 +1468,7 @@ class TestNewQueueApiEndpoint(base.FunctionalTestBase):
                     "batch_failure": None,
                     "checks_timeout": None,
                     "freeze": None,
+                    "pause": None,
                     "title": "The pull request is embarked with "
                     f"{self.main_branch_name} "
                     f"({base_sha[:7]}) for merge",
@@ -1589,6 +1590,7 @@ class TestNewQueueApiEndpoint(base.FunctionalTestBase):
                     "batch_failure": None,
                     "checks_timeout": None,
                     "freeze": None,
+                    "pause": None,
                     "title": "The pull request is embarked with "
                     f"{self.main_branch_name} "
                     f"({base_sha_projA[:7]}) for merge",
@@ -1598,6 +1600,7 @@ class TestNewQueueApiEndpoint(base.FunctionalTestBase):
                     "batch_failure": None,
                     "checks_timeout": None,
                     "freeze": None,
+                    "pause": None,
                     "title": "The pull request is embarked with "
                     f"{self.main_branch_name} "
                     f"({base_sha_projB[:7]}) for merge",

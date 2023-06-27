@@ -9,6 +9,7 @@ from mergify_engine import github_types
 from mergify_engine import json
 from mergify_engine import utils
 from mergify_engine.queue import freeze
+from mergify_engine.queue import pause
 from mergify_engine.queue.merge_train import train_car
 from mergify_engine.queue.merge_train import types as queue_types
 from mergify_engine.rules.config import queue_rules as qr_config
@@ -70,9 +71,10 @@ class TrainCarState:
     ci_ended_at: datetime.datetime | None = None
     outcome_message: str | None = None
     checks_type: train_car.TrainCarChecksType | None = None
-    # NOTE(Syffe): The freeze attribute (frozen_by) is stored solely for reporting reasons
+    # NOTE(Syffe): The freeze and pause attributes (frozen_by, paused_by) are stored solely for reporting reasons
     # It should not be used for other purposes
     frozen_by: freeze.QueueFreeze | None = None
+    paused_by: pause.QueuePause | None = None
     waiting_for_freeze_start_dates: list[datetime.datetime] = dataclasses.field(
         default_factory=list
     )
@@ -94,6 +96,7 @@ class TrainCarState:
         outcome_message: str | None
         checks_type: train_car.TrainCarChecksType | None
         frozen_by: freeze.QueueFreeze.Serialized | None
+        paused_by: pause.QueuePause.Serialized | None
         waiting_for_freeze_start_dates: list[datetime.datetime]
         waiting_for_freeze_end_dates: list[datetime.datetime]
         waiting_for_schedule_start_dates: list[datetime.datetime]
@@ -104,6 +107,10 @@ class TrainCarState:
         if self.frozen_by is not None:
             frozen_by = self.frozen_by.serialized()
 
+        paused_by = None
+        if self.paused_by is not None:
+            paused_by = self.paused_by.serialized()
+
         return self.Serialized(
             outcome=self.outcome,
             ci_state=self.ci_state,
@@ -112,6 +119,7 @@ class TrainCarState:
             outcome_message=self.outcome_message,
             checks_type=self.checks_type,
             frozen_by=frozen_by,
+            paused_by=paused_by,
             waiting_for_freeze_start_dates=self.waiting_for_freeze_start_dates,
             waiting_for_freeze_end_dates=self.waiting_for_freeze_end_dates,
             waiting_for_schedule_start_dates=self.waiting_for_schedule_start_dates,
@@ -160,6 +168,11 @@ class TrainCarState:
                     repository, queue_rule, frozen_by_raw
                 )
 
+        # backward compatibility following the implementation of "paused_by" attribute
+        paused_by = None
+        if (paused_by_raw := data.get("paused_by")) is not None:
+            paused_by = pause.QueuePause.deserialize(repository, paused_by_raw)
+
         return cls(
             outcome=data["outcome"],
             ci_state=data["ci_state"],
@@ -168,6 +181,7 @@ class TrainCarState:
             outcome_message=data["outcome_message"],
             checks_type=data["checks_type"],
             frozen_by=frozen_by,
+            paused_by=paused_by,
             **kwargs,
         )
 

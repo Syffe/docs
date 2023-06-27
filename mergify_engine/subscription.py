@@ -36,6 +36,7 @@ class Features(enum.Enum):
     DEDICATED_WORKER = "dedicated_worker"
     ADVANCED_MONITORING = "advanced_monitoring"
     QUEUE_FREEZE = "queue_freeze"
+    QUEUE_PAUSE = "queue_pause"
     EVENTLOGS_SHORT = "eventlogs_short"
     EVENTLOGS_LONG = "eventlogs_long"
     MERGE_QUEUE_STATS = "merge_queue_stats"
@@ -53,6 +54,7 @@ FeaturesLiteralT = typing.Literal[
     "dedicated_worker",
     "advanced_monitoring",
     "queue_freeze",
+    "queue_pause",
     "eventlogs_short",
     "eventlogs_long",
     "merge_queue_stats",

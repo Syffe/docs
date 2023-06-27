@@ -372,6 +372,36 @@ Every pull request that goes through ``default`` will not be merged in this conf
 However, without the cascading effect activated on the freeze, every pull request that
 goes through the queue ``lowprio`` will be tested and still be able to be merged.
 
+Queue Pause
+-----------
+
+|open source plan tag|
+|premium plan tag|
+|advanced plan tag|
+
+Mergify allows to pause the merge queue at a repository level to provide maximum control
+and flexibility on how and when you want the code to be merged.
+
+The pause feature is available through `the Mergify API <https://docs.mergify.com/api>`_.
+A set of API endpoints allows you to create, get, update and delete pause on your repositories.
+
+The pause is effective on every queue of a repository at the same time, you can't pause only one queue among several.
+When a merge queue is paused, all the checks and CI configured are paused, they will not be scheduled and triggered.
+Also, all the currently running checks at the moment of the pause will be interrupted. However, pull requests can
+still be queued in any queue.
+When lifting the pause and resuming the merge, the merge queue will restart in the same state it was at the moment of the pause,
+without reordering pull requests.
+Pausing allows you to fully pause the merges in your repository by ensuring that every checks and the merge are blocked.
+
+For example, let's say you have three queues, respectively ``hotfix``, ``default`` and ``lowprio``, in this order.
+
+You are in the middle of an incident involving your CI tool, and want to block the merge of any pull request
+while also preventing every CI job from running until you find a solution for your incident.
+By creating a pause on the repository, you are now assured that nothing will be merged by any queue and that
+no CI jobs will be scheduled and run.
+
+Once your incident is resolved, you can resume the merge queue and return to the previous state.
+
 🚫 Unqueued Pull Request
 ------------------------
 

@@ -28,6 +28,7 @@ from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import http
 from mergify_engine.queue import freeze
 from mergify_engine.queue import merge_train
+from mergify_engine.queue import pause
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.queue.merge_train import types as merge_train_types
 from mergify_engine.rules import checks_status
@@ -148,6 +149,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         self,
         convoy: merge_train.Convoy,
         queue_freeze: freeze.QueueFreeze | None,
+        queue_pause: pause.QueuePause | None,
         # "cars" is not used but needed because this func is used in 'merge' property
         # with another func that need this attribute.
         cars: list[merge_train.TrainCar] | None,
@@ -164,6 +166,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 rule=self.rule,
                 queue_rule=self.queue_rule,
                 queue_freeze=queue_freeze,
+                queue_pause=queue_pause,
             ),
         )
         if result.conclusion == check_api.Conclusion.SUCCESS:
@@ -193,6 +196,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         self,
         convoy: merge_train.Convoy,
         queue_freeze: freeze.QueueFreeze | None,
+        queue_pause: pause.QueuePause | None,
         cars: list[merge_train.TrainCar] | None,
     ) -> check_api.Result:
         if not cars:
@@ -261,6 +265,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     rule=self.rule,
                     queue_rule=self.queue_rule,
                     queue_freeze=queue_freeze,
+                    queue_pause=queue_pause,
                 ),
             )
 
@@ -292,6 +297,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         [
             merge_train.Convoy,
             freeze.QueueFreeze | None,
+            pause.QueuePause | None,
             list[merge_train.TrainCar] | None,
         ],
         abc.Coroutine[typing.Any, typing.Any, check_api.Result],
@@ -528,13 +534,19 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         try:
             queue_freeze = await convoy.get_current_queue_freeze(self.config["name"])
+            queue_pause = await pause.QueuePause.get(self.ctxt.repository)
             if await self._should_be_merged(
-                self.ctxt, convoy, queue_freeze, partition_names
+                self.ctxt, convoy, queue_freeze, queue_pause, partition_names
             ):
-                result = await self._merge(convoy, queue_freeze, cars)
+                result = await self._merge(convoy, queue_freeze, queue_pause, cars)
             else:
                 result = await self.get_pending_queue_status(
-                    self.ctxt, convoy, self.rule, self.queue_rule, queue_freeze
+                    self.ctxt,
+                    convoy,
+                    self.rule,
+                    self.queue_rule,
+                    queue_freeze,
+                    queue_pause,
                 )
         except Exception as e:
             if not exceptions.need_retry(e):
@@ -685,8 +697,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
             return result
 
         queue_freeze = await convoy.get_current_queue_freeze(self.config["name"])
+        queue_pause = await pause.QueuePause.get(convoy.repository)
         result = await self.get_pending_queue_status(
-            self.ctxt, convoy, self.rule, self.queue_rule, queue_freeze
+            self.ctxt, convoy, self.rule, self.queue_rule, queue_freeze, queue_pause
         )
 
         if result.conclusion is not check_api.Conclusion.PENDING:
@@ -887,8 +900,11 @@ Then, re-embark the pull request into the merge queue by posting the comment
             f"TrainCarState.outcome `{train_car_state.outcome.value}` can't be mapped to an AbortReason"
         )
 
-    @staticmethod
-    async def _should_be_queued(ctxt: context.Context) -> bool:
+    @classmethod
+    async def _should_be_queued(
+        cls,
+        ctxt: context.Context,
+    ) -> bool:
         # TODO(sileht): load outcome from summary,
         # so we know why it shouldn't be queued
         check = await ctxt.get_engine_check_run(constants.MERGE_QUEUE_SUMMARY_NAME)
@@ -903,9 +919,13 @@ Then, re-embark the pull request into the merge queue by posting the comment
         ctxt: context.Context,
         convoy: merge_train.Convoy,
         queue_freeze: freeze.QueueFreeze | None,
+        queue_pause: pause.QueuePause | None,
         partition_names: list[partr_config.PartitionRuleName],
     ) -> bool:
         if queue_freeze is not None:
+            return False
+
+        if queue_pause is not None:
             return False
 
         for train in convoy.iter_trains_from_partition_names(partition_names):
@@ -979,8 +999,11 @@ Then, re-embark the pull request into the merge queue by posting the comment
         rule: prr_config.EvaluatedPullRequestRule,
         queue_rule: qr_config.QueueRule,
         queue_freeze: freeze.QueueFreeze | None,
+        queue_pause: pause.QueuePause | None,
     ) -> check_api.Result:
-        if queue_freeze is not None:
+        if queue_pause is not None:
+            title = queue_pause.get_pause_message()
+        elif queue_freeze is not None:
             title = queue_freeze.get_freeze_message()
         else:
             embarked_pulls = await convoy.find_embarked_pull(ctxt.pull["number"])

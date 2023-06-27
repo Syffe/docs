@@ -47,6 +47,9 @@ EventName = typing.Literal[
     "queue.freeze.create",
     "queue.freeze.update",
     "queue.freeze.delete",
+    "queue.pause.create",
+    "queue.pause.update",
+    "queue.pause.delete",
 ]
 
 
@@ -202,6 +205,20 @@ class EventQueueFreezeUpdateMetadata(EventMetadata, total=False):
 
 class EventQueueFreezeDeleteMetadata(EventMetadata, total=False):
     queue_name: str
+    deleted_by: github.Actor
+
+
+class EventQueuePauseCreateMetadata(EventMetadata, total=False):
+    reason: str
+    created_by: github.Actor
+
+
+class EventQueuePauseUpdateMetadata(EventMetadata, total=False):
+    reason: str
+    updated_by: github.Actor
+
+
+class EventQueuePauseDeleteMetadata(EventMetadata, total=False):
     deleted_by: github.Actor
 
 
@@ -499,6 +516,39 @@ async def send(
     pull_request: None,
     event: typing.Literal["queue.freeze.delete"],
     metadata: EventQueueFreezeDeleteMetadata,
+    trigger: str,
+) -> None:
+    ...
+
+
+@typing.overload
+async def send(
+    repository: "context.Repository",
+    pull_request: None,
+    event: typing.Literal["queue.pause.create"],
+    metadata: EventQueuePauseCreateMetadata,
+    trigger: str,
+) -> None:
+    ...
+
+
+@typing.overload
+async def send(
+    repository: "context.Repository",
+    pull_request: None,
+    event: typing.Literal["queue.pause.update"],
+    metadata: EventQueuePauseUpdateMetadata,
+    trigger: str,
+) -> None:
+    ...
+
+
+@typing.overload
+async def send(
+    repository: "context.Repository",
+    pull_request: None,
+    event: typing.Literal["queue.pause.delete"],
+    metadata: EventQueuePauseDeleteMetadata,
     trigger: str,
 ) -> None:
     ...

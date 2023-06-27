@@ -166,6 +166,21 @@ class EventQueueFreezeDelete(EventBase):
     metadata: signals.EventQueueFreezeDeleteMetadata
 
 
+class EventQueuePauseCreate(EventBase):
+    event: typing.Literal["queue.pause.create"]
+    metadata: signals.EventQueuePauseCreateMetadata
+
+
+class EventQueuePauseUpdate(EventBase):
+    event: typing.Literal["queue.pause.update"]
+    metadata: signals.EventQueuePauseUpdateMetadata
+
+
+class EventQueuePauseDelete(EventBase):
+    event: typing.Literal["queue.pause.delete"]
+    metadata: signals.EventQueuePauseDeleteMetadata
+
+
 def _get_repository_key(
     owner_id: github_types.GitHubAccountIdType,
     repo_id: github_types.GitHubRepositoryIdType,
@@ -209,6 +224,9 @@ Event = (
     | EventQueueFreezeCreate
     | EventQueueFreezeUpdate
     | EventQueueFreezeDelete
+    | EventQueuePauseCreate
+    | EventQueuePauseUpdate
+    | EventQueuePauseDelete
 )
 
 SUPPORTED_EVENT_NAMES = list(
@@ -452,6 +470,15 @@ async def get(
 
         elif event["event"] == "queue.freeze.delete":
             events.append(typing.cast(EventQueueFreezeDelete, event))
+
+        elif event["event"] == "queue.pause.create":
+            events.append(typing.cast(EventQueuePauseCreate, event))
+
+        elif event["event"] == "queue.pause.update":
+            events.append(typing.cast(EventQueuePauseUpdate, event))
+
+        elif event["event"] == "queue.pause.delete":
+            events.append(typing.cast(EventQueuePauseDelete, event))
 
         else:
             LOG.error("unsupported event-type, skipping", event=event)  # type: ignore[unreachable]

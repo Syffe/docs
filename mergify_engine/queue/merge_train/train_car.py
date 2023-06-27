@@ -30,6 +30,7 @@ from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 from mergify_engine.models import github_user
+from mergify_engine.queue import pause
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.queue.merge_train import checks as merge_train_checks
 from mergify_engine.queue.merge_train import embarked_pull as ep_import
@@ -86,6 +87,9 @@ class TrainCarOutcome(enum.Enum):
     UPDATED_PR_CHANGE = "updated_pr_change"
     UNKNOWN = "unknown"
     BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS = "batch_max_failure_resolution_attempts"
+    PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE = (
+        "pr_checks_stopped_because_merge_queue_pause"
+    )
     # FIXME(jd): remove me once all serialization are up to date
     UNKNWON = "unknown"
 
@@ -139,6 +143,7 @@ class QueueSummary:
     train_car_state: str
     unexpected_changes: str | None
     freeze: str | None
+    pause: str | None
     checks_timeout: str | None
     merge_conditions: str
     check_runs: str | None
@@ -152,6 +157,9 @@ class QueueSummary:
 
         if self.freeze is not None:
             body += "\n\n" + self.freeze
+
+        if self.pause is not None:
+            body += "\n\n" + self.pause
 
         if self.checks_timeout is not None:
             body += "\n\n" + self.checks_timeout
@@ -526,6 +534,7 @@ class TrainCar:
             TrainCarOutcome.UNKNOWN,
             TrainCarOutcome.BASE_BRANCH_CHANGE,
             TrainCarOutcome.UPDATED_PR_CHANGE,
+            TrainCarOutcome.PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE,
         ):
             return check_api.Conclusion.PENDING
 
@@ -1762,6 +1771,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
         )
         saved_queue_check_run_conclusion = check["conclusion"] if check else None
         saved_freeze_data = self.train_car_state.frozen_by
+        saved_pause_data = self.train_car_state.paused_by
 
         if (
             origin == "original_pull_request"
@@ -1841,6 +1851,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             or saved_outcome != self.train_car_state.outcome
             or saved_ci_state != self.train_car_state.ci_state
             or saved_freeze_data != self.train_car_state.frozen_by
+            or saved_pause_data != self.train_car_state.paused_by
             or saved_queue_check_run_conclusion
             != self.get_queue_check_run_conclusion().value
         )
@@ -2019,8 +2030,14 @@ You don't need to do anything. Mergify will close this pull request automaticall
             # Add start date only if the reason this isnt getting merged is because of the freeze
             self.train_car_state.add_waiting_for_freeze_start_date()
 
+        self.train_car_state.paused_by = await pause.QueuePause.get(self.repository)
+
+        if self.train_car_state.paused_by is not None:
+            self.train_car_state.outcome = (
+                TrainCarOutcome.PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE
+            )
         # Update Outcome
-        if unexpected_changes is not None:
+        elif unexpected_changes is not None:
             # Unexpected change always override any outcome
             self.train_car_state.outcome = UNEXPECTED_CHANGES_COMPATIBILITY[
                 type(unexpected_changes)
@@ -2234,6 +2251,12 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
         return self.train_car_state.frozen_by.get_freeze_message()
 
+    def get_pause_summary(self) -> str | None:
+        if self.train_car_state.paused_by is None:
+            return None
+
+        return self.train_car_state.paused_by.get_pause_message()
+
     def get_original_pr_summary_title(self) -> str:
         if self.train_car_state.outcome == TrainCarOutcome.DRAFT_PR_CHANGE:
             return "The pull request has been removed from the queue"
@@ -2257,6 +2280,12 @@ You don't need to do anything. Mergify will close this pull request automaticall
         ):
             return f"The pull request embarked with {self._get_embarked_refs(include_my_self=False)} cannot be merged and has been disembarked"
 
+        if (
+            self.train_car_state.outcome
+            == TrainCarOutcome.PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE
+        ):
+            return f"The pull request is embarked with {self._get_embarked_refs(include_my_self=False)} for merge, but the merge queue is paused"
+
         raise RuntimeError(f"Unhandled TrainCarOutcome: {self.train_car_state.outcome}")
 
     def get_original_pr_summary(
@@ -2269,6 +2298,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
             merge_conditions=self.get_merge_conditions_summary(),
             unexpected_changes=self.get_unexpected_changes_summary(),
             freeze=self.get_freeze_summary(),
+            pause=self.get_pause_summary(),
             checks_timeout=self.get_checks_timeout_summary(),
             check_runs=self.get_check_runs_summary(checked_pull),
             batch_failure=self.get_batch_failure_summary(),
@@ -2337,6 +2367,11 @@ You don't need to do anything. Mergify will close this pull request automaticall
             else:
                 headline = f"⏳ The pull requests {self._get_user_refs()} are embarked for merge and currently being checked. ⏳"
             show_queue = True
+        elif (
+            self.train_car_state.outcome
+            == TrainCarOutcome.PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE
+        ):
+            headline = "⏸️ The checks have been interrupted because the merge queue is paused on the repository ⏸️"
         else:
             raise RuntimeError(
                 f"Unhandled TrainCarOutcome: {self.train_car_state.outcome}"

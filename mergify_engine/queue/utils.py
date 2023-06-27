@@ -25,6 +25,7 @@ AbortCodeT = typing.Literal[
     "TARGET_BRANCH_CHANGED",
     "PR_UNEXPECTEDLY_FAILED_TO_MERGE",
     "BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS",
+    "PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE",
 ]
 
 UnqueueCodeT = typing.Literal["PR_MERGED"] | AbortCodeT
@@ -95,6 +96,14 @@ class PrWithHigherPriorityQueued(BaseUnqueueReason):
         typing.Literal["PR_WITH_HIGHER_PRIORITY_QUEUED"]
     ] = "PR_WITH_HIGHER_PRIORITY_QUEUED"
     pr_number: int
+
+
+@dataclasses.dataclass
+class ChecksStoppedBecauseMergeQueuePause(BaseUnqueueReason):
+    message = "The checks have been interrupted because the merge queue is paused on this repository"
+    unqueue_code: typing.ClassVar[
+        typing.Literal["PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE"]
+    ] = "PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE"
 
 
 @dataclasses.dataclass

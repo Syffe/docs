@@ -136,6 +136,9 @@ class PullRequestSummary:
     freeze: str | None = dataclasses.field(
         metadata={"description": "The queue freeze summary"}
     )
+    pause: str | None = dataclasses.field(
+        metadata={"description": "The queue pause summary"}
+    )
     checks_timeout: str | None = dataclasses.field(
         metadata={"description": "The checks timeout summary"}
     )
@@ -396,6 +399,7 @@ async def repository_queue_pull_request(
                     title=raw_summary.title,
                     unexpected_changes=raw_summary.unexpected_changes,
                     freeze=raw_summary.freeze,
+                    pause=raw_summary.pause,
                     checks_timeout=raw_summary.checks_timeout,
                     batch_failure=raw_summary.get_batch_failure_summary_title(),
                 )

@@ -97,6 +97,7 @@ class FailureByReasonT(typing.TypedDict):
     TARGET_BRANCH_MISSING: int
     PR_UNEXPECTEDLY_FAILED_TO_MERGE: int
     BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS: int
+    PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE: int
 
 
 @dataclasses.dataclass
@@ -117,6 +118,7 @@ class FailureByReason(BaseQueueStats):
         queue_utils.PrDequeued.unqueue_code: 14,
         queue_utils.PrUnexpectedlyFailedToMerge.unqueue_code: 15,
         queue_utils.MaximumBatchFailureResolutionAttemptsReached.unqueue_code: 16,
+        queue_utils.ChecksStoppedBecauseMergeQueuePause.unqueue_code: 17,
     }
     _INT_TO_UNQUEUE_CODE_MAPPING: typing.ClassVar[dict[int, queue_utils.AbortCodeT]] = {
         v: k for k, v in _ABORT_CODE_TO_INT_MAPPING.items()
@@ -485,6 +487,7 @@ BASE_QUEUE_CHECKS_OUTCOME_T_DICT: QueueChecksOutcomeT = QueueChecksOutcomeT(
         "TARGET_BRANCH_MISSING": 0,
         "PR_UNEXPECTEDLY_FAILED_TO_MERGE": 0,
         "BATCH_MAX_FAILURE_RESOLUTION_ATTEMPTS": 0,
+        "PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE": 0,
     }
 )
 
