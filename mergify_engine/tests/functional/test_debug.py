@@ -38,84 +38,60 @@ class TestDebugger(base.FunctionalTestBase):
         self.register_mock(m)
 
     async def create_main_branch_protection(self) -> None:
-        protection = github_graphql_types.CreateGraphqlBranchProtectionRule(
-            {
-                "allowsDeletions": False,
-                "allowsForcePushes": False,
-                "dismissesStaleReviews": False,
-                "isAdminEnforced": True,
-                "pattern": self.main_branch_name,
-                "requiredDeploymentEnvironments": [],
-                "requiredStatusCheckContexts": [],
-                "requiresApprovingReviews": True,
-                "requiresCodeOwnerReviews": False,
-                "requiresCommitSignatures": False,
-                "requiresConversationResolution": False,
-                "requiresLinearHistory": False,
-                "requiresStatusChecks": True,
-                "requiresStrictStatusChecks": True,
-                "restrictsPushes": False,
-                "restrictsReviewDismissals": False,
-            }
-        )
-        await self.create_branch_protection_rule(protection)
-
-        self.expected_branch_protection_rules = await self.get_expected_branch_protection_rules_without_missing_graphql_fields(
-            [
-                github_graphql_types.GraphqlBranchProtectionRule(
-                    {
-                        "allowsDeletions": False,
-                        "allowsForcePushes": False,
-                        "blocksCreations": False,
-                        "dismissesStaleReviews": False,
-                        "isAdminEnforced": True,
-                        "lockBranch": False,
-                        "matchingRefs": [
-                            github_graphql_types.GraphqlBranchProtectionRuleMatchingRef(
-                                {
-                                    "name": self.main_branch_name,
-                                    "prefix": "refs/heads/",
-                                }
-                            )
-                        ],
-                        "pattern": self.main_branch_name,
-                        "requireLastPushApproval": False,
-                        "requiredApprovingReviewCount": 1,
-                        "requiredDeploymentEnvironments": [],
-                        "requiredStatusCheckContexts": [],
-                        "requiresApprovingReviews": True,
-                        "requiresCodeOwnerReviews": False,
-                        "requiresCommitSignatures": False,
-                        "requiresConversationResolution": False,
-                        "requiresDeployments": False,
-                        "requiresLinearHistory": False,
-                        "requiresStatusChecks": True,
-                        "requiresStrictStatusChecks": True,
-                        "restrictsPushes": False,
-                        "restrictsReviewDismissals": False,
-                    }
-                )
-            ],
-        )
-
-    async def get_expected_branch_protection_rules_without_missing_graphql_fields(
-        self, rules: list[github_graphql_types.GraphqlBranchProtectionRule]
-    ) -> list[github_graphql_types.GraphqlBranchProtectionRule]:
-        graphql_fields = (
+        graphql_allowed_fields = (
             await self.repository_ctxt.get_graphql_allowed_branch_protection_rules_fields()
         )
-        for branch_rule in rules:
-            branch_rule = typing.cast(
-                github_graphql_types.GraphqlBranchProtectionRule,
-                dict(
-                    filter(
-                        lambda key_value: key_value[0] in graphql_fields,
-                        branch_rule.items(),
-                    )
-                ),
-            )
 
-        return rules
+        base_protection = {
+            "allowsDeletions": False,
+            "allowsForcePushes": False,
+            "dismissesStaleReviews": False,
+            "isAdminEnforced": True,
+            "pattern": self.main_branch_name,
+            "blocksCreations": False,
+            "lockBranch": False,
+            "requiredApprovingReviewCount": 1,
+            "requireLastPushApproval": False,
+            "requiresDeployments": False,
+            "requiredDeploymentEnvironments": [],
+            "requiredStatusCheckContexts": [],
+            "requiresApprovingReviews": True,
+            "requiresCodeOwnerReviews": False,
+            "requiresCommitSignatures": False,
+            "requiresConversationResolution": False,
+            "requiresLinearHistory": False,
+            "requiresStatusChecks": True,
+            "requiresStrictStatusChecks": True,
+            "restrictsPushes": False,
+            "restrictsReviewDismissals": False,
+        }
+        protection_filtered = typing.cast(
+            github_graphql_types.CreateGraphqlBranchProtectionRule,
+            dict(
+                filter(
+                    lambda key_value: key_value[0] in graphql_allowed_fields,
+                    base_protection.items(),
+                )
+            ),
+        )
+
+        # mypy isn't happy because we're telling him that it's a list of something while it's actually
+        # a list of something else.
+        # But we're transforming that something else into the something it's supposed to be right below so its no big deal.
+        self.expected_branch_protection_rules: list[
+            github_graphql_types.GraphqlBranchProtectionRule
+        ] = [
+            protection_filtered.copy()  # type: ignore[list-item]
+        ]
+        self.expected_branch_protection_rules[0]["matchingRefs"] = [
+            github_graphql_types.GraphqlBranchProtectionRuleMatchingRef(
+                {
+                    "name": self.main_branch_name,
+                    "prefix": "refs/heads/",
+                }
+            )
+        ]
+        await self.create_branch_protection_rule(protection_filtered)
 
     async def test_debugger(self) -> None:
         rules = {
