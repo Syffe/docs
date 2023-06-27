@@ -285,7 +285,11 @@ class Convoy:
         # all unfrozen queues with lower priorities than the highest frozen queue have
         # to be considered as non-usable to queue the newly added PR.
         queues_with_freeze = await self.get_queue_freezes_by_names()
-        return {name for name, qf in queues_with_freeze.items() if qf is not None}
+        return {
+            name
+            for name, queue_freeze in queues_with_freeze.items()
+            if queue_freeze is not None
+        }
 
     async def find_embarked_pull(
         self, pull_number: github_types.GitHubPullRequestNumber

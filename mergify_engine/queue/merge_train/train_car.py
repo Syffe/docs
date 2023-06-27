@@ -2007,12 +2007,15 @@ You don't need to do anything. Mergify will close this pull request automaticall
             )
 
         # Register freeze period
-        qf = await self.train.convoy.is_queue_frozen(
+        queue_freeze = await self.train.convoy.is_queue_frozen(
             self.still_queued_embarked_pulls[0].config["name"],
         )
-        if not qf:
+        if not queue_freeze:
             self.train_car_state.add_waiting_for_freeze_end_date()
-        elif qf and self.train_car_state.ci_state == merge_train_types.CiState.SUCCESS:
+        elif (
+            queue_freeze
+            and self.train_car_state.ci_state == merge_train_types.CiState.SUCCESS
+        ):
             # Add start date only if the reason this isnt getting merged is because of the freeze
             self.train_car_state.add_waiting_for_freeze_start_date()
 

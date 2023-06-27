@@ -10,6 +10,7 @@ import msgpack
 
 from mergify_engine import context
 from mergify_engine import date
+from mergify_engine import worker_pusher
 from mergify_engine.queue import merge_train
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
@@ -85,21 +86,21 @@ class QueueFreeze:
     ) -> QueueFreeze:
         # NOTE(Syffe): timestamp parameter means that timestamp variables will be converted to
         # datetime (value 3=to_datetime()). Other values can be used: 1=to_float(), 2=to_unix_ns()
-        qf = msgpack.unpackb(queue_freeze_raw, timestamp=3)
+        queue_freeze = msgpack.unpackb(queue_freeze_raw, timestamp=3)
         return cls(
             repository=repository,
             queue_rule=queue_rule,
-            name=qf["name"],
-            reason=qf["reason"],
-            freeze_date=qf["freeze_date"],
-            cascading=qf.get("cascading", True),  # Backward compat
+            name=queue_freeze["name"],
+            reason=queue_freeze["reason"],
+            freeze_date=queue_freeze["freeze_date"],
+            cascading=queue_freeze.get("cascading", True),  # Backward compat
         )
 
     @classmethod
     async def get_all(
         cls, repository: context.Repository, queue_rules: qr_config.QueueRules
     ) -> abc.AsyncGenerator[QueueFreeze, None]:
-        async for key, qf_raw in repository.installation.redis.queue.hscan_iter(
+        async for key, queue_freeze_raw in repository.installation.redis.queue.hscan_iter(
             name=cls._get_redis_hash(repository),
             match=cls._get_redis_key_match(repository),
         ):
@@ -113,16 +114,16 @@ class QueueFreeze:
             yield cls.unpack(
                 repository=repository,
                 queue_rule=queue_rule,
-                queue_freeze_raw=qf_raw,
+                queue_freeze_raw=queue_freeze_raw,
             )
 
     @classmethod
     async def get_all_non_cascading(
         cls, repository: context.Repository, queue_rules: qr_config.QueueRules
     ) -> abc.AsyncGenerator[QueueFreeze, None]:
-        async for qf in cls.get_all(repository, queue_rules):
-            if not qf.cascading:
-                yield qf
+        async for queue_freeze in cls.get_all(repository, queue_rules):
+            if not queue_freeze.cascading:
+                yield queue_freeze
 
     @classmethod
     async def get(
@@ -130,16 +131,18 @@ class QueueFreeze:
         repository: context.Repository,
         queue_rule: qr_config.QueueRule,
     ) -> QueueFreeze | None:
-        qf_raw = await repository.installation.redis.queue.hget(
+        queue_freeze_raw = await repository.installation.redis.queue.hget(
             cls._get_redis_hash(repository),
             cls._get_redis_key(repository, queue_rule.name),
         )
 
-        if qf_raw is None:
+        if queue_freeze_raw is None:
             return None
 
         return cls.unpack(
-            repository=repository, queue_rule=queue_rule, queue_freeze_raw=qf_raw
+            repository=repository,
+            queue_rule=queue_rule,
+            queue_freeze_raw=queue_freeze_raw,
         )
 
     @classmethod
@@ -211,7 +214,10 @@ class QueueFreeze:
             self.repository, queue_rules, partition_rules
         ):
             for train in convoy.iter_trains():
-                await train.refresh_pulls(source=source)
+                await train.refresh_pulls(
+                    source=source,
+                    priority_first_pull_request=worker_pusher.Priority.immediate,
+                )
 
     def get_freeze_message(self) -> str:
         return (

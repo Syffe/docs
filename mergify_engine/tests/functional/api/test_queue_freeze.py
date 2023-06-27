@@ -883,7 +883,9 @@ class TestQueueFreeze(base.FunctionalTestBase):
 
         r = await self._get_all_queue_freeze()
         json_data = r.json()
-        list_queue_name = [qf["name"] for qf in json_data["queue_freezes"]]
+        list_queue_name = [
+            queue_freeze["name"] for queue_freeze in json_data["queue_freezes"]
+        ]
         assert "default" in list_queue_name
         assert "low-priority" in list_queue_name
 

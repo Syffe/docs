@@ -95,9 +95,9 @@ async def create_queue_freeze(
             status_code=404, detail=f'The queue "{queue_name}" does not exist.'
         )
 
-    qf = await freeze.QueueFreeze.get(repository_ctxt, queue_rule)
-    if qf is None:
-        qf = freeze.QueueFreeze(
+    queue_freeze = await freeze.QueueFreeze.get(repository_ctxt, queue_rule)
+    if queue_freeze is None:
+        queue_freeze = freeze.QueueFreeze(
             repository=repository_ctxt,
             queue_rule=queue_rule,
             name=queue_rule.name,
@@ -113,8 +113,8 @@ async def create_queue_freeze(
             signals.EventQueueFreezeCreateMetadata(
                 {
                     "queue_name": queue_name,
-                    "reason": qf.reason,
-                    "cascading": qf.cascading,
+                    "reason": queue_freeze.reason,
+                    "cascading": queue_freeze.cascading,
                     "created_by": auth.actor,
                 }
             ),
@@ -122,13 +122,13 @@ async def create_queue_freeze(
         )
 
     has_been_updated = False
-    if qf.reason != queue_freeze_payload.reason:
+    if queue_freeze.reason != queue_freeze_payload.reason:
         has_been_updated = True
-        qf.reason = queue_freeze_payload.reason
+        queue_freeze.reason = queue_freeze_payload.reason
 
-    if qf.cascading != queue_freeze_payload.cascading:
+    if queue_freeze.cascading != queue_freeze_payload.cascading:
         has_been_updated = True
-        qf.cascading = queue_freeze_payload.cascading
+        queue_freeze.cascading = queue_freeze_payload.cascading
 
     if has_been_updated:
         await signals.send(
@@ -138,22 +138,22 @@ async def create_queue_freeze(
             signals.EventQueueFreezeUpdateMetadata(
                 {
                     "queue_name": queue_name,
-                    "reason": qf.reason,
-                    "cascading": qf.cascading,
+                    "reason": queue_freeze.reason,
+                    "cascading": queue_freeze.cascading,
                     "updated_by": auth.actor,
                 }
             ),
             "Update queue freeze",
         )
 
-    await qf.save(queue_rules, partition_rules)
+    await queue_freeze.save(queue_rules, partition_rules)
     return QueueFreezeResponse(
         queue_freezes=[
             QueueFreeze(
-                name=qf.name,
-                reason=qf.reason,
-                freeze_date=qf.freeze_date,
-                cascading=qf.cascading,
+                name=queue_freeze.name,
+                reason=queue_freeze.reason,
+                freeze_date=queue_freeze.freeze_date,
+                cascading=queue_freeze.cascading,
             )
         ],
     )
@@ -189,12 +189,12 @@ async def delete_queue_freeze(
             status_code=404, detail=f'The queue "{queue_name}" does not exist.'
         )
 
-    qf = freeze.QueueFreeze(
+    queue_freeze = freeze.QueueFreeze(
         repository=repository_ctxt,
         queue_rule=queue_rule,
         name=queue_name,
     )
-    if not await qf.delete(queue_rules, partition_rules):
+    if not await queue_freeze.delete(queue_rules, partition_rules):
         raise fastapi.HTTPException(
             status_code=404,
             detail=f'The queue "{queue_name}" is not currently frozen.',
@@ -238,8 +238,8 @@ async def get_queue_freeze(
             status_code=404, detail=f'The queue "{queue_name}" does not exist.'
         )
 
-    qf = await freeze.QueueFreeze.get(repository_ctxt, queue_rule)
-    if qf is None:
+    queue_freeze = await freeze.QueueFreeze.get(repository_ctxt, queue_rule)
+    if queue_freeze is None:
         raise fastapi.HTTPException(
             status_code=404,
             detail=f'The queue "{queue_name}" is not currently frozen.',
@@ -248,10 +248,10 @@ async def get_queue_freeze(
     return QueueFreezeResponse(
         queue_freezes=[
             QueueFreeze(
-                name=qf.name,
-                reason=qf.reason,
-                freeze_date=qf.freeze_date,
-                cascading=qf.cascading,
+                name=queue_freeze.name,
+                reason=queue_freeze.reason,
+                freeze_date=queue_freeze.freeze_date,
+                cascading=queue_freeze.cascading,
             )
         ],
     )
@@ -273,11 +273,13 @@ async def get_list_queue_freeze(
     return QueueFreezeResponse(
         queue_freezes=[
             QueueFreeze(
-                name=qf.name,
-                reason=qf.reason,
-                freeze_date=qf.freeze_date,
-                cascading=qf.cascading,
+                name=queue_freeze.name,
+                reason=queue_freeze.reason,
+                freeze_date=queue_freeze.freeze_date,
+                cascading=queue_freeze.cascading,
             )
-            async for qf in freeze.QueueFreeze.get_all(repository_ctxt, queue_rules)
+            async for queue_freeze in freeze.QueueFreeze.get_all(
+                repository_ctxt, queue_rules
+            )
         ]
     )

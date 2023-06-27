@@ -520,12 +520,14 @@ Then, re-embark the pull request into the merge queue by posting the comment
         )
 
         try:
-            qf = await convoy.get_current_queue_freeze(self.config["name"])
-            if await self._should_be_merged(self.ctxt, convoy, qf, partition_names):
-                result = await self._merge(convoy, qf, cars)
+            queue_freeze = await convoy.get_current_queue_freeze(self.config["name"])
+            if await self._should_be_merged(
+                self.ctxt, convoy, queue_freeze, partition_names
+            ):
+                result = await self._merge(convoy, queue_freeze, cars)
             else:
                 result = await self.get_pending_queue_status(
-                    self.ctxt, convoy, self.rule, self.queue_rule, qf
+                    self.ctxt, convoy, self.rule, self.queue_rule, queue_freeze
                 )
         except Exception as e:
             if not exceptions.need_retry(e):
@@ -668,9 +670,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
             await self._unqueue_pull_request(convoy, cars, unqueue_reason, result)
             return result
 
-        qf = await convoy.get_current_queue_freeze(self.config["name"])
+        queue_freeze = await convoy.get_current_queue_freeze(self.config["name"])
         result = await self.get_pending_queue_status(
-            self.ctxt, convoy, self.rule, self.queue_rule, qf
+            self.ctxt, convoy, self.rule, self.queue_rule, queue_freeze
         )
 
         if result.conclusion is not check_api.Conclusion.PENDING:
