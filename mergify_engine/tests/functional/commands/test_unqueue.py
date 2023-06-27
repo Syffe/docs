@@ -101,9 +101,8 @@ class TestUnQueueCommand(base.FunctionalTestBase):
         )
         assert check is not None
         assert check["conclusion"] == "cancelled"
-        assert (
-            check["output"]["title"]
-            == "The pull request has been removed from the queue"
+        assert check["output"]["title"].startswith(
+            "The pull request has been removed from the queue"
         )
         assert check["output"]["summary"].startswith(
             f"Pull request #{p1['number']} has been dequeued by an `unqueue` command"
@@ -117,7 +116,7 @@ class TestUnQueueCommand(base.FunctionalTestBase):
         assert check["conclusion"] == "cancelled"
         assert (
             check["output"]["title"]
-            == "The pull request has been removed from the queue by an `unqueue` command"
+            == "The pull request has been removed from the queue `default` by an `unqueue` command"
         )
 
         await self.create_comment_as_admin(p1["number"], "@mergifyio requeue")

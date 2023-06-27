@@ -113,9 +113,8 @@ class TestQueueAction(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Rule: Queue (queue)",
         )
         assert check is not None
-        assert (
-            check["output"]["title"]
-            == "The pull request has been removed from the queue"
+        assert check["output"]["title"].startswith(
+            "The pull request has been removed from the queue"
         )
 
         check = first(
@@ -194,9 +193,8 @@ class TestQueueAction(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Rule: Queue (queue)",
         )
         assert check is not None
-        assert (
-            check["output"]["title"]
-            == "The pull request has been removed from the queue"
+        assert check["output"]["title"].startswith(
+            "The pull request has been removed from the queue"
         )
 
         check = first(
@@ -273,9 +271,8 @@ class TestQueueAction(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Rule: Queue (queue)",
         )
         assert check is not None
-        assert (
-            check["output"]["title"]
-            == "The pull request has been removed from the queue"
+        assert check["output"]["title"].startswith(
+            "The pull request has been removed from the queue"
         )
 
         check = first(
@@ -2758,9 +2755,8 @@ class TestQueueAction(base.FunctionalTestBase):
         )
         assert check is not None
         assert check["conclusion"] == "cancelled"
-        assert (
-            check["output"]["title"]
-            == "The pull request has been removed from the queue"
+        assert check["output"]["title"].startswith(
+            "The pull request has been removed from the queue"
         )
         assert check["output"]["summary"].startswith(
             f"Pull request #{p1['number']} has been dequeued by an `unqueue` command.\n"
@@ -3671,18 +3667,16 @@ class TestQueueAction(base.FunctionalTestBase):
             key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
         )
         assert check is not None
-        assert (
-            check["output"]["title"]
-            == "The pull request has been removed from the queue"
+        assert check["output"]["title"].startswith(
+            "The pull request has been removed from the queue"
         )
         check = first(
             await context.Context(self.repository_ctxt, p2).pull_engine_check_runs,
             key=lambda c: c["name"] == "Rule: Merge priority high (queue)",
         )
         assert check is not None
-        assert (
-            check["output"]["title"]
-            == "The pull request has been removed from the queue"
+        assert check["output"]["title"].startswith(
+            "The pull request has been removed from the queue"
         )
 
     async def test_draft_pr_train_reset_after_unexpected_base_branch_changes(
@@ -6050,9 +6044,8 @@ class TestQueueAction(base.FunctionalTestBase):
                 match check_run["check_run"]["name"]:
                     case "Rule: queue (queue)":
                         found_queue_rule = True
-                        assert (
-                            check_run["check_run"]["output"]["title"]
-                            == "The pull request has been removed from the queue"
+                        assert check_run["check_run"]["output"]["title"].startswith(
+                            "The pull request has been removed from the queue"
                         )
                         assert check_run["check_run"]["conclusion"] == "cancelled"
                     case "Queue: Embarked in merge train":
@@ -6144,9 +6137,8 @@ class TestQueueAction(base.FunctionalTestBase):
                 match check_run["check_run"]["name"]:
                     case "Rule: queue (queue)":
                         found_queue_rule = True
-                        assert (
-                            check_run["check_run"]["output"]["title"]
-                            == "The pull request has been removed from the queue"
+                        assert check_run["check_run"]["output"]["title"].startswith(
+                            "The pull request has been removed from the queue"
                         )
                         assert check_run["check_run"]["conclusion"] == "cancelled"
                     case "Queue: Embarked in merge train":
@@ -6225,9 +6217,8 @@ class TestQueueAction(base.FunctionalTestBase):
                 key=lambda c: c["name"] == "Rule: queue (queue)",
             )
             assert check is not None
-            assert (
-                check["output"]["title"]
-                == "The pull request has been removed from the queue"
+            assert check["output"]["title"].startswith(
+                "The pull request has been removed from the queue"
             )
             check = first(
                 await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
@@ -6315,9 +6306,8 @@ class TestQueueAction(base.FunctionalTestBase):
             ctxt_p1._caches.pull_check_runs.delete()
             check = await ctxt_p1.get_engine_check_run("Rule: queue (queue)")
             assert check is not None
-            assert (
-                check["output"]["title"]
-                == "The pull request has been removed from the queue"
+            assert check["output"]["title"].startswith(
+                "The pull request has been removed from the queue"
             )
             check = first(
                 await context.Context(self.repository_ctxt, p1).pull_engine_check_runs,
@@ -7182,7 +7172,7 @@ pull_request_rules:
         )
 
         assert (
-            "The pull request has been removed from the queue"
+            "The pull request has been removed from the queue `default`"
             in comment_unqueue["comment"]["body"]
         )
 
@@ -7193,7 +7183,7 @@ pull_request_rules:
         )
         assert (
             check_run["check_run"]["output"]["title"]
-            == "The pull request has been removed from the queue by an `unqueue` command"
+            == "The pull request has been removed from the queue `default` by an `unqueue` command"
         )
 
     async def test_unqueue_then_requeue_not_in_first_place_check_run(self) -> None:

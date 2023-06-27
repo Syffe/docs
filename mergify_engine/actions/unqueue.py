@@ -46,7 +46,10 @@ class UnqueueExecutor(
         convoy = await merge_train.Convoy.from_context(
             self.ctxt, self.queue_rules, self.partition_rules
         )
-        if not convoy.is_pull_embarked(self.ctxt.pull["number"]):
+        queue_name = await convoy.get_queue_name_from_pull_request_number(
+            self.ctxt.pull["number"]
+        )
+        if queue_name is None:
             return check_api.Result(
                 check_api.Conclusion.NEUTRAL,
                 title="The pull request is not queued",
@@ -59,7 +62,7 @@ class UnqueueExecutor(
             constants.MERGE_QUEUE_SUMMARY_NAME,
             check_api.Result(
                 check_api.Conclusion.CANCELLED,
-                title="The pull request has been removed from the queue by an `unqueue` command",
+                title=f"The pull request has been removed from the queue `{queue_name}` by an `unqueue` command",
                 summary="",
             ),
             details_url=await dashboard.get_queues_url_from_context(self.ctxt, convoy),
@@ -81,7 +84,7 @@ class UnqueueExecutor(
         )
         return check_api.Result(
             check_api.Conclusion.SUCCESS,
-            title="The pull request has been removed from the queue",
+            title=f"The pull request has been removed from the queue `{queue_name}`",
             summary="",
         )
 

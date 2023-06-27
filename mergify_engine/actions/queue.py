@@ -451,6 +451,13 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     original_pull_request_number=self.ctxt.pull["number"],
                 )
 
+        queue_name = await convoy.get_queue_name_from_pull_request_number(
+            self.ctxt.pull["number"]
+        )
+        unqueue_msg = "The pull request has been removed from the queue"
+        if queue_name is not None:
+            unqueue_msg += f" `{queue_name}`"
+
         # NOTE(sileht): the pull request gets checked and then changed
         # by user, we should unqueue and requeue it as the conditions still match.
         if await self.ctxt.synchronized_by_user_at():
@@ -482,7 +489,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             if isinstance(self.rule, prr_config.CommandRule):
                 return check_api.Result(
                     check_api.Conclusion.CANCELLED,
-                    "The pull request has been removed from the queue",
+                    unqueue_msg,
                     f"{unexpected_changes!s}.\n{self.UNQUEUE_DOCUMENTATION}",
                 )
 
@@ -490,7 +497,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             unqueue_reason = await self.get_unqueue_reason_from_outcome(self.ctxt)
             result = check_api.Result(
                 check_api.Conclusion.CANCELLED,
-                "The pull request has been removed from the queue",
+                unqueue_msg,
                 f"{unqueue_reason!s}.\n{self.UNQUEUE_DOCUMENTATION}",
             )
             await self._unqueue_pull_request(convoy, cars, unqueue_reason, result)
@@ -662,9 +669,16 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         if not await self._should_be_queued(self.ctxt):
             unqueue_reason = await self.get_unqueue_reason_from_outcome(self.ctxt)
+            queue_name = await convoy.get_queue_name_from_pull_request_number(
+                self.ctxt.pull["number"]
+            )
+            unqueue_msg = "The pull request has been removed from the queue"
+            if queue_name is not None:
+                unqueue_msg += f" `{queue_name}`"
+
             result = check_api.Result(
                 check_api.Conclusion.CANCELLED,
-                "The pull request has been removed from the queue",
+                unqueue_msg,
                 f"{unqueue_reason!s}.\n{self.UNQUEUE_DOCUMENTATION}",
             )
             await self._unqueue_pull_request(convoy, cars, unqueue_reason, result)

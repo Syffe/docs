@@ -613,3 +613,10 @@ class Convoy:
                 conv = cls(repository, queue_rules, partition_rules, convoy_ref)
                 await conv.load_from_bytes(convoy_raw)
                 yield conv
+
+    async def get_queue_name_from_pull_request_number(
+        self, pr_number: github_types.GitHubPullRequestNumber
+    ) -> qr_config.QueueName | None:
+        for embarked_pull in await self.find_embarked_pull(pr_number):
+            return embarked_pull.embarked_pull.config["name"]
+        return None

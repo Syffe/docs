@@ -571,9 +571,8 @@ pull_requests:
         check_run = await self.wait_for_check_run(
             name="Rule: Automatic merge (queue)", conclusion="cancelled"
         )
-        assert (
-            check_run["check_run"]["output"]["title"]
-            == "The pull request has been removed from the queue"
+        assert check_run["check_run"]["output"]["title"].startswith(
+            "The pull request has been removed from the queue"
         )
         assert check_run["check_run"]["output"]["summary"].startswith(
             "The maximum batch failure resolution attempts has been reached."
