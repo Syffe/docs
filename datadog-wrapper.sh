@@ -45,6 +45,7 @@ D="$(echo "$DYNO" | sed -e 's/[^a-zA-Z0-9.-]/-/g' -e 's/^-//g')"
 export DD_HOSTNAME="$HAN.$D"
 export DD_PROCESS_CONFIG_ENABLED=true
 export DD_LOGS_ENABLED=true
+export DD_RUNTIME_METRICS_ENABLED=true
 export DD_LOGS_CONFIG_FRAME_SIZE=30000
 
 # Copy the empty config file
