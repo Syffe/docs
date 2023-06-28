@@ -253,7 +253,7 @@ Example structure of a commit object:
         "date_author": "2012-04-14T16:00:49Z",
         "email_author": "user@example.com",
         "committer": "commit-committer",
-        "date_committer": "2012-04-15T16:00:49Z"
+        "date_committer": "2012-04-15T16:00:49Z",
         "email_committer": "user@example.com",
     }
 
