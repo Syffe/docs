@@ -60,12 +60,13 @@ def upgrade() -> None:
         sqlalchemy.Column("repository", sqlalchemy.Text(), nullable=False),
         sqlalchemy.Column(
             "event",
-            sqlalchemy.Enum(
+            postgresql.ENUM(
                 "PULL_REQUEST",
                 "PULL_REQUEST_TARGET",
                 "PUSH",
                 "SCHEDULE",
                 name="jobruntriggerevent",
+                create_type=False,
             ),
             nullable=False,
         ),
