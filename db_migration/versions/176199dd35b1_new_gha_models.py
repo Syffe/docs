@@ -7,6 +7,7 @@ Create Date: 2023-06-21 08:36:12.979855
 """
 import alembic
 import sqlalchemy
+from sqlalchemy.dialects import postgresql
 
 
 revision = "176199dd35b1"
@@ -32,8 +33,13 @@ def upgrade() -> None:
         ),
         sqlalchemy.Column(
             "conclusion",
-            sqlalchemy.Enum(
-                "SUCCESS", "FAILURE", "SKIPPED", "CANCELLED", name="jobrunconclusion"
+            postgresql.ENUM(
+                "SUCCESS",
+                "FAILURE",
+                "SKIPPED",
+                "CANCELLED",
+                name="jobrunconclusion",
+                create_type=False,
             ),
             nullable=False,
         ),
