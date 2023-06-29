@@ -372,7 +372,7 @@ class IsolatedAsyncioTestCaseWithPytestAsyncioGlue(unittest.IsolatedAsyncioTestC
         # We reuse the event loop created by pytest-asyncio
         self._asyncioRunner = asyncio.Runner(
             debug=True,
-            loop_factory=lambda: self.pytest_event_loop,  # type: ignore[attr-defined,no-any-return]
+            loop_factory=lambda: self.pytest_event_loop,  # type: ignore[attr-defined]
         )
 
     def _tearDownAsyncioRunner(self) -> None:
