@@ -3,7 +3,6 @@ import os
 import typing
 from unittest import mock
 
-import msgpack
 import pytest
 
 from mergify_engine import github_events
@@ -65,60 +64,39 @@ async def test_event_classifier(
         assert isinstance(classified_event, expected_event_class)
 
 
-async def test_push_ci_event(
+async def test_push_ci_event_workflow_run(
     redis_links: redis_utils.RedisLinks,
     sample_events: dict[str, tuple[github_types.GitHubEventType, typing.Any]],
 ) -> None:
     _, event = sample_events["workflow_run.completed.json"]
-    run_id = event["workflow_run"]["id"]
     await worker_pusher.push_ci_event(
-        redis_links.stream,
-        github_types.GitHubAccountIdType(123),
-        github_types.GitHubRepositoryIdType(456),
-        "workflow_run",
-        "whatever",
-        event,
+        redis_links.stream, "workflow_run", "whatever", event
     )
 
-    _, event = sample_events["workflow_job.completed.json"]
-    job_id = event["workflow_job"]["id"]
-    await worker_pusher.push_ci_event(
-        redis_links.stream,
-        github_types.GitHubAccountIdType(123),
-        github_types.GitHubRepositoryIdType(456),
-        "workflow_job",
-        "whatever",
-        event,
-    )
-
-    stream_events = await redis_links.stream.xrange("workflow_job")
+    stream_events = await redis_links.stream.xrange("gha_workflow_run")
     assert len(stream_events) == 1
+
     _, event = stream_events[0]
-    assert event[b"owner_id"] == b"123"
-    assert event[b"repo_id"] == b"456"
-    assert event[b"workflow_run_id"] == str(run_id).encode()
-    assert event[b"workflow_job_id"] == str(job_id).encode()
-    assert event[b"workflow_run_key"] == f"workflow_run/123/456/{run_id}".encode()
+    assert event[b"event_type"] == b"workflow_run"
+    assert b"data" in event
+    assert b"timestamp" in event
+    assert b"delivery_id" in event
 
-    events = await redis_links.stream.hgetall(f"workflow_run/123/456/{run_id}")
-    assert len(events) == 2
 
-    assert b"workflow_run" in events
-    run = msgpack.unpackb(events[b"workflow_run"])
-    assert run["event_type"] == "workflow_run"
-
-    assert f"workflow_job/{job_id}".encode() in events
-    run = msgpack.unpackb(events[f"workflow_job/{job_id}".encode()])
-    assert run["event_type"] == "workflow_job"
-
-    # Push the same event twice, shouldn't raise an error
+async def test_push_ci_event_workflow_job(
+    redis_links: redis_utils.RedisLinks,
+    sample_events: dict[str, tuple[github_types.GitHubEventType, typing.Any]],
+) -> None:
     _, event = sample_events["workflow_job.completed.json"]
-    job_id = event["workflow_job"]["id"]
     await worker_pusher.push_ci_event(
-        redis_links.stream,
-        github_types.GitHubAccountIdType(123),
-        github_types.GitHubRepositoryIdType(456),
-        "workflow_job",
-        "whatever",
-        event,
+        redis_links.stream, "workflow_job", "whatever", event
     )
+
+    stream_events = await redis_links.stream.xrange("gha_workflow_job")
+    assert len(stream_events) == 1
+
+    _, event = stream_events[0]
+    assert event[b"event_type"] == b"workflow_job"
+    assert b"data" in event
+    assert b"timestamp" in event
+    assert b"delivery_id" in event

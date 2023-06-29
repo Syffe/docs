@@ -1,6 +1,5 @@
 import datetime
 import enum
-import typing
 
 import daiquiri
 from ddtrace import tracer
@@ -148,91 +147,19 @@ async def push(
 
 async def push_ci_event(
     redis: redis_utils.RedisStream,
-    owner_id: github_types.GitHubAccountIdType,
-    repo_id: github_types.GitHubRepositoryIdType,
     event_type: github_types.GitHubEventType,
     event_id: str,
     data: github_types.GitHubEventWorkflowRun | github_types.GitHubEventWorkflowJob,
 ) -> None:
-    """Completed workflow runs are added to a Redis stream to be processed later.
-
-    Workflow events are stored in Redis as hashes.
-
-                        key                                    field: workflow_run                       field: workflow_job/<job_id>
-    ┌────────────────────────────────────────────┬─────────────────────────────────────────────┬─────────────────────────────────────────────┐
-    │                                            │ {                                           │ {                                           │
-    │                                            │    "event_type": "workflow_run",            │    "event_type": "workflow_job",            │
-    │                                            │    "data": {                                │    "data": {                                │
-    │                                            │      "action": "completed",                 │      "action": "completed",                 │
-    │                                            │      "workflow_run": {...},                 │      "workflow_run": {...},                 │
-    │ workflow_run/<owner_id>/<repo_id>/<run_id> │      "repository": {...},                   │      "repository": {...},                   │
-    │                                            │      "organization": {...},                 │      "organization": {...},                 │
-    │                                            │      "sender": {...}                        │      "sender": {...}                        │
-    │                                            │    },                                       │    },                                       │
-    │                                            │    "timestamp": "2019-05-18T15:17:00+00:00" │    "timestamp": "2019-05-18T15:17:00+00:00" │
-    │                                            │    "delivery_id": "10d1bf91-7388-4b19-b..." │    "delivery_id": "e1bcace3-9f9e-4087-b..." │
-    │                                            │  }                                          │  }                                          │
-    └────────────────────────────────────────────┴─────────────────────────────────────────────┴─────────────────────────────────────────────┘
-    """
     event = {
         "event_type": event_type,
-        "data": data,
+        "data": msgpack.packb(data),
         "timestamp": date.utcnow().isoformat(),
         "delivery_id": event_id,
     }
 
-    if event_type == "workflow_run":
-        data = typing.cast(github_types.GitHubEventWorkflowRun, data)
-        run_id = data["workflow_run"]["id"]
-        key = f"workflow_run/{owner_id}/{repo_id}/{run_id}"
-        job_id = None
-        field_name = "workflow_run"
-    elif event_type == "workflow_job":
-        data = typing.cast(github_types.GitHubEventWorkflowJob, data)
-        run_id = data["workflow_job"]["run_id"]
-        key = f"workflow_run/{owner_id}/{repo_id}/{run_id}"
-        job_id = data["workflow_job"]["id"]
-        field_name = f"workflow_job/{data['workflow_job']['id']}"
-
-        # FIXME(charly): log duplicate events until we find out why we receive
-        # some events twice
-        await _check_if_exists(redis, key, field_name, event)
-    else:
-        raise ValueError(f"Unhandled CI event {event_type}")
-
-    pipe = await redis.pipeline()
-    await pipe.hset(key, field_name, msgpack.packb(event))
-    await pipe.expire(key, CI_EVENT_EXPIRATION)
-
-    if event_type == "workflow_job":
-        stream_event = {
-            "owner_id": owner_id,
-            "repo_id": repo_id,
-            "workflow_run_id": run_id,
-            "workflow_job_id": job_id,
-            "workflow_run_key": key,
-            "timestamp": date.utcnow().isoformat(),
-        }
-        await pipe.xadd(
-            "workflow_job",
-            fields=stream_event,
-            minid=redis_utils.get_expiration_minid(CI_EVENT_EXPIRATION),
-        )
-        await pipe.expire("workflow_job", CI_EVENT_EXPIRATION)
-
-    await pipe.execute()
-
-
-async def _check_if_exists(
-    redis: redis_utils.RedisStream, key: str, field_name: str, event: typing.Any
-) -> None:
-    existing_data = await redis.hget(key, field_name)
-
-    if existing_data is not None:
-        LOG.error(
-            "workflow_job.completed event sent twice",
-            redis_key=key,
-            field_name=field_name,
-            existing_event=msgpack.unpackb(existing_data),
-            new_event=event,
-        )
+    await redis.xadd(
+        f"gha_{event_type}",
+        fields=event,
+        minid=redis_utils.get_expiration_minid(CI_EVENT_EXPIRATION),
+    )

@@ -9,7 +9,7 @@
         "path": ".github/workflows/uptime.yml",
         "display_title": "Uptime CI",
         "run_number": 47837,
-        "event": "schedule",
+        "event": "pull_request",
         "status": "completed",
         "conclusion": "success",
         "workflow_id": 19667756,

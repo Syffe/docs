@@ -24,4 +24,4 @@ class CIEventProcessingService:
         return [self._ci_event_processing_task]
 
     async def ci_event_processing_task(self) -> None:
-        await download.process_event_stream(self.redis_links)
+        await download.process_event_streams(self.redis_links)

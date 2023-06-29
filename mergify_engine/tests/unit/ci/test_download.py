@@ -13,6 +13,8 @@ from mergify_engine import github_events
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine.ci import download
+from mergify_engine.ci import models
+from mergify_engine.ci import pull_registries
 from mergify_engine.models import github_account
 from mergify_engine.models import github_actions
 from mergify_engine.models import github_repository
@@ -208,124 +210,84 @@ def sample_ci_events_to_process(
     return ci_events
 
 
-async def test_process_event_stream(
+@pytest.mark.parametrize(
+    "event_filename", ["workflow_run.completed.json", "workflow_run.no_org.json"]
+)
+async def test_process_event_stream_workflow_run(
+    redis_links: redis_utils.RedisLinks,
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
+    event_filename: str,
+    logger_checker: None,
+) -> None:
+    # Create the event twice, as we should handle duplicates
+    stream_event = {
+        "event_type": "workflow_run",
+        "data": msgpack.packb(sample_ci_events_to_process[event_filename].slim_event),
+    }
+    await redis_links.stream.xadd("gha_workflow_run", stream_event)
+    await redis_links.stream.xadd("gha_workflow_run", stream_event)
+
+    with mock.patch.object(
+        pull_registries.RedisPullRequestRegistry,
+        "get_from_commit",
+        return_value=[models.PullRequest(id=1, number=1, title="hello", state="open")],
+    ):
+        await download.process_event_streams(redis_links)
+
+    workflow_runs = list(
+        await db.scalars(sqlalchemy.select(github_actions.WorkflowRun))
+    )
+    assert len(workflow_runs) == 1
+    actual_workflow_run = workflow_runs[0]
+    assert actual_workflow_run.event == github_actions.JobRunTriggerEvent.PULL_REQUEST
+
+    pulls = list(await db.scalars(sqlalchemy.select(github_actions.PullRequest)))
+    assert len(pulls) == 1
+    actual_pull = pulls[0]
+    assert actual_pull.id == 1
+    assert actual_pull.number == 1
+    assert actual_pull.title == "hello"
+    assert actual_pull.state == "open"
+
+    associations = list(
+        await db.scalars(
+            sqlalchemy.select(github_actions.PullRequestWorkflowRunAssociation)
+        )
+    )
+    assert len(associations) == 1
+    actual_association = associations[0]
+    assert actual_association.pull_request_id == 1
+
+    stream_events = await redis_links.stream.xrange("workflow_run")
+    assert len(stream_events) == 0
+
+
+async def test_process_event_stream_workflow_job(
     redis_links: redis_utils.RedisLinks,
     db: sqlalchemy.ext.asyncio.AsyncSession,
     sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
     logger_checker: None,
 ) -> None:
-    await redis_links.stream.xadd(
-        "workflow_job",
-        {"workflow_run_key": "some/key", "workflow_job_id": 13403743463},
-    )
-    await redis_links.stream.hset(
-        "some/key",
-        "workflow_job/13403743463",
-        msgpack.packb(
-            {
-                "event_type": "workflow_job",
-                "data": sample_ci_events_to_process[
-                    "workflow_job.completed.json"
-                ].slim_event,
-            }
+    # Create the event twice, as we should handle duplicates
+    stream_event = {
+        "event_type": "workflow_job",
+        "data": msgpack.packb(
+            sample_ci_events_to_process["workflow_job.completed.json"].slim_event
         ),
-    )
+    }
+    await redis_links.stream.xadd("gha_workflow_job", stream_event)
+    await redis_links.stream.xadd("gha_workflow_job", stream_event)
 
-    # We havn't received the completed workflow run event, it should do nothing
-    await download.process_event_stream(redis_links)
-    stream_events = await redis_links.stream.xrange("workflow_job")
-    assert len(stream_events) == 1
+    await download.process_event_streams(redis_links)
 
-    await redis_links.stream.hset(
-        "some/key",
-        "workflow_run",
-        msgpack.packb(
-            {
-                "event_type": "workflow_run",
-                "data": sample_ci_events_to_process[
-                    "workflow_run.completed.json"
-                ].slim_event,
-            }
-        ),
-    )
-
-    with mock.patch(
-        "mergify_engine.ci.pull_registries.RedisPullRequestRegistry.get_from_commit",
-        return_value=[],
-    ), mock.patch("mergify_engine.ci.download._create_gh_client_from_login"):
-        await download.process_event_stream(redis_links)
-
-    sql = sqlalchemy.select(github_actions.JobRun)
+    sql = sqlalchemy.select(github_actions.WorkflowJob)
     result = await db.scalars(sql)
-    job_runs = list(result)
-    assert len(job_runs) == 1
-    actual_job_run = job_runs[0]
-    assert actual_job_run.name == "test"
-    assert actual_job_run.conclusion == github_actions.JobRunConclusion.SUCCESS
+    workflow_jobs = list(result)
+    assert len(workflow_jobs) == 1
+    actual_workflow_job = workflow_jobs[0]
+    assert actual_workflow_job.conclusion == github_actions.JobRunConclusion.SUCCESS
+    assert actual_workflow_job.labels == ["ubuntu-20.04"]
 
     stream_events = await redis_links.stream.xrange("workflow_job")
     assert len(stream_events) == 0
-
-    hash_keys = await redis_links.stream.hkeys("some/key")
-    assert b"workflow_job/13403743463" not in hash_keys
-    assert len(hash_keys) == 1
-
-    # Try to process again the event, in case GitHub sends an event twice. It
-    # shouldn't raise an error if the job is in the database.
-    await redis_links.stream.xadd(
-        "workflow_job",
-        {"workflow_run_key": "some/key", "workflow_job_id": 13403743463},
-    )
-
-    await download.process_event_stream(redis_links)
-
-    stream_events = await redis_links.stream.xrange("workflow_job")
-    assert len(stream_events) == 0
-
-
-async def test_process_event_stream_without_organization(
-    redis_links: redis_utils.RedisLinks,
-    db: sqlalchemy.ext.asyncio.AsyncSession,
-    sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
-) -> None:
-    await redis_links.stream.xadd(
-        "workflow_job",
-        {"workflow_run_key": "some/key", "workflow_job_id": 13897999414},
-    )
-    await redis_links.stream.hset(
-        "some/key",
-        "workflow_job/13897999414",
-        msgpack.packb(
-            {
-                "event_type": "workflow_job",
-                "data": sample_ci_events_to_process[
-                    "workflow_job.no_org.json"
-                ].slim_event,
-            }
-        ),
-    )
-    await redis_links.stream.hset(
-        "some/key",
-        "workflow_run",
-        msgpack.packb(
-            {
-                "event_type": "workflow_run",
-                "data": sample_ci_events_to_process[
-                    "workflow_run.no_org.json"
-                ].slim_event,
-            }
-        ),
-    )
-
-    with mock.patch(
-        "mergify_engine.ci.pull_registries.RedisPullRequestRegistry.get_from_commit",
-        return_value=[],
-    ), mock.patch("mergify_engine.ci.download._create_gh_client_from_login"):
-        await download.process_event_stream(redis_links)
-
-    sql = sqlalchemy.select(github_actions.JobRun)
-    result = await db.scalars(sql)
-    job_runs = list(result)
-    assert len(job_runs) == 1
-    actual_job_run = job_runs[0]
-    assert actual_job_run.conclusion == github_actions.JobRunConclusion.SUCCESS
