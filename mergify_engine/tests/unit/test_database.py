@@ -65,7 +65,7 @@ def test_migration(database_cleanup: None, tmp_path: pathlib.Path) -> None:
         schema_dump_migration_path = pathlib.Path(os.environ["MIGRATED_DATA_DUMP"])
     else:
         with mock.patch.object(settings, "DATABASE_URL", url):
-            config = alembic.config.Config("alembic.ini")
+            config = manage.load_alembic_config()
             alembic.command.upgrade(config, "head")
 
             schema_dump_migration_path = tmp_path / "test_migration_migrate.sql"

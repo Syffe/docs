@@ -1,5 +1,6 @@
 import argparse
 import asyncio
+import importlib.resources  # nosemgrep: python.lang.compatibility.python37.python37-compatibility-importlib2
 
 import alembic.command
 import alembic.config
@@ -10,11 +11,11 @@ from mergify_engine import settings
 
 # NOTE(sileht): ensure all models are loaded, to
 # allow create_all() to find all tables to creates
-from mergify_engine.models import application_keys  # noqa
-from mergify_engine.models import github_account  # noqa
-from mergify_engine.models import github_actions  # noqa
-from mergify_engine.models import github_repository  # noqa
-from mergify_engine.models import github_user  # noqa
+from mergify_engine.models import application_keys  # noqa: F401
+from mergify_engine.models import github_account  # noqa: F401
+from mergify_engine.models import github_actions  # noqa: F401
+from mergify_engine.models import github_repository  # noqa: F401
+from mergify_engine.models import github_user  # noqa: F401
 
 
 async def create_all() -> None:
@@ -33,8 +34,15 @@ def database_create() -> None:
     asyncio.run(create_all())
 
 
+def load_alembic_config() -> alembic.config.Config:
+    config_file = importlib.resources.files(__package__).joinpath(
+        "db_migration/alembic.ini"
+    )
+    return alembic.config.Config(str(config_file))
+
+
 def database_update() -> None:
-    config = alembic.config.Config("alembic.ini")
+    config = load_alembic_config()
     alembic.command.upgrade(config, "head")
 
 
@@ -43,5 +51,5 @@ def database_stamp(argv: list[str] | None = None) -> None:
     parser.add_argument("revision")
     args = parser.parse_args(argv)
 
-    config = alembic.config.Config("alembic.ini")
+    config = load_alembic_config()
     alembic.command.stamp(config, args.revision)
