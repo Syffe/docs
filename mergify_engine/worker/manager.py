@@ -76,8 +76,7 @@ ServiceNameT = typing.Literal[
     "delayed-refresh",
     "gitter",
     "ci-download",
-    # FIXME(charly): delete ci-dump when we use ci-download everywhere
-    "ci-dump",
+    "ci-event-processing",
 ]
 ServiceNamesT = set[ServiceNameT]
 AVAILABLE_WORKER_SERVICES = set(ServiceNameT.__dict__["__args__"])
@@ -222,8 +221,7 @@ class ServiceManager:
                 )
             )
 
-        # FIXME(charly): delete ci-dump when we use ci-download everywhere
-        if "ci-dump" in self.enabled_services or "ci-download" in self.enabled_services:
+        if "ci-event-processing" in self.enabled_services:
             self._services.append(
                 ci_event_processing_service.CIEventProcessingService(
                     self._redis_links,
@@ -231,6 +229,7 @@ class ServiceManager:
                 )
             )
 
+        if "ci-download" in self.enabled_services:
             self._services.append(
                 ci_download_service.CIDownloadService(
                     self._redis_links,
