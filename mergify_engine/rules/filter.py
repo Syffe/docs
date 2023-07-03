@@ -577,144 +577,194 @@ def NearDatetimeFilter(
     )
 
 
-# NOTE(sileht): Sentinel object (eg: `marker = object()`) can't be expressed
-# with typing yet use the proposed workaround instead:
-#   https://github.com/python/typing/issues/689
-#   https://www.python.org/dev/peps/pep-0661/
-class IncompleteMarkerType(enum.Enum):
-    _MARKER = 0
+class UnknownType(enum.Enum):
+    _MARKER_UNKNOWN_ONLY = 0
+    _MARKER_UNKNOWN_OR_TRUE = 1
+    _MARKER_UNKNOWN_OR_FALSE = 2
 
 
-IncompleteAttribute: typing.Final = IncompleteMarkerType._MARKER
+UnknownOnlyAttribute: typing.Final = UnknownType._MARKER_UNKNOWN_ONLY
+UnknownOrTrueAttribute: typing.Final = UnknownType._MARKER_UNKNOWN_OR_TRUE
+UnknownOrFalseAttribute: typing.Final = UnknownType._MARKER_UNKNOWN_OR_FALSE
 
 
-IncompleteAttributesResult = bool | IncompleteMarkerType
+TernaryFilterResult = bool | UnknownType
+
+MultipleOperatorPrecedencesT = dict[
+    tuple[TernaryFilterResult, TernaryFilterResult], TernaryFilterResult
+]
+
+# X OR Y = Z
+ANY_PRECEDENCES: MultipleOperatorPrecedencesT = {
+    (False, False): False,
+    (False, UnknownOrFalseAttribute): UnknownOrFalseAttribute,
+    (False, UnknownOnlyAttribute): UnknownOrFalseAttribute,
+    (False, UnknownOrTrueAttribute): UnknownOrTrueAttribute,
+    (False, True): True,
+    (True, UnknownOrFalseAttribute): True,
+    (True, UnknownOnlyAttribute): True,
+    (True, UnknownOrTrueAttribute): True,
+    (True, True): True,
+    (UnknownOnlyAttribute, UnknownOnlyAttribute): UnknownOnlyAttribute,
+    (UnknownOnlyAttribute, UnknownOrFalseAttribute): UnknownOnlyAttribute,
+    (UnknownOnlyAttribute, UnknownOrTrueAttribute): UnknownOrTrueAttribute,
+    (UnknownOrFalseAttribute, UnknownOrFalseAttribute): UnknownOrFalseAttribute,
+    (UnknownOrFalseAttribute, UnknownOrTrueAttribute): UnknownOrTrueAttribute,
+    (UnknownOrTrueAttribute, UnknownOrTrueAttribute): UnknownOrTrueAttribute,
+}
 
 
-def IncompleteAttributesAll(
+# X AND Y = Z
+ALL_PRECEDENCES: MultipleOperatorPrecedencesT = {
+    (False, False): False,
+    (False, UnknownOrFalseAttribute): False,
+    (False, UnknownOnlyAttribute): False,
+    (False, UnknownOrTrueAttribute): False,
+    (False, True): False,
+    (True, UnknownOrFalseAttribute): UnknownOrFalseAttribute,
+    (True, UnknownOnlyAttribute): UnknownOrTrueAttribute,
+    (True, UnknownOrTrueAttribute): UnknownOrTrueAttribute,
+    (True, True): True,
+    (UnknownOnlyAttribute, UnknownOrFalseAttribute): UnknownOrFalseAttribute,
+    (UnknownOnlyAttribute, UnknownOnlyAttribute): UnknownOnlyAttribute,
+    (UnknownOnlyAttribute, UnknownOrTrueAttribute): UnknownOrTrueAttribute,
+    (UnknownOrFalseAttribute, UnknownOrFalseAttribute): UnknownOrFalseAttribute,
+    (UnknownOrFalseAttribute, UnknownOrTrueAttribute): UnknownOrFalseAttribute,
+    (UnknownOrTrueAttribute, UnknownOrTrueAttribute): UnknownOrTrueAttribute,
+}
+
+
+def TernaryFilterOperatorMultiple(
     values: abc.Iterable[object],
-) -> IncompleteAttributesResult:
-    values = typing.cast(abc.Iterable[IncompleteAttributesResult], values)
-    found_unknown = False
-    for v in values:
-        if v is False:
-            return False
+    precedences: MultipleOperatorPrecedencesT,
+    empty_default: TernaryFilterResult,
+) -> TernaryFilterResult:
+    values = iter(typing.cast(abc.Iterable[TernaryFilterResult], values))
 
-        if v is IncompleteAttribute:
-            found_unknown = True
+    try:
+        result = next(values)
+    except StopIteration:
+        return empty_default
 
-    if found_unknown:
-        return IncompleteAttribute
-    return True
+    for value in values:
+        try:
+            result = precedences[result, value]
+        except KeyError:
+            result = precedences[value, result]
+
+    return result
 
 
-def IncompleteAttributesAny(
+def TernaryFilterOperatorAll(
     values: abc.Iterable[object],
-) -> IncompleteAttributesResult:
-    values = typing.cast(abc.Iterable[IncompleteAttributesResult], values)
-    found_true = False
-    for v in values:
-        if v is IncompleteAttribute:
-            return IncompleteAttribute
-        if v:
-            found_true = True
-    return found_true
+) -> TernaryFilterResult:
+    return TernaryFilterOperatorMultiple(values, ALL_PRECEDENCES, True)
 
 
-def IncompleteAttributesNegate(
-    value: IncompleteAttributesResult,
-) -> IncompleteAttributesResult:
-    if value is IncompleteAttribute:
-        return IncompleteAttribute
-    return not value
+def TernaryFilterOperatorAny(
+    values: abc.Iterable[object],
+) -> TernaryFilterResult:
+    return TernaryFilterOperatorMultiple(values, ANY_PRECEDENCES, False)
 
 
-def cast_ret_to_incomplete_attribute_result(
+def TernaryFilterOperatorNegate(
+    value: TernaryFilterResult,
+) -> TernaryFilterResult:
+    if value is UnknownOrTrueAttribute:
+        return UnknownOrFalseAttribute
+    if value is UnknownOrFalseAttribute:
+        return UnknownOrTrueAttribute
+    if value is UnknownOnlyAttribute:
+        return UnknownOnlyAttribute
+    if value is True:
+        return False
+    if value is False:
+        return True
+    raise RuntimeError(f"Unexpected data type: {value} ({type(value)})")
+
+
+def cast_ret_to_ternary_filter_result(
     op: abc.Callable[[typing.Any, typing.Any], bool]
-) -> abc.Callable[[typing.Any, typing.Any], IncompleteAttributesResult]:
-    return typing.cast(
-        abc.Callable[[typing.Any, typing.Any], IncompleteAttributesResult], op
-    )
+) -> abc.Callable[[typing.Any, typing.Any], TernaryFilterResult]:
+    return typing.cast(abc.Callable[[typing.Any, typing.Any], TernaryFilterResult], op)
 
 
 @dataclasses.dataclass(repr=False)
-class IncompleteAttributesFilter(Filter[IncompleteAttributesResult]):
+class TernaryFilter(Filter[TernaryFilterResult]):
     tree: TreeT | CompiledTreeT[GetAttrObject, bool]
-    unary_operators: dict[
-        str, UnaryOperatorT[IncompleteAttributesResult]
-    ] = dataclasses.field(
+    unary_operators: dict[str, UnaryOperatorT[TernaryFilterResult]] = dataclasses.field(
         default_factory=lambda: {
-            "-": IncompleteAttributesNegate,
-            "not": IncompleteAttributesNegate,
+            "-": TernaryFilterOperatorNegate,
+            "not": TernaryFilterOperatorNegate,
         }
     )
     binary_operators: dict[
-        str, BinaryOperatorT[IncompleteAttributesResult]
+        str, BinaryOperatorT[TernaryFilterResult]
     ] = dataclasses.field(
         default_factory=lambda: {
             "=": (
-                cast_ret_to_incomplete_attribute_result(operator.eq),
-                IncompleteAttributesAny,
+                cast_ret_to_ternary_filter_result(operator.eq),
+                TernaryFilterOperatorAny,
                 _identity,
             ),
             "<": (
-                cast_ret_to_incomplete_attribute_result(operator.lt),
-                IncompleteAttributesAny,
+                cast_ret_to_ternary_filter_result(operator.lt),
+                TernaryFilterOperatorAny,
                 _identity,
             ),
             ">": (
-                cast_ret_to_incomplete_attribute_result(operator.gt),
-                IncompleteAttributesAny,
+                cast_ret_to_ternary_filter_result(operator.gt),
+                TernaryFilterOperatorAny,
                 _identity,
             ),
             "<=": (
-                cast_ret_to_incomplete_attribute_result(operator.le),
-                IncompleteAttributesAny,
+                cast_ret_to_ternary_filter_result(operator.le),
+                TernaryFilterOperatorAny,
                 _identity,
             ),
             ">=": (
-                cast_ret_to_incomplete_attribute_result(operator.ge),
-                IncompleteAttributesAny,
+                cast_ret_to_ternary_filter_result(operator.ge),
+                TernaryFilterOperatorAny,
                 _identity,
             ),
             "!=": (
-                cast_ret_to_incomplete_attribute_result(operator.ne),
-                IncompleteAttributesAll,
+                cast_ret_to_ternary_filter_result(operator.ne),
+                TernaryFilterOperatorAll,
                 _identity,
             ),
             "~=": (
-                cast_ret_to_incomplete_attribute_result(
-                    lambda a, b: a is not None and b.search(a)
+                cast_ret_to_ternary_filter_result(
+                    lambda a, b: bool(a is not None and b.search(a))
                 ),
-                IncompleteAttributesAny,
+                TernaryFilterOperatorAny,
                 re.compile,
             ),
         }
     )
     multiple_operators: dict[
-        str, MultipleOperatorT[IncompleteAttributesResult]
+        str, MultipleOperatorT[TernaryFilterResult]
     ] = dataclasses.field(
         default_factory=lambda: {
-            "or": IncompleteAttributesAny,
-            "and": IncompleteAttributesAll,
+            "or": TernaryFilterOperatorAny,
+            "and": TernaryFilterOperatorAll,
         }
     )
 
     def _eval_binary_op(
         self,
-        op: BinaryOperatorT[IncompleteAttributesResult],
+        op: BinaryOperatorT[TernaryFilterResult],
         attribute_name: str,
         attribute_values: list[typing.Any],
         ref_values_expanded: list[typing.Any],
-    ) -> IncompleteAttributesResult:
-        if not self.is_complete(op, attribute_name, ref_values_expanded):
-            return IncompleteAttribute
+    ) -> TernaryFilterResult:
+        if not self.is_known(op, attribute_name, ref_values_expanded):
+            return UnknownOnlyAttribute
 
         return super()._eval_binary_op(
             op, attribute_name, attribute_values, ref_values_expanded
         )
 
-    def is_complete(
+    def is_known(
         self,
         op: BinaryOperatorT[FilterResultT],
         attribute_name: str,
@@ -724,11 +774,11 @@ class IncompleteAttributesFilter(Filter[IncompleteAttributesResult]):
 
 
 @dataclasses.dataclass(repr=False)
-class IncompleteChecksFilter(IncompleteAttributesFilter):
+class IncompleteChecksFilter(TernaryFilter):
     pending_checks: list[str] = dataclasses.field(default_factory=list)
     all_checks: list[str] = dataclasses.field(default_factory=list)
 
-    def is_complete(
+    def is_known(
         self,
         op: BinaryOperatorT[FilterResultT],
         attribute_name: str,

@@ -60,7 +60,7 @@ async def _get_checks_result(
     # instead of just True/False, this allows us to known if a condition can
     # change in the future or if its a final state.
     tree = conditions.extract_raw_filter_tree()
-    results: dict[int, filter.IncompleteAttributesResult] = {}
+    results: dict[int, filter.TernaryFilterResult] = {}
 
     for pull in pulls:
         f = filter.IncompleteChecksFilter(
@@ -71,7 +71,12 @@ async def _get_checks_result(
         live_resolvers.configure_filter(repository, f)
 
         ret = await f(pull)
-        if ret is filter.IncompleteAttribute:
+        if ret in (
+            filter.UnknownOnlyAttribute,
+            filter.UnknownOrTrueAttribute,
+            # NOTE(sileht): Impossible since since root conditions is always an AND, but better safe than sorry
+            filter.UnknownOrFalseAttribute,
+        ):
             return check_api.Conclusion.PENDING
 
         pr_number = await pull.number  # type: ignore[attr-defined]
