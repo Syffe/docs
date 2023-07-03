@@ -425,7 +425,9 @@ mergeable_state: blocked
             # All those keys should not be present in the output of branch protection
             # rule since we simulated a case were they are all missing because
             # of an old GHES version.
-            del expected_branch_protection_rules[0][k]  # type: ignore[misc]
+            # We use `pop` instead of `del` because when re-recording for GHES
+            # the keys are already missing.
+            expected_branch_protection_rules[0].pop(k, None)  # type: ignore[misc]
 
         assert (
             s1.strip()
