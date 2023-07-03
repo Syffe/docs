@@ -915,4 +915,4 @@ GitHubEventWorkflowJobActionType = typing.Literal[
 
 class GitHubEventWorkflowJob(GitHubEventWithRepository):
     action: GitHubEventPullRequestActionType
-    workflow_job: GitHubJobRun
+    workflow_job: GitHubJobRun | None
