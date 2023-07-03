@@ -1272,7 +1272,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         external_id: str | None = None,
     ) -> github_types.GitHubEventCheckRun:
         payload: dict[str, typing.Any] = {"name": name, "head_sha": pull["head"]["sha"]}
-        wait_payload: dict[str, typing.Any] = {}
+        wait_payload: dict[str, typing.Any] = {"name": name}
 
         if conclusion is None:
             payload["status"] = wait_payload["status"] = "in_progress"

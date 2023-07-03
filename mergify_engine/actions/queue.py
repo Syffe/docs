@@ -10,6 +10,7 @@ import datetime
 import functools
 import typing
 
+import first
 import voluptuous
 
 from mergify_engine import actions
@@ -49,6 +50,19 @@ BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT = (
 class InvalidQueueConfiguration(Exception):
     title: str
     message: str
+
+
+@dataclasses.dataclass
+class MismatchingRoutingConditions(InvalidQueueConfiguration):
+    summary: str | None = dataclasses.field(default=None)
+    title: str = "There are no queue routing conditions matching"
+    message: str = (
+        "There are routing conditions defined in the configuration, but none matches. "
+        "The pull request has not been embarked."
+    )
+
+    def __post_init__(self) -> None:
+        self.message += f"\n\nDetails:\n{self.summary}"
 
 
 @dataclasses.dataclass
@@ -368,12 +382,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 f"* Queue `{name}`: \n{routing_conditions_summary}"
                 for name, routing_conditions_summary in summary.items()
             )
-            raise InvalidQueueConfiguration(
-                title="There are no queue routing conditions matching",
-                message="There are routing conditions defined in the configuration, but none matches. "
-                "The pull request has not been embarked.\n\nDetails:\n"
-                f"{routing_summary_str}",
-            )
+            raise MismatchingRoutingConditions(summary=routing_summary_str)
 
         if matching_routing_conditions and self.config["name"] is None:
             self.config["name"] = matching_routing_conditions[0].name
@@ -745,7 +754,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
         except action_utils.BotAccountNotFound as e:
             raise InvalidQueueConfiguration(e.title, e.reason)
 
-    async def _check_action_validity(self) -> check_api.Result | None:
+    async def _check_action_validity(
+        self, cars: list[merge_train.TrainCar]
+    ) -> check_api.Result | None:
         try:
             await self._set_action_queue_rule()
             await self._check_config_compatibility_with_branch_protection(
@@ -759,13 +770,25 @@ Then, re-embark the pull request into the merge queue by posting the comment
             )
             await self._render_bot_accounts()
         except InvalidQueueConfiguration as e:
+            if isinstance(e, MismatchingRoutingConditions):
+                # NOTE(lecrepont01): we don't want the rule to fail yet if PR was already embarked
+                # this could be caused by routing conditions checks removed after a rebase
+                if still_embarked_pull := first.first(
+                    still_embarked_pull
+                    for car in cars
+                    for still_embarked_pull in car.still_queued_embarked_pulls
+                    if self.ctxt.pull["number"]
+                    == still_embarked_pull.user_pull_request_number
+                ):
+                    self.queue_rule = self.queue_rules[
+                        qr_config.QueueName(still_embarked_pull.config["name"])
+                    ]
+                    return None
             return check_api.Result(
                 check_api.Conclusion.FAILURE,
                 e.title,
                 e.message,
             )
-        except qr_config.RoutingConditionsPendingChecks as e:
-            return check_api.Result(check_api.Conclusion.PENDING, e.title, e.message)
 
         try:
             await self._check_subscription_status(
@@ -789,7 +812,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         convoy: merge_train.Convoy,
         cars: list[merge_train.TrainCar],
     ) -> check_api.Result | None:
-        result = await self._check_action_validity()
+        result = await self._check_action_validity(cars)
 
         if result is None:
             result = await self.pre_merge_checks(

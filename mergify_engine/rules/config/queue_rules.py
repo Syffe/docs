@@ -6,7 +6,6 @@ import typing
 
 import voluptuous
 
-from mergify_engine import check_api
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import date
@@ -14,7 +13,6 @@ from mergify_engine import github_types
 from mergify_engine import queue
 from mergify_engine import rules as base_rules
 from mergify_engine.actions import merge_base
-from mergify_engine.rules import checks_status
 from mergify_engine.rules import conditions as conditions_mod
 from mergify_engine.rules import types
 from mergify_engine.rules.config import conditions as cond_config
@@ -28,23 +26,6 @@ QueueName = typing.NewType("QueueName", str)
 EvaluatedQueueRule = typing.NewType("EvaluatedQueueRule", "QueueRule")
 
 QueuesRulesEvaluator = base_rules.GenericRulesEvaluator["QueueRule", EvaluatedQueueRule]
-
-
-@dataclasses.dataclass
-class RoutingConditionsPendingChecks(Exception):
-    pending_rules: list[QueueName]
-
-    title: str = "Waiting for checks in routing conditions to complete to be able to select a queue"
-    message: str = dataclasses.field(init=False)
-
-    def __post_init__(self) -> None:
-        pending_rules_str = ", ".join(
-            {f"* `{pending_rule}`\n" for pending_rule in self.pending_rules}
-        )
-        self.message = (
-            "The following queues have routing conditions with pending checks:\n"
-            + pending_rules_str
-        )
 
 
 class QueueConfig(typing.TypedDict):
@@ -250,31 +231,7 @@ class QueueRules:
             [ctxt.pull_request],
             True,
         )
-        matching_rules = routing_rules_evaluator.matching_rules
-
-        if pending_rules := await self._get_pending_rules(ctxt, matching_rules):
-            raise RoutingConditionsPendingChecks(pending_rules)
-
-        return matching_rules
-
-    @staticmethod
-    async def _get_pending_rules(
-        ctxt: context.Context, matching_rules: list[EvaluatedQueueRule]
-    ) -> list[QueueName]:
-        pending_rules: list[QueueName] = []
-
-        for matching_rule in matching_rules:
-            rule_conclusion = await checks_status.get_rule_checks_status(
-                ctxt.log,
-                ctxt.repository,
-                [ctxt.pull_request],
-                matching_rule,
-                conditions_type="routing_conditions",
-            )
-            if rule_conclusion == check_api.Conclusion.PENDING:
-                pending_rules.append(matching_rule.name)
-
-        return pending_rules
+        return routing_rules_evaluator.matching_rules
 
 
 def PositiveInterval(v: str) -> datetime.timedelta:
