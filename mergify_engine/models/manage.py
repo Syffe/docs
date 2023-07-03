@@ -41,9 +41,12 @@ def load_alembic_config() -> alembic.config.Config:
     return alembic.config.Config(str(config_file))
 
 
-def database_update() -> None:
+def database_update(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description="Update Mergify database schema")
+    parser.add_argument("revision", default="head")
+    args = parser.parse_args(argv)
     config = load_alembic_config()
-    alembic.command.upgrade(config, "head")
+    alembic.command.upgrade(config, args.revision)
 
 
 def database_stamp(argv: list[str] | None = None) -> None:
