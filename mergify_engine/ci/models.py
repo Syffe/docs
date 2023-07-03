@@ -6,7 +6,6 @@ import re
 import typing
 
 from mergify_engine import github_types
-from mergify_engine.ci import cost_calculator
 
 
 if typing.TYPE_CHECKING:
@@ -63,26 +62,6 @@ class JobRun:
     run_attempt: int
     operating_system: OperatingSystem
     cores: int
-
-    @property
-    def timing(self) -> datetime.timedelta:
-        return self.completed_at - self.started_at
-
-    @property
-    def cost(self) -> cost_calculator.MoneyAmount:
-        return cost_calculator.CostCalculator.calculate(
-            self.timing, self.operating_system, self.cores
-        )
-
-    @property
-    def lifecycle(self) -> Lifecycle | None:
-        if self.triggering_event not in ("pull_request", "pull_request_target"):
-            return None
-
-        if self.run_attempt > 1:
-            return "retry"
-
-        return "push"
 
     @classmethod
     async def create_job(

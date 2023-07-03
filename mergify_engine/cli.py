@@ -1,9 +1,7 @@
 import argparse
 import datetime
-import time
 import typing
 
-from mergify_engine import database
 from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import redis_utils
@@ -13,8 +11,6 @@ from mergify_engine import settings
 from mergify_engine import subscription
 from mergify_engine import utils
 from mergify_engine.ci import download
-from mergify_engine.ci import job_registries
-from mergify_engine.ci import reports
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 
@@ -131,33 +127,3 @@ async def ci_download_handler(argv: list[str] | None = None) -> None:
             typing.cast(github_types.GitHubRepositoryName, args.repository),
             date_range,
         )
-
-
-@utils.make_sync_for_entrypoint
-async def global_insight_handler(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(description="Mergify CI Optimizer report")
-    parser.add_argument("owner", type=github_types.GitHubLogin)
-    parser.add_argument("repository", type=github_types.GitHubRepositoryName)
-    parser.add_argument("start_at", type=lambda v: datetime.date.fromisoformat(v))
-    parser.add_argument("end_at", type=lambda v: datetime.date.fromisoformat(v))
-    args = parser.parse_args(argv)
-
-    database.init_sqlalchemy("ci")
-
-    query = reports.CategoryQuery(
-        owner=args.owner,
-        repository=None if args.repository == "*" else args.repository,
-        start_at=args.start_at,
-        end_at=args.end_at,
-    )
-
-    action = reports.CategoryReport(
-        job_registries.PostgresJobRegistry(),
-        query,
-    )
-    started_at = time.monotonic()
-    result = await action.run()
-    ended_at = time.monotonic()
-
-    print(result)
-    print(f"processed in {ended_at-started_at} seconds")

@@ -1,6 +1,5 @@
 import datetime
 
-from freezegun import freeze_time
 import sqlalchemy
 import sqlalchemy.ext.asyncio
 
@@ -42,29 +41,6 @@ async def test_insert(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
     assert actual_job_run.run_attempt == 2
     assert actual_job_run.operating_system == sql_models.JobRunOperatingSystem.WINDOWS
     assert actual_job_run.cores == 4
-
-
-@freeze_time("2023-02-24 12:00:00", tick=True)
-async def test_search(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
-    await _insert_data(db)
-    registry = job_registries.PostgresJobRegistry()
-
-    job_runs = [
-        j
-        async for j in registry.search(
-            owner="some-owner",
-            repository="some-repo",
-            start_at=datetime.date.today(),
-            end_at=datetime.date.today(),
-        )
-    ]
-
-    assert len(job_runs) == 1
-    job_run = job_runs[0]
-    assert job_run.owner.login == "some-owner"
-    assert job_run.repository == "some-repo"
-    assert job_run.started_at.date() == datetime.date.today()
-    assert job_run.completed_at.date() == datetime.date.today()
 
 
 async def test_filter_if_exist(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
