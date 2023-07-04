@@ -23,8 +23,6 @@ You can automatically generate a revision with Alembic. You just need an up-to-d
 ```bash
 # Activate the virtual environment and start containers
 poe shell
-# Apply all existing migrations to Postgres database
-mergify-database-update
 # Autogenerate a revision based on SQLAlchemy models
 poe revision --autogenerate -m "What have changed"
 ```
