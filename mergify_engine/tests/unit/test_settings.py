@@ -11,7 +11,6 @@ from mergify_engine.config import types
 @pytest.fixture
 def unset_testing_env(
     monkeypatch: pytest.MonkeyPatch,
-    original_environment_variables: None,
 ) -> None:
     monkeypatch.setattr(config.EngineSettings.Config, "env_file", None)
 
@@ -24,7 +23,6 @@ def unset_testing_env(
 
 
 def test_defaults(
-    original_environment_variables: None,
     unset_testing_env: None,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -101,7 +99,6 @@ def test_defaults(
 
 
 def test_all_sets(
-    original_environment_variables: None,
     unset_testing_env: None,
     monkeypatch: pytest.MonkeyPatch,
     tmp_path_factory: pytest.TempPathFactory,
@@ -276,7 +273,6 @@ def test_all_sets(
 
 
 def test_legacy_env_sets(
-    original_environment_variables: None,
     unset_testing_env: None,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -322,7 +318,6 @@ def test_legacy_env_sets(
     "env_var", ("MERGIFYENGINE_BASE_URL", "MERGIFYENGINE_DASHBOARD_UI_FRONT_BASE_URL")
 )
 def test_legacy_dashboard_urls(
-    original_environment_variables: None,
     unset_testing_env: None,
     monkeypatch: pytest.MonkeyPatch,
     env_var: str,
@@ -373,7 +368,6 @@ MERGIFYENGINE_LOG_LEVEL
     ),
 )
 def test_type_log_level(
-    original_environment_variables: None,
     monkeypatch: pytest.MonkeyPatch,
     value: str,
     expected: int | None,
@@ -392,9 +386,7 @@ def test_type_log_level(
 @pytest.mark.parametrize(
     "path", ("/", "/foobar", "/foobar/", "?foobar=1", "/foobar/?foobar=1")
 )
-def test_github_url_normalization(
-    original_environment_variables: None, monkeypatch: pytest.MonkeyPatch, path: str
-) -> None:
+def test_github_url_normalization(monkeypatch: pytest.MonkeyPatch, path: str) -> None:
     monkeypatch.setenv("MERGIFYENGINE_GITHUB_URL", f"https://my-ghes.example.com{path}")
     conf = config.EngineSettings()
     path, _, _ = path.partition("?")
@@ -407,9 +399,7 @@ def test_github_url_normalization(
     )
 
 
-def test_database_url_replace(
-    original_environment_variables: None, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_database_url_replace(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv(
         "MERGIFYENGINE_DATABASE_URL", "postgres://user:password@example.com:1234/db"
     )
@@ -474,9 +464,7 @@ MERGIFYENGINE_DATABASE_URL
     )
 
 
-def test_redis_onpremise_legacy(
-    original_environment_variables: None, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_redis_onpremise_legacy(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("MERGIFYENGINE_DEFAULT_REDIS_URL")
     monkeypatch.setenv("MERGIFYENGINE_STORAGE_URL", "rediss://redis.example.com:1234")
     conf = config.EngineSettings()
@@ -496,9 +484,7 @@ def test_redis_onpremise_legacy(
     )
 
 
-def test_redis_saas_current(
-    original_environment_variables: None, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_redis_saas_current(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv(
         "MERGIFYENGINE_DEFAULT_REDIS_URL", "rediss://redis.example.com:1234"
     )
@@ -533,9 +519,7 @@ def test_redis_saas_current(
     )
 
 
-def test_redis_default(
-    original_environment_variables: None, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_redis_default(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv(
         "MERGIFYENGINE_DEFAULT_REDIS_URL", "rediss://redis.example.com:1234"
     )
@@ -556,9 +540,7 @@ def test_redis_default(
     )
 
 
-def test_redis_all_set(
-    original_environment_variables: None, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_redis_all_set(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv(
         "MERGIFYENGINE_DEFAULT_REDIS_URL",
         "rediss://redis-default.example.com:1234",

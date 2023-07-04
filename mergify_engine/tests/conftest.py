@@ -66,7 +66,9 @@ msgpack.packb = functools.partial(msgpack.packb, default=msgpack_freezegun_fixes
 original_os_environ = os.environ.copy()
 
 
-@pytest.fixture()
+# mergify_engine.cli:setup() sanitize the environment variables
+# so this fixtures always restore the previous environment variables
+@pytest.fixture(autouse=True)
 def original_environment_variables(
     monkeypatch: pytest.MonkeyPatch,
 ) -> abc.Generator[None, None, None]:
