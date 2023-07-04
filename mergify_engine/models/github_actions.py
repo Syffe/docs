@@ -60,6 +60,9 @@ class JobRunConclusion(enum.Enum):
     FAILURE = "failure"
     SKIPPED = "skipped"
     CANCELLED = "cancelled"
+    NEUTRAL = "neutral"
+    TIMED_OUT = "timed_out"
+    ACTION_REQUIRED = "action_required"
 
 
 class JobRunTriggerEvent(enum.Enum):

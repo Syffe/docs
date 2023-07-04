@@ -903,8 +903,15 @@ class GitHubEventWorkflowRun(GitHubEventWithRepository):
     workflow_run: GitHubWorkflowRun
 
 
+# https://docs.github.com/en/rest/actions/workflow-jobs?apiVersion=2022-11-28#get-a-job-for-a-workflow-run
 GitHubJobRunConclusionType = typing.Literal[
-    "success", "failure", "skipped", "cancelled"
+    "success",
+    "failure",
+    "neutral",
+    "cancelled",
+    "skipped",
+    "timed_out",
+    "action_required",
 ]
 
 
