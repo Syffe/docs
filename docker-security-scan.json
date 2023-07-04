@@ -1571,7 +1571,7 @@
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27535",
     "Title": "FTP too eager connection reuse",
-    "Severity": "HIGH",
+    "Severity": "MEDIUM",
     "PublishedDate": "2023-03-30T20:15:00Z"
   },
   {
@@ -1580,7 +1580,7 @@
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27535",
     "Title": "FTP too eager connection reuse",
-    "Severity": "HIGH",
+    "Severity": "MEDIUM",
     "PublishedDate": "2023-03-30T20:15:00Z"
   },
   {
@@ -1589,7 +1589,7 @@
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-27535",
     "Title": "FTP too eager connection reuse",
-    "Severity": "HIGH",
+    "Severity": "MEDIUM",
     "PublishedDate": "2023-03-30T20:15:00Z"
   },
   {
@@ -2023,5 +2023,14 @@
     "Title": "assertion failure when a monitor is active and a message from the driver cannot be delivered",
     "Severity": "MEDIUM",
     "PublishedDate": "2023-06-08T03:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-36191",
+    "PkgName": "libsqlite3-0",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-36191",
+    "Title": "CLI fault on missing -nonce",
+    "Severity": "LOW",
+    "PublishedDate": "2023-06-23T02:15:00Z"
   }
 ]
