@@ -13,9 +13,13 @@ def unset_testing_env(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(config.EngineSettings.Config, "env_file", None)
-    for env in os.environ:
+
+    # NOTE(sileht): we can't use monkeypatch.delenv here because it doesn't
+    # work well with original_environment_variables() fixture
+    # We don't need to restore the env variables because the original_environment_variables() already does it.
+    for env in list(os.environ.keys()):
         if env.startswith("MERGIFYENGINE"):
-            monkeypatch.delenv(env)
+            del os.environ[env]
 
 
 def test_defaults(
