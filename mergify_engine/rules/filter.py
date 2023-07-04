@@ -774,6 +774,20 @@ class TernaryFilter(Filter[TernaryFilterResult]):
 
 
 @dataclasses.dataclass(repr=False)
+class FixedAttributesFilter(TernaryFilter):
+    fixed_attributes: tuple[str, ...] = dataclasses.field(default_factory=tuple)
+
+    def is_known(
+        self,
+        op: BinaryOperatorT[FilterResultT],
+        attribute_name: str,
+        ref_values: list[typing.Any],
+    ) -> bool:
+        real_attr_name = attribute_name.lstrip(Filter.LENGTH_OPERATOR)
+        return real_attr_name in self.fixed_attributes
+
+
+@dataclasses.dataclass(repr=False)
 class IncompleteChecksFilter(TernaryFilter):
     pending_checks: list[str] = dataclasses.field(default_factory=list)
     all_checks: list[str] = dataclasses.field(default_factory=list)

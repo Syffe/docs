@@ -86,8 +86,7 @@ pull_request_rules:
           - label=match
     actions: {}
 """,
-            # FIXME(sileht): should be ignored: MRGFY-2284
-            True,
+            False,
         ),
         (
             """
@@ -98,6 +97,52 @@ pull_request_rules:
         and:
           - label=do-not-match
           - label=match
+    actions: {}
+""",
+            False,
+        ),
+        (
+            """
+pull_request_rules:
+  - name: not with head match and label match
+    conditions:
+    - not:
+        and:
+          - head=match
+          - label=match
+    actions: {}
+""",
+            True,
+        ),
+        (
+            """
+pull_request_rules:
+  - name: not with head do not match and label match
+    conditions:
+    - not:
+        and:
+          - head=do-not-match
+          - label=match
+    actions: {}
+""",
+            False,
+        ),
+        (
+            """
+pull_request_rules:
+  - name: not with head do not match and label do not match
+    conditions:
+    - not:
+        and:
+          - head=do-not-match
+          - label=do-not-match
+    actions: {}
+pull_request_rules:
+  - name: no head
+    conditions:
+      - or:
+        - label=do-not-match
+        - label=other-do-no-match
     actions: {}
 """,
             False,
@@ -136,5 +181,3 @@ async def test_pull_request_rules_evaluator(
     else:
         assert len(evaluated_rules.ignored_rules) == 0
         assert len(evaluated_rules.matching_rules) == 1
-
-    # assert evaluated_rules.matching_rules[0].conditions.condition.get_summary() == ""

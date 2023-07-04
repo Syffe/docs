@@ -12,6 +12,7 @@ from mergify_engine import actions as actions_mod
 from mergify_engine import github_types
 from mergify_engine import yaml
 from mergify_engine.rules import conditions as conditions_mod
+from mergify_engine.rules import filter
 from mergify_engine.rules import live_resolvers
 from mergify_engine.rules import types
 from mergify_engine.rules.config import defaults as defaults_config
@@ -106,14 +107,17 @@ class GenericRulesEvaluator(typing.Generic[types.T_Rule, types.T_EvaluatedRule])
 
             if rule_hidden_from_merge_queue and not evaluated_rule_conditions.match:
                 if await cls.can_attributes_make_rule_always_false(
-                    evaluated_rule_conditions, self.BASE_CHANGEABLE_ATTRIBUTES, pulls
+                    repository,
+                    evaluated_rule_conditions,
+                    self.BASE_CHANGEABLE_ATTRIBUTES,
+                    pulls,
                 ):
                     self.not_applicable_base_changeable_attributes_rules.append(
                         evaluated_rule
                     )
 
                 if await cls.can_attributes_make_rule_always_false(
-                    evaluated_rule_conditions, self.FIXED_ATTRIBUTES, pulls
+                    repository, evaluated_rule_conditions, self.FIXED_ATTRIBUTES, pulls
                 ):
                     self.ignored_rules.append(evaluated_rule)
                     categorized = True
@@ -129,19 +133,32 @@ class GenericRulesEvaluator(typing.Generic[types.T_Rule, types.T_EvaluatedRule])
 
     @staticmethod
     async def can_attributes_make_rule_always_false(
+        repository: context.Repository,
         conditions: conditions_mod.BaseRuleConditions,
         base_attributes: tuple[str, ...],
         pulls: list[context.BasePullRequest],
     ) -> bool:
-        # NOTE(sileht): Replace non-base attribute and non-base changeables attributes
-        # by true, if it still matches it's a potential rule otherwise hide it.
-        conditions_with_only_base_attributes = conditions.copy()
-        for condition in conditions_with_only_base_attributes.walk():
-            attr = condition.get_attribute_name()
-            if attr not in base_attributes:
-                condition.make_always_true()
+        tree = conditions.extract_raw_filter_tree()
+        for pull in pulls:
+            f = filter.FixedAttributesFilter(
+                tree,
+                fixed_attributes=base_attributes,
+            )
+            live_resolvers.configure_filter(repository, f)
 
-        return not await conditions_with_only_base_attributes(pulls)
+            try:
+                ret = await f(pull)
+            except live_resolvers.LiveResolutionFailure:
+                return False
+
+            if ret in (
+                True,
+                filter.UnknownOnlyAttribute,
+                filter.UnknownOrTrueAttribute,
+            ):
+                return False
+
+        return True
 
 
 class YAMLInvalid(voluptuous.Invalid):  # type: ignore[misc]
