@@ -38,7 +38,7 @@ def load_alembic_config() -> alembic.config.Config:
 
 def database_update(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Update Mergify database schema")
-    parser.add_argument("revision", default="head")
+    parser.add_argument("revision", default="head", nargs="?")
     args = parser.parse_args(argv)
     config = load_alembic_config()
     alembic.command.upgrade(config, args.revision)
