@@ -301,10 +301,18 @@ async def run_forever(
 
 def ServicesSet(v: str) -> ServiceNamesT:
     values = set(v.strip().split(","))
+    enabled_services = set()
+    invalid_services = set()
     for value in values:
-        if value not in AVAILABLE_WORKER_SERVICES:
-            raise ValueError(f"{v} is not a valid service")
-    return typing.cast(ServiceNamesT, values)
+        if value in AVAILABLE_WORKER_SERVICES:
+            enabled_services.add(value)
+        else:
+            invalid_services.add(value)
+
+    if invalid_services:
+        LOG.error("Invalid services have been ignored: %s", invalid_services)
+
+    return typing.cast(ServiceNamesT, enabled_services)
 
 
 def main(argv: list[str] | None = None) -> None:
