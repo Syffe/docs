@@ -83,9 +83,7 @@ ruff = "^0.0.276"
 black = "^23.3.0"
 
 [tool.poetry.scripts]
-  mergify-database-create = "mergify_engine.models.manage:database_create"
   mergify-database-update = "mergify_engine.models.manage:database_update"
-  mergify-database-stamp = "mergify_engine.models.manage:database_stamp"
   mergify-refresher = "mergify_engine.cli:refresher_cli"
   mergify-clear-token-cache = "mergify_engine.cli:clear_token_cache"
   mergify-debug = "mergify_engine.debug:main"

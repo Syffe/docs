@@ -1,5 +1,4 @@
 import argparse
-import asyncio
 import importlib.resources  # nosemgrep: python.lang.compatibility.python37.python37-compatibility-importlib2
 
 import alembic.command
@@ -30,10 +29,6 @@ async def drop_all() -> None:
         await conn.run_sync(models.Base.metadata.drop_all)
 
 
-def database_create() -> None:
-    asyncio.run(create_all())
-
-
 def load_alembic_config() -> alembic.config.Config:
     config_file = importlib.resources.files(__package__).joinpath(
         "db_migration/alembic.ini"
@@ -47,12 +42,3 @@ def database_update(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
     config = load_alembic_config()
     alembic.command.upgrade(config, args.revision)
-
-
-def database_stamp(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(description="Create database stamp")
-    parser.add_argument("revision")
-    args = parser.parse_args(argv)
-
-    config = load_alembic_config()
-    alembic.command.stamp(config, args.revision)
