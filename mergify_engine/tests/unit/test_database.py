@@ -6,6 +6,8 @@ import pathlib
 import re
 import subprocess
 
+import pytest
+
 from mergify_engine import settings
 from mergify_engine.config import types
 from mergify_engine.models import manage
@@ -68,6 +70,7 @@ def _run_migration_scripts(url: types.PostgresDSN) -> None:
     _run_alembic("check", environ=environ)
 
 
+@pytest.mark.timeout(60)
 def test_migration(setup_database: None, tmp_path: pathlib.Path) -> None:
     # We need to manually run the coroutine in an event loop because
     # pytest-asyncio has its own `event_loop` fixture that is function scoped
