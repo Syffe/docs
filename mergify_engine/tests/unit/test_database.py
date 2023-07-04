@@ -43,6 +43,7 @@ def _run_alembic(*args: str, environ: dict[str, str] | None = None) -> str:
         env=environ,
         check=True,
         capture_output=True,
+        timeout=10,
     )
     return p.stdout.decode()
 
@@ -62,6 +63,7 @@ def _run_migration_scripts(url: types.PostgresDSN) -> None:
             env=environ,
             check=True,
             capture_output=True,
+            timeout=10,
         )
     _run_alembic("check", environ=environ)
 
@@ -101,6 +103,7 @@ def test_migration(setup_database: None, tmp_path: pathlib.Path) -> None:
             f" {_file}",
             shell=True,
             check=True,
+            timeout=10,
         )
 
     assert filecmp.cmp(
@@ -131,6 +134,7 @@ def dump_schema(url: types.PostgresDSN, filepath: pathlib.Path) -> None:
             ),
             check=True,
             capture_output=True,
+            timeout=10,
         )
     except subprocess.CalledProcessError as e:
         error_message = e.stderr.decode()
