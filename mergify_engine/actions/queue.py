@@ -1293,12 +1293,8 @@ class QueueAction(actions.Action):
 
     @staticmethod
     def command_to_config(command_arguments: str) -> dict[str, typing.Any]:
-        # NOTE(sileht): requiring branch_protection before putting in queue
-        # doesn't play well with command subsystem, and it's not intuitive as
-        # the user tell us to put the PR in queue and by default we don't. So
-        # we disable this for commands.
         name: str | None = None
-        config = {"name": name, "require_branch_protection": False}
+        config = {"name": name}
         args = [
             arg_stripped
             for arg in command_arguments.split(" ")

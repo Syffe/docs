@@ -270,63 +270,80 @@ class TestQueueCommand(base.FunctionalTestBase):
         # To force others to be rebased
         p = await self.create_pr()
         await self.merge_pull(p["number"])
-        await self.wait_for("pull_request", {"action": "closed"})
+        await self.wait_for_pull_request("closed", p["number"], merged=True)
         await self.run_engine()
-        p = await self.get_pull(p["number"])
 
         await self.branch_protection_protect(self.main_branch_name, protection)
 
         await self.create_comment_as_admin(p1["number"], "@mergifyio queue")
-        await self.create_comment_as_admin(p2["number"], "@mergifyio queue")
         await self.run_engine()
+        comment_p1 = await self.wait_for_issue_comment(str(p1["number"]), "created")
 
-        await self.wait_for("pull_request", {"action": "synchronize"})
-        p1 = await self.get_pull(p1["number"])
+        assert (
+            """Waiting for conditions to match
 
-        q = await self.get_train()
-        assert p["merge_commit_sha"]
-        await self.assert_merge_queue_contents(
-            q,
-            p["merge_commit_sha"],
-            [
-                base.MergeQueueCarMatcher(
-                    [p1["number"]],
-                    [],
-                    p["merge_commit_sha"],
-                    merge_train.TrainCarChecksType.INPLACE,
-                    p1["number"],
-                ),
-            ],
-            [p2["number"]],
+<details>
+
+- [ ] any of: [🛡 GitHub branch protection]
+  - [ ] `check-neutral=continuous-integration/fake-ci`
+  - [ ] `check-skipped=continuous-integration/fake-ci`
+  - [ ] `check-success=continuous-integration/fake-ci`
+- [X] `-draft` [:pushpin: queue requirement]
+- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+- [X] any of: [:twisted_rightwards_arrows: routing conditions]
+  - [X] all of [:pushpin: routing conditions of queue `default`]
+
+</details>
+"""
+            in comment_p1["comment"]["body"]
         )
 
-        async def assert_queued(
-            pull: github_types.GitHubPullRequest, position: str
-        ) -> None:
-            comments = await self.get_issue_comments(pull["number"])
-            assert (
-                f"The pull request is the {position} in the queue to be merged"
-                in comments[-1]["body"]
-            )
-
+        await self.create_comment_as_admin(p2["number"], "@mergifyio queue")
         await self.run_engine()
-        await assert_queued(p1, "1st")
-        await assert_queued(p2, "2nd")
+        comment_p2 = await self.wait_for_issue_comment(str(p2["number"]), "created")
+
+        assert (
+            """Waiting for conditions to match
+
+<details>
+
+- [ ] any of: [🛡 GitHub branch protection]
+  - [ ] `check-neutral=continuous-integration/fake-ci`
+  - [ ] `check-skipped=continuous-integration/fake-ci`
+  - [ ] `check-success=continuous-integration/fake-ci`
+- [X] `-draft` [:pushpin: queue requirement]
+- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+- [X] any of: [:twisted_rightwards_arrows: routing conditions]
+  - [X] all of [:pushpin: routing conditions of queue `default`]
+
+</details>
+"""
+            in comment_p2["comment"]["body"]
+        )
 
         await self.create_status(p1)
         await self.run_engine()
 
-        await self.wait_for("pull_request", {"action": "synchronize"})
-        p2 = await self.get_pull(p2["number"])
-        await assert_queued(p2, "1st")
+        # NOTE: p1 and p2 both lose their status after the run_engine because they are synchronized,
+        # so we need to re-create the status on the updated PR
+        p1 = (await self.wait_for_pull_request("synchronize", p1["number"]))[
+            "pull_request"
+        ]
+        await self.create_status(p1)
+        await self.run_engine()
+
+        await self.wait_for_pull_request("closed", p1["number"], merged=True)
 
         await self.create_status(p2)
         await self.run_engine()
 
-        pulls = await self.get_pulls()
-        assert len(pulls) == 0
+        p2 = (await self.wait_for_pull_request("synchronize", p2["number"]))[
+            "pull_request"
+        ]
+        await self.create_status(p2)
+        await self.run_engine()
 
-        await self.assert_merge_queue_contents(q, None, [])
+        await self.wait_for_pull_request("closed", p2["number"], merged=True)
 
     async def test_unqueue_on_synchronize(self) -> None:
         rules = {
@@ -394,3 +411,60 @@ class TestQueueCommand(base.FunctionalTestBase):
         assert len(pulls) == 1
 
         await self.assert_merge_queue_contents(q, None, [])
+
+    async def test_routing_conditions_with_branch_protections(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "routing_conditions": [
+                        "label=default",
+                    ],
+                },
+                {
+                    "name": "quwu",
+                    "routing_conditions": [
+                        "label=uwu",
+                    ],
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        protection = {
+            "required_status_checks": None,
+            "required_pull_request_reviews": {
+                "required_approving_review_count": 1,
+            },
+            "required_linear_history": False,
+            "restrictions": None,
+            "enforce_admins": True,
+        }
+        await self.branch_protection_protect(self.main_branch_name, protection)
+
+        pr = await self.create_pr()
+        await self.add_label(pr["number"], "uwu")
+        await self.create_comment_as_admin(pr["number"], "@mergifyio queue")
+        await self.run_engine()
+
+        # Make sure the queue action is waiting for the branch protections
+        comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
+        assert "Waiting for conditions to match" in comment["comment"]["body"]
+        assert (
+            """<details>
+
+- [ ] `#approved-reviews-by>=1` [🛡 GitHub branch protection]
+- [X] `#changes-requested-reviews-by=0` [🛡 GitHub branch protection]
+- [X] `-draft` [:pushpin: queue requirement]
+- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+- [X] any of: [:twisted_rightwards_arrows: routing conditions]
+  - [X] all of: [:pushpin: routing conditions of queue `quwu`]
+    - [X] `label=uwu`
+  - [ ] all of: [:pushpin: routing conditions of queue `default`]
+    - [ ] `label=default`
+
+</details>
+"""
+            in comment["comment"]["body"]
+        )
