@@ -6,9 +6,11 @@ import daiquiri
 import msgpack
 
 from mergify_engine import date
+from mergify_engine import events_db
 from mergify_engine import github_types
 from mergify_engine import pagination
 from mergify_engine import redis_utils
+from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine import subscription
 
@@ -305,6 +307,18 @@ class EventLogsSignal(signals.SignalBase):
             await pipe.expire(pull_key, int(retention.total_seconds()))
 
         await pipe.execute()
+
+        if settings.EVENTLOG_EVENTS_DB_INGESTION:
+            if event in events_db.EVENT_NAME_TO_MODEL:
+                await events_db.insert(
+                    event=event,
+                    repository=repository.repo,
+                    pull_request=pull_request,
+                    metadata=metadata,
+                    trigger=trigger,
+                )
+            else:
+                LOG.debug("skipping event-type not supported in database", event=event)
 
 
 async def get(

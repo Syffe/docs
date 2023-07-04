@@ -125,6 +125,16 @@ def enable_ci_dump_ingestion() -> None:
     settings.CI_EVENT_INGESTION = True
 
 
+@pytest.fixture()
+def enable_events_db_ingestion() -> abc.Generator[None, None, None]:
+    initial_state = settings.EVENTLOG_EVENTS_DB_INGESTION
+    settings.EVENTLOG_EVENTS_DB_INGESTION = True
+    try:
+        yield
+    finally:
+        settings.EVENTLOG_EVENTS_DB_INGESTION = initial_state
+
+
 def get_worker_id_as_int(worker_id: str) -> int:
     if not re.match(r"gw\d+", worker_id):
         return 0

@@ -3,6 +3,7 @@ from __future__ import annotations
 import sqlalchemy
 from sqlalchemy import orm
 from sqlalchemy.dialects import postgresql
+import sqlalchemy.ext.asyncio
 
 from mergify_engine import github_types
 from mergify_engine import models
@@ -34,3 +35,19 @@ class GitHubAccount(models.Base):
             )
         )
         await session.execute(sql)
+
+    @classmethod
+    async def get_or_create(
+        cls,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+        account: github_types.GitHubAccount,
+    ) -> GitHubAccount:
+        result = await session.execute(
+            sqlalchemy.select(cls).where(cls.id == account["id"])
+        )
+        if (account_obj := result.scalar_one_or_none()) is not None:
+            # NOTE(lecrepont01): update attributes
+            account_obj.login = account["login"]
+            return account_obj
+
+        return cls(id=account["id"], login=account["login"])

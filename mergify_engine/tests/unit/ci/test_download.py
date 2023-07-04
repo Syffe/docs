@@ -55,6 +55,7 @@ async def test_download_next_repositories(
         [
             {
                 "id": 11,
+                "name": "some_repo",
                 "owner_id": 1,
                 "last_download_at": AN_HOUR_AGO,
             }
@@ -97,11 +98,13 @@ async def test_get_next_repositories_normal_case(
         [
             {
                 "id": 11,
+                "name": "some_repo",
                 "owner_id": 1,
                 "last_download_at": AN_HOUR_AGO,
             },
             {
                 "id": 12,
+                "name": "some_other_repo",
                 "owner_id": 1,
                 "last_download_at": NOW,
             },
@@ -128,11 +131,13 @@ async def test_get_next_repositories_new_repository(
         [
             {
                 "id": 11,
+                "name": "some_repo",
                 "owner_id": 1,
                 "last_download_at": None,
             },
             {
                 "id": 12,
+                "name": "some_other_repo",
                 "owner_id": 1,
                 "last_download_at": NOW,
             },
@@ -159,6 +164,7 @@ async def test_get_next_repositories_nothing_to_download(
         [
             {
                 "id": 11,
+                "name": "some_repo",
                 "owner_id": 1,
                 "last_download_at": LESS_THAN_AN_HOUR_AGO,
             },
@@ -180,6 +186,7 @@ async def test_get_next_repositories_not_up_to_date(
         [
             {
                 "id": 11,
+                "name": "some_repo",
                 "owner_id": 1,
                 "last_download_at": TWO_HOURS_AGO,
             },

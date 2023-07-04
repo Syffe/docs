@@ -5,16 +5,21 @@ from unittest import mock
 import anys
 from freezegun import freeze_time
 import pytest
+import sqlalchemy
+from sqlalchemy import func
 
+from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine import subscription
 from mergify_engine import yaml
+from mergify_engine.models import events as evt_models
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.tests.functional import base
 
 
+@pytest.mark.usefixtures("enable_events_db_ingestion")
 @pytest.mark.subscription(
     subscription.Features.EVENTLOGS_SHORT,
     subscription.Features.EVENTLOGS_LONG,
@@ -737,3 +742,27 @@ class TestEventLogsAction(base.FunctionalTestBase):
                         break
                 else:
                     raise KeyError("Event `action.queue.checks_end` not found")
+
+    async def test_eventlogs_db(self) -> None:
+        # NOTE(lecrepont01): this tests the integration of feature events in DB but should evolve in an API test
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "assign",
+                    "conditions": [f"base={self.main_branch_name}"],
+                    "actions": {
+                        "assign": {"users": ["mergify-test1"]},
+                        "label": {"add": ["toto"]},
+                    },
+                }
+            ]
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+        await self.create_pr()
+        await self.run_engine()
+        async with database.create_session() as db:
+            result = await db.execute(
+                sqlalchemy.select(func.count()).select_from(evt_models.Event)
+            )
+        assert result.scalar() == 1
