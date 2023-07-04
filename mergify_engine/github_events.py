@@ -26,6 +26,7 @@ from mergify_engine.ci import pull_registries
 from mergify_engine.clients import github
 from mergify_engine.engine import commands_runner
 from mergify_engine.queue import utils as queue_utils
+from mergify_engine.web.api import security as api_security
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -367,6 +368,22 @@ async def event_preprocessing(
             background_tasks.add_task(commands_runner.on_each_event, event)
 
 
+async def clear_api_authentication_cache(
+    redis_links: redis_utils.RedisLinks,
+    event: github_types.GitHubEventInstallationRepositories,
+) -> None:
+    redis_key = api_security.get_redis_key_for_repo_access_check(
+        event["installation"]["account"]["login"]
+    )
+    pipe = await redis_links.cache.pipeline()
+    for new_repository in event["repositories_added"]:
+        await pipe.hdel(redis_key, new_repository["full_name"])
+    for new_repository in event["repositories_removed"]:
+        await pipe.hdel(redis_key, new_repository["full_name"])
+
+    await pipe.execute()
+
+
 async def event_classifier(
     redis_links: redis_utils.RedisLinks,
     event_type: github_types.GitHubEventType,
@@ -385,6 +402,11 @@ async def event_classifier(
         "team_add",
         "repository",
     ):
+        if event_type == "installation_repositories":
+            # NOTE: Use this event to invalidate api authentication cache
+            event = typing.cast(github_types.GitHubEventInstallationRepositories, event)
+            await clear_api_authentication_cache(redis_links, event)
+
         return EventToIgnore(event_type, event_id, event, f"{event_type} event")
 
     if "repository" in event:

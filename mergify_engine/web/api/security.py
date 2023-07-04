@@ -1,4 +1,5 @@
 from collections import abc
+import datetime
 import typing
 
 import daiquiri
@@ -9,6 +10,7 @@ from mergify_engine import context
 from mergify_engine import database
 from mergify_engine import date
 from mergify_engine import github_types
+from mergify_engine import json
 from mergify_engine import settings
 from mergify_engine import subscription
 from mergify_engine.clients import github
@@ -26,6 +28,8 @@ from mergify_engine.web import redis
 LOG = daiquiri.getLogger(__name__)
 
 ScopeT = typing.NewType("ScopeT", str)
+
+AUTH_CACHE_EXPIRE = datetime.timedelta(days=7)
 
 
 class _HttpAuth(typing.NamedTuple):
@@ -179,6 +183,77 @@ async def get_http_auth(
 HttpAuth = typing.Annotated[_HttpAuth, fastapi.Depends(get_http_auth)]
 
 
+def get_redis_key_for_repo_access_check(
+    installation_account_login: github_types.GitHubLogin,
+) -> str:
+    return f"api/security/repositories-access/{installation_account_login}"
+
+
+class AuthCache(typing.TypedDict):
+    # GitHub's response to our repository request.
+    # Will be set to `200` if the request was successfuly made,
+    # otherwise it will contain the status code of the response's error.
+    status_code: int
+    # If status_code != 200, data contains the `exc.response.text`.
+    # If status_code == 200, data contains the repository as github_types.GitHubRepository
+    data: github_types.GitHubRepository | str
+
+
+async def application_auth_with_cache(
+    owner: github_types.GitHubLogin,
+    repository: github_types.GitHubRepositoryName,
+    installation: github_types.GitHubInstallation,
+    redis_links: redis.RedisLinks,
+    client: github.AsyncGitHubInstallationClient,
+) -> github_types.GitHubRepository:
+    repo_access_redis_key = get_redis_key_for_repo_access_check(
+        installation["account"]["login"]
+    )
+    raw_redis_value = await redis_links.cache.hget(
+        repo_access_redis_key, f"{owner}/{repository}"
+    )
+    if raw_redis_value is not None:
+        redis_value: AuthCache = json.loads(raw_redis_value)
+        if redis_value["status_code"] != 200:
+            # Means the installation's account doesn't have access to owner/repository
+            # (set in the `except` case below)
+            raise fastapi.HTTPException(
+                status_code=404,
+                detail=redis_value["data"],
+            )
+
+        return typing.cast(github_types.GitHubRepository, redis_value["data"])
+
+    pipe = await redis_links.cache.pipeline()
+    try:
+        repo = typing.cast(
+            github_types.GitHubRepository,
+            await client.item(f"/repos/{owner}/{repository}"),
+        )
+        await pipe.hset(
+            repo_access_redis_key,
+            f"{owner}/{repository}",
+            json.dumps({"status_code": 200, "data": repo}),
+        )
+    except (http.HTTPNotFound, http.HTTPForbidden, http.HTTPUnauthorized) as exc:
+        await pipe.hset(
+            repo_access_redis_key,
+            f"{owner}/{repository}",
+            json.dumps(
+                {
+                    "status_code": exc.status_code,
+                    "data": exc.response.text,
+                }
+            ),
+        )
+        raise fastapi.HTTPException(status_code=404)
+    finally:
+        await pipe.expire(repo_access_redis_key, AUTH_CACHE_EXPIRE)
+        await pipe.execute()
+
+    return repo
+
+
 async def get_repository_context(
     owner: typing.Annotated[
         github_types.GitHubLogin,
@@ -199,14 +274,20 @@ async def get_repository_context(
     async with github.AsyncGitHubInstallationClient(
         auth,
     ) as client:
-        try:
-            # Check this token has access to this repository
-            repo = typing.cast(
-                github_types.GitHubRepository,
-                await client.item(f"/repos/{owner}/{repository}"),
+        if actor["type"] == "user":
+            try:
+                repo = typing.cast(
+                    github_types.GitHubRepository,
+                    await client.item(f"/repos/{owner}/{repository}"),
+                )
+            except (http.HTTPNotFound, http.HTTPForbidden, http.HTTPUnauthorized):
+                raise fastapi.HTTPException(status_code=404)
+        elif actor["type"] == "application":
+            repo = await application_auth_with_cache(
+                owner, repository, installation_json, redis_links, client
             )
-        except (http.HTTPNotFound, http.HTTPForbidden, http.HTTPUnauthorized):
-            raise fastapi.HTTPException(status_code=404)
+        else:
+            raise RuntimeError("Unknown actor type %s", actor["type"])
 
         sub = await subscription.Subscription.get_subscription(
             redis_links.cache, repo["owner"]["id"]

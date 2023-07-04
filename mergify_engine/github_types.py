@@ -413,6 +413,8 @@ GitHubEventType = typing.Literal[
     "status",
     "push",
     "issue_comment",
+    "installation",
+    "installation_repositories",
     "pull_request_review",
     "pull_request_review_comment",
     "pull_request_review_thread",
@@ -450,6 +452,23 @@ class GitHubEvent(typing.TypedDict):
 
 class GitHubEventWithRepository(GitHubEvent):
     repository: GitHubRepository
+
+
+class GitHubInstallationRepository(typing.TypedDict):
+    full_name: str
+    id: GitHubRepositoryIdType
+    name: GitHubRepositoryName
+    node_id: str
+    private: bool
+
+
+class GitHubEventInstallationRepositories(GitHubEventWithRepository):
+    # https://docs.github.com/en/webhooks-and-events/webhooks/webhook-events-and-payloads#installation_repositories
+    action: typing.Literal["added", "removed"]
+    repositories_added: list[GitHubInstallationRepository]
+    repositories_removed: list[GitHubInstallationRepository]
+    repository_selection: typing.Literal["all", "selected"]
+    requester: GitHubAccount
 
 
 GitHubEventRefreshActionType = typing.Literal[
