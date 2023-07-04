@@ -11,6 +11,7 @@ from mergify_engine.config import types
 @pytest.fixture
 def unset_testing_env(
     monkeypatch: pytest.MonkeyPatch,
+    original_environment_variables: None,
 ) -> None:
     monkeypatch.setattr(config.EngineSettings.Config, "env_file", None)
 
