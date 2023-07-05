@@ -601,6 +601,7 @@ def get_merge_after_condition(ctxt: context.Context) -> RuleConditionNode | None
 
 async def get_routing_conditions(
     ctxt: context.Context,
+    for_queue_name: str | None = None,
 ) -> RuleConditionNode | None:
     mergify_config = await ctxt.repository.get_mergify_config()
 
@@ -609,6 +610,7 @@ async def get_routing_conditions(
             RuleConditionNode, rule.routing_conditions.condition.copy()
         )
         for rule in mergify_config["queue_rules"]
+        if for_queue_name is None or rule.name == for_queue_name
     }
 
     for queue_name, routing_condition in routing_conditions.items():

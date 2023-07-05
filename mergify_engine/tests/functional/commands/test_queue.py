@@ -468,3 +468,55 @@ class TestQueueCommand(base.FunctionalTestBase):
 """
             in comment["comment"]["body"]
         )
+
+    async def test_command_queue_non_matching_routing_conditions_and_specifying_queue_name(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "routing_conditions": [
+                        "label=default",
+                    ],
+                },
+                {
+                    "name": "specialq",
+                    "routing_conditions": [
+                        "label=special",
+                    ],
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        pr = await self.create_pr()
+        await self.create_comment_as_admin(pr["number"], "@mergifyio queue default")
+        await self.add_label(pr["number"], "special")
+        await self.run_engine()
+
+        comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
+
+        assert (
+            """#### 🟠 Waiting for conditions to match
+
+<details>
+
+- [ ] any of: [:twisted_rightwards_arrows: routing conditions]
+  - [ ] all of: [:pushpin: routing conditions of queue `default`]
+    - [ ] `label=default`
+- [X] `-draft` [:pushpin: queue requirement]
+- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+
+</details>"""
+            in comment["comment"]["body"]
+        )
+        train = await self.get_train()
+        assert len(train._cars) == 0
+        assert len(train._waiting_pulls) == 0
+
+        await self.create_comment_as_admin(pr["number"], "@mergifyio queue")
+        await self.run_engine()
+
+        await self.wait_for_pull_request("closed", pr["number"], merged=True)

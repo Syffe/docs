@@ -1326,7 +1326,9 @@ class QueueAction(actions.Action):
         if merge_after_condition is not None:
             conditions_requirements.append(merge_after_condition)
 
-        if routing_conditions := await conditions.get_routing_conditions(ctxt):
+        if routing_conditions := await conditions.get_routing_conditions(
+            ctxt, self.config["name"]
+        ):
             conditions_requirements.append(routing_conditions)
 
         conditions_requirements.append(
