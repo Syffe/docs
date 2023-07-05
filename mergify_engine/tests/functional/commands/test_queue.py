@@ -1,7 +1,10 @@
+import pytest
+
 from mergify_engine import github_types
 from mergify_engine import yaml
 from mergify_engine.queue import merge_train
 from mergify_engine.tests.functional import base
+from mergify_engine.tests.functional import conftest
 
 
 class TestQueueCommand(base.FunctionalTestBase):
@@ -520,3 +523,43 @@ class TestQueueCommand(base.FunctionalTestBase):
         await self.run_engine()
 
         await self.wait_for_pull_request("closed", pr["number"], merged=True)
+
+    async def test_command_queue_infinite_loop_bug(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "routing_conditions": [
+                        "label=default",
+                    ],
+                },
+                {
+                    "name": "specialq",
+                    "routing_conditions": [
+                        "label=special",
+                    ],
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        pr = await self.create_pr()
+        await self.run_engine()
+
+        await self.create_comment_as_admin(pr["number"], "@mergifyio queue default")
+        await self.run_engine()
+        await self.wait_for_issue_comment(str(pr["number"]), "created")
+
+        await self.add_label(pr["number"], "special")
+        await self.run_engine()
+
+        # The label "special" was added, but we asked to queue in "default", so the PR should
+        # not be queued in "specialq"
+        with pytest.raises(
+            (
+                base.MissingEventTimeout,
+                conftest.ShutUpVcrCannotOverwriteExistingCassetteException,
+            )
+        ):
+            await self.wait_for_issue_comment(str(pr["number"]), "created")
