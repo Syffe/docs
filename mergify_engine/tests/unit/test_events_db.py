@@ -1,11 +1,11 @@
 import random
 
+import pytest
 import sqlalchemy
 from sqlalchemy import func
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import context
-from mergify_engine import database
 from mergify_engine import events_db
 from mergify_engine import github_types
 from mergify_engine import signals
@@ -26,6 +26,34 @@ async def insert_event(
     )
 
 
+async def assert_base_event(
+    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+) -> None:
+    # base event inserted
+    result = await db.execute(
+        sqlalchemy.select(func.count()).select_from(evt_model.Event)
+    )
+    assert result.scalar() == 1
+
+    # GithubRepository and account inserted
+    event = await db.scalar(sqlalchemy.select(evt_model.Event))
+    assert event is not None
+    assert event.repository.id == fake_repository.repo["id"]
+    assert event.repository.owner.id == fake_repository.repo["owner"]["id"]
+
+
+async def test_event_not_supported(fake_repository: context.Repository) -> None:
+    with pytest.raises(events_db.EventNotHandled) as e:
+        await events_db.insert(
+            event="event.not.supported",  # type: ignore [arg-type]
+            repository=fake_repository.repo,
+            pull_request=github_types.GitHubPullRequestNumber(random.randint(1, 100)),
+            metadata={},
+            trigger="Rule: my rule",
+        )
+    assert "Event 'event.not.supported' not supported in database" == str(e.value)
+
+
 async def test_event_action_assign_consistency(
     db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
 ) -> None:
@@ -37,24 +65,11 @@ async def test_event_action_assign_consistency(
         ),
     )
 
-    async with database.create_session() as session:
-        # base event inserted
-        result = await session.execute(
-            sqlalchemy.select(func.count()).select_from(evt_model.Event)
-        )
-        assert result.scalar() == 1
-
-        # GithubRepository and account inserted
-        event = await session.scalar(sqlalchemy.select(evt_model.Event))
-        assert event is not None
-        assert event.repository.id == fake_repository.repo["id"]
-        assert event.repository.owner.id == fake_repository.repo["owner"]["id"]
-
-        # action assign
-        event = await session.scalar(sqlalchemy.select(evt_model.EventActionAssign))
-        assert event is not None
-        assert set(event.added) == {"leo", "charly", "guillaume"}
-        assert set(event.removed) == {"damien", "fabien"}
+    await assert_base_event(db, fake_repository)
+    event = await db.scalar(sqlalchemy.select(evt_model.EventActionAssign))
+    assert event is not None
+    assert set(event.added) == {"leo", "charly", "guillaume"}
+    assert set(event.removed) == {"damien", "fabien"}
 
 
 async def test_event_post_check_consistency(
@@ -72,7 +87,27 @@ async def test_event_post_check_consistency(
         ),
     )
 
+    await assert_base_event(db, fake_repository)
     event = await db.scalar(sqlalchemy.select(evt_model.EventActionPostCheck))
     assert event is not None
     assert event.title == "Rule: my check (post_check)"
     assert event.conclusion == "success"
+
+
+async def test_event_action_copy_consistency(
+    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+) -> None:
+    await insert_event(
+        fake_repository,
+        "action.copy",
+        signals.EventCopyMetadata(
+            {"to": "test_branch", "pull_request_number": 123, "conflicts": False}
+        ),
+    )
+
+    await assert_base_event(db, fake_repository)
+    event = await db.scalar(sqlalchemy.select(evt_model.EventActionCopy))
+    assert event is not None
+    assert event.to == "test_branch"
+    assert event.pull_request_number == 123
+    assert event.conflicts is False

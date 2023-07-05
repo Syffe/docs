@@ -104,3 +104,17 @@ class EventActionPostCheck(Event):
     )
     title: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
     summary: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
+
+
+class EventActionCopy(Event):
+    __tablename__ = "event_action_copy"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "action.copy",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"), primary_key=True
+    )
+    to: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
+    pull_request_number: orm.Mapped[int] = orm.mapped_column(sqlalchemy.Integer)
+    conflicts: orm.Mapped[bool] = orm.mapped_column(sqlalchemy.Boolean)
