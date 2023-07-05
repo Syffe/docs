@@ -1939,7 +1939,7 @@
     "PkgName": "libperl5.32",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31484",
-    "Title": "CPAN.pm before 2.35 does not verify TLS certificates when downloading  ...",
+    "Title": "CPAN.pm before 2.35 does not verify TLS certificates when downloading distributions over HTTPS",
     "Severity": "HIGH",
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
@@ -1948,7 +1948,7 @@
     "PkgName": "perl",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31484",
-    "Title": "CPAN.pm before 2.35 does not verify TLS certificates when downloading  ...",
+    "Title": "CPAN.pm before 2.35 does not verify TLS certificates when downloading distributions over HTTPS",
     "Severity": "HIGH",
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
@@ -1957,7 +1957,7 @@
     "PkgName": "perl-base",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31484",
-    "Title": "CPAN.pm before 2.35 does not verify TLS certificates when downloading  ...",
+    "Title": "CPAN.pm before 2.35 does not verify TLS certificates when downloading distributions over HTTPS",
     "Severity": "HIGH",
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
@@ -1966,7 +1966,7 @@
     "PkgName": "perl-modules-5.32",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31484",
-    "Title": "CPAN.pm before 2.35 does not verify TLS certificates when downloading  ...",
+    "Title": "CPAN.pm before 2.35 does not verify TLS certificates when downloading distributions over HTTPS",
     "Severity": "HIGH",
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
