@@ -62,6 +62,10 @@ class TestEditAction(base.FunctionalTestBase):
             "total": 1,
         }
 
+    @pytest.mark.skipif(
+        not settings.GITHUB_URL.startswith("https://github.com"),
+        reason="requires GHES 3.2",
+    )
     async def test_draft_to_ready_for_review(self) -> None:
         rules = {
             "pull_request_rules": [
@@ -106,6 +110,10 @@ class TestEditAction(base.FunctionalTestBase):
             "total": 1,
         }
 
+    @pytest.mark.skipif(
+        not settings.GITHUB_URL.startswith("https://github.com"),
+        reason="requires GHES 3.2",
+    )
     @pytest.mark.subscription(
         subscription.Features.EVENTLOGS_SHORT,
         subscription.Features.EVENTLOGS_LONG,
@@ -143,6 +151,10 @@ class TestEditAction(base.FunctionalTestBase):
             "total": 0,
         }
 
+    @pytest.mark.skipif(
+        not settings.GITHUB_URL.startswith("https://github.com"),
+        reason="requires GHES 3.2",
+    )
     async def test_ready_for_review_already_converted(self) -> None:
         rules = {
             "pull_request_rules": [
@@ -176,6 +188,10 @@ class TestEditAction(base.FunctionalTestBase):
             "total": 0,
         }
 
+    @pytest.mark.skipif(
+        not settings.GITHUB_URL.startswith("https://github.com"),
+        reason="requires GHES 3.2",
+    )
     async def test_edit_on_closed_pr(self) -> None:
         rules = {
             "pull_request_rules": [
