@@ -2772,7 +2772,7 @@ interactions:
       -->\n### Rule: Queue (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows:
-      routing conditions]\n  - [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr
+      queue conditions]\n  - [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr
       />\n:sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for
       free to open source projects.\n\n:rocket:&nbsp;&nbsp;You can help us by [becoming
       a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify commands
@@ -2802,8 +2802,8 @@ interactions:
       rule matches","summary":"<!-- eydSdWxlOiBRdWV1ZSAocXVldWUpJzogbnVsbH0K -->\n###
       Rule: Queue (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -2869,8 +2869,8 @@ interactions:
       rule matches","summary":"<!-- eydSdWxlOiBRdWV1ZSAocXVldWUpJzogbnVsbH0K -->\n###
       Rule: Queue (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -3142,8 +3142,8 @@ interactions:
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `depends-on=#12031` [\u26d3\ufe0f **test_pr_with_depends_on_unqueued_after_dependent_pr_failed_checks_with_speculative_checks:
       pull request n1 from integration** ([#12031](https://github.com/mergifyio-testing/functional-testing-repo-Syffe/pull/12031))]\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -3174,8 +3174,8 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `depends-on=#12031` [\u26D3\uFE0F **test_pr_with_depends_on_unqueued_after_dependent_pr_failed_checks_with_speculative_checks:
       pull request n1 from integration** ([#12031](https://github.com/mergifyio-testing/functional-testing-repo-Syffe/pull/12031))]\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -3243,8 +3243,8 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `depends-on=#12031` [\u26D3\uFE0F **test_pr_with_depends_on_unqueued_after_dependent_pr_failed_checks_with_speculative_checks:
       pull request n1 from integration** ([#12031](https://github.com/mergifyio-testing/functional-testing-repo-Syffe/pull/12031))]\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -3398,8 +3398,8 @@ interactions:
       rule matches","summary":"<!-- eydSdWxlOiBRdWV1ZSAocXVldWUpJzogbnVsbH0K -->\n###
       Rule: Queue (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -4351,8 +4351,8 @@ interactions:
       rule matches","summary":"<!-- eydSdWxlOiBRdWV1ZSAocXVldWUpJzogbnVsbH0K -->\n###
       Rule: Queue (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -4657,8 +4657,8 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `depends-on=#12031` [\u26D3\uFE0F **test_pr_with_depends_on_unqueued_after_dependent_pr_failed_checks_with_speculative_checks:
       pull request n1 from integration** ([#12031](https://github.com/mergifyio-testing/functional-testing-repo-Syffe/pull/12031))]\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -4928,8 +4928,8 @@ interactions:
       rule matches\",\"summary\":\"<!-- eydSdWxlOiBRdWV1ZSAocXVldWUpJzogbnVsbH0K -->\\n###
       Rule: Queue (queue)\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -4947,8 +4947,8 @@ interactions:
       rule matches\",\"summary\":\"<!-- eydSdWxlOiBRdWV1ZSAocXVldWUpJzogbnVsbH0K -->\\n###
       Rule: Queue (queue)\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -4983,8 +4983,8 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `depends-on=#12031` [\u26D3\uFE0F **test_pr_with_depends_on_unqueued_after_dependent_pr_failed_checks_with_speculative_checks:
       pull request n1 from integration** ([#12031](https://github.com/mergifyio-testing/functional-testing-repo-Syffe/pull/12031))]\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -5004,8 +5004,8 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `depends-on=#12031` [\u26D3\uFE0F **test_pr_with_depends_on_unqueued_after_dependent_pr_failed_checks_with_speculative_checks:
       pull request n1 from integration** ([#12031](https://github.com/mergifyio-testing/functional-testing-repo-Syffe/pull/12031))]\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -5181,8 +5181,8 @@ interactions:
       rule matches","summary":"<!-- eydSdWxlOiBRdWV1ZSAocXVldWUpJzogbnVsbH0K -->\n###
       Rule: Queue (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -5243,8 +5243,8 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `depends-on=#12031` [\u26D3\uFE0F **test_pr_with_depends_on_unqueued_after_dependent_pr_failed_checks_with_speculative_checks:
       pull request n1 from integration** ([#12031](https://github.com/mergifyio-testing/functional-testing-repo-Syffe/pull/12031))]\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -5675,8 +5675,8 @@ interactions:
       rule matches","summary":"<!-- eydSdWxlOiBRdWV1ZSAocXVldWUpJzogbnVsbH0K -->\n###
       Rule: Queue (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -5882,8 +5882,8 @@ interactions:
       rule matches","summary":"<!-- eydSdWxlOiBRdWV1ZSAocXVldWUpJzogbnVsbH0K -->\n###
       Rule: Queue (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -6474,7 +6474,7 @@ interactions:
       -->\n### Rule: Queue (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows:
-      routing conditions]\n  - [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr
+      queue conditions]\n  - [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr
       />\n:sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for
       free to open source projects.\n\n:rocket:&nbsp;&nbsp;You can help us by [becoming
       a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify commands
@@ -6505,7 +6505,7 @@ interactions:
       -->\n### Rule: Queue (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows:
-      routing conditions]\n  - [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr
+      queue conditions]\n  - [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr
       />\n:sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for
       free to open source projects.\n\n:rocket:&nbsp;&nbsp;You can help us by [becoming
       a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify commands
@@ -6584,7 +6584,7 @@ interactions:
       -->\n### Rule: Queue (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows:
-      routing conditions]\n  - [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr
+      queue conditions]\n  - [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr
       />\n:sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for
       free to open source projects.\n\n:rocket:&nbsp;&nbsp;You can help us by [becoming
       a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify commands
@@ -6914,8 +6914,8 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `depends-on=#12031` [\u26D3\uFE0F **test_pr_with_depends_on_unqueued_after_dependent_pr_failed_checks_with_speculative_checks:
       pull request n1 from integration** ([#12031](https://github.com/mergifyio-testing/functional-testing-repo-Syffe/pull/12031))]\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -7058,8 +7058,8 @@ interactions:
       pull request n1 from integration** ([#12031](https://github.com/mergifyio-testing/functional-testing-repo-Syffe/pull/12031))]\n-
       [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -7090,8 +7090,8 @@ interactions:
       pull request n1 from integration** ([#12031](https://github.com/mergifyio-testing/functional-testing-repo-Syffe/pull/12031))]\\n-
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -7163,8 +7163,8 @@ interactions:
       pull request n1 from integration** ([#12031](https://github.com/mergifyio-testing/functional-testing-repo-Syffe/pull/12031))]\\n-
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -7242,7 +7242,7 @@ interactions:
       -->\n### Rule: Queue (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows:
-      routing conditions]\n  - [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr
+      queue conditions]\n  - [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr
       />\n:sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for
       free to open source projects.\n\n:rocket:&nbsp;&nbsp;You can help us by [becoming
       a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify commands
@@ -7297,8 +7297,8 @@ interactions:
       pull request n1 from integration** ([#12031](https://github.com/mergifyio-testing/functional-testing-repo-Syffe/pull/12031))]\\n-
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -7348,8 +7348,8 @@ interactions:
       pull request n1 from integration** ([#12031](https://github.com/mergifyio-testing/functional-testing-repo-Syffe/pull/12031))]\\n-
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions

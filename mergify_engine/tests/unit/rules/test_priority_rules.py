@@ -14,7 +14,7 @@ from mergify_engine.tests.unit import conftest
 
 @mock.patch.object(
     conditions,
-    "get_routing_conditions",
+    "get_queue_conditions",
     mock.AsyncMock(return_value=None),
 )
 @pytest.mark.parametrize(

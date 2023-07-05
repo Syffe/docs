@@ -136,44 +136,44 @@ The merge queue can be visualized from your `dashboard <https://dashboard.mergif
    :alt: The merge queue from the dashboard
 
 
-.. _routing conditions:
+.. _queue conditions:
 
-Routing Conditions
+Queue Conditions
 ~~~~~~~~~~~~~~~~~~
 
-The usage of ``routing_conditions`` is optional but can be used to have thinner control over routing your pull requests
+The usage of ``queue_conditions`` is optional but can be used to have thinner control over routing your pull requests
 into queues.
 
-``routing_conditions`` are evaluated just before queuing the pull request.
-Their job is to determine in which queue the pull request must be queued. The pull request will be queued in the first queue matching the routing conditions.
+``queue_conditions`` are evaluated just before queuing the pull request.
+Their job is to determine in which queue the pull request must be queued. The pull request will be queued in the first queue matching the queue conditions.
 
-The routing conditions can be expressed using the usual :ref:`Conditions`.
+The queue conditions can be expressed using the usual :ref:`Conditions`.
 
-You can use routing conditions both with :ref:`Commands` and ``pull_request_rules``.
+You can use queue conditions both with :ref:`Commands` and ``pull_request_rules``.
 
 Example
 ~~~~~~~
 
 The following example defines two queues named ``default`` and ``hotfix``, and a ``pull_request_rule``.
-Only the queue ``hotfix`` has ``routing_conditions``.
+Only the queue ``hotfix`` has ``queue_conditions``.
 
-In this case, supposing that the ``routing_conditions`` are fulfilled, the command ``@Mergifyio queue``
+In this case, supposing that the ``queue_conditions`` are fulfilled, the command ``@Mergifyio queue``
 is going to queue the pull request in ``hotfix``.
-Also, if the ``pull_request_rule`` matches, supposing that the ``routing_conditions`` are fulfilled,
+Also, if the ``pull_request_rule`` matches, supposing that the ``queue_conditions`` are fulfilled,
 the pull request is going to be queued in ``hotfix``.
 
-Empty ``routing_conditions`` are always matching, thus, a pull request will always fallback in a queue with no ``routing_conditions`` defined.
-To avoid a pull request being queued due to the fallback, you need to define ``routing_conditions`` for every one of your queues.
-If no ``routing_conditions`` are matching, the pull request will not be queued.
+Empty ``queue_conditions`` are always matching, thus, a pull request will always fallback in a queue with no ``queue_conditions`` defined.
+To avoid a pull request being queued due to the fallback, you need to define ``queue_conditions`` for every one of your queues.
+If no ``queue_conditions`` are matching, the pull request will not be queued.
 
-In this case, supposing that the ``routing_conditions`` are not fulfilled, the pull request is going to be queued in ``default``.
+In this case, supposing that the ``queue_conditions`` are not fulfilled, the pull request is going to be queued in ``default``.
 
 
 .. code-block:: yaml
 
     queue_rules:
       - name: hotfix
-        routing_conditions:
+        queue_conditions:
           - label=hotfix
         merge_conditions:
           - "#approved-reviews-by>=2"
@@ -583,7 +583,7 @@ These are the options of the ``queue`` action:
    * - ``name``
      - string
      -
-     - The name of the queue where the pull request should be added. If no name is set, ``routing_conditions`` will be applied instead.
+     - The name of the queue where the pull request should be added. If no name is set, ``queue_conditions`` will be applied instead.
 
    * - ``allow_merging_configuration_change``
      - bool
@@ -787,7 +787,7 @@ A ``queue_rules`` takes the following parameters:
        |premium plan tag|
        |advanced plan tag|
        When creating a draft pull request for a queue, this prefix will be used to name the branch.
-   * - ``routing_conditions``
+   * - ``queue_conditions``
      - list of :ref:`Conditions`
      -
      - The list of ``conditions`` to match to queue the pull request.
@@ -1183,7 +1183,7 @@ Here is a table representing the partition and queues with the code below:
         queue_rules:
           - name: hotfix
             priority_rules: *priority_rules
-            routing_conditions:
+            queue_conditions:
               - label=hotfix
             merge_conditions:
               - or:
@@ -1277,7 +1277,7 @@ Here is a table representing the partition and queues with the code below:
         queue_rules:
           - name: hotfix
             priority_rules: *priority_rules
-            routing_conditions:
+            queue_conditions:
               - label=hotfix
             merge_conditions:
               - or:

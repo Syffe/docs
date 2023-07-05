@@ -53,11 +53,11 @@ class InvalidQueueConfiguration(Exception):
 
 
 @dataclasses.dataclass
-class MismatchingRoutingConditions(InvalidQueueConfiguration):
+class MismatchingQueueConditions(InvalidQueueConfiguration):
     summary: str | None = dataclasses.field(default=None)
-    title: str = "There are no queue routing conditions matching"
+    title: str = "There are no queue conditions matching"
     message: str = (
-        "There are routing conditions defined in the configuration, but none matches. "
+        "There are queue conditions defined in the configuration, but none matches. "
         "The pull request has not been embarked."
     )
 
@@ -355,37 +355,37 @@ Then, re-embark the pull request into the merge queue by posting the comment
             )
 
     async def _set_action_queue_rule(self) -> None:
-        mismatching_routing_conditions: list[qr_config.EvaluatedQueueRule] = []
-        matching_routing_conditions: list[qr_config.EvaluatedQueueRule] = []
-        if await self.queue_rules.routing_conditions_exists():
-            for rule in await self.queue_rules.get_evaluated_routing_conditions(
+        mismatching_queue_conditions: list[qr_config.EvaluatedQueueRule] = []
+        matching_queue_conditions: list[qr_config.EvaluatedQueueRule] = []
+        if await self.queue_rules.queue_conditions_exists():
+            for rule in await self.queue_rules.get_evaluated_queue_conditions(
                 self.ctxt
             ):
                 (
-                    matching_routing_conditions
-                    if rule.routing_conditions.match
-                    else mismatching_routing_conditions
+                    matching_queue_conditions
+                    if rule.queue_conditions.match
+                    else mismatching_queue_conditions
                 ).append(rule)
 
-        if mismatching_routing_conditions and not matching_routing_conditions:
+        if mismatching_queue_conditions and not matching_queue_conditions:
             summary = {
-                q.name: q.routing_conditions.get_summary(display_evaluations=False)
-                for q in mismatching_routing_conditions
+                q.name: q.queue_conditions.get_summary(display_evaluations=False)
+                for q in mismatching_queue_conditions
             }
 
             self.ctxt.log.info(
-                "no routing conditions matching",
+                "no queue conditions matching",
                 summary=summary,
             )
 
-            routing_summary_str = "\n".join(
-                f"* Queue `{name}`: \n{routing_conditions_summary}"
-                for name, routing_conditions_summary in summary.items()
+            queue_conditions_summary_str = "\n".join(
+                f"* Queue `{name}`: \n{queue_conditions_summary}"
+                for name, queue_conditions_summary in summary.items()
             )
-            raise MismatchingRoutingConditions(summary=routing_summary_str)
+            raise MismatchingQueueConditions(summary=queue_conditions_summary_str)
 
-        if matching_routing_conditions and self.config["name"] is None:
-            self.config["name"] = matching_routing_conditions[0].name
+        if matching_queue_conditions and self.config["name"] is None:
+            self.config["name"] = matching_queue_conditions[0].name
 
         # default queue name
         if self.config["name"] is None:
@@ -770,9 +770,9 @@ Then, re-embark the pull request into the merge queue by posting the comment
             )
             await self._render_bot_accounts()
         except InvalidQueueConfiguration as e:
-            if isinstance(e, MismatchingRoutingConditions):
+            if isinstance(e, MismatchingQueueConditions):
                 # NOTE(lecrepont01): we don't want the rule to fail yet if PR was already embarked
-                # this could be caused by routing conditions checks removed after a rebase
+                # this could be caused by queue conditions checks removed after a rebase
                 if still_embarked_pull := first.first(
                     still_embarked_pull
                     for car in cars
@@ -1326,10 +1326,10 @@ class QueueAction(actions.Action):
         if merge_after_condition is not None:
             conditions_requirements.append(merge_after_condition)
 
-        if routing_conditions := await conditions.get_routing_conditions(
+        if queue_conditions := await conditions.get_queue_conditions(
             ctxt, self.config["name"]
         ):
-            conditions_requirements.append(routing_conditions)
+            conditions_requirements.append(queue_conditions)
 
         conditions_requirements.append(
             conditions.RuleCondition.from_tree(

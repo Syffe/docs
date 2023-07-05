@@ -1340,18 +1340,18 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
       [ ] `label=queue`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [ ]
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [ ]
       `label=queue-low`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -1382,18 +1382,18 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
       [ ] `label=queue`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [ ]
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [ ]
       `label=queue-low`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -1524,18 +1524,18 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
       [ ] `label=queue`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [ ]
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [ ]
       `label=queue-low`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -1566,18 +1566,18 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
       [ ] `label=queue`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [ ]
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [ ]
       `label=queue-low`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -1708,18 +1708,18 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
       [ ] `label=queue`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [ ]
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [ ]
       `label=queue-low`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -1750,18 +1750,18 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
       [ ] `label=queue`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [ ]
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [ ]
       `label=queue-low`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -1869,18 +1869,18 @@ interactions:
       [ ] `label=queue-urgent`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X]
       `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `urgent`]\n\n### Rule: Merge default
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `urgent`]\n\n### Rule: Merge default
       (queue)\n- [ ] `label=queue`\n- [X] `-draft` [:pushpin: queue requirement]\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
       [ ] `label=queue-low`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -1912,18 +1912,18 @@ interactions:
       [ ] `label=queue-urgent`\\n- [X] `-draft` [:pushpin: queue requirement]\\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `urgent`]\\n\\n### Rule: Merge default
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `urgent`]\\n\\n### Rule: Merge default
       (queue)\\n- [ ] `label=queue`\\n- [X] `-draft` [:pushpin: queue requirement]\\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
       [ ] `label=queue-low`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X]
       `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -2030,18 +2030,18 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\\n\\n### Rule: Merge default (queue)\\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\\n\\n### Rule: Merge default (queue)\\n-
       [ ] `label=queue`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of [:pushpin:
-      routing conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of [:pushpin:
+      queue conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
       [ ] `label=queue-low`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X]
       `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -2061,18 +2061,18 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\\n\\n### Rule: Merge default (queue)\\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\\n\\n### Rule: Merge default (queue)\\n-
       [ ] `label=queue`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of [:pushpin:
-      routing conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of [:pushpin:
+      queue conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
       [ ] `label=queue-low`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X]
       `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -2095,18 +2095,18 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\\n\\n### Rule: Merge default (queue)\\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\\n\\n### Rule: Merge default (queue)\\n-
       [ ] `label=queue`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of [:pushpin:
-      routing conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of [:pushpin:
+      queue conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
       [ ] `label=queue-low`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X]
       `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -2126,18 +2126,18 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\\n\\n### Rule: Merge default (queue)\\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\\n\\n### Rule: Merge default (queue)\\n-
       [ ] `label=queue`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of [:pushpin:
-      routing conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of [:pushpin:
+      queue conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
       [ ] `label=queue-low`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X]
       `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -2160,18 +2160,18 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\\n\\n### Rule: Merge default (queue)\\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\\n\\n### Rule: Merge default (queue)\\n-
       [ ] `label=queue`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of [:pushpin:
-      routing conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of [:pushpin:
+      queue conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
       [ ] `label=queue-low`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X]
       `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -2191,18 +2191,18 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\\n\\n### Rule: Merge default (queue)\\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\\n\\n### Rule: Merge default (queue)\\n-
       [ ] `label=queue`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of [:pushpin:
-      routing conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of [:pushpin:
+      queue conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
       [ ] `label=queue-low`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X]
       `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -2223,18 +2223,18 @@ interactions:
       [ ] `label=queue-urgent`\\n- [X] `-draft` [:pushpin: queue requirement]\\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `urgent`]\\n\\n### Rule: Merge default
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `urgent`]\\n\\n### Rule: Merge default
       (queue)\\n- [ ] `label=queue`\\n- [X] `-draft` [:pushpin: queue requirement]\\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
       [ ] `label=queue-low`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X]
       `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -2255,18 +2255,18 @@ interactions:
       [ ] `label=queue-urgent`\\n- [X] `-draft` [:pushpin: queue requirement]\\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `urgent`]\\n\\n### Rule: Merge default
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `urgent`]\\n\\n### Rule: Merge default
       (queue)\\n- [ ] `label=queue`\\n- [X] `-draft` [:pushpin: queue requirement]\\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
       [ ] `label=queue-low`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X]
       `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -2644,18 +2644,18 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
       [ ] `label=queue`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [ ]
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [ ]
       `label=queue-low`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -2789,18 +2789,18 @@ interactions:
       -->\n### Rule: Merge priority high (queue)\n- [X] `-draft` [:pushpin: queue
       requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n-
-      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: routing
-      conditions]\n  - [X] all of [:pushpin: routing conditions of queue `urgent`]\n\n###
+      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: queue
+      conditions]\n  - [X] all of [:pushpin: queue conditions of queue `urgent`]\n\n###
       Rule: Merge default (queue)\n- [ ] `label=queue`\n- [X] `-draft` [:pushpin:
       queue requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue
       -> allow_merging_configuration_change setting requirement]\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
       [ ] `label=queue-low`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -2830,18 +2830,18 @@ interactions:
       -->\n### Rule: Merge priority high (queue)\n- [X] `-draft` [:pushpin: queue
       requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n-
-      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: routing
-      conditions]\n  - [X] all of [:pushpin: routing conditions of queue `urgent`]\n\n###
+      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: queue
+      conditions]\n  - [X] all of [:pushpin: queue conditions of queue `urgent`]\n\n###
       Rule: Merge default (queue)\n- [ ] `label=queue`\n- [X] `-draft` [:pushpin:
       queue requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue
       -> allow_merging_configuration_change setting requirement]\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
       [ ] `label=queue-low`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -2921,18 +2921,18 @@ interactions:
       -->\n### Rule: Merge priority high (queue)\n- [X] `-draft` [:pushpin: queue
       requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n-
-      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: routing
-      conditions]\n  - [X] all of [:pushpin: routing conditions of queue `urgent`]\n\n###
+      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: queue
+      conditions]\n  - [X] all of [:pushpin: queue conditions of queue `urgent`]\n\n###
       Rule: Merge default (queue)\n- [ ] `label=queue`\n- [X] `-draft` [:pushpin:
       queue requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue
       -> allow_merging_configuration_change setting requirement]\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
       [ ] `label=queue-low`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -3075,18 +3075,18 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
       [ ] `label=queue`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [ ]
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [ ]
       `label=queue-low`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -3197,18 +3197,18 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
       [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] `label=queue`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
       [ ] `label=queue-low`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -3239,18 +3239,18 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
       [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] `label=queue`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
       [ ] `label=queue-low`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -3331,18 +3331,18 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
       [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] `label=queue`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
       [ ] `label=queue-low`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -3485,18 +3485,18 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
       [ ] `label=queue`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [ ]
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [ ]
       `label=queue-low`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -3607,18 +3607,18 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
       [ ] `label=queue`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [X]
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [X]
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] `label=queue-low`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -3649,18 +3649,18 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
       [ ] `label=queue`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [X]
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [X]
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] `label=queue-low`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -3741,18 +3741,18 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
       [ ] `label=queue`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [X]
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [X]
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] `label=queue-low`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -3907,18 +3907,18 @@ interactions:
       -->\n### Rule: Merge priority high (queue)\n- [X] `-draft` [:pushpin: queue
       requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n-
-      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: routing
-      conditions]\n  - [X] all of [:pushpin: routing conditions of queue `urgent`]\n\n###
+      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: queue
+      conditions]\n  - [X] all of [:pushpin: queue conditions of queue `urgent`]\n\n###
       Rule: Merge default (queue)\n- [ ] `label=queue`\n- [X] `-draft` [:pushpin:
       queue requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue
       -> allow_merging_configuration_change setting requirement]\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
       [ ] `label=queue-low`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -4074,18 +4074,18 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
       [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] `label=queue`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
       [ ] `label=queue-low`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -4653,18 +4653,18 @@ interactions:
       -->\n### Rule: Merge priority high (queue)\n- [X] `-draft` [:pushpin: queue
       requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n-
-      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: routing
-      conditions]\n  - [X] all of [:pushpin: routing conditions of queue `urgent`]\n\n###
+      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: queue
+      conditions]\n  - [X] all of [:pushpin: queue conditions of queue `urgent`]\n\n###
       Rule: Merge default (queue)\n- [ ] `label=queue`\n- [X] `-draft` [:pushpin:
       queue requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue
       -> allow_merging_configuration_change setting requirement]\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
       [ ] `label=queue-low`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -5081,18 +5081,18 @@ interactions:
       -->\n### Rule: Merge priority high (queue)\n- [X] `-draft` [:pushpin: queue
       requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n-
-      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: routing
-      conditions]\n  - [X] all of [:pushpin: routing conditions of queue `urgent`]\n\n###
+      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: queue
+      conditions]\n  - [X] all of [:pushpin: queue conditions of queue `urgent`]\n\n###
       Rule: Merge default (queue)\n- [ ] `label=queue`\n- [X] `-draft` [:pushpin:
       queue requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue
       -> allow_merging_configuration_change setting requirement]\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
       [ ] `label=queue-low`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -5147,18 +5147,18 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
       [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] `label=queue`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
       [ ] `label=queue-low`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -5213,18 +5213,18 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
       [ ] `label=queue`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [X]
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [X]
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] `label=queue-low`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -5406,18 +5406,18 @@ interactions:
       -->\n### Rule: Merge priority high (queue)\n- [X] `-draft` [:pushpin: queue
       requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n-
-      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: routing
-      conditions]\n  - [X] all of [:pushpin: routing conditions of queue `urgent`]\n\n###
+      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: queue
+      conditions]\n  - [X] all of [:pushpin: queue conditions of queue `urgent`]\n\n###
       Rule: Merge default (queue)\n- [ ] `label=queue`\n- [X] `-draft` [:pushpin:
       queue requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue
       -> allow_merging_configuration_change setting requirement]\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
       [ ] `label=queue-low`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -6004,18 +6004,18 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
       [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] `label=queue`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
       [ ] `label=queue-low`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -6173,18 +6173,18 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\n\n### Rule: Merge default (queue)\n-
       [ ] `label=queue`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [X]
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n- [X]
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] `label=queue-low`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -6484,18 +6484,18 @@ interactions:
       -->\\n### Rule: Merge priority high (queue)\\n- [X] `-draft` [:pushpin: queue
       requirement]\\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] `label=queue-urgent`\\n- [X] any of: [:twisted_rightwards_arrows: routing
-      conditions]\\n  - [X] all of [:pushpin: routing conditions of queue `urgent`]\\n\\n###
+      [X] `label=queue-urgent`\\n- [X] any of: [:twisted_rightwards_arrows: queue
+      conditions]\\n  - [X] all of [:pushpin: queue conditions of queue `urgent`]\\n\\n###
       Rule: Merge default (queue)\\n- [ ] `label=queue`\\n- [X] `-draft` [:pushpin:
       queue requirement]\\n- [X] `-mergify-configuration-changed` [:pushpin: queue
       -> allow_merging_configuration_change setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
       [ ] `label=queue-low`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X]
       `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -6558,18 +6558,18 @@ interactions:
       -->\\n### Rule: Merge priority high (queue)\\n- [X] `-draft` [:pushpin: queue
       requirement]\\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] `label=queue-urgent`\\n- [X] any of: [:twisted_rightwards_arrows: routing
-      conditions]\\n  - [X] all of [:pushpin: routing conditions of queue `urgent`]\\n\\n###
+      [X] `label=queue-urgent`\\n- [X] any of: [:twisted_rightwards_arrows: queue
+      conditions]\\n  - [X] all of [:pushpin: queue conditions of queue `urgent`]\\n\\n###
       Rule: Merge default (queue)\\n- [ ] `label=queue`\\n- [X] `-draft` [:pushpin:
       queue requirement]\\n- [X] `-mergify-configuration-changed` [:pushpin: queue
       -> allow_merging_configuration_change setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
       [ ] `label=queue-low`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X]
       `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -6651,18 +6651,18 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\\n\\n### Rule: Merge default (queue)\\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\\n\\n### Rule: Merge default (queue)\\n-
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n- [X] `label=queue`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
       [ ] `label=queue-low`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X]
       `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -6744,18 +6744,18 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\\n\\n### Rule: Merge default (queue)\\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\\n\\n### Rule: Merge default (queue)\\n-
       [ ] `label=queue`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of [:pushpin:
-      routing conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of [:pushpin:
+      queue conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n- [X] `label=queue-low`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -7538,18 +7538,18 @@ interactions:
       -->\n### Rule: Merge priority high (queue)\n- [X] `-draft` [:pushpin: queue
       requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n-
-      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: routing
-      conditions]\n  - [X] all of [:pushpin: routing conditions of queue `urgent`]\n\n###
+      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: queue
+      conditions]\n  - [X] all of [:pushpin: queue conditions of queue `urgent`]\n\n###
       Rule: Merge default (queue)\n- [ ] `label=queue`\n- [X] `-draft` [:pushpin:
       queue requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue
       -> allow_merging_configuration_change setting requirement]\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
       [ ] `label=queue-low`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -7579,18 +7579,18 @@ interactions:
       -->\n### Rule: Merge priority high (queue)\n- [X] `-draft` [:pushpin: queue
       requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n-
-      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: routing
-      conditions]\n  - [X] all of [:pushpin: routing conditions of queue `urgent`]\n\n###
+      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: queue
+      conditions]\n  - [X] all of [:pushpin: queue conditions of queue `urgent`]\n\n###
       Rule: Merge default (queue)\n- [ ] `label=queue`\n- [X] `-draft` [:pushpin:
       queue requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue
       -> allow_merging_configuration_change setting requirement]\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n### Rule: Merge low (queue)\n-
       [ ] `label=queue-low`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of [:pushpin:
-      routing conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of [:pushpin:
+      queue conditions of queue `low-priority`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -7671,18 +7671,18 @@ interactions:
       -->\\n### Rule: Merge priority high (queue)\\n- [X] `-draft` [:pushpin: queue
       requirement]\\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] `label=queue-urgent`\\n- [X] any of: [:twisted_rightwards_arrows: routing
-      conditions]\\n  - [X] all of [:pushpin: routing conditions of queue `urgent`]\\n\\n###
+      [X] `label=queue-urgent`\\n- [X] any of: [:twisted_rightwards_arrows: queue
+      conditions]\\n  - [X] all of [:pushpin: queue conditions of queue `urgent`]\\n\\n###
       Rule: Merge default (queue)\\n- [ ] `label=queue`\\n- [X] `-draft` [:pushpin:
       queue requirement]\\n- [X] `-mergify-configuration-changed` [:pushpin: queue
       -> allow_merging_configuration_change setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
       [ ] `label=queue-low`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X]
       `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -7848,18 +7848,18 @@ interactions:
       -->\\n### Rule: Merge priority high (queue)\\n- [X] `-draft` [:pushpin: queue
       requirement]\\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] `label=queue-urgent`\\n- [X] any of: [:twisted_rightwards_arrows: routing
-      conditions]\\n  - [X] all of [:pushpin: routing conditions of queue `urgent`]\\n\\n###
+      [X] `label=queue-urgent`\\n- [X] any of: [:twisted_rightwards_arrows: queue
+      conditions]\\n  - [X] all of [:pushpin: queue conditions of queue `urgent`]\\n\\n###
       Rule: Merge default (queue)\\n- [ ] `label=queue`\\n- [X] `-draft` [:pushpin:
       queue requirement]\\n- [X] `-mergify-configuration-changed` [:pushpin: queue
       -> allow_merging_configuration_change setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
       [ ] `label=queue-low`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X]
       `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -8018,18 +8018,18 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\\n\\n### Rule: Merge default (queue)\\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\\n\\n### Rule: Merge default (queue)\\n-
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n- [X] `label=queue`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
       [ ] `label=queue-low`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X]
       `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -8188,18 +8188,18 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of [:pushpin:
-      routing conditions of queue `urgent`]\\n\\n### Rule: Merge default (queue)\\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of [:pushpin:
+      queue conditions of queue `urgent`]\\n\\n### Rule: Merge default (queue)\\n-
       [ ] `label=queue`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n- [X] any
-      of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of [:pushpin:
-      routing conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
+      of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of [:pushpin:
+      queue conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n- [X] `label=queue-low`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -8331,18 +8331,18 @@ interactions:
       -->\\n### Rule: Merge priority high (queue)\\n- [X] `-draft` [:pushpin: queue
       requirement]\\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] `label=queue-urgent`\\n- [X] any of: [:twisted_rightwards_arrows: routing
-      conditions]\\n  - [X] all of [:pushpin: routing conditions of queue `urgent`]\\n\\n###
+      [X] `label=queue-urgent`\\n- [X] any of: [:twisted_rightwards_arrows: queue
+      conditions]\\n  - [X] all of [:pushpin: queue conditions of queue `urgent`]\\n\\n###
       Rule: Merge default (queue)\\n- [ ] `label=queue`\\n- [X] `-draft` [:pushpin:
       queue requirement]\\n- [X] `-mergify-configuration-changed` [:pushpin: queue
       -> allow_merging_configuration_change setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\\n\\n### Rule: Merge low (queue)\\n-
       [ ] `label=queue-low`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X]
       `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704161108/test_create_queue_pause_no_inplace/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `low-priority`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions

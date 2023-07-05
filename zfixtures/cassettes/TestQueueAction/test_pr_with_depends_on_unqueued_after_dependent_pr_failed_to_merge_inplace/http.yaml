@@ -2172,7 +2172,7 @@ interactions:
       -->\n### Rule: Queue (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows:
-      routing conditions]\n  - [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr
+      queue conditions]\n  - [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr
       />\n:sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for
       free to open source projects.\n\n:rocket:&nbsp;&nbsp;You can help us by [becoming
       a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify commands
@@ -2202,8 +2202,8 @@ interactions:
       rule matches","summary":"<!-- eydSdWxlOiBRdWV1ZSAocXVldWUpJzogbnVsbH0K -->\n###
       Rule: Queue (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -2269,8 +2269,8 @@ interactions:
       rule matches","summary":"<!-- eydSdWxlOiBRdWV1ZSAocXVldWUpJzogbnVsbH0K -->\n###
       Rule: Queue (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -2542,8 +2542,8 @@ interactions:
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `depends-on=#12035` [\u26d3\ufe0f **test_pr_with_depends_on_unqueued_after_dependent_pr_failed_to_merge_inplace:
       pull request n1 from integration** ([#12035](https://github.com/mergifyio-testing/functional-testing-repo-Syffe/pull/12035))]\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -2574,8 +2574,8 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `depends-on=#12035` [\u26D3\uFE0F **test_pr_with_depends_on_unqueued_after_dependent_pr_failed_to_merge_inplace:
       pull request n1 from integration** ([#12035](https://github.com/mergifyio-testing/functional-testing-repo-Syffe/pull/12035))]\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -2643,8 +2643,8 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `depends-on=#12035` [\u26D3\uFE0F **test_pr_with_depends_on_unqueued_after_dependent_pr_failed_to_merge_inplace:
       pull request n1 from integration** ([#12035](https://github.com/mergifyio-testing/functional-testing-repo-Syffe/pull/12035))]\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -2798,8 +2798,8 @@ interactions:
       rule matches","summary":"<!-- eydSdWxlOiBRdWV1ZSAocXVldWUpJzogbnVsbH0K -->\n###
       Rule: Queue (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -3145,8 +3145,8 @@ interactions:
       rule matches","summary":"<!-- eydSdWxlOiBRdWV1ZSAocXVldWUpJzogbnVsbH0K -->\n###
       Rule: Queue (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -3341,7 +3341,7 @@ interactions:
       queue requirement]\n    - [X] #12035\n  - `-mergify-configuration-changed` [:pushpin:
       queue -> allow_merging_configuration_change setting requirement]\n    - [X]
       #12035\n  - `label=queue`\n    - [X] #12035\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]"}}'
     headers:
       accept:
@@ -3363,7 +3363,7 @@ interactions:
       queue requirement]\\n    - [X] #12035\\n  - `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #12035\\n  - `label=queue`\\n    - [X] #12035\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\",\"text\":null,\"annotations_count\":0,\"annotations_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Syffe/check-runs/14260595375/annotations\"},\"check_suite\":{\"id\":13603044949},\"app\":{\"id\":214874,\"slug\":\"mergify-syffe\",\"node_id\":\"A_kwHOAmplV84AA0da\",\"owner\":{\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/mergifyio-testing\",\"html_url\":\"https://github.com/mergifyio-testing\",\"followers_url\":\"https://api.github.com/users/mergifyio-testing/followers\",\"following_url\":\"https://api.github.com/users/mergifyio-testing/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/mergifyio-testing/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/mergifyio-testing/subscriptions\",\"organizations_url\":\"https://api.github.com/users/mergifyio-testing/orgs\",\"repos_url\":\"https://api.github.com/users/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/users/mergifyio-testing/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/mergifyio-testing/received_events\",\"type\":\"Organization\",\"site_admin\":false},\"name\":\"mergify-Syffe\",\"description\":\"Mergify
       testing installation for Syffe\",\"external_url\":\"https://mergify.com/\",\"html_url\":\"https://github.com/apps/mergify-syffe\",\"created_at\":\"2022-06-27T12:48:14Z\",\"updated_at\":\"2023-06-06T11:39:19Z\",\"permissions\":{\"administration\":\"read\",\"checks\":\"write\",\"contents\":\"write\",\"emails\":\"read\",\"issues\":\"write\",\"members\":\"read\",\"metadata\":\"read\",\"pages\":\"write\",\"pull_requests\":\"write\",\"statuses\":\"write\",\"workflows\":\"write\"},\"events\":[\"check_run\",\"check_suite\",\"issue_comment\",\"member\",\"membership\",\"organization\",\"pull_request\",\"pull_request_review\",\"pull_request_review_comment\",\"pull_request_review_thread\",\"push\",\"repository\",\"status\",\"team\",\"team_add\",\"workflow_job\",\"workflow_run\"]},\"pull_requests\":[{\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Syffe/pulls/12035\",\"id\":1392610431,\"number\":12035,\"head\":{\"ref\":\"20230614150411/test_pr_with_depends_on_unqueued_after_dependent_pr_failed_to_merge_inplace/integration/pr1\",\"sha\":\"1dc732aa8f9311742ce80a7d5a0645cbf781238c\",\"repo\":{\"id\":453968595,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Syffe\",\"name\":\"functional-testing-repo-Syffe\"}},\"base\":{\"ref\":\"20230614150411/test_pr_with_depends_on_unqueued_after_dependent_pr_failed_to_merge_inplace/main\",\"sha\":\"b666d493d9eb5c1565465328290172b9f26c4450\",\"repo\":{\"id\":453968595,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Syffe\",\"name\":\"functional-testing-repo-Syffe\"}}}]}"
     headers:
@@ -3392,7 +3392,7 @@ interactions:
       queue requirement]\n    - [X] #12035\n  - `-mergify-configuration-changed` [:pushpin:
       queue -> allow_merging_configuration_change setting requirement]\n    - [X]
       #12035\n  - `label=queue`\n    - [X] #12035\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\n\n**Visit the [Mergify Dashboard](http://localhost:3000/github/mergifyio-testing/repo/functional-testing-repo-Syffe/queues/partitions/__default__?queues=default&branch=20230614150411%2Ftest_pr_with_depends_on_unqueued_after_dependent_pr_failed_to_merge_inplace%2Fmain)
       to check the state of the queue `default`.**\n\n---\n\nMore information about
       Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue/).\n\n<details>\n<summary>Mergify
@@ -3422,7 +3422,7 @@ interactions:
       queue requirement]\\n    - [X] #12035\\n  - `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #12035\\n  - `label=queue`\\n    - [X] #12035\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n\\n**Visit the [Mergify Dashboard](http://localhost:3000/github/mergifyio-testing/repo/functional-testing-repo-Syffe/queues/partitions/__default__?queues=default&branch=20230614150411%2Ftest_pr_with_depends_on_unqueued_after_dependent_pr_failed_to_merge_inplace%2Fmain)
       to check the state of the queue `default`.**\\n\\n---\\n\\nMore information
       about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue/).\\n\\n<details>\\n<summary>Mergify
@@ -3464,14 +3464,14 @@ interactions:
       queue requirement]\\n    - [X] #12035\\n  - `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #12035\\n  - `label=queue`\\n    - [X] #12035\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\",\"text\":null,\"annotations_count\":0,\"annotations_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Syffe/check-runs/14260595375/annotations\"},\"check_suite\":{\"id\":13603044949},\"app\":{\"id\":214874,\"slug\":\"mergify-syffe\",\"node_id\":\"A_kwHOAmplV84AA0da\",\"owner\":{\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/mergifyio-testing\",\"html_url\":\"https://github.com/mergifyio-testing\",\"followers_url\":\"https://api.github.com/users/mergifyio-testing/followers\",\"following_url\":\"https://api.github.com/users/mergifyio-testing/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/mergifyio-testing/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/mergifyio-testing/subscriptions\",\"organizations_url\":\"https://api.github.com/users/mergifyio-testing/orgs\",\"repos_url\":\"https://api.github.com/users/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/users/mergifyio-testing/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/mergifyio-testing/received_events\",\"type\":\"Organization\",\"site_admin\":false},\"name\":\"mergify-Syffe\",\"description\":\"Mergify
       testing installation for Syffe\",\"external_url\":\"https://mergify.com/\",\"html_url\":\"https://github.com/apps/mergify-syffe\",\"created_at\":\"2022-06-27T12:48:14Z\",\"updated_at\":\"2023-06-06T11:39:19Z\",\"permissions\":{\"administration\":\"read\",\"checks\":\"write\",\"contents\":\"write\",\"emails\":\"read\",\"issues\":\"write\",\"members\":\"read\",\"metadata\":\"read\",\"pages\":\"write\",\"pull_requests\":\"write\",\"statuses\":\"write\",\"workflows\":\"write\"},\"events\":[\"check_run\",\"check_suite\",\"issue_comment\",\"member\",\"membership\",\"organization\",\"pull_request\",\"pull_request_review\",\"pull_request_review_comment\",\"pull_request_review_thread\",\"push\",\"repository\",\"status\",\"team\",\"team_add\",\"workflow_job\",\"workflow_run\"]},\"pull_requests\":[{\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Syffe/pulls/12035\",\"id\":1392610431,\"number\":12035,\"head\":{\"ref\":\"20230614150411/test_pr_with_depends_on_unqueued_after_dependent_pr_failed_to_merge_inplace/integration/pr1\",\"sha\":\"1dc732aa8f9311742ce80a7d5a0645cbf781238c\",\"repo\":{\"id\":453968595,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Syffe\",\"name\":\"functional-testing-repo-Syffe\"}},\"base\":{\"ref\":\"20230614150411/test_pr_with_depends_on_unqueued_after_dependent_pr_failed_to_merge_inplace/main\",\"sha\":\"b666d493d9eb5c1565465328290172b9f26c4450\",\"repo\":{\"id\":453968595,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Syffe\",\"name\":\"functional-testing-repo-Syffe\"}}}]},{\"id\":14260589169,\"name\":\"Summary\",\"node_id\":\"CR_kwDOGw8C088AAAADUf9ScQ\",\"head_sha\":\"1dc732aa8f9311742ce80a7d5a0645cbf781238c\",\"external_id\":\"12035\",\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Syffe/check-runs/14260589169\",\"html_url\":\"https://github.com/mergifyio-testing/functional-testing-repo-Syffe/runs/14260589169\",\"details_url\":\"http://localhost:3000/github/mergifyio-testing/repo/functional-testing-repo-Syffe/event-logs\",\"status\":\"completed\",\"conclusion\":\"success\",\"started_at\":\"2023-06-14T15:04:43Z\",\"completed_at\":\"2023-06-14T15:04:45Z\",\"output\":{\"title\":\"1
       rule matches\",\"summary\":\"<!-- eydSdWxlOiBRdWV1ZSAocXVldWUpJzogbnVsbH0K -->\\n###
       Rule: Queue (queue)\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -3493,7 +3493,7 @@ interactions:
       queue requirement]\\n    - [X] #12035\\n  - `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #12035\\n  - `label=queue`\\n    - [X] #12035\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n\\n**Visit the [Mergify Dashboard](http://localhost:3000/github/mergifyio-testing/repo/functional-testing-repo-Syffe/queues/partitions/__default__?queues=default&branch=20230614150411%2Ftest_pr_with_depends_on_unqueued_after_dependent_pr_failed_to_merge_inplace%2Fmain)
       to check the state of the queue `default`.**\\n\\n---\\n\\nMore information
       about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue/).\\n\\n<details>\\n<summary>Mergify
@@ -3532,8 +3532,8 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `depends-on=#12035` [\u26D3\uFE0F **test_pr_with_depends_on_unqueued_after_dependent_pr_failed_to_merge_inplace:
       pull request n1 from integration** ([#12035](https://github.com/mergifyio-testing/functional-testing-repo-Syffe/pull/12035))]\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -3745,14 +3745,14 @@ interactions:
       queue requirement]\\n    - [X] #12035\\n  - `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #12035\\n  - `label=queue`\\n    - [X] #12035\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\",\"text\":null,\"annotations_count\":0,\"annotations_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Syffe/check-runs/14260595375/annotations\"},\"check_suite\":{\"id\":13603044949},\"app\":{\"id\":214874,\"slug\":\"mergify-syffe\",\"node_id\":\"A_kwHOAmplV84AA0da\",\"owner\":{\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/mergifyio-testing\",\"html_url\":\"https://github.com/mergifyio-testing\",\"followers_url\":\"https://api.github.com/users/mergifyio-testing/followers\",\"following_url\":\"https://api.github.com/users/mergifyio-testing/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/mergifyio-testing/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/mergifyio-testing/subscriptions\",\"organizations_url\":\"https://api.github.com/users/mergifyio-testing/orgs\",\"repos_url\":\"https://api.github.com/users/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/users/mergifyio-testing/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/mergifyio-testing/received_events\",\"type\":\"Organization\",\"site_admin\":false},\"name\":\"mergify-Syffe\",\"description\":\"Mergify
       testing installation for Syffe\",\"external_url\":\"https://mergify.com/\",\"html_url\":\"https://github.com/apps/mergify-syffe\",\"created_at\":\"2022-06-27T12:48:14Z\",\"updated_at\":\"2023-06-06T11:39:19Z\",\"permissions\":{\"administration\":\"read\",\"checks\":\"write\",\"contents\":\"write\",\"emails\":\"read\",\"issues\":\"write\",\"members\":\"read\",\"metadata\":\"read\",\"pages\":\"write\",\"pull_requests\":\"write\",\"statuses\":\"write\",\"workflows\":\"write\"},\"events\":[\"check_run\",\"check_suite\",\"issue_comment\",\"member\",\"membership\",\"organization\",\"pull_request\",\"pull_request_review\",\"pull_request_review_comment\",\"pull_request_review_thread\",\"push\",\"repository\",\"status\",\"team\",\"team_add\",\"workflow_job\",\"workflow_run\"]},\"pull_requests\":[{\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Syffe/pulls/12035\",\"id\":1392610431,\"number\":12035,\"head\":{\"ref\":\"20230614150411/test_pr_with_depends_on_unqueued_after_dependent_pr_failed_to_merge_inplace/integration/pr1\",\"sha\":\"1dc732aa8f9311742ce80a7d5a0645cbf781238c\",\"repo\":{\"id\":453968595,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Syffe\",\"name\":\"functional-testing-repo-Syffe\"}},\"base\":{\"ref\":\"20230614150411/test_pr_with_depends_on_unqueued_after_dependent_pr_failed_to_merge_inplace/main\",\"sha\":\"b666d493d9eb5c1565465328290172b9f26c4450\",\"repo\":{\"id\":453968595,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Syffe\",\"name\":\"functional-testing-repo-Syffe\"}}}]},{\"id\":14260589169,\"name\":\"Summary\",\"node_id\":\"CR_kwDOGw8C088AAAADUf9ScQ\",\"head_sha\":\"1dc732aa8f9311742ce80a7d5a0645cbf781238c\",\"external_id\":\"12035\",\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Syffe/check-runs/14260589169\",\"html_url\":\"https://github.com/mergifyio-testing/functional-testing-repo-Syffe/runs/14260589169\",\"details_url\":\"http://localhost:3000/github/mergifyio-testing/repo/functional-testing-repo-Syffe/event-logs\",\"status\":\"completed\",\"conclusion\":\"success\",\"started_at\":\"2023-06-14T15:04:43Z\",\"completed_at\":\"2023-06-14T15:04:45Z\",\"output\":{\"title\":\"1
       rule matches\",\"summary\":\"<!-- eydSdWxlOiBRdWV1ZSAocXVldWUpJzogbnVsbH0K -->\\n###
       Rule: Queue (queue)\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -3774,7 +3774,7 @@ interactions:
       queue requirement]\\n    - [X] #12035\\n  - `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #12035\\n  - `label=queue`\\n    - [X] #12035\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n\\n**Visit the [Mergify Dashboard](http://localhost:3000/github/mergifyio-testing/repo/functional-testing-repo-Syffe/queues/partitions/__default__?queues=default&branch=20230614150411%2Ftest_pr_with_depends_on_unqueued_after_dependent_pr_failed_to_merge_inplace%2Fmain)
       to check the state of the queue `default`.**\\n\\n---\\n\\nMore information
       about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue/).\\n\\n<details>\\n<summary>Mergify
@@ -3954,7 +3954,7 @@ interactions:
       queue requirement]\n    - [X] #12035\n  - `-mergify-configuration-changed` [:pushpin:
       queue -> allow_merging_configuration_change setting requirement]\n    - [X]
       #12035\n  - `label=queue`\n    - [X] #12035\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\n\nCheck-runs and statuses of the embarked pull request #12035:\n\n<table><tr><td
       align=\"center\" width=\"48\" height=\"48\"><img src=\"https://raw.githubusercontent.com/Mergifyio/mergify-engine/master/assets/x-red-16.png\"
       width=\"16\" height=\"16\" /></td><td align=\"center\" width=\"48\" height=\"48\"><img
@@ -3982,7 +3982,7 @@ interactions:
       queue requirement]\\n    - [X] #12035\\n  - `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #12035\\n  - `label=queue`\\n    - [X] #12035\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n\\nCheck-runs and statuses of the embarked pull request #12035:\\n\\n<table><tr><td
       align=\\\"center\\\" width=\\\"48\\\" height=\\\"48\\\"><img src=\\\"https://raw.githubusercontent.com/Mergifyio/mergify-engine/master/assets/x-red-16.png\\\"
       width=\\\"16\\\" height=\\\"16\\\" /></td><td align=\\\"center\\\" width=\\\"48\\\"
@@ -4055,7 +4055,7 @@ interactions:
       -->\n### Rule: Queue (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows:
-      routing conditions]\n  - [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr
+      queue conditions]\n  - [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr
       />\n:sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for
       free to open source projects.\n\n:rocket:&nbsp;&nbsp;You can help us by [becoming
       a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify commands
@@ -4086,7 +4086,7 @@ interactions:
       -->\n### Rule: Queue (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows:
-      routing conditions]\n  - [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr
+      queue conditions]\n  - [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr
       />\n:sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for
       free to open source projects.\n\n:rocket:&nbsp;&nbsp;You can help us by [becoming
       a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify commands
@@ -4158,7 +4158,7 @@ interactions:
       queue requirement]\\n    - [X] #12035\\n  - `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #12035\\n  - `label=queue`\\n    - [X] #12035\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n\\nCheck-runs and statuses of the embarked pull request #12035:\\n\\n<table><tr><td
       align=\\\"center\\\" width=\\\"48\\\" height=\\\"48\\\"><img src=\\\"https://raw.githubusercontent.com/Mergifyio/mergify-engine/master/assets/x-red-16.png\\\"
       width=\\\"16\\\" height=\\\"16\\\" /></td><td align=\\\"center\\\" width=\\\"48\\\"
@@ -4170,7 +4170,7 @@ interactions:
       -->\\n### Rule: Queue (queue)\\n- [X] `-draft` [:pushpin: queue requirement]\\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows:
-      routing conditions]\\n  - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]\\n  - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide
       this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
@@ -4313,8 +4313,8 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `depends-on=#12035` [\u26D3\uFE0F **test_pr_with_depends_on_unqueued_after_dependent_pr_failed_to_merge_inplace:
       pull request n1 from integration** ([#12035](https://github.com/mergifyio-testing/functional-testing-repo-Syffe/pull/12035))]\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -4455,8 +4455,8 @@ interactions:
       pull request n1 from integration** ([#12035](https://github.com/mergifyio-testing/functional-testing-repo-Syffe/pull/12035))]\n-
       [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -4487,8 +4487,8 @@ interactions:
       pull request n1 from integration** ([#12035](https://github.com/mergifyio-testing/functional-testing-repo-Syffe/pull/12035))]\\n-
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -4560,8 +4560,8 @@ interactions:
       pull request n1 from integration** ([#12035](https://github.com/mergifyio-testing/functional-testing-repo-Syffe/pull/12035))]\\n-
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -4632,7 +4632,7 @@ interactions:
       queue requirement]\\n    - [X] #12035\\n  - `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #12035\\n  - `label=queue`\\n    - [X] #12035\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n\\nCheck-runs and statuses of the embarked pull request #12035:\\n\\n<table><tr><td
       align=\\\"center\\\" width=\\\"48\\\" height=\\\"48\\\"><img src=\\\"https://raw.githubusercontent.com/Mergifyio/mergify-engine/master/assets/x-red-16.png\\\"
       width=\\\"16\\\" height=\\\"16\\\" /></td><td align=\\\"center\\\" width=\\\"48\\\"
@@ -4644,7 +4644,7 @@ interactions:
       -->\\n### Rule: Queue (queue)\\n- [X] `-draft` [:pushpin: queue requirement]\\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows:
-      routing conditions]\\n  - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]\\n  - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide
       this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
@@ -4699,8 +4699,8 @@ interactions:
       pull request n1 from integration** ([#12035](https://github.com/mergifyio-testing/functional-testing-repo-Syffe/pull/12035))]\\n-
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -4750,8 +4750,8 @@ interactions:
       pull request n1 from integration** ([#12035](https://github.com/mergifyio-testing/functional-testing-repo-Syffe/pull/12035))]\\n-
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions

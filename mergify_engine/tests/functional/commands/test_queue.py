@@ -10,14 +10,14 @@ from mergify_engine.tests.functional import conftest
 class TestQueueCommand(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True
 
-    async def test_command_queue_with_routing_conditions_not_matching_and_no_fallback(
+    async def test_command_queue_with_queue_conditions_not_matching_and_no_fallback(
         self,
     ) -> None:
         rules = {
             "queue_rules": [
                 {
                     "name": "hotfix",
-                    "routing_conditions": [
+                    "queue_conditions": [
                         "label=hotfix",
                     ],
                     "merge_conditions": [
@@ -26,7 +26,7 @@ class TestQueueCommand(base.FunctionalTestBase):
                 },
                 {
                     "name": "default",
-                    "routing_conditions": [
+                    "queue_conditions": [
                         "label=toto",
                     ],
                     "merge_conditions": [
@@ -45,14 +45,14 @@ class TestQueueCommand(base.FunctionalTestBase):
             "> queue\n\n#### 🟠 Waiting for conditions to match" in comments[-1]["body"]
         )
 
-    async def test_command_queue_with_routing_conditions_not_matching_and_fallback(
+    async def test_command_queue_with_queue_conditions_not_matching_and_fallback(
         self,
     ) -> None:
         rules = {
             "queue_rules": [
                 {
                     "name": "hotfix",
-                    "routing_conditions": [
+                    "queue_conditions": [
                         "label=hotfix",
                     ],
                     "merge_conditions": [
@@ -78,12 +78,12 @@ class TestQueueCommand(base.FunctionalTestBase):
             in comments[-1]["body"]
         )
 
-    async def test_command_queue_with_routing_conditions_matching(self) -> None:
+    async def test_command_queue_with_queue_conditions_matching(self) -> None:
         rules = {
             "queue_rules": [
                 {
                     "name": "hotfix",
-                    "routing_conditions": [
+                    "queue_conditions": [
                         "label=hotfix",
                     ],
                     "merge_conditions": [
@@ -120,14 +120,14 @@ class TestQueueCommand(base.FunctionalTestBase):
 
         await assert_queued(p1, "1st")
 
-    async def test_command_queue_with_routing_conditions_matching_and_default_queue_forced(
+    async def test_command_queue_with_queue_conditions_matching_and_default_queue_forced(
         self,
     ) -> None:
         rules = {
             "queue_rules": [
                 {
                     "name": "hotfix",
-                    "routing_conditions": [
+                    "queue_conditions": [
                         "label=hotfix",
                     ],
                     "merge_conditions": [
@@ -293,8 +293,8 @@ class TestQueueCommand(base.FunctionalTestBase):
   - [ ] `check-success=continuous-integration/fake-ci`
 - [X] `-draft` [:pushpin: queue requirement]
 - [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
-- [X] any of: [:twisted_rightwards_arrows: routing conditions]
-  - [X] all of [:pushpin: routing conditions of queue `default`]
+- [X] any of: [:twisted_rightwards_arrows: queue conditions]
+  - [X] all of [:pushpin: queue conditions of queue `default`]
 
 </details>
 """
@@ -316,8 +316,8 @@ class TestQueueCommand(base.FunctionalTestBase):
   - [ ] `check-success=continuous-integration/fake-ci`
 - [X] `-draft` [:pushpin: queue requirement]
 - [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
-- [X] any of: [:twisted_rightwards_arrows: routing conditions]
-  - [X] all of [:pushpin: routing conditions of queue `default`]
+- [X] any of: [:twisted_rightwards_arrows: queue conditions]
+  - [X] all of [:pushpin: queue conditions of queue `default`]
 
 </details>
 """
@@ -415,18 +415,18 @@ class TestQueueCommand(base.FunctionalTestBase):
 
         await self.assert_merge_queue_contents(q, None, [])
 
-    async def test_routing_conditions_with_branch_protections(self) -> None:
+    async def test_queue_conditions_with_branch_protections(self) -> None:
         rules = {
             "queue_rules": [
                 {
                     "name": "default",
-                    "routing_conditions": [
+                    "queue_conditions": [
                         "label=default",
                     ],
                 },
                 {
                     "name": "quwu",
-                    "routing_conditions": [
+                    "queue_conditions": [
                         "label=uwu",
                     ],
                 },
@@ -461,10 +461,10 @@ class TestQueueCommand(base.FunctionalTestBase):
 - [X] `#changes-requested-reviews-by=0` [🛡 GitHub branch protection]
 - [X] `-draft` [:pushpin: queue requirement]
 - [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
-- [X] any of: [:twisted_rightwards_arrows: routing conditions]
-  - [X] all of: [:pushpin: routing conditions of queue `quwu`]
+- [X] any of: [:twisted_rightwards_arrows: queue conditions]
+  - [X] all of: [:pushpin: queue conditions of queue `quwu`]
     - [X] `label=uwu`
-  - [ ] all of: [:pushpin: routing conditions of queue `default`]
+  - [ ] all of: [:pushpin: queue conditions of queue `default`]
     - [ ] `label=default`
 
 </details>
@@ -472,20 +472,20 @@ class TestQueueCommand(base.FunctionalTestBase):
             in comment["comment"]["body"]
         )
 
-    async def test_command_queue_non_matching_routing_conditions_and_specifying_queue_name(
+    async def test_command_queue_non_matching_queue_conditions_and_specifying_queue_name(
         self,
     ) -> None:
         rules = {
             "queue_rules": [
                 {
                     "name": "default",
-                    "routing_conditions": [
+                    "queue_conditions": [
                         "label=default",
                     ],
                 },
                 {
                     "name": "specialq",
-                    "routing_conditions": [
+                    "queue_conditions": [
                         "label=special",
                     ],
                 },
@@ -506,8 +506,8 @@ class TestQueueCommand(base.FunctionalTestBase):
 
 <details>
 
-- [ ] any of: [:twisted_rightwards_arrows: routing conditions]
-  - [ ] all of: [:pushpin: routing conditions of queue `default`]
+- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
+  - [ ] all of: [:pushpin: queue conditions of queue `default`]
     - [ ] `label=default`
 - [X] `-draft` [:pushpin: queue requirement]
 - [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]

@@ -108,7 +108,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
                 qr_config.QueueRule(
                     name=qr_config.QueueName("foo"),
                     merge_conditions=conditions.QueueRuleMergeConditions([]),
-                    routing_conditions=conditions.QueueRuleMergeConditions([]),
+                    queue_conditions=conditions.QueueRuleMergeConditions([]),
                     config=queue_config,
                     priority_rules=pr_config.PriorityRules([]),
                 )
@@ -247,7 +247,7 @@ pull_requests:
                 qr_config.QueueRule(
                     name=qr_config.QueueName("foo"),
                     merge_conditions=conditions.QueueRuleMergeConditions([]),
-                    routing_conditions=conditions.QueueRuleMergeConditions([]),
+                    queue_conditions=conditions.QueueRuleMergeConditions([]),
                     config=queue_config,
                     priority_rules=pr_config.PriorityRules([]),
                 )
@@ -348,7 +348,7 @@ pull_requests:
                 qr_config.QueueRule(
                     name=qr_config.QueueName("foo"),
                     merge_conditions=conditions.QueueRuleMergeConditions([]),
-                    routing_conditions=conditions.QueueRuleMergeConditions([]),
+                    queue_conditions=conditions.QueueRuleMergeConditions([]),
                     config=queue_config,
                     priority_rules=pr_config.PriorityRules([]),
                 )
@@ -426,7 +426,7 @@ pull_requests:
                 qr_config.QueueRule(
                     name=qr_config.QueueName("foo"),
                     merge_conditions=conditions.QueueRuleMergeConditions([]),
-                    routing_conditions=conditions.QueueRuleMergeConditions([]),
+                    queue_conditions=conditions.QueueRuleMergeConditions([]),
                     config=queue_config,
                     priority_rules=pr_config.PriorityRules([]),
                 )

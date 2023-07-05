@@ -1194,8 +1194,8 @@ interactions:
       -->\n### Rule: Automatic merge (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230612143114/test_rebase_pr_in_queue/main`\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n\n<details>\n<summary>Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
       be found in the [documentation](https://docs.mergify.com/).\n\nYou can also
       trigger Mergify actions by commenting on this pull request:\n\n- `@Mergifyio
@@ -1223,8 +1223,8 @@ interactions:
       -->\n### Rule: Automatic merge (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230612143114/test_rebase_pr_in_queue/main`\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n\n<details>\n<summary>Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
       be found in the [documentation](https://docs.mergify.com/).\n\nYou can also
       trigger Mergify actions by commenting on this pull request:\n\n- `@Mergifyio
@@ -1289,8 +1289,8 @@ interactions:
       -->\n### Rule: Automatic merge (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230612143114/test_rebase_pr_in_queue/main`\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n\n<details>\n<summary>Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
       be found in the [documentation](https://docs.mergify.com/).\n\nYou can also
       trigger Mergify actions by commenting on this pull request:\n\n- `@Mergifyio
@@ -1484,7 +1484,7 @@ interactions:
       [ ] `label=queue`\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230612143114/test_rebase_pr_in_queue/main`\n- [X] any of: [:twisted_rightwards_arrows:
-      routing conditions]\n  - [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr
+      queue conditions]\n  - [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr
       />\n\n<details>\n<summary>Mergify commands and options</summary>\n\n<br />\n\nMore
       conditions and actions can be found in the [documentation](https://docs.mergify.com/).\n\nYou
       can also trigger Mergify actions by commenting on this pull request:\n\n- `@Mergifyio
@@ -1514,7 +1514,7 @@ interactions:
       [ ] `label=queue`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230612143114/test_rebase_pr_in_queue/main`\\n- [X] any of: [:twisted_rightwards_arrows:
-      routing conditions]\\n  - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]\\n  - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n\\n<hr />\\n\\n<details>\\n<summary>Mergify commands and options</summary>\\n\\n<br
       />\\n\\nMore conditions and actions can be found in the [documentation](https://docs.mergify.com/).\\n\\nYou
       can also trigger Mergify actions by commenting on this pull request:\\n\\n-
@@ -1992,8 +1992,8 @@ interactions:
       -->\n### Rule: Automatic merge (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230612143114/test_rebase_pr_in_queue/main`\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n\n<details>\n<summary>Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
       be found in the [documentation](https://docs.mergify.com/).\n\nYou can also
       trigger Mergify actions by commenting on this pull request:\n\n- `@Mergifyio
@@ -2291,8 +2291,8 @@ interactions:
       -->\\n### Rule: Automatic merge (queue)\\n- [X] `-draft` [:pushpin: queue requirement]\\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230612143114/test_rebase_pr_in_queue/main`\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n\\n<details>\\n<summary>Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
       can be found in the [documentation](https://docs.mergify.com/).\\n\\nYou can
       also trigger Mergify actions by commenting on this pull request:\\n\\n- `@Mergifyio
@@ -2309,8 +2309,8 @@ interactions:
       -->\\n### Rule: Automatic merge (queue)\\n- [X] `-draft` [:pushpin: queue requirement]\\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230612143114/test_rebase_pr_in_queue/main`\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n\\n<details>\\n<summary>Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
       can be found in the [documentation](https://docs.mergify.com/).\\n\\nYou can
       also trigger Mergify actions by commenting on this pull request:\\n\\n- `@Mergifyio
@@ -2329,7 +2329,7 @@ interactions:
       [ ] `label=queue`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230612143114/test_rebase_pr_in_queue/main`\\n- [X] any of: [:twisted_rightwards_arrows:
-      routing conditions]\\n  - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]\\n  - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n\\n<hr />\\n\\n<details>\\n<summary>Mergify commands and options</summary>\\n\\n<br
       />\\n\\nMore conditions and actions can be found in the [documentation](https://docs.mergify.com/).\\n\\nYou
       can also trigger Mergify actions by commenting on this pull request:\\n\\n-
@@ -2351,7 +2351,7 @@ interactions:
       [ ] `label=queue`\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230612143114/test_rebase_pr_in_queue/main`\\n- [X] any of: [:twisted_rightwards_arrows:
-      routing conditions]\\n  - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]\\n  - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n\\n<hr />\\n\\n<details>\\n<summary>Mergify commands and options</summary>\\n\\n<br
       />\\n\\nMore conditions and actions can be found in the [documentation](https://docs.mergify.com/).\\n\\nYou
       can also trigger Mergify actions by commenting on this pull request:\\n\\n-
@@ -2639,8 +2639,8 @@ interactions:
       -->\n### Rule: Automatic merge (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230612143114/test_rebase_pr_in_queue/main`\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n\n<details>\n<summary>Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
       be found in the [documentation](https://docs.mergify.com/).\n\nYou can also
       trigger Mergify actions by commenting on this pull request:\n\n- `@Mergifyio

@@ -962,6 +962,53 @@ found undefined alias
         "Cannot have both `conditions` and `merge_conditions`, only use `merge_conditions (`conditions` is deprecated)"
     )
 
+    with pytest.raises(voluptuous.error.MultipleInvalid) as exc:
+        rules.UserConfigurationSchema(
+            rules.YamlSchema(
+                """
+                queue_rules:
+                  - name: foo
+                    routing_conditions:
+                      - base=test
+                    queue_conditions:
+                      - "#approved-reviews-by>=2"
+                      - check-success=Travis CI - Pull Request
+                """
+            )
+        )
+
+    assert str(exc.value).startswith(
+        "Cannot have both `routing_conditions` and `queue_conditions`, only use `queue_conditions (`routing_conditions` is deprecated)"
+    )
+
+    # Just to make sure both routing_conditions and queue_conditions works fine
+    # on their own
+    rules.UserConfigurationSchema(
+        rules.YamlSchema(
+            """
+            queue_rules:
+              - name: foo
+                routing_conditions:
+                  - base=test
+                  - "#approved-reviews-by>=2"
+                  - check-success=Travis CI - Pull Request
+            """
+        )
+    )
+
+    rules.UserConfigurationSchema(
+        rules.YamlSchema(
+            """
+            queue_rules:
+              - name: foo
+                queue_conditions:
+                  - base=test
+                  - "#approved-reviews-by>=2"
+                  - check-success=Travis CI - Pull Request
+            """
+        )
+    )
+
 
 @pytest.mark.parametrize(
     "extends",

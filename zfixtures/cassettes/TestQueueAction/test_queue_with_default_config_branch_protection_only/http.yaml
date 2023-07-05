@@ -1069,8 +1069,8 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -1103,8 +1103,8 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -1238,8 +1238,8 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -1273,8 +1273,8 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -1412,8 +1412,8 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -1438,8 +1438,8 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -1462,8 +1462,8 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -1489,8 +1489,8 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -1689,8 +1689,8 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -1846,8 +1846,8 @@ interactions:
       -->\n### Rule: Merge priority high (queue)\n- [X] `-draft` [:pushpin: queue
       requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n- [X] any of:
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n- [X] any of:
       [\ud83d\udee1 GitHub branch protection]\n  - [X] `check-success=continuous-integration/fake-ci`\n  -
       [ ] `check-neutral=continuous-integration/fake-ci`\n  - [ ] `check-skipped=continuous-integration/fake-ci`\n\n<hr
       />\n:sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for
@@ -1880,8 +1880,8 @@ interactions:
       -->\\n### Rule: Merge priority high (queue)\\n- [X] `-draft` [:pushpin: queue
       requirement]\\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n- [X] any
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n- [X] any
       of: [\U0001F6E1 GitHub branch protection]\\n  - [X] `check-success=continuous-integration/fake-ci`\\n
       \ - [ ] `check-neutral=continuous-integration/fake-ci`\\n  - [ ] `check-skipped=continuous-integration/fake-ci`\\n\\n<hr
       />\\n:sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for
@@ -1963,8 +1963,8 @@ interactions:
       -->\\n### Rule: Merge priority high (queue)\\n- [X] `-draft` [:pushpin: queue
       requirement]\\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n- [X] any
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n- [X] any
       of: [\U0001F6E1 GitHub branch protection]\\n  - [X] `check-success=continuous-integration/fake-ci`\\n
       \ - [ ] `check-neutral=continuous-integration/fake-ci`\\n  - [ ] `check-skipped=continuous-integration/fake-ci`\\n\\n<hr
       />\\n:sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for
@@ -2298,8 +2298,8 @@ interactions:
       -->\\n### Rule: Merge priority high (queue)\\n- [X] `-draft` [:pushpin: queue
       requirement]\\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n- [X] any
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n- [X] any
       of: [\U0001F6E1 GitHub branch protection]\\n  - [X] `check-success=continuous-integration/fake-ci`\\n
       \ - [ ] `check-neutral=continuous-integration/fake-ci`\\n  - [ ] `check-skipped=continuous-integration/fake-ci`\\n\\n<hr
       />\\n:sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for
@@ -2516,8 +2516,8 @@ interactions:
       -->\\n### Rule: Merge priority high (queue)\\n- [X] `-draft` [:pushpin: queue
       requirement]\\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n- [X] any
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n- [X] any
       of: [\U0001F6E1 GitHub branch protection]\\n  - [X] `check-success=continuous-integration/fake-ci`\\n
       \ - [ ] `check-neutral=continuous-integration/fake-ci`\\n  - [ ] `check-skipped=continuous-integration/fake-ci`\\n\\n<hr
       />\\n:sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for
@@ -2554,8 +2554,8 @@ interactions:
       -->\n### Rule: Merge priority high (queue)\n- [X] `-draft` [:pushpin: queue
       requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n- [X] any of:
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n- [X] any of:
       [\ud83d\udee1 GitHub branch protection]\n  - [X] `check-success=continuous-integration/fake-ci`\n  -
       [ ] `check-neutral=continuous-integration/fake-ci`\n  - [ ] `check-skipped=continuous-integration/fake-ci`\n\n<hr
       />\n:sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for
@@ -2588,8 +2588,8 @@ interactions:
       -->\\n### Rule: Merge priority high (queue)\\n- [X] `-draft` [:pushpin: queue
       requirement]\\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n- [X] any
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n- [X] any
       of: [\U0001F6E1 GitHub branch protection]\\n  - [X] `check-success=continuous-integration/fake-ci`\\n
       \ - [ ] `check-neutral=continuous-integration/fake-ci`\\n  - [ ] `check-skipped=continuous-integration/fake-ci`\\n\\n<hr
       />\\n:sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for
@@ -2780,7 +2780,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n    -
       [X] #1821\n  - [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\n  -
       `label=queue`\n    - [X] #1821\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\n- [ ] any of [\ud83d\udee1 GitHub branch protection]:\n  - [ ] `check-neutral=continuous-integration/fake-ci`\n  -
       [ ] `check-skipped=continuous-integration/fake-ci`\n  - [ ] `check-success=continuous-integration/fake-ci`"}}'
     headers:
@@ -2806,7 +2806,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #1821\\n  - [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n
       \ - `label=queue`\\n    - [X] #1821\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n- [ ] any of [\U0001F6E1 GitHub branch protection]:\\n  - [ ] `check-neutral=continuous-integration/fake-ci`\\n
       \ - [ ] `check-skipped=continuous-integration/fake-ci`\\n  - [ ] `check-success=continuous-integration/fake-ci`\",\"text\":null,\"annotations_count\":0,\"annotations_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/check-runs/14186869183/annotations\"},\"check_suite\":{\"id\":13537829565},\"app\":{\"id\":313724,\"slug\":\"mergify-lecrepont01\",\"node_id\":\"A_kwHOAmplV84ABMl8\",\"owner\":{\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/mergifyio-testing\",\"html_url\":\"https://github.com/mergifyio-testing\",\"followers_url\":\"https://api.github.com/users/mergifyio-testing/followers\",\"following_url\":\"https://api.github.com/users/mergifyio-testing/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/mergifyio-testing/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/mergifyio-testing/subscriptions\",\"organizations_url\":\"https://api.github.com/users/mergifyio-testing/orgs\",\"repos_url\":\"https://api.github.com/users/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/users/mergifyio-testing/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/mergifyio-testing/received_events\",\"type\":\"Organization\",\"site_admin\":false},\"name\":\"mergify-lecrepont01\",\"description\":\"Mergify
       testing installation for lecrepont01\",\"external_url\":\"https://mergify.com/\",\"html_url\":\"https://github.com/apps/mergify-lecrepont01\",\"created_at\":\"2023-04-04T10:31:12Z\",\"updated_at\":\"2023-06-06T11:38:49Z\",\"permissions\":{\"administration\":\"read\",\"checks\":\"write\",\"contents\":\"write\",\"emails\":\"read\",\"issues\":\"write\",\"members\":\"read\",\"metadata\":\"read\",\"pages\":\"write\",\"pull_requests\":\"write\",\"statuses\":\"write\",\"workflows\":\"write\"},\"events\":[\"check_run\",\"check_suite\",\"issue_comment\",\"member\",\"membership\",\"organization\",\"pull_request\",\"pull_request_review\",\"pull_request_review_comment\",\"pull_request_review_thread\",\"push\",\"repository\",\"status\",\"team\",\"team_add\",\"workflow_job\",\"workflow_run\"]},\"pull_requests\":[{\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/pulls/1821\",\"id\":1388623015,\"number\":1821,\"head\":{\"ref\":\"20230612122943/test_queue_with_default_config_branch_protection_only/integration/pr1\",\"sha\":\"cc30b97a6df8c48233e60b102adca1ed47293417\",\"repo\":{\"id\":623417671,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01\",\"name\":\"functional-testing-repo-lecrepont01\"}},\"base\":{\"ref\":\"20230612122943/test_queue_with_default_config_branch_protection_only/main\",\"sha\":\"4e336a448e9948aae67136c5375e6733c3e3e5cd\",\"repo\":{\"id\":623417671,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01\",\"name\":\"functional-testing-repo-lecrepont01\"}}}]}"
@@ -2839,7 +2839,7 @@ interactions:
       queue -> allow_merging_configuration_change setting requirement]\n    - [X]
       #1821\n  - [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\n  -
       `label=queue`\n    - [X] #1821\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\n- [ ] any of [\ud83d\udee1 GitHub branch protection]:\n  - [ ] `check-neutral=continuous-integration/fake-ci`\n  -
       [ ] `check-skipped=continuous-integration/fake-ci`\n  - [ ] `check-success=continuous-integration/fake-ci`\n\n**Required
       conditions to stay in the queue:**\n\n- [ ] any of: [\ud83d\udee1 GitHub branch
@@ -2877,7 +2877,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #1821\\n  - [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n
       \ - `label=queue`\\n    - [X] #1821\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n- [ ] any of [\U0001F6E1 GitHub branch protection]:\\n  - [ ] `check-neutral=continuous-integration/fake-ci`\\n
       \ - [ ] `check-skipped=continuous-integration/fake-ci`\\n  - [ ] `check-success=continuous-integration/fake-ci`\\n\\n**Required
       conditions to stay in the queue:**\\n\\n- [ ] any of: [\U0001F6E1 GitHub branch
@@ -2916,8 +2916,8 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -2950,8 +2950,8 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -3040,8 +3040,8 @@ interactions:
       -->\\n### Rule: Merge priority high (queue)\\n- [X] `-draft` [:pushpin: queue
       requirement]\\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n- [X] any
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n- [X] any
       of: [\U0001F6E1 GitHub branch protection]\\n  - [X] `check-success=continuous-integration/fake-ci`\\n
       \ - [ ] `check-neutral=continuous-integration/fake-ci`\\n  - [ ] `check-skipped=continuous-integration/fake-ci`\\n\\n<hr
       />\\n:sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for
@@ -3063,8 +3063,8 @@ interactions:
       -->\\n### Rule: Merge priority high (queue)\\n- [X] `-draft` [:pushpin: queue
       requirement]\\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n- [X] any
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n- [X] any
       of: [\U0001F6E1 GitHub branch protection]\\n  - [X] `check-success=continuous-integration/fake-ci`\\n
       \ - [ ] `check-neutral=continuous-integration/fake-ci`\\n  - [ ] `check-skipped=continuous-integration/fake-ci`\\n\\n<hr
       />\\n:sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for
@@ -3097,7 +3097,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #1821\\n  - [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n
       \ - `label=queue`\\n    - [X] #1821\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n- [ ] any of [\U0001F6E1 GitHub branch protection]:\\n  - [ ] `check-neutral=continuous-integration/fake-ci`\\n
       \ - [ ] `check-skipped=continuous-integration/fake-ci`\\n  - [ ] `check-success=continuous-integration/fake-ci`\",\"text\":null,\"annotations_count\":0,\"annotations_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/check-runs/14186869183/annotations\"},\"check_suite\":{\"id\":13537829565,\"node_id\":\"CS_kwDOJSiZR88AAAADJurivQ\",\"head_branch\":\"20230612122943/test_queue_with_default_config_branch_protection_only/integration/pr1\",\"head_sha\":\"cc30b97a6df8c48233e60b102adca1ed47293417\",\"status\":\"in_progress\",\"conclusion\":null,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/check-suites/13537829565\",\"before\":\"758d8520509f58d592365d37430015a0f3d51e3a\",\"after\":\"cc30b97a6df8c48233e60b102adca1ed47293417\",\"pull_requests\":[{\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/pulls/1821\",\"id\":1388623015,\"number\":1821,\"head\":{\"ref\":\"20230612122943/test_queue_with_default_config_branch_protection_only/integration/pr1\",\"sha\":\"cc30b97a6df8c48233e60b102adca1ed47293417\",\"repo\":{\"id\":623417671,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01\",\"name\":\"functional-testing-repo-lecrepont01\"}},\"base\":{\"ref\":\"20230612122943/test_queue_with_default_config_branch_protection_only/main\",\"sha\":\"4e336a448e9948aae67136c5375e6733c3e3e5cd\",\"repo\":{\"id\":623417671,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01\",\"name\":\"functional-testing-repo-lecrepont01\"}}}],\"app\":{\"id\":313724,\"slug\":\"mergify-lecrepont01\",\"node_id\":\"A_kwHOAmplV84ABMl8\",\"owner\":{\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/mergifyio-testing\",\"html_url\":\"https://github.com/mergifyio-testing\",\"followers_url\":\"https://api.github.com/users/mergifyio-testing/followers\",\"following_url\":\"https://api.github.com/users/mergifyio-testing/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/mergifyio-testing/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/mergifyio-testing/subscriptions\",\"organizations_url\":\"https://api.github.com/users/mergifyio-testing/orgs\",\"repos_url\":\"https://api.github.com/users/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/users/mergifyio-testing/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/mergifyio-testing/received_events\",\"type\":\"Organization\",\"site_admin\":false},\"name\":\"mergify-lecrepont01\",\"description\":\"Mergify
       testing installation for lecrepont01\",\"external_url\":\"https://mergify.com/\",\"html_url\":\"https://github.com/apps/mergify-lecrepont01\",\"created_at\":\"2023-04-04T10:31:12Z\",\"updated_at\":\"2023-06-06T11:38:49Z\",\"permissions\":{\"administration\":\"read\",\"checks\":\"write\",\"contents\":\"write\",\"emails\":\"read\",\"issues\":\"write\",\"members\":\"read\",\"metadata\":\"read\",\"pages\":\"write\",\"pull_requests\":\"write\",\"statuses\":\"write\",\"workflows\":\"write\"},\"events\":[\"check_run\",\"check_suite\",\"issue_comment\",\"member\",\"membership\",\"organization\",\"pull_request\",\"pull_request_review\",\"pull_request_review_comment\",\"pull_request_review_thread\",\"push\",\"repository\",\"status\",\"team\",\"team_add\",\"workflow_job\",\"workflow_run\"]},\"created_at\":\"2023-06-12T12:32:01Z\",\"updated_at\":\"2023-06-12T12:33:04Z\"},\"app\":{\"id\":313724,\"slug\":\"mergify-lecrepont01\",\"node_id\":\"A_kwHOAmplV84ABMl8\",\"owner\":{\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/mergifyio-testing\",\"html_url\":\"https://github.com/mergifyio-testing\",\"followers_url\":\"https://api.github.com/users/mergifyio-testing/followers\",\"following_url\":\"https://api.github.com/users/mergifyio-testing/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/mergifyio-testing/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/mergifyio-testing/subscriptions\",\"organizations_url\":\"https://api.github.com/users/mergifyio-testing/orgs\",\"repos_url\":\"https://api.github.com/users/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/users/mergifyio-testing/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/mergifyio-testing/received_events\",\"type\":\"Organization\",\"site_admin\":false},\"name\":\"mergify-lecrepont01\",\"description\":\"Mergify
@@ -3115,7 +3115,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #1821\\n  - [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n
       \ - `label=queue`\\n    - [X] #1821\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n- [ ] any of [\U0001F6E1 GitHub branch protection]:\\n  - [ ] `check-neutral=continuous-integration/fake-ci`\\n
       \ - [ ] `check-skipped=continuous-integration/fake-ci`\\n  - [ ] `check-success=continuous-integration/fake-ci`\\n\\n**Required
       conditions to stay in the queue:**\\n\\n- [ ] any of: [\U0001F6E1 GitHub branch
@@ -3214,7 +3214,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #1821\\n  - [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n
       \ - `label=queue`\\n    - [X] #1821\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n- [ ] any of [\U0001F6E1 GitHub branch protection]:\\n  - [ ] `check-neutral=continuous-integration/fake-ci`\\n
       \ - [ ] `check-skipped=continuous-integration/fake-ci`\\n  - [ ] `check-success=continuous-integration/fake-ci`\\n\\n**Required
       conditions to stay in the queue:**\\n\\n- [ ] any of: [\U0001F6E1 GitHub branch
@@ -3240,7 +3240,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #1821\\n  - [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n
       \ - `label=queue`\\n    - [X] #1821\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n- [ ] any of [\U0001F6E1 GitHub branch protection]:\\n  - [ ] `check-neutral=continuous-integration/fake-ci`\\n
       \ - [ ] `check-skipped=continuous-integration/fake-ci`\\n  - [ ] `check-success=continuous-integration/fake-ci`\",\"text\":null,\"annotations_count\":0,\"annotations_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/check-runs/14186869183/annotations\"},\"check_suite\":{\"id\":13537829565},\"app\":{\"id\":313724,\"slug\":\"mergify-lecrepont01\",\"node_id\":\"A_kwHOAmplV84ABMl8\",\"owner\":{\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/mergifyio-testing\",\"html_url\":\"https://github.com/mergifyio-testing\",\"followers_url\":\"https://api.github.com/users/mergifyio-testing/followers\",\"following_url\":\"https://api.github.com/users/mergifyio-testing/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/mergifyio-testing/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/mergifyio-testing/subscriptions\",\"organizations_url\":\"https://api.github.com/users/mergifyio-testing/orgs\",\"repos_url\":\"https://api.github.com/users/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/users/mergifyio-testing/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/mergifyio-testing/received_events\",\"type\":\"Organization\",\"site_admin\":false},\"name\":\"mergify-lecrepont01\",\"description\":\"Mergify
       testing installation for lecrepont01\",\"external_url\":\"https://mergify.com/\",\"html_url\":\"https://github.com/apps/mergify-lecrepont01\",\"created_at\":\"2023-04-04T10:31:12Z\",\"updated_at\":\"2023-06-06T11:38:49Z\",\"permissions\":{\"administration\":\"read\",\"checks\":\"write\",\"contents\":\"write\",\"emails\":\"read\",\"issues\":\"write\",\"members\":\"read\",\"metadata\":\"read\",\"pages\":\"write\",\"pull_requests\":\"write\",\"statuses\":\"write\",\"workflows\":\"write\"},\"events\":[\"check_run\",\"check_suite\",\"issue_comment\",\"member\",\"membership\",\"organization\",\"pull_request\",\"pull_request_review\",\"pull_request_review_comment\",\"pull_request_review_thread\",\"push\",\"repository\",\"status\",\"team\",\"team_add\",\"workflow_job\",\"workflow_run\"]},\"pull_requests\":[{\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/pulls/1821\",\"id\":1388623015,\"number\":1821,\"head\":{\"ref\":\"20230612122943/test_queue_with_default_config_branch_protection_only/integration/pr1\",\"sha\":\"cc30b97a6df8c48233e60b102adca1ed47293417\",\"repo\":{\"id\":623417671,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01\",\"name\":\"functional-testing-repo-lecrepont01\"}},\"base\":{\"ref\":\"20230612122943/test_queue_with_default_config_branch_protection_only/main\",\"sha\":\"4e336a448e9948aae67136c5375e6733c3e3e5cd\",\"repo\":{\"id\":623417671,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01\",\"name\":\"functional-testing-repo-lecrepont01\"}}}]},{\"id\":14186863382,\"name\":\"Summary\",\"node_id\":\"CR_kwDOJSiZR88AAAADTZpbFg\",\"head_sha\":\"cc30b97a6df8c48233e60b102adca1ed47293417\",\"external_id\":\"1821\",\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/check-runs/14186863382\",\"html_url\":\"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01/runs/14186863382\",\"details_url\":\"http://localhost:3000/github/mergifyio-testing/repo/functional-testing-repo-lecrepont01/event-logs\",\"status\":\"completed\",\"conclusion\":\"success\",\"started_at\":\"2023-06-12T12:32:28Z\",\"completed_at\":\"2023-06-12T12:33:17Z\",\"output\":{\"title\":\"1
@@ -3251,8 +3251,8 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -3464,7 +3464,7 @@ interactions:
       queue -> allow_merging_configuration_change setting requirement]\n    - [X]
       #1821\n  - [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\n  -
       `label=queue`\n    - [X] #1821\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\n- [ ] any of [\ud83d\udee1 GitHub branch protection]:\n  - [ ] `check-neutral=continuous-integration/fake-ci`\n  -
       [ ] `check-skipped=continuous-integration/fake-ci`\n  - [ ] `check-success=continuous-integration/fake-ci`\n\n**Required
       conditions to stay in the queue:**\n\n- [ ] any of: [\ud83d\udee1 GitHub branch
@@ -3502,7 +3502,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #1821\\n  - [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n
       \ - `label=queue`\\n    - [X] #1821\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n- [ ] any of [\U0001F6E1 GitHub branch protection]:\\n  - [ ] `check-neutral=continuous-integration/fake-ci`\\n
       \ - [ ] `check-skipped=continuous-integration/fake-ci`\\n  - [ ] `check-success=continuous-integration/fake-ci`\\n\\n**Required
       conditions to stay in the queue:**\\n\\n- [ ] any of: [\U0001F6E1 GitHub branch
@@ -3579,7 +3579,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #1821\\n  - [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n
       \ - `label=queue`\\n    - [X] #1821\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n- [ ] any of [\U0001F6E1 GitHub branch protection]:\\n  - [ ] `check-neutral=continuous-integration/fake-ci`\\n
       \ - [ ] `check-skipped=continuous-integration/fake-ci`\\n  - [ ] `check-success=continuous-integration/fake-ci`\\n\\n**Required
       conditions to stay in the queue:**\\n\\n- [ ] any of: [\U0001F6E1 GitHub branch
@@ -3605,7 +3605,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #1821\\n  - [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n
       \ - `label=queue`\\n    - [X] #1821\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n- [ ] any of [\U0001F6E1 GitHub branch protection]:\\n  - [ ] `check-neutral=continuous-integration/fake-ci`\\n
       \ - [ ] `check-skipped=continuous-integration/fake-ci`\\n  - [ ] `check-success=continuous-integration/fake-ci`\",\"text\":null,\"annotations_count\":0,\"annotations_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/check-runs/14186869183/annotations\"},\"check_suite\":{\"id\":13537829565},\"app\":{\"id\":313724,\"slug\":\"mergify-lecrepont01\",\"node_id\":\"A_kwHOAmplV84ABMl8\",\"owner\":{\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/mergifyio-testing\",\"html_url\":\"https://github.com/mergifyio-testing\",\"followers_url\":\"https://api.github.com/users/mergifyio-testing/followers\",\"following_url\":\"https://api.github.com/users/mergifyio-testing/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/mergifyio-testing/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/mergifyio-testing/subscriptions\",\"organizations_url\":\"https://api.github.com/users/mergifyio-testing/orgs\",\"repos_url\":\"https://api.github.com/users/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/users/mergifyio-testing/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/mergifyio-testing/received_events\",\"type\":\"Organization\",\"site_admin\":false},\"name\":\"mergify-lecrepont01\",\"description\":\"Mergify
       testing installation for lecrepont01\",\"external_url\":\"https://mergify.com/\",\"html_url\":\"https://github.com/apps/mergify-lecrepont01\",\"created_at\":\"2023-04-04T10:31:12Z\",\"updated_at\":\"2023-06-06T11:38:49Z\",\"permissions\":{\"administration\":\"read\",\"checks\":\"write\",\"contents\":\"write\",\"emails\":\"read\",\"issues\":\"write\",\"members\":\"read\",\"metadata\":\"read\",\"pages\":\"write\",\"pull_requests\":\"write\",\"statuses\":\"write\",\"workflows\":\"write\"},\"events\":[\"check_run\",\"check_suite\",\"issue_comment\",\"member\",\"membership\",\"organization\",\"pull_request\",\"pull_request_review\",\"pull_request_review_comment\",\"pull_request_review_thread\",\"push\",\"repository\",\"status\",\"team\",\"team_add\",\"workflow_job\",\"workflow_run\"]},\"pull_requests\":[{\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/pulls/1821\",\"id\":1388623015,\"number\":1821,\"head\":{\"ref\":\"20230612122943/test_queue_with_default_config_branch_protection_only/integration/pr1\",\"sha\":\"cc30b97a6df8c48233e60b102adca1ed47293417\",\"repo\":{\"id\":623417671,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01\",\"name\":\"functional-testing-repo-lecrepont01\"}},\"base\":{\"ref\":\"20230612122943/test_queue_with_default_config_branch_protection_only/main\",\"sha\":\"4e336a448e9948aae67136c5375e6733c3e3e5cd\",\"repo\":{\"id\":623417671,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01\",\"name\":\"functional-testing-repo-lecrepont01\"}}}]},{\"id\":14186863382,\"name\":\"Summary\",\"node_id\":\"CR_kwDOJSiZR88AAAADTZpbFg\",\"head_sha\":\"cc30b97a6df8c48233e60b102adca1ed47293417\",\"external_id\":\"1821\",\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/check-runs/14186863382\",\"html_url\":\"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01/runs/14186863382\",\"details_url\":\"http://localhost:3000/github/mergifyio-testing/repo/functional-testing-repo-lecrepont01/event-logs\",\"status\":\"completed\",\"conclusion\":\"success\",\"started_at\":\"2023-06-12T12:32:28Z\",\"completed_at\":\"2023-06-12T12:33:17Z\",\"output\":{\"title\":\"1
@@ -3616,8 +3616,8 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -3804,7 +3804,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #1821\\n  - [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n
       \ - `label=queue`\\n    - [X] #1821\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n- [ ] any of [\U0001F6E1 GitHub branch protection]:\\n  - [ ] `check-neutral=continuous-integration/fake-ci`\\n
       \ - [ ] `check-skipped=continuous-integration/fake-ci`\\n  - [ ] `check-success=continuous-integration/fake-ci`\\n\\n**Required
       conditions to stay in the queue:**\\n\\n- [ ] any of: [\U0001F6E1 GitHub branch
@@ -3830,7 +3830,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #1821\\n  - [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n
       \ - `label=queue`\\n    - [X] #1821\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n- [ ] any of [\U0001F6E1 GitHub branch protection]:\\n  - [ ] `check-neutral=continuous-integration/fake-ci`\\n
       \ - [ ] `check-skipped=continuous-integration/fake-ci`\\n  - [ ] `check-success=continuous-integration/fake-ci`\",\"text\":null,\"annotations_count\":0,\"annotations_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/check-runs/14186869183/annotations\"},\"check_suite\":{\"id\":13537829565},\"app\":{\"id\":313724,\"slug\":\"mergify-lecrepont01\",\"node_id\":\"A_kwHOAmplV84ABMl8\",\"owner\":{\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/mergifyio-testing\",\"html_url\":\"https://github.com/mergifyio-testing\",\"followers_url\":\"https://api.github.com/users/mergifyio-testing/followers\",\"following_url\":\"https://api.github.com/users/mergifyio-testing/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/mergifyio-testing/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/mergifyio-testing/subscriptions\",\"organizations_url\":\"https://api.github.com/users/mergifyio-testing/orgs\",\"repos_url\":\"https://api.github.com/users/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/users/mergifyio-testing/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/mergifyio-testing/received_events\",\"type\":\"Organization\",\"site_admin\":false},\"name\":\"mergify-lecrepont01\",\"description\":\"Mergify
       testing installation for lecrepont01\",\"external_url\":\"https://mergify.com/\",\"html_url\":\"https://github.com/apps/mergify-lecrepont01\",\"created_at\":\"2023-04-04T10:31:12Z\",\"updated_at\":\"2023-06-06T11:38:49Z\",\"permissions\":{\"administration\":\"read\",\"checks\":\"write\",\"contents\":\"write\",\"emails\":\"read\",\"issues\":\"write\",\"members\":\"read\",\"metadata\":\"read\",\"pages\":\"write\",\"pull_requests\":\"write\",\"statuses\":\"write\",\"workflows\":\"write\"},\"events\":[\"check_run\",\"check_suite\",\"issue_comment\",\"member\",\"membership\",\"organization\",\"pull_request\",\"pull_request_review\",\"pull_request_review_comment\",\"pull_request_review_thread\",\"push\",\"repository\",\"status\",\"team\",\"team_add\",\"workflow_job\",\"workflow_run\"]},\"pull_requests\":[{\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/pulls/1821\",\"id\":1388623015,\"number\":1821,\"head\":{\"ref\":\"20230612122943/test_queue_with_default_config_branch_protection_only/integration/pr1\",\"sha\":\"cc30b97a6df8c48233e60b102adca1ed47293417\",\"repo\":{\"id\":623417671,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01\",\"name\":\"functional-testing-repo-lecrepont01\"}},\"base\":{\"ref\":\"20230612122943/test_queue_with_default_config_branch_protection_only/main\",\"sha\":\"4e336a448e9948aae67136c5375e6733c3e3e5cd\",\"repo\":{\"id\":623417671,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01\",\"name\":\"functional-testing-repo-lecrepont01\"}}}]},{\"id\":14186863382,\"name\":\"Summary\",\"node_id\":\"CR_kwDOJSiZR88AAAADTZpbFg\",\"head_sha\":\"cc30b97a6df8c48233e60b102adca1ed47293417\",\"external_id\":\"1821\",\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/check-runs/14186863382\",\"html_url\":\"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01/runs/14186863382\",\"details_url\":\"http://localhost:3000/github/mergifyio-testing/repo/functional-testing-repo-lecrepont01/event-logs\",\"status\":\"completed\",\"conclusion\":\"success\",\"started_at\":\"2023-06-12T12:32:28Z\",\"completed_at\":\"2023-06-12T12:33:17Z\",\"output\":{\"title\":\"1
@@ -3841,8 +3841,8 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -4050,7 +4050,7 @@ interactions:
       [X] #1821\n  - `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n    - [X] #1821\n  - [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\n  -
       `label=queue`\n    - [X] #1821\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\n  - [X] any of [\ud83d\udee1 GitHub branch protection]:\n    - [X]
       `check-success=continuous-integration/fake-ci`\n    - [ ] `check-neutral=continuous-integration/fake-ci`\n    -
       [ ] `check-skipped=continuous-integration/fake-ci`\n- [X] any of [\ud83d\udee1
@@ -4083,7 +4083,7 @@ interactions:
       \   - [X] #1821\\n  - `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n    - [X] #1821\\n  - [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n
       \ - `label=queue`\\n    - [X] #1821\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n  - [X] any of [\U0001F6E1 GitHub branch protection]:\\n    - [X]
       `check-success=continuous-integration/fake-ci`\\n    - [ ] `check-neutral=continuous-integration/fake-ci`\\n
       \   - [ ] `check-skipped=continuous-integration/fake-ci`\\n- [X] any of [\U0001F6E1
@@ -4187,7 +4187,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #1821\\n  - [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n
       \ - `label=queue`\\n    - [X] #1821\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n- [ ] any of [\U0001F6E1 GitHub branch protection]:\\n  - [ ] `check-neutral=continuous-integration/fake-ci`\\n
       \ - [ ] `check-skipped=continuous-integration/fake-ci`\\n  - [ ] `check-success=continuous-integration/fake-ci`\\n\\n**Required
       conditions to stay in the queue:**\\n\\n- [ ] any of: [\U0001F6E1 GitHub branch
@@ -4210,7 +4210,7 @@ interactions:
       \   - [X] #1821\\n  - `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n    - [X] #1821\\n  - [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n
       \ - `label=queue`\\n    - [X] #1821\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n  - [X] any of [\U0001F6E1 GitHub branch protection]:\\n    - [X]
       `check-success=continuous-integration/fake-ci`\\n    - [ ] `check-neutral=continuous-integration/fake-ci`\\n
       \   - [ ] `check-skipped=continuous-integration/fake-ci`\\n- [X] any of [\U0001F6E1
@@ -4230,8 +4230,8 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -4301,8 +4301,8 @@ interactions:
       -->\n### Rule: Merge priority high (queue)\n- [X] `-draft` [:pushpin: queue
       requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n- [X] any of:
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n- [X] any of:
       [\ud83d\udee1 GitHub branch protection]\n  - [X] `check-success=continuous-integration/fake-ci`\n  -
       [ ] `check-neutral=continuous-integration/fake-ci`\n  - [ ] `check-skipped=continuous-integration/fake-ci`\n\n<hr
       />\n:sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for
@@ -4335,8 +4335,8 @@ interactions:
       -->\\n### Rule: Merge priority high (queue)\\n- [X] `-draft` [:pushpin: queue
       requirement]\\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n- [X] any
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n- [X] any
       of: [\U0001F6E1 GitHub branch protection]\\n  - [X] `check-success=continuous-integration/fake-ci`\\n
       \ - [ ] `check-neutral=continuous-integration/fake-ci`\\n  - [ ] `check-skipped=continuous-integration/fake-ci`\\n\\n<hr
       />\\n:sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for
@@ -4436,7 +4436,7 @@ interactions:
       \   - [X] #1821\\n  - `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n    - [X] #1821\\n  - [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n
       \ - `label=queue`\\n    - [X] #1821\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n  - [X] any of [\U0001F6E1 GitHub branch protection]:\\n    - [X]
       `check-success=continuous-integration/fake-ci`\\n    - [ ] `check-neutral=continuous-integration/fake-ci`\\n
       \   - [ ] `check-skipped=continuous-integration/fake-ci`\\n- [X] any of [\U0001F6E1
@@ -4453,8 +4453,8 @@ interactions:
       -->\\n### Rule: Merge priority high (queue)\\n- [X] `-draft` [:pushpin: queue
       requirement]\\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n- [X] any
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n- [X] any
       of: [\U0001F6E1 GitHub branch protection]\\n  - [X] `check-success=continuous-integration/fake-ci`\\n
       \ - [ ] `check-neutral=continuous-integration/fake-ci`\\n  - [ ] `check-skipped=continuous-integration/fake-ci`\\n\\n<hr
       />\\n:sparkling_heart:&nbsp;&nbsp;Mergify is proud to provide this service for
@@ -4531,7 +4531,7 @@ interactions:
       \   - [X] #1821\\n  - `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n    - [X] #1821\\n  - [X] `base=20230612122943/test_queue_with_default_config_branch_protection_only/main`\\n
       \ - `label=queue`\\n    - [X] #1821\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n  - [X] any of [\U0001F6E1 GitHub branch protection]:\\n    - [X]
       `check-success=continuous-integration/fake-ci`\\n    - [ ] `check-neutral=continuous-integration/fake-ci`\\n
       \   - [ ] `check-skipped=continuous-integration/fake-ci`\\n- [X] any of [\U0001F6E1

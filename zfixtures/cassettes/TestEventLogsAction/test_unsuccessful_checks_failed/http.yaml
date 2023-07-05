@@ -1020,8 +1020,8 @@ interactions:
       -->\n### Rule: merge default (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230614124949/test_unsuccessful_checks_failed/main`\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n\n<details>\n<summary>Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
       be found in the [documentation](https://docs.mergify.com/).\n\nYou can also
       trigger Mergify actions by commenting on this pull request:\n\n- `@Mergifyio
@@ -1049,8 +1049,8 @@ interactions:
       -->\n### Rule: merge default (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230614124949/test_unsuccessful_checks_failed/main`\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n\n<details>\n<summary>Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
       be found in the [documentation](https://docs.mergify.com/).\n\nYou can also
       trigger Mergify actions by commenting on this pull request:\n\n- `@Mergifyio
@@ -1115,8 +1115,8 @@ interactions:
       -->\n### Rule: merge default (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230614124949/test_unsuccessful_checks_failed/main`\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n\n<details>\n<summary>Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
       be found in the [documentation](https://docs.mergify.com/).\n\nYou can also
       trigger Mergify actions by commenting on this pull request:\n\n- `@Mergifyio
@@ -1467,8 +1467,8 @@ interactions:
       -->\n### Rule: merge default (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230614124949/test_unsuccessful_checks_failed/main`\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n\n<details>\n<summary>Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
       be found in the [documentation](https://docs.mergify.com/).\n\nYou can also
       trigger Mergify actions by commenting on this pull request:\n\n- `@Mergifyio
@@ -1664,7 +1664,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n    -
       [X] #2556\n  - [X] `base=20230614124949/test_unsuccessful_checks_failed/main`\n  -
       `label=queue`\n    - [X] #2556\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]"}}'
     headers:
       accept:
@@ -1688,7 +1688,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #2556\\n  - [X] `base=20230614124949/test_unsuccessful_checks_failed/main`\\n
       \ - `label=queue`\\n    - [X] #2556\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\",\"text\":null,\"annotations_count\":0,\"annotations_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/check-runs/14255852105/annotations\"},\"check_suite\":{\"id\":13598797406},\"app\":{\"id\":327815,\"slug\":\"mergify-kontrolix\",\"node_id\":\"A_kwHOAmplV84ABQCH\",\"owner\":{\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/mergifyio-testing\",\"html_url\":\"https://github.com/mergifyio-testing\",\"followers_url\":\"https://api.github.com/users/mergifyio-testing/followers\",\"following_url\":\"https://api.github.com/users/mergifyio-testing/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/mergifyio-testing/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/mergifyio-testing/subscriptions\",\"organizations_url\":\"https://api.github.com/users/mergifyio-testing/orgs\",\"repos_url\":\"https://api.github.com/users/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/users/mergifyio-testing/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/mergifyio-testing/received_events\",\"type\":\"Organization\",\"site_admin\":false},\"name\":\"mergify-Kontrolix\",\"description\":\"Mergify
       testing installation for Kontrolix\",\"external_url\":\"https://mergify.com/\",\"html_url\":\"https://github.com/apps/mergify-kontrolix\",\"created_at\":\"2023-05-03T09:24:33Z\",\"updated_at\":\"2023-06-06T11:38:34Z\",\"permissions\":{\"administration\":\"read\",\"checks\":\"write\",\"contents\":\"write\",\"emails\":\"read\",\"issues\":\"write\",\"members\":\"read\",\"metadata\":\"read\",\"pages\":\"write\",\"pull_requests\":\"write\",\"statuses\":\"write\",\"workflows\":\"write\"},\"events\":[\"check_run\",\"check_suite\",\"issue_comment\",\"member\",\"membership\",\"organization\",\"pull_request\",\"pull_request_review\",\"pull_request_review_comment\",\"pull_request_review_thread\",\"push\",\"repository\",\"status\",\"team\",\"team_add\",\"workflow_job\",\"workflow_run\"]},\"pull_requests\":[{\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/pulls/2556\",\"id\":1392355278,\"number\":2556,\"head\":{\"ref\":\"20230614124949/test_unsuccessful_checks_failed/integration/pr1\",\"sha\":\"962ee898790a9f942cc5f35da4fb0539ec315aaa\",\"repo\":{\"id\":635704693,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix\",\"name\":\"functional-testing-repo-Kontrolix\"}},\"base\":{\"ref\":\"20230614124949/test_unsuccessful_checks_failed/main\",\"sha\":\"d8398fe158a8dc0e5b297a8b970890e3a74f3ed4\",\"repo\":{\"id\":635704693,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix\",\"name\":\"functional-testing-repo-Kontrolix\"}}}]}"
     headers:
@@ -1719,7 +1719,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n    -
       [X] #2556\n  - [X] `base=20230614124949/test_unsuccessful_checks_failed/main`\n  -
       `label=queue`\n    - [X] #2556\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\n\n**Visit the [Mergify Dashboard](http://localhost:3000/github/mergifyio-testing/repo/functional-testing-repo-Kontrolix/queues/partitions/__default__?queues=default&branch=20230614124949%2Ftest_unsuccessful_checks_failed%2Fmain)
       to check the state of the queue `default`.**\n\n---\n\nMore information about
       Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue/).\n\n<details>\n<summary>Mergify
@@ -1751,7 +1751,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #2556\\n  - [X] `base=20230614124949/test_unsuccessful_checks_failed/main`\\n
       \ - `label=queue`\\n    - [X] #2556\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n\\n**Visit the [Mergify Dashboard](http://localhost:3000/github/mergifyio-testing/repo/functional-testing-repo-Kontrolix/queues/partitions/__default__?queues=default&branch=20230614124949%2Ftest_unsuccessful_checks_failed%2Fmain)
       to check the state of the queue `default`.**\\n\\n---\\n\\nMore information
       about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue/).\\n\\n<details>\\n<summary>Mergify
@@ -2189,15 +2189,15 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #2556\\n  - [X] `base=20230614124949/test_unsuccessful_checks_failed/main`\\n
       \ - `label=queue`\\n    - [X] #2556\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\",\"text\":null,\"annotations_count\":0,\"annotations_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/check-runs/14255852105/annotations\"},\"check_suite\":{\"id\":13598797406},\"app\":{\"id\":327815,\"slug\":\"mergify-kontrolix\",\"node_id\":\"A_kwHOAmplV84ABQCH\",\"owner\":{\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/mergifyio-testing\",\"html_url\":\"https://github.com/mergifyio-testing\",\"followers_url\":\"https://api.github.com/users/mergifyio-testing/followers\",\"following_url\":\"https://api.github.com/users/mergifyio-testing/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/mergifyio-testing/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/mergifyio-testing/subscriptions\",\"organizations_url\":\"https://api.github.com/users/mergifyio-testing/orgs\",\"repos_url\":\"https://api.github.com/users/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/users/mergifyio-testing/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/mergifyio-testing/received_events\",\"type\":\"Organization\",\"site_admin\":false},\"name\":\"mergify-Kontrolix\",\"description\":\"Mergify
       testing installation for Kontrolix\",\"external_url\":\"https://mergify.com/\",\"html_url\":\"https://github.com/apps/mergify-kontrolix\",\"created_at\":\"2023-05-03T09:24:33Z\",\"updated_at\":\"2023-06-06T11:38:34Z\",\"permissions\":{\"administration\":\"read\",\"checks\":\"write\",\"contents\":\"write\",\"emails\":\"read\",\"issues\":\"write\",\"members\":\"read\",\"metadata\":\"read\",\"pages\":\"write\",\"pull_requests\":\"write\",\"statuses\":\"write\",\"workflows\":\"write\"},\"events\":[\"check_run\",\"check_suite\",\"issue_comment\",\"member\",\"membership\",\"organization\",\"pull_request\",\"pull_request_review\",\"pull_request_review_comment\",\"pull_request_review_thread\",\"push\",\"repository\",\"status\",\"team\",\"team_add\",\"workflow_job\",\"workflow_run\"]},\"pull_requests\":[{\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/pulls/2556\",\"id\":1392355278,\"number\":2556,\"head\":{\"ref\":\"20230614124949/test_unsuccessful_checks_failed/integration/pr1\",\"sha\":\"962ee898790a9f942cc5f35da4fb0539ec315aaa\",\"repo\":{\"id\":635704693,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix\",\"name\":\"functional-testing-repo-Kontrolix\"}},\"base\":{\"ref\":\"20230614124949/test_unsuccessful_checks_failed/main\",\"sha\":\"d8398fe158a8dc0e5b297a8b970890e3a74f3ed4\",\"repo\":{\"id\":635704693,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix\",\"name\":\"functional-testing-repo-Kontrolix\"}}}]},{\"id\":14255850420,\"name\":\"Summary\",\"node_id\":\"CR_kwDOJeQVdc8AAAADUbcDtA\",\"head_sha\":\"962ee898790a9f942cc5f35da4fb0539ec315aaa\",\"external_id\":\"2556\",\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/check-runs/14255850420\",\"html_url\":\"https://github.com/mergifyio-testing/functional-testing-repo-Kontrolix/runs/14255850420\",\"details_url\":\"http://localhost:3000/github/mergifyio-testing/repo/functional-testing-repo-Kontrolix/event-logs\",\"status\":\"completed\",\"conclusion\":\"success\",\"started_at\":\"2023-06-14T12:50:02Z\",\"completed_at\":\"2023-06-14T12:50:05Z\",\"output\":{\"title\":\"1
       rule matches\",\"summary\":\"<!-- eydSdWxlOiBtZXJnZSBkZWZhdWx0IChxdWV1ZSknOiBudWxsfQo=
       -->\\n### Rule: merge default (queue)\\n- [X] `-draft` [:pushpin: queue requirement]\\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230614124949/test_unsuccessful_checks_failed/main`\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n\\n<details>\\n<summary>Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
       can be found in the [documentation](https://docs.mergify.com/).\\n\\nYou can
       also trigger Mergify actions by commenting on this pull request:\\n\\n- `@Mergifyio
@@ -2219,7 +2219,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #2556\\n  - [X] `base=20230614124949/test_unsuccessful_checks_failed/main`\\n
       \ - `label=queue`\\n    - [X] #2556\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n\\n**Visit the [Mergify Dashboard](http://localhost:3000/github/mergifyio-testing/repo/functional-testing-repo-Kontrolix/queues/partitions/__default__?queues=default&branch=20230614124949%2Ftest_unsuccessful_checks_failed%2Fmain)
       to check the state of the queue `default`.**\\n\\n---\\n\\nMore information
       about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue/).\\n\\n<details>\\n<summary>Mergify
@@ -2404,7 +2404,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n    -
       [X] #2556\n  - [X] `base=20230614124949/test_unsuccessful_checks_failed/main`\n  -
       `label=queue`\n    - [X] #2556\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\n\nCheck-runs and statuses of the embarked pull request #2556:\n\n<table><tr><td
       align=\"center\" width=\"48\" height=\"48\"><img src=\"https://raw.githubusercontent.com/Mergifyio/mergify-engine/master/assets/x-red-16.png\"
       width=\"16\" height=\"16\" /></td><td align=\"center\" width=\"48\" height=\"48\"><img
@@ -2449,7 +2449,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #2556\\n  - [X] `base=20230614124949/test_unsuccessful_checks_failed/main`\\n
       \ - `label=queue`\\n    - [X] #2556\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n\\nCheck-runs and statuses of the embarked pull request #2556:\\n\\n<table><tr><td
       align=\\\"center\\\" width=\\\"48\\\" height=\\\"48\\\"><img src=\\\"https://raw.githubusercontent.com/Mergifyio/mergify-engine/master/assets/x-red-16.png\\\"
       width=\\\"16\\\" height=\\\"16\\\" /></td><td align=\\\"center\\\" width=\\\"48\\\"
@@ -2537,8 +2537,8 @@ interactions:
       -->\n### Rule: merge default (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230614124949/test_unsuccessful_checks_failed/main`\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n\n<details>\n<summary>Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
       be found in the [documentation](https://docs.mergify.com/).\n\nYou can also
       trigger Mergify actions by commenting on this pull request:\n\n- `@Mergifyio
@@ -2566,8 +2566,8 @@ interactions:
       -->\n### Rule: merge default (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230614124949/test_unsuccessful_checks_failed/main`\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n\n<details>\n<summary>Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
       be found in the [documentation](https://docs.mergify.com/).\n\nYou can also
       trigger Mergify actions by commenting on this pull request:\n\n- `@Mergifyio
@@ -2638,7 +2638,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #2556\\n  - [X] `base=20230614124949/test_unsuccessful_checks_failed/main`\\n
       \ - `label=queue`\\n    - [X] #2556\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n\\nCheck-runs and statuses of the embarked pull request #2556:\\n\\n<table><tr><td
       align=\\\"center\\\" width=\\\"48\\\" height=\\\"48\\\"><img src=\\\"https://raw.githubusercontent.com/Mergifyio/mergify-engine/master/assets/x-red-16.png\\\"
       width=\\\"16\\\" height=\\\"16\\\" /></td><td align=\\\"center\\\" width=\\\"48\\\"
@@ -2665,8 +2665,8 @@ interactions:
       -->\\n### Rule: merge default (queue)\\n- [X] `-draft` [:pushpin: queue requirement]\\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230614124949/test_unsuccessful_checks_failed/main`\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n\\n<details>\\n<summary>Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
       can be found in the [documentation](https://docs.mergify.com/).\\n\\nYou can
       also trigger Mergify actions by commenting on this pull request:\\n\\n- `@Mergifyio

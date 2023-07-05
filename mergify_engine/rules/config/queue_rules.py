@@ -55,15 +55,18 @@ class QueueRule:
     name: QueueName
     config: QueueConfig
     merge_conditions: conditions_mod.QueueRuleMergeConditions
-    routing_conditions: conditions_mod.QueueRuleMergeConditions
+    queue_conditions: conditions_mod.QueueRuleMergeConditions
     priority_rules: priority_rules_config.PriorityRules
 
     class T_from_dict(QueueConfig, total=False):
         name: QueueName
         config: QueueConfig
+        # NOTE: conditions is the deprecated variant of merge_conditions
         conditions: conditions_mod.QueueRuleMergeConditions
         merge_conditions: conditions_mod.QueueRuleMergeConditions
+        # NOTE: routing_conditions is the deprecated variant of queue_conditions
         routing_conditions: conditions_mod.QueueRuleMergeConditions
+        queue_conditions: conditions_mod.QueueRuleMergeConditions
         priority_rules: priority_rules_config.PriorityRules
 
     @property
@@ -79,7 +82,12 @@ class QueueRule:
         merge_conditions = d.pop("conditions", None)
         if merge_conditions is None:
             merge_conditions = d.pop("merge_conditions")
-        routing_conditions = d.pop("routing_conditions")
+
+        # NOTE: deprecated name, for backward compat
+        queue_conditions = d.pop("routing_conditions", None)
+        if queue_conditions is None:
+            queue_conditions = d.pop("queue_conditions")
+
         priority_rules = d.pop("priority_rules")
 
         # NOTE(sileht): backward compat
@@ -98,7 +106,7 @@ class QueueRule:
             name=name,
             config=d,
             merge_conditions=merge_conditions,
-            routing_conditions=routing_conditions,
+            queue_conditions=queue_conditions,
             priority_rules=priority_rules,
         )
 
@@ -134,8 +142,8 @@ class QueueRule:
             merge_conditions=conditions_mod.QueueRuleMergeConditions(
                 extra_conditions + self.merge_conditions.condition.copy().conditions
             ),
-            routing_conditions=conditions_mod.QueueRuleMergeConditions(
-                self.routing_conditions.condition.copy().conditions
+            queue_conditions=conditions_mod.QueueRuleMergeConditions(
+                self.queue_conditions.condition.copy().conditions
             ),
             config=self.config,
             priority_rules=self.priority_rules,
@@ -152,7 +160,7 @@ class QueueRule:
         self, pulls: list[context.BasePullRequest]
     ) -> EvaluatedQueueRule:
         await self.merge_conditions(pulls)
-        await self.routing_conditions(pulls)
+        await self.queue_conditions(pulls)
         return typing.cast(EvaluatedQueueRule, self)
 
     async def get_context_effective_priority(self, ctxt: context.Context) -> int:
@@ -201,23 +209,23 @@ class QueueRules:
                         f"disallow_checks_interruption_from_queues contains an unkown queue: {name}"
                     )
 
-    async def routing_conditions_exists(self) -> bool:
+    async def queue_conditions_exists(self) -> bool:
         for rule in self.rules:
-            if rule.routing_conditions.condition.conditions:
+            if rule.queue_conditions.condition.conditions:
                 return True
         return False
 
-    async def get_evaluated_routing_conditions(
+    async def get_evaluated_queue_conditions(
         self, ctxt: context.Context
     ) -> list[EvaluatedQueueRule]:
-        # NOTE(Syffe): in order to only evaluate routing_conditions (and not basic conditions) before queuing the PR,
-        # we create a list of temporary QueueRules that only contains routing_conditions for evaluation
+        # NOTE(Syffe): in order to only evaluate queue_conditions (and not basic conditions) before queuing the PR,
+        # we create a list of temporary QueueRules that only contains queue_conditions for evaluation
         routing_rules = [
             QueueRule(
                 name=rule.name,
                 merge_conditions=conditions_mod.QueueRuleMergeConditions([]),
-                routing_conditions=conditions_mod.QueueRuleMergeConditions(
-                    rule.routing_conditions.condition.copy().conditions
+                queue_conditions=conditions_mod.QueueRuleMergeConditions(
+                    rule.queue_conditions.condition.copy().conditions
                 ),
                 config=rule.config,
                 priority_rules=rule.priority_rules,
@@ -277,6 +285,7 @@ def _has_only_one_of(
 
 
 merge_conditions_exclusive_msg = "Cannot have both `conditions` and `merge_conditions`, only use `merge_conditions (`conditions` is deprecated)"
+queue_conditions_exclusive_msg = "Cannot have both `routing_conditions` and `queue_conditions`, only use `queue_conditions (`routing_conditions` is deprecated)"
 
 QueueRulesSchema = voluptuous.All(
     [
@@ -285,6 +294,11 @@ QueueRulesSchema = voluptuous.All(
                 "conditions",
                 "merge_conditions",
                 msg=merge_conditions_exclusive_msg,
+            ),
+            _has_only_one_of(
+                "routing_conditions",
+                "queue_conditions",
+                msg=queue_conditions_exclusive_msg,
             ),
             {
                 voluptuous.Required("name"): str,
@@ -323,7 +337,11 @@ QueueRulesSchema = voluptuous.All(
                     [voluptuous.Coerce(cond_config.RuleConditionSchema)],
                     voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
                 ),
-                voluptuous.Required("routing_conditions", default=list): voluptuous.All(
+                voluptuous.Required("queue_conditions", default=list): voluptuous.All(
+                    [voluptuous.Coerce(cond_config.RuleConditionSchema)],
+                    voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
+                ),
+                "routing_conditions": voluptuous.All(
                     [voluptuous.Coerce(cond_config.RuleConditionSchema)],
                     voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
                 ),

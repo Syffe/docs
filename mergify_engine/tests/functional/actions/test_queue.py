@@ -409,14 +409,14 @@ class TestQueueAction(base.FunctionalTestBase):
         p2_merged = await self.wait_for_pull_request("closed")
         assert p2_merged["pull_request"]["merged"]
 
-    async def test_queue_routing_conditions_matching_with_pull_request_rules(
+    async def test_queue_conditions_matching_with_pull_request_rules(
         self,
     ) -> None:
         rules = {
             "queue_rules": [
                 {
                     "name": "hotfix",
-                    "routing_conditions": [
+                    "queue_conditions": [
                         "label=hotfix",
                     ],
                     "merge_conditions": [
@@ -461,14 +461,14 @@ class TestQueueAction(base.FunctionalTestBase):
             in check["output"]["summary"]
         )
 
-    async def test_queue_routing_conditions_failure_with_pull_request_rules_and_no_fallback(
+    async def test_queue_conditions_failure_with_pull_request_rules_and_no_fallback(
         self,
     ) -> None:
         rules = {
             "queue_rules": [
                 {
                     "name": "hotfix",
-                    "routing_conditions": [
+                    "queue_conditions": [
                         "label=hotfix",
                     ],
                     "merge_conditions": [
@@ -477,7 +477,7 @@ class TestQueueAction(base.FunctionalTestBase):
                 },
                 {
                     "name": "default",
-                    "routing_conditions": [
+                    "queue_conditions": [
                         "label=toto",
                         "label=tata",
                     ],
@@ -505,11 +505,11 @@ class TestQueueAction(base.FunctionalTestBase):
         check = await self.wait_for_check_run(name="Summary", conclusion="success")
         assert check["check_run"]["output"]["title"] == "1 potential rule"
         assert (
-            """- [ ] any of: [:twisted_rightwards_arrows: routing conditions]
-  - [ ] all of: [:pushpin: routing conditions of queue `default`]
+            """- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
+  - [ ] all of: [:pushpin: queue conditions of queue `default`]
     - [ ] `label=tata`
     - [ ] `label=toto`
-  - [ ] all of: [:pushpin: routing conditions of queue `hotfix`]
+  - [ ] all of: [:pushpin: queue conditions of queue `hotfix`]
     - [ ] `label=hotfix`
 - [X] `-draft` [:pushpin: queue requirement]
 - [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
@@ -517,14 +517,14 @@ class TestQueueAction(base.FunctionalTestBase):
             in check["check_run"]["output"]["summary"]
         )
 
-    async def test_queue_routing_conditions_failure_with_pull_request_rules_and_fallback(
+    async def test_queue_conditions_failure_with_pull_request_rules_and_fallback(
         self,
     ) -> None:
         rules = {
             "queue_rules": [
                 {
                     "name": "hotfix",
-                    "routing_conditions": [
+                    "queue_conditions": [
                         "label=hotfix",
                     ],
                     "merge_conditions": [
@@ -568,12 +568,12 @@ class TestQueueAction(base.FunctionalTestBase):
             in check["output"]["summary"]
         )
 
-    async def test_queue_routing_conditions_success(self) -> None:
+    async def test_queue_conditions_success(self) -> None:
         rules = {
             "queue_rules": [
                 {
                     "name": "default",
-                    "routing_conditions": [
+                    "queue_conditions": [
                         "files~=^test/",
                     ],
                     "merge_conditions": [
@@ -619,12 +619,12 @@ class TestQueueAction(base.FunctionalTestBase):
             check["output"]["title"] == "The pull request has been merged automatically"
         )
 
-    async def test_queue_routing_conditions_failure(self) -> None:
+    async def test_queue_conditions_failure(self) -> None:
         rules = {
             "queue_rules": [
                 {
                     "name": "default",
-                    "routing_conditions": [
+                    "queue_conditions": [
                         "files~=^dummy/",
                     ],
                     "merge_conditions": [
@@ -651,8 +651,8 @@ class TestQueueAction(base.FunctionalTestBase):
 
         check = await self.wait_for_check_run(name="Summary")
         assert check["check_run"]["output"]["title"] == "1 potential rule"
-        expected_summary = f"""- [ ] any of: [:twisted_rightwards_arrows: routing conditions]
-  - [ ] all of: [:pushpin: routing conditions of queue `default`]
+        expected_summary = f"""- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
+  - [ ] all of: [:pushpin: queue conditions of queue `default`]
     - [ ] `files~=^dummy/`
 - [X] `-draft` [:pushpin: queue requirement]
 - [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
@@ -660,14 +660,14 @@ class TestQueueAction(base.FunctionalTestBase):
 - [X] `label=queue`"""
         assert expected_summary in check["check_run"]["output"]["summary"]
 
-    async def test_queue_routing_conditions_failure_update_after_queued(
+    async def test_queue_conditions_failure_update_after_queued(
         self,
     ) -> None:
         rules = {
             "queue_rules": [
                 {
                     "name": "default",
-                    "routing_conditions": ["label=routing"],
+                    "queue_conditions": ["label=routing"],
                     "merge_conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
@@ -713,12 +713,12 @@ class TestQueueAction(base.FunctionalTestBase):
         assert check["output"]["title"] == "The pull request rule doesn't match anymore"
         assert check["output"]["summary"] == "This action has been cancelled."
 
-    async def test_queue_routing_conditions_empty(self) -> None:
+    async def test_queue_conditions_empty(self) -> None:
         rules = {
             "queue_rules": [
                 {
                     "name": "default",
-                    "routing_conditions": [],
+                    "queue_conditions": [],
                     "merge_conditions": [
                         "status-success=continuous-integration/fake-ci",
                     ],
@@ -762,16 +762,16 @@ class TestQueueAction(base.FunctionalTestBase):
             check["output"]["title"] == "The pull request has been merged automatically"
         )
 
-    async def test_routing_conditions_checks_still_queued_after_rebase(self) -> None:
+    async def test_queue_conditions_checks_still_queued_after_rebase(self) -> None:
         rules = {
             "queue_rules": [
                 {
                     "name": "hotfix",
-                    "routing_conditions": ["label=hotfix"],
+                    "queue_conditions": ["label=hotfix"],
                 },
                 {
                     "name": "default",
-                    "routing_conditions": [
+                    "queue_conditions": [
                         "check-success=check",
                     ],
                 },
@@ -827,14 +827,14 @@ class TestQueueAction(base.FunctionalTestBase):
         assert check_run is not None
         assert check_run["check_run"]["head_sha"] == p1_rebased["head"]["sha"]
 
-    async def test_queue_routing_conditions_matching_with_pull_request_rules_and_queue_forced(
+    async def test_queue_conditions_matching_with_pull_request_rules_and_queue_forced(
         self,
     ) -> None:
         rules = {
             "queue_rules": [
                 {
                     "name": "hotfix",
-                    "routing_conditions": [
+                    "queue_conditions": [
                         "label=hotfix",
                     ],
                     "merge_conditions": [
@@ -879,18 +879,18 @@ class TestQueueAction(base.FunctionalTestBase):
             in check["output"]["summary"]
         )
 
-    async def test_queue_routing_conditions_with_pending_check_runs(self) -> None:
+    async def test_queue_conditions_with_pending_check_runs(self) -> None:
         rules = {
             "queue_rules": [
                 {
                     "name": "pending-check-success",
-                    "routing_conditions": [
+                    "queue_conditions": [
                         "check-success=some-pending-check-in-ci",
                     ],
                 },
                 {
                     "name": "default",
-                    "routing_conditions": ["label=will-not-be-set"],
+                    "queue_conditions": ["label=will-not-be-set"],
                 },
             ],
             "pull_request_rules": [
@@ -919,10 +919,10 @@ class TestQueueAction(base.FunctionalTestBase):
         check = await self.wait_for_check_run(name="Summary", conclusion="success")
         assert check["check_run"]["output"]["title"] == "1 potential rule"
         assert (
-            """- [ ] any of: [:twisted_rightwards_arrows: routing conditions]
-  - [ ] all of: [:pushpin: routing conditions of queue `default`]
+            """- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
+  - [ ] all of: [:pushpin: queue conditions of queue `default`]
     - [ ] `label=will-not-be-set`
-  - [ ] all of: [:pushpin: routing conditions of queue `pending-check-success`]
+  - [ ] all of: [:pushpin: queue conditions of queue `pending-check-success`]
     - [ ] `check-success=some-pending-check-in-ci`
 - [X] `-draft` [:pushpin: queue requirement]
 - [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]

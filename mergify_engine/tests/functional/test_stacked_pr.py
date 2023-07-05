@@ -15,7 +15,7 @@ class TestStackedPr(base.FunctionalTestBase):
             "queue_rules": [
                 {
                     "name": "default",
-                    "routing_conditions": [
+                    "queue_conditions": [
                         f"base={self.main_branch_name}",
                     ],
                 }

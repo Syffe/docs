@@ -83,7 +83,7 @@ class GenericRulesEvaluator(typing.Generic[types.T_Rule, types.T_EvaluatedRule])
             apply_configure_filter(repository, rule.conditions)
             evaluated_rule = typing.cast(types.T_EvaluatedRule, await rule.evaluate(pulls))  # type: ignore[redundant-cast]
             if isinstance(rule, qr_config.QueueRule):
-                apply_configure_filter(repository, rule.routing_conditions)
+                apply_configure_filter(repository, rule.queue_conditions)
             del rule
 
             # NOTE(sileht):
@@ -96,13 +96,13 @@ class GenericRulesEvaluator(typing.Generic[types.T_Rule, types.T_EvaluatedRule])
             categorized = False
             evaluated_rule_conditions = evaluated_rule.conditions
 
-            # NOTE(Syffe): routing_conditions status can change even after the PR is queued.
-            # Thus we need to evaluate conditions and routing_conditions together when they are available
-            # since not matching routing_conditions are a motive for PR invalidity
+            # NOTE(Syffe): queue_conditions status can change even after the PR is queued.
+            # Thus we need to evaluate conditions and queue_conditions together when they are available
+            # since not matching queue_conditions are a motive for PR invalidity
             if isinstance(evaluated_rule, qr_config.QueueRule):
                 evaluated_rule_conditions = conditions_mod.QueueRuleMergeConditions(
                     evaluated_rule.conditions.condition.copy().conditions
-                    + evaluated_rule.routing_conditions.condition.copy().conditions
+                    + evaluated_rule.queue_conditions.condition.copy().conditions
                 )
 
             if rule_hidden_from_merge_queue and not evaluated_rule_conditions.match:
@@ -228,7 +228,7 @@ def UserConfigurationSchema(
                     "name": "default",
                     "priority_rules": [],
                     "merge_conditions": [],
-                    "routing_conditions": [],
+                    "queue_conditions": [],
                 }
             ],
         ): qr_config.QueueRulesSchema,

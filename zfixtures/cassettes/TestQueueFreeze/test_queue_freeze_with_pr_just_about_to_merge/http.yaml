@@ -1276,13 +1276,13 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `urgent`]\n\n### Rule: Merge default
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `urgent`]\n\n### Rule: Merge default
       (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -1313,13 +1313,13 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `urgent`]\n\n### Rule: Merge default
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `urgent`]\n\n### Rule: Merge default
       (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -1401,13 +1401,13 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `urgent`]\\n\\n### Rule: Merge default
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `urgent`]\\n\\n### Rule: Merge default
       (queue)\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -1618,13 +1618,13 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `urgent`]\n\n### Rule: Merge default
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `urgent`]\n\n### Rule: Merge default
       (queue)\n- [ ] `label=queue`\n- [X] `-draft` [:pushpin: queue requirement]\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -1655,13 +1655,13 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `urgent`]\n\n### Rule: Merge default
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `urgent`]\n\n### Rule: Merge default
       (queue)\n- [ ] `label=queue`\n- [X] `-draft` [:pushpin: queue requirement]\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -1960,13 +1960,13 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `urgent`]\\n\\n### Rule: Merge default
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `urgent`]\\n\\n### Rule: Merge default
       (queue)\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -2152,7 +2152,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n    -
       [X] #21917\n  - [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n  -
       `label=queue`\n    - [X] #21917\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\n\nCheck-runs and statuses of the embarked pull request #21917:\n\n<table><tr><td
       align=\"center\" width=\"48\" height=\"48\"><img src=\"https://raw.githubusercontent.com/Mergifyio/mergify-engine/master/assets/check-green-16.png\"
       width=\"16\" height=\"16\" /></td><td align=\"center\" width=\"48\" height=\"48\"><img
@@ -2183,7 +2183,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #21917\\n  - [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n
       \ - `label=queue`\\n    - [X] #21917\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n\\nCheck-runs and statuses of the embarked pull request #21917:\\n\\n<table><tr><td
       align=\\\"center\\\" width=\\\"48\\\" height=\\\"48\\\"><img src=\\\"https://raw.githubusercontent.com/Mergifyio/mergify-engine/master/assets/check-green-16.png\\\"
       width=\\\"16\\\" height=\\\"16\\\" /></td><td align=\\\"center\\\" width=\\\"48\\\"
@@ -2255,7 +2255,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n    -
       [X] #21917\n  - [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n  -
       `label=queue`\n    - [X] #21917\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\n\n**Visit the [Mergify Dashboard](http://localhost:3000/github/mergifyio-testing/repo/functional-testing-repo-Greesb/queues/partitions/__default__?queues=default&branch=20230704155807%2Ftest_queue_freeze_with_pr_just_about_to_merge%2Fmain)
       to check the state of the queue `default`.**\n\n---\n\nMore information about
       Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue/).\n\n<details>\n<summary>Mergify
@@ -2287,7 +2287,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #21917\\n  - [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n
       \ - `label=queue`\\n    - [X] #21917\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n\\n**Visit the [Mergify Dashboard](http://localhost:3000/github/mergifyio-testing/repo/functional-testing-repo-Greesb/queues/partitions/__default__?queues=default&branch=20230704155807%2Ftest_queue_freeze_with_pr_just_about_to_merge%2Fmain)
       to check the state of the queue `default`.**\\n\\n---\\n\\nMore information
       about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue/).\\n\\n<details>\\n<summary>Mergify
@@ -2346,13 +2346,13 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `urgent`]\\n\\n### Rule: Merge default
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `urgent`]\\n\\n### Rule: Merge default
       (queue)\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -2375,13 +2375,13 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `urgent`]\\n\\n### Rule: Merge default
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `urgent`]\\n\\n### Rule: Merge default
       (queue)\\n- [ ] `label=queue`\\n- [X] `-draft` [:pushpin: queue requirement]\\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -2422,7 +2422,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #21917\\n  - [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n
       \ - `label=queue`\\n    - [X] #21917\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n\\nCheck-runs and statuses of the embarked pull request #21917:\\n\\n<table><tr><td
       align=\\\"center\\\" width=\\\"48\\\" height=\\\"48\\\"><img src=\\\"https://raw.githubusercontent.com/Mergifyio/mergify-engine/master/assets/check-green-16.png\\\"
       width=\\\"16\\\" height=\\\"16\\\" /></td><td align=\\\"center\\\" width=\\\"48\\\"
@@ -2642,13 +2642,13 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `urgent`]\n\n### Rule: Merge default
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `urgent`]\n\n### Rule: Merge default
       (queue)\n- [ ] `label=queue`\n- [X] `-draft` [:pushpin: queue requirement]\n-
       [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -2780,13 +2780,13 @@ interactions:
       -->\n### Rule: Merge priority high (queue)\n- [X] `-draft` [:pushpin: queue
       requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: routing
-      conditions]\n  - [X] all of [:pushpin: routing conditions of queue `urgent`]\n\n###
+      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: queue
+      conditions]\n  - [X] all of [:pushpin: queue conditions of queue `urgent`]\n\n###
       Rule: Merge default (queue)\n- [ ] `label=queue`\n- [X] `-draft` [:pushpin:
       queue requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue
       -> allow_merging_configuration_change setting requirement]\n- [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -2816,13 +2816,13 @@ interactions:
       -->\n### Rule: Merge priority high (queue)\n- [X] `-draft` [:pushpin: queue
       requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: routing
-      conditions]\n  - [X] all of [:pushpin: routing conditions of queue `urgent`]\n\n###
+      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: queue
+      conditions]\n  - [X] all of [:pushpin: queue conditions of queue `urgent`]\n\n###
       Rule: Merge default (queue)\n- [ ] `label=queue`\n- [X] `-draft` [:pushpin:
       queue requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue
       -> allow_merging_configuration_change setting requirement]\n- [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -2901,13 +2901,13 @@ interactions:
       -->\n### Rule: Merge priority high (queue)\n- [X] `-draft` [:pushpin: queue
       requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: routing
-      conditions]\n  - [X] all of [:pushpin: routing conditions of queue `urgent`]\n\n###
+      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: queue
+      conditions]\n  - [X] all of [:pushpin: queue conditions of queue `urgent`]\n\n###
       Rule: Merge default (queue)\n- [ ] `label=queue`\n- [X] `-draft` [:pushpin:
       queue requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue
       -> allow_merging_configuration_change setting requirement]\n- [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -3058,7 +3058,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #21917\\n  - [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n
       \ - `label=queue`\\n    - [X] #21917\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n\\n**Visit the [Mergify Dashboard](http://localhost:3000/github/mergifyio-testing/repo/functional-testing-repo-Greesb/queues/partitions/__default__?queues=default&branch=20230704155807%2Ftest_queue_freeze_with_pr_just_about_to_merge%2Fmain)
       to check the state of the queue `default`.**\\n\\n---\\n\\nMore information
       about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue/).\\n\\n<details>\\n<summary>Mergify
@@ -3073,13 +3073,13 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `urgent`]\\n\\n### Rule: Merge default
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `urgent`]\\n\\n### Rule: Merge default
       (queue)\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -3463,13 +3463,13 @@ interactions:
       -->\n### Rule: Merge priority high (queue)\n- [X] `-draft` [:pushpin: queue
       requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: routing
-      conditions]\n  - [X] all of [:pushpin: routing conditions of queue `urgent`]\n\n###
+      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: queue
+      conditions]\n  - [X] all of [:pushpin: queue conditions of queue `urgent`]\n\n###
       Rule: Merge default (queue)\n- [ ] `label=queue`\n- [X] `-draft` [:pushpin:
       queue requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue
       -> allow_merging_configuration_change setting requirement]\n- [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -3651,7 +3651,7 @@ interactions:
       [X] #21933\n  - `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n    - [X] #21933\n  - [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n  -
       `label=queue-urgent`\n    - [X] #21933\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\n    - [X] all of [:pushpin: queue conditions of queue
       `urgent`]"}, "conclusion": "success", "completed_at": "2023-07-04T16:02:32.987206+00:00"}'
     headers:
       accept:
@@ -3674,7 +3674,7 @@ interactions:
       allow_merging_configuration_change setting requirement]\\n    - [X] #21933\\n
       \ - [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n
       \ - `label=queue-urgent`\\n    - [X] #21933\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `urgent`]\",\"text\":null,\"annotations_count\":0,\"annotations_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/check-runs/14772603619/annotations\"},\"check_suite\":{\"id\":14056951864},\"app\":{\"id\":214877,\"slug\":\"mergify-greesb\",\"node_id\":\"A_kwHOAmplV84AA0dd\",\"owner\":{\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/mergifyio-testing\",\"html_url\":\"https://github.com/mergifyio-testing\",\"followers_url\":\"https://api.github.com/users/mergifyio-testing/followers\",\"following_url\":\"https://api.github.com/users/mergifyio-testing/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/mergifyio-testing/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/mergifyio-testing/subscriptions\",\"organizations_url\":\"https://api.github.com/users/mergifyio-testing/orgs\",\"repos_url\":\"https://api.github.com/users/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/users/mergifyio-testing/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/mergifyio-testing/received_events\",\"type\":\"Organization\",\"site_admin\":false},\"name\":\"mergify-Greesb\",\"description\":\"Mergify
       testing installation for Greesb\",\"external_url\":\"https://mergify.com/\",\"html_url\":\"https://github.com/apps/mergify-greesb\",\"created_at\":\"2022-06-27T12:53:37Z\",\"updated_at\":\"2023-06-06T11:38:07Z\",\"permissions\":{\"administration\":\"read\",\"checks\":\"write\",\"contents\":\"write\",\"emails\":\"read\",\"issues\":\"write\",\"members\":\"read\",\"metadata\":\"read\",\"pages\":\"write\",\"pull_requests\":\"write\",\"statuses\":\"write\",\"workflows\":\"write\"},\"events\":[\"check_run\",\"check_suite\",\"issue_comment\",\"member\",\"membership\",\"organization\",\"pull_request\",\"pull_request_review\",\"pull_request_review_comment\",\"pull_request_review_thread\",\"push\",\"repository\",\"status\",\"team\",\"team_add\",\"workflow_job\",\"workflow_run\"]},\"pull_requests\":[{\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/pulls/21933\",\"id\":1419877059,\"number\":21933,\"head\":{\"ref\":\"20230704155807/test_queue_freeze_with_pr_just_about_to_merge/integration/pr2\",\"sha\":\"7d17e4d984337cd88dd61a46cdf3070fcadd8641\",\"repo\":{\"id\":500849499,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb\",\"name\":\"functional-testing-repo-Greesb\"}},\"base\":{\"ref\":\"20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main\",\"sha\":\"64163ff0fd1e0d9453369c7ba23d5eb1ce21cc12\",\"repo\":{\"id\":500849499,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb\",\"name\":\"functional-testing-repo-Greesb\"}}}]}"
     headers:
@@ -3765,7 +3765,7 @@ interactions:
       allow_merging_configuration_change setting requirement]\\n    - [X] #21933\\n
       \ - [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n
       \ - `label=queue-urgent`\\n    - [X] #21933\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `urgent`]\",\"text\":null,\"annotations_count\":0,\"annotations_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/check-runs/14772603619/annotations\"},\"check_suite\":{\"id\":14056951864},\"app\":{\"id\":214877,\"slug\":\"mergify-greesb\",\"node_id\":\"A_kwHOAmplV84AA0dd\",\"owner\":{\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/mergifyio-testing\",\"html_url\":\"https://github.com/mergifyio-testing\",\"followers_url\":\"https://api.github.com/users/mergifyio-testing/followers\",\"following_url\":\"https://api.github.com/users/mergifyio-testing/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/mergifyio-testing/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/mergifyio-testing/subscriptions\",\"organizations_url\":\"https://api.github.com/users/mergifyio-testing/orgs\",\"repos_url\":\"https://api.github.com/users/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/users/mergifyio-testing/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/mergifyio-testing/received_events\",\"type\":\"Organization\",\"site_admin\":false},\"name\":\"mergify-Greesb\",\"description\":\"Mergify
       testing installation for Greesb\",\"external_url\":\"https://mergify.com/\",\"html_url\":\"https://github.com/apps/mergify-greesb\",\"created_at\":\"2022-06-27T12:53:37Z\",\"updated_at\":\"2023-06-06T11:38:07Z\",\"permissions\":{\"administration\":\"read\",\"checks\":\"write\",\"contents\":\"write\",\"emails\":\"read\",\"issues\":\"write\",\"members\":\"read\",\"metadata\":\"read\",\"pages\":\"write\",\"pull_requests\":\"write\",\"statuses\":\"write\",\"workflows\":\"write\"},\"events\":[\"check_run\",\"check_suite\",\"issue_comment\",\"member\",\"membership\",\"organization\",\"pull_request\",\"pull_request_review\",\"pull_request_review_comment\",\"pull_request_review_thread\",\"push\",\"repository\",\"status\",\"team\",\"team_add\",\"workflow_job\",\"workflow_run\"]},\"pull_requests\":[]},{\"id\":14772586562,\"name\":\"Rule:
       Merge priority high (queue)\",\"node_id\":\"CR_kwDOHdpbW88AAAADcIPIQg\",\"head_sha\":\"7d17e4d984337cd88dd61a46cdf3070fcadd8641\",\"external_id\":\"\",\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/check-runs/14772586562\",\"html_url\":\"https://github.com/mergifyio-testing/functional-testing-repo-Greesb/runs/14772586562\",\"details_url\":\"http://localhost:3000/github/mergifyio-testing/repo/functional-testing-repo-Greesb/queues?branch=20230704155807%2Ftest_queue_freeze_with_pr_just_about_to_merge%2Fmain&queues=urgent&pull=21933\",\"status\":\"in_progress\",\"conclusion\":null,\"started_at\":\"2023-07-04T16:01:55Z\",\"completed_at\":null,\"output\":{\"title\":\"The
@@ -3784,13 +3784,13 @@ interactions:
       -->\\n### Rule: Merge priority high (queue)\\n- [X] `-draft` [:pushpin: queue
       requirement]\\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n-
-      [X] `label=queue-urgent`\\n- [X] any of: [:twisted_rightwards_arrows: routing
-      conditions]\\n  - [X] all of [:pushpin: routing conditions of queue `urgent`]\\n\\n###
+      [X] `label=queue-urgent`\\n- [X] any of: [:twisted_rightwards_arrows: queue
+      conditions]\\n  - [X] all of [:pushpin: queue conditions of queue `urgent`]\\n\\n###
       Rule: Merge default (queue)\\n- [ ] `label=queue`\\n- [X] `-draft` [:pushpin:
       queue requirement]\\n- [X] `-mergify-configuration-changed` [:pushpin: queue
       -> allow_merging_configuration_change setting requirement]\\n- [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -3861,13 +3861,13 @@ interactions:
       -->\n### Rule: Merge priority high (queue)\n- [X] `-draft` [:pushpin: queue
       requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: routing
-      conditions]\n  - [X] all of [:pushpin: routing conditions of queue `urgent`]\n\n###
+      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: queue
+      conditions]\n  - [X] all of [:pushpin: queue conditions of queue `urgent`]\n\n###
       Rule: Merge default (queue)\n- [ ] `label=queue`\n- [X] `-draft` [:pushpin:
       queue requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue
       -> allow_merging_configuration_change setting requirement]\n- [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -3897,13 +3897,13 @@ interactions:
       -->\n### Rule: Merge priority high (queue)\n- [X] `-draft` [:pushpin: queue
       requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\n- [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: routing
-      conditions]\n  - [X] all of [:pushpin: routing conditions of queue `urgent`]\n\n###
+      [X] `label=queue-urgent`\n- [X] any of: [:twisted_rightwards_arrows: queue
+      conditions]\n  - [X] all of [:pushpin: queue conditions of queue `urgent`]\n\n###
       Rule: Merge default (queue)\n- [ ] `label=queue`\n- [X] `-draft` [:pushpin:
       queue requirement]\n- [X] `-mergify-configuration-changed` [:pushpin: queue
       -> allow_merging_configuration_change setting requirement]\n- [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -3997,7 +3997,7 @@ interactions:
       allow_merging_configuration_change setting requirement]\\n    - [X] #21933\\n
       \ - [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n
       \ - `label=queue-urgent`\\n    - [X] #21933\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `urgent`]\",\"text\":null,\"annotations_count\":0,\"annotations_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/check-runs/14772603619/annotations\"},\"check_suite\":{\"id\":14056951864},\"app\":{\"id\":214877,\"slug\":\"mergify-greesb\",\"node_id\":\"A_kwHOAmplV84AA0dd\",\"owner\":{\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/mergifyio-testing\",\"html_url\":\"https://github.com/mergifyio-testing\",\"followers_url\":\"https://api.github.com/users/mergifyio-testing/followers\",\"following_url\":\"https://api.github.com/users/mergifyio-testing/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/mergifyio-testing/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/mergifyio-testing/subscriptions\",\"organizations_url\":\"https://api.github.com/users/mergifyio-testing/orgs\",\"repos_url\":\"https://api.github.com/users/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/users/mergifyio-testing/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/mergifyio-testing/received_events\",\"type\":\"Organization\",\"site_admin\":false},\"name\":\"mergify-Greesb\",\"description\":\"Mergify
       testing installation for Greesb\",\"external_url\":\"https://mergify.com/\",\"html_url\":\"https://github.com/apps/mergify-greesb\",\"created_at\":\"2022-06-27T12:53:37Z\",\"updated_at\":\"2023-06-06T11:38:07Z\",\"permissions\":{\"administration\":\"read\",\"checks\":\"write\",\"contents\":\"write\",\"emails\":\"read\",\"issues\":\"write\",\"members\":\"read\",\"metadata\":\"read\",\"pages\":\"write\",\"pull_requests\":\"write\",\"statuses\":\"write\",\"workflows\":\"write\"},\"events\":[\"check_run\",\"check_suite\",\"issue_comment\",\"member\",\"membership\",\"organization\",\"pull_request\",\"pull_request_review\",\"pull_request_review_comment\",\"pull_request_review_thread\",\"push\",\"repository\",\"status\",\"team\",\"team_add\",\"workflow_job\",\"workflow_run\"]},\"pull_requests\":[]},{\"id\":14772586562,\"name\":\"Rule:
       Merge priority high (queue)\",\"node_id\":\"CR_kwDOHdpbW88AAAADcIPIQg\",\"head_sha\":\"7d17e4d984337cd88dd61a46cdf3070fcadd8641\",\"external_id\":\"\",\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/check-runs/14772586562\",\"html_url\":\"https://github.com/mergifyio-testing/functional-testing-repo-Greesb/runs/14772586562\",\"details_url\":\"http://localhost:3000/github/mergifyio-testing/repo/functional-testing-repo-Greesb/queues?branch=20230704155807%2Ftest_queue_freeze_with_pr_just_about_to_merge%2Fmain&pull=21933\",\"status\":\"completed\",\"conclusion\":\"success\",\"started_at\":\"2023-07-04T16:03:14Z\",\"completed_at\":\"2023-07-04T16:03:14Z\",\"output\":{\"title\":\"The
@@ -4008,13 +4008,13 @@ interactions:
       -->\\n### Rule: Merge priority high (queue)\\n- [X] `-draft` [:pushpin: queue
       requirement]\\n- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change
       setting requirement]\\n- [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n-
-      [X] `label=queue-urgent`\\n- [X] any of: [:twisted_rightwards_arrows: routing
-      conditions]\\n  - [X] all of [:pushpin: routing conditions of queue `urgent`]\\n\\n###
+      [X] `label=queue-urgent`\\n- [X] any of: [:twisted_rightwards_arrows: queue
+      conditions]\\n  - [X] all of [:pushpin: queue conditions of queue `urgent`]\\n\\n###
       Rule: Merge default (queue)\\n- [ ] `label=queue`\\n- [X] `-draft` [:pushpin:
       queue requirement]\\n- [X] `-mergify-configuration-changed` [:pushpin: queue
       -> allow_merging_configuration_change setting requirement]\\n- [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -4100,13 +4100,13 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `urgent`]\\n\\n### Rule: Merge default
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `urgent`]\\n\\n### Rule: Merge default
       (queue)\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -4459,13 +4459,13 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `urgent`]\\n\\n### Rule: Merge default
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `urgent`]\\n\\n### Rule: Merge default
       (queue)\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -4705,13 +4705,13 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `urgent`]\n\n### Rule: Merge default
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `urgent`]\n\n### Rule: Merge default
       (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -4747,13 +4747,13 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `urgent`]\n\n### Rule: Merge default
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `urgent`]\n\n### Rule: Merge default
       (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -4784,13 +4784,13 @@ interactions:
       `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  - [X] all of
-      [:pushpin: routing conditions of queue `urgent`]\n\n### Rule: Merge default
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  - [X] all of
+      [:pushpin: queue conditions of queue `urgent`]\n\n### Rule: Merge default
       (queue)\n- [X] `-draft` [:pushpin: queue requirement]\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n-
-      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\n  -
-      [X] all of [:pushpin: routing conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\n  -
+      [X] all of [:pushpin: queue conditions of queue `default`]\n\n<hr />\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\n\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\n<hr />\n\n<details>\n<summary>Mergify
       commands and options</summary>\n\n<br />\n\nMore conditions and actions can
@@ -4978,7 +4978,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n    -
       [X] #21917\n  - [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n  -
       `label=queue`\n    - [X] #21917\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]"}}'
     headers:
       accept:
@@ -5003,7 +5003,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #21917\\n  - [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n
       \ - `label=queue`\\n    - [X] #21917\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\",\"text\":null,\"annotations_count\":0,\"annotations_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/check-runs/14772639033/annotations\"},\"check_suite\":{\"id\":14057051512},\"app\":{\"id\":214877,\"slug\":\"mergify-greesb\",\"node_id\":\"A_kwHOAmplV84AA0dd\",\"owner\":{\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/mergifyio-testing\",\"html_url\":\"https://github.com/mergifyio-testing\",\"followers_url\":\"https://api.github.com/users/mergifyio-testing/followers\",\"following_url\":\"https://api.github.com/users/mergifyio-testing/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/mergifyio-testing/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/mergifyio-testing/subscriptions\",\"organizations_url\":\"https://api.github.com/users/mergifyio-testing/orgs\",\"repos_url\":\"https://api.github.com/users/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/users/mergifyio-testing/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/mergifyio-testing/received_events\",\"type\":\"Organization\",\"site_admin\":false},\"name\":\"mergify-Greesb\",\"description\":\"Mergify
       testing installation for Greesb\",\"external_url\":\"https://mergify.com/\",\"html_url\":\"https://github.com/apps/mergify-greesb\",\"created_at\":\"2022-06-27T12:53:37Z\",\"updated_at\":\"2023-06-06T11:38:07Z\",\"permissions\":{\"administration\":\"read\",\"checks\":\"write\",\"contents\":\"write\",\"emails\":\"read\",\"issues\":\"write\",\"members\":\"read\",\"metadata\":\"read\",\"pages\":\"write\",\"pull_requests\":\"write\",\"statuses\":\"write\",\"workflows\":\"write\"},\"events\":[\"check_run\",\"check_suite\",\"issue_comment\",\"member\",\"membership\",\"organization\",\"pull_request\",\"pull_request_review\",\"pull_request_review_comment\",\"pull_request_review_thread\",\"push\",\"repository\",\"status\",\"team\",\"team_add\",\"workflow_job\",\"workflow_run\"]},\"pull_requests\":[{\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/pulls/21917\",\"id\":1419875939,\"number\":21917,\"head\":{\"ref\":\"20230704155807/test_queue_freeze_with_pr_just_about_to_merge/integration/pr1\",\"sha\":\"3e164e4f13072a988a557e1c7848d405c63eb910\",\"repo\":{\"id\":500849499,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb\",\"name\":\"functional-testing-repo-Greesb\"}},\"base\":{\"ref\":\"20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main\",\"sha\":\"5323f9b0917bb26d15f9ad41c1d74182b72f2cc0\",\"repo\":{\"id\":500849499,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb\",\"name\":\"functional-testing-repo-Greesb\"}}}]}"
     headers:
@@ -5034,7 +5034,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\n    -
       [X] #21917\n  - [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\n  -
       `label=queue`\n    - [X] #21917\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\n\n**Visit the [Mergify Dashboard](http://localhost:3000/github/mergifyio-testing/repo/functional-testing-repo-Greesb/queues/partitions/__default__?queues=default&branch=20230704155807%2Ftest_queue_freeze_with_pr_just_about_to_merge%2Fmain)
       to check the state of the queue `default`.**\n\n---\n\nMore information about
       Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue/).\n\n<details>\n<summary>Mergify
@@ -5066,7 +5066,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #21917\\n  - [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n
       \ - `label=queue`\\n    - [X] #21917\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\\n\\n**Visit the [Mergify Dashboard](http://localhost:3000/github/mergifyio-testing/repo/functional-testing-repo-Greesb/queues/partitions/__default__?queues=default&branch=20230704155807%2Ftest_queue_freeze_with_pr_just_about_to_merge%2Fmain)
       to check the state of the queue `default`.**\\n\\n---\\n\\nMore information
       about Mergify merge queue can be found in the [documentation](https://docs.mergify.com/actions/queue/).\\n\\n<details>\\n<summary>Mergify
@@ -5134,7 +5134,7 @@ interactions:
       allow_merging_configuration_change setting requirement]\\n    - [X] #21933\\n
       \ - [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n
       \ - `label=queue-urgent`\\n    - [X] #21933\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `urgent`]\",\"text\":null,\"annotations_count\":0,\"annotations_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/check-runs/14772603619/annotations\"},\"check_suite\":{\"id\":14056951864,\"node_id\":\"CS_kwDOHdpbW88AAAADRdwQOA\",\"head_branch\":\"20230704155807/test_queue_freeze_with_pr_just_about_to_merge/integration/pr2\",\"head_sha\":\"7d17e4d984337cd88dd61a46cdf3070fcadd8641\",\"status\":\"in_progress\",\"conclusion\":null,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/check-suites/14056951864\",\"before\":\"0000000000000000000000000000000000000000\",\"after\":\"7d17e4d984337cd88dd61a46cdf3070fcadd8641\",\"pull_requests\":[{\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/pulls/21933\",\"id\":1419877059,\"number\":21933,\"head\":{\"ref\":\"20230704155807/test_queue_freeze_with_pr_just_about_to_merge/integration/pr2\",\"sha\":\"7d17e4d984337cd88dd61a46cdf3070fcadd8641\",\"repo\":{\"id\":500849499,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb\",\"name\":\"functional-testing-repo-Greesb\"}},\"base\":{\"ref\":\"20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main\",\"sha\":\"64163ff0fd1e0d9453369c7ba23d5eb1ce21cc12\",\"repo\":{\"id\":500849499,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb\",\"name\":\"functional-testing-repo-Greesb\"}}}],\"app\":{\"id\":214877,\"slug\":\"mergify-greesb\",\"node_id\":\"A_kwHOAmplV84AA0dd\",\"owner\":{\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/mergifyio-testing\",\"html_url\":\"https://github.com/mergifyio-testing\",\"followers_url\":\"https://api.github.com/users/mergifyio-testing/followers\",\"following_url\":\"https://api.github.com/users/mergifyio-testing/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/mergifyio-testing/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/mergifyio-testing/subscriptions\",\"organizations_url\":\"https://api.github.com/users/mergifyio-testing/orgs\",\"repos_url\":\"https://api.github.com/users/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/users/mergifyio-testing/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/mergifyio-testing/received_events\",\"type\":\"Organization\",\"site_admin\":false},\"name\":\"mergify-Greesb\",\"description\":\"Mergify
       testing installation for Greesb\",\"external_url\":\"https://mergify.com/\",\"html_url\":\"https://github.com/apps/mergify-greesb\",\"created_at\":\"2022-06-27T12:53:37Z\",\"updated_at\":\"2023-06-06T11:38:07Z\",\"permissions\":{\"administration\":\"read\",\"checks\":\"write\",\"contents\":\"write\",\"emails\":\"read\",\"issues\":\"write\",\"members\":\"read\",\"metadata\":\"read\",\"pages\":\"write\",\"pull_requests\":\"write\",\"statuses\":\"write\",\"workflows\":\"write\"},\"events\":[\"check_run\",\"check_suite\",\"issue_comment\",\"member\",\"membership\",\"organization\",\"pull_request\",\"pull_request_review\",\"pull_request_review_comment\",\"pull_request_review_thread\",\"push\",\"repository\",\"status\",\"team\",\"team_add\",\"workflow_job\",\"workflow_run\"]},\"created_at\":\"2023-07-04T15:58:49Z\",\"updated_at\":\"2023-07-04T16:01:51Z\"},\"app\":{\"id\":214877,\"slug\":\"mergify-greesb\",\"node_id\":\"A_kwHOAmplV84AA0dd\",\"owner\":{\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/mergifyio-testing\",\"html_url\":\"https://github.com/mergifyio-testing\",\"followers_url\":\"https://api.github.com/users/mergifyio-testing/followers\",\"following_url\":\"https://api.github.com/users/mergifyio-testing/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/mergifyio-testing/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/mergifyio-testing/subscriptions\",\"organizations_url\":\"https://api.github.com/users/mergifyio-testing/orgs\",\"repos_url\":\"https://api.github.com/users/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/users/mergifyio-testing/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/mergifyio-testing/received_events\",\"type\":\"Organization\",\"site_admin\":false},\"name\":\"mergify-Greesb\",\"description\":\"Mergify
       testing installation for Greesb\",\"external_url\":\"https://mergify.com/\",\"html_url\":\"https://github.com/apps/mergify-greesb\",\"created_at\":\"2022-06-27T12:53:37Z\",\"updated_at\":\"2023-06-06T11:38:07Z\",\"permissions\":{\"administration\":\"read\",\"checks\":\"write\",\"contents\":\"write\",\"emails\":\"read\",\"issues\":\"write\",\"members\":\"read\",\"metadata\":\"read\",\"pages\":\"write\",\"pull_requests\":\"write\",\"statuses\":\"write\",\"workflows\":\"write\"},\"events\":[\"check_run\",\"check_suite\",\"issue_comment\",\"member\",\"membership\",\"organization\",\"pull_request\",\"pull_request_review\",\"pull_request_review_comment\",\"pull_request_review_thread\",\"push\",\"repository\",\"status\",\"team\",\"team_add\",\"workflow_job\",\"workflow_run\"]},\"pull_requests\":[{\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/pulls/21933\",\"id\":1419877059,\"number\":21933,\"head\":{\"ref\":\"20230704155807/test_queue_freeze_with_pr_just_about_to_merge/integration/pr2\",\"sha\":\"7d17e4d984337cd88dd61a46cdf3070fcadd8641\",\"repo\":{\"id\":500849499,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb\",\"name\":\"functional-testing-repo-Greesb\"}},\"base\":{\"ref\":\"20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main\",\"sha\":\"64163ff0fd1e0d9453369c7ba23d5eb1ce21cc12\",\"repo\":{\"id\":500849499,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb\",\"name\":\"functional-testing-repo-Greesb\"}}}]},\"repository\":{\"id\":500849499,\"node_id\":\"R_kgDOHdpbWw\",\"name\":\"functional-testing-repo-Greesb\",\"full_name\":\"mergifyio-testing/functional-testing-repo-Greesb\",\"private\":false,\"owner\":{\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/mergifyio-testing\",\"html_url\":\"https://github.com/mergifyio-testing\",\"followers_url\":\"https://api.github.com/users/mergifyio-testing/followers\",\"following_url\":\"https://api.github.com/users/mergifyio-testing/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/mergifyio-testing/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/mergifyio-testing/subscriptions\",\"organizations_url\":\"https://api.github.com/users/mergifyio-testing/orgs\",\"repos_url\":\"https://api.github.com/users/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/users/mergifyio-testing/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/mergifyio-testing/received_events\",\"type\":\"Organization\",\"site_admin\":false},\"html_url\":\"https://github.com/mergifyio-testing/functional-testing-repo-Greesb\",\"description\":null,\"fork\":false,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb\",\"forks_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/forks\",\"keys_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/keys{/key_id}\",\"collaborators_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/collaborators{/collaborator}\",\"teams_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/teams\",\"hooks_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/hooks\",\"issue_events_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/issues/events{/number}\",\"events_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/events\",\"assignees_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/assignees{/user}\",\"branches_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/branches{/branch}\",\"tags_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/tags\",\"blobs_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/git/blobs{/sha}\",\"git_tags_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/git/tags{/sha}\",\"git_refs_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/git/refs{/sha}\",\"trees_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/git/trees{/sha}\",\"statuses_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/statuses/{sha}\",\"languages_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/languages\",\"stargazers_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/stargazers\",\"contributors_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/contributors\",\"subscribers_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/subscribers\",\"subscription_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/subscription\",\"commits_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/commits{/sha}\",\"git_commits_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/git/commits{/sha}\",\"comments_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/comments{/number}\",\"issue_comment_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/issues/comments{/number}\",\"contents_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/contents/{+path}\",\"compare_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/compare/{base}...{head}\",\"merges_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/merges\",\"archive_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/{archive_format}{/ref}\",\"downloads_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/downloads\",\"issues_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/issues{/number}\",\"pulls_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/pulls{/number}\",\"milestones_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/milestones{/number}\",\"notifications_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/notifications{?since,all,participating}\",\"labels_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/labels{/name}\",\"releases_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/releases{/id}\",\"deployments_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/deployments\",\"created_at\":\"2022-06-07T13:21:39Z\",\"updated_at\":\"2023-01-31T19:55:17Z\",\"pushed_at\":\"2023-07-04T16:02:17Z\",\"git_url\":\"git://github.com/mergifyio-testing/functional-testing-repo-Greesb.git\",\"ssh_url\":\"git@github.com:mergifyio-testing/functional-testing-repo-Greesb.git\",\"clone_url\":\"https://github.com/mergifyio-testing/functional-testing-repo-Greesb.git\",\"svn_url\":\"https://github.com/mergifyio-testing/functional-testing-repo-Greesb\",\"homepage\":null,\"size\":16,\"stargazers_count\":0,\"watchers_count\":0,\"language\":null,\"has_issues\":true,\"has_projects\":true,\"has_downloads\":true,\"has_wiki\":true,\"has_pages\":false,\"has_discussions\":false,\"forks_count\":1,\"mirror_url\":null,\"archived\":false,\"disabled\":false,\"open_issues_count\":26,\"license\":null,\"allow_forking\":true,\"is_template\":false,\"web_commit_signoff_required\":false,\"topics\":[],\"visibility\":\"public\",\"forks\":1,\"open_issues\":26,\"watchers\":0,\"default_branch\":\"main\"},\"organization\":{\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"url\":\"https://api.github.com/orgs/mergifyio-testing\",\"repos_url\":\"https://api.github.com/orgs/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/orgs/mergifyio-testing/events\",\"hooks_url\":\"https://api.github.com/orgs/mergifyio-testing/hooks\",\"issues_url\":\"https://api.github.com/orgs/mergifyio-testing/issues\",\"members_url\":\"https://api.github.com/orgs/mergifyio-testing/members{/member}\",\"public_members_url\":\"https://api.github.com/orgs/mergifyio-testing/public_members{/member}\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"description\":\"This
@@ -5196,13 +5196,13 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `urgent`]\\n\\n### Rule: Merge default
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `urgent`]\\n\\n### Rule: Merge default
       (queue)\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -5226,13 +5226,13 @@ interactions:
       [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n-
-      [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n  - [X] all of
-      [:pushpin: routing conditions of queue `urgent`]\\n\\n### Rule: Merge default
+      [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n  - [X] all of
+      [:pushpin: queue conditions of queue `urgent`]\\n\\n### Rule: Merge default
       (queue)\\n- [X] `-draft` [:pushpin: queue requirement]\\n- [X] `-mergify-configuration-changed`
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n-
       [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n-
-      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: routing conditions]\\n
-      \ - [X] all of [:pushpin: routing conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
+      [X] `label=queue`\\n- [X] any of: [:twisted_rightwards_arrows: queue conditions]\\n
+      \ - [X] all of [:pushpin: queue conditions of queue `default`]\\n\\n<hr />\\n:sparkling_heart:&nbsp;&nbsp;Mergify
       is proud to provide this service for free to open source projects.\\n\\n:rocket:&nbsp;&nbsp;You
       can help us by [becoming a sponsor](/sponsors/Mergifyio)!\\n<hr />\\n\\n<details>\\n<summary>Mergify
       commands and options</summary>\\n\\n<br />\\n\\nMore conditions and actions
@@ -5258,7 +5258,7 @@ interactions:
       [:pushpin: queue -> allow_merging_configuration_change setting requirement]\\n
       \   - [X] #21917\\n  - [X] `base=20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main`\\n
       \ - `label=queue`\\n    - [X] #21917\\n  - [X] any of [:twisted_rightwards_arrows:
-      routing conditions]:\\n    - [X] all of [:pushpin: routing conditions of queue
+      queue conditions]:\\n    - [X] all of [:pushpin: queue conditions of queue
       `default`]\",\"text\":null,\"annotations_count\":0,\"annotations_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/check-runs/14772639033/annotations\"},\"check_suite\":{\"id\":14057051512,\"node_id\":\"CS_kwDOHdpbW88AAAADRd2VeA\",\"head_branch\":\"20230704155807/test_queue_freeze_with_pr_just_about_to_merge/integration/pr1\",\"head_sha\":\"3e164e4f13072a988a557e1c7848d405c63eb910\",\"status\":\"in_progress\",\"conclusion\":null,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/check-suites/14057051512\",\"before\":\"2bd5b6fc95986721994bb17b8fe2bf80ec4bd5d4\",\"after\":\"3e164e4f13072a988a557e1c7848d405c63eb910\",\"pull_requests\":[{\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/pulls/21917\",\"id\":1419875939,\"number\":21917,\"head\":{\"ref\":\"20230704155807/test_queue_freeze_with_pr_just_about_to_merge/integration/pr1\",\"sha\":\"3e164e4f13072a988a557e1c7848d405c63eb910\",\"repo\":{\"id\":500849499,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb\",\"name\":\"functional-testing-repo-Greesb\"}},\"base\":{\"ref\":\"20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main\",\"sha\":\"5323f9b0917bb26d15f9ad41c1d74182b72f2cc0\",\"repo\":{\"id\":500849499,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb\",\"name\":\"functional-testing-repo-Greesb\"}}}],\"app\":{\"id\":214877,\"slug\":\"mergify-greesb\",\"node_id\":\"A_kwHOAmplV84AA0dd\",\"owner\":{\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/mergifyio-testing\",\"html_url\":\"https://github.com/mergifyio-testing\",\"followers_url\":\"https://api.github.com/users/mergifyio-testing/followers\",\"following_url\":\"https://api.github.com/users/mergifyio-testing/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/mergifyio-testing/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/mergifyio-testing/subscriptions\",\"organizations_url\":\"https://api.github.com/users/mergifyio-testing/orgs\",\"repos_url\":\"https://api.github.com/users/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/users/mergifyio-testing/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/mergifyio-testing/received_events\",\"type\":\"Organization\",\"site_admin\":false},\"name\":\"mergify-Greesb\",\"description\":\"Mergify
       testing installation for Greesb\",\"external_url\":\"https://mergify.com/\",\"html_url\":\"https://github.com/apps/mergify-greesb\",\"created_at\":\"2022-06-27T12:53:37Z\",\"updated_at\":\"2023-06-06T11:38:07Z\",\"permissions\":{\"administration\":\"read\",\"checks\":\"write\",\"contents\":\"write\",\"emails\":\"read\",\"issues\":\"write\",\"members\":\"read\",\"metadata\":\"read\",\"pages\":\"write\",\"pull_requests\":\"write\",\"statuses\":\"write\",\"workflows\":\"write\"},\"events\":[\"check_run\",\"check_suite\",\"issue_comment\",\"member\",\"membership\",\"organization\",\"pull_request\",\"pull_request_review\",\"pull_request_review_comment\",\"pull_request_review_thread\",\"push\",\"repository\",\"status\",\"team\",\"team_add\",\"workflow_job\",\"workflow_run\"]},\"created_at\":\"2023-07-04T16:03:36Z\",\"updated_at\":\"2023-07-04T16:03:53Z\"},\"app\":{\"id\":214877,\"slug\":\"mergify-greesb\",\"node_id\":\"A_kwHOAmplV84AA0dd\",\"owner\":{\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/mergifyio-testing\",\"html_url\":\"https://github.com/mergifyio-testing\",\"followers_url\":\"https://api.github.com/users/mergifyio-testing/followers\",\"following_url\":\"https://api.github.com/users/mergifyio-testing/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/mergifyio-testing/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/mergifyio-testing/subscriptions\",\"organizations_url\":\"https://api.github.com/users/mergifyio-testing/orgs\",\"repos_url\":\"https://api.github.com/users/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/users/mergifyio-testing/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/mergifyio-testing/received_events\",\"type\":\"Organization\",\"site_admin\":false},\"name\":\"mergify-Greesb\",\"description\":\"Mergify
       testing installation for Greesb\",\"external_url\":\"https://mergify.com/\",\"html_url\":\"https://github.com/apps/mergify-greesb\",\"created_at\":\"2022-06-27T12:53:37Z\",\"updated_at\":\"2023-06-06T11:38:07Z\",\"permissions\":{\"administration\":\"read\",\"checks\":\"write\",\"contents\":\"write\",\"emails\":\"read\",\"issues\":\"write\",\"members\":\"read\",\"metadata\":\"read\",\"pages\":\"write\",\"pull_requests\":\"write\",\"statuses\":\"write\",\"workflows\":\"write\"},\"events\":[\"check_run\",\"check_suite\",\"issue_comment\",\"member\",\"membership\",\"organization\",\"pull_request\",\"pull_request_review\",\"pull_request_review_comment\",\"pull_request_review_thread\",\"push\",\"repository\",\"status\",\"team\",\"team_add\",\"workflow_job\",\"workflow_run\"]},\"pull_requests\":[{\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/pulls/21917\",\"id\":1419875939,\"number\":21917,\"head\":{\"ref\":\"20230704155807/test_queue_freeze_with_pr_just_about_to_merge/integration/pr1\",\"sha\":\"3e164e4f13072a988a557e1c7848d405c63eb910\",\"repo\":{\"id\":500849499,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb\",\"name\":\"functional-testing-repo-Greesb\"}},\"base\":{\"ref\":\"20230704155807/test_queue_freeze_with_pr_just_about_to_merge/main\",\"sha\":\"5323f9b0917bb26d15f9ad41c1d74182b72f2cc0\",\"repo\":{\"id\":500849499,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb\",\"name\":\"functional-testing-repo-Greesb\"}}}]},\"repository\":{\"id\":500849499,\"node_id\":\"R_kgDOHdpbWw\",\"name\":\"functional-testing-repo-Greesb\",\"full_name\":\"mergifyio-testing/functional-testing-repo-Greesb\",\"private\":false,\"owner\":{\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/mergifyio-testing\",\"html_url\":\"https://github.com/mergifyio-testing\",\"followers_url\":\"https://api.github.com/users/mergifyio-testing/followers\",\"following_url\":\"https://api.github.com/users/mergifyio-testing/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/mergifyio-testing/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/mergifyio-testing/subscriptions\",\"organizations_url\":\"https://api.github.com/users/mergifyio-testing/orgs\",\"repos_url\":\"https://api.github.com/users/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/users/mergifyio-testing/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/mergifyio-testing/received_events\",\"type\":\"Organization\",\"site_admin\":false},\"html_url\":\"https://github.com/mergifyio-testing/functional-testing-repo-Greesb\",\"description\":null,\"fork\":false,\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb\",\"forks_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/forks\",\"keys_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/keys{/key_id}\",\"collaborators_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/collaborators{/collaborator}\",\"teams_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/teams\",\"hooks_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/hooks\",\"issue_events_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/issues/events{/number}\",\"events_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/events\",\"assignees_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/assignees{/user}\",\"branches_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/branches{/branch}\",\"tags_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/tags\",\"blobs_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/git/blobs{/sha}\",\"git_tags_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/git/tags{/sha}\",\"git_refs_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/git/refs{/sha}\",\"trees_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/git/trees{/sha}\",\"statuses_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/statuses/{sha}\",\"languages_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/languages\",\"stargazers_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/stargazers\",\"contributors_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/contributors\",\"subscribers_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/subscribers\",\"subscription_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/subscription\",\"commits_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/commits{/sha}\",\"git_commits_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/git/commits{/sha}\",\"comments_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/comments{/number}\",\"issue_comment_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/issues/comments{/number}\",\"contents_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/contents/{+path}\",\"compare_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/compare/{base}...{head}\",\"merges_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/merges\",\"archive_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/{archive_format}{/ref}\",\"downloads_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/downloads\",\"issues_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/issues{/number}\",\"pulls_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/pulls{/number}\",\"milestones_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/milestones{/number}\",\"notifications_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/notifications{?since,all,participating}\",\"labels_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/labels{/name}\",\"releases_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/releases{/id}\",\"deployments_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Greesb/deployments\",\"created_at\":\"2022-06-07T13:21:39Z\",\"updated_at\":\"2023-01-31T19:55:17Z\",\"pushed_at\":\"2023-07-04T16:03:38Z\",\"git_url\":\"git://github.com/mergifyio-testing/functional-testing-repo-Greesb.git\",\"ssh_url\":\"git@github.com:mergifyio-testing/functional-testing-repo-Greesb.git\",\"clone_url\":\"https://github.com/mergifyio-testing/functional-testing-repo-Greesb.git\",\"svn_url\":\"https://github.com/mergifyio-testing/functional-testing-repo-Greesb\",\"homepage\":null,\"size\":16,\"stargazers_count\":0,\"watchers_count\":0,\"language\":null,\"has_issues\":true,\"has_projects\":true,\"has_downloads\":true,\"has_wiki\":true,\"has_pages\":false,\"has_discussions\":false,\"forks_count\":1,\"mirror_url\":null,\"archived\":false,\"disabled\":false,\"open_issues_count\":27,\"license\":null,\"allow_forking\":true,\"is_template\":false,\"web_commit_signoff_required\":false,\"topics\":[],\"visibility\":\"public\",\"forks\":1,\"open_issues\":27,\"watchers\":0,\"default_branch\":\"main\"},\"organization\":{\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"url\":\"https://api.github.com/orgs/mergifyio-testing\",\"repos_url\":\"https://api.github.com/orgs/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/orgs/mergifyio-testing/events\",\"hooks_url\":\"https://api.github.com/orgs/mergifyio-testing/hooks\",\"issues_url\":\"https://api.github.com/orgs/mergifyio-testing/issues\",\"members_url\":\"https://api.github.com/orgs/mergifyio-testing/members{/member}\",\"public_members_url\":\"https://api.github.com/orgs/mergifyio-testing/public_members{/member}\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"description\":\"This

@@ -599,29 +599,29 @@ def get_merge_after_condition(ctxt: context.Context) -> RuleConditionNode | None
     )
 
 
-async def get_routing_conditions(
+async def get_queue_conditions(
     ctxt: context.Context,
     for_queue_name: str | None = None,
 ) -> RuleConditionNode | None:
     mergify_config = await ctxt.repository.get_mergify_config()
 
-    routing_conditions = {
+    queue_conditions = {
         rule.name: typing.cast(
-            RuleConditionNode, rule.routing_conditions.condition.copy()
+            RuleConditionNode, rule.queue_conditions.condition.copy()
         )
         for rule in mergify_config["queue_rules"]
         if for_queue_name is None or rule.name == for_queue_name
     }
 
-    for queue_name, routing_condition in routing_conditions.items():
-        routing_condition.description = (
-            f":pushpin: routing conditions of queue `{queue_name}`"
+    for queue_name, queue_condition in queue_conditions.items():
+        queue_condition.description = (
+            f":pushpin: queue conditions of queue `{queue_name}`"
         )
 
-    if len(routing_conditions) >= 1:
+    if len(queue_conditions) >= 1:
         return RuleConditionCombination(
-            {"or": list(routing_conditions.values())},
-            description=":twisted_rightwards_arrows: routing conditions",
+            {"or": list(queue_conditions.values())},
+            description=":twisted_rightwards_arrows: queue conditions",
         )
 
     return None

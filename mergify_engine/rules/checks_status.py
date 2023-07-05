@@ -94,7 +94,7 @@ async def get_rule_checks_status(
     rule: prr_config.EvaluatedPullRequestRule | qr_config.EvaluatedQueueRule,
     *,
     wait_for_schedule_to_match: bool = False,
-    conditions_type: typing.Literal["conditions", "routing_conditions"] = "conditions",
+    conditions_type: typing.Literal["conditions", "queue_conditions"] = "conditions",
 ) -> check_api.Conclusion:
     conditions = getattr(rule, conditions_type)
 
