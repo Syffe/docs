@@ -2032,6 +2032,16 @@ You don't need to do anything. Mergify will close this pull request automaticall
 
         self.train_car_state.paused_by = await pause.QueuePause.get(self.repository)
 
+        if (
+            self.train_car_state.outcome == TrainCarOutcome.MERGEABLE
+            and queue_conditions_conclusion != check_api.Conclusion.SUCCESS
+        ):
+            # NOTE(Kontrolix): If previous outcome was MERGEABLE but now
+            # queue_conditions_conclusion is no longer SUCCESS, it needs to be reseted
+            # to UNKNOWN. e.g. a PR is evaluated during a queue freeze as MERGEABLE
+            # then the freeze is remove outside a schedule
+            self.train_car_state.outcome = TrainCarOutcome.UNKNOWN
+
         if self.train_car_state.paused_by is not None:
             self.train_car_state.outcome = (
                 TrainCarOutcome.PR_CHECKS_STOPPED_BECAUSE_MERGE_QUEUE_PAUSE

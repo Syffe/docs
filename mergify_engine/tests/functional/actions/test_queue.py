@@ -6448,6 +6448,70 @@ class TestQueueAction(base.FunctionalTestBase):
                 == "The pull request is the 1st in the queue to be merged"
             )
 
+    async def test_unfreeze_outside_schedule(self) -> None:
+        config = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": ["schedule: MON-FRI 08:00-17:00"],
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "queue",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        with freeze_time("2023-06-30T15:00:00", tick=True):
+            await self.setup_repo(yaml.dump(config))
+
+            r = await self.admin_app.put(
+                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/default/freeze",
+                json={"reason": "frezee for test"},
+            )
+            assert r.status_code == 200
+
+            pr = await self.create_pr()
+
+            await self.add_label(pr["number"], "queue")
+
+            await self.run_engine()
+
+            train = await self.get_train()
+            car = train.get_car(
+                await self.repository_ctxt.get_pull_request_context(pr["number"])
+            )
+            assert car is not None
+            assert car.train_car_state.outcome == merge_train.TrainCarOutcome.MERGEABLE
+
+            r = await self.admin_app.delete(
+                f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/queue/default/freeze",
+            )
+            assert r.status_code == 204
+
+        with freeze_time("2023-06-30T18:59:00", tick=True):
+            await self.run_engine()
+
+            train = await self.get_train()
+            car = train.get_car(
+                await self.repository_ctxt.get_pull_request_context(pr["number"])
+            )
+            assert car is not None
+            assert car.train_car_state.outcome == merge_train.TrainCarOutcome.UNKNOWN
+
+        pr = await self.get_pull(pr["number"])
+        assert pr["merged"] is False
+
+        with freeze_time("2023-07-03T08:10:00", tick=True):
+            await self.run_full_engine()
+
+        await self.wait_for_pull_request("closed", pr_number=pr["number"], merged=True)
+
     async def test_queue_with_default_config_branch_protection_only(self) -> None:
         rules = {
             "queue_rules": [
