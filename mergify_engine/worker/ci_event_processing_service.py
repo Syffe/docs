@@ -1,7 +1,7 @@
 import dataclasses
 
 from mergify_engine import redis_utils
-from mergify_engine.ci import download
+from mergify_engine.ci import event_processing
 from mergify_engine.worker import task
 
 
@@ -24,4 +24,4 @@ class CIEventProcessingService:
         return [self._ci_event_processing_task]
 
     async def ci_event_processing_task(self) -> None:
-        await download.process_event_streams(self.redis_links)
+        await event_processing.process_event_streams(self.redis_links)

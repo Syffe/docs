@@ -1,16 +1,10 @@
 import argparse
-import datetime
-import typing
 
-from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import refresher
-from mergify_engine import service
-from mergify_engine import settings
 from mergify_engine import subscription
 from mergify_engine import utils
-from mergify_engine.ci import download
 from mergify_engine.clients import github
 from mergify_engine.clients import http
 
@@ -88,42 +82,3 @@ async def refresher_cli() -> None:
                 )
             else:
                 print(f"No pull request or branch to refresh found for {url}")
-
-
-@utils.make_sync_for_entrypoint
-async def ci_download_handler(argv: list[str] | None = None) -> None:
-    service.setup("ci-download")
-
-    parser = argparse.ArgumentParser(description="Mergify CI download")
-    parser.add_argument("owner", type=github_types.GitHubLogin)
-    parser.add_argument("repository", type=github_types.GitHubRepositoryName)
-    parser.add_argument("at", type=lambda v: datetime.date.fromisoformat(v))
-    args = parser.parse_args(argv)
-
-    auth: github.GitHubAppInstallationAuth | github.GitHubTokenAuth
-
-    if settings.TESTING_DEV_PERSONAL_TOKEN:
-        auth = github.GitHubTokenAuth(
-            token=settings.TESTING_DEV_PERSONAL_TOKEN,
-        )
-    else:
-        auth = github.GitHubAppInstallationAuth(
-            await github.get_installation_from_login(
-                typing.cast(github_types.GitHubLogin, args.owner)
-            )
-        )
-
-    gh_client = github.AsyncGitHubInstallationClient(auth=auth)
-
-    async with redis_utils.RedisLinks(name="ci_download") as redis_links:
-        start = datetime.datetime.combine(args.at, datetime.time.min)
-        end = start + datetime.timedelta(days=1)
-        date_range = date.DateTimeRange(start, end)
-
-        await download.download(
-            redis_links,
-            gh_client,
-            typing.cast(github_types.GitHubLogin, args.owner),
-            typing.cast(github_types.GitHubRepositoryName, args.repository),
-            date_range,
-        )

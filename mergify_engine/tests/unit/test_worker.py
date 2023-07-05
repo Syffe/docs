@@ -2762,10 +2762,10 @@ async def test_start_stop_cycle(
     # NOTE(sileht): ensure it doesn't crash instantly
     await asyncio.sleep(1)
 
-    assert len(w._services) == 8
+    assert len(w._services) == 7
 
     tasks = [a_task for serv in w._services for a_task in serv.tasks]
-    assert len(tasks) == 12
+    assert len(tasks) == 11
 
     serv_shared = w.get_service(stream_services.SharedStreamService)
     assert serv_shared is not None

@@ -16,7 +16,6 @@ from mergify_engine import service
 from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine.clients import github
-from mergify_engine.worker import ci_download_service
 from mergify_engine.worker import ci_event_processing_service
 from mergify_engine.worker import gitter_service
 from mergify_engine.worker import stream_services
@@ -75,7 +74,6 @@ ServiceNameT = typing.Literal[
     "stream-monitoring",
     "delayed-refresh",
     "gitter",
-    "ci-download",
     "ci-event-processing",
 ]
 ServiceNamesT = set[ServiceNameT]
@@ -226,14 +224,6 @@ class ServiceManager:
                 ci_event_processing_service.CIEventProcessingService(
                     self._redis_links,
                     ci_event_processing_idle_time=self.ci_event_processing_idle_time,
-                )
-            )
-
-        if "ci-download" in self.enabled_services:
-            self._services.append(
-                ci_download_service.CIDownloadService(
-                    self._redis_links,
-                    ci_download_idle_time=self.ci_download_idle_time,
                 )
             )
 

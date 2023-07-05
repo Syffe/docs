@@ -4,50 +4,11 @@ import datetime
 import typing
 
 import msgpack
-from sqlalchemy.dialects import postgresql
 
-from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine.ci import models as ci_models
 from mergify_engine.clients import github
-from mergify_engine.models import github_actions as sql_models
-
-
-class NotFoundError(Exception):
-    pass
-
-
-class PostgresPullRequestRegistry:
-    async def insert(self, new_pull: ci_models.PullRequest) -> None:
-        async with database.create_session() as session:
-            sql = (
-                postgresql.insert(sql_models.PullRequest)  # type: ignore [no-untyped-call]
-                .values(
-                    id=new_pull.id,
-                    number=new_pull.number,
-                    title=new_pull.title,
-                    state=new_pull.state,
-                )
-                .on_conflict_do_update(
-                    index_elements=[sql_models.PullRequest.id],
-                    set_={"number": new_pull.number, "title": new_pull.title},
-                )
-            )
-            await session.execute(sql)
-            await session.commit()
-
-    async def register_job_run(self, pull_id: int, job_run: ci_models.JobRun) -> None:
-        async with database.create_session() as session:
-            sql = (
-                postgresql.insert(sql_models.PullRequestJobRunAssociation)  # type: ignore [no-untyped-call]
-                .values(pull_request_id=pull_id, job_run_id=job_run.id)
-                .on_conflict_do_nothing(
-                    index_elements=["pull_request_id", "job_run_id"]
-                )
-            )
-            await session.execute(sql)
-            await session.commit()
 
 
 class PullRequestFromCommitRegistry(typing.Protocol):
