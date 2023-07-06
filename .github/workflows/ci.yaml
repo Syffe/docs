@@ -129,6 +129,8 @@ jobs:
           POSTGRES_PASSWORD: password
         ports:
           - 5432:5432
+        options: --name postgres
+
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v3.3.0

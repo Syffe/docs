@@ -16,3 +16,4 @@ services:
       - "${LOCAL_POSTGRES_PORT:-0}:5432"
     environment:
       POSTGRES_PASSWORD: password
+    container_name: postgres
