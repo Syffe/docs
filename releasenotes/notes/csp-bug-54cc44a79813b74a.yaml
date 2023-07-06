@@ -1,0 +1,5 @@
+---
+fixes:
+  - |
+    Some dashboard resources can't be downloaded by the web browser.
+    The Content Security Policy header has been updated to fix this.
