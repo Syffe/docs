@@ -58,7 +58,7 @@ class TestBranchProtection(base.FunctionalTestBase):
 
         ctxt = context.Context(self.repository_ctxt, p)
         check_name = "Rule: Merge (queue)"
-        expected_conclusion = "failure"
+        expected_conclusion = "cancelled"
         expected_title = "Configuration not compatible with a branch protection setting"
         expected_summary = (
             "The branch protection setting `Require branches to be up to date before merging` "

@@ -785,7 +785,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                     ]
                     return None
             return check_api.Result(
-                check_api.Conclusion.FAILURE,
+                check_api.Conclusion.CANCELLED,
                 e.title,
                 e.message,
             )
