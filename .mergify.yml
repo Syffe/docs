@@ -3,7 +3,7 @@ extends: .github
 queue_rules:
   - name: hotfix
     allow_inplace_checks: true
-    queue_conditions: &HotfixConditions
+    queue_conditions:
       - check-success=semantic-pull-request
       - "check-success=Rule: testing requirements (post_check)"
       - or:
@@ -45,7 +45,7 @@ queue_rules:
 
   - name: default
     allow_inplace_checks: true
-    queue_conditions: &DefaultConditions
+    queue_conditions:
       - and: *CheckRuns
       - "check-success=Rule: feature requirements (post_check)"
       - "check-success=Rule: testing requirements (post_check)"
@@ -61,7 +61,7 @@ queue_rules:
 
   - name: lowprio
     allow_inplace_checks: true
-    queue_conditions: &LowprioConditions
+    queue_conditions:
       - and: *CheckRuns
       - "#commits=1"
       - or:
@@ -91,10 +91,6 @@ pull_request_rules:
       - base=main
       - label!=manual merge
       - check-success=semantic-pull-request
-      - or:
-          - and: *HotfixConditions
-          - and: *DefaultConditions
-          - and: *LowprioConditions
     actions:
       queue:
 
