@@ -195,7 +195,7 @@ def to_cached_github_branch_commit(
     commit: GitHubBranchCommit,
 ) -> CachedGitHubBranchCommit:
     author = commit["author"]
-    gh_author_login = None if author is None else author["login"]
+    gh_author_login = None if author is None else author.get("login")
 
     return CachedGitHubBranchCommit(
         sha=commit["sha"],
