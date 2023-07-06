@@ -254,7 +254,7 @@ class WorkerSettings(pydantic.BaseSettings):
     # FIXME: stop injecting events until we reenable the consuming part
     CI_EVENT_INGESTION: bool = False
     CI_DOWNLOAD_BATCH_SIZE: int = 50
-    EVENTLOG_EVENTS_DB_INGESTION: bool = True
+    EVENTLOG_EVENTS_DB_INGESTION: bool = False
 
 
 class APISettings(pydantic.BaseSettings):
