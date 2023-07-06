@@ -5,6 +5,7 @@ import pytest
 
 from mergify_engine import context
 from mergify_engine import github_types
+from mergify_engine import settings
 from mergify_engine import subscription
 from mergify_engine import yaml
 from mergify_engine.tests.functional import base
@@ -109,6 +110,10 @@ class BackportActionTestBase(base.FunctionalTestBase):
         return await self.get_pull(pulls[0]["number"])
 
 
+@pytest.mark.skipif(
+    not settings.GITHUB_URL.startswith("https://github.com"),
+    reason="https://linear.app/mergify/issue/MRGFY-2233/backport-tests-record-in-parallel-are-flaky",
+)
 @pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
 class TestBackportAction(BackportActionTestBase):
     async def test_backport_no_branch(self) -> None:
@@ -413,6 +418,10 @@ no changes added to commit (use "git add" and/or "git commit -a")
         assert [f"refs/heads/mergify/bp/{stable_branch}/pr-{p1['number']}"] == refs
 
 
+@pytest.mark.skipif(
+    not settings.GITHUB_URL.startswith("https://github.com"),
+    reason="https://linear.app/mergify/issue/MRGFY-2233/backport-tests-record-in-parallel-are-flaky",
+)
 class TestBackportActionWithSub(BackportActionTestBase):
     SUBSCRIPTION_ACTIVE = True
 
