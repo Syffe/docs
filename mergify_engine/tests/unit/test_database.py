@@ -110,8 +110,13 @@ def dump_schema(dbname: str, filepath: pathlib.Path) -> None:
         "--format=p",
         "--encoding=UTF8",
     ]
+    if os.environ.get("CI") == "true":
+        docker_cmd = ["docker", "exec", "postgres"]
+    else:
+        docker_cmd = ["docker", "compose", "exec", "postgres"]
+
     process = subprocess.run(
-        ["docker", "exec", "postgres", *pg_dump_cmd],
+        [*docker_cmd, *pg_dump_cmd],
         check=True,
         capture_output=True,
         timeout=10,
