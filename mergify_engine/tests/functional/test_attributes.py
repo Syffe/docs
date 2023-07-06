@@ -365,6 +365,7 @@ class TestAttributes(base.FunctionalTestBase):
             "files": ["test2"],
             "check-neutral": [],
             "status-neutral": [],
+            "co-authors": set(),
             "commented-reviews-by": [],
             "commits-unverified": [
                 "test_draft_attribute: pull request n2 from integration"

@@ -139,6 +139,7 @@ async def test_get_commits_to_cherry_pick_rebase(
         email_committer="",
         date_author=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
         date_committer=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
+        gh_author_login=github_types.GitHubLogin("someone"),
     )
     c2 = github_types.CachedGitHubBranchCommit(
         sha=github_types.SHAType("c2"),
@@ -151,6 +152,7 @@ async def test_get_commits_to_cherry_pick_rebase(
         email_committer="",
         date_author=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
         date_committer=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
+        gh_author_login=github_types.GitHubLogin("someone"),
     )
     commits.return_value = [c1, c2]
 
@@ -192,6 +194,12 @@ async def test_get_commits_to_cherry_pick_rebase(
                 "type": "User",
                 "avatar_url": "",
             },
+            "author": {
+                "login": github_types.GitHubLogin("someone"),
+                "id": github_types.GitHubAccountIdType(2),
+                "type": "User",
+                "avatar_url": "",
+            },
         }
     )
     rebased_c2 = github_types.GitHubBranchCommit(
@@ -219,6 +227,12 @@ async def test_get_commits_to_cherry_pick_rebase(
             "committer": {
                 "login": github_types.GitHubLogin("foobar"),
                 "id": github_types.GitHubAccountIdType(1),
+                "type": "User",
+                "avatar_url": "",
+            },
+            "author": {
+                "login": github_types.GitHubLogin("someone"),
+                "id": github_types.GitHubAccountIdType(2),
                 "type": "User",
                 "avatar_url": "",
             },
@@ -263,6 +277,7 @@ async def test_get_commits_to_cherry_pick_merge(
         email_committer="",
         date_author=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
         date_committer=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
+        gh_author_login=github_types.GitHubLogin("someone"),
     )
     c2 = github_types.CachedGitHubBranchCommit(
         sha=github_types.SHAType("c2"),
@@ -275,6 +290,7 @@ async def test_get_commits_to_cherry_pick_merge(
         email_committer="",
         date_author=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
         date_committer=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
+        gh_author_login=github_types.GitHubLogin("someone"),
     )
 
     async def fake_commits() -> list[github_types.CachedGitHubBranchCommit]:
@@ -299,6 +315,7 @@ async def test_get_commits_to_cherry_pick_merge(
         email_committer="",
         date_author=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
         date_committer=github_types.ISODateTimeType(str(datetime.datetime.utcnow())),
+        gh_author_login=github_types.GitHubLogin("someone"),
     )
     merge_commit = github_types.GitHubBranchCommit(
         sha=github_types.SHAType("merge_commit"),
@@ -321,6 +338,12 @@ async def test_get_commits_to_cherry_pick_merge(
             "id": github_types.GitHubAccountIdType(0),
             "type": "User",
             "login": github_types.GitHubLogin("someone-else"),
+            "avatar_url": "",
+        },
+        author={
+            "id": github_types.GitHubAccountIdType(1),
+            "type": "User",
+            "login": github_types.GitHubLogin("someone"),
             "avatar_url": "",
         },
     )

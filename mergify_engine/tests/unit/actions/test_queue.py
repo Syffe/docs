@@ -237,6 +237,12 @@ def fake_client() -> mock.Mock:
                             "login": github_types.GitHubLogin("goo"),
                             "avatar_url": "https://example.com",
                         },
+                        "author": {
+                            "type": "User",
+                            "id": github_types.GitHubAccountIdType(1234),
+                            "login": github_types.GitHubLogin("goo"),
+                            "avatar_url": "https://example.com",
+                        },
                     },
                     "protection": {
                         "enabled": False,

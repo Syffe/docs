@@ -33,6 +33,12 @@ def create_commit(sha: github_types.SHAType) -> github_types.GitHubBranchCommit:
                 "type": "User",
                 "avatar_url": "",
             },
+            "author": {
+                "login": github_types.GitHubLogin("foobar"),
+                "id": github_types.GitHubAccountIdType(1),
+                "type": "User",
+                "avatar_url": "",
+            },
         }
     )
 

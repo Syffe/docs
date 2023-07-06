@@ -265,6 +265,30 @@ Using the list of commit within a :ref:`template <data type template>`:
     Co-Authored-By: {{ commit.author }} <{{ commit.email_author }}>
     {% endfor %}
 
+.. _data type commit author:
+
+Commit Authors
+~~~~~~~~~~~~~~
+
+List of unique commit authors.
+
+Example structure of a commit author object:
+
+.. code-block:: javascript
+
+    {
+        "name": "commit-author",
+        "email": "user@example.com",
+    }
+
+Using the list of co-authors within a :ref:`template <data type template>`:
+
+.. code-block::
+
+    {% for co_author in co_authors %}
+    Co-Authored-By: {{ co_author.name }} <{{ co_author.email }}>
+    {% endfor %}
+
 .. _regular expressions:
 
 Regular Expressions

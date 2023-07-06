@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    The pull request has a new ``co-authors`` attribute containing a list of
+    pull request co-authors.

@@ -892,6 +892,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         commit_headline: str | None = None,
         commit_body: str | None = None,
         commit_date: datetime.datetime | None = None,
+        commit_author: str | None = None,
     ) -> github_types.GitHubPullRequest:
         self.pr_counter += 1
 
@@ -927,6 +928,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         args_commit = ["commit", "--no-edit", "-m", commit_headline]
         if commit_body is not None:
             args_commit += ["-m", commit_body]
+        if commit_author is not None:
+            args_commit += ["--author", commit_author]
 
         tmp_kwargs = {}
         if commit_date is not None:
@@ -1020,6 +1023,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         draft: bool = False,
         verified: bool = False,
         commits_body: list[str] | None = None,
+        commits_author: list[str] | None = None,
     ) -> github_types.GitHubPullRequest:
         self.pr_counter += 1
 
@@ -1032,6 +1036,10 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             assert len(commits_body) == len(
                 commits_headline
             ), "If `commits_body` is specified, it must have the same length as `commits_headline`"
+        if commits_author is not None:
+            assert len(commits_author) == len(
+                commits_headline
+            ), "If `commits_author` is specified, it must have the same length as `commits_headline`"
 
         if self.git.repository is None:
             raise RuntimeError("self.git.init() not called, tmp dir empty")
@@ -1077,6 +1085,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             args_commit = ["commit", "--no-edit", "-m", commit_headline]
             if commits_body is not None:
                 args_commit += ["-m", commits_body[idx]]
+            if commits_author is not None:
+                args_commit += ["--author", commits_author[idx]]
 
             if verified:
                 args_commit.append("-S")

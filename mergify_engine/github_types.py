@@ -168,6 +168,7 @@ class GitHubBranchCommit(typing.TypedDict):
     parents: list[GitHubBranchCommitParent]
     commit: GitHubBranchCommitCommit
     committer: GitHubAccount
+    author: GitHubAccount | None
 
 
 @dataclasses.dataclass
@@ -182,6 +183,8 @@ class CachedGitHubBranchCommit:
     date_committer: ISODateTimeType
     email_author: str
     email_committer: str
+    gh_author_login: GitHubLogin | None
+
     __string_like__ = True
 
     def __str__(self) -> str:
@@ -191,6 +194,9 @@ class CachedGitHubBranchCommit:
 def to_cached_github_branch_commit(
     commit: GitHubBranchCommit,
 ) -> CachedGitHubBranchCommit:
+    author = commit["author"]
+    gh_author_login = None if author is None else author["login"]
+
     return CachedGitHubBranchCommit(
         sha=commit["sha"],
         commit_message=commit["commit"]["message"],
@@ -202,6 +208,7 @@ def to_cached_github_branch_commit(
         email_committer=commit["commit"]["committer"]["email"],
         date_author=commit["commit"]["author"]["date"],
         date_committer=commit["commit"]["committer"]["date"],
+        gh_author_login=gh_author_login,
     )
 
 

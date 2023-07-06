@@ -955,6 +955,7 @@ commits:
                 email_committer="",
                 date_author=github_types.ISODateTimeType(""),
                 date_committer=github_types.ISODateTimeType(""),
+                gh_author_login=github_types.GitHubLogin("someone"),
             ),
             github_types.CachedGitHubBranchCommit(
                 sha=github_types.SHAType("foobar"),
@@ -967,6 +968,7 @@ commits:
                 email_committer="",
                 date_author=github_types.ISODateTimeType(""),
                 date_committer=github_types.ISODateTimeType(""),
+                gh_author_login=github_types.GitHubLogin("someone"),
             ),
         ]
     )
@@ -1478,6 +1480,7 @@ Yo!
             email_committer="",
             date_author=github_types.ISODateTimeType("2012-04-14T16:00:49Z"),
             date_committer=github_types.ISODateTimeType("2013-04-14T16:00:49Z"),
+            gh_author_login=github_types.GitHubLogin("someone"),
         ),
         github_types.CachedGitHubBranchCommit(
             sha=github_types.SHAType("7777bbbb"),
@@ -1490,6 +1493,7 @@ Yo!
             email_committer="",
             date_author=github_types.ISODateTimeType("2013-04-14T16:00:49Z"),
             date_committer=github_types.ISODateTimeType("2014-04-14T16:00:49Z"),
+            gh_author_login=github_types.GitHubLogin("someone-else"),
         ),
         github_types.CachedGitHubBranchCommit(
             sha=github_types.SHAType("8888bbbb"),
@@ -1502,6 +1506,7 @@ Yo!
             email_committer="",
             date_author=github_types.ISODateTimeType("2014-04-14T16:00:49Z"),
             date_committer=github_types.ISODateTimeType("2015-04-14T16:00:49Z"),
+            gh_author_login=github_types.GitHubLogin("another-someone"),
         ),
     ]
     ctxt = context.Context(mock.Mock(), a_pull_request)
@@ -1534,4 +1539,100 @@ Yo!
     - another-someone 2
     - 2015-04-14T16:00:49Z
 """
+    )
+
+
+async def test_context_co_authors(
+    a_pull_request: github_types.GitHubPullRequest,
+) -> None:
+    a_pull_request["title"] = "feat(module): hello there"
+    a_pull_request["number"] = github_types.GitHubPullRequestNumber(1234)
+    a_pull_request[
+        "body"
+    ] = """
+## Description
+
+- Hello there...
+- General Kenobi!
+
+## Checklist
+
+[X] One
+[X] Two
+[X] Three
+"""
+    a_pull_request["user"] = {
+        "login": github_types.GitHubLogin("Obi-Wan Kenobi"),
+        "id": github_types.GitHubAccountIdType(0),
+        "type": "User",
+        "avatar_url": "",
+    }
+
+    ctxt = context.Context(mock.Mock(), a_pull_request)
+    ctxt._caches.commits.set(
+        [
+            github_types.CachedGitHubBranchCommit(
+                sha=github_types.SHAType(""),
+                commit_message="",
+                commit_verification_verified=False,
+                parents=[],
+                author="Obi-Wan Kenobi",
+                committer="",
+                email_author="obi-wan.kenobi@jedi-high-concil.org",
+                email_committer="",
+                date_author=github_types.ISODateTimeType(""),
+                date_committer=github_types.ISODateTimeType(""),
+                gh_author_login=github_types.GitHubLogin("Obi-Wan Kenobi"),
+            ),
+            github_types.CachedGitHubBranchCommit(
+                sha=github_types.SHAType(""),
+                commit_message="",
+                commit_verification_verified=False,
+                parents=[],
+                author="General Grievous",
+                committer="",
+                email_author="general.grievous@confederacy.org",
+                email_committer="",
+                date_author=github_types.ISODateTimeType(""),
+                date_committer=github_types.ISODateTimeType(""),
+                gh_author_login=github_types.GitHubLogin("General Grievous"),
+            ),
+            github_types.CachedGitHubBranchCommit(
+                sha=github_types.SHAType(""),
+                commit_message="",
+                commit_verification_verified=False,
+                parents=[],
+                author="General Grievous",
+                committer="",
+                email_author="general.grievous@confederacy.org",
+                email_committer="",
+                date_author=github_types.ISODateTimeType(""),
+                date_committer=github_types.ISODateTimeType(""),
+                gh_author_login=github_types.GitHubLogin("General Grievous"),
+            ),
+        ]
+    )
+
+    expected_title = "feat(module): hello there"
+    expected_body = """- Hello there...
+- General Kenobi!
+
+Pull request: #1234
+
+Co-Authored-By: General Grievous <general.grievous@confederacy.org>
+"""
+
+    assert (
+        await ctxt.pull_request.get_commit_message(
+            """{{ title }}
+
+{{ body | get_section("## Description", "") }}
+
+Pull request: #{{ number }}
+{% for co_author in co_authors %}
+Co-Authored-By: {{ co_author.name }} <{{ co_author.email }}>
+{% endfor %}
+"""
+        )
+        == (expected_title, expected_body)
     )

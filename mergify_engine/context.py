@@ -1054,6 +1054,11 @@ class ContextCaches:
     )
 
 
+class CommitAuthor(typing.NamedTuple):
+    name: str
+    email: str
+
+
 ContextAttributeType = (
     None
     | list[bool]
@@ -1072,6 +1077,7 @@ ContextAttributeType = (
     | list[github_types.GitHubBranchCommit]
     | list[github_types.CachedGitHubBranchCommit]
     | github_types.GitHubRepositoryPermission
+    | set[CommitAuthor]
 )
 
 COMMITS_ARRAY_ATTRIBUTE_RE = re.compile(r"^commits\[(-?\d+|\*)\]\.([\-\w]+)$")
@@ -2543,6 +2549,13 @@ class BasePullRequest:
         if name == "branch-protection-review-decision":
             return await ctxt.retrieve_review_decision()
 
+        if name == "co-authors":
+            return {
+                CommitAuthor(commit.author, commit.email_author)
+                for commit in await ctxt.commits
+                if commit.gh_author_login != ctxt.pull["user"]["login"]
+            }
+
         raise PullRequestAttributeError(name)
 
 
@@ -2605,6 +2618,7 @@ class PullRequest(BasePullRequest):
         "review-threads-resolved",
         "review-threads-unresolved",
         "files",
+        "co-authors",
     }
 
     LIST_ATTRIBUTES_WITH_LENGTH_OPTIMIZATION: typing.ClassVar[set[str]] = {

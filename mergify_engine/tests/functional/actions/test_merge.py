@@ -269,6 +269,53 @@ superRP!"""
             not in summary["output"]["summary"]
         )
 
+    async def test_merge_template_with_co_authors(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "merge on main",
+                    "conditions": [f"base={self.main_branch_name}"],
+                    "actions": {
+                        "merge": {
+                            "commit_message_template": """{{ title }}
+
+{{ body | get_section("## Description", "") }}
+
+Pull request: #{{ number }}
+{% for co_author in co_authors %}
+Co-Authored-By: {{ co_author.name }} <{{ co_author.email }}>
+{% endfor %}
+""",
+                        }
+                    },
+                },
+            ]
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        p = await self.create_pr(
+            message="## Description\n\nHello there",
+            commit_author="General Grievous <general.grievous@confederacy.org>",
+        )
+        await self.run_engine()
+        merged_pull = await self.wait_for_pull_request(
+            "closed", p["number"], merged=True
+        )
+
+        merge_commit_sha = merged_pull["pull_request"]["merge_commit_sha"]
+        assert merge_commit_sha is not None
+        commit = await self.get_commit(merge_commit_sha)
+        assert (
+            f"""test_merge_template_with_co_authors: pull request n1 from integration
+
+Hello there
+
+Pull request: #{merged_pull['number']}
+
+Co-Authored-By: General Grievous <general.grievous@confederacy.org>"""
+            == commit["commit"]["message"]
+        )
+
     async def test_merge_branch_protection_strict(self) -> None:
         rules = {
             "pull_request_rules": [
