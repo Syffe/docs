@@ -40,7 +40,7 @@ class PullRequest(models.Base):
         cls, session: sqlalchemy.ext.asyncio.AsyncSession, pull: ci_models.PullRequest
     ) -> None:
         sql = (
-            postgresql.insert(cls)  # type: ignore [no-untyped-call]
+            postgresql.insert(cls)
             .values(
                 id=pull.id,
                 number=pull.number,
@@ -206,7 +206,7 @@ class WorkflowRun(models.Base):
         workflow_run_data: github_types.GitHubWorkflowRun,
     ) -> None:
         sql = (
-            postgresql.insert(cls)  # type: ignore [no-untyped-call]
+            postgresql.insert(cls)
             .values(
                 id=workflow_run_data["id"],
                 workflow_id=workflow_run_data["workflow_id"],
@@ -249,7 +249,7 @@ class WorkflowJob(models.Base):
         workflow_job_data: github_types.GitHubJobRun,
     ) -> None:
         sql = (
-            postgresql.insert(cls)  # type: ignore [no-untyped-call]
+            postgresql.insert(cls)
             .values(
                 id=workflow_job_data["id"],
                 workflow_run_id=workflow_job_data["run_id"],
@@ -286,7 +286,7 @@ class PullRequestWorkflowRunAssociation(models.Base):
         workflow_run_id: int,
     ) -> None:
         sql = (
-            postgresql.insert(cls)  # type: ignore [no-untyped-call]
+            postgresql.insert(cls)
             .values(pull_request_id=pull_request_id, workflow_run_id=workflow_run_id)
             .on_conflict_do_nothing(
                 index_elements=["pull_request_id", "workflow_run_id"]

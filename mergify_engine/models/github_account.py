@@ -27,7 +27,7 @@ class GitHubAccount(models.Base):
         account_login: github_types.GitHubLogin,
     ) -> None:
         sql = (
-            postgresql.insert(cls)  # type: ignore [no-untyped-call]
+            postgresql.insert(cls)
             .values(id=account_id, login=account_login)
             .on_conflict_do_update(
                 index_elements=[cls.id],
