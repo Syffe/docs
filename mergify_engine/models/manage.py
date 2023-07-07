@@ -8,14 +8,6 @@ import sqlalchemy
 from mergify_engine import models
 from mergify_engine import settings
 
-# NOTE(sileht): ensure all models are loaded, to
-# allow create_all() to find all tables to creates
-from mergify_engine.models import application_keys  # noqa: F401
-from mergify_engine.models import github_account  # noqa: F401
-from mergify_engine.models import github_actions  # noqa: F401
-from mergify_engine.models import github_repository  # noqa: F401
-from mergify_engine.models import github_user  # noqa: F401
-
 
 async def create_all() -> None:
     engine = sqlalchemy.ext.asyncio.create_async_engine(settings.DATABASE_URL.geturl())
