@@ -171,3 +171,22 @@ async def test_event_action_dismiss_reviews_consistency(
     event = await db.scalar(sqlalchemy.select(evt_model.EventActionDismissReviews))
     assert event is not None
     assert set(event.users) == {"leo", "charly", "guillaume"}
+
+
+async def test_event_action_backport_consistency(
+    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+) -> None:
+    await insert_event(
+        fake_repository,
+        "action.backport",
+        signals.EventCopyMetadata(
+            {"to": "stable_branch", "pull_request_number": 456, "conflicts": True}
+        ),
+    )
+
+    await assert_base_event(db, fake_repository)
+    event = await db.scalar(sqlalchemy.select(evt_model.EventActionBackport))
+    assert event is not None
+    assert event.to == "stable_branch"
+    assert event.pull_request_number == 456
+    assert event.conflicts is True

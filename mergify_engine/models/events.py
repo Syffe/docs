@@ -168,3 +168,17 @@ class EventActionDismissReviews(Event):
     users: orm.Mapped[list[str]] = orm.mapped_column(
         sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1)
     )
+
+
+class EventActionBackport(Event):
+    __tablename__ = "event_action_backport"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "action.backport",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"), primary_key=True
+    )
+    to: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
+    pull_request_number: orm.Mapped[int] = orm.mapped_column(sqlalchemy.Integer)
+    conflicts: orm.Mapped[bool] = orm.mapped_column(sqlalchemy.Boolean)
