@@ -126,3 +126,18 @@ async def test_event_action_comment_consistency(
     event = await db.scalar(sqlalchemy.select(evt_model.EventActionComment))
     assert event is not None
     assert event.message == "hello world"
+
+
+async def test_event_action_close_consistency(
+    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+) -> None:
+    await insert_event(
+        fake_repository,
+        "action.close",
+        signals.EventCommentMetadata(message="goodbye world"),
+    )
+
+    await assert_base_event(db, fake_repository)
+    event = await db.scalar(sqlalchemy.select(evt_model.EventActionClose))
+    assert event is not None
+    assert event.message == "goodbye world"

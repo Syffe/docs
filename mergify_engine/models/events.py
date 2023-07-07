@@ -130,3 +130,15 @@ class EventActionComment(Event):
         sqlalchemy.ForeignKey("event.id"), primary_key=True
     )
     message: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
+
+
+class EventActionClose(Event):
+    __tablename__ = "event_action_close"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "action.close",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"), primary_key=True
+    )
+    message: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
