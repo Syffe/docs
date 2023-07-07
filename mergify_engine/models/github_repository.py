@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import datetime
-
 import sqlalchemy
 from sqlalchemy import orm
 import sqlalchemy.ext.asyncio
@@ -25,9 +23,6 @@ class GitHubRepository(models.Base):
         lazy="joined", foreign_keys=[owner_id]
     )
 
-    last_download_at: orm.Mapped[datetime.datetime | None] = orm.mapped_column(
-        sqlalchemy.DateTime, nullable=True
-    )
     name: orm.Mapped[str] = orm.mapped_column(
         sqlalchemy.Text, nullable=False, index=True
     )

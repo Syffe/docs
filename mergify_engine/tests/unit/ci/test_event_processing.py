@@ -10,7 +10,6 @@ from mergify_engine import github_events
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine.ci import event_processing
-from mergify_engine.ci import models
 from mergify_engine.ci import pull_registries
 from mergify_engine.models import github_actions
 
@@ -49,7 +48,9 @@ async def test_process_event_stream_workflow_run(
     with mock.patch.object(
         pull_registries.RedisPullRequestRegistry,
         "get_from_commit",
-        return_value=[models.PullRequest(id=1, number=1, title="hello", state="open")],
+        return_value=[
+            pull_registries.PullRequest(id=1, number=1, title="hello", state="open")
+        ],
     ):
         await event_processing.process_event_streams(redis_links)
 

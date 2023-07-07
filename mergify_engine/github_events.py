@@ -21,7 +21,6 @@ from mergify_engine import settings
 from mergify_engine import utils
 from mergify_engine import worker_pusher
 from mergify_engine.ci import job_registries
-from mergify_engine.ci import models as ci_models
 from mergify_engine.ci import pull_registries
 from mergify_engine.clients import github
 from mergify_engine.engine import commands_runner
@@ -186,7 +185,7 @@ async def clean_and_fill_caches(
                 event["pull_request"]["base"]["repo"]["owner"]["login"],
                 event["pull_request"]["base"]["repo"]["name"],
                 commit_shas,
-                ci_models.PullRequest(
+                pull_registries.PullRequest(
                     id=event["pull_request"]["id"],
                     number=event["pull_request"]["number"],
                     title=event["pull_request"]["title"],

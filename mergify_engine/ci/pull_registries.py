@@ -7,8 +7,15 @@ import msgpack
 
 from mergify_engine import github_types
 from mergify_engine import redis_utils
-from mergify_engine.ci import models as ci_models
 from mergify_engine.clients import github
+
+
+@dataclasses.dataclass
+class PullRequest:
+    id: int
+    number: int
+    title: str
+    state: github_types.GitHubPullRequestState
 
 
 class PullRequestFromCommitRegistry(typing.Protocol):
@@ -17,7 +24,7 @@ class PullRequestFromCommitRegistry(typing.Protocol):
         owner: github_types.GitHubLogin,
         repository: github_types.GitHubRepositoryName,
         commit_sha: github_types.SHAType,
-    ) -> list[ci_models.PullRequest]:
+    ) -> list[PullRequest]:
         ...
 
 
@@ -45,7 +52,7 @@ class HTTPPullRequestRegistry:
         owner: github_types.GitHubLogin,
         repository: github_types.GitHubRepositoryName,
         commit_sha: github_types.SHAType,
-    ) -> list[ci_models.PullRequest]:
+    ) -> list[PullRequest]:
         # https://docs.github.com/en/rest/commits/commits#list-pull-requests-associated-with-a-commit
         client = await self.get_client()
         pull_payloads = typing.cast(
@@ -57,7 +64,7 @@ class HTTPPullRequestRegistry:
             ),
         )
         return [
-            ci_models.PullRequest(
+            PullRequest(
                 id=p["id"], number=p["number"], title=p["title"], state=p["state"]
             )
             async for p in pull_payloads
@@ -96,7 +103,7 @@ class RedisPullRequestRegistry:
         owner: github_types.GitHubLogin,
         repository: github_types.GitHubRepositoryName,
         commit_sha: github_types.SHAType,
-    ) -> list[ci_models.PullRequest]:
+    ) -> list[PullRequest]:
         cache = await self.redis.hgetall(self.cache_key(owner, repository, commit_sha))
         if cache:
             return self._parse(cache)
@@ -108,12 +115,12 @@ class RedisPullRequestRegistry:
 
         return pulls
 
-    def _parse(self, cache: dict[bytes, bytes]) -> list[ci_models.PullRequest]:
+    def _parse(self, cache: dict[bytes, bytes]) -> list[PullRequest]:
         pulls = []
         for raw in cache.values():
             data = msgpack.unpackb(raw)
             if data["id"]:
-                pulls.append(ci_models.PullRequest(**data))
+                pulls.append(PullRequest(**data))
         return pulls
 
     @classmethod
@@ -123,14 +130,14 @@ class RedisPullRequestRegistry:
         owner: github_types.GitHubLogin,
         repository: github_types.GitHubRepositoryName,
         commit_shas: set[github_types.SHAType],
-        pulls: list[ci_models.PullRequest],
+        pulls: list[PullRequest],
     ) -> None:
         # NOTE(charly): no pull requests means that the commit is not associated
         # to any. We store a fake pull request to return an empty list and avoid
         # doint HTTP request later.
         if not pulls:
             pulls = [
-                ci_models.PullRequest(
+                PullRequest(
                     0, 0, "No pull request associated to this commit", state="closed"
                 )
             ]
@@ -154,6 +161,6 @@ class RedisPullRequestRegistry:
         owner: github_types.GitHubLogin,
         repository: github_types.GitHubRepositoryName,
         commit_shas: set[github_types.SHAType],
-        pull_request: ci_models.PullRequest,
+        pull_request: PullRequest,
     ) -> None:
         await cls._store(redis, owner, repository, commit_shas, [pull_request])

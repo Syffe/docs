@@ -14,19 +14,3 @@ instances:
         columns:
           - name: users.count
             type: gauge
-
-      - metric_prefix: engine.db
-        query: >
-          SELECT
-              AVG(EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - last_download_at))) AS avg,
-              MAX(EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - last_download_at))) AS max,
-              MIN(EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - last_download_at))) AS min
-          FROM github_repository
-          WHERE last_download_at IS NOT NULL;
-        columns:
-          - name: github_repository.last_download.avg
-            type: gauge
-          - name: github_repository.last_download.max
-            type: gauge
-          - name: github_repository.last_download.min
-            type: gauge

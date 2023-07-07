@@ -5,23 +5,22 @@ import pytest
 
 from mergify_engine import github_types
 from mergify_engine import redis_utils
-from mergify_engine.ci import models
 from mergify_engine.ci import pull_registries
 
 
 @dataclasses.dataclass
 class FakePullRequestRegistry:
-    pulls: list[models.PullRequest] | None = None
+    pulls: list[pull_registries.PullRequest] | None = None
 
     async def get_from_commit(
         self,
         owner: github_types.GitHubLogin,
         repository: github_types.GitHubRepositoryName,
         commit_sha: github_types.SHAType,
-    ) -> list[models.PullRequest]:
+    ) -> list[pull_registries.PullRequest]:
         if self.pulls is None:
             return [
-                models.PullRequest(
+                pull_registries.PullRequest(
                     id=1234, number=12, title="feat: my awesome feature", state="open"
                 )
             ]
@@ -110,7 +109,7 @@ async def test_register(registry: pull_registries.RedisPullRequestRegistry) -> N
         owner,
         repo,
         {commit_sha},
-        models.PullRequest(
+        pull_registries.PullRequest(
             id=1234, number=12, title="feat: my awesome feature", state="open"
         ),
     )
