@@ -126,3 +126,8 @@ cmd = "./tools/poetry-ci-install.sh"
 deps = ["setup"]
 help = "Create a database revision file"
 cmd = "./tools/run-tests.sh ./tools/run-alembic-revision.sh"
+
+[tool.poe.tasks.alembic]
+deps = ["setup"]
+help = "Run an alembic command"
+cmd = "./tools/run-tests.sh alembic --config mergify_engine/models/db_migration/alembic.ini"
