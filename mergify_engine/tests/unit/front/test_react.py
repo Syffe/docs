@@ -29,33 +29,33 @@ async def test_react_static_files(
     prepared_request = web_client.build_request(
         # nosemgrep: python.lang.security.audit.insecure-transport.requests.request-with-http.request-with-http
         method="GET",
-        url="http://localhost:5001/static/../../test_react.py",
+        url="http://localhost:5001/assets/../../test_react.py",
     )
     # nosemgrep: python.lang.security.audit.insecure-transport.requests.request-with-http.request-with-http
-    prepared_request.url = httpx.URL("http://localhost:5001/static/../../test_react.py")
+    prepared_request.url = httpx.URL("http://localhost:5001/assets/../../test_react.py")
     response = await web_client.send(prepared_request)
     assert response.status_code == 404
 
-    response = await web_client.get("/static/")
+    response = await web_client.get("/assets/")
     assert response.status_code == 404
 
-    response = await web_client.get("/static")
+    response = await web_client.get("/assets")
     assert response.status_code == 404
 
-    response = await web_client.head("/static/notexits.js")
+    response = await web_client.head("/assets/notexits.js")
     assert response.status_code == 404
 
-    response = await web_client.get("/static/notexits.js")
+    response = await web_client.get("/assets/notexits.js")
     assert response.status_code == 404
 
-    response = await web_client.get("/manifest.json")
+    response = await web_client.get("/index.html")
     assert response.status_code == 200
     assert response.content == b"testing\n"
 
-    response = await web_client.get("/static/main.js")
+    response = await web_client.get("/assets/main.js")
     assert response.status_code == 200
     assert response.content == b"testing\n"
 
-    response = await web_client.head("/static/main.js")
+    response = await web_client.head("/assets/main.js")
     assert response.status_code == 200
     assert response.content == b""
