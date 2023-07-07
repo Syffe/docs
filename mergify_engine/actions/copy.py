@@ -406,17 +406,19 @@ class CopyExecutor(actions.ActionExecutor["CopyAction", "CopyExecutorConfig"]):
 
         results = await self._do_copies()
 
-        # Pick the first status as the final_status
-        conclusion = results[0].status
-        for r in results[1:]:
-            if r.status == check_api.Conclusion.FAILURE:
-                conclusion = check_api.Conclusion.FAILURE
-                # If we have a failure, everything is set to fail
-                break
-            elif r.status == check_api.Conclusion.SUCCESS:
-                # If it was None, replace with success
-                # Keep checking for a failure just in case
-                conclusion = check_api.Conclusion.SUCCESS
+        conclusions = {r.status for r in results}
+        if check_api.Conclusion.PENDING in conclusions:
+            # NOTE(charly): if anything is pending, report pending
+            conclusion = check_api.Conclusion.PENDING
+        elif check_api.Conclusion.FAILURE in conclusions:
+            # NOTE(charly): if results contain one failure, report a failure
+            conclusion = check_api.Conclusion.FAILURE
+        elif check_api.Conclusion.SUCCESS in conclusions:
+            # NOTE(charly): no failure or pending, only success, report a
+            # success
+            conclusion = check_api.Conclusion.SUCCESS
+        else:
+            raise RuntimeError(f"Unknown {self.KIND} conclusion: {conclusions}")
 
         if conclusion == check_api.Conclusion.SUCCESS:
             message = self.SUCCESS_MESSAGE
