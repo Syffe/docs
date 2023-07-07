@@ -92,7 +92,7 @@ class WorkflowRun(models.Base):
     event: orm.Mapped[JobRunTriggerEvent] = orm.mapped_column(
         sqlalchemy.Enum(JobRunTriggerEvent)
     )
-    triggering_actor_id: orm.Mapped[int] = orm.mapped_column(
+    triggering_actor_id: orm.Mapped[int | None] = orm.mapped_column(
         sqlalchemy.ForeignKey("github_account.id")
     )
     run_attempt: orm.Mapped[int] = orm.mapped_column(sqlalchemy.BigInteger)
@@ -116,6 +116,11 @@ class WorkflowRun(models.Base):
         session: sqlalchemy.ext.asyncio.AsyncSession,
         workflow_run_data: github_types.GitHubWorkflowRun,
     ) -> None:
+        if "triggering_actor" in workflow_run_data:
+            triggering_actor_id = workflow_run_data["triggering_actor"]["id"]
+        else:
+            triggering_actor_id = None  # type: ignore[unreachable]
+
         sql = (
             postgresql.insert(cls)
             .values(
@@ -124,7 +129,7 @@ class WorkflowRun(models.Base):
                 owner_id=workflow_run_data["repository"]["owner"]["id"],
                 repository=workflow_run_data["repository"]["name"],
                 event=JobRunTriggerEvent(workflow_run_data["event"]),
-                triggering_actor_id=workflow_run_data["triggering_actor"]["id"],
+                triggering_actor_id=triggering_actor_id,
                 run_attempt=workflow_run_data["run_attempt"],
             )
             .on_conflict_do_nothing(index_elements=["id"])

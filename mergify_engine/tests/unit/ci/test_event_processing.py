@@ -28,7 +28,12 @@ def sample_ci_events_to_process(
 
 
 @pytest.mark.parametrize(
-    "event_filename", ["workflow_run.completed.json", "workflow_run.no_org.json"]
+    "event_filename",
+    [
+        "workflow_run.completed.json",
+        "workflow_run.no_org.json",
+        "workflow_run.completed.no-actor.json",
+    ],
 )
 async def test_process_event_stream_workflow_run(
     redis_links: redis_utils.RedisLinks,
