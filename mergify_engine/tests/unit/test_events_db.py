@@ -141,3 +141,18 @@ async def test_event_action_close_consistency(
     event = await db.scalar(sqlalchemy.select(evt_model.EventActionClose))
     assert event is not None
     assert event.message == "goodbye world"
+
+
+async def test_event_action_delete_head_branch_consistency(
+    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+) -> None:
+    await insert_event(
+        fake_repository,
+        "action.delete_head_branch",
+        signals.EventDeleteHeadBranchMetadata(branch="change_branch"),
+    )
+
+    await assert_base_event(db, fake_repository)
+    event = await db.scalar(sqlalchemy.select(evt_model.EventActionDeleteHeadBranch))
+    assert event is not None
+    assert event.branch == "change_branch"

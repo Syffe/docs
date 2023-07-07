@@ -142,3 +142,15 @@ class EventActionClose(Event):
         sqlalchemy.ForeignKey("event.id"), primary_key=True
     )
     message: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
+
+
+class EventActionDeleteHeadBranch(Event):
+    __tablename__ = "event_action_delete_head_branch"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "action.delete_head_branch",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"), primary_key=True
+    )
+    branch: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
