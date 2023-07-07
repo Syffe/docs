@@ -1009,6 +1009,66 @@ found undefined alias
         )
     )
 
+    with pytest.raises(voluptuous.error.MultipleInvalid) as exc:
+        rules.UserConfigurationSchema(
+            rules.YamlSchema(
+                """
+                pull_request_rules:
+                  - name: queue_pull_requests
+                    conditions:
+                      - base=main
+                    actions:
+                      queue:
+                        name: default
+                        merge_method: rebase
+                        method: rebase
+                """
+            )
+        )
+
+    assert str(exc.value).startswith(
+        "Cannot have both `method` and `merge_method` options in `queue` action, use `merge_method` only (`method` is deprecated)"
+    )
+
+    # new `merge_method` option name
+    rules.UserConfigurationSchema(
+        rules.YamlSchema(
+            """
+            pull_request_rules:
+              - name: queue_pull_requests
+                conditions:
+                  - base=main
+                actions:
+                  queue:
+                    name: default
+                    merge_method: rebase
+            """
+        )
+    )
+
+    # old `method` option name for retro-compatibility
+    validated_config = rules.UserConfigurationSchema(
+        rules.YamlSchema(
+            """
+            pull_request_rules:
+              - name: queue_pull_requests
+                conditions:
+                  - base=main
+                actions:
+                  queue:
+                    name: default
+                    method: fast-forward
+            """
+        )
+    )
+    assert (
+        validated_config["pull_request_rules"]
+        .rules[0]
+        .actions["queue"]
+        .config["merge_method"]
+        == "fast-forward"
+    )
+
 
 @pytest.mark.parametrize(
     "extends",
@@ -1934,7 +1994,7 @@ pull_request_rules:
 
     pull_request_rules = list(config["pull_request_rules"])
     assert pull_request_rules[0].actions["queue"].config["name"] == "default"
-    assert pull_request_rules[0].actions["queue"].config["method"] == "squash"
+    assert pull_request_rules[0].actions["queue"].config["merge_method"] == "squash"
 
 
 def queue_rule_from_list(lst: typing.Any) -> prr_config.PullRequestRules:

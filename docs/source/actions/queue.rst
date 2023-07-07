@@ -570,7 +570,7 @@ These are the options of the ``queue`` action:
        |
        | This option overrides the value defined in the :ref:`queue rules` section of the configuration.
 
-   * - ``method``
+   * - ``merge_method``
      - string
      -
      - | Merge method to use. Possible values are ``merge``, ``squash``,

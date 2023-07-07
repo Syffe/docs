@@ -119,7 +119,7 @@ class TestBranchProtection(base.FunctionalTestBase):
                     "actions": {
                         "queue": {
                             "name": "default",
-                            "method": "merge",
+                            "merge_method": "merge",
                             "update_method": "rebase",
                         },
                     },

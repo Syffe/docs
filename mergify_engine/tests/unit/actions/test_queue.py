@@ -517,7 +517,7 @@ async def test_action_rules_in_queue_rules(
     executor._set_action_config_from_queue_rules()
 
     assert executor.config["commit_message_template"] == "test"
-    assert executor.config["method"] == "rebase"
+    assert executor.config["merge_method"] == "rebase"
     assert executor.config["merge_bot_account"] == "test"
     assert executor.config["update_method"] == "rebase"
     assert executor.config["update_bot_account"] == "test"
@@ -550,7 +550,7 @@ async def test_action_rules_in_queue_rules(
             1,
             True,
             "Commit message can't be changed with fast-forward merge method",
-            "`commit_message_template` must not be set if `method: fast-forward` is set.",
+            "`commit_message_template` must not be set if `merge_method: fast-forward` is set.",
         ),
         (
             "rebase",
@@ -559,7 +559,7 @@ async def test_action_rules_in_queue_rules(
             1,
             True,
             "batch_size > 1 is not compatible with fast-forward merge method",
-            "The merge `method` or the queue configuration must be updated.",
+            "The `merge_method` or the queue configuration must be updated.",
         ),
         (
             "rebase",
@@ -568,7 +568,7 @@ async def test_action_rules_in_queue_rules(
             4,
             True,
             "speculative_checks > 1 is not compatible with fast-forward merge method",
-            "The merge `method` or the queue configuration must be updated.",
+            "The `merge_method` or the queue configuration must be updated.",
         ),
         (
             "rebase",
@@ -577,7 +577,7 @@ async def test_action_rules_in_queue_rules(
             1,
             False,
             "allow_inplace_checks=False is not compatible with fast-forward merge method",
-            "The merge `method` or the queue configuration must be updated.",
+            "The `merge_method` or the queue configuration must be updated.",
         ),
     ),
 )
@@ -608,7 +608,7 @@ async def test_check_method_fastforward_configuration(
 
     action = queue.QueueAction({})
     action.queue_rule = queue_rules["queue_rules"]["default"]
-    action.config["method"] = "fast-forward"
+    action.config["merge_method"] = "fast-forward"
     ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
     evaluated_pull_request_rule = mock.Mock()
     executor = await action.executor_class.create(

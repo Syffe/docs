@@ -24,6 +24,7 @@ from mergify_engine import queue
 from mergify_engine import signals
 from mergify_engine import subscription
 from mergify_engine import utils
+from mergify_engine.actions import RawConfigT
 from mergify_engine.actions import merge_base
 from mergify_engine.actions import utils as action_utils
 from mergify_engine.clients import http
@@ -96,7 +97,7 @@ QueueUpdateT = typing.Literal["merge", "rebase"]
 
 class QueueExecutorConfig(typing.TypedDict):
     name: qr_config.QueueName
-    method: merge_base.MergeMethodT
+    merge_method: merge_base.MergeMethodT
     merge_bot_account: github_types.GitHubLogin | None
     update_bot_account: github_types.GitHubLogin | None
     update_method: QueueUpdateT
@@ -140,7 +141,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             QueueExecutorConfig(
                 {
                     "name": action.config["name"],
-                    "method": action.config["method"],
+                    "merge_method": action.config["merge_method"],
                     "update_method": action.config["update_method"],
                     "commit_message_template": action.config["commit_message_template"],
                     "merge_bot_account": action.config["merge_bot_account"],
@@ -171,7 +172,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         result = await self.common_merge(
             "queue",
             self.ctxt,
-            self.config["method"],
+            self.config["merge_method"],
             self.config["merge_bot_account"],
             self.config["commit_message_template"],
             functools.partial(
@@ -224,11 +225,11 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 "Shouldn't be in queue_branch_merge_fastforward with partition rules in use"
             )
 
-        if self.config["method"] != "merge":
+        if self.config["merge_method"] != "merge":
             return check_api.Result(
                 check_api.Conclusion.ACTION_REQUIRED,
-                f"Cannot use method={self.config['method']} with queue_branch_merge_method=fast-forward",
-                "Only `method=merge` is supported with `queue_branch_merge_method=fast-forward`",
+                f"Cannot use merge_method={self.config['merge_method']} with queue_branch_merge_method=fast-forward",
+                "Only `merge_method=merge` is supported with `queue_branch_merge_method=fast-forward`",
             )
 
         try:
@@ -346,12 +347,12 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
         # name in action and queue_rule are not the same so we need to treat it
         # in a different way
-        if self.config["method"] is None:
-            self.config["method"] = self.queue_rule.config["merge_method"]
+        if self.config["merge_method"] is None:
+            self.config["merge_method"] = self.queue_rule.config["merge_method"]
 
         if self.config["update_method"] is None:
             self.config["update_method"] = (
-                "rebase" if self.config["method"] == "fast-forward" else "merge"
+                "rebase" if self.config["merge_method"] == "fast-forward" else "merge"
             )
 
     async def _set_action_queue_rule(self) -> None:
@@ -817,7 +818,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         if result is None:
             result = await self.pre_merge_checks(
                 self.ctxt,
-                self.config["method"],
+                self.config["merge_method"],
                 self.config["merge_bot_account"],
             )
 
@@ -829,7 +830,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             result is None
             and (
                 self.queue_rule.config["queue_branch_merge_method"] == "fast-forward"
-                or self.config["method"] == "fast-forward"
+                or self.config["merge_method"] == "fast-forward"
             )
             and await self.has_been_recently_merged(
                 convoy.repository.installation.redis.cache,
@@ -1088,7 +1089,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
         config: QueueExecutorConfig,
         queue_rule: qr_config.QueueRule,
     ) -> None:
-        if config["method"] != "fast-forward":
+        if config["merge_method"] != "fast-forward":
             return
 
         if config["update_method"] != "rebase":
@@ -1100,22 +1101,22 @@ Then, re-embark the pull request into the merge queue by posting the comment
         if config["commit_message_template"] is not None:
             raise InvalidQueueConfiguration(
                 "Commit message can't be changed with fast-forward merge method",
-                "`commit_message_template` must not be set if `method: fast-forward` is set.",
+                "`commit_message_template` must not be set if `merge_method: fast-forward` is set.",
             )
         if queue_rule.config["batch_size"] > 1:
             raise InvalidQueueConfiguration(
                 "batch_size > 1 is not compatible with fast-forward merge method",
-                "The merge `method` or the queue configuration must be updated.",
+                "The `merge_method` or the queue configuration must be updated.",
             )
         if queue_rule.config["speculative_checks"] > 1:
             raise InvalidQueueConfiguration(
                 "speculative_checks > 1 is not compatible with fast-forward merge method",
-                "The merge `method` or the queue configuration must be updated.",
+                "The `merge_method` or the queue configuration must be updated.",
             )
         if not queue_rule.config["allow_inplace_checks"]:
             raise InvalidQueueConfiguration(
                 "allow_inplace_checks=False is not compatible with fast-forward merge method",
-                "The merge `method` or the queue configuration must be updated.",
+                "The `merge_method` or the queue configuration must be updated.",
             )
 
         if (
@@ -1244,30 +1245,49 @@ class QueueAction(actions.Action):
         # | actions.ActionFlag.ALWAYS_RUN
     )
 
-    validator: typing.ClassVar[actions.ValidatorT] = {
-        voluptuous.Required("name", default=None): voluptuous.Any(
-            str,
-            None,
+    merge_method_exclusive_msg = "Cannot have both `method` and `merge_method` options in `queue` action, use `merge_method` only (`method` is deprecated)"
+    merge_method_value_validator = voluptuous.Any(
+        None,  # fallback to queue_rule
+        "rebase",
+        "merge",
+        "squash",
+        "fast-forward",
+    )
+
+    validator: typing.ClassVar[actions.ValidatorT] = voluptuous.All(
+        qr_config._has_only_one_of(
+            "method",
+            "merge_method",
+            msg=merge_method_exclusive_msg,
         ),
-        voluptuous.Required("method", default=None): voluptuous.Any(
-            None,  # fallback to queue_rule
-            "rebase",
-            "merge",
-            "squash",
-            "fast-forward",
-        ),
-        voluptuous.Required("merge_bot_account", default=None): types.Jinja2WithNone,
-        voluptuous.Required("update_bot_account", default=None): types.Jinja2WithNone,
-        voluptuous.Required("update_method", default=None): voluptuous.Any(
-            "rebase", "merge", None
-        ),
-        voluptuous.Required(
-            "commit_message_template", default=None
-        ): types.Jinja2WithNone,
-        voluptuous.Required("require_branch_protection", default=True): bool,
-        voluptuous.Required("allow_merging_configuration_change", default=False): bool,
-        voluptuous.Required("autosquash", default=True): bool,
-    }
+        {
+            voluptuous.Required("name", default=None): voluptuous.Any(
+                str,
+                None,
+            ),
+            voluptuous.Required(
+                "merge_method", default=None
+            ): merge_method_value_validator,
+            "method": merge_method_value_validator,  # for retro-compatibility
+            voluptuous.Required(
+                "merge_bot_account", default=None
+            ): types.Jinja2WithNone,
+            voluptuous.Required(
+                "update_bot_account", default=None
+            ): types.Jinja2WithNone,
+            voluptuous.Required("update_method", default=None): voluptuous.Any(
+                "rebase", "merge", None
+            ),
+            voluptuous.Required(
+                "commit_message_template", default=None
+            ): types.Jinja2WithNone,
+            voluptuous.Required("require_branch_protection", default=True): bool,
+            voluptuous.Required(
+                "allow_merging_configuration_change", default=False
+            ): bool,
+            voluptuous.Required("autosquash", default=True): bool,
+        },
+    )
 
     default_restrictions: typing.ClassVar[list[typing.Any]] = [
         "sender-permission>=write"
@@ -1281,6 +1301,12 @@ class QueueAction(actions.Action):
     )
     queue_rules: qr_config.QueueRules = dataclasses.field(init=False, repr=False)
     queue_rule: qr_config.QueueRule = dataclasses.field(init=False, repr=False)
+
+    def __post_init__(self, raw_config_: RawConfigT | None) -> None:
+        super().__post_init__(raw_config_)
+        # NOTE(lecrepont01): `method` is deprecated but still accepted see validator
+        if "method" in self.config:
+            self.config["merge_method"] = self.config.pop("method")
 
     def validate_config(self, mergify_config: mergify_conf.MergifyConfig) -> None:
         self.queue_rules = mergify_config["queue_rules"]

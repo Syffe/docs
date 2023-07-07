@@ -40,7 +40,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                 {
                     "name": "Merge on main",
                     "conditions": [f"base={self.main_branch_name}", "label=squash"],
-                    "actions": {"merge": {"method": "squash"}},
+                    "actions": {"merge": {"merge_method": "squash"}},
                 },
             ]
         }
@@ -68,7 +68,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                         "approved-reviews-by=@mergifyio-testing/testing",
                     ],
-                    "actions": {"merge": {"method": "rebase"}},
+                    "actions": {"merge": {"merge_method": "rebase"}},
                 },
                 {
                     "name": "short teams",
@@ -77,7 +77,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                         "approved-reviews-by=@testing",
                     ],
-                    "actions": {"merge": {"method": "rebase"}},
+                    "actions": {"merge": {"merge_method": "rebase"}},
                 },
                 {
                     "name": "not exists teams",
@@ -86,7 +86,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                         "approved-reviews-by=@mergifyio-testing/noexists",
                     ],
-                    "actions": {"merge": {"method": "rebase"}},
+                    "actions": {"merge": {"merge_method": "rebase"}},
                 },
                 {
                     "name": "invalid organization",
@@ -95,7 +95,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                         "approved-reviews-by=@another-org/testing",
                     ],
-                    "actions": {"merge": {"method": "rebase"}},
+                    "actions": {"merge": {"merge_method": "rebase"}},
                 },
             ]
         }
@@ -176,7 +176,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                         f"base={self.main_branch_name}",
                         "status-success=continuous-integration/fake-ci",
                     ],
-                    "actions": {"merge": {"method": method}},
+                    "actions": {"merge": {"merge_method": method}},
                 }
             ]
         }
@@ -229,7 +229,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                         f"base={self.main_branch_name}",
                         "status-success=continuous-integration/fake-ci",
                     ],
-                    "actions": {"merge": {"method": "merge"}},
+                    "actions": {"merge": {"merge_method": "merge"}},
                 }
             ]
         }
@@ -282,7 +282,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                         "#approved-reviews-by>=1",
                     ],
-                    "actions": {"merge": {"method": "rebase"}},
+                    "actions": {"merge": {"merge_method": "rebase"}},
                 }
             ]
         }
@@ -305,7 +305,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                     "name": "merge",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {
-                        "merge": {"method": "rebase"},
+                        "merge": {"merge_method": "rebase"},
                         "comment": {"message": "yo"},
                     },
                 }

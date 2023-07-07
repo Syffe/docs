@@ -1,0 +1,4 @@
+---
+deprecations:
+  - |
+    The ``method`` option of the ``queue`` action has been renamed ``merge_method``.

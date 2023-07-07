@@ -385,7 +385,7 @@ Co-Authored-By: General Grievous <general.grievous@confederacy.org>"""
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {
                         "merge": {
-                            "method": "fast-forward",
+                            "merge_method": "fast-forward",
                         }
                     },
                 },
@@ -437,7 +437,7 @@ Co-Authored-By: General Grievous <general.grievous@confederacy.org>"""
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {
                         "merge": {
-                            "method": "fast-forward",
+                            "merge_method": "fast-forward",
                             "merge_bot_account": "{{ body }}",
                         }
                     },

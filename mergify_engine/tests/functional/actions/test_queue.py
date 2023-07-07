@@ -1486,7 +1486,7 @@ class TestQueueAction(base.FunctionalTestBase):
                     "actions": {
                         "queue": {
                             "name": "default",
-                            "method": "fast-forward",
+                            "merge_method": "fast-forward",
                         }
                     },
                 },
@@ -6700,7 +6700,7 @@ class TestQueueAction(base.FunctionalTestBase):
                         ],
                         "actions": {
                             "queue": {
-                                "method": "squash",
+                                "merge_method": "squash",
                                 "name": "default",
                                 "require_branch_protection": False,
                             }
