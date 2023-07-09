@@ -796,7 +796,7 @@
     "PkgName": "libperl5.32",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-16156",
-    "Title": "perl-CPAN: Bypass of verification of signatures in CHECKSUMS files",
+    "Title": "Bypass of verification of signatures in CHECKSUMS files",
     "Severity": "HIGH",
     "PublishedDate": "2021-12-13T18:15:00Z"
   },
@@ -805,7 +805,7 @@
     "PkgName": "perl",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-16156",
-    "Title": "perl-CPAN: Bypass of verification of signatures in CHECKSUMS files",
+    "Title": "Bypass of verification of signatures in CHECKSUMS files",
     "Severity": "HIGH",
     "PublishedDate": "2021-12-13T18:15:00Z"
   },
@@ -814,7 +814,7 @@
     "PkgName": "perl-base",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-16156",
-    "Title": "perl-CPAN: Bypass of verification of signatures in CHECKSUMS files",
+    "Title": "Bypass of verification of signatures in CHECKSUMS files",
     "Severity": "HIGH",
     "PublishedDate": "2021-12-13T18:15:00Z"
   },
@@ -823,7 +823,7 @@
     "PkgName": "perl-modules-5.32",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2020-16156",
-    "Title": "perl-CPAN: Bypass of verification of signatures in CHECKSUMS files",
+    "Title": "Bypass of verification of signatures in CHECKSUMS files",
     "Severity": "HIGH",
     "PublishedDate": "2021-12-13T18:15:00Z"
   },
@@ -976,7 +976,7 @@
     "PkgName": "openssh-client",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-41617",
-    "Title": "openssh: privilege escalation when AuthorizedKeysCommand or AuthorizedPrincipalsCommand are configured",
+    "Title": "privilege escalation when AuthorizedKeysCommand or AuthorizedPrincipalsCommand are configured",
     "Severity": "HIGH",
     "PublishedDate": "2021-09-26T19:15:00Z"
   },
@@ -985,7 +985,7 @@
     "PkgName": "openssh-server",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-41617",
-    "Title": "openssh: privilege escalation when AuthorizedKeysCommand or AuthorizedPrincipalsCommand are configured",
+    "Title": "privilege escalation when AuthorizedKeysCommand or AuthorizedPrincipalsCommand are configured",
     "Severity": "HIGH",
     "PublishedDate": "2021-09-26T19:15:00Z"
   },
@@ -994,7 +994,7 @@
     "PkgName": "openssh-sftp-server",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-41617",
-    "Title": "openssh: privilege escalation when AuthorizedKeysCommand or AuthorizedPrincipalsCommand are configured",
+    "Title": "privilege escalation when AuthorizedKeysCommand or AuthorizedPrincipalsCommand are configured",
     "Severity": "HIGH",
     "PublishedDate": "2021-09-26T19:15:00Z"
   },
@@ -1003,7 +1003,7 @@
     "PkgName": "patch",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-45261",
-    "Title": "patch: Invalid Pointer via another_hunk function",
+    "Title": "Invalid Pointer via another_hunk function",
     "Severity": "LOW",
     "PublishedDate": "2021-12-22T18:15:00Z"
   },
@@ -1021,7 +1021,7 @@
     "PkgName": "libbpf0",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-45940",
-    "Title": "libbpf: heap-based buffer overflow (4 bytes) in __bpf_object__open",
+    "Title": "heap-based buffer overflow (4 bytes) in __bpf_object__open",
     "Severity": "MEDIUM",
     "PublishedDate": "2022-01-01T01:15:00Z"
   },
@@ -1030,7 +1030,7 @@
     "PkgName": "libbpf0",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-45941",
-    "Title": "libbpf: heap-based buffer overflow (8 bytes) in __bpf_object__open",
+    "Title": "heap-based buffer overflow (8 bytes) in __bpf_object__open",
     "Severity": "MEDIUM",
     "PublishedDate": "2022-01-01T01:15:00Z"
   },
@@ -1039,7 +1039,7 @@
     "PkgName": "bsdutils",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
-    "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
+    "Title": "partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
     "Severity": "LOW",
     "PublishedDate": "2022-02-21T19:15:00Z"
   },
@@ -1048,7 +1048,7 @@
     "PkgName": "libblkid1",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
-    "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
+    "Title": "partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
     "Severity": "LOW",
     "PublishedDate": "2022-02-21T19:15:00Z"
   },
@@ -1057,7 +1057,7 @@
     "PkgName": "libmount1",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
-    "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
+    "Title": "partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
     "Severity": "LOW",
     "PublishedDate": "2022-02-21T19:15:00Z"
   },
@@ -1066,7 +1066,7 @@
     "PkgName": "libsmartcols1",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
-    "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
+    "Title": "partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
     "Severity": "LOW",
     "PublishedDate": "2022-02-21T19:15:00Z"
   },
@@ -1075,7 +1075,7 @@
     "PkgName": "libuuid1",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
-    "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
+    "Title": "partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
     "Severity": "LOW",
     "PublishedDate": "2022-02-21T19:15:00Z"
   },
@@ -1084,7 +1084,7 @@
     "PkgName": "mount",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
-    "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
+    "Title": "partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
     "Severity": "LOW",
     "PublishedDate": "2022-02-21T19:15:00Z"
   },
@@ -1093,7 +1093,7 @@
     "PkgName": "util-linux",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-0563",
-    "Title": "util-linux: partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
+    "Title": "partial disclosure of arbitrary files in chfn and chsh when compiled with libreadline",
     "Severity": "LOW",
     "PublishedDate": "2022-02-21T19:15:00Z"
   },
