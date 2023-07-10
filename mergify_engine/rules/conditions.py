@@ -508,7 +508,10 @@ async def get_branch_protection_conditions(
                 "required_pull_request_reviews"
             )
         ) is not None:
-            if required_pull_request_reviews["require_code_owner_reviews"]:
+            if (
+                required_pull_request_reviews["require_code_owner_reviews"]
+                and required_pull_request_reviews["required_approving_review_count"] > 0
+            ):
                 conditions.append(
                     RuleCondition.from_tree(
                         {"=": ("branch-protection-review-decision", "APPROVED")},
