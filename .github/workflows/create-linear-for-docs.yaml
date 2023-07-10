@@ -13,16 +13,21 @@ jobs:
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_URL: ${{ github.event.pull_request.html_url }}
         run: |
+          JSON_PAYLOAD=$(jq -n \
+                          --arg title "Docs for $PR_TITLE" \
+                          --arg desc "Documentation needed for merged PR: $PR_URL" \
+                          --arg teamId "MRGFY" \
+                          --arg labelId "documentation" \
+                          '{
+                            "query": "mutation ($title: String!, $description: String!, $teamId: String!, $labelId: String!) { createIssue(input: { title: $title, description: $description, teamId: $teamId, labelIds: [$labelId], statusId: \\\"status_todo\\\" }) { issue { id } } }",
+                            "variables": {
+                              "title": $title,
+                              "description": $desc,
+                              "teamId": $teamId,
+                              "labelId": $labelId
+                            }
+                          }')
           curl -X POST "https://api.linear.app/graphql" \
           -H "Authorization: Bearer ${{ secrets.LINEAR_TOKEN }}" \
           -H "Content-Type: application/json" \
-          -d "
-          {
-            \"query\": \"mutation($title: String!, $description: String!, $teamId: String!, $labelId: String!) { createIssue(input: { title: $title, description: $description, teamId: $teamId, labelIds: [$labelId], statusId: \\\"status_todo\\\" }) { issue { id } } }\",
-            \"variables\": {
-              \"title\": \"Docs for $PR_TITLE\",
-              \"description\": \"Documentation needed for merged PR: $PR_URL\",
-              \"teamId\": \"MRGFY\",
-              \"labelId\": \"documentation\"
-            }
-          }"
+          -d "$JSON_PAYLOAD"
