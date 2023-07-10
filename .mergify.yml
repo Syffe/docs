@@ -1,6 +1,10 @@
 extends: .github
 shared:
   DefaultQueueOptions: &DefaultQueueOptions
+    commit_message_template: |
+      {{ title }} (#{{ number }})
+
+      {{ body }}
     allow_inplace_checks: true
     merge_method: squash
     speculative_checks: 5
