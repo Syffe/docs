@@ -6,7 +6,7 @@ on:
 
 jobs:
   mergify-merge-queue-labels-copier:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Copying labels
         uses: Mergifyio/gha-mergify-merge-queue-labels-copier@main

@@ -20,7 +20,7 @@ concurrency:
 jobs:
   docker-image-security-scan:
     timeout-minutes: 10
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: 👮 Log into in Heroku
         if: github.event_name != 'pull_request'

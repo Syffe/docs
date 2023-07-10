@@ -28,7 +28,7 @@ jobs:
 
   semgrep:
     timeout-minutes: 20
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v3.3.0
@@ -48,7 +48,7 @@ jobs:
           poetry run poe semgrep
   pep8:
     timeout-minutes: 20
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v3.3.0
@@ -68,7 +68,7 @@ jobs:
           poetry run poe linters
 
   secrets-leakage:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v3.3.0
@@ -82,7 +82,7 @@ jobs:
 
   import-checks:
     timeout-minutes: 20
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     services:
       redis:
         image: redis:latest
@@ -113,7 +113,7 @@ jobs:
 
   test:
     timeout-minutes: 20
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         group: [1, 2, 3, 4, 5]
@@ -168,7 +168,7 @@ jobs:
           path: engine-ci-test-durations
   docs:
     timeout-minutes: 20
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v3.3.0
