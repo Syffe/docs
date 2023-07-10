@@ -194,3 +194,20 @@ class EventActionEdit(Event):
         sqlalchemy.ForeignKey("event.id"), primary_key=True
     )
     draft: orm.Mapped[bool] = orm.mapped_column(sqlalchemy.Boolean)
+
+
+class EventActionLabel(Event):
+    __tablename__ = "event_action_label"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "action.label",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"), primary_key=True
+    )
+    added: orm.Mapped[list[str]] = orm.mapped_column(
+        sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1)
+    )
+    removed: orm.Mapped[list[str]] = orm.mapped_column(
+        sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1)
+    )

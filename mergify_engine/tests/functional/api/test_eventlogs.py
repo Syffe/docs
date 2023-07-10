@@ -765,4 +765,4 @@ class TestEventLogsAction(base.FunctionalTestBase):
             result = await db.execute(
                 sqlalchemy.select(func.count()).select_from(evt_models.Event)
             )
-        assert result.scalar() == 1
+        assert result.scalar() == 2
