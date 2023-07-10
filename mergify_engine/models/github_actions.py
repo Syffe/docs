@@ -1,11 +1,15 @@
 import datetime
 import enum
 
+import numpy as np
+import numpy.typing as npt
+from pgvector.sqlalchemy import Vector  # type: ignore
 import sqlalchemy
 from sqlalchemy import orm
 from sqlalchemy.dialects import postgresql
 import sqlalchemy.ext.asyncio
 
+from mergify_engine import constants
 from mergify_engine import github_types
 from mergify_engine import models
 from mergify_engine.ci import pull_registries
@@ -156,6 +160,10 @@ class WorkflowJob(models.Base):
     )
     labels: orm.Mapped[list[str]] = orm.mapped_column(
         sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1)
+    )
+
+    log_embedding: orm.Mapped[npt.NDArray[np.float32] | None] = orm.mapped_column(
+        Vector(constants.OPENAI_EMBEDDING_DIMENSION), nullable=True
     )
 
     @classmethod

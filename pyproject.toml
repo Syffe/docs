@@ -42,6 +42,7 @@ starsessions = "^2.1.2"
 Authlib = "^1.2.1"
 sqlalchemy = {version = ">=1.4", extras = ["asyncio", "postgresql_psycopg", "mypy"]}
 sqlalchemy-utils = {version = ">=0.37.0", extras = ["encrypted", "password"]}
+pgvector = "*"
 # NOTE(sileht): sqlalchemy does not install binary for psycopg > 3
 psycopg = { version = ">=3.1", extras = ["binary"] }
 # NOTE(sileht): sqlalchemy does not install it for some architecture like mac/m1...

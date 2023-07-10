@@ -94,3 +94,7 @@ MIN_DELAY_BETWEEN_SAME_PULL_REQUEST = datetime.timedelta(seconds=3)
 NEW_MERGIFY_PERMISSIONS_MUST_BE_ACCEPTED = f"""The new Mergify permissions must be accepted to rebase pull request with `.github/workflows` changes.
 You can accept them at {settings.DASHBOARD_UI_FRONT_URL}.
 """
+
+# NOTE(Kontrolix): 1536 is the output dimension of OpenAI Embedding at this time
+# https://platform.openai.com/docs/guides/embeddings/second-generation-models
+OPENAI_EMBEDDING_DIMENSION = 1536

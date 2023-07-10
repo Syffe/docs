@@ -12,6 +12,7 @@ from mergify_engine import settings
 async def create_all() -> None:
     engine = sqlalchemy.ext.asyncio.create_async_engine(settings.DATABASE_URL.geturl())
     async with engine.begin() as conn:
+        await conn.execute(sqlalchemy.text("CREATE EXTENSION IF NOT EXISTS vector"))
         await conn.run_sync(models.Base.metadata.create_all)
 
 

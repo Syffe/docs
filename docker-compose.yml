@@ -11,7 +11,7 @@ services:
     # make it a parameter in the run-tests.sh somehow.
     command: --databases 1000
   postgres:
-    image: postgres
+    image: ankane/pgvector:v0.4.4
     ports:
       - "${LOCAL_POSTGRES_PORT:-0}:5432"
     environment:
