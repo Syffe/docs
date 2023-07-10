@@ -190,3 +190,18 @@ async def test_event_action_backport_consistency(
     assert event.to == "stable_branch"
     assert event.pull_request_number == 456
     assert event.conflicts is True
+
+
+async def test_event_action_edit_consistency(
+    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+) -> None:
+    await insert_event(
+        fake_repository,
+        "action.edit",
+        signals.EventEditMetadata(draft=True),
+    )
+
+    await assert_base_event(db, fake_repository)
+    event = await db.scalar(sqlalchemy.select(evt_model.EventActionEdit))
+    assert event is not None
+    assert event.draft is True

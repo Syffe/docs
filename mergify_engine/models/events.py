@@ -182,3 +182,15 @@ class EventActionBackport(Event):
     to: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
     pull_request_number: orm.Mapped[int] = orm.mapped_column(sqlalchemy.Integer)
     conflicts: orm.Mapped[bool] = orm.mapped_column(sqlalchemy.Boolean)
+
+
+class EventActionEdit(Event):
+    __tablename__ = "event_action_edit"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "action.edit",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"), primary_key=True
+    )
+    draft: orm.Mapped[bool] = orm.mapped_column(sqlalchemy.Boolean)
