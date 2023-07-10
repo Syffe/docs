@@ -3,6 +3,7 @@ extends: .github
 queue_rules:
   - name: hotfix
     allow_inplace_checks: true
+    merge_method: squash
     queue_conditions:
       - check-success=semantic-pull-request
       - "check-success=Rule: testing requirements (post_check)"
@@ -57,6 +58,7 @@ queue_rules:
     merge_conditions:
       - and: *CheckRuns
       - schedule=Mon-Fri 09:00-17:30[Europe/Paris]
+    merge_method: squash
     speculative_checks: 5
 
   - name: lowprio
