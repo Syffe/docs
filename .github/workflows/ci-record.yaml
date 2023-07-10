@@ -10,7 +10,7 @@ on:
 jobs:
   record:
     timeout-minutes: 120
-    runs-on: ubuntu-latest-8-cores
+    runs-on: ubuntu-latest
     services:
       redis:
         image: bitnami/redis:latest
@@ -53,7 +53,7 @@ jobs:
           pip install -r requirements-poetry.txt
           tools/poetry-ci-install.sh
           DOW=$(date +%u)
-          poetry run poe record-parallel -- --splits 5 --group "${DOW}"
+          poetry run poe record -- --splits 5 --group "${DOW}"
 
       - name: Report Status
         if: always()
