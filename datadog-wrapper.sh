@@ -3,6 +3,12 @@
 # NOTE(sileht): Heroku doesn't log stderr of containers, so use only stdout
 exec 2>&1
 
+
+
+url_decode() {
+    python3 -c "import urllib.parse as p, sys;print(p.unquote(sys.stdin.read()))"
+}
+
 startup_message() {
     echo "Starting Mergify SaaS"
     echo "MERGIFYENGINE_VERSION=$MERGIFYENGINE_VERSION"
@@ -66,9 +72,11 @@ POSTGRES_CONF_FILE="$DD_CONF_DIR/conf.d/postgres.d/conf.yaml"
 
 if [ -n "$MERGIFYENGINE_DATABASE_URL" ]; then
     if [[ $MERGIFYENGINE_DATABASE_URL =~ $POSTGRES_REGEX ]]; then
+        DB_USERNAME=$(echo "${BASH_REMATCH[1]}" | url_decode)
+        DB_PASSWORD=$(echo "${BASH_REMATCH[2]}" | url_decode)
         sed -i "s/<YOUR HOSTNAME>/${BASH_REMATCH[3]}/" "$POSTGRES_CONF_FILE"
-        sed -i "s/<YOUR USERNAME>/${BASH_REMATCH[1]}/" "$POSTGRES_CONF_FILE"
-        sed -i "s/<YOUR PASSWORD>/${BASH_REMATCH[2]}/" "$POSTGRES_CONF_FILE"
+        sed -i "s/<YOUR USERNAME>/${DB_USERNAME}/" "$POSTGRES_CONF_FILE"
+        sed -i "s/<YOUR PASSWORD>/${DB_PASSWORD}/" "$POSTGRES_CONF_FILE"
         sed -i "s/<YOUR PORT>/${BASH_REMATCH[4]}/" "$POSTGRES_CONF_FILE"
         sed -i "s/<YOUR DBNAME>/${BASH_REMATCH[5]}/" "$POSTGRES_CONF_FILE"
     fi
