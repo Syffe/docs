@@ -1,9 +1,30 @@
 extends: .github
+shared:
+  DefaultQueueOptions: &DefaultQueueOptions
+    allow_inplace_checks: true
+    merge_method: squash
+    speculative_checks: 5
+  CheckRuns: &CheckRuns
+    - or:
+        - -label=docker
+        - and:
+            - check-success=docker-saas
+            - check-success=docker-onpremise
+    - check-success=semantic-pull-request
+    - check-success=import-checks
+    - check-success=pep8
+    - check-success=semgrep
+    - check-success=secrets-leakage
+    - check-success=test (1)
+    - check-success=test (2)
+    - check-success=test (3)
+    - check-success=test (4)
+    - check-success=test (5)
+    - check-success=docs
 
 queue_rules:
   - name: hotfix
-    allow_inplace_checks: true
-    merge_method: squash
+    <<: *DefaultQueueOptions
     queue_conditions:
       - check-success=semantic-pull-request
       - "check-success=Rule: testing requirements (post_check)"
@@ -25,27 +46,10 @@ queue_rules:
       - "#changes-requested-reviews-by=0"
       - "#review-requested=0"
     merge_conditions:
-      - and: &CheckRuns
-          - or:
-              - -label=docker
-              - and:
-                  - check-success=docker-saas
-                  - check-success=docker-onpremise
-          - check-success=semantic-pull-request
-          - check-success=import-checks
-          - check-success=pep8
-          - check-success=semgrep
-          - check-success=secrets-leakage
-          - check-success=test (1)
-          - check-success=test (2)
-          - check-success=test (3)
-          - check-success=test (4)
-          - check-success=test (5)
-          - check-success=docs
-    speculative_checks: 5
+      - and: *CheckRuns
 
   - name: default
-    allow_inplace_checks: true
+    <<: *DefaultQueueOptions
     queue_conditions:
       - and: *CheckRuns
       - "check-success=Rule: feature requirements (post_check)"
@@ -58,11 +62,9 @@ queue_rules:
     merge_conditions:
       - and: *CheckRuns
       - schedule=Mon-Fri 09:00-17:30[Europe/Paris]
-    merge_method: squash
-    speculative_checks: 5
 
   - name: lowprio
-    allow_inplace_checks: true
+    <<: *DefaultQueueOptions
     queue_conditions:
       - and: *CheckRuns
       - "#commits=1"
@@ -76,10 +78,11 @@ queue_rules:
               - head=trivy/daily-report
               - label!=new CVE
           - author=dependabot[bot]
+    merge_method: merge
     merge_conditions:
       - and: *CheckRuns
       - schedule=Mon-Fri 09:00-17:00[Europe/Paris]
-    merge_method: merge
+    speculative_checks: 1
     batch_size: 7
     batch_max_wait_time: 5min
     commit_message_template: null
