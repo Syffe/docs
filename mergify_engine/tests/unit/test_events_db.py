@@ -1,15 +1,18 @@
 import random
 
+from freezegun import freeze_time
 import pytest
 import sqlalchemy
 from sqlalchemy import func
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import context
+from mergify_engine import date
 from mergify_engine import events_db
 from mergify_engine import github_types
 from mergify_engine import signals
 from mergify_engine.models import events as evt_model
+from mergify_engine.rules.config import partition_rules
 
 
 async def insert_event(
@@ -241,3 +244,48 @@ async def test_event_action_merge_consistency(
     event = await db.scalar(sqlalchemy.select(evt_model.EventActionMerge))
     assert event is not None
     assert event.branch == "merge_branch"
+
+
+@freeze_time("2023-07-10T14:00:00", tz_offset=0)
+async def test_event_action_queue_enter_consistency(
+    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+) -> None:
+    await insert_event(
+        fake_repository,
+        "action.queue.enter",
+        signals.EventQueueEnterMetadata(
+            {
+                "queue_name": "default",
+                "branch": "refactor_test",
+                "position": 3,
+                "queued_at": date.utcnow(),
+                "partition_name": partition_rules.PartitionRuleName(
+                    "default_partition"
+                ),
+            }
+        ),
+    )
+
+    await assert_base_event(db, fake_repository)
+    event = await db.scalar(sqlalchemy.select(evt_model.EventActionQueueEnter))
+    assert event is not None
+    assert event.queue_name == "default"
+    assert event.branch == "refactor_test"
+    assert event.position == 3
+    assert event.queued_at.isoformat() == "2023-07-10T14:00:00+00:00"
+    assert event.partition_name == "default_partition"
+
+    # partition name is nullable
+    await insert_event(
+        fake_repository,
+        "action.queue.enter",
+        signals.EventQueueEnterMetadata(
+            {
+                "queue_name": "default",
+                "branch": "refactor_test",
+                "position": 3,
+                "queued_at": date.utcnow(),
+                "partition_name": None,
+            }
+        ),
+    )

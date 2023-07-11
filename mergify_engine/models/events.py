@@ -13,6 +13,7 @@ from mergify_engine import github_types
 from mergify_engine import models
 from mergify_engine import signals
 from mergify_engine.models import github_repository
+from mergify_engine.rules.config import partition_rules
 
 
 class Event(models.Base):
@@ -223,3 +224,23 @@ class EventActionMerge(Event):
         sqlalchemy.ForeignKey("event.id"), primary_key=True
     )
     branch: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
+
+
+class EventActionQueueEnter(Event):
+    __tablename__ = "event_action_queue_enter"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "action.queue.enter",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"), primary_key=True
+    )
+    queue_name: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
+    branch: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
+    position: orm.Mapped[int] = orm.mapped_column(sqlalchemy.Integer)
+    queued_at: orm.Mapped[datetime.datetime] = orm.mapped_column(
+        sqlalchemy.DateTime(timezone=True)
+    )
+    partition_name: orm.Mapped[
+        partition_rules.PartitionRuleName | None
+    ] = orm.mapped_column(sqlalchemy.Text, nullable=True)
