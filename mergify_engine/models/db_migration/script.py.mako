@@ -20,4 +20,8 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    # NOTE(sileht): We don't want to support downgrades as it means we will
+    # drop columns. And we don't want to provide tooling that may drop data.
+    # For restoring old version of the database, the only supported process is
+    # to use a backup.
     pass
