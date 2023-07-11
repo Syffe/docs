@@ -226,3 +226,18 @@ async def test_event_action_label_consistency(
     assert event is not None
     assert set(event.added) == {"manual merge", "skip changelog"}
     assert set(event.removed) == {"hotfix", "skip tests"}
+
+
+async def test_event_action_merge_consistency(
+    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+) -> None:
+    await insert_event(
+        fake_repository,
+        "action.merge",
+        signals.EventMergeMetadata(branch="merge_branch"),
+    )
+
+    await assert_base_event(db, fake_repository)
+    event = await db.scalar(sqlalchemy.select(evt_model.EventActionMerge))
+    assert event is not None
+    assert event.branch == "merge_branch"

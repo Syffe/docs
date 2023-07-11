@@ -211,3 +211,15 @@ class EventActionLabel(Event):
     removed: orm.Mapped[list[str]] = orm.mapped_column(
         sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1)
     )
+
+
+class EventActionMerge(Event):
+    __tablename__ = "event_action_merge"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "action.merge",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"), primary_key=True
+    )
+    branch: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
