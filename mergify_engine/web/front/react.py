@@ -47,6 +47,6 @@ async def react_static_files(request: fastapi.Request) -> fastapi.Response:
 @router.get("/github")
 @router.get("/github/")
 @router.get("/github/{remaning:path}")
-@router.get("/sudo/${remaining:path}")
+@router.get("/sudo/{remaining:path}")
 async def react_app(request: fastapi.Request) -> fastapi.Response:
     return await serve_static_file(request, "index.html")
