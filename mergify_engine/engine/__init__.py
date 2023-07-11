@@ -104,7 +104,9 @@ async def _check_configuration_changes(
     if not modified_config_files:
         return False
 
-    config_filenames = {f["filename"] for f in modified_config_files}
+    config_filenames = {
+        f["filename"] for f in modified_config_files if f["status"] != "renamed"
+    }
     if current_mergify_config_file is not None:
         config_filenames.add(current_mergify_config_file["path"])
 

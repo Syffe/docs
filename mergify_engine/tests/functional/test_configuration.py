@@ -1,3 +1,4 @@
+import os
 import typing
 from unittest import mock
 
@@ -499,6 +500,21 @@ did not find expected alphabetic or numeric character
         )
 
     async def test_configuration_moved(self) -> None:
+        await self.setup_repo("")
+
+        os.mkdir(self.git.repository + "/.github")
+        await self.git("mv", ".mergify.yml", ".github/mergify.yml")
+        await self.create_pr(git_tree_ready=True)
+        await self.run_engine()
+
+        summary_event = await self.wait_for_check_run(name=constants.SUMMARY_NAME)
+        summary = summary_event["check_run"]
+        assert (
+            "no rules configured, just listening for commands"
+            in summary["output"]["title"]
+        )
+
+    async def test_configuration_moved_and_disabled(self) -> None:
         await self.setup_repo("")
         await self.git("mv", ".mergify.yml", "disabled.yml")
         p = await self.create_pr(git_tree_ready=True)
