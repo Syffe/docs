@@ -370,3 +370,102 @@ class TestUnQueueCommand(base.FunctionalTestBase):
         assert len(convoy._trains) == 2
         assert len(convoy._trains[0]._cars) == 0
         assert len(convoy._trains[1]._cars) == 0
+
+    async def test_unqueue_command_on_pr_waiting_for_queue_match(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "routing_conditions": [
+                        "label=default",
+                    ],
+                },
+                {
+                    "name": "specialq",
+                    "routing_conditions": [
+                        "label=special",
+                    ],
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        p1 = await self.create_pr()
+        await self.create_comment_as_admin(p1["number"], "@mergifyio queue")
+        await self.run_engine()
+
+        comment = await self.wait_for_issue_comment(str(p1["number"]), "created")
+        assert (
+            """#### 🟠 Waiting for conditions to match
+
+<details>
+
+- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
+  - [ ] all of: [:pushpin: queue conditions of queue `default`]
+    - [ ] `label=default`
+  - [ ] all of: [:pushpin: queue conditions of queue `specialq`]
+    - [ ] `label=special`
+- [X] `-draft` [:pushpin: queue requirement]
+- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+
+</details>"""
+            in comment["comment"]["body"]
+        )
+
+        await self.create_comment_as_admin(p1["number"], "@mergifyio unqueue")
+        await self.run_engine()
+
+        edited_comment = await self.wait_for_issue_comment(str(p1["number"]), "edited")
+        assert (
+            "This `queue` command has been cancelled by an `unqueue` command"
+            in edited_comment["comment"]["body"]
+        )
+        assert '"conclusion": "cancelled"' in edited_comment["comment"]["body"]
+
+        unqueue_comment = await self.wait_for_issue_comment(
+            str(p1["number"]), "created"
+        )
+        assert (
+            "#### ✅ The pull request is not waiting to be queued anymore."
+            in unqueue_comment["comment"]["body"]
+        )
+
+        # Same test as above but with a queue name as parameter of the command
+        p2 = await self.create_pr()
+        await self.create_comment_as_admin(p2["number"], "@mergifyio queue default")
+        await self.run_engine()
+
+        comment = await self.wait_for_issue_comment(str(p2["number"]), "created")
+        assert (
+            """#### 🟠 Waiting for conditions to match
+
+<details>
+
+- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
+  - [ ] all of: [:pushpin: queue conditions of queue `default`]
+    - [ ] `label=default`
+- [X] `-draft` [:pushpin: queue requirement]
+- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+
+</details>"""
+            in comment["comment"]["body"]
+        )
+
+        await self.create_comment_as_admin(p2["number"], "@mergifyio unqueue")
+        await self.run_engine()
+
+        edited_comment = await self.wait_for_issue_comment(str(p2["number"]), "edited")
+        assert (
+            "This `queue` command has been cancelled by an `unqueue` command"
+            in edited_comment["comment"]["body"]
+        )
+        assert '"conclusion": "cancelled"' in edited_comment["comment"]["body"]
+
+        unqueue_comment = await self.wait_for_issue_comment(
+            str(p2["number"]), "created"
+        )
+        assert (
+            "#### ✅ The pull request is not waiting to be queued anymore."
+            in unqueue_comment["comment"]["body"]
+        )

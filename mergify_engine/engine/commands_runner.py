@@ -82,13 +82,13 @@ class CommandState:
     github_comment_result: github_types.GitHubComment | None
 
 
-def prepare_message(command: Command | CommandInvalid, result: check_api.Result) -> str:
+def prepare_message(command: str, result: check_api.Result) -> str:
     # NOTE: Do not serialize this with Mergify JSON encoder:
     # we don't want to allow loading/unloading weird value/classes
     # this could be modified by a user, so we keep it really straightforward
     payload = CommandPayload(
         {
-            "command": command.get_command(),
+            "command": command,
             "conclusion": result.conclusion.value,
         }
     )
@@ -96,7 +96,7 @@ def prepare_message(command: Command | CommandInvalid, result: check_api.Result)
     if result.summary:
         details = f"<details>\n\n{result.summary}\n\n</details>\n"
 
-    message = f"""> {command.get_command()}
+    message = f"""> {command}
 
 #### {result.conclusion.emoji} {result.title}
 
@@ -230,13 +230,12 @@ def extract_command_state(
     )
 
 
-async def run_commands_tasks(
-    ctxt: context.Context, mergify_config: mergify_conf.MergifyConfig
-) -> None:
+async def get_pending_commands_to_run_from_comments(
+    ctxt: context.Context,
+) -> LastUpdatedOrderedDict:
     mergify_bot = await github.GitHubAppInfo.get_bot(
         ctxt.repository.installation.redis.cache
     )
-
     pendings = LastUpdatedOrderedDict()
     async for attempt in tenacity.AsyncRetrying(
         stop=tenacity.stop_after_attempt(2),
@@ -264,6 +263,14 @@ async def run_commands_tasks(
             pendings[state.command] = state
         elif state.command in pendings:
             del pendings[state.command]
+
+    return pendings
+
+
+async def run_commands_tasks(
+    ctxt: context.Context, mergify_config: mergify_conf.MergifyConfig
+) -> None:
+    pendings = await get_pending_commands_to_run_from_comments(ctxt)
 
     for pending, state in pendings.items():
         try:
@@ -314,7 +321,7 @@ async def post_result(
     state: CommandState,
     result: check_api.Result,
 ) -> None:
-    message = prepare_message(command, result)
+    message = prepare_message(command.get_command(), result)
     ctxt.log.info(
         "command %s: %s",
         command.name,

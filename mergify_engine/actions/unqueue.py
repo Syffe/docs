@@ -8,6 +8,7 @@ from mergify_engine import context
 from mergify_engine import dashboard
 from mergify_engine import signals
 from mergify_engine import subscription
+from mergify_engine.engine import commands_runner
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules.config import mergify as mergify_conf
@@ -50,9 +51,49 @@ class UnqueueExecutor(
             self.ctxt.pull["number"]
         )
         if queue_name is None:
+            # Try to find any queue command in waiting state (waiting for queue conditions to be valid).
+            # In this state, the PR cannot be in any train yet, so we need to edit the queue comment,
+            # if there is a queue comment response already otherwise we just post a new comment,
+            # to cancel this waiting state.
+            # This will prevent the PR from being queued if the queue conditions matches later on.
+            pendings = await commands_runner.get_pending_commands_to_run_from_comments(
+                self.ctxt
+            )
+            has_pending_queue = False
+            for command, state in pendings.items():
+                # Use `startswith` to include commands with arguments
+                if not command.startswith("queue"):
+                    continue
+
+                has_pending_queue = True
+
+                message = commands_runner.prepare_message(
+                    command=command,
+                    result=check_api.Result(
+                        conclusion=check_api.Conclusion.CANCELLED,
+                        title="This `queue` command has been cancelled by an `unqueue` command",
+                        summary="",
+                    ),
+                )
+
+                if state.github_comment_result is None:
+                    # Means this is the first time running the command and we haven't responded yet.
+                    await self.ctxt.post_comment(message)
+                else:
+                    await self.ctxt.edit_comment(
+                        state.github_comment_result["id"], message
+                    )
+
+            if not has_pending_queue:
+                return check_api.Result(
+                    check_api.Conclusion.NEUTRAL,
+                    title="The pull request is not queued",
+                    summary="",
+                )
+
             return check_api.Result(
-                check_api.Conclusion.NEUTRAL,
-                title="The pull request is not queued",
+                check_api.Conclusion.SUCCESS,
+                title="The pull request is not waiting to be queued anymore.",
                 summary="",
             )
 
