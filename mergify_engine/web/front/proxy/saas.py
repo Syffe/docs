@@ -9,6 +9,7 @@ from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import settings
+from mergify_engine import subscription
 from mergify_engine.clients import dashboard
 from mergify_engine.web import redis
 from mergify_engine.web.front import security
@@ -109,6 +110,10 @@ async def saas_subscription(
             )
         return response
 
+    sub = await subscription.Subscription.get_subscription(
+        redis_links.cache, github_account_id
+    )
+
     return fastapi.responses.JSONResponse(
         {
             "role": "member",
@@ -118,23 +123,7 @@ async def saas_subscription(
             "subscription": None,
             "plan": {
                 "name": "OnPremise Premium",
-                "features": [
-                    "private_repository",
-                    "public_repository",
-                    "priority_queues",
-                    "custom_checks",
-                    "random_request_reviews",
-                    "merge_bot_account",
-                    "queue_action",
-                    "depends_on",
-                    "show_sponsor",
-                    "dedicated_worker",
-                    "advanced_monitoring",
-                    "queue_freeze",
-                    "eventlogs_short",
-                    "eventlogs_long",
-                    "merge_queue_stats",
-                ],
+                "features": sub.to_dict()["features"],
             },
         }
     )

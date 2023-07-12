@@ -1,4 +1,5 @@
 import datetime
+import typing
 
 import pytest
 import respx
@@ -7,6 +8,7 @@ import sqlalchemy
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import settings
+from mergify_engine import subscription
 from mergify_engine.models import github_user
 from mergify_engine.tests import conftest
 from mergify_engine.web.front.proxy import saas
@@ -174,6 +176,17 @@ async def test_saas_subscription_with_saas_mode_false(
     db.add(user)
     await db.commit()
 
+    respx_mock.get("http://localhost:5000/engine/subscription/42").respond(
+        200,
+        json={
+            "subscription_reason": "Subscription active",
+            "features": [
+                typing.cast(subscription.FeaturesLiteralT, f.value)
+                for f in subscription.Features
+            ],
+        },
+    )
+
     url = "/front/proxy/saas/github-account/42/subscription-details"
 
     resp = await web_client.get(url, headers={"dnt": "1"})
@@ -192,17 +205,17 @@ async def test_saas_subscription_with_saas_mode_false(
                 "public_repository",
                 "priority_queues",
                 "custom_checks",
-                "random_request_reviews",
-                "merge_bot_account",
                 "queue_action",
-                "depends_on",
                 "show_sponsor",
                 "dedicated_worker",
                 "advanced_monitoring",
                 "queue_freeze",
+                "queue_pause",
                 "eventlogs_short",
                 "eventlogs_long",
                 "merge_queue_stats",
+                "merge_queue",
+                "workflow_automation",
             ],
             "name": "OnPremise Premium",
         },
