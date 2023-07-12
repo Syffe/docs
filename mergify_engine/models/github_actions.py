@@ -14,6 +14,7 @@ from mergify_engine import github_types
 from mergify_engine import models
 from mergify_engine.ci import pull_registries
 from mergify_engine.models import github_account
+from mergify_engine.models import github_repository
 
 
 class PullRequest(models.Base):
@@ -77,9 +78,9 @@ class WorkflowRun(models.Base):
     __tablename__ = "gha_workflow_run"
     __table_args__ = (
         sqlalchemy.Index(
-            "gha_job_run_owner_id_repository_idx",
+            "gha_workflow_run_owner_id_repository_id_idx",
             "owner_id",
-            "repository",
+            "repository_id",
         ),
     )
 
@@ -89,9 +90,6 @@ class WorkflowRun(models.Base):
     workflow_id: orm.Mapped[int] = orm.mapped_column(sqlalchemy.BigInteger)
     owner_id: orm.Mapped[int] = orm.mapped_column(
         sqlalchemy.ForeignKey("github_account.id")
-    )
-    repository: orm.Mapped[github_types.GitHubRepositoryName] = orm.mapped_column(
-        sqlalchemy.Text
     )
     event: orm.Mapped[JobRunTriggerEvent] = orm.mapped_column(
         sqlalchemy.Enum(JobRunTriggerEvent)
@@ -114,31 +112,46 @@ class WorkflowRun(models.Base):
         lazy="selectin",
     )
 
+    repository_id: orm.Mapped[
+        github_types.GitHubRepositoryIdType | None
+    ] = orm.mapped_column(sqlalchemy.ForeignKey("github_repository.id"), nullable=True)
+
+    repository: orm.Mapped[
+        github_repository.GitHubRepository | None
+    ] = orm.relationship(lazy="joined")
+
     @classmethod
     async def insert(
         cls,
         session: sqlalchemy.ext.asyncio.AsyncSession,
         workflow_run_data: github_types.GitHubWorkflowRun,
     ) -> None:
-        if "triggering_actor" in workflow_run_data:
-            triggering_actor_id = workflow_run_data["triggering_actor"]["id"]
-        else:
-            triggering_actor_id = None  # type: ignore[unreachable]
-
-        sql = (
-            postgresql.insert(cls)
-            .values(
-                id=workflow_run_data["id"],
-                workflow_id=workflow_run_data["workflow_id"],
-                owner_id=workflow_run_data["repository"]["owner"]["id"],
-                repository=workflow_run_data["repository"]["name"],
-                event=JobRunTriggerEvent(workflow_run_data["event"]),
-                triggering_actor_id=triggering_actor_id,
-                run_attempt=workflow_run_data["run_attempt"],
-            )
-            .on_conflict_do_nothing(index_elements=["id"])
+        result = await session.execute(
+            sqlalchemy.select(cls).where(cls.id == workflow_run_data["id"])
         )
-        await session.execute(sql)
+        if result.scalar_one_or_none() is None:
+            if "triggering_actor" in workflow_run_data:
+                triggering_actor = await github_account.GitHubAccount.get_or_create(
+                    session, workflow_run_data["triggering_actor"]
+                )
+            else:
+                triggering_actor = None  # type: ignore[unreachable]
+
+            session.add(
+                cls(
+                    id=workflow_run_data["id"],
+                    workflow_id=workflow_run_data["workflow_id"],
+                    owner=await github_account.GitHubAccount.get_or_create(
+                        session, workflow_run_data["repository"]["owner"]
+                    ),
+                    repository=await github_repository.GitHubRepository.get_or_create(
+                        session, workflow_run_data["repository"]
+                    ),
+                    event=JobRunTriggerEvent(workflow_run_data["event"]),
+                    triggering_actor=triggering_actor,
+                    run_attempt=workflow_run_data["run_attempt"],
+                )
+            )
 
 
 class WorkflowJob(models.Base):
@@ -166,26 +179,39 @@ class WorkflowJob(models.Base):
         Vector(constants.OPENAI_EMBEDDING_DIMENSION), nullable=True
     )
 
+    repository_id: orm.Mapped[
+        github_types.GitHubRepositoryIdType | None
+    ] = orm.mapped_column(sqlalchemy.ForeignKey("github_repository.id"), nullable=True)
+
+    repository: orm.Mapped[
+        github_repository.GitHubRepository | None
+    ] = orm.relationship(lazy="joined")
+
     @classmethod
     async def insert(
         cls,
         session: sqlalchemy.ext.asyncio.AsyncSession,
         workflow_job_data: github_types.GitHubJobRun,
+        repository: github_types.GitHubRepository,
     ) -> None:
-        sql = (
-            postgresql.insert(cls)
-            .values(
-                id=workflow_job_data["id"],
-                workflow_run_id=workflow_job_data["run_id"],
-                name=workflow_job_data["name"],
-                started_at=workflow_job_data["started_at"],
-                completed_at=workflow_job_data["completed_at"],
-                conclusion=JobRunConclusion(workflow_job_data["conclusion"]),
-                labels=workflow_job_data["labels"],
-            )
-            .on_conflict_do_nothing(index_elements=["id"])
+        result = await session.execute(
+            sqlalchemy.select(cls).where(cls.id == workflow_job_data["id"])
         )
-        await session.execute(sql)
+        if result.scalar_one_or_none() is None:
+            session.add(
+                cls(
+                    id=workflow_job_data["id"],
+                    workflow_run_id=workflow_job_data["run_id"],
+                    name=workflow_job_data["name"],
+                    started_at=workflow_job_data["started_at"],
+                    completed_at=workflow_job_data["completed_at"],
+                    conclusion=JobRunConclusion(workflow_job_data["conclusion"]),
+                    labels=workflow_job_data["labels"],
+                    repository=await github_repository.GitHubRepository.get_or_create(
+                        session, repository
+                    ),
+                )
+            )
 
 
 # https://docs.sqlalchemy.org/en/20/orm/basic_relationships.html#association-object
