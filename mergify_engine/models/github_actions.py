@@ -112,9 +112,9 @@ class WorkflowRun(models.Base):
         lazy="selectin",
     )
 
-    repository_id: orm.Mapped[
-        github_types.GitHubRepositoryIdType | None
-    ] = orm.mapped_column(sqlalchemy.ForeignKey("github_repository.id"), nullable=True)
+    repository_id: orm.Mapped[github_types.GitHubRepositoryIdType] = orm.mapped_column(
+        sqlalchemy.ForeignKey("github_repository.id")
+    )
 
     repository: orm.Mapped[
         github_repository.GitHubRepository | None
@@ -179,9 +179,9 @@ class WorkflowJob(models.Base):
         Vector(constants.OPENAI_EMBEDDING_DIMENSION), nullable=True
     )
 
-    repository_id: orm.Mapped[
-        github_types.GitHubRepositoryIdType | None
-    ] = orm.mapped_column(sqlalchemy.ForeignKey("github_repository.id"), nullable=True)
+    repository_id: orm.Mapped[github_types.GitHubRepositoryIdType] = orm.mapped_column(
+        sqlalchemy.ForeignKey("github_repository.id")
+    )
 
     repository: orm.Mapped[
         github_repository.GitHubRepository | None

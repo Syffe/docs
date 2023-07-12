@@ -149,17 +149,12 @@ async def _process_workflow_job_event(
         github_types.GitHubJobRun,
         event_data["workflow_job"],
     )
-    try:
-        repository = typing.cast(
-            github_types.GitHubRepository,
-            event_data["repository"],
-        )
-    except KeyError:
-        # Note(Kontrolix): This ugly try except is temporary it will be deleted as soon
-        # as the "old" stream are flushed
-        pass
-    else:
-        await github_actions.WorkflowJob.insert(session, workflow_job, repository)
-        await session.commit()
+    repository = typing.cast(
+        github_types.GitHubRepository,
+        event_data["repository"],
+    )
+
+    await github_actions.WorkflowJob.insert(session, workflow_job, repository)
+    await session.commit()
 
     await redis_links.stream.xdel("gha_workflow_job", stream_event_id)  # type: ignore [no-untyped-call]
