@@ -19,13 +19,14 @@ jobs:
         env:
           REDIS_EXTRA_FLAGS: "--databases 1000"
           ALLOW_EMPTY_PASSWORD: yes
+
       postgres:
-        # Pin PostgreSQL to the version that is in ubuntu-latest
-        image: postgres:12.5
+        image: ankane/pgvector:v0.4.4
         env:
           POSTGRES_PASSWORD: password
         ports:
           - 5432:5432
+        options: --name postgres
     strategy:
       max-parallel: 2
       fail-fast: false
