@@ -929,7 +929,7 @@ class GitHubJobRun(typing.TypedDict):
     conclusion: GitHubJobRunConclusionType
     started_at: ISODateTimeType
     completed_at: ISODateTimeType
-    workflow_run: GitHubWorkflowRun | None
+    workflow_run: GitHubWorkflowRun
     labels: list[str]
 
 

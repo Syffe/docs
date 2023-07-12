@@ -144,17 +144,12 @@ async def _process_workflow_job_event(
     stream_event_id: bytes,
     stream_event: dict[bytes, bytes],
 ) -> None:
-    event_data = msgpack.unpackb(stream_event[b"data"])
     workflow_job = typing.cast(
         github_types.GitHubJobRun,
-        event_data["workflow_job"],
-    )
-    repository = typing.cast(
-        github_types.GitHubRepository,
-        event_data["repository"],
+        msgpack.unpackb(stream_event[b"data"])["workflow_job"],
     )
 
-    await github_actions.WorkflowJob.insert(session, workflow_job, repository)
+    await github_actions.WorkflowJob.insert(session, workflow_job)
     await session.commit()
 
     await redis_links.stream.xdel("gha_workflow_job", stream_event_id)  # type: ignore [no-untyped-call]
