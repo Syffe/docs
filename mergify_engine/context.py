@@ -690,7 +690,9 @@ class Repository:
         permission: github_types.GitHubRepositoryPermission,
     ) -> None:
         pipe = await self.installation.redis.user_permissions_cache.pipeline()
-        await pipe.hset(self._users_permission_cache_key, user["id"], permission.value)
+        await pipe.hset(
+            self._users_permission_cache_key, str(user["id"]), permission.value
+        )
         await pipe.expire(
             self._users_permission_cache_key, self.USERS_PERMISSION_EXPIRATION
         )
@@ -1445,7 +1447,7 @@ class Context:
                 self.repository.repo["id"],
                 self.pull["head"]["sha"],
             ),
-            self.pull["number"],
+            str(self.pull["number"]),
         )
         await pipe.execute()
 

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import typing
 
 import daiquiri
@@ -16,7 +18,7 @@ LOG = daiquiri.getLogger()
 
 
 async def _send_refresh(
-    redis_stream: "redis_utils.RedisStream",
+    redis_stream: redis_utils.RedisStream | redis_utils.PipelineStream,
     repository: github_types.GitHubRepository,
     action: github_types.GitHubEventRefreshActionType,
     source: str,
@@ -64,7 +66,7 @@ async def _send_refresh(
 
 
 async def send_pull_refresh(
-    redis_stream: "redis_utils.RedisStream",
+    redis_stream: redis_utils.RedisStream | redis_utils.PipelineStream,
     repository: github_types.GitHubRepository,
     action: github_types.GitHubEventRefreshActionType,
     pull_request_number: github_types.GitHubPullRequestNumber,
@@ -93,7 +95,7 @@ async def send_pull_refresh(
 
 
 async def send_branch_refresh(
-    redis_stream: "redis_utils.RedisStream",
+    redis_stream: redis_utils.RedisStream,
     repository: github_types.GitHubRepository,
     action: github_types.GitHubEventRefreshActionType,
     ref: github_types.GitHubRefType,

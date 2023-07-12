@@ -17,6 +17,7 @@ from mergify_engine import delayed_refresh
 from mergify_engine import github_types
 from mergify_engine import json
 from mergify_engine import queue
+from mergify_engine import redis_utils
 from mergify_engine import refresher
 from mergify_engine import settings
 from mergify_engine import signals
@@ -1296,7 +1297,10 @@ class Train:
         if additional_pull_request and additional_pull_request not in pulls:
             pulls.append(additional_pull_request)
 
-        pipe = await self.convoy.repository.installation.redis.stream.pipeline()
+        pipe = typing.cast(
+            redis_utils.PipelineStream,
+            await self.convoy.repository.installation.redis.stream.pipeline(),
+        )
         for i, pull_number in enumerate(pulls):
             await refresher.send_pull_refresh(
                 pipe,

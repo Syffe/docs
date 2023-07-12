@@ -40,7 +40,7 @@ redis.call("ZADD", "streams", "NX", scheduled_at_timestamp, bucket_org_key)
 
 @tracer.wrap("stream_push_pull", span_type="worker")
 async def push_pull(
-    redis: redis_utils.RedisStream,
+    redis: redis_utils.RedisStream | redis_utils.PipelineStream,
     bucket_org_key: BucketOrgKeyType,
     bucket_sources_key: BucketSourcesKeyType,
     tracing_repo_name: github_types.GitHubRepositoryNameForTracing,

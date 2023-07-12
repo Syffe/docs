@@ -23,6 +23,7 @@ LOG = daiquiri.getLogger(__name__)
 RedisCache = typing.NewType("RedisCache", "redispy.Redis[bytes]")
 RedisAuthentication = typing.NewType("RedisAuthentication", "redispy.Redis[bytes]")
 RedisStream = typing.NewType("RedisStream", "redispy.Redis[bytes]")
+PipelineStream = typing.NewType("PipelineStream", "redispy.client.Pipeline[bytes]")
 RedisQueue = typing.NewType("RedisQueue", "redispy.Redis[bytes]")
 RedisActiveUsers = typing.NewType("RedisActiveUsers", "redispy.Redis[bytes]")
 RedisUserPermissionsCache = typing.NewType(
@@ -98,7 +99,7 @@ async def load_stream_scripts(connection: redispy.connection.Connection) -> None
 
 
 async def run_script(
-    redis: RedisCache | RedisStream,
+    redis: RedisCache | RedisStream | PipelineStream,
     script_id: ScriptIdT,
     keys: tuple[str, ...],
     args: tuple[str, ...] | None = None,

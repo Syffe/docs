@@ -740,7 +740,9 @@ class Processor:
         if source["event_type"] == "push":
             score = worker_pusher.get_priority_score(worker_pusher.Priority.low)
 
-        pipe = await self.redis_links.stream.pipeline()
+        pipe = typing.cast(
+            redis_utils.PipelineStream, await self.redis_links.stream.pipeline()
+        )
         for pull_number in pull_numbers:
             if pull_number is None:
                 # NOTE(sileht): even it looks not possible, this is a safeguard to ensure

@@ -146,7 +146,7 @@ async def send(
     if not keys:
         return
 
-    pipe = await redis_links.stream.pipeline()
+    pipe = typing.cast(redis_utils.PipelineStream, await redis_links.stream.pipeline())
     keys_to_delete = set()
     for subkey in keys:
         (
