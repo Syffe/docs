@@ -9,6 +9,7 @@ import sqlalchemy
 from sqlalchemy import func
 
 from mergify_engine import database
+from mergify_engine import events_db
 from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine import signals
@@ -584,13 +585,16 @@ class TestEventLogsAction(base.FunctionalTestBase):
         ]
 
         # We don't send any metadata on purpose
-        await signals.send(
-            self.repository_ctxt,
-            github_types.GitHubPullRequestNumber(123),
-            "action.queue.merged",
-            signals.EventQueueMergedMetadata({}),
-            "gogogo",
-        )
+        with mock.patch.object(events_db, "insert", return_value=None):
+            # NOTE(lecrepont01): An incomplete event should not be inserted in database, insert errors should be handled
+            # in the future by watching the error logs. Mock the insert to avoid teardown failure via logger_checker.
+            await signals.send(
+                self.repository_ctxt,
+                github_types.GitHubPullRequestNumber(123),
+                "action.queue.merged",
+                signals.EventQueueMergedMetadata({}),
+                "gogogo",
+            )
         r = await self.admin_app.get(
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/123/events",
         )

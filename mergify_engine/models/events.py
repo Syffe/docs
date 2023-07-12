@@ -244,3 +244,23 @@ class EventActionQueueEnter(Event):
     partition_name: orm.Mapped[
         partition_rules.PartitionRuleName | None
     ] = orm.mapped_column(sqlalchemy.Text, nullable=True)
+
+
+class EventActionQueueMerged(Event):
+    __tablename__ = "event_action_queue_merged"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "action.queue.merged",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"), primary_key=True
+    )
+
+    branch: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
+    queue_name: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
+    queued_at: orm.Mapped[datetime.datetime] = orm.mapped_column(
+        sqlalchemy.DateTime(timezone=True)
+    )
+    partition_names: orm.Mapped[
+        list[partition_rules.PartitionRuleName]
+    ] = orm.mapped_column(sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1))

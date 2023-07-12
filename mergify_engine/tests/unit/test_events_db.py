@@ -289,3 +289,32 @@ async def test_event_action_queue_enter_consistency(
             }
         ),
     )
+
+
+@freeze_time("2023-07-10T14:00:00", tz_offset=0)
+async def test_event_action_queue_merged_consistency(
+    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+) -> None:
+    await insert_event(
+        fake_repository,
+        "action.queue.merged",
+        signals.EventQueueMergedMetadata(
+            {
+                "queue_name": "default",
+                "branch": "some_branch",
+                "queued_at": date.utcnow(),
+                "partition_names": [
+                    partition_rules.PartitionRuleName("partA"),
+                    partition_rules.PartitionRuleName("partB"),
+                ],
+            }
+        ),
+    )
+
+    await assert_base_event(db, fake_repository)
+    event = await db.scalar(sqlalchemy.select(evt_model.EventActionQueueMerged))
+    assert event is not None
+    assert event.queue_name == "default"
+    assert event.branch == "some_branch"
+    assert event.queued_at.isoformat() == "2023-07-10T14:00:00+00:00"
+    assert set(event.partition_names) == {"partA", "partB"}
