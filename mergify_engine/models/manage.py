@@ -5,20 +5,18 @@ import alembic.command
 import alembic.config
 import sqlalchemy
 
+from mergify_engine import database
 from mergify_engine import models
-from mergify_engine import settings
 
 
 async def create_all() -> None:
-    engine = sqlalchemy.ext.asyncio.create_async_engine(settings.DATABASE_URL.geturl())
-    async with engine.begin() as conn:
+    async with database.get_engine().begin() as conn:
         await conn.execute(sqlalchemy.text("CREATE EXTENSION IF NOT EXISTS vector"))
         await conn.run_sync(models.Base.metadata.create_all)
 
 
 async def drop_all() -> None:
-    engine = sqlalchemy.ext.asyncio.create_async_engine(settings.DATABASE_URL.geturl())
-    async with engine.begin() as conn:
+    async with database.get_engine().begin() as conn:
         await conn.run_sync(models.Base.metadata.drop_all)
 
 
