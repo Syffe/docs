@@ -664,6 +664,8 @@ class Train:
                 "queued_at": embarked_pull_with_car.embarked_pull.queued_at,
                 "queue_name": embarked_pull_with_car.embarked_pull.config["name"],
                 "reason": str(unqueue_reason),
+                "seconds_waiting_for_schedule": 0,
+                "seconds_waiting_for_freeze": 0,
             }
         )
         if embarked_pull_with_car.car is not None:
