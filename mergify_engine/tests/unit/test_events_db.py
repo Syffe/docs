@@ -318,3 +318,39 @@ async def test_event_action_queue_merged_consistency(
     assert event.branch == "some_branch"
     assert event.queued_at.isoformat() == "2023-07-10T14:00:00+00:00"
     assert set(event.partition_names) == {"partA", "partB"}
+
+
+@freeze_time("2023-07-10T14:00:00", tz_offset=0)
+async def test_event_action_queue_leave_consistency(
+    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+) -> None:
+    await insert_event(
+        fake_repository,
+        "action.queue.leave",
+        signals.EventQueueLeaveMetadata(
+            {
+                "queue_name": "default",
+                "branch": "refactor_test",
+                "position": 3,
+                "queued_at": date.utcnow(),
+                "partition_name": partition_rules.DEFAULT_PARTITION_NAME,
+                "merged": False,
+                "reason": "Pull request ahead in queue failed to get merged",
+                "seconds_waiting_for_schedule": 5,
+                "seconds_waiting_for_freeze": 5,
+            }
+        ),
+    )
+
+    await assert_base_event(db, fake_repository)
+    event = await db.scalar(sqlalchemy.select(evt_model.EventActionQueueLeave))
+    assert event is not None
+    assert event.queue_name == "default"
+    assert event.branch == "refactor_test"
+    assert event.position == 3
+    assert event.queued_at.isoformat() == "2023-07-10T14:00:00+00:00"
+    assert event.partition_name == partition_rules.DEFAULT_PARTITION_NAME
+    assert event.merged is False
+    assert event.reason == "Pull request ahead in queue failed to get merged"
+    assert event.seconds_waiting_for_schedule == 5
+    assert event.seconds_waiting_for_freeze == 5
