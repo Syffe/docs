@@ -7,15 +7,20 @@ import sqlalchemy
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import database
+from mergify_engine import logs
 from mergify_engine import models
-from mergify_engine import service
 
 
 async def run_async_migrations() -> None:
-    service.setup("db-migration")
+    logs.setup_logging(dump_config=False)
+    database.init_sqlalchemy("db-migration")
 
-    async with database.get_engine().connect() as connection:
-        await connection.run_sync(do_run_migrations)
+    engine = database.get_engine()
+    try:
+        async with engine.connect() as connection:
+            await connection.run_sync(do_run_migrations)
+    finally:
+        await engine.dispose()
 
 
 def do_run_migrations(connection: sqlalchemy.Connection) -> None:
@@ -24,6 +29,8 @@ def do_run_migrations(connection: sqlalchemy.Connection) -> None:
         target_metadata=models.Base.metadata,
         alembic_module_prefix="alembic.op.",
         sqlalchemy_module_prefix="sqlalchemy.",
+        transactional_ddl=True,
+        transaction_per_migration=True,
     )
 
     with context.begin_transaction():

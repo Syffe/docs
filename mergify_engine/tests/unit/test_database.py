@@ -1,56 +1,47 @@
 import asyncio
 import filecmp
+import io
 import os
 import pathlib
 import subprocess
+from unittest import mock
+import warnings
 
-import pytest
+import alembic
+import sqlalchemy
 
+from mergify_engine import database
 from mergify_engine import settings
-from mergify_engine.config import types
+from mergify_engine.config import types as config_types
 from mergify_engine.models import manage
 from mergify_engine.tests import utils
 
 
-def _run_alembic(*args: str, environ: dict[str, str] | None = None) -> str:
-    # NOTE(sileht): we must run alembic in separate process to ensure the already loaded sqlalchemy
-    # resource does not interfer with the migration scripts
-    if environ is None:
-        environ = os.environ.copy()
-
+def _run_alembic(command: str, *args: str) -> str:
     config = manage.load_alembic_config()
-    assert config.config_file_name is not None
-    p = subprocess.run(
-        ("alembic", "-c", config.config_file_name, *args),
-        env=environ,
-        check=True,
-        capture_output=True,
-        timeout=10,
-    )
-    return p.stdout.decode()
+    config.stdout = io.StringIO()
+
+    APP_STATE = database.APP_STATE
+    database.APP_STATE = None
+    try:
+        with mock.patch.object(settings, "LOG_STDOUT", command == "check"):
+            getattr(alembic.command, command)(config, *args)
+    finally:
+        database.APP_STATE = APP_STATE
+    return config.stdout.getvalue()
 
 
-def _run_migration_scripts(url: types.PostgresDSN) -> None:
-    # NOTE(sileht): we must run alembic in separate process to ensure the already loaded sqlalchemy
-    # resource does not interfer with the migration scripts
-    environ = os.environ.copy()
-    environ["MERGIFYENGINE_DATABASE_URL"] = url.geturl()
-    environ["MERGIFYENGINE_LOG_STDOUT"] = "false"
-
-    output = _run_alembic("history", environ=environ)
-    scripts_count = len(output.splitlines())
-    for _ in range(scripts_count):
-        subprocess.run(
-            ("mergify-database-update", "+1"),
-            env=environ,
-            check=True,
-            capture_output=True,
-            timeout=10,
-        )
-    _run_alembic("check", environ=environ)
+def _run_migration_scripts(url: config_types.PostgresDSN) -> None:
+    with mock.patch.object(settings, "DATABASE_URL", url):
+        output = _run_alembic("history")
+        scripts_count = len(output.splitlines())
+        for _ in range(scripts_count):
+            _run_alembic("upgrade", "+1")
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=sqlalchemy.exc.SAWarning)
+            _run_alembic("check")
 
 
-@pytest.mark.timeout(90)
 def test_migration(setup_database: None, tmp_path: pathlib.Path) -> None:
     # We need to manually run the coroutine in an event loop because
     # pytest-asyncio has its own `event_loop` fixture that is function scoped
