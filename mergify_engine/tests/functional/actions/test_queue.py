@@ -4316,6 +4316,32 @@ class TestQueueAction(base.FunctionalTestBase):
         # Queue is now empty
         await self.assert_merge_queue_contents(q, None, [])
 
+        # Check event logs
+        r = await self.admin_app.get(
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{p1['number']}/events?per_page=1",
+        )
+        assert r.status_code == 200
+        assert r.json() == {
+            "events": [
+                {
+                    "event": "action.queue.merged",
+                    "metadata": {
+                        "branch": self.main_branch_name,
+                        "queue_name": "default",
+                        "queued_at": anys.ANY_AWARE_DATETIME_STR,
+                        "partition_names": [partr_config.DEFAULT_PARTITION_NAME],
+                    },
+                    "pull_request": p1["number"],
+                    "repository": self.repository_ctxt.repo["full_name"],
+                    "timestamp": anys.ANY_AWARE_DATETIME_STR,
+                    "trigger": "Rule: Queue",
+                },
+            ],
+            "per_page": 1,
+            "size": 1,
+            "total": 5,
+        }
+
     async def test_ongoing_train_basic(self) -> None:
         rules = {
             "queue_rules": [

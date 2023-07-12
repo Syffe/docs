@@ -167,8 +167,11 @@ Then, re-embark the pull request into the merge queue by posting the comment
         queue_pause: pause.QueuePause | None,
         # "cars" is not used but needed because this func is used in 'merge' property
         # with another func that need this attribute.
-        cars: list[merge_train.TrainCar] | None,
+        cars: list[merge_train.TrainCar],
     ) -> check_api.Result:
+        if not cars:
+            raise RuntimeError("Ready to merge PR without any car...")
+
         result = await self.common_merge(
             "queue",
             self.ctxt,
@@ -201,6 +204,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
             partition_names = [ep.partition_name for ep in embarked_pulls]
             await self.send_merge_signal(
+                self.ctxt.pull["number"],
                 embarked_pulls[0].embarked_pull.queued_at,
                 partition_names,
             )
@@ -212,10 +216,10 @@ Then, re-embark the pull request into the merge queue by posting the comment
         convoy: merge_train.Convoy,
         queue_freeze: freeze.QueueFreeze | None,
         queue_pause: pause.QueuePause | None,
-        cars: list[merge_train.TrainCar] | None,
+        cars: list[merge_train.TrainCar],
     ) -> check_api.Result:
         if not cars:
-            raise RuntimeError("Ready to merge PR without any car....")
+            raise RuntimeError("Ready to merge PR without any car...")
 
         if (
             len(cars) > 1
@@ -284,20 +288,22 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 ),
             )
 
-        for car in cars:
-            for embarked_pull in car.still_queued_embarked_pulls.copy():
-                await self.create_recently_merged_tracker(
-                    self.ctxt.repository.installation.redis.cache,
-                    self.ctxt.repository.repo["id"],
-                    embarked_pull.user_pull_request_number,
-                )
-                await convoy.remove_pull(
-                    embarked_pull.user_pull_request_number,
-                    self.rule.get_signal_trigger(),
-                    queue_utils.PrMerged(
-                        embarked_pull.user_pull_request_number, newsha
-                    ),
-                )
+        for embarked_pull in cars[0].still_queued_embarked_pulls.copy():
+            await self.create_recently_merged_tracker(
+                self.ctxt.repository.installation.redis.cache,
+                self.ctxt.repository.repo["id"],
+                embarked_pull.user_pull_request_number,
+            )
+            await convoy.remove_pull(
+                embarked_pull.user_pull_request_number,
+                self.rule.get_signal_trigger(),
+                queue_utils.PrMerged(embarked_pull.user_pull_request_number, newsha),
+            )
+            await self.send_merge_signal(
+                embarked_pull.user_pull_request_number,
+                embarked_pull.queued_at,
+                [car.train.partition_name],
+            )
 
         return check_api.Result(
             check_api.Conclusion.SUCCESS,
@@ -313,7 +319,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
             merge_train.Convoy,
             freeze.QueueFreeze | None,
             pause.QueuePause | None,
-            list[merge_train.TrainCar] | None,
+            list[merge_train.TrainCar],
         ],
         abc.Coroutine[typing.Any, typing.Any, check_api.Result],
     ]:
@@ -1066,12 +1072,13 @@ Then, re-embark the pull request into the merge queue by posting the comment
 
     async def send_merge_signal(
         self,
+        pull_request: github_types.GitHubPullRequestNumber,
         embarked_pull_queued_at: datetime.datetime,
         partition_names: list[partr_config.PartitionRuleName],
     ) -> None:
         await signals.send(
             self.ctxt.repository,
-            self.ctxt.pull["number"],
+            pull_request,
             "action.queue.merged",
             signals.EventQueueMergedMetadata(
                 {
