@@ -116,9 +116,9 @@ class WorkflowRun(models.Base):
         sqlalchemy.ForeignKey("github_repository.id")
     )
 
-    repository: orm.Mapped[
-        github_repository.GitHubRepository | None
-    ] = orm.relationship(lazy="joined")
+    repository: orm.Mapped[github_repository.GitHubRepository] = orm.relationship(
+        lazy="joined"
+    )
 
     @classmethod
     async def insert(
@@ -183,9 +183,9 @@ class WorkflowJob(models.Base):
         sqlalchemy.ForeignKey("github_repository.id")
     )
 
-    repository: orm.Mapped[
-        github_repository.GitHubRepository | None
-    ] = orm.relationship(lazy="joined")
+    repository: orm.Mapped[github_repository.GitHubRepository] = orm.relationship(
+        lazy="joined"
+    )
 
     @classmethod
     async def insert(
