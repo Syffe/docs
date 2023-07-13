@@ -44,6 +44,7 @@ from mergify_engine.queue import statistics as queue_statistics
 from mergify_engine.rules.config import partition_rules as partr_config
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.tests.functional import conftest as func_conftest
+from mergify_engine.worker import ci_event_processing_service
 from mergify_engine.worker import gitter_service
 from mergify_engine.worker import manager
 from mergify_engine.worker import stream
@@ -728,6 +729,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
 
     async def run_full_engine(self) -> None:
         LOG.log(42, "RUNNING FULL ENGINE")
+
         w = manager.ServiceManager(
             idle_sleep_time=self.WORKER_IDLE_SLEEP_TIME,
             enabled_services={
@@ -760,7 +762,9 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         w.stop()
         await w.wait_shutdown_complete()
 
-    async def run_engine(self) -> None:
+    async def run_engine(
+        self, additionnal_services: manager.ServiceNamesT | None = None
+    ) -> None:
         LOG.log(42, "RUNNING ENGINE")
 
         gitter_serv = gitter_service.GitterService(
@@ -768,9 +772,11 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             idle_sleep_time=0.01,
             monitoring_idle_time=60,
         )
+
         syncer_service = stream_services.DedicatedWorkersCacheSyncerService(
             self.redis_links, dedicated_workers_syncer_idle_time=0.01
         )
+
         shared_service = stream_services.SharedStreamService(
             self.redis_links,
             dedicated_workers_cache_syncer=syncer_service,
@@ -780,6 +786,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             shared_stream_tasks_per_process=0,
             retry_handled_exception_forever=False,
         )
+
         dedicated_service = stream_services.DedicatedStreamService(
             self.redis_links,
             dedicated_workers_cache_syncer=syncer_service,
@@ -790,7 +797,17 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             retry_handled_exception_forever=False,
         )
 
+        services = [syncer_service, dedicated_service, shared_service, gitter_serv]
+
         shared_service.shared_stream_tasks_per_process = 1
+
+        if additionnal_services and "ci-event-processing" in additionnal_services:
+            services.append(
+                ci_event_processing_service.CIEventProcessingService(
+                    self.redis_links,
+                    ci_event_processing_idle_time=0,
+                )
+            )
 
         while (await self.redis_links.stream.zcard("streams")) > 0:
             await shared_service.shared_stream_worker_task(0)
@@ -801,10 +818,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                 await gitter_serv._gitter_worker("gitter-worker-0")
 
         await task.stop_and_wait(
-            syncer_service.tasks
-            + dedicated_service.tasks
-            + shared_service.tasks
-            + gitter_serv.tasks
+            list(itertools.chain.from_iterable([s.tasks for s in services]))  # type: ignore[attr-defined]
         )
 
     def get_gitter(

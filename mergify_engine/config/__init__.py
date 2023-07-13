@@ -341,6 +341,12 @@ class TestingSettings(pydantic.BaseSettings):
     )
 
 
+class OpenAISettings(pydantic.BaseSettings):
+    OPENAI_API_TOKEN: pydantic.SecretStr = pydantic.Field(
+        default=pydantic.SecretStr("")
+    )
+
+
 class EngineSettings(
     APISettings,
     DatabaseSettings,
@@ -351,6 +357,7 @@ class EngineSettings(
     SubscriptionSetting,
     WorkerSettings,
     TestingSettings,
+    OpenAISettings,
     pydantic.BaseSettings,
 ):
     VERSION: str = pydantic.Field("dev", extra_env="HEROKU_SLUG_COMMIT")

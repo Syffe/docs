@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datetime
 import enum
 
@@ -29,7 +31,7 @@ class PullRequest(models.Base):
         sqlalchemy.Text
     )
 
-    workflow_runs: orm.Mapped[list["WorkflowRun"]] = orm.relationship(
+    workflow_runs: orm.Mapped[list[WorkflowRun]] = orm.relationship(
         secondary="jt_gha_workflow_run_pull_request",
         back_populates="pull_requests",
         viewonly=True,
