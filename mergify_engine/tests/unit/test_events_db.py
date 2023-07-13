@@ -354,3 +354,25 @@ async def test_event_action_queue_leave_consistency(
     assert event.reason == "Pull request ahead in queue failed to get merged"
     assert event.seconds_waiting_for_schedule == 5
     assert event.seconds_waiting_for_freeze == 5
+
+
+async def test_events_with_no_metadata(
+    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+) -> None:
+    events_set: set[signals.EventName] = {
+        "action.squash",
+        "action.rebase",
+        "action.refresh",
+        "action.requeue",
+        "action.unqueue",
+        "action.update",
+    }
+    for event in events_set:
+        await insert_event(
+            fake_repository,
+            event,
+            signals.EventNoMetadata(),
+        )
+
+    events_types = await db.scalars(sqlalchemy.select(evt_model.Event.type))
+    assert set(events_types.all()) == events_set

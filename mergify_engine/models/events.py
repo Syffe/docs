@@ -290,3 +290,69 @@ class EventActionQueueLeave(Event):
         sqlalchemy.Integer
     )
     seconds_waiting_for_freeze: orm.Mapped[int] = orm.mapped_column(sqlalchemy.Integer)
+
+
+class EventActionSquash(Event):
+    __tablename__ = "event_action_squash"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "action.squash",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"), primary_key=True
+    )
+
+
+class EventActionRebase(Event):
+    __tablename__ = "event_action_rebase"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "action.rebase",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"), primary_key=True
+    )
+
+
+class EventActionRefresh(Event):
+    __tablename__ = "event_action_refresh"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "action.refresh",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"), primary_key=True
+    )
+
+
+class EventActionRequeue(Event):
+    __tablename__ = "event_action_requeue"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "action.requeue",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"), primary_key=True
+    )
+
+
+class EventActionUnqueue(Event):
+    __tablename__ = "event_action_unqueue"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "action.unqueue",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"), primary_key=True
+    )
+
+
+class EventActionUpdate(Event):
+    __tablename__ = "event_action_update"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "action.update",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"), primary_key=True
+    )
