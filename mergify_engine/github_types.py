@@ -893,25 +893,13 @@ class GitHubWorkflowRun(typing.TypedDict):
     run_started_at: ISODateTimeType
 
 
-class GitHubWorkflowRunList(typing.TypedDict):
-    total_count: int
-    workflow_runs: list[GitHubWorkflowRun]
-
-
-GitHubEventWorkflowRunActionType = typing.Literal[
-    "completed",
-    "in_progress",
-    "requested",
-]
-
-
 class GitHubEventWorkflowRun(GitHubEventWithRepository):
     action: GitHubEventPullRequestActionType
     workflow_run: GitHubWorkflowRun
 
 
 # https://docs.github.com/en/rest/actions/workflow-jobs?apiVersion=2022-11-28#get-a-job-for-a-workflow-run
-GitHubJobRunConclusionType = typing.Literal[
+GitHubWorkflowJobConclusionType = typing.Literal[
     "success",
     "failure",
     "neutral",
@@ -922,30 +910,16 @@ GitHubJobRunConclusionType = typing.Literal[
 ]
 
 
-class GitHubJobRun(typing.TypedDict):
+class GitHubWorkflowJob(typing.TypedDict):
     id: int
     run_id: int
     name: str
-    conclusion: GitHubJobRunConclusionType
+    conclusion: GitHubWorkflowJobConclusionType
     started_at: ISODateTimeType
     completed_at: ISODateTimeType
-    workflow_run: GitHubWorkflowRun | None
     labels: list[str]
-
-
-class GitHubJobRunList(typing.TypedDict):
-    total_count: int
-    jobs: list[GitHubJobRun]
-
-
-GitHubEventWorkflowJobActionType = typing.Literal[
-    "completed",
-    "in_progress",
-    "queued",
-    "waiting",
-]
 
 
 class GitHubEventWorkflowJob(GitHubEventWithRepository):
     action: GitHubEventPullRequestActionType
-    workflow_job: GitHubJobRun | None
+    workflow_job: GitHubWorkflowJob | None

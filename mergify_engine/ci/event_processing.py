@@ -146,7 +146,7 @@ async def _process_workflow_job_event(
 ) -> None:
     event_data = msgpack.unpackb(stream_event[b"data"])
     workflow_job = typing.cast(
-        github_types.GitHubJobRun,
+        github_types.GitHubWorkflowJob,
         event_data["workflow_job"],
     )
     repository = typing.cast(

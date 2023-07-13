@@ -9,7 +9,7 @@ LOG = daiquiri.getLogger(__name__)
 
 class HTTPJobRegistry:
     @staticmethod
-    def is_workflow_job_ignored(payload: github_types.GitHubJobRun) -> bool:
+    def is_workflow_job_ignored(payload: github_types.GitHubWorkflowJob) -> bool:
         return not payload["completed_at"] or payload["conclusion"] == "skipped"
 
     @staticmethod

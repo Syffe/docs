@@ -191,7 +191,7 @@ class WorkflowJob(models.Base):
     async def insert(
         cls,
         session: sqlalchemy.ext.asyncio.AsyncSession,
-        workflow_job_data: github_types.GitHubJobRun,
+        workflow_job_data: github_types.GitHubWorkflowJob,
         repository: github_types.GitHubRepository,
     ) -> None:
         result = await session.execute(
