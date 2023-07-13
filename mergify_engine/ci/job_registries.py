@@ -18,7 +18,7 @@ class HTTPJobRegistry:
             return True
 
         try:
-            sql_models.JobRunTriggerEvent(payload["event"])
+            sql_models.WorkflowRunTriggerEvent(payload["event"])
         except ValueError:
             return True
         else:

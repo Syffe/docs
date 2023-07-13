@@ -64,7 +64,9 @@ async def test_process_event_stream_workflow_run(
     )
     assert len(workflow_runs) == 1
     actual_workflow_run = workflow_runs[0]
-    assert actual_workflow_run.event == github_actions.JobRunTriggerEvent.PULL_REQUEST
+    assert (
+        actual_workflow_run.event == github_actions.WorkflowRunTriggerEvent.PULL_REQUEST
+    )
 
     pulls = list(await db.scalars(sqlalchemy.select(github_actions.PullRequest)))
     assert len(pulls) == 1
@@ -110,7 +112,9 @@ async def test_process_event_stream_workflow_job(
     workflow_jobs = list(result)
     assert len(workflow_jobs) == 1
     actual_workflow_job = workflow_jobs[0]
-    assert actual_workflow_job.conclusion == github_actions.JobRunConclusion.SUCCESS
+    assert (
+        actual_workflow_job.conclusion == github_actions.WorkflowJobConclusion.SUCCESS
+    )
     assert actual_workflow_job.labels == ["ubuntu-20.04"]
 
     stream_events = await redis_links.stream.xrange("workflow_job")

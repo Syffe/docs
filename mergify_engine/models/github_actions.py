@@ -57,7 +57,7 @@ class PullRequest(models.Base):
         await session.execute(sql)
 
 
-class JobRunConclusion(enum.Enum):
+class WorkflowJobConclusion(enum.Enum):
     SUCCESS = "success"
     FAILURE = "failure"
     SKIPPED = "skipped"
@@ -67,7 +67,7 @@ class JobRunConclusion(enum.Enum):
     ACTION_REQUIRED = "action_required"
 
 
-class JobRunTriggerEvent(enum.Enum):
+class WorkflowRunTriggerEvent(enum.Enum):
     PULL_REQUEST = "pull_request"
     PULL_REQUEST_TARGET = "pull_request_target"
     PUSH = "push"
@@ -91,8 +91,8 @@ class WorkflowRun(models.Base):
     owner_id: orm.Mapped[int] = orm.mapped_column(
         sqlalchemy.ForeignKey("github_account.id")
     )
-    event: orm.Mapped[JobRunTriggerEvent] = orm.mapped_column(
-        sqlalchemy.Enum(JobRunTriggerEvent)
+    event: orm.Mapped[WorkflowRunTriggerEvent] = orm.mapped_column(
+        sqlalchemy.Enum(WorkflowRunTriggerEvent)
     )
     triggering_actor_id: orm.Mapped[int | None] = orm.mapped_column(
         sqlalchemy.ForeignKey("github_account.id")
@@ -147,7 +147,7 @@ class WorkflowRun(models.Base):
                     repository=await github_repository.GitHubRepository.get_or_create(
                         session, workflow_run_data["repository"]
                     ),
-                    event=JobRunTriggerEvent(workflow_run_data["event"]),
+                    event=WorkflowRunTriggerEvent(workflow_run_data["event"]),
                     triggering_actor=triggering_actor,
                     run_attempt=workflow_run_data["run_attempt"],
                 )
@@ -168,8 +168,8 @@ class WorkflowJob(models.Base):
     completed_at: orm.Mapped[datetime.datetime] = orm.mapped_column(
         sqlalchemy.DateTime(timezone=True)
     )
-    conclusion: orm.Mapped[JobRunConclusion] = orm.mapped_column(
-        sqlalchemy.Enum(JobRunConclusion)
+    conclusion: orm.Mapped[WorkflowJobConclusion] = orm.mapped_column(
+        sqlalchemy.Enum(WorkflowJobConclusion)
     )
     labels: orm.Mapped[list[str]] = orm.mapped_column(
         sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1)
@@ -205,7 +205,7 @@ class WorkflowJob(models.Base):
                     name=workflow_job_data["name"],
                     started_at=workflow_job_data["started_at"],
                     completed_at=workflow_job_data["completed_at"],
-                    conclusion=JobRunConclusion(workflow_job_data["conclusion"]),
+                    conclusion=WorkflowJobConclusion(workflow_job_data["conclusion"]),
                     labels=workflow_job_data["labels"],
                     repository=await github_repository.GitHubRepository.get_or_create(
                         session, repository
