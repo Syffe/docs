@@ -244,9 +244,9 @@ class ServiceManager:
         LOG.info("shutdown start")
         await self._stop_all_tasks()
 
-        LOG.info("redis finalizing")
+        LOG.debug("redis finalizing")
         await self._redis_links.shutdown_all()
-        LOG.info("redis finalized")
+        LOG.debug("redis finalized")
 
         self._stopped.set()
         LOG.info("shutdown finished")
@@ -286,7 +286,6 @@ async def run_forever(
     await worker.start()
     worker.setup_signals()
     await worker.wait_shutdown_complete()
-    LOG.info("Exiting...")
 
 
 def ServicesSet(v: str) -> ServiceNamesT:

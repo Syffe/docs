@@ -31,9 +31,9 @@ async def startup() -> None:
 
 
 async def shutdown() -> None:
-    LOG.info("asgi: starting redis shutdown")
+    LOG.debug("asgi: starting redis shutdown")
     await _REDIS_LINKS.shutdown_all()
-    LOG.info("asgi: finished redis shutdown")
+    LOG.debug("asgi: finished redis shutdown")
 
 
 def get_redis_links() -> redis_utils.RedisLinks:

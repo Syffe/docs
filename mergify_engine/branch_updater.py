@@ -220,7 +220,7 @@ async def update_with_api(
                 return
 
         elif e.status_code == 403:
-            ctxt.log.info(
+            ctxt.log.debug(
                 "permission error",
                 status_code=e.status_code,
                 error=e.message,

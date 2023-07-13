@@ -515,7 +515,7 @@ async def run_actions(
                     )
                 except Exception as e:
                     if exceptions.should_be_ignored(e):
-                        ctxt.log.info(
+                        ctxt.log.debug(
                             "Fail to post check `%s`", check_name, exc_info=True
                         )
                     elif exceptions.need_retry(e):
@@ -579,11 +579,11 @@ async def cleanup_pending_actions_with_no_associated_rules(
             check_to_cancel.add(check_name)
 
     for check_name in check_to_cancel:
-        ctxt.log.info("action removal cleanup", check_name=check_name)
+        ctxt.log.debug("action removal cleanup", check_name=check_name)
         await check_api.set_check_run(ctxt, check_name, actions.CANCELLED_CHECK_REPORT)
 
     if not is_queued and was_queued:
-        ctxt.log.info("action removal cleanup, cleanup queue")
+        ctxt.log.debug("action removal cleanup, cleanup queue")
         await merge_train.Convoy.force_remove_pull(
             ctxt.repository,
             queue_rules,

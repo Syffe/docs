@@ -380,7 +380,7 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 for q in mismatching_queue_conditions
             }
 
-            self.ctxt.log.info(
+            self.ctxt.log.debug(
                 "no queue conditions matching",
                 summary=summary,
             )

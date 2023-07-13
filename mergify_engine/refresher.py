@@ -73,7 +73,7 @@ async def send_pull_refresh(
     source: str,
     priority: worker_pusher.Priority = worker_pusher.Priority.high,
 ) -> None:
-    LOG.info(
+    LOG.debug(
         "sending pull refresh",
         gh_owner=repository["owner"]["login"],
         gh_repo=repository["name"],
@@ -101,7 +101,7 @@ async def send_branch_refresh(
     ref: github_types.GitHubRefType,
     source: str,
 ) -> None:
-    LOG.info(
+    LOG.debug(
         "sending repository branch refresh",
         gh_owner=repository["owner"]["login"],
         gh_repo=repository["name"],

@@ -928,23 +928,6 @@ class Repository:
                 else:
                     raise
 
-            if (
-                branch_protection
-                and (
-                    required_pull_request_reviews := branch_protection.get(
-                        "required_pull_request_reviews"
-                    )
-                )
-                and required_pull_request_reviews["require_code_owner_reviews"]
-                and required_pull_request_reviews["required_approving_review_count"]
-                == 0
-            ):
-                self.log.info(
-                    "Repository %s is using `require_code_owner_reviews=True` and `required_approving_review_count=0` branch protection",
-                    self.repo["full_name"],
-                    branch=branch_name,
-                )
-
             self._caches.branch_protections.set(branch_name, branch_protection)
         return branch_protection
 
@@ -2755,7 +2738,7 @@ class PullRequest(BasePullRequest):
                 elif found:
                     message_lines.append(line)
                 if found:
-                    self.context.log.info("Commit message template found in body")
+                    self.context.log.debug("Commit message template found in body")
                     template = "\n".join(line.strip() for line in message_lines)
 
         if template is None:

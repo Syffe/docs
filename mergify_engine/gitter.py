@@ -8,6 +8,7 @@ import re
 import shutil
 import sys
 import tempfile
+import typing
 import urllib.parse
 
 from mergify_engine import github_types
@@ -86,6 +87,9 @@ GIT_MESSAGE_TO_EXCEPTION: dict[
 class Gitter:
     logger: "logging.LoggerAdapter[logging.Logger]"
     tmp: str | None = None
+    _messages: list[tuple[str, dict[str, typing.Any]]] = dataclasses.field(
+        default_factory=list
+    )
 
     GIT_COMMAND_TIMEOUT: float = dataclasses.field(
         init=False, default=datetime.timedelta(minutes=10).total_seconds()
@@ -112,7 +116,7 @@ class Gitter:
             "LANG": "C.UTF-8",
         }
         version = await self("version")
-        self.logger.info("git directory created", path=self.tmp, version=version)
+        self.log("git directory created", path=self.tmp, version=version)
         await self("init", "--initial-branch=tmp-mergify-trunk")
         # NOTE(sileht): Bump the repository format. This ensures required
         # extensions (promisor, partialclonefilter) are present in git cli and
@@ -133,6 +137,9 @@ class Gitter:
         # https://git-scm.com/docs/git-config#Documentation/git-config.txt-checkoutworkers
         await self("config", "checkout.workers", "0")
 
+    def log(self, message: str, **extra: typing.Any) -> None:
+        self._messages.append(("git directory created", extra))
+
     def prepare_safe_env(
         self,
         _env: dict[str, str] | None = None,
@@ -152,7 +159,7 @@ class Gitter:
             raise RuntimeError("__call__() called before init()")
 
         command = ("git", *args)
-        self.logger.info("git operation", command=command)
+        self.log("git operation", command=command)
 
         try:
             # TODO(sileht): Current user provided data in git commands are safe, but we should create an
@@ -225,31 +232,35 @@ class Gitter:
         if self.tmp is None:
             return
 
-        self.logger.info("cleaning: %s", self.tmp)
-        try:
-            await self(
-                "credential-cache",
-                f"--socket={self.tmp}/.git-creds-socket",
-                "exit",
-            )
-        except GitError:  # pragma: no cover
-            self.logger.warning("git credential-cache exit fail")
-        # TODO(sileht): use aiofiles instead of thread
+        self.log(f"cleaning: {self.tmp}")
 
-        ongoing_exc_type, ongoing_exc_value, _ = sys.exc_info()
         try:
-            await asyncio.to_thread(shutil.rmtree, self.tmp)
-        except OSError:
-            if (
-                ongoing_exc_type is not None
-                and ongoing_exc_value is not None
-                and ongoing_exc_type is asyncio.CancelledError
-                # NOTE(sileht): The reason is set by worker.py
-                and ongoing_exc_value.args[0] == "shutdown"
-            ):
-                return
+            try:
+                await self(
+                    "credential-cache",
+                    f"--socket={self.tmp}/.git-creds-socket",
+                    "exit",
+                )
+            except GitError:  # pragma: no cover
+                self.logger.warning("git credential-cache exit fail")
+            # TODO(sileht): use aiofiles instead of thread
 
-            self.logger.warning("git temporary directory cleanup fail.")
+            ongoing_exc_type, ongoing_exc_value, _ = sys.exc_info()
+            try:
+                await asyncio.to_thread(shutil.rmtree, self.tmp)
+            except OSError:
+                if (
+                    ongoing_exc_type is not None
+                    and ongoing_exc_value is not None
+                    and ongoing_exc_type is asyncio.CancelledError
+                    # NOTE(sileht): The reason is set by worker.py
+                    and ongoing_exc_value.args[0] == "shutdown"
+                ):
+                    return
+
+                self.logger.warning("git temporary directory cleanup fail.")
+        finally:
+            self.logger.info("gitter messages", messages=self._messages)
 
     async def configure(
         self,

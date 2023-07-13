@@ -348,7 +348,7 @@ async def run(
 
     if ctxt.pull["base"]["repo"]["private"]:
         if not ctxt.subscription.has_feature(subscription.Features.PRIVATE_REPOSITORY):
-            ctxt.log.info(
+            ctxt.log.debug(
                 "mergify disabled: private repository", reason=ctxt.subscription.reason
             )
             return check_api.Result(
@@ -360,7 +360,7 @@ async def run(
             )
     else:
         if not ctxt.subscription.has_feature(subscription.Features.PUBLIC_REPOSITORY):
-            ctxt.log.info(
+            ctxt.log.debug(
                 "mergify disabled: public repository", reason=ctxt.subscription.reason
             )
             return check_api.Result(
@@ -424,7 +424,7 @@ async def run(
     await _ensure_summary_on_head_sha(ctxt)
 
     if not ctxt.has_been_opened() and summary is None:
-        ctxt.log.warning(
+        ctxt.log.debug(
             "the pull request doesn't have a summary",
             head_sha=ctxt.pull["head"]["sha"],
         )

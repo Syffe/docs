@@ -47,7 +47,7 @@ class RequeueExecutor(
                 summary="",
             )
 
-        self.ctxt.log.info(
+        self.ctxt.log.debug(
             "requeue command marks the pull request as re-embarkable", check=check
         )
 
