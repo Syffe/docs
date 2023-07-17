@@ -1,0 +1,477 @@
+requested labels: ubuntu-20.04
+job defined at: mergifyio/engine/.github/workflows/ci.yaml@refs/pull/5770/merge
+waiting runner pick job...
+job waiting hosted runner come online.
+job start running hosted runner: github actions 36 (hosted)
+current runner version: '2.303.0'
+##[group]operating system
+ubuntu
+20.04.6
+lts
+##[endgroup]
+##[group]runner image
+image: ubuntu-20.04
+version: 20230417.1
+included software: https://github.com/actions/runner-images/blob/ubuntu20/20230417.1/images/linux/ubuntu2004-readme.md
+image release: https://github.com/actions/runner-images/releases/tag/ubuntu20%2f20230417.1
+##[endgroup]
+##[group]runner image provisioner
+2.0.139.1
+##[endgroup]
+##[group]github_token permissions
+actions: read
+checks: read
+contents: read
+deployments: read
+discussions: read
+issues: read
+metadata: read
+packages: read
+pages: read
+pullrequests: read
+repositoryprojects: read
+securityevents: read
+statuses: read
+##[endgroup]
+secret source: dependabot
+prepare workflow directory
+prepare required actions
+getting action download info
+download action repository 'actions/checkout@v3.3.0' (sha:ac593985615ec2ede58e132d2e21d2b1cbd6127c)
+download action repository 'actions/setup-python@v4.5.0' (sha:d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435)
+complete job name: pep8
+##[group]run actions/checkout@v3.3.0
+with:
+fetch-depth:
+repository: mergifyio/engine
+token: ***
+ssh-strict: true
+persist-credentials: true
+clean: true
+lfs: false
+submodules: false
+set-safe-directory: true
+##[endgroup]
+syncing repository: mergifyio/engine
+##[group]getting git version info
+working directory '/home/runner/work/engine/engine'
+[command]/usr/bin/git version
+git version 2.40.0
+##[endgroup]
+temporarily overriding home='/home/runner/work/_temp/414c33dd-9bbf-4f69-b3b9-0720a54f8909' making global git config changes
+adding repository directory temporary git global config safe directory
+[command]/usr/bin/git config --global --add safe.directory /home/runner/work/engine/engine
+deleting contents '/home/runner/work/engine/engine'
+##[group]initializing repository
+[command]/usr/bin/git init /home/runner/work/engine/engine
+hint: using 'master' name initial branch. default branch name
+hint: subject change. configure initial branch name use
+hint: new repositories, suppress warning, call:
+hint:
+hint: git config --global init.defaultbranch <name>
+hint:
+hint: names commonly chosen instead 'master' 'main', 'trunk'
+hint: 'development'. just-created branch renamed via command:
+hint:
+hint: git branch -m <name>
+initialized empty git repository /home/runner/work/engine/engine/.git/
+[command]/usr/bin/git remote add origin https://github.com/mergifyio/engine
+##[endgroup]
+##[group]disabling automatic garbage collection
+[command]/usr/bin/git config --local gc.auto
+##[endgroup]
+##[group]setting auth
+[command]/usr/bin/git config --local --name-only --get-regexp core\.sshcommand
+[command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshcommand' && git config --local --unset-all 'core.sshcommand' || :"
+[command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+[command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+[command]/usr/bin/git config --local http.https://github.com/.extraheader authorization: basic ***
+##[endgroup]
+##[group]fetching repository
+[command]/usr/bin/git -c protocol.version=2 fetch --prune --progress --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/* +89ba3e87c5c2a94a332c78f22c23d476f6c63f2b:refs/remotes/pull/5770/merge
+remote: enumerating objects: 118825, done.
+remote: total 118825 (delta 115), reused 164 (delta 84), pack-reused 118611
+https://github.com/mergifyio/engine
+[new branch] config-cleanup -> origin/config-cleanup
+[new branch] dependabot/pip/httpx-0.24.0 -> origin/dependabot/pip/httpx-0.24.0
+[new branch] dependabot/pip/ruff-0.0.263 -> origin/dependabot/pip/ruff-0.0.263
+[new branch] dependabot/pip/yamllint-1.31.0 -> origin/dependabot/pip/yamllint-1.31.0
+[new branch] dependabot/pip/yarl-1.9.1 -> origin/dependabot/pip/yarl-1.9.1
+[new branch] devs/sileht/drop-yesqa/aio -> origin/devs/sileht/drop-yesqa/aio
+[new branch] devs/sileht/train-refresh-rework/aio -> origin/devs/sileht/train-refresh-rework/aio
+[new branch] git_push_stack/config-cleanup/aio -> origin/git_push_stack/config-cleanup/aio
+[new branch] main -> origin/main
+[new tag] 4.1.1 -> 4.1.1
+[new tag] 5.0.0 -> 5.0.0
+[new tag] 6.0.0 -> 6.0.0
+[new tag] 7.0.0 -> 7.0.0
+[new tag] 7.1.0 -> 7.1.0
+[new tag] 7.2.0 -> 7.2.0
+[new tag] 7.2.1 -> 7.2.1
+[new ref] 89ba3e87c5c2a94a332c78f22c23d476f6c63f2b -> pull/5770/merge
+##[endgroup]
+##[group]determining checkout info
+##[endgroup]
+##[group]checking ref
+[command]/usr/bin/git checkout --progress --force refs/remotes/pull/5770/merge
+note: switching 'refs/remotes/pull/5770/merge'.
+'detached head' state. look around, make experimental
+changes commit them, discard commits make
+state without impacting branches switching back branch.
+want create new branch retain commits create, may
+(now later) using -c switch command. example:
+git switch -c <new-branch-name>
+undo operation with:
+git switch
+turn advice setting config variable advice.detachedhead false
+head 89ba3e87c merge 57468730095773683c7a1ba677f58c1acd782797 badc34c005b14104fd0dcc1294af48e3c11effe9
+##[endgroup]
+[command]/usr/bin/git log -1 --format='%h'
+'89ba3e87c5c2a94a332c78f22c23d476f6c63f2b'
+##[group]run actions/setup-python@v4.5.0
+with:
+python-version: 3.11.3
+check-latest: false
+token: ***
+update-environment: true
+##[endgroup]
+##[group]installed versions
+successfully set cpython (3.11.3)
+##[endgroup]
+##[group]run nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
+shell: /usr/bin/bash -e {0}
+env:
+pythonlocation: /opt/hostedtoolcache/python/3.11.3/x64
+pkg_config_path: /opt/hostedtoolcache/python/3.11.3/x64/lib/pkgconfig
+python_root_dir: /opt/hostedtoolcache/python/3.11.3/x64
+python2_root_dir: /opt/hostedtoolcache/python/3.11.3/x64
+python3_root_dir: /opt/hostedtoolcache/python/3.11.3/x64
+ld_library_path: /opt/hostedtoolcache/python/3.11.3/x64/lib
+##[endgroup]
+collecting poetry==1.4.2 (from -r requirements-poetry.txt (line 1))
+downloading poetry-1.4.2-py3-none-any.whl (222 kb)
+--------------------------------------- 222.7/222.7 kb 6.3 mb/s eta 0:00:00
+collecting build<0.11.0,>=0.10.0 (from poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading build-0.10.0-py3-none-any.whl (17 kb)
+collecting cachecontrol[filecache]<0.13.0,>=0.12.9 (from poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading cachecontrol-0.12.11-py2.py3-none-any.whl (21 kb)
+collecting cleo<3.0.0,>=2.0.0 (from poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading cleo-2.0.1-py3-none-any.whl (77 kb)
+---------------------------------------- 77.3/77.3 kb 24.7 mb/s eta 0:00:00
+collecting crashtest<0.5.0,>=0.4.1 (from poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading crashtest-0.4.1-py3-none-any.whl (7.6 kb)
+collecting dulwich<0.22.0,>=0.21.2 (from poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading dulwich-0.21.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (508 kb)
+-------------------------------------- 508.2/508.2 kb 25.4 mb/s eta 0:00:00
+collecting filelock<4.0.0,>=3.8.0 (from poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading filelock-3.12.0-py3-none-any.whl (10 kb)
+collecting html5lib<2.0,>=1.0 (from poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading html5lib-1.1-py2.py3-none-any.whl (112 kb)
+-------------------------------------- 112.2/112.2 kb 39.6 mb/s eta 0:00:00
+collecting installer<0.8.0,>=0.7.0 (from poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading installer-0.7.0-py3-none-any.whl (453 kb)
+-------------------------------------- 453.8/453.8 kb 80.2 mb/s eta 0:00:00
+collecting jsonschema<5.0.0,>=4.10.0 (from poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading jsonschema-4.17.3-py3-none-any.whl (90 kb)
+---------------------------------------- 90.4/90.4 kb 29.4 mb/s eta 0:00:00
+collecting keyring<24.0.0,>=23.9.0 (from poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading keyring-23.13.1-py3-none-any.whl (37 kb)
+collecting lockfile<0.13.0,>=0.12.2 (from poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading lockfile-0.12.2-py2.py3-none-any.whl (13 kb)
+collecting packaging>=20.4 (from poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading packaging-23.1-py3-none-any.whl (48 kb)
+---------------------------------------- 48.9/48.9 kb 18.0 mb/s eta 0:00:00
+collecting pexpect<5.0.0,>=4.7.0 (from poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading pexpect-4.8.0-py2.py3-none-any.whl (59 kb)
+---------------------------------------- 59.0/59.0 kb 23.9 mb/s eta 0:00:00
+collecting pkginfo<2.0.0,>=1.9.4 (from poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading pkginfo-1.9.6-py3-none-any.whl (30 kb)
+collecting platformdirs<3.0.0,>=2.5.2 (from poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading platformdirs-2.6.2-py3-none-any.whl (14 kb)
+collecting poetry-core==1.5.2 (from poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading poetry_core-1.5.2-py3-none-any.whl (465 kb)
+-------------------------------------- 465.2/465.2 kb 84.4 mb/s eta 0:00:00
+collecting poetry-plugin-export<2.0.0,>=1.3.0 (from poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading poetry_plugin_export-1.3.1-py3-none-any.whl (10 kb)
+collecting pyproject-hooks<2.0.0,>=1.0.0 (from poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading pyproject_hooks-1.0.0-py3-none-any.whl (9.3 kb)
+collecting requests<3.0,>=2.18 (from poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading requests-2.28.2-py3-none-any.whl (62 kb)
+---------------------------------------- 62.8/62.8 kb 25.4 mb/s eta 0:00:00
+collecting requests-toolbelt<0.11.0,>=0.9.1 (from poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading requests_toolbelt-0.10.1-py2.py3-none-any.whl (54 kb)
+---------------------------------------- 54.5/54.5 kb 17.7 mb/s eta 0:00:00
+collecting shellingham<2.0,>=1.5 (from poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading shellingham-1.5.0.post1-py2.py3-none-any.whl (9.4 kb)
+collecting tomlkit!=0.11.2,!=0.11.3,<1.0.0,>=0.11.1 (from poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading tomlkit-0.11.7-py3-none-any.whl (35 kb)
+collecting trove-classifiers>=2022.5.19 (from poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading trove_classifiers-2023.4.22-py3-none-any.whl (13 kb)
+collecting urllib3<2.0.0,>=1.26.0 (from poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading urllib3-1.26.15-py2.py3-none-any.whl (140 kb)
+-------------------------------------- 140.9/140.9 kb 46.0 mb/s eta 0:00:00
+collecting virtualenv!=20.4.5,!=20.4.6,<21.0.0,>=20.4.3 (from poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading virtualenv-20.22.0-py3-none-any.whl (3.2 mb)
+---------------------------------------- 3.2/3.2 mb 76.6 mb/s eta 0:00:00
+collecting msgpack>=0.5.2 (from cachecontrol[filecache]<0.13.0,>=0.12.9->poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading msgpack-1.0.5-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (325 kb)
+-------------------------------------- 325.1/325.1 kb 69.1 mb/s eta 0:00:00
+collecting rapidfuzz<3.0.0,>=2.2.0 (from cleo<3.0.0,>=2.0.0->poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading rapidfuzz-2.15.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.0 mb)
+---------------------------------------- 3.0/3.0 mb 125.1 mb/s eta 0:00:00
+collecting six>=1.9 (from html5lib<2.0,>=1.0->poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading six-1.16.0-py2.py3-none-any.whl (11 kb)
+collecting webencodings (from html5lib<2.0,>=1.0->poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading webencodings-0.5.1-py2.py3-none-any.whl (11 kb)
+collecting attrs>=17.4.0 (from jsonschema<5.0.0,>=4.10.0->poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading attrs-23.1.0-py3-none-any.whl (61 kb)
+---------------------------------------- 61.2/61.2 kb 20.8 mb/s eta 0:00:00
+collecting pyrsistent!=0.17.0,!=0.17.1,!=0.17.2,>=0.14.0 (from jsonschema<5.0.0,>=4.10.0->poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading pyrsistent-0.19.3-py3-none-any.whl (57 kb)
+---------------------------------------- 57.5/57.5 kb 20.0 mb/s eta 0:00:00
+collecting jaraco.classes (from keyring<24.0.0,>=23.9.0->poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading jaraco.classes-3.2.3-py3-none-any.whl (6.0 kb)
+collecting importlib-metadata>=4.11.4 (from keyring<24.0.0,>=23.9.0->poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading importlib_metadata-6.6.0-py3-none-any.whl (22 kb)
+collecting secretstorage>=3.2 (from keyring<24.0.0,>=23.9.0->poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading secretstorage-3.3.3-py3-none-any.whl (15 kb)
+collecting jeepney>=0.4.2 (from keyring<24.0.0,>=23.9.0->poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading jeepney-0.8.0-py3-none-any.whl (48 kb)
+---------------------------------------- 48.4/48.4 kb 19.5 mb/s eta 0:00:00
+collecting ptyprocess>=0.5 (from pexpect<5.0.0,>=4.7.0->poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading ptyprocess-0.7.0-py2.py3-none-any.whl (13 kb)
+collecting charset-normalizer<4,>=2 (from requests<3.0,>=2.18->poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading charset_normalizer-3.1.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (197 kb)
+-------------------------------------- 197.3/197.3 kb 54.8 mb/s eta 0:00:00
+collecting idna<4,>=2.5 (from requests<3.0,>=2.18->poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading idna-3.4-py3-none-any.whl (61 kb)
+---------------------------------------- 61.5/61.5 kb 25.2 mb/s eta 0:00:00
+collecting certifi>=2017.4.17 (from requests<3.0,>=2.18->poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading certifi-2022.12.7-py3-none-any.whl (155 kb)
+-------------------------------------- 155.3/155.3 kb 51.2 mb/s eta 0:00:00
+collecting distlib<1,>=0.3.6 (from virtualenv!=20.4.5,!=20.4.6,<21.0.0,>=20.4.3->poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading distlib-0.3.6-py2.py3-none-any.whl (468 kb)
+-------------------------------------- 468.5/468.5 kb 88.0 mb/s eta 0:00:00
+info: pip looking multiple versions virtualenv determine version compatible requirements. could take while.
+collecting virtualenv!=20.4.5,!=20.4.6,<21.0.0,>=20.4.3 (from poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading virtualenv-20.21.1-py3-none-any.whl (8.7 mb)
+---------------------------------------- 8.7/8.7 mb 119.8 mb/s eta 0:00:00
+collecting zipp>=0.5 (from importlib-metadata>=4.11.4->keyring<24.0.0,>=23.9.0->poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading zipp-3.15.0-py3-none-any.whl (6.8 kb)
+collecting cryptography>=2.0 (from secretstorage>=3.2->keyring<24.0.0,>=23.9.0->poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading cryptography-40.0.2-cp36-abi3-manylinux_2_28_x86_64.whl (3.7 mb)
+---------------------------------------- 3.7/3.7 mb 115.3 mb/s eta 0:00:00
+collecting more-itertools (from jaraco.classes->keyring<24.0.0,>=23.9.0->poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading more_itertools-9.1.0-py3-none-any.whl (54 kb)
+---------------------------------------- 54.2/54.2 kb 21.3 mb/s eta 0:00:00
+collecting cffi>=1.12 (from cryptography>=2.0->secretstorage>=3.2->keyring<24.0.0,>=23.9.0->poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading cffi-1.15.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (462 kb)
+-------------------------------------- 462.6/462.6 kb 82.5 mb/s eta 0:00:00
+collecting pycparser (from cffi>=1.12->cryptography>=2.0->secretstorage>=3.2->keyring<24.0.0,>=23.9.0->poetry==1.4.2->-r requirements-poetry.txt (line 1))
+downloading pycparser-2.21-py2.py3-none-any.whl (118 kb)
+-------------------------------------- 118.7/118.7 kb 40.8 mb/s eta 0:00:00
+installing collected packages: webencodings, trove-classifiers, ptyprocess, msgpack, lockfile, distlib, zipp, urllib3, tomlkit, six, shellingham, rapidfuzz, pyrsistent, pyproject-hooks, pycparser, poetry-core, platformdirs, pkginfo, pexpect, packaging, more-itertools, jeepney, installer, idna, filelock, crashtest, charset-normalizer, certifi, attrs, virtualenv, requests, jsonschema, jaraco.classes, importlib-metadata, html5lib, dulwich, cleo, cffi, build, requests-toolbelt, cryptography, cachecontrol, secretstorage, keyring, poetry-plugin-export, poetry
+successfully installed secretstorage-3.3.3 attrs-23.1.0 build-0.10.0 cachecontrol-0.12.11 certifi-2022.12.7 cffi-1.15.1 charset-normalizer-3.1.0 cleo-2.0.1 crashtest-0.4.1 cryptography-40.0.2 distlib-0.3.6 dulwich-0.21.3 filelock-3.12.0 html5lib-1.1 idna-3.4 importlib-metadata-6.6.0 installer-0.7.0 jaraco.classes-3.2.3 jeepney-0.8.0 jsonschema-4.17.3 keyring-23.13.1 lockfile-0.12.2 more-itertools-9.1.0 msgpack-1.0.5 packaging-23.1 pexpect-4.8.0 pkginfo-1.9.6 platformdirs-2.6.2 poetry-1.4.2 poetry-core-1.5.2 poetry-plugin-export-1.3.1 ptyprocess-0.7.0 pycparser-2.21 pyproject-hooks-1.0.0 pyrsistent-0.19.3 rapidfuzz-2.15.1 requests-2.28.2 requests-toolbelt-0.10.1 shellingham-1.5.0.post1 six-1.16.0 tomlkit-0.11.7 trove-classifiers-2023.4.22 urllib3-1.26.15 virtualenv-20.21.1 webencodings-0.5.1 zipp-3.15.0
+[notice] new release pip available: 22.3.1 -> 23.1.1
+[notice] update, run: pip install --upgrade pip
+creating virtualenv mergify-engine-chhel7m--py3.11 /home/runner/.cache/pypoetry/virtualenvs
+collecting setuptools==67.7.2
+downloading setuptools-67.7.2-py3-none-any.whl (1.1 mb)
+---------------------------------------- 1.1/1.1 mb 17.3 mb/s eta 0:00:00
+installing collected packages: setuptools
+attempting uninstall: setuptools
+found existing installation: setuptools 67.6.1
+uninstalling setuptools-67.6.1:
+successfully uninstalled setuptools-67.6.1
+successfully installed setuptools-67.7.2
+[notice] new release pip available: 23.1 -> 23.1.1
+[notice] update, run: pip install --upgrade pip
+installing dependencies lock file
+package operations: 154 installs, updates, removals
+installing idna (3.4)
+installing pycparser (2.21)
+installing sniffio (1.3.0)
+installing anyio (3.6.2)
+installing boltons (21.0.0)
+installing certifi (2022.12.7)
+installing cffi (1.15.1)
+installing charset-normalizer (3.1.0)
+installing h11 (0.14.0)
+installing markupsafe (2.1.2)
+installing mdurl (0.1.2)
+installing typing-extensions (4.5.0)
+installing urllib3 (1.26.15)
+installing wrapt (1.15.0)
+installing alabaster (0.7.13)
+installing attrs (23.1.0)
+installing babel (2.12.1)
+installing click (8.1.3)
+installing bracex (2.3.post1)
+installing cryptography (40.0.2)
+installing deprecated (1.2.13)
+installing docutils (0.19)
+installing face (22.0.0)
+installing greenlet (2.0.2)
+installing hpack (4.0.0)
+installing httpcore (0.16.3)
+installing hyperframe (6.0.1)
+installing imagesize (1.4.1)
+installing iniconfig (2.0.0)
+installing jinja2 (3.1.2)
+installing markdown-it-py (2.2.0)
+installing multidict (6.0.4)
+installing mypy-extensions (1.0.0)
+installing packaging (23.1)
+installing pluggy (1.0.0)
+installing protobuf (4.22.3)
+installing pydantic (1.10.7)
+installing pygments (2.15.1)
+installing pyrsistent (0.19.3)
+installing requests (2.28.2)
+installing rfc3986 (1.5.0)
+installing six (1.16.0)
+installing snowballstemmer (2.2.0)
+installing soupsieve (2.4.1)
+installing sphinxcontrib-applehelp (1.0.4)
+installing sphinxcontrib-devhelp (1.0.2)
+installing sphinxcontrib-htmlhelp (2.0.1)
+installing sphinxcontrib-jsmath (1.0.1)
+installing sphinxcontrib-qthelp (1.0.3)
+installing sphinxcontrib-serializinghtml (1.1.5)
+installing starlette (0.26.1)
+installing ujson (5.7.0)
+installing beautifulsoup4 (4.12.2)
+installing bytecode (0.14.1)
+installing cattrs (22.2.0)
+installing click-option-group (0.5.5)
+installing colorama (0.4.6)
+installing coverage (7.2.3)
+installing ddsketch (2.0.4)
+installing defusedxml (0.7.1)
+installing dulwich (0.21.3)
+installing envier (0.4.0)
+installing execnet (1.9.0)
+installing fastapi (0.95.1)
+installing glom (22.1.0)
+installing h2 (4.1.0)
+installing httptools (0.5.0)
+installing httpx (0.23.3)
+installing itsdangerous (2.1.2)
+installing jsonschema (4.17.3)
+installing mako (1.2.4)
+installing mypy (1.2.0)
+installing opentelemetry-api (1.16.0)
+installing ordered-set (4.1.0)
+installing passlib (1.7.4)
+installing pastel (0.2.1)
+installing pathspec (0.11.1)
+installing pbr (5.11.1)
+installing peewee (3.16.2)
+installing platformdirs (3.2.0)
+installing psycopg (3.1.8)
+installing psycopg-binary (3.1.8)
+installing pyenchant (3.2.2)
+installing pytest (7.3.1)
+installing python-dateutil (2.8.2)
+installing python-dotenv (1.0.0)
+installing python-json-logger (2.0.7)
+installing python-lsp-jsonrpc (1.0.0)
+installing pyyaml (6.0)
+installing rich (13.3.4)
+installing ruamel-yaml (0.17.21)
+installing setproctitle (1.2.3)
+installing sphinx (6.2.0)
+installing sqlalchemy (2.0.10)
+installing tenacity (8.2.2)
+installing toml (0.10.2)
+installing tomli (2.0.1)
+installing types-pyopenssl (23.1.0.2)
+installing uvloop (0.17.0)
+installing watchfiles (0.19.0)
+installing wcmatch (8.4.1)
+installing websockets (11.0.2)
+installing xmltodict (0.13.0)
+installing yarl (1.8.2)
+installing aiofiles (23.1.0)
+installing alembic (1.10.4)
+installing asgi-lifespan (2.1.0)
+installing anys (0.2.1)
+installing black (23.3.0)
+installing authlib (1.2.0)
+installing daiquiri (3.2.1)
+installing datadog (0.45.0)
+installing ddtrace (1.12.1)
+installing deepdiff (6.3.0)
+installing filelock (3.12.0)
+installing first (2.0.2)
+installing freezegun (1.2.2)
+installing graphql-utils (0.4)
+installing gunicorn (20.1.0)
+installing hiredis (2.2.2)
+installing honcho (1.1.0)
+installing imia (0.5.3)
+installing markdownify (0.11.6)
+installing msgpack (1.0.5)
+installing poethepoet (0.19.0)
+installing pyjwt (2.6.0)
+installing pytest-asyncio (0.21.0)
+installing pytest-cov (4.0.0)
+installing pytest-github-actions-annotate-failures (0.1.8)
+installing pytest-rerunfailures (11.1.2)
+installing pytest-split (0.8.1)
+installing pytest-timeout (2.1.0)
+installing pytest-xdist (3.2.1)
+installing python-multipart (0.0.6)
+installing redis (4.5.4)
+installing reno (4.0.0)
+installing respx (0.20.1)
+installing ruff (0.0.263)
+installing semgrep (1.19.0)
+installing sentry-sdk (1.20.0)
+installing sphinxcontrib-jquery (4.1)
+installing sphinxcontrib-spelling (8.0.0)
+installing sqlalchemy-utils (0.41.0)
+installing starsessions (2.1.1)
+installing tryceratops (1.1.0)
+installing types-first (2.0.5.1)
+installing types-freezegun (1.1.10)
+installing types-pkg-resources (0.1.3)
+installing types-pyyaml (6.0.12.9)
+installing types-redis (4.5.4.1)
+installing uvicorn (0.21.1)
+installing vcrpy (4.2.1)
+installing voluptuous (0.13.1)
+installing yamllint (1.30.0)
+installing current project: mergify_engine (0.0.0)
+poe => ./tools/poetry-ci-install.sh
+requirement already satisfied: setuptools==67.7.2 /home/runner/.cache/pypoetry/virtualenvs/mergify-engine-chhel7m--py3.11/lib/python3.11/site-packages (67.7.2)
+[notice] new release pip available: 23.1 -> 23.1.1
+[notice] update, run: pip install --upgrade pip
+installing dependencies lock file
+dependencies install update
+installing current project: mergify_engine (0.0.0)
+poe => ruff check
+mergify_engine/clients/github.py:700:29: ruf009 perform function call `int` dataclass defaults
+mergify_engine/context.py:2485:18: ruf008 use mutable default values dataclass attributes
+mergify_engine/context.py:2504:23: ruf008 use mutable default values dataclass attributes
+mergify_engine/context.py:2532:48: ruf008 use mutable default values dataclass attributes
+mergify_engine/exceptions.py:35:36: ruf009 perform function call `datetime.timedelta` dataclass defaults
+mergify_engine/tests/functional/actions/test_backport.py:251:6: ruf100 [*] unused `noqa` directive (unused: `w191`)
+mergify_engine/yaml.py:1:1: i001 [*] import block un-sorted un-formatted
+found errors.
+[*] potentially fixable --fix option.
+error: sequence aborted failed subtask 'ruff check .'
+##[error]process completed exit code 1.
+post job cleanup.
+[command]/usr/bin/git version
+git version 2.40.0
+temporarily overriding home='/home/runner/work/_temp/16064383-9123-485d-98b8-a37ba5bd2d3c' making global git config changes
+adding repository directory temporary git global config safe directory
+[command]/usr/bin/git config --global --add safe.directory /home/runner/work/engine/engine
+[command]/usr/bin/git config --local --name-only --get-regexp core\.sshcommand
+[command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshcommand' && git config --local --unset-all 'core.sshcommand' || :"
+[command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+http.https://github.com/.extraheader
+[command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+[command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+cleaning orphan processes

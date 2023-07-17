@@ -1,16 +1,16 @@
 from collections import abc
 
 from mergify_engine.clients import github
+from mergify_engine.log_embedder import log_cleaner
 from mergify_engine.log_embedder import openai_embedding
 from mergify_engine.models import github_actions
 
 
 async def log_embedding(job: github_actions.WorkflowJob) -> None:
+    cleaner = log_cleaner.LogCleaner()
     cleaned_log = []
     async for log_line in log_download(job):
-        # TODO(Kontolix): call log cleaner for real when it's ready ###
-        cleaned_log_line = log_line
-        ##############################################################
+        cleaned_log_line = cleaner.clean_line(log_line)
 
         if cleaned_log_line:
             cleaned_log.append(cleaned_log_line)
