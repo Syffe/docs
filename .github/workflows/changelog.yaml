@@ -18,6 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Synchronize changelog
+        # yamllint disable-line rule:line-length
+        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
         uses: Mergifyio/gha-changelog-syncer@main
         with:
           NOTION_API_KEY: ${{ secrets.CHANGELOG_NOTION_API_KEY }}

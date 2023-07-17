@@ -25,6 +25,8 @@ jobs:
 
       - name: Create the Pull Request
         id: cpr
+        # yamllint disable-line rule:line-length
+        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.MERGIFY_CI_BOT_PAT }}
@@ -45,6 +47,8 @@ jobs:
 
       - name: Report Status
         if: failure()
+        # yamllint disable-line rule:line-length
+        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
         uses: Mergifyio/gha-slack-notification@main
         with:
           message: "Clifus: Python version bump"
@@ -68,6 +72,8 @@ jobs:
 
       - name: Create the Pull Request
         id: cpr
+        # yamllint disable-line rule:line-length
+        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.MERGIFY_CI_BOT_PAT }}
@@ -88,6 +94,8 @@ jobs:
 
       - name: Report Status
         if: failure()
+        # yamllint disable-line rule:line-length
+        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
         uses: Mergifyio/gha-slack-notification@main
         with:
           message: "Clifus: Datadog Agent bump"
@@ -113,6 +121,8 @@ jobs:
 
       - name: Create the Pull Request
         id: cpr
+        # yamllint disable-line rule:line-length
+        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.MERGIFY_CI_BOT_PAT }}
@@ -135,6 +145,8 @@ jobs:
 
       - name: Report Status
         if: failure()
+        # yamllint disable-line rule:line-length
+        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
         uses: Mergifyio/gha-slack-notification@main
         with:
           message: "Clifus: Datadog Mergify Integration bump"

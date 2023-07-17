@@ -27,6 +27,8 @@ jobs:
 
       - name: Deployment start
         if: always()
+        # yamllint disable-line rule:line-length
+        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
         uses: Mergifyio/gha-slack-notification@main
         with:
           type: deploy-start
@@ -42,11 +44,15 @@ jobs:
           poetry run poe docs
 
       - name: Setup Google Auth 🔧
+        # yamllint disable-line rule:line-length
+        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
         uses: "google-github-actions/auth@v1"
         with:
           credentials_json: "${{ secrets.GCP_DOCS_CREDENTIAL_JSON }}"
 
       - name: Deploy 🚀
+        # yamllint disable-line rule:line-length
+        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
         uses: google-github-actions/upload-cloud-storage@v1.0.3
         with:
           path: docs/build
@@ -55,6 +61,8 @@ jobs:
 
       - name: Deployment finish
         if: always()
+        # yamllint disable-line rule:line-length
+        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
         uses: Mergifyio/gha-slack-notification@main
         with:
           type: deploy-finish

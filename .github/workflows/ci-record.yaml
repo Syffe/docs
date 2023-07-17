@@ -59,6 +59,8 @@ jobs:
 
       - name: Report Status
         if: always()
+        # yamllint disable-line rule:line-length
+        # nosemgrep: yaml.github-actions.security.third-party-action-not-pinned-to-commit-sha.third-party-action-not-pinned-to-commit-sha
         uses: Mergifyio/gha-slack-notification@main
         with:
           message: "${{ matrix.target.name }}, engine fixture re-generation tests"
