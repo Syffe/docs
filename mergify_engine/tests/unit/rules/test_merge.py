@@ -1,10 +1,10 @@
-# flake8: noqa (ignores FS002 f-string missing prefix)
 import typing
 from unittest import mock
 
 import pytest
 
 from mergify_engine.rules.config import mergify as mergify_conf
+
 
 source_config = {
     "pull_request_rules": [
@@ -67,8 +67,8 @@ source_config = {
                         "check-success=docs",
                     ]
                 },
-                "check-success=Rule: feature " "requirements (post_check)",
-                "check-success=Rule: testing " "requirements (post_check)",
+                "check-success=Rule: feature requirements (post_check)",
+                "check-success=Rule: testing requirements (post_check)",
                 "#approved-reviews-by>=2",
                 "#changes-requested-reviews-by=0",
                 "#review-threads-unresolved=0",
@@ -141,7 +141,7 @@ source_config = {
             "name": "automatic merge from dependabot",
         },
         {
-            "actions": {"comment": {"message": "@dependabot " "recreate"}},
+            "actions": {"comment": {"message": "@dependabot recreate"}},
             "conditions": ["author=dependabot[bot]", "conflict"],
             "name": "dependabot conflict fixer",
         },
@@ -167,8 +167,8 @@ source_config = {
                         "check-success=docs",
                     ]
                 },
-                "check-success=Rule: feature " "requirements (post_check)",
-                "check-success=Rule: testing " "requirements (post_check)",
+                "check-success=Rule: feature requirements (post_check)",
+                "check-success=Rule: testing requirements (post_check)",
                 "#approved-reviews-by=0",
                 "#changes-requested-reviews-by=0",
             ],
@@ -193,18 +193,18 @@ source_config = {
             "name": "remove conflict label if not needed",
         },
         {
-            "actions": {"label": {"add": ["Review Threads " "Unresolved"]}},
+            "actions": {"label": {"add": ["Review Threads Unresolved"]}},
             "conditions": ["#review-threads-unresolved>0"],
             "name": "label on unresolved",
         },
         {
-            "actions": {"label": {"remove": ["Review Threads " "Unresolved"]}},
+            "actions": {"label": {"remove": ["Review Threads Unresolved"]}},
             "conditions": ["#review-threads-unresolved=0"],
             "name": "unlabel on resolved",
         },
         {
             "actions": {
-                "comment": {"message": "Your hotfix is " "failing CI " "@{{author}} 🥺"}
+                "comment": {"message": "Your hotfix is failing CI @{{author}} 🥺"}
             },
             "conditions": ["label=hotfix", "#check-failure>0"],
             "name": "warn on CI failure for hotfix",
@@ -233,13 +233,13 @@ source_config = {
                             "and": [
                                 {
                                     "or": [
-                                        "label=Skip " "release note",
+                                        "label=Skip release note",
                                         "files~=^releasenotes/notes",
                                     ]
                                 },
                                 {
                                     "or": [
-                                        "label=Skip " "documentation",
+                                        "label=Skip documentation",
                                         "files~=^docs/source",
                                     ]
                                 },
@@ -463,7 +463,7 @@ def test_merge_raw_configs() -> None:
                 "name": "automatic merge from dependabot",
             },
             {
-                "actions": {"comment": {"message": "@dependabot " "recreate"}},
+                "actions": {"comment": {"message": "@dependabot recreate"}},
                 "conditions": ["author=dependabot[bot]", "conflict"],
                 "name": "dependabot conflict fixer",
             },
@@ -489,8 +489,8 @@ def test_merge_raw_configs() -> None:
                             "check-success=docs",
                         ]
                     },
-                    "check-success=Rule: feature " "requirements (post_check)",
-                    "check-success=Rule: testing " "requirements (post_check)",
+                    "check-success=Rule: feature requirements (post_check)",
+                    "check-success=Rule: testing requirements (post_check)",
                     "#approved-reviews-by=0",
                     "#changes-requested-reviews-by=0",
                 ],
@@ -515,20 +515,18 @@ def test_merge_raw_configs() -> None:
                 "name": "remove conflict label if not needed",
             },
             {
-                "actions": {"label": {"add": ["Review Threads " "Unresolved"]}},
+                "actions": {"label": {"add": ["Review Threads Unresolved"]}},
                 "conditions": ["#review-threads-unresolved>0"],
                 "name": "label on unresolved",
             },
             {
-                "actions": {"label": {"remove": ["Review Threads " "Unresolved"]}},
+                "actions": {"label": {"remove": ["Review Threads Unresolved"]}},
                 "conditions": ["#review-threads-unresolved=0"],
                 "name": "unlabel on resolved",
             },
             {
                 "actions": {
-                    "comment": {
-                        "message": "Your hotfix is " "failing CI " "@{{author}} 🥺"
-                    }
+                    "comment": {"message": "Your hotfix is failing CI @{{author}} 🥺"}
                 },
                 "conditions": ["label=hotfix", "#check-failure>0"],
                 "name": "warn on CI failure for hotfix",
@@ -557,13 +555,13 @@ def test_merge_raw_configs() -> None:
                                 "and": [
                                     {
                                         "or": [
-                                            "label=Skip " "release note",
+                                            "label=Skip release note",
                                             "files~=^releasenotes/notes",
                                         ]
                                     },
                                     {
                                         "or": [
-                                            "label=Skip " "documentation",
+                                            "label=Skip documentation",
                                             "files~=^docs/source",
                                         ]
                                     },

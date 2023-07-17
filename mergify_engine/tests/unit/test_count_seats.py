@@ -39,8 +39,9 @@ def test_seats_renamed_account_repo() -> None:
 
     users = {user1, user2, user2bis, user1bis}
     assert len(users) == 2
-    assert list(users)[0].login == "user2"
-    assert list(users)[1].login == "user1"
+    users_iterator = iter(users)
+    assert next(users_iterator).login == "user2"
+    assert next(users_iterator).login == "user1"
 
     repo1 = count_seats.SeatRepository(
         github_types.GitHubRepositoryIdType(123),
