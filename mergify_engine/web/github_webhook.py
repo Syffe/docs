@@ -29,6 +29,36 @@ router = fastapi.APIRouter(
 )
 
 
+async def forward_event(
+    destination: str,
+    request: requests.Request,
+    event_type: str,
+    event_id: str,
+    event: github_types.GitHubEvent,
+) -> None:
+    raw = await request.body()
+    try:
+        async with http.AsyncClient(timeout=EVENT_FORWARD_TIMEOUT) as client:
+            await client.post(
+                destination,
+                content=raw.decode(),
+                headers={
+                    "X-GitHub-Event": event_type,
+                    "X-GitHub-Delivery": event_id,
+                    "X-Hub-Signature": request.headers["X-Hub-Signature"],
+                    "User-Agent": request.headers["User-Agent"],
+                    "Content-Type": request.headers["Content-Type"],
+                },
+            )
+    except httpx.HTTPError:
+        LOG.warning(
+            "Fail to forward GitHub event",
+            event_type=event_type,
+            event_id=event_id,
+            sender=event["sender"]["login"],
+        )
+
+
 @router.post("/event")
 async def event_handler(
     request: requests.Request,
@@ -68,27 +98,14 @@ async def event_handler(
         and settings.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES is not None
         and event_type in settings.GITHUB_WEBHOOK_FORWARD_EVENT_TYPES
     ):
-        raw = await request.body()
-        try:
-            async with http.AsyncClient(timeout=EVENT_FORWARD_TIMEOUT) as client:
-                await client.post(
-                    settings.GITHUB_WEBHOOK_FORWARD_URL,
-                    content=raw.decode(),
-                    headers={
-                        "X-GitHub-Event": event_type,
-                        "X-GitHub-Delivery": event_id,
-                        "X-Hub-Signature": request.headers["X-Hub-Signature"],
-                        "User-Agent": request.headers["User-Agent"],
-                        "Content-Type": request.headers["Content-Type"],
-                    },
-                )
-        except httpx.HTTPError:
-            LOG.warning(
-                "Fail to forward GitHub event",
-                event_type=event_type,
-                event_id=event_id,
-                sender=data["sender"]["login"],
-            )
+        background_tasks.add_task(
+            forward_event,
+            settings.GITHUB_WEBHOOK_FORWARD_URL,
+            request,
+            event_type,
+            event_id,
+            data,
+        )
 
     return responses.Response(reason, status_code=status_code)
 
