@@ -33,14 +33,14 @@ class TestSummary(base.FunctionalTestBase):
                     "conditions": [
                         "base=dummy",
                     ],
-                    "actions": {"merge": {"merge_method": "rebase"}},
+                    "actions": {"merge": {"method": "rebase"}},
                 },
                 {
                     "name": "valid rule main",
                     "conditions": [
                         f"base={self.main_branch_name}",
                     ],
-                    "actions": {"merge": {"merge_method": "rebase"}},
+                    "actions": {"merge": {"method": "rebase"}},
                 },
             ]
         }
@@ -67,7 +67,7 @@ class TestSummary(base.FunctionalTestBase):
                     "conditions": [
                         "base=dummy",
                     ],
-                    "actions": {"merge": {"merge_method": "rebase"}},
+                    "actions": {"merge": {"method": "rebase"}},
                 },
                 {
                     "name": "valid rule label",
@@ -79,7 +79,7 @@ class TestSummary(base.FunctionalTestBase):
                             ]
                         },
                     ],
-                    "actions": {"merge": {"merge_method": "rebase"}},
+                    "actions": {"merge": {"method": "rebase"}},
                 },
             ]
         }
@@ -107,7 +107,7 @@ class TestSummary(base.FunctionalTestBase):
                         f"base={self.main_branch_name}",
                         "label=test",
                     ],
-                    "actions": {"merge": {"merge_method": "rebase"}},
+                    "actions": {"merge": {"method": "rebase"}},
                 }
             ]
         }
@@ -150,7 +150,7 @@ class TestSummary(base.FunctionalTestBase):
                             ],
                         },
                     ],
-                    "actions": {"merge": {"merge_method": "rebase"}},
+                    "actions": {"merge": {"method": "rebase"}},
                 }
             ]
         }
@@ -204,7 +204,7 @@ class TestSummary(base.FunctionalTestBase):
                             ],
                         },
                     ],
-                    "actions": {"merge": {"merge_method": "rebase"}},
+                    "actions": {"merge": {"method": "rebase"}},
                 }
             ]
         }

@@ -40,7 +40,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                 {
                     "name": "Merge on main",
                     "conditions": [f"base={self.main_branch_name}", "label=squash"],
-                    "actions": {"merge": {"merge_method": "squash"}},
+                    "actions": {"merge": {"method": "squash"}},
                 },
             ]
         }
@@ -68,7 +68,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                         "approved-reviews-by=@mergifyio-testing/testing",
                     ],
-                    "actions": {"merge": {"merge_method": "rebase"}},
+                    "actions": {"merge": {"method": "rebase"}},
                 },
                 {
                     "name": "short teams",
@@ -77,7 +77,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                         "approved-reviews-by=@testing",
                     ],
-                    "actions": {"merge": {"merge_method": "rebase"}},
+                    "actions": {"merge": {"method": "rebase"}},
                 },
                 {
                     "name": "not exists teams",
@@ -86,7 +86,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                         "approved-reviews-by=@mergifyio-testing/noexists",
                     ],
-                    "actions": {"merge": {"merge_method": "rebase"}},
+                    "actions": {"merge": {"method": "rebase"}},
                 },
                 {
                     "name": "invalid organization",
@@ -95,7 +95,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                         "approved-reviews-by=@another-org/testing",
                     ],
-                    "actions": {"merge": {"merge_method": "rebase"}},
+                    "actions": {"merge": {"method": "rebase"}},
                 },
             ]
         }
@@ -176,7 +176,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                         f"base={self.main_branch_name}",
                         "status-success=continuous-integration/fake-ci",
                     ],
-                    "actions": {"merge": {"merge_method": method}},
+                    "actions": {"merge": {"method": method}},
                 }
             ]
         }
@@ -191,8 +191,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
 
         await self.run_engine()
 
-        p_merged = await self.wait_for_pull_request("closed", pr_number=p["number"])
-        assert p_merged["pull_request"]["merged"]
+        await self.wait_for_pull_request("closed", pr_number=p["number"], merged=True)
 
         commit = (await self.get_head_commit())["commit"]
         if commit_msg is None:
@@ -229,7 +228,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                         f"base={self.main_branch_name}",
                         "status-success=continuous-integration/fake-ci",
                     ],
-                    "actions": {"merge": {"merge_method": "merge"}},
+                    "actions": {"merge": {"method": "merge"}},
                 }
             ]
         }
@@ -282,7 +281,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                         "status-success=continuous-integration/fake-ci",
                         "#approved-reviews-by>=1",
                     ],
-                    "actions": {"merge": {"merge_method": "rebase"}},
+                    "actions": {"merge": {"method": "rebase"}},
                 }
             ]
         }
@@ -305,7 +304,7 @@ class TestEngineV2Scenario(base.FunctionalTestBase):
                     "name": "merge",
                     "conditions": [f"base={self.main_branch_name}"],
                     "actions": {
-                        "merge": {"merge_method": "rebase"},
+                        "merge": {"method": "rebase"},
                         "comment": {"message": "yo"},
                     },
                 }

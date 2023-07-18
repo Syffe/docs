@@ -29,7 +29,7 @@ class BackportActionTestBase(base.FunctionalTestBase):
                         f"base={self.main_branch_name}",
                         "label=backport-#3.1",
                     ],
-                    "actions": {"merge": {"merge_method": method}},
+                    "actions": {"merge": {"method": method}},
                 },
                 {
                     "name": "Backport to stable/#3.1",
@@ -125,7 +125,7 @@ class TestBackportAction(BackportActionTestBase):
                         f"base={self.main_branch_name}",
                         "label=backport-#3.1",
                     ],
-                    "actions": {"merge": {"merge_method": "merge"}},
+                    "actions": {"merge": {"method": "merge"}},
                 },
                 {
                     "name": "Backport",
@@ -172,7 +172,7 @@ class TestBackportAction(BackportActionTestBase):
                         f"base={self.main_branch_name}",
                         "label=backport-#3.1",
                     ],
-                    "actions": {"merge": {"merge_method": "rebase"}},
+                    "actions": {"merge": {"method": "rebase"}},
                 },
                 {
                     "name": "Backport to stable/#3.1",
@@ -332,7 +332,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
                         f"base={stable_branch}",
                         "label=merge stable branch",
                     ],
-                    "actions": {"merge": {"merge_method": "merge"}},
+                    "actions": {"merge": {"method": "merge"}},
                 },
                 {
                     "name": "Merge on main",
@@ -340,7 +340,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
                         f"base={self.main_branch_name}",
                         "label=backport-#3.1",
                     ],
-                    "actions": {"merge": {"merge_method": "merge"}},
+                    "actions": {"merge": {"method": "merge"}},
                 },
                 {
                     "name": "Backport to stable/#3.1",
