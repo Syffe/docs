@@ -17,13 +17,20 @@ class ApplicationKey(models.Base):
     __tablename__ = "application"
 
     id: Mapped[int] = orm.mapped_column(
-        sqlalchemy.Integer, primary_key=True, nullable=False, autoincrement=True
+        sqlalchemy.Integer,
+        primary_key=True,
+        nullable=False,
+        autoincrement=True,
+        anonymizer_config=None,
     )
 
-    name: Mapped[str] = orm.mapped_column(sqlalchemy.String(255), nullable=False)
-    api_access_key: Mapped[str] = orm.mapped_column(
+    name: Mapped[str] = orm.mapped_column(
         sqlalchemy.String(255),
         nullable=False,
+        anonymizer_config="anon.lorem_ipsum( words := 7 )",
+    )
+    api_access_key: Mapped[str] = orm.mapped_column(
+        sqlalchemy.String(255), nullable=False, anonymizer_config="''CONFIDENTIAL''"
     )
 
     api_secret_key: Mapped[str] = orm.mapped_column(
@@ -31,18 +38,21 @@ class ApplicationKey(models.Base):
             schemes=["pbkdf2_sha512"],
         ),
         nullable=False,
+        anonymizer_config="''CONFIDENTIAL''",
     )
     github_account_id: Mapped[github_types.GitHubAccountIdType] = orm.mapped_column(
         sqlalchemy.BigInteger,
         sqlalchemy.ForeignKey("github_account.id"),
         index=True,
         nullable=False,
+        anonymizer_config=None,
     )
     created_by_github_user_id: Mapped[
         github_types.GitHubAccountIdType | None
     ] = orm.mapped_column(
         sqlalchemy.Integer,
         sqlalchemy.ForeignKey("github_user.id"),
+        anonymizer_config=None,
     )
 
     github_account: Mapped[github_account_mod.GitHubAccount] = orm.relationship(
@@ -59,7 +69,10 @@ class ApplicationKey(models.Base):
     )
 
     created_at: Mapped[datetime.datetime] = orm.mapped_column(
-        sqlalchemy.DateTime, server_default=sqlalchemy.func.now(), nullable=False
+        sqlalchemy.DateTime,
+        server_default=sqlalchemy.func.now(),
+        nullable=False,
+        anonymizer_config="anon.dnoise(created_at, ''2 days'')",
     )
 
     @staticmethod

@@ -22,6 +22,11 @@ class SQLAlchemyAppState(typing.TypedDict):
 APP_STATE: SQLAlchemyAppState | None = None
 
 
+# NOTE(sileht): this is a fake dialect to be able to annotate column with anonymizer config
+class Anonymizer(sqlalchemy.Dialect):
+    pass
+
+
 def init_sqlalchemy(service_name: str) -> None:
     global APP_STATE
 

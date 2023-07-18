@@ -17,3 +17,5 @@ docs/source/actions/action-list.html
 .docker
 .venv
 delete_branch_on_merge.lock
+postgresql_anonymizer_rules.sql
+empty_database.sql

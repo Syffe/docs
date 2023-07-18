@@ -13,10 +13,15 @@ class GitHubAccount(models.Base):
     __tablename__ = "github_account"
 
     id: orm.Mapped[github_types.GitHubAccountIdType] = orm.mapped_column(
-        sqlalchemy.BigInteger, primary_key=True, autoincrement=False
+        sqlalchemy.BigInteger,
+        primary_key=True,
+        autoincrement=False,
+        anonymizer_config=None,
     )
     login: orm.Mapped[github_types.GitHubLogin] = orm.mapped_column(
-        sqlalchemy.Text, unique=True
+        sqlalchemy.Text,
+        unique=True,
+        anonymizer_config="anon.lorem_ipsum( characters := 7 )",
     )
 
     @classmethod

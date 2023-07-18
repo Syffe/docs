@@ -23,12 +23,22 @@ class PullRequest(models.Base):
     __tablename__ = "pull_request"
 
     id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.BigInteger, primary_key=True, autoincrement=False
+        sqlalchemy.BigInteger,
+        primary_key=True,
+        autoincrement=False,
+        anonymizer_config=None,
     )
-    number: orm.Mapped[int] = orm.mapped_column(sqlalchemy.BigInteger)
-    title: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
+    number: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.BigInteger,
+        anonymizer_config="anon.random_int_between(1,100000)",
+    )
+    title: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( words := 5 )",
+    )
     state: orm.Mapped[github_types.GitHubPullRequestState] = orm.mapped_column(
-        sqlalchemy.Text
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( characters := 7 )",
     )
 
     workflow_runs: orm.Mapped[list[WorkflowRun]] = orm.relationship(
@@ -87,19 +97,30 @@ class WorkflowRun(models.Base):
     )
 
     id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.BigInteger, primary_key=True, autoincrement=False
+        sqlalchemy.BigInteger,
+        primary_key=True,
+        autoincrement=False,
+        anonymizer_config=None,
     )
-    workflow_id: orm.Mapped[int] = orm.mapped_column(sqlalchemy.BigInteger)
+    workflow_id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.BigInteger,
+        anonymizer_config="anon.random_bigint_between(1,100000)",
+    )
     owner_id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("github_account.id")
+        sqlalchemy.ForeignKey("github_account.id"),
+        anonymizer_config=None,
     )
     event: orm.Mapped[WorkflowRunTriggerEvent] = orm.mapped_column(
-        sqlalchemy.Enum(WorkflowRunTriggerEvent)
+        sqlalchemy.Enum(WorkflowRunTriggerEvent),
+        anonymizer_config="anon.random_in_enum(event)",
     )
     triggering_actor_id: orm.Mapped[int | None] = orm.mapped_column(
-        sqlalchemy.ForeignKey("github_account.id")
+        sqlalchemy.ForeignKey("github_account.id"),
+        anonymizer_config=None,
     )
-    run_attempt: orm.Mapped[int] = orm.mapped_column(sqlalchemy.BigInteger)
+    run_attempt: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.BigInteger, anonymizer_config=None
+    )
 
     owner: orm.Mapped[github_account.GitHubAccount] = orm.relationship(
         lazy="joined", foreign_keys=[owner_id]
@@ -115,7 +136,8 @@ class WorkflowRun(models.Base):
     )
 
     repository_id: orm.Mapped[github_types.GitHubRepositoryIdType] = orm.mapped_column(
-        sqlalchemy.ForeignKey("github_repository.id")
+        sqlalchemy.ForeignKey("github_repository.id"),
+        anonymizer_config=None,
     )
 
     repository: orm.Mapped[github_repository.GitHubRepository] = orm.relationship(
@@ -160,29 +182,45 @@ class WorkflowJob(models.Base):
     __tablename__ = "gha_workflow_job"
 
     id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.BigInteger, primary_key=True, autoincrement=False
+        sqlalchemy.BigInteger,
+        primary_key=True,
+        autoincrement=False,
+        anonymizer_config=None,
     )
-    workflow_run_id: orm.Mapped[int] = orm.mapped_column(sqlalchemy.BigInteger)
-    name: orm.Mapped[str]
+    workflow_run_id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.BigInteger,
+        anonymizer_config="anon.random_bigint_between(1,100000)",
+    )
+    name: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.String,
+        anonymizer_config="anon.lorem_ipsum( characters := 7 )",
+    )
     started_at: orm.Mapped[datetime.datetime] = orm.mapped_column(
-        sqlalchemy.DateTime(timezone=True)
+        sqlalchemy.DateTime(timezone=True),
+        anonymizer_config="anon.dnoise(started_at, ''1 hour'')",
     )
     completed_at: orm.Mapped[datetime.datetime] = orm.mapped_column(
-        sqlalchemy.DateTime(timezone=True)
+        sqlalchemy.DateTime(timezone=True),
+        anonymizer_config="anon.dnoise(completed_at, ''1 hour'')",
     )
     conclusion: orm.Mapped[WorkflowJobConclusion] = orm.mapped_column(
-        sqlalchemy.Enum(WorkflowJobConclusion)
+        sqlalchemy.Enum(WorkflowJobConclusion),
+        anonymizer_config="anon.random_in_enum(conclusion)",
     )
     labels: orm.Mapped[list[str]] = orm.mapped_column(
-        sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1)
+        sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1),
+        anonymizer_config="custom_masks.lorem_ipsum_array(0, 5, 20)",
     )
 
     log_embedding: orm.Mapped[npt.NDArray[np.float32] | None] = orm.mapped_column(
-        Vector(constants.OPENAI_EMBEDDING_DIMENSION), nullable=True
+        Vector(constants.OPENAI_EMBEDDING_DIMENSION),
+        nullable=True,
+        anonymizer_config=None,
     )
 
     repository_id: orm.Mapped[github_types.GitHubRepositoryIdType] = orm.mapped_column(
-        sqlalchemy.ForeignKey("github_repository.id")
+        sqlalchemy.ForeignKey("github_repository.id"),
+        anonymizer_config=None,
     )
 
     repository: orm.Mapped[github_repository.GitHubRepository] = orm.relationship(
@@ -221,10 +259,14 @@ class PullRequestWorkflowRunAssociation(models.Base):
     __tablename__ = "jt_gha_workflow_run_pull_request"
 
     pull_request_id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("pull_request.id"), primary_key=True
+        sqlalchemy.ForeignKey("pull_request.id"),
+        primary_key=True,
+        anonymizer_config=None,
     )
     workflow_run_id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("gha_workflow_run.id"), primary_key=True
+        sqlalchemy.ForeignKey("gha_workflow_run.id"),
+        primary_key=True,
+        anonymizer_config=None,
     )
 
     pull_request: orm.Mapped[PullRequest] = orm.relationship()

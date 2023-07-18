@@ -49,7 +49,7 @@ def test_migration(setup_database: None, tmp_path: pathlib.Path) -> None:
     # fixture)
     loop = asyncio.get_event_loop_policy().new_event_loop()
     schema_dump_creation_path = tmp_path / "test_migration_create.sql"
-    dump_schema(settings.DATABASE_URL.path[1:], schema_dump_creation_path)
+    utils.dump_schema(settings.DATABASE_URL.path[1:], schema_dump_creation_path)
 
     if os.getenv("MIGRATED_DATA_DUMP") is None:
         url_migrate, url_migrate_without_db_name = utils.create_database_url(
@@ -62,7 +62,7 @@ def test_migration(setup_database: None, tmp_path: pathlib.Path) -> None:
         )
         _run_migration_scripts(url_migrate)
         schema_dump_migration_path = tmp_path / "test_migration_migrate.sql"
-        dump_schema("test_migration_migrate", schema_dump_migration_path)
+        utils.dump_schema("test_migration_migrate", schema_dump_migration_path)
     else:
         schema_dump_migration_path = pathlib.Path(os.environ["MIGRATED_DATA_DUMP"])
 
@@ -85,36 +85,6 @@ def test_migration(setup_database: None, tmp_path: pathlib.Path) -> None:
     ), filediff(schema_dump_creation_path, schema_dump_migration_path)
 
     loop.close()
-
-
-def dump_schema(dbname: str, filepath: pathlib.Path) -> None:
-    pg_dump_cmd = [
-        "pg_dump",
-        "--no-acl",
-        "--no-owner",
-        "--no-comments",
-        f"--dbname={dbname}",
-        "--user=postgres",
-        "--exclude-schema=heroku_ext",
-        "--schema-only",
-        "--exclude-table=alembic_version",
-        "--format=p",
-        "--encoding=UTF8",
-    ]
-    if os.environ.get("CI") == "true":
-        docker_cmd = ["docker", "exec", "postgres"]
-    else:
-        docker_cmd = ["docker", "compose", "exec", "postgres"]
-
-    process = subprocess.run(
-        [*docker_cmd, *pg_dump_cmd],
-        check=True,
-        capture_output=True,
-        timeout=10,
-    )
-
-    with open(filepath, "w") as f:
-        f.write(process.stdout.decode())
 
 
 def filediff(path1: pathlib.Path, path2: pathlib.Path) -> str | None:

@@ -24,17 +24,35 @@ class Event(models.Base):
     }
 
     id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.BigInteger, primary_key=True, autoincrement=True
+        sqlalchemy.BigInteger,
+        primary_key=True,
+        autoincrement=True,
+        anonymizer_config=None,
     )
-    type: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text, index=True)
+    type: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text,
+        index=True,
+        # FIXME(sileht): must be an enum MRGFY-2435
+        # anonymizer_config="anon.random_in_enum(type)",
+        anonymizer_config=None,
+    )
     received_at: orm.Mapped[datetime.datetime] = orm.mapped_column(
-        sqlalchemy.DateTime(timezone=True), server_default=func.now()
+        sqlalchemy.DateTime(timezone=True),
+        server_default=func.now(),
+        anonymizer_config="anon.dnoise(received_at, ''2 days'')",
     )
-    pull_request: orm.Mapped[int] = orm.mapped_column(sqlalchemy.Integer, index=True)
-    trigger: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
+    pull_request: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.Integer,
+        index=True,
+        anonymizer_config="anon.random_int_between(1,100000)",
+    )
+    trigger: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( words := 7 )",
+    )
 
     repository_id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("github_repository.id")
+        sqlalchemy.ForeignKey("github_repository.id"), anonymizer_config=None
     )
     repository: orm.Mapped[github_repository.GitHubRepository] = orm.relationship(
         lazy="joined"
@@ -68,14 +86,16 @@ class EventActionAssign(Event):
     }
 
     id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("event.id"), primary_key=True
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
     )
 
     added: orm.Mapped[list[str]] = orm.mapped_column(
-        sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1)
+        sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1),
+        anonymizer_config="custom_masks.lorem_ipsum_array(0, 5, 20)",
     )
     removed: orm.Mapped[list[str]] = orm.mapped_column(
-        sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1)
+        sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1),
+        anonymizer_config="custom_masks.lorem_ipsum_array(0, 5, 20)",
     )
 
 
@@ -98,13 +118,21 @@ class EventActionPostCheck(Event):
     }
 
     id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("event.id"), primary_key=True
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
     )
     conclusion: orm.Mapped[CheckConclusion] = orm.mapped_column(
-        sqlalchemy.Enum(CheckConclusion), nullable=True
+        sqlalchemy.Enum(CheckConclusion),
+        nullable=True,
+        anonymizer_config="anon.random_in_enum(conclusion)",
     )
-    title: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
-    summary: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
+    title: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( words := 7 )",
+    )
+    summary: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( words := 7 )",
+    )
 
 
 class EventActionCopy(Event):
@@ -114,11 +142,19 @@ class EventActionCopy(Event):
     }
 
     id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("event.id"), primary_key=True
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
     )
-    to: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
-    pull_request_number: orm.Mapped[int] = orm.mapped_column(sqlalchemy.Integer)
-    conflicts: orm.Mapped[bool] = orm.mapped_column(sqlalchemy.Boolean)
+    to: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( characters := 7)",
+    )
+    pull_request_number: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.Integer, anonymizer_config="anon.random_int_between(0,100000)"
+    )
+    conflicts: orm.Mapped[bool] = orm.mapped_column(
+        sqlalchemy.Boolean,
+        anonymizer_config="anon.random_int_between(0,1)",
+    )
 
 
 class EventActionComment(Event):
@@ -128,9 +164,11 @@ class EventActionComment(Event):
     }
 
     id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("event.id"), primary_key=True
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
     )
-    message: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
+    message: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( words := 20)"
+    )
 
 
 class EventActionClose(Event):
@@ -140,9 +178,11 @@ class EventActionClose(Event):
     }
 
     id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("event.id"), primary_key=True
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
     )
-    message: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
+    message: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( words := 20)"
+    )
 
 
 class EventActionDeleteHeadBranch(Event):
@@ -152,9 +192,11 @@ class EventActionDeleteHeadBranch(Event):
     }
 
     id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("event.id"), primary_key=True
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
     )
-    branch: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
+    branch: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+    )
 
 
 class EventActionDismissReviews(Event):
@@ -164,10 +206,11 @@ class EventActionDismissReviews(Event):
     }
 
     id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("event.id"), primary_key=True
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
     )
     users: orm.Mapped[list[str]] = orm.mapped_column(
-        sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1)
+        sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1),
+        anonymizer_config="custom_masks.lorem_ipsum_array(0, 5, 20)",
     )
 
 
@@ -178,11 +221,19 @@ class EventActionBackport(Event):
     }
 
     id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("event.id"), primary_key=True
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
     )
-    to: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
-    pull_request_number: orm.Mapped[int] = orm.mapped_column(sqlalchemy.Integer)
-    conflicts: orm.Mapped[bool] = orm.mapped_column(sqlalchemy.Boolean)
+    to: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( characters := 7)",
+    )
+    pull_request_number: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.Integer, anonymizer_config="anon.random_int_between(0,100000)"
+    )
+    conflicts: orm.Mapped[bool] = orm.mapped_column(
+        sqlalchemy.Boolean,
+        anonymizer_config="anon.random_int_between(0,1)",
+    )
 
 
 class EventActionEdit(Event):
@@ -192,9 +243,12 @@ class EventActionEdit(Event):
     }
 
     id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("event.id"), primary_key=True
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
     )
-    draft: orm.Mapped[bool] = orm.mapped_column(sqlalchemy.Boolean)
+    draft: orm.Mapped[bool] = orm.mapped_column(
+        sqlalchemy.Boolean,
+        anonymizer_config="anon.random_int_between(0,1)",
+    )
 
 
 class EventActionLabel(Event):
@@ -204,13 +258,15 @@ class EventActionLabel(Event):
     }
 
     id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("event.id"), primary_key=True
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
     )
     added: orm.Mapped[list[str]] = orm.mapped_column(
-        sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1)
+        sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1),
+        anonymizer_config="custom_masks.lorem_ipsum_array(1, 2, 7)",
     )
     removed: orm.Mapped[list[str]] = orm.mapped_column(
-        sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1)
+        sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1),
+        anonymizer_config="custom_masks.lorem_ipsum_array(1, 2, 7)",
     )
 
 
@@ -221,9 +277,11 @@ class EventActionMerge(Event):
     }
 
     id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("event.id"), primary_key=True
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
     )
-    branch: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
+    branch: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+    )
 
 
 class EventActionQueueEnter(Event):
@@ -233,17 +291,28 @@ class EventActionQueueEnter(Event):
     }
 
     id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("event.id"), primary_key=True
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
     )
-    queue_name: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
-    branch: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
-    position: orm.Mapped[int] = orm.mapped_column(sqlalchemy.Integer)
+    queue_name: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+    )
+    branch: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+    )
+    position: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.Integer, anonymizer_config="anon.random_int_between(0, 50)"
+    )
     queued_at: orm.Mapped[datetime.datetime] = orm.mapped_column(
-        sqlalchemy.DateTime(timezone=True)
+        sqlalchemy.DateTime(timezone=True),
+        anonymizer_config="anon.dnoise(queued_at, ''2 days'')",
     )
     partition_name: orm.Mapped[
         partition_rules.PartitionRuleName | None
-    ] = orm.mapped_column(sqlalchemy.Text, nullable=True)
+    ] = orm.mapped_column(
+        sqlalchemy.Text,
+        nullable=True,
+        anonymizer_config="anon.lorem_ipsum( characters := 7)",
+    )
 
 
 class EventActionQueueMerged(Event):
@@ -253,17 +322,24 @@ class EventActionQueueMerged(Event):
     }
 
     id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("event.id"), primary_key=True
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
     )
-
-    branch: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
-    queue_name: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
+    branch: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+    )
+    queue_name: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+    )
     queued_at: orm.Mapped[datetime.datetime] = orm.mapped_column(
-        sqlalchemy.DateTime(timezone=True)
+        sqlalchemy.DateTime(timezone=True),
+        anonymizer_config="anon.dnoise(queued_at, ''2 days'')",
     )
     partition_names: orm.Mapped[
         list[partition_rules.PartitionRuleName]
-    ] = orm.mapped_column(sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1))
+    ] = orm.mapped_column(
+        sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1),
+        anonymizer_config="custom_masks.lorem_ipsum_array(1, 2, 7)",
+    )
 
 
 class EventActionQueueLeave(Event):
@@ -273,23 +349,41 @@ class EventActionQueueLeave(Event):
     }
 
     id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("event.id"), primary_key=True
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
     )
-    queue_name: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
-    branch: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
-    position: orm.Mapped[int] = orm.mapped_column(sqlalchemy.Integer)
+    queue_name: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+    )
+    branch: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+    )
+    position: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.Integer, anonymizer_config="anon.random_int_between(0, 50)"
+    )
     queued_at: orm.Mapped[datetime.datetime] = orm.mapped_column(
-        sqlalchemy.DateTime(timezone=True)
+        sqlalchemy.DateTime(timezone=True),
+        anonymizer_config="anon.dnoise(queued_at, ''2 days'')",
     )
     partition_name: orm.Mapped[
         partition_rules.PartitionRuleName | None
-    ] = orm.mapped_column(sqlalchemy.Text, nullable=True)
-    merged: orm.Mapped[bool] = orm.mapped_column(sqlalchemy.Boolean)
-    reason: orm.Mapped[str] = orm.mapped_column(sqlalchemy.Text)
-    seconds_waiting_for_schedule: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.Integer
+    ] = orm.mapped_column(
+        sqlalchemy.Text,
+        nullable=True,
+        anonymizer_config="anon.lorem_ipsum( characters := 7)",
     )
-    seconds_waiting_for_freeze: orm.Mapped[int] = orm.mapped_column(sqlalchemy.Integer)
+    merged: orm.Mapped[bool] = orm.mapped_column(
+        sqlalchemy.Boolean,
+        anonymizer_config="anon.random_int_between(0,1)",
+    )
+    reason: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( words := 7)"
+    )
+    seconds_waiting_for_schedule: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.Integer, anonymizer_config=None
+    )
+    seconds_waiting_for_freeze: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.Integer, anonymizer_config=None
+    )
 
 
 class EventActionSquash(Event):
@@ -299,7 +393,7 @@ class EventActionSquash(Event):
     }
 
     id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("event.id"), primary_key=True
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
     )
 
 
@@ -310,7 +404,7 @@ class EventActionRebase(Event):
     }
 
     id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("event.id"), primary_key=True
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
     )
 
 
@@ -321,7 +415,7 @@ class EventActionRefresh(Event):
     }
 
     id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("event.id"), primary_key=True
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
     )
 
 
@@ -332,7 +426,7 @@ class EventActionRequeue(Event):
     }
 
     id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("event.id"), primary_key=True
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
     )
 
 
@@ -343,7 +437,7 @@ class EventActionUnqueue(Event):
     }
 
     id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("event.id"), primary_key=True
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
     )
 
 
@@ -354,5 +448,5 @@ class EventActionUpdate(Event):
     }
 
     id: orm.Mapped[int] = orm.mapped_column(
-        sqlalchemy.ForeignKey("event.id"), primary_key=True
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
     )

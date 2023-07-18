@@ -131,3 +131,13 @@ cmd = "./tools/run-tests.sh ./tools/run-alembic-revision.sh"
 deps = ["setup"]
 help = "Run an alembic command"
 cmd = "./tools/run-tests.sh alembic --config mergify_engine/models/db_migration/alembic.ini"
+
+[tool.poe.tasks.pg_anonymizer]
+deps = ["setup"]
+help = "Generate and check the rule file for postgresql_anonymizer"
+default_item_type = "cmd"
+sequence = [
+     "./tools/run-tests.sh python3 mergify_engine/models/anonymizer.py",
+     "docker build -t mergifyio/custom_postgresql_anonymizer -f dockerfiles/Dockerfile.postgresql_anonymizer .",
+     "bash -c 'cat empty_database.sql postgresql_anonymizer_rules.sql | docker run --rm -i mergifyio/custom_postgresql_anonymizer /anon.sh'"
+]

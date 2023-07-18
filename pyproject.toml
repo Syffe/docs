@@ -103,6 +103,9 @@ black = "^23.7.0"
 
 [tool.poetry.plugins]
 
+[tool.poetry.plugins."sqlalchemy.dialects"]
+  anonymizer = "mergify_engine.database:Anonymizer"
+
 [tool.poetry.plugins.mergify_signals]
   noop = "mergify_engine.signals:NoopSignal"
   last_seen = "mergify_engine.usage.last_seen:Signal"

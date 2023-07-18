@@ -24,6 +24,7 @@ shared:
     - check-success=test (3)
     - check-success=test (4)
     - check-success=test (5)
+    - check-success=postgresql-anonymizer
     - check-success=docs
 
 queue_rules:

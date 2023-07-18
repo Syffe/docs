@@ -13,10 +13,14 @@ class GitHubRepository(models.Base):
     __tablename__ = "github_repository"
 
     id: orm.Mapped[github_types.GitHubRepositoryIdType] = orm.mapped_column(
-        sqlalchemy.BigInteger, primary_key=True, autoincrement=False
+        sqlalchemy.BigInteger,
+        primary_key=True,
+        autoincrement=False,
+        anonymizer_config=None,
     )
     owner_id: orm.Mapped[github_types.GitHubAccountIdType] = orm.mapped_column(
-        sqlalchemy.ForeignKey("github_account.id")
+        sqlalchemy.ForeignKey("github_account.id"),
+        anonymizer_config=None,
     )
 
     owner: orm.Mapped[github_account.GitHubAccount] = orm.relationship(
@@ -24,7 +28,10 @@ class GitHubRepository(models.Base):
     )
 
     name: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.Text, nullable=False, index=True
+        sqlalchemy.Text,
+        nullable=False,
+        index=True,
+        anonymizer_config="anon.lorem_ipsum( characters := 7 )",
     )
 
     @classmethod
