@@ -1,3 +1,4 @@
+import asyncio
 import dataclasses
 import logging
 import sys
@@ -53,6 +54,8 @@ class LoggingMiddleware:
         exc_info = None
         try:
             await self.app(scope, receive, send_wrapper)
+        except asyncio.CancelledError:
+            raise
         except requests.ClientDisconnect:
             raise
         except Exception:
