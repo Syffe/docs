@@ -17,7 +17,7 @@ Mergify uses the configuration file that is:
   from the root directory.
 
 - In the default repository branch configured on GitHub — usually ``main``.
-- The configuration can be extended once by another configuration using the keyword ``extends``.
+- The configuration can be extended once by another configuration using the keyword ``extends``, see :ref:`extends`.
 
 Format
 ------
@@ -597,6 +597,8 @@ Example
           merge:
             method: merge
 
+.. _extends:
+
 Extends
 -------
 
@@ -610,6 +612,12 @@ repository configuration where Mergify is installed. The value of the
 .. code-block:: yaml
 
   extends: my_repo
+
+.. warning::
+
+   The extended repository needs to have Mergify installed on it for the extend to work.
+   Otherwise, Mergify will not be able to keep the configuration up to date if the configuration
+   is changed in the extended repository.
 
 
 The local configuration inherits rules from the remote configuration. Remote

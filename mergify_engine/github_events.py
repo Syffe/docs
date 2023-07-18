@@ -383,6 +383,25 @@ async def clear_api_authentication_cache(
     await pipe.execute()
 
 
+async def clear_mergify_installed_cache(
+    redis_links: redis_utils.RedisLinks,
+    event: github_types.GitHubEventInstallationRepositories,
+) -> None:
+    pipe = await redis_links.cache.pipeline()
+    for repository in event["repositories_added"]:
+        cache_key = context.Repository.get_mergify_installation_cache_key(
+            repository["full_name"]
+        )
+        await pipe.delete(cache_key)
+    for repository in event["repositories_removed"]:
+        cache_key = context.Repository.get_mergify_installation_cache_key(
+            repository["full_name"]
+        )
+        await pipe.delete(cache_key)
+
+    await pipe.execute()
+
+
 async def event_classifier(
     redis_links: redis_utils.RedisLinks,
     event_type: github_types.GitHubEventType,
@@ -405,6 +424,7 @@ async def event_classifier(
             # NOTE: Use this event to invalidate api authentication cache
             event = typing.cast(github_types.GitHubEventInstallationRepositories, event)
             await clear_api_authentication_cache(redis_links, event)
+            await clear_mergify_installed_cache(redis_links, event)
 
         return EventToIgnore(event_type, event_id, event, f"{event_type} event")
 

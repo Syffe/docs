@@ -43,6 +43,7 @@ from mergify_engine import settings
 from mergify_engine import subscription as subscription_mod
 from mergify_engine import utils
 from mergify_engine.clients import github
+from mergify_engine.clients import github_app
 from mergify_engine.clients import http
 
 
@@ -281,6 +282,11 @@ class RepositoryCaches:
     team_has_read_permission: cache.Cache[
         github_types.GitHubTeamSlug, bool
     ] = dataclasses.field(default_factory=cache.Cache)
+
+
+class MergifyInstalled(typing.TypedDict):
+    installed: bool
+    error: str | None
 
 
 @dataclasses.dataclass
@@ -583,6 +589,52 @@ class Repository:
     ) -> None:
         cache_key = cls.get_config_file_cache_key(repo_id)
         await redis.delete(cache_key)
+
+    INSTALLATION_CACHE_EXPIRATION = datetime.timedelta(days=7)
+
+    @classmethod
+    def get_mergify_installation_cache_key(
+        self,
+        repo_fullname: str,
+    ) -> str:
+        return f"mergify-installation/{repo_fullname}"
+
+    async def is_mergify_installed(self) -> MergifyInstalled:
+        """
+        Returns True if Mergify is installed on the repository. Otherwise
+        returns the error, as a string, from the http request
+        """
+        cache_key = self.get_mergify_installation_cache_key(self.repo["full_name"])
+        cache_value = await self.installation.redis.cache.get(cache_key)
+        if cache_value is not None:
+            return typing.cast(MergifyInstalled, json.loads(cache_value))
+
+        async with github.AsyncGitHubClient(
+            auth=github_app.GitHubBearerAuth()
+        ) as client:
+            try:
+                await client.get(
+                    f"/repos/{self.repo['owner']['login']}/{self.repo['name']}/installation"
+                )
+            except http.HTTPNotFound as e:
+                ret = MergifyInstalled(
+                    installed=False,
+                    error=str(e),
+                )
+                await self.installation.redis.cache.set(
+                    cache_key,
+                    json.dumps(ret),
+                    ex=self.INSTALLATION_CACHE_EXPIRATION,
+                )
+                return ret
+
+        ret = MergifyInstalled(installed=True, error=None)
+        await self.installation.redis.cache.set(
+            cache_key,
+            json.dumps(ret),
+            ex=self.INSTALLATION_CACHE_EXPIRATION,
+        )
+        return ret
 
     USERS_PERMISSION_CACHE_KEY_PREFIX = "users_permission"
     USERS_PERMISSION_CACHE_KEY_DELIMITER = "/"

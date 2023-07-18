@@ -7,6 +7,7 @@ import typing
 from unittest import mock
 
 import pytest
+import respx
 import voluptuous
 
 from mergify_engine import context
@@ -1126,7 +1127,9 @@ async def test_extends_infinite_loop() -> None:
     )
 
 
-async def test_extends_limit(fake_repository: context.Repository) -> None:
+async def test_extends_limit(
+    fake_repository: context.Repository, respx_mock: respx.MockRouter
+) -> None:
     mergify_config = mergify_conf.MergifyConfig(
         {
             "extends": github_types.GitHubRepositoryName(".github"),
@@ -1140,6 +1143,10 @@ async def test_extends_limit(fake_repository: context.Repository) -> None:
             },
         }
     )
+
+    # "Mergifyio/mergify-engine" because this is the value of the fake_repository
+    # that is returned by the mocked `get_repository_by_name`
+    respx_mock.get("/repos/Mergifyio/mergify-engine/installation").respond(200)
 
     repository_ctxt = mock.MagicMock()
     repository_ctxt.installation.get_repository_by_name = mock.AsyncMock(

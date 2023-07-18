@@ -253,4 +253,15 @@ async def get_mergify_extended_config(
             error_path,
         )
 
+    mergify_installed = await extended_repository_ctxt.is_mergify_installed()
+    if not mergify_installed["installed"]:
+        raise InvalidRules(
+            voluptuous.Invalid(
+                f"Extended configuration repository `{extended_path}` doesn't have Mergify installed on it. Mergify needs to be enabled on extended repositories to be able to detect configuration changes properly.",
+                ["extends"],
+                mergify_installed["error"],
+            ),
+            error_path,
+        )
+
     return await extended_repository_ctxt.get_mergify_config(allow_extend=False)

@@ -1,15 +1,21 @@
+import json
 import os
 import typing
 from unittest import mock
 
+import anys
 import pytest
 
 from mergify_engine import check_api
 from mergify_engine import constants
 from mergify_engine import context
+from mergify_engine import github_events
+from mergify_engine import github_types
 from mergify_engine import rules
+from mergify_engine import settings
 from mergify_engine import subscription
 from mergify_engine import yaml
+from mergify_engine.clients import github
 from mergify_engine.rules.config import queue_rules as qr_config
 from mergify_engine.tests.functional import base
 
@@ -621,18 +627,77 @@ did not find expected alphabetic or numeric character
 
     @pytest.mark.subscription(subscription.Features.CUSTOM_CHECKS)
     async def test_extend_config_file_ok(self) -> None:
+        # TODO: mock extends installation request
         # Notes(Jules): this config is stored here: https://github.com/mergifyio-testing/.github/blob/main/.mergify.yml
         mergify_config = {"extends": ".github"}
 
         await self.setup_repo(yaml.dump(mergify_config))
         p = await self.create_pr()
         await self.add_label(p["number"], "comment")
-        await self.run_engine()
-        ctxt = context.Context(self.repository_ctxt, p, [])
-        config = await ctxt.repository.get_mergify_config()
+
+        real_client_get = github.AsyncGitHubClient.get
+
+        async def mocked_client_get(self, url, *args, **kwargs):  # type: ignore[no-untyped-def]
+            if (
+                f"/repos/{settings.TESTING_ORGANIZATION_NAME}/.github/installation"
+                in url
+            ):
+                m = mock.Mock()
+                m.status_code = 200
+                return m
+            return await real_client_get(self, url, *args, **kwargs)
+
+        with mock.patch.object(github.AsyncGitHubClient, "get", mocked_client_get):
+            await self.run_engine()
+
+            ctxt = context.Context(self.repository_ctxt, p, [])
+            config = await ctxt.repository.get_mergify_config()
 
         assert len(config["queue_rules"]) == 1
         assert len(config["pull_request_rules"].rules) == 2
+
+        # Make sure the installation status is stored in redis
+        cache_value = await self.redis_links.cache.get(
+            context.Repository.get_mergify_installation_cache_key(
+                f"{settings.TESTING_ORGANIZATION_NAME}/.github"
+            )
+        )
+        assert cache_value is not None
+        assert json.loads(cache_value) == {"installed": True, "error": None}
+
+        # Make sure that a "installation_repositories" event cleans up the mergify installation status
+        # NOTE: This is impossible to test with a real event, so we need to manually send one
+        await github_events.event_classifier(
+            self.redis_links,
+            "installation_repositories",
+            "123eventid",
+            # This is a slim event with just the data required to make sure the
+            # authentication cache clearing mechanism work.
+            github_types.GitHubEventInstallationRepositories(  # type: ignore[typeddict-item]
+                {
+                    "installation": {
+                        "account": {
+                            "login": settings.TESTING_ORGANIZATION_NAME,
+                        }
+                    },
+                    "repositories_added": [
+                        {
+                            "full_name": f"{settings.TESTING_ORGANIZATION_NAME}/.github",
+                        }
+                    ],
+                    "repositories_removed": [],
+                }
+            ),
+            # We don't need the bot infos
+            github_types.GitHubAccount({}),  # type: ignore[typeddict-item]
+        )
+
+        cache_value = await self.redis_links.cache.get(
+            context.Repository.get_mergify_installation_cache_key(
+                f"{settings.TESTING_ORGANIZATION_NAME}/.github"
+            )
+        )
+        assert cache_value is None
 
     @pytest.mark.subscription(subscription.Features.CUSTOM_CHECKS)
     async def test_extend_config_file_merge_ok(self) -> None:
@@ -659,9 +724,23 @@ did not find expected alphabetic or numeric character
         await self.setup_repo(yaml.dump(mergify_config))
         p = await self.create_pr()
         await self.add_label(p["number"], "comment")
-        await self.run_engine()
-        ctxt = context.Context(self.repository_ctxt, p, [])
-        config = await ctxt.repository.get_mergify_config()
+
+        real_client_get = github.AsyncGitHubClient.get
+
+        async def mocked_client_get(self, url, *args, **kwargs):  # type: ignore[no-untyped-def]
+            if (
+                f"/repos/{settings.TESTING_ORGANIZATION_NAME}/.github/installation"
+                in url
+            ):
+                m = mock.Mock()
+                m.status_code = 200
+                return m
+            return await real_client_get(self, url, *args, **kwargs)
+
+        with mock.patch.object(github.AsyncGitHubClient, "get", mocked_client_get):
+            await self.run_engine()
+            ctxt = context.Context(self.repository_ctxt, p, [])
+            config = await ctxt.repository.get_mergify_config()
 
         assert len(config["queue_rules"].rules) == 2
         # One from default config, one from extends, one from this repo
@@ -709,3 +788,31 @@ did not find expected alphabetic or numeric character
             "Extended configuration repository `this_repo_does_not_exist` was not found. This repository doesn't exist or Mergify is not installed on it."
             in summary_check["output"]["summary"]
         )
+
+    async def test_extended_repo_does_not_have_mergify_enabled(self) -> None:
+        # git-pull-request = repo in mergifyio-testing that doesn't, and shouldn't,
+        # have the testing app installed on it.
+        rules = {"extends": "git-pull-request"}
+
+        await self.setup_repo(yaml.dump(rules))
+        await self.create_pr()
+        await self.run_engine()
+
+        check_run = await self.wait_for_check_run(name="Summary", conclusion="failure")
+        assert (
+            check_run["check_run"]["output"]["title"]
+            == "The current Mergify configuration is invalid"
+        )
+
+        assert (
+            "Extended configuration repository `git-pull-request` doesn't have Mergify installed on it. Mergify needs to be enabled on extended repositories to be able to detect configuration changes properly."
+            in check_run["check_run"]["output"]["summary"]
+        )
+
+        cache_value = await self.redis_links.cache.get(
+            context.Repository.get_mergify_installation_cache_key(
+                f"{settings.TESTING_ORGANIZATION_NAME}/git-pull-request"
+            )
+        )
+        assert cache_value is not None
+        assert json.loads(cache_value) == {"installed": False, "error": anys.ANY_STR}
