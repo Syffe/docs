@@ -5,7 +5,6 @@ import pytest
 
 from mergify_engine import context
 from mergify_engine import github_types
-from mergify_engine import settings
 from mergify_engine import subscription
 from mergify_engine import yaml
 from mergify_engine.tests.functional import base
@@ -103,17 +102,18 @@ class BackportActionTestBase(base.FunctionalTestBase):
         refs = [
             ref["ref"]
             async for ref in self.find_git_refs(
-                self.url_origin, [f"mergify/bp/{stable_branch}/pr-{p['number']}"]
+                self.url_origin,
+                [
+                    f"mergify/{self.mocked_backport_branch_prefix}/{stable_branch}/pr-{p['number']}"
+                ],
             )
         ]
-        assert [f"refs/heads/mergify/bp/{stable_branch}/pr-{p['number']}"] == refs
+        assert [
+            f"refs/heads/mergify/{self.mocked_backport_branch_prefix}/{stable_branch}/pr-{p['number']}"
+        ] == refs
         return await self.get_pull(pulls[0]["number"])
 
 
-@pytest.mark.skipif(
-    not settings.GITHUB_URL.startswith("https://github.com"),
-    reason="https://linear.app/mergify/issue/MRGFY-2233/backport-tests-record-in-parallel-are-flaky",
-)
 @pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
 class TestBackportAction(BackportActionTestBase):
     async def test_backport_no_branch(self) -> None:
@@ -236,7 +236,7 @@ class TestBackportAction(BackportActionTestBase):
 
 Cherry-pick of {commit_id} has failed:
 ```
-On branch mergify/bp/{stable_branch}/pr-{p['number']}
+On branch mergify/{self.mocked_backport_branch_prefix}/{stable_branch}/pr-{p['number']}
 Your branch is up to date with 'origin/{stable_branch}'.
 
 You are currently cherry-picking commit {commit_id[:7]}.
@@ -412,16 +412,17 @@ no changes added to commit (use "git add" and/or "git commit -a")
         refs = [
             ref["ref"]
             async for ref in self.find_git_refs(
-                self.url_origin, [f"mergify/bp/{stable_branch}/pr-{p1['number']}"]
+                self.url_origin,
+                [
+                    f"mergify/{self.mocked_backport_branch_prefix}/{stable_branch}/pr-{p1['number']}"
+                ],
             )
         ]
-        assert [f"refs/heads/mergify/bp/{stable_branch}/pr-{p1['number']}"] == refs
+        assert [
+            f"refs/heads/mergify/{self.mocked_backport_branch_prefix}/{stable_branch}/pr-{p1['number']}"
+        ] == refs
 
 
-@pytest.mark.skipif(
-    not settings.GITHUB_URL.startswith("https://github.com"),
-    reason="https://linear.app/mergify/issue/MRGFY-2233/backport-tests-record-in-parallel-are-flaky",
-)
 class TestBackportActionWithSub(BackportActionTestBase):
     SUBSCRIPTION_ACTIVE = True
 

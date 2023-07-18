@@ -16,6 +16,7 @@ import typing
 import unittest
 from unittest import mock
 from urllib import parse
+import uuid
 
 import daiquiri
 from first import first
@@ -465,6 +466,29 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         self.register_mock(self.mock_merge_queue_branch_prefix)
         # ##############################
 
+        # ########## MOCK BACKPORT AND COPY ACTIONS BRANCH PREFIX
+        # This way we can clean up only the branches created by the backport/copy
+        # of the current test.
+        uuidvalue = uuid.uuid5(uuid.NAMESPACE_OID, self._testMethodName)
+        self.mocked_backport_branch_prefix = f"bp/{uuidvalue}"
+        self.mocked_copy_branch_prefix = f"copy/{uuidvalue}"
+
+        self.register_mock(
+            mock.patch.object(
+                backport.BackportExecutor,
+                "BRANCH_PREFIX",
+                self.mocked_backport_branch_prefix,
+            )
+        )
+        self.register_mock(
+            mock.patch.object(
+                copy_action.CopyExecutor,
+                "BRANCH_PREFIX",
+                self.mocked_copy_branch_prefix,
+            )
+        )
+        # ##############################
+
         # ########## MOCK EXTRACT DEFAULT BRANCH
         def mock_extract_default_branch(
             repository: github_types.GitHubRepository,
@@ -603,8 +627,8 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                     [
                         self.main_branch_name,
                         self.mocked_merge_queue_branch_prefix,
-                        f"mergify/{backport.BackportExecutor.BRANCH_PREFIX}",
-                        f"mergify/{copy_action.CopyExecutor.BRANCH_PREFIX}",
+                        f"mergify/{self.mocked_backport_branch_prefix}",
+                        f"mergify/{self.mocked_copy_branch_prefix}",
                     ],
                 )
             ]

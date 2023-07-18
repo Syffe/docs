@@ -45,10 +45,18 @@ class TestCommandCopy(base.FunctionalTestBase):
 
         refs = [
             ref["ref"]
-            async for ref in self.find_git_refs(self.url_origin, ["mergify/copy"])
+            async for ref in self.find_git_refs(
+                self.url_origin, [f"mergify/{self.mocked_copy_branch_prefix}"]
+            )
         ]
-        assert f"refs/heads/mergify/copy/{feature_branch}/pr-{p['number']}" in refs
-        assert f"refs/heads/mergify/copy/{stable_branch}/pr-{p['number']}" in refs
+        assert (
+            f"refs/heads/mergify/{self.mocked_copy_branch_prefix}/{feature_branch}/pr-{p['number']}"
+            in refs
+        )
+        assert (
+            f"refs/heads/mergify/{self.mocked_copy_branch_prefix}/{stable_branch}/pr-{p['number']}"
+            in refs
+        )
 
         await self.merge_pull(pulls_feature[0]["number"])
         await self.wait_for("pull_request", {"action": "closed"})
@@ -58,7 +66,15 @@ class TestCommandCopy(base.FunctionalTestBase):
 
         refs = [
             ref["ref"]
-            async for ref in self.find_git_refs(self.url_origin, ["mergify/copy"])
+            async for ref in self.find_git_refs(
+                self.url_origin, [f"mergify/{self.mocked_copy_branch_prefix}"]
+            )
         ]
-        assert f"refs/heads/mergify/copy/{feature_branch}/pr-{p['number']}" not in refs
-        assert f"refs/heads/mergify/copy/{stable_branch}/pr-{p['number']}" not in refs
+        assert (
+            f"refs/heads/mergify/{self.mocked_copy_branch_prefix}/{feature_branch}/pr-{p['number']}"
+            not in refs
+        )
+        assert (
+            f"refs/heads/mergify/{self.mocked_copy_branch_prefix}/{stable_branch}/pr-{p['number']}"
+            not in refs
+        )
