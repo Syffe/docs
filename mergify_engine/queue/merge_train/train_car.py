@@ -1426,21 +1426,26 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 queue_utils.AbortCodeT, unqueue_reason.unqueue_code
             )
 
-        if (
-            self.train_car_state.outcome
-            in (
-                TrainCarOutcome.CHECKS_TIMEOUT,
-                TrainCarOutcome.CHECKS_FAILED,
-            )
-            and self.last_conditions_evaluation
+        if self.train_car_state.outcome in (
+            TrainCarOutcome.CHECKS_TIMEOUT,
+            TrainCarOutcome.CHECKS_FAILED,
         ):
-            related_checks = self.last_conditions_evaluation.get_related_checks()
+            if self.last_conditions_evaluation:
+                related_checks = self.last_conditions_evaluation.get_related_checks()
+            else:
+                related_checks = set()
 
             unsuccessful_checks = [
                 check.serialized()
                 for check in self.last_checks
                 if check.state != "success" and check.name in related_checks
             ]
+            if not unsuccessful_checks:
+                self.train.log.info(
+                    "unsuccessful_checks is unexpectedly empty",
+                    last_checks=self.last_checks,
+                    related_checks=related_checks,
+                )
         else:
             unsuccessful_checks = []
 
