@@ -132,7 +132,13 @@ class EventRequeue(EventBaseNoMetadata):
 
 
 class EventRequestReviewers(EventBase):
+    # TODO(lecrepont01): transition to `EventRequestReviews` below after UI change
     event: typing.Literal["action.request_reviewers"]
+    metadata: signals.EventRequestReviewsMetadata
+
+
+class EventRequestReviews(EventBase):
+    event: typing.Literal["action.request_reviews"]
     metadata: signals.EventRequestReviewsMetadata
 
 
@@ -218,6 +224,7 @@ Event = (
     | EventRebase
     | EventRefresh
     | EventRequestReviewers
+    | EventRequestReviews
     | EventRequeue
     | EventReview
     | EventSquash
@@ -457,6 +464,9 @@ async def get(
 
         elif event["event"] == "action.request_reviewers":
             events.append(typing.cast(EventRequestReviewers, event))
+
+        elif event["event"] == "action.request_reviews":
+            events.append(typing.cast(EventRequestReviews, event))
 
         elif event["event"] == "action.requeue":
             events.append(typing.cast(EventRequeue, event))

@@ -39,6 +39,7 @@ EventName = typing.Literal[
     "action.rebase",
     "action.refresh",
     "action.request_reviewers",
+    "action.request_reviews",
     "action.requeue",
     "action.review",
     "action.squash",
@@ -419,6 +420,7 @@ async def send(
     metadata: EventRequestReviewsMetadata,
     trigger: str,
 ) -> None:
+    # TODO(lecrepont01): transition to `EventRequestReviews` after UI change
     ...
 
 
