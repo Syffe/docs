@@ -1,5 +1,6 @@
 from datetime import datetime
 from datetime import timedelta
+import typing
 from unittest import mock
 
 import anys
@@ -22,6 +23,7 @@ from mergify_engine.tests.functional import base
 
 @pytest.mark.usefixtures("enable_events_db_ingestion")
 @pytest.mark.subscription(
+    subscription.Features.QUEUE_ACTION,
     subscription.Features.EVENTLOGS_SHORT,
     subscription.Features.EVENTLOGS_LONG,
     subscription.Features.QUEUE_FREEZE,
@@ -606,6 +608,421 @@ class TestEventLogsAction(base.FunctionalTestBase):
             "total": 1,
         }
 
+    @staticmethod
+    def assert_unsuccessful_checks(
+        events: typing.Any,
+        expected_unsuccessful_checks: list[typing.Any],
+    ) -> None:
+        for event in events:
+            if event["event"] == "action.queue.checks_end":
+                assert (
+                    event["metadata"]["speculative_check_pull_request"][
+                        "unsuccessful_checks"
+                    ]
+                    == expected_unsuccessful_checks
+                )
+                break
+        else:
+            raise KeyError("Event `action.queue.checks_end` not found")
+
+    async def test_unsuccessful_checks_failed_with_batch(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        {
+                            "or": [
+                                {
+                                    "and": [
+                                        "status-success=continuous-integration/toto",
+                                        "status-success=continuous-integration/tutu",
+                                    ]
+                                },
+                                "status-success=continuous-integration/tata",
+                            ],
+                        },
+                        "status-success=continuous-integration/fake-ci",
+                        "status-success=continuous-integration/fake-ci_2",
+                        "status-success=continuous-integration/fake-ci_3",
+                    ],
+                    "speculative_checks": 1,
+                    "batch_size": 2,
+                    "allow_inplace_checks": True,
+                    "merge_method": "squash",
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "merge default",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        pr_1 = await self.create_pr()
+        pr_2 = await self.create_pr()
+
+        await self.add_label(pr_1["number"], "queue")
+        await self.add_label(pr_2["number"], "queue")
+
+        await self.run_engine()
+        tmp_pull = await self.wait_for_pull_request("opened")
+        assert tmp_pull["pull_request"]["number"] not in [
+            pr_1["number"],
+            pr_2["number"],
+        ]
+
+        # make the first PR pass the CIs
+        await self.create_status(pr_1, "continuous-integration/fake-ci")
+        await self.create_status(pr_1, "continuous-integration/fake-ci_2")
+        await self.create_status(pr_1, "continuous-integration/fake-ci_3")
+        await self.create_status(pr_1, "continuous-integration/toto")
+        await self.create_status(pr_1, "continuous-integration/tata")
+
+        # make the draft PR fails the CIs, so the 2nd PR is notified as failing
+        await self.create_status(
+            tmp_pull["pull_request"],
+            "continuous-integration/fake-ci",
+            state="failure",
+        )
+        await self.create_status(
+            tmp_pull["pull_request"], "continuous-integration/toto", state="failure"
+        )
+        await self.create_status(
+            tmp_pull["pull_request"], "continuous-integration/tata", state="failure"
+        )
+        await self.create_status(
+            tmp_pull["pull_request"],
+            "continuous-integration/fake-ci_2",
+            state="pending",
+        )
+        await self.create_status(
+            tmp_pull["pull_request"],
+            "continuous-integration/fake-ci_3",
+        )
+
+        # Create another one to check that it's not present in the eventlog even if it
+        # not success
+        await self.create_status(
+            tmp_pull["pull_request"],
+            "continuous-integration/fake-ci_4",
+            state="failure",
+        )
+
+        await self.run_engine()
+        await self.wait_for_pull_request("closed")
+
+        r = await self.admin_app.get(
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{pr_1['number']}/events",
+        )
+
+        # assert first PR has no unsuccessful checks
+        self.assert_unsuccessful_checks(
+            events=r.json()["events"], expected_unsuccessful_checks=[]
+        )
+
+        r = await self.admin_app.get(
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{pr_2['number']}/events",
+        )
+
+        # assert second PR has unsuccessful checks reported from the draft PR failing CIs
+        self.assert_unsuccessful_checks(
+            events=r.json()["events"],
+            expected_unsuccessful_checks=[
+                {
+                    "avatar_url": anys.ANY_STR,
+                    "description": "The CI is failure",
+                    "name": "continuous-integration/fake-ci",
+                    "state": "failure",
+                    "url": anys.ANY_STR,
+                },
+                {
+                    "avatar_url": anys.ANY_STR,
+                    "description": "The CI is failure",
+                    "name": "continuous-integration/toto",
+                    "state": "failure",
+                    "url": anys.ANY_STR,
+                },
+                {
+                    "avatar_url": anys.ANY_STR,
+                    "description": "The CI is failure",
+                    "name": "continuous-integration/tata",
+                    "state": "failure",
+                    "url": anys.ANY_STR,
+                },
+                {
+                    "avatar_url": anys.ANY_STR,
+                    "description": "The CI is pending",
+                    "name": "continuous-integration/fake-ci_2",
+                    "state": "pending",
+                    "url": anys.ANY_STR,
+                },
+            ],
+        )
+
+    async def test_unsuccessful_checks_failed_with_spec_checks(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        {
+                            "or": [
+                                {
+                                    "and": [
+                                        "status-success=continuous-integration/toto",
+                                        "status-success=continuous-integration/tutu",
+                                    ]
+                                },
+                                "status-success=continuous-integration/tata",
+                            ],
+                        },
+                        "status-success=continuous-integration/fake-ci",
+                        "status-success=continuous-integration/fake-ci_2",
+                        "status-success=continuous-integration/fake-ci_3",
+                    ],
+                    "speculative_checks": 3,
+                    "allow_inplace_checks": False,
+                    "merge_method": "squash",
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "merge default",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        pr_1 = await self.create_pr()
+
+        await self.add_label(pr_1["number"], "queue")
+
+        await self.run_engine()
+        tmp_pull_1 = await self.wait_for_pull_request("opened")
+        assert tmp_pull_1["pull_request"]["number"] != pr_1["number"]
+
+        await self.create_status(
+            tmp_pull_1["pull_request"],
+            "continuous-integration/fake-ci",
+            state="failure",
+        )
+        await self.create_status(
+            tmp_pull_1["pull_request"], "continuous-integration/toto", state="failure"
+        )
+        await self.create_status(
+            tmp_pull_1["pull_request"], "continuous-integration/tata", state="failure"
+        )
+        await self.create_status(
+            tmp_pull_1["pull_request"],
+            "continuous-integration/fake-ci_2",
+            state="pending",
+        )
+        await self.create_status(
+            tmp_pull_1["pull_request"],
+            "continuous-integration/fake-ci_3",
+        )
+        # Create another one to check that it's not present in the eventlog even if it
+        # not success
+        await self.create_status(
+            tmp_pull_1["pull_request"],
+            "continuous-integration/fake-ci_4",
+            state="failure",
+        )
+
+        await self.run_engine()
+        await self.wait_for_pull_request("closed")
+
+        r = await self.admin_app.get(
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{pr_1['number']}/events",
+        )
+        self.assert_unsuccessful_checks(
+            events=r.json()["events"],
+            expected_unsuccessful_checks=[
+                {
+                    "avatar_url": anys.ANY_STR,
+                    "description": "The CI is failure",
+                    "name": "continuous-integration/fake-ci",
+                    "state": "failure",
+                    "url": anys.ANY_STR,
+                },
+                {
+                    "avatar_url": anys.ANY_STR,
+                    "description": "The CI is failure",
+                    "name": "continuous-integration/toto",
+                    "state": "failure",
+                    "url": anys.ANY_STR,
+                },
+                {
+                    "avatar_url": anys.ANY_STR,
+                    "description": "The CI is failure",
+                    "name": "continuous-integration/tata",
+                    "state": "failure",
+                    "url": anys.ANY_STR,
+                },
+                {
+                    "avatar_url": anys.ANY_STR,
+                    "description": "The CI is pending",
+                    "name": "continuous-integration/fake-ci_2",
+                    "state": "pending",
+                    "url": anys.ANY_STR,
+                },
+            ],
+        )
+
+    async def test_unsuccessful_checks_failed_with_spec_checks_and_second_pr_failing(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "merge_conditions": [
+                        {
+                            "or": [
+                                {
+                                    "and": [
+                                        "status-success=continuous-integration/toto",
+                                        "status-success=continuous-integration/tutu",
+                                    ]
+                                },
+                                "status-success=continuous-integration/tata",
+                            ],
+                        },
+                        "status-success=continuous-integration/fake-ci",
+                        "status-success=continuous-integration/fake-ci_2",
+                        "status-success=continuous-integration/fake-ci_3",
+                    ],
+                    "speculative_checks": 3,
+                    "allow_inplace_checks": True,
+                    "merge_method": "squash",
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "merge default",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                        "label=queue",
+                    ],
+                    "actions": {"queue": {"name": "default"}},
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        pr_1 = await self.create_pr()
+        pr_2 = await self.create_pr()
+
+        await self.add_label(pr_1["number"], "queue")
+        await self.add_label(pr_2["number"], "queue")
+
+        await self.run_engine()
+        tmp_pull_1 = await self.wait_for_pull_request("opened")
+        assert tmp_pull_1["pull_request"]["number"] not in [
+            pr_1["number"],
+            pr_2["number"],
+        ]
+
+        # make the first PR pass the CIs
+        await self.create_status(pr_1, "continuous-integration/fake-ci")
+        await self.create_status(pr_1, "continuous-integration/fake-ci_2")
+        await self.create_status(pr_1, "continuous-integration/fake-ci_3")
+        await self.create_status(pr_1, "continuous-integration/toto")
+        await self.create_status(pr_1, "continuous-integration/tata")
+
+        # make the draft PR (PR1+PR2) fails the CIs, so the 2nd PR is notified as failing
+        await self.create_status(
+            tmp_pull_1["pull_request"],
+            "continuous-integration/fake-ci",
+            state="failure",
+        )
+        await self.create_status(
+            tmp_pull_1["pull_request"], "continuous-integration/toto", state="failure"
+        )
+        await self.create_status(
+            tmp_pull_1["pull_request"], "continuous-integration/tata", state="failure"
+        )
+        await self.create_status(
+            tmp_pull_1["pull_request"],
+            "continuous-integration/fake-ci_2",
+            state="pending",
+        )
+        await self.create_status(
+            tmp_pull_1["pull_request"],
+            "continuous-integration/fake-ci_3",
+        )
+
+        # Create another one to check that it's not present in the eventlog even if it
+        # not success
+        await self.create_status(
+            tmp_pull_1["pull_request"],
+            "continuous-integration/fake-ci_4",
+            state="failure",
+        )
+
+        await self.run_engine()
+        await self.wait_for_pull_request("closed")
+
+        r = await self.admin_app.get(
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{pr_1['number']}/events",
+        )
+
+        # assert first PR has no unsuccessful checks
+        self.assert_unsuccessful_checks(
+            events=r.json()["events"], expected_unsuccessful_checks=[]
+        )
+
+        r = await self.admin_app.get(
+            f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{pr_2['number']}/events",
+        )
+
+        # assert second PR has unsuccessful checks reported from the draft PR failing CIs
+        self.assert_unsuccessful_checks(
+            events=r.json()["events"],
+            expected_unsuccessful_checks=[
+                {
+                    "avatar_url": anys.ANY_STR,
+                    "description": "The CI is failure",
+                    "name": "continuous-integration/fake-ci",
+                    "state": "failure",
+                    "url": anys.ANY_STR,
+                },
+                {
+                    "avatar_url": anys.ANY_STR,
+                    "description": "The CI is failure",
+                    "name": "continuous-integration/toto",
+                    "state": "failure",
+                    "url": anys.ANY_STR,
+                },
+                {
+                    "avatar_url": anys.ANY_STR,
+                    "description": "The CI is failure",
+                    "name": "continuous-integration/tata",
+                    "state": "failure",
+                    "url": anys.ANY_STR,
+                },
+                {
+                    "avatar_url": anys.ANY_STR,
+                    "description": "The CI is pending",
+                    "name": "continuous-integration/fake-ci_2",
+                    "state": "pending",
+                    "url": anys.ANY_STR,
+                },
+            ],
+        )
+
     async def test_unsuccessful_checks_failed(self) -> None:
         rules = {
             "queue_rules": [
@@ -641,9 +1058,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
         await self.create_status(
             pr, "continuous-integration/fake-ci_2", state="pending"
         )
-        await self.create_status(
-            pr, "continuous-integration/fake-ci_3", state="success"
-        )
+        await self.create_status(pr, "continuous-integration/fake-ci_3")
         # Create another one to check that it's not present in the eventlog even if it
         # not success
         await self.create_status(
@@ -655,30 +1070,25 @@ class TestEventLogsAction(base.FunctionalTestBase):
         r = await self.admin_app.get(
             f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{pr['number']}/events",
         )
-
-        for event in r.json()["events"]:
-            if event["event"] == "action.queue.checks_end":
-                assert event["metadata"]["speculative_check_pull_request"][
-                    "unsuccessful_checks"
-                ] == [
-                    {
-                        "avatar_url": anys.ANY_STR,
-                        "description": "The CI is failure",
-                        "name": "continuous-integration/fake-ci",
-                        "state": "failure",
-                        "url": anys.ANY_STR,
-                    },
-                    {
-                        "avatar_url": anys.ANY_STR,
-                        "description": "The CI is pending",
-                        "name": "continuous-integration/fake-ci_2",
-                        "state": "pending",
-                        "url": anys.ANY_STR,
-                    },
-                ]
-                break
-        else:
-            raise KeyError("Event `action.queue.checks_end` not found")
+        self.assert_unsuccessful_checks(
+            events=r.json()["events"],
+            expected_unsuccessful_checks=[
+                {
+                    "avatar_url": anys.ANY_STR,
+                    "description": "The CI is failure",
+                    "name": "continuous-integration/fake-ci",
+                    "state": "failure",
+                    "url": anys.ANY_STR,
+                },
+                {
+                    "avatar_url": anys.ANY_STR,
+                    "description": "The CI is pending",
+                    "name": "continuous-integration/fake-ci_2",
+                    "state": "pending",
+                    "url": anys.ANY_STR,
+                },
+            ],
+        )
 
     async def test_unsuccessful_checks_timeout(self) -> None:
         rules = {
@@ -712,9 +1122,7 @@ class TestEventLogsAction(base.FunctionalTestBase):
 
             await self.run_full_engine()
 
-            await self.create_status(
-                pr, "continuous-integration/fake-ci", state="success"
-            )
+            await self.create_status(pr, "continuous-integration/fake-ci")
             await self.create_status(
                 pr, "continuous-integration/fake-ci_2", state="pending"
             )
@@ -730,22 +1138,18 @@ class TestEventLogsAction(base.FunctionalTestBase):
                 r = await self.admin_app.get(
                     f"/v1/repos/{settings.TESTING_ORGANIZATION_NAME}/{self.RECORD_CONFIG['repository_name']}/pulls/{pr['number']}/events",
                 )
-                for event in r.json()["events"]:
-                    if event["event"] == "action.queue.checks_end":
-                        assert event["metadata"]["speculative_check_pull_request"][
-                            "unsuccessful_checks"
-                        ] == [
-                            {
-                                "avatar_url": anys.ANY_STR,
-                                "description": "The CI is pending",
-                                "name": "continuous-integration/fake-ci_2",
-                                "state": "pending",
-                                "url": anys.ANY_STR,
-                            }
-                        ]
-                        break
-                else:
-                    raise KeyError("Event `action.queue.checks_end` not found")
+                self.assert_unsuccessful_checks(
+                    events=r.json()["events"],
+                    expected_unsuccessful_checks=[
+                        {
+                            "avatar_url": anys.ANY_STR,
+                            "description": "The CI is pending",
+                            "name": "continuous-integration/fake-ci_2",
+                            "state": "pending",
+                            "url": anys.ANY_STR,
+                        }
+                    ],
+                )
 
     async def test_eventlogs_db(self) -> None:
         # NOTE(lecrepont01): this tests the integration of feature events in DB but should evolve in an API test
