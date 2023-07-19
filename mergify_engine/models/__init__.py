@@ -4,10 +4,6 @@ import sqlalchemy
 from sqlalchemy import orm
 
 
-class ORMObjectAsDict(typing.TypedDict):
-    pass
-
-
 class Base(orm.DeclarativeBase):
     __allow_unmapped__ = True
     __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {"eager_defaults": True}  # type: ignore [misc]
@@ -21,17 +17,6 @@ class Base(orm.DeclarativeBase):
             "ck": "%(table_name)s_%(constraint_name)s_check",
         }
     )
-
-    def as_dict(self) -> ORMObjectAsDict:
-        result = {c.name: getattr(self, c.name) for c in self.__table__.columns}
-
-        for relationship in sqlalchemy.inspect(self.__class__).relationships:
-            relationship_name = relationship.key
-            relationship_value = getattr(self, relationship_name)
-            if relationship_value is not None:
-                result[relationship_name] = relationship_value.as_dict()
-
-        return result  # type: ignore [return-value]
 
 
 # NOTE(charly): ensure all models are loaded, to

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import typing
-
 import sqlalchemy
 from sqlalchemy import orm
 import sqlalchemy.ext.asyncio
@@ -9,16 +7,6 @@ import sqlalchemy.ext.asyncio
 from mergify_engine import github_types
 from mergify_engine import models
 from mergify_engine.models import github_account
-
-
-class GitHubRepositoryDict(models.ORMObjectAsDict):
-    id: github_types.GitHubRepositoryIdType
-    owner: github_account.GitHubAccountDict
-    name: github_types.GitHubRepositoryName
-    private: bool
-    default_branch: github_types.GitHubRefType
-    full_name: str
-    archived: bool
 
 
 class GitHubRepository(models.Base):
@@ -63,19 +51,10 @@ class GitHubRepository(models.Base):
     )
 
     @classmethod
-    async def get_by_name(
-        cls,
-        session: sqlalchemy.ext.asyncio.AsyncSession,
-        name: github_types.GitHubRepositoryName,
-    ) -> GitHubRepository | None:
-        result = await session.execute(sqlalchemy.select(cls).where(cls.name == name))
-        return result.scalar_one_or_none()
-
-    @classmethod
     async def get_or_create(
         cls,
         session: sqlalchemy.ext.asyncio.AsyncSession,
-        repository: github_types.GitHubRepository | GitHubRepositoryDict,
+        repository: github_types.GitHubRepository,
     ) -> GitHubRepository:
         owner = await github_account.GitHubAccount.get_or_create(
             session, repository["owner"]
@@ -87,21 +66,6 @@ class GitHubRepository(models.Base):
         if (repository_obj := result.scalar_one_or_none()) is not None:
             # NOTE(lecrepont01): update attributes
             repository_obj.name = repository["name"]
-            repository_obj.private = repository.get("private")
-            repository_obj.default_branch = repository.get("default_branch")
-            repository_obj.full_name = repository.get("full_name")
-            repository_obj.archived = repository.get("archived")
             return repository_obj
 
-        return cls(
-            id=repository["id"],
-            name=repository["name"],
-            owner=owner,
-            private=repository.get("private"),
-            default_branch=repository.get("default_branch"),
-            full_name=repository.get("full_name"),
-            archived=repository.get("archived"),
-        )
-
-    def as_dict(self) -> GitHubRepositoryDict:
-        return typing.cast(GitHubRepositoryDict, super().as_dict())
+        return cls(id=repository["id"], name=repository["name"], owner=owner)

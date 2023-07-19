@@ -149,7 +149,6 @@ class WorkflowRun(models.Base):
         cls,
         session: sqlalchemy.ext.asyncio.AsyncSession,
         workflow_run_data: github_types.GitHubWorkflowRun,
-        repository: github_types.GitHubRepository,
     ) -> None:
         result = await session.execute(
             sqlalchemy.select(cls).where(cls.id == workflow_run_data["id"])
@@ -170,7 +169,7 @@ class WorkflowRun(models.Base):
                         session, workflow_run_data["repository"]["owner"]
                     ),
                     repository=await github_repository.GitHubRepository.get_or_create(
-                        session, repository
+                        session, workflow_run_data["repository"]
                     ),
                     event=WorkflowRunTriggerEvent(workflow_run_data["event"]),
                     triggering_actor=triggering_actor,

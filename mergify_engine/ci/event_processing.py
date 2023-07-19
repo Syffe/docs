@@ -70,17 +70,19 @@ async def _process_workflow_run_event(
     workflow_run = workflow_run_event["workflow_run"]
 
     owner = workflow_run["repository"]["owner"]
-    await github_account.GitHubAccount.create_or_update(session, owner)
+    await github_account.GitHubAccount.create_or_update(
+        session, owner["id"], owner["login"]
+    )
 
     # GitHub lies and sometimes does not set this
     # MERGIFY-ENGINE-3B2
     if "triggering_actor" in workflow_run:
         triggering_actor = workflow_run["triggering_actor"]
-        await github_account.GitHubAccount.create_or_update(session, triggering_actor)
+        await github_account.GitHubAccount.create_or_update(
+            session, triggering_actor["id"], triggering_actor["login"]
+        )
 
-    await github_actions.WorkflowRun.insert(
-        session, workflow_run, workflow_run_event["repository"]
-    )
+    await github_actions.WorkflowRun.insert(session, workflow_run)
 
     if workflow_run["event"] in ("pull_request", "pull_request_target"):
         await _insert_pull_request(redis_links, session, workflow_run_event)

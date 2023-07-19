@@ -1,15 +1,9 @@
-from __future__ import annotations
-
 import typing
 
 from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine import signals
 from mergify_engine.models import events as evt_model
-
-
-if typing.TYPE_CHECKING:
-    from mergify_engine.models import github_repository
 
 
 EVENT_NAME_TO_MODEL = {
@@ -26,7 +20,7 @@ class EventNotHandled(Exception):
 
 async def insert(
     event: signals.EventName,
-    repository: github_types.GitHubRepository | github_repository.GitHubRepositoryDict,
+    repository: github_types.GitHubRepository,
     pull_request: github_types.GitHubPullRequestNumber | None,
     trigger: str,
     metadata: signals.EventMetadata,

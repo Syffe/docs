@@ -236,9 +236,9 @@ async def build_fake_context(
         "base": {
             "label": github_types.GitHubBaseBranchLabel("mergify_engine:main"),
             "ref": github_types.GitHubRefType("main"),
-            "repo": repository.repo,  # type: ignore [typeddict-item]
+            "repo": repository.repo,
             "sha": github_types.SHAType("the-base-sha"),
-            "user": repository.repo["owner"],  # type: ignore [typeddict-item]
+            "user": repository.repo["owner"],
         },
     }
     pull.update(kwargs)  # type: ignore
