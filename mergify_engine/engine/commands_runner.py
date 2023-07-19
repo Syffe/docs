@@ -1,3 +1,4 @@
+import collections
 import dataclasses
 import re
 import typing
@@ -163,6 +164,13 @@ async def on_each_event(event: github_types.GitHubEventIssueComment) -> None:
             )
 
 
+# NOTE(sileht): Unlike the Python dict, this one move to the end key that have been updated
+class LastUpdatedOrderedDict(collections.OrderedDict[str, CommandState]):
+    def __setitem__(self, key: str, value: CommandState) -> None:
+        super().__setitem__(key, value)
+        self.move_to_end(key)
+
+
 class NoCommandStateFound(Exception):
     pass
 
@@ -225,11 +233,11 @@ def extract_command_state(
 
 async def get_pending_commands_to_run_from_comments(
     ctxt: context.Context,
-) -> dict[str, CommandState]:
+) -> LastUpdatedOrderedDict:
     mergify_bot = await github.GitHubAppInfo.get_bot(
         ctxt.repository.installation.redis.cache
     )
-    pendings: dict[str, CommandState] = {}
+    pendings = LastUpdatedOrderedDict()
     async for attempt in tenacity.AsyncRetrying(
         stop=tenacity.stop_after_attempt(2),
         wait=tenacity.wait_exponential(0.2),
