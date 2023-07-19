@@ -225,7 +225,7 @@ jobs:
         env:
           PRODUCTION_ENGINE_POSTGRES_URL: ${{ secrets.PRODUCTION_ENGINE_POSTGRES_URL }}
         run: |
-          eval "$(python3 tools/pg_url_to_pg_env.py PRODUCTION_ENGINE_POSTGRES_URL)"
+          eval "$(python3 tools/pg_url_to_env.py PRODUCTION_ENGINE_POSTGRES_URL)"
           pg_dump --no-acl --no-owner --no-comments --format=p --encoding=UTF8 | \
             cat - postgresql_anonymizer_rules.sql | \
             docker run --rm -i mergifyio/custom_postgresql_anonymizer /anon.sh \
@@ -236,7 +236,7 @@ jobs:
         env:
           MERGIFYENGINE_DATABASE_URL: "postgresql://postgres:password@localhost:5432/postgres"
         run: |
-          eval "$(python3 tools/pg_url_to_pg_env.py MERGIFYENGINE_DATABASE_URL)"
+          eval "$(python3 tools/pg_url_to_env.py MERGIFYENGINE_DATABASE_URL)"
           psql < anonymized_database.dump
           docker run \
               --env-file fake.env \
