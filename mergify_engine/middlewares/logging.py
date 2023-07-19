@@ -64,7 +64,7 @@ class LoggingMiddleware:
             exc_info = sys.exc_info()
             raise
         finally:
-            if response_info["status"] >= 500 or exc_info:
+            if exc_info:
                 level = logging.ERROR
             else:
                 level = logging.INFO

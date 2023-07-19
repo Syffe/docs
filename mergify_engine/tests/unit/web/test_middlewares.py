@@ -94,7 +94,7 @@ async def test_http_redirect_to_https() -> None:
 
 @pytest.mark.parametrize(
     "status_code,log_level",
-    ((0, logging.ERROR), (500, logging.ERROR), (200, logging.INFO)),
+    ((0, logging.ERROR), (200, logging.INFO)),
 )
 async def test_logging_middleware(
     status_code: int, log_level: int, caplog: pytest.LogCaptureFixture
