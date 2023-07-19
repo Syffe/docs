@@ -234,7 +234,7 @@ jobs:
       - name: Load and upgrade anonymized testing database
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
-          MERGIFYENGINE_DATABASE_URL: "postgresql://postgres:password@localhost:5432/postgres"
+          MERGIFYENGINE_DATABASE_URL: "postgresql://postgres:password@postgres:5432/postgres"
         run: |
           eval "$(python3 tools/pg_url_to_env.py MERGIFYENGINE_DATABASE_URL)"
           psql < anonymized_database.dump
