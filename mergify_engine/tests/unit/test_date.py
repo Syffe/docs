@@ -916,6 +916,14 @@ def test_datetimerange_as_github_date_query() -> None:
             datetime.datetime(2023, 7, 13, 14, tzinfo=date.UTC),
         ),
         (
+            "2023-07-13T14:00+02:00",
+            datetime.datetime(2023, 7, 13, 12, tzinfo=date.UTC),
+        ),
+        (
+            "2023-07-13T14:00+02",
+            datetime.datetime(2023, 7, 13, 12, tzinfo=date.UTC),
+        ),
+        (
             "2023-07-13T14:00[Europe/Paris]",
             datetime.datetime(
                 2023, 7, 13, 14, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
@@ -927,3 +935,19 @@ def test_fromisoformat_with_zoneinfo(
     isoformat_datetime: str, expected_datetime: datetime.datetime
 ) -> None:
     assert date.fromisoformat_with_zoneinfo(isoformat_datetime) == expected_datetime
+
+
+@pytest.mark.parametrize(
+    "isoformat_datetime",
+    (
+        "2023-07",
+        "2023-07-12-",
+        "2023-07-13T14:00[Europe/Paris",
+        "2023-07-13T14:00Europe/Paris]",
+        "2023-07-13T14:00[WTF]",
+        "2023-07-13T14:00+25",
+    ),
+)
+def test_fromisoformat_with_zoneinfo_invalid(isoformat_datetime: str) -> None:
+    with pytest.raises(date.InvalidDate):
+        assert date.fromisoformat_with_zoneinfo(isoformat_datetime)
