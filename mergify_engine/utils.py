@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 from collections import abc
 import enum
@@ -14,6 +16,10 @@ import daiquiri
 import voluptuous
 
 from mergify_engine import github_types
+
+
+if typing.TYPE_CHECKING:
+    from mergify_engine.models import github_repository
 
 
 LOG = daiquiri.getLogger()
@@ -248,7 +254,7 @@ def strip_comment_tags(line: str) -> str:
 
 
 def extract_default_branch(
-    repository: github_types.GitHubRepository,
+    repository: github_types.GitHubRepository | github_repository.GitHubRepositoryDict,
 ) -> github_types.GitHubRefType:
     # Helper to easily mock default branch during tests
     return repository["default_branch"]

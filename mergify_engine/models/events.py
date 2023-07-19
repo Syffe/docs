@@ -62,7 +62,8 @@ class Event(models.Base):
     async def create(
         cls,
         session: sqlalchemy.ext.asyncio.AsyncSession,
-        repository: github_types.GitHubRepository,
+        repository: github_types.GitHubRepository
+        | github_repository.GitHubRepositoryDict,
         pull_request: github_types.GitHubPullRequestNumber | None,
         trigger: str,
         metadata: signals.EventMetadata,

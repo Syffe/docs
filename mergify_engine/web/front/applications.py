@@ -121,7 +121,12 @@ async def create_application(
         )
 
     await github_account.GitHubAccount.create_or_update(
-        session, account_id, membership["organization"]["login"]
+        session,
+        github_account.GitHubAccountDict(
+            id=account_id,
+            login=membership["organization"]["login"],
+            type=membership["organization"]["type"],
+        ),
     )
 
     application = application_keys.ApplicationKey()

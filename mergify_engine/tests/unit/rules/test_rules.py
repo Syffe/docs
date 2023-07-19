@@ -8,13 +8,18 @@ from unittest import mock
 
 import pytest
 import respx
+import sqlalchemy.ext.asyncio
 import voluptuous
 
 from mergify_engine import context
 from mergify_engine import date
 from mergify_engine import github_types
+from mergify_engine import json
+from mergify_engine import redis_utils
 from mergify_engine import rules
+from mergify_engine import settings
 from mergify_engine.clients import http
+from mergify_engine.models import github_repository
 from mergify_engine.rules import conditions
 from mergify_engine.rules.config import conditions as cond_config
 from mergify_engine.rules.config import mergify as mergify_conf
@@ -1173,6 +1178,118 @@ async def test_extends_limit(
         str(i.value)
         == "Maximum number of extended configuration reached. Limit is 1. @ extends"
     )
+
+
+@pytest.mark.respx(base_url=settings.GITHUB_REST_API_URL)
+async def test_extends_without_database_cache(
+    fake_repository: context.Repository,
+    respx_mock: respx.MockRouter,
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+) -> None:
+    # Config extension containing default values to assert the extension worked
+    mergify_config_extension = mergify_conf.MergifyConfig(
+        {
+            "extends": None,
+            "pull_request_rules": prr_config.PullRequestRules([]),
+            "queue_rules": qr_config.QueueRules([]),
+            "partition_rules": partr_config.PartitionRules([]),
+            "defaults": mergify_conf.Defaults({"actions": {"hello": {}}}),
+            "commands_restrictions": {},
+            "raw_config": {},
+        }
+    )
+
+    respx_mock.get("repos/Mergifyio/.github").respond(
+        200,
+        json={
+            "id": 1,
+            "name": ".github",
+            "owner": fake_repository.repo["owner"],
+            "private": True,
+            "default_branch": "main",
+            "full_name": "",
+        },
+    )
+    respx_mock.get("repos/Mergifyio/.github/installation").respond(200)
+
+    with mock.patch.object(
+        context.Repository,
+        "get_mergify_config",
+        mock.AsyncMock(return_value=mergify_config_extension),
+    ):
+        config = await mergify_conf.get_mergify_config_from_dict(
+            fake_repository,
+            {"extends": github_types.GitHubRepositoryName(".github")},
+            "",
+        )
+
+    # Configuration has been extended and have defaults from the extension
+    assert config["extends"] == ".github"
+    assert config["defaults"] == {"actions": {"hello": {}}}
+    result = await db.scalars(sqlalchemy.select(github_repository.GitHubRepository))
+    repos = list(result)
+    assert len(repos) == 1
+    assert repos[0].id == 1
+    assert repos[0].name == ".github"
+
+
+@pytest.mark.respx(base_url=settings.GITHUB_REST_API_URL)
+async def test_extends_with_database_cache(
+    fake_repository: context.Repository,
+    respx_mock: respx.MockRouter,
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    redis_links: redis_utils.RedisLinks,
+) -> None:
+    # Insert the repo containing the configuration extension
+    repo = await github_repository.GitHubRepository.get_or_create(
+        db,
+        {
+            "id": github_types.GitHubRepositoryIdType(1),
+            "name": github_types.GitHubRepositoryName(".github"),
+            "owner": fake_repository.repo["owner"],
+            "private": True,
+            "default_branch": github_types.GitHubRefType("main"),
+            "full_name": f"{fake_repository.repo['owner']['login']}/.github",
+            "archived": False,
+        },
+    )
+    db.add(repo)
+    await db.commit()
+
+    await redis_links.cache.set(
+        f"mergify-installation/{fake_repository.repo['owner']['login']}/.github",
+        json.dumps({"installed": True, "error": None}),
+    )
+
+    # Config extension containing default values to assert the extension worked
+    mergify_config_extension = mergify_conf.MergifyConfig(
+        {
+            "extends": None,
+            "pull_request_rules": prr_config.PullRequestRules([]),
+            "queue_rules": qr_config.QueueRules([]),
+            "partition_rules": partr_config.PartitionRules([]),
+            "defaults": mergify_conf.Defaults({"actions": {"hello": {}}}),
+            "commands_restrictions": {},
+            "raw_config": {},
+        }
+    )
+
+    with mock.patch.object(
+        context.Repository,
+        "get_mergify_config",
+        mock.AsyncMock(return_value=mergify_config_extension),
+    ):
+        config = await mergify_conf.get_mergify_config_from_dict(
+            fake_repository,
+            {"extends": github_types.GitHubRepositoryName(".github")},
+            "",
+        )
+
+    # No HTTP request to GH
+    respx_mock.calls.assert_not_called()
+    # Configuration has been extended and have defaults from the extension
+    assert config["extends"] == ".github"
+    assert config["defaults"] == {"actions": {"hello": {}}}
 
 
 def test_user_binary_file() -> None:
