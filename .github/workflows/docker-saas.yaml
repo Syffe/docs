@@ -232,7 +232,8 @@ jobs:
               -e DYNO=testing.1 \
               --entrypoint /bin/bash \
               web:tmp \
-              -c '/datadog-wrapper.sh mergify-import-check-worker;
+              -c 'set -e;
+                  /datadog-wrapper.sh mergify-import-check-worker;
                   /datadog-wrapper.sh mergify-import-check-web;
                   /datadog-wrapper.sh mergify-import-check-db-update;'
 
