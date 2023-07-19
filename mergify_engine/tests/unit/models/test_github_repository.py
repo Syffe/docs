@@ -112,3 +112,26 @@ async def test_as_dict(db: sqlalchemy.ext.asyncio.AsyncSession) -> None:
         "full_name": "Mergifyio/mergify-engine",
         "archived": False,
     }
+
+
+def test_is_complete() -> None:
+    repo = github_repository.GitHubRepository()
+    assert not repo.is_complete()
+
+    repo = github_repository.GitHubRepository(
+        id=github_types.GitHubRepositoryIdType(0),
+        owner_id=github_types.GitHubAccountIdType(0),
+        name=github_types.GitHubRepositoryName("hello"),
+    )
+    assert not repo.is_complete()
+
+    repo = github_repository.GitHubRepository(
+        id=github_types.GitHubRepositoryIdType(0),
+        owner_id=github_types.GitHubAccountIdType(0),
+        name=github_types.GitHubRepositoryName("hello"),
+        private=False,
+        default_branch=github_types.GitHubRefType("main"),
+        full_name="hello/there",
+        archived=False,
+    )
+    assert repo.is_complete()

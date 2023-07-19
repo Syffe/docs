@@ -111,3 +111,6 @@ class GitHubRepository(models.Base):
 
     def as_dict(self) -> GitHubRepositoryDict:
         return typing.cast(GitHubRepositoryDict, super().as_dict())
+
+    def is_complete(self) -> bool:
+        return None not in self.as_dict().values()
