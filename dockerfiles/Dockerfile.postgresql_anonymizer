@@ -3,3 +3,6 @@ FROM registry.gitlab.com/dalibo/postgresql_anonymizer:latest
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -y && apt-get upgrade -y && apt-get install -y postgresql-14-pgvector && apt-get autoremove --purge -y
+
+COPY ./dockerfiles/anon-custom.sh ../
+RUN chmod +x ../anon-custom.sh
