@@ -58,11 +58,12 @@ jobs:
           - 6363:6379
       postgres:
         # Pin PostgreSQL to the version that is in ubuntu-latest
-        image: postgres:12.5
+        image: ankane/pgvector:v0.4.4
         env:
           POSTGRES_PASSWORD: password
         ports:
           - 5432:5432
+        options: --name postgres
     steps:
       - name: Deployment start
         if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -78,6 +79,18 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           submodules: true
+
+      - name: Setup Python 🔧
+        uses: actions/setup-python@v4.7.0
+        with:
+          python-version: 3.11.4
+
+      - name: Generate PostgreSQL anonymizer rules
+        run: |
+          # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
+          pip install -r requirements-poetry.txt
+          tools/poetry-ci-install.sh
+          poetry run poe pg_anonymizer
 
       # NOTE(sileht):  github.event.pull_request.head.sha is not set for push event
       # so we pick the HEAD sha if the checkout for the image:
@@ -207,6 +220,36 @@ jobs:
       #
       # Next steps are only on main branch for pushing change in production
       #
+      - name: Dump anonymized production database
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          PRODUCTION_ENGINE_POSTGRES_URL: ${{ secrets.PRODUCTION_ENGINE_POSTGRES_URL }}
+        run: |
+          eval "$(python3 tools/pg_url_to_pg_env.py PRODUCTION_ENGINE_POSTGRES_URL)"
+          pg_dump --no-acl --no-owner --no-comments --format=p --encoding=UTF8 | \
+            cat - postgresql_anonymizer_rules.sql | \
+            docker run --rm -i mergifyio/custom_postgresql_anonymizer /anon.sh \
+            > anonymized_database.dump
+
+      - name: Load and upgrade anonymized testing database
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          MERGIFYENGINE_DATABASE_URL: "postgresql://postgres:password@localhost:5432/postgres"
+        run: |
+          eval "$(python3 tools/pg_url_to_pg_env.py MERGIFYENGINE_DATABASE_URL)"
+          psql < anonymized_database.dump
+          docker run \
+              --env-file fake.env \
+              -e DD_API_KEY=testing-false-key \
+              -e DYNO=testing.1 \
+              -e MERGIFYENGINE_STORAGE_URL=redis://redis:6363 \
+              -e MERGIFYENGINE_DATABASE_URL="${MERGIFYENGINE_DATABASE_URL}" \
+              -e SENTRY_URL=https://fake-sentry.example.com/ \
+              -e SENTRY_ENVIRONMENT=ci \
+              --entrypoint /bin/bash \
+              web:tmp \
+              -c 'mergify-database-update';
+
       - name: 👮 Log into in Heroku
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
@@ -259,6 +302,13 @@ jobs:
           for i in web worker-shared worker-dedicated; do
             heroku container:release -a "${HEROKU_ENVIRONMENT}" "${i}"
           done
+
+      - name: 🚀 Update Production database
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          HEROKU_ENVIRONMENT: ${{ steps.vars.outputs.HEROKU_ENVIRONMENT }}
+        run: |
+          heroku run -a "${HEROKU_ENVIRONMENT}" mergify-database-update
 
       - name: Deployment finish
         if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
