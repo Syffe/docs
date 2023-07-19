@@ -898,3 +898,32 @@ def test_datetimerange_as_github_date_query() -> None:
         r.as_github_date_query()
         == "2023-05-30T15:30:00+00:00..2023-05-30T16:00:00+00:00"
     )
+
+
+@pytest.mark.parametrize(
+    "isoformat_datetime,expected_datetime",
+    (
+        (
+            "2023-07-13",
+            datetime.datetime(2023, 7, 13, tzinfo=date.UTC),
+        ),
+        (
+            "2023-07-13T14:00",
+            datetime.datetime(2023, 7, 13, 14, tzinfo=date.UTC),
+        ),
+        (
+            "2023-07-13T14:00Z",
+            datetime.datetime(2023, 7, 13, 14, tzinfo=date.UTC),
+        ),
+        (
+            "2023-07-13T14:00[Europe/Paris]",
+            datetime.datetime(
+                2023, 7, 13, 14, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+            ),
+        ),
+    ),
+)
+def test_fromisoformat_with_zoneinfo(
+    isoformat_datetime: str, expected_datetime: datetime.datetime
+) -> None:
+    assert date.fromisoformat_with_zoneinfo(isoformat_datetime) == expected_datetime

@@ -670,9 +670,7 @@ def fromisoformat(s: str) -> datetime.datetime:
 def fromisoformat_with_zoneinfo(string: str) -> datetime.datetime:
     value, tzinfo = extract_timezone(string)
     try:
-        # TODO(sileht): astimezone doesn't look logic, but keep the
-        # same behavior as the old parse for now
-        return fromisoformat(value).astimezone(tzinfo)
+        return fromisoformat(value).replace(tzinfo=tzinfo)
     except ValueError:
         raise InvalidDate("Invalid timestamp")
 
