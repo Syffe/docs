@@ -25,6 +25,7 @@ TRAIN_CAR_CHECKS_TYPE_MAPPING: dict[
 ] = {
     merge_train.TrainCarChecksType.INPLACE: "in_place",
     merge_train.TrainCarChecksType.DRAFT: "draft_pr",
+    merge_train.TrainCarChecksType.DRAFT_DELEGATED: "draft_pr",
 }
 
 router = fastapi.APIRouter(
@@ -92,6 +93,7 @@ class MergeabilityCheck:
 
         if car.train_car_state.checks_type in (
             merge_train.TrainCarChecksType.DRAFT,
+            merge_train.TrainCarChecksType.DRAFT_DELEGATED,
             merge_train.TrainCarChecksType.INPLACE,
         ):
             if car.queue_pull_request_number is None:
