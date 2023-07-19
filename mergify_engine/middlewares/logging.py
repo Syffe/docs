@@ -45,9 +45,11 @@ class LoggingMiddleware:
         async def send_wrapper(message: types.Message) -> None:
             if message["type"] == "http.response.start":
                 response_info["status"] = message["status"]
-                response_info["headers"] = list(
-                    datastructures.Headers(scope=message).items()
-                )
+                response_info["headers"] = [
+                    (key, value)
+                    for key, value in datastructures.Headers(scope=message).items()
+                    if key != "set-cookie"
+                ]
 
             await send(message)
 
