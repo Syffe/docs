@@ -101,19 +101,21 @@ def extract(event_type: str, event_id: str | None, event: typing.Any) -> typing.
                     "id": True,
                     "workflow_id": True,
                     "event": True,
-                    "triggering_actor": {"id": True, "login": True},
+                    "triggering_actor": {"id": True, "login": True, "type": True},
                     "head_sha": True,
                     "run_attempt": True,
                     "repository": {
                         "id": True,
                         "name": True,
-                        "owner": {"id": True, "login": True},
+                        "owner": {"id": True, "login": True, "type": True},
                     },
                 },
                 "repository": {
                     "id": True,
                     "name": True,
-                    "owner": {"id": True, "login": True},
+                    "owner": {"id": True, "login": True, "type": True},
+                    "private": True,
+                    "default_branch": True,
                 },
                 "organization": {"login": True},
             }
@@ -133,7 +135,9 @@ def extract(event_type: str, event_id: str | None, event: typing.Any) -> typing.
                 "repository": {
                     "id": True,
                     "name": True,
-                    "owner": {"id": True, "login": True},
+                    "owner": {"id": True, "login": True, "type": True},
+                    "private": True,
+                    "default_branch": True,
                 },
             }
         )

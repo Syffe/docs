@@ -9,8 +9,10 @@ import warnings
 
 import alembic
 import sqlalchemy
+from sqlalchemy import orm
 
 from mergify_engine import database
+from mergify_engine import models
 from mergify_engine import settings
 from mergify_engine.config import types as config_types
 from mergify_engine.models import manage
@@ -102,3 +104,47 @@ def test_one_head() -> None:
     assert (
         len(heads) == 1
     ), f"One head revision allowed, {len(heads)} found: {', '.join(heads)}"
+
+
+def test_model_as_dict() -> None:
+    class TestSimpleModel(models.Base):
+        __tablename__ = "test_simple_table"
+        id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
+        name: orm.Mapped[str]
+
+    obj = TestSimpleModel(id=0)
+    assert obj.as_dict() == {"id": 0, "name": None}  # type: ignore [comparison-overlap]
+
+    obj = TestSimpleModel(id=0, name="hello")
+    assert obj.as_dict() == {"id": 0, "name": "hello"}  # type: ignore [comparison-overlap]
+
+
+def test_relational_model_as_dict() -> None:
+    class TestRelationalUserModel(models.Base):
+        __tablename__ = "test_relational_user_table"
+        id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
+        name: orm.Mapped[str]
+
+    class TestRelationalModel(models.Base):
+        __tablename__ = "test_relational_table"
+        id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
+        name: orm.Mapped[str]
+        user_id: orm.Mapped[int] = orm.mapped_column(
+            sqlalchemy.ForeignKey("test_relational_user_table.id")
+        )
+        user: orm.Mapped[TestRelationalUserModel] = orm.relationship(
+            lazy="joined", foreign_keys=[user_id]
+        )
+
+    obj = TestRelationalModel(id=0)
+    assert obj.as_dict() == {"id": 0, "name": None, "user_id": None}  # type: ignore [comparison-overlap]
+
+    obj = TestRelationalModel(
+        id=0, name="hello", user_id=0, user=TestRelationalUserModel(id=0, name="me")
+    )
+    assert obj.as_dict() == {  # type: ignore [comparison-overlap]
+        "id": 0,
+        "name": "hello",
+        "user_id": 0,
+        "user": {"id": 0, "name": "me"},
+    }

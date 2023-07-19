@@ -12,6 +12,7 @@ from mergify_engine import worker_pusher
 
 if typing.TYPE_CHECKING:
     from mergify_engine import redis_utils
+    from mergify_engine.models import github_repository
 
 
 LOG = daiquiri.getLogger()
@@ -19,7 +20,7 @@ LOG = daiquiri.getLogger()
 
 async def _send_refresh(
     redis_stream: redis_utils.RedisStream | redis_utils.PipelineStream,
-    repository: github_types.GitHubRepository,
+    repository: github_types.GitHubRepository | github_repository.GitHubRepositoryDict,
     action: github_types.GitHubEventRefreshActionType,
     source: str,
     pull_request_number: github_types.GitHubPullRequestNumber | None = None,
@@ -33,17 +34,19 @@ async def _send_refresh(
             "source": source,
             "ref": ref,
             "pull_request_number": pull_request_number,
-            "repository": repository,
+            "repository": typing.cast(github_types.GitHubRepository, repository),
             "sender": {
                 "login": github_types.GitHubLogin("<internal>"),
                 "id": github_types.GitHubAccountIdType(0),
                 "type": "User",
                 "avatar_url": "",
             },
-            "organization": repository["owner"],
+            "organization": typing.cast(
+                github_types.GitHubAccount, repository["owner"]
+            ),
             "installation": {
                 "id": github_types.GitHubInstallationIdType(0),
-                "account": repository["owner"],
+                "account": typing.cast(github_types.GitHubAccount, repository["owner"]),
                 "target_type": repository["owner"]["type"],
                 "permissions": {},
                 "suspended_at": None,
@@ -67,7 +70,7 @@ async def _send_refresh(
 
 async def send_pull_refresh(
     redis_stream: redis_utils.RedisStream | redis_utils.PipelineStream,
-    repository: github_types.GitHubRepository,
+    repository: github_types.GitHubRepository | github_repository.GitHubRepositoryDict,
     action: github_types.GitHubEventRefreshActionType,
     pull_request_number: github_types.GitHubPullRequestNumber,
     source: str,

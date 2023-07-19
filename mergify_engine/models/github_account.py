@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import enum
+import typing
+
 import sqlalchemy
 from sqlalchemy import orm
 from sqlalchemy.dialects import postgresql
@@ -7,6 +10,18 @@ import sqlalchemy.ext.asyncio
 
 from mergify_engine import github_types
 from mergify_engine import models
+
+
+class GitHubAccountDict(typing.TypedDict):
+    login: github_types.GitHubLogin
+    id: github_types.GitHubAccountIdType
+    type: github_types.GitHubAccountType
+
+
+class GitHubAccountType(enum.StrEnum):
+    USER = "User"
+    ORGANIZATION = "Organization"
+    BOT = "Bot"
 
 
 class GitHubAccount(models.Base):
@@ -23,20 +38,24 @@ class GitHubAccount(models.Base):
         unique=True,
         anonymizer_config="anon.lorem_ipsum( characters := 7 )",
     )
+    type: orm.Mapped[GitHubAccountType | None] = orm.mapped_column(
+        sqlalchemy.Enum(GitHubAccountType),
+        nullable=True,
+        anonymizer_config="anon.random_in_enum(type)",
+    )
 
     @classmethod
     async def create_or_update(
         cls,
         session: sqlalchemy.ext.asyncio.AsyncSession,
-        account_id: github_types.GitHubAccountIdType,
-        account_login: github_types.GitHubLogin,
+        account: github_types.GitHubAccount | GitHubAccountDict,
     ) -> None:
         sql = (
             postgresql.insert(cls)
-            .values(id=account_id, login=account_login)
+            .values(id=account["id"], login=account["login"], type=account.get("type"))
             .on_conflict_do_update(
                 index_elements=[cls.id],
-                set_={"login": account_login},
+                set_={"login": account["login"]},
             )
         )
         await session.execute(sql)
@@ -45,7 +64,7 @@ class GitHubAccount(models.Base):
     async def get_or_create(
         cls,
         session: sqlalchemy.ext.asyncio.AsyncSession,
-        account: github_types.GitHubAccount,
+        account: github_types.GitHubAccount | GitHubAccountDict,
     ) -> GitHubAccount:
         result = await session.execute(
             sqlalchemy.select(cls).where(cls.id == account["id"])
@@ -53,6 +72,8 @@ class GitHubAccount(models.Base):
         if (account_obj := result.scalar_one_or_none()) is not None:
             # NOTE(lecrepont01): update attributes
             account_obj.login = account["login"]
+            if "type" in account:
+                account_obj.type = GitHubAccountType(account["type"])
             return account_obj
 
-        return cls(id=account["id"], login=account["login"])
+        return cls(id=account["id"], login=account["login"], type=account.get("type"))

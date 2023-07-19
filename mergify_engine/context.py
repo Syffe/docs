@@ -32,6 +32,7 @@ from mergify_engine import cache
 from mergify_engine import check_api
 from mergify_engine import constants
 from mergify_engine import dashboard
+from mergify_engine import database
 from mergify_engine import date
 from mergify_engine import dependabot_helpers
 from mergify_engine import dependabot_types
@@ -48,6 +49,7 @@ from mergify_engine.clients import http
 
 
 if typing.TYPE_CHECKING:
+    from mergify_engine.models import github_repository
     from mergify_engine.rules.config import mergify as mergify_conf
 
 SUMMARY_SHA_EXPIRATION = 60 * 60 * 24 * 31 * 1  # 1 Month
@@ -167,7 +169,7 @@ class Installation:
 
     def get_repository_from_github_data(
         self,
-        repo: github_types.GitHubRepository,
+        repo: github_types.GitHubRepository | github_repository.GitHubRepositoryDict,
     ) -> Repository:
         if repo["name"] not in self.repositories:
             repository = Repository(self, repo)
@@ -180,10 +182,38 @@ class Installation:
     ) -> Repository:
         if name in self.repositories:
             return self.repositories[name]
-        repo_data: github_types.GitHubRepository = await self.client.item(
-            f"/repos/{self.owner_login}/{name}"
-        )
+
+        # Circular import
+        from mergify_engine.models import github_repository
+
+        async with database.create_session() as session:
+            db_repo = await github_repository.GitHubRepository.get_by_name(
+                session, name
+            )
+
+        repo_data: github_types.GitHubRepository | github_repository.GitHubRepositoryDict
+        if db_repo is not None:
+            repo_data = db_repo.as_dict()
+        else:
+            repo_data = await self.client.item(f"/repos/{self.owner_login}/{name}")
+            await self._save_repository_to_database(repo_data)
+
         return self.get_repository_from_github_data(repo_data)
+
+    async def _save_repository_to_database(
+        self,
+        repo_data: github_types.GitHubRepository
+        | github_repository.GitHubRepositoryDict,
+    ) -> None:
+        # Circular import
+        from mergify_engine.models import github_repository
+
+        async with database.create_session() as session:
+            db_repo = await github_repository.GitHubRepository.get_or_create(
+                session, repo_data
+            )
+            session.add(db_repo)
+            await session.commit()
 
     async def get_repository_by_id(
         self, _id: github_types.GitHubRepositoryIdType
@@ -292,7 +322,7 @@ class MergifyInstalled(typing.TypedDict):
 @dataclasses.dataclass
 class Repository:
     installation: Installation
-    repo: github_types.GitHubRepository
+    repo: github_types.GitHubRepository | github_repository.GitHubRepositoryDict
     pull_contexts: dict[
         github_types.GitHubPullRequestNumber, Context
     ] = dataclasses.field(default_factory=dict, repr=False)
