@@ -1296,6 +1296,15 @@
     "PublishedDate": "2023-01-05T15:15:00Z"
   },
   {
+    "VulnerabilityID": "CVE-2022-41409",
+    "PkgName": "libpcre2-8-0",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-41409",
+    "Title": "Integer overflow vulnerability in pcre2test before 10.41 allows attack ...",
+    "Severity": "LOW",
+    "PublishedDate": "2023-07-18T14:15:00Z"
+  },
+  {
     "VulnerabilityID": "CVE-2022-42916",
     "PkgName": "curl",
     "SeveritySource": "nvd",
@@ -2007,6 +2016,20 @@
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
   {
+    "VulnerabilityID": "CVE-2023-3446",
+    "PkgName": "libssl1.1",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-3446",
+    "Title": "Issue summary: Checking excessively long DH keys or parameters may be  ...",
+    "Severity": "LOW"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-3446",
+    "PkgName": "openssl",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-3446",
+    "Title": "Issue summary: Checking excessively long DH keys or parameters may be  ...",
+    "Severity": "LOW"
+  },
+  {
     "VulnerabilityID": "CVE-2023-34969",
     "PkgName": "dbus",
     "SeveritySource": "nvd",
@@ -2032,5 +2055,26 @@
     "Title": "CLI fault on missing -nonce",
     "Severity": "LOW",
     "PublishedDate": "2023-06-23T02:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-38408",
+    "PkgName": "openssh-client",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-38408",
+    "Title": "[Remote Code Execution in OpenSSH's forwarded ssh-agent]",
+    "Severity": "UNKNOWN"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-38408",
+    "PkgName": "openssh-server",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-38408",
+    "Title": "[Remote Code Execution in OpenSSH's forwarded ssh-agent]",
+    "Severity": "UNKNOWN"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-38408",
+    "PkgName": "openssh-sftp-server",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-38408",
+    "Title": "[Remote Code Execution in OpenSSH's forwarded ssh-agent]",
+    "Severity": "UNKNOWN"
   }
 ]
