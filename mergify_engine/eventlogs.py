@@ -132,7 +132,7 @@ class EventRequeue(EventBaseNoMetadata):
 
 
 class EventRequestReviewers(EventBase):
-    # TODO(lecrepont01): transition to `EventRequestReviews` below after UI change
+    # FIXME(lecrepont01): remove according to MRGFY-2461
     event: typing.Literal["action.request_reviewers"]
     metadata: signals.EventRequestReviewsMetadata
 
@@ -462,7 +462,7 @@ async def get(
         elif event["event"] == "action.refresh":
             events.append(typing.cast(EventRefresh, event))
 
-        elif event["event"] == "action.request_reviewers":
+        elif event["event"] == "action.request_reviewers":  # MRGFY-2461
             events.append(typing.cast(EventRequestReviewers, event))
 
         elif event["event"] == "action.request_reviews":

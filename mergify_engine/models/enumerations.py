@@ -28,3 +28,9 @@ class CheckConclusionWithStatuses(str, enum.Enum):
     TIMED_OUT = "timed_out"
     ERROR = "error"
     PENDING = "pending"
+
+
+class ReviewType(str, enum.Enum):
+    APPROVE = "APPROVE"
+    REQUEST_CHANGES = "REQUEST_CHANGES"
+    COMMENT = "COMMENT"

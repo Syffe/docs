@@ -506,3 +506,79 @@ class EventActionQueueChecksStart(Event):
             speculative_check_pull_request=speculative_check_pull_request,
             **metadata,
         )
+
+
+class EventActionRequestReviews(Event):
+    __tablename__ = "event_action_request_reviews"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "action.request_reviews",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"),
+        primary_key=True,
+        anonymizer_config=None,
+    )
+
+    reviewers: orm.Mapped[list[str]] = orm.mapped_column(
+        sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1),
+        anonymizer_config="custom_masks.lorem_ipsum_array(0, 5, 8)",
+    )
+    team_reviewers: orm.Mapped[list[str]] = orm.mapped_column(
+        sqlalchemy.ARRAY(sqlalchemy.Text, dimensions=1),
+        anonymizer_config="custom_masks.lorem_ipsum_array(0, 5, 8)",
+    )
+
+
+class EventActionReview(Event):
+    __tablename__ = "event_action_review"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "action.review",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"),
+        primary_key=True,
+        anonymizer_config=None,
+    )
+    review_type: orm.Mapped[enumerations.ReviewType] = orm.mapped_column(
+        sqlalchemy.Enum(enumerations.ReviewType),
+        nullable=True,
+        anonymizer_config="anon.random_in_enum(review_type)",
+    )
+    reviewer: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text,
+        nullable=True,
+        anonymizer_config="anon.lorem_ipsum( characters := 7 )",
+    )
+    message: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text,
+        nullable=True,
+        anonymizer_config="anon.lorem_ipsum( words := 7 )",
+    )
+
+    @classmethod
+    async def create(
+        cls,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+        repository: github_types.GitHubRepository
+        | github_repository.GitHubRepositoryDict,
+        pull_request: github_types.GitHubPullRequestNumber | None,
+        trigger: str,
+        metadata: signals.EventMetadata,
+    ) -> Event:
+        # NOTE(lecrepont01): field `type` already exists on base class as discriminator,
+        # meaning that it must be renamed `review_type` in the relation
+        repository_obj = await github_repository.GitHubRepository.get_or_create(
+            session, repository
+        )
+        metadata = typing.cast(signals.EventReviewMetadata, metadata)
+
+        return cls(
+            repository=repository_obj,
+            pull_request=pull_request,
+            trigger=trigger,
+            review_type=metadata["type"],
+            reviewer=metadata["reviewer"],
+            message=metadata["message"],
+        )

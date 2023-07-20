@@ -219,7 +219,7 @@ class RequestReviewsExecutor(
                 await signals.send(
                     self.ctxt.repository,
                     self.ctxt.pull["number"],
-                    "action.request_reviewers",
+                    "action.request_reviews",
                     signals.EventRequestReviewsMetadata(
                         {
                             "reviewers": list(user_reviews_to_request),

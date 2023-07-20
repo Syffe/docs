@@ -433,3 +433,47 @@ async def test_event_action_queue_checks_start_consistency(
     assert spec_check_pr.checks_started_at == anys.ANY_AWARE_DATETIME
     assert spec_check_pr.checks_ended_at == anys.ANY_AWARE_DATETIME
     assert spec_check_pr.unsuccessful_checks == [unsuccessful_check]
+
+
+async def test_event_action_request_reviews_consistency(
+    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+) -> None:
+    await insert_event(
+        fake_repository,
+        "action.request_reviews",
+        signals.EventRequestReviewsMetadata(
+            {
+                "reviewers": ["leo", "charly", "guillaume"],
+                "team_reviewers": ["damien", "fabien"],
+            }
+        ),
+    )
+
+    await assert_base_event(db, fake_repository)
+    event = await db.scalar(sqlalchemy.select(evt_model.EventActionRequestReviews))
+    assert event is not None
+    assert set(event.reviewers) == {"leo", "charly", "guillaume"}
+    assert set(event.team_reviewers) == {"damien", "fabien"}
+
+
+async def test_event_action_review_consistency(
+    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+) -> None:
+    await insert_event(
+        fake_repository,
+        "action.review",
+        signals.EventReviewMetadata(
+            {
+                "type": "APPROVE",
+                "reviewer": "John Doe",
+                "message": "Looks good to me",
+            }
+        ),
+    )
+
+    await assert_base_event(db, fake_repository)
+    event = await db.scalar(sqlalchemy.select(evt_model.EventActionReview))
+    assert event is not None
+    assert event.review_type == "APPROVE"
+    assert event.reviewer == "John Doe"
+    assert event.message == "Looks good to me"

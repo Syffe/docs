@@ -38,7 +38,7 @@ EventName = typing.Literal[
     "action.queue.merged",
     "action.rebase",
     "action.refresh",
-    "action.request_reviewers",
+    "action.request_reviewers",  # MRGFY-2461
     "action.request_reviews",
     "action.requeue",
     "action.review",
@@ -416,11 +416,10 @@ async def send(
 async def send(
     repository: "context.Repository",
     pull_request: github_types.GitHubPullRequestNumber,
-    event: typing.Literal["action.request_reviewers"],
+    event: typing.Literal["action.request_reviews"],
     metadata: EventRequestReviewsMetadata,
     trigger: str,
 ) -> None:
-    # TODO(lecrepont01): transition to `EventRequestReviews` after UI change
     ...
 
 
