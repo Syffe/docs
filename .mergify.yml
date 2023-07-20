@@ -82,6 +82,9 @@ queue_rules:
               - author=mergify-ci-bot
               - head=trivy/daily-report
               - label!=new CVE
+          - and:
+              - author=mergify-ci-bot
+              - head=openapi-spec-sync
           - author=dependabot[bot]
     merge_method: merge
     merge_conditions:
