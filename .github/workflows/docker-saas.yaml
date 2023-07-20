@@ -225,7 +225,7 @@ jobs:
         env:
           PRODUCTION_ENGINE_POSTGRES_URL: ${{ secrets.PRODUCTION_ENGINE_POSTGRES_URL }}
         run: |
-          set -o pipe
+          set -o pipefail
           eval "$(python3 tools/pg_url_to_env.py PRODUCTION_ENGINE_POSTGRES_URL)"
           docker run -e PGHOST -e PGPORT -e PGDATABASE -e PGUSER -e PGPASSWORD ankane/pgvector:v0.4.4 \
             pg_dump --no-acl --no-owner --no-comments --format=p --encoding=UTF8 | \
