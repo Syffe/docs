@@ -80,18 +80,6 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           submodules: true
 
-      - name: Setup Python 🔧
-        uses: actions/setup-python@v4.7.0
-        with:
-          python-version: 3.11.4
-
-      - name: Generate PostgreSQL anonymizer rules
-        run: |
-          # nosemgrep: generic.ci.security.use-frozen-lockfile.use-frozen-lockfile-pip
-          pip install -r requirements-poetry.txt
-          tools/poetry-ci-install.sh
-          poetry run poe pg_anonymizer
-
       # NOTE(sileht):  github.event.pull_request.head.sha is not set for push event
       # so we pick the HEAD sha if the checkout for the image:
       # * for push, HEAD is main branch head (default actions/checkout)
