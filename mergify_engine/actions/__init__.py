@@ -52,6 +52,9 @@ class ActionFlag(enum.Flag):
     ALLOW_AS_PENDING_COMMAND = enum.auto()
     # Once succeed the action must not be ran anymore
     SUCCESS_IS_FINAL_STATE = enum.auto()
+    # A command in PENDING status will be canceled if the same command
+    # with different args is executed
+    SAME_COMMAND_WITH_DIFFERENT_ARGS_CANCEL_PENDING_STATUS = enum.auto()
 
 
 def get_classes(group: PluginGroupT) -> dict[str, type["Action"]]:

@@ -563,3 +563,90 @@ class TestQueueCommand(base.FunctionalTestBase):
             )
         ):
             await self.wait_for_issue_comment(str(pr["number"]), "created")
+
+    async def test_multiple_queue_commands_on_different_queues(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "routing_conditions": [
+                        "label=default",
+                    ],
+                },
+                {
+                    "name": "specialq",
+                    "routing_conditions": [
+                        "label=special",
+                    ],
+                    "merge_conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        pr = await self.create_pr()
+        await self.run_engine()
+
+        await self.add_label(pr["number"], "special")
+        await self.create_comment_as_admin(pr["number"], "@mergifyio queue specialq")
+        await self.run_engine()
+        first_comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
+
+        await self.create_comment_as_admin(pr["number"], "@mergifyio queue default")
+        await self.run_engine()
+        edited_comment = await self.wait_for_issue_comment(str(pr["number"]), "edited")
+        assert edited_comment["comment"]["id"] == first_comment["comment"]["id"]
+        assert (
+            "🛑 Command `queue specialq` cancelled because of a new `queue` command with different arguments"
+            in edited_comment["comment"]["body"]
+        )
+
+        second_comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
+        assert "Waiting for conditions to match" in second_comment["comment"]["body"]
+
+        train = await self.get_train()
+        assert len(train._cars) == 0
+        assert len(train._waiting_pulls) == 0
+
+    async def test_multiple_queue_commands_on_different_queues_with_restrictions(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "routing_conditions": [
+                        "label=default",
+                    ],
+                },
+                {
+                    "name": "specialq",
+                    "routing_conditions": [
+                        "label=special",
+                    ],
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        pr = await self.create_pr()
+        await self.run_engine()
+
+        await self.create_comment_as_admin(pr["number"], "@mergifyio queue specialq")
+        await self.run_engine()
+        first_response = await self.wait_for_issue_comment(str(pr["number"]), "created")
+
+        await self.create_comment(pr["number"], "@mergifyio queue", as_="fork")
+        await self.run_engine()
+
+        second_response = await self.wait_for_issue_comment(
+            str(pr["number"]), "created"
+        )
+        assert "Command disallowed" in second_response["comment"]["body"]
+
+        first_response_again = await self.get_comment(first_response["comment"]["id"])
+        assert "Waiting for conditions to match" in first_response_again["body"]

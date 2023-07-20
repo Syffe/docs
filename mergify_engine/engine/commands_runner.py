@@ -5,6 +5,7 @@ import typing
 
 import daiquiri
 from datadog import statsd  # type: ignore[attr-defined]
+import first
 import tenacity
 import voluptuous
 
@@ -268,31 +269,128 @@ async def get_pending_commands_to_run_from_comments(
     return pendings
 
 
+async def pre_commands_run(
+    ctxt: context.Context,
+    pendings: LastUpdatedOrderedDict,
+    mergify_config: mergify_conf.MergifyConfig,
+) -> list[tuple[Command | CommandInvalid | NotACommand, CommandState]]:
+    loaded_commands: list[
+        tuple[Command | CommandInvalid | NotACommand, CommandState]
+    ] = []
+    seen_commands_names = set()
+    for pending, state in pendings.items():
+        try:
+            command = load_command(mergify_config, f"@Mergifyio {pending}")
+        except CommandInvalid as e:
+            loaded_commands.append((e, state))
+            seen_commands_names.add(e.name)
+            continue
+        except NotACommand as e:
+            loaded_commands.append((e, state))
+            continue
+
+        loaded_commands.append((command, state))
+
+        if not (
+            command.name in seen_commands_names
+            and actions.ActionFlag.SAME_COMMAND_WITH_DIFFERENT_ARGS_CANCEL_PENDING_STATUS
+            in command.action.flags
+        ):
+            seen_commands_names.add(command.name)
+            continue
+
+        ctxt.log.info(
+            "Command '%s' needs to override a previously loaded %s command",
+            command.get_command(),
+            command.name,
+        )
+        try:
+            # Make sure the new command has the rights to be executed first,
+            # otherwise we could be cancelling actions from unauthorized
+            # senders.
+            await check_init_command_run(ctxt, mergify_config, command, state)
+        except CommandNotAllowed:
+            ctxt.log.info(
+                "Command '%s' doesn't have the rights to be executed, cancelling overload of previous command.",
+                command.get_command(),
+            )
+            continue
+
+        # A command with different arguments already exist in the commands
+        # we already loaded, and the `Action` class of that command says
+        # that we need to cancel previous commands.
+        # So we need to cancel the previously loaded command in order to
+        # then execute the command with different args.
+        loaded_command_tuple = first.first(
+            tmp_command
+            for tmp_command in loaded_commands
+            if isinstance(tmp_command[0], Command)
+            and tmp_command[0].name == command.name
+        )
+        if loaded_command_tuple is None:
+            raise RuntimeError("Did not found existing command in `loaded_commands`")
+
+        loaded_command, loaded_command_state = loaded_command_tuple
+        # mypy doesn't understand that the `if` in the `first.first` make it so that
+        # loaded_command is a Command
+        loaded_command = typing.cast(Command, loaded_command)
+        loaded_commands.remove((loaded_command, loaded_command_state))
+
+        ctxt.log.info("Cancelling pending command '%s'", command.get_command())
+
+        await run_command(
+            ctxt,
+            mergify_config,
+            # NOTE(Greesb): Pass the new `command` instead of the `loaded_command`
+            # in order for the `cancel` to see the new requirements of the action.
+            # Otherwise the conditions would still match and the `cancel` might not do anything.
+            # eg: if we do `queue foo` and then `queue bar`, the requirements of the
+            # queue `bar` will be passed to the `cancel` of the queue action which will
+            # result in the PR being unqueued.
+            command,
+            loaded_command_state,
+            force_run=True,
+            executor_func_to_run="cancel",
+        )
+        result = check_api.Result(
+            check_api.Conclusion.CANCELLED,
+            f"Command `{loaded_command.get_command()}` cancelled because of a new `{command.name}` command with different arguments",
+            "",
+        )
+        await post_result(ctxt, loaded_command, loaded_command_state, result)
+
+        seen_commands_names.add(command.name)
+
+    return loaded_commands
+
+
 async def run_commands_tasks(
     ctxt: context.Context, mergify_config: mergify_conf.MergifyConfig
 ) -> None:
     pendings = await get_pending_commands_to_run_from_comments(ctxt)
 
-    for pending, state in pendings.items():
-        try:
-            command = load_command(mergify_config, f"@Mergifyio {pending}")
-        except CommandInvalid as e:
+    commands = await pre_commands_run(ctxt, pendings, mergify_config)
+
+    for command, state in commands:
+        if isinstance(command, CommandInvalid):
             if state.github_comment_result is None:
-                result = check_api.Result(check_api.Conclusion.FAILURE, e.message, "")
-                await post_result(ctxt, e, state, result)
+                result = check_api.Result(
+                    check_api.Conclusion.FAILURE, command.message, ""
+                )
+                await post_result(ctxt, command, state, result)
             else:
                 ctxt.log.error(
                     "Unexpected command string, it was valid in the past but not anymore",
                     command_state=state,
-                    exc_info=True,
+                    exc=str(command),
                 )
 
-        except NotACommand:
+        elif isinstance(command, NotACommand):
             if state.github_comment_result is not None:
                 ctxt.log.error(
                     "Unexpected command string, it was valid in the past but not anymore",
                     command_state=state,
-                    exc_info=True,
+                    exc=str(command),
                 )
         else:
             if not ctxt.subscription.has_feature(
@@ -304,7 +402,7 @@ async def run_commands_tasks(
                     state,
                     check_api.Result(
                         check_api.Conclusion.ACTION_REQUIRED,
-                        f"Cannot use the command `{pending}`",
+                        f"Cannot use the command `{command.get_command()}`",
                         ctxt.subscription.missing_feature_reason(
                             ctxt.pull["base"]["repo"]["owner"]["login"]
                         ),
@@ -347,6 +445,8 @@ async def run_command(
     mergify_config: mergify_conf.MergifyConfig,
     command: Command,
     state: CommandState,
+    force_run: bool = False,
+    executor_func_to_run: typing.Literal["run", "cancel"] = "run",
 ) -> check_api.Result:
     statsd.increment("engine.commands.count", tags=[f"name:{command.name}"])
     try:
@@ -358,7 +458,7 @@ async def run_command(
         await command.action.get_conditions_requirements(ctxt)
     )
     await conds([ctxt.pull_request])
-    if conds.match:
+    if conds.match or force_run:
         try:
             await command.action.load_context(
                 ctxt,
@@ -380,7 +480,13 @@ async def run_command(
                 e.details,
             )
         else:
-            return await command.action.executor.run()
+            # Do not use getattr to keep typing
+            if executor_func_to_run == "run":
+                return await command.action.executor.run()
+            if executor_func_to_run == "cancel":
+                return await command.action.executor.cancel()
+            raise RuntimeError(f"Unhandled executor function '{executor_func_to_run}'")
+
     elif actions.ActionFlag.ALLOW_AS_PENDING_COMMAND in command.action.flags:
         return check_api.Result(
             check_api.Conclusion.PENDING,

@@ -1248,6 +1248,7 @@ class QueueAction(actions.Action):
         actions.ActionFlag.DISALLOW_RERUN_ON_OTHER_RULES
         | actions.ActionFlag.SUCCESS_IS_FINAL_STATE
         | actions.ActionFlag.ALLOW_AS_PENDING_COMMAND
+        | actions.ActionFlag.SAME_COMMAND_WITH_DIFFERENT_ARGS_CANCEL_PENDING_STATUS
         # FIXME(sileht): MRGFY-562
         # | actions.ActionFlag.ALWAYS_RUN
     )

@@ -1407,6 +1407,12 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         )
         await self.wait_for("pull_request", {"action": "review_requested"})
 
+    async def get_comment(self, comment_id: int) -> github_types.GitHubComment:
+        r = await self.client_integration.get(
+            f"{self.url_origin}/issues/comments/{comment_id}"
+        )
+        return typing.cast(github_types.GitHubComment, r.json())
+
     async def create_comment(
         self,
         pull_number: github_types.GitHubPullRequestNumber,
