@@ -220,38 +220,6 @@ jobs:
       #
       # Next steps are only on main branch for pushing change in production
       #
-      - name: Dump anonymized production database
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        env:
-          PRODUCTION_ENGINE_POSTGRES_URL: ${{ secrets.PRODUCTION_ENGINE_POSTGRES_URL }}
-        run: |
-          set -o pipefail
-          eval "$(python3 tools/pg_url_to_env.py PRODUCTION_ENGINE_POSTGRES_URL)"
-          docker run -e PGHOST -e PGPORT -e PGDATABASE -e PGUSER -e PGPASSWORD ankane/pgvector:v0.4.4 \
-            pg_dump --no-acl --no-owner --no-comments --format=p --encoding=UTF8 | \
-            cat - postgresql_anonymizer_rules.sql | \
-            docker run --rm -i mergifyio/custom_postgresql_anonymizer /anon.sh \
-            > anonymized_database.dump
-
-      - name: Load and upgrade anonymized testing database
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        env:
-          MERGIFYENGINE_DATABASE_URL: "postgresql://postgres:password@localhost:5432/postgres"
-        run: |
-          eval "$(python3 tools/pg_url_to_env.py MERGIFYENGINE_DATABASE_URL)"
-          psql < anonymized_database.dump
-          docker run \
-              --env-file fake.env \
-              -e DD_API_KEY=testing-false-key \
-              -e DYNO=testing.1 \
-              -e MERGIFYENGINE_STORAGE_URL=redis://redis:6363 \
-              -e MERGIFYENGINE_DATABASE_URL=postgresql://postgres:password@postgres:5432/postgres \
-              -e SENTRY_URL=https://fake-sentry.example.com/ \
-              -e SENTRY_ENVIRONMENT=ci \
-              --entrypoint /bin/bash \
-              web:tmp \
-              -c 'mergify-database-update';
-
       - name: 👮 Log into in Heroku
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
