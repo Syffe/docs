@@ -1427,7 +1427,9 @@ You don't need to do anything. Mergify will close this pull request automaticall
             )
 
         raw_unsuccessful_checks = [
-            check for check in self.last_checks if check.state != "success"
+            check
+            for check in self.last_checks
+            if check.state not in ("success", "neutral", "skipped")
         ]
 
         if (
