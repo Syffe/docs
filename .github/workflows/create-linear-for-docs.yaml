@@ -19,7 +19,7 @@ jobs:
                           --arg teamId "MRGFY" \
                           --arg labelId "documentation" \
                           '{
-                            "query": "mutation ($title: String!, $description: String!, $teamId: String!, $labelId: String!) { createIssue(input: { title: $title, description: $description, teamId: $teamId, labelIds: [$labelId], statusId: \"status_todo\" }) { issue { id } } }",
+                            "query": "mutation ($title: String!, $description: String!, $teamId: String!, $labelId: String!) { issueCreate(input: { title: $title, description: $description, teamId: $teamId, labelIds: [$labelId], statusId: \"status_todo\" }) { success issue { id title } } }",
                             "variables": {
                               "title": $title,
                               "description": $desc,
