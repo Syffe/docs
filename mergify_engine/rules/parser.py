@@ -110,6 +110,7 @@ CONDITION_PARSERS = {
     "sender": Parser.LOGIN_AND_TEAMS,
     "sender-permission": Parser.PERMISSION,
     "queue-partition-name": Parser.TEXT,
+    "current-datetime": Parser.TIMESTAMP,
 }
 COMMAND_ONLY_ATTRIBUTES = ("sender", "sender-permission")
 CONDITION_ENUMS = {
@@ -134,6 +135,7 @@ PARSER_MODIFIERS = {
     Parser.POSITIVE_NUMBER: (True, False),
     Parser.SCHEDULE: (False, False),
     Parser.TIMESTAMP_OR_TIMEDELTA: (False, False),
+    Parser.TIMESTAMP: (False, False),
 }
 
 NEGATION_OPERATORS = ("-", "¬")
@@ -373,7 +375,7 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
         cond: dict[str, typing.Any] = {op: ("current-time", parse_schedule(value))}
         return _to_dict(False, False, attribute, "@", cond)
 
-    if parser == Parser.TIMESTAMP_OR_TIMEDELTA:
+    if parser in (Parser.TIMESTAMP, Parser.TIMESTAMP_OR_TIMEDELTA):
         value = _unquote(value)
         if parser == Parser.TIMESTAMP_OR_TIMEDELTA:
             try:

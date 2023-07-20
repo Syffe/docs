@@ -2542,7 +2542,7 @@ class BasePullRequest:
                     depends_on.append(f"#{pull_request_number}")
             return depends_on
 
-        if name == "current-time":
+        if name in ("current-time", "current-datetime"):
             return date.utcnow()
 
         if name == "updated-at-relative":
@@ -2861,6 +2861,7 @@ class QueuePullRequest(BasePullRequest):
         "check-timed-out",
         "check-pending",
         "check-stale",
+        "current-datetime",
         "schedule",
         "queue-merge-started-at",
         "queue-merge-started-at-relative",

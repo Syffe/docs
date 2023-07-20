@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    A new ``current-datetime`` condition allows triggering a rule depending on a
+    specific date/time.

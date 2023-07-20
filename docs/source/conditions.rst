@@ -302,6 +302,9 @@ Here's the list of pull request attribute that can be used in conditions:
    * - ``created-at``
      - :ref:`Timestamp <iso timestamp>` or :ref:`Relative timestamp <relative timestamp>`
      - The time the pull request was created at.
+   * - ``current-datetime``
+     - :ref:`Timestamp <iso timestamp>`
+     - The current date and time.
    * - ``dependabot-dependency-name``
      - string
      - The dependency-name value included in the Dependabot commit message.
@@ -430,13 +433,14 @@ Here's the list of pull request attribute only usable in :ref:`Commands Restrict
 
 .. note::
 
-   ``created-at``, ``updated-at``, ``closed-at`` and ``merged-at``
-   do not support the ``~=``, ``=`` and ``!=`` operators.
+   ``current-datetime``, ``created-at``, ``updated-at``, ``closed-at`` and
+   ``merged-at`` do not support the ``~=``, ``=`` and ``!=`` operators.
    ``schedule`` only supports the ``=`` and ``!=`` operators.
 
 .. note::
 
-   ``schedule`` works only for open pull requests or pull requests closed in the last 7 days.
+   ``schedule`` and ``current-datetime`` works only for open pull requests or
+   pull requests closed in the last 7 days.
 
 .. note::
 

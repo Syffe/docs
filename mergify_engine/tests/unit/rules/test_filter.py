@@ -530,6 +530,7 @@ def get_scheduled_pr() -> FakePR:
         {
             "number": 3433,
             "current-time": date.utcnow(),
+            "current-datetime": date.utcnow(),
         }
     )
 
@@ -573,6 +574,21 @@ async def test_schedule_with_timezone() -> None:
             )
             assert await f(get_scheduled_pr()) == next_refresh_dt
             frozen_time.move_to(next_refresh_dt)
+
+
+async def test_current_datetime() -> None:
+    with freeze_time("2023-07-13"):
+        tree = parser.parse("current-datetime<=2023-07-13T14:00[Europe/Paris]")
+        f = filter.NearDatetimeFilter(tree)
+
+        next_refresh_at = datetime.datetime.fromisoformat("2023-07-13T14:00").replace(
+            tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+        )
+
+        assert await f(get_scheduled_pr()) == next_refresh_at
+
+    with freeze_time("2023-07-14"):
+        assert await f(get_scheduled_pr()) == date.DT_MAX
 
 
 async def test_text_jinja_template(

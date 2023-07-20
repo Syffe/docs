@@ -411,6 +411,17 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                 )
             },
         ),
+        (
+            "current-datetime>=2023-07-13T14:00[Europe/Paris]",
+            {
+                ">=": (
+                    "current-datetime",
+                    datetime.datetime(
+                        2023, 7, 13, 14, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                    ),
+                )
+            },
+        ),
     ),
 )
 @freeze_time(now)
@@ -490,6 +501,11 @@ async def test_parse_jinja_template(
         ("commits[0].test", "`test` is not a valid sub-attribute for `commits`"),
         ("commits[abc].author", "Invalid operator"),
         ("commits[0]", "Invalid operator"),
+        ("current-datetime=2023-07-13T14:00[Europe/Paris]", "Invalid operator"),
+        (
+            "-current-datetime<2023-07-13T14:00[Europe/Paris]",
+            "`-` modifier is invalid for attribute: `current-datetime`",
+        ),
     ),
 )
 def test_parse_invalid(line: str, expected_error: str) -> None:
