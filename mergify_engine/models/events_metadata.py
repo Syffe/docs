@@ -5,9 +5,12 @@ import datetime
 import sqlalchemy
 from sqlalchemy import orm
 from sqlalchemy.dialects import postgresql
+import sqlalchemy.ext.asyncio
 
 from mergify_engine import models
+from mergify_engine.clients import github
 from mergify_engine.models import enumerations
+from mergify_engine.models.enumerations import GithubAuthenticatedActorType
 from mergify_engine.queue.merge_train import checks
 
 
@@ -57,3 +60,36 @@ class SpeculativeCheckPullRequest(models.Base):
             "'url', 'avatar_url'])"
         ),
     )
+
+
+class GithubAuthenticatedActor(models.Base):
+    __tablename__ = "github_authenticated_actor"
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.BigInteger,
+        primary_key=True,
+        anonymizer_config=None,
+    )
+    type: orm.Mapped[GithubAuthenticatedActorType | None] = orm.mapped_column(
+        sqlalchemy.Enum(GithubAuthenticatedActorType),
+        nullable=True,
+        anonymizer_config="anon.random_in_enum(type)",
+    )
+    name: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7 )"
+    )
+
+    @classmethod
+    async def get_or_create(
+        cls,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+        data: github.Actor,
+    ) -> GithubAuthenticatedActor:
+        result = await session.execute(
+            sqlalchemy.select(cls).where(cls.id == data["id"])
+        )
+        if (instance := result.scalar_one_or_none()) is not None:
+            instance.name = data["name"]
+            return instance
+
+        return cls(**data)

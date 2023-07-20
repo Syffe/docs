@@ -21,11 +21,15 @@ async def insert_event(
     fake_repository: context.Repository,
     event: signals.EventName,
     metadata: signals.EventMetadata,
+    pull_request: int | None = 0,
 ) -> None:
+    if pull_request is not None:
+        pull_request = github_types.GitHubPullRequestNumber(random.randint(1, 100))
+
     await events_db.insert(
         event=event,
         repository=fake_repository.repo,
-        pull_request=github_types.GitHubPullRequestNumber(random.randint(1, 100)),
+        pull_request=pull_request,
         metadata=metadata,
         trigger="Rule: my rule",
     )
@@ -477,3 +481,31 @@ async def test_event_action_review_consistency(
     assert event.review_type == "APPROVE"
     assert event.reviewer == "John Doe"
     assert event.message == "Looks good to me"
+
+
+async def test_event_queue_freeze_create_consistency(
+    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+) -> None:
+    await insert_event(
+        fake_repository,
+        "queue.freeze.create",
+        signals.EventQueueFreezeCreateMetadata(
+            {
+                "queue_name": "hotfix",
+                "reason": "Incident in production",
+                "cascading": True,
+                "created_by": {"id": 123456, "type": "user", "name": "krilin"},
+            }
+        ),
+        pull_request=None,
+    )
+
+    await assert_base_event(db, fake_repository)
+    event = await db.scalar(sqlalchemy.select(evt_model.EventQueueFreezeCreate))
+    assert event is not None
+    assert event.queue_name == "hotfix"
+    assert event.reason == "Incident in production"
+    assert event.cascading is True
+    assert event.created_by.id == 123456
+    assert event.created_by.type == "user"
+    assert event.created_by.name == "krilin"

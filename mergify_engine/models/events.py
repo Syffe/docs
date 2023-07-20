@@ -42,7 +42,7 @@ class Event(models.Base):
         server_default=func.now(),
         anonymizer_config="anon.dnoise(received_at, ''2 days'')",
     )
-    pull_request: orm.Mapped[int] = orm.mapped_column(
+    pull_request: orm.Mapped[int | None] = orm.mapped_column(
         sqlalchemy.Integer,
         index=True,
         anonymizer_config="anon.random_int_between(1,100000)",
@@ -541,17 +541,17 @@ class EventActionReview(Event):
         primary_key=True,
         anonymizer_config=None,
     )
-    review_type: orm.Mapped[enumerations.ReviewType] = orm.mapped_column(
+    review_type: orm.Mapped[enumerations.ReviewType | None] = orm.mapped_column(
         sqlalchemy.Enum(enumerations.ReviewType),
         nullable=True,
         anonymizer_config="anon.random_in_enum(review_type)",
     )
-    reviewer: orm.Mapped[str] = orm.mapped_column(
+    reviewer: orm.Mapped[str | None] = orm.mapped_column(
         sqlalchemy.Text,
         nullable=True,
         anonymizer_config="anon.lorem_ipsum( characters := 7 )",
     )
-    message: orm.Mapped[str] = orm.mapped_column(
+    message: orm.Mapped[str | None] = orm.mapped_column(
         sqlalchemy.Text,
         nullable=True,
         anonymizer_config="anon.lorem_ipsum( words := 7 )",
@@ -581,4 +581,61 @@ class EventActionReview(Event):
             review_type=metadata["type"],
             reviewer=metadata["reviewer"],
             message=metadata["message"],
+        )
+
+
+class EventQueueFreezeCreate(Event):
+    __tablename__ = "event_queue_freeze_create"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "queue.freeze.create",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
+    )
+    queue_name: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7 )"
+    )
+    reason: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( words := 7 )",
+    )
+    cascading: orm.Mapped[bool] = orm.mapped_column(
+        sqlalchemy.Boolean,
+        anonymizer_config="anon.random_int_between(0,1)",
+    )
+
+    created_by_id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("github_authenticated_actor.id"), anonymizer_config=None
+    )
+    created_by: orm.Mapped[events_metadata.GithubAuthenticatedActor] = orm.relationship(
+        lazy="joined"
+    )
+
+    @classmethod
+    async def create(
+        cls,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+        repository: github_types.GitHubRepository
+        | github_repository.GitHubRepositoryDict,
+        pull_request: github_types.GitHubPullRequestNumber | None,
+        trigger: str,
+        metadata: signals.EventMetadata,
+    ) -> Event:
+        repository_obj = await github_repository.GitHubRepository.get_or_create(
+            session, repository
+        )
+
+        metadata = typing.cast(signals.EventQueueFreezeCreateMetadata, metadata)
+        actor = await events_metadata.GithubAuthenticatedActor.get_or_create(
+            session,
+            metadata.pop("created_by"),
+        )
+
+        return cls(
+            repository=repository_obj,
+            pull_request=pull_request,
+            trigger=trigger,
+            created_by=actor,
+            **metadata,
         )

@@ -34,3 +34,8 @@ class ReviewType(str, enum.Enum):
     APPROVE = "APPROVE"
     REQUEST_CHANGES = "REQUEST_CHANGES"
     COMMENT = "COMMENT"
+
+
+class GithubAuthenticatedActorType(str, enum.Enum):
+    USER = "user"
+    APPLICATION = "application"
