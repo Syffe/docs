@@ -319,6 +319,10 @@ class MergifyInstalled(typing.TypedDict):
     error: str | None
 
 
+class MergifyConfigFileEmpty(Exception):
+    pass
+
+
 @dataclasses.dataclass
 class Repository:
     installation: Installation
@@ -396,7 +400,9 @@ class Repository:
 
     @tracer.wrap("get_mergify_config", span_type="worker")
     async def get_mergify_config(
-        self, allow_extend: bool = True
+        self,
+        allow_extend: bool = True,
+        allow_empty_configuration: bool = True,
     ) -> mergify_conf.MergifyConfig:
         # Circular import
         from mergify_engine.rules.config import mergify as mergify_conf
@@ -409,6 +415,9 @@ class Repository:
 
         config_file = await self.get_mergify_config_file()
         if config_file is None:
+            if not allow_empty_configuration:
+                raise MergifyConfigFileEmpty()
+
             config_file = DEFAULT_CONFIG_FILE
 
         # BRANCH CONFIGURATION CHECKING

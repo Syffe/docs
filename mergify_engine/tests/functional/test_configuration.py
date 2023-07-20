@@ -816,3 +816,36 @@ did not find expected alphabetic or numeric character
         )
         assert cache_value is not None
         assert json.loads(cache_value) == {"installed": False, "error": anys.ANY_STR}
+
+    async def test_extended_repo_does_not_have_a_configuration_file(self) -> None:
+        rules = {"extends": ".github"}
+
+        await self.setup_repo(yaml.dump(rules))
+
+        real_get_mergify_config_file = context.Repository.get_mergify_config_file
+
+        async def mocked_get_mergify_config_file(self):  # type: ignore[no-untyped-def]
+            if self.repo["name"] == ".github":
+                return None
+
+            return await real_get_mergify_config_file(self)
+
+        await self.create_pr()
+        with mock.patch.object(
+            context.Repository,
+            "get_mergify_config_file",
+            mocked_get_mergify_config_file,
+        ), mock.patch.object(
+            context.Repository, "is_mergify_installed", return_value={"installed": True}
+        ):
+            await self.run_engine()
+
+        check_run = await self.wait_for_check_run(name="Summary", conclusion="failure")
+        assert (
+            check_run["check_run"]["output"]["title"]
+            == "The current Mergify configuration is invalid"
+        )
+        assert (
+            "Extended configuration repository `.github` doesn't have a Mergify configuration file."
+            in check_run["check_run"]["output"]["summary"]
+        )

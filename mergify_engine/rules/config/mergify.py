@@ -6,6 +6,7 @@ import typing
 
 import voluptuous
 
+from mergify_engine import context
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import rules
@@ -14,7 +15,6 @@ from mergify_engine.clients import http
 
 
 if typing.TYPE_CHECKING:
-    from mergify_engine import context
     from mergify_engine.rules.config import partition_rules as partr_config
     from mergify_engine.rules.config import pull_request_rules as prr_config
     from mergify_engine.rules.config import queue_rules as qr_config
@@ -162,8 +162,8 @@ class InvalidRules(Exception):
 
 
 async def get_mergify_config_from_file(
-    repository_ctxt: "context.Repository",
-    config_file: "context.MergifyConfigFile",
+    repository_ctxt: context.Repository,
+    config_file: context.MergifyConfigFile,
     allow_extend: bool = True,
 ) -> MergifyConfig:
     try:
@@ -182,7 +182,7 @@ async def get_mergify_config_from_file(
 
 
 async def get_mergify_config_from_dict(
-    repository_ctxt: "context.Repository",
+    repository_ctxt: context.Repository,
     config: dict[str, typing.Any],
     error_path: str,
     allow_extend: bool = True,
@@ -225,7 +225,7 @@ async def get_mergify_config_from_dict(
 
 
 async def get_mergify_extended_config(
-    repository_ctxt: "context.Repository",
+    repository_ctxt: context.Repository,
     extended_path: github_types.GitHubRepositoryName,
     error_path: str,
 ) -> MergifyConfig:
@@ -264,4 +264,15 @@ async def get_mergify_extended_config(
             error_path,
         )
 
-    return await extended_repository_ctxt.get_mergify_config(allow_extend=False)
+    try:
+        return await extended_repository_ctxt.get_mergify_config(
+            allow_extend=False, allow_empty_configuration=False
+        )
+    except context.MergifyConfigFileEmpty:
+        raise InvalidRules(
+            voluptuous.Invalid(
+                f"Extended configuration repository `{extended_path}` doesn't have a Mergify configuration file.",
+                ["extends"],
+            ),
+            error_path,
+        )
