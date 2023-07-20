@@ -112,7 +112,10 @@ HTTP_500_EXCEPTION = http.HTTPServerSideError(
 
 
 async def just_run_once(
-    name: str, func: task.TaskRetriedForeverFuncT, sleep_time: float
+    self: task.TaskRetriedForever,
+    name: str,
+    func: task.TaskRetriedForeverFuncT,
+    sleep_time: float,
 ) -> None:
     await func()
 
@@ -2794,3 +2797,59 @@ async def test_start_stop_cycle(
     assert len(w._services) == 0
     assert w._stopped.is_set()
     assert w._stop_task is None
+
+
+async def test_task_unexpected_cancellation(
+    logger_checker: pytest.LogCaptureFixture,
+) -> None:
+    counter = 0
+
+    async def wait() -> None:
+        nonlocal counter
+        counter += 1
+        await asyncio.sleep(1000)
+
+    t = task.TaskRetriedForever("foo", wait, 0)
+
+    # NOTE(sileht): schedule the task
+    await asyncio.sleep(0)
+
+    assert counter == 1
+    assert [r.message for r in logger_checker.get_records(when="call")] == [
+        "foo starting",
+    ]
+    assert not t.task.done()
+
+    # ignored
+    t.task.cancel()
+    await asyncio.sleep(0)
+    assert not t.task.done()
+    assert counter == 2
+    assert [r.message for r in logger_checker.get_records(when="call")] == [
+        "foo starting",
+        "foo task unexpectedly cancelled, ignoring",
+    ]
+
+    # ignored
+    t.task.cancel()
+    await asyncio.sleep(0)
+    assert not t.task.done()
+    assert counter == 3
+    assert [r.message for r in logger_checker.get_records(when="call")] == [
+        "foo starting",
+        "foo task unexpectedly cancelled, ignoring",
+        "foo task unexpectedly cancelled, ignoring",
+    ]
+
+    # stopped
+    await task.stop_and_wait([t])
+    assert t.task.done()
+    assert counter == 3
+    assert [r.message for r in logger_checker.get_records(when="call")] == [
+        "foo starting",
+        "foo task unexpectedly cancelled, ignoring",
+        "foo task unexpectedly cancelled, ignoring",
+        "tasks stopping",
+        "foo task exited",
+        "tasks stopped",
+    ]

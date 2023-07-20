@@ -19,6 +19,7 @@ class TaskRetriedForever:
     func: TaskRetriedForeverFuncT
     sleep_time: float
     must_shutdown_first: bool = False
+    shutdown_requested: bool = dataclasses.field(init=False, default=False)
 
     task: asyncio.Task[None] = dataclasses.field(init=False, repr=False)
 
@@ -33,9 +34,8 @@ class TaskRetriedForever:
     def _exited(self, fut: asyncio.Future[None]) -> None:
         LOG.info("%s task exited", self.name)
 
-    @staticmethod
     async def loop_and_sleep_forever(
-        name: str, func: TaskRetriedForeverFuncT, sleep_time: float
+        self, name: str, func: TaskRetriedForeverFuncT, sleep_time: float
     ) -> None:
         with sentry_sdk.Hub(sentry_sdk.Hub.current):
             while True:
@@ -50,6 +50,15 @@ class TaskRetriedForever:
                     )
                 except Exception:
                     LOG.error("%s task failed", name, exc_info=True)
+                except asyncio.CancelledError:
+                    if self.shutdown_requested:
+                        raise
+                    # FIXME(sileht): This should never ever occurs, but INC-78 prove the reverse
+                    # We prefer to ignore it and restart the worker to continue the events processing
+                    LOG.warning(
+                        "%s task unexpectedly cancelled, ignoring", name, exc_info=True
+                    )
+                    continue
 
                 await asyncio.sleep(sleep_time)
 
@@ -58,6 +67,8 @@ async def stop_and_wait(tasks: list[TaskRetriedForever]) -> None:
     names = [t.name for t in tasks]
     LOG.info("tasks stopping", tasks=names, count=len(tasks))
     if tasks:
+        for t in tasks:
+            t.shutdown_requested = True
         pendings = {t.task for t in tasks}
         while pendings:
             # NOTE(sileht): sometime tasks didn't get cancelled correctly (eg:
