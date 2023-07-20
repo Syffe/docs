@@ -42,3 +42,4 @@ from mergify_engine.models import github_actions  # noqa
 from mergify_engine.models import github_repository  # noqa
 from mergify_engine.models import github_user  # noqa
 from mergify_engine.models import events  # noqa
+from mergify_engine.models import enumerations  # noqa

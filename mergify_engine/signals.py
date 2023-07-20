@@ -151,7 +151,7 @@ class SpeculativeCheckPullRequest(typing.TypedDict, total=False):
     in_place: bool
     checks_timed_out: bool
     checks_conclusion: ChecksConclusion
-    checks_started_at: datetime.datetime
+    checks_started_at: datetime.datetime | None
     checks_ended_at: datetime.datetime | None
     unsuccessful_checks: list[merge_train_checks.QueueCheck.Serialized]
 

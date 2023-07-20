@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import datetime
-import enum
 import typing
 
 import sqlalchemy
@@ -12,6 +11,8 @@ import sqlalchemy.ext.asyncio
 from mergify_engine import github_types
 from mergify_engine import models
 from mergify_engine import signals
+from mergify_engine.models import enumerations
+from mergify_engine.models import events_metadata
 from mergify_engine.models import github_repository
 from mergify_engine.rules.config import partition_rules
 
@@ -100,18 +101,6 @@ class EventActionAssign(Event):
     )
 
 
-class CheckConclusion(str, enum.Enum):
-    PENDING = None
-    CANCELLED = "cancelled"
-    SUCCESS = "success"
-    FAILURE = "failure"
-    SKIPPED = "skipped"
-    NEUTRAL = "neutral"
-    STALE = "stale"
-    ACTION_REQUIRED = "action_required"
-    TIMED_OUT = "timed_out"
-
-
 class EventActionPostCheck(Event):
     __tablename__ = "event_action_post_check"
     __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
@@ -121,8 +110,8 @@ class EventActionPostCheck(Event):
     id: orm.Mapped[int] = orm.mapped_column(
         sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
     )
-    conclusion: orm.Mapped[CheckConclusion] = orm.mapped_column(
-        sqlalchemy.Enum(CheckConclusion),
+    conclusion: orm.Mapped[enumerations.CheckConclusion] = orm.mapped_column(
+        sqlalchemy.Enum(enumerations.CheckConclusion),
         nullable=True,
         anonymizer_config="anon.random_in_enum(conclusion)",
     )
@@ -451,3 +440,69 @@ class EventActionUpdate(Event):
     id: orm.Mapped[int] = orm.mapped_column(
         sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
     )
+
+
+class EventActionQueueChecksStart(Event):
+    __tablename__ = "event_action_queue_checks_start"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "action.queue.checks_start",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
+    )
+    branch: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+    )
+    partition_name: orm.Mapped[
+        partition_rules.PartitionRuleName | None
+    ] = orm.mapped_column(
+        sqlalchemy.Text,
+        nullable=True,
+        anonymizer_config="anon.lorem_ipsum( characters := 7)",
+    )
+    position: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.Integer, anonymizer_config="anon.random_int_between(0, 50)"
+    )
+    queue_name: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+    )
+    queued_at: orm.Mapped[datetime.datetime] = orm.mapped_column(
+        sqlalchemy.DateTime(timezone=True),
+        anonymizer_config="anon.dnoise(queued_at, ''2 days'')",
+    )
+
+    speculative_check_pull_request_id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("speculative_check_pull_request.id"),
+        anonymizer_config=None,
+    )
+    speculative_check_pull_request: orm.Mapped[
+        events_metadata.SpeculativeCheckPullRequest
+    ] = orm.relationship(lazy="joined")
+
+    @classmethod
+    async def create(
+        cls,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+        repository: github_types.GitHubRepository
+        | github_repository.GitHubRepositoryDict,
+        pull_request: github_types.GitHubPullRequestNumber | None,
+        trigger: str,
+        metadata: signals.EventMetadata,
+    ) -> Event:
+        repository_obj = await github_repository.GitHubRepository.get_or_create(
+            session, repository
+        )
+
+        metadata = typing.cast(signals.EventQueueChecksStartMetadata, metadata)
+        speculative_check_pull_request = events_metadata.SpeculativeCheckPullRequest(
+            **metadata.pop("speculative_check_pull_request")
+        )
+
+        return cls(
+            repository=repository_obj,
+            pull_request=pull_request,
+            trigger=trigger,
+            speculative_check_pull_request=speculative_check_pull_request,
+            **metadata,
+        )

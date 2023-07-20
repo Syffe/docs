@@ -34,9 +34,33 @@ BEGIN
 END
 $$;
 
+DROP FUNCTION IF EXISTS custom_masks.json_obj_array;
+CREATE FUNCTION custom_masks.json_obj_array(min int, max int, keys text[])
+RETURNS jsonb
+VOLATILE
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    count integer;
+    obj jsonb;
+    result jsonb;
+BEGIN
+    count := anon.random_int_between(min, max);
+    result := jsonb_build_array();
+    FOR i IN 1..count LOOP
+        obj := jsonb_object();
+        FOR j IN ARRAY_RANGE(1, array_length(keys, 1)) LOOP
+            obj[keys[j]] := to_jsonb(anon.random_string(10));
+        END LOOP;
+        result := result || obj;
+    END LOOP;
+    RETURN result::jsonb;
+END
+$$;
+
 -- To validate the function content syntax
 select custom_masks.lorem_ipsum_array(1, 2, 2);
-
+select custom_masks.json_obj_array(0, 5, ARRAY['name', 'description', 'url']);
 
 """
 

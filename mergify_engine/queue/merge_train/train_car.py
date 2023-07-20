@@ -1258,7 +1258,9 @@ class TrainCar:
                             or "pending",
                             "checks_timed_out": self.train_car_state.outcome
                             == TrainCarOutcome.CHECKS_TIMEOUT,
+                            "checks_started_at": None,
                             "checks_ended_at": self.checks_ended_timestamp,
+                            "unsuccessful_checks": [],
                         },
                     }
                 ),

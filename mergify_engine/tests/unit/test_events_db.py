@@ -1,5 +1,6 @@
 import random
 
+import anys
 from freezegun import freeze_time
 import pytest
 import sqlalchemy
@@ -12,6 +13,7 @@ from mergify_engine import events_db
 from mergify_engine import github_types
 from mergify_engine import signals
 from mergify_engine.models import events as evt_model
+from mergify_engine.queue.merge_train import checks
 from mergify_engine.rules.config import partition_rules
 
 
@@ -376,3 +378,58 @@ async def test_events_with_no_metadata(
 
     events_types = await db.scalars(sqlalchemy.select(evt_model.Event.type))
     assert set(events_types.all()) == events_set
+
+
+@freeze_time("2023-07-17T14:00:00", tz_offset=0)
+async def test_event_action_queue_checks_start_consistency(
+    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+) -> None:
+    unsuccessful_check = checks.QueueCheck.Serialized(
+        {
+            "name": "ruff",
+            "description": "Syntax check",
+            "state": "failure",
+            "url": None,
+            "avatar_url": "some_url",
+        }
+    )
+
+    await insert_event(
+        fake_repository,
+        "action.queue.checks_start",
+        signals.EventQueueChecksStartMetadata(
+            {
+                "branch": "fix_hyperdrive_trigger",
+                "partition_name": partition_rules.DEFAULT_PARTITION_NAME,
+                "position": 3,
+                "queue_name": "default",
+                "queued_at": date.utcnow(),
+                "speculative_check_pull_request": {
+                    "number": 123,
+                    "in_place": True,
+                    "checks_timed_out": False,
+                    "checks_conclusion": "failure",
+                    "checks_started_at": date.utcnow(),
+                    "checks_ended_at": date.utcnow(),
+                    "unsuccessful_checks": [unsuccessful_check],
+                },
+            }
+        ),
+    )
+
+    await assert_base_event(db, fake_repository)
+    event = await db.scalar(sqlalchemy.select(evt_model.EventActionQueueChecksStart))
+    assert event is not None
+    assert event.branch == "fix_hyperdrive_trigger"
+    assert event.partition_name == "__default__"
+    assert event.queue_name == "default"
+    assert event.queued_at == anys.ANY_AWARE_DATETIME
+    spec_check_pr = event.speculative_check_pull_request
+    assert spec_check_pr is not None
+    assert spec_check_pr.number == 123
+    assert spec_check_pr.in_place is True
+    assert spec_check_pr.checks_timed_out is False
+    assert spec_check_pr.checks_conclusion == "failure"
+    assert spec_check_pr.checks_started_at == anys.ANY_AWARE_DATETIME
+    assert spec_check_pr.checks_ended_at == anys.ANY_AWARE_DATETIME
+    assert spec_check_pr.unsuccessful_checks == [unsuccessful_check]
