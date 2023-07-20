@@ -1,7 +1,7 @@
 FROM mergifyio/dashboard:${MERGIFYUI_VERSION} as js-ui
 
 # hadolint ignore=DL3007
-FROM mergifyio/installer:latest as js-installer
+FROM mergifyio/installer:${MERGIFYINSTALLER_VERSION} as js-installer
 
 ### ON PREMISE ###
 # hadolint ignore=DL3006

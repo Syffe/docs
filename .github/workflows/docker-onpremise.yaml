@@ -63,10 +63,13 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
             UI_VERSION="latest"
+            INSTALLER_VERSION="latest"
           else
             UI_VERSION="${{ github.ref_name }}"
+            INSTALLER_VERSION="${{ github.ref_name }}"
           fi
           echo "UI_VERSION=${UI_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "INSTALLER_VERSION=${INSTALLER_VERSION}" >> "$GITHUB_OUTPUT"
 
           ENGINE_VERSION="${{ github.ref_name }}"
           echo "ENGINE_VERSION=${ENGINE_VERSION}" >> "$GITHUB_OUTPUT"
@@ -106,6 +109,7 @@ jobs:
             PYTHON_VERSION=${{ steps.vars.outputs.PYTHON_VERSION }}
             MERGIFYENGINE_VERSION=${{ steps.vars.outputs.ENGINE_VERSION }}
             MERGIFYUI_VERSION=${{ steps.vars.outputs.UI_VERSION }}
+            MERGIFYINSTALLER_VERSION=${{ steps.vars.outputs.INSTALLER_VERSION }}
             MERGIFYENGINE_SHA=${{ steps.vars.outputs.ENGINE_SHA }}
             BUILD_DATE=${{ steps.vars.outputs.BUILD_DATE }}
           context: .
