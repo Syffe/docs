@@ -33,7 +33,7 @@ interactions:
     method: GET
     uri: https://api.github.com/user
   response:
-    content: '{"login":"mergify-test1","id":38494943,"node_id":"MDQ6VXNlcjM4NDk0OTQz","avatar_url":"https://avatars.githubusercontent.com/u/38494943?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-test1","html_url":"https://github.com/mergify-test1","followers_url":"https://api.github.com/users/mergify-test1/followers","following_url":"https://api.github.com/users/mergify-test1/following{/other_user}","gists_url":"https://api.github.com/users/mergify-test1/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-test1/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-test1/subscriptions","organizations_url":"https://api.github.com/users/mergify-test1/orgs","repos_url":"https://api.github.com/users/mergify-test1/repos","events_url":"https://api.github.com/users/mergify-test1/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-test1/received_events","type":"User","site_admin":false,"name":"mergify-test-user-1","company":"@mergifyio","blog":"https://mergify.io","location":null,"email":null,"hireable":null,"bio":"This
+    content: '{"login":"mergify-test1","id":38494943,"node_id":"MDQ6VXNlcjM4NDk0OTQz","avatar_url":"https://avatars.githubusercontent.com/u/38494943?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-test1","html_url":"https://github.com/mergify-test1","followers_url":"https://api.github.com/users/mergify-test1/followers","following_url":"https://api.github.com/users/mergify-test1/following{/other_user}","gists_url":"https://api.github.com/users/mergify-test1/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-test1/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-test1/subscriptions","organizations_url":"https://api.github.com/users/mergify-test1/orgs","repos_url":"https://api.github.com/users/mergify-test1/repos","events_url":"https://api.github.com/users/mergify-test1/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-test1/received_events","type":"User","site_admin":false,"name":"mergify-test-user-1","company":"@mergifyio","blog":"https://mergify.com","location":null,"email":null,"hireable":null,"bio":"This
       account is for testing purpose of the workflow of the GitHub App @mergifyio","twitter_username":"mergifyio","public_repos":1,"public_gists":0,"followers":0,"following":0,"created_at":"2018-04-18T10:42:59Z","updated_at":"2023-05-15T11:36:56Z","private_gists":0,"total_private_repos":0,"owned_private_repos":0,"disk_usage":0,"collaborators":0,"two_factor_authentication":false,"plan":{"name":"free","space":976562499,"collaborators":0,"private_repos":10000}}'
     headers:
       Content-Encoding:
@@ -118,9 +118,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: DELETE
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure
   response:
     content: Event queued
     headers:
@@ -140,9 +140,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=1
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=1
   response:
     content: '[]'
     headers:
@@ -164,9 +164,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=2
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=2
   response:
     content: '[]'
     headers:
@@ -188,9 +188,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=3
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=3
   response:
     content: '[]'
     headers:
@@ -212,9 +212,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=4
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=4
   response:
     content: '[]'
     headers:
@@ -236,9 +236,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=5
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=5
   response:
     content: '[{"id":"1ab3b3f0-0912-11ee-9425-60f81c8fd532","hook_id":"408282773","type":"check_suite","payload":{"action":"requested","check_suite":{"id":13535859484,"node_id":"CS_kwDOJSiZR88AAAADJszTHA","head_branch":"20230612111302/test_queue_ci_failure/main","head_sha":"c4cc3dbee137ab62ff6336328255748b531b43e8","status":"queued","conclusion":null,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/check-suites/13535859484","before":"0000000000000000000000000000000000000000","after":"c4cc3dbee137ab62ff6336328255748b531b43e8","pull_requests":[],"app":{"id":313724,"slug":"mergify-lecrepont01","node_id":"A_kwHOAmplV84ABMl8","owner":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"name":"mergify-lecrepont01","description":"Mergify
       testing installation for lecrepont01","external_url":"https://mergify.com/","html_url":"https://github.com/apps/mergify-lecrepont01","created_at":"2023-04-04T10:31:12Z","updated_at":"2023-06-06T11:38:49Z","permissions":{"administration":"read","checks":"write","contents":"write","emails":"read","issues":"write","members":"read","metadata":"read","pages":"write","pull_requests":"write","statuses":"write","workflows":"write"},"events":["check_run","check_suite","issue_comment","member","membership","organization","pull_request","pull_request_review","pull_request_review_comment","pull_request_review_thread","push","repository","status","team","team_add","workflow_job","workflow_run"]},"created_at":"2023-06-12T11:13:05Z","updated_at":"2023-06-12T11:13:05Z","rerequestable":true,"runs_rerequestable":true,"latest_check_runs_count":0,"check_runs_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/check-suites/13535859484/check-runs","head_commit":{"id":"c4cc3dbee137ab62ff6336328255748b531b43e8","tree_id":"70ca2ca992968b7cf20652ddd1e011d5389d507f","message":"initial
@@ -266,9 +266,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=6
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=6
   response:
     content: '[]'
     headers:
@@ -290,9 +290,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=7
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=7
   response:
     content: '[]'
     headers:
@@ -314,9 +314,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=8
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=8
   response:
     content: '[]'
     headers:
@@ -338,9 +338,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=9
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=9
   response:
     content: '[]'
     headers:
@@ -362,9 +362,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=10
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=10
   response:
     content: '[]'
     headers:
@@ -386,9 +386,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=11
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=11
   response:
     content: '[{"id":"1c9d2944-0912-11ee-9532-01cbdd7b35b9","hook_id":"408282773","type":"push","payload":{"ref":"refs/heads/20230612111302/test_queue_ci_failure/integration/pr1","before":"0000000000000000000000000000000000000000","after":"56527ef006be24778f651107e4c77a3ef8c1081f","repository":{"id":623417671,"node_id":"R_kgDOJSiZRw","name":"functional-testing-repo-lecrepont01","full_name":"mergifyio-testing/functional-testing-repo-lecrepont01","private":false,"owner":{"name":"mergifyio-testing","email":null,"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"html_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01","description":null,"fork":false,"url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01","forks_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/forks","keys_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/keys{/key_id}","collaborators_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/collaborators{/collaborator}","teams_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/teams","hooks_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/hooks","issue_events_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/issues/events{/number}","events_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/events","assignees_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/assignees{/user}","branches_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/branches{/branch}","tags_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/tags","blobs_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/git/blobs{/sha}","git_tags_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/git/tags{/sha}","git_refs_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/git/refs{/sha}","trees_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/git/trees{/sha}","statuses_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/statuses/{sha}","languages_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/languages","stargazers_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/stargazers","contributors_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/contributors","subscribers_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/subscribers","subscription_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/subscription","commits_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/commits{/sha}","git_commits_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/git/commits{/sha}","comments_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/comments{/number}","issue_comment_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/issues/comments{/number}","contents_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/contents/{+path}","compare_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/compare/{base}...{head}","merges_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/merges","archive_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/{archive_format}{/ref}","downloads_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/downloads","issues_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/issues{/number}","pulls_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/pulls{/number}","milestones_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/milestones{/number}","notifications_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/notifications{?since,all,participating}","labels_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/labels{/name}","releases_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/releases{/id}","deployments_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/deployments","created_at":1680604258,"updated_at":"2023-04-04T10:30:58Z","pushed_at":1686568388,"git_url":"git://github.com/mergifyio-testing/functional-testing-repo-lecrepont01.git","ssh_url":"git@github.com:mergifyio-testing/functional-testing-repo-lecrepont01.git","clone_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01.git","svn_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01","homepage":null,"size":39,"stargazers_count":0,"watchers_count":0,"language":null,"has_issues":true,"has_projects":true,"has_downloads":true,"has_wiki":true,"has_pages":false,"has_discussions":false,"forks_count":1,"mirror_url":null,"archived":false,"disabled":false,"open_issues_count":13,"license":null,"allow_forking":true,"is_template":false,"web_commit_signoff_required":false,"topics":[],"visibility":"public","forks":1,"open_issues":13,"watchers":0,"default_branch":"main","stargazers":0,"master_branch":"main","organization":"mergifyio-testing"},"pusher":{"name":"mergify-test1","email":"38494943+mergify-test1@users.noreply.github.com"},"organization":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","url":"https://api.github.com/orgs/mergifyio-testing","repos_url":"https://api.github.com/orgs/mergifyio-testing/repos","events_url":"https://api.github.com/orgs/mergifyio-testing/events","hooks_url":"https://api.github.com/orgs/mergifyio-testing/hooks","issues_url":"https://api.github.com/orgs/mergifyio-testing/issues","members_url":"https://api.github.com/orgs/mergifyio-testing/members{/member}","public_members_url":"https://api.github.com/orgs/mergifyio-testing/public_members{/member}","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","description":"This
       account is for testing purpose of the workflow of the GitHub App @Mergifyio"},"sender":{"login":"mergify-test1","id":38494943,"node_id":"MDQ6VXNlcjM4NDk0OTQz","avatar_url":"https://avatars.githubusercontent.com/u/38494943?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-test1","html_url":"https://github.com/mergify-test1","followers_url":"https://api.github.com/users/mergify-test1/followers","following_url":"https://api.github.com/users/mergify-test1/following{/other_user}","gists_url":"https://api.github.com/users/mergify-test1/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-test1/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-test1/subscriptions","organizations_url":"https://api.github.com/users/mergify-test1/orgs","repos_url":"https://api.github.com/users/mergify-test1/repos","events_url":"https://api.github.com/users/mergify-test1/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-test1/received_events","type":"User","site_admin":false},"installation":{"id":36052686,"node_id":"MDIzOkludGVncmF0aW9uSW5zdGFsbGF0aW9uMzYwNTI2ODY="},"created":true,"deleted":false,"forced":false,"base_ref":null,"compare":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01/commit/56527ef006be","commits":[{"id":"56527ef006be24778f651107e4c77a3ef8c1081f","tree_id":"0ec7617cf35c494decb81d3d31fd60658becb6d9","distinct":true,"message":"test_queue_ci_failure:
@@ -448,9 +448,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=12
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=12
   response:
     content: '[]'
     headers:
@@ -472,9 +472,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=13
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=13
   response:
     content: '[{"id":"1e724290-0912-11ee-818a-de0325521141","hook_id":"408282773","type":"pull_request","payload":{"action":"opened","number":1617,"pull_request":{"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/pulls/1617","id":1388480638,"node_id":"PR_kwDOJSiZR85Swoh-","html_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01/pull/1617","diff_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01/pull/1617.diff","patch_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01/pull/1617.patch","issue_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/issues/1617","number":1617,"state":"open","locked":false,"title":"test_queue_ci_failure:
       pull request n1 from integration","user":{"login":"mergify-lecrepont01[bot]","id":129850877,"node_id":"BOT_kgDOB71d_Q","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D","html_url":"https://github.com/apps/mergify-lecrepont01","followers_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/followers","following_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/following{/other_user}","gists_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/subscriptions","organizations_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/orgs","repos_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/repos","events_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/received_events","type":"Bot","site_admin":false},"body":"test_queue_ci_failure:
@@ -499,9 +499,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=14
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=14
   response:
     content: '[]'
     headers:
@@ -523,9 +523,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=15
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=15
   response:
     content: '[]'
     headers:
@@ -547,9 +547,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=16
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=16
   response:
     content: '[]'
     headers:
@@ -571,9 +571,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=17
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=17
   response:
     content: '[]'
     headers:
@@ -595,9 +595,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=18
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=18
   response:
     content: '[]'
     headers:
@@ -619,9 +619,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=19
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=19
   response:
     content: '[{"id":"201e396e-0912-11ee-99f2-c3d69fe4c41c","hook_id":"408282773","type":"push","payload":{"ref":"refs/heads/20230612111302/test_queue_ci_failure/integration/pr2","before":"0000000000000000000000000000000000000000","after":"636d5c49a6f00381b23ee37ec533c3354cc30f5f","repository":{"id":623417671,"node_id":"R_kgDOJSiZRw","name":"functional-testing-repo-lecrepont01","full_name":"mergifyio-testing/functional-testing-repo-lecrepont01","private":false,"owner":{"name":"mergifyio-testing","email":null,"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"html_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01","description":null,"fork":false,"url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01","forks_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/forks","keys_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/keys{/key_id}","collaborators_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/collaborators{/collaborator}","teams_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/teams","hooks_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/hooks","issue_events_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/issues/events{/number}","events_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/events","assignees_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/assignees{/user}","branches_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/branches{/branch}","tags_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/tags","blobs_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/git/blobs{/sha}","git_tags_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/git/tags{/sha}","git_refs_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/git/refs{/sha}","trees_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/git/trees{/sha}","statuses_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/statuses/{sha}","languages_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/languages","stargazers_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/stargazers","contributors_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/contributors","subscribers_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/subscribers","subscription_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/subscription","commits_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/commits{/sha}","git_commits_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/git/commits{/sha}","comments_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/comments{/number}","issue_comment_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/issues/comments{/number}","contents_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/contents/{+path}","compare_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/compare/{base}...{head}","merges_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/merges","archive_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/{archive_format}{/ref}","downloads_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/downloads","issues_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/issues{/number}","pulls_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/pulls{/number}","milestones_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/milestones{/number}","notifications_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/notifications{?since,all,participating}","labels_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/labels{/name}","releases_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/releases{/id}","deployments_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/deployments","created_at":1680604258,"updated_at":"2023-04-04T10:30:58Z","pushed_at":1686568393,"git_url":"git://github.com/mergifyio-testing/functional-testing-repo-lecrepont01.git","ssh_url":"git@github.com:mergifyio-testing/functional-testing-repo-lecrepont01.git","clone_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01.git","svn_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01","homepage":null,"size":39,"stargazers_count":0,"watchers_count":0,"language":null,"has_issues":true,"has_projects":true,"has_downloads":true,"has_wiki":true,"has_pages":false,"has_discussions":false,"forks_count":1,"mirror_url":null,"archived":false,"disabled":false,"open_issues_count":14,"license":null,"allow_forking":true,"is_template":false,"web_commit_signoff_required":false,"topics":[],"visibility":"public","forks":1,"open_issues":14,"watchers":0,"default_branch":"main","stargazers":0,"master_branch":"main","organization":"mergifyio-testing"},"pusher":{"name":"mergify-test1","email":"38494943+mergify-test1@users.noreply.github.com"},"organization":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","url":"https://api.github.com/orgs/mergifyio-testing","repos_url":"https://api.github.com/orgs/mergifyio-testing/repos","events_url":"https://api.github.com/orgs/mergifyio-testing/events","hooks_url":"https://api.github.com/orgs/mergifyio-testing/hooks","issues_url":"https://api.github.com/orgs/mergifyio-testing/issues","members_url":"https://api.github.com/orgs/mergifyio-testing/members{/member}","public_members_url":"https://api.github.com/orgs/mergifyio-testing/public_members{/member}","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","description":"This
       account is for testing purpose of the workflow of the GitHub App @Mergifyio"},"sender":{"login":"mergify-test1","id":38494943,"node_id":"MDQ6VXNlcjM4NDk0OTQz","avatar_url":"https://avatars.githubusercontent.com/u/38494943?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-test1","html_url":"https://github.com/mergify-test1","followers_url":"https://api.github.com/users/mergify-test1/followers","following_url":"https://api.github.com/users/mergify-test1/following{/other_user}","gists_url":"https://api.github.com/users/mergify-test1/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-test1/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-test1/subscriptions","organizations_url":"https://api.github.com/users/mergify-test1/orgs","repos_url":"https://api.github.com/users/mergify-test1/repos","events_url":"https://api.github.com/users/mergify-test1/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-test1/received_events","type":"User","site_admin":false},"installation":{"id":36052686,"node_id":"MDIzOkludGVncmF0aW9uSW5zdGFsbGF0aW9uMzYwNTI2ODY="},"created":true,"deleted":false,"forced":false,"base_ref":null,"compare":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01/commit/636d5c49a6f0","commits":[{"id":"636d5c49a6f00381b23ee37ec533c3354cc30f5f","tree_id":"48364fa3866eb0182552b6aa33debcb0c90ef60f","distinct":true,"message":"test_queue_ci_failure:
@@ -681,9 +681,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=20
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=20
   response:
     content: '[{"id":"30902b40-0912-11ee-9596-274dd247e950","hook_id":"408282773","type":"pull_request","payload":{"action":"opened","number":1625,"pull_request":{"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/pulls/1625","id":1388481647,"node_id":"PR_kwDOJSiZR85Swoxv","html_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01/pull/1625","diff_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01/pull/1625.diff","patch_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01/pull/1625.patch","issue_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/issues/1625","number":1625,"state":"open","locked":false,"title":"test_queue_ci_failure:
       pull request n2 from integration","user":{"login":"mergify-lecrepont01[bot]","id":129850877,"node_id":"BOT_kgDOB71d_Q","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D","html_url":"https://github.com/apps/mergify-lecrepont01","followers_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/followers","following_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/following{/other_user}","gists_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/subscriptions","organizations_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/orgs","repos_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/repos","events_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/received_events","type":"Bot","site_admin":false},"body":"test_queue_ci_failure:
@@ -708,9 +708,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=21
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=21
   response:
     content: '[]'
     headers:
@@ -732,9 +732,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=22
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=22
   response:
     content: '[]'
     headers:
@@ -756,9 +756,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=23
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=23
   response:
     content: '[]'
     headers:
@@ -780,9 +780,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=24
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=24
   response:
     content: '[{"id":"323019f6-0912-11ee-992a-52d20265778b","hook_id":"408282773","type":"push","payload":{"ref":"refs/heads/20230612111302/test_queue_ci_failure/integration/pr3","before":"0000000000000000000000000000000000000000","after":"36ba86c1ba1a064fc7c7c4ae545d6ebbc0fa7e98","repository":{"id":623417671,"node_id":"R_kgDOJSiZRw","name":"functional-testing-repo-lecrepont01","full_name":"mergifyio-testing/functional-testing-repo-lecrepont01","private":false,"owner":{"name":"mergifyio-testing","email":null,"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"html_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01","description":null,"fork":false,"url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01","forks_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/forks","keys_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/keys{/key_id}","collaborators_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/collaborators{/collaborator}","teams_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/teams","hooks_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/hooks","issue_events_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/issues/events{/number}","events_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/events","assignees_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/assignees{/user}","branches_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/branches{/branch}","tags_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/tags","blobs_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/git/blobs{/sha}","git_tags_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/git/tags{/sha}","git_refs_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/git/refs{/sha}","trees_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/git/trees{/sha}","statuses_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/statuses/{sha}","languages_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/languages","stargazers_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/stargazers","contributors_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/contributors","subscribers_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/subscribers","subscription_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/subscription","commits_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/commits{/sha}","git_commits_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/git/commits{/sha}","comments_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/comments{/number}","issue_comment_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/issues/comments{/number}","contents_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/contents/{+path}","compare_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/compare/{base}...{head}","merges_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/merges","archive_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/{archive_format}{/ref}","downloads_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/downloads","issues_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/issues{/number}","pulls_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/pulls{/number}","milestones_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/milestones{/number}","notifications_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/notifications{?since,all,participating}","labels_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/labels{/name}","releases_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/releases{/id}","deployments_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/deployments","created_at":1680604258,"updated_at":"2023-04-04T10:30:58Z","pushed_at":1686568424,"git_url":"git://github.com/mergifyio-testing/functional-testing-repo-lecrepont01.git","ssh_url":"git@github.com:mergifyio-testing/functional-testing-repo-lecrepont01.git","clone_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01.git","svn_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01","homepage":null,"size":39,"stargazers_count":0,"watchers_count":0,"language":null,"has_issues":true,"has_projects":true,"has_downloads":true,"has_wiki":true,"has_pages":false,"has_discussions":false,"forks_count":1,"mirror_url":null,"archived":false,"disabled":false,"open_issues_count":22,"license":null,"allow_forking":true,"is_template":false,"web_commit_signoff_required":false,"topics":[],"visibility":"public","forks":1,"open_issues":22,"watchers":0,"default_branch":"main","stargazers":0,"master_branch":"main","organization":"mergifyio-testing"},"pusher":{"name":"mergify-test1","email":"38494943+mergify-test1@users.noreply.github.com"},"organization":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","url":"https://api.github.com/orgs/mergifyio-testing","repos_url":"https://api.github.com/orgs/mergifyio-testing/repos","events_url":"https://api.github.com/orgs/mergifyio-testing/events","hooks_url":"https://api.github.com/orgs/mergifyio-testing/hooks","issues_url":"https://api.github.com/orgs/mergifyio-testing/issues","members_url":"https://api.github.com/orgs/mergifyio-testing/members{/member}","public_members_url":"https://api.github.com/orgs/mergifyio-testing/public_members{/member}","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","description":"This
       account is for testing purpose of the workflow of the GitHub App @Mergifyio"},"sender":{"login":"mergify-test1","id":38494943,"node_id":"MDQ6VXNlcjM4NDk0OTQz","avatar_url":"https://avatars.githubusercontent.com/u/38494943?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-test1","html_url":"https://github.com/mergify-test1","followers_url":"https://api.github.com/users/mergify-test1/followers","following_url":"https://api.github.com/users/mergify-test1/following{/other_user}","gists_url":"https://api.github.com/users/mergify-test1/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-test1/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-test1/subscriptions","organizations_url":"https://api.github.com/users/mergify-test1/orgs","repos_url":"https://api.github.com/users/mergify-test1/repos","events_url":"https://api.github.com/users/mergify-test1/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-test1/received_events","type":"User","site_admin":false},"installation":{"id":36052686,"node_id":"MDIzOkludGVncmF0aW9uSW5zdGFsbGF0aW9uMzYwNTI2ODY="},"created":true,"deleted":false,"forced":false,"base_ref":null,"compare":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01/commit/36ba86c1ba1a","commits":[{"id":"36ba86c1ba1a064fc7c7c4ae545d6ebbc0fa7e98","tree_id":"6957b96cf67ec8a46b89a8732b8fa412cf8b195d","distinct":true,"message":"test_queue_ci_failure:
@@ -839,9 +839,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=25
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=25
   response:
     content: '[{"id":"3223eaa0-0912-11ee-9db6-5e83a8a0539e","hook_id":"408282773","type":"check_suite","payload":{"action":"requested","check_suite":{"id":13535875145,"node_id":"CS_kwDOJSiZR88AAAADJs0QSQ","head_branch":"20230612111302/test_queue_ci_failure/integration/pr3","head_sha":"36ba86c1ba1a064fc7c7c4ae545d6ebbc0fa7e98","status":"queued","conclusion":null,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/check-suites/13535875145","before":"0000000000000000000000000000000000000000","after":"36ba86c1ba1a064fc7c7c4ae545d6ebbc0fa7e98","pull_requests":[],"app":{"id":313724,"slug":"mergify-lecrepont01","node_id":"A_kwHOAmplV84ABMl8","owner":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"name":"mergify-lecrepont01","description":"Mergify
       testing installation for lecrepont01","external_url":"https://mergify.com/","html_url":"https://github.com/apps/mergify-lecrepont01","created_at":"2023-04-04T10:31:12Z","updated_at":"2023-06-06T11:38:49Z","permissions":{"administration":"read","checks":"write","contents":"write","emails":"read","issues":"write","members":"read","metadata":"read","pages":"write","pull_requests":"write","statuses":"write","workflows":"write"},"events":["check_run","check_suite","issue_comment","member","membership","organization","pull_request","pull_request_review","pull_request_review_comment","pull_request_review_thread","push","repository","status","team","team_add","workflow_job","workflow_run"]},"created_at":"2023-06-12T11:13:44Z","updated_at":"2023-06-12T11:13:44Z","rerequestable":true,"runs_rerequestable":true,"latest_check_runs_count":0,"check_runs_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/check-suites/13535875145/check-runs","head_commit":{"id":"36ba86c1ba1a064fc7c7c4ae545d6ebbc0fa7e98","tree_id":"6957b96cf67ec8a46b89a8732b8fa412cf8b195d","message":"test_queue_ci_failure:
@@ -866,9 +866,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=26
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=26
   response:
     content: '[{"id":"39f2f870-0912-11ee-9784-c4aadb6381cf","hook_id":"408282773","type":"pull_request","payload":{"action":"opened","number":1626,"pull_request":{"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/pulls/1626","id":1388482153,"node_id":"PR_kwDOJSiZR85Swo5p","html_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01/pull/1626","diff_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01/pull/1626.diff","patch_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01/pull/1626.patch","issue_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/issues/1626","number":1626,"state":"open","locked":false,"title":"test_queue_ci_failure:
       pull request n3 from integration","user":{"login":"mergify-lecrepont01[bot]","id":129850877,"node_id":"BOT_kgDOB71d_Q","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D","html_url":"https://github.com/apps/mergify-lecrepont01","followers_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/followers","following_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/following{/other_user}","gists_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/subscriptions","organizations_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/orgs","repos_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/repos","events_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/received_events","type":"Bot","site_admin":false},"body":"test_queue_ci_failure:
@@ -922,9 +922,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=27
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=27
   response:
     content: '[]'
     headers:
@@ -946,9 +946,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=28
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=28
   response:
     content: '[{"id":"41a09b90-0912-11ee-8faa-41e6990afb82","hook_id":"408282773","type":"pull_request","payload":{"action":"closed","number":1626,"pull_request":{"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/pulls/1626","id":1388482153,"node_id":"PR_kwDOJSiZR85Swo5p","html_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01/pull/1626","diff_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01/pull/1626.diff","patch_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01/pull/1626.patch","issue_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/issues/1626","number":1626,"state":"closed","locked":false,"title":"test_queue_ci_failure:
       pull request n3 from integration","user":{"login":"mergify-lecrepont01[bot]","id":129850877,"node_id":"BOT_kgDOB71d_Q","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D","html_url":"https://github.com/apps/mergify-lecrepont01","followers_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/followers","following_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/following{/other_user}","gists_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/subscriptions","organizations_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/orgs","repos_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/repos","events_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/received_events","type":"Bot","site_admin":false},"body":"test_queue_ci_failure:
@@ -1591,9 +1591,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=29
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=29
   response:
     content: "[{\"id\":\"4217515e-0912-11ee-9736-43c0e8899e7a\",\"hook_id\":\"408282773\",\"type\":\"push\",\"payload\":{\"ref\":\"refs/heads/20230612111302/test_queue_ci_failure/main\",\"before\":\"c4cc3dbee137ab62ff6336328255748b531b43e8\",\"after\":\"38fb86c3244e21248e0fe3e576fdfc90bfc88e50\",\"repository\":{\"id\":623417671,\"node_id\":\"R_kgDOJSiZRw\",\"name\":\"functional-testing-repo-lecrepont01\",\"full_name\":\"mergifyio-testing/functional-testing-repo-lecrepont01\",\"private\":false,\"owner\":{\"name\":\"mergifyio-testing\",\"email\":null,\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/mergifyio-testing\",\"html_url\":\"https://github.com/mergifyio-testing\",\"followers_url\":\"https://api.github.com/users/mergifyio-testing/followers\",\"following_url\":\"https://api.github.com/users/mergifyio-testing/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/mergifyio-testing/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/mergifyio-testing/subscriptions\",\"organizations_url\":\"https://api.github.com/users/mergifyio-testing/orgs\",\"repos_url\":\"https://api.github.com/users/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/users/mergifyio-testing/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/mergifyio-testing/received_events\",\"type\":\"Organization\",\"site_admin\":false},\"html_url\":\"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01\",\"description\":null,\"fork\":false,\"url\":\"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01\",\"forks_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/forks\",\"keys_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/keys{/key_id}\",\"collaborators_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/collaborators{/collaborator}\",\"teams_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/teams\",\"hooks_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/hooks\",\"issue_events_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/issues/events{/number}\",\"events_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/events\",\"assignees_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/assignees{/user}\",\"branches_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/branches{/branch}\",\"tags_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/tags\",\"blobs_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/git/blobs{/sha}\",\"git_tags_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/git/tags{/sha}\",\"git_refs_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/git/refs{/sha}\",\"trees_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/git/trees{/sha}\",\"statuses_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/statuses/{sha}\",\"languages_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/languages\",\"stargazers_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/stargazers\",\"contributors_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/contributors\",\"subscribers_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/subscribers\",\"subscription_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/subscription\",\"commits_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/commits{/sha}\",\"git_commits_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/git/commits{/sha}\",\"comments_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/comments{/number}\",\"issue_comment_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/issues/comments{/number}\",\"contents_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/contents/{+path}\",\"compare_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/compare/{base}...{head}\",\"merges_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/merges\",\"archive_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/{archive_format}{/ref}\",\"downloads_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/downloads\",\"issues_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/issues{/number}\",\"pulls_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/pulls{/number}\",\"milestones_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/milestones{/number}\",\"notifications_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/notifications{?since,all,participating}\",\"labels_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/labels{/name}\",\"releases_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/releases{/id}\",\"deployments_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/deployments\",\"created_at\":1680604258,\"updated_at\":\"2023-04-04T10:30:58Z\",\"pushed_at\":1686568450,\"git_url\":\"git://github.com/mergifyio-testing/functional-testing-repo-lecrepont01.git\",\"ssh_url\":\"git@github.com:mergifyio-testing/functional-testing-repo-lecrepont01.git\",\"clone_url\":\"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01.git\",\"svn_url\":\"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01\",\"homepage\":null,\"size\":39,\"stargazers_count\":0,\"watchers_count\":0,\"language\":null,\"has_issues\":true,\"has_projects\":true,\"has_downloads\":true,\"has_wiki\":true,\"has_pages\":false,\"has_discussions\":false,\"forks_count\":1,\"mirror_url\":null,\"archived\":false,\"disabled\":false,\"open_issues_count\":21,\"license\":null,\"allow_forking\":true,\"is_template\":false,\"web_commit_signoff_required\":false,\"topics\":[],\"visibility\":\"public\",\"forks\":1,\"open_issues\":21,\"watchers\":0,\"default_branch\":\"main\",\"stargazers\":0,\"master_branch\":\"main\",\"organization\":\"mergifyio-testing\"},\"pusher\":{\"name\":\"mergify-lecrepont01[bot]\",\"email\":null},\"organization\":{\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"url\":\"https://api.github.com/orgs/mergifyio-testing\",\"repos_url\":\"https://api.github.com/orgs/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/orgs/mergifyio-testing/events\",\"hooks_url\":\"https://api.github.com/orgs/mergifyio-testing/hooks\",\"issues_url\":\"https://api.github.com/orgs/mergifyio-testing/issues\",\"members_url\":\"https://api.github.com/orgs/mergifyio-testing/members{/member}\",\"public_members_url\":\"https://api.github.com/orgs/mergifyio-testing/public_members{/member}\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"description\":\"This
       account is for testing purpose of the workflow of the GitHub App @Mergifyio\"},\"sender\":{\"login\":\"mergify-lecrepont01[bot]\",\"id\":129850877,\"node_id\":\"BOT_kgDOB71d_Q\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D\",\"html_url\":\"https://github.com/apps/mergify-lecrepont01\",\"followers_url\":\"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/followers\",\"following_url\":\"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/subscriptions\",\"organizations_url\":\"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/orgs\",\"repos_url\":\"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/repos\",\"events_url\":\"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/received_events\",\"type\":\"Bot\",\"site_admin\":false},\"installation\":{\"id\":36052686,\"node_id\":\"MDIzOkludGVncmF0aW9uSW5zdGFsbGF0aW9uMzYwNTI2ODY=\"},\"created\":false,\"deleted\":false,\"forced\":false,\"base_ref\":null,\"compare\":\"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01/compare/c4cc3dbee137...38fb86c3244e\",\"commits\":[{\"id\":\"36ba86c1ba1a064fc7c7c4ae545d6ebbc0fa7e98\",\"tree_id\":\"6957b96cf67ec8a46b89a8732b8fa412cf8b195d\",\"distinct\":false,\"message\":\"test_queue_ci_failure:
@@ -1758,9 +1758,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=30
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=30
   response:
     content: '[{"id":"6efd0100-0912-11ee-9608-5da8b74eadce","hook_id":"408282773","type":"pull_request","payload":{"action":"labeled","number":1617,"pull_request":{"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/pulls/1617","id":1388480638,"node_id":"PR_kwDOJSiZR85Swoh-","html_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01/pull/1617","diff_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01/pull/1617.diff","patch_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01/pull/1617.patch","issue_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/issues/1617","number":1617,"state":"open","locked":false,"title":"test_queue_ci_failure:
       pull request n1 from integration","user":{"login":"mergify-lecrepont01[bot]","id":129850877,"node_id":"BOT_kgDOB71d_Q","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D","html_url":"https://github.com/apps/mergify-lecrepont01","followers_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/followers","following_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/following{/other_user}","gists_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/subscriptions","organizations_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/orgs","repos_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/repos","events_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/received_events","type":"Bot","site_admin":false},"body":"test_queue_ci_failure:
@@ -1813,9 +1813,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=31
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=31
   response:
     content: '[]'
     headers:
@@ -1837,9 +1837,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=32
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=32
   response:
     content: '[]'
     headers:
@@ -1861,9 +1861,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=33
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=33
   response:
     content: '[{"id":"710469c0-0912-11ee-8102-c064ee35b3e9","hook_id":"408282773","type":"pull_request","payload":{"action":"labeled","number":1625,"pull_request":{"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/pulls/1625","id":1388481647,"node_id":"PR_kwDOJSiZR85Swoxv","html_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01/pull/1625","diff_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01/pull/1625.diff","patch_url":"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01/pull/1625.patch","issue_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/issues/1625","number":1625,"state":"open","locked":false,"title":"test_queue_ci_failure:
       pull request n2 from integration","user":{"login":"mergify-lecrepont01[bot]","id":129850877,"node_id":"BOT_kgDOB71d_Q","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D","html_url":"https://github.com/apps/mergify-lecrepont01","followers_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/followers","following_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/following{/other_user}","gists_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/subscriptions","organizations_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/orgs","repos_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/repos","events_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-lecrepont01%5Bbot%5D/received_events","type":"Bot","site_admin":false},"body":"test_queue_ci_failure:
@@ -4416,9 +4416,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/ae471acf624e44b4c21e94bd60bba5a06ba2b0e0?counter=34
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/ae471acf624e44b4c21e94bd60bba5a06ba2b0e0?counter=34
   response:
     content: '[]'
     headers:
@@ -4440,9 +4440,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/ae471acf624e44b4c21e94bd60bba5a06ba2b0e0?counter=35
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/ae471acf624e44b4c21e94bd60bba5a06ba2b0e0?counter=35
   response:
     content: '[{"id":"f02f2adc-0912-11ee-9854-56123ddc07d4","hook_id":"408282773","type":"status","payload":{"id":23569317190,"sha":"ae471acf624e44b4c21e94bd60bba5a06ba2b0e0","name":"mergifyio-testing/functional-testing-repo-lecrepont01","target_url":null,"avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","context":"continuous-integration/fake-ci","description":"The
       CI is failure","state":"failure","commit":{"sha":"ae471acf624e44b4c21e94bd60bba5a06ba2b0e0","node_id":"C_kwDOJSiZR9oAKGFlNDcxYWNmNjI0ZTQ0YjRjMjFlOTRiZDYwYmJhNWEwNmJhMmIwZTA","commit":{"author":{"name":"mergify-lecrepont01[bot]","email":"129850877+mergify-lecrepont01[bot]@users.noreply.github.com","date":"2023-06-12T11:18:10Z"},"committer":{"name":"GitHub","email":"noreply@github.com","date":"2023-06-12T11:18:10Z"},"message":"Merge
@@ -4928,9 +4928,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/effe6991395c2325ddb82635fc6f92cfa7df9f8c?counter=36
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/effe6991395c2325ddb82635fc6f92cfa7df9f8c?counter=36
   response:
     content: '[{"id":"0f1e96f8-0913-11ee-9791-9ad46a6ea6b1","hook_id":"408282773","type":"status","payload":{"id":23569329333,"sha":"effe6991395c2325ddb82635fc6f92cfa7df9f8c","name":"mergifyio-testing/functional-testing-repo-lecrepont01","target_url":null,"avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","context":"continuous-integration/fake-ci","description":"The
       CI is failure","state":"failure","commit":{"sha":"effe6991395c2325ddb82635fc6f92cfa7df9f8c","node_id":"C_kwDOJSiZR9oAKGVmZmU2OTkxMzk1YzIzMjVkZGI4MjYzNWZjNmY5MmNmYTdkZjlmOGM","commit":{"author":{"name":"mergify-lecrepont01[bot]","email":"129850877+mergify-lecrepont01[bot]@users.noreply.github.com","date":"2023-06-12T11:17:27Z"},"committer":{"name":"GitHub","email":"noreply@github.com","date":"2023-06-12T11:17:27Z"},"message":"Merge
@@ -7303,9 +7303,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/d88988df3c7ea16906ffef97c5bbe61258eba69d?counter=37
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/d88988df3c7ea16906ffef97c5bbe61258eba69d?counter=37
   response:
     content: '[{"id":"954e7a72-0913-11ee-993a-00691ab38293","hook_id":"408282773","type":"status","payload":{"id":23569390008,"sha":"d88988df3c7ea16906ffef97c5bbe61258eba69d","name":"mergifyio-testing/functional-testing-repo-lecrepont01","target_url":null,"avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","context":"continuous-integration/fake-ci","description":"The
       CI is success","state":"success","commit":{"sha":"d88988df3c7ea16906ffef97c5bbe61258eba69d","node_id":"C_kwDOJSiZR9oAKGQ4ODk4OGRmM2M3ZWExNjkwNmZmZWY5N2M1YmJlNjEyNThlYmE2OWQ","commit":{"author":{"name":"mergify-lecrepont01[bot]","email":"129850877+mergify-lecrepont01[bot]@users.noreply.github.com","date":"2023-06-12T11:23:03Z"},"committer":{"name":"GitHub","email":"noreply@github.com","date":"2023-06-12T11:23:03Z"},"message":"Merge
@@ -8413,9 +8413,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=38
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure?counter=38
   response:
     content: "[{\"id\":\"89e128c0-0912-11ee-8de2-e778e1c64086\",\"hook_id\":\"408282773\",\"type\":\"check_run\",\"payload\":{\"action\":\"created\",\"check_run\":{\"id\":14184771002,\"name\":\"Rule:
       merge default (queue)\",\"node_id\":\"CR_kwDOJSiZR88AAAADTXptug\",\"head_sha\":\"56527ef006be24778f651107e4c77a3ef8c1081f\",\"external_id\":\"\",\"url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-lecrepont01/check-runs/14184771002\",\"html_url\":\"https://github.com/mergifyio-testing/functional-testing-repo-lecrepont01/runs/14184771002\",\"details_url\":\"http://localhost:3000/github/mergifyio-testing/repo/functional-testing-repo-lecrepont01/queues?branch=20230612111302%2Ftest_queue_ci_failure%2Fmain&queues=default&pull=1617\",\"status\":\"in_progress\",\"conclusion\":null,\"started_at\":\"2023-06-12T11:15:33Z\",\"completed_at\":null,\"output\":{\"title\":\"The
@@ -9849,9 +9849,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: DELETE
-    uri: https://test-forwarder.mergify.io/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure
+    uri: https://test-forwarder.mergify.com/events/github.com/313724/623417671/20230612111302-test_queue_ci_failure
   response:
     content: Event queued
     headers:

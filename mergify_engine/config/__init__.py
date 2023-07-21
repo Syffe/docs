@@ -296,7 +296,7 @@ class SubscriptionSetting(pydantic.BaseSettings):
 
 
 class TestingSettings(pydantic.BaseSettings):
-    TESTING_FORWARDER_ENDPOINT: str = "https://test-forwarder.mergify.io"
+    TESTING_FORWARDER_ENDPOINT: str = "https://test-forwarder.mergify.com"
     TESTING_INSTALLATION_ID: int = 15398551
     TESTING_ORGANIZATION_ID: github_types.GitHubAccountIdType = (
         github_types.GitHubAccountIdType(40527191)

@@ -299,7 +299,7 @@ interactions:
       X-Hub-Signature:
       - <SIGNATURE>
     method: DELETE
-    uri: https://test-forwarder.mergify.io/events/github.com/11221/258840104
+    uri: https://test-forwarder.mergify.com/events/github.com/11221/258840104
   response:
     body:
       string: ''
@@ -316,7 +316,7 @@ interactions:
       - max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"
       Set-Cookie:
       - __cfduid=d69d3728af9340cda96a204e9e1d382351585415250; expires=Mon, 27-Apr-20
-        17:07:30 GMT; path=/; domain=.mergify.io; HttpOnly; SameSite=Lax; Secure
+        17:07:30 GMT; path=/; domain=.mergify.com; HttpOnly; SameSite=Lax; Secure
       Transfer-Encoding:
       - chunked
       Via:
@@ -403,7 +403,7 @@ interactions:
       X-Hub-Signature:
       - <SIGNATURE>
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/11221/258840104?counter=1
+    uri: https://test-forwarder.mergify.com/events/github.com/11221/258840104?counter=1
   response:
     body:
       string: !!binary |
@@ -997,15 +997,15 @@ interactions:
         potential rule","summary":"#### Rule: delete on merge (delete_head_branch)\n-
         [X] `base=main`\n- [ ] `label=merge`\n- [ ] `merged`\n\n<hr />\n\n<details>\n<summary>Mergify
         commands and options</summary>\n\n<br />\n\nMore conditions and actions can
-        be found in the [documentation](https://doc.mergify.io/).\n\nYou can also
+        be found in the [documentation](https://doc.mergify.com/).\n\nYou can also
         trigger Mergify actions by commenting on this pull request:\n\n- `@Mergifyio
         refresh` will re-evaluate the rules\n- `@Mergifyio rebase` will rebase this
         PR\n- `@Mergifyio backport <destination>` will backport this PR on `<destination>`
-        branch\n\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.io/)
+        branch\n\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com/)
         you can:\n\n- look at your merge queues\n- generate the Mergify configuration
-        with the simulator.\n\nFinally, you can contact us on https://mergify.io/\n</details>\n<!--
+        with the simulator.\n\nFinally, you can contact us on https://mergify.com/\n</details>\n<!--
         J1J1bGU6IGRlbGV0ZSBvbiBtZXJnZSAoZGVsZXRlX2hlYWRfYnJhbmNoKSc6IG5ldXRyYWwK -->","text":null,"annotations_count":0,"annotations_url":"https://api.github.com/repos/mergifyio-testing/repo-b2f45374-434f-434b-9063-f663787516cd-test_delete_branch_with_dep_force/check-runs/541974942/annotations"},"name":"Summary","check_suite":{"id":554672325},"app":{"id":11221,"slug":"mergify-test","node_id":"MDM6QXBwMTEyMjE=","owner":{"login":"Mergifyio","id":37838584,"node_id":"MDEyOk9yZ2FuaXphdGlvbjM3ODM4NTg0","avatar_url":"https://avatars1.githubusercontent.com/u/37838584?v=4","gravatar_id":"","url":"https://api.github.com/users/Mergifyio","html_url":"https://github.com/Mergifyio","followers_url":"https://api.github.com/users/Mergifyio/followers","following_url":"https://api.github.com/users/Mergifyio/following{/other_user}","gists_url":"https://api.github.com/users/Mergifyio/gists{/gist_id}","starred_url":"https://api.github.com/users/Mergifyio/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/Mergifyio/subscriptions","organizations_url":"https://api.github.com/users/Mergifyio/orgs","repos_url":"https://api.github.com/users/Mergifyio/repos","events_url":"https://api.github.com/users/Mergifyio/events{/privacy}","received_events_url":"https://api.github.com/users/Mergifyio/received_events","type":"Organization","site_admin":false},"name":"Mergify-test","description":"Test
-        version of Mergify","external_url":"https://mergify.io","html_url":"https://github.com/apps/mergify-test","created_at":"2018-04-18T13:55:11Z","updated_at":"2020-02-21T16:07:22Z","permissions":{"checks":"write","contents":"write","emails":"read","issues":"write","members":"read","metadata":"read","pages":"write","pull_requests":"write","statuses":"read"},"events":["check_run","check_suite","issue_comment","pull_request","pull_request_review","pull_request_review_comment","push","status"]},"pull_requests":[{"url":"https://api.github.com/repos/mergifyio-testing/repo-b2f45374-434f-434b-9063-f663787516cd-test_delete_branch_with_dep_force/pulls/1","id":395124275,"number":1,"head":{"ref":"#1-first-pr","sha":"8ac7c98c00361c3597a8b5b390d283d2c1f2c489","repo":{"id":250850016,"url":"https://api.github.com/repos/mergifyio-testing/repo-b2f45374-434f-434b-9063-f663787516cd-test_delete_branch_with_dep_force","name":"repo-b2f45374-434f-434b-9063-f663787516cd-test_delete_branch_with_dep_force"}},"base":{"ref":"main","sha":"3e3cb6284399e32eb07920dd1899f80658575dff","repo":{"id":250850016,"url":"https://api.github.com/repos/mergifyio-testing/repo-b2f45374-434f-434b-9063-f663787516cd-test_delete_branch_with_dep_force","name":"repo-b2f45374-434f-434b-9063-f663787516cd-test_delete_branch_with_dep_force"}}}]}'
+        version of Mergify","external_url":"https://mergify.com","html_url":"https://github.com/apps/mergify-test","created_at":"2018-04-18T13:55:11Z","updated_at":"2020-02-21T16:07:22Z","permissions":{"checks":"write","contents":"write","emails":"read","issues":"write","members":"read","metadata":"read","pages":"write","pull_requests":"write","statuses":"read"},"events":["check_run","check_suite","issue_comment","pull_request","pull_request_review","pull_request_review_comment","push","status"]},"pull_requests":[{"url":"https://api.github.com/repos/mergifyio-testing/repo-b2f45374-434f-434b-9063-f663787516cd-test_delete_branch_with_dep_force/pulls/1","id":395124275,"number":1,"head":{"ref":"#1-first-pr","sha":"8ac7c98c00361c3597a8b5b390d283d2c1f2c489","repo":{"id":250850016,"url":"https://api.github.com/repos/mergifyio-testing/repo-b2f45374-434f-434b-9063-f663787516cd-test_delete_branch_with_dep_force","name":"repo-b2f45374-434f-434b-9063-f663787516cd-test_delete_branch_with_dep_force"}},"base":{"ref":"main","sha":"3e3cb6284399e32eb07920dd1899f80658575dff","repo":{"id":250850016,"url":"https://api.github.com/repos/mergifyio-testing/repo-b2f45374-434f-434b-9063-f663787516cd-test_delete_branch_with_dep_force","name":"repo-b2f45374-434f-434b-9063-f663787516cd-test_delete_branch_with_dep_force"}}}]}'
     headers:
       Content-Length:
       - '4217'
@@ -1615,7 +1615,7 @@ interactions:
       X-Hub-Signature:
       - <SIGNATURE>
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/11221/258840104?counter=2
+    uri: https://test-forwarder.mergify.com/events/github.com/11221/258840104?counter=2
   response:
     body:
       string: !!binary |
@@ -2155,15 +2155,15 @@ interactions:
         not applicable rule</summary>\n\n#### Rule: delete on merge (delete_head_branch)\n-
         [ ] `base=main`\n- [ ] `label=merge`\n- [ ] `merged`\n\n</details>\n\n<details>\n<summary>Mergify
         commands and options</summary>\n\n<br />\n\nMore conditions and actions can
-        be found in the [documentation](https://doc.mergify.io/).\n\nYou can also
+        be found in the [documentation](https://doc.mergify.com/).\n\nYou can also
         trigger Mergify actions by commenting on this pull request:\n\n- `@Mergifyio
         refresh` will re-evaluate the rules\n- `@Mergifyio rebase` will rebase this
         PR\n- `@Mergifyio backport <destination>` will backport this PR on `<destination>`
-        branch\n\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.io/)
+        branch\n\nAdditionally, on Mergify [dashboard](https://dashboard.mergify.com/)
         you can:\n\n- look at your merge queues\n- generate the Mergify configuration
-        with the simulator.\n\nFinally, you can contact us on https://mergify.io/\n</details>\n<!--
+        with the simulator.\n\nFinally, you can contact us on https://mergify.com/\n</details>\n<!--
         e30K -->","text":null,"annotations_count":0,"annotations_url":"https://api.github.com/repos/mergifyio-testing/repo-b2f45374-434f-434b-9063-f663787516cd-test_delete_branch_with_dep_force/check-runs/541975288/annotations"},"name":"Summary","check_suite":{"id":554672535},"app":{"id":11221,"slug":"mergify-test","node_id":"MDM6QXBwMTEyMjE=","owner":{"login":"Mergifyio","id":37838584,"node_id":"MDEyOk9yZ2FuaXphdGlvbjM3ODM4NTg0","avatar_url":"https://avatars1.githubusercontent.com/u/37838584?v=4","gravatar_id":"","url":"https://api.github.com/users/Mergifyio","html_url":"https://github.com/Mergifyio","followers_url":"https://api.github.com/users/Mergifyio/followers","following_url":"https://api.github.com/users/Mergifyio/following{/other_user}","gists_url":"https://api.github.com/users/Mergifyio/gists{/gist_id}","starred_url":"https://api.github.com/users/Mergifyio/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/Mergifyio/subscriptions","organizations_url":"https://api.github.com/users/Mergifyio/orgs","repos_url":"https://api.github.com/users/Mergifyio/repos","events_url":"https://api.github.com/users/Mergifyio/events{/privacy}","received_events_url":"https://api.github.com/users/Mergifyio/received_events","type":"Organization","site_admin":false},"name":"Mergify-test","description":"Test
-        version of Mergify","external_url":"https://mergify.io","html_url":"https://github.com/apps/mergify-test","created_at":"2018-04-18T13:55:11Z","updated_at":"2020-02-21T16:07:22Z","permissions":{"checks":"write","contents":"write","emails":"read","issues":"write","members":"read","metadata":"read","pages":"write","pull_requests":"write","statuses":"read"},"events":["check_run","check_suite","issue_comment","pull_request","pull_request_review","pull_request_review_comment","push","status"]},"pull_requests":[{"url":"https://api.github.com/repos/mergifyio-testing/repo-b2f45374-434f-434b-9063-f663787516cd-test_delete_branch_with_dep_force/pulls/2","id":395124306,"number":2,"head":{"ref":"#2-second-pr","sha":"7e13b524b62a3de0908656d03ae7c3b12b1c3374","repo":{"id":250850016,"url":"https://api.github.com/repos/mergifyio-testing/repo-b2f45374-434f-434b-9063-f663787516cd-test_delete_branch_with_dep_force","name":"repo-b2f45374-434f-434b-9063-f663787516cd-test_delete_branch_with_dep_force"}},"base":{"ref":"#1-first-pr","sha":"8ac7c98c00361c3597a8b5b390d283d2c1f2c489","repo":{"id":250850016,"url":"https://api.github.com/repos/mergifyio-testing/repo-b2f45374-434f-434b-9063-f663787516cd-test_delete_branch_with_dep_force","name":"repo-b2f45374-434f-434b-9063-f663787516cd-test_delete_branch_with_dep_force"}}}]}'
+        version of Mergify","external_url":"https://mergify.com","html_url":"https://github.com/apps/mergify-test","created_at":"2018-04-18T13:55:11Z","updated_at":"2020-02-21T16:07:22Z","permissions":{"checks":"write","contents":"write","emails":"read","issues":"write","members":"read","metadata":"read","pages":"write","pull_requests":"write","statuses":"read"},"events":["check_run","check_suite","issue_comment","pull_request","pull_request_review","pull_request_review_comment","push","status"]},"pull_requests":[{"url":"https://api.github.com/repos/mergifyio-testing/repo-b2f45374-434f-434b-9063-f663787516cd-test_delete_branch_with_dep_force/pulls/2","id":395124306,"number":2,"head":{"ref":"#2-second-pr","sha":"7e13b524b62a3de0908656d03ae7c3b12b1c3374","repo":{"id":250850016,"url":"https://api.github.com/repos/mergifyio-testing/repo-b2f45374-434f-434b-9063-f663787516cd-test_delete_branch_with_dep_force","name":"repo-b2f45374-434f-434b-9063-f663787516cd-test_delete_branch_with_dep_force"}},"base":{"ref":"#1-first-pr","sha":"8ac7c98c00361c3597a8b5b390d283d2c1f2c489","repo":{"id":250850016,"url":"https://api.github.com/repos/mergifyio-testing/repo-b2f45374-434f-434b-9063-f663787516cd-test_delete_branch_with_dep_force","name":"repo-b2f45374-434f-434b-9063-f663787516cd-test_delete_branch_with_dep_force"}}}]}'
     headers:
       Content-Length:
       - '4240'
@@ -2326,7 +2326,7 @@ interactions:
       X-Hub-Signature:
       - <SIGNATURE>
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/11221/258840104?counter=3
+    uri: https://test-forwarder.mergify.com/events/github.com/11221/258840104?counter=3
   response:
     body:
       string: !!binary |
@@ -2836,7 +2836,7 @@ interactions:
       X-Hub-Signature:
       - <SIGNATURE>
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/11221/258840104?counter=4
+    uri: https://test-forwarder.mergify.com/events/github.com/11221/258840104?counter=4
   response:
     body:
       string: !!binary |
@@ -3042,7 +3042,7 @@ interactions:
       X-Hub-Signature:
       - <SIGNATURE>
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/11221/258840104?counter=5
+    uri: https://test-forwarder.mergify.com/events/github.com/11221/258840104?counter=5
   response:
     body:
       string: !!binary |
@@ -3412,7 +3412,7 @@ interactions:
       string: '{"id":541975608,"node_id":"MDg6Q2hlY2tSdW41NDE5NzU2MDg=","head_sha":"8ac7c98c00361c3597a8b5b390d283d2c1f2c489","external_id":"","url":"https://api.github.com/repos/mergifyio-testing/repo-b2f45374-434f-434b-9063-f663787516cd-test_delete_branch_with_dep_force/check-runs/541975608","html_url":"https://github.com/mergifyio-testing/repo-b2f45374-434f-434b-9063-f663787516cd-test_delete_branch_with_dep_force/runs/541975608","details_url":"https://github.com/mergifyio-testing/repo-b2f45374-434f-434b-9063-f663787516cd-test_delete_branch_with_dep_force/pull/1/checks","status":"completed","conclusion":"success","started_at":"2020-03-28T17:08:44Z","completed_at":"2020-03-28T17:08:17Z","output":{"title":"Branch
         `#1-first-pr` has been deleted","summary":"","text":null,"annotations_count":0,"annotations_url":"https://api.github.com/repos/mergifyio-testing/repo-b2f45374-434f-434b-9063-f663787516cd-test_delete_branch_with_dep_force/check-runs/541975608/annotations"},"name":"Rule:
         delete on merge (delete_head_branch)","check_suite":{"id":554672325},"app":{"id":11221,"slug":"mergify-test","node_id":"MDM6QXBwMTEyMjE=","owner":{"login":"Mergifyio","id":37838584,"node_id":"MDEyOk9yZ2FuaXphdGlvbjM3ODM4NTg0","avatar_url":"https://avatars1.githubusercontent.com/u/37838584?v=4","gravatar_id":"","url":"https://api.github.com/users/Mergifyio","html_url":"https://github.com/Mergifyio","followers_url":"https://api.github.com/users/Mergifyio/followers","following_url":"https://api.github.com/users/Mergifyio/following{/other_user}","gists_url":"https://api.github.com/users/Mergifyio/gists{/gist_id}","starred_url":"https://api.github.com/users/Mergifyio/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/Mergifyio/subscriptions","organizations_url":"https://api.github.com/users/Mergifyio/orgs","repos_url":"https://api.github.com/users/Mergifyio/repos","events_url":"https://api.github.com/users/Mergifyio/events{/privacy}","received_events_url":"https://api.github.com/users/Mergifyio/received_events","type":"Organization","site_admin":false},"name":"Mergify-test","description":"Test
-        version of Mergify","external_url":"https://mergify.io","html_url":"https://github.com/apps/mergify-test","created_at":"2018-04-18T13:55:11Z","updated_at":"2020-02-21T16:07:22Z","permissions":{"checks":"write","contents":"write","emails":"read","issues":"write","members":"read","metadata":"read","pages":"write","pull_requests":"write","statuses":"read"},"events":["check_run","check_suite","issue_comment","pull_request","pull_request_review","pull_request_review_comment","push","status"]},"pull_requests":[]}'
+        version of Mergify","external_url":"https://mergify.com","html_url":"https://github.com/apps/mergify-test","created_at":"2018-04-18T13:55:11Z","updated_at":"2020-02-21T16:07:22Z","permissions":{"checks":"write","contents":"write","emails":"read","issues":"write","members":"read","metadata":"read","pages":"write","pull_requests":"write","statuses":"read"},"events":["check_run","check_suite","issue_comment","pull_request","pull_request_review","pull_request_review_comment","push","status"]},"pull_requests":[]}'
     headers:
       Content-Length:
       - '2619'
@@ -3520,7 +3520,7 @@ interactions:
       X-Hub-Signature:
       - <SIGNATURE>
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/11221/258840104?counter=6
+    uri: https://test-forwarder.mergify.com/events/github.com/11221/258840104?counter=6
   response:
     body:
       string: !!binary |
@@ -4084,7 +4084,7 @@ interactions:
       X-Hub-Signature:
       - <SIGNATURE>
     method: DELETE
-    uri: https://test-forwarder.mergify.io/events/github.com/11221/258840104
+    uri: https://test-forwarder.mergify.com/events/github.com/11221/258840104
   response:
     body:
       string: ''

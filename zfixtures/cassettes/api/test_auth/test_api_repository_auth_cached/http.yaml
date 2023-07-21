@@ -133,7 +133,7 @@ interactions:
     uri: https://api.github.com/users/mergifyio-testing
   response:
     content: '{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false,"name":"Mergify
-      Testing","company":null,"blog":"https://mergify.io","location":null,"email":null,"hireable":null,"bio":"This
+      Testing","company":null,"blog":"https://mergify.com","location":null,"email":null,"hireable":null,"bio":"This
       account is for testing purpose of the workflow of the GitHub App @Mergifyio","twitter_username":"mergifyio","public_repos":18,"public_gists":0,"followers":1,"following":0,"created_at":"2018-06-23T20:01:53Z","updated_at":"2023-06-18T11:36:32Z"}'
     headers:
       Content-Encoding:

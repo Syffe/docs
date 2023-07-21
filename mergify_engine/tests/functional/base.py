@@ -986,7 +986,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                 "config", "user.signingkey", settings.TESTING_ID_GPGKEY_SECRET
             )
             await self.git(
-                "config", "user.email", "engineering+mergify-test@mergify.io"
+                "config", "user.email", "engineering+mergify-test@mergify.com"
             )
             args_commit.append("-S")
             tmp_kwargs.setdefault("_env", {})
@@ -1110,7 +1110,7 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
                 "config", "user.signingkey", settings.TESTING_ID_GPGKEY_SECRET
             )
             await self.git(
-                "config", "user.email", "engineering+mergify-test@mergify.io"
+                "config", "user.email", "engineering+mergify-test@mergify.com"
             )
             tmp_kwargs.setdefault("_env", {})
             tmp_kwargs["_env"].update(tmp_env)

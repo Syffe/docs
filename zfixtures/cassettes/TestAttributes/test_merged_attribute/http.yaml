@@ -108,7 +108,7 @@ interactions:
     method: GET
     uri: https://api.github.com/user
   response:
-    content: '{"login":"mergify-test1","id":38494943,"node_id":"MDQ6VXNlcjM4NDk0OTQz","avatar_url":"https://avatars.githubusercontent.com/u/38494943?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-test1","html_url":"https://github.com/mergify-test1","followers_url":"https://api.github.com/users/mergify-test1/followers","following_url":"https://api.github.com/users/mergify-test1/following{/other_user}","gists_url":"https://api.github.com/users/mergify-test1/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-test1/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-test1/subscriptions","organizations_url":"https://api.github.com/users/mergify-test1/orgs","repos_url":"https://api.github.com/users/mergify-test1/repos","events_url":"https://api.github.com/users/mergify-test1/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-test1/received_events","type":"User","site_admin":false,"name":"mergify-test-user-1","company":"@mergifyio","blog":"https://mergify.io","location":null,"email":null,"hireable":null,"bio":"This
+    content: '{"login":"mergify-test1","id":38494943,"node_id":"MDQ6VXNlcjM4NDk0OTQz","avatar_url":"https://avatars.githubusercontent.com/u/38494943?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-test1","html_url":"https://github.com/mergify-test1","followers_url":"https://api.github.com/users/mergify-test1/followers","following_url":"https://api.github.com/users/mergify-test1/following{/other_user}","gists_url":"https://api.github.com/users/mergify-test1/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-test1/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-test1/subscriptions","organizations_url":"https://api.github.com/users/mergify-test1/orgs","repos_url":"https://api.github.com/users/mergify-test1/repos","events_url":"https://api.github.com/users/mergify-test1/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-test1/received_events","type":"User","site_admin":false,"name":"mergify-test-user-1","company":"@mergifyio","blog":"https://mergify.com","location":null,"email":null,"hireable":null,"bio":"This
       account is for testing purpose of the workflow of the GitHub App @mergifyio","twitter_username":"mergifyio","public_repos":1,"public_gists":0,"followers":0,"following":0,"created_at":"2018-04-18T10:42:59Z","updated_at":"2023-05-15T11:36:56Z","private_gists":0,"total_private_repos":0,"owned_private_repos":0,"disk_usage":0,"collaborators":0,"two_factor_authentication":false,"plan":{"name":"free","space":976562499,"collaborators":0,"private_repos":10000}}'
     headers:
       Content-Encoding:
@@ -191,9 +191,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: DELETE
-    uri: https://test-forwarder.mergify.io/events/github.com/327815/635704693/20230524094209-test_merged_attribute
+    uri: https://test-forwarder.mergify.com/events/github.com/327815/635704693/20230524094209-test_merged_attribute
   response:
     content: Event queued
     headers:
@@ -213,9 +213,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=1
+    uri: https://test-forwarder.mergify.com/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=1
   response:
     content: '[]'
     headers:
@@ -237,9 +237,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=2
+    uri: https://test-forwarder.mergify.com/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=2
   response:
     content: '[]'
     headers:
@@ -261,9 +261,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=3
+    uri: https://test-forwarder.mergify.com/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=3
   response:
     content: '[]'
     headers:
@@ -285,9 +285,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=4
+    uri: https://test-forwarder.mergify.com/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=4
   response:
     content: '[{"id":"43457290-fa17-11ed-84b5-df702670aefb","type":"check_suite","payload":{"action":"requested","check_suite":{"id":13112144452,"node_id":"CS_kwDOJeQVdc8AAAADDYtyRA","head_branch":"20230524094209/test_merged_attribute/main","head_sha":"bec15db77a5ea2447fc78a14fbeae2d165c4bfa3","status":"queued","conclusion":null,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/check-suites/13112144452","before":"0000000000000000000000000000000000000000","after":"bec15db77a5ea2447fc78a14fbeae2d165c4bfa3","pull_requests":[],"app":{"id":327815,"slug":"mergify-kontrolix","node_id":"A_kwHOAmplV84ABQCH","owner":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"name":"mergify-Kontrolix","description":"Mergify
       testing installation for Kontrolix","external_url":"https://mergify.com/","html_url":"https://github.com/apps/mergify-kontrolix","created_at":"2023-05-03T09:24:33Z","updated_at":"2023-05-03T09:24:33Z","permissions":{"administration":"read","checks":"write","contents":"write","emails":"read","issues":"write","members":"read","metadata":"read","pages":"write","pull_requests":"write","statuses":"write","workflows":"write"},"events":["check_run","check_suite","issue_comment","member","membership","organization","pull_request","pull_request_review","pull_request_review_comment","pull_request_review_thread","push","repository","status","team","team_add"]},"created_at":"2023-05-24T09:42:13Z","updated_at":"2023-05-24T09:42:13Z","rerequestable":true,"runs_rerequestable":true,"latest_check_runs_count":0,"check_runs_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/check-suites/13112144452/check-runs","head_commit":{"id":"bec15db77a5ea2447fc78a14fbeae2d165c4bfa3","tree_id":"164f0c4edebed7482f0ca6d907b2afd94eb1eacc","message":"initial
@@ -312,9 +312,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=5
+    uri: https://test-forwarder.mergify.com/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=5
   response:
     content: '[{"id":"435d4226-fa17-11ed-88a2-d48e25130b9e","type":"push","payload":{"ref":"refs/heads/20230524094209/test_merged_attribute/main","before":"0000000000000000000000000000000000000000","after":"bec15db77a5ea2447fc78a14fbeae2d165c4bfa3","repository":{"id":635704693,"node_id":"R_kgDOJeQVdQ","name":"functional-testing-repo-Kontrolix","full_name":"mergifyio-testing/functional-testing-repo-Kontrolix","private":false,"owner":{"name":"mergifyio-testing","email":null,"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"html_url":"https://github.com/mergifyio-testing/functional-testing-repo-Kontrolix","description":null,"fork":false,"url":"https://github.com/mergifyio-testing/functional-testing-repo-Kontrolix","forks_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/forks","keys_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/keys{/key_id}","collaborators_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/collaborators{/collaborator}","teams_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/teams","hooks_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/hooks","issue_events_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/issues/events{/number}","events_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/events","assignees_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/assignees{/user}","branches_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/branches{/branch}","tags_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/tags","blobs_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/git/blobs{/sha}","git_tags_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/git/tags{/sha}","git_refs_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/git/refs{/sha}","trees_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/git/trees{/sha}","statuses_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/statuses/{sha}","languages_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/languages","stargazers_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/stargazers","contributors_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/contributors","subscribers_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/subscribers","subscription_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/subscription","commits_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/commits{/sha}","git_commits_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/git/commits{/sha}","comments_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/comments{/number}","issue_comment_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/issues/comments{/number}","contents_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/contents/{+path}","compare_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/compare/{base}...{head}","merges_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/merges","archive_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/{archive_format}{/ref}","downloads_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/downloads","issues_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/issues{/number}","pulls_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/pulls{/number}","milestones_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/milestones{/number}","notifications_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/notifications{?since,all,participating}","labels_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/labels{/name}","releases_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/releases{/id}","deployments_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/deployments","created_at":1683105861,"updated_at":"2023-05-03T09:24:22Z","pushed_at":1684921333,"git_url":"git://github.com/mergifyio-testing/functional-testing-repo-Kontrolix.git","ssh_url":"git@github.com:mergifyio-testing/functional-testing-repo-Kontrolix.git","clone_url":"https://github.com/mergifyio-testing/functional-testing-repo-Kontrolix.git","svn_url":"https://github.com/mergifyio-testing/functional-testing-repo-Kontrolix","homepage":null,"size":54,"stargazers_count":0,"watchers_count":0,"language":null,"has_issues":true,"has_projects":true,"has_downloads":true,"has_wiki":true,"has_pages":false,"has_discussions":false,"forks_count":1,"mirror_url":null,"archived":false,"disabled":false,"open_issues_count":5,"license":null,"allow_forking":true,"is_template":false,"web_commit_signoff_required":false,"topics":[],"visibility":"public","forks":1,"open_issues":5,"watchers":0,"default_branch":"main","stargazers":0,"master_branch":"main","organization":"mergifyio-testing"},"pusher":{"name":"mergify-test1","email":"38494943+mergify-test1@users.noreply.github.com"},"organization":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","url":"https://api.github.com/orgs/mergifyio-testing","repos_url":"https://api.github.com/orgs/mergifyio-testing/repos","events_url":"https://api.github.com/orgs/mergifyio-testing/events","hooks_url":"https://api.github.com/orgs/mergifyio-testing/hooks","issues_url":"https://api.github.com/orgs/mergifyio-testing/issues","members_url":"https://api.github.com/orgs/mergifyio-testing/members{/member}","public_members_url":"https://api.github.com/orgs/mergifyio-testing/public_members{/member}","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","description":"This
       account is for testing purpose of the workflow of the GitHub App @Mergifyio"},"sender":{"login":"mergify-test1","id":38494943,"node_id":"MDQ6VXNlcjM4NDk0OTQz","avatar_url":"https://avatars.githubusercontent.com/u/38494943?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-test1","html_url":"https://github.com/mergify-test1","followers_url":"https://api.github.com/users/mergify-test1/followers","following_url":"https://api.github.com/users/mergify-test1/following{/other_user}","gists_url":"https://api.github.com/users/mergify-test1/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-test1/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-test1/subscriptions","organizations_url":"https://api.github.com/users/mergify-test1/orgs","repos_url":"https://api.github.com/users/mergify-test1/repos","events_url":"https://api.github.com/users/mergify-test1/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-test1/received_events","type":"User","site_admin":false},"installation":{"id":37100555,"node_id":"MDIzOkludGVncmF0aW9uSW5zdGFsbGF0aW9uMzcxMDA1NTU="},"created":true,"deleted":false,"forced":false,"base_ref":null,"compare":"https://github.com/mergifyio-testing/functional-testing-repo-Kontrolix/commit/bec15db77a5e","commits":[{"id":"bec15db77a5ea2447fc78a14fbeae2d165c4bfa3","tree_id":"164f0c4edebed7482f0ca6d907b2afd94eb1eacc","distinct":true,"message":"initial
@@ -339,9 +339,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=6
+    uri: https://test-forwarder.mergify.com/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=6
   response:
     content: '[]'
     headers:
@@ -363,9 +363,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=7
+    uri: https://test-forwarder.mergify.com/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=7
   response:
     content: '[]'
     headers:
@@ -387,9 +387,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=8
+    uri: https://test-forwarder.mergify.com/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=8
   response:
     content: '[]'
     headers:
@@ -411,9 +411,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=9
+    uri: https://test-forwarder.mergify.com/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=9
   response:
     content: '[]'
     headers:
@@ -435,9 +435,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=10
+    uri: https://test-forwarder.mergify.com/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=10
   response:
     content: '[{"id":"44e8c250-fa17-11ed-8a2c-e15b0bc904e7","type":"check_suite","payload":{"action":"requested","check_suite":{"id":13112145434,"node_id":"CS_kwDOJeQVdc8AAAADDYt2Gg","head_branch":"20230524094209/test_merged_attribute/integration/pr1","head_sha":"62e4949cf905a53db8a17bf562e79c9ddea9edb8","status":"queued","conclusion":null,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/check-suites/13112145434","before":"0000000000000000000000000000000000000000","after":"62e4949cf905a53db8a17bf562e79c9ddea9edb8","pull_requests":[],"app":{"id":327815,"slug":"mergify-kontrolix","node_id":"A_kwHOAmplV84ABQCH","owner":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"name":"mergify-Kontrolix","description":"Mergify
       testing installation for Kontrolix","external_url":"https://mergify.com/","html_url":"https://github.com/apps/mergify-kontrolix","created_at":"2023-05-03T09:24:33Z","updated_at":"2023-05-03T09:24:33Z","permissions":{"administration":"read","checks":"write","contents":"write","emails":"read","issues":"write","members":"read","metadata":"read","pages":"write","pull_requests":"write","statuses":"write","workflows":"write"},"events":["check_run","check_suite","issue_comment","member","membership","organization","pull_request","pull_request_review","pull_request_review_comment","pull_request_review_thread","push","repository","status","team","team_add"]},"created_at":"2023-05-24T09:42:16Z","updated_at":"2023-05-24T09:42:16Z","rerequestable":true,"runs_rerequestable":true,"latest_check_runs_count":0,"check_runs_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/check-suites/13112145434/check-runs","head_commit":{"id":"62e4949cf905a53db8a17bf562e79c9ddea9edb8","tree_id":"32cac0b176ca58f9fc84d2395aa96291a5f02734","message":"test_merged_attribute:
@@ -462,9 +462,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=11
+    uri: https://test-forwarder.mergify.com/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=11
   response:
     content: '[]'
     headers:
@@ -486,9 +486,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=12
+    uri: https://test-forwarder.mergify.com/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=12
   response:
     content: '[{"id":"4527daa8-fa17-11ed-8f0c-c912d481a7ed","type":"push","payload":{"ref":"refs/heads/20230524094209/test_merged_attribute/integration/pr1","before":"0000000000000000000000000000000000000000","after":"62e4949cf905a53db8a17bf562e79c9ddea9edb8","repository":{"id":635704693,"node_id":"R_kgDOJeQVdQ","name":"functional-testing-repo-Kontrolix","full_name":"mergifyio-testing/functional-testing-repo-Kontrolix","private":false,"owner":{"name":"mergifyio-testing","email":null,"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"html_url":"https://github.com/mergifyio-testing/functional-testing-repo-Kontrolix","description":null,"fork":false,"url":"https://github.com/mergifyio-testing/functional-testing-repo-Kontrolix","forks_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/forks","keys_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/keys{/key_id}","collaborators_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/collaborators{/collaborator}","teams_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/teams","hooks_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/hooks","issue_events_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/issues/events{/number}","events_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/events","assignees_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/assignees{/user}","branches_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/branches{/branch}","tags_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/tags","blobs_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/git/blobs{/sha}","git_tags_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/git/tags{/sha}","git_refs_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/git/refs{/sha}","trees_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/git/trees{/sha}","statuses_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/statuses/{sha}","languages_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/languages","stargazers_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/stargazers","contributors_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/contributors","subscribers_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/subscribers","subscription_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/subscription","commits_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/commits{/sha}","git_commits_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/git/commits{/sha}","comments_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/comments{/number}","issue_comment_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/issues/comments{/number}","contents_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/contents/{+path}","compare_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/compare/{base}...{head}","merges_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/merges","archive_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/{archive_format}{/ref}","downloads_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/downloads","issues_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/issues{/number}","pulls_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/pulls{/number}","milestones_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/milestones{/number}","notifications_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/notifications{?since,all,participating}","labels_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/labels{/name}","releases_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/releases{/id}","deployments_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/deployments","created_at":1683105861,"updated_at":"2023-05-03T09:24:22Z","pushed_at":1684921335,"git_url":"git://github.com/mergifyio-testing/functional-testing-repo-Kontrolix.git","ssh_url":"git@github.com:mergifyio-testing/functional-testing-repo-Kontrolix.git","clone_url":"https://github.com/mergifyio-testing/functional-testing-repo-Kontrolix.git","svn_url":"https://github.com/mergifyio-testing/functional-testing-repo-Kontrolix","homepage":null,"size":54,"stargazers_count":0,"watchers_count":0,"language":null,"has_issues":true,"has_projects":true,"has_downloads":true,"has_wiki":true,"has_pages":false,"has_discussions":false,"forks_count":1,"mirror_url":null,"archived":false,"disabled":false,"open_issues_count":5,"license":null,"allow_forking":true,"is_template":false,"web_commit_signoff_required":false,"topics":[],"visibility":"public","forks":1,"open_issues":5,"watchers":0,"default_branch":"main","stargazers":0,"master_branch":"main","organization":"mergifyio-testing"},"pusher":{"name":"mergify-test1","email":"38494943+mergify-test1@users.noreply.github.com"},"organization":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","url":"https://api.github.com/orgs/mergifyio-testing","repos_url":"https://api.github.com/orgs/mergifyio-testing/repos","events_url":"https://api.github.com/orgs/mergifyio-testing/events","hooks_url":"https://api.github.com/orgs/mergifyio-testing/hooks","issues_url":"https://api.github.com/orgs/mergifyio-testing/issues","members_url":"https://api.github.com/orgs/mergifyio-testing/members{/member}","public_members_url":"https://api.github.com/orgs/mergifyio-testing/public_members{/member}","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","description":"This
       account is for testing purpose of the workflow of the GitHub App @Mergifyio"},"sender":{"login":"mergify-test1","id":38494943,"node_id":"MDQ6VXNlcjM4NDk0OTQz","avatar_url":"https://avatars.githubusercontent.com/u/38494943?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-test1","html_url":"https://github.com/mergify-test1","followers_url":"https://api.github.com/users/mergify-test1/followers","following_url":"https://api.github.com/users/mergify-test1/following{/other_user}","gists_url":"https://api.github.com/users/mergify-test1/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-test1/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-test1/subscriptions","organizations_url":"https://api.github.com/users/mergify-test1/orgs","repos_url":"https://api.github.com/users/mergify-test1/repos","events_url":"https://api.github.com/users/mergify-test1/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-test1/received_events","type":"User","site_admin":false},"installation":{"id":37100555,"node_id":"MDIzOkludGVncmF0aW9uSW5zdGFsbGF0aW9uMzcxMDA1NTU="},"created":true,"deleted":false,"forced":false,"base_ref":null,"compare":"https://github.com/mergifyio-testing/functional-testing-repo-Kontrolix/commit/62e4949cf905","commits":[{"id":"62e4949cf905a53db8a17bf562e79c9ddea9edb8","tree_id":"32cac0b176ca58f9fc84d2395aa96291a5f02734","distinct":true,"message":"test_merged_attribute:
@@ -545,9 +545,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=13
+    uri: https://test-forwarder.mergify.com/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=13
   response:
     content: '[]'
     headers:
@@ -569,9 +569,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=14
+    uri: https://test-forwarder.mergify.com/events/github.com/327815/635704693/20230524094209-test_merged_attribute?counter=14
   response:
     content: '[{"id":"49d41120-fa17-11ed-825e-4812aa3497fc","type":"pull_request","payload":{"action":"opened","number":542,"pull_request":{"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/pulls/542","id":1362755245,"node_id":"PR_kwDOJeQVdc5ROf6t","html_url":"https://github.com/mergifyio-testing/functional-testing-repo-Kontrolix/pull/542","diff_url":"https://github.com/mergifyio-testing/functional-testing-repo-Kontrolix/pull/542.diff","patch_url":"https://github.com/mergifyio-testing/functional-testing-repo-Kontrolix/pull/542.patch","issue_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/issues/542","number":542,"state":"open","locked":false,"title":"test_merged_attribute:
       pull request n1 from integration","user":{"login":"mergify-kontrolix[bot]","id":132445501,"node_id":"BOT_kgDOB-T1PQ","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-kontrolix%5Bbot%5D","html_url":"https://github.com/apps/mergify-kontrolix","followers_url":"https://api.github.com/users/mergify-kontrolix%5Bbot%5D/followers","following_url":"https://api.github.com/users/mergify-kontrolix%5Bbot%5D/following{/other_user}","gists_url":"https://api.github.com/users/mergify-kontrolix%5Bbot%5D/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-kontrolix%5Bbot%5D/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-kontrolix%5Bbot%5D/subscriptions","organizations_url":"https://api.github.com/users/mergify-kontrolix%5Bbot%5D/orgs","repos_url":"https://api.github.com/users/mergify-kontrolix%5Bbot%5D/repos","events_url":"https://api.github.com/users/mergify-kontrolix%5Bbot%5D/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-kontrolix%5Bbot%5D/received_events","type":"Bot","site_admin":false},"body":"test_merged_attribute:
@@ -854,9 +854,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/327815/635704693/542?counter=15
+    uri: https://test-forwarder.mergify.com/events/github.com/327815/635704693/542?counter=15
   response:
     content: '[{"id":"653cab20-fa17-11ed-925b-983ef9ea3d05","type":"issue_comment","payload":{"action":"created","issue":{"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/issues/542","repository_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix","labels_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/issues/542/labels{/name}","comments_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/issues/542/comments","events_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/issues/542/events","html_url":"https://github.com/mergifyio-testing/functional-testing-repo-Kontrolix/pull/542","id":1723587952,"node_id":"PR_kwDOJeQVdc5ROf6t","number":542,"title":"test_merged_attribute:
       pull request n1 from integration","user":{"login":"mergify-kontrolix[bot]","id":132445501,"node_id":"BOT_kgDOB-T1PQ","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-kontrolix%5Bbot%5D","html_url":"https://github.com/apps/mergify-kontrolix","followers_url":"https://api.github.com/users/mergify-kontrolix%5Bbot%5D/followers","following_url":"https://api.github.com/users/mergify-kontrolix%5Bbot%5D/following{/other_user}","gists_url":"https://api.github.com/users/mergify-kontrolix%5Bbot%5D/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-kontrolix%5Bbot%5D/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-kontrolix%5Bbot%5D/subscriptions","organizations_url":"https://api.github.com/users/mergify-kontrolix%5Bbot%5D/orgs","repos_url":"https://api.github.com/users/mergify-kontrolix%5Bbot%5D/repos","events_url":"https://api.github.com/users/mergify-kontrolix%5Bbot%5D/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-kontrolix%5Bbot%5D/received_events","type":"Bot","site_admin":false},"labels":[],"state":"closed","locked":false,"assignee":null,"assignees":[],"milestone":null,"comments":1,"created_at":"2023-05-24T09:42:24Z","updated_at":"2023-05-24T09:43:10Z","closed_at":"2023-05-24T09:42:53Z","author_association":"NONE","active_lock_reason":null,"draft":false,"pull_request":{"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-Kontrolix/pulls/542","html_url":"https://github.com/mergifyio-testing/functional-testing-repo-Kontrolix/pull/542","diff_url":"https://github.com/mergifyio-testing/functional-testing-repo-Kontrolix/pull/542.diff","patch_url":"https://github.com/mergifyio-testing/functional-testing-repo-Kontrolix/pull/542.patch","merged_at":"2023-05-24T09:42:53Z"},"body":"test_merged_attribute:
@@ -1074,9 +1074,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: DELETE
-    uri: https://test-forwarder.mergify.io/events/github.com/327815/635704693/20230524094209-test_merged_attribute
+    uri: https://test-forwarder.mergify.com/events/github.com/327815/635704693/20230524094209-test_merged_attribute
   response:
     content: Event queued
     headers:

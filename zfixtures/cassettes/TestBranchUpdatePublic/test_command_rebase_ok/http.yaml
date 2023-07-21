@@ -108,7 +108,7 @@ interactions:
     method: GET
     uri: https://api.github.com/user
   response:
-    content: '{"login":"mergify-test1","id":38494943,"node_id":"MDQ6VXNlcjM4NDk0OTQz","avatar_url":"https://avatars.githubusercontent.com/u/38494943?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-test1","html_url":"https://github.com/mergify-test1","followers_url":"https://api.github.com/users/mergify-test1/followers","following_url":"https://api.github.com/users/mergify-test1/following{/other_user}","gists_url":"https://api.github.com/users/mergify-test1/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-test1/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-test1/subscriptions","organizations_url":"https://api.github.com/users/mergify-test1/orgs","repos_url":"https://api.github.com/users/mergify-test1/repos","events_url":"https://api.github.com/users/mergify-test1/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-test1/received_events","type":"User","site_admin":false,"name":"mergify-test-user-1","company":"@mergifyio","blog":"https://mergify.io","location":null,"email":null,"hireable":null,"bio":"This
+    content: '{"login":"mergify-test1","id":38494943,"node_id":"MDQ6VXNlcjM4NDk0OTQz","avatar_url":"https://avatars.githubusercontent.com/u/38494943?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-test1","html_url":"https://github.com/mergify-test1","followers_url":"https://api.github.com/users/mergify-test1/followers","following_url":"https://api.github.com/users/mergify-test1/following{/other_user}","gists_url":"https://api.github.com/users/mergify-test1/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-test1/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-test1/subscriptions","organizations_url":"https://api.github.com/users/mergify-test1/orgs","repos_url":"https://api.github.com/users/mergify-test1/repos","events_url":"https://api.github.com/users/mergify-test1/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-test1/received_events","type":"User","site_admin":false,"name":"mergify-test-user-1","company":"@mergifyio","blog":"https://mergify.com","location":null,"email":null,"hireable":null,"bio":"This
       account is for testing purpose of the workflow of the GitHub App @mergifyio","twitter_username":"mergifyio","public_repos":1,"public_gists":0,"followers":0,"following":0,"created_at":"2018-04-18T10:42:59Z","updated_at":"2023-01-15T12:40:04Z","private_gists":0,"total_private_repos":0,"owned_private_repos":0,"disk_usage":0,"collaborators":0,"two_factor_authentication":false,"plan":{"name":"free","space":976562499,"collaborators":0,"private_repos":10000}}'
     headers:
       Content-Encoding:
@@ -193,9 +193,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: DELETE
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok
   response:
     content: Event queued
     headers:
@@ -215,9 +215,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=1
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=1
   response:
     content: '[]'
     headers:
@@ -239,9 +239,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=2
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=2
   response:
     content: '[]'
     headers:
@@ -263,9 +263,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=3
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=3
   response:
     content: '[]'
     headers:
@@ -287,9 +287,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=4
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=4
   response:
     content: '[]'
     headers:
@@ -311,9 +311,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=5
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=5
   response:
     content: '[{"id":"733aad5c-a64e-11ed-9203-8b97daae4821","type":"push","payload":{"ref":"refs/heads/20230206184535/test_command_rebase_ok/main","before":"0000000000000000000000000000000000000000","after":"415d15cf74ef67047376a9a6ba2dad4e649e264a","repository":{"id":399426199,"node_id":"MDEwOlJlcG9zaXRvcnkzOTk0MjYxOTk=","name":"functional-testing-repo-sileht","full_name":"mergifyio-testing/functional-testing-repo-sileht","private":false,"owner":{"name":"mergifyio-testing","email":null,"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"html_url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht","description":null,"fork":false,"url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht","forks_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/forks","keys_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/keys{/key_id}","collaborators_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/collaborators{/collaborator}","teams_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/teams","hooks_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/hooks","issue_events_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/issues/events{/number}","events_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/events","assignees_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/assignees{/user}","branches_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/branches{/branch}","tags_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/tags","blobs_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/git/blobs{/sha}","git_tags_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/git/tags{/sha}","git_refs_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/git/refs{/sha}","trees_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/git/trees{/sha}","statuses_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/statuses/{sha}","languages_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/languages","stargazers_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/stargazers","contributors_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/contributors","subscribers_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/subscribers","subscription_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/subscription","commits_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/commits{/sha}","git_commits_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/git/commits{/sha}","comments_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/comments{/number}","issue_comment_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/issues/comments{/number}","contents_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/contents/{+path}","compare_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/compare/{base}...{head}","merges_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/merges","archive_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/{archive_format}{/ref}","downloads_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/downloads","issues_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/issues{/number}","pulls_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/pulls{/number}","milestones_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/milestones{/number}","notifications_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/notifications{?since,all,participating}","labels_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/labels{/name}","releases_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/releases{/id}","deployments_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/deployments","created_at":1629801394,"updated_at":"2023-01-31T19:06:12Z","pushed_at":1675709138,"git_url":"git://github.com/mergifyio-testing/functional-testing-repo-sileht.git","ssh_url":"git@github.com:mergifyio-testing/functional-testing-repo-sileht.git","clone_url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht.git","svn_url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht","homepage":null,"size":419,"stargazers_count":0,"watchers_count":0,"language":null,"has_issues":true,"has_projects":true,"has_downloads":true,"has_wiki":true,"has_pages":false,"has_discussions":false,"forks_count":2,"mirror_url":null,"archived":false,"disabled":false,"open_issues_count":0,"license":null,"allow_forking":true,"is_template":false,"web_commit_signoff_required":false,"topics":[],"visibility":"public","forks":2,"open_issues":0,"watchers":0,"default_branch":"main","stargazers":0,"master_branch":"main","organization":"mergifyio-testing"},"pusher":{"name":"mergify-test1","email":"38494943+mergify-test1@users.noreply.github.com"},"organization":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","url":"https://api.github.com/orgs/mergifyio-testing","repos_url":"https://api.github.com/orgs/mergifyio-testing/repos","events_url":"https://api.github.com/orgs/mergifyio-testing/events","hooks_url":"https://api.github.com/orgs/mergifyio-testing/hooks","issues_url":"https://api.github.com/orgs/mergifyio-testing/issues","members_url":"https://api.github.com/orgs/mergifyio-testing/members{/member}","public_members_url":"https://api.github.com/orgs/mergifyio-testing/public_members{/member}","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","description":"This
       account is for testing purpose of the workflow of the GitHub App @Mergifyio"},"sender":{"login":"mergify-test1","id":38494943,"node_id":"MDQ6VXNlcjM4NDk0OTQz","avatar_url":"https://avatars.githubusercontent.com/u/38494943?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-test1","html_url":"https://github.com/mergify-test1","followers_url":"https://api.github.com/users/mergify-test1/followers","following_url":"https://api.github.com/users/mergify-test1/following{/other_user}","gists_url":"https://api.github.com/users/mergify-test1/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-test1/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-test1/subscriptions","organizations_url":"https://api.github.com/users/mergify-test1/orgs","repos_url":"https://api.github.com/users/mergify-test1/repos","events_url":"https://api.github.com/users/mergify-test1/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-test1/received_events","type":"User","site_admin":false},"installation":{"id":26894537,"node_id":"MDIzOkludGVncmF0aW9uSW5zdGFsbGF0aW9uMjY4OTQ1Mzc="},"created":true,"deleted":false,"forced":false,"base_ref":null,"compare":"https://github.com/mergifyio-testing/functional-testing-repo-sileht/commit/415d15cf74ef","commits":[{"id":"415d15cf74ef67047376a9a6ba2dad4e649e264a","tree_id":"daa1e0d308bd705c293fd33bbdd102cf629f299d","distinct":true,"message":"initial
@@ -341,9 +341,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=6
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=6
   response:
     content: '[]'
     headers:
@@ -365,9 +365,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=7
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=7
   response:
     content: '[]'
     headers:
@@ -389,9 +389,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=8
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=8
   response:
     content: '[]'
     headers:
@@ -413,9 +413,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=9
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=9
   response:
     content: '[]'
     headers:
@@ -437,9 +437,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=10
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=10
   response:
     content: '[{"id":"753aef90-a64e-11ed-93e6-988b03953926","type":"check_suite","payload":{"action":"requested","check_suite":{"id":10811059909,"node_id":"CS_kwDOF87Cl88AAAAChGOuxQ","head_branch":"20230206184535/test_command_rebase_ok/integration/pr1","head_sha":"2fcc03fa0f22b6ef0aa62ee6dd8deccba273a635","status":"queued","conclusion":null,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/check-suites/10811059909","before":"0000000000000000000000000000000000000000","after":"2fcc03fa0f22b6ef0aa62ee6dd8deccba273a635","pull_requests":[],"app":{"id":214863,"slug":"mergify-sileht","node_id":"A_kwHOAmplV84AA0dP","owner":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"name":"mergify-sileht","description":"Mergify
       testing installation for sileht","external_url":"https://mergify.com/","html_url":"https://github.com/apps/mergify-sileht","created_at":"2022-06-27T12:22:05Z","updated_at":"2022-12-20T15:44:43Z","permissions":{"administration":"read","checks":"write","contents":"write","emails":"read","issues":"write","members":"read","merge_queues":"write","metadata":"read","pages":"write","pull_requests":"write","statuses":"write","workflows":"write"},"events":["check_run","check_suite","issue_comment","member","membership","organization","pull_request","pull_request_review","pull_request_review_comment","pull_request_review_thread","push","repository","status","team","team_add"]},"created_at":"2023-02-06T18:45:42Z","updated_at":"2023-02-06T18:45:42Z","rerequestable":true,"runs_rerequestable":true,"latest_check_runs_count":0,"check_runs_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/check-suites/10811059909/check-runs","head_commit":{"id":"2fcc03fa0f22b6ef0aa62ee6dd8deccba273a635","tree_id":"dd3a8046b81b27f8bfccad72f7250521955c9a8f","message":"test_command_rebase_ok:
@@ -499,9 +499,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=11
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=11
   response:
     content: '[]'
     headers:
@@ -523,9 +523,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=12
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=12
   response:
     content: '[{"id":"76536470-a64e-11ed-8159-064f0fd07fd5","type":"pull_request","payload":{"action":"opened","number":26882,"pull_request":{"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/pulls/26882","id":1230897724,"node_id":"PR_kwDOF87Cl85JXgI8","html_url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht/pull/26882","diff_url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht/pull/26882.diff","patch_url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht/pull/26882.patch","issue_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/issues/26882","number":26882,"state":"open","locked":false,"title":"test_command_rebase_ok:
       pull request n1 from integration","user":{"login":"mergify-sileht[bot]","id":108276933,"node_id":"BOT_kgDOBnQsxQ","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-sileht%5Bbot%5D","html_url":"https://github.com/apps/mergify-sileht","followers_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/followers","following_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/following{/other_user}","gists_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/subscriptions","organizations_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/orgs","repos_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/repos","events_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/received_events","type":"Bot","site_admin":false},"body":"test_command_rebase_ok:
@@ -550,9 +550,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=13
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=13
   response:
     content: '[]'
     headers:
@@ -574,9 +574,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=14
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=14
   response:
     content: '[]'
     headers:
@@ -598,9 +598,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=15
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=15
   response:
     content: '[]'
     headers:
@@ -622,9 +622,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=16
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=16
   response:
     content: '[]'
     headers:
@@ -646,9 +646,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=17
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=17
   response:
     content: '[{"id":"77e48648-a64e-11ed-9eb3-8176797c2821","type":"push","payload":{"ref":"refs/heads/20230206184535/test_command_rebase_ok/integration/pr2","before":"0000000000000000000000000000000000000000","after":"1d79e96d94a44943a06ce4861b224bc26614b38e","repository":{"id":399426199,"node_id":"MDEwOlJlcG9zaXRvcnkzOTk0MjYxOTk=","name":"functional-testing-repo-sileht","full_name":"mergifyio-testing/functional-testing-repo-sileht","private":false,"owner":{"name":"mergifyio-testing","email":null,"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"html_url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht","description":null,"fork":false,"url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht","forks_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/forks","keys_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/keys{/key_id}","collaborators_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/collaborators{/collaborator}","teams_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/teams","hooks_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/hooks","issue_events_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/issues/events{/number}","events_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/events","assignees_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/assignees{/user}","branches_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/branches{/branch}","tags_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/tags","blobs_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/git/blobs{/sha}","git_tags_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/git/tags{/sha}","git_refs_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/git/refs{/sha}","trees_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/git/trees{/sha}","statuses_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/statuses/{sha}","languages_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/languages","stargazers_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/stargazers","contributors_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/contributors","subscribers_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/subscribers","subscription_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/subscription","commits_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/commits{/sha}","git_commits_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/git/commits{/sha}","comments_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/comments{/number}","issue_comment_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/issues/comments{/number}","contents_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/contents/{+path}","compare_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/compare/{base}...{head}","merges_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/merges","archive_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/{archive_format}{/ref}","downloads_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/downloads","issues_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/issues{/number}","pulls_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/pulls{/number}","milestones_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/milestones{/number}","notifications_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/notifications{?since,all,participating}","labels_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/labels{/name}","releases_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/releases{/id}","deployments_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/deployments","created_at":1629801394,"updated_at":"2023-01-31T19:06:12Z","pushed_at":1675709146,"git_url":"git://github.com/mergifyio-testing/functional-testing-repo-sileht.git","ssh_url":"git@github.com:mergifyio-testing/functional-testing-repo-sileht.git","clone_url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht.git","svn_url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht","homepage":null,"size":419,"stargazers_count":0,"watchers_count":0,"language":null,"has_issues":true,"has_projects":true,"has_downloads":true,"has_wiki":true,"has_pages":false,"has_discussions":false,"forks_count":2,"mirror_url":null,"archived":false,"disabled":false,"open_issues_count":1,"license":null,"allow_forking":true,"is_template":false,"web_commit_signoff_required":false,"topics":[],"visibility":"public","forks":2,"open_issues":1,"watchers":0,"default_branch":"main","stargazers":0,"master_branch":"main","organization":"mergifyio-testing"},"pusher":{"name":"mergify-test1","email":"38494943+mergify-test1@users.noreply.github.com"},"organization":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","url":"https://api.github.com/orgs/mergifyio-testing","repos_url":"https://api.github.com/orgs/mergifyio-testing/repos","events_url":"https://api.github.com/orgs/mergifyio-testing/events","hooks_url":"https://api.github.com/orgs/mergifyio-testing/hooks","issues_url":"https://api.github.com/orgs/mergifyio-testing/issues","members_url":"https://api.github.com/orgs/mergifyio-testing/members{/member}","public_members_url":"https://api.github.com/orgs/mergifyio-testing/public_members{/member}","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","description":"This
       account is for testing purpose of the workflow of the GitHub App @Mergifyio"},"sender":{"login":"mergify-test1","id":38494943,"node_id":"MDQ6VXNlcjM4NDk0OTQz","avatar_url":"https://avatars.githubusercontent.com/u/38494943?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-test1","html_url":"https://github.com/mergify-test1","followers_url":"https://api.github.com/users/mergify-test1/followers","following_url":"https://api.github.com/users/mergify-test1/following{/other_user}","gists_url":"https://api.github.com/users/mergify-test1/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-test1/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-test1/subscriptions","organizations_url":"https://api.github.com/users/mergify-test1/orgs","repos_url":"https://api.github.com/users/mergify-test1/repos","events_url":"https://api.github.com/users/mergify-test1/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-test1/received_events","type":"User","site_admin":false},"installation":{"id":26894537,"node_id":"MDIzOkludGVncmF0aW9uSW5zdGFsbGF0aW9uMjY4OTQ1Mzc="},"created":true,"deleted":false,"forced":false,"base_ref":null,"compare":"https://github.com/mergifyio-testing/functional-testing-repo-sileht/commit/1d79e96d94a4","commits":[{"id":"1d79e96d94a44943a06ce4861b224bc26614b38e","tree_id":"7373ae42566b0629e2cd6b7d0876baf51b333565","distinct":true,"message":"test_command_rebase_ok:
@@ -708,9 +708,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=18
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=18
   response:
     content: '[]'
     headers:
@@ -732,9 +732,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=19
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=19
   response:
     content: '[]'
     headers:
@@ -756,9 +756,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=20
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=20
   response:
     content: '[{"id":"793d3df0-a64e-11ed-90dc-62d63ffa2b90","type":"pull_request","payload":{"action":"opened","number":26883,"pull_request":{"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/pulls/26883","id":1230897799,"node_id":"PR_kwDOF87Cl85JXgKH","html_url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht/pull/26883","diff_url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht/pull/26883.diff","patch_url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht/pull/26883.patch","issue_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/issues/26883","number":26883,"state":"open","locked":false,"title":"test_command_rebase_ok:
       pull request n2 from integration","user":{"login":"mergify-sileht[bot]","id":108276933,"node_id":"BOT_kgDOBnQsxQ","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-sileht%5Bbot%5D","html_url":"https://github.com/apps/mergify-sileht","followers_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/followers","following_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/following{/other_user}","gists_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/subscriptions","organizations_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/orgs","repos_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/repos","events_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/received_events","type":"Bot","site_admin":false},"body":"test_command_rebase_ok:
@@ -810,9 +810,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=21
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=21
   response:
     content: '[]'
     headers:
@@ -834,9 +834,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=22
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=22
   response:
     content: '[]'
     headers:
@@ -858,9 +858,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=23
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=23
   response:
     content: '[{"id":"7ae21450-a64e-11ed-9055-25fd30cad611","type":"pull_request","payload":{"action":"closed","number":26882,"pull_request":{"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/pulls/26882","id":1230897724,"node_id":"PR_kwDOF87Cl85JXgI8","html_url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht/pull/26882","diff_url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht/pull/26882.diff","patch_url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht/pull/26882.patch","issue_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/issues/26882","number":26882,"state":"closed","locked":false,"title":"test_command_rebase_ok:
       pull request n1 from integration","user":{"login":"mergify-sileht[bot]","id":108276933,"node_id":"BOT_kgDOBnQsxQ","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-sileht%5Bbot%5D","html_url":"https://github.com/apps/mergify-sileht","followers_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/followers","following_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/following{/other_user}","gists_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/subscriptions","organizations_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/orgs","repos_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/repos","events_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/received_events","type":"Bot","site_admin":false},"body":"test_command_rebase_ok:
@@ -918,9 +918,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/26883?counter=24
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/26883?counter=24
   response:
     content: '[]'
     headers:
@@ -942,9 +942,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/26883?counter=25
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/26883?counter=25
   response:
     content: '[]'
     headers:
@@ -966,9 +966,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/26883?counter=26
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/26883?counter=26
   response:
     content: '[{"id":"7bf99ed0-a64e-11ed-89f5-ae8e140e073b","type":"issue_comment","payload":{"action":"created","issue":{"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/issues/26883","repository_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht","labels_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/issues/26883/labels{/name}","comments_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/issues/26883/comments","events_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/issues/26883/events","html_url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht/pull/26883","id":1573097286,"node_id":"PR_kwDOF87Cl85JXgKH","number":26883,"title":"test_command_rebase_ok:
       pull request n2 from integration","user":{"login":"mergify-sileht[bot]","id":108276933,"node_id":"BOT_kgDOBnQsxQ","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-sileht%5Bbot%5D","html_url":"https://github.com/apps/mergify-sileht","followers_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/followers","following_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/following{/other_user}","gists_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/subscriptions","organizations_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/orgs","repos_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/repos","events_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/received_events","type":"Bot","site_admin":false},"labels":[],"state":"open","locked":false,"assignee":null,"assignees":[],"milestone":null,"comments":1,"created_at":"2023-02-06T18:45:48Z","updated_at":"2023-02-06T18:45:53Z","closed_at":null,"author_association":"CONTRIBUTOR","active_lock_reason":null,"draft":false,"pull_request":{"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/pulls/26883","html_url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht/pull/26883","diff_url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht/pull/26883.diff","patch_url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht/pull/26883.patch","merged_at":null},"body":"test_command_rebase_ok:
@@ -1508,9 +1508,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=27
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=27
   response:
     content: "[{\"id\":\"7b251692-a64e-11ed-91d3-a0fbad771b47\",\"type\":\"push\",\"payload\":{\"ref\":\"refs/heads/20230206184535/test_command_rebase_ok/main\",\"before\":\"415d15cf74ef67047376a9a6ba2dad4e649e264a\",\"after\":\"08a9c460a2aeee2bc8eac54c470ee38ad7abc7d2\",\"repository\":{\"id\":399426199,\"node_id\":\"MDEwOlJlcG9zaXRvcnkzOTk0MjYxOTk=\",\"name\":\"functional-testing-repo-sileht\",\"full_name\":\"mergifyio-testing/functional-testing-repo-sileht\",\"private\":false,\"owner\":{\"name\":\"mergifyio-testing\",\"email\":null,\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/mergifyio-testing\",\"html_url\":\"https://github.com/mergifyio-testing\",\"followers_url\":\"https://api.github.com/users/mergifyio-testing/followers\",\"following_url\":\"https://api.github.com/users/mergifyio-testing/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/mergifyio-testing/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/mergifyio-testing/subscriptions\",\"organizations_url\":\"https://api.github.com/users/mergifyio-testing/orgs\",\"repos_url\":\"https://api.github.com/users/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/users/mergifyio-testing/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/mergifyio-testing/received_events\",\"type\":\"Organization\",\"site_admin\":false},\"html_url\":\"https://github.com/mergifyio-testing/functional-testing-repo-sileht\",\"description\":null,\"fork\":false,\"url\":\"https://github.com/mergifyio-testing/functional-testing-repo-sileht\",\"forks_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/forks\",\"keys_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/keys{/key_id}\",\"collaborators_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/collaborators{/collaborator}\",\"teams_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/teams\",\"hooks_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/hooks\",\"issue_events_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/issues/events{/number}\",\"events_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/events\",\"assignees_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/assignees{/user}\",\"branches_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/branches{/branch}\",\"tags_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/tags\",\"blobs_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/git/blobs{/sha}\",\"git_tags_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/git/tags{/sha}\",\"git_refs_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/git/refs{/sha}\",\"trees_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/git/trees{/sha}\",\"statuses_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/statuses/{sha}\",\"languages_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/languages\",\"stargazers_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/stargazers\",\"contributors_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/contributors\",\"subscribers_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/subscribers\",\"subscription_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/subscription\",\"commits_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/commits{/sha}\",\"git_commits_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/git/commits{/sha}\",\"comments_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/comments{/number}\",\"issue_comment_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/issues/comments{/number}\",\"contents_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/contents/{+path}\",\"compare_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/compare/{base}...{head}\",\"merges_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/merges\",\"archive_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/{archive_format}{/ref}\",\"downloads_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/downloads\",\"issues_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/issues{/number}\",\"pulls_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/pulls{/number}\",\"milestones_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/milestones{/number}\",\"notifications_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/notifications{?since,all,participating}\",\"labels_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/labels{/name}\",\"releases_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/releases{/id}\",\"deployments_url\":\"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/deployments\",\"created_at\":1629801394,\"updated_at\":\"2023-01-31T19:06:12Z\",\"pushed_at\":1675709151,\"git_url\":\"git://github.com/mergifyio-testing/functional-testing-repo-sileht.git\",\"ssh_url\":\"git@github.com:mergifyio-testing/functional-testing-repo-sileht.git\",\"clone_url\":\"https://github.com/mergifyio-testing/functional-testing-repo-sileht.git\",\"svn_url\":\"https://github.com/mergifyio-testing/functional-testing-repo-sileht\",\"homepage\":null,\"size\":419,\"stargazers_count\":0,\"watchers_count\":0,\"language\":null,\"has_issues\":true,\"has_projects\":true,\"has_downloads\":true,\"has_wiki\":true,\"has_pages\":false,\"has_discussions\":false,\"forks_count\":2,\"mirror_url\":null,\"archived\":false,\"disabled\":false,\"open_issues_count\":1,\"license\":null,\"allow_forking\":true,\"is_template\":false,\"web_commit_signoff_required\":false,\"topics\":[],\"visibility\":\"public\",\"forks\":2,\"open_issues\":1,\"watchers\":0,\"default_branch\":\"main\",\"stargazers\":0,\"master_branch\":\"main\",\"organization\":\"mergifyio-testing\"},\"pusher\":{\"name\":\"mergify-sileht[bot]\",\"email\":null},\"organization\":{\"login\":\"mergifyio-testing\",\"id\":40527191,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx\",\"url\":\"https://api.github.com/orgs/mergifyio-testing\",\"repos_url\":\"https://api.github.com/orgs/mergifyio-testing/repos\",\"events_url\":\"https://api.github.com/orgs/mergifyio-testing/events\",\"hooks_url\":\"https://api.github.com/orgs/mergifyio-testing/hooks\",\"issues_url\":\"https://api.github.com/orgs/mergifyio-testing/issues\",\"members_url\":\"https://api.github.com/orgs/mergifyio-testing/members{/member}\",\"public_members_url\":\"https://api.github.com/orgs/mergifyio-testing/public_members{/member}\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"description\":\"This
       account is for testing purpose of the workflow of the GitHub App @Mergifyio\"},\"sender\":{\"login\":\"mergify-sileht[bot]\",\"id\":108276933,\"node_id\":\"BOT_kgDOBnQsxQ\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/40527191?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/mergify-sileht%5Bbot%5D\",\"html_url\":\"https://github.com/apps/mergify-sileht\",\"followers_url\":\"https://api.github.com/users/mergify-sileht%5Bbot%5D/followers\",\"following_url\":\"https://api.github.com/users/mergify-sileht%5Bbot%5D/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/mergify-sileht%5Bbot%5D/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/mergify-sileht%5Bbot%5D/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/mergify-sileht%5Bbot%5D/subscriptions\",\"organizations_url\":\"https://api.github.com/users/mergify-sileht%5Bbot%5D/orgs\",\"repos_url\":\"https://api.github.com/users/mergify-sileht%5Bbot%5D/repos\",\"events_url\":\"https://api.github.com/users/mergify-sileht%5Bbot%5D/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/mergify-sileht%5Bbot%5D/received_events\",\"type\":\"Bot\",\"site_admin\":false},\"installation\":{\"id\":26894537,\"node_id\":\"MDIzOkludGVncmF0aW9uSW5zdGFsbGF0aW9uMjY4OTQ1Mzc=\"},\"created\":false,\"deleted\":false,\"forced\":false,\"base_ref\":null,\"compare\":\"https://github.com/mergifyio-testing/functional-testing-repo-sileht/compare/415d15cf74ef...08a9c460a2ae\",\"commits\":[{\"id\":\"2fcc03fa0f22b6ef0aa62ee6dd8deccba273a635\",\"tree_id\":\"dd3a8046b81b27f8bfccad72f7250521955c9a8f\",\"distinct\":false,\"message\":\"test_command_rebase_ok:
@@ -1703,9 +1703,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=28
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=28
   response:
     content: '[{"id":"84eba8d0-a64e-11ed-99b3-5ac9a70435e1","type":"check_run","payload":{"action":"created","check_run":{"id":11145715035,"name":"Summary","node_id":"CR_kwDOF87Cl88AAAACmFYdWw","head_sha":"39bacfadca46f9ff3b08d7897adf13140849c949","external_id":"26883","url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/check-runs/11145715035","html_url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht/runs/11145715035","details_url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht/pull/26883/checks","status":"in_progress","conclusion":null,"started_at":"2023-02-06T18:46:08Z","completed_at":null,"output":{"title":"Your
       rules are under evaluation","summary":"Be patient, the page will be updated
@@ -1732,9 +1732,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=29
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=29
   response:
     content: '[]'
     headers:
@@ -1756,9 +1756,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=30
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=30
   response:
     content: '[]'
     headers:
@@ -1780,9 +1780,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=31
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=31
   response:
     content: '[{"id":"85ff3f48-a64e-11ed-9f90-e459242c6976","type":"push","payload":{"ref":"refs/heads/20230206184535/test_command_rebase_ok/main","before":"08a9c460a2aeee2bc8eac54c470ee38ad7abc7d2","after":"31f534f536367e222be57d2c56555edf41f16d41","repository":{"id":399426199,"node_id":"MDEwOlJlcG9zaXRvcnkzOTk0MjYxOTk=","name":"functional-testing-repo-sileht","full_name":"mergifyio-testing/functional-testing-repo-sileht","private":false,"owner":{"name":"mergifyio-testing","email":null,"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"html_url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht","description":null,"fork":false,"url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht","forks_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/forks","keys_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/keys{/key_id}","collaborators_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/collaborators{/collaborator}","teams_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/teams","hooks_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/hooks","issue_events_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/issues/events{/number}","events_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/events","assignees_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/assignees{/user}","branches_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/branches{/branch}","tags_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/tags","blobs_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/git/blobs{/sha}","git_tags_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/git/tags{/sha}","git_refs_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/git/refs{/sha}","trees_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/git/trees{/sha}","statuses_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/statuses/{sha}","languages_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/languages","stargazers_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/stargazers","contributors_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/contributors","subscribers_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/subscribers","subscription_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/subscription","commits_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/commits{/sha}","git_commits_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/git/commits{/sha}","comments_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/comments{/number}","issue_comment_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/issues/comments{/number}","contents_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/contents/{+path}","compare_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/compare/{base}...{head}","merges_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/merges","archive_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/{archive_format}{/ref}","downloads_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/downloads","issues_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/issues{/number}","pulls_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/pulls{/number}","milestones_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/milestones{/number}","notifications_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/notifications{?since,all,participating}","labels_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/labels{/name}","releases_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/releases{/id}","deployments_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/deployments","created_at":1629801394,"updated_at":"2023-01-31T19:06:12Z","pushed_at":1675709169,"git_url":"git://github.com/mergifyio-testing/functional-testing-repo-sileht.git","ssh_url":"git@github.com:mergifyio-testing/functional-testing-repo-sileht.git","clone_url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht.git","svn_url":"https://github.com/mergifyio-testing/functional-testing-repo-sileht","homepage":null,"size":419,"stargazers_count":0,"watchers_count":0,"language":null,"has_issues":true,"has_projects":true,"has_downloads":true,"has_wiki":true,"has_pages":false,"has_discussions":false,"forks_count":2,"mirror_url":null,"archived":false,"disabled":false,"open_issues_count":0,"license":null,"allow_forking":true,"is_template":false,"web_commit_signoff_required":false,"topics":[],"visibility":"public","forks":2,"open_issues":0,"watchers":0,"default_branch":"main","stargazers":0,"master_branch":"main","organization":"mergifyio-testing"},"pusher":{"name":"mergify-sileht[bot]","email":null},"organization":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","url":"https://api.github.com/orgs/mergifyio-testing","repos_url":"https://api.github.com/orgs/mergifyio-testing/repos","events_url":"https://api.github.com/orgs/mergifyio-testing/events","hooks_url":"https://api.github.com/orgs/mergifyio-testing/hooks","issues_url":"https://api.github.com/orgs/mergifyio-testing/issues","members_url":"https://api.github.com/orgs/mergifyio-testing/members{/member}","public_members_url":"https://api.github.com/orgs/mergifyio-testing/public_members{/member}","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","description":"This
       account is for testing purpose of the workflow of the GitHub App @Mergifyio"},"sender":{"login":"mergify-sileht[bot]","id":108276933,"node_id":"BOT_kgDOBnQsxQ","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-sileht%5Bbot%5D","html_url":"https://github.com/apps/mergify-sileht","followers_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/followers","following_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/following{/other_user}","gists_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/subscriptions","organizations_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/orgs","repos_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/repos","events_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-sileht%5Bbot%5D/received_events","type":"Bot","site_admin":false},"installation":{"id":26894537,"node_id":"MDIzOkludGVncmF0aW9uSW5zdGFsbGF0aW9uMjY4OTQ1Mzc="},"created":false,"deleted":false,"forced":false,"base_ref":null,"compare":"https://github.com/mergifyio-testing/functional-testing-repo-sileht/compare/08a9c460a2ae...31f534f53636","commits":[{"id":"39bacfadca46f9ff3b08d7897adf13140849c949","tree_id":"78434b01fe7f732ea9d47d6fda4cca78ce9cc713","distinct":false,"message":"test_command_rebase_ok:
@@ -1810,9 +1810,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: GET
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=32
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok?counter=32
   response:
     content: '[{"id":"8630d300-a64e-11ed-9140-9ab7d836d703","type":"check_suite","payload":{"action":"requested","check_suite":{"id":10811068967,"node_id":"CS_kwDOF87Cl88AAAAChGPSJw","head_branch":"20230206184535/test_command_rebase_ok/main","head_sha":"31f534f536367e222be57d2c56555edf41f16d41","status":"queued","conclusion":null,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/check-suites/10811068967","before":"08a9c460a2aeee2bc8eac54c470ee38ad7abc7d2","after":"31f534f536367e222be57d2c56555edf41f16d41","pull_requests":[],"app":{"id":214863,"slug":"mergify-sileht","node_id":"A_kwHOAmplV84AA0dP","owner":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"name":"mergify-sileht","description":"Mergify
       testing installation for sileht","external_url":"https://mergify.com/","html_url":"https://github.com/apps/mergify-sileht","created_at":"2022-06-27T12:22:05Z","updated_at":"2022-12-20T15:44:43Z","permissions":{"administration":"read","checks":"write","contents":"write","emails":"read","issues":"write","members":"read","merge_queues":"write","metadata":"read","pages":"write","pull_requests":"write","statuses":"write","workflows":"write"},"events":["check_run","check_suite","issue_comment","member","membership","organization","pull_request","pull_request_review","pull_request_review_comment","pull_request_review_thread","push","repository","status","team","team_add"]},"created_at":"2023-02-06T18:46:10Z","updated_at":"2023-02-06T18:46:10Z","rerequestable":true,"runs_rerequestable":true,"latest_check_runs_count":0,"check_runs_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-sileht/check-suites/10811068967/check-runs","head_commit":{"id":"31f534f536367e222be57d2c56555edf41f16d41","tree_id":"78434b01fe7f732ea9d47d6fda4cca78ce9cc713","message":"Merge
@@ -2028,9 +2028,9 @@ interactions:
       content-length:
       - '14'
       host:
-      - test-forwarder.mergify.io
+      - test-forwarder.mergify.com
     method: DELETE
-    uri: https://test-forwarder.mergify.io/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok
+    uri: https://test-forwarder.mergify.com/events/github.com/214863/399426199/20230206184535-test_command_rebase_ok
   response:
     content: Event queued
     headers:
