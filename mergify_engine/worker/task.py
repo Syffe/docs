@@ -1,5 +1,6 @@
 import asyncio
 from collections import abc
+import contextlib
 import dataclasses
 
 import daiquiri
@@ -19,7 +20,9 @@ class TaskRetriedForever:
     func: TaskRetriedForeverFuncT
     sleep_time: float
     must_shutdown_first: bool = False
-    shutdown_requested: bool = dataclasses.field(init=False, default=False)
+    shutdown_requested: asyncio.Event = dataclasses.field(
+        init=False, default_factory=asyncio.Event
+    )
 
     task: asyncio.Task[None] = dataclasses.field(init=False, repr=False)
 
@@ -38,7 +41,7 @@ class TaskRetriedForever:
         self, name: str, func: TaskRetriedForeverFuncT, sleep_time: float
     ) -> None:
         with sentry_sdk.Hub(sentry_sdk.Hub.current):
-            while True:
+            while not self.shutdown_requested.is_set():
                 try:
                     await func()
                 except redis_exceptions.ConnectionError:
@@ -51,8 +54,9 @@ class TaskRetriedForever:
                 except Exception:
                     LOG.error("%s task failed", name, exc_info=True)
                 except asyncio.CancelledError:
-                    if self.shutdown_requested:
+                    if self.shutdown_requested.is_set():
                         raise
+
                     # FIXME(sileht): This should never ever occurs, but INC-78 prove the reverse
                     # We prefer to ignore it and restart the worker to continue the events processing
                     LOG.warning(
@@ -60,7 +64,9 @@ class TaskRetriedForever:
                     )
                     continue
 
-                await asyncio.sleep(sleep_time)
+                with contextlib.suppress(asyncio.TimeoutError):
+                    async with asyncio.timeout(self.sleep_time):
+                        await self.shutdown_requested.wait()
 
 
 async def stop_and_wait(tasks: list[TaskRetriedForever]) -> None:
@@ -68,7 +74,7 @@ async def stop_and_wait(tasks: list[TaskRetriedForever]) -> None:
     LOG.info("tasks stopping", tasks=names, count=len(tasks))
     if tasks:
         for t in tasks:
-            t.shutdown_requested = True
+            t.shutdown_requested.set()
         pendings = {t.task for t in tasks}
         while pendings:
             # NOTE(sileht): sometime tasks didn't get cancelled correctly (eg:
