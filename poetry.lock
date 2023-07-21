@@ -3222,13 +3222,13 @@ files = [
 
 [[package]]
 name = "types-first"
-version = "2.0.5.1"
+version = "2.0.5.2"
 description = "Typing stubs for first"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-first-2.0.5.1.tar.gz", hash = "sha256:02b7f74dc9a573872bee37d025003bec84cad1b0b0bdf5199ec712d85d1cfbd2"},
-    {file = "types_first-2.0.5.1-py3-none-any.whl", hash = "sha256:b7dd8a50d556cb79a71506df5e6124b131146973d82fde80e29444a2ebb9c7b3"},
+    {file = "types-first-2.0.5.2.tar.gz", hash = "sha256:4115d28bdb52542531f70ccb1a044802f597d8fb3e4e55f65c23f522e1086d1f"},
+    {file = "types_first-2.0.5.2-py3-none-any.whl", hash = "sha256:342c2d99d3a2bf43c281b2de5d08f83c65ac1b2320af04b0f878ea2bc8ba390c"},
 ]
 
 [[package]]
