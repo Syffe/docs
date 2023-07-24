@@ -2674,15 +2674,16 @@ files = [
 
 [[package]]
 name = "semgrep"
-version = "1.32.0"
+version = "1.33.2"
 description = "Lightweight static analysis for many languages. Find bug variants with patterns that look like source code."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "semgrep-1.32.0-cp37.cp38.cp39.cp310.cp311.py37.py38.py39.py310.py311-none-any.whl", hash = "sha256:cec99107ef3d7ab2f57297b661d20730062a70fb3a86cfa9afc753a659b9277d"},
-    {file = "semgrep-1.32.0-cp37.cp38.cp39.cp310.cp311.py37.py38.py39.py310.py311-none-macosx_10_14_x86_64.whl", hash = "sha256:90d8070912221c276e3fab74a9926a3ef365e1d876ba2881a8cf9c9f10c6b4a7"},
-    {file = "semgrep-1.32.0-cp37.cp38.cp39.cp310.cp311.py37.py38.py39.py310.py311-none-macosx_11_0_arm64.whl", hash = "sha256:918f50ab756679ffbb76f29c3caf472cbfdbcdf5e806d87288b7fe67991bcd16"},
-    {file = "semgrep-1.32.0.tar.gz", hash = "sha256:c8dc8e06f12ade975c00b22b86a102d7108a97bcd8a106ff1d2671ecfd2f23b2"},
+    {file = "semgrep-1.33.2-cp37.cp38.cp39.cp310.cp311.py37.py38.py39.py310.py311-none-any.whl", hash = "sha256:70fc058d9516d916108c9b5223f202774b77798d379f20eaefd28f152c03d43d"},
+    {file = "semgrep-1.33.2-cp37.cp38.cp39.cp310.cp311.py37.py38.py39.py310.py311-none-macosx_10_14_x86_64.whl", hash = "sha256:d5e07dc7b24c4939908e5464d317d0f9d77c82b0fdde0eb5804240dd699a3cd7"},
+    {file = "semgrep-1.33.2-cp37.cp38.cp39.cp310.cp311.py37.py38.py39.py310.py311-none-macosx_11_0_arm64.whl", hash = "sha256:301ec877740a535817b9b4c74ff8cb45130da1f5b48f2fff5bbe737cf57633f0"},
+    {file = "semgrep-1.33.2-cp37.cp38.cp39.cp310.cp311.py37.py38.py39.py310.py311-none-manylinux2014_aarch64.whl", hash = "sha256:5e457bab413ce21224ffe5e55bc170b06e2e2c4ae573e3943d852906e447b51b"},
+    {file = "semgrep-1.33.2.tar.gz", hash = "sha256:fad13d82cd78bcec862c2036e248520a8cd68263eb03d30d60148294d9960175"},
 ]
 
 [package.dependencies]
@@ -3839,4 +3840,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<4.0"
-content-hash = "e30c533ab25fe6945f3ee6b388e034384a491405a3dd568fa75fc9b1f7744e47"
+content-hash = "37a80abf8bb9e4f59076b2d57810844627fa6036f026e958782fea39cc6da655"
