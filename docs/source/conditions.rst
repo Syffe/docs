@@ -303,7 +303,7 @@ Here's the list of pull request attribute that can be used in conditions:
      - :ref:`Timestamp <iso timestamp>` or :ref:`Relative timestamp <relative timestamp>`
      - The time the pull request was created at.
    * - ``current-datetime``
-     - :ref:`Timestamp <iso timestamp>`
+     - :ref:`Timestamp <iso timestamp>` or :ref:`Timestamp interval <iso timestamp_interval>`
      - The current date and time.
    * - ``dependabot-dependency-name``
      - string

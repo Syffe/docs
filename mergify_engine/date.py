@@ -32,15 +32,20 @@ def extract_timezone(
     value: str,
 ) -> tuple[str, zoneinfo.ZoneInfo]:
     if has_timezone(value):
+        if value[-1] == "Z":
+            return value[:-1], UTC
+
         for timezone in TIMEZONES:
             if value.endswith(timezone):
                 return value[: -len(timezone)], zoneinfo.ZoneInfo(timezone[1:-1])
+
         raise InvalidDate("Invalid timezone")
+
     return value, UTC
 
 
 def has_timezone(value: str) -> bool:
-    return value[-1] == "]"
+    return value[-1] == "]" or value[-1] == "Z"
 
 
 def utcnow() -> datetime.datetime:
@@ -723,6 +728,52 @@ class DateTimeRange:
     start: datetime.datetime
     end: datetime.datetime
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(
+            other,
+            DateTimeRange | datetime.datetime,
+        ):
+            raise ValueError(f"Unsupported comparison type: {type(other)}")
+
+        if isinstance(other, DateTimeRange):
+            return self.start == other.start and self.end == other.end
+
+        return self.start <= other <= self.end
+
     def as_github_date_query(self) -> str:
         # https://docs.github.com/en/search-github/getting-started-with-searching-on-github/understanding-the-search-syntax#query-for-dates
         return f"{self.start.isoformat()}..{self.end.isoformat()}"
+
+    @classmethod
+    def fromisoformat_with_zoneinfo(cls, string: str) -> DateTimeRange:
+        # NOTE(charly): Search for the position of the "/" that separate two
+        # dates
+        separator_match = re.search(r"/\d{4}-", string)
+        if separator_match is None:
+            raise InvalidDate("Invalid date/time range")
+
+        start_str = string[: separator_match.start()]
+        start_iso_str, start_tz = extract_timezone(start_str)
+
+        end_str = string[separator_match.start() + 1 :]
+        end_iso_str, end_tz = extract_timezone(end_str)
+
+        # NOTE(charly): if the first TZ isn't set, we use the second (e.g.
+        # "2007-03-01T13:00/2008-05-11T15:30[Europe/Paris]")
+        if not has_timezone(start_str):
+            start_tz = end_tz
+
+        try:
+            start = fromisoformat(start_iso_str).replace(tzinfo=start_tz)
+            end = fromisoformat(end_iso_str).replace(tzinfo=end_tz)
+        except ValueError:
+            raise InvalidDate("Invalid date/time range")
+
+        return cls(start, end)
+
+    def get_next_datetime(self, from_time: datetime.datetime) -> datetime.datetime:
+        if from_time <= self.start:
+            return self.start
+        if from_time <= self.end:
+            return self.end + datetime.timedelta(minutes=1)
+        return DT_MAX

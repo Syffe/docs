@@ -168,7 +168,7 @@ SUPPORTED_OPERATORS = {
     Parser.ENUM: EQUALITY_OPERATORS,
     Parser.SCHEDULE: EQUALITY_OPERATORS,
     # RANGE_OPERATORS
-    Parser.TIMESTAMP: RANGE_OPERATORS,
+    Parser.TIMESTAMP: SIMPLE_OPERATORS,
     Parser.TIMESTAMP_OR_TIMEDELTA: RANGE_OPERATORS,
 }
 
@@ -386,9 +386,21 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
                 return _to_dict(False, False, f"{attribute}-relative", op, rd)
 
         try:
+            dtr = date.DateTimeRange.fromisoformat_with_zoneinfo(value)
+        except date.InvalidDate:
+            pass
+        else:
+            if op not in EQUALITY_OPERATORS:
+                raise ConditionParsingError("Invalid operator")
+            return _to_dict(False, False, attribute, op, dtr)
+
+        try:
             d = date.fromisoformat_with_zoneinfo(value)
         except date.InvalidDate as e:
             raise ConditionParsingError(e.message)
+
+        if op not in RANGE_OPERATORS:
+            raise ConditionParsingError("Invalid operator")
         return _to_dict(False, False, attribute, op, d)
 
     if parser in (

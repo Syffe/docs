@@ -422,6 +422,22 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                 )
             },
         ),
+        (
+            "current-datetime=2023-07-13T14:00/2023-07-13T16:00[Europe/Paris]",
+            {
+                "=": (
+                    "current-datetime",
+                    date.DateTimeRange(
+                        datetime.datetime(
+                            2023, 7, 13, 14, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                        ),
+                        datetime.datetime(
+                            2023, 7, 13, 16, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+                        ),
+                    ),
+                )
+            },
+        ),
     ),
 )
 @freeze_time(now)
@@ -505,6 +521,10 @@ async def test_parse_jinja_template(
         (
             "-current-datetime<2023-07-13T14:00[Europe/Paris]",
             "`-` modifier is invalid for attribute: `current-datetime`",
+        ),
+        (
+            "current-datetime>=2023-07-13T14:00/2023-07-13T16:00[Europe/Paris]",
+            "Invalid operator",
         ),
     ),
 )

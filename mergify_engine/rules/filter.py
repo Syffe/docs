@@ -508,7 +508,7 @@ def _dt_op(
         try:
             dt_value = _as_datetime(value).astimezone(datetime.UTC)
 
-            if isinstance(ref, date.Schedule):
+            if isinstance(ref, date.Schedule | date.DateTimeRange):
                 return ref.get_next_datetime(dt_value)
 
             dt_ref = _as_datetime(ref).astimezone(datetime.UTC)

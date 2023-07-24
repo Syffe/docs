@@ -1098,6 +1098,35 @@ class TestAttributes(base.FunctionalTestBase):
             comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
             assert comment["comment"]["body"] == "Happy New Year!"
 
+    async def test_current_datetime_range(self) -> None:
+        rules = {
+            "pull_request_rules": [
+                {
+                    "name": "Comment on New Year's Day 2024",
+                    "conditions": [
+                        "current-datetime=2024-01-01T00:00/2024-01-01T23:59[Europe/Paris]"
+                    ],
+                    "actions": {"comment": {"message": "Happy New Year!"}},
+                }
+            ]
+        }
+
+        with freeze_time("2023-12-31T23:59+01", tz_offset=0, tick=True):
+            await self.setup_repo(yaml.dump(rules))
+            pr = await self.create_pr()
+
+            await self.run_full_engine()
+            comments = await self.get_issue_comments(pr["number"])
+            assert len(comments) == 0
+
+            assert await self.redis_links.cache.zcard("delayed-refresh") == 1
+
+        with freeze_time("2024-01-01T00:00+01", tz_offset=0, tick=True):
+            await self.run_full_engine()
+
+            comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
+            assert comment["comment"]["body"] == "Happy New Year!"
+
 
 class TestAttributesWithSub(base.FunctionalTestBase):
     SUBSCRIPTION_ACTIVE = True

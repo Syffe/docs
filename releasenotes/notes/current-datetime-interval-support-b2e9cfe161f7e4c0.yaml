@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    ``current-datetime`` attribute supports time intervals (e.g.
+    ``current-datetime=2023-07-13T14:00/2023-07-13T14:00[Europe/Paris]``).

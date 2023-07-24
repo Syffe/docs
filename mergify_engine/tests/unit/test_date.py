@@ -7,6 +7,9 @@ import pytest
 from mergify_engine import date
 
 
+TZ_PARIS = zoneinfo.ZoneInfo("Europe/Paris")
+
+
 @pytest.mark.parametrize(
     "value, expected",
     (
@@ -951,3 +954,139 @@ def test_fromisoformat_with_zoneinfo(
 def test_fromisoformat_with_zoneinfo_invalid(isoformat_datetime: str) -> None:
     with pytest.raises(date.InvalidDate):
         assert date.fromisoformat_with_zoneinfo(isoformat_datetime)
+
+
+@pytest.mark.parametrize(
+    "isoformat_dtr,expected_dtr",
+    (
+        (
+            "2007-03-01T13:00/2008-05-11T15:30",
+            date.DateTimeRange(
+                datetime.datetime(2007, 3, 1, 13, tzinfo=date.UTC),
+                datetime.datetime(2008, 5, 11, 15, 30, tzinfo=date.UTC),
+            ),
+        ),
+        (
+            "2007-03-01T13:00:00Z/2008-05-11T15:30:00Z",
+            date.DateTimeRange(
+                datetime.datetime(2007, 3, 1, 13, tzinfo=date.UTC),
+                datetime.datetime(2008, 5, 11, 15, 30, tzinfo=date.UTC),
+            ),
+        ),
+        (
+            "2007-03-01T13:00:00[Europe/Paris]/2008-05-11T15:30:00[Europe/Paris]",
+            date.DateTimeRange(
+                datetime.datetime(2007, 3, 1, 13, tzinfo=TZ_PARIS),
+                datetime.datetime(2008, 5, 11, 15, 30, tzinfo=TZ_PARIS),
+            ),
+        ),
+        (
+            "2007-03-01T13:00:00Z/2008-05-11T15:30:00[Europe/Paris]",
+            date.DateTimeRange(
+                datetime.datetime(2007, 3, 1, 13, tzinfo=date.UTC),
+                datetime.datetime(2008, 5, 11, 15, 30, tzinfo=TZ_PARIS),
+            ),
+        ),
+        (
+            "2007-03-01T13:00:00[UTC]/2008-05-11T15:30:00[Europe/Paris]",
+            date.DateTimeRange(
+                datetime.datetime(2007, 3, 1, 13, tzinfo=date.UTC),
+                datetime.datetime(2008, 5, 11, 15, 30, tzinfo=TZ_PARIS),
+            ),
+        ),
+        (
+            "2007-03-01T13:00:00/2008-05-11T15:30:00[Europe/Paris]",
+            date.DateTimeRange(
+                datetime.datetime(2007, 3, 1, 13, tzinfo=TZ_PARIS),
+                datetime.datetime(2008, 5, 11, 15, 30, tzinfo=TZ_PARIS),
+            ),
+        ),
+    ),
+)
+def test_datetimerange_fromisoformat_with_zoneinfo(
+    isoformat_dtr: str, expected_dtr: date.DateTimeRange
+) -> None:
+    assert date.DateTimeRange.fromisoformat_with_zoneinfo(isoformat_dtr) == expected_dtr
+
+
+@pytest.mark.parametrize(
+    "isoformat_dtr",
+    (
+        "2023-07-12",
+        "2023-07-13T14:00:00Z",
+        "2023-07-13T14:00[Europe/Paris]",
+        "2007-03-01T13:00/wtf",
+        "2007-03-01T13:00/2008-wtf",
+        "2007-03-01T13:00/2008-05-11T15:30[WTF]",
+        "2007-03-01T13:00/15:30",
+    ),
+)
+def test_datetimerange_fromisoformat_with_zoneinfo_invalid(isoformat_dtr: str) -> None:
+    with pytest.raises(date.InvalidDate):
+        assert date.DateTimeRange.fromisoformat_with_zoneinfo(isoformat_dtr)
+
+
+@pytest.mark.parametrize(
+    "actual,other",
+    (
+        (
+            date.DateTimeRange.fromisoformat_with_zoneinfo(
+                "2007-03-01T13:00/2008-05-11T15:30"
+            ),
+            date.DateTimeRange.fromisoformat_with_zoneinfo(
+                "2007-03-01T13:00/2008-05-11T15:30"
+            ),
+        ),
+        (
+            date.DateTimeRange.fromisoformat_with_zoneinfo(
+                "2007-03-01T13:00/2008-05-11T15:30"
+            ),
+            datetime.datetime(2007, 3, 1, 13, tzinfo=date.UTC),
+        ),
+        (
+            date.DateTimeRange.fromisoformat_with_zoneinfo(
+                "2007-03-01T13:00/2008-05-11T15:30"
+            ),
+            datetime.datetime(2008, 5, 11, 15, 30, tzinfo=date.UTC),
+        ),
+    ),
+)
+def test_datetimerange_equality(actual: date.DateTimeRange, other: object) -> None:
+    assert actual == other
+
+
+@pytest.mark.parametrize(
+    "actual,other",
+    (
+        (
+            date.DateTimeRange.fromisoformat_with_zoneinfo(
+                "2007-03-01T13:00/2008-05-11T15:30"
+            ),
+            date.DateTimeRange.fromisoformat_with_zoneinfo(
+                "2007-03-01T13:00/2007-05-11T15:30"
+            ),
+        ),
+        (
+            date.DateTimeRange.fromisoformat_with_zoneinfo(
+                "2007-03-01T13:00/2008-05-11T15:30"
+            ),
+            date.DateTimeRange.fromisoformat_with_zoneinfo(
+                "2006-03-01T13:00/2008-05-11T15:30"
+            ),
+        ),
+        (
+            date.DateTimeRange.fromisoformat_with_zoneinfo(
+                "2007-03-01T13:00/2008-05-11T15:30"
+            ),
+            datetime.datetime(2007, 3, 1, 12, tzinfo=date.UTC),
+        ),
+        (
+            date.DateTimeRange.fromisoformat_with_zoneinfo(
+                "2007-03-01T13:00/2008-05-11T15:30"
+            ),
+            datetime.datetime(2008, 5, 11, 15, 31, tzinfo=date.UTC),
+        ),
+    ),
+)
+def test_datetimerange_inequality(actual: date.DateTimeRange, other: object) -> None:
+    assert actual != other

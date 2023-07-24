@@ -591,6 +591,33 @@ async def test_current_datetime() -> None:
         assert await f(get_scheduled_pr()) == date.DT_MAX
 
 
+@pytest.mark.parametrize(
+    "condition",
+    (
+        "current-datetime=2023-07-13T14:00/2023-07-13T16:00[Europe/Paris]",
+        "current-datetime!=2023-07-13T14:00/2023-07-13T16:00[Europe/Paris]",
+    ),
+)
+async def test_current_datetime_range(condition: str) -> None:
+    with freeze_time("2023-07-13T13:00+02"):
+        tree = parser.parse(condition)
+        f = filter.NearDatetimeFilter(tree)
+
+        next_refresh_at = datetime.datetime.fromisoformat("2023-07-13T14:00").replace(
+            tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+        )
+        assert await f(get_scheduled_pr()) == next_refresh_at
+
+    with freeze_time("2023-07-13T15:00+02"):
+        next_refresh_at = datetime.datetime.fromisoformat("2023-07-13T16:01").replace(
+            tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+        )
+        assert await f(get_scheduled_pr()) == next_refresh_at
+
+    with freeze_time("2023-07-13T17:00+02"):
+        assert await f(get_scheduled_pr()) == date.DT_MAX
+
+
 async def test_text_jinja_template(
     jinja_environment: jinja2.sandbox.SandboxedEnvironment,
 ) -> None:

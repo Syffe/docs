@@ -393,6 +393,33 @@ Examples
               The pull request needs to be rebased after end of life of version 10.0
 
 
+.. _iso timestamp_interval:
+
+Timestamp interval
+~~~~~~~~~~~~~~~~~~
+
+Some timestamp attributes support basic `intervals
+<https://en.wikipedia.org/wiki/ISO_8601#Time_intervals>`_.
+
+.. code-block::
+
+   2023-07-13T14:00/2023-07-13T16:00
+   2023-07-13T14:00:00.123/2023-07-13T16:00:00.123
+   2023-07-13T14:00Z/2023-07-13T16:00Z
+   2023-07-13T14:00/2023-07-13T16:00[Europe/Paris]
+
+Examples
+++++++++
+
+.. code-block:: yaml
+
+      - name: merge except on new year day
+        conditions:
+          - current-datetime!=2023-01-01T00:00/2023-01-01T23:59[Europe/Paris]
+        actions:
+          merge:
+
+
 .. _relative timestamp:
 
 Relative Timestamp
