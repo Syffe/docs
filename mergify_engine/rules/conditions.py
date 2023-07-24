@@ -92,7 +92,7 @@ class RuleConditionFilters:
     ) -> FakeTreeT:
         negate = "-" in tree
         tree = tree.get("-", tree)
-        operator = overwrite_operator or list(tree.keys())[0]
+        operator = overwrite_operator or next(iter(tree.keys()))
         values = typing.cast(list[filter.TreeBinaryLeafT], list(tree.values()))
         name, value = values[0]
         if name.startswith(filter.Filter.LENGTH_OPERATOR):
@@ -205,7 +205,7 @@ class RuleCondition:
         tree = typing.cast(filter.TreeT, self.filters.boolean.tree)
         tree = tree.get("-", tree)
         _, tree = tree.get("@", ("", tree))  # type: ignore[misc]
-        return list(tree.keys())[0]
+        return next(iter(tree.keys()))
 
 
 class RuleConditionGroup(abstract.ABC):

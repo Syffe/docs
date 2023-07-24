@@ -159,9 +159,9 @@ class TestDebugger(base.FunctionalTestBase):
         assert s1.startswith(s2)
 
         ctxt = context.Context(self.repository_ctxt, p, [])
-        summary_html_url = [
+        summary_html_url = next(
             check for check in await ctxt.pull_check_runs if check["name"] == "Summary"
-        ][0]["html_url"]
+        )["html_url"]
         commit = (await ctxt.commits)[0]
 
         assert (
@@ -411,9 +411,9 @@ mergeable_state: blocked
             s1 = "".join(call.args[0] for call in stdout.write.mock_calls)
 
         ctxt = context.Context(self.repository_ctxt, p, [])
-        summary_html_url = [
+        summary_html_url = next(
             check for check in await ctxt.pull_check_runs if check["name"] == "Summary"
-        ][0]["html_url"]
+        )["html_url"]
         commit = (await ctxt.commits)[0]
 
         expected_branch_protection_rules = self.expected_branch_protection_rules.copy()

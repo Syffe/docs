@@ -41,11 +41,11 @@ def create_testing_router(web_server: fastapi.FastAPI) -> None:
         org = await repository_ctxt.installation.client.item(f"/users/{owner}")
         return ResponseTest(org["login"])
 
-    api_app = [
+    api_app = next(
         r
         for r in web_server.router.routes
         if r.path == "/v1"  # type:ignore[attr-defined]
-    ][0].app
+    ).app
     api_app.include_router(router)
 
 

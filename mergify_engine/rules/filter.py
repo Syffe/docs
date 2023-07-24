@@ -138,7 +138,7 @@ class Filter(typing.Generic[FilterResultT]):
 
         # We don't do any kind of validation here since build_evaluator does
         # that.
-        op, nodes = list(tree.items())[0]
+        op, nodes = next(iter(tree.items()))
 
         if op in self.multiple_operators:
             return "(" + f" {op} ".join(self._tree_to_str(n) for n in nodes) + ")"  # type: ignore[attr-defined]
@@ -235,7 +235,7 @@ class Filter(typing.Generic[FilterResultT]):
         if len(tree) != 1:
             raise ParseError(tree)
 
-        operator_name, nodes = list(tree.items())[0]
+        operator_name, nodes = next(iter(tree.items()))
 
         if operator_name == "@":
             # NOTE(sileht): the value is already a TreeT, so just evaluate it.

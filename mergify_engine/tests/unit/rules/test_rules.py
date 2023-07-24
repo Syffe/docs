@@ -1975,7 +1975,7 @@ pull_request_rules:
 
     config = await mergify_conf.get_mergify_config_from_file(mock.MagicMock(), file)
 
-    assert [list(rule.actions.keys()) for rule in config["pull_request_rules"]][0] == [
+    assert next(list(rule.actions.keys()) for rule in config["pull_request_rules"]) == [
         "comment",
         "rebase",
         "post_check",

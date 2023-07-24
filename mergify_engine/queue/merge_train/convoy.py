@@ -75,7 +75,7 @@ class Convoy:
         self,
     ) -> None:
         query: collections.OrderedDict[
-            str, "partr_config.PartitionRuleName" | None
+            str, partr_config.PartitionRuleName | None
         ] = collections.OrderedDict()
         if self.partition_rules:
             for part_rule in self.partition_rules:
@@ -221,7 +221,7 @@ class Convoy:
             exclude_ref=ctxt.pull["base"]["ref"],
         )
 
-        real_partition_names: list["partr_config.PartitionRuleName"]
+        real_partition_names: list[partr_config.PartitionRuleName]
         if not partition_names:
             real_partition_names = [partr_config.DEFAULT_PARTITION_NAME]
         else:

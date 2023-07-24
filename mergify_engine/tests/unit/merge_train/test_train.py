@@ -1749,7 +1749,7 @@ async def test_train_load_from_redis_with_None_partition_name(
         merge_train.get_redis_train_key(repository.installation)
     )
     assert len(redis_trains) == 1
-    assert list(redis_trains.keys())[0].decode() == f"{repository.repo['id']}~{ref}"
+    assert next(iter(redis_trains.keys())).decode() == f"{repository.repo['id']}~{ref}"
 
     # ######
     # Loading a convoy with the old default partition name with `load_from_redis`
@@ -1789,7 +1789,7 @@ async def test_train_load_from_redis_with_None_partition_name(
     )
     assert len(redis_trains) == 1
     assert (
-        list(redis_trains.keys())[0]
+        next(iter(redis_trains.keys()))
         .decode()
         .endswith(partr_config.DEFAULT_PARTITION_NAME)
     )
@@ -1815,7 +1815,7 @@ async def test_train_load_from_redis_with_None_partition_name(
     )
     assert len(redis_trains) == 1
     assert (
-        list(redis_trains.keys())[0]
+        next(iter(redis_trains.keys()))
         .decode()
         .endswith(partr_config.DEFAULT_PARTITION_NAME)
     )
