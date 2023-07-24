@@ -252,6 +252,24 @@ jobs:
             docker push "$image"
           done
 
+      - name: Testing production database upgrade
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          PRODUCTION_DATABASE_BASE_URL: ${{ secrets.PRODUCTION_DATABASE_BASE_URL }}
+        run: |
+          docker run \
+              --env-file fake.env \
+              -e DD_API_KEY=testing-false-key \
+              -e DYNO=testing.1 \
+              -e MERGIFYENGINE_STORAGE_URL=redis://redis:6363 \
+              -e MERGIFYENGINE_DATABASE_URL="${PRODUCTION_DATABASE_BASE_URL}/engine_ci_testing" \
+              -e SENTRY_URL=https://fake-sentry.example.com/ \
+              -e SENTRY_ENVIRONMENT=ci \
+              --entrypoint /bin/bash \
+              web:tmp \
+              -c 'mergify-database-update'
+
+
       - name: 🚀 Release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:

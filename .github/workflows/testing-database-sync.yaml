@@ -1,0 +1,29 @@
+name: Testing database sync
+permissions: read-all
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 6 * * 1-5"
+
+concurrency:
+  group: "${{ github.workflow }}"
+  cancel-in-progress: true
+
+jobs:
+  testing-database-sync:
+    timeout-minutes: 15
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Syncing databases
+        env:
+          PRODUCTION_ENGINE_DATABASE_URL: ${{ secrets.PRODUCTION_ENGINE_DATABASE_URL }}
+        run: |
+          # NOTE(sileht): maybe run this on AWS Lambda to avoid the network roundtrip
+          # between AWS and GitHub Actions
+          docker run \
+            --rm \
+            -v "$(pwd):/app" \
+            -e PRODUCTION_DATABASE_BASE_URL \
+            -u postgres \
+            ankane/pgvector:v0.4.4 \
+            /app/tools/run-testing-database-sync.sh
