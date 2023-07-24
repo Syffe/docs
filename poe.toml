@@ -139,5 +139,5 @@ default_item_type = "cmd"
 sequence = [
      "./tools/run-tests.sh python3 mergify_engine/models/anonymizer.py",
      "docker build -t mergifyio/custom_postgresql_anonymizer -f dockerfiles/Dockerfile.postgresql_anonymizer .",
-     "bash -c 'cat empty_database.sql postgresql_anonymizer_rules.sql | docker run --rm -i mergifyio/custom_postgresql_anonymizer /anon-custom.sh'"
+     "bash -c 'cat empty_database.sql postgresql_anonymizer_rules.sql | docker run -e LANG=C --rm -i mergifyio/custom_postgresql_anonymizer /anon-custom.sh'"
 ]
