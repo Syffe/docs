@@ -119,7 +119,6 @@ class ServiceManager:
 
     # CIDownloadService
     ci_event_processing_idle_time: float = 30
-    ci_download_idle_time: float = 60
 
     _redis_links: redis_utils.RedisLinks = dataclasses.field(
         init=False, default_factory=lambda: redis_utils.RedisLinks(name="worker")

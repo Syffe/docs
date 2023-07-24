@@ -167,7 +167,7 @@ async def run_worker(
         dedicated_workers_spawner_idle_time=0.01,
         dedicated_workers_syncer_idle_time=0.01,
         gitter_concurrent_jobs=0,
-        ci_download_idle_time=0.01,
+        ci_event_processing_idle_time=0.01,
         **kwargs,
     )
     await w.start()
