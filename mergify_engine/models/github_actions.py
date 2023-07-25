@@ -190,7 +190,7 @@ class WorkflowJob(models.Base):
     )
     workflow_run_id: orm.Mapped[int] = orm.mapped_column(
         sqlalchemy.BigInteger,
-        anonymizer_config="anon.random_bigint_between(1,100000)",
+        anonymizer_config=None,
     )
     name: orm.Mapped[str] = orm.mapped_column(
         sqlalchemy.String,
