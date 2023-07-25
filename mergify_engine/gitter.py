@@ -90,6 +90,7 @@ class Gitter:
     _messages: list[tuple[str, dict[str, typing.Any]]] = dataclasses.field(
         default_factory=list
     )
+    _log_level: int = logging.INFO
 
     GIT_COMMAND_TIMEOUT: float = dataclasses.field(
         init=False, default=datetime.timedelta(minutes=10).total_seconds()
@@ -137,7 +138,8 @@ class Gitter:
         # https://git-scm.com/docs/git-config#Documentation/git-config.txt-checkoutworkers
         await self("config", "checkout.workers", "0")
 
-    def log(self, message: str, **extra: typing.Any) -> None:
+    def log(self, message: str, level: int = logging.INFO, **extra: typing.Any) -> None:
+        self._log_level = max(level, self._log_level)
         self._messages.append(("git directory created", extra))
 
     def prepare_safe_env(
@@ -182,13 +184,15 @@ class Gitter:
                         input=None if _input is None else _input.encode("utf8")
                     )
             except asyncio.TimeoutError:
-                self.logger.error("git operation timed out", command=command)
+                self.log(
+                    "git operation timed out", command=command, level=logging.ERROR
+                )
                 raise GitTimeout(-1, "git operation took too long")
 
             output = stdout.decode("utf-8")
             self._check_git_output(process, output)
         finally:
-            self.logger.debug("git operation finished", command=command)
+            self.log("git operation finished", command=command)
 
         return output
 
@@ -242,16 +246,16 @@ class Gitter:
                     "exit",
                 )
             except GitError:  # pragma: no cover
-                self.logger.warning("git credential-cache exit fail")
+                self.log("git credential-cache exit fail", level=logging.ERROR)
             # TODO(sileht): use aiofiles instead of thread
 
             ongoing_exc_type, ongoing_exc_value, _ = sys.exc_info()
             try:
                 await asyncio.to_thread(shutil.rmtree, self.tmp)
             except OSError:
-                self.logger.warning("git temporary directory cleanup fail.")
+                self.log("git temporary directory cleanup fail.")
         finally:
-            self.logger.info("gitter messages", messages=self._messages)
+            self.logger.log(self._log_level, "gitter messages", messages=self._messages)
 
     async def configure(
         self,
