@@ -169,6 +169,7 @@ class AsyncClient(httpx.AsyncClient):
             headers=final_headers,
             timeout=timeout,
             follow_redirects=True,
+            http2=True,
         )
 
     async def request(self, *args: typing.Any, **kwargs: typing.Any) -> httpx.Response:
