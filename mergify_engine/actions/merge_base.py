@@ -317,6 +317,18 @@ class MergeUtilsMixin:
                     "allowed in the repository configuration settings.",
                 )
 
+            # FIXME(charly): this error happened on our demo repo after a queue
+            # command, while there are no branch protection (see MRGFY-2478)
+            if e.message == "Pull Request is not mergeable":
+                ctxt.log.error(
+                    e.message,
+                    status_code=e.status_code,
+                    response_json=e.response.json(),
+                    response_text=e.response.text,
+                    request_method=e.request.method,
+                    request_url=e.request.url,
+                )
+
             ctxt.log.info(
                 "Branch protection settings are not validated anymore",
                 status_code=e.status_code,
