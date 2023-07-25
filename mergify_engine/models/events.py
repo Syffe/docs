@@ -729,3 +729,255 @@ class EventQueueFreezeCreate(Event):
             created_by=actor,
             **metadata,
         )
+
+
+class EventQueueFreezeUpdate(Event):
+    __tablename__ = "event_queue_freeze_update"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "queue.freeze.update",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
+    )
+    queue_name: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7 )"
+    )
+    reason: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( words := 7 )",
+    )
+    cascading: orm.Mapped[bool] = orm.mapped_column(
+        sqlalchemy.Boolean,
+        anonymizer_config="anon.random_int_between(0,1)",
+    )
+
+    updated_by_id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("github_authenticated_actor.id"), anonymizer_config=None
+    )
+    updated_by: orm.Mapped[events_metadata.GithubAuthenticatedActor] = orm.relationship(
+        lazy="joined"
+    )
+
+    @classmethod
+    async def create(
+        cls,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+        repository: github_types.GitHubRepository
+        | github_repository.GitHubRepositoryDict,
+        pull_request: github_types.GitHubPullRequestNumber | None,
+        trigger: str,
+        metadata: signals.EventMetadata,
+    ) -> Event:
+        repository_obj = await github_repository.GitHubRepository.get_or_create(
+            session, repository
+        )
+
+        metadata = typing.cast(signals.EventQueueFreezeUpdateMetadata, metadata.copy())
+        actor = await events_metadata.GithubAuthenticatedActor.get_or_create(
+            session,
+            metadata.pop("updated_by"),
+        )
+
+        return cls(
+            repository=repository_obj,
+            pull_request=pull_request,
+            trigger=trigger,
+            updated_by=actor,
+            **metadata,
+        )
+
+
+class EventQueueFreezeDelete(Event):
+    __tablename__ = "event_queue_freeze_delete"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "queue.freeze.delete",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
+    )
+    queue_name: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7 )"
+    )
+
+    deleted_by_id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("github_authenticated_actor.id"), anonymizer_config=None
+    )
+    deleted_by: orm.Mapped[events_metadata.GithubAuthenticatedActor] = orm.relationship(
+        lazy="joined"
+    )
+
+    @classmethod
+    async def create(
+        cls,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+        repository: github_types.GitHubRepository
+        | github_repository.GitHubRepositoryDict,
+        pull_request: github_types.GitHubPullRequestNumber | None,
+        trigger: str,
+        metadata: signals.EventMetadata,
+    ) -> Event:
+        repository_obj = await github_repository.GitHubRepository.get_or_create(
+            session, repository
+        )
+
+        metadata = typing.cast(signals.EventQueueFreezeDeleteMetadata, metadata.copy())
+        actor = await events_metadata.GithubAuthenticatedActor.get_or_create(
+            session,
+            metadata.pop("deleted_by"),
+        )
+
+        return cls(
+            repository=repository_obj,
+            pull_request=pull_request,
+            trigger=trigger,
+            deleted_by=actor,
+            **metadata,
+        )
+
+
+class EventQueuePauseCreate(Event):
+    __tablename__ = "event_queue_pause_create"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "queue.pause.create",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
+    )
+    reason: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( words := 7 )",
+    )
+
+    created_by_id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("github_authenticated_actor.id"), anonymizer_config=None
+    )
+    created_by: orm.Mapped[events_metadata.GithubAuthenticatedActor] = orm.relationship(
+        lazy="joined"
+    )
+
+    @classmethod
+    async def create(
+        cls,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+        repository: github_types.GitHubRepository
+        | github_repository.GitHubRepositoryDict,
+        pull_request: github_types.GitHubPullRequestNumber | None,
+        trigger: str,
+        metadata: signals.EventMetadata,
+    ) -> Event:
+        repository_obj = await github_repository.GitHubRepository.get_or_create(
+            session, repository
+        )
+
+        metadata = typing.cast(signals.EventQueuePauseCreateMetadata, metadata.copy())
+        actor = await events_metadata.GithubAuthenticatedActor.get_or_create(
+            session,
+            metadata.pop("created_by"),
+        )
+
+        return cls(
+            repository=repository_obj,
+            pull_request=pull_request,
+            trigger=trigger,
+            created_by=actor,
+            **metadata,
+        )
+
+
+class EventQueuePauseUpdate(Event):
+    __tablename__ = "event_queue_pause_update"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "queue.pause.update",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
+    )
+    reason: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( words := 7 )",
+    )
+
+    updated_by_id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("github_authenticated_actor.id"), anonymizer_config=None
+    )
+    updated_by: orm.Mapped[events_metadata.GithubAuthenticatedActor] = orm.relationship(
+        lazy="joined"
+    )
+
+    @classmethod
+    async def create(
+        cls,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+        repository: github_types.GitHubRepository
+        | github_repository.GitHubRepositoryDict,
+        pull_request: github_types.GitHubPullRequestNumber | None,
+        trigger: str,
+        metadata: signals.EventMetadata,
+    ) -> Event:
+        repository_obj = await github_repository.GitHubRepository.get_or_create(
+            session, repository
+        )
+
+        metadata = typing.cast(signals.EventQueuePauseUpdateMetadata, metadata.copy())
+        actor = await events_metadata.GithubAuthenticatedActor.get_or_create(
+            session,
+            metadata.pop("updated_by"),
+        )
+
+        return cls(
+            repository=repository_obj,
+            pull_request=pull_request,
+            trigger=trigger,
+            updated_by=actor,
+            **metadata,
+        )
+
+
+class EventQueuePauseDelete(Event):
+    __tablename__ = "event_queue_pause_delete"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "queue.pause.delete",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
+    )
+
+    deleted_by_id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("github_authenticated_actor.id"), anonymizer_config=None
+    )
+    deleted_by: orm.Mapped[events_metadata.GithubAuthenticatedActor] = orm.relationship(
+        lazy="joined"
+    )
+
+    @classmethod
+    async def create(
+        cls,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+        repository: github_types.GitHubRepository
+        | github_repository.GitHubRepositoryDict,
+        pull_request: github_types.GitHubPullRequestNumber | None,
+        trigger: str,
+        metadata: signals.EventMetadata,
+    ) -> Event:
+        repository_obj = await github_repository.GitHubRepository.get_or_create(
+            session, repository
+        )
+
+        metadata = typing.cast(signals.EventQueuePauseDeleteMetadata, metadata.copy())
+        actor = await events_metadata.GithubAuthenticatedActor.get_or_create(
+            session,
+            metadata.pop("deleted_by"),
+        )
+
+        return cls(
+            repository=repository_obj,
+            pull_request=pull_request,
+            trigger=trigger,
+            deleted_by=actor,
+            **metadata,
+        )

@@ -9,6 +9,7 @@ import sqlalchemy.ext.asyncio
 
 from mergify_engine import context
 from mergify_engine import date
+from mergify_engine import eventlogs
 from mergify_engine import events_db
 from mergify_engine import github_types
 from mergify_engine import signals
@@ -574,3 +575,132 @@ async def test_event_queue_freeze_create_consistency(
     assert event.created_by.id == 123456
     assert event.created_by.type == "user"
     assert event.created_by.name == "krilin"
+
+
+async def test_event_queue_freeze_update_consistency(
+    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+) -> None:
+    await insert_event(
+        fake_repository,
+        "queue.freeze.update",
+        signals.EventQueueFreezeUpdateMetadata(
+            {
+                "queue_name": "hotfix",
+                "reason": "Incident in production",
+                "cascading": True,
+                "updated_by": {"id": 567, "type": "user", "name": "sangoku"},
+            }
+        ),
+        pull_request=None,
+    )
+
+    await assert_base_event(db, fake_repository)
+    event = await db.scalar(sqlalchemy.select(evt_model.EventQueueFreezeUpdate))
+    assert event is not None
+    assert event.queue_name == "hotfix"
+    assert event.reason == "Incident in production"
+    assert event.cascading is True
+    assert event.updated_by.id == 567
+    assert event.updated_by.type == "user"
+    assert event.updated_by.name == "sangoku"
+
+
+async def test_event_queue_freeze_delete_consistency(
+    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+) -> None:
+    await insert_event(
+        fake_repository,
+        "queue.freeze.delete",
+        signals.EventQueueFreezeDeleteMetadata(
+            {
+                "queue_name": "hotfix",
+                "deleted_by": {"id": 454, "type": "user", "name": "freezer"},
+            }
+        ),
+        pull_request=None,
+    )
+
+    await assert_base_event(db, fake_repository)
+    event = await db.scalar(sqlalchemy.select(evt_model.EventQueueFreezeDelete))
+    assert event is not None
+    assert event.queue_name == "hotfix"
+    assert event.deleted_by.id == 454
+    assert event.deleted_by.type == "user"
+    assert event.deleted_by.name == "freezer"
+
+
+async def test_event_queue_pause_create_consistency(
+    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+) -> None:
+    await insert_event(
+        fake_repository,
+        "queue.pause.create",
+        signals.EventQueuePauseCreateMetadata(
+            {
+                "reason": "Incident in production",
+                "created_by": {"id": 145, "type": "user", "name": "vegeta"},
+            }
+        ),
+        pull_request=None,
+    )
+
+    await assert_base_event(db, fake_repository)
+    event = await db.scalar(sqlalchemy.select(evt_model.EventQueuePauseCreate))
+    assert event is not None
+    assert event.reason == "Incident in production"
+    assert event.created_by.id == 145
+    assert event.created_by.type == "user"
+    assert event.created_by.name == "vegeta"
+
+
+async def test_event_queue_pause_update_consistency(
+    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+) -> None:
+    await insert_event(
+        fake_repository,
+        "queue.pause.update",
+        signals.EventQueuePauseUpdateMetadata(
+            {
+                "reason": "Incident in production",
+                "updated_by": {"id": 145, "type": "user", "name": "sangohan"},
+            }
+        ),
+        pull_request=None,
+    )
+
+    await assert_base_event(db, fake_repository)
+    event = await db.scalar(sqlalchemy.select(evt_model.EventQueuePauseUpdate))
+    assert event is not None
+    assert event.reason == "Incident in production"
+    assert event.updated_by.id == 145
+    assert event.updated_by.type == "user"
+    assert event.updated_by.name == "sangohan"
+
+
+async def test_event_queue_pause_delete_consistency(
+    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+) -> None:
+    await insert_event(
+        fake_repository,
+        "queue.pause.delete",
+        signals.EventQueuePauseDeleteMetadata(
+            deleted_by={"id": 987, "type": "user", "name": "cell"},
+        ),
+        pull_request=None,
+    )
+
+    await assert_base_event(db, fake_repository)
+    event = await db.scalar(sqlalchemy.select(evt_model.EventQueuePauseDelete))
+    assert event is not None
+    assert event.deleted_by.id == 987
+    assert event.deleted_by.type == "user"
+    assert event.deleted_by.name == "cell"
+
+
+def test_all_known_events_supported() -> None:
+    known_evt_models = set(events_db.EVENT_NAME_TO_MODEL)
+    known_evt_names = set(eventlogs.SUPPORTED_EVENT_NAMES)
+    # NOTE(lecrepont01): equality will be achieved after MRGFY-2461
+    assert known_evt_names - known_evt_models == {
+        "action.request_reviewers",
+    }
