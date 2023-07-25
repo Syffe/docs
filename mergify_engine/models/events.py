@@ -508,6 +508,96 @@ class EventActionQueueChecksStart(Event):
         )
 
 
+class EventActionQueueChecksEnd(Event):
+    __tablename__ = "event_action_queue_checks_end"
+    __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]
+        "polymorphic_identity": "action.queue.checks_end",
+    }
+
+    id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("event.id"), primary_key=True, anonymizer_config=None
+    )
+    branch: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+    )
+    partition_name: orm.Mapped[
+        partition_rules.PartitionRuleName | None
+    ] = orm.mapped_column(
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( characters := 7)",
+    )
+    position: orm.Mapped[int | None] = orm.mapped_column(
+        sqlalchemy.Integer, anonymizer_config="anon.random_int_between(0, 50)"
+    )
+    queue_name: orm.Mapped[str] = orm.mapped_column(
+        sqlalchemy.Text, anonymizer_config="anon.lorem_ipsum( characters := 7)"
+    )
+    queued_at: orm.Mapped[datetime.datetime] = orm.mapped_column(
+        sqlalchemy.DateTime(timezone=True),
+        anonymizer_config="anon.dnoise(queued_at, ''2 days'')",
+    )
+
+    aborted: orm.Mapped[bool] = orm.mapped_column(
+        sqlalchemy.Boolean,
+        anonymizer_config="anon.random_int_between(0,1)",
+    )
+    abort_code: orm.Mapped[
+        enumerations.QueueChecksAbortCode | None
+    ] = orm.mapped_column(
+        sqlalchemy.Enum(enumerations.QueueChecksAbortCode),
+        anonymizer_config="anon.random_in_enum(abort_code)",
+    )
+    abort_reason: orm.Mapped[str | None] = orm.mapped_column(
+        sqlalchemy.Text,
+        anonymizer_config="anon.lorem_ipsum( words := 7 )",
+    )
+    abort_status: orm.Mapped[enumerations.QueueChecksAbortStatus] = orm.mapped_column(
+        sqlalchemy.Enum(enumerations.QueueChecksAbortStatus),
+        anonymizer_config="anon.random_in_enum(abort_status)",
+    )
+    unqueue_code: orm.Mapped[
+        enumerations.QueueChecksUnqueueCode | None
+    ] = orm.mapped_column(
+        sqlalchemy.Enum(enumerations.QueueChecksUnqueueCode),
+        anonymizer_config="anon.random_in_enum(unqueue_code)",
+    )
+
+    speculative_check_pull_request_id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("speculative_check_pull_request.id"),
+        anonymizer_config=None,
+    )
+    speculative_check_pull_request: orm.Mapped[
+        events_metadata.SpeculativeCheckPullRequest
+    ] = orm.relationship(lazy="joined")
+
+    @classmethod
+    async def create(
+        cls,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+        repository: github_types.GitHubRepository
+        | github_repository.GitHubRepositoryDict,
+        pull_request: github_types.GitHubPullRequestNumber | None,
+        trigger: str,
+        metadata: signals.EventMetadata,
+    ) -> Event:
+        repository_obj = await github_repository.GitHubRepository.get_or_create(
+            session, repository
+        )
+
+        metadata = typing.cast(signals.EventQueueChecksEndMetadata, metadata)
+        speculative_check_pull_request = events_metadata.SpeculativeCheckPullRequest(
+            **metadata.pop("speculative_check_pull_request")
+        )
+
+        return cls(
+            repository=repository_obj,
+            pull_request=pull_request,
+            trigger=trigger,
+            speculative_check_pull_request=speculative_check_pull_request,
+            **metadata,
+        )
+
+
 class EventActionRequestReviews(Event):
     __tablename__ = "event_action_request_reviews"
     __mapper_args__: typing.ClassVar[dict[str, typing.Any]] = {  # type: ignore [misc]

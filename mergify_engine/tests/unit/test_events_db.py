@@ -439,6 +439,71 @@ async def test_event_action_queue_checks_start_consistency(
     assert spec_check_pr.unsuccessful_checks == [unsuccessful_check]
 
 
+@freeze_time("2023-07-17T14:00:00", tz_offset=0)
+async def test_event_action_queue_checks_end_consistency(
+    db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
+) -> None:
+    unsuccessful_check = checks.QueueCheck.Serialized(
+        {
+            "name": "trivy",
+            "description": "Security check",
+            "state": "failure",
+            "url": None,
+            "avatar_url": "some_url",
+        }
+    )
+
+    await insert_event(
+        fake_repository,
+        "action.queue.checks_end",
+        signals.EventQueueChecksEndMetadata(
+            {
+                "branch": "feature_branch",
+                "partition_name": partition_rules.DEFAULT_PARTITION_NAME,
+                "position": 3,
+                "queue_name": "default",
+                "queued_at": date.utcnow(),
+                "aborted": True,
+                "abort_code": "PR_DEQUEUED",
+                "abort_reason": "Pull request has been dequeued.",
+                "abort_status": "DEFINITIVE",
+                "unqueue_code": None,
+                "speculative_check_pull_request": {
+                    "number": 456,
+                    "in_place": True,
+                    "checks_timed_out": False,
+                    "checks_conclusion": "failure",
+                    "checks_started_at": date.utcnow(),
+                    "checks_ended_at": date.utcnow(),
+                    "unsuccessful_checks": [unsuccessful_check],
+                },
+            }
+        ),
+    )
+
+    await assert_base_event(db, fake_repository)
+    event = await db.scalar(sqlalchemy.select(evt_model.EventActionQueueChecksEnd))
+    assert event is not None
+    assert event.branch == "feature_branch"
+    assert event.partition_name == "__default__"
+    assert event.queue_name == "default"
+    assert event.queued_at == anys.ANY_AWARE_DATETIME
+    assert event.aborted is True
+    assert event.abort_code == "PR_DEQUEUED"
+    assert event.abort_reason == "Pull request has been dequeued."
+    assert event.abort_status == "DEFINITIVE"
+    assert event.unqueue_code is None
+    spec_check_pr = event.speculative_check_pull_request
+    assert spec_check_pr is not None
+    assert spec_check_pr.number == 456
+    assert spec_check_pr.in_place is True
+    assert spec_check_pr.checks_timed_out is False
+    assert spec_check_pr.checks_conclusion == "failure"
+    assert spec_check_pr.checks_started_at == anys.ANY_AWARE_DATETIME
+    assert spec_check_pr.checks_ended_at == anys.ANY_AWARE_DATETIME
+    assert spec_check_pr.unsuccessful_checks == [unsuccessful_check]
+
+
 async def test_event_action_request_reviews_consistency(
     db: sqlalchemy.ext.asyncio.AsyncSession, fake_repository: context.Repository
 ) -> None:

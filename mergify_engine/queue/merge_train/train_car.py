@@ -1466,6 +1466,7 @@ You don't need to do anything. Mergify will close this pull request automaticall
                 "abort_code": abort_code,
                 "abort_reason": abort_reason_str,
                 "abort_status": abort_status,
+                "unqueue_code": None,
                 "branch": self.ref,
                 "queue_name": ep.config["name"],
                 "partition_name": self.train.partition_name,
