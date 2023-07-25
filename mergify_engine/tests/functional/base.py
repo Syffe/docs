@@ -1,5 +1,4 @@
 import asyncio
-import base64
 from collections import abc
 import copy
 import datetime
@@ -171,8 +170,7 @@ class GitterRecorder(gitter.Gitter):
         ]
         if "user.signingkey" in prepared_args:
             prepared_args = [
-                arg.replace(settings.TESTING_ID_GPGKEY_SECRET, "<SECRET>")
-                for arg in args
+                arg.replace(settings.TESTING_GPG_SECRET_KEY, "<SECRET>") for arg in args
             ]
         return prepared_args
 
@@ -979,11 +977,11 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             self.addCleanup(shutil.rmtree, temporary_folder)
             subprocess.run(
                 ["gpg", "--import"],
-                input=base64.b64decode(settings.TESTING_GPGKEY_SECRET),
+                input=settings.TESTING_GPG_SECRET_KEY.encode(),
                 env=self.git.prepare_safe_env(tmp_env),
             )
             await self.git(
-                "config", "user.signingkey", settings.TESTING_ID_GPGKEY_SECRET
+                "config", "user.signingkey", settings.TESTING_GPG_SECRET_KEY_ID
             )
             await self.git(
                 "config", "user.email", "engineering+mergify-test@mergify.com"
@@ -1103,11 +1101,11 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
             self.addCleanup(shutil.rmtree, temporary_folder)
             subprocess.run(
                 ["gpg", "--import"],
-                input=base64.b64decode(settings.TESTING_GPGKEY_SECRET),
+                input=settings.TESTING_GPG_SECRET_KEY.encode(),
                 env=self.git.prepare_safe_env(tmp_env),
             )
             await self.git(
-                "config", "user.signingkey", settings.TESTING_ID_GPGKEY_SECRET
+                "config", "user.signingkey", settings.TESTING_GPG_SECRET_KEY_ID
             )
             await self.git(
                 "config", "user.email", "engineering+mergify-test@mergify.com"

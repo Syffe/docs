@@ -334,8 +334,26 @@ class TestingSettings(pydantic.BaseSettings):
     TESTING_MERGIFY_TEST_2_ID: github_types.GitHubAccountIdType = (
         github_types.GitHubAccountIdType(38495008)
     )
-    TESTING_GPGKEY_SECRET: str = ""
-    TESTING_ID_GPGKEY_SECRET: str = ""
+    TESTING_GPG_SECRET_KEY: str = """
+--- nosemgrep: generic.secrets.security.detected-pgp-private-key-block.detected-pgp-private-key-block
+-----BEGIN PGP PRIVATE KEY BLOCK-----
+
+lFgEZL6cGRYJKwYBBAHaRw8BAQdACJKhmijinQdAw6EUsS/OOpR0TNio6dYTvdBm
+0Gr+iI0AAPwP32IiJ3WaL4bD5QR1i6CG8XF3Q/5zSo/cbdAZXeselxDAtEpNZXJn
+aWZ5IGVuZ2luZWVyaW5nIChtZXJnaWZ5LXRlc3QyKSA8ZW5naW5lZXJpbmcrbWVy
+Z2lmeS10ZXN0QG1lcmdpZnkuY29tPoiTBBMWCgA7FiEEjHs1+K/aKS7ATmcadwUM
+WNd6GJcFAmS+nBkCGwMFCwkIBwICIgIGFQoJCAsCBBYCAwECHgcCF4AACgkQdwUM
+WNd6GJeWHQD/YgZid6Nc+Insb/Z0vFYBtXrp4Xg3tu0zVYGV6Kr6r00BAJi/5Bt3
+0+S1Tq5RroRDwnurXoy1iqjjvAn8xcR9CaMKnF0EZL6cGRIKKwYBBAGXVQEFAQEH
+QIznpvg6S4R+tf5fB4Mr8MfQBHkgaGg0TK6FamdqpeNnAwEIBwAA/1mUwqBybwWp
+e2rG9NBUlfxYoQx3pBaz6W/78gkkR4z4EleIeAQYFgoAIBYhBIx7Nfiv2ikuwE5n
+GncFDFjXehiXBQJkvpwZAhsMAAoJEHcFDFjXehiX3GoBAOB5aca4sBO/MrgnYYd4
+3EMcwCvPDdnJOuAPuZvQUJ5+AQDVXtWOfig+zKwnFgFNk/HvqI7wiFUSOvzlwNTY
+wEb0Bg==
+=3wUc
+-----END PGP PRIVATE KEY BLOCK-----
+"""
+    TESTING_GPG_SECRET_KEY_ID: str = "77050C58D77A1897"
     TESTING_DEV_PERSONAL_TOKEN: str | None = pydantic.Field(
         default=None, extra_env="DEV_PERSONAL_TOKEN"
     )
