@@ -2,7 +2,7 @@ from collections import abc
 import typing
 
 import daiquiri
-import ddtrace
+from ddtrace import tracer
 import msgpack
 import sqlalchemy
 import sqlalchemy.ext.asyncio
@@ -19,11 +19,11 @@ from mergify_engine.models import github_actions
 LOG = daiquiri.getLogger(__name__)
 
 
+@tracer.wrap("ci.event_processing", span_type="worker")
 async def process_event_streams(redis_links: redis_utils.RedisLinks) -> None:
-    with ddtrace.tracer.trace("ci.event_processing", span_type="worker"):
-        async with database.create_session() as session:
-            await _process_workflow_run_stream(redis_links, session)
-            await _process_workflow_job_stream(redis_links, session)
+    async with database.create_session() as session:
+        await _process_workflow_run_stream(redis_links, session)
+        await _process_workflow_job_stream(redis_links, session)
 
 
 async def _process_workflow_run_stream(
@@ -58,6 +58,7 @@ async def _iter_stream(
         min_stream_event_id = f"({stream_event_id.decode()}"
 
 
+@tracer.wrap("ci.workflow_run_processing")
 async def _process_workflow_run_event(
     redis_links: redis_utils.RedisLinks,
     session: sqlalchemy.ext.asyncio.AsyncSession,
@@ -136,6 +137,7 @@ async def _process_workflow_job_stream(
             )
 
 
+@tracer.wrap("ci.workflow_job_processing")
 async def _process_workflow_job_event(
     redis_links: redis_utils.RedisLinks,
     session: sqlalchemy.ext.asyncio.AsyncSession,
