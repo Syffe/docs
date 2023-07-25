@@ -494,7 +494,7 @@ class EventActionQueueChecksStart(Event):
             session, repository
         )
 
-        metadata = typing.cast(signals.EventQueueChecksStartMetadata, metadata)
+        metadata = typing.cast(signals.EventQueueChecksStartMetadata, metadata.copy())
         speculative_check_pull_request = events_metadata.SpeculativeCheckPullRequest(
             **metadata.pop("speculative_check_pull_request")
         )
@@ -584,7 +584,7 @@ class EventActionQueueChecksEnd(Event):
             session, repository
         )
 
-        metadata = typing.cast(signals.EventQueueChecksEndMetadata, metadata)
+        metadata = typing.cast(signals.EventQueueChecksEndMetadata, metadata.copy())
         speculative_check_pull_request = events_metadata.SpeculativeCheckPullRequest(
             **metadata.pop("speculative_check_pull_request")
         )
@@ -716,7 +716,7 @@ class EventQueueFreezeCreate(Event):
             session, repository
         )
 
-        metadata = typing.cast(signals.EventQueueFreezeCreateMetadata, metadata)
+        metadata = typing.cast(signals.EventQueueFreezeCreateMetadata, metadata.copy())
         actor = await events_metadata.GithubAuthenticatedActor.get_or_create(
             session,
             metadata.pop("created_by"),
