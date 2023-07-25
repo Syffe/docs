@@ -45,7 +45,7 @@ class MergeUtilsMixin:
             pull_request_number=ctxt.pull["number"],
             action="internal",
             source="merge failed and need to be retried",
-            priority=worker_pusher.Priority.immediate,
+            priority=worker_pusher.Priority.high,
         )
 
     @staticmethod
