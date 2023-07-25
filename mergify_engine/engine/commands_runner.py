@@ -73,6 +73,12 @@ class NotACommand(Exception):
 class CommandPayload(typing.TypedDict):
     command: str
     conclusion: str
+    action_is_running: bool
+
+
+class CommandExecutionState(typing.NamedTuple):
+    result: check_api.Result
+    action_is_running: bool
 
 
 @dataclasses.dataclass
@@ -81,9 +87,12 @@ class CommandState:
     conclusion: check_api.Conclusion
     github_comment_source: github_types.GitHubComment
     github_comment_result: github_types.GitHubComment | None
+    action_is_running: bool
 
 
-def prepare_message(command: str, result: check_api.Result) -> str:
+def prepare_message(
+    command: str, result: check_api.Result, action_is_running: bool
+) -> str:
     # NOTE: Do not serialize this with Mergify JSON encoder:
     # we don't want to allow loading/unloading weird value/classes
     # this could be modified by a user, so we keep it really straightforward
@@ -91,6 +100,7 @@ def prepare_message(command: str, result: check_api.Result) -> str:
         {
             "command": command,
             "conclusion": result.conclusion.value,
+            "action_is_running": action_is_running,
         }
     )
     details = ""
@@ -190,6 +200,7 @@ def extract_command_state(
             conclusion=check_api.Conclusion.PENDING,
             github_comment_source=comment,
             github_comment_result=None,
+            action_is_running=False,
         )
 
     # Looking for Mergify command result comment
@@ -213,6 +224,10 @@ def extract_command_state(
         LOG.warning("got command with invalid payload", payload=payload)  # type: ignore[unreachable]
         raise NoCommandStateFound()
 
+    # TODO(Syffe): remove this once every command has been updated with new payload format
+    # backward compat, we need to set a value for old payloads
+    action_is_running = payload.get("action_is_running", False)
+
     try:
         conclusion = check_api.Conclusion(payload["conclusion"])
     except ValueError:
@@ -229,6 +244,7 @@ def extract_command_state(
         conclusion=conclusion,
         github_comment_source=previous_state.github_comment_source,
         github_comment_result=comment,
+        action_is_running=action_is_running,
     )
 
 
@@ -352,12 +368,19 @@ async def pre_commands_run(
             force_run=True,
             executor_func_to_run="cancel",
         )
-        result = check_api.Result(
-            check_api.Conclusion.CANCELLED,
-            f"Command `{loaded_command.get_command()}` cancelled because of a new `{command.name}` command with different arguments",
-            "",
+        await post_result(
+            ctxt,
+            loaded_command,
+            loaded_command_state,
+            CommandExecutionState(
+                result=check_api.Result(
+                    check_api.Conclusion.CANCELLED,
+                    f"Command `{loaded_command.get_command()}` cancelled because of a new `{command.name}` command with different arguments",
+                    "",
+                ),
+                action_is_running=False,
+            ),
         )
-        await post_result(ctxt, loaded_command, loaded_command_state, result)
 
         seen_commands_names.add(command.name)
 
@@ -374,10 +397,13 @@ async def run_commands_tasks(
     for command, state in commands:
         if isinstance(command, CommandInvalid):
             if state.github_comment_result is None:
-                result = check_api.Result(
-                    check_api.Conclusion.FAILURE, command.message, ""
+                command_execution_state = CommandExecutionState(
+                    result=check_api.Result(
+                        check_api.Conclusion.FAILURE, command.message, ""
+                    ),
+                    action_is_running=False,
                 )
-                await post_result(ctxt, command, state, result)
+                await post_result(ctxt, command, state, command_execution_state)
             else:
                 ctxt.log.error(
                     "Unexpected command string, it was valid in the past but not anymore",
@@ -400,33 +426,42 @@ async def run_commands_tasks(
                     ctxt,
                     command,
                     state,
-                    check_api.Result(
-                        check_api.Conclusion.ACTION_REQUIRED,
-                        f"Cannot use the command `{command.get_command()}`",
-                        ctxt.subscription.missing_feature_reason(
-                            ctxt.pull["base"]["repo"]["owner"]["login"]
+                    CommandExecutionState(
+                        result=check_api.Result(
+                            check_api.Conclusion.ACTION_REQUIRED,
+                            f"Cannot use the command `{command.get_command()}`",
+                            ctxt.subscription.missing_feature_reason(
+                                ctxt.pull["base"]["repo"]["owner"]["login"]
+                            ),
                         ),
+                        action_is_running=False,
                     ),
                 )
                 continue
 
-            result = await run_command(ctxt, mergify_config, command, state)
-            await post_result(ctxt, command, state, result)
+            command_execution_state = await run_command(
+                ctxt, mergify_config, command, state
+            )
+            await post_result(ctxt, command, state, command_execution_state)
 
 
 async def post_result(
     ctxt: context.Context,
     command: Command | CommandInvalid,
     state: CommandState,
-    result: check_api.Result,
+    command_execution_state: CommandExecutionState,
 ) -> None:
-    message = prepare_message(command.get_command(), result)
+    message = prepare_message(
+        command.get_command(),
+        command_execution_state.result,
+        command_execution_state.action_is_running,
+    )
     ctxt.log.info(
         "command %s: %s",
         command.name,
-        result.conclusion,
+        command_execution_state.result.conclusion,
         command_full=str(command),
-        result=result,
+        result=command_execution_state.result,
         user_login=state.github_comment_source["user"]["login"]
         if state.github_comment_source
         else "<unavailable>",
@@ -447,12 +482,15 @@ async def run_command(
     state: CommandState,
     force_run: bool = False,
     executor_func_to_run: typing.Literal["run", "cancel"] = "run",
-) -> check_api.Result:
+) -> CommandExecutionState:
     statsd.increment("engine.commands.count", tags=[f"name:{command.name}"])
     try:
         await check_init_command_run(ctxt, mergify_config, command, state)
     except CommandNotAllowed as e:
-        return check_api.Result(check_api.Conclusion.FAILURE, e.title, e.message)
+        return CommandExecutionState(
+            result=check_api.Result(check_api.Conclusion.FAILURE, e.title, e.message),
+            action_is_running=False,
+        )
 
     conds = conditions_mod.PullRequestRuleConditions(
         await command.action.get_conditions_requirements(ctxt)
@@ -474,30 +512,75 @@ async def run_command(
                 ),
             )
         except actions.InvalidDynamicActionConfiguration as e:
-            return check_api.Result(
-                check_api.Conclusion.ACTION_REQUIRED,
-                e.reason,
-                e.details,
+            return CommandExecutionState(
+                result=check_api.Result(
+                    check_api.Conclusion.ACTION_REQUIRED,
+                    e.reason,
+                    e.details,
+                ),
+                action_is_running=False,
             )
         else:
             # Do not use getattr to keep typing
             if executor_func_to_run == "run":
-                return await command.action.executor.run()
+                return CommandExecutionState(
+                    result=await command.action.executor.run(),
+                    action_is_running=True,
+                )
             if executor_func_to_run == "cancel":
-                return await command.action.executor.cancel()
+                return CommandExecutionState(
+                    result=await command.action.executor.cancel(),
+                    action_is_running=True,
+                )
             raise RuntimeError(f"Unhandled executor function '{executor_func_to_run}'")
 
+    elif state.action_is_running:
+        try:
+            await command.action.load_context(
+                ctxt,
+                prr_config.EvaluatedPullRequestRule(
+                    prr_config.CommandRule(
+                        prr_config.PullRequestRuleName(str(command)),
+                        None,
+                        conds,
+                        {},
+                        False,
+                        state.github_comment_source["user"],
+                    )
+                ),
+            )
+        except actions.InvalidDynamicActionConfiguration as e:
+            return CommandExecutionState(
+                result=check_api.Result(
+                    check_api.Conclusion.ACTION_REQUIRED,
+                    e.reason,
+                    e.details,
+                ),
+                action_is_running=True,
+            )
+        else:
+            return CommandExecutionState(
+                result=await command.action.executor.cancel(),
+                action_is_running=True,
+            )
+
     elif actions.ActionFlag.ALLOW_AS_PENDING_COMMAND in command.action.flags:
-        return check_api.Result(
-            check_api.Conclusion.PENDING,
-            "Waiting for conditions to match",
-            conds.get_summary(),
+        return CommandExecutionState(
+            result=check_api.Result(
+                check_api.Conclusion.PENDING,
+                "Waiting for conditions to match",
+                conds.get_summary(),
+            ),
+            action_is_running=False,
         )
     else:
-        return check_api.Result(
-            check_api.Conclusion.NEUTRAL,
-            "Nothing to do",
-            conds.get_summary(),
+        return CommandExecutionState(
+            result=check_api.Result(
+                check_api.Conclusion.NEUTRAL,
+                "Nothing to do",
+                conds.get_summary(),
+            ),
+            action_is_running=False,
         )
 
 

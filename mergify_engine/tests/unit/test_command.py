@@ -283,6 +283,52 @@ async def test_run_command_with_user(
         assert result in json.loads(post_comment_router.calls[0][0].content)["body"]
 
 
+def test_extract_command_state_with_old_payload_format() -> None:
+    user = create_fake_user()
+
+    # bottom payload without attribute "action_is_running"
+    body = """Waiting for conditions to match
+
+<details>
+
+- [ ] any of: [🛡 GitHub branch protection]
+  - [ ] `check-neutral=continuous-integration/fake-ci`
+  - [ ] `check-skipped=continuous-integration/fake-ci`
+  - [ ] `check-success=continuous-integration/fake-ci`
+- [X] `-draft` [:pushpin: queue requirement]
+- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+- [X] any of: [:twisted_rightwards_arrows: queue conditions]
+  - [X] all of [:pushpin: queue conditions of queue `default`]
+
+</details>
+
+<!---
+DO NOT EDIT
+-*- Mergify Payload -*-
+{"command": "queue default", "conclusion": "neutral"}
+-*- Mergify Payload End -*-
+-->"""
+
+    comment = github_types.GitHubComment(
+        {
+            "id": github_types.GitHubCommentIdType(1),
+            "url": "",
+            "created_at": github_types.ISODateTimeType("2003-02-15T00:00:00Z"),
+            "updated_at": github_types.ISODateTimeType("2003-02-15T00:00:00Z"),
+            "user": user,
+            "body": body,
+        }
+    )
+
+    command_state = commands_runner.extract_command_state(
+        comment=comment,
+        mergify_bot=user,
+        pendings=mock.Mock(),
+    )
+
+    assert command_state.action_is_running is False
+
+
 async def test_run_command_with_wrong_arg(
     context_getter: conftest.ContextGetterFixture,
     respx_mock: respx.MockRouter,
@@ -328,7 +374,7 @@ async def test_run_command_with_wrong_arg(
 <!---
 DO NOT EDIT
 -*- Mergify Payload -*-
-{"command": "squash invalid-arg", "conclusion": "failure"}
+{"command": "squash invalid-arg", "conclusion": "failure", "action_is_running": false}
 -*- Mergify Payload End -*-
 -->"""
     )
@@ -398,7 +444,7 @@ async def test_run_command_with_no_subscription(
 <!---
 DO NOT EDIT
 -*- Mergify Payload -*-
-{{"command": "{command_name}", "conclusion": "action_required"}}
+{{"command": "{command_name}", "conclusion": "action_required", "action_is_running": false}}
 -*- Mergify Payload End -*-
 -->"""
     )

@@ -74,6 +74,7 @@ class UnqueueExecutor(
                         title="This `queue` command has been cancelled by an `unqueue` command",
                         summary="",
                     ),
+                    action_is_running=True,
                 )
 
                 if state.github_comment_result is None:

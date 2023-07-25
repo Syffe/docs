@@ -74,7 +74,7 @@ class TestUnQueueCommand(base.FunctionalTestBase):
 
 
 
-{utils.get_mergify_payload({"command": "requeue", "conclusion": "neutral"})}"""
+{utils.get_mergify_payload({"command": "requeue", "conclusion": "neutral", "action_is_running": True})}"""
         )
 
         check = first(

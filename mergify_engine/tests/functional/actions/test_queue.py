@@ -4182,7 +4182,7 @@ class TestQueueAction(base.FunctionalTestBase):
 
 
 
-{utils.get_mergify_payload({"command": "refresh", "conclusion": "success"})}"""
+{utils.get_mergify_payload({"command": "refresh", "conclusion": "success", "action_is_running":  True})}"""
             == comments[-1]["body"]
         )
 

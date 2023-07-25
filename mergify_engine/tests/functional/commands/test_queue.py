@@ -650,3 +650,83 @@ class TestQueueCommand(base.FunctionalTestBase):
 
         first_response_again = await self.get_comment(first_response["comment"]["id"])
         assert "Waiting for conditions to match" in first_response_again["body"]
+
+    async def test_queue_command_unqueue_pr_after_ci_failure(self) -> None:
+        await self.setup_repo()
+
+        protection = {
+            "required_status_checks": {
+                "strict": False,
+                "contexts": [
+                    "continuous-integration/fake-ci",
+                ],
+            },
+            "required_linear_history": False,
+            "required_pull_request_reviews": None,
+            "restrictions": None,
+            "enforce_admins": False,
+        }
+
+        p1 = await self.create_pr()
+
+        # To force others to be rebased
+        p = await self.create_pr()
+        await self.merge_pull(p["number"])
+        await self.wait_for_pull_request("closed", p["number"], merged=True)
+        await self.run_engine()
+
+        await self.branch_protection_protect(self.main_branch_name, protection)
+
+        await self.create_comment_as_admin(p1["number"], "@mergifyio queue")
+        await self.run_engine()
+        comment_p1 = await self.wait_for_issue_comment(str(p1["number"]), "created")
+
+        assert (
+            """Waiting for conditions to match
+
+<details>
+
+- [ ] any of: [🛡 GitHub branch protection]
+  - [ ] `check-neutral=continuous-integration/fake-ci`
+  - [ ] `check-skipped=continuous-integration/fake-ci`
+  - [ ] `check-success=continuous-integration/fake-ci`
+- [X] `-draft` [:pushpin: queue requirement]
+- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+- [X] any of: [:twisted_rightwards_arrows: queue conditions]
+  - [X] all of [:pushpin: queue conditions of queue `default`]
+
+</details>
+"""
+            in comment_p1["comment"]["body"]
+        )
+
+        await self.create_status(p1, state="success")
+        await self.run_engine()
+
+        comment_p1 = await self.wait_for_issue_comment(str(p1["number"]), "edited")
+        assert (
+            "The pull request is the 1st in the queue to be merged"
+            in comment_p1["comment"]["body"]
+        )
+        p1 = (await self.wait_for_pull_request("synchronize", p1["number"]))[
+            "pull_request"
+        ]
+        train = await self.get_train()
+        assert len(train._cars) == 1
+        assert len(train._waiting_pulls) == 0
+
+        await self.create_status(p1, state="failure")
+        await self.run_full_engine()
+
+        train = await self.get_train()
+        assert len(train._cars) == 0
+        assert len(train._waiting_pulls) == 0
+
+        comment_p1 = await self.wait_for_issue_comment(str(p1["number"]), "edited")
+
+        assert (
+            "The pull request rule doesn't match anymore"
+            in comment_p1["comment"]["body"]
+        )
+
+        assert "This action has been cancelled." in comment_p1["comment"]["body"]
