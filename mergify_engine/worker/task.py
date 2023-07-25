@@ -62,6 +62,12 @@ class TaskRetriedForever:
                     LOG.warning(
                         "%s task unexpectedly cancelled, ignoring", name, exc_info=True
                     )
+
+                    task = asyncio.current_task()
+                    if task is None:
+                        raise RuntimeError("No current task during CancelledError")
+                    task.uncancel()
+
                     continue
 
                 with contextlib.suppress(asyncio.TimeoutError):
