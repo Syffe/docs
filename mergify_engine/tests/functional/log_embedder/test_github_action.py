@@ -103,7 +103,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                 )
                 assert job is not None
 
-                await gha_embedder.log_embedding(job)
+                await gha_embedder.embed_log(job)
             await session.commit()
 
         async with database.create_session() as session:

@@ -359,9 +359,12 @@ wEb0Bg==
     )
 
 
-class OpenAISettings(pydantic.BaseSettings):
+class LogEmbedderSettings(pydantic.BaseSettings):
     OPENAI_API_TOKEN: pydantic.SecretStr = pydantic.Field(
         default=pydantic.SecretStr("")
+    )
+    LOG_EMBEDDER_ENABLED_ORGS: list[github_types.GitHubLogin] = pydantic.Field(
+        default_factory=list
     )
 
 
@@ -375,7 +378,7 @@ class EngineSettings(
     SubscriptionSetting,
     WorkerSettings,
     TestingSettings,
-    OpenAISettings,
+    LogEmbedderSettings,
     pydantic.BaseSettings,
 ):
     VERSION: str = pydantic.Field("dev", extra_env="HEROKU_SLUG_COMMIT")

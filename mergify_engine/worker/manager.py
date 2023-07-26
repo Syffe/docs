@@ -18,6 +18,7 @@ from mergify_engine import signals
 from mergify_engine.clients import github
 from mergify_engine.worker import ci_event_processing_service
 from mergify_engine.worker import gitter_service
+from mergify_engine.worker import log_embedder_service
 from mergify_engine.worker import stream_services
 from mergify_engine.worker import task
 
@@ -75,6 +76,7 @@ ServiceNameT = typing.Literal[
     "delayed-refresh",
     "gitter",
     "ci-event-processing",
+    "log-embedder",
 ]
 ServiceNamesT = set[ServiceNameT]
 AVAILABLE_WORKER_SERVICES = set(ServiceNameT.__dict__["__args__"])
@@ -119,6 +121,9 @@ class ServiceManager:
 
     # CIDownloadService
     ci_event_processing_idle_time: float = 30
+
+    # LogEmbedderProcessingService
+    log_embedder_idle_time: float = 60
 
     _redis_links: redis_utils.RedisLinks = dataclasses.field(
         init=False, default_factory=lambda: redis_utils.RedisLinks(name="worker")
@@ -223,6 +228,13 @@ class ServiceManager:
                 ci_event_processing_service.CIEventProcessingService(
                     self._redis_links,
                     ci_event_processing_idle_time=self.ci_event_processing_idle_time,
+                )
+            )
+
+        if "log-embedder" in self.enabled_services:
+            self._services.append(
+                log_embedder_service.LogEmbedderService(
+                    log_embedder_idle_time=self.log_embedder_idle_time,
                 )
             )
 

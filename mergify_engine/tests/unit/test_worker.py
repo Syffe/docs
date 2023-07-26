@@ -168,6 +168,7 @@ async def run_worker(
         dedicated_workers_syncer_idle_time=0.01,
         gitter_concurrent_jobs=0,
         ci_event_processing_idle_time=0.01,
+        log_embedder_idle_time=0.01,
         **kwargs,
     )
     await w.start()
@@ -2756,6 +2757,8 @@ async def test_start_stop_cycle(
         dedicated_stream_processes=1,
         process_index=0,
         gitter_concurrent_jobs=2,
+        ci_event_processing_idle_time=0.01,
+        log_embedder_idle_time=0.01,
     )
     assert w._stopped.is_set()
     assert w._stop_task is None
@@ -2765,10 +2768,10 @@ async def test_start_stop_cycle(
     # NOTE(sileht): ensure it doesn't crash instantly
     await asyncio.sleep(1)
 
-    assert len(w._services) == 7
+    assert len(w._services) == 8
 
     tasks = [a_task for serv in w._services for a_task in serv.tasks]
-    assert len(tasks) == 11
+    assert len(tasks) == 12
 
     serv_shared = w.get_service(stream_services.SharedStreamService)
     assert serv_shared is not None
