@@ -1571,11 +1571,40 @@ async def test_context_co_authors(
     ctxt = context.Context(mock.Mock(), a_pull_request)
     ctxt._caches.commits.set(
         [
+            # Merge commit, should be ignored
             github_types.CachedGitHubBranchCommit(
-                sha=github_types.SHAType(""),
+                sha=github_types.SHAType("e"),
+                commit_message="Merge commit",
+                commit_verification_verified=False,
+                parents=[github_types.SHAType("x"), github_types.SHAType("y")],
+                author="Anakin Skywalker",
+                committer="",
+                email_author="anakin.skywalker.internship@jedi-high-concil.org",
+                email_committer="",
+                date_author=github_types.ISODateTimeType(""),
+                date_committer=github_types.ISODateTimeType(""),
+                gh_author_login=github_types.GitHubLogin("Anakin Skywalker"),
+            ),
+            # Bot commits should be ignored
+            github_types.CachedGitHubBranchCommit(
+                sha=github_types.SHAType("d"),
                 commit_message="",
                 commit_verification_verified=False,
-                parents=[],
+                parents=[github_types.SHAType("c")],
+                author="dependabot[bot]",
+                committer="",
+                email_author="dependabot[bot]@users.noreply.github.com",
+                email_committer="",
+                date_author=github_types.ISODateTimeType(""),
+                date_committer=github_types.ISODateTimeType(""),
+                gh_author_login=github_types.GitHubLogin("dependabot[bot]"),
+            ),
+            # Pull request author's commit, should be ignored
+            github_types.CachedGitHubBranchCommit(
+                sha=github_types.SHAType("c"),
+                commit_message="",
+                commit_verification_verified=False,
+                parents=[github_types.SHAType("b")],
                 author="Obi-Wan Kenobi",
                 committer="",
                 email_author="obi-wan.kenobi@jedi-high-concil.org",
@@ -1584,11 +1613,12 @@ async def test_context_co_authors(
                 date_committer=github_types.ISODateTimeType(""),
                 gh_author_login=github_types.GitHubLogin("Obi-Wan Kenobi"),
             ),
+            # Two commits from a co-author, should not duplicate
             github_types.CachedGitHubBranchCommit(
-                sha=github_types.SHAType(""),
+                sha=github_types.SHAType("b"),
                 commit_message="",
                 commit_verification_verified=False,
-                parents=[],
+                parents=[github_types.SHAType("a")],
                 author="General Grievous",
                 committer="",
                 email_author="general.grievous@confederacy.org",
@@ -1598,10 +1628,10 @@ async def test_context_co_authors(
                 gh_author_login=github_types.GitHubLogin("General Grievous"),
             ),
             github_types.CachedGitHubBranchCommit(
-                sha=github_types.SHAType(""),
+                sha=github_types.SHAType("a"),
                 commit_message="",
                 commit_verification_verified=False,
-                parents=[],
+                parents=[github_types.SHAType("z")],
                 author="General Grievous",
                 committer="",
                 email_author="general.grievous@confederacy.org",

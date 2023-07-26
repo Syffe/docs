@@ -234,7 +234,8 @@ Here's the list of pull request attribute that can be used in conditions:
        permission on the repository.
    * - ``co-authors``
      - list of :ref:`authors <data type commit author>`
-     - The list of co-authors on the pull request.
+     - The list of co-authors on the pull request (excluding merge commits and
+       bots).
    * - ``commits``
      - list of :ref:`commits <data type commit>`
      - The list of commits of the pull request. The index ``0`` is the first

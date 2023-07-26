@@ -2630,6 +2630,8 @@ class BasePullRequest:
                 CommitAuthor(commit.author, commit.email_author)
                 for commit in await ctxt.commits
                 if commit.gh_author_login != ctxt.pull["user"]["login"]
+                and len(commit.parents) == 1
+                and not commit.author.endswith("[bot]")
             }
 
         raise PullRequestAttributeError(name)
