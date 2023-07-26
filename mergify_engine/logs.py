@@ -156,6 +156,9 @@ def setup_logging(dump_config: bool = True) -> None:
             ("asyncio", "WARN"),
             ("ddtrace", "WARN"),
             ("uvicorn.access", "WARN"),
+            ("httpcore", "WARN"),
+            ("hpack", "WARN"),
+            ("filelock", "WARN"),
         ]
         + [(name, "DEBUG") for name in settings.LOG_DEBUG_LOGGER_NAMES]
     )
