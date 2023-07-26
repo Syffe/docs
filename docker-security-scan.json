@@ -891,6 +891,15 @@
     "PublishedDate": "2023-05-09T02:15:00Z"
   },
   {
+    "VulnerabilityID": "CVE-2021-33294",
+    "PkgName": "libelf1",
+    "SeveritySource": "debian",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2021-33294",
+    "Title": "In elfutils 0.183, an infinite loop was found in the function handle_s ...",
+    "Severity": "LOW",
+    "PublishedDate": "2023-07-18T14:15:00Z"
+  },
+  {
     "VulnerabilityID": "CVE-2021-33560",
     "PkgName": "libgcrypt20",
     "SeveritySource": "nvd",
@@ -2019,15 +2028,17 @@
     "VulnerabilityID": "CVE-2023-3446",
     "PkgName": "libssl1.1",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-3446",
-    "Title": "Issue summary: Checking excessively long DH keys or parameters may be  ...",
-    "Severity": "LOW"
+    "Title": "Excessive time spent checking DH keys and parameters",
+    "Severity": "MEDIUM",
+    "PublishedDate": "2023-07-19T12:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-3446",
     "PkgName": "openssl",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-3446",
-    "Title": "Issue summary: Checking excessively long DH keys or parameters may be  ...",
-    "Severity": "LOW"
+    "Title": "Excessive time spent checking DH keys and parameters",
+    "Severity": "MEDIUM",
+    "PublishedDate": "2023-07-19T12:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-34969",
@@ -2060,21 +2071,24 @@
     "VulnerabilityID": "CVE-2023-38408",
     "PkgName": "openssh-client",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-38408",
-    "Title": "[Remote Code Execution in OpenSSH's forwarded ssh-agent]",
-    "Severity": "UNKNOWN"
+    "Title": "Remote code execution in ssh-agent PKCS#11 support",
+    "Severity": "HIGH",
+    "PublishedDate": "2023-07-20T03:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-38408",
     "PkgName": "openssh-server",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-38408",
-    "Title": "[Remote Code Execution in OpenSSH's forwarded ssh-agent]",
-    "Severity": "UNKNOWN"
+    "Title": "Remote code execution in ssh-agent PKCS#11 support",
+    "Severity": "HIGH",
+    "PublishedDate": "2023-07-20T03:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-38408",
     "PkgName": "openssh-sftp-server",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-38408",
-    "Title": "[Remote Code Execution in OpenSSH's forwarded ssh-agent]",
-    "Severity": "UNKNOWN"
+    "Title": "Remote code execution in ssh-agent PKCS#11 support",
+    "Severity": "HIGH",
+    "PublishedDate": "2023-07-20T03:15:00Z"
   }
 ]
