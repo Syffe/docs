@@ -4,6 +4,7 @@ from unittest import mock
 import pytest
 import respx
 
+from mergify_engine import check_api
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import github_types
@@ -545,3 +546,71 @@ commands_restrictions:
         expected_result_str
         in json.loads(post_comment_router.calls[0][0].content)["body"]
     )
+
+
+async def test_pending_commands_ordering(
+    context_getter: conftest.ContextGetterFixture,
+    respx_mock: respx.MockRouter,
+    fake_mergify_bot: github_types.GitHubAccount,
+) -> None:
+    user = create_fake_user()
+    ctxt = await context_getter(github_types.GitHubPullRequestNumber(1))
+
+    respx_mock.get(f"{ctxt.base_url}/collaborators/{user['login']}/permission").respond(
+        200,
+        json={
+            "permission": "write",
+            "user": user,
+        },
+    )
+    respx_mock.get(f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments").respond(
+        200,
+        json=[
+            github_types.GitHubComment(
+                {
+                    "id": github_types.GitHubCommentIdType(1),
+                    "url": "",
+                    "created_at": github_types.ISODateTimeType("2003-02-15T00:00:00Z"),
+                    "updated_at": github_types.ISODateTimeType("2003-02-15T00:00:00Z"),
+                    "user": user,
+                    "body": "@mergifyio squash",
+                }
+            ),
+            github_types.GitHubComment(
+                {
+                    "id": github_types.GitHubCommentIdType(1),
+                    "url": "",
+                    "created_at": github_types.ISODateTimeType("2003-02-15T00:00:00Z"),
+                    "updated_at": github_types.ISODateTimeType("2003-02-15T00:00:00Z"),
+                    "user": user,
+                    "body": "@mergifyio rebase",
+                }
+            ),
+            github_types.GitHubComment(
+                {
+                    "id": github_types.GitHubCommentIdType(2),
+                    "url": "",
+                    "created_at": github_types.ISODateTimeType("2003-02-15T01:00:00Z"),
+                    "updated_at": github_types.ISODateTimeType("2003-02-15T01:00:00Z"),
+                    "user": fake_mergify_bot,
+                    "body": commands_runner.prepare_message(
+                        "squash",
+                        check_api.Result(
+                            check_api.Conclusion.PENDING,
+                            "pending",
+                            "pending",
+                        ),
+                        True,
+                    ),
+                }
+            ),
+        ],
+    )
+    pendings = await commands_runner.get_pending_commands_to_run_from_comments(ctxt)
+    states = list(pendings.values())
+    assert len(states) == 2
+    assert states[0].command == "rebase"
+    assert states[0].github_comment_result is None
+    assert states[1].command == "squash"
+    assert states[1].github_comment_result is not None
+    assert states[1].github_comment_result["id"] == 2
