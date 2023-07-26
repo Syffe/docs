@@ -2469,7 +2469,7 @@ def _dt(at: str) -> datetime.datetime:
             conditions.RuleCondition.from_string(
                 "schedule=Mon-Fri 09:00-17:30[Europe/Paris]"
             ),
-            conftest.FakePullRequest({"current-time": _dt("2022-01-10T12:00:00")}),
+            conftest.FakePullRequest({"current-datetime": _dt("2022-01-10T12:00:00")}),
             True,
             _dt("2022-01-10T16:31:00"),
             id="in schedule",
@@ -2478,7 +2478,7 @@ def _dt(at: str) -> datetime.datetime:
             conditions.RuleCondition.from_string(
                 "schedule=Mon-Fri 09:00-17:30[Europe/Paris]"
             ),
-            conftest.FakePullRequest({"current-time": _dt("2022-01-10T00:00:00")}),
+            conftest.FakePullRequest({"current-datetime": _dt("2022-01-10T00:00:00")}),
             False,
             _dt("2022-01-10T08:00:01"),
             id="out schedule",
@@ -2486,7 +2486,7 @@ def _dt(at: str) -> datetime.datetime:
         pytest.param(
             conditions.RuleCondition.from_string("base=main"),
             conftest.FakePullRequest(
-                {"current-time": _dt("2022-01-10T00:00:00"), "base": "main"}
+                {"current-datetime": _dt("2022-01-10T00:00:00"), "base": "main"}
             ),
             True,
             date.DT_MAX,

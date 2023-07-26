@@ -649,66 +649,57 @@ footer
     (
         (
             "Merge-After: 2023-01-18",
-            context.MergeAfterTuple(
-                datetime.datetime(2023, 1, 18, tzinfo=date.UTC),
-                False,
-            ),
+            datetime.datetime(2023, 1, 18, tzinfo=date.UTC),
+        ),
+        (
+            "MergE-aftEr:\t2023-01-18",
+            datetime.datetime(2023, 1, 18, tzinfo=date.UTC),
+        ),
+        (
+            "Merge-After:    2023-01-18",
+            datetime.datetime(2023, 1, 18, tzinfo=date.UTC),
+        ),
+        (
+            "  Merge-After:    2023-01-18",
+            datetime.datetime(2023, 1, 18, tzinfo=date.UTC),
         ),
         (
             "Merge-After: 2023-01-18[Australia/Sydney]",
-            context.MergeAfterTuple(
-                datetime.datetime(
-                    2023, 1, 18, tzinfo=zoneinfo.ZoneInfo("Australia/Sydney")
-                ),
-                False,
+            datetime.datetime(
+                2023, 1, 18, tzinfo=zoneinfo.ZoneInfo("Australia/Sydney")
             ),
         ),
         (
             "Merge-After: 2023-01-18 08:10",
-            context.MergeAfterTuple(
-                datetime.datetime(2023, 1, 18, 8, 10, tzinfo=date.UTC),
-                True,
-            ),
+            datetime.datetime(2023, 1, 18, 8, 10, tzinfo=date.UTC),
         ),
         (
             "Merge-After: 2023-01-18 08:10[Europe/Paris]",
-            context.MergeAfterTuple(
-                datetime.datetime(
-                    2023, 1, 18, 8, 10, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
-                ),
-                True,
+            datetime.datetime(
+                2023, 1, 18, 8, 10, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
             ),
         ),
         (
             "Merge-After: 2023-01-18 08:10[Africa/Porto-Novo]",
-            context.MergeAfterTuple(
-                datetime.datetime(
-                    2023, 1, 18, 8, 10, tzinfo=zoneinfo.ZoneInfo("Africa/Porto-Novo")
-                ),
-                True,
+            datetime.datetime(
+                2023, 1, 18, 8, 10, tzinfo=zoneinfo.ZoneInfo("Africa/Porto-Novo")
             ),
         ),
         (
             "Merge-After: 2023-01-18 08:10[Africa/Sao_Tome]",
-            context.MergeAfterTuple(
-                datetime.datetime(
-                    2023, 1, 18, 8, 10, tzinfo=zoneinfo.ZoneInfo("Africa/Sao_Tome")
-                ),
-                True,
+            datetime.datetime(
+                2023, 1, 18, 8, 10, tzinfo=zoneinfo.ZoneInfo("Africa/Sao_Tome")
             ),
         ),
         (
             "Merge-After: 2023-01-18 08:10[America/Argentina/Cordoba]",
-            context.MergeAfterTuple(
-                datetime.datetime(
-                    2023,
-                    1,
-                    18,
-                    8,
-                    10,
-                    tzinfo=zoneinfo.ZoneInfo("America/Argentina/Cordoba"),
-                ),
-                True,
+            datetime.datetime(
+                2023,
+                1,
+                18,
+                8,
+                10,
+                tzinfo=zoneinfo.ZoneInfo("America/Argentina/Cordoba"),
             ),
         ),
     ),
@@ -716,7 +707,7 @@ footer
 async def test_context_merge_after_valid(
     a_pull_request: github_types.GitHubPullRequest,
     merge_after_str: str,
-    expected_out: context.MergeAfterTuple,
+    expected_out: datetime.datetime,
 ) -> None:
     a_pull_request[
         "body"
@@ -750,7 +741,6 @@ async def test_context_merge_after_valid(
         "Merge-After: 2023-01-1 08:10",
         "Merge-After: 2023-01-18 8:10",
         "Merge-After: 2023-01-18 08:1",
-        "Merge-After: 2023-01-18 08-10",
         "Merge-After: -1-01-18 08:10[Europe/Paris]",
         "Merge-After: 202-01-18 08:10[Europe/Paris]",
         "Merge-After: 2023-01-1 08:10[Europe/Paris]",
@@ -759,6 +749,7 @@ async def test_context_merge_after_valid(
         "Merge-After: 2023-01-01 08:10Europe/Paris]",
         "Merge-After: 2023-01-01 08:10[lol]",
         "Merge-After: 2023-01-01 08:10[UTC",
+        "Merge-After: 2023-01-\n18 08:10[Africa/Sao_Tome]",
     ),
 )
 async def test_context_merge_after_invalid(

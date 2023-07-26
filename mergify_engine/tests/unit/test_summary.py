@@ -431,7 +431,9 @@ async def test_queue_rules_summary() -> None:
         conftest.FakePullRequest(
             {
                 "number": 1,
-                "current-time": datetime.datetime(2022, 11, 24, tzinfo=datetime.UTC),
+                "current-datetime": datetime.datetime(
+                    2022, 11, 24, tzinfo=datetime.UTC
+                ),
                 "author": "me",
                 "base": "main",
                 "head": "feature-1",
@@ -447,7 +449,9 @@ async def test_queue_rules_summary() -> None:
         conftest.FakePullRequest(
             {
                 "number": 2,
-                "current-time": datetime.datetime(2022, 11, 24, tzinfo=datetime.UTC),
+                "current-datetime": datetime.datetime(
+                    2022, 11, 24, tzinfo=datetime.UTC
+                ),
                 "author": "me",
                 "base": "main",
                 "head": "feature-2",
@@ -463,7 +467,9 @@ async def test_queue_rules_summary() -> None:
         conftest.FakePullRequest(
             {
                 "number": 3,
-                "current-time": datetime.datetime(2022, 11, 24, tzinfo=datetime.UTC),
+                "current-datetime": datetime.datetime(
+                    2022, 11, 24, tzinfo=datetime.UTC
+                ),
                 "author": "not-me",
                 "base": "main",
                 "head": "feature-3",
@@ -564,7 +570,7 @@ async def test_rules_conditions_schedule() -> None:
                 "number": 1,
                 "author": "me",
                 "base": "main",
-                "current-time": date.utcnow(),
+                "current-datetime": date.utcnow(),
             }
         ),
     ]

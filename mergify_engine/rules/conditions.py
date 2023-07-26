@@ -8,7 +8,6 @@ import functools
 import html
 import textwrap
 import typing
-import zoneinfo
 
 import daiquiri
 from first import first
@@ -582,22 +581,10 @@ def get_merge_after_condition(ctxt: context.Context) -> RuleConditionNode | None
     if merge_after is None:
         return None
 
-    description = "🕒 Merge-After: "
-    if merge_after.has_hoursminutes:
-        description += merge_after.merge_after_date.strftime("%Y-%m-%d %H:%M")
-    else:
-        description += merge_after.merge_after_date.strftime("%Y-%m-%d")
+    description = "🕒 Merge-After: " + merge_after.isoformat()
 
-    if merge_after.merge_after_date.tzinfo is None or not isinstance(
-        merge_after.merge_after_date.tzinfo, zoneinfo.ZoneInfo
-    ):
-        raise RuntimeError(
-            "Impossible to have merge_after_date without correct tzinfo type"
-        )
-
-    description += f"[{merge_after.merge_after_date.tzinfo.key}]"
     return RuleCondition.from_tree(
-        {">=": ("current-time", merge_after.merge_after_date)},
+        {">=": ("current-datetime", merge_after)},
         description=description,
     )
 

@@ -372,7 +372,7 @@ def parse(v: str, allow_command_attributes: bool = False) -> typing.Any:
         return _to_dict(negate, False, attribute, op, True)
 
     if parser == Parser.SCHEDULE:
-        cond: dict[str, typing.Any] = {op: ("current-time", parse_schedule(value))}
+        cond: dict[str, typing.Any] = {op: ("current-datetime", parse_schedule(value))}
         return _to_dict(False, False, attribute, "@", cond)
 
     if parser in (Parser.TIMESTAMP, Parser.TIMESTAMP_OR_TIMEDELTA):

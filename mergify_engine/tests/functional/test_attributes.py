@@ -1199,15 +1199,14 @@ class TestAttributesWithSub(base.FunctionalTestBase):
             await self.run_engine()
 
             ctxt = context.Context(self.repository_ctxt, pr_labeled["pull_request"])
-            assert ctxt.get_merge_after() == context.MergeAfterTuple(
-                datetime.datetime(2023, 4, 19, tzinfo=zoneinfo.ZoneInfo("UTC")),
-                has_hoursminutes=False,
+            assert ctxt.get_merge_after() == datetime.datetime(
+                2023, 4, 19, tzinfo=zoneinfo.ZoneInfo("UTC")
             )
 
             summary = await ctxt.get_engine_check_run(constants.SUMMARY_NAME)
             assert summary is not None
             expected = f"""### Rule: merge (merge)
-- [ ] `current-time>=2023-04-19T00:00:00` [🕒 Merge-After: 2023-04-19[UTC]]
+- [ ] `current-datetime>=2023-04-19T00:00:00` [🕒 Merge-After: 2023-04-19T00:00:00+00:00]
 - [X] `-draft` [:pushpin: merge requirement]
 - [X] `-mergify-configuration-changed` [:pushpin: merge -> allow_merging_configuration_change setting requirement]
 - [X] `base={self.main_branch_name}`

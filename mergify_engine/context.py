@@ -95,11 +95,6 @@ class T_PayloadEventSource(typing.TypedDict):
     initial_score: float
 
 
-class MergeAfterTuple(typing.NamedTuple):
-    merge_after_date: datetime.datetime
-    has_hoursminutes: bool
-
-
 @dataclasses.dataclass
 class InstallationCaches:
     team_members: cache.Cache[
@@ -1737,66 +1732,19 @@ class Context:
 
     # merge-after: YEAR-MONTH-DAY HOUR:MINUTES
     MERGE_AFTER = re.compile(
-        r"^ *Merge-After: +(\d{4}-\d{2}-\d{2}) *(\d{2}:\d{2})?(\[[^\s]+\])? *$",
+        r"^\s*Merge-After:\s*([^\n]*)$",
         re.MULTILINE | re.IGNORECASE,
     )
 
-    def get_merge_after(self) -> MergeAfterTuple | None:
+    def get_merge_after(self) -> datetime.datetime | None:
         find = self.MERGE_AFTER.search(self.body)
         if not find:
             return None
 
-        groups = [g for g in find.groups() if g is not None]
-        nb_groups = len(groups)
-
-        base_date = datetime.datetime.strptime(groups[0], "%Y-%m-%d")
-        base_date = base_date.replace(tzinfo=date.UTC)
-        if nb_groups == 1:
-            # Only Y-M-D
-            return MergeAfterTuple(
-                merge_after_date=base_date,
-                has_hoursminutes=False,
-            )
-
-        if nb_groups == 2 and groups[1].endswith("]"):
-            # Y-M-D[TZ]
-            try:
-                timezone = date.extract_timezone(groups[1])
-            except date.InvalidDate:
-                return None
-
-            date_with_tz = base_date.replace(tzinfo=timezone[1])
-            return MergeAfterTuple(
-                merge_after_date=date_with_tz,
-                has_hoursminutes=False,
-            )
-
-        # Y-M-D H:M
-        # Y-M-D H:M[TZ]
         try:
-            timezone = date.extract_timezone(groups[2])
+            return date.fromisoformat_with_zoneinfo(find.group(1))
         except date.InvalidDate:
             return None
-        except IndexError:
-            # IndexError because in case of `Y-M-D H:M` there
-            # is only 2 elements.
-            date_with_tz = base_date
-        else:
-            date_with_tz = base_date.replace(tzinfo=timezone[1])
-
-        hourminute_date = datetime.datetime.strptime(
-            groups[1],
-            "%H:%M",
-        )
-        date_with_tz = date_with_tz.replace(
-            hour=hourminute_date.hour,
-            minute=hourminute_date.minute,
-        )
-
-        return MergeAfterTuple(
-            merge_after_date=date_with_tz,
-            has_hoursminutes=True,
-        )
 
     async def update_cached_check_runs(
         self, check: github_types.CachedGitHubCheckRun
@@ -2551,7 +2499,7 @@ class BasePullRequest:
                     depends_on.append(f"#{pull_request_number}")
             return depends_on
 
-        if name in ("current-time", "current-datetime"):
+        if name == "current-datetime":
             return date.utcnow()
 
         if name == "updated-at-relative":
