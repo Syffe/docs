@@ -30,6 +30,7 @@ from mergify_engine.queue.merge_train import train_car
 from mergify_engine.queue.merge_train import train_car_state as tcs_import
 from mergify_engine.queue.merge_train import types as merge_train_types
 from mergify_engine.queue.merge_train import utils as train_utils
+from mergify_engine.rules import conditions as conditions_mod
 from mergify_engine.rules.config import partition_rules as partr_config
 
 
@@ -1261,10 +1262,23 @@ class Train:
 
         if embarked_pull_with_car.car is None:
             description = f"#{ctxt.pull['number']} is queued for merge."
+
+            # Add the branch protections just so the user know that we didn't forget them.
+            # They will be re-added automatically by the TrainCar when evaluating the PRs and the queue_rules.
+            branch_protections = await conditions_mod.get_branch_protection_conditions(
+                self.convoy.repository, self.convoy.ref, strict=False
+            )
+
+            merge_conditions_with_branch_protections = (
+                conditions_mod.QueueRuleMergeConditions(
+                    queue_rule.merge_conditions.condition.copy().conditions
+                    + branch_protections
+                )
+            )
             description += await self.generate_merge_queue_summary_footer(
                 queue_rule_report=merge_train_types.QueueRuleReport(
                     name=embarked_pull_with_car.embarked_pull.config["name"],
-                    summary=queue_rule.merge_conditions.get_summary(),
+                    summary=merge_conditions_with_branch_protections.get_summary(),
                 ),
                 pull_rule=pull_rule,
             )

@@ -730,3 +730,82 @@ class TestQueueCommand(base.FunctionalTestBase):
         )
 
         assert "This action has been cancelled." in comment_p1["comment"]["body"]
+
+    async def test_branch_protections_reporting_when_pr_is_not_yet_in_traincar(
+        self,
+    ) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "queue_conditions": [
+                        "label=default",
+                    ],
+                },
+                {
+                    "name": "specialq",
+                    "queue_conditions": [
+                        "label=specialq",
+                    ],
+                },
+            ],
+        }
+
+        await self.setup_repo(yaml.dump(rules))
+
+        protection = {
+            "required_status_checks": {
+                "strict": False,
+                "contexts": [
+                    "continuous-integration/fake-ci",
+                ],
+            },
+            "required_pull_request_reviews": None,
+            "required_linear_history": False,
+            "restrictions": None,
+            "enforce_admins": True,
+        }
+        await self.branch_protection_protect(self.main_branch_name, protection)
+
+        pr = await self.create_pr()
+        await self.add_label(pr["number"], "specialq")
+        await self.create_comment_as_admin(pr["number"], "@mergifyio queue")
+        await self.run_engine()
+
+        # Make sure the queue action is waiting for the branch protections
+        comment = await self.wait_for_issue_comment(str(pr["number"]), "created")
+        assert "Waiting for conditions to match" in comment["comment"]["body"]
+        assert (
+            """<details>
+
+- [ ] any of: [🛡 GitHub branch protection]
+  - [ ] `check-neutral=continuous-integration/fake-ci`
+  - [ ] `check-skipped=continuous-integration/fake-ci`
+  - [ ] `check-success=continuous-integration/fake-ci`
+- [X] `-draft` [:pushpin: queue requirement]
+- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
+- [X] any of: [:twisted_rightwards_arrows: queue conditions]
+  - [X] all of: [:pushpin: queue conditions of queue `specialq`]
+    - [X] `label=specialq`
+  - [ ] all of: [:pushpin: queue conditions of queue `default`]
+    - [ ] `label=default`
+
+</details>
+"""
+            in comment["comment"]["body"]
+        )
+
+        await self.create_status(pr)
+        await self.run_engine()
+
+        comment = await self.wait_for_issue_comment(str(pr["number"]), "edited")
+        assert (
+            """**Required conditions of queue** `specialq` **for merge:**
+
+- [ ] any of: [🛡 GitHub branch protection]
+  - [ ] `check-neutral=continuous-integration/fake-ci`
+  - [ ] `check-skipped=continuous-integration/fake-ci`
+  - [ ] `check-success=continuous-integration/fake-ci`
+"""
+            in comment["comment"]["body"]
+        )
