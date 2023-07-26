@@ -7,13 +7,14 @@ from mergify_engine import date
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import worker_pusher
+from mergify_engine.rules import conditions as conditions_mod
 from mergify_engine.rules import filter
 from mergify_engine.rules import live_resolvers
+from mergify_engine.rules.config import pull_request_rules as prr_config
 
 
 if typing.TYPE_CHECKING:
     from mergify_engine import context
-    from mergify_engine.rules.config import pull_request_rules as prr_config
     from mergify_engine.rules.config import queue_rules as qr_config
 
 LOG = daiquiri.getLogger(__name__)
@@ -72,11 +73,21 @@ async def plan_next_refresh(
     )
 
     for rule in _rules:
-        if refresh_time_conditions:
-            conditions = rule.conditions
-        else:
-            # NOTE(sileht): we stop refresh closed PR of only schedule conditions change
-            conditions = rule.conditions.copy()
+        rule_conditions = rule.conditions.condition.copy().conditions
+        rule_success_conditions = []
+
+        if isinstance(rule, prr_config.PullRequestRule):
+            for action in rule.actions.values():
+                if action.config.get("success_conditions"):
+                    rule_success_conditions.extend(
+                        action.config["success_conditions"].condition.copy().conditions
+                    )
+
+        conditions = conditions_mod.PullRequestRuleConditions(
+            rule_conditions + rule_success_conditions
+        )
+
+        if not refresh_time_conditions:
             for condition in conditions.walk():
                 attr = condition.get_attribute_name()
                 # Replace time conditions with an always true condition, so

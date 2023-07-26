@@ -22,7 +22,7 @@ from mergify_engine.tests.unit import conftest
         ),
     ),
 )
-async def test_delay_refresh_without_time(
+async def test_delayed_refresh_without_time(
     context_getter: conftest.ContextGetterFixture,
     pull: dict[str, typing.Any],
     expected_refresh: datetime.datetime | None,
@@ -54,8 +54,80 @@ pull_request_rules:
     assert when == expected_refresh
 
 
+@pytest.mark.parametrize(
+    "start_datetime, pull, expected_refresh",
+    (
+        # [Europe/Madrid] == UTC+2
+        # This is a Monday
+        (
+            datetime.datetime(2023, 7, 24, 11, 10, tzinfo=datetime.UTC),
+            {"updated_at": "2023-07-24T9:02:00Z"},
+            datetime.datetime(2023, 7, 24, 13, 20, 1, tzinfo=datetime.UTC),
+        ),
+        # This is a Monday
+        (
+            datetime.datetime(2023, 7, 24, 10, 10, tzinfo=datetime.UTC),
+            {},
+            datetime.datetime(2023, 7, 24, 13, 20, 1, tzinfo=datetime.UTC),
+        ),
+        # This is a Monday
+        (
+            datetime.datetime(2023, 7, 24, 10, 10, tzinfo=datetime.UTC),
+            {"closed_at": "2023-07-10T06:50:05Z"},
+            None,
+        ),
+        # This is a Friday
+        (
+            datetime.datetime(2023, 7, 21, 6, 10, tzinfo=datetime.UTC),
+            {},
+            datetime.datetime(2023, 7, 21, 7, 0, 1, tzinfo=datetime.UTC),
+        ),
+    ),
+)
+async def test_delayed_refresh_with_success_conditions(
+    context_getter: conftest.ContextGetterFixture,
+    start_datetime: datetime.datetime,
+    pull: dict[str, typing.Any],
+    expected_refresh: datetime.datetime | None,
+) -> None:
+    config = await utils.load_mergify_config(
+        """
+pull_request_rules:
+  - name: post check with success conditions
+    conditions:
+      - "base=main"
+
+    actions:
+      post_check:
+        success_conditions:
+          - or:
+            - schedule=Mon-Thu 15:20-18:00[Europe/Madrid]
+            - schedule=Fri-Fri 09:00-12:00[Europe/Madrid]
+        title: Best post check ever
+        summary: |
+          {% if not check_succeed %}
+          We are not in working hours, try another time
+          {% else %}
+          We are in working hours, well done
+          {% endif %}
+"""
+    )
+    with freeze_time(start_datetime, tick=True):
+        ctxt = await context_getter(0, **pull)
+        rule = typing.cast(
+            list[prr_config.EvaluatedPullRequestRule],
+            config["pull_request_rules"].rules,
+        )
+        await delayed_refresh.plan_next_refresh(ctxt, rule, ctxt.pull_request)
+
+        when = await delayed_refresh._get_current_refresh_datetime(
+            ctxt.repository, ctxt.pull["number"]
+        )
+        assert when == expected_refresh
+
+
 @freeze_time("2021-09-22T08:00:05", tz_offset=0)
-async def test_delay_refresh_only_if_earlier(
+async def test_delayed_refresh_only_if_earlier(
     context_getter: conftest.ContextGetterFixture,
 ) -> None:
     config = await utils.load_mergify_config(
