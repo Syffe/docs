@@ -1,6 +1,8 @@
 import pytest
+import respx
 
 from mergify_engine import github_types
+from mergify_engine import settings
 from mergify_engine import yaml
 from mergify_engine.queue import merge_train
 from mergify_engine.tests.functional import base
@@ -809,3 +811,45 @@ class TestQueueCommand(base.FunctionalTestBase):
 """
             in comment["comment"]["body"]
         )
+
+    async def test_pull_request_is_not_mergeable(self) -> None:
+        await self.setup_repo()
+
+        p = await self.create_pr()
+        await self.create_comment(p["number"], "@mergifyio queue", as_="admin")
+
+        # First queue attempt fails
+        with respx.mock(assert_all_called=False) as respx_mock:
+            respx_mock.put(
+                f"{settings.GITHUB_REST_API_URL}/repos/{self.RECORD_CONFIG['organization_name']}/{self.RECORD_CONFIG['repository_name']}/pulls/{p['number']}/merge"
+            ).respond(405, json={"message": "Pull Request is not mergeable"})
+            respx_mock.route(host="api.github.com").pass_through()
+
+            await self.run_engine()
+
+        queue_comment = await self.wait_for_issue_comment(
+            action="created", test_id=str(p["number"])
+        )
+        assert (
+            "🟠 The pull request is the 1st in the queue to be merged"
+            in queue_comment["comment"]["body"]
+        )
+        queue_comment = await self.wait_for_issue_comment(
+            action="edited", test_id=str(p["number"])
+        )
+        assert (
+            "GitHub can't merge the pull request for now."
+            in queue_comment["comment"]["body"]
+        )
+
+        # Second queue attempt succeeds
+        await self.create_comment(p["number"], "@mergifyio queue", as_="admin")
+        await self.run_engine()
+        queue_comment = await self.wait_for_issue_comment(
+            action="created", test_id=str(p["number"])
+        )
+        assert (
+            "🟠 The pull request is the 1st in the queue to be merged"
+            in queue_comment["comment"]["body"]
+        )
+        await self.wait_for_pull_request("closed", p["number"], merged=True)

@@ -22,6 +22,7 @@ REQUIRED_STATUS_RE = re.compile(r'Required status check "([^"]*)" is expected.')
 FORBIDDEN_MERGE_COMMITS_MSG = "Merge commits are not allowed on this repository."
 FORBIDDEN_SQUASH_MERGE_MSG = "Squash merges are not allowed on this repository."
 FORBIDDEN_REBASE_MERGE_MSG = "Rebase merges are not allowed on this repository."
+PULL_REQUEST_IS_NOT_MERGEABLE = "Pull Request is not mergeable"
 
 """
 We've esteemed 7 days is enough for keeping merge_commit_sha history of the pull requests we have merged with Mergify.
@@ -317,16 +318,19 @@ class MergeUtilsMixin:
                     "allowed in the repository configuration settings.",
                 )
 
-            # FIXME(charly): this error happened on our demo repo after a queue
-            # command, while there are no branch protection (see MRGFY-2478)
-            if e.message == "Pull Request is not mergeable":
-                ctxt.log.error(
-                    e.message,
+            if e.message == PULL_REQUEST_IS_NOT_MERGEABLE:
+                ctxt.log.info(
+                    "GitHub can't merge the pull request",
                     status_code=e.status_code,
-                    response_json=e.response.json(),
-                    response_text=e.response.text,
-                    request_method=e.request.method,
-                    request_url=e.request.url,
+                    error_message=e.message,
+                )
+                # NOTE(charly): set neutral conclusion to be able to enqueue the
+                # pull request again
+                return check_api.Result(
+                    check_api.Conclusion.NEUTRAL,
+                    "GitHub can't merge the pull request for now.",
+                    "GitHub can't merge the pull request for an unknown reason. "
+                    "You should retry later.",
                 )
 
             ctxt.log.info(
