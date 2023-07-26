@@ -46,25 +46,32 @@ GitHubAccountId = typing.Annotated[
 ]
 
 
+class Membership(typing.TypedDict):
+    role: github_types.GitHubMembershipRole
+    user: github_types.GitHubAccount
+    organization: typing.NotRequired[github_types.GitHubOrganization]
+
+
 async def get_membership(
     account_id: GitHubAccountId, logged_user: CurrentUser
-) -> github_types.GitHubMembership:
+) -> Membership:
     if account_id == logged_user.id:
         # We are always admin of our account
-        return github_types.GitHubMembership(
-            state="active",
-            role="admin",
-            user=logged_user.to_github_account(),
-            organization=logged_user.to_github_account(),
-        )
+        return Membership(role="admin", user=logged_user.to_github_account())
 
     async with github.AsyncGitHubInstallationClient(
         github.GitHubTokenAuth(logged_user.oauth_access_token)
     ) as client:
         try:
-            return typing.cast(
+            gh_membership = typing.cast(
                 github_types.GitHubMembership,
                 await client.item(f"/user/memberships/orgs/{account_id}"),
+            )
+
+            return Membership(
+                role=gh_membership["role"],
+                user=gh_membership["user"],
+                organization=gh_membership["organization"],
             )
         except http.HTTPNotFound:
             raise fastapi.HTTPException(403)

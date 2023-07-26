@@ -866,12 +866,20 @@ class GitHubCompareCommits(typing.TypedDict):
 
 GitHubMembershipRole = typing.Literal["admin", "member"]
 
+GitHubOrganizationIdType = typing.NewType("GitHubOrganizationIdType", int)
 
+
+class GitHubOrganization(typing.TypedDict):
+    login: GitHubLogin
+    id: GitHubOrganizationIdType
+
+
+# https://docs.github.com/en/rest/orgs/members?apiVersion=2022-11-28#get-an-organization-membership-for-the-authenticated-user
 class GitHubMembership(typing.TypedDict):
     state: typing.Literal["active", "pending"]
     role: GitHubMembershipRole
     user: GitHubAccount
-    organization: GitHubAccount
+    organization: GitHubOrganization
 
 
 GitHubWorkflowRunConclusionType = typing.Literal[

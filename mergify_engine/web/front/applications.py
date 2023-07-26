@@ -96,7 +96,7 @@ async def create_application(
     session: database.Session,
     current_user: security.CurrentUser,
     membership: typing.Annotated[
-        github_types.GitHubMembership, fastapi.Depends(security.get_membership)
+        security.Membership, fastapi.Depends(security.get_membership)
     ],
 ) -> ApplicationJSONWithAPIKey:
     # NOTE(sileht): the engine and dashboard token verification expected the
@@ -120,14 +120,24 @@ async def create_application(
             detail=f"too many applications : {count} > {APPLICATIONS_LIMIT - 1}",
         )
 
-    await github_account.GitHubAccount.create_or_update(
-        session,
-        github_account.GitHubAccountDict(
-            id=account_id,
-            login=membership["organization"]["login"],
-            type=membership["organization"]["type"],
-        ),
-    )
+    if "organization" in membership:
+        await github_account.GitHubAccount.create_or_update(
+            session,
+            github_account.GitHubAccountDict(
+                id=account_id,
+                login=membership["organization"]["login"],
+                type="Organization",
+            ),
+        )
+    else:
+        await github_account.GitHubAccount.create_or_update(
+            session,
+            github_account.GitHubAccountDict(
+                id=account_id,
+                login=membership["user"]["login"],
+                type=membership["user"]["type"],
+            ),
+        )
 
     application = application_keys.ApplicationKey()
 

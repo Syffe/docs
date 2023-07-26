@@ -139,6 +139,63 @@ async def test_applications_life_cycle(
     assert len(list_data["applications"]) == 0
 
 
+async def test_create_application_for_orgs(
+    db: sqlalchemy.ext.asyncio.AsyncSession,
+    web_client: conftest.CustomTestClient,
+    respx_mock: respx.MockRouter,
+) -> None:
+    user = github_user.GitHubUser(
+        id=424242,
+        login="user1",
+        oauth_access_token="token",
+    )
+    db.add(user)
+    await db.commit()
+
+    respx_mock.post(f"{settings.SUBSCRIPTION_URL}/engine/applications").respond(
+        status_code=404
+    )
+
+    await web_client.log_as(user.id)
+
+    respx_mock.get("https://api.github.com/user/memberships/orgs/1234").respond(
+        status_code=200,
+        json={
+            "state": "active",
+            "role": "admin",
+            "user": {"id": 424242, "login": "user1"},
+            "organization": {"id": 1234, "login": "org1"},
+        },
+    )
+    resp = await web_client.post(
+        "/front/github-account/1234/applications",
+        json={"name": "my first app"},
+    )
+    assert resp.status_code == 200
+    create_data = resp.json()
+    assert create_data["id"] == 1
+    assert create_data["name"] == "my first app"
+    assert create_data["created_at"] is not None
+    assert create_data["created_by"] is not None
+    assert create_data["created_by"]["login"] == "user1"
+    assert len(create_data["api_access_key"]) == 32
+    assert len(create_data["api_secret_key"]) == 43
+
+    # test the generated key
+    resp = await web_client.get(
+        "/v1/application",
+        headers={
+            "Authorization": f"bearer {create_data['api_access_key']}{create_data['api_secret_key']}"
+        },
+    )
+    assert resp.status_code == 200
+    assert resp.json() == {
+        "account_scope": {"id": 1234, "login": "org1"},
+        "id": 1,
+        "name": "my first app",
+    }
+
+
 async def test_applications_bad_body(
     db: sqlalchemy.ext.asyncio.AsyncSession,
     web_client: conftest.CustomTestClient,
@@ -266,7 +323,12 @@ async def test_applications_permissions_for_orgs(
     else:
         request_mock.respond(
             status_code=200,
-            json={"state": "active", "role": role},
+            json={
+                "state": "active",
+                "role": role,
+                "user": {"id": 424242, "login": "user1"},
+                "organization": {"id": 1234, "login": "org1"},
+            },
         )
 
     await web_client.log_as(user.id)
