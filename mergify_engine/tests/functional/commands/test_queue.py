@@ -289,14 +289,14 @@ class TestQueueCommand(base.FunctionalTestBase):
 
 <details>
 
-- [ ] any of: [🛡 GitHub branch protection]
-  - [ ] `check-neutral=continuous-integration/fake-ci`
-  - [ ] `check-skipped=continuous-integration/fake-ci`
-  - [ ] `check-success=continuous-integration/fake-ci`
+- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
+  - [ ] all of: [:pushpin: queue conditions of queue `default`]
+    - [ ] any of: [🛡 GitHub branch protection]
+      - [ ] `check-neutral=continuous-integration/fake-ci`
+      - [ ] `check-skipped=continuous-integration/fake-ci`
+      - [ ] `check-success=continuous-integration/fake-ci`
 - [X] `-draft` [:pushpin: queue requirement]
 - [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
-- [X] any of: [:twisted_rightwards_arrows: queue conditions]
-  - [X] all of [:pushpin: queue conditions of queue `default`]
 
 </details>
 """
@@ -312,14 +312,14 @@ class TestQueueCommand(base.FunctionalTestBase):
 
 <details>
 
-- [ ] any of: [🛡 GitHub branch protection]
-  - [ ] `check-neutral=continuous-integration/fake-ci`
-  - [ ] `check-skipped=continuous-integration/fake-ci`
-  - [ ] `check-success=continuous-integration/fake-ci`
+- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
+  - [ ] all of: [:pushpin: queue conditions of queue `default`]
+    - [ ] any of: [🛡 GitHub branch protection]
+      - [ ] `check-neutral=continuous-integration/fake-ci`
+      - [ ] `check-skipped=continuous-integration/fake-ci`
+      - [ ] `check-success=continuous-integration/fake-ci`
 - [X] `-draft` [:pushpin: queue requirement]
 - [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
-- [X] any of: [:twisted_rightwards_arrows: queue conditions]
-  - [X] all of [:pushpin: queue conditions of queue `default`]
 
 </details>
 """
@@ -688,14 +688,14 @@ class TestQueueCommand(base.FunctionalTestBase):
 
 <details>
 
-- [ ] any of: [🛡 GitHub branch protection]
-  - [ ] `check-neutral=continuous-integration/fake-ci`
-  - [ ] `check-skipped=continuous-integration/fake-ci`
-  - [ ] `check-success=continuous-integration/fake-ci`
+- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
+  - [ ] all of: [:pushpin: queue conditions of queue `default`]
+    - [ ] any of: [🛡 GitHub branch protection]
+      - [ ] `check-neutral=continuous-integration/fake-ci`
+      - [ ] `check-skipped=continuous-integration/fake-ci`
+      - [ ] `check-success=continuous-integration/fake-ci`
 - [X] `-draft` [:pushpin: queue requirement]
 - [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
-- [X] any of: [:twisted_rightwards_arrows: queue conditions]
-  - [X] all of [:pushpin: queue conditions of queue `default`]
 
 </details>
 """
@@ -780,17 +780,21 @@ class TestQueueCommand(base.FunctionalTestBase):
         assert (
             """<details>
 
-- [ ] any of: [🛡 GitHub branch protection]
-  - [ ] `check-neutral=continuous-integration/fake-ci`
-  - [ ] `check-skipped=continuous-integration/fake-ci`
-  - [ ] `check-success=continuous-integration/fake-ci`
-- [X] `-draft` [:pushpin: queue requirement]
-- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
-- [X] any of: [:twisted_rightwards_arrows: queue conditions]
-  - [X] all of: [:pushpin: queue conditions of queue `specialq`]
-    - [X] `label=specialq`
+- [ ] any of: [:twisted_rightwards_arrows: queue conditions]
   - [ ] all of: [:pushpin: queue conditions of queue `default`]
     - [ ] `label=default`
+    - [ ] any of: [🛡 GitHub branch protection]
+      - [ ] `check-neutral=continuous-integration/fake-ci`
+      - [ ] `check-skipped=continuous-integration/fake-ci`
+      - [ ] `check-success=continuous-integration/fake-ci`
+  - [ ] all of: [:pushpin: queue conditions of queue `specialq`]
+    - [ ] any of: [🛡 GitHub branch protection]
+      - [ ] `check-neutral=continuous-integration/fake-ci`
+      - [ ] `check-skipped=continuous-integration/fake-ci`
+      - [ ] `check-success=continuous-integration/fake-ci`
+    - [X] `label=specialq`
+- [X] `-draft` [:pushpin: queue requirement]
+- [X] `-mergify-configuration-changed` [:pushpin: queue -> allow_merging_configuration_change setting requirement]
 
 </details>
 """

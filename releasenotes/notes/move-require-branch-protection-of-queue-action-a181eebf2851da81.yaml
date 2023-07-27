@@ -1,0 +1,7 @@
+---
+deprecations:
+  - |
+    The ``require_branch_protection`` option of the ``queue`` action has been moved
+    to the ``queue_rules``. A brownout is planned to happen on September 26th 2023
+    and the option will be completely removed on October 26th 2023.
+    For more informations: https://docs.mergify.com/actions/queue/#queue-rules

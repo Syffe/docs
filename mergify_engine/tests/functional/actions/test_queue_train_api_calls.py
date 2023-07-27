@@ -111,6 +111,7 @@ class TestTrainApiCalls(base.FunctionalTestBase):
                     queue_conditions=conditions.QueueRuleMergeConditions([]),
                     config=queue_config,
                     priority_rules=pr_config.PriorityRules([]),
+                    require_branch_protection=True,
                 )
             ]
         )
@@ -250,6 +251,7 @@ pull_requests:
                     queue_conditions=conditions.QueueRuleMergeConditions([]),
                     config=queue_config,
                     priority_rules=pr_config.PriorityRules([]),
+                    require_branch_protection=True,
                 )
             ]
         )
@@ -355,6 +357,7 @@ pull_requests:
                     queue_conditions=conditions.QueueRuleMergeConditions([]),
                     config=queue_config,
                     priority_rules=pr_config.PriorityRules([]),
+                    require_branch_protection=True,
                 )
             ]
         )
@@ -433,6 +436,7 @@ pull_requests:
                     queue_conditions=conditions.QueueRuleMergeConditions([]),
                     config=queue_config,
                     priority_rules=pr_config.PriorityRules([]),
+                    require_branch_protection=True,
                 )
             ]
         )

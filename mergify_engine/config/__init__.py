@@ -386,6 +386,8 @@ class EngineSettings(
 
     HEALTHCHECK_SHARED_TOKEN: pydantic.SecretStr | None = None
 
+    ALLOW_REQUIRE_BRANCH_PROTECTION_QUEUE_ATTRIBUTE: bool = pydantic.Field(default=True)
+
     class Config(pydantic.BaseSettings.Config):
         case_sensitive = True
         env_prefix = "MERGIFYENGINE_"

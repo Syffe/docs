@@ -19,6 +19,7 @@ from mergify_engine import settings
 from mergify_engine import subscription
 from mergify_engine import utils
 from mergify_engine import yaml
+from mergify_engine.engine import actions_runner
 from mergify_engine.queue import merge_train
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules.config import partition_rules as partr_config
@@ -1240,6 +1241,12 @@ class TestQueueAction(base.FunctionalTestBase):
         p1 = await self.create_pr()
         await self.add_label(p1["number"], "queue")
         await self.run_engine()
+
+        summary = await self.wait_for_check_run(name="Summary")
+        assert (
+            actions_runner.REQUIRE_BRANCH_PROTECTION_QUEUE_DEPRECATION_SAAS
+            in summary["check_run"]["output"]["summary"]
+        )
 
         q = await self.get_train()
         await self.assert_merge_queue_contents(

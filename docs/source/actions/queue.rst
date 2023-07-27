@@ -593,7 +593,8 @@ These are the options of the ``queue`` action:
    * - ``require_branch_protection``
      - bool
      - true
-     - Whether branch protections are required for queueing pull requests.
+     - | |deprecated tag|
+       | Whether branch protections are required for queueing pull requests.
 
    * - ``update_bot_account``
      - :ref:`data type template`
@@ -787,10 +788,17 @@ A ``queue_rules`` takes the following parameters:
        |premium plan tag|
        |advanced plan tag|
        When creating a draft pull request for a queue, this prefix will be used to name the branch.
+
    * - ``queue_conditions``
      - list of :ref:`Conditions`
      -
      - The list of ``conditions`` to match to queue the pull request.
+
+   * - ``require_branch_protection``
+     - bool
+     - true
+     - Whether branch protections are required for queueing pull requests.
+
    * - ``speculative_checks``
      - int
      - 1

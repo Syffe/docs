@@ -16,6 +16,7 @@ from mergify_engine import date
 from mergify_engine import delayed_refresh
 from mergify_engine import exceptions
 from mergify_engine import github_types
+from mergify_engine import settings
 from mergify_engine import subscription
 from mergify_engine import utils
 from mergify_engine import yaml
@@ -31,6 +32,21 @@ NOT_APPLICABLE_TEMPLATE = """<details>
 <summary>Rules not applicable to this pull request:</summary>
 %s
 </details>"""
+
+REQUIRE_BRANCH_PROTECTION_QUEUE_DEPRECATION_GHES = """
+:bangbang: **Action Required** :bangbang:
+> **The configuration uses the deprecated `require_branch_protection` in the queue action.**
+> This option will be removed on a future version.
+> For more information: https://docs.mergify.com/actions/queue/
+"""
+
+REQUIRE_BRANCH_PROTECTION_QUEUE_DEPRECATION_SAAS = """
+:bangbang: **Action Required** :bangbang:
+> **The configuration uses the deprecated `require_branch_protection` in the queue action.**
+> A brownout is planned on September 26th, 2023.
+> This option will be removed on October 26th, 2023.
+> For more information: https://docs.mergify.com/actions/queue/
+"""
 
 
 async def get_already_merged_summary(
@@ -140,6 +156,19 @@ async def gen_summary(
 ) -> tuple[str, str]:
     summary = ""
     summary += await get_already_merged_summary(ctxt, match)
+
+    has_require_branch_protection_queue_action = [
+        action
+        for rule in match.rules
+        for name, action in rule.actions.items()
+        if name == "queue" and "require_branch_protection" in action.raw_config
+    ]
+
+    if has_require_branch_protection_queue_action:
+        if settings.SAAS_MODE:
+            summary += REQUIRE_BRANCH_PROTECTION_QUEUE_DEPRECATION_SAAS
+        else:
+            summary += REQUIRE_BRANCH_PROTECTION_QUEUE_DEPRECATION_GHES
 
     matching_rules_to_display = match.matching_rules[:]
     not_applicable_base_changeable_attributes_rules_to_display = []

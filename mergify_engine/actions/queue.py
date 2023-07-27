@@ -21,6 +21,7 @@ from mergify_engine import dashboard
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import queue
+from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine import subscription
 from mergify_engine import utils
@@ -45,6 +46,13 @@ from mergify_engine.rules.config import queue_rules as qr_config
 BRANCH_PROTECTION_REQUIRED_STATUS_CHECKS_STRICT = (
     "Require branches to be up to date before merging"
 )
+
+DEPRECATED_MESSAGE_REQUIRE_BRANCH_PROTECTION_QUEUE_ACTION = """The configuration uses the deprecated `require_branch_protection` attribute of the queue action. This attribute has been moved to the `queue_rules`.
+A brownout is planned on September 26th, 2023.
+This option will be removed on October 26th, 2023.
+For more information: https://docs.mergify.com/actions/queue/
+
+`%s` is invalid"""
 
 
 @dataclasses.dataclass
@@ -1262,21 +1270,17 @@ class QueueAction(actions.Action):
         "fast-forward",
     )
 
-    validator: typing.ClassVar[actions.ValidatorT] = voluptuous.All(
-        qr_config._has_only_one_of(
-            "method",
-            "merge_method",
-            msg=merge_method_exclusive_msg,
-        ),
-        {
+    @property
+    def validator(self) -> actions.ValidatorT:
+        config = {
             voluptuous.Required("name", default=None): voluptuous.Any(
                 str,
                 None,
             ),
             voluptuous.Required(
                 "merge_method", default=None
-            ): merge_method_value_validator,
-            "method": merge_method_value_validator,  # for retro-compatibility
+            ): self.merge_method_value_validator,
+            "method": self.merge_method_value_validator,  # for retro-compatibility
             voluptuous.Required(
                 "merge_bot_account", default=None
             ): types.Jinja2WithNone,
@@ -1289,13 +1293,37 @@ class QueueAction(actions.Action):
             voluptuous.Required(
                 "commit_message_template", default=None
             ): types.Jinja2WithNone,
-            voluptuous.Required("require_branch_protection", default=True): bool,
             voluptuous.Required(
                 "allow_merging_configuration_change", default=False
             ): bool,
             voluptuous.Required("autosquash", default=True): bool,
-        },
-    )
+        }
+
+        if settings.ALLOW_REQUIRE_BRANCH_PROTECTION_QUEUE_ATTRIBUTE:
+            config[
+                voluptuous.Required("require_branch_protection", default=True)
+            ] = bool
+        else:
+            config[
+                voluptuous.Required(
+                    "require_branch_protection", default=utils.UnsetMarker
+                )
+            ] = utils.DeprecatedOption(
+                DEPRECATED_MESSAGE_REQUIRE_BRANCH_PROTECTION_QUEUE_ACTION,
+                True,
+            )
+
+        return typing.cast(
+            actions.ValidatorT,
+            voluptuous.All(
+                qr_config._has_only_one_of(
+                    "method",
+                    "merge_method",
+                    msg=self.merge_method_exclusive_msg,
+                ),
+                config,
+            ),
+        )
 
     default_restrictions: typing.ClassVar[list[typing.Any]] = [
         "sender-permission>=write"
@@ -1342,12 +1370,6 @@ class QueueAction(actions.Action):
         self, ctxt: context.Context
     ) -> list[conditions.RuleConditionNode]:
         conditions_requirements = []
-        if self.config["require_branch_protection"]:
-            conditions_requirements.extend(
-                await conditions.get_branch_protection_conditions(
-                    ctxt.repository, ctxt.pull["base"]["ref"], strict=False
-                )
-            )
 
         conditions_requirements.append(
             conditions.get_mergify_configuration_change_conditions(
@@ -1361,7 +1383,11 @@ class QueueAction(actions.Action):
             conditions_requirements.append(merge_after_condition)
 
         if queue_conditions := await conditions.get_queue_conditions(
-            ctxt, self.config["name"]
+            ctxt,
+            self.config["name"],
+            # NOTE: Retrocompatibility, remove once the config option has been removed
+            # MRGFY-2495
+            require_branch_protection=self.config["require_branch_protection"],
         ):
             conditions_requirements.append(queue_conditions)
 

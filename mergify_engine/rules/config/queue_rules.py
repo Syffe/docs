@@ -57,6 +57,7 @@ class QueueRule:
     merge_conditions: conditions_mod.QueueRuleMergeConditions
     queue_conditions: conditions_mod.QueueRuleMergeConditions
     priority_rules: priority_rules_config.PriorityRules
+    require_branch_protection: bool
 
     class T_from_dict(QueueConfig, total=False):
         name: QueueName
@@ -68,6 +69,7 @@ class QueueRule:
         routing_conditions: conditions_mod.QueueRuleMergeConditions
         queue_conditions: conditions_mod.QueueRuleMergeConditions
         priority_rules: priority_rules_config.PriorityRules
+        require_branch_protection: bool
 
     @property
     def conditions(self) -> conditions_mod.QueueRuleMergeConditions:
@@ -87,6 +89,8 @@ class QueueRule:
         queue_conditions = d.pop("routing_conditions", None)
         if queue_conditions is None:
             queue_conditions = d.pop("queue_conditions")
+
+        require_branch_protection = d.pop("require_branch_protection", True)
 
         priority_rules = d.pop("priority_rules")
 
@@ -108,6 +112,7 @@ class QueueRule:
             merge_conditions=merge_conditions,
             queue_conditions=queue_conditions,
             priority_rules=priority_rules,
+            require_branch_protection=require_branch_protection,
         )
 
     async def get_evaluated_queue_rule(
@@ -147,6 +152,7 @@ class QueueRule:
             ),
             config=self.config,
             priority_rules=self.priority_rules,
+            require_branch_protection=self.require_branch_protection,
         )
         queue_rules_evaluator = await QueuesRulesEvaluator.create(
             [queue_rule_with_extra_conditions],
@@ -229,6 +235,7 @@ class QueueRules:
                 ),
                 config=rule.config,
                 priority_rules=rule.priority_rules,
+                require_branch_protection=rule.require_branch_protection,
             )
             for rule in self.rules
         ]
@@ -345,6 +352,7 @@ QueueRulesSchema = voluptuous.All(
                     [voluptuous.Coerce(cond_config.RuleConditionSchema)],
                     voluptuous.Coerce(conditions_mod.QueueRuleMergeConditions),
                 ),
+                voluptuous.Required("require_branch_protection", default=True): bool,
                 voluptuous.Required("speculative_checks", default=1): voluptuous.All(
                     int, voluptuous.Range(min=1, max=20)
                 ),

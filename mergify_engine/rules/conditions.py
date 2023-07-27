@@ -592,21 +592,33 @@ def get_merge_after_condition(ctxt: context.Context) -> RuleConditionNode | None
 async def get_queue_conditions(
     ctxt: context.Context,
     for_queue_name: str | None = None,
+    require_branch_protection: bool = False,
 ) -> RuleConditionNode | None:
     mergify_config = await ctxt.repository.get_mergify_config()
 
-    queue_conditions = {
-        rule.name: typing.cast(
-            RuleConditionNode, rule.queue_conditions.condition.copy()
-        )
-        for rule in mergify_config["queue_rules"]
-        if for_queue_name is None or rule.name == for_queue_name
-    }
+    queue_conditions: dict[str, RuleConditionNode] = {}
+    for rule in mergify_config["queue_rules"]:
+        if for_queue_name is not None and rule.name != for_queue_name:
+            continue
 
-    for queue_name, queue_condition in queue_conditions.items():
-        queue_condition.description = (
-            f":pushpin: queue conditions of queue `{queue_name}`"
-        )
+        if rule.require_branch_protection and require_branch_protection:
+            branch_protections = await get_branch_protection_conditions(
+                ctxt.repository, ctxt.pull["base"]["ref"], strict=False
+            )
+            if branch_protections:
+                and_conds: list[RuleConditionNode] = branch_protections
+                if rule.queue_conditions.condition._conditions:
+                    and_conds.extend(rule.queue_conditions.condition.copy().conditions)
+
+                conditions = RuleConditionCombination({"and": and_conds})
+            else:
+                conditions = rule.queue_conditions.condition.copy()
+
+        else:
+            conditions = rule.queue_conditions.condition.copy()
+
+        conditions.description = f":pushpin: queue conditions of queue `{rule.name}`"
+        queue_conditions[rule.name] = conditions
 
     if len(queue_conditions) >= 1:
         return RuleConditionCombination(
