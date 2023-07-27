@@ -1252,12 +1252,13 @@ class FunctionalTestBase(IsolatedAsyncioTestCaseWithPytestAsyncioGlue):
         await self.git(*args)
 
         await self.git("push", "--quiet", "origin", pr["head"]["ref"])
-
         await self.wait_for("push", {"ref": f"refs/heads/{pr['head']['ref']}"})
+        await self.wait_for_pull_request("synchronize", pr["number"])
+
         commits = await self.get_commits(pr["number"])
         assert len(commits) == 2
 
-        # We can't use `-m` with those (git doesn't  allow it), so we
+        # We can't use `-m` with those (git doesn't allow it), so we
         # need to trick a bit to have the same behavior.
         if autosquash_commit_body is not None and commit_type in (
             "fixup=amend",
