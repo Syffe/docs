@@ -1,6 +1,5 @@
 import typing
 
-import msgpack
 import numpy as np
 import numpy.typing as npt
 import pytest
@@ -10,28 +9,31 @@ import sqlalchemy.ext.asyncio
 
 from mergify_engine import github_events
 from mergify_engine import github_types
-from mergify_engine import redis_utils
 from mergify_engine import settings
-from mergify_engine.ci import event_processing
 from mergify_engine.log_embedder import github_action
 from mergify_engine.log_embedder import openai_embedding
+from mergify_engine.models import github_account
 from mergify_engine.models import github_actions
+from mergify_engine.models import github_repository
 from mergify_engine.tests.openai_embedding_dataset import OPENAI_EMBEDDING_DATASET
 from mergify_engine.tests.openai_embedding_dataset import (
     OPENAI_EMBEDDING_DATASET_NUMPY_FORMAT,
 )
+from mergify_engine.tests.unit.log_embedder import utils
 
 
 async def test_embed_logs(
     respx_mock: respx.MockRouter,
-    redis_links: redis_utils.RedisLinks,
     db: sqlalchemy.ext.asyncio.AsyncSession,
     sample_ci_events_to_process: dict[str, github_events.CIEventToProcess],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    respx_mock.get(
-        "https://api.github.com/users/mergifyio-testing/installation"
-    ).respond(
+    owner = github_account.GitHubAccount(id=1, login="owner_login")
+    db.add(owner)
+    repo = github_repository.GitHubRepository(id=1, owner=owner, name="repo_name")
+    db.add(repo)
+
+    respx_mock.get(f"https://api.github.com/users/{owner.login}/installation").respond(
         200,
         json=github_types.GitHubInstallation(  # type: ignore[arg-type]
             {
@@ -48,10 +50,6 @@ async def test_embed_logs(
     respx_mock.post("https://api.github.com/app/installations/0/access_tokens").respond(
         200, json={"token": "<app_token>", "expires_at": "2100-12-31T23:59:59Z"}
     )
-    respx_mock.get(
-        "https://api.github.com/repos/mergifyio-testing/functional-testing-repo-DouglasBlackwood/actions/jobs/13403743463/logs"
-    ).respond(200, text="toto")
-
     respx_mock.post(
         openai_embedding.OPENAI_EMBEDDINGS_END_POINT,
         json={
@@ -74,40 +72,76 @@ async def test_embed_logs(
         },
     )
 
-    stream_event = {
-        "event_type": "workflow_job",
-        "data": msgpack.packb(
-            sample_ci_events_to_process["workflow_job.completed.json"].slim_event
-        ),
-    }
-    await redis_links.stream.xadd("gha_workflow_job", stream_event)
+    # NOTE(Kontrolix): Reduce batch size to speed up test
+    github_action.LOG_EMBEDDER_JOBS_BATCH_SIZE = 2
 
-    await event_processing.process_event_streams(redis_links)
+    # Create 3 jobs (LOG_EMBEDDER_JOBS_BATCH_SIZE + 1)
+    for i in range(3):
+        job = await utils.add_job(
+            db,
+            {
+                "id": i,
+                "repository": repo,
+                "conclusion": github_actions.WorkflowJobConclusion.FAILURE,
+            },
+        )
+        respx_mock.get(
+            f"https://api.github.com/repos/{owner.login}/{repo.name}/actions/jobs/{job.id}/logs"
+        ).respond(200, text="toto")
+    await db.commit()
 
     pending_work = await github_action.embed_logs()
     assert not pending_work
-    jobs = list(await db.scalars(sqlalchemy.select(github_actions.WorkflowJob)))
-    assert len(jobs) == 1
-    assert jobs[0].log_embedding is None
+    jobs = (await db.scalars(sqlalchemy.select(github_actions.WorkflowJob))).all()
+    assert len(jobs) == 3
+    assert all(job.log_embedding is None for job in jobs)
 
     db.expunge_all()
 
     monkeypatch.setattr(
         settings,
         "LOG_EMBEDDER_ENABLED_ORGS",
-        [
-            sample_ci_events_to_process["workflow_job.completed.json"].slim_event[
-                "repository"
-            ]["owner"]["login"]
-        ],
+        [owner.login],
     )
+    pending_work = await github_action.embed_logs()
+    assert pending_work
     pending_work = await github_action.embed_logs()
     assert not pending_work
 
-    jobs = list(await db.scalars(sqlalchemy.select(github_actions.WorkflowJob)))
-    assert len(jobs) == 1
-    assert np.array_equal(
-        # FIXME(sileht): This typing issue is annoying, sqlalchemy.Vector is not recognized as ndarray by mypy
-        typing.cast(npt.NDArray[np.float32], jobs[0].log_embedding),
-        OPENAI_EMBEDDING_DATASET_NUMPY_FORMAT["toto"],
+    jobs = (await db.scalars(sqlalchemy.select(github_actions.WorkflowJob))).all()
+    assert len(jobs) == 3
+    assert all(
+        np.array_equal(
+            # FIXME(sileht): This typing issue is annoying, sqlalchemy.Vector is not recognized as ndarray by mypy
+            typing.cast(npt.NDArray[np.float32], job.log_embedding),
+            OPENAI_EMBEDDING_DATASET_NUMPY_FORMAT["toto"],
+        )
+        for job in jobs
     )
+    assert all(job.neighbours_computed_at is not None for job in jobs)
+
+    # NOTE(Kontolix): Validate that if embedding has been computed for a job but neighbours
+    # have not been computed, if we call the service, only neighbours are computed for that job.
+
+    embedding_control_value = np.array([np.float32(-1)] * 1536)
+    # Change embedding value to be sure that it is not compute again
+    jobs[0].log_embedding = embedding_control_value
+    jobs[0].neighbours_computed_at = None
+    await db.commit()
+
+    pending_work = await github_action.embed_logs()
+    assert not pending_work
+
+    db.expunge_all()
+
+    a_job = await db.scalar(
+        sqlalchemy.select(github_actions.WorkflowJob).where(
+            github_actions.WorkflowJob.id == jobs[0].id
+        )
+    )
+    assert a_job is not None
+    assert np.array_equal(
+        typing.cast(npt.NDArray[np.float32], a_job.log_embedding),
+        embedding_control_value,
+    )
+    assert a_job.neighbours_computed_at is not None

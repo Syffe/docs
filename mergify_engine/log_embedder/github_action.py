@@ -51,23 +51,38 @@ async def embed_logs() -> bool:
 
     async with database.create_session() as session:
         stmt = (
-            (
-                sqlalchemy.select(github_actions.WorkflowJob)
-                .join(github_repository.GitHubRepository)
-                .join(
-                    github_repository.GitHubRepository.owner.and_(
-                        github_account.GitHubAccount.login.in_(
-                            settings.LOG_EMBEDDER_ENABLED_ORGS
-                        )
-                    )
-                )
-                .where(github_actions.WorkflowJob.log_embedding.is_(None))
+            sqlalchemy.select(github_actions.WorkflowJob)
+            .join(github_repository.GitHubRepository)
+            .join(
+                github_account.GitHubAccount,
+                sqlalchemy.and_(
+                    github_repository.GitHubRepository.owner_id
+                    == github_account.GitHubAccount.id,
+                    github_account.GitHubAccount.login.in_(
+                        settings.LOG_EMBEDDER_ENABLED_ORGS
+                    ),
+                ),
+            )
+            .where(
+                github_actions.WorkflowJob.conclusion
+                == github_actions.WorkflowJobConclusion.FAILURE,
+                sqlalchemy.or_(
+                    github_actions.WorkflowJob.log_embedding.is_(None),
+                    github_actions.WorkflowJob.neighbours_computed_at.is_(None),
+                ),
             )
             .order_by(github_actions.WorkflowJob.completed_at.asc())
             .limit(LOG_EMBEDDER_JOBS_BATCH_SIZE)
         )
         jobs = (await session.scalars(stmt)).all()
+        job_ids = []
         for job in jobs:
-            await embed_log(job)
+            if job.log_embedding is None:
+                await embed_log(job)
+            job_ids.append(job.id)
             await session.commit()
+        await github_actions.WorkflowJob.compute_logs_embedding_cosine_similarity(
+            session, job_ids
+        )
+        await session.commit()
         return LOG_EMBEDDER_JOBS_BATCH_SIZE - len(jobs) == 0

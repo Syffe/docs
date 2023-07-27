@@ -228,6 +228,10 @@ class WorkflowJob(models.Base):
         lazy="joined"
     )
 
+    neighbours_computed_at: orm.Mapped[datetime.datetime | None] = orm.mapped_column(
+        nullable=True, anonymizer_config=None
+    )
+
     @classmethod
     async def insert(
         cls,
@@ -253,6 +257,81 @@ class WorkflowJob(models.Base):
                     ),
                 )
             )
+
+    @classmethod
+    async def compute_logs_embedding_cosine_similarity(
+        cls,
+        session: sqlalchemy.ext.asyncio.AsyncSession,
+        job_ids: list[int],
+    ) -> None:
+        job = orm.aliased(cls, name="job")
+        other_job = orm.aliased(cls, name="other_job")
+
+        select_statement = (
+            sqlalchemy.select(
+                job.id.label("job_id"),
+                other_job.id.label("neighbour_job_id"),
+                1
+                - (job.log_embedding.cosine_distance(other_job.log_embedding)).label(
+                    "cosine_similarity"
+                ),
+            )
+            .select_from(job)
+            .join(
+                other_job,
+                sqlalchemy.and_(
+                    other_job.id != job.id,
+                    other_job.name == job.name,
+                    other_job.log_embedding.isnot(None),
+                    other_job.repository_id == job.repository_id,
+                ),
+            )
+            .where(job.id.in_(job_ids))
+        )
+
+        insert_statement = postgresql.insert(WorkflowJobLogNeighbours).from_select(
+            [
+                WorkflowJobLogNeighbours.job_id,
+                WorkflowJobLogNeighbours.neighbour_job_id,
+                WorkflowJobLogNeighbours.cosine_similarity,
+            ],
+            select_statement,
+        )
+
+        upsert_statement = insert_statement.on_conflict_do_update(
+            index_elements=[
+                WorkflowJobLogNeighbours.job_id,
+                WorkflowJobLogNeighbours.neighbour_job_id,
+            ],
+            set_={"cosine_similarity": insert_statement.excluded.cosine_similarity},
+            where=WorkflowJobLogNeighbours.cosine_similarity
+            != insert_statement.excluded.cosine_similarity,
+        )
+
+        await session.execute(upsert_statement)
+
+        await session.execute(
+            sqlalchemy.update(cls)
+            .where(cls.id.in_(job_ids))
+            .values(neighbours_computed_at=sqlalchemy.func.now())
+        )
+
+
+class WorkflowJobLogNeighbours(models.Base):
+    __tablename__ = "gha_workflow_job_log_neighbours"
+
+    job_id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("gha_workflow_job.id"),
+        primary_key=True,
+        anonymizer_config=None,
+    )
+    neighbour_job_id: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.ForeignKey("gha_workflow_job.id"),
+        primary_key=True,
+        anonymizer_config=None,
+    )
+
+    cosine_similarity: orm.Mapped[float] = orm.mapped_column(anonymizer_config=None)
 
 
 # https://docs.sqlalchemy.org/en/20/orm/basic_relationships.html#association-object
