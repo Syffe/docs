@@ -2674,16 +2674,16 @@ files = [
 
 [[package]]
 name = "semgrep"
-version = "1.33.2"
+version = "1.34.0"
 description = "Lightweight static analysis for many languages. Find bug variants with patterns that look like source code."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "semgrep-1.33.2-cp37.cp38.cp39.cp310.cp311.py37.py38.py39.py310.py311-none-any.whl", hash = "sha256:70fc058d9516d916108c9b5223f202774b77798d379f20eaefd28f152c03d43d"},
-    {file = "semgrep-1.33.2-cp37.cp38.cp39.cp310.cp311.py37.py38.py39.py310.py311-none-macosx_10_14_x86_64.whl", hash = "sha256:d5e07dc7b24c4939908e5464d317d0f9d77c82b0fdde0eb5804240dd699a3cd7"},
-    {file = "semgrep-1.33.2-cp37.cp38.cp39.cp310.cp311.py37.py38.py39.py310.py311-none-macosx_11_0_arm64.whl", hash = "sha256:301ec877740a535817b9b4c74ff8cb45130da1f5b48f2fff5bbe737cf57633f0"},
-    {file = "semgrep-1.33.2-cp37.cp38.cp39.cp310.cp311.py37.py38.py39.py310.py311-none-manylinux2014_aarch64.whl", hash = "sha256:5e457bab413ce21224ffe5e55bc170b06e2e2c4ae573e3943d852906e447b51b"},
-    {file = "semgrep-1.33.2.tar.gz", hash = "sha256:fad13d82cd78bcec862c2036e248520a8cd68263eb03d30d60148294d9960175"},
+    {file = "semgrep-1.34.0-cp37.cp38.cp39.cp310.cp311.py37.py38.py39.py310.py311-none-any.whl", hash = "sha256:3eec6679cd9cb28367d28d03479a098085d1d969c5e45a67bc5b718ed95860c2"},
+    {file = "semgrep-1.34.0-cp37.cp38.cp39.cp310.cp311.py37.py38.py39.py310.py311-none-macosx_10_14_x86_64.whl", hash = "sha256:ca12b09a93ccbc9a8f1e904a3d7eace09d2817c266a975401b37254fb42eea3b"},
+    {file = "semgrep-1.34.0-cp37.cp38.cp39.cp310.cp311.py37.py38.py39.py310.py311-none-macosx_11_0_arm64.whl", hash = "sha256:60119043341450cbc20578e5accae3067ece347bb811aa362692069764377dc7"},
+    {file = "semgrep-1.34.0-cp37.cp38.cp39.cp310.cp311.py37.py38.py39.py310.py311-none-manylinux2014_aarch64.whl", hash = "sha256:57a5b525323ca88117accb0a2dee3ced3af22ea5b47b2e022b41b5ad8c07c6c2"},
+    {file = "semgrep-1.34.0.tar.gz", hash = "sha256:874c1be086e1adfb244666febb8e493e5aa0909da765fd1e99ac62f7fc89a838"},
 ]
 
 [package.dependencies]
@@ -3840,4 +3840,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<4.0"
-content-hash = "41e5e27f00ded98178ba55c3bbc5911fb484d7115c88041beb13d85d5fdfb688"
+content-hash = "932a8ac5701ed31786aa903e0f54ebf4e31980c9ffcbac55ad6a4cb09192f5f9"
