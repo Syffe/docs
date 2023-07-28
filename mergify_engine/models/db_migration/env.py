@@ -31,6 +31,7 @@ def do_run_migrations(connection: sqlalchemy.Connection) -> None:
         sqlalchemy_module_prefix="sqlalchemy.",
         transactional_ddl=True,
         transaction_per_migration=True,
+        compare_type=True,
     )
 
     with context.begin_transaction():
