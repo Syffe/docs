@@ -2027,6 +2027,7 @@
   {
     "VulnerabilityID": "CVE-2023-3446",
     "PkgName": "libssl1.1",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-3446",
     "Title": "Excessive time spent checking DH keys and parameters",
     "Severity": "MEDIUM",
@@ -2035,6 +2036,7 @@
   {
     "VulnerabilityID": "CVE-2023-3446",
     "PkgName": "openssl",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-3446",
     "Title": "Excessive time spent checking DH keys and parameters",
     "Severity": "MEDIUM",
