@@ -3,6 +3,39 @@ from __future__ import annotations
 import enum
 
 
+class EventType(enum.StrEnum):
+    ActionAssign = "action.assign"
+    ActionBackport = "action.backport"
+    ActionClose = "action.close"
+    ActionComment = "action.comment"
+    ActionCopy = "action.copy"
+    ActionDeleteHeadBranch = "action.delete_head_branch"
+    ActionDismissReviews = "action.dismiss_reviews"
+    ActionEdit = "action.edit"
+    ActionLabel = "action.label"
+    ActionMerge = "action.merge"
+    ActionPostCheck = "action.post_check"
+    ActionQueueEnter = "action.queue.enter"
+    ActionQueueChecksStart = "action.queue.checks_start"
+    ActionQueueChecksEnd = "action.queue.checks_end"
+    ActionQueueLeave = "action.queue.leave"
+    ActionQueueMerged = "action.queue.merged"
+    ActionRebase = "action.rebase"
+    ActionRefresh = "action.refresh"
+    ActionRequestReviews = "action.request_reviews"
+    ActionRequeue = "action.requeue"
+    ActionReview = "action.review"
+    ActionSquash = "action.squash"
+    ActionUnqueue = "action.unqueue"
+    ActionUpdate = "action.update"
+    QueueFreezeCreate = "queue.freeze.create"
+    QueueFreezeUpdate = "queue.freeze.update"
+    QueueFreezeDelete = "queue.freeze.delete"
+    QueuePauseCreate = "queue.pause.create"
+    QueuePauseUpdate = "queue.pause.update"
+    QueuePauseDelete = "queue.pause.delete"
+
+
 class CheckConclusion(str, enum.Enum):
     # NOTE(lecrepont01): handles checks runs API conclusion values
     PENDING = None

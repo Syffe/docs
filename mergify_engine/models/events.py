@@ -30,12 +30,12 @@ class Event(models.Base):
         autoincrement=True,
         anonymizer_config=None,
     )
-    type: orm.Mapped[str] = orm.mapped_column(
-        sqlalchemy.Text,
+    type: orm.Mapped[enumerations.EventType] = orm.mapped_column(
+        sqlalchemy.Enum(
+            enumerations.EventType, values_callable=lambda x: [e.value for e in x]
+        ),
         index=True,
-        # FIXME(sileht): must be an enum MRGFY-2435
-        # anonymizer_config="anon.random_in_enum(type)",
-        anonymizer_config=None,
+        anonymizer_config="anon.random_in_enum(type)",
     )
     received_at: orm.Mapped[datetime.datetime] = orm.mapped_column(
         sqlalchemy.DateTime(timezone=True),

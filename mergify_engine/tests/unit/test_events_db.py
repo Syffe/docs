@@ -13,6 +13,7 @@ from mergify_engine import eventlogs
 from mergify_engine import events_db
 from mergify_engine import github_types
 from mergify_engine import signals
+from mergify_engine.models import enumerations
 from mergify_engine.models import events as evt_model
 from mergify_engine.queue.merge_train import checks
 from mergify_engine.rules.config import partition_rules
@@ -701,6 +702,17 @@ def test_all_known_events_supported() -> None:
     known_evt_models = set(events_db.EVENT_NAME_TO_MODEL)
     known_evt_names = set(eventlogs.SUPPORTED_EVENT_NAMES)
     # NOTE(lecrepont01): equality will be achieved after MRGFY-2461
+    # assert known_evt_names == known_evt_models
     assert known_evt_names - known_evt_models == {
+        "action.request_reviewers",
+    }
+
+    known_evt_enum_types = {
+        e.value for e in enumerations.EventType.__members__.values()
+    }
+    # NOTE(lecrepont01): equality will be achieved after MRGFY-2461
+    # assert known_evt_names == known_evt_enum_types,
+    # "Type values inserted should be kept in sync with the known event names"
+    assert known_evt_names - known_evt_enum_types == {
         "action.request_reviewers",
     }
