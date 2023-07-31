@@ -1,0 +1,547 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.github.machine-man-preview+json
+      host:
+      - api.github.com
+    method: GET
+    uri: https://api.github.com/app
+  response:
+    content: '{"id":331826,"slug":"mergify-samuelbillaud","node_id":"A_kwHOAmplV84ABRAy","owner":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"name":"mergify-samuelbillaud","description":"Mergify
+      testing installation for samuelbillaud","external_url":"https://mergify.com/","html_url":"https://github.com/apps/mergify-samuelbillaud","created_at":"2023-05-10T07:38:13Z","updated_at":"2023-06-06T11:39:02Z","permissions":{"administration":"read","checks":"write","contents":"write","emails":"read","issues":"write","members":"read","metadata":"read","pages":"write","pull_requests":"write","statuses":"write","workflows":"write"},"events":["check_run","check_suite","issue_comment","member","membership","organization","pull_request","pull_request_review","pull_request_review_comment","pull_request_review_thread","push","repository","status","team","team_add","workflow_job","workflow_run"],"installations_count":1}'
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining,
+        X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes,
+        X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO,
+        X-GitHub-Request-Id, Deprecation, Sunset
+      cache-control:
+      - public, max-age=60, s-maxage=60
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - default-src 'none'
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Mon, 31 Jul 2023 11:41:41 GMT
+      etag:
+      - W/"92bb50fa3af6e9f8acc76427e5a5c06967056525d62e57e1c0e76c33946a4e4b"
+      referrer-policy:
+      - origin-when-cross-origin, strict-origin-when-cross-origin
+      server:
+      - GitHub.com
+      strict-transport-security:
+      - max-age=31536000; includeSubdomains; preload
+      vary:
+      - Accept
+      - Accept-Encoding, Accept, X-Requested-With
+      x-content-type-options:
+      - nosniff
+      x-frame-options:
+      - deny
+      x-github-api-version-selected:
+      - '2022-11-28'
+      x-github-media-type:
+      - github.v3; param=machine-man-preview; format=json
+      x-github-request-id:
+      - CD7C:9445:9C90BC:9D89E4:64C79DF5
+      x-xss-protection:
+      - '0'
+    http_version: HTTP/2
+    status_code: 200
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.github.machine-man-preview+json
+      host:
+      - api.github.com
+    method: GET
+    uri: https://api.github.com/app/installations?per_page=100
+  response:
+    content: '[{"id":37343127,"account":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"repository_selection":"selected","access_tokens_url":"https://api.github.com/app/installations/37343127/access_tokens","repositories_url":"https://api.github.com/installation/repositories","html_url":"https://github.com/organizations/mergifyio-testing/settings/installations/37343127","app_id":331826,"app_slug":"mergify-samuelbillaud","target_id":40527191,"target_type":"Organization","permissions":{"pages":"write","checks":"write","issues":"write","members":"read","contents":"write","metadata":"read","statuses":"write","workflows":"write","pull_requests":"write","administration":"read"},"events":["check_run","check_suite","issue_comment","member","membership","organization","pull_request","pull_request_review","pull_request_review_comment","pull_request_review_thread","push","repository","status","team","team_add","workflow_job","workflow_run"],"created_at":"2023-05-10T07:38:21.000Z","updated_at":"2023-06-06T11:39:03.000Z","single_file_name":null,"has_multiple_single_files":false,"single_file_paths":[],"suspended_by":null,"suspended_at":null}]'
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining,
+        X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes,
+        X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO,
+        X-GitHub-Request-Id, Deprecation, Sunset
+      cache-control:
+      - public, max-age=60, s-maxage=60
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - default-src 'none'
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Mon, 31 Jul 2023 11:41:41 GMT
+      etag:
+      - W/"5652476e3744a14a6d288adc04effa5c8e25300e2b50049808e0189296d5b4b6"
+      referrer-policy:
+      - origin-when-cross-origin, strict-origin-when-cross-origin
+      server:
+      - GitHub.com
+      strict-transport-security:
+      - max-age=31536000; includeSubdomains; preload
+      vary:
+      - Accept
+      - Accept-Encoding, Accept, X-Requested-With
+      x-content-type-options:
+      - nosniff
+      x-frame-options:
+      - deny
+      x-github-api-version-selected:
+      - '2022-11-28'
+      x-github-media-type:
+      - github.v3; param=machine-man-preview; format=json
+      x-github-request-id:
+      - CD7D:F9F8:96BC06:97B4CC:64C79DF5
+      x-xss-protection:
+      - '0'
+    http_version: HTTP/2
+    status_code: 200
+- request:
+    body: ''
+    headers:
+      Authorization:
+      - <TOKEN>
+      accept:
+      - application/vnd.github.machine-man-preview+json
+      host:
+      - api.github.com
+    method: GET
+    uri: https://api.github.com/users/mergify-samuelbillaud[bot]
+  response:
+    content: '{"login":"mergify-samuelbillaud[bot]","id":133094394,"node_id":"BOT_kgDOB-7b-g","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergify-samuelbillaud%5Bbot%5D","html_url":"https://github.com/apps/mergify-samuelbillaud","followers_url":"https://api.github.com/users/mergify-samuelbillaud%5Bbot%5D/followers","following_url":"https://api.github.com/users/mergify-samuelbillaud%5Bbot%5D/following{/other_user}","gists_url":"https://api.github.com/users/mergify-samuelbillaud%5Bbot%5D/gists{/gist_id}","starred_url":"https://api.github.com/users/mergify-samuelbillaud%5Bbot%5D/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergify-samuelbillaud%5Bbot%5D/subscriptions","organizations_url":"https://api.github.com/users/mergify-samuelbillaud%5Bbot%5D/orgs","repos_url":"https://api.github.com/users/mergify-samuelbillaud%5Bbot%5D/repos","events_url":"https://api.github.com/users/mergify-samuelbillaud%5Bbot%5D/events{/privacy}","received_events_url":"https://api.github.com/users/mergify-samuelbillaud%5Bbot%5D/received_events","type":"Bot","site_admin":false,"name":null,"company":null,"blog":"","location":null,"email":null,"hireable":null,"bio":null,"twitter_username":null,"public_repos":0,"public_gists":0,"followers":0,"following":0,"created_at":"2023-05-10T07:38:13Z","updated_at":"2023-05-10T07:38:13Z"}'
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining,
+        X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes,
+        X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO,
+        X-GitHub-Request-Id, Deprecation, Sunset
+      cache-control:
+      - private, max-age=60, s-maxage=60
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - default-src 'none'
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Mon, 31 Jul 2023 11:41:42 GMT
+      etag:
+      - W/"3b522b04951194192fe34d6c6ed0933b7fb54426785377dbd764e51623209ed7"
+      last-modified:
+      - Wed, 10 May 2023 07:38:13 GMT
+      referrer-policy:
+      - origin-when-cross-origin, strict-origin-when-cross-origin
+      server:
+      - GitHub.com
+      strict-transport-security:
+      - max-age=31536000; includeSubdomains; preload
+      vary:
+      - Accept, Authorization, Cookie, X-GitHub-OTP
+      - Accept-Encoding, Accept, X-Requested-With
+      x-content-type-options:
+      - nosniff
+      x-frame-options:
+      - deny
+      x-github-api-version-selected:
+      - '2022-11-28'
+      x-github-media-type:
+      - github.v3; param=machine-man-preview; format=json
+      x-github-request-id:
+      - CD7E:D7FD:980909:9901E1:64C79DF6
+      x-ratelimit-limit:
+      - '5000'
+      x-ratelimit-remaining:
+      - '4993'
+      x-ratelimit-reset:
+      - '1690806939'
+      x-ratelimit-resource:
+      - core
+      x-ratelimit-used:
+      - '7'
+      x-xss-protection:
+      - '0'
+    http_version: HTTP/2
+    status_code: 200
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.github.machine-man-preview+json
+      host:
+      - api.github.com
+    method: GET
+    uri: https://api.github.com/users/mergifyio-testing/installation
+  response:
+    content: '{"id":37343127,"account":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"repository_selection":"selected","access_tokens_url":"https://api.github.com/app/installations/37343127/access_tokens","repositories_url":"https://api.github.com/installation/repositories","html_url":"https://github.com/organizations/mergifyio-testing/settings/installations/37343127","app_id":331826,"app_slug":"mergify-samuelbillaud","target_id":40527191,"target_type":"Organization","permissions":{"pages":"write","checks":"write","issues":"write","members":"read","contents":"write","metadata":"read","statuses":"write","workflows":"write","pull_requests":"write","administration":"read"},"events":["check_run","check_suite","issue_comment","member","membership","organization","pull_request","pull_request_review","pull_request_review_comment","pull_request_review_thread","push","repository","status","team","team_add","workflow_job","workflow_run"],"created_at":"2023-05-10T07:38:21.000Z","updated_at":"2023-06-06T11:39:03.000Z","single_file_name":null,"has_multiple_single_files":false,"single_file_paths":[],"suspended_by":null,"suspended_at":null}'
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining,
+        X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes,
+        X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO,
+        X-GitHub-Request-Id, Deprecation, Sunset
+      cache-control:
+      - public, max-age=60, s-maxage=60
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - default-src 'none'
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Mon, 31 Jul 2023 11:41:42 GMT
+      etag:
+      - W/"67a2e6d2aa182f503d4339f90095f22187e61b00e1ab0e068fa97258352ac6d7"
+      referrer-policy:
+      - origin-when-cross-origin, strict-origin-when-cross-origin
+      server:
+      - GitHub.com
+      strict-transport-security:
+      - max-age=31536000; includeSubdomains; preload
+      vary:
+      - Accept
+      - Accept-Encoding, Accept, X-Requested-With
+      x-content-type-options:
+      - nosniff
+      x-frame-options:
+      - deny
+      x-github-api-version-selected:
+      - '2022-11-28'
+      x-github-media-type:
+      - github.v3; param=machine-man-preview; format=json
+      x-github-request-id:
+      - CD82:C72A:944B20:95441A:64C79DF6
+      x-xss-protection:
+      - '0'
+    http_version: HTTP/2
+    status_code: 200
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.github.machine-man-preview+json
+      host:
+      - api.github.com
+    method: GET
+    uri: https://api.github.com/
+  response:
+    content: '{"current_user_url":"https://api.github.com/user","current_user_authorizations_html_url":"https://github.com/settings/connections/applications{/client_id}","authorizations_url":"https://api.github.com/authorizations","code_search_url":"https://api.github.com/search/code?q={query}{&page,per_page,sort,order}","commit_search_url":"https://api.github.com/search/commits?q={query}{&page,per_page,sort,order}","emails_url":"https://api.github.com/user/emails","emojis_url":"https://api.github.com/emojis","events_url":"https://api.github.com/events","feeds_url":"https://api.github.com/feeds","followers_url":"https://api.github.com/user/followers","following_url":"https://api.github.com/user/following{/target}","gists_url":"https://api.github.com/gists{/gist_id}","hub_url":"https://api.github.com/hub","issue_search_url":"https://api.github.com/search/issues?q={query}{&page,per_page,sort,order}","issues_url":"https://api.github.com/issues","keys_url":"https://api.github.com/user/keys","label_search_url":"https://api.github.com/search/labels?q={query}&repository_id={repository_id}{&page,per_page}","notifications_url":"https://api.github.com/notifications","organization_url":"https://api.github.com/orgs/{org}","organization_repositories_url":"https://api.github.com/orgs/{org}/repos{?type,page,per_page,sort}","organization_teams_url":"https://api.github.com/orgs/{org}/teams","public_gists_url":"https://api.github.com/gists/public","rate_limit_url":"https://api.github.com/rate_limit","repository_url":"https://api.github.com/repos/{owner}/{repo}","repository_search_url":"https://api.github.com/search/repositories?q={query}{&page,per_page,sort,order}","current_user_repositories_url":"https://api.github.com/user/repos{?type,page,per_page,sort}","starred_url":"https://api.github.com/user/starred{/owner}{/repo}","starred_gists_url":"https://api.github.com/gists/starred","topic_search_url":"https://api.github.com/search/topics?q={query}{&page,per_page}","user_url":"https://api.github.com/users/{user}","user_organizations_url":"https://api.github.com/user/orgs","user_repositories_url":"https://api.github.com/users/{user}/repos{?type,page,per_page,sort}","user_search_url":"https://api.github.com/search/users?q={query}{&page,per_page,sort,order}"}'
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining,
+        X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes,
+        X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO,
+        X-GitHub-Request-Id, Deprecation, Sunset
+      cache-control:
+      - private, max-age=60, s-maxage=60
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - default-src 'none'
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Mon, 31 Jul 2023 11:41:43 GMT
+      etag:
+      - W/"ef8af1bb2d8c713b2cf0b76e2a72107b7584c57db73da46479e790d2c388c246"
+      referrer-policy:
+      - origin-when-cross-origin, strict-origin-when-cross-origin
+      server:
+      - GitHub.com
+      strict-transport-security:
+      - max-age=31536000; includeSubdomains; preload
+      vary:
+      - Accept, Authorization, Cookie, X-GitHub-OTP
+      - Accept-Encoding, Accept, X-Requested-With
+      x-content-type-options:
+      - nosniff
+      x-frame-options:
+      - deny
+      x-github-api-version-selected:
+      - '2022-11-28'
+      x-github-media-type:
+      - github.v3; param=machine-man-preview; format=json
+      x-github-request-id:
+      - CD83:F96A:9B20C9:9C19FA:64C79DF7
+      x-ratelimit-limit:
+      - '5000'
+      x-ratelimit-remaining:
+      - '4992'
+      x-ratelimit-reset:
+      - '1690806939'
+      x-ratelimit-resource:
+      - core
+      x-ratelimit-used:
+      - '8'
+      x-xss-protection:
+      - '0'
+    http_version: HTTP/2
+    status_code: 200
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.github.machine-man-preview+json
+      host:
+      - api.github.com
+    method: GET
+    uri: https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud
+  response:
+    content: '{"id":638828474,"node_id":"R_kgDOJhO_ug","name":"functional-testing-repo-samuelbillaud","full_name":"mergifyio-testing/functional-testing-repo-samuelbillaud","private":false,"owner":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"html_url":"https://github.com/mergifyio-testing/functional-testing-repo-samuelbillaud","description":null,"fork":false,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud","forks_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/forks","keys_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/keys{/key_id}","collaborators_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/collaborators{/collaborator}","teams_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/teams","hooks_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/hooks","issue_events_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/issues/events{/number}","events_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/events","assignees_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/assignees{/user}","branches_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/branches{/branch}","tags_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/tags","blobs_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/git/blobs{/sha}","git_tags_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/git/tags{/sha}","git_refs_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/git/refs{/sha}","trees_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/git/trees{/sha}","statuses_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/statuses/{sha}","languages_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/languages","stargazers_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/stargazers","contributors_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/contributors","subscribers_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/subscribers","subscription_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/subscription","commits_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/commits{/sha}","git_commits_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/git/commits{/sha}","comments_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/comments{/number}","issue_comment_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/issues/comments{/number}","contents_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/contents/{+path}","compare_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/compare/{base}...{head}","merges_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/merges","archive_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/{archive_format}{/ref}","downloads_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/downloads","issues_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/issues{/number}","pulls_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/pulls{/number}","milestones_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/milestones{/number}","notifications_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/notifications{?since,all,participating}","labels_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/labels{/name}","releases_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/releases{/id}","deployments_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/deployments","created_at":"2023-05-10T07:38:00Z","updated_at":"2023-07-18T13:59:14Z","pushed_at":"2023-07-21T07:31:19Z","git_url":"git://github.com/mergifyio-testing/functional-testing-repo-samuelbillaud.git","ssh_url":"git@github.com:mergifyio-testing/functional-testing-repo-samuelbillaud.git","clone_url":"https://github.com/mergifyio-testing/functional-testing-repo-samuelbillaud.git","svn_url":"https://github.com/mergifyio-testing/functional-testing-repo-samuelbillaud","homepage":null,"size":110,"stargazers_count":0,"watchers_count":0,"language":null,"has_issues":true,"has_projects":true,"has_downloads":true,"has_wiki":true,"has_pages":false,"has_discussions":false,"forks_count":1,"mirror_url":null,"archived":false,"disabled":false,"open_issues_count":26,"license":null,"allow_forking":true,"is_template":false,"web_commit_signoff_required":false,"topics":[],"visibility":"public","forks":1,"open_issues":26,"watchers":0,"default_branch":"main","permissions":{"admin":false,"maintain":false,"push":false,"triage":false,"pull":false},"temp_clone_token":"","allow_squash_merge":true,"allow_merge_commit":true,"allow_rebase_merge":true,"allow_auto_merge":false,"delete_branch_on_merge":false,"allow_update_branch":false,"use_squash_pr_title_as_default":false,"squash_merge_commit_message":"COMMIT_MESSAGES","squash_merge_commit_title":"COMMIT_OR_PR_TITLE","merge_commit_message":"PR_TITLE","merge_commit_title":"MERGE_MESSAGE","organization":{"login":"mergifyio-testing","id":40527191,"node_id":"MDEyOk9yZ2FuaXphdGlvbjQwNTI3MTkx","avatar_url":"https://avatars.githubusercontent.com/u/40527191?v=4","gravatar_id":"","url":"https://api.github.com/users/mergifyio-testing","html_url":"https://github.com/mergifyio-testing","followers_url":"https://api.github.com/users/mergifyio-testing/followers","following_url":"https://api.github.com/users/mergifyio-testing/following{/other_user}","gists_url":"https://api.github.com/users/mergifyio-testing/gists{/gist_id}","starred_url":"https://api.github.com/users/mergifyio-testing/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/mergifyio-testing/subscriptions","organizations_url":"https://api.github.com/users/mergifyio-testing/orgs","repos_url":"https://api.github.com/users/mergifyio-testing/repos","events_url":"https://api.github.com/users/mergifyio-testing/events{/privacy}","received_events_url":"https://api.github.com/users/mergifyio-testing/received_events","type":"Organization","site_admin":false},"security_and_analysis":{"secret_scanning":{"status":"disabled"},"secret_scanning_push_protection":{"status":"disabled"},"dependabot_security_updates":{"status":"disabled"}},"network_count":1,"subscribers_count":2}'
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining,
+        X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes,
+        X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO,
+        X-GitHub-Request-Id, Deprecation, Sunset
+      cache-control:
+      - private, max-age=60, s-maxage=60
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - default-src 'none'
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Mon, 31 Jul 2023 11:41:43 GMT
+      etag:
+      - W/"e2dcdbb8834f7b67e5030cd3bb489f633fbee3779dcdc0ad107ddb362e44fa28"
+      last-modified:
+      - Tue, 18 Jul 2023 13:59:14 GMT
+      referrer-policy:
+      - origin-when-cross-origin, strict-origin-when-cross-origin
+      server:
+      - GitHub.com
+      strict-transport-security:
+      - max-age=31536000; includeSubdomains; preload
+      vary:
+      - Accept, Authorization, Cookie, X-GitHub-OTP
+      - Accept-Encoding, Accept, X-Requested-With
+      x-content-type-options:
+      - nosniff
+      x-frame-options:
+      - deny
+      x-github-api-version-selected:
+      - '2022-11-28'
+      x-github-media-type:
+      - github.v3; param=machine-man-preview; format=json
+      x-github-request-id:
+      - CD83:F96A:9B220F:9C1B22:64C79DF7
+      x-ratelimit-limit:
+      - '5000'
+      x-ratelimit-remaining:
+      - '4991'
+      x-ratelimit-reset:
+      - '1690806939'
+      x-ratelimit-resource:
+      - core
+      x-ratelimit-used:
+      - '9'
+      x-xss-protection:
+      - '0'
+    http_version: HTTP/2
+    status_code: 200
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.github.machine-man-preview+json
+      host:
+      - api.github.com
+    method: GET
+    uri: https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/contents/.mergify.yml?ref=main
+  response:
+    content: '{"message":"Not Found","documentation_url":"https://docs.github.com/rest/repos/contents#get-repository-content"}'
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining,
+        X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes,
+        X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO,
+        X-GitHub-Request-Id, Deprecation, Sunset
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - default-src 'none'
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Mon, 31 Jul 2023 11:41:43 GMT
+      referrer-policy:
+      - origin-when-cross-origin, strict-origin-when-cross-origin
+      server:
+      - GitHub.com
+      strict-transport-security:
+      - max-age=31536000; includeSubdomains; preload
+      vary:
+      - Accept-Encoding, Accept, X-Requested-With
+      x-content-type-options:
+      - nosniff
+      x-frame-options:
+      - deny
+      x-github-api-version-selected:
+      - '2022-11-28'
+      x-github-media-type:
+      - github.v3; param=machine-man-preview; format=json
+      x-github-request-id:
+      - CD83:F96A:9B237D:9C1CBA:64C79DF7
+      x-ratelimit-limit:
+      - '5000'
+      x-ratelimit-remaining:
+      - '4990'
+      x-ratelimit-reset:
+      - '1690806939'
+      x-ratelimit-resource:
+      - core
+      x-ratelimit-used:
+      - '10'
+      x-xss-protection:
+      - '0'
+    http_version: HTTP/2
+    status_code: 404
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.github.machine-man-preview+json
+      host:
+      - api.github.com
+    method: GET
+    uri: https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/contents/.mergify/config.yml?ref=main
+  response:
+    content: '{"message":"Not Found","documentation_url":"https://docs.github.com/rest/repos/contents#get-repository-content"}'
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining,
+        X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes,
+        X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO,
+        X-GitHub-Request-Id, Deprecation, Sunset
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - default-src 'none'
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Mon, 31 Jul 2023 11:41:43 GMT
+      referrer-policy:
+      - origin-when-cross-origin, strict-origin-when-cross-origin
+      server:
+      - GitHub.com
+      strict-transport-security:
+      - max-age=31536000; includeSubdomains; preload
+      vary:
+      - Accept-Encoding, Accept, X-Requested-With
+      x-content-type-options:
+      - nosniff
+      x-frame-options:
+      - deny
+      x-github-api-version-selected:
+      - '2022-11-28'
+      x-github-media-type:
+      - github.v3; param=machine-man-preview; format=json
+      x-github-request-id:
+      - CD83:F96A:9B24C0:9C1DEE:64C79DF7
+      x-ratelimit-limit:
+      - '5000'
+      x-ratelimit-remaining:
+      - '4989'
+      x-ratelimit-reset:
+      - '1690806939'
+      x-ratelimit-resource:
+      - core
+      x-ratelimit-used:
+      - '11'
+      x-xss-protection:
+      - '0'
+    http_version: HTTP/2
+    status_code: 404
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.github.machine-man-preview+json
+      host:
+      - api.github.com
+    method: GET
+    uri: https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/contents/.github/mergify.yml?ref=main
+  response:
+    content: '{"name":"mergify.yml","path":".github/mergify.yml","sha":"2a494797f39ef198c749ba8d0b3f21e8b5cd5dc7","size":1156,"url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/contents/.github/mergify.yml?ref=main","html_url":"https://github.com/mergifyio-testing/functional-testing-repo-samuelbillaud/blob/main/.github/mergify.yml","git_url":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/git/blobs/2a494797f39ef198c749ba8d0b3f21e8b5cd5dc7","download_url":"https://raw.githubusercontent.com/mergifyio-testing/functional-testing-repo-samuelbillaud/main/.github/mergify.yml","type":"file","content":"cXVldWVfcnVsZXM6CiAgLSBuYW1lOiBob3RmaXgKICAgIGFsbG93X2lucGxh\nY2VfY2hlY2tzOiB0cnVlCiAgICBjb25kaXRpb25zOgogICAgICAtIGxhYmVs\nPWhvdGZpeAogICAgICAtIGFuZDogJkNoZWNrUnVucwogICAgICAgICAgLSBv\ncjoKICAgICAgICAgICAgICAtIC1sYWJlbD1kb2NrZXIKICAgICAgICAgICAg\nICAtIGNoZWNrLXN1Y2Nlc3M9ZG9ja2VyLW9ucHJlbWlzZQogICAgc3BlY3Vs\nYXRpdmVfY2hlY2tzOiA1CiAgLSBuYW1lOiBkZWZhdWx0CiAgICBhbGxvd19p\nbnBsYWNlX2NoZWNrczogdHJ1ZQogICAgY29uZGl0aW9uczoKICAgICAgLSBh\nbmQ6ICpDaGVja1J1bnMKICAgICAgLSBzY2hlZHVsZT1Nb24tRnJpIDA5OjAw\nLTE3OjMwW0V1cm9wZS9QYXJpc10KICAgIHNwZWN1bGF0aXZlX2NoZWNrczog\nNQogIC0gbmFtZTogYmF0Y2gKICAgIGFsbG93X2lucGxhY2VfY2hlY2tzOiB0\ncnVlCiAgICBjb25kaXRpb25zOgogICAgICAtIGFuZDogKkNoZWNrUnVucwog\nICAgICAtIHNjaGVkdWxlPU1vbi1GcmkgMDk6MDAtMTk6MDBbRXVyb3BlL1Bh\ncmlzXQogICAgYmF0Y2hfc2l6ZTogMwogICAgYmF0Y2hfbWF4X3dhaXRfdGlt\nZTogNDVtaW4KICAgIHF1ZXVlX2JyYW5jaF9tZXJnZV9tZXRob2Q6IGZhc3Qt\nZm9yd2FyZAogICAgZGlzYWxsb3dfY2hlY2tzX2ludGVycnVwdGlvbl9mcm9t\nX3F1ZXVlczoKICAgICAgLSBkZWZhdWx0CgpwdWxsX3JlcXVlc3RfcnVsZXM6\nCiAgLSBuYW1lOiBBdXRvbWF0aWMgbWVyZ2Ug4qyH77iPIG9uIGFwcHJvdmFs\nIOKclAogICAgY29uZGl0aW9uczoKICAgICAgLSAiI2FwcHJvdmVkLXJldmll\nd3MtYnk+PTAiCiAgICBhY3Rpb25zOgogICAgICBxdWV1ZToKICAtIG5hbWU6\nIEF1dG9tYXRpYyBtZXJnZSBvbiBob3RmaXgKICAgIGNvbmRpdGlvbnM6CiAg\nICAgIC0gIiNhcHByb3ZlZC1yZXZpZXdzLWJ5Pj0wIgogICAgICAtIGxhYmVs\nPWhvdGZpeAogICAgYWN0aW9uczoKICAgICAgcXVldWU6CiAgICAgICAgbmFt\nZTogaG90Zml4CiAgLSBuYW1lOiBhdXRvbWF0aWMgbWVyZ2Ugb24gYmF0Y2gg\nbGFiZWwKICAgIGNvbmRpdGlvbnM6CiAgICAgIC0gIiNhcHByb3ZlZC1yZXZp\nZXdzLWJ5Pj0wIgogICAgICAtIGxhYmVsPWJhdGNoCiAgICBhY3Rpb25zOgog\nICAgICBxdWV1ZToKICAgICAgICBuYW1lOiBiYXRjaA==\n","encoding":"base64","_links":{"self":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/contents/.github/mergify.yml?ref=main","git":"https://api.github.com/repos/mergifyio-testing/functional-testing-repo-samuelbillaud/git/blobs/2a494797f39ef198c749ba8d0b3f21e8b5cd5dc7","html":"https://github.com/mergifyio-testing/functional-testing-repo-samuelbillaud/blob/main/.github/mergify.yml"}}'
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining,
+        X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes,
+        X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO,
+        X-GitHub-Request-Id, Deprecation, Sunset
+      cache-control:
+      - private, max-age=60, s-maxage=60
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - default-src 'none'
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Mon, 31 Jul 2023 11:41:44 GMT
+      etag:
+      - W/"2a494797f39ef198c749ba8d0b3f21e8b5cd5dc7"
+      last-modified:
+      - Mon, 17 Jul 2023 09:15:49 GMT
+      referrer-policy:
+      - origin-when-cross-origin, strict-origin-when-cross-origin
+      server:
+      - GitHub.com
+      strict-transport-security:
+      - max-age=31536000; includeSubdomains; preload
+      vary:
+      - Accept, Authorization, Cookie, X-GitHub-OTP
+      - Accept-Encoding, Accept, X-Requested-With
+      x-content-type-options:
+      - nosniff
+      x-frame-options:
+      - deny
+      x-github-api-version-selected:
+      - '2022-11-28'
+      x-github-media-type:
+      - github.v3; param=machine-man-preview; format=json
+      x-github-request-id:
+      - CD83:F96A:9B260C:9C1F38:64C79DF8
+      x-ratelimit-limit:
+      - '5000'
+      x-ratelimit-remaining:
+      - '4988'
+      x-ratelimit-reset:
+      - '1690806939'
+      x-ratelimit-resource:
+      - core
+      x-ratelimit-used:
+      - '12'
+      x-xss-protection:
+      - '0'
+    http_version: HTTP/2
+    status_code: 200
+version: 1

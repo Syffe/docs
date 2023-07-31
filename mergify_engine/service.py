@@ -31,11 +31,13 @@ def ddtrace_hook(span: ddtrace.Span) -> None:
         span.set_tag("gh_owner", owner)
 
 
-def setup(service_name: str, dump_config: bool = True) -> None:
+def setup(
+    service_name: str, dump_config: bool = True, stdout_logging_only: bool = False
+) -> None:
     global SERVICE_NAME
     SERVICE_NAME = "engine-" + service_name
 
-    if settings.SENTRY_URL:  # pragma: no cover
+    if settings.SENTRY_URL and not stdout_logging_only:  # pragma: no cover
         sentry_sdk.init(
             settings.SENTRY_URL.geturl(),
             max_breadcrumbs=10,
@@ -58,7 +60,7 @@ def setup(service_name: str, dump_config: bool = True) -> None:
     ddtrace.config.httpx["split_by_domain"] = True
     ddtrace.tracer.on_start_span(ddtrace_hook)
 
-    logs.setup_logging(dump_config=dump_config)
+    logs.setup_logging(dump_config=dump_config, stdout_logging_only=stdout_logging_only)
 
     database.init_sqlalchemy(service_name)
 

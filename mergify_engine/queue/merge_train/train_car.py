@@ -122,6 +122,12 @@ class UnexpectedBaseBranchChange(UnexpectedChanges):
         return f"an external action moved the target branch head to {self.base_sha}"
 
 
+@dataclasses.dataclass
+class MergifySupportReset(UnexpectedChanges):
+    def __str__(self) -> str:
+        return "Mergify support has resetted the merge-queue"
+
+
 UNEXPECTED_CHANGES_COMPATIBILITY = {
     UnexpectedDraftPullRequestChange: TrainCarOutcome.DRAFT_PR_CHANGE,
     UnexpectedBaseBranchChange: TrainCarOutcome.BASE_BRANCH_CHANGE,

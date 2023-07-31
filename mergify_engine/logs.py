@@ -111,17 +111,17 @@ def config_log() -> None:
             )
 
 
-def setup_logging(dump_config: bool = True) -> None:
+def setup_logging(dump_config: bool = True, stdout_logging_only: bool = False) -> None:
     outputs: list[daiquiri.output.Output] = []
 
-    if settings.LOG_STDOUT:
+    if settings.LOG_STDOUT or stdout_logging_only:
         outputs.append(
             daiquiri.output.Stream(
                 sys.stdout, level=settings.LOG_STDOUT_LEVEL, formatter=CUSTOM_FORMATTER
             )
         )
 
-    if settings.LOG_DATADOG:
+    if settings.LOG_DATADOG and not stdout_logging_only:
         dd_extras: dict[str, int | str] = {}
         if isinstance(settings.LOG_DATADOG, str):
             dd_agent_parsed = parse.urlparse(settings.LOG_DATADOG)
