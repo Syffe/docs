@@ -879,6 +879,7 @@ class TrainCar:
                     and "Validation Failed" in exc.message
                 ),
                 stop=tenacity.stop_after_attempt(3),
+                wait=tenacity.wait_exponential(multiplier=0.2),
             ):
                 with attempt:
                     response = await self.repository.installation.client.post(
@@ -1020,6 +1021,7 @@ class TrainCar:
         ),
         stop=tenacity.stop_after_attempt(3),
         reraise=True,
+        wait=tenacity.wait_exponential(multiplier=0.2),
     )
     async def _merge_pull_into_draft_pr_branch(
         self, pull_number: int, on_behalf: github_user.GitHubUser | None = None
