@@ -865,17 +865,27 @@ class TrainCar:
         try:
             title = f"merge queue: embarking {self._get_embarked_refs()} together"
             body = await self.build_draft_pr_summary(for_queue_pull_request=True)
-            response = await self.repository.installation.client.post(
-                f"/repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/pulls",
-                json={
-                    "title": title,
-                    "body": body,
-                    "base": self.ref,
-                    "head": branch_name,
-                    "draft": True,
-                },
-                oauth_token=on_behalf.oauth_access_token if on_behalf else None,
-            )
+            async for attempt in tenacity.AsyncRetrying(
+                reraise=True,
+                retry=tenacity.retry_if_exception(
+                    lambda exc: isinstance(exc, http.HTTPClientSideError)
+                    and exc.status_code == 422
+                    and "Validation Failed" in exc.message
+                ),
+                stop=tenacity.stop_after_attempt(3),
+            ):
+                with attempt:
+                    response = await self.repository.installation.client.post(
+                        f"/repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/pulls",
+                        json={
+                            "title": title,
+                            "body": body,
+                            "base": self.ref,
+                            "head": branch_name,
+                            "draft": True,
+                        },
+                        oauth_token=on_behalf.oauth_access_token if on_behalf else None,
+                    )
         except http.HTTPClientSideError as e:
             if "A pull request already exists for" in e.message:
                 # NOTE(sileht): Filtering pull requests on head is dangerous.
