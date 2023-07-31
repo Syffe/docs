@@ -1006,8 +1006,8 @@ class TrainCar:
                     "fail to merge pull request into draft pr branch",
                     gh_pull=pull_number,
                     queue_branch_name=self.queue_branch_name,
-                    curl_request=self.repository.installation.client.last_request.to_curl_request(),
-                    curl_response=self.repository.installation.client.last_request.to_curl_response(),
+                    curl_request=await self.repository.installation.client.last_request.to_curl_request(),
+                    curl_response=await self.repository.installation.client.last_request.to_curl_response(),
                 )
 
             raise
