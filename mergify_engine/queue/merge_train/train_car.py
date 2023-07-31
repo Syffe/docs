@@ -935,11 +935,6 @@ class TrainCar:
                 typing.cast(github_types.GitHubPullRequest, response.json()),
             )
 
-    @tenacity.retry(
-        retry=tenacity.retry_if_exception_type(tenacity.TryAgain),
-        stop=tenacity.stop_after_attempt(2),
-        reraise=True,
-    )
     async def _prepare_draft_pr_branch(
         self,
         branch_name: github_types.GitHubRefType,
@@ -951,38 +946,61 @@ class TrainCar:
         and another TrainCar already has an existing PR for the exact same
         PR that this TrainCar wants to check
         """
+
         try:
-            await self.repository.installation.client.post(
-                f"/repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/git/refs",
-                oauth_token=on_behalf.oauth_access_token if on_behalf else None,
-                json={
-                    "ref": f"refs/heads/{branch_name}",
-                    "sha": base_sha,
-                },
-            )
+            async for attempt in tenacity.AsyncRetrying(
+                reraise=True,
+                retry=tenacity.retry_if_exception(
+                    lambda exc: isinstance(exc, http.HTTPClientSideError)
+                    and exc.status_code == 422
+                    and "Reference already exists" in exc.message
+                ),
+                stop=tenacity.stop_after_attempt(2),
+            ):
+                with attempt:
+                    try:
+                        await self.repository.installation.client.post(
+                            f"/repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/git/refs",
+                            oauth_token=on_behalf.oauth_access_token
+                            if on_behalf
+                            else None,
+                            json={
+                                "ref": f"refs/heads/{branch_name}",
+                                "sha": base_sha,
+                            },
+                        )
+                    except http.HTTPClientSideError as exc:
+                        if (
+                            exc.status_code == 422
+                            and "Reference already exists" in exc.message
+                        ):
+                            # The same PR, with the same base_sha, already exists in another
+                            # TrainCar from another partition
+                            if (
+                                self.train.partition_name
+                                != partr_config.DEFAULT_PARTITION_NAME
+                            ):
+                                existing_pr = await self.train.convoy.find_prs_in_train_cars_and_add_delegation(
+                                    [
+                                        ep.user_pull_request_number
+                                        for ep in self.still_queued_embarked_pulls
+                                    ],
+                                    self.train.partition_name,
+                                )
+                                if existing_pr is not None:
+                                    return existing_pr
+
+                            try:
+                                await self._delete_branch()
+                            except http.HTTPClientSideError as exc_patch:
+                                await self._set_creation_failure(exc_patch.message)
+                                raise TrainCarPullRequestCreationFailure(
+                                    self
+                                ) from exc_patch
+
+                            raise
+
         except http.HTTPClientSideError as exc:
-            if exc.status_code == 422 and "Reference already exists" in exc.message:
-                # The same PR, with the same base_sha, already exists in another
-                # TrainCar from another partition
-                if self.train.partition_name != partr_config.DEFAULT_PARTITION_NAME:
-                    existing_pr = await self.train.convoy.find_prs_in_train_cars_and_add_delegation(
-                        [
-                            ep.user_pull_request_number
-                            for ep in self.still_queued_embarked_pulls
-                        ],
-                        self.train.partition_name,
-                    )
-                    if existing_pr is not None:
-                        return existing_pr
-
-                try:
-                    await self._delete_branch()
-                except http.HTTPClientSideError as exc_patch:
-                    await self._set_creation_failure(exc_patch.message)
-                    raise TrainCarPullRequestCreationFailure(self) from exc_patch
-
-                raise tenacity.TryAgain
-
             await self._set_creation_failure(exc.message, report_as_error=True)
             raise TrainCarPullRequestCreationFailure(self) from exc
 
@@ -1022,11 +1040,6 @@ class TrainCar:
 
             raise
 
-    @tenacity.retry(
-        retry=tenacity.retry_if_exception_type(tenacity.TryAgain),
-        stop=tenacity.stop_after_attempt(2),
-        reraise=True,
-    )
     async def _rename_branch(
         self,
         current_branch_name: github_types.GitHubRefType,
@@ -1034,16 +1047,22 @@ class TrainCar:
         on_behalf: github_user.GitHubUser | None,
     ) -> None:
         try:
-            await self.repository.installation.client.post(
-                f"/repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/branches/{current_branch_name}/rename",
-                oauth_token=on_behalf.oauth_access_token if on_behalf else None,
-                json={"new_name": new_branch_name},
-            )
-        except http.HTTPClientSideError as exc:
-            if exc.status_code == 404:
+            async for attempt in tenacity.AsyncRetrying(
+                reraise=True,
                 # NOTE(sileht): the merge queue we just created is missing ???, just retry just in case
-                raise tenacity.TryAgain
-
+                retry=tenacity.retry_if_exception(
+                    lambda exc: isinstance(exc, http.HTTPClientSideError)
+                    and exc.status_code == 404
+                ),
+                stop=tenacity.stop_after_attempt(2),
+            ):
+                with attempt:
+                    await self.repository.installation.client.post(
+                        f"/repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/branches/{current_branch_name}/rename",
+                        oauth_token=on_behalf.oauth_access_token if on_behalf else None,
+                        json={"new_name": new_branch_name},
+                    )
+        except http.HTTPClientSideError as exc:
             if exc.status_code == 422 and "New branch already exists" in exc.message:
                 try:
                     await self._delete_branch()
