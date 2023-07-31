@@ -979,6 +979,40 @@ class TrainCar:
         return None
 
     @tenacity.retry(
+        retry=tenacity.retry_if_exception(
+            lambda exc: isinstance(exc, http.HTTPClientSideError)
+            and exc.status_code == 404
+            and "Base does not exist" in exc.message
+        ),
+        stop=tenacity.stop_after_attempt(3),
+        reraise=True,
+    )
+    async def _merge_pull_into_draft_pr_branch(
+        self, pull_number: int, on_behalf: github_user.GitHubUser | None = None
+    ) -> None:
+        try:
+            await self.repository.installation.client.post(
+                f"/repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/merges",
+                oauth_token=on_behalf.oauth_access_token if on_behalf else None,
+                json={
+                    "base": self.queue_branch_name,
+                    "head": f"refs/pull/{pull_number}/head",
+                    "commit_message": f"Merge of #{pull_number}",
+                },
+            )
+        except http.HTTPClientSideError as exc:
+            if exc.status_code == 404 and "Base does not exist" in exc.message:
+                self.repository.log.info(
+                    "fail to merge pull request into draft pr branch",
+                    gh_pull=pull_number,
+                    queue_branch_name=self.queue_branch_name,
+                    curl_request=self.repository.installation.client.last_request.to_curl_request(),
+                    curl_response=self.repository.installation.client.last_request.to_curl_response(),
+                )
+
+            raise
+
+    @tenacity.retry(
         retry=tenacity.retry_if_exception_type(tenacity.TryAgain),
         stop=tenacity.stop_after_attempt(2),
         reraise=True,
@@ -1131,15 +1165,7 @@ class TrainCar:
 
         for pull_number in pulls_in_draft:
             try:
-                await self.repository.installation.client.post(
-                    f"/repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/merges",
-                    oauth_token=on_behalf.oauth_access_token if on_behalf else None,
-                    json={
-                        "base": self.queue_branch_name,
-                        "head": f"refs/pull/{pull_number}/head",
-                        "commit_message": f"Merge of #{pull_number}",
-                    },
-                )
+                await self._merge_pull_into_draft_pr_branch(pull_number, on_behalf)
             except http.HTTPClientSideError as e:
                 if (
                     e.status_code == 403
