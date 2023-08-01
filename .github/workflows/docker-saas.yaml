@@ -72,7 +72,7 @@ jobs:
         uses: Mergifyio/gha-slack-notification@main
         with:
           type: deploy-start
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL_RELEASES }}
 
       - name: ⬇️ Checkout
         uses: actions/checkout@v3.3.0
@@ -293,4 +293,5 @@ jobs:
         uses: Mergifyio/gha-slack-notification@main
         with:
           type: deploy-finish
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL_RELEASES }}
+          FAILURE_ONLY_SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL_PROD }}

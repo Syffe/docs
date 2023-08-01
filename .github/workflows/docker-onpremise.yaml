@@ -46,7 +46,7 @@ jobs:
         with:
           type: release-start
           project: Mergify Enterprise
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL_RELEASES }}
 
       - name: ⬇️ Checkout
         uses: actions/checkout@v3.3.0
@@ -172,4 +172,4 @@ jobs:
         with:
           type: release-finish
           project: Mergify Enterprise
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DEPLOYMENT_WEBHOOK_URL_RELEASES }}
