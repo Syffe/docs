@@ -856,6 +856,7 @@ class TrainCar:
             DraftPullRequestCreationTemporaryFailure
         ),
         stop=tenacity.stop_after_attempt(2),
+        reraise=True,
     )
     async def _create_draft_pull_request(
         self,
