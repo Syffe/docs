@@ -18,6 +18,8 @@ from mergify_engine import check_api
 from mergify_engine import constants
 from mergify_engine import context
 from mergify_engine import dashboard
+from mergify_engine import date
+from mergify_engine import delayed_refresh
 from mergify_engine import exceptions
 from mergify_engine import github_types
 from mergify_engine import queue
@@ -852,9 +854,15 @@ Then, re-embark the pull request into the merge queue by posting the comment
                 self.ctxt.pull["number"],
             )
         ):
-            raise exceptions.EngineNeedRetry(
-                "Merged pull request not yet marked as merged on GitHub side",
-                retry_in=datetime.timedelta(seconds=30),
+            await delayed_refresh.plan_refresh_at_least_at(
+                self.ctxt.repository,
+                self.ctxt.pull["number"],
+                at=date.utcnow() + datetime.timedelta(seconds=30),
+            )
+            return check_api.Result(
+                check_api.Conclusion.PENDING,
+                "The pull request is going to be merged soon",
+                summary="The pull request is going to be merged soon",
             )
 
         if result is not None:
