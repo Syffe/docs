@@ -1190,6 +1190,17 @@ class TrainCar:
         base_sha, pulls_in_draft = await self._get_draft_pr_setup(
             queue_rule, previous_car
         )
+        if not pulls_in_draft:
+            self.train.log.error(
+                "We are going to create a train car with no pull requests",
+                initial_embarked_pulls=[
+                    ep.user_pull_request_number for ep in self.initial_embarked_pulls
+                ],
+                still_embarked_pull_numbers=[
+                    ep.user_pull_request_number
+                    for ep in self.still_queued_embarked_pulls
+                ],
+            )
 
         self.queue_branch_name = github_types.GitHubRefType(
             f"{self.QUEUE_BRANCH_PREFIX}{self.queue_branch_name}"
