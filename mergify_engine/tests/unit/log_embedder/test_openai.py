@@ -36,3 +36,54 @@ async def test_openai_get_embedding(
     embedding = await openai_embedding.get_embedding("toto")
 
     assert np.array_equal(embedding, OPENAI_EMBEDDING_DATASET_NUMPY_FORMAT["toto"])
+
+
+async def test_truncate_to_max_openai_size() -> None:
+    one_token_string = "hello"
+    max_input_token_string = (
+        one_token_string * openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN
+    )
+    too_long_input_token_string = max_input_token_string + "the end"
+
+    assert len(openai_embedding.TIKTOKEN_ENCODING.encode(one_token_string)) == 1
+    assert (
+        len(openai_embedding.TIKTOKEN_ENCODING.encode(max_input_token_string))
+        == openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN
+    )
+    assert (
+        len(openai_embedding.TIKTOKEN_ENCODING.encode(too_long_input_token_string))
+        > openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN
+    )
+
+    truncated_one_token_string = openai_embedding.truncate_to_max_openai_size(
+        one_token_string
+    )
+    truncated_max_input_token_string = openai_embedding.truncate_to_max_openai_size(
+        max_input_token_string
+    )
+    truncated_too_long_input_token_string = (
+        openai_embedding.truncate_to_max_openai_size(too_long_input_token_string)
+    )
+
+    assert truncated_one_token_string == openai_embedding.TIKTOKEN_ENCODING.encode(
+        one_token_string
+    )
+    assert (
+        truncated_max_input_token_string
+        == openai_embedding.TIKTOKEN_ENCODING.encode(max_input_token_string)
+    )
+    assert (
+        truncated_too_long_input_token_string
+        != openai_embedding.TIKTOKEN_ENCODING.encode(too_long_input_token_string)
+    )
+
+    assert (
+        len(truncated_too_long_input_token_string)
+        == openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN
+    )
+    assert (
+        openai_embedding.TIKTOKEN_ENCODING.decode(
+            truncated_too_long_input_token_string
+        )[-7:]
+        == "the end"
+    )

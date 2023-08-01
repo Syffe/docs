@@ -18,14 +18,18 @@ LOG_EMBEDDER_JOBS_BATCH_SIZE = 100
 
 async def embed_log(job: github_actions.WorkflowJob) -> None:
     cleaner = log_cleaner.LogCleaner()
-    cleaned_log = []
+    cleaned_log_lines = []
     async for log_line in log_download(job):
         cleaned_log_line = cleaner.clean_line(log_line)
 
         if cleaned_log_line:
-            cleaned_log.append(cleaned_log_line)
+            cleaned_log_lines.append(cleaned_log_line)
 
-    embedding = await openai_embedding.get_embedding("\n".join(cleaned_log))
+    truncated_clean_log = openai_embedding.truncate_to_max_openai_size(
+        "\n".join(cleaned_log_lines)
+    )
+
+    embedding = await openai_embedding.get_embedding(truncated_clean_log)
 
     job.log_embedding = embedding
 

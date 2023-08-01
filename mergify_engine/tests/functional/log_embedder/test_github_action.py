@@ -76,6 +76,7 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                     gha_model.WorkflowJob.id == job_event["workflow_job"]["id"]
                 )
             )
+            assert job is not None
 
             # NOTE(Kontrolix): We must set `assert_all_called=True` here beacause
             # pass_through routes to github api will not be called in no recording mode
@@ -101,9 +102,9 @@ class TestLogEmbedderGithubAction(base.FunctionalTestBase):
                         "usage": {"prompt_tokens": 2, "total_tokens": 2},
                     },
                 )
-                assert job is not None
 
                 await gha_embedder.embed_log(job)
+
             await session.commit()
 
         async with database.create_session() as session:
