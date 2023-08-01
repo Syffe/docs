@@ -3,6 +3,7 @@ import typing
 
 from freezegun import freeze_time
 import pytest
+import tenacity
 
 from mergify_engine import github_types
 from mergify_engine import redis_utils
@@ -349,3 +350,13 @@ def test_filter_dict_recursively() -> None:
     filtered_data = utils.filter_dict(data, mask)
 
     assert filtered_data == {"a": 1, "b": {"c": True}}
+
+
+async def test_map_tenacity_try_again_to_real_cause() -> None:
+    @utils.map_tenacity_try_again_to_real_cause
+    @tenacity.retry(retry=tenacity.retry_never, stop=tenacity.stop_after_attempt(2))
+    async def buggy_code() -> None:
+        1 / 0  # noqa
+
+    with pytest.raises(ZeroDivisionError):
+        await buggy_code()

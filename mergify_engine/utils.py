@@ -13,6 +13,7 @@ import typing
 import urllib
 
 import daiquiri
+import tenacity
 import voluptuous
 
 from mergify_engine import github_types
@@ -338,3 +339,26 @@ def filter_dict(data: _D, mask: Mask) -> _D:
                 filtered[key] = value
 
     return typing.cast(_D, filtered)
+
+
+P = typing.ParamSpec("P")
+CoroReturn = typing.TypeVar("CoroReturn")
+CoroSendT = typing.TypeVar("CoroSendT")
+CoroThrowT = typing.TypeVar("CoroThrowT")
+
+
+def map_tenacity_try_again_to_real_cause(
+    func: abc.Callable[P, abc.Coroutine[CoroSendT, CoroThrowT, CoroReturn]]
+) -> abc.Callable[P, abc.Coroutine[CoroSendT, CoroThrowT, CoroReturn]]:
+    @functools.wraps(func)
+    async def inner_func(*args: P.args, **kwargs: P.kwargs) -> CoroReturn:
+        try:
+            return await func(*args, **kwargs)
+        except tenacity.TryAgain as exc:
+            if exc.__cause__ is None:
+                raise RuntimeError(
+                    "map_tenacity_try_again_to_real_cause must be used only if TryAgain is raise in an except block"
+                )
+            raise exc.__cause__
+
+    return inner_func

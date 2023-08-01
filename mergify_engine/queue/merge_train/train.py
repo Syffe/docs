@@ -849,6 +849,7 @@ class Train:
                 # When this car will be removed the remaining one will be created
                 return
 
+    @utils.map_tenacity_try_again_to_real_cause
     @tenacity.retry(
         wait=tenacity.wait_exponential(multiplier=0.2),
         stop=tenacity.stop_after_attempt(5),
