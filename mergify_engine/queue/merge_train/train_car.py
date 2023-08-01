@@ -878,7 +878,7 @@ class TrainCar:
                     and exc.status_code == 422
                     and "Validation Failed" in exc.message
                 ),
-                stop=tenacity.stop_after_attempt(3),
+                stop=tenacity.stop_after_attempt(5),
                 wait=tenacity.wait_exponential(multiplier=0.2),
             ):
                 with attempt:
@@ -962,7 +962,8 @@ class TrainCar:
                     and exc.status_code == 422
                     and "Reference already exists" in exc.message
                 ),
-                stop=tenacity.stop_after_attempt(2),
+                stop=tenacity.stop_after_attempt(5),
+                wait=tenacity.wait_exponential(multiplier=0.2),
             ):
                 with attempt:
                     try:
@@ -1019,7 +1020,7 @@ class TrainCar:
             and exc.status_code == 404
             and "Base does not exist" in exc.message
         ),
-        stop=tenacity.stop_after_attempt(3),
+        stop=tenacity.stop_after_attempt(5),
         reraise=True,
         wait=tenacity.wait_exponential(multiplier=0.2),
     )
@@ -1062,7 +1063,8 @@ class TrainCar:
                     lambda exc: isinstance(exc, http.HTTPClientSideError)
                     and exc.status_code == 404
                 ),
-                stop=tenacity.stop_after_attempt(2),
+                stop=tenacity.stop_after_attempt(5),
+                wait=tenacity.wait_exponential(multiplier=0.2),
             ):
                 with attempt:
                     await self.repository.installation.client.post(
