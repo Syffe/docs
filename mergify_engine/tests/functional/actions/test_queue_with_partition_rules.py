@@ -1562,10 +1562,10 @@ class TestQueueWithPartitionRules(base.FunctionalTestBase):
 
         check_run = await self.wait_for_check_run(
             name="Rule: Automatic merge (queue)",
-            conclusion="failure",
+            conclusion="cancelled",
         )
         check = check_run["check_run"]
-        assert check["conclusion"] == "failure"
+        assert check["conclusion"] == "cancelled"
         assert (
             check["output"]["title"]
             == "Invalid merge method with partition rules in use"
