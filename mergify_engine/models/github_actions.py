@@ -264,6 +264,9 @@ class WorkflowJob(models.Base):
         session: sqlalchemy.ext.asyncio.AsyncSession,
         job_ids: list[int],
     ) -> None:
+        if not job_ids:
+            return
+
         job = orm.aliased(cls, name="job")
         other_job = orm.aliased(cls, name="other_job")
 
