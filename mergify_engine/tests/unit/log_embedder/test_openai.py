@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 import respx
 
 from mergify_engine.log_embedder import openai_embedding
@@ -38,6 +39,7 @@ async def test_openai_get_embedding(
     assert np.array_equal(embedding, OPENAI_EMBEDDING_DATASET_NUMPY_FORMAT["toto"])
 
 
+@pytest.mark.timeout(60)
 async def test_truncate_to_max_openai_size() -> None:
     one_token_string = "hello"
     max_input_token_string = (
