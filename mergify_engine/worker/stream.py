@@ -329,6 +329,15 @@ class Processor:
                     self.redis_links.cache, owner_id
                 )
 
+                if not sub.features:
+                    LOG.info(
+                        "organization doesn't have any features enabled, skipping",
+                        gh_owner_id=owner_id,
+                        gh_owner=owner_login_for_tracing,
+                        subscription_reason=sub.reason,
+                    )
+                    raise OrgBucketUnused(bucket_org_key)
+
                 if sub.has_feature(subscription.Features.DEDICATED_WORKER):
                     if self.dedicated_owner_id is None:
                         # Spawn a worker
