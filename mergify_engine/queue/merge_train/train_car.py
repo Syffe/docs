@@ -883,6 +883,19 @@ class TrainCar:
                 wait=tenacity.wait_exponential(multiplier=0.2),
             ):
                 with attempt:
+                    if attempt.retry_state.attempt_number > 1:
+                        self.train.log.info(
+                            "retrying to create a merge queue pull request",
+                            head=branch_name,
+                            title=title,
+                            ref=self.ref,
+                            on_behalf=on_behalf.login if on_behalf else None,
+                            parent_pull_request_numbers=self.parent_pull_request_numbers,
+                            still_queued_embarked_pull_numbers=[
+                                ep.user_pull_request_number
+                                for ep in self.still_queued_embarked_pulls
+                            ],
+                        )
                     response = await self.repository.installation.client.post(
                         f"/repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/pulls",
                         json={
@@ -967,6 +980,13 @@ class TrainCar:
                 wait=tenacity.wait_exponential(multiplier=0.2),
             ):
                 with attempt:
+                    if attempt.retry_state.attempt_number > 1:
+                        self.train.log.info(
+                            "retrying to create the merge-queue branch",
+                            name=branch_name,
+                            sha=base_sha,
+                        )
+
                     try:
                         await self.repository.installation.client.post(
                             f"/repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/git/refs",
@@ -1068,6 +1088,12 @@ class TrainCar:
                 wait=tenacity.wait_exponential(multiplier=0.2),
             ):
                 with attempt:
+                    if attempt.retry_state.attempt_number > 1:
+                        self.train.log.info(
+                            "retrying to rename merge-queue branch",
+                            current_branch_name=current_branch_name,
+                            new_branch_name=new_branch_name,
+                        )
                     await self.repository.installation.client.post(
                         f"/repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/branches/{current_branch_name}/rename",
                         oauth_token=on_behalf.oauth_access_token if on_behalf else None,
