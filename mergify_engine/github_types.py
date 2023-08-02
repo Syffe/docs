@@ -926,6 +926,7 @@ class GitHubWorkflowJob(typing.TypedDict):
     started_at: ISODateTimeType
     completed_at: ISODateTimeType
     labels: list[str]
+    run_attempt: int
 
 
 class GitHubEventWorkflowJob(GitHubEventWithRepository):
