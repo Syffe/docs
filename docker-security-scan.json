@@ -1111,7 +1111,7 @@
     "PkgName": "e2fsprogs",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-1304",
-    "Title": "e2fsprogs: out-of-bounds read/write via crafted filesystem",
+    "Title": "out-of-bounds read/write via crafted filesystem",
     "Severity": "HIGH",
     "PublishedDate": "2022-04-14T21:15:00Z"
   },
@@ -1120,7 +1120,7 @@
     "PkgName": "libcom-err2",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-1304",
-    "Title": "e2fsprogs: out-of-bounds read/write via crafted filesystem",
+    "Title": "out-of-bounds read/write via crafted filesystem",
     "Severity": "HIGH",
     "PublishedDate": "2022-04-14T21:15:00Z"
   },
@@ -1129,7 +1129,7 @@
     "PkgName": "libext2fs2",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-1304",
-    "Title": "e2fsprogs: out-of-bounds read/write via crafted filesystem",
+    "Title": "out-of-bounds read/write via crafted filesystem",
     "Severity": "HIGH",
     "PublishedDate": "2022-04-14T21:15:00Z"
   },
@@ -1138,7 +1138,7 @@
     "PkgName": "libss2",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-1304",
-    "Title": "e2fsprogs: out-of-bounds read/write via crafted filesystem",
+    "Title": "out-of-bounds read/write via crafted filesystem",
     "Severity": "HIGH",
     "PublishedDate": "2022-04-14T21:15:00Z"
   },
@@ -1147,7 +1147,7 @@
     "PkgName": "logsave",
     "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2022-1304",
-    "Title": "e2fsprogs: out-of-bounds read/write via crafted filesystem",
+    "Title": "out-of-bounds read/write via crafted filesystem",
     "Severity": "HIGH",
     "PublishedDate": "2022-04-14T21:15:00Z"
   },
@@ -1993,7 +1993,7 @@
     "PkgName": "libperl5.32",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31486",
-    "Title": "HTTP::Tiny before 0.083, a Perl core module since 5.13.9 and available ...",
+    "Title": "insecure TLS cert default",
     "Severity": "LOW",
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
@@ -2002,7 +2002,7 @@
     "PkgName": "perl",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31486",
-    "Title": "HTTP::Tiny before 0.083, a Perl core module since 5.13.9 and available ...",
+    "Title": "insecure TLS cert default",
     "Severity": "LOW",
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
@@ -2011,7 +2011,7 @@
     "PkgName": "perl-base",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31486",
-    "Title": "HTTP::Tiny before 0.083, a Perl core module since 5.13.9 and available ...",
+    "Title": "insecure TLS cert default",
     "Severity": "LOW",
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
@@ -2020,7 +2020,7 @@
     "PkgName": "perl-modules-5.32",
     "SeveritySource": "debian",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-31486",
-    "Title": "HTTP::Tiny before 0.083, a Perl core module since 5.13.9 and available ...",
+    "Title": "insecure TLS cert default",
     "Severity": "LOW",
     "PublishedDate": "2023-04-29T00:15:00Z"
   },
@@ -2070,27 +2070,46 @@
     "PublishedDate": "2023-06-23T02:15:00Z"
   },
   {
+    "VulnerabilityID": "CVE-2023-3817",
+    "PkgName": "libssl1.1",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-3817",
+    "Title": "Excessive time spent checking DH q parameter value",
+    "Severity": "MEDIUM",
+    "PublishedDate": "2023-07-31T16:15:00Z"
+  },
+  {
+    "VulnerabilityID": "CVE-2023-3817",
+    "PkgName": "openssl",
+    "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-3817",
+    "Title": "Excessive time spent checking DH q parameter value",
+    "Severity": "MEDIUM",
+    "PublishedDate": "2023-07-31T16:15:00Z"
+  },
+  {
     "VulnerabilityID": "CVE-2023-38408",
     "PkgName": "openssh-client",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-38408",
     "Title": "Remote code execution in ssh-agent PKCS#11 support",
-    "Severity": "HIGH",
+    "Severity": "CRITICAL",
     "PublishedDate": "2023-07-20T03:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-38408",
     "PkgName": "openssh-server",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-38408",
     "Title": "Remote code execution in ssh-agent PKCS#11 support",
-    "Severity": "HIGH",
+    "Severity": "CRITICAL",
     "PublishedDate": "2023-07-20T03:15:00Z"
   },
   {
     "VulnerabilityID": "CVE-2023-38408",
     "PkgName": "openssh-sftp-server",
+    "SeveritySource": "nvd",
     "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2023-38408",
     "Title": "Remote code execution in ssh-agent PKCS#11 support",
-    "Severity": "HIGH",
+    "Severity": "CRITICAL",
     "PublishedDate": "2023-07-20T03:15:00Z"
   }
 ]
