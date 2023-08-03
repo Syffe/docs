@@ -72,8 +72,8 @@ POSTGRES_CONF_FILE="$DD_CONF_DIR/conf.d/postgres.d/conf.yaml"
 
 if [ -n "$MERGIFYENGINE_DATABASE_URL" ]; then
     if [[ $MERGIFYENGINE_DATABASE_URL =~ $POSTGRES_REGEX ]]; then
-        DB_USERNAME=$(echo "${BASH_REMATCH[1]}" | url_decode)
-        DB_PASSWORD=$(echo "${BASH_REMATCH[2]}" | url_decode)
+        DB_USERNAME="datadog"
+        DB_PASSWORD=$(echo "${DATADOG_POSTGRES_PASSWORD}" | url_decode)
         sed -i "s/<YOUR HOSTNAME>/${BASH_REMATCH[3]}/" "$POSTGRES_CONF_FILE"
         sed -i "s/<YOUR USERNAME>/${DB_USERNAME}/" "$POSTGRES_CONF_FILE"
         sed -i "s/<YOUR PASSWORD>/${DB_PASSWORD}/" "$POSTGRES_CONF_FILE"
