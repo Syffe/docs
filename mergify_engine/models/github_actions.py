@@ -232,6 +232,10 @@ class WorkflowJob(models.Base):
         nullable=True, anonymizer_config=None
     )
 
+    run_attempt: orm.Mapped[int] = orm.mapped_column(
+        sqlalchemy.BigInteger, anonymizer_config=None
+    )
+
     @classmethod
     async def insert(
         cls,
@@ -255,6 +259,7 @@ class WorkflowJob(models.Base):
                     repository=await github_repository.GitHubRepository.get_or_create(
                         session, repository
                     ),
+                    run_attempt=workflow_job_data["run_attempt"],
                 )
             )
 

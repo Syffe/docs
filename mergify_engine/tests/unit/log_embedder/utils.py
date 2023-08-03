@@ -22,6 +22,7 @@ async def add_job(
             "conclusion", github_actions.WorkflowJobConclusion.SUCCESS
         ),
         labels=job_data.get("labels", []),
+        run_attempt=job_data.get("run_attempt", 1),
     )
     session.add(job)
     return job
