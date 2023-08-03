@@ -33,6 +33,7 @@ oauth.register(
     api_base_url=settings.GITHUB_REST_API_URL,
     authorize_url=f"{settings.GITHUB_URL}/login/oauth/authorize",
     access_token_url=f"{settings.GITHUB_URL}/login/oauth/access_token",
+    transport=http.AsyncHTTPTransport(retry_stop_after_attempt=2),
 )
 
 

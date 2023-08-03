@@ -1,9 +1,9 @@
+import dataclasses
 import datetime
 import email.utils
 import sys
 import typing
 
-import anyio._core._exceptions
 import daiquiri
 import httpx
 from httpx import _types as httpx_types
@@ -105,25 +105,29 @@ def parse_date(value: str) -> datetime.datetime | None:
     return dt
 
 
-class wait_retry_after_header(tenacity.wait.wait_base):
-    def __call__(self, retry_state: tenacity.RetryCallState) -> float:
-        if retry_state.outcome is None:
-            return 0
+@dataclasses.dataclass
+class TryAgainOnCertainHTTPError(tenacity.TryAgain):
+    response: httpx.Response
 
-        exc = retry_state.outcome.exception()
-        if exc is None or not isinstance(exc, HTTPStatusError):
-            return 0
+    class wait_from_headers(tenacity.wait.wait_base):
+        def __call__(self, retry_state: tenacity.RetryCallState) -> float:
+            if retry_state.outcome is None:
+                return 0
 
-        value = exc.response.headers.get("retry-after")
-        if value is None:
-            return 0
-        if value.isdigit():
-            return int(value)
+            exc = retry_state.outcome.exception()
+            if exc is None or not isinstance(exc, TryAgainOnCertainHTTPError):
+                return 0
 
-        d = parse_date(value)
-        if d is None:
-            return 0
-        return max(0, (d - date.utcnow()).total_seconds())
+            value = exc.response.headers.get("retry-after")
+            if value is None:
+                return 0
+            if value.isdigit():
+                return int(value)
+
+            d = parse_date(value)
+            if d is None:
+                return 0
+            return max(0, (d - date.utcnow()).total_seconds())
 
 
 def extract_organization_login(client: httpx.AsyncClient) -> str | None:
@@ -147,6 +151,42 @@ def raise_for_status(resp: httpx.Response) -> None:
     raise exc_class(message, request=resp.request, response=resp)
 
 
+class AsyncHTTPTransport(httpx.AsyncHTTPTransport):
+    def __init__(
+        self,
+        retry_stop_after_attempt: int = 5,
+        retry_exponential_multiplier: float = 0.2,
+    ) -> None:
+        super().__init__(http2=True)
+        self.retry_stop_after_attempt = retry_stop_after_attempt
+        self.retry_exponential_multiplier = retry_exponential_multiplier
+
+    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
+        try:
+            async for attempt in tenacity.AsyncRetrying(
+                reraise=True,
+                retry=tenacity.retry_if_exception_type(
+                    (RequestError, tenacity.TryAgain)
+                ),
+                wait=tenacity.wait_combine(
+                    TryAgainOnCertainHTTPError.wait_from_headers(),
+                    tenacity.wait_exponential(
+                        multiplier=self.retry_exponential_multiplier
+                    ),
+                ),
+                stop=tenacity.stop_after_attempt(self.retry_stop_after_attempt),
+            ):
+                with attempt:
+                    response = await super().handle_async_request(request)
+                    if response.status_code >= 500 or response.status_code == 429:
+                        raise TryAgainOnCertainHTTPError(response=response)
+
+        except TryAgainOnCertainHTTPError as exc:
+            return exc.response
+
+        return response
+
+
 class AsyncClient(httpx.AsyncClient):
     def __init__(
         self,
@@ -158,8 +198,6 @@ class AsyncClient(httpx.AsyncClient):
         retry_stop_after_attempt: int = 5,
         retry_exponential_multiplier: float = 0.2,
     ) -> None:
-        self.retry_stop_after_attempt = retry_stop_after_attempt
-        self.retry_exponential_multiplier = retry_exponential_multiplier
         final_headers = DEFAULT_HEADERS.copy()
         if headers is not None:
             final_headers.update(headers)
@@ -169,26 +207,12 @@ class AsyncClient(httpx.AsyncClient):
             headers=final_headers,
             timeout=timeout,
             follow_redirects=True,
-            http2=True,
+            transport=AsyncHTTPTransport(
+                retry_stop_after_attempt, retry_exponential_multiplier
+            ),
         )
 
     async def request(self, *args: typing.Any, **kwargs: typing.Any) -> httpx.Response:
-        async for attempt in tenacity.AsyncRetrying(
-            reraise=True,
-            retry=tenacity.retry_if_exception_type(
-                (RequestError, HTTPServerSideError, HTTPTooManyRequests)
-            ),
-            wait=tenacity.wait_combine(
-                wait_retry_after_header(),
-                tenacity.wait_exponential(multiplier=self.retry_exponential_multiplier),
-            ),
-            stop=tenacity.stop_after_attempt(self.retry_stop_after_attempt),
-        ):
-            with attempt:
-                try:
-                    resp = await super().request(*args, **kwargs)
-                except anyio._core._exceptions.ClosedResourceError:
-                    # FIXME(sileht): https://github.com/encode/httpx/issues/2337
-                    raise httpx.RequestError("Connection unexpectely closed")
-                raise_for_status(resp)
+        resp = await super().request(*args, **kwargs)
+        raise_for_status(resp)
         return resp
