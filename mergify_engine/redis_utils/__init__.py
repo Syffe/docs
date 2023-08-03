@@ -11,6 +11,7 @@ import uuid
 import daiquiri
 import ddtrace
 import redis.asyncio as redispy
+from redis.asyncio import retry
 
 from mergify_engine import service
 from mergify_engine import settings
@@ -244,6 +245,8 @@ class RedisLinks:
                 decode_responses=False,
                 client_name=f"{service.SERVICE_NAME}/{self.name}/{name}",
                 redis_connect_func=redis_connect_func,
+                retry=retry.Retry(redispy.default_backoff(), retries=1),
+                retry_on_timeout=True,
                 **options,
             )
         )
