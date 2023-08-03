@@ -58,6 +58,7 @@ RUN apt-get update -y && \
     curl -o /tmp/DATADOG_APT_KEY_382E94DE.public "${DATADOG_APT_KEYS_URL}/DATADOG_APT_KEY_382E94DE.public" && \
     gpg --ignore-time-conflict --no-default-keyring --keyring ${DATADOG_APT_KEYRING} --import /tmp/DATADOG_APT_KEY_382E94DE.public && \
     apt-get update && apt-get -y --force-yes install --reinstall datadog-agent=${DD_AGENT_VERSION} && \
+    apt-get purge -y linux-libc-dev && \
     apt-get autoremove --purge -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
 RUN datadog-agent integration install -t -r datadog-mergify==$DD_MERGIFY_VERSION
