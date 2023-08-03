@@ -404,6 +404,7 @@ class EngineSettings(
                 "DASHBOARD_UI_FEATURES",
                 "DASHBOARD_UI_GITHUB_IDS_ALLOWED_TO_SUDO",
                 "LOG_DEBUG_LOGGER_NAMES",
+                "LOG_EMBEDDER_ENABLED_ORGS",
             ):
                 return raw_val.split(",")
 

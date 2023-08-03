@@ -169,6 +169,7 @@ def test_all_sets(
     )
     monkeypatch.setenv("MERGIFYENGINE_REDIS_CRYPTO_SECRET_CURRENT", "crypto-secret")
     monkeypatch.setenv("MERGIFYENGINE_REDIS_CRYPTO_SECRET_OLD", "crypto-secret-old")
+    monkeypatch.setenv("MERGIFYENGINE_LOG_EMBEDDER_ENABLED_ORGS", "Mergifyio")
 
     monkeypatch.setenv("MERGIFYENGINE_REDIS_STREAM_WEB_MAX_CONNECTIONS", "51")
     monkeypatch.setenv("MERGIFYENGINE_REDIS_CACHE_WEB_MAX_CONNECTIONS", "52")
@@ -270,6 +271,7 @@ def test_all_sets(
     assert conf.REDIS_SSL_VERIFY_MODE_CERT_NONE is True
     assert conf.VERSION == "3.1"
     assert conf.SHA == "f8c4fe06d56cd89cbe48975aa8507d479d881bdc"
+    assert conf.LOG_EMBEDDER_ENABLED_ORGS == ["Mergifyio"]
 
 
 def test_legacy_env_sets(
