@@ -2252,8 +2252,10 @@ You don't need to do anything. Mergify will close this pull request automaticall
         )
 
         for check in await checked_ctxt.pull_check_runs:
-            # Don't copy Summary/Rule/Queue/... checks
-            if check["app_id"] == settings.GITHUB_APP_ID:
+            # NOTE(sileht): copy only post_check from our App, we don't care about Summary/Rule/Queue checks
+            if check["app_id"] == settings.GITHUB_APP_ID and not check["name"].endswith(
+                "(post_check)"
+            ):
                 continue
 
             output_title = ""

@@ -7564,6 +7564,49 @@ pull_request_rules:
         p4_closed = await self.wait_for_pull_request("closed", p4["number"])
         assert p4_closed["pull_request"]["merged"]
 
+    async def test_check_runs_filtering(self) -> None:
+        rules = {
+            "queue_rules": [
+                {
+                    "name": "default",
+                    "conditions": [
+                        "status-success=continuous-integration/fake-ci",
+                    ],
+                }
+            ],
+            "pull_request_rules": [
+                {
+                    "name": "Queue and post check",
+                    "conditions": [
+                        f"base={self.main_branch_name}",
+                    ],
+                    "actions": {
+                        "queue": {"name": "default"},
+                        "post_check": {},
+                    },
+                },
+            ],
+        }
+        await self.setup_repo(yaml.dump(rules))
+
+        await self.create_pr()
+        p = await self.create_pr()
+        await self.merge_pull(p["number"])
+        await self.wait_for_pull_request("closed", pr_number=p["number"])
+        await self.run_engine()
+
+        p1 = await self.wait_for_pull_request("synchronize")
+        await self.create_status(p1["pull_request"], state="pending")
+
+        await self.run_engine()
+
+        train = await self.get_train()
+        assert len(train._cars) == 1
+        assert [c.name for c in train._cars[0].last_checks] == [
+            "Rule: Queue and post check (post_check)",
+            "continuous-integration/fake-ci",
+        ]
+
 
 class TestQueueActionFeaturesSubscription(base.FunctionalTestBase):
     @pytest.mark.subscription(subscription.Features.WORKFLOW_AUTOMATION)
