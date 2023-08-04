@@ -1,5 +1,6 @@
 from collections import abc
 
+import daiquiri
 from ddtrace import tracer
 import sqlalchemy
 
@@ -12,6 +13,8 @@ from mergify_engine.models import github_account
 from mergify_engine.models import github_actions
 from mergify_engine.models import github_repository
 
+
+LOG = daiquiri.getLogger(__name__)
 
 LOG_EMBEDDER_JOBS_BATCH_SIZE = 100
 
@@ -79,6 +82,9 @@ async def embed_logs() -> bool:
             .limit(LOG_EMBEDDER_JOBS_BATCH_SIZE)
         )
         jobs = (await session.scalars(stmt)).all()
+
+        LOG.info("log-embedder: %d jobs to embed", len(jobs), request=str(stmt))
+
         job_ids = []
         for job in jobs:
             if job.log_embedding is None:
