@@ -12,7 +12,7 @@ class LogEmbedderService:
 
     def __post_init__(self) -> None:
         self._task = task.TaskRetriedForever(
-            "ci_event_processing",
+            "log-embedder",
             self._work,
             self.log_embedder_idle_time,
         )
