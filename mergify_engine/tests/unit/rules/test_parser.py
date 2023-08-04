@@ -438,6 +438,32 @@ now = datetime.datetime.fromisoformat("2012-01-14T20:32:00+00:00")
                 )
             },
         ),
+        (
+            "current-datetime=XXXX-07-14T08:00/XXXX-07-14T19:00[Europe/Paris]",
+            {
+                "=": (
+                    "current-datetime",
+                    date.DateTimeRange(
+                        date.UncertainDate(
+                            year=date.UncertainDatePart(),
+                            month=7,
+                            day=14,
+                            hour=8,
+                            minute=0,
+                            tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
+                        ),
+                        date.UncertainDate(
+                            year=date.UncertainDatePart(),
+                            month=7,
+                            day=14,
+                            hour=19,
+                            minute=0,
+                            tzinfo=zoneinfo.ZoneInfo("Europe/Paris"),
+                        ),
+                    ),
+                )
+            },
+        ),
     ),
 )
 @freeze_time(now)
@@ -525,6 +551,18 @@ async def test_parse_jinja_template(
         (
             "current-datetime>=2023-07-13T14:00/2023-07-13T16:00[Europe/Paris]",
             "Invalid operator",
+        ),
+        (
+            "current-datetime=20XX-01-01T14:00/19:00[Europe/Paris]",
+            "Invalid timestamp",
+        ),
+        (
+            "current-datetime=XXXX-01-01T14:00",
+            "Invalid timestamp",
+        ),
+        (
+            "current-datetime=2023-XX-XXT14:00/2023-XX-XXT19:00",
+            "Invalid timestamp",
         ),
     ),
 )

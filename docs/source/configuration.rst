@@ -408,6 +408,27 @@ Some timestamp attributes support basic `intervals
    2023-07-13T14:00Z/2023-07-13T16:00Z
    2023-07-13T14:00/2023-07-13T16:00[Europe/Paris]
 
+Unspecified digits can also be used for some part of the timestamp:
+
+.. code-block::
+
+   # 14:00 to 19:00 the 14th of July of every year
+   XXXX-07-14T14:00/XXXX-07-14T19:00[Europe/Paris]
+
+   # 14:00 to 19:00 every day of July of every year
+   XXXX-07-XXT14:00/XXXX-07-XXT19:00[Europe/Paris]
+
+   # 14:00 to 19:00 every day of July of 2023
+   2023-07-XXT14:00/XXXX-07-XXT19:00[Europe/Paris]
+
+   # 14:00 to 19:00 every 31st day of every month of 2023
+   # If a month doesn't have a 31st day it will be skipped
+   2023-XX-31T14:00/2023-XX-31T19:00[Europe/Paris]
+
+   # 14:00 to 19:00 every 31st day of every month of every year
+   XXXX-XX-31T14:00/XXXX-XX-31T19:00[Europe/Paris]
+
+
 Examples
 ++++++++
 

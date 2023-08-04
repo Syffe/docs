@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    Conditions of type `Timestamp intervals` in the configuration now support
+    unspecified digits. For more informations: https://docs.mergify.com/configuration/#timestamp-interval

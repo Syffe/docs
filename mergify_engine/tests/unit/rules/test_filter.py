@@ -617,6 +617,123 @@ async def test_current_datetime_range(condition: str) -> None:
         assert await f(get_scheduled_pr()) == date.DT_MAX
 
 
+@pytest.mark.parametrize(
+    "condition,freeze_time_before_range,freeze_time_inside_range,freeze_time_after_range,next_refresh_before_range,next_refresh_inside_range,next_refresh_after_range",
+    (
+        (
+            "current-datetime=XXXX-07-14T00:00/XXXX-07-14T23:59[Europe/Paris]",
+            "2023-07-13",  # freeze time before range
+            "2023-07-14T10:00+02:00",  # freeze time inside range
+            "2023-07-15",  # freeze time after range
+            datetime.datetime(  # next refresh before range
+                2023, 7, 14, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+            ),
+            datetime.datetime(  # next refresh inside range
+                2023, 7, 15, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+            ),
+            datetime.datetime(  # next refresh after range
+                2024, 7, 14, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+            ),
+        ),
+        (
+            "current-datetime=2023-XX-14T00:00/2023-XX-14T23:59[Europe/Paris]",
+            "2023-07-13",  # freeze time before range
+            "2023-07-14T10:00+02:00",  # freeze time inside range
+            "2023-07-15",  # freeze time after range
+            datetime.datetime(  # next refresh before range
+                2023, 7, 14, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+            ),
+            datetime.datetime(  # next refresh inside range
+                2023, 7, 15, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+            ),
+            datetime.datetime(  # next refresh after range
+                2023, 8, 14, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+            ),
+        ),
+        (
+            "current-datetime=2023-XX-31T00:00/2023-XX-31T23:59[Europe/Paris]",
+            "2023-01-29",  # freeze time before range
+            "2023-01-31T10:00+02:00",  # freeze time inside range
+            "2023-02-02",  # freeze time after range
+            datetime.datetime(  # next refresh before range
+                2023, 1, 31, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+            ),
+            datetime.datetime(  # next refresh inside range
+                2023, 2, 1, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+            ),
+            datetime.datetime(  # next refresh after range
+                2023, 3, 31, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+            ),
+        ),
+        (
+            "current-datetime=XXXX-07-XXT00:00/XXXX-07-XXT23:59[Europe/Paris]",
+            "2023-06-10",  # freeze time before range
+            "2023-07-10",  # freeze time inside range
+            "2023-08-01",  # freeze time after range
+            datetime.datetime(  # next refresh before range
+                2023, 7, 1, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+            ),
+            datetime.datetime(  # next refresh inside range
+                2023, 7, 2, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+            ),
+            datetime.datetime(  # next refresh after range
+                2024, 7, 1, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+            ),
+        ),
+        (
+            "current-datetime=2023-07-XXT00:00/2023-07-XXT23:59[Europe/Paris]",
+            "2023-06-10",  # freeze time before range
+            "2023-07-10",  # freeze time inside range
+            "2023-08-01",  # freeze time after range
+            datetime.datetime(  # next refresh before range
+                2023, 7, 1, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+            ),
+            datetime.datetime(  # next refresh inside range
+                2023, 7, 2, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+            ),
+            datetime.datetime(  # next refresh after range
+                2024, 7, 1, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+            ),
+        ),
+        (
+            "current-datetime=XXXX-XX-31T00:00/XXXX-XX-31T23:59[Europe/Paris]",
+            "2023-01-29",  # freeze time before range
+            "2023-01-31T10:00+02:00",  # freeze time inside range
+            "2023-02-02",  # freeze time after range
+            datetime.datetime(  # next refresh before range
+                2023, 1, 31, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+            ),
+            datetime.datetime(  # next refresh inside range
+                2023, 2, 1, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+            ),
+            datetime.datetime(  # next refresh after range
+                2023, 3, 31, tzinfo=zoneinfo.ZoneInfo("Europe/Paris")
+            ),
+        ),
+    ),
+)
+async def test_current_datetime_range_uncertain_date(
+    condition: str,
+    freeze_time_before_range: str,
+    freeze_time_inside_range: str,
+    freeze_time_after_range: str,
+    next_refresh_before_range: datetime.datetime,
+    next_refresh_inside_range: datetime.datetime,
+    next_refresh_after_range: datetime.datetime,
+) -> None:
+    with freeze_time(freeze_time_before_range):
+        tree = parser.parse(condition)
+        f = filter.NearDatetimeFilter(tree)
+
+        assert await f(get_scheduled_pr()) == next_refresh_before_range
+
+    with freeze_time(freeze_time_inside_range):
+        assert await f(get_scheduled_pr()) == next_refresh_inside_range
+
+    with freeze_time(freeze_time_after_range):
+        assert await f(get_scheduled_pr()) == next_refresh_after_range
+
+
 async def test_text_jinja_template(
     jinja_environment: jinja2.sandbox.SandboxedEnvironment,
 ) -> None:

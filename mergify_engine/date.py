@@ -8,6 +8,7 @@ import time
 import typing
 import zoneinfo
 
+import dateutil
 import pydantic
 
 
@@ -662,6 +663,184 @@ class Schedule:
         return {"hour": hour, "minute": minute}
 
 
+class UncertainDatePart:
+    def __eq__(self, other: object) -> bool:
+        # Needed for unit tests
+        return isinstance(other, UncertainDatePart)
+
+
+REGEX_DATETIME_WITH_UNCERTAIN_DIGITS = re.compile(
+    # We don't need to match the timezone since it will be already split from
+    # the date value when this regex will be used
+    r"^(?P<year>\d{4}|X{4})-(?P<month>\d{2}|X{2})-(?P<day>\d{2}|X{2})[T ]?(?P<hour>[\d]{2}):(?P<minute>[\d]{2})"
+)
+
+
+@dataclasses.dataclass
+class UncertainDate:
+    year: int | UncertainDatePart
+    month: int | UncertainDatePart
+    day: int | UncertainDatePart
+    hour: int
+    minute: int
+    tzinfo: zoneinfo.ZoneInfo = dataclasses.field(default=UTC)
+
+    def __post_init__(self) -> None:
+        if (
+            isinstance(self.year, UncertainDatePart)
+            and isinstance(self.month, UncertainDatePart)
+            and isinstance(self.day, UncertainDatePart)
+        ):
+            raise InvalidDate(
+                "Cannot have year, month and day as uncertain, use `schedule` condition instead"
+            )
+
+        if (
+            isinstance(self.year, int)
+            and isinstance(self.day, UncertainDatePart)
+            and isinstance(self.month, UncertainDatePart)
+        ):
+            # This forbid the following case: 2023-XX-XX
+            # NOTE(Greesb): It is forbidden at the moment because it will require
+            # quite a bit of code to get working and i'm not sure this use case
+            # make sense or will be used at all. So until a client requires it,
+            # it will be forbidden.
+            raise InvalidDate("Cannot have both month and day as uncertain")
+
+    @classmethod
+    def fromisoformat(cls, string: str, tzinfo: zoneinfo.ZoneInfo) -> UncertainDate:
+        match = REGEX_DATETIME_WITH_UNCERTAIN_DIGITS.search(string)
+        if not match:
+            raise InvalidDate("The datetime format is invalid")
+
+        values: dict[str, int | UncertainDatePart] = {}
+        for group_name in ("year", "month", "day"):
+            raw_value = match.group(group_name)
+            if "X" in raw_value:
+                values[group_name] = UncertainDatePart()
+            else:
+                try:
+                    values[group_name] = int(raw_value)
+                except ValueError:
+                    raise InvalidDate("The datetime format is invalid")
+
+        for group_name in ("hour", "minute"):
+            # hour and minute cannot have uncertain digits
+            raw_value = match.group(group_name)
+            if raw_value is not None:
+                values[group_name] = int(raw_value)
+
+        return cls(**values, tzinfo=tzinfo)  # type: ignore[arg-type]
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, UncertainDate):
+            return (
+                self.year == other.year
+                and self.month == other.month
+                and self.day == other.day
+                and (self.hour is None or other.hour is None or self.hour == other.hour)
+                and (
+                    self.minute is None
+                    or other.minute is None
+                    or self.minute == other.minute
+                )
+                and self.tzinfo == other.tzinfo
+            )
+
+        if isinstance(other, datetime.datetime):
+            dt_as_utc = other.astimezone(self.tzinfo)
+            return (
+                self.year == dt_as_utc.year
+                and self.month == dt_as_utc.month
+                and self.day == dt_as_utc.day
+                and (self.hour is None or self.hour == dt_as_utc.hour)
+                and (self.minute is None or self.minute == dt_as_utc.minute)
+            )
+
+        raise ValueError(f"Unsupported comparison type: {type(other)}")
+
+    def _as_datetime(self, other: datetime.datetime) -> datetime.datetime:
+        dt_values = {}
+        other = other.astimezone(self.tzinfo)
+        for attr in ("year", "month", "day", "hour", "minute"):
+            # Build a datetime with the `UncertainDatePart`
+            # replaced by the values of the `other` datetime
+            if isinstance(getattr(self, attr), UncertainDatePart):
+                dt_values[attr] = getattr(other, attr)
+            else:
+                dt_values[attr] = getattr(self, attr)
+
+        out_of_range = True
+        dt: datetime.datetime
+        while out_of_range:
+            try:
+                dt = datetime.datetime(**dt_values, tzinfo=self.tzinfo)
+            except ValueError as e:
+                if "day is out of range for month" not in str(e):
+                    raise
+
+                # We want to keep the correct day, so go try and find it
+                # in the next months if the current month doesn't have the
+                # day we want.
+                # (eg, `31st` day in february doesn't exist, we will find the next `31st`
+                # in march)
+                dt_values["month"] += 1
+                if dt_values["month"] > 12:
+                    dt_values["month"] = 0
+                    dt_values["year"] += 1
+            else:
+                break
+
+        return dt
+
+    def isoformat(self) -> str:
+        return self._as_datetime(datetime.datetime.now(tz=self.tzinfo)).isoformat()
+
+    def __ge__(self, other: object) -> bool:
+        if not isinstance(other, datetime.datetime):
+            raise ValueError(f"Unsupported comparison type: {type(other)}")
+
+        return self._as_datetime(other) >= other.astimezone(self.tzinfo)
+
+    def __le__(self, other: object) -> bool:
+        if not isinstance(other, datetime.datetime):
+            raise ValueError(f"Unsupported comparison type: {type(other)}")
+
+        return self._as_datetime(other) <= other.astimezone(self.tzinfo)
+
+    def get_next_datetime(self, from_time: datetime.datetime) -> datetime.datetime:
+        as_dt = self._as_datetime(from_time)
+
+        if as_dt >= from_time:
+            if isinstance(self.day, UncertainDatePart):
+                return as_dt.replace(day=1)
+            return as_dt
+
+        # as_dt < from_time
+        if isinstance(self.month, UncertainDatePart):
+            # We want a specific day each month, if we are here that means
+            # we already passed the day of the current month.
+            # So we need to increment months to find the next specific day
+            # in the following months.
+            # We add a while loop just to make sure we land on the correct day,
+            # for example if we want the 31st of each month, then we won't have a 31st for each month.
+            as_dt += dateutil.relativedelta.relativedelta(months=1)
+            while as_dt.day != self.day:
+                as_dt += dateutil.relativedelta.relativedelta(months=1)
+
+            return as_dt
+
+        if isinstance(self.year, UncertainDatePart) and isinstance(
+            self.day, UncertainDatePart
+        ):
+            return as_dt.replace(day=1) + dateutil.relativedelta.relativedelta(
+                months=12
+            )
+
+        # Only `year` is `UncertainDatePart`
+        return as_dt + dateutil.relativedelta.relativedelta(years=1)
+
+
 def fromisoformat(s: str) -> datetime.datetime:
     """always returns an aware datetime object with UTC timezone"""
     if s[-1] == "Z":
@@ -672,8 +851,11 @@ def fromisoformat(s: str) -> datetime.datetime:
     return dt.astimezone(UTC)
 
 
-def fromisoformat_with_zoneinfo(string: str) -> datetime.datetime:
+def fromisoformat_with_zoneinfo(
+    string: str,
+) -> datetime.datetime:
     value, tzinfo = extract_timezone(string)
+
     try:
         return fromisoformat(value).replace(tzinfo=tzinfo)
     except ValueError:
@@ -725,8 +907,8 @@ def interval_from_string(value: str) -> datetime.timedelta:
 
 @dataclasses.dataclass
 class DateTimeRange:
-    start: datetime.datetime
-    end: datetime.datetime
+    start: datetime.datetime | UncertainDate
+    end: datetime.datetime | UncertainDate
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(
@@ -745,10 +927,22 @@ class DateTimeRange:
         return f"{self.start.isoformat()}..{self.end.isoformat()}"
 
     @classmethod
+    def _fromisoformat_or_uncertain_date(
+        cls, string: str, tzinfo: zoneinfo.ZoneInfo
+    ) -> datetime.datetime | UncertainDate:
+        if "X" in string:
+            return UncertainDate.fromisoformat(string, tzinfo)
+
+        try:
+            return fromisoformat(string).replace(tzinfo=tzinfo)
+        except ValueError:
+            raise InvalidDate("Invalid date/time range")
+
+    @classmethod
     def fromisoformat_with_zoneinfo(cls, string: str) -> DateTimeRange:
         # NOTE(charly): Search for the position of the "/" that separate two
         # dates
-        separator_match = re.search(r"/\d{4}-", string)
+        separator_match = re.search(r"/(?:\d{4}|X{4})-", string)
         if separator_match is None:
             raise InvalidDate("Invalid date/time range")
 
@@ -763,17 +957,24 @@ class DateTimeRange:
         if not has_timezone(start_str):
             start_tz = end_tz
 
-        try:
-            start = fromisoformat(start_iso_str).replace(tzinfo=start_tz)
-            end = fromisoformat(end_iso_str).replace(tzinfo=end_tz)
-        except ValueError:
-            raise InvalidDate("Invalid date/time range")
+        start = cls._fromisoformat_or_uncertain_date(start_iso_str, start_tz)
+        end = cls._fromisoformat_or_uncertain_date(end_iso_str, end_tz)
 
         return cls(start, end)
 
     def get_next_datetime(self, from_time: datetime.datetime) -> datetime.datetime:
         if from_time <= self.start:
-            return self.start
+            if isinstance(self.start, datetime.datetime):
+                return self.start
+            return self.start.get_next_datetime(from_time)
+
         if from_time <= self.end:
-            return self.end + datetime.timedelta(minutes=1)
+            if isinstance(self.end, datetime.datetime):
+                return self.end + datetime.timedelta(minutes=1)
+            return self.end.get_next_datetime(from_time) + datetime.timedelta(minutes=1)
+
+        # from_time > self.end > self.start
+        if isinstance(self.start, UncertainDate):
+            return self.start.get_next_datetime(from_time)
+
         return DT_MAX

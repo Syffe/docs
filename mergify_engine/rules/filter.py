@@ -505,10 +505,11 @@ def _dt_op(
     def _operator(value: typing.Any, ref: typing.Any) -> datetime.datetime:
         if value is None:
             return date.DT_MAX
+
         try:
             dt_value = _as_datetime(value).astimezone(datetime.UTC)
 
-            if isinstance(ref, date.Schedule | date.DateTimeRange):
+            if isinstance(ref, date.Schedule | date.DateTimeRange | date.UncertainDate):
                 return ref.get_next_datetime(dt_value)
 
             dt_ref = _as_datetime(ref).astimezone(datetime.UTC)
