@@ -55,7 +55,7 @@ async def get_tokenized_cleaned_log(job: github_actions.WorkflowJob) -> list[int
     return list(tokens)
 
 
-@tracer.wrap("log_embedder.run_log_embedder_pipelines", span_type="worker")
+@tracer.wrap("embed-logs")
 async def embed_logs() -> bool:
     if not settings.LOG_EMBEDDER_ENABLED_ORGS:
         return False
