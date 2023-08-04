@@ -22,7 +22,7 @@ class LogEmbedderService:
         return [self._task]
 
     async def _work(self) -> None:
-        while not self._task.shutdown_requested:
+        while not self._task.shutdown_requested.is_set():
             pending_work = await github_action.embed_logs()
             if not pending_work:
                 # NOTE(sileht): nothing to do, sleep a bit
