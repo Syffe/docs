@@ -1,4 +1,5 @@
 from collections import abc
+from collections import deque
 
 import daiquiri
 from ddtrace import tracer
@@ -20,20 +21,8 @@ LOG_EMBEDDER_JOBS_BATCH_SIZE = 100
 
 
 async def embed_log(job: github_actions.WorkflowJob) -> None:
-    cleaner = log_cleaner.LogCleaner()
-    cleaned_log_lines = []
-    async for log_line in log_download(job):
-        cleaned_log_line = cleaner.clean_line(log_line)
-
-        if cleaned_log_line:
-            cleaned_log_lines.append(cleaned_log_line)
-
-    truncated_clean_log = openai_embedding.truncate_to_max_openai_size(
-        "\n".join(cleaned_log_lines)
-    )
-
-    embedding = await openai_embedding.get_embedding(truncated_clean_log)
-
+    tokens = await get_tokenized_cleaned_log(job)
+    embedding = await openai_embedding.get_embedding(tokens)
     job.log_embedding = embedding
 
 
@@ -49,6 +38,21 @@ async def log_download(
         ) as resp:
             async for line in resp.aiter_lines():
                 yield line
+
+
+async def get_tokenized_cleaned_log(job: github_actions.WorkflowJob) -> list[int]:
+    cleaner = log_cleaner.LogCleaner()
+
+    tokens: deque[int] = deque(
+        maxlen=openai_embedding.OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN
+    )
+    async for log_line in log_download(job):
+        cleaned_log_line = cleaner.clean_line(log_line)
+        if cleaned_log_line:
+            line_tokenized = openai_embedding.TIKTOKEN_ENCODING.encode(cleaned_log_line)
+            tokens.extend(line_tokenized)
+
+    return list(tokens)
 
 
 @tracer.wrap("log_embedder.run_log_embedder_pipelines", span_type="worker")

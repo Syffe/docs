@@ -58,7 +58,3 @@ async def get_embedding(input_data: str | list[int]) -> npt.NDArray[np.float32]:
         embedding = response.json()["data"][0]["embedding"]
 
     return np.array(list(map(np.float32, embedding)))
-
-
-def truncate_to_max_openai_size(log: str) -> list[int]:
-    return TIKTOKEN_ENCODING.encode(log)[-OPENAI_EMBEDDINGS_MAX_INPUT_TOKEN:]

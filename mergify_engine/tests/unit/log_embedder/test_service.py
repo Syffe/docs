@@ -52,10 +52,6 @@ async def test_embed_logs(
     )
     respx_mock.post(
         openai_embedding.OPENAI_EMBEDDINGS_END_POINT,
-        json={
-            "input": openai_embedding.truncate_to_max_openai_size("toto"),
-            "model": openai_embedding.OPENAI_EMBEDDINGS_MODEL,
-        },
     ).respond(
         200,
         json={
