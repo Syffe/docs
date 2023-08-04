@@ -57,6 +57,8 @@ def test_logging(
             "logger": {"name": "name"},
             "dd.trace_id": mock.ANY,
             "dd.span_id": mock.ANY,
+            "dd.root_span.resource": "test_logging",
+            "dd.root_span.tags.gh_owner": "foobar",
             # FIXME(sileht): It should be "whatever" but it's buggy
             # here we get a random service depending on the order tests are
             # running, so use ANY for now.

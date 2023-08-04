@@ -59,6 +59,20 @@ class HerokuDatadogFormatter(daiquiri.formatter.DatadogFormatter):
         message_dict: dict[str, str],
     ) -> None:
         super().add_fields(log_record, record, message_dict)
+
+        root_span = ddtrace.tracer.current_root_span()
+
+        ddtrace_internal_tags = ("runtime-id",)
+        if root_span is not None:
+            log_record["dd.root_span.resource"] = root_span.resource
+            log_record.update(
+                {
+                    f"dd.root_span.tags.{k if isinstance(k, str) else k.decode()}": v
+                    for k, v in root_span.get_tags().items()
+                    if k not in ddtrace_internal_tags
+                }
+            )
+
         log_record.update(self.HEROKU_LOG_EXTRAS)
         log_record.update(
             {
