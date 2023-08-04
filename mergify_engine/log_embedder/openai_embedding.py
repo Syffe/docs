@@ -44,7 +44,7 @@ TIKTOKEN_ENCODING = tiktoken.Encoding(
 async def get_embedding(input_data: str | list[int]) -> npt.NDArray[np.float32]:
     async with http.AsyncClient(
         headers={
-            "Authorization": f"Bearer {settings.OPENAI_API_TOKEN}",
+            "Authorization": f"Bearer {settings.OPENAI_API_TOKEN.get_secret_value()}",
             "Accept": "application/json",
         },
     ) as session:
