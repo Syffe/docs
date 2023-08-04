@@ -49,7 +49,16 @@ class HTTPClientSideError(httpx.HTTPStatusError):
         # TODO(sileht): do something with errors and documentation_url when present
         # https://developer.github.com/v3/#client-errors
         response = self.response.json()
-        message = response.get("message", "No error message provided by GitHub")
+
+        # GitHub
+        message = response.get("message")
+
+        # OpenAI
+        if message is None:
+            message = response.get("error", {}).get("message")
+
+        if message is None:
+            message = "No error message provided"
 
         if "errors" in response:
             if "message" in response["errors"][0]:

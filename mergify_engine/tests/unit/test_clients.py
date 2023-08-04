@@ -236,6 +236,23 @@ async def test_message_format_client_HTTP_400(respx_mock: respx.MockRouter) -> N
     respx_mock.get("https://foobar/").respond(
         400,
         json={
+            "error": {
+                "message": "OpenAI error message",
+            }
+        },
+    )
+    async with http.AsyncClient() as client:
+        typing.cast(
+            http.AsyncHTTPTransport, client._transport
+        ).retry_exponential_multiplier = 0
+        with pytest.raises(http.HTTPClientSideError) as exc_info:
+            await client.get("https://foobar/")
+
+    assert exc_info.value.message == "OpenAI error message"
+
+    respx_mock.get("https://foobar/").respond(
+        400,
+        json={
             "not_message_key": "false_key",
             "documentation_url": "fake_url",
         },
@@ -247,7 +264,7 @@ async def test_message_format_client_HTTP_400(respx_mock: respx.MockRouter) -> N
         with pytest.raises(http.HTTPClientSideError) as exc_info:
             await client.get("https://foobar/")
 
-    assert exc_info.value.message == "No error message provided by GitHub"
+    assert exc_info.value.message == "No error message provided"
 
 
 async def test_client_HTTP_500(respx_mock: respx.MockRouter) -> None:
