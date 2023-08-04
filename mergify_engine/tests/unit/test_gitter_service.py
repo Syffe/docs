@@ -5,6 +5,7 @@ import pytest
 
 from mergify_engine import github_types
 from mergify_engine import logs
+from mergify_engine import redis_utils
 from mergify_engine.worker import gitter_service
 from mergify_engine.worker import task
 
@@ -15,10 +16,11 @@ OWNER = github_types.GitHubLogin("owner")
 async def test_gitter_service_lifecycle(
     request: pytest.FixtureRequest,
     event_loop: asyncio.BaseEventLoop,
+    redis_links: redis_utils.RedisLinks,
 ) -> None:
     logs.setup_logging()
     service = gitter_service.GitterService(
-        concurrent_jobs=1, monitoring_idle_time=0, idle_sleep_time=0.01
+        redis_links, gitter_concurrent_jobs=1, idle_time=0, gitter_worker_idle_time=0.01
     )
     assert gitter_service.GitterService._instance is not None
     request.addfinalizer(
@@ -48,10 +50,11 @@ async def test_gitter_service_lifecycle(
 async def test_gitter_service_exception(
     request: pytest.FixtureRequest,
     event_loop: asyncio.BaseEventLoop,
+    redis_links: redis_utils.RedisLinks,
 ) -> None:
     logs.setup_logging()
     service = gitter_service.GitterService(
-        concurrent_jobs=1, monitoring_idle_time=0, idle_sleep_time=0.01
+        redis_links, gitter_concurrent_jobs=1, idle_time=0, gitter_worker_idle_time=0.01
     )
     assert gitter_service.GitterService._instance is not None
     request.addfinalizer(
@@ -83,10 +86,11 @@ async def test_gitter_service_exception(
 async def test_gitter_service_concurrency(
     request: pytest.FixtureRequest,
     event_loop: asyncio.BaseEventLoop,
+    redis_links: redis_utils.RedisLinks,
 ) -> None:
     logs.setup_logging()
     service = gitter_service.GitterService(
-        concurrent_jobs=4, monitoring_idle_time=0, idle_sleep_time=0.01
+        redis_links, gitter_concurrent_jobs=4, gitter_worker_idle_time=0.01, idle_time=0
     )
     request.addfinalizer(
         lambda: event_loop.run_until_complete(task.stop_and_wait(service.tasks))

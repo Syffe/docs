@@ -2,6 +2,7 @@ import argparse
 import asyncio
 import dataclasses
 import functools
+import importlib
 import os
 import signal
 import typing
@@ -16,10 +17,6 @@ from mergify_engine import service
 from mergify_engine import settings
 from mergify_engine import signals
 from mergify_engine.clients import github
-from mergify_engine.worker import ci_event_processing_service
-from mergify_engine.worker import gitter_service
-from mergify_engine.worker import log_embedder_service
-from mergify_engine.worker import stream_services
 from mergify_engine.worker import task
 
 
@@ -70,16 +67,24 @@ class ServiceProtocol(typing.Protocol):
 
 ServiceT = typing.TypeVar("ServiceT", bound=ServiceProtocol)
 ServiceNameT = typing.Literal[
-    "shared-stream",
-    "dedicated-stream",
+    "dedicated-workers-spawner",
+    "shared-workers-spawner",
+    "gitter",
     "stream-monitoring",
     "delayed-refresh",
-    "gitter",
     "ci-event-processing",
     "log-embedder",
+    "dedicated-workers-cache-syncer",
 ]
 ServiceNamesT = set[ServiceNameT]
 AVAILABLE_WORKER_SERVICES = set(ServiceNameT.__dict__["__args__"])
+
+# This ensures all declared services are imported and named correctly
+for service_name in AVAILABLE_WORKER_SERVICES:
+    # nosemgrep: python.lang.security.audit.non-literal-import.non-literal-import
+    importlib.import_module(
+        f"mergify_engine.worker.{service_name.replace('-','_')}_service"
+    )
 
 
 def asyncio_event_set_by_default() -> asyncio.Event:
@@ -93,31 +98,37 @@ class ServiceManager:
     enabled_services: ServiceNamesT = dataclasses.field(
         default_factory=lambda: AVAILABLE_WORKER_SERVICES.copy()
     )
-
-    # DelayedRefreshService
-    delayed_refresh_idle_time: float = 60
+    _mandatory_services: typing.ClassVar[ServiceNamesT] = {
+        "dedicated-workers-cache-syncer"
+    }
 
     # DedicatedWorkersCacheSyncerService
-    dedicated_workers_syncer_idle_time: float = 30
+    dedicated_workers_cache_syncer_idle_time: float = 30
 
     # DedicatedStreamService
     dedicated_workers_spawner_idle_time: float = 60
     dedicated_stream_processes: int = settings.DEDICATED_STREAM_PROCESSES
 
     # SharedStreamService
+    shared_workers_spawner_idle_time: float = 60  # Not used
     shared_stream_tasks_per_process: int = settings.SHARED_STREAM_TASKS_PER_PROCESS
     shared_stream_processes: int = settings.SHARED_STREAM_PROCESSES
 
     # SharedStreamService & DedicatedStreamService
-    idle_sleep_time: float = 0.42
+    worker_idle_time: float = 0.42
     process_index: int = dataclasses.field(default_factory=get_process_index_from_env)
     retry_handled_exception_forever: bool = True
 
     # GitterService
     gitter_concurrent_jobs: int = settings.MAX_GITTER_CONCURRENT_JOBS
+    gitter_idle_time: float = 60
+    gitter_worker_idle_time: float = 60
 
-    # MonitoringStreamService & GitterService
-    monitoring_idle_time: float = 60
+    # MonitoringStreamService
+    stream_monitoring_idle_time: float = 60
+
+    # DelayedRefreshService
+    delayed_refresh_idle_time: float = 60
 
     # CIDownloadService
     ci_event_processing_idle_time: float = 30
@@ -161,82 +172,27 @@ class ServiceManager:
 
         await github.GitHubAppInfo.warm_cache(self._redis_links.cache)
 
-        if "gitter" in self.enabled_services:
-            gitter_serv = gitter_service.GitterService(
-                concurrent_jobs=self.gitter_concurrent_jobs,
-                monitoring_idle_time=self.monitoring_idle_time,
-                idle_sleep_time=self.idle_sleep_time,
-            )
-            self._services.append(gitter_serv)
-        dedicated_workers_cache_syncer = stream_services.DedicatedWorkersCacheSyncerService(
-            self._redis_links,
-            dedicated_workers_syncer_idle_time=self.dedicated_workers_syncer_idle_time,
-        )
-        self._services.append(dedicated_workers_cache_syncer)
+        common_fields = [f.name for f in dataclasses.fields(task.SimpleService)]
+        for name, service_class in sorted(
+            task.SIMPLE_SERVICES_REGISTRY.items(),
+            key=lambda s: s[1].loading_priority,
+        ):
+            if not (name in self.enabled_services or name in self._mandatory_services):
+                continue
 
-        if "shared-stream" in self.enabled_services:
-            self._services.append(
-                stream_services.SharedStreamService(
-                    self._redis_links,
-                    retry_handled_exception_forever=self.retry_handled_exception_forever,
-                    process_index=self.process_index,
-                    idle_sleep_time=self.idle_sleep_time,
-                    shared_stream_tasks_per_process=self.shared_stream_tasks_per_process,
-                    shared_stream_processes=self.shared_stream_processes,
-                    dedicated_workers_cache_syncer=dedicated_workers_cache_syncer,
-                )
+            LOG.info("%s loading", name)
+            serv = service_class(
+                self._redis_links,
+                idle_time=getattr(self, f"{name.replace('-', '_')}_idle_time"),
+                **{
+                    field.name: getattr(self, field.name)
+                    for field in dataclasses.fields(service_class)
+                    if field.init and field.name not in common_fields
+                },
             )
-
-        if "dedicated-stream" in self.enabled_services:
-            self._services.append(
-                stream_services.DedicatedStreamService(
-                    self._redis_links,
-                    retry_handled_exception_forever=self.retry_handled_exception_forever,
-                    process_index=self.process_index,
-                    idle_sleep_time=self.idle_sleep_time,
-                    dedicated_stream_processes=self.dedicated_stream_processes,
-                    dedicated_workers_spawner_idle_time=self.dedicated_workers_spawner_idle_time,
-                    dedicated_workers_cache_syncer=dedicated_workers_cache_syncer,
-                )
-            )
-
-        if "delayed-refresh" in self.enabled_services:
-            # Circular dependency issue
-            from mergify_engine.worker import delayed_refresh_service
-
-            self._services.append(
-                delayed_refresh_service.DelayedRefreshService(
-                    self._redis_links,
-                    delayed_refresh_idle_time=self.delayed_refresh_idle_time,
-                )
-            )
-
-        if "stream-monitoring" in self.enabled_services:
-            self._services.append(
-                stream_services.MonitoringStreamService(
-                    self._redis_links,
-                    monitoring_idle_time=self.monitoring_idle_time,
-                    shared_stream_tasks_per_process=self.shared_stream_tasks_per_process,
-                    shared_stream_processes=self.shared_stream_processes,
-                    dedicated_stream_processes=self.dedicated_stream_processes,
-                    dedicated_workers_cache_syncer=dedicated_workers_cache_syncer,
-                )
-            )
-
-        if "ci-event-processing" in self.enabled_services:
-            self._services.append(
-                ci_event_processing_service.CIEventProcessingService(
-                    self._redis_links,
-                    ci_event_processing_idle_time=self.ci_event_processing_idle_time,
-                )
-            )
-
-        if "log-embedder" in self.enabled_services:
-            self._services.append(
-                log_embedder_service.LogEmbedderService(
-                    log_embedder_idle_time=self.log_embedder_idle_time,
-                )
-            )
+            # NOTE(sileht): make service available for dependant services
+            setattr(self, f"service_{name.replace('-', '_')}", serv)
+            self._services.append(serv)
 
     async def _stop_all_tasks(self) -> None:
         tasks_that_must_shutdown_first: list[task.TaskRetriedForever] = []

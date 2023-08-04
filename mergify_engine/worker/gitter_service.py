@@ -47,15 +47,13 @@ class GitterJob(typing.Generic[T]):
 
 
 @dataclasses.dataclass
-class GitterService:
-    concurrent_jobs: int
-    monitoring_idle_time: float
-    idle_sleep_time: float
+class GitterService(task.SimpleService):
+    gitter_concurrent_jobs: int
+    gitter_worker_idle_time: float
 
     _pools: list[task.TaskRetriedForever] = dataclasses.field(
         init=False, default_factory=list
     )
-    _monitoring_task: task.TaskRetriedForever = dataclasses.field(init=False)
     _queue: asyncio.Queue[GitterJob[typing.Any]] = dataclasses.field(init=False)
     _jobs: dict[GitterJobId, GitterJob[typing.Any]] = dataclasses.field(
         init=False, default_factory=dict
@@ -64,28 +62,25 @@ class GitterService:
     _instance: typing.ClassVar[GitterService | None] = None
 
     def __post_init__(self) -> None:
+        super().__post_init__()
+
         self._queue = asyncio.Queue()
-        for i in range(self.concurrent_jobs):
+        for i in range(self.gitter_concurrent_jobs):
             worker_id = f"gitter-worker-{i}"
             worker = task.TaskRetriedForever(
                 worker_id,
                 functools.partial(self._gitter_worker, worker_id),
-                self.idle_sleep_time,
+                self.gitter_worker_idle_time,
             )
             self._pools.append(worker)
 
-        self._monitoring_task = task.TaskRetriedForever(
-            "gitter-monitoring",
-            self._monitoring,
-            self.monitoring_idle_time,
-        )
         GitterService._instance = self
 
     @property
     def tasks(self) -> list[task.TaskRetriedForever]:
-        return [*self._pools, self._monitoring_task]
+        return [*self._pools, self.main_task]
 
-    async def _monitoring(self) -> None:
+    async def work(self) -> None:
         LOG.debug("running gitter monitoring")
         queued = 0
         running = 0

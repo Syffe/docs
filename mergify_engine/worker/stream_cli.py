@@ -6,9 +6,10 @@ import itertools
 from mergify_engine import date
 from mergify_engine import redis_utils
 from mergify_engine import settings
+from mergify_engine.worker import shared_workers_spawner_service
 from mergify_engine.worker import stream
 from mergify_engine.worker import stream_lua
-from mergify_engine.worker import stream_services
+from mergify_engine.worker import stream_service_base
 
 
 async def async_status() -> None:
@@ -26,14 +27,16 @@ async def async_status() -> None:
 
     def sorter(item: tuple[bytes, float]) -> str:
         org_bucket, score = item
-        owner_id = stream_services.StreamService.extract_owner(
+        owner_id = stream_service_base.StreamService.extract_owner(
             stream_lua.BucketOrgKeyType(org_bucket.decode())
         )
         if owner_id in dedicated_worker_owner_ids:
             return f"dedicated-{owner_id}"
 
-        return stream_services.SharedStreamService.get_shared_worker_id_for(
-            owner_id, global_shared_tasks_count
+        return (
+            shared_workers_spawner_service.SharedStreamService.get_shared_worker_id_for(
+                owner_id, global_shared_tasks_count
+            )
         )
 
     org_buckets: list[tuple[bytes, float]] = sorted(

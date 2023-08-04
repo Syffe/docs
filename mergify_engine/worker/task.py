@@ -2,11 +2,15 @@ import asyncio
 from collections import abc
 import contextlib
 import dataclasses
+import typing
 
 import daiquiri
 from datadog import statsd  # type: ignore[attr-defined]
+from ddtrace import tracer
 from redis import exceptions as redis_exceptions
 import sentry_sdk
+
+from mergify_engine import redis_utils
 
 
 LOG = daiquiri.getLogger(__name__)
@@ -73,6 +77,41 @@ class TaskRetriedForever:
                 with contextlib.suppress(asyncio.TimeoutError):
                     async with asyncio.timeout(self.sleep_time):
                         await self.shutdown_requested.wait()
+
+
+@dataclasses.dataclass
+class SimpleService:
+    redis_links: redis_utils.RedisLinks
+    idle_time: float
+
+    loading_priority: typing.ClassVar[int] = 100
+
+    main_task: TaskRetriedForever = dataclasses.field(init=False)
+
+    def __init_subclass__(cls, **kwargs: typing.Any) -> None:
+        super().__init_subclass__(**kwargs)
+        SIMPLE_SERVICES_REGISTRY[cls.get_name()] = cls
+
+    @classmethod
+    def get_name(cls) -> str:
+        # NOTE(sileht): drop _service.py suffix
+        return cls.__module__.split(".")[-1][:-8].replace("_", "-")
+
+    def __post_init__(self) -> None:
+        traced_work = tracer.wrap(self.get_name(), span_type="worker")(self.work)
+        self.main_task = TaskRetriedForever(
+            self.get_name(), traced_work, self.idle_time
+        )
+
+    @property
+    def tasks(self) -> list[TaskRetriedForever]:
+        return [self.main_task]
+
+    async def work(self) -> None:
+        raise NotImplementedError()
+
+
+SIMPLE_SERVICES_REGISTRY: dict[str, type[SimpleService]] = {}
 
 
 async def stop_and_wait(tasks: list[TaskRetriedForever]) -> None:

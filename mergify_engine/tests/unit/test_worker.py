@@ -22,13 +22,16 @@ from mergify_engine import redis_utils
 from mergify_engine import worker_pusher
 from mergify_engine.clients import github_app
 from mergify_engine.clients import http
+from mergify_engine.worker import dedicated_workers_cache_syncer_service
+from mergify_engine.worker import dedicated_workers_spawner_service
 from mergify_engine.worker import delayed_refresh_service
 from mergify_engine.worker import gitter_service
 from mergify_engine.worker import manager
+from mergify_engine.worker import shared_workers_spawner_service
 from mergify_engine.worker import stream
 from mergify_engine.worker import stream_cli
 from mergify_engine.worker import stream_lua
-from mergify_engine.worker import stream_services
+from mergify_engine.worker import stream_monitoring_service
 from mergify_engine.worker import task
 
 
@@ -161,11 +164,12 @@ async def run_worker(
     test_timeout: float | None = None, **kwargs: typing.Any
 ) -> manager.ServiceManager:
     w = manager.ServiceManager(
-        idle_sleep_time=0.01,
-        monitoring_idle_time=0.01,
+        worker_idle_time=0.01,
+        stream_monitoring_idle_time=0.01,
+        gitter_idle_time=0.01,
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
-        dedicated_workers_syncer_idle_time=0.01,
+        dedicated_workers_cache_syncer_idle_time=0.01,
         gitter_concurrent_jobs=0,
         ci_event_processing_idle_time=0.01,
         log_embedder_idle_time=0.01,
@@ -325,7 +329,7 @@ async def test_worker_legacy_push(
         in run_engine.mock_calls
     )
 
-    serv = w.get_service(stream_services.SharedStreamService)
+    serv = w.get_service(shared_workers_spawner_service.SharedStreamService)
     assert serv is not None
     assert serv._owners_cache._mapping == {i: f"owner-{i}" for i in range(0, 8)}
 
@@ -1372,14 +1376,17 @@ async def test_stream_processor_priority(
         received.append(pull_number)
 
     run_engine.side_effect = fake_engine
-    syncer_service = stream_services.DedicatedWorkersCacheSyncerService(
-        redis_links, dedicated_workers_syncer_idle_time=0
+    syncer_service = (
+        dedicated_workers_cache_syncer_service.DedicatedWorkersCacheSyncerService(
+            redis_links, idle_time=0
+        )
     )
-    shared_service = stream_services.SharedStreamService(
+    shared_service = shared_workers_spawner_service.SharedStreamService(
         redis_links,
-        dedicated_workers_cache_syncer=syncer_service,
+        service_dedicated_workers_cache_syncer=syncer_service,
         process_index=0,
-        idle_sleep_time=0,
+        idle_time=0,
+        worker_idle_time=0,
         shared_stream_processes=1,
         shared_stream_tasks_per_process=0,
         retry_handled_exception_forever=False,
@@ -1446,14 +1453,17 @@ async def test_stream_processor_date_scheduling(
     assert 2 == len(await redis_links.stream.keys("bucket~*"))
     assert 0 == len(await redis_links.stream.hgetall("attempts"))
 
-    syncer_service = stream_services.DedicatedWorkersCacheSyncerService(
-        redis_links, dedicated_workers_syncer_idle_time=0
+    syncer_service = (
+        dedicated_workers_cache_syncer_service.DedicatedWorkersCacheSyncerService(
+            redis_links, idle_time=0
+        )
     )
-    shared_service = stream_services.SharedStreamService(
+    shared_service = shared_workers_spawner_service.SharedStreamService(
         redis_links,
-        dedicated_workers_cache_syncer=syncer_service,
+        service_dedicated_workers_cache_syncer=syncer_service,
         process_index=0,
-        idle_sleep_time=0,
+        idle_time=0,
+        worker_idle_time=0,
         shared_stream_processes=1,
         shared_stream_tasks_per_process=0,
         retry_handled_exception_forever=False,
@@ -1725,7 +1735,7 @@ async def test_worker_with_multiple_workers(
     await asyncio.gather(
         *[
             run_worker(
-                enabled_services={"shared-stream"},
+                enabled_services={"shared-workers-spawner"},
                 shared_stream_tasks_per_process=shared_stream_tasks_per_process,
                 shared_stream_processes=shared_stream_processes,
                 process_index=i,
@@ -1845,12 +1855,12 @@ async def test_dedicated_worker_scaleup_scaledown(
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
 
     w = manager.ServiceManager(
-        enabled_services={"shared-stream", "dedicated-stream"},
-        idle_sleep_time=0.01,
+        enabled_services={"shared-workers-spawner", "dedicated-workers-spawner"},
+        worker_idle_time=0.01,
         shared_stream_tasks_per_process=3,
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
-        dedicated_workers_syncer_idle_time=0.01,
+        dedicated_workers_cache_syncer_idle_time=0.01,
         gitter_concurrent_jobs=1,
     )
     await w.start()
@@ -1931,7 +1941,7 @@ async def test_dedicated_worker_scaleup_scaledown(
         "dedicated-4446",
         "shared-1",
     ]
-    serv = w.get_service(stream_services.DedicatedStreamService)
+    serv = w.get_service(dedicated_workers_spawner_service.DedicatedStreamService)
     assert serv is not None
     assert set(serv._dedicated_worker_tasks.keys()) == set(
         {
@@ -2003,28 +2013,32 @@ async def test_dedicated_worker_process_scaleup_scaledown(
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
 
     w_dedicated = manager.ServiceManager(
-        enabled_services={"dedicated-stream"},
-        idle_sleep_time=0.01,
+        enabled_services={"dedicated-workers-spawner"},
         delayed_refresh_idle_time=0.01,
+        worker_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
-        dedicated_workers_syncer_idle_time=0.01,
+        dedicated_workers_cache_syncer_idle_time=0.01,
     )
     await w_dedicated.start()
     w_shared = manager.ServiceManager(
-        enabled_services={"shared-stream"},
+        enabled_services={"shared-workers-spawner"},
         shared_stream_tasks_per_process=3,
-        idle_sleep_time=0.01,
+        worker_idle_time=0.01,
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
-        dedicated_workers_syncer_idle_time=0.01,
+        dedicated_workers_cache_syncer_idle_time=0.01,
     )
     await w_shared.start()
 
     request.addfinalizer(lambda: event_loop.run_until_complete(w_dedicated._shutdown()))
     request.addfinalizer(lambda: event_loop.run_until_complete(w_shared._shutdown()))
 
-    serv_shared = w_shared.get_service(stream_services.SharedStreamService)
-    serv_dedicated = w_dedicated.get_service(stream_services.DedicatedStreamService)
+    serv_shared = w_shared.get_service(
+        shared_workers_spawner_service.SharedStreamService
+    )
+    serv_dedicated = w_dedicated.get_service(
+        dedicated_workers_spawner_service.DedicatedStreamService
+    )
     assert serv_shared is not None
     assert serv_dedicated is not None
 
@@ -2105,8 +2119,8 @@ async def test_dedicated_worker_process_scaleup_scaledown(
         "shared-1",
     ]
 
-    assert serv_shared.dedicated_workers_cache_syncer.owner_ids == {1, 4446}
-    assert serv_dedicated.dedicated_workers_cache_syncer.owner_ids == {1, 4446}
+    assert serv_shared.service_dedicated_workers_cache_syncer.owner_ids == {1, 4446}
+    assert serv_dedicated.service_dedicated_workers_cache_syncer.owner_ids == {1, 4446}
     assert set(serv_dedicated._dedicated_worker_tasks.keys()) == {1, 4446}
     tracker.clear()
 
@@ -2121,8 +2135,8 @@ async def test_dedicated_worker_process_scaleup_scaledown(
         "shared-2",
         "shared-2",
     ]
-    assert serv_shared.dedicated_workers_cache_syncer.owner_ids == set()
-    assert serv_dedicated.dedicated_workers_cache_syncer.owner_ids == set()
+    assert serv_shared.service_dedicated_workers_cache_syncer.owner_ids == set()
+    assert serv_dedicated.service_dedicated_workers_cache_syncer.owner_ids == set()
     assert set(serv_dedicated._dedicated_worker_tasks.keys()) == set()
     tracker.clear()
 
@@ -2139,8 +2153,8 @@ async def test_dedicated_worker_process_scaleup_scaledown(
         "shared-1",
     ]
 
-    assert serv_shared.dedicated_workers_cache_syncer.owner_ids == {1, 4446}
-    assert serv_dedicated.dedicated_workers_cache_syncer.owner_ids == {1, 4446}
+    assert serv_shared.service_dedicated_workers_cache_syncer.owner_ids == {1, 4446}
+    assert serv_dedicated.service_dedicated_workers_cache_syncer.owner_ids == {1, 4446}
     assert set(serv_dedicated._dedicated_worker_tasks.keys()) == {1, 4446}
     tracker.clear()
 
@@ -2152,8 +2166,8 @@ async def test_dedicated_worker_process_scaleup_scaledown(
         "shared-1",
         "shared-2",
     ]
-    assert serv_shared.dedicated_workers_cache_syncer.owner_ids == set()
-    assert serv_dedicated.dedicated_workers_cache_syncer.owner_ids == set()
+    assert serv_shared.service_dedicated_workers_cache_syncer.owner_ids == set()
+    assert serv_dedicated.service_dedicated_workers_cache_syncer.owner_ids == set()
     assert set(serv_dedicated._dedicated_worker_tasks.keys()) == set()
     tracker.clear()
 
@@ -2169,8 +2183,8 @@ async def test_dedicated_worker_process_scaleup_scaledown(
         "shared-1",
         "shared-1",
     ]
-    assert serv_shared.dedicated_workers_cache_syncer.owner_ids == {1, 4446}
-    assert serv_dedicated.dedicated_workers_cache_syncer.owner_ids == {1, 4446}
+    assert serv_shared.service_dedicated_workers_cache_syncer.owner_ids == {1, 4446}
+    assert serv_dedicated.service_dedicated_workers_cache_syncer.owner_ids == {1, 4446}
     assert set(serv_dedicated._dedicated_worker_tasks.keys()) == {1, 4446}
     tracker.clear()
 
@@ -2191,18 +2205,18 @@ async def test_separate_dedicated_worker(
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
 
     shared_w = manager.ServiceManager(
-        enabled_services={"shared-stream"},
+        enabled_services={"shared-workers-spawner"},
         shared_stream_tasks_per_process=3,
-        idle_sleep_time=0.01,
+        worker_idle_time=0.01,
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
     )
     await shared_w.start()
 
     dedicated_w = manager.ServiceManager(
-        enabled_services={"dedicated-stream"},
+        enabled_services={"dedicated-workers-spawner"},
         shared_stream_tasks_per_process=3,
-        idle_sleep_time=0.01,
+        worker_idle_time=0.01,
         delayed_refresh_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
     )
@@ -2304,17 +2318,15 @@ async def test_separate_dedicated_worker(
 
 
 @mock.patch("mergify_engine.worker.manager.ServiceManager.setup_signals")
+@mock.patch("mergify_engine.worker.delayed_refresh_service.DelayedRefreshService.work")
 @mock.patch(
-    "mergify_engine.worker.delayed_refresh_service.DelayedRefreshService.delayed_refresh_task"
+    "mergify_engine.worker.stream_monitoring_service.MonitoringStreamService.work"
 )
 @mock.patch(
-    "mergify_engine.worker.stream_services.MonitoringStreamService.monitoring_task"
+    "mergify_engine.worker.dedicated_workers_spawner_service.DedicatedStreamService.work"
 )
 @mock.patch(
-    "mergify_engine.worker.stream_services.DedicatedStreamService.dedicated_workers_spawner_task"
-)
-@mock.patch(
-    "mergify_engine.worker.stream_services.SharedStreamService.shared_stream_worker_task"
+    "mergify_engine.worker.shared_workers_spawner_service.SharedStreamService.shared_stream_worker_task"
 )
 @mock.patch(
     "mergify_engine.worker.manager.ServiceManager.wait_shutdown_complete",
@@ -2347,17 +2359,15 @@ def test_worker_start_all_tasks(
 
 
 @mock.patch("mergify_engine.worker.manager.ServiceManager.setup_signals")
+@mock.patch("mergify_engine.worker.delayed_refresh_service.DelayedRefreshService.work")
 @mock.patch(
-    "mergify_engine.worker.delayed_refresh_service.DelayedRefreshService.delayed_refresh_task"
+    "mergify_engine.worker.stream_monitoring_service.MonitoringStreamService.work"
 )
 @mock.patch(
-    "mergify_engine.worker.stream_services.MonitoringStreamService.monitoring_task"
+    "mergify_engine.worker.dedicated_workers_spawner_service.DedicatedStreamService.work"
 )
 @mock.patch(
-    "mergify_engine.worker.stream_services.DedicatedStreamService.dedicated_workers_spawner_task"
-)
-@mock.patch(
-    "mergify_engine.worker.stream_services.SharedStreamService.shared_stream_worker_task"
+    "mergify_engine.worker.shared_workers_spawner_service.SharedStreamService.shared_stream_worker_task"
 )
 @mock.patch(
     "mergify_engine.worker.manager.ServiceManager.wait_shutdown_complete",
@@ -2380,7 +2390,7 @@ def test_worker_start_just_shared(
 ) -> None:
     loop_and_sleep_forever.side_effect = just_run_once
 
-    manager.main(["--enabled-services=shared-stream"])
+    manager.main(["--enabled-services=shared-workers-spawner"])
     while not wait_shutdown_complete.called:
         time.sleep(0.01)
     assert shared_stream_worker_task.called
@@ -2390,17 +2400,15 @@ def test_worker_start_just_shared(
 
 
 @mock.patch("mergify_engine.worker.manager.ServiceManager.setup_signals")
+@mock.patch("mergify_engine.worker.delayed_refresh_service.DelayedRefreshService.work")
 @mock.patch(
-    "mergify_engine.worker.delayed_refresh_service.DelayedRefreshService.delayed_refresh_task"
+    "mergify_engine.worker.stream_monitoring_service.MonitoringStreamService.work"
 )
 @mock.patch(
-    "mergify_engine.worker.stream_services.MonitoringStreamService.monitoring_task"
+    "mergify_engine.worker.dedicated_workers_spawner_service.DedicatedStreamService.work"
 )
 @mock.patch(
-    "mergify_engine.worker.stream_services.DedicatedStreamService.dedicated_workers_spawner_task"
-)
-@mock.patch(
-    "mergify_engine.worker.stream_services.SharedStreamService.shared_stream_worker_task"
+    "mergify_engine.worker.shared_workers_spawner_service.SharedStreamService.shared_stream_worker_task"
 )
 @mock.patch(
     "mergify_engine.worker.manager.ServiceManager.wait_shutdown_complete",
@@ -2424,7 +2432,9 @@ def test_worker_start_except_shared(
     loop_and_sleep_forever.side_effect = just_run_once
 
     manager.main(
-        ["--enabled-services=dedicated-stream,stream-monitoring,delayed-refresh"]
+        [
+            "--enabled-services=dedicated-workers-spawner,stream-monitoring,delayed-refresh"
+        ]
     )
     while not wait_shutdown_complete.called:
         time.sleep(0.01)
@@ -2444,13 +2454,13 @@ async def test_get_shared_worker_ids(
     monkeypatch.setattr(manager, "_DYNO", "worker-shared.1")
     assert manager.get_process_index_from_env() == 0
     w1 = manager.ServiceManager(
-        enabled_services={"shared-stream"},
+        enabled_services={"shared-workers-spawner"},
         shared_stream_processes=2,
         shared_stream_tasks_per_process=30,
     )
     await w1.start()
     request.addfinalizer(lambda: event_loop.run_until_complete(w1._shutdown()))
-    shared_serv1 = w1.get_service(stream_services.SharedStreamService)
+    shared_serv1 = w1.get_service(shared_workers_spawner_service.SharedStreamService)
     assert shared_serv1 is not None
     assert shared_serv1.get_shared_worker_ids() == list(range(0, 30))
     assert shared_serv1.global_shared_tasks_count == 60
@@ -2460,13 +2470,13 @@ async def test_get_shared_worker_ids(
     monkeypatch.setattr(manager, "_DYNO", "worker-shared.2")
     assert manager.get_process_index_from_env() == 1
     w2 = manager.ServiceManager(
-        enabled_services={"shared-stream"},
+        enabled_services={"shared-workers-spawner"},
         shared_stream_processes=2,
         shared_stream_tasks_per_process=30,
     )
     await w2.start()
     request.addfinalizer(lambda: event_loop.run_until_complete(w2._shutdown()))
-    shared_serv2 = w2.get_service(stream_services.SharedStreamService)
+    shared_serv2 = w2.get_service(shared_workers_spawner_service.SharedStreamService)
     assert shared_serv2 is not None
     assert shared_serv2.get_shared_worker_ids() == list(range(30, 60))
     assert shared_serv2.global_shared_tasks_count == 60
@@ -2491,15 +2501,17 @@ async def test_get_my_dedicated_worker_ids(
     monkeypatch.setattr(manager, "_DYNO", "worker-dedicated.1")
     assert manager.get_process_index_from_env() == 0
     w1 = manager.ServiceManager(
-        enabled_services={"shared-stream", "dedicated-stream"},
+        enabled_services={"shared-workers-spawner", "dedicated-workers-spawner"},
         shared_stream_processes=0,
         dedicated_stream_processes=2,
     )
     await w1.start()
     request.addfinalizer(lambda: event_loop.run_until_complete(w1._shutdown()))
-    dedicated_serv1 = w1.get_service(stream_services.DedicatedStreamService)
+    dedicated_serv1 = w1.get_service(
+        dedicated_workers_spawner_service.DedicatedStreamService
+    )
     assert dedicated_serv1 is not None
-    dedicated_serv1.dedicated_workers_cache_syncer.owner_ids = owners_cache
+    dedicated_serv1.service_dedicated_workers_cache_syncer.owner_ids = owners_cache
     assert dedicated_serv1.get_my_dedicated_worker_ids_from_cache() == {
         github_types.GitHubAccountIdType(123),
         github_types.GitHubAccountIdType(125),
@@ -2509,15 +2521,17 @@ async def test_get_my_dedicated_worker_ids(
     monkeypatch.setattr(manager, "_DYNO", "worker-dedicated.2")
     assert manager.get_process_index_from_env() == 1
     w2 = manager.ServiceManager(
-        enabled_services={"shared-stream", "dedicated-stream"},
+        enabled_services={"shared-workers-spawner", "dedicated-workers-spawner"},
         shared_stream_processes=0,
         dedicated_stream_processes=2,
     )
     await w2.start()
     request.addfinalizer(lambda: event_loop.run_until_complete(w2._shutdown()))
-    dedicated_serv2 = w2.get_service(stream_services.DedicatedStreamService)
+    dedicated_serv2 = w2.get_service(
+        dedicated_workers_spawner_service.DedicatedStreamService
+    )
     assert dedicated_serv2 is not None
-    dedicated_serv2.dedicated_workers_cache_syncer.owner_ids = owners_cache
+    dedicated_serv2.service_dedicated_workers_cache_syncer.owner_ids = owners_cache
     assert dedicated_serv2.get_my_dedicated_worker_ids_from_cache() == {
         github_types.GitHubAccountIdType(124),
         github_types.GitHubAccountIdType(126),
@@ -2599,33 +2613,33 @@ async def test_dedicated_multiple_processes(
     get_installation_from_account_id.side_effect = fake_get_installation_from_account_id
 
     w_shared = manager.ServiceManager(
-        enabled_services={"shared-stream"},
+        enabled_services={"shared-workers-spawner"},
         shared_stream_tasks_per_process=3,
-        idle_sleep_time=0.01,
+        worker_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
-        dedicated_workers_syncer_idle_time=0.01,
+        dedicated_workers_cache_syncer_idle_time=0.01,
         dedicated_stream_processes=0,
         process_index=0,
     )
     await w_shared.start()
     w1 = manager.ServiceManager(
-        enabled_services={"dedicated-stream"},
+        enabled_services={"dedicated-workers-spawner"},
         shared_stream_tasks_per_process=0,
-        idle_sleep_time=0.01,
+        worker_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
-        dedicated_workers_syncer_idle_time=0.01,
+        dedicated_workers_cache_syncer_idle_time=0.01,
         dedicated_stream_processes=2,
         process_index=0,
     )
     await w1.start()
 
     w2 = manager.ServiceManager(
-        enabled_services={"dedicated-stream"},
+        enabled_services={"dedicated-workers-spawner"},
         shared_stream_tasks_per_process=0,
         delayed_refresh_idle_time=0.01,
-        idle_sleep_time=0.01,
+        worker_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
-        dedicated_workers_syncer_idle_time=0.01,
+        dedicated_workers_cache_syncer_idle_time=0.01,
         dedicated_stream_processes=2,
         process_index=1,
     )
@@ -2636,12 +2650,12 @@ async def test_dedicated_multiple_processes(
     request.addfinalizer(lambda: event_loop.run_until_complete(w2._shutdown()))
 
     serv_dedicated_of_shared = w_shared.get_service(
-        stream_services.DedicatedStreamService
+        dedicated_workers_spawner_service.DedicatedStreamService
     )
     assert serv_dedicated_of_shared is None
-    serv1 = w1.get_service(stream_services.DedicatedStreamService)
+    serv1 = w1.get_service(dedicated_workers_spawner_service.DedicatedStreamService)
     assert serv1 is not None
-    serv2 = w2.get_service(stream_services.DedicatedStreamService)
+    serv2 = w2.get_service(dedicated_workers_spawner_service.DedicatedStreamService)
     assert serv2 is not None
 
     async def fake_get_subscription_dedicated(
@@ -2751,9 +2765,9 @@ async def test_start_stop_cycle(
 ) -> None:
     w = manager.ServiceManager(
         shared_stream_tasks_per_process=3,
-        idle_sleep_time=0.01,
+        worker_idle_time=0.01,
         dedicated_workers_spawner_idle_time=0.01,
-        dedicated_workers_syncer_idle_time=0.01,
+        dedicated_workers_cache_syncer_idle_time=0.01,
         dedicated_stream_processes=1,
         process_index=0,
         gitter_concurrent_jobs=2,
@@ -2773,11 +2787,13 @@ async def test_start_stop_cycle(
     tasks = [a_task for serv in w._services for a_task in serv.tasks]
     assert len(tasks) == 12
 
-    serv_shared = w.get_service(stream_services.SharedStreamService)
+    serv_shared = w.get_service(shared_workers_spawner_service.SharedStreamService)
     assert serv_shared is not None
-    serv_dedicated = w.get_service(stream_services.DedicatedStreamService)
+    serv_dedicated = w.get_service(
+        dedicated_workers_spawner_service.DedicatedStreamService
+    )
     assert serv_dedicated is not None
-    assert w.get_service(stream_services.MonitoringStreamService) is not None
+    assert w.get_service(stream_monitoring_service.MonitoringStreamService) is not None
     assert w.get_service(delayed_refresh_service.DelayedRefreshService) is not None
     serv_gitter = w.get_service(gitter_service.GitterService)
     assert serv_gitter is not None
