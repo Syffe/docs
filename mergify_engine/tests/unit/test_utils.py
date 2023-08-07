@@ -3,11 +3,13 @@ import typing
 
 from freezegun import freeze_time
 import pytest
+import sqlalchemy.ext.asyncio
 import tenacity
 
 from mergify_engine import github_types
 from mergify_engine import redis_utils
 from mergify_engine import utils
+from mergify_engine.models import github_actions
 
 
 @pytest.mark.parametrize(
@@ -350,6 +352,28 @@ def test_filter_dict_recursively() -> None:
     filtered_data = utils.filter_dict(data, mask)
 
     assert filtered_data == {"a": 1, "b": {"c": True}}
+
+
+def add_workflow_job(
+    session: sqlalchemy.ext.asyncio.AsyncSession,
+    job_data: dict[str, typing.Any],
+) -> github_actions.WorkflowJob:
+    job = github_actions.WorkflowJob(
+        id=job_data["id"],
+        repository=job_data["repository"],
+        log_embedding=job_data.get("log_embedding"),
+        workflow_run_id=job_data.get("workflow_run_id", 1),
+        name=job_data.get("name", "job_name"),
+        started_at=job_data.get("started_at", datetime.datetime.now()),
+        completed_at=job_data.get("completed_at", datetime.datetime.now()),
+        conclusion=job_data.get(
+            "conclusion", github_actions.WorkflowJobConclusion.SUCCESS
+        ),
+        labels=job_data.get("labels", []),
+        run_attempt=job_data.get("run_attempt", 1),
+    )
+    session.add(job)
+    return job
 
 
 async def test_map_tenacity_try_again_to_real_cause() -> None:

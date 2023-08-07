@@ -19,7 +19,7 @@ from mergify_engine.tests.openai_embedding_dataset import OPENAI_EMBEDDING_DATAS
 from mergify_engine.tests.openai_embedding_dataset import (
     OPENAI_EMBEDDING_DATASET_NUMPY_FORMAT,
 )
-from mergify_engine.tests.unit.log_embedder import utils
+from mergify_engine.tests.unit.test_utils import add_workflow_job
 
 
 async def test_embed_logs(
@@ -73,7 +73,7 @@ async def test_embed_logs(
 
     # Create 3 jobs (LOG_EMBEDDER_JOBS_BATCH_SIZE + 1)
     for i in range(3):
-        job = await utils.add_job(
+        job = add_workflow_job(
             db,
             {
                 "id": i,
