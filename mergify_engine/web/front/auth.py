@@ -199,7 +199,7 @@ async def auth_setup(
         )
 
     if setup_action == "request":
-        return AuthRedirectUrl("/?request=true")
+        return AuthRedirectUrl("/github?request=true")
 
     LOG.warning("Unknown setup_action: %s", setup_action)
     return AuthRedirectUrl("/")

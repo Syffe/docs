@@ -60,7 +60,7 @@ async def test_new_user(
             "/github/user-login?new=true",
         ),
         ("setup_action=install&installation_id=456", 200, "/github?new=true"),
-        ("setup_action=request", 200, "/?request=true"),
+        ("setup_action=request", 200, "/github?request=true"),
         ("setup_action=unknown", 200, "/"),
         ("setup_action=install", 400, None),
     ),
