@@ -588,3 +588,19 @@ async def test_to_curl(
 {"work": true}
 """
         )
+
+
+async def test_retry_that_use_response(respx_mock: respx.MockRouter) -> None:
+    respx_mock.get("https://foobar/").side_effect = [
+        httpx.Response(400, json={"message": "This is a 4XX error"}),
+        httpx.Response(200, json={"message": "This is a 2XX error"}),
+    ]
+    async with http.AsyncClient() as client:
+        typing.cast(
+            http.AsyncHTTPTransport, client._transport
+        ).retry_exponential_multiplier = 0
+        response = await client.get(
+            "https://foobar/",
+            extensions={"retry": lambda response: "4XX" in response.json()["message"]},
+        )
+        assert response.status_code == 200

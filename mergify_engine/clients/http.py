@@ -202,10 +202,18 @@ class AsyncHTTPTransport(httpx.AsyncHTTPTransport):
                     if response.status_code >= 500 or response.status_code == 429:
                         raise TryAgainOnCertainHTTPError(response=response)
 
-                    if custom_retry is not None and custom_retry(response):
-                        if custom_retry_log is not None:
-                            custom_retry_log(response)
-                        raise TryAgainOnCertainHTTPError(response=response)
+                    if custom_retry is not None:
+                        try:
+                            should_retry = custom_retry(response)
+                        except httpx.ResponseNotRead:
+                            # retry code need the response body
+                            await response.aread()
+                            should_retry = custom_retry(response)
+
+                        if should_retry:
+                            if custom_retry_log is not None:
+                                custom_retry_log(response)
+                            raise TryAgainOnCertainHTTPError(response=response)
 
         except TryAgainOnCertainHTTPError as exc:
             return exc.response
