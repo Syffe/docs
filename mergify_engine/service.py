@@ -43,7 +43,8 @@ def setup(
             max_breadcrumbs=10,
             release=VERSION,
             environment=settings.SENTRY_ENVIRONMENT,
-            request_bodies="never",
+            max_request_body_size="never",
+            max_value_length=2048,
             integrations=[
                 httpx.HttpxIntegration(),
                 starlette.StarletteIntegration(),
@@ -51,7 +52,6 @@ def setup(
                 sqlalchemy.SqlalchemyIntegration(),
             ],
         )
-        sentry_sdk.utils.MAX_STRING_LENGTH = 2048
 
     ddtrace.config.version = VERSION
     statsd.constant_tags.append(f"service:{SERVICE_NAME}")
