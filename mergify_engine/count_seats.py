@@ -8,7 +8,6 @@ import typing
 
 import daiquiri
 import msgpack
-import tenacity
 
 from mergify_engine import date
 from mergify_engine import exceptions
@@ -322,11 +321,6 @@ class Seats:
                 repo_seats["active_users"] |= active_users
 
 
-@tenacity.retry(
-    wait=tenacity.wait_exponential(multiplier=0.2),
-    stop=tenacity.stop_after_attempt(5),
-    reraise=True,
-)
 async def send_seats(seats: SeatsCountResultT) -> None:
     async with http.AsyncClient() as client:
         if settings.SUBSCRIPTION_TOKEN is None:
@@ -342,12 +336,13 @@ async def send_seats(seats: SeatsCountResultT) -> None:
                     "active_users": seats.active_users,
                     "engine_version": settings.VERSION,
                 },
+                extensions={
+                    "retry": lambda response: response.status_code in [401, 403],
+                },
             )
         except Exception as exc:
             if exceptions.should_be_ignored(exc):
                 return
-            if exceptions.need_retry(exc):
-                raise tenacity.TryAgain
             raise
 
 

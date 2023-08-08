@@ -26,7 +26,6 @@ import jinja2.sandbox
 import jinja2.utils
 import markdownify
 import msgpack
-import tenacity
 
 from mergify_engine import cache
 from mergify_engine import check_api
@@ -1883,24 +1882,26 @@ class Context:
                 return False
         return True
 
-    @tenacity.retry(
-        wait=tenacity.wait_exponential(multiplier=0.2),
-        stop=tenacity.stop_after_attempt(5),
-        retry=tenacity.retry_never,
-        reraise=True,
-    )
     async def update(
         self, wait_merged: bool = False, wait_merge_commit_sha: bool = False
     ) -> None:
         # Don't use it, because consolidated data are not updated after that.
         # Only used by merge/queue action for posting an update report after rebase.
         self.pull = await self.client.item(
-            f"{self.base_url}/pulls/{self.pull['number']}"
+            f"{self.base_url}/pulls/{self.pull['number']}",
+            extensions={
+                "retry": lambda response: (
+                    response.status_code == 200
+                    and (
+                        (wait_merged and not response.json()["merged"])
+                        or (
+                            wait_merge_commit_sha
+                            and not response.json()["merge_commit_sha"]
+                        )
+                    )
+                )
+            },
         )
-        if (wait_merged and not self.pull["merged"]) or (
-            wait_merge_commit_sha and not self.pull["merge_commit_sha"]
-        ):
-            raise tenacity.TryAgain
         self._caches.pull_check_runs.delete()
 
     async def _get_heads_from_commit(self) -> set[github_types.SHAType]:

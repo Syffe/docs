@@ -33,6 +33,30 @@ HTTPStatusError = httpx.HTTPStatusError
 RequestError = httpx.RequestError
 
 
+def extract_message(response: httpx.Response) -> str:
+    # TODO(sileht): do something with errors and documentation_url when present
+    # https://developer.github.com/v3/#client-errors
+    json_response = response.json()
+
+    # GitHub
+    message = json_response.get("message")
+
+    if "errors" in json_response:
+        if "message" in json_response["errors"][0]:
+            message = json_response["errors"][0]["message"]
+        elif isinstance(json_response["errors"][0], str):
+            message = json_response["errors"][0]
+
+    # OpenAI
+    if message is None:
+        message = json_response.get("error", {}).get("message")
+
+    if message is None:
+        message = "No error message provided"
+
+    return typing.cast(str, message)
+
+
 class HTTPServerSideError(httpx.HTTPStatusError):
     @property
     def message(self) -> str:
@@ -46,27 +70,7 @@ class HTTPServerSideError(httpx.HTTPStatusError):
 class HTTPClientSideError(httpx.HTTPStatusError):
     @property
     def message(self) -> str:
-        # TODO(sileht): do something with errors and documentation_url when present
-        # https://developer.github.com/v3/#client-errors
-        response = self.response.json()
-
-        # GitHub
-        message = response.get("message")
-
-        # OpenAI
-        if message is None:
-            message = response.get("error", {}).get("message")
-
-        if message is None:
-            message = "No error message provided"
-
-        if "errors" in response:
-            if "message" in response["errors"][0]:
-                message = response["errors"][0]["message"]
-            elif isinstance(response["errors"][0], str):
-                message = response["errors"][0]
-
-        return typing.cast(str, message)
+        return extract_message(self.response)
 
     @property
     def status_code(self) -> int:
@@ -145,7 +149,7 @@ def extract_organization_login(client: httpx.AsyncClient) -> str | None:
     return None
 
 
-def raise_for_status(resp: httpx.Response) -> None:
+def response_to_exception(resp: httpx.Response) -> HTTPStatusError | None:
     if httpx.codes.is_client_error(resp.status_code):
         error_type = "Client Error"
         exc_class = STATUS_CODE_TO_EXC.get(resp.status_code, HTTPClientSideError)
@@ -153,11 +157,17 @@ def raise_for_status(resp: httpx.Response) -> None:
         error_type = "Server Error"
         exc_class = STATUS_CODE_TO_EXC.get(resp.status_code, HTTPServerSideError)
     else:
-        return
+        return None
 
     details = resp.text if resp.text else "<empty-response>"
     message = f"{resp.status_code} {error_type}: {resp.reason_phrase} for url `{resp.url}`\nDetails: {details}"
-    raise exc_class(message, request=resp.request, response=resp)
+    return exc_class(message, request=resp.request, response=resp)
+
+
+def raise_for_status(resp: httpx.Response) -> None:
+    exception = response_to_exception(resp)
+    if exception is not None:
+        raise exception
 
 
 class AsyncHTTPTransport(httpx.AsyncHTTPTransport):
@@ -171,11 +181,13 @@ class AsyncHTTPTransport(httpx.AsyncHTTPTransport):
         self.retry_exponential_multiplier = retry_exponential_multiplier
 
     async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
+        custom_retry = request.extensions.get("retry")
+        custom_retry_log = request.extensions.get("retry_log")
         try:
             async for attempt in tenacity.AsyncRetrying(
                 reraise=True,
                 retry=tenacity.retry_if_exception_type(
-                    (RequestError, tenacity.TryAgain)
+                    (RequestError, TryAgainOnCertainHTTPError)
                 ),
                 wait=tenacity.wait_combine(
                     TryAgainOnCertainHTTPError.wait_from_headers(),
@@ -188,6 +200,11 @@ class AsyncHTTPTransport(httpx.AsyncHTTPTransport):
                 with attempt:
                     response = await super().handle_async_request(request)
                     if response.status_code >= 500 or response.status_code == 429:
+                        raise TryAgainOnCertainHTTPError(response=response)
+
+                    if custom_retry is not None and custom_retry(response):
+                        if custom_retry_log is not None:
+                            custom_retry_log(response)
                         raise TryAgainOnCertainHTTPError(response=response)
 
         except TryAgainOnCertainHTTPError as exc:

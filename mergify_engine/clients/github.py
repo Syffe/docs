@@ -437,9 +437,14 @@ class AsyncGitHubClient(http.AsyncClient):
         api_version: github_types.GitHubApiVersion | None = None,
         oauth_token: github_types.GitHubOAuthToken | None = None,
         params: dict[str, str] | None = None,
+        extensions: dict[str, typing.Any] | None = None,
     ) -> typing.Any:
         response = await self.get(
-            url, api_version=api_version, oauth_token=oauth_token, params=params
+            url,
+            api_version=api_version,
+            oauth_token=oauth_token,
+            params=params,
+            extensions=extensions,
         )
         return response.json()
 
@@ -454,6 +459,7 @@ class AsyncGitHubClient(http.AsyncClient):
         list_items: str | None = None,
         params: dict[str, str] | None = None,
         batch_size: int | None = None,
+        extensions: dict[str, typing.Any] | None = None,
     ) -> typing.Any:
         # NOTE(sileht): can't be on the same line...
         # https://github.com/python/mypy/issues/10743
@@ -477,6 +483,7 @@ class AsyncGitHubClient(http.AsyncClient):
                 api_version=api_version,
                 oauth_token=oauth_token,
                 params=final_params,
+                extensions=extensions,
             )
             last_url = response.links.get("last", {}).get("url")
             if last_url:

@@ -6,7 +6,6 @@ import typing
 import daiquiri
 from datadog import statsd  # type: ignore[attr-defined]
 import first
-import tenacity
 import voluptuous
 
 from mergify_engine import actions
@@ -18,7 +17,6 @@ from mergify_engine import rules
 from mergify_engine import settings
 from mergify_engine import utils
 from mergify_engine.clients import github
-from mergify_engine.clients import http
 from mergify_engine.queue import utils as queue_utils
 from mergify_engine.rules import conditions as conditions_mod
 from mergify_engine.rules.config import mergify as mergify_conf
@@ -255,21 +253,16 @@ async def get_pending_commands_to_run_from_comments(
         ctxt.repository.installation.redis.cache
     )
     pendings = LastUpdatedOrderedDict()
-    async for attempt in tenacity.AsyncRetrying(
-        stop=tenacity.stop_after_attempt(2),
-        wait=tenacity.wait_exponential(0.2),
-        retry=tenacity.retry_if_exception_type(http.HTTPNotFound),
-        reraise=True,
-    ):
-        with attempt:
-            comments: list[github_types.GitHubComment] = [
-                c
-                async for c in ctxt.client.items(
-                    f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments",
-                    resource_name="comments",
-                    page_limit=20,
-                )
-            ]
+
+    comments: list[github_types.GitHubComment] = [
+        c
+        async for c in ctxt.client.items(
+            f"{ctxt.base_url}/issues/{ctxt.pull['number']}/comments",
+            resource_name="comments",
+            page_limit=20,
+            extensions={"retry": lambda r: r.status_code == 404},
+        )
+    ]
 
     for comment in comments:
         try:

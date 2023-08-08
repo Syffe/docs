@@ -872,41 +872,35 @@ class TrainCar:
         try:
             title = f"merge queue: embarking {self._get_embarked_refs()} together"
             body = await self.build_draft_pr_summary(for_queue_pull_request=True)
-            async for attempt in tenacity.AsyncRetrying(
-                reraise=True,
-                retry=tenacity.retry_if_exception(
-                    lambda exc: isinstance(exc, http.HTTPClientSideError)
-                    and exc.status_code == 422
-                    and "Validation Failed" in exc.message
-                ),
-                stop=tenacity.stop_after_attempt(5),
-                wait=tenacity.wait_exponential(multiplier=0.2),
-            ):
-                with attempt:
-                    if attempt.retry_state.attempt_number > 1:
-                        self.train.log.info(
-                            "retrying to create a merge queue pull request",
-                            head=branch_name,
-                            title=title,
-                            ref=self.ref,
-                            on_behalf=on_behalf.login if on_behalf else None,
-                            parent_pull_request_numbers=self.parent_pull_request_numbers,
-                            still_queued_embarked_pull_numbers=[
-                                ep.user_pull_request_number
-                                for ep in self.still_queued_embarked_pulls
-                            ],
-                        )
-                    response = await self.repository.installation.client.post(
-                        f"/repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/pulls",
-                        json={
-                            "title": title,
-                            "body": body,
-                            "base": self.ref,
-                            "head": branch_name,
-                            "draft": True,
-                        },
-                        oauth_token=on_behalf.oauth_access_token if on_behalf else None,
-                    )
+
+            response = await self.repository.installation.client.post(
+                f"/repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/pulls",
+                json={
+                    "title": title,
+                    "body": body,
+                    "base": self.ref,
+                    "head": branch_name,
+                    "draft": True,
+                },
+                oauth_token=on_behalf.oauth_access_token if on_behalf else None,
+                extensions={
+                    "retry": lambda response: response.status_code == 422
+                    and "Validation Failed" in http.extract_message(response),
+                    "retry_log": lambda retry_state: self.train.log.info(
+                        "retrying to create a merge queue pull request",
+                        head=branch_name,
+                        title=title,
+                        ref=self.ref,
+                        on_behalf=on_behalf.login if on_behalf else None,
+                        parent_pull_request_numbers=self.parent_pull_request_numbers,
+                        still_queued_embarked_pull_numbers=[
+                            ep.user_pull_request_number
+                            for ep in self.still_queued_embarked_pulls
+                        ],
+                    ),
+                },
+            )
+
         except http.HTTPClientSideError as e:
             if "A pull request already exists for" in e.message:
                 # NOTE(sileht): Filtering pull requests on head is dangerous.
@@ -969,106 +963,73 @@ class TrainCar:
         """
 
         try:
-            async for attempt in tenacity.AsyncRetrying(
-                reraise=True,
-                retry=tenacity.retry_if_exception(
-                    lambda exc: isinstance(exc, http.HTTPClientSideError)
-                    and exc.status_code == 422
-                    and "Reference already exists" in exc.message
-                ),
-                stop=tenacity.stop_after_attempt(5),
-                wait=tenacity.wait_exponential(multiplier=0.2),
-            ):
-                with attempt:
-                    if attempt.retry_state.attempt_number > 1:
-                        self.train.log.info(
-                            "retrying to create the merge-queue branch",
-                            branch_name=branch_name,
-                            sha=base_sha,
-                        )
-
-                    try:
-                        await self.repository.installation.client.post(
-                            f"/repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/git/refs",
-                            oauth_token=on_behalf.oauth_access_token
-                            if on_behalf
-                            else None,
-                            json={
-                                "ref": f"refs/heads/{branch_name}",
-                                "sha": base_sha,
-                            },
-                        )
-                    except http.HTTPClientSideError as exc:
-                        if (
-                            exc.status_code == 422
-                            and "Reference already exists" in exc.message
-                        ):
-                            # The same PR, with the same base_sha, already exists in another
-                            # TrainCar from another partition
-                            if (
-                                self.train.partition_name
-                                != partr_config.DEFAULT_PARTITION_NAME
-                            ):
-                                existing_pr = await self.train.convoy.find_prs_in_train_cars_and_add_delegation(
-                                    [
-                                        ep.user_pull_request_number
-                                        for ep in self.still_queued_embarked_pulls
-                                    ],
-                                    self.train.partition_name,
-                                )
-                                if existing_pr is not None:
-                                    return existing_pr
-
-                            try:
-                                await self._delete_branch()
-                            except http.HTTPClientSideError as exc_patch:
-                                await self._set_creation_failure(exc_patch.message)
-                                raise TrainCarPullRequestCreationFailure(
-                                    self
-                                ) from exc_patch
-
-                            raise
-
+            await self.repository.installation.client.post(
+                f"/repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/git/refs",
+                oauth_token=on_behalf.oauth_access_token if on_behalf else None,
+                json={
+                    "ref": f"refs/heads/{branch_name}",
+                    "sha": base_sha,
+                },
+                extensions={
+                    "retry": lambda response: response.status_code == 422
+                    and "Reference already exists" in http.extract_message(response),
+                    "retry_log": lambda retry_state: self.train.log.info(
+                        "retrying to create the merge-queue branch",
+                        branch_name=branch_name,
+                        sha=base_sha,
+                    ),
+                },
+            )
         except http.HTTPClientSideError as exc:
+            if exc.status_code == 422 and "Reference already exists" in exc.message:
+                # The same PR, with the same base_sha, already exists in another
+                # TrainCar from another partition
+                if self.train.partition_name != partr_config.DEFAULT_PARTITION_NAME:
+                    existing_pr = await self.train.convoy.find_prs_in_train_cars_and_add_delegation(
+                        [
+                            ep.user_pull_request_number
+                            for ep in self.still_queued_embarked_pulls
+                        ],
+                        self.train.partition_name,
+                    )
+                    if existing_pr is not None:
+                        return existing_pr
+
+                try:
+                    await self._delete_branch()
+                except http.HTTPClientSideError as exc_patch:
+                    await self._set_creation_failure(exc_patch.message)
+                    raise TrainCarPullRequestCreationFailure(self) from exc_patch
+
             await self._set_creation_failure(exc.message, report_as_error=True)
             raise TrainCarPullRequestCreationFailure(self) from exc
 
         return None
 
-    @tenacity.retry(
-        retry=tenacity.retry_if_exception(
-            lambda exc: isinstance(exc, http.HTTPClientSideError)
-            and exc.status_code == 404
-            and "Base does not exist" in exc.message
-        ),
-        stop=tenacity.stop_after_attempt(5),
-        reraise=True,
-        wait=tenacity.wait_exponential(multiplier=0.2),
-    )
     async def _merge_pull_into_draft_pr_branch(
         self, pull_number: int, on_behalf: github_user.GitHubUser | None = None
     ) -> None:
-        try:
-            await self.repository.installation.client.post(
-                f"/repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/merges",
-                oauth_token=on_behalf.oauth_access_token if on_behalf else None,
-                json={
-                    "base": self.queue_branch_name,
-                    "head": f"refs/pull/{pull_number}/head",
-                    "commit_message": f"Merge of #{pull_number}",
-                },
-            )
-        except http.HTTPClientSideError as exc:
-            if exc.status_code == 404 and "Base does not exist" in exc.message:
-                self.repository.log.info(
+        await self.repository.installation.client.post(
+            f"/repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/merges",
+            oauth_token=on_behalf.oauth_access_token if on_behalf else None,
+            json={
+                "base": self.queue_branch_name,
+                "head": f"refs/pull/{pull_number}/head",
+                "commit_message": f"Merge of #{pull_number}",
+            },
+            extensions={
+                "retry": lambda response: response.status_code == 404
+                and (
+                    "Base does not exist" in http.extract_message(response)
+                    or "Head does not exist" in http.extract_message(response)
+                ),
+                "retry_log": lambda retry_state: self.repository.log.info(
                     "fail to merge pull request into draft pr branch",
                     gh_pull=pull_number,
                     queue_branch_name=self.queue_branch_name,
-                    curl_request=await self.repository.installation.client.last_request.to_curl_request(),
-                    curl_response=await self.repository.installation.client.last_request.to_curl_response(),
-                )
-
-            raise
+                ),
+            },
+        )
 
     async def _rename_branch(
         self,
@@ -1077,28 +1038,19 @@ class TrainCar:
         on_behalf: github_user.GitHubUser | None,
     ) -> None:
         try:
-            async for attempt in tenacity.AsyncRetrying(
-                reraise=True,
-                # NOTE(sileht): the merge queue we just created is missing ???, just retry just in case
-                retry=tenacity.retry_if_exception(
-                    lambda exc: isinstance(exc, http.HTTPClientSideError)
-                    and exc.status_code == 404
-                ),
-                stop=tenacity.stop_after_attempt(5),
-                wait=tenacity.wait_exponential(multiplier=0.2),
-            ):
-                with attempt:
-                    if attempt.retry_state.attempt_number > 1:
-                        self.train.log.info(
-                            "retrying to rename merge-queue branch",
-                            current_branch_name=current_branch_name,
-                            new_branch_name=new_branch_name,
-                        )
-                    await self.repository.installation.client.post(
-                        f"/repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/branches/{current_branch_name}/rename",
-                        oauth_token=on_behalf.oauth_access_token if on_behalf else None,
-                        json={"new_name": new_branch_name},
-                    )
+            await self.repository.installation.client.post(
+                f"/repos/{self.repository.installation.owner_login}/{self.repository.repo['name']}/branches/{current_branch_name}/rename",
+                oauth_token=on_behalf.oauth_access_token if on_behalf else None,
+                json={"new_name": new_branch_name},
+                extensions={
+                    "retry": lambda response: response.status_code == 404,
+                    "retry_log": lambda retry_state: self.train.log.info(
+                        "retrying to rename merge-queue branch",
+                        current_branch_name=current_branch_name,
+                        new_branch_name=new_branch_name,
+                    ),
+                },
+            )
         except http.HTTPClientSideError as exc:
             if exc.status_code == 422 and "New branch already exists" in exc.message:
                 try:
