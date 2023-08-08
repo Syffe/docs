@@ -41,6 +41,10 @@ TIKTOKEN_ENCODING = tiktoken.Encoding(
 )
 
 
+class OpenAiException(Exception):
+    pass
+
+
 async def get_embedding(input_data: str | list[int]) -> npt.NDArray[np.float32]:
     async with http.AsyncClient(
         headers={
@@ -54,7 +58,14 @@ async def get_embedding(input_data: str | list[int]) -> npt.NDArray[np.float32]:
                 "input": input_data,
                 "model": OPENAI_EMBEDDINGS_MODEL,
             },
+            extensions={
+                "retry": lambda response: response.json()["data"][0]["embedding"]
+                is None,
+            },
         )
         embedding = response.json()["data"][0]["embedding"]
+
+        if embedding is None:
+            raise OpenAiException(f"OpenAI return None for embedding of {input_data}")
 
     return np.array(list(map(np.float32, embedding)))

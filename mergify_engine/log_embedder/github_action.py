@@ -92,7 +92,15 @@ async def embed_logs() -> bool:
         job_ids = []
         for job in jobs:
             if job.log_embedding is None:
-                await embed_log(job)
+                try:
+                    await embed_log(job)
+                except openai_embedding.OpenAiException:
+                    LOG.error(
+                        "log-embedder: a job raises an unexpected error on log embedding",
+                        job_id=job.id,
+                        exc_info=True,
+                    )
+
             job_ids.append(job.id)
             await session.commit()
         await github_actions.WorkflowJob.compute_logs_embedding_cosine_similarity(
