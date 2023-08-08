@@ -1,12 +1,17 @@
+import asyncio
 import os
 import pathlib
 import subprocess
+import threading
+import typing
 from unittest import mock
 
+import click.testing
 import sqlalchemy
 import sqlalchemy.ext.asyncio
 
 from mergify_engine import context
+from mergify_engine import database
 from mergify_engine import github_types
 from mergify_engine import settings
 from mergify_engine.config import types
@@ -72,3 +77,26 @@ def dump_schema(dbname: str, filepath: pathlib.Path) -> None:
 
     with open(filepath, "w") as f:
         f.write(process.stdout.decode())
+
+
+def test_console_scripts(
+    *args: typing.Any, **kwargs: typing.Any
+) -> click.testing.Result:
+    saved_state = database.APP_STATE
+    database.APP_STATE = None
+    result = None
+    try:
+
+        def task() -> None:
+            nonlocal result
+            asyncio.set_event_loop(asyncio.new_event_loop())
+            runner = click.testing.CliRunner()
+            result = runner.invoke(*args, **kwargs)
+
+        thread = threading.Thread(target=task)
+        thread.start()
+        thread.join()
+        assert result is not None
+        return result
+    finally:
+        database.APP_STATE = saved_state
